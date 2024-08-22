@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 
 #ifndef SDL_X11_MODULE
 #define SDL_X11_MODULE(modname)
@@ -168,7 +168,7 @@ SDL_X11_SYM(Bool,XrmGetResource,(XrmDatabase db, char* str_name, char* str_class
 SDL_X11_MODULE(XFIXES)
 SDL_X11_SYM(PointerBarrier, XFixesCreatePointerBarrier, (Display* a, Window b, int c, int d, int e, int f, int g, int h, int *i),(a,b,c,d,e,f,g,h,i),return)
 SDL_X11_SYM(void, XFixesDestroyPointerBarrier, (Display* a, PointerBarrier b), (a,b),)
-SDL_X11_SYM(int, XIBarrierReleasePointer,(Display* a,  int b, PointerBarrier c, BarrierEventID d), (a,b,c,d), return) /* this is actually Xinput2 */
+SDL_X11_SYM(int, XIBarrierReleasePointer,(Display* a,  int b, PointerBarrier c, BarrierEventID d), (a,b,c,d), return) // this is actually Xinput2
 SDL_X11_SYM(Status, XFixesQueryVersion,(Display* a, int* b, int* c), (a,b,c), return)
 SDL_X11_SYM(Status, XFixesSelectSelectionInput, (Display* a, Window b, Atom c, unsigned long d), (a,b,c,d), return)
 #endif
@@ -193,7 +193,7 @@ SDL_X11_SYM(void,XkbFreeKeyboard,(XkbDescPtr a,unsigned int b, Bool c),(a,b,c),)
 SDL_X11_SYM(Bool,XkbSetDetectableAutoRepeat,(Display* a, Bool b, Bool* c),(a,b,c),return)
 #endif
 
-/* XKeycodeToKeysym is a deprecated function */
+// XKeycodeToKeysym is a deprecated function
 #ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -211,7 +211,7 @@ SDL_X11_SYM(KeySym,XKeycodeToKeysym,(Display* a,KeyCode b,int c),(a,b,c),return)
 SDL_X11_MODULE(UTF8)
 SDL_X11_SYM(int,Xutf8TextListToTextProperty,(Display* a,char** b,int c,XICCEncodingStyle d,XTextProperty* e),(a,b,c,d,e),return)
 SDL_X11_SYM(int,Xutf8LookupString,(XIC a,XKeyPressedEvent* b,char* c,int d,KeySym* e,Status* f),(a,b,c,d,e,f),return)
-/* SDL_X11_SYM(XIC,XCreateIC,(XIM, ...),return)  !!! ARGH! */
+// SDL_X11_SYM(XIC,XCreateIC,(XIM, ...),return)  !!! ARGH!
 SDL_X11_SYM(void,XDestroyIC,(XIC a),(a),)
 /* SDL_X11_SYM(char*,XGetICValues,(XIC, ...),return)  !!! ARGH! */
 SDL_X11_SYM(void,XSetICFocus,(XIC a),(a),)
@@ -255,7 +255,7 @@ SDL_X11_SYM(int,ipAllocateData,(ChannelPtr a,IPCard b,IPDataPtr * c),(a,b,c),ret
 SDL_X11_SYM(int,ipUnallocateAndSendData,(ChannelPtr a,IPCard b),(a,b),return)
 #endif
 
-/* XCursor support */
+// XCursor support
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 SDL_X11_MODULE(XCURSOR)
 SDL_X11_SYM(XcursorImage*,XcursorImageCreate,(int a,int b),(a,b),return)
@@ -264,7 +264,7 @@ SDL_X11_SYM(Cursor,XcursorImageLoadCursor,(Display *a,const XcursorImage *b),(a,
 SDL_X11_SYM(Cursor,XcursorLibraryLoadCursor,(Display *a, const char *b),(a,b),return)
 #endif
 
-/* Xdbe support */
+// Xdbe support
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
 SDL_X11_MODULE(XDBE)
 SDL_X11_SYM(Status,XdbeQueryExtension,(Display *dpy,int *major_version_return,int *minor_version_return),(dpy,major_version_return,minor_version_return),return)
@@ -278,7 +278,7 @@ SDL_X11_SYM(void,XdbeFreeVisualInfo,(XdbeScreenVisualInfo *visual_info),(visual_
 SDL_X11_SYM(XdbeBackBufferAttributes*,XdbeGetBackBufferAttributes,(Display *dpy,XdbeBackBuffer buffer),(dpy,buffer),return)
 #endif
 
-/* XInput2 support for multiple mice, tablets, etc. */
+// XInput2 support for multiple mice, tablets, etc.
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 SDL_X11_MODULE(XINPUT2)
 SDL_X11_SYM(XIDeviceInfo*,XIQueryDevice,(Display *a,int b,int *c),(a,b,c),return)
@@ -293,7 +293,7 @@ SDL_X11_SYM(Bool,XIWarpPointer,(Display *a,int b,Window c,Window d,double e,doub
 SDL_X11_SYM(Status,XIGetProperty,(Display *a,int b,Atom c,long d,long e,Bool f, Atom g, Atom *h, int *i, unsigned long *j, unsigned long *k, unsigned char **l),(a,b,c,d,e,f,g,h,i,j,k,l),return);
 #endif
 
-/* XRandR support */
+// XRandR support
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 SDL_X11_MODULE(XRANDR)
 SDL_X11_SYM(Status,XRRQueryVersion,(Display *dpy,int *major_versionp,int *minor_versionp),(dpy,major_versionp,minor_versionp),return)
@@ -323,7 +323,7 @@ SDL_X11_SYM(void,XRRSelectInput,(Display *dpy, Window window, int mask),(dpy,win
 SDL_X11_SYM(Status,XRRGetCrtcTransform,(Display *dpy,RRCrtc crtc,XRRCrtcTransformAttributes **attributes),(dpy,crtc,attributes),return)
 #endif
 
-/* MIT-SCREEN-SAVER support */
+// MIT-SCREEN-SAVER support
 #ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
 SDL_X11_MODULE(XSS)
 SDL_X11_SYM(Bool,XScreenSaverQueryExtension,(Display *dpy,int *event_base,int *error_base),(dpy,event_base,error_base),return)
@@ -340,4 +340,4 @@ SDL_X11_SYM(void,XShapeCombineRegion,(Display *a,Window b,int c,int d,int e,Regi
 #undef SDL_X11_MODULE
 #undef SDL_X11_SYM
 
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on

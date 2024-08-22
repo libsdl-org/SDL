@@ -34,6 +34,6 @@ extern int X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);
 extern int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rect, int flags);
 extern void X11_DestroyPointerBarrier(SDL_VideoDevice *_this, SDL_Window *window);
 extern int X11_GetXFixesSelectionNotifyEvent(void);
-#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+#endif // SDL_VIDEO_DRIVER_X11_XFIXES
 
-#endif /* SDL_x11xfixes_h_ */
+#endif // SDL_x11xfixes_h_

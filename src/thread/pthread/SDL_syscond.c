@@ -33,7 +33,7 @@ struct SDL_Condition
     pthread_cond_t cond;
 };
 
-/* Create a condition variable */
+// Create a condition variable
 SDL_Condition *SDL_CreateCondition(void)
 {
     SDL_Condition *cond;
@@ -49,7 +49,7 @@ SDL_Condition *SDL_CreateCondition(void)
     return cond;
 }
 
-/* Destroy a condition variable */
+// Destroy a condition variable
 void SDL_DestroyCondition(SDL_Condition *cond)
 {
     if (cond) {
@@ -58,7 +58,7 @@ void SDL_DestroyCondition(SDL_Condition *cond)
     }
 }
 
-/* Restart one of the threads that are waiting on the condition variable */
+// Restart one of the threads that are waiting on the condition variable
 int SDL_SignalCondition(SDL_Condition *cond)
 {
     int retval;
@@ -74,7 +74,7 @@ int SDL_SignalCondition(SDL_Condition *cond)
     return retval;
 }
 
-/* Restart all threads that are waiting on the condition variable */
+// Restart all threads that are waiting on the condition variable
 int SDL_BroadcastCondition(SDL_Condition *cond)
 {
     int retval;
@@ -130,7 +130,7 @@ tryagain:
     switch (retval) {
     case EINTR:
         goto tryagain;
-        /* break; -Wunreachable-code-break */
+        // break; -Wunreachable-code-break
     case ETIMEDOUT:
         retval = SDL_MUTEX_TIMEDOUT;
         break;

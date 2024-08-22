@@ -29,11 +29,11 @@
 #include <sched.h>
 #include <unistd.h>
 
-/* RLIMIT_RTTIME requires kernel >= 2.6.25 and is in glibc >= 2.14 */
+// RLIMIT_RTTIME requires kernel >= 2.6.25 and is in glibc >= 2.14
 #ifndef RLIMIT_RTTIME
 #define RLIMIT_RTTIME 15
 #endif
-/* SCHED_RESET_ON_FORK is in kernel >= 2.6.32. */
+// SCHED_RESET_ON_FORK is in kernel >= 2.6.32.
 #ifndef SCHED_RESET_ON_FORK
 #define SCHED_RESET_ON_FORK 0x40000000
 #endif
@@ -42,12 +42,12 @@
 
 #ifdef SDL_USE_LIBDBUS
 
-/* d-bus queries to org.freedesktop.RealtimeKit1. */
+// d-bus queries to org.freedesktop.RealtimeKit1.
 #define RTKIT_DBUS_NODE      "org.freedesktop.RealtimeKit1"
 #define RTKIT_DBUS_PATH      "/org/freedesktop/RealtimeKit1"
 #define RTKIT_DBUS_INTERFACE "org.freedesktop.RealtimeKit1"
 
-/* d-bus queries to the XDG portal interface to RealtimeKit1 */
+// d-bus queries to the XDG portal interface to RealtimeKit1
 #define XDG_PORTAL_DBUS_NODE      "org.freedesktop.portal.Desktop"
 #define XDG_PORTAL_DBUS_PATH      "/org/freedesktop/portal/desktop"
 #define XDG_PORTAL_DBUS_INTERFACE "org.freedesktop.portal.Realtime"
@@ -78,13 +78,13 @@ static void set_rtkit_interface(void)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
-    /* xdg-desktop-portal works in all instances, so check for it first. */
+    // xdg-desktop-portal works in all instances, so check for it first.
     if (dbus && realtime_portal_supported(dbus->session_conn)) {
         rtkit_use_session_conn = SDL_TRUE;
         rtkit_dbus_node = XDG_PORTAL_DBUS_NODE;
         rtkit_dbus_path = XDG_PORTAL_DBUS_PATH;
         rtkit_dbus_interface = XDG_PORTAL_DBUS_INTERFACE;
-    } else { /* Fall back to the standard rtkit interface in all other cases. */
+    } else { // Fall back to the standard rtkit interface in all other cases.
         rtkit_use_session_conn = SDL_FALSE;
         rtkit_dbus_node = RTKIT_DBUS_NODE;
         rtkit_dbus_path = RTKIT_DBUS_PATH;
@@ -110,19 +110,19 @@ static void rtkit_initialize(void)
     set_rtkit_interface();
     dbus_conn = get_rtkit_dbus_connection();
 
-    /* Try getting minimum nice level: this is often greater than PRIO_MIN (-20). */
+    // Try getting minimum nice level: this is often greater than PRIO_MIN (-20).
     if (!dbus_conn || !SDL_DBus_QueryPropertyOnConnection(dbus_conn, rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MinNiceLevel",
                                                                  DBUS_TYPE_INT32, &rtkit_min_nice_level)) {
         rtkit_min_nice_level = -20;
     }
 
-    /* Try getting maximum realtime priority: this can be less than the POSIX default (99). */
+    // Try getting maximum realtime priority: this can be less than the POSIX default (99).
     if (!dbus_conn || !SDL_DBus_QueryPropertyOnConnection(dbus_conn, rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MaxRealtimePriority",
                                                                  DBUS_TYPE_INT32, &rtkit_max_realtime_priority)) {
         rtkit_max_realtime_priority = 99;
     }
 
-    /* Try getting maximum rttime allowed by rtkit: exceeding this value will result in SIGKILL */
+    // Try getting maximum rttime allowed by rtkit: exceeding this value will result in SIGKILL
     if (!dbus_conn || !SDL_DBus_QueryPropertyOnConnection(dbus_conn, rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "RTTimeUSecMax",
                                                                  DBUS_TYPE_INT64, &rtkit_max_rttime_usec)) {
         rtkit_max_rttime_usec = 200000;
@@ -245,10 +245,10 @@ static SDL_bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 
 #define rtkit_max_realtime_priority 99
 
-#endif /* dbus */
-#endif /* threads */
+#endif // dbus
+#endif // threads
 
-/* this is a public symbol, so it has to exist even if threads are disabled. */
+// this is a public symbol, so it has to exist even if threads are disabled.
 int SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
 {
 #ifdef SDL_THREADS_DISABLED
@@ -280,7 +280,7 @@ int SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
 #endif
 }
 
-/* this is a public symbol, so it has to exist even if threads are disabled. */
+// this is a public symbol, so it has to exist even if threads are disabled.
 int SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
 #ifdef SDL_THREADS_DISABLED
@@ -342,4 +342,4 @@ int SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
 #endif
 }
 
-#endif /* SDL_PLATFORM_LINUX */
+#endif // SDL_PLATFORM_LINUX

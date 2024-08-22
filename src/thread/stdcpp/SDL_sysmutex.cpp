@@ -67,7 +67,7 @@ extern "C" int SDL_TryLockMutex(SDL_Mutex *mutex)
     return ((!mutex) || mutex->cpp_mutex.try_lock()) ? 0 : SDL_MUTEX_TIMEDOUT;
 }
 
-/* Unlock the mutex */
+// Unlock the mutex
 extern "C" void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
     if (mutex != NULL) {

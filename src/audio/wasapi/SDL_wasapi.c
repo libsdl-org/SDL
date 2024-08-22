@@ -48,7 +48,7 @@ static const IID SDL_IID_IAudioRenderClient = { 0xf294acfc, 0x3146, 0x4483, { 0x
 static const IID SDL_IID_IAudioCaptureClient = { 0xc8adbd64, 0xe71e, 0x48a0, { 0xa4, 0xde, 0x18, 0x5c, 0x39, 0x5c, 0xd3, 0x17 } };
 #ifdef __IAudioClient3_INTERFACE_DEFINED__
 static const IID SDL_IID_IAudioClient3 = { 0x7ed4ee07, 0x8e67, 0x4cd4, { 0x8c, 0x1a, 0x2b, 0x7a, 0x59, 0x87, 0xad, 0x42 } };
-#endif /**/
+#endif //
 
 
 // WASAPI is _really_ particular about various things happening on the same thread, for COM and such,

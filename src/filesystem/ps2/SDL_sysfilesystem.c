@@ -23,7 +23,7 @@
 #ifdef SDL_FILESYSTEM_PS2
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
 
@@ -46,7 +46,7 @@ char *SDL_SYS_GetBasePath(void)
     return retval;
 }
 
-/* Do a recursive mkdir of parents folders */
+// Do a recursive mkdir of parents folders
 static void recursive_mkdir(const char *dir)
 {
     char tmp[FILENAME_MAX];
@@ -109,11 +109,11 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
-/* TODO */
+// TODO
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-#endif /* SDL_FILESYSTEM_PS2 */
+#endif // SDL_FILESYSTEM_PS2

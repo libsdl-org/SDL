@@ -147,4 +147,4 @@ int SDL_SYS_HapticStopAll(SDL_Haptic *haptic)
     return SDL_SYS_LogicError();
 }
 
-#endif /* SDL_HAPTIC_DUMMY || SDL_HAPTIC_DISABLED */
+#endif // SDL_HAPTIC_DUMMY || SDL_HAPTIC_DISABLED

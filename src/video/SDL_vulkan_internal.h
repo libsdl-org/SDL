@@ -57,7 +57,7 @@ extern const char *SDL_Vulkan_GetResultString(VkResult result);
 
 extern VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties,
-    Uint32 *extensionCount); /* free returned list with SDL_free */
+    Uint32 *extensionCount); // free returned list with SDL_free
 
 /* Create a surface directly from a display connected to a physical device
  * using the DisplayKHR extension.
@@ -80,12 +80,12 @@ extern void SDL_Vulkan_DestroySurface_Internal(void *vkGetInstanceProcAddr,
                                                const struct VkAllocationCallbacks *allocator);
 #else
 
-/* No SDL Vulkan support, just include the header for typedefs */
+// No SDL Vulkan support, just include the header for typedefs
 #include <SDL3/SDL_vulkan.h>
 
 typedef void (*PFN_vkGetInstanceProcAddr)(void);
 typedef int (*PFN_vkEnumerateInstanceExtensionProperties)(void);
 
-#endif /* SDL_VIDEO_VULKAN */
+#endif // SDL_VIDEO_VULKAN
 
-#endif /* SDL_vulkan_internal_h_ */
+#endif // SDL_vulkan_internal_h_

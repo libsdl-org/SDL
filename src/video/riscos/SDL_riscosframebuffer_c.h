@@ -28,4 +28,4 @@ extern int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wi
 extern int RISCOS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);
 extern void RISCOS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_riscosframebuffer_c_h_ */
+#endif // SDL_riscosframebuffer_c_h_

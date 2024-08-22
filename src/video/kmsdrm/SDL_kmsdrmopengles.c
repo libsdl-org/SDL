@@ -32,7 +32,7 @@
 #define EGL_PLATFORM_GBM_MESA 0x31D7
 #endif
 
-/* EGL implementation of SDL OpenGL support */
+// EGL implementation of SDL OpenGL support
 
 void KMSDRM_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor)
 {
@@ -96,14 +96,14 @@ int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
        even if you do async flips. */
     uint32_t flip_flags = DRM_MODE_PAGE_FLIP_EVENT;
 
-    /* Skip the swap if we've switched away to another VT */
+    // Skip the swap if we've switched away to another VT
     if (windata->egl_surface == EGL_NO_SURFACE) {
-        /* Wait a bit, throttling to ~100 FPS */
+        // Wait a bit, throttling to ~100 FPS
         SDL_Delay(10);
         return 0;
     }
 
-    /* Recreate the GBM / EGL surfaces if the display mode has changed */
+    // Recreate the GBM / EGL surfaces if the display mode has changed
     if (windata->egl_surface_dirty) {
         KMSDRM_CreateSurfaces(_this, window);
     }
@@ -115,7 +115,7 @@ int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
         return 0;
     }
 
-    /* Release the previous front buffer */
+    // Release the previous front buffer
     if (windata->bo) {
         KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
         windata->bo = NULL;
@@ -140,7 +140,7 @@ int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
         return 0;
     }
 
-    /* Get an actual usable fb for the next front buffer. */
+    // Get an actual usable fb for the next front buffer.
     fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb_info) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not get a framebuffer");
@@ -207,4 +207,4 @@ int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 SDL_EGL_MakeCurrent_impl(KMSDRM)
 
-#endif /* SDL_VIDEO_DRIVER_KMSDRM */
+#endif // SDL_VIDEO_DRIVER_KMSDRM

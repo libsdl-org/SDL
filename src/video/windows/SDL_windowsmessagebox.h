@@ -24,4 +24,4 @@
 
 extern int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-#endif /* SDL_VIDEO_DRIVER_WINDOWS */
+#endif // SDL_VIDEO_DRIVER_WINDOWS

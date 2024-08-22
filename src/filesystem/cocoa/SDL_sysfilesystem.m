@@ -23,7 +23,7 @@
 #ifdef SDL_FILESYSTEM_COCOA
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
 
@@ -47,7 +47,7 @@ char *SDL_SYS_GetBasePath(void)
         } else if (SDL_strcasecmp(baseType, "parent") == 0) {
             base = [[[bundle bundlePath] stringByDeletingLastPathComponent] fileSystemRepresentation];
         } else {
-            /* this returns the exedir for non-bundled  and the resourceDir for bundled apps */
+            // this returns the exedir for non-bundled  and the resourceDir for bundled apps
             base = [[bundle resourcePath] fileSystemRepresentation];
         }
 
@@ -97,9 +97,9 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
         }
 
         array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-#endif /* !SDL_PLATFORM_TVOS */
+#endif // !SDL_PLATFORM_TVOS
 
-        if ([array count] > 0) { /* we only want the first item in the list. */
+        if ([array count] > 0) { // we only want the first item in the list.
             NSString *str = [array objectAtIndex:0];
             const char *base = [str fileSystemRepresentation];
             if (base) {
@@ -233,8 +233,8 @@ append_slash:
         }
 
         return retval;
-#endif /* SDL_PLATFORM_TVOS */
+#endif // SDL_PLATFORM_TVOS
     }
 }
 
-#endif /* SDL_FILESYSTEM_COCOA */
+#endif // SDL_FILESYSTEM_COCOA

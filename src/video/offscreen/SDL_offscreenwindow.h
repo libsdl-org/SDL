@@ -37,4 +37,4 @@ extern int OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SD
 extern void OFFSCREEN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void OFFSCREEN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_offscreenwindow_h */
+#endif // SDL_offscreenwindow_h

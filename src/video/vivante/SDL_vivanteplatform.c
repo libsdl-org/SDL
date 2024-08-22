@@ -44,6 +44,6 @@ void VIVANTE_CleanupPlatform(SDL_VideoDevice *_this)
 {
 }
 
-#endif /* VIVANTE_PLATFORM_GENERIC */
+#endif // VIVANTE_PLATFORM_GENERIC
 
-#endif /* SDL_VIDEO_DRIVER_VIVANTE */
+#endif // SDL_VIDEO_DRIVER_VIVANTE

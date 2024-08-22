@@ -27,16 +27,16 @@
 #include <IOKit/ps/IOPowerSources.h>
 #include <IOKit/ps/IOPSKeys.h>
 
-/* CoreFoundation is so verbose... */
+// CoreFoundation is so verbose...
 #define STRMATCH(a, b) (CFStringCompare(a, b, 0) == kCFCompareEqualTo)
 #define GETVAL(k, v) \
     CFDictionaryGetValueIfPresent(dict, CFSTR(k), (const void **)v)
 
-/* Note that AC power sources also include a laptop battery it is charging. */
+// Note that AC power sources also include a laptop battery it is charging.
 static void checkps(CFDictionaryRef dict, SDL_bool *have_ac, SDL_bool *have_battery,
                     SDL_bool *charging, int *seconds, int *percent)
 {
-    CFStringRef strval; /* don't CFRelease() this. */
+    CFStringRef strval; // don't CFRelease() this.
     CFBooleanRef bval;
     CFNumberRef numval;
     SDL_bool charge = SDL_FALSE;
@@ -47,7 +47,7 @@ static void checkps(CFDictionaryRef dict, SDL_bool *have_ac, SDL_bool *have_batt
     int pct = -1;
 
     if ((GETVAL(kIOPSIsPresentKey, &bval)) && (bval == kCFBooleanFalse)) {
-        return; /* nothing to see here. */
+        return; // nothing to see here.
     }
 
     if (!GETVAL(kIOPSPowerSourceStateKey, &strval)) {
@@ -57,7 +57,7 @@ static void checkps(CFDictionaryRef dict, SDL_bool *have_ac, SDL_bool *have_batt
     if (STRMATCH(strval, CFSTR(kIOPSACPowerValue))) {
         is_ac = *have_ac = SDL_TRUE;
     } else if (!STRMATCH(strval, CFSTR(kIOPSBatteryPowerValue))) {
-        return; /* not a battery? */
+        return; // not a battery?
     }
 
     if ((GETVAL(kIOPSIsChargingKey, &bval)) && (bval == kCFBooleanTrue)) {
@@ -86,14 +86,14 @@ static void checkps(CFDictionaryRef dict, SDL_bool *have_ac, SDL_bool *have_batt
         SInt32 val = -1;
         CFNumberGetValue(numval, kCFNumberSInt32Type, &val);
 
-        /* macOS reports 0 minutes until empty if you're plugged in. :( */
+        // macOS reports 0 minutes until empty if you're plugged in. :(
         if ((val == 0) && (is_ac)) {
-            val = -1; /* !!! FIXME: calc from timeToFull and capacity? */
+            val = -1; // !!! FIXME: calc from timeToFull and capacity?
         }
 
         secs = (int)val;
         if (secs > 0) {
-            secs *= 60; /* value is in minutes, so convert to seconds. */
+            secs *= 60; // value is in minutes, so convert to seconds.
         }
     }
 
@@ -117,7 +117,7 @@ static void checkps(CFDictionaryRef dict, SDL_bool *have_ac, SDL_bool *have_batt
      */
     if ((secs < 0) && (*seconds < 0)) {
         if ((pct < 0) && (*percent < 0)) {
-            choose = SDL_TRUE; /* at least we know there's a battery. */
+            choose = SDL_TRUE; // at least we know there's a battery.
         }
         if (pct > *percent) {
             choose = SDL_TRUE;
@@ -147,7 +147,7 @@ SDL_bool SDL_GetPowerInfo_MacOSX(SDL_PowerState *state, int *seconds, int *perce
     if (blob != NULL) {
         CFArrayRef list = IOPSCopyPowerSourcesList(blob);
         if (list != NULL) {
-            /* don't CFRelease() the list items, or dictionaries! */
+            // don't CFRelease() the list items, or dictionaries!
             SDL_bool have_ac = SDL_FALSE;
             SDL_bool have_battery = SDL_FALSE;
             SDL_bool charging = SDL_FALSE;
@@ -178,8 +178,8 @@ SDL_bool SDL_GetPowerInfo_MacOSX(SDL_PowerState *state, int *seconds, int *perce
         CFRelease(blob);
     }
 
-    return SDL_TRUE; /* always the definitive answer on macOS. */
+    return SDL_TRUE; // always the definitive answer on macOS.
 }
 
-#endif /* SDL_POWER_MACOSX */
-#endif /* SDL_POWER_DISABLED */
+#endif // SDL_POWER_MACOSX
+#endif // SDL_POWER_DISABLED

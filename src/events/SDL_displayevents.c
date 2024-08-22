@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* Display event handling code for SDL */
+// Display event handling code for SDL
 
 #include "SDL_events_c.h"
 
@@ -42,7 +42,7 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
         break;
     }
 
-    /* Post the event, if desired */
+    // Post the event, if desired
     posted = 0;
     if (SDL_EventEnabled(displayevent)) {
         SDL_Event event;

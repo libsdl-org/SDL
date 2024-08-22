@@ -40,4 +40,4 @@ int SDL_SYS_OpenURL(const char *url)
     }
 }
 
-#endif /* SDL_PLATFORM_IOS || SDL_PLATFORM_TVOS */
+#endif // SDL_PLATFORM_IOS || SDL_PLATFORM_TVOS

@@ -31,7 +31,7 @@ void SDL_CancelClipboardData(Uint32 sequence)
     size_t i;
 
     if (sequence != _this->clipboard_sequence) {
-        /* This clipboard data was already canceled */
+        // This clipboard data was already canceled
         return;
     }
 
@@ -62,14 +62,14 @@ int SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanu
         return SDL_SetError("Video subsystem must be initialized to set clipboard text");
     }
 
-    /* Parameter validation */
+    // Parameter validation
     if (!((callback && mime_types && num_mime_types > 0) ||
           (!callback && !mime_types && num_mime_types == 0))) {
         return SDL_SetError("Invalid parameters");
     }
 
     if (!callback && !_this->clipboard_callback) {
-        /* Nothing to do, don't modify the system clipboard */
+        // Nothing to do, don't modify the system clipboard
         return 0;
     }
 
@@ -151,7 +151,7 @@ void *SDL_GetInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type
     if (_this->clipboard_callback) {
         const void *provided_data = _this->clipboard_callback(_this->clipboard_userdata, mime_type, size);
         if (provided_data) {
-            /* Make a copy of it for the caller and guarantee null termination */
+            // Make a copy of it for the caller and guarantee null termination
             data = SDL_malloc(*size + sizeof(Uint32));
             if (data) {
                 SDL_memcpy(data, provided_data, *size);
@@ -180,7 +180,7 @@ void *SDL_GetClipboardData(const char *mime_type, size_t *size)
         return NULL;
     }
 
-    /* Initialize size to empty, so implementations don't have to worry about it */
+    // Initialize size to empty, so implementations don't have to worry about it
     *size = 0;
 
     if (_this->GetClipboardData) {
@@ -232,7 +232,7 @@ SDL_bool SDL_HasClipboardData(const char *mime_type)
     }
 }
 
-/* Clipboard text */
+// Clipboard text
 
 SDL_bool SDL_IsTextMimeType(const char *mime_type)
 {
@@ -330,7 +330,7 @@ SDL_bool SDL_HasClipboardText(void)
     return SDL_FALSE;
 }
 
-/* Primary selection text */
+// Primary selection text
 
 int SDL_SetPrimarySelectionText(const char *text)
 {

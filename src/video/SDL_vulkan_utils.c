@@ -125,7 +125,7 @@ VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     VkExtensionProperties *retval;
 
     if (result == VK_ERROR_INCOMPATIBLE_DRIVER) {
-        /* Avoid the ERR_MAX_STRLEN limit by passing part of the message as a string argument.  */
+        // Avoid the ERR_MAX_STRLEN limit by passing part of the message as a string argument.
         SDL_SetError(
             "You probably don't have a working Vulkan driver installed. %s %s %s(%d)",
             "Getting Vulkan extensions failed:",
@@ -166,7 +166,7 @@ VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     return retval;
 }
 
-/* Alpha modes, in order of preference */
+// Alpha modes, in order of preference
 static const VkDisplayPlaneAlphaFlagBitsKHR alphaModes[4] = {
     VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR,
     VK_DISPLAY_PLANE_ALPHA_GLOBAL_BIT_KHR,
@@ -197,7 +197,7 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
     VkPhysicalDevice *physicalDevices = NULL;
     uint32_t physicalDeviceIndex;
     const char *chosenDisplayId;
-    int displayId = 0; /* Counting from physical device 0, display 0 */
+    int displayId = 0; // Counting from physical device 0, display 0
 
     if (!vkEnumeratePhysicalDevices ||
         !vkGetPhysicalDeviceDisplayPropertiesKHR ||
@@ -214,7 +214,7 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         displayId = SDL_atoi(chosenDisplayId);
     }
 
-    /* Enumerate physical devices */
+    // Enumerate physical devices
     result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, NULL);
     if (result != VK_SUCCESS) {
         SDL_SetError("Could not enumerate Vulkan physical devices");
@@ -253,17 +253,17 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         VkExtent2D extent;
         VkDisplayPlaneCapabilitiesKHR planeCaps = { 0 };
 
-        /* Get information about the physical displays */
+        // Get information about the physical displays
         result = vkGetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, &displayPropertiesCount, NULL);
         if (result != VK_SUCCESS || displayPropertiesCount == 0) {
-            /* This device has no physical device display properties, move on to next. */
+            // This device has no physical device display properties, move on to next.
             continue;
         }
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Number of display properties for device %u: %u",
                      physicalDeviceIndex, displayPropertiesCount);
 
         if (displayId < 0 || (uint32_t)displayId >= displayPropertiesCount) {
-            /* Display id specified was higher than number of available displays, move to next physical device. */
+            // Display id specified was higher than number of available displays, move to next physical device.
             displayId -= displayPropertiesCount;
             continue;
         }
@@ -288,7 +288,7 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         SDL_free(displayProperties);
         displayProperties = NULL;
 
-        /* Get display mode properties for the chosen display */
+        // Get display mode properties for the chosen display
         result = vkGetDisplayModePropertiesKHR(physicalDevice, display, &displayModePropertiesCount, NULL);
         if (result != VK_SUCCESS || displayModePropertiesCount == 0) {
             SDL_SetError("Error enumerating display modes");
@@ -308,7 +308,7 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
             goto error;
         }
 
-        /* Try to find a display mode that matches the native resolution */
+        // Try to find a display mode that matches the native resolution
         for (i = 0; i < displayModePropertiesCount; ++i) {
             if (displayModeProperties[i].parameters.visibleRegion.width == extent.width &&
                 displayModeProperties[i].parameters.visibleRegion.height == extent.height &&
@@ -334,7 +334,7 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         SDL_free(displayModeProperties);
         displayModeProperties = NULL;
 
-        /* Try to find a plane index that supports our display */
+        // Try to find a plane index that supports our display
         result = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, &displayPlanePropertiesCount, NULL);
         if (result != VK_SUCCESS || displayPlanePropertiesCount == 0) {
             SDL_SetError("Error enumerating display planes");
@@ -359,15 +359,15 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
             VkDisplayKHR *planeSupportedDisplays = NULL;
             uint32_t j;
 
-            /* Check if plane is attached to a display, if not, continue. */
+            // Check if plane is attached to a display, if not, continue.
             if (displayPlaneProperties[i].currentDisplay == VK_NULL_HANDLE) {
                 continue;
             }
 
-            /* Check supported displays for this plane. */
+            // Check supported displays for this plane.
             result = vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, i, &planeSupportedDisplaysCount, NULL);
             if (result != VK_SUCCESS || planeSupportedDisplaysCount == 0) {
-                continue; /* No supported displays, on to next plane. */
+                continue; // No supported displays, on to next plane.
             }
 
             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Number of supported displays for plane %u: %u", i, planeSupportedDisplaysCount);
@@ -393,7 +393,7 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
             planeSupportedDisplays = NULL;
 
             if (j == planeSupportedDisplaysCount) {
-                /* This display is not supported for this plane, move on. */
+                // This display is not supported for this plane, move on.
                 continue;
             }
 
@@ -404,10 +404,10 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
                 goto error;
             }
 
-            /* Check if plane fulfills extent requirements. */
+            // Check if plane fulfills extent requirements.
             if (extent.width >= planeCaps.minDstExtent.width && extent.height >= planeCaps.minDstExtent.height &&
                 extent.width <= planeCaps.maxDstExtent.width && extent.height <= planeCaps.maxDstExtent.height) {
-                /* If it does, choose this plane. */
+                // If it does, choose this plane.
                 SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Choosing plane %u, minimum extent %ux%u maximum extent %ux%u", i,
                              planeCaps.minDstExtent.width, planeCaps.minDstExtent.height,
                              planeCaps.maxDstExtent.width, planeCaps.maxDstExtent.height);
@@ -427,7 +427,7 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         SDL_free(displayPlaneProperties);
         displayPlaneProperties = NULL;
 
-        /* Find a supported alpha mode. Not all planes support OPAQUE */
+        // Find a supported alpha mode. Not all planes support OPAQUE
         createInfo.alphaMode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
         for (i = 0; i < SDL_arraysize(alphaModes); i++) {
             if (planeCaps.supportedAlpha & alphaModes[i]) {
@@ -437,7 +437,7 @@ int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         }
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Chose alpha mode 0x%x", createInfo.alphaMode);
 
-        /* Found a match, finally! Fill in extent, and break from loop */
+        // Found a match, finally! Fill in extent, and break from loop
         createInfo.imageExtent = extent;
         break;
     }

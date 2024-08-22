@@ -80,7 +80,7 @@ DECLARE_WINDOW_MASK(Resizable);
 DECLARE_WINDOW_MASK(TexturedBackground);
 DECLARE_WINDOW_MASK(UnifiedTitleAndToolbar);
 DECLARE_WINDOW_MASK(FullScreen);
-/*DECLARE_WINDOW_MASK(FullSizeContentView);*/ /* Not used, fails compile on older SDKs */
+/*DECLARE_WINDOW_MASK(FullSizeContentView);*/ // Not used, fails compile on older SDKs
 static const unsigned int NSWindowStyleMaskUtilityWindow = NSUtilityWindowMask;
 static const unsigned int NSWindowStyleMaskDocModalWindow = NSDocModalWindowMask;
 static const unsigned int NSWindowStyleMaskHUDWindow = NSHUDWindowMask;
@@ -93,7 +93,7 @@ DECLARE_ALERT_STYLE(Critical);
 #undef DECLARE_ALERT_STYLE
 #endif
 
-/* Private display data */
+// Private display data
 
 @class SDL3TranslatorResponder;
 
@@ -108,13 +108,13 @@ DECLARE_ALERT_STYLE(Critical);
 @property(nonatomic) SDL_Mutex *swaplock;
 @end
 
-/* Utility functions */
+// Utility functions
 extern SDL_SystemTheme Cocoa_GetSystemTheme(void);
 extern NSImage *Cocoa_CreateImage(SDL_Surface *surface);
 
-/* Fix build with the 10.11 SDK */
+// Fix build with the 10.11 SDK
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 101200
 #define NSEventSubtypeMouseEvent NSMouseEventSubtype
 #endif
 
-#endif /* SDL_cocoavideo_h_ */
+#endif // SDL_cocoavideo_h_

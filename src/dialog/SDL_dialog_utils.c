@@ -78,7 +78,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
         SDL_free(converted);
     }
 
-    /* If the filter list is empty, put the suffix */
+    // If the filter list is empty, put the suffix
     if (!filters->name || !filters->pattern) {
         new_length = SDL_strlen(combined) + SDL_strlen(suffix) + 1;
 
@@ -117,7 +117,7 @@ char *convert_filter(const SDL_DialogFileFilter filter, NameTransform ntf,
     if (ntf) {
         name_filtered = ntf(filter.name);
     } else {
-        /* Useless strdup, but easier to read and maintain code this way */
+        // Useless strdup, but easier to read and maintain code this way
         name_filtered = SDL_strdup(filter.name);
     }
 
@@ -161,10 +161,10 @@ char *convert_ext_list(const char *list, const char *prefix,
     }
 
     total_length =
-        SDL_strlen(list) - semicolons /* length of list contents */
-      + semicolons * SDL_strlen(separator) /* length of separators */
-      + SDL_strlen(prefix) + SDL_strlen(suffix) /* length of prefix/suffix */
-      + 1; /* terminating null byte */
+        SDL_strlen(list) - semicolons // length of list contents
+      + semicolons * SDL_strlen(separator) // length of separators
+      + SDL_strlen(prefix) + SDL_strlen(suffix) // length of prefix/suffix
+      + 1; // terminating null byte
 
     converted = (char *) SDL_malloc(total_length);
 

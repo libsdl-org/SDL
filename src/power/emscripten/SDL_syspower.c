@@ -55,5 +55,5 @@ SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *p
     return SDL_TRUE;
 }
 
-#endif /* SDL_POWER_EMSCRIPTEN */
-#endif /* SDL_POWER_DISABLED */
+#endif // SDL_POWER_EMSCRIPTEN
+#endif // SDL_POWER_DISABLED

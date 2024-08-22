@@ -24,7 +24,7 @@
 #include "core/windows/SDL_windows.h"
 #endif
 
-/* Simple log messages in SDL */
+// Simple log messages in SDL
 
 #include "SDL_log_c.h"
 
@@ -38,7 +38,7 @@
 
 #include "stdlib/SDL_vacopy.h"
 
-/* The size of the stack buffer to use for rendering log messages. */
+// The size of the stack buffer to use for rendering log messages.
 #define SDL_MAX_LOG_MESSAGE_STACK 256
 
 #define DEFAULT_CATEGORY -1
@@ -51,7 +51,7 @@ typedef struct SDL_LogLevel
 } SDL_LogLevel;
 
 
-/* The default log output function */
+// The default log output function
 static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
 static void SDL_ResetLogPrefixes(void);
@@ -68,7 +68,7 @@ static SDL_Mutex *log_function_mutex = NULL;
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 
-/* If this list changes, update the documentation for SDL_HINT_LOGGING */
+// If this list changes, update the documentation for SDL_HINT_LOGGING
 static const char * const SDL_priority_names[] = {
     NULL,
     "VERBOSE",
@@ -82,7 +82,7 @@ SDL_COMPILE_TIME_ASSERT(priority_names, SDL_arraysize(SDL_priority_names) == SDL
 
 static const char *SDL_priority_prefixes[SDL_NUM_LOG_PRIORITIES];
 
-/* If this list changes, update the documentation for SDL_HINT_LOGGING */
+// If this list changes, update the documentation for SDL_HINT_LOGGING
 static const char * const SDL_category_names[] = {
     "APP",
     "ERROR",
@@ -110,12 +110,12 @@ static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
     ANDROID_LOG_ERROR,
     ANDROID_LOG_FATAL
 };
-#endif /* SDL_PLATFORM_ANDROID */
+#endif // SDL_PLATFORM_ANDROID
 
 void SDL_InitLog(void)
 {
     if (!log_function_mutex) {
-        /* if this fails we'll try to continue without it. */
+        // if this fails we'll try to continue without it.
         log_function_mutex = SDL_CreateMutex();
     }
 }
@@ -154,7 +154,7 @@ void SDL_SetLogPriority(int category, SDL_LogPriority priority)
         }
     }
 
-    /* Create a new entry */
+    // Create a new entry
     entry = (SDL_LogLevel *)SDL_malloc(sizeof(*entry));
     if (entry) {
         entry->category = category;
@@ -194,7 +194,7 @@ static SDL_bool SDL_ParseLogPriority(const char *string, size_t length, SDL_LogP
     if (SDL_isdigit(*string)) {
         i = SDL_atoi(string);
         if (i == 0) {
-            /* 0 has a special meaning of "disable this category" */
+            // 0 has a special meaning of "disable this category"
             *priority = SDL_NUM_LOG_PRIORITIES;
             return SDL_TRUE;
         }
@@ -439,7 +439,7 @@ static const char *GetCategoryPrefix(int category)
     }
     return "CUSTOM";
 }
-#endif /* SDL_PLATFORM_ANDROID */
+#endif // SDL_PLATFORM_ANDROID
 
 void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 {
@@ -449,27 +449,27 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
     int len;
     va_list aq;
 
-    /* Nothing to do if we don't have an output function */
+    // Nothing to do if we don't have an output function
     if (!SDL_log_function) {
         return;
     }
 
-    /* Make sure we don't exceed array bounds */
+    // Make sure we don't exceed array bounds
     if ((int)priority < 0 || priority >= SDL_NUM_LOG_PRIORITIES) {
         return;
     }
 
-    /* See if we want to do anything with this message */
+    // See if we want to do anything with this message
     if (priority < SDL_GetLogPriority(category)) {
         return;
     }
 
     if (!log_function_mutex) {
-        /* this mutex creation can race if you log from two threads at startup. You should have called SDL_Init first! */
+        // this mutex creation can race if you log from two threads at startup. You should have called SDL_Init first!
         log_function_mutex = SDL_CreateMutex();
     }
 
-    /* Render into stack buffer */
+    // Render into stack buffer
     va_copy(aq, ap);
     len = SDL_vsnprintf(stack_buf, sizeof(stack_buf), fmt, aq);
     va_end(aq);
@@ -478,9 +478,9 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
         return;
     }
 
-    /* If message truncated, allocate and re-render */
+    // If message truncated, allocate and re-render
     if (len >= sizeof(stack_buf) && SDL_size_add_overflow(len, 1, &len_plus_term) == 0) {
-        /* Allocate exactly what we need, including the zero-terminator */
+        // Allocate exactly what we need, including the zero-terminator
         message = (char *)SDL_malloc(len_plus_term);
         if (!message) {
             return;
@@ -492,10 +492,10 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
         message = stack_buf;
     }
 
-    /* Chop off final endline. */
+    // Chop off final endline.
     if ((len > 0) && (message[len - 1] == '\n')) {
         message[--len] = '\0';
-        if ((len > 0) && (message[len - 1] == '\r')) { /* catch "\r\n", too. */
+        if ((len > 0) && (message[len - 1] == '\r')) { // catch "\r\n", too.
             message[--len] = '\0';
         }
     }
@@ -504,7 +504,7 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
     SDL_log_function(SDL_log_userdata, category, priority, message);
     SDL_UnlockMutex(log_function_mutex);
 
-    /* Free only if dynamically allocated */
+    // Free only if dynamically allocated
     if (message != stack_buf) {
         SDL_free(message);
     }
@@ -519,7 +519,7 @@ enum {
     CONSOLE_ATTACHED_ERROR = -1,
 } consoleAttached = CONSOLE_UNATTACHED;
 
-/* Handle to stderr output of console. */
+// Handle to stderr output of console.
 static HANDLE stderrHandle = NULL;
 #endif
 
@@ -527,8 +527,8 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
                                   const char *message)
 {
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)
-    /* Way too many allocations here, urgh */
-    /* Note: One can't call SDL_SetError here, since that function itself logs. */
+    // Way too many allocations here, urgh
+    // Note: One can't call SDL_SetError here, since that function itself logs.
     {
         char *output;
         size_t length;
@@ -543,27 +543,27 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         DWORD charsWritten;
 #endif
 
-        /* Maybe attach console and get stderr handle */
+        // Maybe attach console and get stderr handle
         if (consoleAttached == CONSOLE_UNATTACHED) {
             attachResult = AttachConsole(ATTACH_PARENT_PROCESS);
             if (!attachResult) {
                 attachError = GetLastError();
                 if (attachError == ERROR_INVALID_HANDLE) {
-                    /* This is expected when running from Visual Studio */
-                    /*OutputDebugString(TEXT("Parent process has no console\r\n"));*/
+                    // This is expected when running from Visual Studio
+                    // OutputDebugString(TEXT("Parent process has no console\r\n"));
                     consoleAttached = CONSOLE_ATTACHED_MSVC;
                 } else if (attachError == ERROR_GEN_FAILURE) {
                     OutputDebugString(TEXT("Could not attach to console of parent process\r\n"));
                     consoleAttached = CONSOLE_ATTACHED_ERROR;
                 } else if (attachError == ERROR_ACCESS_DENIED) {
-                    /* Already attached */
+                    // Already attached
                     consoleAttached = CONSOLE_ATTACHED_CONSOLE;
                 } else {
                     OutputDebugString(TEXT("Error attaching console\r\n"));
                     consoleAttached = CONSOLE_ATTACHED_ERROR;
                 }
             } else {
-                /* Newly attached */
+                // Newly attached
                 consoleAttached = CONSOLE_ATTACHED_CONSOLE;
             }
 
@@ -571,12 +571,12 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
                 stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
 
                 if (GetConsoleMode(stderrHandle, &consoleMode) == 0) {
-                    /* WriteConsole fails if the output is redirected to a file. Must use WriteFile instead. */
+                    // WriteConsole fails if the output is redirected to a file. Must use WriteFile instead.
                     consoleAttached = CONSOLE_ATTACHED_FILE;
                 }
             }
         }
-#endif /* !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK) */
+#endif // !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
         length = SDL_strlen(SDL_GetLogPriorityPrefix(priority)) + SDL_strlen(message) + 1 + 1 + 1;
         output = SDL_small_alloc(char, length, &isstack);
         (void)SDL_snprintf(output, length, "%s%s\r\n", SDL_GetLogPriorityPrefix(priority), message);
@@ -584,18 +584,18 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 
 
 #if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
-        /* When running in MSVC and using stdio, rely on forwarding of stderr to the debug stream */
+        // When running in MSVC and using stdio, rely on forwarding of stderr to the debug stream
         if (consoleAttached != CONSOLE_ATTACHED_MSVC) {
-            /* Output to debugger */
+            // Output to debugger
             OutputDebugString(tstr);
         }
 #else
-        /* Output to debugger */
+        // Output to debugger
         OutputDebugString(tstr);
 #endif
 
 #if !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
-        /* Screen output to stderr, if console was attached. */
+        // Screen output to stderr, if console was attached.
         if (consoleAttached == CONSOLE_ATTACHED_CONSOLE) {
             if (!WriteConsole(stderrHandle, tstr, (DWORD)SDL_tcslen(tstr), &charsWritten, NULL)) {
                 OutputDebugString(TEXT("Error calling WriteConsole\r\n"));
@@ -609,7 +609,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
                 OutputDebugString(TEXT("Error calling WriteFile\r\n"));
             }
         }
-#endif /* !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK) */
+#endif // !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
 
         SDL_free(tstr);
         SDL_small_free(output, isstack);

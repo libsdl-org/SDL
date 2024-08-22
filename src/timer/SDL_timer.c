@@ -23,7 +23,7 @@
 #include "SDL_timer_c.h"
 #include "../thread/SDL_systhread.h"
 
-/* #define DEBUG_TIMERS */
+// #define DEBUG_TIMERS
 
 #if !defined(SDL_PLATFORM_EMSCRIPTEN) || !defined(SDL_THREADS_DISABLED)
 
@@ -46,25 +46,25 @@ typedef struct SDL_TimerMap
     struct SDL_TimerMap *next;
 } SDL_TimerMap;
 
-/* The timers are kept in a sorted list */
+// The timers are kept in a sorted list
 typedef struct
 {
-    /* Data used by the main thread */
+    // Data used by the main thread
     SDL_Thread *thread;
     SDL_TimerMap *timermap;
     SDL_Mutex *timermap_lock;
 
-    /* Padding to separate cache lines between threads */
+    // Padding to separate cache lines between threads
     char cache_pad[SDL_CACHELINE_SIZE];
 
-    /* Data used to communicate with the timer thread */
+    // Data used to communicate with the timer thread
     SDL_SpinLock lock;
     SDL_Semaphore *sem;
     SDL_Timer *pending;
     SDL_Timer *freelist;
     SDL_AtomicInt active;
 
-    /* List of timers - this is only touched by the timer thread */
+    // List of timers - this is only touched by the timer thread
     SDL_Timer *timers;
 } SDL_TimerData;
 
@@ -87,7 +87,7 @@ static void SDL_AddTimerInternal(SDL_TimerData *data, SDL_Timer *timer)
         }
     }
 
-    /* Insert the timer here! */
+    // Insert the timer here!
     if (prev) {
         prev->next = timer;
     } else {
@@ -111,14 +111,14 @@ static int SDLCALL SDL_TimerThread(void *_data)
      *  3. Wait until next dispatch time or new timer arrives
      */
     for (;;) {
-        /* Pending and freelist maintenance */
+        // Pending and freelist maintenance
         SDL_LockSpinlock(&data->lock);
         {
-            /* Get any timers ready to be queued */
+            // Get any timers ready to be queued
             pending = data->pending;
             data->pending = NULL;
 
-            /* Make any unused timer structures available */
+            // Make any unused timer structures available
             if (freelist_head) {
                 freelist_tail->next = data->freelist;
                 data->freelist = freelist_head;
@@ -126,7 +126,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
         }
         SDL_UnlockSpinlock(&data->lock);
 
-        /* Sort the pending timers into our list */
+        // Sort the pending timers into our list
         while (pending) {
             current = pending;
             pending = pending->next;
@@ -135,27 +135,27 @@ static int SDLCALL SDL_TimerThread(void *_data)
         freelist_head = NULL;
         freelist_tail = NULL;
 
-        /* Check to see if we're still running, after maintenance */
+        // Check to see if we're still running, after maintenance
         if (!SDL_AtomicGet(&data->active)) {
             break;
         }
 
-        /* Initial delay if there are no timers */
+        // Initial delay if there are no timers
         delay = (Uint64)-1;
 
         tick = SDL_GetTicksNS();
 
-        /* Process all the pending timers for this tick */
+        // Process all the pending timers for this tick
         while (data->timers) {
             current = data->timers;
 
             if (tick < current->scheduled) {
-                /* Scheduled for the future, wait a bit */
+                // Scheduled for the future, wait a bit
                 delay = (current->scheduled - tick);
                 break;
             }
 
-            /* We're going to do something with this timer */
+            // We're going to do something with this timer
             data->timers = current->next;
 
             if (SDL_AtomicGet(&current->canceled)) {
@@ -169,7 +169,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
             }
 
             if (interval > 0) {
-                /* Reschedule this timer */
+                // Reschedule this timer
                 current->interval = interval;
                 current->scheduled = tick + interval;
                 SDL_AddTimerInternal(data, current);
@@ -186,7 +186,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
             }
         }
 
-        /* Adjust the delay based on processing time */
+        // Adjust the delay based on processing time
         now = SDL_GetTicksNS();
         interval = (now - tick);
         if (interval > delay) {
@@ -224,7 +224,7 @@ int SDL_InitTimers(void)
 
         SDL_AtomicSet(&data->active, 1);
 
-        /* Timer threads use a callback into the app, so we can't set a limited stack size here. */
+        // Timer threads use a callback into the app, so we can't set a limited stack size here.
         data->thread = SDL_CreateThread(SDL_TimerThread, name, data);
         if (!data->thread) {
             SDL_QuitTimers();
@@ -240,8 +240,8 @@ void SDL_QuitTimers(void)
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    if (SDL_AtomicCompareAndSwap(&data->active, 1, 0)) { /* active? Move to inactive. */
-        /* Shutdown the timer thread */
+    if (SDL_AtomicCompareAndSwap(&data->active, 1, 0)) { // active? Move to inactive.
+        // Shutdown the timer thread
         if (data->thread) {
             SDL_SignalSemaphore(data->sem);
             SDL_WaitThread(data->thread, NULL);
@@ -251,7 +251,7 @@ void SDL_QuitTimers(void)
         SDL_DestroySemaphore(data->sem);
         data->sem = NULL;
 
-        /* Clean up the timer entries */
+        // Clean up the timer entries
         while (data->timers) {
             timer = data->timers;
             data->timers = timer->next;
@@ -327,13 +327,13 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
     data->timermap = entry;
     SDL_UnlockMutex(data->timermap_lock);
 
-    /* Add the timer to the pending list for the timer thread */
+    // Add the timer to the pending list for the timer thread
     SDL_LockSpinlock(&data->lock);
     timer->next = data->pending;
     data->pending = timer;
     SDL_UnlockSpinlock(&data->lock);
 
-    /* Wake up the timer thread if necessary */
+    // Wake up the timer thread if necessary
     SDL_SignalSemaphore(data->sem);
 
     return entry->timerID;
@@ -359,7 +359,7 @@ int SDL_RemoveTimer(SDL_TimerID id)
         return SDL_InvalidParamError("id");
     }
 
-    /* Find the timer */
+    // Find the timer
     SDL_LockMutex(data->timermap_lock);
     prev = NULL;
     for (entry = data->timermap; entry; prev = entry, entry = entry->next) {
@@ -492,7 +492,7 @@ int SDL_RemoveTimer(SDL_TimerID id)
         return SDL_InvalidParamError("id");
     }
 
-    /* Find the timer */
+    // Find the timer
     prev = NULL;
     for (entry = data->timermap; entry; prev = entry, entry = entry->next) {
         if (entry->timerID == id) {
@@ -514,7 +514,7 @@ int SDL_RemoveTimer(SDL_TimerID id)
     }
 }
 
-#endif /* !defined(SDL_PLATFORM_EMSCRIPTEN) || !SDL_THREADS_DISABLED */
+#endif // !defined(SDL_PLATFORM_EMSCRIPTEN) || !SDL_THREADS_DISABLED
 
 static Uint64 tick_start;
 static Uint32 tick_numerator_ns;
@@ -544,14 +544,14 @@ static void SDL_SetSystemTimerResolutionMS(int period)
             timeBeginPeriod((UINT)timer_period);
         }
     }
-#endif /* HAVE_TIME_BEGIN_PERIOD */
+#endif // HAVE_TIME_BEGIN_PERIOD
 }
 
 static void SDLCALL SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     int period;
 
-    /* Unless the hint says otherwise, let's have good sleep precision */
+    // Unless the hint says otherwise, let's have good sleep precision
     if (hint && *hint) {
         period = SDL_atoi(hint);
     } else {
@@ -606,7 +606,7 @@ void SDL_QuitTicks(void)
     SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
                         SDL_TimerResolutionChanged, NULL);
 
-    SDL_SetSystemTimerResolutionMS(0); /* always release our timer resolution request. */
+    SDL_SetSystemTimerResolutionMS(0); // always release our timer resolution request.
 
     tick_start = 0;
 }

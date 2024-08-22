@@ -734,13 +734,13 @@ int gxm_init(SDL_Renderer *renderer)
         // create color vertex format
         SceGxmVertexAttribute colorVertexAttributes[2];
         SceGxmVertexStream colorVertexStreams[1];
-        /* x,y: 2 float 32 bits */
+        // x,y: 2 float 32 bits
         colorVertexAttributes[0].streamIndex = 0;
         colorVertexAttributes[0].offset = 0;
         colorVertexAttributes[0].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
         colorVertexAttributes[0].componentCount = 2; // (x, y)
         colorVertexAttributes[0].regIndex = sceGxmProgramParameterGetResourceIndex(paramColorPositionAttribute);
-        /* color: 4 unsigned char  = 32 bits */
+        // color: 4 unsigned char  = 32 bits
         colorVertexAttributes[1].streamIndex = 0;
         colorVertexAttributes[1].offset = 8; // (x, y) * 4 = 8 bytes
         colorVertexAttributes[1].format = SCE_GXM_ATTRIBUTE_FORMAT_U8N;
@@ -773,19 +773,19 @@ int gxm_init(SDL_Renderer *renderer)
         // create texture vertex format
         SceGxmVertexAttribute textureVertexAttributes[3];
         SceGxmVertexStream textureVertexStreams[1];
-        /* x,y: 2 float 32 bits */
+        // x,y: 2 float 32 bits
         textureVertexAttributes[0].streamIndex = 0;
         textureVertexAttributes[0].offset = 0;
         textureVertexAttributes[0].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
         textureVertexAttributes[0].componentCount = 2; // (x, y)
         textureVertexAttributes[0].regIndex = sceGxmProgramParameterGetResourceIndex(paramTexturePositionAttribute);
-        /* u,v: 2 floats 32 bits */
+        // u,v: 2 floats 32 bits
         textureVertexAttributes[1].streamIndex = 0;
         textureVertexAttributes[1].offset = 8; // (x, y) * 4 = 8 bytes
         textureVertexAttributes[1].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
         textureVertexAttributes[1].componentCount = 2; // (u, v)
         textureVertexAttributes[1].regIndex = sceGxmProgramParameterGetResourceIndex(paramTextureTexcoordAttribute);
-        /* r,g,b,a: 4 unsigned chars 32 bits */
+        // r,g,b,a: 4 unsigned chars 32 bits
         textureVertexAttributes[2].streamIndex = 0;
         textureVertexAttributes[2].offset = 16; // (x, y, u, v) * 4 = 16 bytes
         textureVertexAttributes[2].format = SCE_GXM_ATTRIBUTE_FORMAT_U8N;
@@ -1009,12 +1009,12 @@ gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsig
     *return_h = h;
     *return_pitch = aligned_w * tex_format_to_bytespp(format);
 
-    /* Allocate a GPU buffer for the texture */
+    // Allocate a GPU buffer for the texture
     texture_data = vita_gpu_mem_alloc(
         data,
         tex_size);
 
-    /* Try SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE in case we're out of VRAM */
+    // Try SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE in case we're out of VRAM
     if (!texture_data) {
         SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "CDRAM texture allocation failed\n");
         texture_data = vita_mem_alloc(
@@ -1033,10 +1033,10 @@ gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsig
         return NULL;
     }
 
-    /* Clear the texture */
+    // Clear the texture
     SDL_memset(texture_data, 0, tex_size);
 
-    /* Create the gxm texture */
+    // Create the gxm texture
     ret = sceGxmTextureInitLinear(&texture->gxm_tex, texture_data, format, texture_w, h, 0);
     if (ret < 0) {
         free_gxm_texture(data, texture);
@@ -1210,4 +1210,4 @@ void gxm_term_for_common_dialog(void)
     }
 }
 
-#endif /* SDL_VIDEO_RENDER_VITA_GXM */
+#endif // SDL_VIDEO_RENDER_VITA_GXM

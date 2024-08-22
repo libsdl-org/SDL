@@ -32,10 +32,10 @@
  */
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
 
-/* May not be defined in winapifamily.h, can safely be ignored */
+// May not be defined in winapifamily.h, can safely be ignored
 #ifndef WINAPI_PARTITION_GAMES
 #define WINAPI_PARTITION_GAMES 0
-#endif /* WINAPI_PARTITION_GAMES */
+#endif // WINAPI_PARTITION_GAMES
 
 #define COBJMACROS
 #include "d3d12.h"
@@ -55,11 +55,11 @@
  */
 #define D3D_CALL_RET(THIS, FUNC, ...) (THIS)->lpVtbl->FUNC((THIS), ##__VA_ARGS__)
 
-#else /* !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) */
+#else // !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 
 #if defined(SDL_PLATFORM_XBOXONE)
 #include <d3d12_x.h>
-#else /* SDL_PLATFORM_XBOXSERIES */
+#else // SDL_PLATFORM_XBOXSERIES
 #include <d3d12_xs.h>
 #endif
 
@@ -71,15 +71,15 @@
         X = NULL;           \
     }
 
-/* Older versions of the Xbox GDK may not have this defined */
+// Older versions of the Xbox GDK may not have this defined
 #ifndef D3D12_TEXTURE_DATA_PITCH_ALIGNMENT
 #define D3D12_TEXTURE_DATA_PITCH_ALIGNMENT 256
 #endif
 
-/* DXGI_PRESENT flags are removed on Xbox */
+// DXGI_PRESENT flags are removed on Xbox
 #define DXGI_PRESENT_ALLOW_TEARING 0
 
-/* Xbox D3D12 does not define the COBJMACROS, so we need to define them ourselves */
+// Xbox D3D12 does not define the COBJMACROS, so we need to define them ourselves
 #include "SDL_d3d12_xbox_cmacros.h"
 
 /* Xbox's D3D12 ABI actually varies from Windows, if a function does not exist
@@ -87,6 +87,6 @@
  */
 #define D3D_CALL_RET(THIS, FUNC, RETVAL, ...) *(RETVAL) = (THIS)->FUNC(__VA_ARGS__)
 
-#endif /* !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) */
+#endif // !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 
-#endif /* SDL_D3D12_H */
+#endif // SDL_D3D12_H

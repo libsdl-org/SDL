@@ -33,7 +33,7 @@ static int xfixes_selection_notify_event = 0;
 
 static int query_xfixes_version(Display *display, int major, int minor)
 {
-    /* We don't care if this fails, so long as it sets major/minor on it's way out the door. */
+    // We don't care if this fails, so long as it sets major/minor on it's way out the door.
     X11_XFixesQueryVersion(display, &major, &minor);
     return (major * 1000) + minor;
 }
@@ -58,17 +58,17 @@ void X11_InitXfixes(SDL_VideoDevice *_this)
         return;
     }
 
-    /* Selection tracking is available in all versions of XFixes */
+    // Selection tracking is available in all versions of XFixes
     xfixes_selection_notify_event = event + XFixesSelectionNotify;
     X11_XFixesSelectSelectionInput(data->display, DefaultRootWindow(data->display),
             XA_CLIPBOARD, XFixesSetSelectionOwnerNotifyMask);
     X11_XFixesSelectSelectionInput(data->display, DefaultRootWindow(data->display),
             XA_PRIMARY, XFixesSetSelectionOwnerNotifyMask);
 
-    /* We need at least 5.0 for barriers. */
+    // We need at least 5.0 for barriers.
     version = query_xfixes_version(data->display, 5, 0);
     if (!xfixes_version_atleast(version, 5, 0)) {
-        return; /* X server does not support the version we want at all. */
+        return; // X server does not support the version we want at all.
     }
 
     xfixes_initialized = 1;
@@ -92,7 +92,7 @@ int X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
         if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
             X11_ConfineCursorWithFlags(_this, window, &window->mouse_rect, 0);
         } else {
-            /* Save the state for when we get focus again */
+            // Save the state for when we get focus again
             SDL_WindowData *wdata = window->internal;
 
             SDL_memcpy(&wdata->barrier_rect, &window->mouse_rect, sizeof(wdata->barrier_rect));
@@ -117,7 +117,7 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
         return SDL_Unsupported();
     }
 
-    /* If there is already a set of barriers active, disable them. */
+    // If there is already a set of barriers active, disable them.
     if (data->active_cursor_confined_window) {
         X11_DestroyPointerBarrier(_this, data->active_cursor_confined_window);
     }
@@ -146,7 +146,7 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
             wdata->barrier_rect = *rect;
         }
 
-        /* Use the display bounds to ensure the barriers don't have corner gaps */
+        // Use the display bounds to ensure the barriers don't have corner gaps
         SDL_GetDisplayBounds(SDL_GetDisplayForWindow(window), &bounds);
 
         /** Create the left barrier */
@@ -176,7 +176,7 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
 
         X11_XFlush(data->display);
 
-        /* Lets remember current active confined window. */
+        // Lets remember current active confined window.
         data->active_cursor_confined_window = window;
 
         /* User activated the confinement for this window. We use this later to reactivate
@@ -185,7 +185,7 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
     } else {
         X11_DestroyPointerBarrier(_this, window);
 
-        /* Only set barrier inactive when user specified NULL and not handled by focus out. */
+        // Only set barrier inactive when user specified NULL and not handled by focus out.
         if (flags != X11_BARRIER_HANDLED_BY_EVENT) {
             wdata->pointer_barrier_active = SDL_FALSE;
         }
@@ -211,4 +211,4 @@ void X11_DestroyPointerBarrier(SDL_VideoDevice *_this, SDL_Window *window)
     data->active_cursor_confined_window = NULL;
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_DRIVER_X11_XFIXES */
+#endif // SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_DRIVER_X11_XFIXES

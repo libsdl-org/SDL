@@ -65,4 +65,4 @@ typedef enum SDL_EventCategory
 
 extern SDL_EventCategory SDL_GetEventCategory(Uint32 type);
 
-#endif /* SDL_categories_c_h_ */
+#endif // SDL_categories_c_h_

@@ -26,13 +26,13 @@
 #include "SDL_x11opengles.h"
 #include "SDL_x11opengl.h"
 
-/* EGL implementation of SDL OpenGL support */
+// EGL implementation of SDL OpenGL support
 
 int X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     SDL_VideoData *data = _this->internal;
 
-    /* If the profile requested is not GL ES, switch over to X11_GL functions  */
+    // If the profile requested is not GL ES, switch over to X11_GL functions
     if ((_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) &&
         !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
 #ifdef SDL_VIDEO_OPENGL_GLX
@@ -64,7 +64,7 @@ XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int sc
     int out_count;
 
     if (!_this->egl_data) {
-        /* The EGL library wasn't loaded, SDL_GetError() should have info */
+        // The EGL library wasn't loaded, SDL_GetError() should have info
         return NULL;
     }
 
@@ -73,20 +73,20 @@ XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int sc
                                             EGL_NATIVE_VISUAL_ID,
                                             &visual_id) == EGL_FALSE ||
         !visual_id) {
-        /* Use the default visual when all else fails */
+        // Use the default visual when all else fails
         vi_in.screen = screen;
         egl_visualinfo = X11_XGetVisualInfo(display,
                                             VisualScreenMask,
                                             &vi_in, &out_count);
 
-        /* Return the first transparent Visual */
+        // Return the first transparent Visual
         if (transparent) {
             int i;
             for (i = 0; i < out_count; i++) {
                 XVisualInfo *v = &egl_visualinfo[i];
                 Uint32 format = X11_GetPixelFormatFromVisualInfo(display, v);
-                if (SDL_ISPIXELFORMAT_ALPHA(format)) { /* found! */
-                    /* re-request it to have a copy that can be X11_XFree'ed later */
+                if (SDL_ISPIXELFORMAT_ALPHA(format)) { // found!
+                    // re-request it to have a copy that can be X11_XFree'ed later
                     vi_in.screen = screen;
                     vi_in.visualid = v->visualid;
                     X11_XFree(egl_visualinfo);
@@ -126,4 +126,4 @@ SDL_EGLSurface X11_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window
 SDL_EGL_SwapWindow_impl(X11)
     SDL_EGL_MakeCurrent_impl(X11)
 
-#endif /* SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_OPENGL_EGL

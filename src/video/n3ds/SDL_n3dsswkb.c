@@ -66,4 +66,4 @@ int N3DS_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-#endif /* SDL_VIDEO_DRIVER_N3DS */
+#endif // SDL_VIDEO_DRIVER_N3DS

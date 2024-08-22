@@ -24,10 +24,10 @@
 
 #include "../SDL_time_c.h"
 
-/* PS2 epoch is Jan 1 2000 JST (UTC +9) */
+// PS2 epoch is Jan 1 2000 JST (UTC +9)
 #define UNIX_EPOCH_OFFSET_SEC 946717200
 
-/* TODO: Implement this... */
+// TODO: Implement this...
 void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 {
 }
@@ -62,4 +62,4 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
     return 0;
 }
 
-#endif /* SDL_TIME_PS2 */
+#endif // SDL_TIME_PS2

@@ -22,7 +22,7 @@
 
 #ifdef SDL_SENSOR_ANDROID
 
-/* This is the system specific header for the SDL sensor API */
+// This is the system specific header for the SDL sensor API
 #include <android/sensor.h>
 
 #include "SDL_androidsensor.h"
@@ -126,7 +126,7 @@ static int SDL_ANDROID_StartSensorThread(SDL_AndroidSensorThreadContext *ctx)
         return -1;
     }
 
-    /* Wait for the sensor thread to start */
+    // Wait for the sensor thread to start
     SDL_WaitSemaphore(ctx->sem);
 
     return 0;
@@ -142,7 +142,7 @@ static int SDL_ANDROID_SensorInit(void)
         return SDL_SetError("Couldn't create sensor manager");
     }
 
-    /* FIXME: Is the sensor list dynamic? */
+    // FIXME: Is the sensor list dynamic?
     sensors_count = ASensorManager_getSensorList(SDL_sensor_manager, &sensors);
     if (sensors_count > 0) {
         SDL_sensors = (SDL_AndroidSensor *)SDL_calloc(sensors_count, sizeof(*SDL_sensors));
@@ -219,8 +219,8 @@ static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
             return SDL_SetError("Couldn't enable sensor");
         }
 
-        /* Use 60 Hz update rate if possible */
-        /* FIXME: Maybe add a hint for this? */
+        // Use 60 Hz update rate if possible
+        // FIXME: Maybe add a hint for this?
         delay_us = 1000000 / 60;
         min_delay_us = ASensor_getMinDelay(SDL_sensors[device_index].asensor);
         if (delay_us < min_delay_us) {
@@ -258,7 +258,7 @@ static void SDL_ANDROID_SensorClose(SDL_Sensor *sensor)
 
 static void SDL_ANDROID_SensorQuit(void)
 {
-    /* All sensors are closed, but we need to unblock the sensor thread */
+    // All sensors are closed, but we need to unblock the sensor thread
     SDL_AssertSensorsLocked();
     SDL_UnlockSensors();
     SDL_ANDROID_StopSensorThread(&SDL_sensor_thread_context);
@@ -285,4 +285,4 @@ SDL_SensorDriver SDL_ANDROID_SensorDriver = {
     SDL_ANDROID_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_ANDROID */
+#endif // SDL_SENSOR_ANDROID

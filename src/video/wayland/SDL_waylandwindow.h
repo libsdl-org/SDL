@@ -116,41 +116,41 @@ struct SDL_WindowData
         float y;
     } pointer_scale;
 
-    /* The in-flight window size request. */
+    // The in-flight window size request.
     struct
     {
-        /* The requested logical window size. */
+        // The requested logical window size.
         int logical_width;
         int logical_height;
 
-        /* The size of the window in pixels, when using screen space scaling. */
+        // The size of the window in pixels, when using screen space scaling.
         int pixel_width;
         int pixel_height;
     } requested;
 
-    /* The current size of the window and drawable backing store. */
+    // The current size of the window and drawable backing store.
     struct
     {
-        /* The size of the underlying window. */
+        // The size of the underlying window.
         int logical_width;
         int logical_height;
 
-        /* The size of the window backbuffer in pixels. */
+        // The size of the window backbuffer in pixels.
         int pixel_width;
         int pixel_height;
     } current;
 
-    /* The last compositor requested parameters; used for deduplication of window geometry configuration. */
+    // The last compositor requested parameters; used for deduplication of window geometry configuration.
     struct
     {
         int width;
         int height;
     } last_configure;
 
-    /* System enforced window size limits. */
+    // System enforced window size limits.
     struct
     {
-        /* Minimum allowed logical window size. */
+        // Minimum allowed logical window size.
         int min_width;
         int min_height;
     } system_limits;
@@ -211,4 +211,4 @@ extern int Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 extern void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, SDL_DisplayData *display_data);
 
-#endif /* SDL_waylandwindow_h_ */
+#endif // SDL_waylandwindow_h_

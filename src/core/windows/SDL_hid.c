@@ -41,7 +41,7 @@ int WIN_LoadHIDDLL(void)
     if (s_pHIDDLL) {
         SDL_assert(s_HIDDLLRefCount > 0);
         s_HIDDLLRefCount++;
-        return 0; /* already loaded */
+        return 0; // already loaded
     }
 
     s_pHIDDLL = LoadLibrary(TEXT("hid.dll"));
@@ -82,11 +82,11 @@ void WIN_UnloadHIDDLL(void)
     }
 }
 
-#endif /* !SDL_PLATFORM_WINRT */
+#endif // !SDL_PLATFORM_WINRT
 
 #if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-/* CM_Register_Notification definitions */
+// CM_Register_Notification definitions
 
 #define CR_SUCCESS 0
 
@@ -224,7 +224,7 @@ void WIN_QuitDeviceNotification(void)
     if (--s_DeviceNotificationsRequested > 0) {
         return;
     }
-    /* Make sure we have balanced calls to init/quit */
+    // Make sure we have balanced calls to init/quit
     SDL_assert(s_DeviceNotificationsRequested == 0);
 
     if (cfgmgr32_lib_handle) {

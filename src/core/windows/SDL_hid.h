@@ -208,11 +208,11 @@ extern HidP_GetValueCaps_t SDL_HidP_GetValueCaps;
 extern HidP_MaxDataListLength_t SDL_HidP_MaxDataListLength;
 extern HidP_GetData_t SDL_HidP_GetData;
 
-#endif /* !SDL_PLATFORM_WINRT */
+#endif // !SDL_PLATFORM_WINRT
 
 
 void WIN_InitDeviceNotification(void);
 Uint64 WIN_GetLastDeviceNotification(void);
 void WIN_QuitDeviceNotification(void);
 
-#endif /* SDL_hid_h_ */
+#endif // SDL_hid_h_

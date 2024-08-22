@@ -31,12 +31,12 @@ int SDL_DrawPoint(SDL_Surface *dst, int x, int y, Uint32 color)
         return SDL_InvalidParamError("SDL_DrawPoint(): dst");
     }
 
-    /* This function doesn't work on surfaces < 8 bpp */
+    // This function doesn't work on surfaces < 8 bpp
     if (dst->internal->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_DrawPoint(): Unsupported surface format");
     }
 
-    /* Perform clipping */
+    // Perform clipping
     if (x < dst->internal->clip_rect.x || y < dst->internal->clip_rect.y ||
         x >= (dst->internal->clip_rect.x + dst->internal->clip_rect.w) ||
         y >= (dst->internal->clip_rect.y + dst->internal->clip_rect.h)) {
@@ -71,7 +71,7 @@ int SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count,
         return SDL_InvalidParamError("SDL_DrawPoints(): dst");
     }
 
-    /* This function doesn't work on surfaces < 8 bpp */
+    // This function doesn't work on surfaces < 8 bpp
     if (dst->internal->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_DrawPoints(): Unsupported surface format");
     }
@@ -106,4 +106,4 @@ int SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count,
     return 0;
 }
 
-#endif /* SDL_VIDEO_RENDER_SW */
+#endif // SDL_VIDEO_RENDER_SW

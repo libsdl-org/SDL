@@ -25,7 +25,7 @@
 
 #include <SDL3/SDL_vulkan.h>
 
-/* The SDL video driver */
+// The SDL video driver
 
 typedef struct SDL_VideoDisplay SDL_VideoDisplay;
 typedef struct SDL_VideoDevice SDL_VideoDevice;
@@ -39,7 +39,7 @@ typedef struct
     float HDR_headroom;
 } SDL_HDROutputProperties;
 
-/* Define the SDL window structure, corresponding to toplevel windows */
+// Define the SDL window structure, corresponding to toplevel windows
 struct SDL_Window
 {
     SDL_WindowID id;
@@ -56,8 +56,8 @@ struct SDL_Window
     SDL_WindowFlags pending_flags;
     float display_scale;
     SDL_bool external_graphics_context;
-    SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
-    SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
+    SDL_bool fullscreen_exclusive;  // The window is currently fullscreen exclusive
+    SDL_DisplayID last_fullscreen_exclusive_display;  // The last fullscreen_exclusive display
     SDL_DisplayID last_displayID;
 
     /* Stored position and size for the window in the non-fullscreen state,
@@ -81,7 +81,7 @@ struct SDL_Window
      */
     SDL_bool tiled;
 
-    /* Whether or not the initial position was defined */
+    // Whether or not the initial position was defined
     SDL_bool undefined_x;
     SDL_bool undefined_y;
 
@@ -94,11 +94,11 @@ struct SDL_Window
     SDL_Surface *surface;
     SDL_bool surface_valid;
 
-    SDL_bool is_repositioning; /* Set during an SDL_SetWindowPosition() call. */
+    SDL_bool is_repositioning; // Set during an SDL_SetWindowPosition() call.
     SDL_bool is_hiding;
-    SDL_bool restore_on_show; /* Child was hidden recursively by the parent, restore when shown. */
+    SDL_bool restore_on_show; // Child was hidden recursively by the parent, restore when shown.
     SDL_bool is_destroying;
-    SDL_bool is_dropping; /* drag/drop in progress, expecting SDL_SendDropComplete(). */
+    SDL_bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
 
     int safe_inset_left;
     int safe_inset_right;
@@ -163,7 +163,7 @@ struct SDL_VideoDisplay
     SDL_DisplayData *internal;
 };
 
-/* Video device flags */
+// Video device flags
 typedef enum
 {
     VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED = 0x01,
@@ -175,7 +175,7 @@ typedef enum
     VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES = 0x40
 } DeviceCaps;
 
-/* Fullscreen operations */
+// Fullscreen operations
 typedef enum
 {
     SDL_FULLSCREEN_OP_LEAVE = 0,
@@ -186,11 +186,11 @@ typedef enum
 struct SDL_VideoDevice
 {
     /* * * */
-    /* The name of this video driver */
+    // The name of this video driver
     const char *name;
 
     /* * * */
-    /* Initialization/Query functions */
+    // Initialization/Query functions
 
     /*
      * Initialize the native video subsystem, filling in the list of
@@ -328,22 +328,22 @@ struct SDL_VideoDevice
     void (*SendWakeupEvent)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*PumpEvents)(SDL_VideoDevice *_this);
 
-    /* Suspend the screensaver */
+    // Suspend the screensaver
     int (*SuspendScreenSaver)(SDL_VideoDevice *_this);
 
-    /* Text input */
+    // Text input
     int (*StartTextInput)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
     int (*StopTextInput)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*UpdateTextInputArea)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*ClearComposition)(SDL_VideoDevice *_this, SDL_Window *window);
 
-    /* Screen keyboard */
+    // Screen keyboard
     SDL_bool (*HasScreenKeyboardSupport)(SDL_VideoDevice *_this);
     void (*ShowScreenKeyboard)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
     void (*HideScreenKeyboard)(SDL_VideoDevice *_this, SDL_Window *window);
     SDL_bool (*IsScreenKeyboardShown)(SDL_VideoDevice *_this, SDL_Window *window);
 
-    /* Clipboard */
+    // Clipboard
     const char **(*GetTextMimeTypes)(SDL_VideoDevice *_this, size_t *num_mime_types);
     int (*SetClipboardData)(SDL_VideoDevice *_this);
     void *(*GetClipboardData)(SDL_VideoDevice *_this, const char *mime_type, size_t *size);
@@ -352,31 +352,31 @@ struct SDL_VideoDevice
     int (*SetClipboardText)(SDL_VideoDevice *_this, const char *text);
     char *(*GetClipboardText)(SDL_VideoDevice *_this);
     SDL_bool (*HasClipboardText)(SDL_VideoDevice *_this);
-    /* These functions are only needed if the platform has a separate primary selection buffer */
+    // These functions are only needed if the platform has a separate primary selection buffer
     int (*SetPrimarySelectionText)(SDL_VideoDevice *_this, const char *text);
     char *(*GetPrimarySelectionText)(SDL_VideoDevice *_this);
     SDL_bool (*HasPrimarySelectionText)(SDL_VideoDevice *_this);
 
-    /* MessageBox */
+    // MessageBox
     int (*ShowMessageBox)(SDL_VideoDevice *_this, const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-    /* Hit-testing */
+    // Hit-testing
     int (*SetWindowHitTest)(SDL_Window *window, SDL_bool enabled);
 
-    /* Tell window that app enabled drag'n'drop events */
+    // Tell window that app enabled drag'n'drop events
     void (*AcceptDragAndDrop)(SDL_Window *window, SDL_bool accept);
 
-    /* Display the system-level window menu */
+    // Display the system-level window menu
     void (*ShowWindowSystemMenu)(SDL_Window *window, int x, int y);
 
     /* * * */
-    /* Data common to all drivers */
+    // Data common to all drivers
     SDL_ThreadID thread;
     SDL_bool checked_texture_framebuffer;
     SDL_bool is_dummy;
     SDL_bool suspend_screensaver;
     SDL_Window *wakeup_window;
-    SDL_Mutex *wakeup_lock; /* Initialized only if WaitEventTimeout/SendWakeupEvent are supported */
+    SDL_Mutex *wakeup_lock; // Initialized only if WaitEventTimeout/SendWakeupEvent are supported
     int num_displays;
     SDL_VideoDisplay **displays;
     SDL_Rect desktop_bounds;
@@ -394,7 +394,7 @@ struct SDL_VideoDevice
     SDL_SystemTheme system_theme;
 
     /* * * */
-    /* Data used by the GL drivers */
+    // Data used by the GL drivers
     struct
     {
         int red_size;
@@ -435,7 +435,7 @@ struct SDL_VideoDevice
     SDL_EGLIntArrayCallback egl_contextattrib_callback;
 
     /* * * */
-    /* Cache current GL context; don't call the OS when it hasn't changed. */
+    // Cache current GL context; don't call the OS when it hasn't changed.
     /* We have the global pointers here so Cocoa continues to work the way
        it always has, and the thread-local storage for the general case.
      */
@@ -450,7 +450,7 @@ struct SDL_VideoDevice
     SDL_bool gl_allow_no_surface;
 
     /* * * */
-    /* Data used by the Vulkan drivers */
+    // Data used by the Vulkan drivers
     struct
     {
         SDL_FunctionPointer vkGetInstanceProcAddr;
@@ -461,7 +461,7 @@ struct SDL_VideoDevice
     } vulkan_config;
 
     /* * * */
-    /* Data private to this driver */
+    // Data private to this driver
     SDL_VideoData *internal;
     struct SDL_GLDriverData *gl_data;
 
@@ -474,7 +474,7 @@ struct SDL_VideoDevice
 #endif
 
     /* * * */
-    /* The function used to dispose of this structure */
+    // The function used to dispose of this structure
     void (*free)(SDL_VideoDevice *_this);
 };
 
@@ -483,10 +483,10 @@ typedef struct VideoBootStrap
     const char *name;
     const char *desc;
     SDL_VideoDevice *(*create)(void);
-    int (*ShowMessageBox)(const SDL_MessageBoxData *messageboxdata, int *buttonID);  /* can be done without initializing backend! */
+    int (*ShowMessageBox)(const SDL_MessageBoxData *messageboxdata, int *buttonID);  // can be done without initializing backend!
 } VideoBootStrap;
 
-/* Not all of these are available in a given build. Use #ifdefs, etc. */
+// Not all of these are available in a given build. Use #ifdefs, etc.
 extern VideoBootStrap COCOA_bootstrap;
 extern VideoBootStrap X11_bootstrap;
 extern VideoBootStrap WINDOWS_bootstrap;
@@ -511,7 +511,7 @@ extern VideoBootStrap OFFSCREEN_bootstrap;
 extern VideoBootStrap NGAGE_bootstrap;
 extern VideoBootStrap QNX_bootstrap;
 
-/* Use SDL_OnVideoThread() sparingly, to avoid regressions in use cases that currently happen to work */
+// Use SDL_OnVideoThread() sparingly, to avoid regressions in use cases that currently happen to work
 extern SDL_bool SDL_OnVideoThread(void);
 extern SDL_VideoDevice *SDL_GetVideoDevice(void);
 extern void SDL_SetSystemTheme(SDL_SystemTheme theme);
@@ -572,4 +572,4 @@ extern SDL_Capitalization SDL_GetTextInputCapitalization(SDL_PropertiesID props)
 extern SDL_bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props);
 extern SDL_bool SDL_GetTextInputMultiline(SDL_PropertiesID props);
 
-#endif /* SDL_sysvideo_h_ */
+#endif // SDL_sysvideo_h_

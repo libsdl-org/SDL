@@ -22,7 +22,7 @@
 
 #if defined(SDL_JOYSTICK_DUMMY) || defined(SDL_JOYSTICK_DISABLED)
 
-/* This is the dummy implementation of the SDL joystick API */
+// This is the dummy implementation of the SDL joystick API
 
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
@@ -153,4 +153,4 @@ SDL_JoystickDriver SDL_DUMMY_JoystickDriver = {
     DUMMY_JoystickGetGamepadMapping
 };
 
-#endif /* SDL_JOYSTICK_DUMMY || SDL_JOYSTICK_DISABLED */
+#endif // SDL_JOYSTICK_DUMMY || SDL_JOYSTICK_DISABLED

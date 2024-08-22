@@ -207,4 +207,4 @@ typedef struct
     SDL_bool nv12;
 } VITA_GXM_TextureData;
 
-#endif /* SDL_RENDER_VITA_GXM_TYPES_H */
+#endif // SDL_RENDER_VITA_GXM_TYPES_H

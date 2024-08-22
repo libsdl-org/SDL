@@ -56,5 +56,5 @@ SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *state, int *seconds, int *perc
     return SDL_TRUE;
 }
 
-#endif /* SDL_POWER_ANDROID */
-#endif /* SDL_POWER_DISABLED */
+#endif // SDL_POWER_ANDROID
+#endif // SDL_POWER_DISABLED

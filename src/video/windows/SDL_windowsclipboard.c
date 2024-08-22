@@ -35,14 +35,14 @@
 
 #define IMAGE_FORMAT CF_DIB
 #define IMAGE_MIME_TYPE "image/bmp"
-#define BFT_BITMAP 0x4d42 /* 'BM' */
+#define BFT_BITMAP 0x4d42 // 'BM'
 
-/* Assume we can directly read and write BMP fields without byte swapping */
+// Assume we can directly read and write BMP fields without byte swapping
 SDL_COMPILE_TIME_ASSERT(verify_byte_order, SDL_BYTEORDER == SDL_LIL_ENDIAN);
 
 static BOOL WIN_OpenClipboard(SDL_VideoDevice *_this)
 {
-    /* Retry to open the clipboard in case another application has it open */
+    // Retry to open the clipboard in case another application has it open
     const int MAX_ATTEMPTS = 3;
     int attempt;
     HWND hwnd = NULL;
@@ -149,12 +149,12 @@ static int WIN_SetClipboardImage(SDL_VideoDevice *_this)
     clipboard_data = _this->clipboard_callback(_this->clipboard_userdata, IMAGE_MIME_TYPE, &clipboard_data_size);
     hMem = WIN_ConvertBMPtoDIB(clipboard_data, clipboard_data_size);
     if (hMem) {
-        /* Save the image to the clipboard */
+        // Save the image to the clipboard
         if (!SetClipboardData(IMAGE_FORMAT, hMem)) {
             result = WIN_SetError("Couldn't set clipboard data");
         }
     } else {
-        /* WIN_ConvertBMPtoDIB() set the error */
+        // WIN_ConvertBMPtoDIB() set the error
         result = -1;
     }
     return result;
@@ -175,21 +175,21 @@ static int WIN_SetClipboardText(SDL_VideoDevice *_this, const char *mime_type)
             return SDL_SetError("Couldn't convert text from UTF-8");
         }
 
-        /* Find out the size of the data */
+        // Find out the size of the data
         for (size = 0, i = 0; tstr[i]; ++i, ++size) {
             if (tstr[i] == '\n' && (i == 0 || tstr[i - 1] != '\r')) {
-                /* We're going to insert a carriage return */
+                // We're going to insert a carriage return
                 ++size;
             }
         }
         size = (size + 1) * sizeof(*tstr);
 
-        /* Save the data to the clipboard */
+        // Save the data to the clipboard
         hMem = GlobalAlloc(GMEM_MOVEABLE, size);
         if (hMem) {
             LPTSTR dst = (LPTSTR)GlobalLock(hMem);
             if (dst) {
-                /* Copy the text over, adding carriage returns as necessary */
+                // Copy the text over, adding carriage returns as necessary
                 for (i = 0; tstr[i]; ++i) {
                     if (tstr[i] == '\n' && (i == 0 || tstr[i - 1] != '\r')) {
                         *dst++ = '\r';
@@ -225,7 +225,7 @@ int WIN_SetClipboardData(SDL_VideoDevice *_this)
     if (WIN_OpenClipboard(_this)) {
         EmptyClipboard();
 
-        /* Set the clipboard text */
+        // Set the clipboard text
         for (i = 0; i < _this->num_clipboard_mime_types; ++i) {
             const char *mime_type = _this->clipboard_mime_types[i];
 
@@ -233,12 +233,12 @@ int WIN_SetClipboardData(SDL_VideoDevice *_this)
                 if (WIN_SetClipboardText(_this, mime_type) < 0) {
                     result = -1;
                 }
-                /* Only set the first clipboard text */
+                // Only set the first clipboard text
                 break;
             }
         }
 
-        /* Set the clipboard image */
+        // Set the clipboard image
         for (i = 0; i < _this->num_clipboard_mime_types; ++i) {
             const char *mime_type = _this->clipboard_mime_types[i];
 
@@ -340,4 +340,4 @@ void WIN_CheckClipboardUpdate(struct SDL_VideoData *data)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINDOWS */
+#endif // SDL_VIDEO_DRIVER_WINDOWS

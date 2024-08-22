@@ -29,4 +29,4 @@ extern int Cocoa_InitPen(SDL_VideoDevice *_this);
 extern SDL_bool Cocoa_HandlePenEvent(SDL_CocoaWindowData *_data, NSEvent *event);  // return SDL_FALSE if we didn't handle this event.
 extern void Cocoa_QuitPen(SDL_VideoDevice *_this);
 
-#endif /* SDL_cocoapen_h_ */
+#endif // SDL_cocoapen_h_

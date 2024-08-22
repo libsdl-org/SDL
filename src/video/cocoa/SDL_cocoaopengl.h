@@ -28,7 +28,7 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CVDisplayLink.h>
 
-/* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
+// We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it.
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -68,7 +68,7 @@ struct SDL_GLDriverData
 
 @end
 
-/* OpenGL functions */
+// OpenGL functions
 extern int Cocoa_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_FunctionPointer Cocoa_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 extern void Cocoa_GL_UnloadLibrary(SDL_VideoDevice *_this);
@@ -84,6 +84,6 @@ extern int Cocoa_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 #pragma clang diagnostic pop
 #endif
 
-#endif /* SDL_VIDEO_OPENGL_CGL */
+#endif // SDL_VIDEO_OPENGL_CGL
 
-#endif /* SDL_cocoaopengl_h_ */
+#endif // SDL_cocoaopengl_h_

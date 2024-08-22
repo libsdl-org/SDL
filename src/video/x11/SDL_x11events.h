@@ -36,4 +36,4 @@ extern SDL_WindowData *X11_FindWindow(SDL_VideoDevice *_this, Window window);
 extern SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y, SDL_bool force_new_result);
 extern SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y);
 
-#endif /* SDL_x11events_h_ */
+#endif // SDL_x11events_h_

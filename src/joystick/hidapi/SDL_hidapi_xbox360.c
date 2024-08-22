@@ -29,8 +29,8 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
-/* Define this if you want to log all packets from the controller */
-/*#define DEBUG_XBOX_PROTOCOL*/
+// Define this if you want to log all packets from the controller
+// #define DEBUG_XBOX_PROTOCOL
 
 typedef struct
 {
@@ -61,28 +61,28 @@ static SDL_bool HIDAPI_DriverXbox360_IsEnabled(void)
 
 static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
+    const int XB360W_IFACE_PROTOCOL = 129; // Wireless
 
     if (vendor_id == USB_VENDOR_ASTRO && product_id == USB_PRODUCT_ASTRO_C40_XBOX360) {
-        /* This is the ASTRO C40 in Xbox 360 mode */
+        // This is the ASTRO C40 in Xbox 360 mode
         return SDL_TRUE;
     }
     if (vendor_id == USB_VENDOR_NVIDIA) {
-        /* This is the NVIDIA Shield controller which doesn't talk Xbox controller protocol */
+        // This is the NVIDIA Shield controller which doesn't talk Xbox controller protocol
         return SDL_FALSE;
     }
     if ((vendor_id == USB_VENDOR_MICROSOFT && (product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY2 || product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER)) ||
         (type == SDL_GAMEPAD_TYPE_XBOX360 && interface_protocol == XB360W_IFACE_PROTOCOL)) {
-        /* This is the wireless dongle, which talks a different protocol */
+        // This is the wireless dongle, which talks a different protocol
         return SDL_FALSE;
     }
     if (interface_number > 0) {
-        /* This is the chatpad or other input interface, not the Xbox 360 interface */
+        // This is the chatpad or other input interface, not the Xbox 360 interface
         return SDL_FALSE;
     }
 #ifdef SDL_PLATFORM_MACOS
     if (vendor_id == USB_VENDOR_MICROSOFT && product_id == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 0) {
-        /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
+        // This is the Steam Virtual Gamepad, which isn't supported by this driver
         return SDL_FALSE;
     }
     /* Wired Xbox One controllers are handled by this driver, interfacing with
@@ -179,7 +179,7 @@ static SDL_bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL
     ctx->joystick = joystick;
     SDL_zeroa(ctx->last_state);
 
-    /* Initialize player index (needed for setting LEDs) */
+    // Initialize player index (needed for setting LEDs)
     ctx->player_index = SDL_GetJoystickPlayerIndex(joystick);
     ctx->player_lights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED, SDL_TRUE);
     UpdateSlotLED(ctx);
@@ -187,7 +187,7 @@ static SDL_bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED,
                         SDL_PlayerLEDHintChanged, ctx);
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     joystick->nbuttons = 11;
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
@@ -356,7 +356,7 @@ static SDL_bool HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (size < 0) {
-        /* Read error, device is disconnected */
+        // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return size >= 0;
@@ -398,6 +398,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 = {
     HIDAPI_DriverXbox360_FreeDevice,
 };
 
-#endif /* SDL_JOYSTICK_HIDAPI_XBOX360 */
+#endif // SDL_JOYSTICK_HIDAPI_XBOX360
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

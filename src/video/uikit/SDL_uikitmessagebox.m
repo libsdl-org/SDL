@@ -25,7 +25,7 @@
 #include "SDL_uikitvideo.h"
 #include "SDL_uikitwindow.h"
 
-/* Display a UIKit message box */
+// Display a UIKit message box
 
 static SDL_bool s_showingMessageBox = SDL_FALSE;
 
@@ -39,8 +39,8 @@ static void UIKit_WaitUntilMessageBoxClosed(const SDL_MessageBoxData *messagebox
     *clickedindex = messageboxdata->numbuttons;
 
     @autoreleasepool {
-        /* Run the main event loop until the alert has finished */
-        /* Note that this needs to be done on the main thread */
+        // Run the main event loop until the alert has finished
+        // Note that this needs to be done on the main thread
         s_showingMessageBox = SDL_TRUE;
         while ((*clickedindex) == messageboxdata->numbuttons) {
             [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
@@ -151,4 +151,4 @@ int UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

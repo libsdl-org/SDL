@@ -96,7 +96,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
         }
     }
 
-    /* Verify the blit rectangles */
+    // Verify the blit rectangles
     if (srcrect) {
         if ((srcrect->x < 0) || (srcrect->y < 0) ||
             ((srcrect->x + srcrect->w) > src->w) ||
@@ -133,7 +133,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
         return SDL_SetError("Size too large for scaling");
     }
 
-    /* Lock the destination if it's in hardware */
+    // Lock the destination if it's in hardware
     dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
         if (SDL_LockSurface(dst) < 0) {
@@ -141,7 +141,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
         }
         dst_locked = 1;
     }
-    /* Lock the source if it's in hardware */
+    // Lock the source if it's in hardware
     src_locked = 0;
     if (SDL_MUSTLOCK(src)) {
         if (SDL_LockSurface(src) < 0) {
@@ -159,7 +159,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
         ret = SDL_LowerSoftStretchLinear(src, srcrect, dst, dstrect);
     }
 
-    /* We need to unlock the surfaces if they're locked */
+    // We need to unlock the surfaces if they're locked
     if (dst_locked) {
         SDL_UnlockSurface(dst);
     }
@@ -237,22 +237,22 @@ __attribute__((noinline))
 static void get_scaler_datas(int src_nb, int dst_nb, Sint64 *fp_start, int *fp_step, int *left_pad, int *right_pad)
 {
 
-    int step = FIXED_POINT(src_nb) / (dst_nb); /* source step in fixed point */
-    int x0 = FP_ONE / 2;                       /* dst first pixel center at 0.5 in fixed point */
+    int step = FIXED_POINT(src_nb) / (dst_nb); // source step in fixed point
+    int x0 = FP_ONE / 2;                       // dst first pixel center at 0.5 in fixed point
     Sint64 fp_sum;
     int i;
 #if 0
-    /* scale to source coordinates */
+    // scale to source coordinates
     x0 *= src_nb;
-    x0 /= dst_nb; /* x0 == step / 2 */
+    x0 /= dst_nb; // x0 == step / 2
 #else
-    /* Use this code for perfect match with pixman */
+    // Use this code for perfect match with pixman
     Sint64 tmp[2];
     tmp[0] = (Sint64)step * (x0 >> 16);
     tmp[1] = (Sint64)step * (x0 & 0xFFFF);
-    x0 = (int)(tmp[0] + ((tmp[1] + 0x8000) >> 16)); /*  x0 == (step + 1) / 2  */
+    x0 = (int)(tmp[0] + ((tmp[1] + 0x8000) >> 16)); // x0 == (step + 1) / 2
 #endif
-    /* -= 0.5, get back the pixel origin, in source coordinates  */
+    // -= 0.5, get back the pixel origin, in source coordinates
     x0 -= FP_ONE / 2;
 
     *fp_start = x0;
@@ -317,11 +317,11 @@ static SDL_INLINE void INTERPOL_BILINEAR(const Uint32 *s0, const Uint32 *s1, int
     Uint32 tmp[2];
     unsigned int frac_w1 = FRAC_ONE - frac_w0;
 
-    /* Vertical first, store to 'tmp' */
+    // Vertical first, store to 'tmp'
     INTERPOL(s0, s1, frac_h0, frac_h1, tmp);
     INTERPOL(s0 + 1, s1 + 1, frac_h0, frac_h1, tmp + 1);
 
-    /* Horizontal, store to 'dst' */
+    // Horizontal, store to 'dst'
     INTERPOL(tmp, tmp + 1, frac_w0, frac_w1, dst);
 }
 
@@ -419,27 +419,27 @@ static SDL_INLINE void SDL_TARGETING("sse2") INTERPOL_BILINEAR_SSE(const Uint32 
     f2 = FRAC_ONE - frac_w;
     v_frac_w0 = _mm_set_epi16((short)f, (short)f2, (short)f, (short)f2, (short)f, (short)f2, (short)f, (short)f2);
 
-    x_00_01 = _mm_loadl_epi64((const __m128i *)s0); /* Load x00 and x01 */
+    x_00_01 = _mm_loadl_epi64((const __m128i *)s0); // Load x00 and x01
     x_10_11 = _mm_loadl_epi64((const __m128i *)s1);
 
     /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
 
-    /* Interpolation vertical */
+    // Interpolation vertical
     k0 = _mm_mullo_epi16(_mm_unpacklo_epi8(x_00_01, zero), v_frac_h1);
     l0 = _mm_mullo_epi16(_mm_unpacklo_epi8(x_10_11, zero), v_frac_h0);
     k0 = _mm_add_epi16(k0, l0);
 
-    /* For perfect match, clear the factionnal part eventually. */
+    // For perfect match, clear the factionnal part eventually.
     /*
     k0 = _mm_srli_epi16(k0, PRECISION);
     k0 = _mm_slli_epi16(k0, PRECISION);
     */
 
-    /* Interpolation horizontal */
+    // Interpolation horizontal
     l0 = _mm_unpacklo_epi64(/* unused */ l0, k0);
     k0 = _mm_madd_epi16(_mm_unpackhi_epi16(l0, k0), v_frac_w0);
 
-    /* Store 1 pixel */
+    // Store 1 pixel
     d0 = _mm_srli_epi32(k0, PRECISION * 2);
     e0 = _mm_packs_epi32(d0, d0);
     e0 = _mm_packus_epi16(e0, e0);
@@ -508,12 +508,12 @@ static int SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int
             f2 = FRAC_ONE - frac_w_1;
             v_frac_w1 = _mm_set_epi16((short)f, (short)f2, (short)f, (short)f2, (short)f, (short)f2, (short)f, (short)f2);
 
-            x_00_01 = _mm_loadl_epi64((const __m128i *)s_00_01); /* Load x00 and x01 */
+            x_00_01 = _mm_loadl_epi64((const __m128i *)s_00_01); // Load x00 and x01
             x_02_03 = _mm_loadl_epi64((const __m128i *)s_02_03);
             x_10_11 = _mm_loadl_epi64((const __m128i *)s_10_11);
             x_12_13 = _mm_loadl_epi64((const __m128i *)s_12_13);
 
-            /* Interpolation vertical */
+            // Interpolation vertical
             k0 = _mm_mullo_epi16(_mm_unpacklo_epi8(x_00_01, zero), v_frac_h1);
             l0 = _mm_mullo_epi16(_mm_unpacklo_epi8(x_10_11, zero), v_frac_h0);
             k0 = _mm_add_epi16(k0, l0);
@@ -521,26 +521,26 @@ static int SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int
             l1 = _mm_mullo_epi16(_mm_unpacklo_epi8(x_12_13, zero), v_frac_h0);
             k1 = _mm_add_epi16(k1, l1);
 
-            /* Interpolation horizontal */
+            // Interpolation horizontal
             l0 = _mm_unpacklo_epi64(/* unused */ l0, k0);
             k0 = _mm_madd_epi16(_mm_unpackhi_epi16(l0, k0), v_frac_w0);
             l1 = _mm_unpacklo_epi64(/* unused */ l1, k1);
             k1 = _mm_madd_epi16(_mm_unpackhi_epi16(l1, k1), v_frac_w1);
 
-            /* Store 1 pixel */
+            // Store 1 pixel
             d0 = _mm_srli_epi32(k0, PRECISION * 2);
             e0 = _mm_packs_epi32(d0, d0);
             e0 = _mm_packus_epi16(e0, e0);
             *dst++ = _mm_cvtsi128_si32(e0);
 
-            /* Store 1 pixel */
+            // Store 1 pixel
             d1 = _mm_srli_epi32(k1, PRECISION * 2);
             e1 = _mm_packs_epi32(d1, d1);
             e1 = _mm_packus_epi16(e1, e1);
             *dst++ = _mm_cvtsi128_si32(e1);
         }
 
-        /* Last point */
+        // Last point
         if (middle & 0x1) {
             const Uint32 *s_00_01;
             const Uint32 *s_10_11;
@@ -586,27 +586,27 @@ static SDL_INLINE void INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1
     uint16x8_t d0;
     uint8x8_t e0;
 
-    x_00_01 = CAST_uint8x8_t vld1_u32(s0); /* Load 2 pixels */
+    x_00_01 = CAST_uint8x8_t vld1_u32(s0); // Load 2 pixels
     x_10_11 = CAST_uint8x8_t vld1_u32(s1);
 
     /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
     k0 = vmull_u8(x_00_01, v_frac_h1);     /* k0 := x0 * (1 - frac)    */
     k0 = vmlal_u8(k0, x_10_11, v_frac_h0); /* k0 += x1 * frac          */
 
-    /* k0 now contains 2 interpolated pixels { j0, j1 } */
+    // k0 now contains 2 interpolated pixels { j0, j1 }
     l0 = vshll_n_u16(vget_low_u16(k0), PRECISION);
     l0 = vmlsl_n_u16(l0, vget_low_u16(k0), frac_w);
     l0 = vmlal_n_u16(l0, vget_high_u16(k0), frac_w);
 
-    /* Shift and narrow */
+    // Shift and narrow
     d0 = vcombine_u16(
         /* uint16x4_t */ vshrn_n_u32(l0, 2 * PRECISION),
         /* uint16x4_t */ vshrn_n_u32(l0, 2 * PRECISION));
 
-    /* Narrow again */
+    // Narrow again
     e0 = vmovn_u16(d0);
 
-    /* Store 1 pixel */
+    // Store 1 pixel
     *dst = vget_lane_u32(CAST_uint32x2_t e0, 0);
 }
 
@@ -670,8 +670,8 @@ static int scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch
             s_14_15 = (const Uint32 *)((const Uint8 *)src_h1 + index_w_2);
             s_16_17 = (const Uint32 *)((const Uint8 *)src_h1 + index_w_3);
 
-            /* Interpolation vertical */
-            x_00_01 = CAST_uint8x8_t vld1_u32(s_00_01); /* Load 2 pixels */
+            // Interpolation vertical
+            x_00_01 = CAST_uint8x8_t vld1_u32(s_00_01); // Load 2 pixels
             x_02_03 = CAST_uint8x8_t vld1_u32(s_02_03);
             x_04_05 = CAST_uint8x8_t vld1_u32(s_04_05);
             x_06_07 = CAST_uint8x8_t vld1_u32(s_06_07);
@@ -693,10 +693,10 @@ static int scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch
             k3 = vmull_u8(x_06_07, v_frac_h1);
             k3 = vmlal_u8(k3, x_16_17, v_frac_h0);
 
-            /* k0 now contains 2 interpolated pixels { j0, j1 } */
-            /* k1 now contains 2 interpolated pixels { j2, j3 } */
-            /* k2 now contains 2 interpolated pixels { j4, j5 } */
-            /* k3 now contains 2 interpolated pixels { j6, j7 } */
+            // k0 now contains 2 interpolated pixels { j0, j1 }
+            // k1 now contains 2 interpolated pixels { j2, j3 }
+            // k2 now contains 2 interpolated pixels { j4, j5 }
+            // k3 now contains 2 interpolated pixels { j6, j7 }
 
             l0 = vshll_n_u16(vget_low_u16(k0), PRECISION);
             l0 = vmlsl_n_u16(l0, vget_low_u16(k0), frac_w_0);
@@ -714,22 +714,22 @@ static int scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch
             l3 = vmlsl_n_u16(l3, vget_low_u16(k3), frac_w_3);
             l3 = vmlal_n_u16(l3, vget_high_u16(k3), frac_w_3);
 
-            /* shift and narrow */
+            // shift and narrow
             d0 = vcombine_u16(
                 /* uint16x4_t */ vshrn_n_u32(l0, 2 * PRECISION),
                 /* uint16x4_t */ vshrn_n_u32(l1, 2 * PRECISION));
-            /* narrow again */
+            // narrow again
             e0 = vmovn_u16(d0);
 
-            /* Shift and narrow */
+            // Shift and narrow
             d1 = vcombine_u16(
                 /* uint16x4_t */ vshrn_n_u32(l2, 2 * PRECISION),
                 /* uint16x4_t */ vshrn_n_u32(l3, 2 * PRECISION));
-            /* Narrow again */
+            // Narrow again
             e1 = vmovn_u16(d1);
 
             f0 = vcombine_u32(CAST_uint32x2_t e0, CAST_uint32x2_t e1);
-            /* Store 4 pixels */
+            // Store 4 pixels
             vst1q_u32(dst, f0);
 
             dst += 4;
@@ -766,8 +766,8 @@ static int scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch
             s_10_11 = (const Uint32 *)((const Uint8 *)src_h1 + index_w_0);
             s_12_13 = (const Uint32 *)((const Uint8 *)src_h1 + index_w_1);
 
-            /* Interpolation vertical */
-            x_00_01 = CAST_uint8x8_t vld1_u32(s_00_01); /* Load 2 pixels */
+            // Interpolation vertical
+            x_00_01 = CAST_uint8x8_t vld1_u32(s_00_01); // Load 2 pixels
             x_02_03 = CAST_uint8x8_t vld1_u32(s_02_03);
             x_10_11 = CAST_uint8x8_t vld1_u32(s_10_11);
             x_12_13 = CAST_uint8x8_t vld1_u32(s_12_13);
@@ -779,8 +779,8 @@ static int scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch
             k1 = vmull_u8(x_02_03, v_frac_h1);
             k1 = vmlal_u8(k1, x_12_13, v_frac_h0);
 
-            /* k0 now contains 2 interpolated pixels { j0, j1 } */
-            /* k1 now contains 2 interpolated pixels { j2, j3 } */
+            // k0 now contains 2 interpolated pixels { j0, j1 }
+            // k1 now contains 2 interpolated pixels { j2, j3 }
 
             l0 = vshll_n_u16(vget_low_u16(k0), PRECISION);
             l0 = vmlsl_n_u16(l0, vget_low_u16(k0), frac_w_0);
@@ -790,21 +790,21 @@ static int scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch
             l1 = vmlsl_n_u16(l1, vget_low_u16(k1), frac_w_1);
             l1 = vmlal_n_u16(l1, vget_high_u16(k1), frac_w_1);
 
-            /* Shift and narrow */
+            // Shift and narrow
 
             d0 = vcombine_u16(
                 /* uint16x4_t */ vshrn_n_u32(l0, 2 * PRECISION),
                 /* uint16x4_t */ vshrn_n_u32(l1, 2 * PRECISION));
 
-            /* Narrow again */
+            // Narrow again
             e0 = vmovn_u16(d0);
 
-            /* Store 2 pixels */
+            // Store 2 pixels
             vst1_u32(dst, CAST_uint32x2_t e0);
             dst += 2;
         }
 
-        /* Last point */
+        // Last point
         if (middle & 0x1) {
             int index_w = 4 * SRC_INDEX(fp_sum_w);
             int frac_w = FRAC(fp_sum_w);

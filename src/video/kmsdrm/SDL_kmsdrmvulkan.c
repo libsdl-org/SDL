@@ -54,7 +54,7 @@ int KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         return SDL_SetError("Vulkan already loaded");
     }
 
-    /* Load the Vulkan library */
+    // Load the Vulkan library
     if (!path) {
         path = SDL_GetHint(SDL_HINT_VULKAN_LIBRARY);
     }
@@ -131,14 +131,14 @@ void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 }
 
 /*********************************************************************/
-/* Here we can put whatever Vulkan extensions we want to be enabled  */
-/* at instance creation, which is done in the programs, not in SDL.  */
-/* So: programs call SDL_Vulkan_GetInstanceExtensions() and here     */
-/* we put the extensions specific to this backend so the programs    */
-/* get a list with the extension we want, so they can include that   */
-/* list in the ppEnabledExtensionNames and EnabledExtensionCount     */
-/* members of the VkInstanceCreateInfo struct passed to              */
-/* vkCreateInstance().                                               */
+// Here we can put whatever Vulkan extensions we want to be enabled
+// at instance creation, which is done in the programs, not in SDL.
+// So: programs call SDL_Vulkan_GetInstanceExtensions() and here
+// we put the extensions specific to this backend so the programs
+// get a list with the extension we want, so they can include that
+// list in the ppEnabledExtensionNames and EnabledExtensionCount
+// members of the VkInstanceCreateInfo struct passed to
+// vkCreateInstance().
 /*********************************************************************/
 char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                              Uint32 *count)
@@ -151,12 +151,12 @@ char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 }
 
 /***********************************************************************/
-/* First thing to know is that we don't call vkCreateInstance() here.  */
-/* Instead, programs using SDL and Vulkan create their Vulkan instance */
-/* and we get it here, ready to use.                                   */
-/* Extensions specific for this platform are activated in              */
-/* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with              */
-/* VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK. */
+// First thing to know is that we don't call vkCreateInstance() here.
+// Instead, programs using SDL and Vulkan create their Vulkan instance
+// and we get it here, ready to use.
+// Extensions specific for this platform are activated in
+// KMSDRM_Vulkan_GetInstanceExtensions(), like we do with
+// VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK.
 /***********************************************************************/
 int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                 SDL_Window *window,
@@ -186,7 +186,7 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     VkDisplayModeKHR display_mode = (VkDisplayModeKHR)0;
     VkDisplayModePropertiesKHR display_mode_props = { 0 };
     VkDisplayModeParametersKHR new_mode_parameters = { { 0, 0 }, 0 };
-    /* Prefer a plane that supports per-pixel alpha. */
+    // Prefer a plane that supports per-pixel alpha.
     VkDisplayPlaneAlphaFlagBitsKHR alpha_mode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
 
     VkResult result;
@@ -195,11 +195,11 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     SDL_bool mode_found = SDL_FALSE;
     SDL_bool plane_supports_display = SDL_FALSE;
 
-    /* Get the display index from the display being used by the window. */
+    // Get the display index from the display being used by the window.
     int display_index = SDL_GetDisplayIndex(SDL_GetDisplayForWindow(window));
     int i, j;
 
-    /* Get the function pointers for the functions we will use. */
+    // Get the function pointers for the functions we will use.
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
 
@@ -245,13 +245,13 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     }
 
     /*************************************/
-    /* Block for vulkan surface creation */
+    // Block for vulkan surface creation
     /*************************************/
 
     /****************************************************************/
-    /* If we got vkCreateDisplayPlaneSurfaceKHR() pointer, it means */
-    /* that the VK_KHR_Display extension is active on the instance. */
-    /* That's the central extension we need for x-less VK!          */
+    // If we got vkCreateDisplayPlaneSurfaceKHR() pointer, it means
+    // that the VK_KHR_Display extension is active on the instance.
+    // That's the central extension we need for x-less VK!
     /****************************************************************/
     if (!vkCreateDisplayPlaneSurfaceKHR) {
         SDL_SetError(VK_KHR_DISPLAY_EXTENSION_NAME
@@ -267,7 +267,7 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
        gpu = physical_devices[0], instead of probing, and go with that.
     */
 
-    /* Get the physical device count. */
+    // Get the physical device count.
     vkEnumeratePhysicalDevices(instance, &gpu_count, NULL);
 
     if (gpu_count == 0) {
@@ -275,20 +275,20 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         goto clean;
     }
 
-    /* Get the physical devices. */
+    // Get the physical devices.
     physical_devices = SDL_malloc(sizeof(VkPhysicalDevice) * gpu_count);
     device_props = SDL_malloc(sizeof(VkPhysicalDeviceProperties));
     vkEnumeratePhysicalDevices(instance, &gpu_count, physical_devices);
 
-    /* Iterate on the physical devices. */
+    // Iterate on the physical devices.
     for (i = 0; i < gpu_count; i++) {
 
-        /* Get the physical device properties. */
+        // Get the physical device properties.
         vkGetPhysicalDeviceProperties(
             physical_devices[i],
             device_props);
 
-        /* Is this device a real GPU that supports API version 1 at least? */
+        // Is this device a real GPU that supports API version 1 at least?
         if (device_props->apiVersion >= 1 &&
             (device_props->deviceType == 1 || device_props->deviceType == 2)) {
             gpu = physical_devices[i];
@@ -311,16 +311,16 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         goto clean;
     }
 
-    /* Get the props of the displays of the physical device. */
+    // Get the props of the displays of the physical device.
     display_props = (VkDisplayPropertiesKHR *)SDL_malloc(display_count * sizeof(*display_props));
     vkGetPhysicalDeviceDisplayPropertiesKHR(gpu,
                                             &display_count,
                                             display_props);
 
-    /* Get the chosen display based on the display index. */
+    // Get the chosen display based on the display index.
     display = display_props[display_index].display;
 
-    /* Get the list of the display videomodes. */
+    // Get the list of the display videomodes.
     vkGetDisplayModePropertiesKHR(gpu,
                                   display,
                                   &mode_count, NULL);
@@ -354,7 +354,7 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     if (mode_found &&
         display_mode_props.parameters.visibleRegion.width > 0 &&
         display_mode_props.parameters.visibleRegion.height > 0) {
-        /* Found a suitable mode among the predefined ones. Use that. */
+        // Found a suitable mode among the predefined ones. Use that.
         display_mode = display_mode_props.displayMode;
     } else {
 
@@ -381,13 +381,13 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         }
     }
 
-    /* Just in case we get here without a display_mode. */
+    // Just in case we get here without a display_mode.
     if (!display_mode) {
         SDL_SetError("Vulkan couldn't get a display mode.");
         goto clean;
     }
 
-    /* Get the list of the physical device planes. */
+    // Get the list of the physical device planes.
     vkGetPhysicalDeviceDisplayPlanePropertiesKHR(gpu, &plane_count, NULL);
     if (plane_count == 0) {
         SDL_SetError("Vulkan can't find any planes.");
@@ -406,14 +406,14 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         uint32_t supported_displays_count = 0;
         VkDisplayKHR *supported_displays;
 
-        /* See if the plane is compatible with the current display. */
+        // See if the plane is compatible with the current display.
         vkGetDisplayPlaneSupportedDisplaysKHR(gpu, i, &supported_displays_count, NULL);
         if (supported_displays_count == 0) {
-            /* This plane doesn't support any displays. Continue to the next plane. */
+            // This plane doesn't support any displays. Continue to the next plane.
             continue;
         }
 
-        /* Get the list of displays supported by this plane. */
+        // Get the list of displays supported by this plane.
         supported_displays = (VkDisplayKHR *)SDL_malloc(sizeof(VkDisplayKHR) * supported_displays_count);
         vkGetDisplayPlaneSupportedDisplaysKHR(gpu, i,
                                               &supported_displays_count, supported_displays);
@@ -434,33 +434,33 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
             }
         }
 
-        /* Free the list of displays supported by this plane. */
+        // Free the list of displays supported by this plane.
         if (supported_displays) {
             SDL_free(supported_displays);
         }
 
-        /* If the display is not supported by this plane, iterate to the next plane. */
+        // If the display is not supported by this plane, iterate to the next plane.
         if (!plane_supports_display) {
             continue;
         }
 
-        /* Want a plane that supports the alpha mode we have chosen. */
+        // Want a plane that supports the alpha mode we have chosen.
         vkGetDisplayPlaneCapabilitiesKHR(gpu, display_mode, i, &plane_caps);
         if (plane_caps.supportedAlpha == alpha_mode) {
-            /* Yep, this plane is alright. */
+            // Yep, this plane is alright.
             plane = i;
             break;
         }
     }
 
-    /* If we couldn't find an appropriate plane, error out. */
+    // If we couldn't find an appropriate plane, error out.
     if (plane == UINT32_MAX) {
         SDL_SetError("Vulkan couldn't find an appropriate plane.");
         goto clean;
     }
 
     /********************************************/
-    /* Let's finally create the Vulkan surface! */
+    // Let's finally create the Vulkan surface!
     /********************************************/
 
     image_size.width = window->w;

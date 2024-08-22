@@ -26,6 +26,6 @@
 
 extern int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-#endif /* SDL_VIDEO_DRIVER_WAYLAND */
+#endif // SDL_VIDEO_DRIVER_WAYLAND
 
-#endif /* SDL_waylandmessagebox_h_ */
+#endif // SDL_waylandmessagebox_h_

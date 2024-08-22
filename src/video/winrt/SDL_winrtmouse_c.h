@@ -35,4 +35,4 @@ extern SDL_bool WINRT_UsingRelativeMouseMode;
 }
 #endif
 
-#endif /* SDL_winrtmouse_h_ */
+#endif // SDL_winrtmouse_h_

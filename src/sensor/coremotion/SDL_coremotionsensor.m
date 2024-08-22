@@ -22,7 +22,7 @@
 
 #ifdef SDL_SENSOR_COREMOTION
 
-/* This is the system specific header for the SDL sensor API */
+// This is the system specific header for the SDL sensor API
 #include <CoreMotion/CoreMotion.h>
 
 #include "SDL_coremotionsensor.h"
@@ -211,4 +211,4 @@ SDL_SensorDriver SDL_COREMOTION_SensorDriver = {
     SDL_COREMOTION_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_COREMOTION */
+#endif // SDL_SENSOR_COREMOTION

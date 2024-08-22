@@ -24,9 +24,9 @@
 
 #include "SDL_windows.h"
 
-#include <objbase.h> /* for CoInitialize/CoUninitialize (Win32 only) */
+#include <objbase.h> // for CoInitialize/CoUninitialize (Win32 only)
 #ifdef HAVE_ROAPI_H
-#include <roapi.h> /* For RoInitialize/RoUninitialize (Win32 only) */
+#include <roapi.h> // For RoInitialize/RoUninitialize (Win32 only)
 #else
 typedef enum RO_INIT_TYPE
 {
@@ -53,7 +53,7 @@ typedef enum RO_INIT_TYPE
 #define WC_ERR_INVALID_CHARS 0x00000080
 #endif
 
-/* Sets an error message based on an HRESULT */
+// Sets an error message based on an HRESULT
 int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
 {
     TCHAR buffer[1024];
@@ -62,7 +62,7 @@ int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
     DWORD c = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0,
                             buffer, SDL_arraysize(buffer), NULL);
     buffer[c] = 0;
-    /* kill CR/LF that FormatMessage() sticks at the end */
+    // kill CR/LF that FormatMessage() sticks at the end
     while (*p) {
         if (*p == '\r') {
             *p = 0;
@@ -76,7 +76,7 @@ int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
     return -1;
 }
 
-/* Sets an error message based on GetLastError() */
+// Sets an error message based on GetLastError()
 int WIN_SetError(const char *prefix)
 {
     return WIN_SetErrorFromHRESULT(prefix, GetLastError());
@@ -98,7 +98,7 @@ WIN_CoInitialize(void)
     */
     return S_OK;
 #elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    /* On Xbox, there's no need to call CoInitializeEx (and it's not implemented) */
+    // On Xbox, there's no need to call CoInitializeEx (and it's not implemented)
     return S_OK;
 #else
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
@@ -106,8 +106,8 @@ WIN_CoInitialize(void)
         hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     }
 
-    /* S_FALSE means success, but someone else already initialized. */
-    /* You still need to call CoUninitialize in this case! */
+    // S_FALSE means success, but someone else already initialized.
+    // You still need to call CoUninitialize in this case!
     if (hr == S_FALSE) {
         return S_OK;
     }
@@ -150,14 +150,14 @@ WIN_RoInitialize(void)
     typedef HRESULT(WINAPI * RoInitialize_t)(RO_INIT_TYPE initType);
     RoInitialize_t RoInitializeFunc = (RoInitialize_t)WIN_LoadComBaseFunction("RoInitialize");
     if (RoInitializeFunc) {
-        /* RO_INIT_SINGLETHREADED is equivalent to COINIT_APARTMENTTHREADED */
+        // RO_INIT_SINGLETHREADED is equivalent to COINIT_APARTMENTTHREADED
         HRESULT hr = RoInitializeFunc(RO_INIT_SINGLETHREADED);
         if (hr == RPC_E_CHANGED_MODE) {
             hr = RoInitializeFunc(RO_INIT_MULTITHREADED);
         }
 
-        /* S_FALSE means success, but someone else already initialized. */
-        /* You still need to call RoUninitialize in this case! */
+        // S_FALSE means success, but someone else already initialized.
+        // You still need to call RoUninitialize in this case!
         if (hr == S_FALSE) {
             return S_OK;
         }
@@ -266,7 +266,7 @@ WASAPI doesn't need this. This is just for DirectSound/WinMM.
 char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
 #if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    return WIN_StringToUTF8W(name); /* No registry access on WinRT/UWP and Xbox, go with what we've got. */
+    return WIN_StringToUTF8W(name); // No registry access on WinRT/UWP and Xbox, go with what we've got.
 #else
     static const GUID nullguid = { 0 };
     const unsigned char *ptr;
@@ -278,7 +278,7 @@ char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     char *retval = NULL;
 
     if (WIN_IsEqualGUID(guid, &nullguid)) {
-        return WIN_StringToUTF8(name); /* No GUID, go with what we've got. */
+        return WIN_StringToUTF8(name); // No GUID, go with what we've got.
     }
 
     ptr = (const unsigned char *)guid;
@@ -291,34 +291,34 @@ char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     rc = (RegOpenKeyExW(HKEY_LOCAL_MACHINE, strw, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS);
     SDL_free(strw);
     if (!rc) {
-        return WIN_StringToUTF8(name); /* oh well. */
+        return WIN_StringToUTF8(name); // oh well.
     }
 
     rc = (RegQueryValueExW(hkey, L"Name", NULL, NULL, NULL, &len) == ERROR_SUCCESS);
     if (!rc) {
         RegCloseKey(hkey);
-        return WIN_StringToUTF8(name); /* oh well. */
+        return WIN_StringToUTF8(name); // oh well.
     }
 
     strw = (WCHAR *)SDL_malloc(len + sizeof(WCHAR));
     if (!strw) {
         RegCloseKey(hkey);
-        return WIN_StringToUTF8(name); /* oh well. */
+        return WIN_StringToUTF8(name); // oh well.
     }
 
     rc = (RegQueryValueExW(hkey, L"Name", NULL, NULL, (LPBYTE)strw, &len) == ERROR_SUCCESS);
     RegCloseKey(hkey);
     if (!rc) {
         SDL_free(strw);
-        return WIN_StringToUTF8(name); /* oh well. */
+        return WIN_StringToUTF8(name); // oh well.
     }
 
-    strw[len / 2] = 0; /* make sure it's null-terminated. */
+    strw[len / 2] = 0; // make sure it's null-terminated.
 
     retval = WIN_StringToUTF8(strw);
     SDL_free(strw);
     return retval ? retval : WIN_StringToUTF8(name);
-#endif /* if SDL_PLATFORM_WINRT / else */
+#endif // if SDL_PLATFORM_WINRT / else
 }
 
 BOOL WIN_IsEqualGUID(const GUID *a, const GUID *b)
@@ -349,15 +349,15 @@ void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
 
 BOOL WIN_IsRectEmpty(const RECT *rect)
 {
-    /* Calculating this manually because UWP and Xbox do not support Win32 IsRectEmpty. */
+    // Calculating this manually because UWP and Xbox do not support Win32 IsRectEmpty.
     return (rect->right <= rect->left) || (rect->bottom <= rect->top);
 }
 
-/* Some GUIDs we need to know without linking to libraries that aren't available before Vista. */
-/* *INDENT-OFF* */ /* clang-format off */
+// Some GUIDs we need to know without linking to libraries that aren't available before Vista.
+/* *INDENT-OFF* */ // clang-format off
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on
 
 SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat)
 {
@@ -389,4 +389,4 @@ int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, 
     return WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 }
 
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK) */
+#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)

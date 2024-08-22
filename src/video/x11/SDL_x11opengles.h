@@ -30,12 +30,12 @@
 
 typedef struct SDL_PrivateGLESData
 {
-    /* 1401 If the struct-declaration-list contains no named members, the behavior is undefined. */
-    /* warning: empty struct has size 0 in C, size 1 in C++ [-Wc++-compat] */
+    // 1401 If the struct-declaration-list contains no named members, the behavior is undefined.
+    // warning: empty struct has size 0 in C, size 1 in C++ [-Wc++-compat]
     int dummy;
 } SDL_PrivateGLESData;
 
-/* OpenGLES functions */
+// OpenGLES functions
 #define X11_GLES_GetAttribute    SDL_EGL_GetAttribute
 #define X11_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
 #define X11_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
@@ -50,6 +50,6 @@ extern int X11_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int X11_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 extern SDL_EGLSurface X11_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_OPENGL_EGL
 
-#endif /* SDL_x11opengles_h_ */
+#endif // SDL_x11opengles_h_

@@ -28,4 +28,4 @@ int Android_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLC
 int Android_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 int Android_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 
-#endif /* SDL_androidgl_h_ */
+#endif // SDL_androidgl_h_

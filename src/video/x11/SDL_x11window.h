@@ -47,7 +47,7 @@ struct SDL_WindowData
     Visual *visual;
     Colormap colormap;
 #ifndef NO_SHARED_MEMORY
-    /* MIT shared memory extension information */
+    // MIT shared memory extension information
     SDL_bool use_mitshm;
     XShmSegmentInfo shminfo;
 #endif
@@ -82,7 +82,7 @@ struct SDL_WindowData
     SDL_bool pointer_barrier_active;
     PointerBarrier barrier[4];
     SDL_Rect barrier_rect;
-#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+#endif // SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_Rect expected;
     SDL_DisplayMode requested_fullscreen_mode;
 
@@ -145,4 +145,4 @@ int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title);
 void X11_UpdateWindowPosition(SDL_Window *window, SDL_bool use_current_position);
 void X11_SetWindowMinMax(SDL_Window *window, SDL_bool use_current);
 
-#endif /* SDL_x11window_h_ */
+#endif // SDL_x11window_h_

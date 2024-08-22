@@ -35,4 +35,4 @@ typedef struct
 extern int NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void NGAGE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_ngagewindow */
+#endif // SDL_ngagewindow

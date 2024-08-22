@@ -36,7 +36,7 @@ SDL_bool SDL_GetPowerInfo_N3DS(SDL_PowerState *state, int *seconds, int *percent
 {
     *state = GetPowerState();
     *percent = GetBatteryPercentage();
-    *seconds = -1; /* libctru doesn't provide a way to estimate battery life */
+    *seconds = -1; // libctru doesn't provide a way to estimate battery life
 
     return SDL_TRUE;
 }
@@ -99,4 +99,4 @@ static int GetBatteryPercentage(void)
     return (int)SDL_round(data[0] + data[1] / 256.0);
 }
 
-#endif /* !SDL_POWER_DISABLED && SDL_POWER_N3DS */
+#endif // !SDL_POWER_DISABLED && SDL_POWER_N3DS

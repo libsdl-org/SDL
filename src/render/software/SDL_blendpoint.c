@@ -241,12 +241,12 @@ int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint
         return SDL_InvalidParamError("SDL_BlendPoint(): dst");
     }
 
-    /* This function doesn't work on surfaces < 8 bpp */
+    // This function doesn't work on surfaces < 8 bpp
     if (SDL_BITSPERPIXEL(dst->format) < 8) {
         return SDL_SetError("SDL_BlendPoint(): Unsupported surface format");
     }
 
-    /* Perform clipping */
+    // Perform clipping
     if (x < dst->internal->clip_rect.x || y < dst->internal->clip_rect.y ||
         x >= (dst->internal->clip_rect.x + dst->internal->clip_rect.w) ||
         y >= (dst->internal->clip_rect.y + dst->internal->clip_rect.h)) {
@@ -280,7 +280,7 @@ int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint
             } else {
                 return SDL_BlendPoint_ARGB8888(dst, x, y, blendMode, r, g, b, a);
             }
-            /* break; -Wunreachable-code-break */
+            // break; -Wunreachable-code-break
         }
         break;
     default:
@@ -309,7 +309,7 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
         return SDL_InvalidParamError("SDL_BlendPoints(): dst");
     }
 
-    /* This function doesn't work on surfaces < 8 bpp */
+    // This function doesn't work on surfaces < 8 bpp
     if (dst->internal->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_BlendPoints(): Unsupported surface format");
     }
@@ -320,7 +320,7 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
         b = DRAW_MUL(b, a);
     }
 
-    /* FIXME: Does this function pointer slow things down significantly? */
+    // FIXME: Does this function pointer slow things down significantly?
     switch (dst->internal->format->bits_per_pixel) {
     case 15:
         switch (dst->internal->format->Rmask) {
@@ -376,4 +376,4 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
     return status;
 }
 
-#endif /* SDL_VIDEO_RENDER_SW */
+#endif // SDL_VIDEO_RENDER_SW

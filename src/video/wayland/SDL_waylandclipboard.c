@@ -170,4 +170,4 @@ SDL_bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
     return result;
 }
 
-#endif /* SDL_VIDEO_DRIVER_WAYLAND */
+#endif // SDL_VIDEO_DRIVER_WAYLAND

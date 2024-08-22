@@ -67,7 +67,7 @@ extern "C" int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, in
                             maxbuttons, platform, messageboxdata->numbuttons);
     }
 
-    /* Build a MessageDialog object and its buttons */
+    // Build a MessageDialog object and its buttons
     MessageDialog ^ dialog = ref new MessageDialog(WINRT_UTF8ToPlatformString(messageboxdata->message));
     dialog->Title = WINRT_UTF8ToPlatformString(messageboxdata->title);
     for (int i = 0; i < messageboxdata->numbuttons; ++i) {
@@ -88,14 +88,14 @@ extern "C" int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, in
         }
     }
 
-    /* Display the MessageDialog, then wait for it to be closed */
-    /* TODO, WinRT: Find a way to redraw MessageDialog instances if a GPU device-reset occurs during the following event-loop */
+    // Display the MessageDialog, then wait for it to be closed
+    // TODO, WinRT: Find a way to redraw MessageDialog instances if a GPU device-reset occurs during the following event-loop
     auto operation = dialog->ShowAsync();
     while (operation->Status == Windows::Foundation::AsyncStatus::Started) {
         WINRT_PumpEvents(_this);
     }
 
-    /* Retrieve results from the MessageDialog and process them accordingly */
+    // Retrieve results from the MessageDialog and process them accordingly
     if (operation->Status != Windows::Foundation::AsyncStatus::Completed) {
         return SDL_SetError("An unknown error occurred in displaying the WinRT MessageDialog");
     }
@@ -105,7 +105,7 @@ extern "C" int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, in
         *buttonID = messageboxdata->buttons[clicked_index].buttonID;
     }
     return 0;
-#endif /* if SDL_WINAPI_FAMILY_PHONE / else */
+#endif // if SDL_WINAPI_FAMILY_PHONE / else
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINRT */
+#endif // SDL_VIDEO_DRIVER_WINRT

@@ -75,7 +75,7 @@ struct SDL_GLDriverData
         int minor;
     } es_profile_max_supported_version;
 
-    /* *INDENT-OFF* */ /* clang-format off */
+    /* *INDENT-OFF* */ // clang-format off
     PROC (WINAPI *wglGetProcAddress)(const char *proc);
     HGLRC (WINAPI *wglCreateContext)(HDC hdc);
     BOOL (WINAPI *wglDeleteContext)(HGLRC hglrc);
@@ -98,10 +98,10 @@ struct SDL_GLDriverData
                                      const PIXELFORMATDESCRIPTOR *ppfd);
     int (WINAPI *wglGetPixelFormat)(HDC hdc);
 #endif
-    /* *INDENT-ON* */ /* clang-format on */
+    /* *INDENT-ON* */ // clang-format on
 };
 
-/* OpenGL functions */
+// OpenGL functions
 extern int WIN_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_FunctionPointer WIN_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 extern void WIN_GL_UnloadLibrary(SDL_VideoDevice *_this);
@@ -173,6 +173,6 @@ extern void WIN_GL_InitExtensions(SDL_VideoDevice *_this);
 #define WGL_SAMPLES_ARB        0x2042
 #endif
 
-#endif /* SDL_VIDEO_OPENGL_WGL */
+#endif // SDL_VIDEO_OPENGL_WGL
 
-#endif /* SDL_windowsopengl_h_ */
+#endif // SDL_windowsopengl_h_

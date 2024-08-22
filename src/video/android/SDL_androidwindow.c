@@ -33,7 +33,7 @@
 #include "SDL_androidwindow.h"
 
 
-/* Currently only one window */
+// Currently only one window
 SDL_Window *Android_Window = NULL;
 
 int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
@@ -50,16 +50,16 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         goto endfunction;
     }
 
-    /* Set orientation */
+    // Set orientation
     Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));
 
-    /* Adjust the window data to match the screen */
+    // Adjust the window data to match the screen
     window->x = 0;
     window->y = 0;
     window->w = Android_SurfaceWidth;
     window->h = Android_SurfaceHeight;
 
-    /* One window, it always has focus */
+    // One window, it always has focus
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 
@@ -116,7 +116,7 @@ int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_
         SDL_WindowData *data;
         int old_w, old_h, new_w, new_h;
 
-        /* If the window is being destroyed don't change visible state */
+        // If the window is being destroyed don't change visible state
         if (!window->is_destroying) {
             Android_JNI_SetWindowStyle(fullscreen);
         }
@@ -167,7 +167,7 @@ void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable)
 {
-    /* Set orientation */
+    // Set orientation
     Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));
 }
 
@@ -198,4 +198,4 @@ void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Android_UnlockActivityMutex();
 }
 
-#endif /* SDL_VIDEO_DRIVER_ANDROID */
+#endif // SDL_VIDEO_DRIVER_ANDROID

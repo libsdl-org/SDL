@@ -23,7 +23,7 @@
 #ifdef SDL_FILESYSTEM_UNIX
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
 
@@ -58,13 +58,13 @@ static char *readSymLink(const char *path)
 
         rc = readlink(path, retval, len);
         if (rc == -1) {
-            break; /* not a symlink, i/o error, etc. */
+            break; // not a symlink, i/o error, etc.
         } else if (rc < len) {
-            retval[rc] = '\0'; /* readlink doesn't null-terminate. */
-            return retval;     /* we're good to go. */
+            retval[rc] = '\0'; // readlink doesn't null-terminate.
+            return retval;     // we're good to go.
         }
 
-        len *= 2; /* grow buffer, try again. */
+        len *= 2; // grow buffer, try again.
     }
 
     SDL_free(retval);
@@ -97,28 +97,28 @@ static char *search_path_for_binary(const char *bin)
     exe = (char *)SDL_malloc(alloc_size);
 
     do {
-        ptr = SDL_strchr(start, ':'); /* find next $PATH separator. */
+        ptr = SDL_strchr(start, ':'); // find next $PATH separator.
         if (ptr != start) {
             if (ptr) {
                 *ptr = '\0';
             }
 
-            /* build full binary path... */
+            // build full binary path...
             SDL_snprintf(exe, alloc_size, "%s%s%s", start, (ptr && (ptr[-1] == '/')) ? "" : "/", bin);
 
-            if (access(exe, X_OK) == 0) { /* Exists as executable? We're done. */
+            if (access(exe, X_OK) == 0) { // Exists as executable? We're done.
                 SDL_free(envr);
                 return exe;
             }
         }
-        start = ptr + 1; /* start points to beginning of next element. */
+        start = ptr + 1; // start points to beginning of next element.
     } while (ptr);
 
     SDL_free(envr);
     SDL_free(exe);
 
     SDL_SetError("Process not found in $PATH");
-    return NULL; /* doesn't exist in path. */
+    return NULL; // doesn't exist in path.
 }
 #endif
 
@@ -138,7 +138,7 @@ char *SDL_SYS_GetBasePath(void)
     }
 #endif
 #ifdef SDL_PLATFORM_OPENBSD
-    /* Please note that this will fail if the process was launched with a relative path and $PWD + the cwd have changed, or argv is altered. So don't do that. Or add a new sysctl to OpenBSD. */
+    // Please note that this will fail if the process was launched with a relative path and $PWD + the cwd have changed, or argv is altered. So don't do that. Or add a new sysctl to OpenBSD.
     char **cmdline;
     size_t len;
     const int mib[] = { CTL_KERN, KERN_PROC_ARGS, getpid(), KERN_PROC_ARGV };
@@ -159,7 +159,7 @@ char *SDL_SYS_GetBasePath(void)
 
         exe = cmdline[0];
         pwddst = NULL;
-        if (SDL_strchr(exe, '/') == NULL) { /* not a relative or absolute path, check $PATH for it */
+        if (SDL_strchr(exe, '/') == NULL) { // not a relative or absolute path, check $PATH for it
             exe = search_path_for_binary(cmdline[0]);
         } else {
             if (exe && *exe == '.') {
@@ -195,7 +195,7 @@ char *SDL_SYS_GetBasePath(void)
     }
 #endif
 
-    /* is a Linux-style /proc filesystem available? */
+    // is a Linux-style /proc filesystem available?
     if (!retval && (access("/proc", F_OK) == 0)) {
         /* !!! FIXME: after 2.0.6 ships, let's delete this code and just
                       use the /proc/%llu version. There's no reason to have
@@ -207,9 +207,9 @@ char *SDL_SYS_GetBasePath(void)
 #elif defined(SDL_PLATFORM_SOLARIS)
         retval = readSymLink("/proc/self/path/a.out");
 #else
-        retval = readSymLink("/proc/self/exe"); /* linux. */
+        retval = readSymLink("/proc/self/exe"); // linux.
         if (!retval) {
-            /* older kernels don't have /proc/self ... try PID version... */
+            // older kernels don't have /proc/self ... try PID version...
             char path[64];
             const int rc = SDL_snprintf(path, sizeof(path),
                                         "/proc/%llu/exe",
@@ -221,10 +221,10 @@ char *SDL_SYS_GetBasePath(void)
 #endif
     }
 
-#ifdef SDL_PLATFORM_SOLARIS  /* try this as a fallback if /proc didn't pan out */
+#ifdef SDL_PLATFORM_SOLARIS  // try this as a fallback if /proc didn't pan out
     if (!retval) {
         const char *path = getexecname();
-        if ((path) && (path[0] == '/')) { /* must be absolute path... */
+        if ((path) && (path[0] == '/')) { // must be absolute path...
             retval = SDL_strdup(path);
             if (!retval) {
                 return NULL;
@@ -235,21 +235,21 @@ char *SDL_SYS_GetBasePath(void)
     /* If we had access to argv[0] here, we could check it for a path,
         or troll through $PATH looking for it, too. */
 
-    if (retval) { /* chop off filename. */
+    if (retval) { // chop off filename.
         char *ptr = SDL_strrchr(retval, '/');
         if (ptr) {
             *(ptr + 1) = '\0';
-        } else { /* shouldn't happen, but just in case... */
+        } else { // shouldn't happen, but just in case...
             SDL_free(retval);
             retval = NULL;
         }
     }
 
     if (retval) {
-        /* try to shrink buffer... */
+        // try to shrink buffer...
         char *ptr = (char *)SDL_realloc(retval, SDL_strlen(retval) + 1);
         if (ptr) {
-            retval = ptr; /* oh well if it failed. */
+            retval = ptr; // oh well if it failed.
         }
     }
 
@@ -280,10 +280,10 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     }
 
     if (!envr) {
-        /* You end up with "$HOME/.local/share/Game Name 2" */
+        // You end up with "$HOME/.local/share/Game Name 2"
         envr = SDL_getenv("HOME");
         if (!envr) {
-            /* we could take heroic measures with /etc/passwd, but oh well. */
+            // we could take heroic measures with /etc/passwd, but oh well.
             SDL_SetError("neither XDG_DATA_HOME nor HOME environment is set");
             return NULL;
         }
@@ -403,7 +403,7 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
   user_dir = NULL;
   while (fgets (buffer, sizeof (buffer), file))
     {
-      /* Remove newline at end */
+      // Remove newline at end
       len = SDL_strlen (buffer);
       if (len > 0 && buffer[len-1] == '\n')
         buffer[len-1] = 0;
@@ -500,7 +500,7 @@ static char *xdg_user_dir_lookup (const char *type)
     if (!home_dir)
         return NULL;
 
-    /* Special case desktop for historical compatibility */
+    // Special case desktop for historical compatibility
     if (SDL_strcmp(type, "DESKTOP") == 0) {
         size_t length = SDL_strlen(home_dir) + SDL_strlen("/Desktop") + 1;
         user_dir = (char*) SDL_malloc(length);
@@ -615,4 +615,4 @@ append_slash:
     return retval;
 }
 
-#endif /* SDL_FILESYSTEM_UNIX */
+#endif // SDL_FILESYSTEM_UNIX

@@ -44,9 +44,9 @@ Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_
         *day_of_week = (int)(z >= -4 ? (z + 4) % 7 : (z + 5) % 7 + 6);
     }
     if (day_of_year) {
-        /* This algorithm considers March 1 to be the first day of the year, so offset by Jan + Feb. */
+        // This algorithm considers March 1 to be the first day of the year, so offset by Jan + Feb.
         if (doy > 305) {
-            /* Day 0 is the first day of the year. */
+            // Day 0 is the first day of the year.
             *day_of_year = doy - 306;
         } else {
             const int doy_offset = 59 + (!(year % 4) && ((year % 100) || !(year % 400)));
@@ -59,7 +59,7 @@ Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_
 
 int SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat)
 {
-    /* Default to ISO 8061 date format, as it is unambiguous, and 24 hour time. */
+    // Default to ISO 8061 date format, as it is unambiguous, and 24 hour time.
     if (dateFormat) {
         *dateFormat = SDL_DATE_FORMAT_YYYYMMDD;
     }
@@ -147,7 +147,7 @@ static SDL_bool SDL_DateTimeIsValid(const SDL_DateTime *dt)
     }
     if (dt->second < 0 || dt->second > 60) {
         SDL_SetError("Malformed SDL_DateTime: second out of range [0-60], current: %i", dt->second);
-        return SDL_FALSE; /* 60 accounts for a possible leap second. */
+        return SDL_FALSE; // 60 accounts for a possible leap second.
     }
     if (dt->nanosecond < 0 || dt->nanosecond >= SDL_NS_PER_SECOND) {
         SDL_SetError("Malformed SDL_DateTime: nanosecond out of range [0-999999999], current: %i", dt->nanosecond);
@@ -170,7 +170,7 @@ int SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
         return SDL_InvalidParamError("ticks");
     }
     if (!SDL_DateTimeIsValid(dt)) {
-        /* The validation function sets the error string. */
+        // The validation function sets the error string.
         return -1;
     }
 
@@ -210,7 +210,7 @@ SDL_Time SDL_TimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime)
 
     Uint64 wtime = (((Uint64)dwHighDateTime << 32) | dwLowDateTime);
 
-    /* Clamp the windows time range to the SDL_Time min/max */
+    // Clamp the windows time range to the SDL_Time min/max
     wtime = SDL_clamp(wtime, wintime_min, wintime_max);
 
     return (SDL_Time)(wtime - DELTA_EPOCH_1601_100NS) * 100;

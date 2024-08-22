@@ -35,14 +35,14 @@ int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wi
     const SDL_PixelFormat surface_format = SDL_PIXELFORMAT_XRGB8888;
     int w, h;
 
-    /* Create a new framebuffer */
+    // Create a new framebuffer
     SDL_GetWindowSizeInPixels(window, &w, &h);
     surface = SDL_CreateSurface(w, h, surface_format);
     if (!surface) {
         return -1;
     }
 
-    /* Save the info and return! */
+    // Save the info and return!
     SDL_SetSurfaceProperty(SDL_GetWindowProperties(window), OFFSCREEN_SURFACE, surface);
     *format = surface_format;
     *pixels = surface->pixels;
@@ -61,7 +61,7 @@ int SDL_OFFSCREEN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wi
         return SDL_SetError("Couldn't find offscreen surface for window");
     }
 
-    /* Send the data to the display */
+    // Send the data to the display
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_OFFSCREEN_SAVE_FRAMES, SDL_FALSE)) {
         char file[128];
         (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIu32 "-%8.8d.bmp",
@@ -76,4 +76,4 @@ void SDL_OFFSCREEN_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *
     SDL_ClearProperty(SDL_GetWindowProperties(window), OFFSCREEN_SURFACE);
 }
 
-#endif /* SDL_VIDEO_DRIVER_OFFSCREEN */
+#endif // SDL_VIDEO_DRIVER_OFFSCREEN

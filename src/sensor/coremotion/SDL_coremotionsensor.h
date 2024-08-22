@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* The private structure used to keep track of a sensor */
+// The private structure used to keep track of a sensor
 struct sensor_hwdata
 {
     float data[3];

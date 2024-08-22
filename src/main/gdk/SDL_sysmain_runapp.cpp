@@ -27,10 +27,10 @@ extern "C" {
 }
 #include <XGameRuntime.h>
 #include <xsapi-c/services_c.h>
-#include <shellapi.h> /* CommandLineToArgvW() */
+#include <shellapi.h> // CommandLineToArgvW()
 #include <appnotify.h>
 
-/* Pop up an out of memory message, returns to Windows */
+// Pop up an out of memory message, returns to Windows
 static BOOL OutOfMemory(void)
 {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
@@ -58,7 +58,7 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
      * SDL_free() to use the same allocator after SDL_main() returns.
      */
 
-    /* Parse it into argv and argc */
+    // Parse it into argv and argc
     argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
     if (argv == NULL) {
         return OutOfMemory();
@@ -92,7 +92,7 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
 
         XTaskQueueSetCurrentProcessTaskQueue(taskQueue);
 
-        /* Try to get the title ID and initialize Xbox Live */
+        // Try to get the title ID and initialize Xbox Live
         hr = XGameGetXboxTitleId(&titleid);
         if (SUCCEEDED(hr)) {
             SDL_zero(xblArgs);
@@ -110,13 +110,13 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
             return -1;
         }
 
-        /* Run the application main() code */
+        // Run the application main() code
         result = mainFunction(argc, argv);
 
         GDK_UnregisterChangeNotifications();
 
-        /* !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit? */
-        /* Terminate the task queue and dispatch any pending tasks */
+        // !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit?
+        // Terminate the task queue and dispatch any pending tasks
         XTaskQueueTerminate(taskQueue, false, nullptr, nullptr);
         while (XTaskQueueDispatch(taskQueue, XTaskQueuePort::Completion, 0))
             ;
@@ -137,7 +137,7 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
         result = -1;
     }
 
-    /* Free argv, to avoid memory leak */
+    // Free argv, to avoid memory leak
     for (i = 0; i < argc; ++i) {
         HeapFree(GetProcessHeap(), 0, argv[i]);
     }

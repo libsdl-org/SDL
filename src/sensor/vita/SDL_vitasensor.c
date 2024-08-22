@@ -201,4 +201,4 @@ SDL_SensorDriver SDL_VITA_SensorDriver = {
     SDL_VITA_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_VITA */
+#endif // SDL_SENSOR_VITA

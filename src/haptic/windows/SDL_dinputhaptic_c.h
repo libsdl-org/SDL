@@ -22,7 +22,7 @@
 
 #include "SDL_windowshaptic_c.h"
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,7 +47,7 @@ extern int SDL_DINPUT_HapticPause(SDL_Haptic *haptic);
 extern int SDL_DINPUT_HapticUnpause(SDL_Haptic *haptic);
 extern int SDL_DINPUT_HapticStopAll(SDL_Haptic *haptic);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif

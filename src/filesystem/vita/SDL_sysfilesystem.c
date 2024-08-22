@@ -23,7 +23,7 @@
 #ifdef SDL_FILESYSTEM_VITA
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
 
@@ -82,11 +82,11 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
-/* TODO */
+// TODO
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-#endif /* SDL_FILESYSTEM_VITA */
+#endif // SDL_FILESYSTEM_VITA

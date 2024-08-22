@@ -27,12 +27,12 @@
 #include "SDL_windowsopengl.h"
 #include "SDL_windowswindow.h"
 
-/* EGL implementation of SDL OpenGL support */
+// EGL implementation of SDL OpenGL support
 
 int WIN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
 
-    /* If the profile requested is not GL ES, switch over to WIN_GL functions  */
+    // If the profile requested is not GL ES, switch over to WIN_GL functions
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES &&
         !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
 #ifdef SDL_VIDEO_OPENGL_WGL
@@ -68,7 +68,7 @@ SDL_GLContext WIN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 #ifdef SDL_VIDEO_OPENGL_WGL
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES &&
         !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
-        /* Switch to WGL based functions */
+        // Switch to WGL based functions
         WIN_GLES_UnloadLibrary(_this);
         _this->GL_LoadLibrary = WIN_GL_LoadLibrary;
         _this->GL_GetProcAddress = WIN_GL_GetProcAddress;
@@ -99,21 +99,21 @@ int WIN_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
     return 0;
 }
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 SDL_EGL_SwapWindow_impl(WIN)
 SDL_EGL_MakeCurrent_impl(WIN)
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on
 
 int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    /* The current context is lost in here; save it and reset it. */
+    // The current context is lost in here; save it and reset it.
     SDL_WindowData *windowdata = window->internal;
     SDL_Window *current_win = SDL_GL_GetCurrentWindow();
     SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
 
     if (!_this->egl_data) {
-/* !!! FIXME: commenting out this assertion is (I think) incorrect; figure out why driver_loaded is wrong for ANGLE instead. --ryan. */
-#if 0 /* When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 1, while the below lines function. */
+// !!! FIXME: commenting out this assertion is (I think) incorrect; figure out why driver_loaded is wrong for ANGLE instead. --ryan.
+#if 0 // When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 1, while the below lines function.
         SDL_assert(!_this->gl_config.driver_loaded);
 #endif
         if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform) < 0) {
@@ -123,7 +123,7 @@ int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
         _this->gl_config.driver_loaded = 1;
     }
 
-    /* Create the GLES window surface */
+    // Create the GLES window surface
     windowdata->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)windowdata->hwnd);
 
     if (windowdata->egl_surface == EGL_NO_SURFACE) {
@@ -141,4 +141,4 @@ WIN_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
     return windowdata->egl_surface;
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINDOWS && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_WINDOWS && SDL_VIDEO_OPENGL_EGL

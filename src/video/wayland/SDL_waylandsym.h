@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 
 #ifndef SDL_WAYLAND_MODULE
 #define SDL_WAYLAND_MODULE(modname)
@@ -90,11 +90,11 @@ SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_flags, (struct wl_proxy *prox
 SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_array_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version,  uint32_t flags, union wl_argument *args))
 #endif
 
-#if 0 /* TODO RECONNECT: See waylandvideo.c for more information! */
+#if 0 // TODO RECONNECT: See waylandvideo.c for more information!
 #if SDL_WAYLAND_CHECK_VERSION(broken, on, purpose)
 SDL_WAYLAND_SYM(int, wl_display_reconnect, (struct wl_display*))
 #endif
-#endif /* 0 */
+#endif // 0
 
 SDL_WAYLAND_INTERFACE(wl_seat_interface)
 SDL_WAYLAND_INTERFACE(wl_surface_interface)
@@ -221,7 +221,7 @@ SDL_WAYLAND_SYM(bool, libdecor_configuration_get_window_state, (struct libdecor_
 SDL_WAYLAND_SYM(int, libdecor_dispatch, (struct libdecor *, int))
 
 #if defined(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR) || SDL_LIBDECOR_CHECK_VERSION(0, 2, 0)
-/* Only found in libdecor 0.1.1 or higher, so failure to load them is not fatal. */
+// Only found in libdecor 0.1.1 or higher, so failure to load them is not fatal.
 SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_min_content_size, (const struct libdecor_frame *,\
                                                             int *,\
                                                             int *))
@@ -237,4 +237,4 @@ SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_max_content_size, (const struct lib
 #undef SDL_WAYLAND_SYM_OPT
 #undef SDL_WAYLAND_INTERFACE
 
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on

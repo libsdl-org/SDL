@@ -33,6 +33,6 @@ extern char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice
 extern int OFFSCREEN_Vulkan_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, VkInstance instance, const struct VkAllocationCallbacks *allocator, VkSurfaceKHR *surface);
 extern void OFFSCREEN_Vulkan_DestroySurface(SDL_VideoDevice *_this, VkInstance instance, VkSurfaceKHR surface, const struct VkAllocationCallbacks *allocator);
 
-#endif /* SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_VULKAN */
+#endif // SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_VULKAN
 
-#endif /* SDL_offscreenvulkan_h */
+#endif // SDL_offscreenvulkan_h

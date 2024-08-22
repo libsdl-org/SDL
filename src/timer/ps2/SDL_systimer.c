@@ -47,4 +47,4 @@ void SDL_SYS_DelayNS(Uint64 ns)
     nanosleep(&tv, NULL);
 }
 
-#endif /* SDL_TIMER_PS2 */
+#endif // SDL_TIMER_PS2

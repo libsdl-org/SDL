@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_PS2
 
-/* Semaphore functions for the PS2. */
+// Semaphore functions for the PS2.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,7 +35,7 @@ struct SDL_Semaphore
     s32 semid;
 };
 
-/* Create a semaphore */
+// Create a semaphore
 SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_Semaphore *sem;
@@ -43,7 +43,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 
     sem = (SDL_Semaphore *)SDL_malloc(sizeof(*sem));
     if (sem) {
-        /* TODO: Figure out the limit on the maximum value. */
+        // TODO: Figure out the limit on the maximum value.
         sema.init_count = initial_value;
         sema.max_count = 255;
         sema.option = 0;
@@ -59,7 +59,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
     return sem;
 }
 
-/* Free the semaphore */
+// Free the semaphore
 void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
     if (sem) {
@@ -104,7 +104,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     return 0; // Wait condition satisfied.
 }
 
-/* Returns the current count of the semaphore */
+// Returns the current count of the semaphore
 Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     ee_sema_t info;
@@ -137,4 +137,4 @@ int SDL_SignalSemaphore(SDL_Semaphore *sem)
     return 0;
 }
 
-#endif /* SDL_THREAD_PS2 */
+#endif // SDL_THREAD_PS2

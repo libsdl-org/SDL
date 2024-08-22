@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* This is the software implementation of the YUV texture support */
+// This is the software implementation of the YUV texture support
 
 #if SDL_HAVE_YUV
 
@@ -68,7 +68,7 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, int w, int h)
         }
     }
 
-    /* Find the pitch and offset values for the texture */
+    // Find the pitch and offset values for the texture
     switch (format) {
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
@@ -99,7 +99,7 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, int w, int h)
         break;
     }
 
-    /* We're all done.. */
+    // We're all done..
     return swdata;
 }
 
@@ -126,7 +126,7 @@ int SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
             int row;
             size_t length;
 
-            /* Copy the Y plane */
+            // Copy the Y plane
             src = (Uint8 *)pixels;
             dst = swdata->pixels + rect->y * swdata->w + rect->x;
             length = rect->w;
@@ -136,7 +136,7 @@ int SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
                 dst += swdata->w;
             }
 
-            /* Copy the next plane */
+            // Copy the next plane
             src = (Uint8 *)pixels + rect->h * pitch;
             dst = swdata->pixels + swdata->h * swdata->w;
             dst += rect->y / 2 * ((swdata->w + 1) / 2) + rect->x / 2;
@@ -147,7 +147,7 @@ int SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
                 dst += (swdata->w + 1) / 2;
             }
 
-            /* Copy the next plane */
+            // Copy the next plane
             src = (Uint8 *)pixels + rect->h * pitch + ((rect->h + 1) / 2) * ((pitch + 1) / 2);
             dst = swdata->pixels + swdata->h * swdata->w +
                   ((swdata->h + 1) / 2) * ((swdata->w + 1) / 2);
@@ -191,7 +191,7 @@ int SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
             int row;
             size_t length;
 
-            /* Copy the Y plane */
+            // Copy the Y plane
             src = (Uint8 *)pixels;
             dst = swdata->pixels + rect->y * swdata->w + rect->x;
             length = rect->w;
@@ -201,7 +201,7 @@ int SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
                 dst += swdata->w;
             }
 
-            /* Copy the next plane */
+            // Copy the next plane
             src = (Uint8 *)pixels + rect->h * pitch;
             dst = swdata->pixels + swdata->h * swdata->w;
             dst += 2 * ((rect->y + 1) / 2) * ((swdata->w + 1) / 2) + 2 * (rect->x / 2);
@@ -229,7 +229,7 @@ int SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rec
     int row;
     size_t length;
 
-    /* Copy the Y plane */
+    // Copy the Y plane
     src = Yplane;
     dst = swdata->pixels + rect->y * swdata->w + rect->x;
     length = rect->w;
@@ -239,7 +239,7 @@ int SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rec
         dst += swdata->w;
     }
 
-    /* Copy the U plane */
+    // Copy the U plane
     src = Uplane;
     if (swdata->format == SDL_PIXELFORMAT_IYUV) {
         dst = swdata->pixels + swdata->h * swdata->w;
@@ -255,7 +255,7 @@ int SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rec
         dst += (swdata->w + 1) / 2;
     }
 
-    /* Copy the V plane */
+    // Copy the V plane
     src = Vplane;
     if (swdata->format == SDL_PIXELFORMAT_YV12) {
         dst = swdata->pixels + swdata->h * swdata->w;
@@ -282,7 +282,7 @@ int SDL_SW_UpdateNVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect
     int row;
     size_t length;
 
-    /* Copy the Y plane */
+    // Copy the Y plane
     src = Yplane;
     dst = swdata->pixels + rect->y * swdata->w + rect->x;
     length = rect->w;
@@ -292,7 +292,7 @@ int SDL_SW_UpdateNVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect
         dst += swdata->w;
     }
 
-    /* Copy the UV or VU plane */
+    // Copy the UV or VU plane
     src = UVplane;
     dst = swdata->pixels + swdata->h * swdata->w;
     dst += rect->y * ((swdata->w + 1) / 2) + rect->x;
@@ -342,7 +342,7 @@ int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
 {
     int stretch;
 
-    /* Make sure we're set up to display in the desired format */
+    // Make sure we're set up to display in the desired format
     if (target_format != swdata->target_format && swdata->display) {
         SDL_DestroySurface(swdata->display);
         swdata->display = NULL;
@@ -402,4 +402,4 @@ void SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture *swdata)
     }
 }
 
-#endif /* SDL_HAVE_YUV */
+#endif // SDL_HAVE_YUV

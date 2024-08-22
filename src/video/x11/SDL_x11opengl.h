@@ -77,7 +77,7 @@ struct SDL_GLDriverData
     int (*glXGetSwapIntervalMESA)(void);
 };
 
-/* OpenGL functions */
+// OpenGL functions
 extern int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_FunctionPointer X11_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 extern void X11_GL_UnloadLibrary(SDL_VideoDevice *_this);
@@ -91,6 +91,6 @@ extern int X11_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
 extern int X11_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int X11_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 
-#endif /* SDL_VIDEO_OPENGL_GLX */
+#endif // SDL_VIDEO_OPENGL_GLX
 
-#endif /* SDL_x11opengl_h_ */
+#endif // SDL_x11opengl_h_

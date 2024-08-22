@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* Pressure-sensitive pen handling code for SDL */
+// Pressure-sensitive pen handling code for SDL
 
 #include "../SDL_hints_c.h"
 #include "SDL_events_c.h"

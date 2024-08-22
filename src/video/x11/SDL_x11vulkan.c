@@ -29,7 +29,7 @@
 #include "SDL_x11vulkan.h"
 
 #include <X11/Xlib.h>
-/*#include <xcb/xcb.h>*/
+// #include <xcb/xcb.h>
 
 #ifdef SDL_PLATFORM_OPENBSD
 #define DEFAULT_VULKAN "libvulkan.so"
@@ -56,7 +56,7 @@ int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         return SDL_SetError("Vulkan already loaded");
     }
 
-    /* Load the Vulkan loader library */
+    // Load the Vulkan loader library
     if (!path) {
         path = SDL_GetHint(SDL_HINT_VULKAN_LIBRARY);
     }

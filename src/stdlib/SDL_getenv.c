@@ -40,37 +40,37 @@
 #define HAVE_LOCAL_ENVIRONMENT
 #endif
 
-/* Put a variable into the environment */
-/* Note: Name may not contain a '=' character. (Reference: http://www.unix.com/man-page/Linux/3/setenv/) */
+// Put a variable into the environment
+// Note: Name may not contain a '=' character. (Reference: http://www.unix.com/man-page/Linux/3/setenv/)
 #ifdef HAVE_LIBC_ENVIRONMENT
 #if defined(HAVE_SETENV)
 int SDL_setenv(const char *name, const char *value, int overwrite)
 {
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
         return -1;
     }
 
     return setenv(name, value, overwrite);
 }
-/* We have a real environment table, but no real setenv? Fake it w/ putenv. */
+// We have a real environment table, but no real setenv? Fake it w/ putenv.
 #else
 int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     char *new_variable;
 
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
         return -1;
     }
 
     if (getenv(name) != NULL) {
         if (!overwrite) {
-            return 0; /* leave the existing one there. */
+            return 0; // leave the existing one there.
         }
     }
 
-    /* This leaks. Sorry. Get a better OS so we don't have to do this. */
+    // This leaks. Sorry. Get a better OS so we don't have to do this.
     SDL_asprintf(&new_variable, "%s=%s", name, value);
     if (!new_variable) {
         return -1;
@@ -81,14 +81,14 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
 #elif defined(HAVE_WIN32_ENVIRONMENT)
 int SDL_setenv(const char *name, const char *value, int overwrite)
 {
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
         return -1;
     }
 
     if (!overwrite) {
         if (GetEnvironmentVariableA(name, NULL, 0) > 0) {
-            return 0; /* asked not to overwrite existing value. */
+            return 0; // asked not to overwrite existing value.
         }
     }
     if (!SetEnvironmentVariableA(name, value)) {
@@ -96,9 +96,9 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
     }
     return 0;
 }
-#else /* roll our own */
+#else // roll our own
 
-/* We'll leak this, as environment variables are intended to persist past SDL_Quit() */
+// We'll leak this, as environment variables are intended to persist past SDL_Quit()
 static char **SDL_env;
 
 int SDL_setenv(const char *name, const char *value, int overwrite)
@@ -108,17 +108,17 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
     char **new_env;
     char *new_variable;
 
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
         return -1;
     }
 
-    /* See if it already exists */
+    // See if it already exists
     if (!overwrite && SDL_getenv(name)) {
         return 0;
     }
 
-    /* Allocate memory for the variable */
+    // Allocate memory for the variable
     len = SDL_strlen(name) + SDL_strlen(value) + 2;
     new_variable = (char *)SDL_malloc(len);
     if (!new_variable) {
@@ -129,15 +129,15 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
     value = new_variable + SDL_strlen(name) + 1;
     name = new_variable;
 
-    /* Actually put it into the environment */
+    // Actually put it into the environment
     added = 0;
     i = 0;
     if (SDL_env) {
-        /* Check to see if it's already there... */
+        // Check to see if it's already there...
         len = (value - name);
         for (; SDL_env[i]; ++i) {
             if (SDL_strncmp(SDL_env[i], name, len) == 0) {
-                /* If we found it, just replace the entry */
+                // If we found it, just replace the entry
                 SDL_free(SDL_env[i]);
                 SDL_env[i] = new_variable;
                 added = 1;
@@ -146,7 +146,7 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
         }
     }
 
-    /* Didn't find it in the environment, expand and add */
+    // Didn't find it in the environment, expand and add
     if (!added) {
         new_env = SDL_realloc(SDL_env, (i + 2) * sizeof(char *));
         if (new_env) {
@@ -166,18 +166,18 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
 #if defined(HAVE_UNSETENV)
 int SDL_unsetenv(const char *name)
 {
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
         return -1;
     }
 
     return unsetenv(name);
 }
-/* We have a real environment table, but no unsetenv? Fake it w/ putenv. */
+// We have a real environment table, but no unsetenv? Fake it w/ putenv.
 #else
 int SDL_unsetenv(const char *name)
 {
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
         return -1;
     }
@@ -189,7 +189,7 @@ int SDL_unsetenv(const char *name)
 #elif defined(HAVE_WIN32_ENVIRONMENT)
 int SDL_unsetenv(const char *name)
 {
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
         return -1;
     }
@@ -204,7 +204,7 @@ int SDL_unsetenv(const char *name)
 {
     size_t len, i;
 
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
         return -1;
     }
@@ -214,7 +214,7 @@ int SDL_unsetenv(const char *name)
         for (i = 0; SDL_env[i]; ++i) {
             if ((SDL_strncmp(SDL_env[i], name, len) == 0) &&
                 (SDL_env[i][len] == '=')) {
-                /* Just clear out this entry for now */
+                // Just clear out this entry for now
                 *SDL_env[i] = '\0';
                 break;
             }
@@ -224,16 +224,16 @@ int SDL_unsetenv(const char *name)
 }
 #endif // HAVE_LIBC_ENVIRONMENT
 
-/* Retrieve a variable named "name" from the environment */
+// Retrieve a variable named "name" from the environment
 #ifdef HAVE_LIBC_ENVIRONMENT
 const char *SDL_getenv(const char *name)
 {
 #ifdef SDL_PLATFORM_ANDROID
-    /* Make sure variables from the application manifest are available */
+    // Make sure variables from the application manifest are available
     Android_JNI_GetManifestEnvironmentVariables();
 #endif
 
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0') {
         return NULL;
     }
@@ -247,7 +247,7 @@ const char *SDL_getenv(const char *name)
     char *string = NULL;
     const char *retval = NULL;
 
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0') {
         return NULL;
     }
@@ -285,7 +285,7 @@ const char *SDL_getenv(const char *name)
     size_t len, i;
     char *value;
 
-    /* Input validation */
+    // Input validation
     if (!name || *name == '\0') {
         return NULL;
     }

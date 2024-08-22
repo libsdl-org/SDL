@@ -165,19 +165,19 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
         const char **path;
 
         dbus->message_iter_init(msg, &signal_iter);
-        /* Check if the parameters are what we expect */
+        // Check if the parameters are what we expect
         if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_UINT32)
             goto not_our_signal;
         dbus->message_iter_get_basic(&signal_iter, &result);
 
         if (result == 1 || result == 2) {
-            /* cancelled */
+            // cancelled
             const char *result_data[] = { NULL };
-            signal_data->callback(signal_data->userdata, result_data, -1); /* TODO: Set this to the last selected filter */
+            signal_data->callback(signal_data->userdata, result_data, -1); // TODO: Set this to the last selected filter
             goto handled;
         }
         else if (result) {
-            /* some error occurred */
+            // some error occurred
             signal_data->callback(signal_data->userdata, NULL, -1);
             goto handled;
         }
@@ -199,7 +199,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
             dbus->message_iter_get_basic(&array_entry, &method);
             if (!SDL_strcmp(method, "uris")) {
-                /* we only care about the selected file paths */
+                // we only care about the selected file paths
                 break;
             }
 
@@ -239,8 +239,8 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
             dbus->message_iter_get_basic(&uri_entry, &uri);
 
-            /* https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileChooser.html */
-            /* Returned paths will always start with 'file://'; SDL_URIToLocal() truncates it. */
+            // https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileChooser.html
+            // Returned paths will always start with 'file://'; SDL_URIToLocal() truncates it.
             char *decoded_uri = SDL_malloc(SDL_strlen(uri) + 1);
             if (SDL_URIToLocal(uri, decoded_uri)) {
                 path[current] = decoded_uri;
@@ -255,7 +255,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
             ++current;
         }
         path[length - 1] = NULL;
-        signal_data->callback(signal_data->userdata, path, -1); /* TODO: Fetch the index of the filter that was used */
+        signal_data->callback(signal_data->userdata, path, -1); // TODO: Fetch the index of the filter that was used
 cleanup:
         dbus->connection_remove_filter(conn, &DBus_MessageFilter, signal_data);
 
@@ -326,14 +326,14 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
         } else {
             const Uint64 xid = (Uint64)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
             if (xid) {
-                const size_t len = sizeof(X11_HANDLE_PREFIX) + 24; /* A 64-bit number can be 20 characters max. */
+                const size_t len = sizeof(X11_HANDLE_PREFIX) + 24; // A 64-bit number can be 20 characters max.
                 handle_str = SDL_malloc(len * sizeof(char));
                 if (!handle_str) {
                     callback(userdata, NULL, -1);
                     return;
                 }
 
-                /* The portal wants X11 window ID numbers in hex. */
+                // The portal wants X11 window ID numbers in hex.
                 SDL_snprintf(handle_str, len, "%s%" SDL_PRIx64, X11_HANDLE_PREFIX, xid);
             }
         }
@@ -448,7 +448,7 @@ int SDL_Portal_detect(void)
     DBusMessageIter reply_iter;
     static int portal_present = -1;
 
-    /* No need for this if the result is cached. */
+    // No need for this if the result is cached.
     if (portal_present != -1) {
         return portal_present;
     }
@@ -460,7 +460,7 @@ int SDL_Portal_detect(void)
         return 0;
     }
 
-    /* Use introspection to get the available services. */
+    // Use introspection to get the available services.
     msg = dbus->message_new_method_call(PORTAL_DESTINATION, PORTAL_PATH, "org.freedesktop.DBus.Introspectable", "Introspect");
     if (!msg) {
         goto done;
@@ -485,7 +485,7 @@ int SDL_Portal_detect(void)
      */
     dbus->message_iter_get_basic(&reply_iter, &reply_str);
     if (SDL_strstr(reply_str, PORTAL_INTERFACE)) {
-        portal_present = 1; /* Found it! */
+        portal_present = 1; // Found it!
     }
 
 done:
@@ -498,7 +498,7 @@ done:
 
 #else
 
-/* Dummy implementation to avoid compilation problems */
+// Dummy implementation to avoid compilation problems
 
 void SDL_Portal_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
 {
@@ -523,4 +523,4 @@ int SDL_Portal_detect(void)
     return 0;
 }
 
-#endif /* SDL_USE_LIBDBUS */
+#endif // SDL_USE_LIBDBUS

@@ -22,7 +22,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_WINRT
 
-/* SDL includes */
+// SDL includes
 #include "SDL_winrtevents_c.h"
 #include "SDL_winrtmouse_c.h"
 #include "SDL_winrtvideo_cpp.h"
@@ -34,7 +34,7 @@ extern "C" {
 #include "../../events/SDL_touch_c.h"
 }
 
-/* File-specific globals: */
+// File-specific globals:
 static SDL_TouchID WINRT_TouchID = 1;
 
 void WINRT_InitTouch(SDL_VideoDevice *_this)
@@ -246,7 +246,7 @@ void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::Poin
     Windows::Foundation::Point windowPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, TransformToSDLWindowSize);
 
     if (!WINRT_IsTouchEvent(pointerPoint)) {
-        /* For some odd reason Moved events are used for multiple mouse buttons */
+        // For some odd reason Moved events are used for multiple mouse buttons
         Uint8 button, pressed;
         if (WINRT_GetSDLButtonForPointerPoint(pointerPoint, &button, &pressed)) {
             SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, pressed, button);

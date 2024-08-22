@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_N3DS
 
-/* An implementation of semaphores using libctru's LightSemaphore */
+// An implementation of semaphores using libctru's LightSemaphore
 
 #include <3ds.h>
 
@@ -86,12 +86,12 @@ int WaitOnSemaphoreFor(SDL_Semaphore *sem, Sint64 timeout)
         if (LightSemaphore_TryAcquire(&sem->semaphore, 1) == 0) {
             return 0;
         }
-        /* 100 microseconds seems to be the sweet spot */
+        // 100 microseconds seems to be the sweet spot
         SDL_DelayNS(SDL_US_TO_NS(100));
         current_time = SDL_GetTicksNS();
     }
 
-    /* If we failed, yield to avoid starvation on busy waits */
+    // If we failed, yield to avoid starvation on busy waits
     SDL_DelayNS(1);
     return SDL_MUTEX_TIMEDOUT;
 }
@@ -114,4 +114,4 @@ int SDL_SignalSemaphore(SDL_Semaphore *sem)
     return 0;
 }
 
-#endif /* SDL_THREAD_N3DS */
+#endif // SDL_THREAD_N3DS

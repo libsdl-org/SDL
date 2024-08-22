@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* Things named "Master" were renamed to "Main" in macOS 12.0's SDK. */
+// Things named "Master" were renamed to "Main" in macOS 12.0's SDK.
 #include <AvailabilityMacros.h>
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 #define kIOMainPortDefault kIOMasterPortDefault

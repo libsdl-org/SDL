@@ -177,7 +177,7 @@ SDL_PropertiesID SDL_CreateProperties(void)
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (inserted) {
-        /* All done! */
+        // All done!
         return props;
     }
 
@@ -225,7 +225,7 @@ int SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
             SDL_Property *dst_property;
 
             if (src_property->cleanup) {
-                /* Can't copy properties with cleanup functions, we don't know how to duplicate the data */
+                // Can't copy properties with cleanup functions, we don't know how to duplicate the data
                 continue;
             }
 

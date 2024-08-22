@@ -28,7 +28,7 @@
 
 #if SDL_VIDEO_RENDER_VITA_GXM
 #include "../../render/vitagxm/SDL_render_vita_gxm_tools.h"
-#endif /* SDL_VIDEO_RENDER_VITA_GXM */
+#endif // SDL_VIDEO_RENDER_VITA_GXM
 
 int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
@@ -122,4 +122,4 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 #endif
 }
 
-#endif /* SDL_VIDEO_DRIVER_VITA */
+#endif // SDL_VIDEO_DRIVER_VITA

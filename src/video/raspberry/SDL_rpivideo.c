@@ -30,7 +30,7 @@
  * http://cgit.freedesktop.org/wayland/weston/tree/src/compositor-rpi.c
  */
 
-/* SDL internals */
+// SDL internals
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -39,7 +39,7 @@
 #include "../../core/linux/SDL_evdev.h"
 #endif
 
-/* RPI declarations */
+// RPI declarations
 #include "SDL_rpivideo.h"
 #include "SDL_rpievents_c.h"
 #include "SDL_rpiopengles.h"
@@ -70,7 +70,7 @@ static void RPI_GetRefreshRate(int *numerator, int *denominator)
         return;
     }
 
-    /* Failed to get display state, default to 60 */
+    // Failed to get display state, default to 60
     *numerator = 60;
     *denominator = 1;
 }
@@ -80,13 +80,13 @@ static SDL_VideoDevice *RPI_Create(void)
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
 
-    /* Initialize SDL_VideoDevice structure */
+    // Initialize SDL_VideoDevice structure
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         return NULL;
     }
 
-    /* Initialize internal data */
+    // Initialize internal data
     phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (!phdata) {
         SDL_free(device);
@@ -95,13 +95,13 @@ static SDL_VideoDevice *RPI_Create(void)
 
     device->internal = phdata;
 
-    /* Setup amount of available displays */
+    // Setup amount of available displays
     device->num_displays = 0;
 
-    /* Set device free function */
+    // Set device free function
     device->free = RPI_Destroy;
 
-    /* Setup all functions which we can handle */
+    // Setup all functions which we can handle
     device->VideoInit = RPI_VideoInit;
     device->VideoQuit = RPI_VideoQuit;
     device->CreateSDLWindow = RPI_CreateWindow;
@@ -135,11 +135,11 @@ VideoBootStrap RPI_bootstrap = {
     "rpi",
     "RPI Video Driver",
     RPI_Create,
-    NULL /* no ShowMessageBox implementation */
+    NULL // no ShowMessageBox implementation
 };
 
 /*****************************************************************************/
-/* SDL Video and Display initialization/handling functions                   */
+// SDL Video and Display initialization/handling functions
 /*****************************************************************************/
 
 static void AddDispManXDisplay(const int display_id)
@@ -152,7 +152,7 @@ static void AddDispManXDisplay(const int display_id)
 
     handle = vc_dispmanx_display_open(display_id);
     if (!handle) {
-        return; /* this display isn't available */
+        return; // this display isn't available
     }
 
     if (vc_dispmanx_display_get_info(handle, &modeinfo) < 0) {
@@ -160,23 +160,23 @@ static void AddDispManXDisplay(const int display_id)
         return;
     }
 
-    /* RPI_GetRefreshRate() doesn't distinguish between displays. I'm not sure the hardware distinguishes either */
+    // RPI_GetRefreshRate() doesn't distinguish between displays. I'm not sure the hardware distinguishes either
     SDL_zero(mode);
     mode.w = modeinfo.width;
     mode.h = modeinfo.height;
     RPI_GetRefreshRate(&mode.refresh_rate_numerator, &mode.refresh_rate_denominator);
 
-    /* 32 bpp for default */
+    // 32 bpp for default
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     SDL_zero(display);
     display.desktop_mode = mode;
 
-    /* Allocate display internal data */
+    // Allocate display internal data
     data = (SDL_DisplayData *)SDL_calloc(1, sizeof(SDL_DisplayData));
     if (!data) {
         vc_dispmanx_display_close(handle);
-        return; /* oh well */
+        return; // oh well
     }
 
     data->dispman_display = handle;
@@ -188,11 +188,11 @@ static void AddDispManXDisplay(const int display_id)
 
 int RPI_VideoInit(SDL_VideoDevice *_this)
 {
-    /* Initialize BCM Host */
+    // Initialize BCM Host
     bcm_host_init();
 
-    AddDispManXDisplay(DISPMANX_ID_MAIN_LCD);    /* your default display */
-    AddDispManXDisplay(DISPMANX_ID_FORCE_OTHER); /* an "other" display...maybe DSI-connected screen while HDMI is your main */
+    AddDispManXDisplay(DISPMANX_ID_MAIN_LCD);    // your default display
+    AddDispManXDisplay(DISPMANX_ID_FORCE_OTHER); // an "other" display...maybe DSI-connected screen while HDMI is your main
 
 #ifdef SDL_INPUT_LINUXEV
     if (SDL_EVDEV_Init() < 0) {
@@ -233,12 +233,12 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     uint32_t layer = SDL_RPI_VIDEOLAYER;
     const char *env;
 
-    /* Disable alpha, otherwise the app looks composed with whatever dispman is showing (X11, console,etc) */
+    // Disable alpha, otherwise the app looks composed with whatever dispman is showing (X11, console,etc)
     dispman_alpha.flags = DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS;
     dispman_alpha.opacity = 0xFF;
     dispman_alpha.mask = 0;
 
-    /* Allocate window internal data */
+    // Allocate window internal data
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!wdata) {
         return -1;
@@ -246,14 +246,14 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     display = SDL_GetVideoDisplayForWindow(window);
     displaydata = display->internal;
 
-    /* Windows have one size for now */
+    // Windows have one size for now
     window->w = display->desktop_mode.w;
     window->h = display->desktop_mode.h;
 
-    /* OpenGL ES is the law here, buddy */
+    // OpenGL ES is the law here, buddy
     window->flags |= SDL_WINDOW_OPENGL;
 
-    /* Create a dispman element and associate a window to it */
+    // Create a dispman element and associate a window to it
     dst_rect.x = 0;
     dst_rect.y = 0;
     dst_rect.width = window->w;
@@ -295,7 +295,7 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         return SDL_SetError("Could not create GLES window surface");
     }
 
-    /* Start generating vsync callbacks if necessary */
+    // Start generating vsync callbacks if necessary
     wdata->double_buffer = SDL_FALSE;
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
         wdata->vsync_cond = SDL_CreateCondition();
@@ -304,14 +304,14 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         vc_dispmanx_vsync_callback(displaydata->dispman_display, RPI_vsync_callback, (void *)wdata);
     }
 
-    /* Setup driver data for this window */
+    // Setup driver data for this window
     window->internal = wdata;
 
-    /* One window, it always has focus */
+    // One window, it always has focus
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 
-    /* Window has been successfully created */
+    // Window has been successfully created
     return 0;
 }
 
@@ -322,7 +322,7 @@ void RPI_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     if (data) {
         if (data->double_buffer) {
-            /* Wait for vsync, and then stop vsync callbacks and destroy related stuff, if needed */
+            // Wait for vsync, and then stop vsync callbacks and destroy related stuff, if needed
             SDL_LockMutex(data->vsync_cond_mutex);
             SDL_WaitCondition(data->vsync_cond, data->vsync_cond_mutex);
             SDL_UnlockMutex(data->vsync_cond_mutex);
@@ -372,4 +372,4 @@ void RPI_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-#endif /* SDL_VIDEO_DRIVER_RPI */
+#endif // SDL_VIDEO_DRIVER_RPI

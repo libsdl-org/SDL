@@ -64,7 +64,7 @@ int OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prope
     } else {
         offscreen_window->egl_surface = EGL_NO_SURFACE;
     }
-#endif /* SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_OPENGL_EGL
 
     return 0;
 }
@@ -87,4 +87,4 @@ void OFFSCREEN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
 }
-#endif /* SDL_VIDEO_DRIVER_OFFSCREEN */
+#endif // SDL_VIDEO_DRIVER_OFFSCREEN

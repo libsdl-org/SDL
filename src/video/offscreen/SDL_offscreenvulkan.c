@@ -45,7 +45,7 @@ static const char *s_defaultPaths[] = {
 #if defined( SDL_PLATFORM_APPLE )
 #include <dlfcn.h>
 
-/* Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF. */
+// Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF.
 #define DEFAULT_HANDLE RTLD_DEFAULT
 #endif
 
@@ -72,14 +72,14 @@ int OFFSCREEN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         return SDL_SetError("Vulkan already loaded");
     }
 
-    /* Load the Vulkan loader library */
+    // Load the Vulkan loader library
     if (!path) {
         path = SDL_GetHint(SDL_HINT_VULKAN_LIBRARY);
     }
 
 #if defined(SDL_PLATFORM_APPLE)
     if (!path) {
-        /* Handle the case where Vulkan Portability is linked statically. */
+        // Handle the case where Vulkan Portability is linked statically.
         vkGetInstanceProcAddr =
             (PFN_vkGetInstanceProcAddr)dlsym(DEFAULT_HANDLE,
                                              "vkGetInstanceProcAddr");
@@ -149,7 +149,7 @@ int OFFSCREEN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         SDL_SetError("Installed Vulkan doesn't implement the " VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME " extension");
         goto fail;
 #else
-        /*Let's at least leave a breadcrumb for people to find if they have issues*/
+        // Let's at least leave a breadcrumb for people to find if they have issues
         SDL_Log("Installed Vulkan doesn't implement the " VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME " extension");
 #endif
     }
@@ -202,7 +202,7 @@ char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this
             if ( hasHeadlessSurfaceExtension == SDL_TRUE ) {
                 *count = SDL_arraysize(returnExtensions);
             } else {
-                *count = SDL_arraysize(returnExtensions) - 1; /*assumes VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME is last*/
+                *count = SDL_arraysize(returnExtensions) - 1; // assumes VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME is last
             }
         }
 #       else

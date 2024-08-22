@@ -35,11 +35,11 @@ struct SDL_Condition
     std::condition_variable_any cpp_cond;
 };
 
-/* Create a condition variable */
+// Create a condition variable
 extern "C" SDL_Condition *
 SDL_CreateCondition(void)
 {
-    /* Allocate and initialize the condition variable */
+    // Allocate and initialize the condition variable
     try {
         SDL_Condition *cond = new SDL_Condition;
         return cond;
@@ -52,7 +52,7 @@ SDL_CreateCondition(void)
     }
 }
 
-/* Destroy a condition variable */
+// Destroy a condition variable
 extern "C" void
 SDL_DestroyCondition(SDL_Condition *cond)
 {
@@ -61,7 +61,7 @@ SDL_DestroyCondition(SDL_Condition *cond)
     }
 }
 
-/* Restart one of the threads that are waiting on the condition variable */
+// Restart one of the threads that are waiting on the condition variable
 extern "C" int
 SDL_SignalCondition(SDL_Condition *cond)
 {
@@ -73,7 +73,7 @@ SDL_SignalCondition(SDL_Condition *cond)
     return 0;
 }
 
-/* Restart all threads that are waiting on the condition variable */
+// Restart all threads that are waiting on the condition variable
 extern "C" int
 SDL_BroadcastCondition(SDL_Condition *cond)
 {

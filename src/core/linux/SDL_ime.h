@@ -32,4 +32,4 @@ extern SDL_bool SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 sta
 extern void SDL_IME_UpdateTextInputArea(SDL_Window *window);
 extern void SDL_IME_PumpEvents(void);
 
-#endif /* SDL_ime_h_ */
+#endif // SDL_ime_h_

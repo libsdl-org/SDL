@@ -38,7 +38,7 @@
 #include <pspirkeyb.h>
 #include <pspirkeyb_rawkeys.h>
 
-#define IRKBD_CONFIG_FILE NULL /* this will take ms0:/seplugins/pspirkeyb.ini */
+#define IRKBD_CONFIG_FILE NULL // this will take ms0:/seplugins/pspirkeyb.ini
 
 static int irkbd_ready = 0;
 static SDL_Scancode keymap[256];
@@ -67,7 +67,7 @@ int EventUpdate(void *data)
         SDL_WaitSemaphore(event_sem);
         sceHprmPeekCurrentKey((u32 *)&hprm);
         SDL_SignalSemaphore(event_sem);
-        /* Delay 1/60th of a second */
+        // Delay 1/60th of a second
         sceKernelDelayThread(1000000 / 60);
     }
     return 0;
@@ -84,7 +84,7 @@ void PSP_PumpEvents(SDL_VideoDevice *_this)
     keys = hprm;
     SDL_SignalSemaphore(event_sem);
 
-    /* HPRM Keyboard */
+    // HPRM Keyboard
     changed = old_keys ^ keys;
     old_keys = keys;
     if (changed) {
@@ -243,7 +243,7 @@ int PSP_EventInit(SDL_VideoDevice *_this)
         irkbd_ready = 0;
     }
 #endif
-    /* Start thread to read data */
+    // Start thread to read data
     if ((event_sem = SDL_CreateSemaphore(1)) == NULL) {
         return SDL_SetError("Can't create input semaphore");
     }
@@ -267,6 +267,6 @@ void PSP_EventQuit(SDL_VideoDevice *_this)
 #endif
 }
 
-/* end of SDL_pspevents.c ... */
+// end of SDL_pspevents.c ...
 
-#endif /* SDL_VIDEO_DRIVER_PSP */
+#endif // SDL_VIDEO_DRIVER_PSP

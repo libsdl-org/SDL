@@ -27,4 +27,4 @@ extern int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window
 extern int Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);
 extern void Emscripten_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_emscriptenframebuffer_h_ */
+#endif // SDL_emscriptenframebuffer_h_

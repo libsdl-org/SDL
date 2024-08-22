@@ -93,7 +93,7 @@ static int CreateTempFD(off_t size)
             return -1;
         }
 
-        /* Need to manually unlink the temp files, or they can persist after close and fill up the temp storage. */
+        // Need to manually unlink the temp files, or they can persist after close and fill up the temp storage.
         unlink(tmp_path);
     }
 
@@ -107,7 +107,7 @@ static int CreateTempFD(off_t size)
 
 static void buffer_handle_release(void *data, struct wl_buffer *wl_buffer)
 {
-    /* NOP */
+    // NOP
 }
 
 static struct wl_buffer_listener buffer_listener = {

@@ -32,7 +32,7 @@
 
 void DUMMY_PumpEvents(SDL_VideoDevice *_this)
 {
-    /* do nothing. */
+    // do nothing.
 }
 
-#endif /* SDL_VIDEO_DRIVER_DUMMY */
+#endif // SDL_VIDEO_DRIVER_DUMMY

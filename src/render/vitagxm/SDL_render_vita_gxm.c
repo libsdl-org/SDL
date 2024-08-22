@@ -36,7 +36,7 @@
 
 #include <psp2/common_dialog.h>
 
-/* #define DEBUG_RAZOR */
+// #define DEBUG_RAZOR
 
 #ifdef DEBUG_RAZOR
 #include <psp2/sysmodule.h>
@@ -915,7 +915,7 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
         data->drawstate.texture = texture;
     }
 
-    /* all drawing commands use this */
+    // all drawing commands use this
     sceGxmSetVertexStream(data->gxm_context, 0, (const void *)cmd->data.draw.first);
 
     return 0;
@@ -923,7 +923,7 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
 
 static void VITA_GXM_InvalidateCachedState(SDL_Renderer *renderer)
 {
-    /* currently this doesn't do anything. If this needs to do something (and someone is mixing their own rendering calls in!), update this. */
+    // currently this doesn't do anything. If this needs to do something (and someone is mixing their own rendering calls in!), update this.
 }
 
 static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
@@ -983,13 +983,13 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
             break;
         }
 
-        case SDL_RENDERCMD_FILL_RECTS: /* unused */
+        case SDL_RENDERCMD_FILL_RECTS: // unused
             break;
 
-        case SDL_RENDERCMD_COPY: /* unused */
+        case SDL_RENDERCMD_COPY: // unused
             break;
 
-        case SDL_RENDERCMD_COPY_EX: /* unused */
+        case SDL_RENDERCMD_COPY_EX: // unused
             break;
 
         case SDL_RENDERCMD_DRAW_POINTS:
@@ -1006,11 +1006,11 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
             while (nextcmd) {
                 const SDL_RenderCommandType nextcmdtype = nextcmd->command;
                 if (nextcmdtype != thiscmdtype) {
-                    break; /* can't go any further on this draw call, different render command up next. */
+                    break; // can't go any further on this draw call, different render command up next.
                 } else if (nextcmd->data.draw.texture != thistexture || nextcmd->data.draw.blend != thisblend) {
-                    break; /* can't go any further on this draw call, different texture/blendmode copy up next. */
+                    break; // can't go any further on this draw call, different texture/blendmode copy up next.
                 } else {
-                    finalcmd = nextcmd; /* we can combine copy operations here. Mark this one as the furthest okay command. */
+                    finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
                     count += nextcmd->data.draw.count;
                 }
                 nextcmd = nextcmd->next;
@@ -1036,7 +1036,7 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
                 }
             }
 
-            cmd = finalcmd; /* skip any copy commands we just combined in here. */
+            cmd = finalcmd; // skip any copy commands we just combined in here.
             break;
         }
 
@@ -1099,7 +1099,7 @@ static SDL_Surface *VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_
     read_pixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
                 rect->w, rect->h, surface->pixels);
 
-    /* Flip the rows to be top-down if necessary */
+    // Flip the rows to be top-down if necessary
 
     if (!renderer->target) {
         SDL_bool isstack;
@@ -1204,4 +1204,4 @@ static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
     }
 }
 
-#endif /* SDL_VIDEO_RENDER_VITA_GXM */
+#endif // SDL_VIDEO_RENDER_VITA_GXM

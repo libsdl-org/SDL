@@ -37,4 +37,4 @@ struct SDL_CursorData
 extern void RPI_InitMouse(SDL_VideoDevice *_this);
 extern void RPI_QuitMouse(SDL_VideoDevice *_this);
 
-#endif /* SDL_RPI_mouse_h_ */
+#endif // SDL_RPI_mouse_h_

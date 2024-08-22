@@ -29,7 +29,7 @@
 
 // just turn off clang-format for this whole file, this INDENT_OFF stuff on
 //  each EM_ASM section is ugly.
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 
 static Uint8 *EMSCRIPTENAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
@@ -346,6 +346,6 @@ AudioBootStrap EMSCRIPTENAUDIO_bootstrap = {
     "emscripten", "SDL emscripten audio driver", EMSCRIPTENAUDIO_Init, SDL_FALSE
 };
 
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on
 
 #endif // SDL_AUDIO_DRIVER_EMSCRIPTEN

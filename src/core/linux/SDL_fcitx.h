@@ -32,4 +32,4 @@ extern SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 s
 extern void SDL_Fcitx_UpdateTextInputArea(SDL_Window *window);
 extern void SDL_Fcitx_PumpEvents(void);
 
-#endif /* SDL_fcitx_h_ */
+#endif // SDL_fcitx_h_

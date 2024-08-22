@@ -25,4 +25,4 @@
 
 extern int SDL_SendClipboardUpdate(void);
 
-#endif /* SDL_clipboardevents_c_h_ */
+#endif // SDL_clipboardevents_c_h_

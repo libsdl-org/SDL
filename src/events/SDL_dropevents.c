@@ -20,12 +20,12 @@
 */
 #include "SDL_internal.h"
 
-/* Drag and drop event handling code for SDL */
+// Drag and drop event handling code for SDL
 
 #include "SDL_events_c.h"
 #include "SDL_dropevents_c.h"
 
-#include "../video/SDL_sysvideo.h" /* for SDL_Window internals. */
+#include "../video/SDL_sysvideo.h" // for SDL_Window internals.
 
 static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *source, const char *data, float x, float y)
 {
@@ -34,7 +34,7 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
     static float last_drop_y = 0;
     int posted = 0;
 
-    /* Post the event, if desired */
+    // Post the event, if desired
     if (SDL_EventEnabled(evtype)) {
         const SDL_bool need_begin = window ? !window->is_dropping : !app_is_dropping;
         SDL_Event event;

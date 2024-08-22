@@ -31,4 +31,4 @@ extern int X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
                                        const SDL_Rect *rects, int numrects);
 extern void X11_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_x11framebuffer_h_ */
+#endif // SDL_x11framebuffer_h_

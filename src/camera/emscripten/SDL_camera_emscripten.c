@@ -30,7 +30,7 @@
 
 // just turn off clang-format for this whole file, this INDENT_OFF stuff on
 //  each EM_ASM section is ugly.
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 
 EM_JS_DEPS(sdlcamera, "$dynCall");
 
@@ -261,7 +261,7 @@ CameraBootStrap EMSCRIPTENCAMERA_bootstrap = {
     "emscripten", "SDL Emscripten MediaStream camera driver", EMSCRIPTENCAMERA_Init, SDL_FALSE
 };
 
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on
 
 #endif // SDL_CAMERA_DRIVER_EMSCRIPTEN
 

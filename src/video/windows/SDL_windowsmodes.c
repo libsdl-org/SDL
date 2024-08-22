@@ -30,13 +30,13 @@
 #include <dxgi1_6.h>
 #endif
 
-/* Windows CE compatibility */
+// Windows CE compatibility
 #ifndef CDS_FULLSCREEN
 #define CDS_FULLSCREEN 0
 #endif
 
-/* #define DEBUG_MODES */
-/* #define HIGHDPI_DEBUG_VERBOSE */
+// #define DEBUG_MODES
+// #define HIGHDPI_DEBUG_VERBOSE
 
 static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode)
 {
@@ -45,7 +45,7 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
 
     data->DeviceMode.dmFields = (DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY | DM_DISPLAYFLAGS);
 
-    /* NOLINTNEXTLINE(bugprone-assignment-in-if-condition): No simple way to extract the assignment */
+    // NOLINTNEXTLINE(bugprone-assignment-in-if-condition): No simple way to extract the assignment
     if (index == ENUM_CURRENT_SETTINGS && (hdc = CreateDC(deviceName, NULL, NULL, NULL)) != NULL) {
         char bmi_data[sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD)];
         LPBITMAPINFO bmi;
@@ -85,7 +85,7 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
             }
         }
     } else if (mode->format == SDL_PIXELFORMAT_UNKNOWN) {
-        /* FIXME: Can we tell what this will be? */
+        // FIXME: Can we tell what this will be?
         if ((data->DeviceMode.dmFields & DM_BITSPERPEL) == DM_BITSPERPEL) {
             switch (data->DeviceMode.dmBitsPerPel) {
             case 32:
@@ -163,7 +163,7 @@ static SDL_DisplayOrientation WIN_GetNaturalOrientation(DEVMODE *mode)
     int width = mode->dmPelsWidth;
     int height = mode->dmPelsHeight;
 
-    /* Use unrotated width/height to guess orientation */
+    // Use unrotated width/height to guess orientation
     if (mode->dmDisplayOrientation == DMDO_90 || mode->dmDisplayOrientation == DMDO_270) {
         int temp = width;
         width = height;
@@ -210,7 +210,7 @@ static SDL_DisplayOrientation WIN_GetDisplayOrientation(DEVMODE *mode)
 
 static void WIN_GetRefreshRate(void *dxgi_output, DEVMODE *mode, int *numerator, int *denominator)
 {
-    /* We're not currently using DXGI to query display modes, so fake NTSC timings */
+    // We're not currently using DXGI to query display modes, so fake NTSC timings
     switch (mode->dmDisplayFrequency) {
     case 119:
     case 59:
@@ -257,7 +257,7 @@ static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
         }
     }
     if (dpi == 0) {
-        /* Window 8.0 and below: same DPI for all monitors */
+        // Window 8.0 and below: same DPI for all monitors
         HDC hdc = GetDC(NULL);
         if (hdc) {
             dpi = GetDeviceCaps(hdc, LOGPIXELSX);
@@ -265,7 +265,7 @@ static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
         }
     }
     if (dpi == 0) {
-        /* Safe default */
+        // Safe default
         dpi = USER_DEFAULT_SCREEN_DPI;
     }
     return dpi / (float)USER_DEFAULT_SCREEN_DPI;
@@ -296,7 +296,7 @@ static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, void *dxgi_output, HM
     mode->h = data->DeviceMode.dmPelsHeight;
     WIN_GetRefreshRate(dxgi_output, &data->DeviceMode, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
 
-    /* Fill in the mode information */
+    // Fill in the mode information
     WIN_UpdateDisplayMode(_this, deviceName, index, mode);
 
     if (natural_orientation) {
@@ -524,7 +524,7 @@ static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
         white_level.header.size = sizeof(white_level);
         white_level.header.adapterId = path_info.targetInfo.adapterId;
         white_level.header.id = path_info.targetInfo.id;
-        /* WIN_GetMonitorPathInfo() succeeded: DisplayConfigGetDeviceInfo is not NULL */
+        // WIN_GetMonitorPathInfo() succeeded: DisplayConfigGetDeviceInfo is not NULL
         if (videodata->DisplayConfigGetDeviceInfo(&white_level.header) == ERROR_SUCCESS &&
             white_level.SDRWhiteLevel > 0) {
             SDR_white_level = (white_level.SDRWhiteLevel / 1000.0f);
@@ -546,7 +546,7 @@ static void WIN_GetHDRProperties(SDL_VideoDevice *_this, HMONITOR hMonitor, SDL_
         }
     }
 }
-#endif /* HAVE_DXGI1_6_H */
+#endif // HAVE_DXGI1_6_H
 
 static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index)
 {
@@ -580,12 +580,12 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
             SDL_bool changed_bounds = SDL_FALSE;
 
             if (internal->state != DisplayRemoved) {
-                /* We've already enumerated this display, don't move it */
+                // We've already enumerated this display, don't move it
                 return;
             }
 
             if (index >= _this->num_displays) {
-                /* This should never happen due to the check above, but just in case... */
+                // This should never happen due to the check above, but just in case...
                 return;
             }
 
@@ -774,7 +774,7 @@ int WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
             break;
         }
         if (SDL_ISPIXELFORMAT_INDEXED(mode.format)) {
-            /* We don't support palettized modes now */
+            // We don't support palettized modes now
             SDL_free(mode.internal);
             continue;
         }
@@ -920,7 +920,7 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
 
 void WIN_QuitModes(SDL_VideoDevice *_this)
 {
-    /* All fullscreen windows should have restored modes by now */
+    // All fullscreen windows should have restored modes by now
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINDOWS */
+#endif // SDL_VIDEO_DRIVER_WINDOWS

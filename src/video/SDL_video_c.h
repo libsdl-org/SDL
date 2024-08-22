@@ -65,4 +65,4 @@ extern int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Ui
 const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name);
 #endif
 
-#endif /* SDL_video_c_h_ */
+#endif // SDL_video_c_h_

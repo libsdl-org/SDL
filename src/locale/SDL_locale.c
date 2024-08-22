@@ -39,22 +39,22 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
         ++csv;
     }
     if (!csv || !*csv) {
-        return NULL; /* nothing to report */
+        return NULL; // nothing to report
     }
 
-    num_locales = 1; /* at least one */
+    num_locales = 1; // at least one
     for (ptr = csv; *ptr; ptr++) {
         if (*ptr == ',') {
             num_locales++;
         }
     }
 
-    slen = ((size_t)(ptr - csv)) + 1; /* SDL_strlen(csv) + 1 */
+    slen = ((size_t)(ptr - csv)) + 1; // SDL_strlen(csv) + 1
     alloclen = ((num_locales + 1) * sizeof(SDL_Locale *)) + (num_locales * sizeof(SDL_Locale)) + slen;
 
     retval = (SDL_Locale **)SDL_calloc(1, alloclen);
     if (!retval) {
-        return NULL; /* oh well */
+        return NULL; // oh well
     }
     loc = (SDL_Locale *)(retval + (num_locales + 1));
     ptr = (char *)(loc + num_locales);
@@ -62,9 +62,9 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
 
     i = 0;
     retval[i++] = loc;
-    while (SDL_TRUE) { /* parse out the string */
+    while (SDL_TRUE) { // parse out the string
         while (SDL_isspace(*ptr)) {
-            ptr++; /* skip whitespace. */
+            ptr++; // skip whitespace.
         }
 
         if (*ptr == '\0') {
@@ -77,7 +77,7 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
                 *(ptr++) = '\0';
                 loc->country = ptr;
             } else if (SDL_isspace(ch)) {
-                *(ptr++) = '\0'; /* trim ending whitespace and keep going. */
+                *(ptr++) = '\0'; // trim ending whitespace and keep going.
             } else if (ch == ',') {
                 *(ptr++) = '\0';
                 loc++;
@@ -86,7 +86,7 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
             } else if (ch == '\0') {
                 break;
             } else {
-                ptr++; /* just keep going, still a valid string */
+                ptr++; // just keep going, still a valid string
             }
         }
     }
@@ -100,7 +100,7 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
 
 SDL_Locale **SDL_GetPreferredLocales(int *count)
 {
-    char locbuf[128]; /* enough for 21 "xx_YY," language strings. */
+    char locbuf[128]; // enough for 21 "xx_YY," language strings.
     const char *hint = SDL_GetHint(SDL_HINT_PREFERRED_LOCALES);
     if (hint) {
         SDL_strlcpy(locbuf, hint, sizeof(locbuf));

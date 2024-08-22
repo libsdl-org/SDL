@@ -87,13 +87,13 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
 
     incy = ((Uint64)info->src_h << 16) / info->dst_h;
     incx = ((Uint64)info->src_w << 16) / info->dst_w;
-    posy = incy / 2; /* start at the middle of pixel */
+    posy = incy / 2; // start at the middle of pixel
 
     while (info->dst_h--) {
         Uint8 *src = 0;
         Uint8 *dst = info->dst;
         int n = info->dst_w;
-        posx = incx / 2; /* start at the middle of pixel */
+        posx = incx / 2; // start at the middle of pixel
         srcy = posy >> 16;
         while (n--) {
             srcx = posx >> 16;
@@ -136,12 +136,12 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                 }
                 break;
             case SlowBlitPixelAccess_Large:
-                /* Handled in SDL_Blit_Slow_Float() */
+                // Handled in SDL_Blit_Slow_Float()
                 break;
             }
 
             if (flags & SDL_COPY_COLORKEY) {
-                /* srcpixel isn't set for 24 bpp */
+                // srcpixel isn't set for 24 bpp
                 if (srcbpp == 3) {
                     srcpixel = (srcR << src_fmt->Rshift) |
                                (srcG << src_fmt->Gshift) | (srcB << src_fmt->Bshift);
@@ -190,11 +190,11 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                     }
                     break;
                 case SlowBlitPixelAccess_Large:
-                    /* Handled in SDL_Blit_Slow_Float() */
+                    // Handled in SDL_Blit_Slow_Float()
                     break;
                 }
             } else {
-                /* don't care */
+                // don't care
             }
 
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -318,7 +318,7 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                 break;
             }
             case SlowBlitPixelAccess_Large:
-                /* Handled in SDL_Blit_Slow_Float() */
+                // Handled in SDL_Blit_Slow_Float()
                 break;
             }
 
@@ -394,25 +394,25 @@ static Uint16 float_to_half(float a)
     ir = (ia >> 16) & 0x8000;
     if ((ia & 0x7f800000) == 0x7f800000) {
         if ((ia & 0x7fffffff) == 0x7f800000) {
-            ir |= 0x7c00; /* infinity */
+            ir |= 0x7c00; // infinity
         } else {
-            ir |= 0x7e00 | ((ia >> (24 - 11)) & 0x1ff); /* NaN, quietened */
+            ir |= 0x7e00 | ((ia >> (24 - 11)) & 0x1ff); // NaN, quietened
         }
     } else if ((ia & 0x7f800000) >= 0x33000000) {
         int shift = (int)((ia >> 23) & 0xff) - 127;
         if (shift > 15) {
-            ir |= 0x7c00; /* infinity */
+            ir |= 0x7c00; // infinity
         } else {
-            ia = (ia & 0x007fffff) | 0x00800000; /* extract mantissa */
-            if (shift < -14) { /* denormal */
+            ia = (ia & 0x007fffff) | 0x00800000; // extract mantissa
+            if (shift < -14) { // denormal
                 ir |= ia >> (-1 - shift);
                 ia = ia << (32 - (-1 - shift));
-            } else { /* normal */
+            } else { // normal
                 ir |= ia >> (24 - 11);
                 ia = ia << (32 - (24 - 11));
                 ir = ir + ((14 + shift) << 10);
             }
-            /* IEEE-754 round to nearest of even */
+            // IEEE-754 round to nearest of even
             if ((ia > 0x80000000) || ((ia == 0x80000000) && (ir & 1))) {
                 ir++;
             }
@@ -506,7 +506,7 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_
             }
             break;
         default:
-            /* Unknown array type */
+            // Unknown array type
             v[0] = v[1] = v[2] = v[3] = 0.0f;
             break;
         }
@@ -548,14 +548,14 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_
             fR = v[3];
             break;
         default:
-            /* Unknown array order */
+            // Unknown array order
             fA = fR = fG = fB = 0.0f;
             break;
         }
         break;
     }
 
-    /* Convert to nits so src and dst are guaranteed to be linear and in the same units */
+    // Convert to nits so src and dst are guaranteed to be linear and in the same units
     switch (SDL_COLORSPACETRANSFER(colorspace)) {
     case SDL_TRANSFER_CHARACTERISTICS_SRGB:
         fR = SDL_sRGBtoLinear(fR);
@@ -573,7 +573,7 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_
         fB /= SDR_white_point;
         break;
     default:
-        /* Unknown, leave it alone */
+        // Unknown, leave it alone
         break;
     }
 
@@ -590,7 +590,7 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL
     Uint32 pixel;
     float v[4];
 
-    /* We converted to nits so src and dst are guaranteed to be linear and in the same units */
+    // We converted to nits so src and dst are guaranteed to be linear and in the same units
     switch (SDL_COLORSPACETRANSFER(colorspace)) {
     case SDL_TRANSFER_CHARACTERISTICS_SRGB:
         fR = SDL_sRGBfromLinear(fR);
@@ -608,7 +608,7 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL
         fB *= SDR_white_point;
         break;
     default:
-        /* Unknown, leave it alone */
+        // Unknown, leave it alone
         break;
     }
 
@@ -691,7 +691,7 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL
             v[3] = fR;
             break;
         default:
-            /* Unknown array order */
+            // Unknown array order
             v[0] = v[1] = v[2] = v[3] = 0.0f;
             break;
         }
@@ -721,7 +721,7 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL
             }
             break;
         default:
-            /* Unknown array type */
+            // Unknown array type
             break;
         }
         break;
@@ -849,7 +849,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     src_headroom = SDL_GetSurfaceHDRHeadroom(info->src_surface, src_colorspace);
     dst_headroom = SDL_GetSurfaceHDRHeadroom(info->dst_surface, dst_colorspace);
     if (dst_headroom == 0.0f) {
-        /* The destination will have the same headroom as the source */
+        // The destination will have the same headroom as the source
         dst_headroom = src_headroom;
         SDL_SetFloatProperty(SDL_GetSurfaceProperties(info->dst_surface), SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, dst_headroom);
     }
@@ -874,7 +874,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
             tonemap.data.chrome.a = (dst_headroom / (src_headroom * src_headroom));
             tonemap.data.chrome.b = (1.0f / dst_headroom);
 
-            /* We'll convert to BT.2020 primaries for the tonemap operation */
+            // We'll convert to BT.2020 primaries for the tonemap operation
             tonemap.data.chrome.color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, SDL_COLOR_PRIMARIES_BT2020);
             if (tonemap.data.chrome.color_primaries_matrix) {
                 src_primaries = SDL_COLOR_PRIMARIES_BT2020;
@@ -894,13 +894,13 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
 
     incy = ((Uint64)info->src_h << 16) / info->dst_h;
     incx = ((Uint64)info->src_w << 16) / info->dst_w;
-    posy = incy / 2; /* start at the middle of pixel */
+    posy = incy / 2; // start at the middle of pixel
 
     while (info->dst_h--) {
         Uint8 *src = 0;
         Uint8 *dst = info->dst;
         int n = info->dst_w;
-        posx = incx / 2; /* start at the middle of pixel */
+        posx = incx / 2; // start at the middle of pixel
         srcy = posy >> 16;
         while (n--) {
             srcx = posx >> 16;
@@ -917,12 +917,12 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
             }
 
             if (flags & SDL_COPY_COLORKEY) {
-                /* colorkey isn't supported */
+                // colorkey isn't supported
             }
             if ((flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL))) {
                 ReadFloatPixel(dst, dst_access, dst_fmt, dst_pal, dst_colorspace, dst_white_point, &dstR, &dstG, &dstB, &dstA);
             } else {
-                /* don't care */
+                // don't care
                 dstR = dstG = dstB = dstA = 0.0f;
             }
 

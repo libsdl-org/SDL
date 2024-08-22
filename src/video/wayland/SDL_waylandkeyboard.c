@@ -122,10 +122,10 @@ int Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prope
 
             zwp_text_input_v3_enable(input->text_input->text_input);
 
-            /* Now that it's enabled, set the input properties */
+            // Now that it's enabled, set the input properties
             zwp_text_input_v3_set_content_type(input->text_input->text_input, hint, purpose);
             if (!SDL_RectEmpty(rect)) {
-                /* This gets reset on enable so we have to cache it */
+                // This gets reset on enable so we have to cache it
                 zwp_text_input_v3_set_cursor_rectangle(input->text_input->text_input,
                                                        rect->x,
                                                        rect->y,
@@ -137,7 +137,7 @@ int Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prope
     }
 
     if (input && input->xkb.compose_state) {
-        /* Reset compose state so composite and dead keys don't carry over */
+        // Reset compose state so composite and dead keys don't carry over
         WAYLAND_xkb_compose_state_reset(input->xkb.compose_state);
     }
 
@@ -162,7 +162,7 @@ int Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
 
     if (input && input->xkb.compose_state) {
-        /* Reset compose state so composite and dead keys don't carry over */
+        // Reset compose state so composite and dead keys don't carry over
         WAYLAND_xkb_compose_state_reset(input->xkb.compose_state);
     }
     return 0;
@@ -206,4 +206,4 @@ SDL_bool Wayland_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return !haskeyboard && hastextmanager;
 }
 
-#endif /* SDL_VIDEO_DRIVER_WAYLAND */
+#endif // SDL_VIDEO_DRIVER_WAYLAND

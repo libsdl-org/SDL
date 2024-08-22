@@ -22,7 +22,7 @@
 
 #ifdef SDL_JOYSTICK_VIRTUAL
 
-/* This is the virtual implementation of the SDL joystick API */
+// This is the virtual implementation of the SDL joystick API
 
 #include "SDL_virtualjoystick_c.h"
 #include "../SDL_sysjoystick.h"
@@ -70,7 +70,7 @@ static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
         return;
     }
 
-    /* Remove hwdata from SDL-global list */
+    // Remove hwdata from SDL-global list
     for (cur = g_VJoys; cur; prev = cur, cur = cur->next) {
         if (hwdata == cur) {
             if (prev) {
@@ -206,7 +206,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
             }
         }
 
-        /* Find the trigger axes */
+        // Find the trigger axes
         axis = 0;
         for (i = 0; axis < hwdata->desc.naxes && i < SDL_GAMEPAD_AXIS_MAX; ++i) {
             if (hwdata->desc.axis_mask & (1 << i)) {
@@ -223,7 +223,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
 
     hwdata->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, NULL, name, 'v', (Uint8)hwdata->desc.type);
 
-    /* Allocate fields for different control-types */
+    // Allocate fields for different control-types
     if (hwdata->desc.naxes > 0) {
         hwdata->axes = (Sint16 *)SDL_calloc(hwdata->desc.naxes, sizeof(*hwdata->axes));
         if (!hwdata->axes) {
@@ -231,7 +231,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
             return 0;
         }
 
-        /* Trigger axes are at minimum value at rest */
+        // Trigger axes are at minimum value at rest
         if (axis_triggerleft >= 0) {
             hwdata->axes[axis_triggerleft] = SDL_JOYSTICK_AXIS_MIN;
         }
@@ -299,10 +299,10 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         }
     }
 
-    /* Allocate an instance ID for this device */
+    // Allocate an instance ID for this device
     hwdata->instance_id = SDL_GetNextObjectID();
 
-    /* Add virtual joystick to SDL-global lists */
+    // Add virtual joystick to SDL-global lists
     if (g_VJoys) {
         joystick_hwdata *last;
 
@@ -497,7 +497,7 @@ static void VIRTUAL_JoystickDetect(void)
 
 static SDL_bool VIRTUAL_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    /* We don't override any other drivers... or do we? */
+    // We don't override any other drivers... or do we?
     return SDL_FALSE;
 }
 
@@ -977,4 +977,4 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver = {
     VIRTUAL_JoystickGetGamepadMapping
 };
 
-#endif /* SDL_JOYSTICK_VIRTUAL */
+#endif // SDL_JOYSTICK_VIRTUAL

@@ -30,4 +30,4 @@
 
 extern int SDL_IOReady(int fd, int flags, Sint64 timeoutNS);
 
-#endif /* SDL_poll_h_ */
+#endif // SDL_poll_h_

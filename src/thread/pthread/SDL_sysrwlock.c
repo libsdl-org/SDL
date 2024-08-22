@@ -33,7 +33,7 @@ SDL_RWLock *SDL_CreateRWLock(void)
 {
     SDL_RWLock *rwlock;
 
-    /* Allocate the structure */
+    // Allocate the structure
     rwlock = (SDL_RWLock *)SDL_calloc(1, sizeof(*rwlock));
     if (rwlock) {
         if (pthread_rwlock_init(&rwlock->id, NULL) != 0) {

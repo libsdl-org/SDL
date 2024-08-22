@@ -26,7 +26,7 @@
 extern "C" SDL_bool
 SDL_GetPowerInfo_WinRT(SDL_PowerState *state, int *seconds, int *percent)
 {
-    /* TODO, WinRT: Battery info is available on at least one WinRT platform (Windows Phone 8).  Implement SDL_GetPowerInfo_WinRT as appropriate. */
+    // TODO, WinRT: Battery info is available on at least one WinRT platform (Windows Phone 8).  Implement SDL_GetPowerInfo_WinRT as appropriate.
     /* Notes:
          - the Win32 function, GetSystemPowerStatus, is not available for use on WinRT
          - Windows Phone 8 has a 'Battery' class, which is documented as available for C++
@@ -35,5 +35,5 @@ SDL_GetPowerInfo_WinRT(SDL_PowerState *state, int *seconds, int *percent)
     return SDL_FALSE;
 }
 
-#endif /* SDL_POWER_WINRT */
-#endif /* SDL_POWER_DISABLED */
+#endif // SDL_POWER_WINRT
+#endif // SDL_POWER_DISABLED

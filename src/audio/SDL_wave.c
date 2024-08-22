@@ -24,14 +24,14 @@
 #include <limits.h>
 #endif
 #ifndef INT_MAX
-/* Make a lucky guess. */
+// Make a lucky guess.
 #define INT_MAX SDL_MAX_SINT32
 #endif
 #ifndef SIZE_MAX
 #define SIZE_MAX ((size_t)-1)
 #endif
 
-/* Microsoft WAVE file loading routines */
+// Microsoft WAVE file loading routines
 
 #include "SDL_wave.h"
 #include "SDL_sysaudio.h"
@@ -52,17 +52,17 @@ static int SafeMult(size_t *f1, size_t f2)
 
 typedef struct ADPCM_DecoderState
 {
-    Uint32 channels;        /* Number of channels. */
-    size_t blocksize;       /* Size of an ADPCM block in bytes. */
-    size_t blockheadersize; /* Size of an ADPCM block header in bytes. */
-    size_t samplesperblock; /* Number of samples per channel in an ADPCM block. */
-    size_t framesize;       /* Size of a sample frame (16-bit PCM) in bytes. */
-    Sint64 framestotal;     /* Total number of sample frames. */
-    Sint64 framesleft;      /* Number of sample frames still to be decoded. */
-    void *ddata;            /* Decoder data from initialization. */
-    void *cstate;           /* Decoding state for each channel. */
+    Uint32 channels;        // Number of channels.
+    size_t blocksize;       // Size of an ADPCM block in bytes.
+    size_t blockheadersize; // Size of an ADPCM block header in bytes.
+    size_t samplesperblock; // Number of samples per channel in an ADPCM block.
+    size_t framesize;       // Size of a sample frame (16-bit PCM) in bytes.
+    Sint64 framestotal;     // Total number of sample frames.
+    Sint64 framesleft;      // Number of sample frames still to be decoded.
+    void *ddata;            // Decoder data from initialization.
+    void *cstate;           // Decoding state for each channel.
 
-    /* ADPCM data. */
+    // ADPCM data.
     struct
     {
         Uint8 *data;
@@ -70,7 +70,7 @@ typedef struct ADPCM_DecoderState
         size_t pos;
     } input;
 
-    /* Current ADPCM block in the ADPCM data above. */
+    // Current ADPCM block in the ADPCM data above.
     struct
     {
         Uint8 *data;
@@ -78,7 +78,7 @@ typedef struct ADPCM_DecoderState
         size_t pos;
     } block;
 
-    /* Decoded 16-bit PCM data. */
+    // Decoded 16-bit PCM data.
     struct
     {
         Sint16 *data;
@@ -91,7 +91,7 @@ typedef struct MS_ADPCM_CoeffData
 {
     Uint16 coeffcount;
     Sint16 *coeff;
-    Sint16 aligndummy; /* Has to be last member. */
+    Sint16 aligndummy; // Has to be last member.
 } MS_ADPCM_CoeffData;
 
 typedef struct MS_ADPCM_ChannelState
@@ -342,18 +342,18 @@ static int MS_ADPCM_CalculateSampleFrames(WaveFile *file, size_t datalength)
     const size_t trailingdata = datalength % file->format.blockalign;
 
     if (file->trunchint == TruncVeryStrict || file->trunchint == TruncStrict) {
-        /* The size of the data chunk must be a multiple of the block size. */
+        // The size of the data chunk must be a multiple of the block size.
         if (datalength < blockheadersize || trailingdata > 0) {
             return SDL_SetError("Truncated MS ADPCM block");
         }
     }
 
-    /* Calculate number of sample frames that will be decoded. */
+    // Calculate number of sample frames that will be decoded.
     file->sampleframes = (Sint64)availableblocks * format->samplesperblock;
     if (trailingdata > 0) {
-        /* The last block is truncated. Check if we can get any samples out of it. */
+        // The last block is truncated. Check if we can get any samples out of it.
         if (file->trunchint == TruncDropFrame) {
-            /* Drop incomplete sample frame. */
+            // Drop incomplete sample frame.
             if (trailingdata >= blockheadersize) {
                 size_t trailingsamples = 2 + (trailingdata - blockheadersize) * 8 / blockframebitsize;
                 if (trailingsamples > format->samplesperblock) {
@@ -384,7 +384,7 @@ static int MS_ADPCM_Init(WaveFile *file, size_t datalength)
     size_t i, coeffcount;
     MS_ADPCM_CoeffData *coeffdata;
 
-    /* Sanity checks. */
+    // Sanity checks.
 
     /* While it's clear how IMA ADPCM handles more than two channels, the nibble
      * order of MS ADPCM makes it awkward. The Standards Update does not talk
@@ -398,7 +398,7 @@ static int MS_ADPCM_Init(WaveFile *file, size_t datalength)
         return SDL_SetError("Invalid MS ADPCM bits per sample of %u", (unsigned int)format->bitspersample);
     }
 
-    /* The block size must be big enough to contain the block header. */
+    // The block size must be big enough to contain the block header.
     if (format->blockalign < blockheadersize) {
         return SDL_SetError("Invalid MS ADPCM block size (nBlockAlign)");
     }
@@ -419,7 +419,7 @@ static int MS_ADPCM_Init(WaveFile *file, size_t datalength)
     }
 
     format->samplesperblock = chunk->data[18] | ((Uint16)chunk->data[19] << 8);
-    /* Number of coefficient pairs. A pair has two 16-bit integers. */
+    // Number of coefficient pairs. A pair has two 16-bit integers.
     coeffcount = chunk->data[20] | ((size_t)chunk->data[21] << 8);
     /* bPredictor, the integer offset into the coefficients array, is only
      * 8 bits. It can only address the first 256 coefficients. Let's limit
@@ -438,14 +438,14 @@ static int MS_ADPCM_Init(WaveFile *file, size_t datalength)
     }
 
     coeffdata = (MS_ADPCM_CoeffData *)SDL_malloc(sizeof(MS_ADPCM_CoeffData) + coeffcount * 4);
-    file->decoderdata = coeffdata; /* Freed in cleanup. */
+    file->decoderdata = coeffdata; // Freed in cleanup.
     if (!coeffdata) {
         return -1;
     }
     coeffdata->coeff = &coeffdata->aligndummy;
     coeffdata->coeffcount = (Uint16)coeffcount;
 
-    /* Copy the 16-bit pairs. */
+    // Copy the 16-bit pairs.
     for (i = 0; i < coeffcount * 2; i++) {
         Sint32 c = chunk->data[22 + i * 2] | ((Sint32)chunk->data[23 + i * 2] << 8);
         if (c >= 0x8000) {
@@ -504,7 +504,7 @@ static Sint16 MS_ADPCM_ProcessNibble(MS_ADPCM_ChannelState *cstate, Sint32 sampl
     Uint32 delta = cstate->delta;
 
     new_sample = (sample1 * cstate->coeff1 + sample2 * cstate->coeff2) / 256;
-    /* The nibble is a signed 4-bit error delta. */
+    // The nibble is a signed 4-bit error delta.
     errordelta = (Sint32)nybble - (nybble >= 0x08 ? 0x10 : 0);
     new_sample += (Sint32)delta * errordelta;
     if (new_sample < min_audioval) {
@@ -538,7 +538,7 @@ static int MS_ADPCM_DecodeBlockHeader(ADPCM_DecoderState *state)
     for (c = 0; c < channels; c++) {
         size_t o = c;
 
-        /* Load the coefficient pair into the channel state. */
+        // Load the coefficient pair into the channel state.
         coeffindex = state->block.data[o];
         if (coeffindex > ddata->coeffcount) {
             return SDL_SetError("Invalid MS ADPCM coefficient index in block header");
@@ -546,7 +546,7 @@ static int MS_ADPCM_DecodeBlockHeader(ADPCM_DecoderState *state)
         cstate[c].coeff1 = ddata->coeff[coeffindex * 2];
         cstate[c].coeff2 = ddata->coeff[coeffindex * 2 + 1];
 
-        /* Initial delta value. */
+        // Initial delta value.
         o = (size_t)channels + c * 2;
         cstate[c].delta = state->block.data[o] | ((Uint16)state->block.data[o + 1] << 8);
 
@@ -572,10 +572,10 @@ static int MS_ADPCM_DecodeBlockHeader(ADPCM_DecoderState *state)
 
     state->block.pos += state->blockheadersize;
 
-    /* Skip second sample frame that came from the header. */
+    // Skip second sample frame that came from the header.
     state->output.pos += state->channels;
 
-    /* Header provided two sample frames. */
+    // Header provided two sample frames.
     state->framesleft -= 2;
 
     return 0;
@@ -611,12 +611,12 @@ static int MS_ADPCM_DecodeBlockData(ADPCM_DecoderState *state)
             } else if (blockpos < blocksize) {
                 nybble = state->block.data[blockpos++] | 0x4000;
             } else {
-                /* Out of input data. Drop the incomplete frame and return. */
+                // Out of input data. Drop the incomplete frame and return.
                 state->output.pos = outpos - c;
                 return -1;
             }
 
-            /* Load previous samples which may come from the block header. */
+            // Load previous samples which may come from the block header.
             sample1 = state->output.data[outpos - channels];
             sample2 = state->output.data[outpos - channels * 2];
 
@@ -645,13 +645,13 @@ static int MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     SDL_zeroa(cstate);
 
     if (chunk->size != chunk->length) {
-        /* Could not read everything. Recalculate number of sample frames. */
+        // Could not read everything. Recalculate number of sample frames.
         if (MS_ADPCM_CalculateSampleFrames(file, chunk->size) < 0) {
             return -1;
         }
     }
 
-    /* Nothing to decode, nothing to return. */
+    // Nothing to decode, nothing to return.
     if (file->sampleframes == 0) {
         *audio_buf = NULL;
         *audio_len = 0;
@@ -671,7 +671,7 @@ static int MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     state.input.size = chunk->size;
     state.input.pos = 0;
 
-    /* The output size in bytes. May get modified if data is truncated. */
+    // The output size in bytes. May get modified if data is truncated.
     outputsize = (size_t)state.framestotal;
     if (SafeMult(&outputsize, state.framesize)) {
         return SDL_SetError("WAVE file too big");
@@ -688,7 +688,7 @@ static int MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
 
     state.cstate = cstate;
 
-    /* Decode block by block. A truncated block will stop the decoding. */
+    // Decode block by block. A truncated block will stop the decoding.
     bytesleft = state.input.size - state.input.pos;
     while (state.framesleft > 0 && bytesleft >= state.blockheadersize) {
         state.block.data = state.input.data + state.input.pos;
@@ -696,29 +696,29 @@ static int MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
         state.block.pos = 0;
 
         if (state.output.size - state.output.pos < (Uint64)state.framesleft * state.channels) {
-            /* Somehow didn't allocate enough space for the output. */
+            // Somehow didn't allocate enough space for the output.
             SDL_free(state.output.data);
             return SDL_SetError("Unexpected overflow in MS ADPCM decoder");
         }
 
-        /* Initialize decoder with the values from the block header. */
+        // Initialize decoder with the values from the block header.
         result = MS_ADPCM_DecodeBlockHeader(&state);
         if (result < 0) {
             SDL_free(state.output.data);
             return -1;
         }
 
-        /* Decode the block data. It stores the samples directly in the output. */
+        // Decode the block data. It stores the samples directly in the output.
         result = MS_ADPCM_DecodeBlockData(&state);
         if (result < 0) {
-            /* Unexpected end. Stop decoding and return partial data if necessary. */
+            // Unexpected end. Stop decoding and return partial data if necessary.
             if (file->trunchint == TruncVeryStrict || file->trunchint == TruncStrict) {
                 SDL_free(state.output.data);
                 return SDL_SetError("Truncated data chunk");
             } else if (file->trunchint != TruncDropFrame) {
                 state.output.pos -= state.output.pos % (state.samplesperblock * state.channels);
             }
-            outputsize = state.output.pos * sizeof(Sint16); /* Can't overflow, is always smaller. */
+            outputsize = state.output.pos * sizeof(Sint16); // Can't overflow, is always smaller.
             break;
         }
 
@@ -741,16 +741,16 @@ static int IMA_ADPCM_CalculateSampleFrames(WaveFile *file, size_t datalength)
     const size_t trailingdata = datalength % format->blockalign;
 
     if (file->trunchint == TruncVeryStrict || file->trunchint == TruncStrict) {
-        /* The size of the data chunk must be a multiple of the block size. */
+        // The size of the data chunk must be a multiple of the block size.
         if (datalength < blockheadersize || trailingdata > 0) {
             return SDL_SetError("Truncated IMA ADPCM block");
         }
     }
 
-    /* Calculate number of sample frames that will be decoded. */
+    // Calculate number of sample frames that will be decoded.
     file->sampleframes = (Uint64)availableblocks * format->samplesperblock;
     if (trailingdata > 0) {
-        /* The last block is truncated. Check if we can get any samples out of it. */
+        // The last block is truncated. Check if we can get any samples out of it.
         if (file->trunchint == TruncDropFrame && trailingdata > blockheadersize - 2) {
             /* The sample frame in the header of the truncated block is present.
              * Drop incomplete sample frames.
@@ -758,7 +758,7 @@ static int IMA_ADPCM_CalculateSampleFrames(WaveFile *file, size_t datalength)
             size_t trailingsamples = 1;
 
             if (trailingdata > blockheadersize) {
-                /* More data following after the header. */
+                // More data following after the header.
                 const size_t trailingblockdata = trailingdata - blockheadersize;
                 const size_t trailingsubblockdata = trailingblockdata % subblockframesize;
                 trailingsamples += (trailingblockdata / subblockframesize) * 8;
@@ -794,9 +794,9 @@ static int IMA_ADPCM_Init(WaveFile *file, size_t datalength)
     const size_t blockframebitsize = (size_t)format->bitspersample * format->channels;
     const size_t blockdatasamples = (blockdatasize * 8) / blockframebitsize;
 
-    /* Sanity checks. */
+    // Sanity checks.
 
-    /* IMA ADPCM can also have 3-bit samples, but it's not supported by SDL at this time. */
+    // IMA ADPCM can also have 3-bit samples, but it's not supported by SDL at this time.
     if (format->bitspersample == 3) {
         return SDL_SetError("3-bit IMA ADPCM currently not supported");
     } else if (format->bitspersample != 4) {
@@ -815,7 +815,7 @@ static int IMA_ADPCM_Init(WaveFile *file, size_t datalength)
          * format because the extensible header has wSampePerBlocks too.
          */
     } else {
-        /* The Standards Update says there 'should' be 2 bytes for wSamplesPerBlock. */
+        // The Standards Update says there 'should' be 2 bytes for wSamplesPerBlock.
         if (chunk->size >= 20 && format->extsize >= 2) {
             format->samplesperblock = chunk->data[18] | ((Uint16)chunk->data[19] << 8);
         }
@@ -874,17 +874,17 @@ static Sint16 IMA_ADPCM_ProcessNibble(Sint8 *cindex, Sint16 lastsample, Uint8 ny
     Sint32 sample, delta;
     Sint8 index = *cindex;
 
-    /* Clamp index into valid range. */
+    // Clamp index into valid range.
     if (index > 88) {
         index = 88;
     } else if (index < 0) {
         index = 0;
     }
 
-    /* explicit cast to avoid gcc warning about using 'char' as array index */
+    // explicit cast to avoid gcc warning about using 'char' as array index
     step = step_table[(size_t)index];
 
-    /* Update index value */
+    // Update index value
     *cindex = index + index_table_4b[nybble];
 
     /* This calculation uses shifts and additions because multiplications were
@@ -909,7 +909,7 @@ static Sint16 IMA_ADPCM_ProcessNibble(Sint8 *cindex, Sint16 lastsample, Uint8 ny
 
     sample = lastsample + delta;
 
-    /* Clamp output sample */
+    // Clamp output sample
     if (sample > max_audioval) {
         sample = max_audioval;
     } else if (sample < min_audioval) {
@@ -928,18 +928,18 @@ static int IMA_ADPCM_DecodeBlockHeader(ADPCM_DecoderState *state)
     for (c = 0; c < state->channels; c++) {
         size_t o = state->block.pos + c * 4;
 
-        /* Extract the sample from the header. */
+        // Extract the sample from the header.
         Sint32 sample = state->block.data[o] | ((Sint32)state->block.data[o + 1] << 8);
         if (sample >= 0x8000) {
             sample -= 0x10000;
         }
         state->output.data[state->output.pos++] = (Sint16)sample;
 
-        /* Channel step index. */
+        // Channel step index.
         step = (Sint16)state->block.data[o + 2];
         cstate[c] = (Sint8)(step > 0x80 ? step - 0x100 : step);
 
-        /* Reserved byte in block header, should be 0. */
+        // Reserved byte in block header, should be 0.
         if (state->block.data[o + 3] != 0) {
             /* Uh oh, corrupt data?  Buggy code? */;
         }
@@ -947,7 +947,7 @@ static int IMA_ADPCM_DecodeBlockHeader(ADPCM_DecoderState *state)
 
     state->block.pos += state->blockheadersize;
 
-    /* Header provided one sample frame. */
+    // Header provided one sample frame.
     state->framesleft--;
 
     return 0;
@@ -980,14 +980,14 @@ static int IMA_ADPCM_DecodeBlockData(ADPCM_DecoderState *state)
 
     bytesrequired = (blockframesleft + 7) / 8 * subblockframesize;
     if (blockleft < bytesrequired) {
-        /* Data truncated. Calculate how many samples we can get out if it. */
+        // Data truncated. Calculate how many samples we can get out if it.
         const size_t guaranteedframes = blockleft / subblockframesize;
         const size_t remainingbytes = blockleft % subblockframesize;
         blockframesleft = guaranteedframes;
         if (remainingbytes > subblockframesize - 4) {
             blockframesleft += (Sint64)(remainingbytes % 4) * 2;
         }
-        /* Signal the truncation. */
+        // Signal the truncation.
         retval = -1;
     }
 
@@ -1001,7 +1001,7 @@ static int IMA_ADPCM_DecodeBlockData(ADPCM_DecoderState *state)
 
         for (c = 0; c < channels; c++) {
             Uint8 nybble = 0;
-            /* Load previous sample which may come from the block header. */
+            // Load previous sample which may come from the block header.
             Sint16 sample = state->output.data[outpos + c - channels];
 
             for (i = 0; i < subblocksamples; i++) {
@@ -1036,13 +1036,13 @@ static int IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len
     Sint8 *cstate;
 
     if (chunk->size != chunk->length) {
-        /* Could not read everything. Recalculate number of sample frames. */
+        // Could not read everything. Recalculate number of sample frames.
         if (IMA_ADPCM_CalculateSampleFrames(file, chunk->size) < 0) {
             return -1;
         }
     }
 
-    /* Nothing to decode, nothing to return. */
+    // Nothing to decode, nothing to return.
     if (file->sampleframes == 0) {
         *audio_buf = NULL;
         *audio_len = 0;
@@ -1062,7 +1062,7 @@ static int IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len
     state.input.size = chunk->size;
     state.input.pos = 0;
 
-    /* The output size in bytes. May get modified if data is truncated. */
+    // The output size in bytes. May get modified if data is truncated.
     outputsize = (size_t)state.framestotal;
     if (SafeMult(&outputsize, state.framesize)) {
         return SDL_SetError("WAVE file too big");
@@ -1084,7 +1084,7 @@ static int IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len
     }
     state.cstate = cstate;
 
-    /* Decode block by block. A truncated block will stop the decoding. */
+    // Decode block by block. A truncated block will stop the decoding.
     bytesleft = state.input.size - state.input.pos;
     while (state.framesleft > 0 && bytesleft >= state.blockheadersize) {
         state.block.data = state.input.data + state.input.pos;
@@ -1092,21 +1092,21 @@ static int IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len
         state.block.pos = 0;
 
         if (state.output.size - state.output.pos < (Uint64)state.framesleft * state.channels) {
-            /* Somehow didn't allocate enough space for the output. */
+            // Somehow didn't allocate enough space for the output.
             SDL_free(state.output.data);
             SDL_free(cstate);
             return SDL_SetError("Unexpected overflow in IMA ADPCM decoder");
         }
 
-        /* Initialize decoder with the values from the block header. */
+        // Initialize decoder with the values from the block header.
         result = IMA_ADPCM_DecodeBlockHeader(&state);
         if (result == 0) {
-            /* Decode the block data. It stores the samples directly in the output. */
+            // Decode the block data. It stores the samples directly in the output.
             result = IMA_ADPCM_DecodeBlockData(&state);
         }
 
         if (result < 0) {
-            /* Unexpected end. Stop decoding and return partial data if necessary. */
+            // Unexpected end. Stop decoding and return partial data if necessary.
             if (file->trunchint == TruncVeryStrict || file->trunchint == TruncStrict) {
                 SDL_free(state.output.data);
                 SDL_free(cstate);
@@ -1114,7 +1114,7 @@ static int IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len
             } else if (file->trunchint != TruncDropFrame) {
                 state.output.pos -= state.output.pos % (state.samplesperblock * state.channels);
             }
-            outputsize = state.output.pos * sizeof(Sint16); /* Can't overflow, is always smaller. */
+            outputsize = state.output.pos * sizeof(Sint16); // Can't overflow, is always smaller.
             break;
         }
 
@@ -1134,12 +1134,12 @@ static int LAW_Init(WaveFile *file, size_t datalength)
 {
     WaveFormat *format = &file->format;
 
-    /* Standards Update requires this to be 8. */
+    // Standards Update requires this to be 8.
     if (format->bitspersample != 8) {
         return SDL_SetError("Invalid companded bits per sample of %u", (unsigned int)format->bitspersample);
     }
 
-    /* Not going to bother with weird padding. */
+    // Not going to bother with weird padding.
     if (format->blockalign != format->channels) {
         return SDL_SetError("Unsupported block alignment");
     }
@@ -1212,7 +1212,7 @@ static int LAW_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
         }
     }
 
-    /* Nothing to decode, nothing to return. */
+    // Nothing to decode, nothing to return.
     if (file->sampleframes == 0) {
         *audio_buf = NULL;
         *audio_len = 0;
@@ -1231,7 +1231,7 @@ static int LAW_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
         return SDL_SetError("WAVE file too big");
     }
 
-    /* 1 to avoid allocating zero bytes, to keep static analysis happy. */
+    // 1 to avoid allocating zero bytes, to keep static analysis happy.
     src = (Uint8 *)SDL_realloc(chunk->data, expanded_len ? expanded_len : 1);
     if (!src) {
         return -1;
@@ -1310,7 +1310,7 @@ static int PCM_Init(WaveFile *file, size_t datalength)
         case 16:
         case 24:
         case 32:
-            /* These are supported. */
+            // These are supported.
             break;
         default:
             return SDL_SetError("%u-bit PCM format not supported", (unsigned int)format->bitspersample);
@@ -1324,7 +1324,7 @@ static int PCM_Init(WaveFile *file, size_t datalength)
     /* It wouldn't be that hard to support more exotic block sizes, but
      * the most common formats should do for now.
      */
-    /* Make sure we're a multiple of the blockalign, at least. */
+    // Make sure we're a multiple of the blockalign, at least.
     if ((format->channels * format->bitspersample) % (format->blockalign * 8)) {
         return SDL_SetError("Unsupported block alignment");
     }
@@ -1362,20 +1362,20 @@ static int PCM_ConvertSint24ToSint32(WaveFile *file, Uint8 **audio_buf, Uint32 *
         return SDL_SetError("WAVE file too big");
     }
 
-    /* 1 to avoid allocating zero bytes, to keep static analysis happy. */
+    // 1 to avoid allocating zero bytes, to keep static analysis happy.
     ptr = (Uint8 *)SDL_realloc(chunk->data, expanded_len ? expanded_len : 1);
     if (!ptr) {
         return -1;
     }
 
-    /* This pointer is now invalid. */
+    // This pointer is now invalid.
     chunk->data = NULL;
     chunk->size = 0;
 
     *audio_buf = ptr;
     *audio_len = (Uint32)expanded_len;
 
-    /* work from end to start, since we're expanding in-place. */
+    // work from end to start, since we're expanding in-place.
     for (i = sample_count; i > 0; i--) {
         const size_t o = i - 1;
         uint8_t b[4];
@@ -1407,14 +1407,14 @@ static int PCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
         }
     }
 
-    /* Nothing to decode, nothing to return. */
+    // Nothing to decode, nothing to return.
     if (file->sampleframes == 0) {
         *audio_buf = NULL;
         *audio_len = 0;
         return 0;
     }
 
-    /* 24-bit samples get shifted to 32 bits. */
+    // 24-bit samples get shifted to 32 bits.
     if (format->encoding == PCM_CODE && format->bitspersample == 24) {
         return PCM_ConvertSint24ToSint32(file, audio_buf, audio_len);
     }
@@ -1429,7 +1429,7 @@ static int PCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     *audio_buf = chunk->data;
     *audio_len = (Uint32)outputsize;
 
-    /* This pointer is going to be returned to the caller. Prevent free in cleanup. */
+    // This pointer is going to be returned to the caller. Prevent free in cleanup.
     chunk->data = NULL;
     chunk->size = 0;
 
@@ -1507,21 +1507,21 @@ static int WaveNextChunk(SDL_IOStream *src, WaveChunk *chunk)
     Uint32 chunkheader[2];
     Sint64 nextposition = chunk->position + chunk->length;
 
-    /* Data is no longer valid after this function returns. */
+    // Data is no longer valid after this function returns.
     WaveFreeChunkData(chunk);
 
-    /* Error on overflows. */
+    // Error on overflows.
     if (SDL_MAX_SINT64 - chunk->length < chunk->position || SDL_MAX_SINT64 - 8 < nextposition) {
         return -1;
     }
 
-    /* RIFF chunks have a 2-byte alignment. Skip padding byte. */
+    // RIFF chunks have a 2-byte alignment. Skip padding byte.
     if (chunk->length & 1) {
         nextposition++;
     }
 
     if (SDL_SeekIO(src, nextposition, SDL_IO_SEEK_SET) != nextposition) {
-        /* Not sure how we ended up here. Just abort. */
+        // Not sure how we ended up here. Just abort.
         return -2;
     } else if (SDL_ReadIO(src, chunkheader, sizeof(Uint32) * 2) != (sizeof(Uint32) * 2)) {
         return -1;
@@ -1549,13 +1549,13 @@ static int WaveReadPartialChunkData(SDL_IOStream *src, WaveChunk *chunk, size_t 
         }
 
         if (SDL_SeekIO(src, chunk->position, SDL_IO_SEEK_SET) != chunk->position) {
-            /* Not sure how we ended up here. Just abort. */
+            // Not sure how we ended up here. Just abort.
             return -2;
         }
 
         chunk->size = SDL_ReadIO(src, chunk->data, length);
         if (chunk->size != length) {
-            /* Expected to be handled by the caller. */
+            // Expected to be handled by the caller.
         }
     }
 
@@ -1573,7 +1573,7 @@ typedef struct WaveExtensibleGUID
     Uint8 guid[16];
 } WaveExtensibleGUID;
 
-/* Some of the GUIDs that are used by WAVEFORMATEXTENSIBLE. */
+// Some of the GUIDs that are used by WAVEFORMATEXTENSIBLE.
 #define WAVE_FORMATTAG_GUID(tag)                                                     \
     {                                                                                \
         (tag) & 0xff, (tag) >> 8, 0, 0, 0, 0, 16, 0, 128, 0, 0, 170, 0, 56, 155, 113 \
@@ -1606,7 +1606,7 @@ static int WaveReadFormat(WaveFile *file)
     size_t fmtlen = chunk->size;
 
     if (fmtlen > SDL_MAX_SINT32) {
-        /* Limit given by SDL_IOFromConstMem. */
+        // Limit given by SDL_IOFromConstMem.
         return SDL_SetError("Data of WAVE fmt chunk too big");
     }
     fmtsrc = SDL_IOFromConstMem(chunk->data, (int)chunk->size);
@@ -1623,7 +1623,7 @@ static int WaveReadFormat(WaveFile *file)
     }
     format->encoding = format->formattag;
 
-    /* This is PCM specific in the first version of the specification. */
+    // This is PCM specific in the first version of the specification.
     if (fmtlen >= 16) {
         if (!SDL_ReadU16LE(fmtsrc, &format->bitspersample)) {
             return -1;
@@ -1633,7 +1633,7 @@ static int WaveReadFormat(WaveFile *file)
         return SDL_SetError("Missing wBitsPerSample field in WAVE fmt chunk");
     }
 
-    /* The earlier versions also don't have this field. */
+    // The earlier versions also don't have this field.
     if (fmtlen >= 18) {
         if (!SDL_ReadU16LE(fmtsrc, &format->extsize)) {
             return -1;
@@ -1647,7 +1647,7 @@ static int WaveReadFormat(WaveFile *file)
          * to be useful working when they use this format flag.
          */
 
-        /* Extensible header must be at least 22 bytes. */
+        // Extensible header must be at least 22 bytes.
         if (fmtlen < 40 || format->extsize < 22) {
             SDL_CloseIO(fmtsrc);
             return SDL_SetError("Extensible WAVE header too small");
@@ -1670,7 +1670,7 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
 {
     WaveFormat *format = &file->format;
 
-    /* Check for some obvious issues. */
+    // Check for some obvious issues.
 
     if (format->channels == 0) {
         return SDL_SetError("Invalid number of channels");
@@ -1682,7 +1682,7 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
         return SDL_SetError("Sample rate exceeds limit of %d", INT_MAX);
     }
 
-    /* Reject invalid fact chunks in strict mode. */
+    // Reject invalid fact chunks in strict mode.
     if (file->facthint == FactStrict && file->fact.status == -1) {
         return SDL_SetError("Invalid fact chunk in WAVE file");
     }
@@ -1697,22 +1697,22 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
     case MULAW_CODE:
     case MS_ADPCM_CODE:
     case IMA_ADPCM_CODE:
-        /* These formats require a fact chunk. */
+        // These formats require a fact chunk.
         if (file->facthint == FactStrict && file->fact.status <= 0) {
             return SDL_SetError("Missing fact chunk in WAVE file");
         }
         SDL_FALLTHROUGH;
     case PCM_CODE:
-        /* All supported formats require a non-zero bit depth. */
+        // All supported formats require a non-zero bit depth.
         if (file->chunk.size < 16) {
             return SDL_SetError("Missing wBitsPerSample field in WAVE fmt chunk");
         } else if (format->bitspersample == 0) {
             return SDL_SetError("Invalid bits per sample");
         }
 
-        /* All supported formats must have a proper block size. */
+        // All supported formats must have a proper block size.
         if (format->blockalign == 0) {
-            format->blockalign = 1;  /* force it to 1 if it was unset. */
+            format->blockalign = 1;  // force it to 1 if it was unset.
         }
 
         /* If the fact chunk is valid and the appropriate hint is set, the
@@ -1727,7 +1727,7 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
         }
     }
 
-    /* Check the format for encoding specific issues and initialize decoders. */
+    // Check the format for encoding specific issues and initialize decoders.
     switch (format->encoding) {
     case PCM_CODE:
     case IEEE_FLOAT_CODE:
@@ -1805,24 +1805,24 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
         return SDL_SetError("Could not read RIFF header");
     }
 
-    /* Check main WAVE file identifiers. */
+    // Check main WAVE file identifiers.
     if (RIFFchunk.fourcc == RIFF) {
         Uint32 formtype;
-        /* Read the form type. "WAVE" expected. */
+        // Read the form type. "WAVE" expected.
         if (!SDL_ReadU32LE(src, &formtype)) {
             return SDL_SetError("Could not read RIFF form type");
         } else if (formtype != WAVE) {
             return SDL_SetError("RIFF form type is not WAVE (not a Waveform file)");
         }
     } else if (RIFFchunk.fourcc == WAVE) {
-        /* RIFF chunk missing or skipped. Length unknown. */
+        // RIFF chunk missing or skipped. Length unknown.
         RIFFchunk.position = 0;
         RIFFchunk.length = 0;
     } else {
         return SDL_SetError("Could not find RIFF or WAVE identifiers (not a Waveform file)");
     }
 
-    /* The 4-byte form type is immediately followed by the first chunk.*/
+    // The 4-byte form type is immediately followed by the first chunk.
     chunk->position = RIFFchunk.position + 4;
 
     /* Use the RIFF chunk size to limit the search for the chunks. This is not
@@ -1854,18 +1854,18 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
      * currently also ignores cue, list, and slnt chunks.
      */
     while ((Uint64)RIFFend > (Uint64)chunk->position + chunk->length + (chunk->length & 1)) {
-        /* Abort after too many chunks or else corrupt files may waste time. */
+        // Abort after too many chunks or else corrupt files may waste time.
         if (chunkcount++ >= chunkcountlimit) {
             return SDL_SetError("Chunk count in WAVE file exceeds limit of %" SDL_PRIu32, chunkcountlimit);
         }
 
         result = WaveNextChunk(src, chunk);
         if (result < 0) {
-            /* Unexpected EOF. Corrupt file or I/O issues. */
+            // Unexpected EOF. Corrupt file or I/O issues.
             if (file->trunchint == TruncVeryStrict) {
                 return SDL_SetError("Unexpected end of WAVE file");
             }
-            /* Let the checks after this loop sort this issue out. */
+            // Let the checks after this loop sort this issue out.
             break;
         } else if (result == -2) {
             return SDL_SetError("Could not seek to WAVE chunk header");
@@ -1873,9 +1873,9 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
 
         if (chunk->fourcc == FMT) {
             if (fmtchunk.fourcc == FMT) {
-                /* Multiple fmt chunks. Ignore or error? */
+                // Multiple fmt chunks. Ignore or error?
             } else {
-                /* The fmt chunk must occur before the data chunk. */
+                // The fmt chunk must occur before the data chunk.
                 if (datachunk.fourcc == DATA) {
                     return SDL_SetError("fmt chunk after data chunk in WAVE file");
                 }
@@ -1896,7 +1896,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
                 if (chunk->length < 4) {
                     file->fact.status = -1;
                 } else {
-                    /* Let's use src directly, it's just too convenient. */
+                    // Let's use src directly, it's just too convenient.
                     Sint64 position = SDL_SeekIO(src, chunk->position, SDL_IO_SEEK_SET);
                     if (position == chunk->position && SDL_ReadU32LE(src, &file->fact.samplelength)) {
                         file->fact.status = 1;
@@ -1926,17 +1926,17 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
      */
     lastchunkpos = chunk->position + chunk->length;
 
-    /* The fmt chunk is mandatory. */
+    // The fmt chunk is mandatory.
     if (fmtchunk.fourcc != FMT) {
         return SDL_SetError("Missing fmt chunk in WAVE file");
     }
-    /* A data chunk must be present. */
+    // A data chunk must be present.
     if (datachunk.fourcc != DATA) {
         return SDL_SetError("Missing data chunk in WAVE file");
     }
-    /* Check if the last chunk has all of its data in verystrict mode. */
+    // Check if the last chunk has all of its data in verystrict mode.
     if (file->trunchint == TruncVeryStrict) {
-        /* data chunk is handled later. */
+        // data chunk is handled later.
         if (chunk->fourcc != DATA && chunk->length > 0) {
             Uint8 tmp;
             Uint64 position = (Uint64)chunk->position + chunk->length - 1;
@@ -1948,7 +1948,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
         }
     }
 
-    /* Process fmt chunk. */
+    // Process fmt chunk.
     *chunk = fmtchunk;
 
     /* No need to read more than 1046 bytes of the fmt chunk data with the
@@ -1980,7 +1980,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
 
     WaveFreeChunkData(chunk);
 
-    /* Process data chunk. */
+    // Process data chunk.
     *chunk = datachunk;
 
     if (chunk->length > 0) {
@@ -1993,14 +1993,14 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
     }
 
     if (chunk->length != chunk->size) {
-        /* I/O issues or corrupt file. */
+        // I/O issues or corrupt file.
         if (file->trunchint == TruncVeryStrict || file->trunchint == TruncStrict) {
             return SDL_SetError("Could not read data of WAVE data chunk");
         }
-        /* The decoders handle this truncation. */
+        // The decoders handle this truncation.
     }
 
-    /* Decode or convert the data if necessary. */
+    // Decode or convert the data if necessary.
     switch (format->encoding) {
     case PCM_CODE:
     case IEEE_FLOAT_CODE:
@@ -2038,7 +2038,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
     case IMA_ADPCM_CODE:
     case ALAW_CODE:
     case MULAW_CODE:
-        /* These can be easily stored in the byte order of the system. */
+        // These can be easily stored in the byte order of the system.
         spec->format = SDL_AUDIO_S16;
         break;
     case IEEE_FLOAT_CODE:
@@ -2052,12 +2052,12 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
         case 16:
             spec->format = SDL_AUDIO_S16LE;
             break;
-        case 24: /* Has been shifted to 32 bits. */
+        case 24: // Has been shifted to 32 bits.
         case 32:
             spec->format = SDL_AUDIO_S32LE;
             break;
         default:
-            /* Just in case something unexpected happened in the checks. */
+            // Just in case something unexpected happened in the checks.
             return SDL_SetError("Unexpected %u-bit PCM data format", (unsigned int)format->bitspersample);
         }
         break;
@@ -2065,7 +2065,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
         return SDL_SetError("Unexpected data format");
     }
 
-    /* Report the end position back to the cleanup code. */
+    // Report the end position back to the cleanup code.
     if (RIFFlengthknown) {
         chunk->position = RIFFend;
     } else {
@@ -2090,9 +2090,9 @@ int SDL_LoadWAV_IO(SDL_IOStream *src, SDL_bool closeio, SDL_AudioSpec *spec, Uin
         *audio_len = 0;
     }
 
-    /* Make sure we are passed a valid data source */
+    // Make sure we are passed a valid data source
     if (!src) {
-        goto done;  /* Error may come from SDL_IOStream. */
+        goto done;  // Error may come from SDL_IOStream.
     } else if (!spec) {
         SDL_InvalidParamError("spec");
         goto done;
@@ -2116,7 +2116,7 @@ int SDL_LoadWAV_IO(SDL_IOStream *src, SDL_bool closeio, SDL_AudioSpec *spec, Uin
         audio_len = 0;
     }
 
-    /* Cleanup */
+    // Cleanup
     if (!closeio) {
         SDL_SeekIO(src, file.chunk.position, SDL_IO_SEEK_SET);
     }

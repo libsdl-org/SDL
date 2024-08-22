@@ -32,4 +32,4 @@ SDL_Keycode SDL_GetKeymapKeycode(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_
 SDL_Scancode SDL_GetKeymapScancode(SDL_Keymap *keymap, SDL_Keycode keycode, SDL_Keymod *modstate);
 void SDL_DestroyKeymap(SDL_Keymap *keymap);
 
-#endif /* SDL_keymap_c_h_ */
+#endif // SDL_keymap_c_h_

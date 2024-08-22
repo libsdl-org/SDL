@@ -34,4 +34,4 @@ void SDL_UpdateSteamControllers(void);
 void SDL_UpdateSteamController(SDL_Joystick *joystick);
 void SDL_QuitSteamControllers(void);
 
-#endif /* SDL_steamcontroller_h_ */
+#endif // SDL_steamcontroller_h_

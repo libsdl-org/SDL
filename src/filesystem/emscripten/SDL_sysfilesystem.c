@@ -23,7 +23,7 @@
 #ifdef SDL_FILESYSTEM_EMSCRIPTEN
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
 
@@ -113,4 +113,4 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     return retval;
 }
 
-#endif /* SDL_FILESYSTEM_EMSCRIPTEN */
+#endif // SDL_FILESYSTEM_EMSCRIPTEN

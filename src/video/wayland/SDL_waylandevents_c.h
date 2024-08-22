@@ -49,16 +49,16 @@ typedef struct SDL_WaylandTabletInput
 
 typedef struct
 {
-    int32_t repeat_rate;     /* Repeat rate in range of [1, 1000] character(s) per second */
-    int32_t repeat_delay_ms; /* Time to first repeat event in milliseconds */
-    Uint32 keyboard_id;      /* ID of the source keyboard. */
+    int32_t repeat_rate;     // Repeat rate in range of [1, 1000] character(s) per second
+    int32_t repeat_delay_ms; // Time to first repeat event in milliseconds
+    Uint32 keyboard_id;      // ID of the source keyboard.
     SDL_bool is_initialized;
 
     SDL_bool is_key_down;
     uint32_t key;
-    Uint64 wl_press_time_ns;  /* Key press time as reported by the Wayland API */
-    Uint64 sdl_press_time_ns; /* Key press time expressed in SDL ticks */
-    Uint64 next_repeat_ns;    /* Next repeat event in nanoseconds */
+    Uint64 wl_press_time_ns;  // Key press time as reported by the Wayland API
+    Uint64 sdl_press_time_ns; // Key press time expressed in SDL ticks
+    Uint64 next_repeat_ns;    // Next repeat event in nanoseconds
     uint32_t scancode;
     char text[8];
 } SDL_WaylandKeyboardRepeat;
@@ -85,18 +85,18 @@ struct SDL_WaylandInput
     Uint32 pointer_id;
     uint32_t pointer_enter_serial;
 
-    /* High-resolution event timestamps */
+    // High-resolution event timestamps
     Uint64 keyboard_timestamp_ns;
     Uint64 pointer_timestamp_ns;
     Uint64 touch_timestamp_ns;
 
-    /* Last motion location */
+    // Last motion location
     wl_fixed_t sx_w;
     wl_fixed_t sy_w;
 
     uint32_t buttons_pressed;
 
-    /* The serial of the last implicit grab event for window activation and selection data. */
+    // The serial of the last implicit grab event for window activation and selection data.
     Uint32 last_implicit_grab_serial;
 
     struct
@@ -106,10 +106,10 @@ struct SDL_WaylandInput
         struct xkb_compose_table *compose_table;
         struct xkb_compose_state *compose_state;
 
-        /* Keyboard layout "group" */
+        // Keyboard layout "group"
         uint32_t current_group;
 
-        /* Modifier bitshift values */
+        // Modifier bitshift values
         uint32_t idx_shift;
         uint32_t idx_ctrl;
         uint32_t idx_alt;
@@ -118,12 +118,12 @@ struct SDL_WaylandInput
         uint32_t idx_num;
         uint32_t idx_caps;
 
-        /* Current system modifier flags */
+        // Current system modifier flags
         uint32_t wl_pressed_modifiers;
         uint32_t wl_locked_modifiers;
     } xkb;
 
-    /* information about axis events on current frame */
+    // information about axis events on current frame
     struct
     {
         enum SDL_WaylandAxisEvent x_axis_type;
@@ -132,7 +132,7 @@ struct SDL_WaylandInput
         enum SDL_WaylandAxisEvent y_axis_type;
         float y;
 
-        /* Event timestamp in nanoseconds */
+        // Event timestamp in nanoseconds
         Uint64 timestamp_ns;
         SDL_MouseWheelDirection direction;
     } pointer_curr_axis_info;
@@ -143,7 +143,7 @@ struct SDL_WaylandInput
 
     SDL_bool keyboard_is_virtual;
 
-    /* Current SDL modifier flags */
+    // Current SDL modifier flags
     SDL_Keymod pressed_modifiers;
     SDL_Keymod locked_modifiers;
 };
@@ -189,4 +189,4 @@ extern void Wayland_CreateCursorShapeDevice(struct SDL_WaylandInput *input);
  */
 extern void Wayland_UpdateImplicitGrabSerial(struct SDL_WaylandInput *input, Uint32 serial);
 
-#endif /* SDL_waylandevents_h_ */
+#endif // SDL_waylandevents_h_

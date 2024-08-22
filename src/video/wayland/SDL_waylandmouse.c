@@ -128,7 +128,7 @@ static DBusMessage *Wayland_ReadDBusProperty(SDL_DBusContext *dbus, const char *
     DBusMessage *msg = dbus->message_new_method_call(CURSOR_NODE,
                                                      CURSOR_PATH,
                                                      CURSOR_INTERFACE,
-                                                     "Read"); /* Method */
+                                                     "Read"); // Method
 
     if (msg) {
         if (dbus->message_append_args(msg, DBUS_TYPE_STRING, &iface, DBUS_TYPE_STRING, &key, DBUS_TYPE_INVALID)) {
@@ -174,7 +174,7 @@ static DBusHandlerResult Wayland_DBusCursorMessageFilter(DBusConnection *conn, D
         const char *namespace, *key;
 
         dbus->message_iter_init(msg, &signal_iter);
-        /* Check if the parameters are what we expect */
+        // Check if the parameters are what we expect
         if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_STRING) {
             goto not_our_signal;
         }
@@ -206,7 +206,7 @@ static DBusHandlerResult Wayland_DBusCursorMessageFilter(DBusConnection *conn, D
 
             if (dbus_cursor_size != new_cursor_size) {
                 dbus_cursor_size = new_cursor_size;
-                SDL_SetCursor(NULL); /* Force cursor update */
+                SDL_SetCursor(NULL); // Force cursor update
             }
         } else if (SDL_strcmp(CURSOR_THEME_KEY, key) == 0) {
             const char *new_cursor_theme = NULL;
@@ -231,7 +231,7 @@ static DBusHandlerResult Wayland_DBusCursorMessageFilter(DBusConnection *conn, D
                     dbus_cursor_theme = NULL;
                 }
 
-                /* Purge the current cached themes and force a cursor refresh. */
+                // Purge the current cached themes and force a cursor refresh.
                 Wayland_FreeCursorThemes(vdata);
                 SDL_SetCursor(NULL);
             }
@@ -275,7 +275,7 @@ static void Wayland_DBusInitCursorProperties(SDL_VideoData *vdata)
         dbus->message_unref(reply);
     }
 
-    /* Only add the filter if at least one of the settings we want is present. */
+    // Only add the filter if at least one of the settings we want is present.
     if (add_filter) {
         dbus->bus_add_match(dbus->session_conn,
                             "type='signal', interface='" CURSOR_INTERFACE "',"
@@ -311,11 +311,11 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     c->cursor_data.system.frame_callback = wl_surface_frame(c->surface);
     wl_callback_add_listener(c->cursor_data.system.frame_callback, &cursor_frame_listener, data);
 
-    /* Calculate the next frame based on the elapsed duration. */
+    // Calculate the next frame based on the elapsed duration.
     for (Uint64 t = c->cursor_data.system.frames[next].duration; t <= elapsed; t += c->cursor_data.system.frames[next].duration) {
         next = (next + 1) % c->cursor_data.system.num_frames;
 
-        /* Make sure we don't end up in an infinite loop if a cursor has frame durations of 0. */
+        // Make sure we don't end up in an infinite loop if a cursor has frame durations of 0.
         if (!c->cursor_data.system.frames[next].duration) {
             break;
         }
@@ -343,7 +343,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *
 
     SDL_Window *focus;
 
-    /* Fallback envvar if the DBus properties don't exist */
+    // Fallback envvar if the DBus properties don't exist
     if (size <= 0) {
         const char *xcursor_size = SDL_getenv("XCURSOR_SIZE");
         if (xcursor_size) {
@@ -353,10 +353,10 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *
     if (size <= 0) {
         size = 24;
     }
-    /* First, find the appropriate theme based on the current scale... */
+    // First, find the appropriate theme based on the current scale...
     focus = SDL_GetMouse()->focus;
     if (focus) {
-        /* TODO: Use the fractional scale once GNOME supports viewports on cursor surfaces. */
+        // TODO: Use the fractional scale once GNOME supports viewports on cursor surfaces.
         *scale = SDL_ceilf(focus->internal->windowed_scale_factor);
     } else {
         *scale = 1.0f;
@@ -379,7 +379,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *
         }
         vdata->cursor_themes = new_cursor_themes;
 
-        /* Fallback envvar if the DBus properties don't exist */
+        // Fallback envvar if the DBus properties don't exist
         if (!xcursor_theme) {
             xcursor_theme = SDL_getenv("XCURSOR_THEME");
         }
@@ -395,11 +395,11 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, fallback_name);
     }
 
-    /* Fallback to the default cursor if the chosen one wasn't found */
+    // Fallback to the default cursor if the chosen one wasn't found
     if (!cursor) {
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "default");
     }
-    /* Try the old X11 name as a last resort */
+    // Try the old X11 name as a last resort
     if (!cursor) {
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "left_ptr");
     }
@@ -415,7 +415,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *
         }
     }
 
-    /* ... Set the cursor data, finally. */
+    // ... Set the cursor data, finally.
     cdata->cursor_data.system.num_frames = cursor->image_count;
     cdata->cursor_data.system.total_duration = 0;
     for (int i = 0; i < cursor->image_count; ++i) {
@@ -441,12 +441,12 @@ static Wayland_CachedCustomCursor *Wayland_GetCachedCustomCursor(SDL_Cursor *cur
         scale = focus->internal->windowed_scale_factor;
     }
 
-    /* Only use fractional scale values if viewports are available. */
+    // Only use fractional scale values if viewports are available.
     if (!wd->viewporter) {
         scale = SDL_ceilf(scale);
     }
 
-    /* Is this cursor already cached at the target scale? */
+    // Is this cursor already cached at the target scale?
     wl_list_for_each(cache, &data->cursor_data.custom.cursor_cache, node) {
         if (cache->scale == scale) {
             return cache;
@@ -464,14 +464,14 @@ static Wayland_CachedCustomCursor *Wayland_GetCachedCustomCursor(SDL_Cursor *cur
         return NULL;
     }
 
-    /* Allocate shared memory buffer for this cursor */
+    // Allocate shared memory buffer for this cursor
     if (Wayland_AllocSHMBuffer(surface->w, surface->h, &cache->shmBuffer) != 0) {
         SDL_free(cache);
         SDL_DestroySurface(surface);
         return NULL;
     }
 
-    /* Wayland requires premultiplied alpha for its surfaces. */
+    // Wayland requires premultiplied alpha for its surfaces.
     SDL_PremultiplyAlpha(surface->w, surface->h,
                          surface->format, surface->pixels, surface->pitch,
                          SDL_PIXELFORMAT_ARGB8888, cache->shmBuffer.shm_data, surface->w * 4, SDL_TRUE);
@@ -507,7 +507,7 @@ static SDL_Cursor *Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot
         data->cursor_data.custom.sdl_cursor_surface = surface;
         ++surface->refcount;
 
-        /* If the cursor has only one size, just prepare it now. */
+        // If the cursor has only one size, just prepare it now.
         if (!SDL_SurfaceHasAlternateImages(surface)) {
             Wayland_GetCachedCustomCursor(cursor);
         }
@@ -552,7 +552,7 @@ static SDL_Cursor *Wayland_CreateDefaultCursor(void)
 
 static void Wayland_FreeCursorData(SDL_CursorData *d)
 {
-    /* Buffers for system cursors must not be destroyed. */
+    // Buffers for system cursors must not be destroyed.
     if (d->is_system_cursor) {
         if (d->cursor_data.system.frame_callback) {
             wl_callback_destroy(d->cursor_data.system.frame_callback);
@@ -585,7 +585,7 @@ static void Wayland_FreeCursor(SDL_Cursor *cursor)
         return;
     }
 
-    /* Probably not a cursor we own */
+    // Probably not a cursor we own
     if (!cursor->internal) {
         return;
     }
@@ -662,7 +662,7 @@ static void Wayland_SetSystemCursorShape(struct SDL_WaylandInput *input, SDL_Sys
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_W_RESIZE;
         break;
     default:
-        SDL_assert(0); /* Should never be here... */
+        SDL_assert(0); // Should never be here...
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT;
     }
 
@@ -683,7 +683,7 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
         return -1;
     }
 
-    /* Stop the frame callback for old animated cursors. */
+    // Stop the frame callback for old animated cursors.
     if (input->current_cursor && input->current_cursor->is_system_cursor &&
         input->current_cursor->cursor_data.system.frame_callback) {
         wl_callback_destroy(input->current_cursor->cursor_data.system.frame_callback);
@@ -709,7 +709,7 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
         if (data->is_system_cursor) {
             wl_surface_attach(data->surface, data->cursor_data.system.frames[0].wl_buffer, 0, 0);
 
-            /* If more than one frame is available, create a frame callback to run the animation. */
+            // If more than one frame is available, create a frame callback to run the animation.
             if (data->cursor_data.system.num_frames > 1) {
                 data->cursor_data.system.last_frame_time_ms = SDL_GetTicks();
                 data->cursor_data.system.current_frame = 0;
@@ -727,7 +727,7 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
             wl_surface_attach(data->surface, cached->shmBuffer.wl_buffer, 0, 0);
         }
 
-        /* TODO: Make the viewport path the default in all cases once GNOME finally supports viewports on cursor surfaces. */
+        // TODO: Make the viewport path the default in all cases once GNOME finally supports viewports on cursor surfaces.
         if (SDL_ceilf(scale) != scale && d->viewporter) {
             if (!data->viewport) {
                 data->viewport = wp_viewporter_get_viewport(d->viewporter, data->surface);
@@ -807,7 +807,7 @@ static int Wayland_WarpMouseGlobal(float x, float y)
     struct SDL_WaylandInput *input = d->input;
     SDL_WindowData *wind = input->pointer_focus;
 
-    /* If the client wants the coordinates warped to within the focused window, just convert the coordinates to relative. */
+    // If the client wants the coordinates warped to within the focused window, just convert the coordinates to relative.
     if (wind) {
         SDL_Window *window = wind->sdlwindow;
         return Wayland_WarpMouse(window, x - (float)window->x, y - (float)window->y);
@@ -857,19 +857,19 @@ static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float 
     return ret;
 }
 
-#if 0  /* TODO RECONNECT: See waylandvideo.c for more information! */
+#if 0  // TODO RECONNECT: See waylandvideo.c for more information!
 static void Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
 {
     SDL_CursorData *cdata = cursor->internal;
 
-    /* Probably not a cursor we own */
+    // Probably not a cursor we own
     if (cdata == NULL) {
         return;
     }
 
     Wayland_FreeCursorData(cdata);
 
-    /* We're not currently freeing this, so... yolo? */
+    // We're not currently freeing this, so... yolo?
     if (cdata->shm_data != NULL) {
         void *old_data_pointer = cdata->shm_data;
         int stride = cdata->w * 4;
@@ -911,7 +911,7 @@ void Wayland_RecreateCursors(void)
         }
     }
 }
-#endif /* 0 */
+#endif // 0
 
 void Wayland_InitMouse(void)
 {
@@ -995,4 +995,4 @@ void Wayland_SetHitTestCursor(SDL_HitTestResult rc)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_WAYLAND */
+#endif // SDL_VIDEO_DRIVER_WAYLAND

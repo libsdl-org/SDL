@@ -36,7 +36,7 @@
 
 struct SDL_VideoData
 {
-    /* Epoc window server info */
+    // Epoc window server info
     RWsSession NGAGE_WsSession;
     RWindowGroup NGAGE_WsWindowGroup;
     TInt NGAGE_WsWindowGroupID;
@@ -47,9 +47,9 @@ struct SDL_VideoData
     TRequestStatus NGAGE_RedrawEventStatus;
     TWsEvent NGAGE_WsEvent;
     CFbsDrawDevice *NGAGE_DrawDevice;
-    TBool NGAGE_IsWindowFocused; /* Not used yet */
+    TBool NGAGE_IsWindowFocused; // Not used yet
 
-    /* Screen hardware frame buffer info */
+    // Screen hardware frame buffer info
     TBool NGAGE_HasFrameBuffer;
     TInt NGAGE_BytesPerPixel;
     TInt NGAGE_BytesPerScanLine;
@@ -62,4 +62,4 @@ struct SDL_VideoData
     CFbsBitGc::TGraphicsOrientation NGAGE_ScreenOrientation;
 };
 
-#endif /* SDL_ngagevideo_h */
+#endif // SDL_ngagevideo_h

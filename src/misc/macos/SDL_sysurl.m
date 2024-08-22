@@ -36,4 +36,4 @@ int SDL_SYS_OpenURL(const char *url)
     }
 }
 
-#endif /* SDL_PLATFORM_MACOS */
+#endif // SDL_PLATFORM_MACOS

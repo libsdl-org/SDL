@@ -27,7 +27,7 @@
 #define DEFAULT_CHOTX   0
 #define DEFAULT_CHOTY   0
 
-/* Added a real MacOS cursor, at the request of Luc-Olivier de Charrière */
+// Added a real MacOS cursor, at the request of Luc-Olivier de Charrière
 #define USE_MACOS_CURSOR
 
 #ifdef USE_MACOS_CURSOR
@@ -110,4 +110,4 @@ static const unsigned char default_cmask[] = {
     0x03, 0x00
 };
 
-#endif /* USE_MACOS_CURSOR */
+#endif // USE_MACOS_CURSOR

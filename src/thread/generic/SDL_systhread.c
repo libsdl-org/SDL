@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* Thread management routines for SDL */
+// Thread management routines for SDL
 
 #include "../SDL_systhread.h"
 

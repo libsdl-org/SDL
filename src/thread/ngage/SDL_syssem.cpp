@@ -20,11 +20,11 @@
 */
 #include "SDL_internal.h"
 
-/* An implementation of semaphores using the Symbian API. */
+// An implementation of semaphores using the Symbian API.
 
 #include <e32std.h>
 
-/* !!! FIXME: Should this be SDL_MUTEX_TIMEDOUT? */
+// !!! FIXME: Should this be SDL_MUTEX_TIMEDOUT?
 #define SDL_MUTEX_TIMEOUT -2
 
 struct SDL_Semaphore

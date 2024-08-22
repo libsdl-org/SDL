@@ -20,11 +20,11 @@
 */
 #include "SDL_internal.h"
 
-/* This file contains SDL replacements for functions in the C library */
+// This file contains SDL replacements for functions in the C library
 
 #if !defined(HAVE_LIBC) && !defined(SDL_STATIC_LIB)
 
-/* These are some C runtime intrinsics that need to be defined */
+// These are some C runtime intrinsics that need to be defined
 
 #ifdef _MSC_VER
 
@@ -35,7 +35,7 @@ __declspec(selectany) int _fltused = 1;
 
 #ifdef _M_IX86
 
-/* Float to long */
+// Float to long
 void __declspec(naked) _ftol()
 {
     /* *INDENT-OFF* */
@@ -95,7 +95,7 @@ void _ftol2()
     _ftol();
 }
 
-/* 64-bit math operators for 32-bit systems */
+// 64-bit math operators for 32-bit systems
 void __declspec(naked) _allmul()
 {
     /* *INDENT-OFF* */
@@ -726,7 +726,7 @@ void __declspec(naked) _alloca_probe_16(void)
     /* *INDENT-ON* */
 }
 
-#endif /* _M_IX86 */
+#endif // _M_IX86
 
 #ifdef _M_ARM64
 
@@ -736,7 +736,7 @@ void __chkstk() {
 
 #endif
 
-#endif /* MSC_VER */
+#endif // MSC_VER
 
 #ifdef __ICL
 /* The classic Intel compiler generates calls to _intel_fast_memcpy
@@ -751,4 +751,4 @@ void *_intel_fast_memset(void *dst, int c, size_t len)
 }
 #endif
 
-#endif /* !HAVE_LIBC && !SDL_STATIC_LIB */
+#endif // !HAVE_LIBC && !SDL_STATIC_LIB

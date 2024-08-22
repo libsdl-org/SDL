@@ -23,12 +23,12 @@
 
 #ifdef SDL_VIDEO_DRIVER_PSP
 
-/* SDL internals */
+// SDL internals
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
 
-/* PSP declarations */
+// PSP declarations
 #include "SDL_pspvideo.h"
 #include "SDL_pspevents_c.h"
 #include "SDL_pspgl_c.h"
@@ -54,13 +54,13 @@ static SDL_VideoDevice *PSP_Create(void)
     SDL_VideoData *phdata;
     SDL_GLDriverData *gldata;
 
-    /* Initialize SDL_VideoDevice structure */
+    // Initialize SDL_VideoDevice structure
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         return NULL;
     }
 
-    /* Initialize internal PSP specific data */
+    // Initialize internal PSP specific data
     phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (!phdata) {
         SDL_free(device);
@@ -79,13 +79,13 @@ static SDL_VideoDevice *PSP_Create(void)
 
     phdata->egl_initialized = SDL_TRUE;
 
-    /* Setup amount of available displays */
+    // Setup amount of available displays
     device->num_displays = 0;
 
-    /* Set device free function */
+    // Set device free function
     device->free = PSP_Destroy;
 
-    /* Setup all functions which we can handle */
+    // Setup all functions which we can handle
     device->VideoInit = PSP_VideoInit;
     device->VideoQuit = PSP_VideoQuit;
     device->GetDisplayModes = PSP_GetDisplayModes;
@@ -128,14 +128,14 @@ VideoBootStrap PSP_bootstrap = {
 };
 
 /*****************************************************************************/
-/* SDL Video and Display initialization/handling functions                   */
+// SDL Video and Display initialization/handling functions
 /*****************************************************************************/
 int PSP_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
     if (PSP_EventInit(_this) == -1) {
-        return -1;  /* error string would already be set */
+        return -1;  // error string would already be set
     }
 
     SDL_zero(mode);
@@ -143,7 +143,7 @@ int PSP_VideoInit(SDL_VideoDevice *_this)
     mode.h = 272;
     mode.refresh_rate = 60.0f;
 
-    /* 32 bpp for default */
+    // 32 bpp for default
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
@@ -166,11 +166,11 @@ int PSP_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     mode.h = 272;
     mode.refresh_rate = 60.0f;
 
-    /* 32 bpp for default */
+    // 32 bpp for default
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     SDL_AddFullscreenDisplayMode(display, &mode);
 
-    /* 16 bpp secondary mode */
+    // 16 bpp secondary mode
     mode.format = SDL_PIXELFORMAT_BGR565;
     SDL_AddFullscreenDisplayMode(display, &mode);
     return 0;
@@ -197,18 +197,18 @@ int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
 {
     SDL_WindowData *wdata;
 
-    /* Allocate window internal data */
+    // Allocate window internal data
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!wdata) {
         return -1;
     }
 
-    /* Setup driver data for this window */
+    // Setup driver data for this window
     window->internal = wdata;
 
     SDL_SetKeyboardFocus(window);
 
-    /* Window has been successfully created */
+    // Window has been successfully created
     return 0;
 }
 
@@ -354,4 +354,4 @@ SDL_bool PSP_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
     return SDL_FALSE;
 }
 
-#endif /* SDL_VIDEO_DRIVER_PSP */
+#endif // SDL_VIDEO_DRIVER_PSP

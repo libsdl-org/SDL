@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 extern "C" {
 #include "../SDL_sysfilesystem.h"
@@ -54,13 +54,13 @@ SDL_SYS_GetBasePath(void)
         path = (CHAR *)ptr;
 
         len = GetModuleFileNameA(NULL, path, buflen);
-        /* if it truncated, then len >= buflen - 1 */
-        /* if there was enough room (or failure), len < buflen - 1 */
+        // if it truncated, then len >= buflen - 1
+        // if there was enough room (or failure), len < buflen - 1
         if (len < buflen - 1) {
             break;
         }
 
-        /* buffer too small? Try again. */
+        // buffer too small? Try again.
         buflen *= 2;
     }
 
@@ -76,8 +76,8 @@ SDL_SYS_GetBasePath(void)
         }
     }
 
-    SDL_assert(i > 0);  /* Should have been an absolute path. */
-    path[i + 1] = '\0'; /* chop off filename. */
+    SDL_assert(i > 0);  // Should have been an absolute path.
+    path[i + 1] = '\0'; // chop off filename.
 
     return path;
 }
@@ -89,20 +89,20 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     char *folderPath;
     HRESULT result;
     const char *csid = SDL_GetHint("SDL_GDK_SERVICE_CONFIGURATION_ID");
-    
+
     if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
 
-    /* This should be set before calling SDL_GetPrefPath! */
+    // This should be set before calling SDL_GetPrefPath!
     if (!csid) {
         SDL_LogWarn(SDL_LOG_CATEGORY_SYSTEM, "Set SDL_GDK_SERVICE_CONFIGURATION_ID before calling SDL_GetPrefPath!");
         return SDL_strdup("T:\\");
     }
 
     if (SDL_GetGDKDefaultUser(&user) < 0) {
-        /* Error already set, just return */
+        // Error already set, just return
         return NULL;
     }
 
@@ -135,11 +135,11 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     return folderPath;
 }
 
-/* TODO */
+// TODO
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-/* vi: set ts=4 sw=4 expandtab: */
+// vi: set ts=4 sw=4 expandtab:

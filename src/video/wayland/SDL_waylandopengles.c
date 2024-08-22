@@ -32,7 +32,7 @@
 
 #include "xdg-shell-client-protocol.h"
 
-/* EGL implementation of SDL OpenGL ES support */
+// EGL implementation of SDL OpenGL ES support
 
 int Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
@@ -86,7 +86,7 @@ int Wayland_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
         interval = -1;
     }
 
-    /* !!! FIXME: technically, this should be per-context, right? */
+    // !!! FIXME: technically, this should be per-context, right?
     _this->egl_data->egl_swapinterval = interval;
     _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0);
     return 0;
@@ -125,7 +125,7 @@ int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
      * immediately for the Wayland frame callback.
      */
     if (data->double_buffer) {
-        /* Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again. */
+        // Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again.
         if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, data->egl_surface)) {
             return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
         }
@@ -133,11 +133,11 @@ int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
         WAYLAND_wl_display_flush(data->waylandData->display);
     }
 
-    /* Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval */
+    // Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval
     if (swap_interval != 0 && data->surface_status == WAYLAND_SURFACE_STATUS_SHOWN) {
         SDL_VideoData *videodata = _this->internal;
         struct wl_display *display = videodata->display;
-        /* 20hz, so we'll progress even if throttled to zero. */
+        // 20hz, so we'll progress even if throttled to zero.
         const Uint64 max_wait = SDL_GetTicksNS() + (SDL_NS_PER_SECOND / 20);
         while (SDL_AtomicGet(&data->swap_interval_ready) == 0) {
             Uint64 now;
@@ -147,27 +147,27 @@ int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
             /* wl_display_prepare_read_queue() will return -1 if the event queue is not empty.
              * If the event queue is empty, it will prepare us for our SDL_IOReady() call. */
             if (WAYLAND_wl_display_prepare_read_queue(display, data->gles_swap_frame_event_queue) != 0) {
-                /* We have some pending events. Check if the frame callback happened. */
+                // We have some pending events. Check if the frame callback happened.
                 WAYLAND_wl_display_dispatch_queue_pending(display, data->gles_swap_frame_event_queue);
                 continue;
             }
 
-            /* Beyond this point, we must either call wl_display_cancel_read() or wl_display_read_events() */
+            // Beyond this point, we must either call wl_display_cancel_read() or wl_display_read_events()
 
             now = SDL_GetTicksNS();
             if (now >= max_wait) {
-                /* Timeout expired. Cancel the read. */
+                // Timeout expired. Cancel the read.
                 WAYLAND_wl_display_cancel_read(display);
                 break;
             }
 
             if (SDL_IOReady(WAYLAND_wl_display_get_fd(display), SDL_IOR_READ, max_wait - now) <= 0) {
-                /* Error or timeout expired without any events for us. Cancel the read. */
+                // Error or timeout expired without any events for us. Cancel the read.
                 WAYLAND_wl_display_cancel_read(display);
                 break;
             }
 
-            /* We have events. Read and dispatch them. */
+            // We have events. Read and dispatch them.
             WAYLAND_wl_display_read_events(display);
             WAYLAND_wl_display_dispatch_queue_pending(display, data->gles_swap_frame_event_queue);
         }
@@ -175,7 +175,7 @@ int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     if (!data->double_buffer) {
-        /* Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again. */
+        // Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again.
         if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, data->egl_surface)) {
             return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
         }
@@ -198,7 +198,7 @@ int Wayland_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLC
 
     WAYLAND_wl_display_flush(_this->internal->display);
 
-    _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0); /* see comments on Wayland_GLES_SetSwapInterval. */
+    _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0); // see comments on Wayland_GLES_SetSwapInterval.
 
     return ret;
 }
@@ -217,4 +217,4 @@ EGLSurface Wayland_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window
     return windowdata->egl_surface;
 }
 
-#endif /* SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL

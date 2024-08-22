@@ -28,4 +28,4 @@ extern int SDL_SendDropPosition(SDL_Window *window, float x, float y);
 extern int SDL_SendDropText(SDL_Window *window, const char *text);
 extern int SDL_SendDropComplete(SDL_Window *window);
 
-#endif /* SDL_dropevents_c_h_ */
+#endif // SDL_dropevents_c_h_

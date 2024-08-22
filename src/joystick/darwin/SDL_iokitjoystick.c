@@ -26,16 +26,16 @@
 #include "../SDL_joystick_c.h"
 #include "SDL_iokitjoystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
-#include "../../haptic/darwin/SDL_syshaptic_c.h" /* For haptic hot plugging */
+#include "../../haptic/darwin/SDL_syshaptic_c.h" // For haptic hot plugging
 
 #define SDL_JOYSTICK_RUNLOOP_MODE CFSTR("SDLJoystick")
 
 #define CONVERT_MAGNITUDE(x) (((x)*10000) / 0x7FFF)
 
-/* The base object of the HID Manager API */
+// The base object of the HID Manager API
 static IOHIDManagerRef hidman = NULL;
 
-/* Linked list of all available devices */
+// Linked list of all available devices
 static recDevice *gpDeviceList = NULL;
 
 void FreeRumbleEffectData(FFEFFECT *effect)
@@ -54,7 +54,7 @@ FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     FFEFFECT *effect;
     FFPERIODIC *periodic;
 
-    /* Create the effect */
+    // Create the effect
     effect = (FFEFFECT *)SDL_calloc(1, sizeof(*effect));
     if (!effect) {
         return NULL;
@@ -62,7 +62,7 @@ FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     effect->dwSize = sizeof(*effect);
     effect->dwGain = 10000;
     effect->dwFlags = FFEFF_OBJECTOFFSETS;
-    effect->dwDuration = SDL_MAX_RUMBLE_DURATION_MS * 1000; /* In microseconds. */
+    effect->dwDuration = SDL_MAX_RUMBLE_DURATION_MS * 1000; // In microseconds.
     effect->dwTriggerButton = FFEB_NOTRIGGER;
 
     effect->cAxes = 2;
@@ -145,7 +145,7 @@ static recDevice *FreeDevice(recDevice *removeDevice)
         }
         SDL_UnlockJoysticks();
 
-        /* save next device prior to disposing of this device */
+        // save next device prior to disposing of this device
         pDeviceNext = removeDevice->pNext;
 
         if (gpDeviceList == removeDevice) {
@@ -162,7 +162,7 @@ static recDevice *FreeDevice(recDevice *removeDevice)
         }
         removeDevice->pNext = NULL;
 
-        /* free element lists */
+        // free element lists
         FreeElementList(removeDevice->firstAxis);
         FreeElementList(removeDevice->firstButton);
         FreeElementList(removeDevice->firstHat);
@@ -182,7 +182,7 @@ static SDL_bool GetHIDElementState(recDevice *pDevice, recElement *pElement, SIn
         if (IOHIDDeviceGetValue(pDevice->deviceRef, pElement->elementRef, &valueRef) == kIOReturnSuccess) {
             value = (SInt32)IOHIDValueGetIntegerValue(valueRef);
 
-            /* record min and max for auto calibration */
+            // record min and max for auto calibration
             if (value < pElement->minReport) {
                 pElement->minReport = value;
             }
@@ -204,7 +204,7 @@ static SDL_bool GetHIDScaledCalibratedState(recDevice *pDevice, recElement *pEle
     int returnValue = SDL_FALSE;
     if (GetHIDElementState(pDevice, pElement, pValue)) {
         if (readScale == 0) {
-            returnValue = SDL_TRUE; /* no scaling at all */
+            returnValue = SDL_TRUE; // no scaling at all
         } else {
             *pValue = (Sint32)(((*pValue - pElement->minReport) * deviceScale / readScale) + min);
             returnValue = SDL_TRUE;
@@ -244,7 +244,7 @@ static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *s
 
 static void AddHIDElement(const void *value, void *parameter);
 
-/* Call AddHIDElement() on all elements in an array of IOHIDElementRefs */
+// Call AddHIDElement() on all elements in an array of IOHIDElementRefs
 static void AddHIDElements(CFArrayRef array, recDevice *pDevice)
 {
     const CFRange range = { 0, CFArrayGetCount(array) };
@@ -262,7 +262,7 @@ static SDL_bool ElementAlreadyAdded(const IOHIDElementCookie cookie, const recEl
     return SDL_FALSE;
 }
 
-/* See if we care about this HID element, and if so, note it in our recDevice. */
+// See if we care about this HID element, and if so, note it in our recDevice.
 static void AddHIDElement(const void *value, void *parameter)
 {
     recDevice *pDevice = (recDevice *)parameter;
@@ -276,13 +276,13 @@ static void AddHIDElement(const void *value, void *parameter)
         recElement *element = NULL;
         recElement **headElement = NULL;
 
-        /* look at types of interest */
+        // look at types of interest
         switch (IOHIDElementGetType(refElement)) {
         case kIOHIDElementTypeInput_Misc:
         case kIOHIDElementTypeInput_Button:
         case kIOHIDElementTypeInput_Axis:
         {
-            switch (usagePage) { /* only interested in kHIDPage_GenericDesktop and kHIDPage_Button */
+            switch (usagePage) { // only interested in kHIDPage_GenericDesktop and kHIDPage_Button
             case kHIDPage_GenericDesktop:
                 switch (usage) {
                 case kHIDUsage_GD_X:
@@ -351,7 +351,7 @@ static void AddHIDElement(const void *value, void *parameter)
                 break;
 
             case kHIDPage_Button:
-            case kHIDPage_Consumer: /* e.g. 'pause' button on Steelseries MFi gamepads. */
+            case kHIDPage_Consumer: // e.g. 'pause' button on Steelseries MFi gamepads.
                 if (!ElementAlreadyAdded(cookie, pDevice->firstButton)) {
                     element = (recElement *)SDL_calloc(1, sizeof(recElement));
                     if (element) {
@@ -378,7 +378,7 @@ static void AddHIDElement(const void *value, void *parameter)
             break;
         }
 
-        if (element && headElement) { /* add to list */
+        if (element && headElement) { // add to list
             recElement *elementPrevious = NULL;
             recElement *elementCurrent = *headElement;
             while (elementCurrent && usage >= elementCurrent->usage) {
@@ -410,7 +410,7 @@ static int GetSteamVirtualGamepadSlot(Uint16 vendor_id, Uint16 product_id, const
     int slot = -1;
 
     if (vendor_id == USB_VENDOR_MICROSOFT && product_id == USB_PRODUCT_XBOX360_WIRED_CONTROLLER) {
-        /* Gamepad name is "GamePad-N", where N is slot + 1 */
+        // Gamepad name is "GamePad-N", where N is slot + 1
         if (SDL_sscanf(product_string, "GamePad-%d", &slot) == 1) {
             slot -= 1;
         }
@@ -429,13 +429,13 @@ static SDL_bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     CFTypeRef refCF = NULL;
     CFArrayRef array = NULL;
 
-    /* get usage page and usage */
+    // get usage page and usage
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDPrimaryUsagePageKey));
     if (refCF) {
         CFNumberGetValue(refCF, kCFNumberSInt32Type, &pDevice->usagePage);
     }
     if (pDevice->usagePage != kHIDPage_GenericDesktop) {
-        return SDL_FALSE; /* Filter device list to non-keyboard/mouse stuff */
+        return SDL_FALSE; // Filter device list to non-keyboard/mouse stuff
     }
 
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDPrimaryUsageKey));
@@ -446,7 +446,7 @@ static SDL_bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     if ((pDevice->usage != kHIDUsage_GD_Joystick &&
          pDevice->usage != kHIDUsage_GD_GamePad &&
          pDevice->usage != kHIDUsage_GD_MultiAxisController)) {
-        return SDL_FALSE; /* Filter device list to non-keyboard/mouse stuff */
+        return SDL_FALSE; // Filter device list to non-keyboard/mouse stuff
     }
 
     /* Make sure we retain the use of the IOKit-provided device-object,
@@ -475,7 +475,7 @@ static SDL_bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         CFNumberGetValue(refCF, kCFNumberSInt32Type, &version);
     }
 
-    /* get device name */
+    // get device name
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDManufacturerKey));
     if ((!refCF) || (!CFStringGetCString(refCF, manufacturer_string, sizeof(manufacturer_string), kCFStringEncodingUTF8))) {
         manufacturer_string[0] = '\0';
@@ -535,7 +535,7 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     }
 
     if (JoystickAlreadyKnown(ioHIDDeviceObject)) {
-        return; /* IOKit sent us a duplicate. */
+        return; // IOKit sent us a duplicate.
     }
 
     device = (recDevice *)SDL_calloc(1, sizeof(recDevice));
@@ -545,7 +545,7 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
 
     if (!GetDeviceInfo(ioHIDDeviceObject, device)) {
         FreeDevice(device);
-        return; /* not a device we care about, probably. */
+        return; // not a device we care about, probably.
     }
 
     if (SDL_ShouldIgnoreJoystick(device->product, device->guid)) {
@@ -553,15 +553,15 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
         return;
     }
 
-    /* Get notified when this device is disconnected. */
+    // Get notified when this device is disconnected.
     IOHIDDeviceRegisterRemovalCallback(ioHIDDeviceObject, JoystickDeviceWasRemovedCallback, device);
     IOHIDDeviceScheduleWithRunLoop(ioHIDDeviceObject, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
     device->runLoopAttached = SDL_TRUE;
 
-    /* Allocate an instance ID for this device */
+    // Allocate an instance ID for this device
     device->instance_id = SDL_GetNextObjectID();
 
-    /* We have to do some storage of the io_service_t for SDL_OpenHapticFromJoystick */
+    // We have to do some storage of the io_service_t for SDL_OpenHapticFromJoystick
     ioservice = IOHIDDeviceGetService(ioHIDDeviceObject);
     if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK)) {
         device->ffservice = ioservice;
@@ -570,7 +570,7 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
 #endif
     }
 
-    /* Add device to the end of the list */
+    // Add device to the end of the list
     if (!gpDeviceList) {
         gpDeviceList = device;
     } else {
@@ -599,12 +599,12 @@ static SDL_bool ConfigHIDManager(CFArrayRef matchingArray)
     IOHIDManagerScheduleWithRunLoop(hidman, runloop, SDL_JOYSTICK_RUNLOOP_MODE);
 
     while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {
-        /* no-op. Callback fires once per existing device. */
+        // no-op. Callback fires once per existing device.
     }
 
-    /* future hotplug events will come through SDL_JOYSTICK_RUNLOOP_MODE now. */
+    // future hotplug events will come through SDL_JOYSTICK_RUNLOOP_MODE now.
 
-    return SDL_TRUE; /* good to go. */
+    return SDL_TRUE; // good to go.
 }
 
 static CFDictionaryRef CreateHIDDeviceMatchDictionary(const UInt32 page, const UInt32 usage, int *okay)
@@ -706,14 +706,14 @@ static void DARWIN_JoystickDetect(void)
         /* run this after the checks above so we don't set device->removed and delete the device before
            DARWIN_JoystickUpdate can run to clean up the SDL_Joystick object that owns this device */
         while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {
-            /* no-op. Pending callbacks will fire in CFRunLoopRunInMode(). */
+            // no-op. Pending callbacks will fire in CFRunLoopRunInMode().
         }
     }
 }
 
 static SDL_bool DARWIN_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    /* We don't override any other drivers */
+    // We don't override any other drivers
     return SDL_FALSE;
 }
 
@@ -788,7 +788,7 @@ static const char *FFStrError(unsigned int err)
     switch (err) {
     case FFERR_DEVICEFULL:
         return "device full";
-    /* This should be valid, but for some reason isn't defined... */
+    // This should be valid, but for some reason isn't defined...
     /* case FFERR_DEVICENOTREG:
         return "device not registered"; */
     case FFERR_DEVICEPAUSED:
@@ -846,7 +846,7 @@ static int DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
         }
     }
 
-    /* Reset and then enable actuators */
+    // Reset and then enable actuators
     result = FFDeviceSendForceFeedbackCommand(device->ffdevice, FFSFFC_RESET);
     if (result != FF_OK) {
         return SDL_SetError("Unable to reset force feedback device: %s", FFStrError(result));
@@ -857,7 +857,7 @@ static int DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
         return SDL_SetError("Unable to enable force feedback actuators: %s", FFStrError(result));
     }
 
-    /* Create the effect */
+    // Create the effect
     device->ffeffect = CreateRumbleEffectData(magnitude);
     if (!device->ffeffect) {
         return -1;
@@ -876,7 +876,7 @@ static int DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_ru
     HRESULT result;
     recDevice *device = joystick->hwdata;
 
-    /* Scale and average the two rumble strengths */
+    // Scale and average the two rumble strengths
     Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
 
     if (!device) {
@@ -942,7 +942,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
         return;
     }
 
-    if (device->removed) { /* device was unplugged; ignore it. */
+    if (device->removed) { // device was unplugged; ignore it.
         if (joystick->hwdata) {
             joystick->hwdata = NULL;
         }
@@ -967,7 +967,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     while (element) {
         goodRead = GetHIDElementState(device, element, &value);
         if (goodRead) {
-            if (value > 1) { /* handle pressure-sensitive buttons */
+            if (value > 1) { // handle pressure-sensitive buttons
                 value = 1;
             }
             SDL_SendJoystickButton(timestamp, joystick, i, value);
@@ -987,9 +987,9 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
         goodRead = GetHIDElementState(device, element, &value);
         if (goodRead) {
             value -= element->min;
-            if (range == 4) { /* 4 position hatswitch - scale up value */
+            if (range == 4) { // 4 position hatswitch - scale up value
                 value *= 2;
-            } else if (range != 8) { /* Neither a 4 nor 8 positions - fall back to default position (centered) */
+            } else if (range != 8) { // Neither a 4 nor 8 positions - fall back to default position (centered)
                 value = -1;
             }
             switch (value) {
@@ -1045,7 +1045,7 @@ static void DARWIN_JoystickClose(SDL_Joystick *joystick)
 static void DARWIN_JoystickQuit(void)
 {
     while (FreeDevice(gpDeviceList)) {
-        /* spin */
+        // spin
     }
 
     if (hidman) {
@@ -1085,4 +1085,4 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver = {
     DARWIN_JoystickGetGamepadMapping
 };
 
-#endif /* SDL_JOYSTICK_IOKIT */
+#endif // SDL_JOYSTICK_IOKIT

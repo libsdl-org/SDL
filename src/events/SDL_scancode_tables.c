@@ -68,4 +68,4 @@ SDL_Scancode SDL_GetScancodeFromTable(SDL_ScancodeTable table, int keycode)
     return scancode;
 }
 
-#endif /* SDL_INPUT_LINUXEV || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_X11 */
+#endif // SDL_INPUT_LINUXEV || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_X11

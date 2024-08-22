@@ -26,4 +26,4 @@
 
 extern void N3DS_PumpEvents(SDL_VideoDevice *_this);
 
-#endif /* SDL_n3dsevents_c_h_ */
+#endif // SDL_n3dsevents_c_h_

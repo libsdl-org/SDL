@@ -32,4 +32,4 @@ extern void SDL_EVDEV_kbd_update(SDL_EVDEV_keyboard_state *state);
 extern void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode, int down);
 extern void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state);
 
-#endif /* SDL_evdev_kbd_h_ */
+#endif // SDL_evdev_kbd_h_

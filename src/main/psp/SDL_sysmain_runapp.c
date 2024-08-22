@@ -23,7 +23,7 @@
 
 #ifdef SDL_PLATFORM_PSP
 
-/* SDL_RunApp() for PSP based on SDL_psp_main.c, placed in the public domain by Sam Lantinga  3/13/14 */
+// SDL_RunApp() for PSP based on SDL_psp_main.c, placed in the public domain by Sam Lantinga  3/13/14
 
 #include <pspkernel.h>
 #include <pspthreadman.h>
@@ -79,4 +79,4 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
     return mainFunction(argc, argv);
 }
 
-#endif /* SDL_PLATFORM_PSP */
+#endif // SDL_PLATFORM_PSP

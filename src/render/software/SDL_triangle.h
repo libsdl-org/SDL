@@ -40,4 +40,4 @@ extern int SDL_SW_BlitTriangle(
 
 extern void trianglepoint_2_fixedpoint(SDL_Point *a);
 
-#endif /* SDL_triangle_h_ */
+#endif // SDL_triangle_h_

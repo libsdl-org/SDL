@@ -22,7 +22,7 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-/* Handle rumble on a separate thread so it doesn't block the application */
+// Handle rumble on a separate thread so it doesn't block the application
 
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
@@ -31,7 +31,7 @@
 typedef struct SDL_HIDAPI_RumbleRequest
 {
     SDL_HIDAPI_Device *device;
-    Uint8 data[2 * USB_PACKET_LENGTH]; /* need enough space for the biggest report: dualshock4 is 78 bytes */
+    Uint8 data[2 * USB_PACKET_LENGTH]; // need enough space for the biggest report: dualshock4 is 78 bytes
     int size;
     SDL_HIDAPI_RumbleSentCallback callback;
     void *userdata;
@@ -91,7 +91,7 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
             (void)SDL_AtomicDecRef(&request->device->rumble_pending);
             SDL_free(request);
 
-            /* Make sure we're not starving report reads when there's lots of rumble */
+            // Make sure we're not starving report reads when there's lots of rumble
             SDL_Delay(10);
         }
     }
@@ -233,7 +233,7 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
     }
     ctx->requests_head = request;
 
-    /* Make sure we unlock before posting the semaphore so the rumble thread can run immediately */
+    // Make sure we unlock before posting the semaphore so the rumble thread can run immediately
     SDL_HIDAPI_UnlockRumble();
 
     SDL_SignalSemaphore(ctx->request_sem);
@@ -260,7 +260,7 @@ int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size
         return -1;
     }
 
-    /* check if there is a pending request for the device and update it */
+    // check if there is a pending request for the device and update it
     if (SDL_HIDAPI_GetPendingRumbleLocked(device, &pending_data, &pending_size, &maximum_size) &&
         size == *pending_size && data[0] == pending_data[0]) {
         SDL_memcpy(pending_data, data, size);
@@ -280,4 +280,4 @@ void SDL_HIDAPI_QuitRumble(void)
     }
 }
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

@@ -24,4 +24,4 @@
 
 extern int RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-#endif /* SDL_VIDEO_DRIVER_RISCOS */
+#endif // SDL_VIDEO_DRIVER_RISCOS

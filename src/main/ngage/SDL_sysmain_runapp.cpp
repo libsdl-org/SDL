@@ -20,25 +20,25 @@
 int SDL_RunApp(int argc_, char* argv_[], SDL_main_func mainFunction, void * reserved)
 {
     (void)argc_; (void)argv_; (void)reserved;
-    /*  Get the clean-up stack */
+    // Get the clean-up stack
     CTrapCleanup *cleanup = CTrapCleanup::New();
 
-    /* Arrange for multi-threaded operation */
+    // Arrange for multi-threaded operation
     SpawnPosixServerThread();
 
-    /* Get args and environment */
+    // Get args and environment
     int argc = 0;
     char **argv = 0;
     char **envp = 0;
 
     __crt0(argc, argv, envp);
 
-    /* Start the application! */
+    // Start the application!
 
-    /* Create stdlib */
+    // Create stdlib
     _REENT;
 
-    /* Set process and thread priority and name */
+    // Set process and thread priority and name
 
     RThread currentThread;
     RProcess thisProcess;
@@ -48,7 +48,7 @@ int SDL_RunApp(int argc_, char* argv_[], SDL_main_func mainFunction, void * rese
     currentThread.SetProcessPriority(EPriorityLow);
     currentThread.SetPriority(EPriorityMuchLess);
 
-    /* Increase heap size */
+    // Increase heap size
     RHeap *newHeap = NULL;
     RHeap *oldHeap = NULL;
     TInt heapSize = 7500000;
@@ -61,7 +61,7 @@ int SDL_RunApp(int argc_, char* argv_[], SDL_main_func mainFunction, void * rese
         goto cleanup;
     } else {
         oldHeap = User::SwitchHeap(newHeap);
-        /* Call stdlib main */
+        // Call stdlib main
         SDL_SetMainReady();
         ret = mainFunction(argc, argv);
     }

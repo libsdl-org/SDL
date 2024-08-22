@@ -23,7 +23,7 @@
 
 #ifdef SDL_PLATFORM_PS2
 
-/* SDL_RunApp() code for PS2 based on SDL_ps2_main.c, fjtrujy@gmail.com */
+// SDL_RunApp() code for PS2 based on SDL_ps2_main.c, fjtrujy@gmail.com
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -81,4 +81,4 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
     return res;
 }
 
-#endif /* SDL_PLATFORM_PS2 */
+#endif // SDL_PLATFORM_PS2

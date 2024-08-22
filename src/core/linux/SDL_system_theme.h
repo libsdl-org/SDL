@@ -27,4 +27,4 @@
 extern SDL_bool SDL_SystemTheme_Init(void);
 extern SDL_SystemTheme SDL_SystemTheme_Get(void);
 
-#endif /* SDL_system_theme_h_ */
+#endif // SDL_system_theme_h_

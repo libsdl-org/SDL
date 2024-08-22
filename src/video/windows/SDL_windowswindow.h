@@ -29,7 +29,7 @@
 #include "../SDL_sysvideo.h"
 #endif
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -97,7 +97,7 @@ struct SDL_WindowData
     EGLSurface egl_surface;
 #endif
 
-    /* Whether we retain the content of the window when changing state */
+    // Whether we retain the content of the window when changing state
     UINT copybits_flag;
     SDLDropTarget *drop_target;
 };
@@ -139,9 +139,9 @@ extern int WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, 
 extern int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi);
 extern int WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_windowswindow_h_ */
+#endif // SDL_windowswindow_h_

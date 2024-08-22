@@ -99,7 +99,7 @@ def main():
             if match:
                 continue
 
-            # Remove one line comment /* ... */
+            # Remove one line comment // ...
             # eg: extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
             line = reg_comment_remove_content.sub('', line)
 

@@ -24,4 +24,4 @@
 
 extern int Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

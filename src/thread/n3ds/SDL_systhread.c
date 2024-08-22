@@ -22,11 +22,11 @@
 
 #ifdef SDL_THREAD_N3DS
 
-/* Thread management routines for SDL */
+// Thread management routines for SDL
 
 #include "../SDL_systhread.h"
 
-/* N3DS has very limited RAM (128MB), so we set a low default thread stack size. */
+// N3DS has very limited RAM (128MB), so we set a low default thread stack size.
 #define N3DS_THREAD_STACK_SIZE_DEFAULT (80 * 1024)
 
 #define N3DS_THREAD_PRIORITY_LOW           0x3F /**< Minimum priority */
@@ -53,7 +53,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
 
     svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
 
-    /* prefer putting audio thread on system core */
+    // prefer putting audio thread on system core
     if (thread->name && (SDL_strncmp(thread->name, "SDLAudioP", 9) == 0) && R_SUCCEEDED(APT_SetAppCpuTimeLimit(30))) {
         cpu = 1;
     }
@@ -133,4 +133,4 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
     threadDetach(thread->handle);
 }
 
-#endif /* SDL_THREAD_N3DS */
+#endif // SDL_THREAD_N3DS

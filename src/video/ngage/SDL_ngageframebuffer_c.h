@@ -26,7 +26,7 @@ extern int SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window 
 extern void SDL_NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
 
 /****************************************************************************/
-/* Runtime                                                                  */
+// Runtime
 /****************************************************************************/
 
 class NGAGE_Runtime

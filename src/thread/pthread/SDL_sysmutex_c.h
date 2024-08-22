@@ -37,4 +37,4 @@ struct SDL_Mutex
 #endif
 };
 
-#endif /* SDL_mutex_c_h_ */
+#endif // SDL_mutex_c_h_

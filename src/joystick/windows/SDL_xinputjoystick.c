@@ -29,7 +29,7 @@
 #include "SDL_rawinputjoystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,7 +49,7 @@ int SDL_XINPUT_JoystickInit(void)
     s_bXInputEnabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE);
 
     if (s_bXInputEnabled && WIN_LoadXInputDLL() < 0) {
-        s_bXInputEnabled = SDL_FALSE; /* oh well. */
+        s_bXInputEnabled = SDL_FALSE; // oh well.
     }
     return 0;
 }
@@ -97,7 +97,7 @@ static SDL_bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Ui
     SDL_XINPUT_CAPABILITIES_EX capabilities;
 
     if (!XINPUTGETCAPABILITIESEX || XINPUTGETCAPABILITIESEX(1, userid, 0, &capabilities) != ERROR_SUCCESS) {
-        /* Use a generic VID/PID representing an XInput controller */
+        // Use a generic VID/PID representing an XInput controller
         if (pVID) {
             *pVID = USB_VENDOR_MICROSOFT;
         }
@@ -107,7 +107,7 @@ static SDL_bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Ui
         return SDL_FALSE;
     }
 
-    /* Fixup for Wireless Xbox 360 Controller */
+    // Fixup for Wireless Xbox 360 Controller
     if (capabilities.ProductId == 0 && capabilities.Capabilities.Flags & XINPUT_CAPS_WIRELESS) {
         capabilities.VendorId = USB_VENDOR_MICROSOFT;
         capabilities.ProductId = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
@@ -149,7 +149,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
 
 #ifdef SDL_JOYSTICK_RAWINPUT
     if (RAWINPUT_IsEnabled()) {
-        /* The raw input driver handles more than 4 controllers, so prefer that when available */
+        // The raw input driver handles more than 4 controllers, so prefer that when available
         /* We do this check here rather than at the top of SDL_XINPUT_JoystickDetect() because
            we need to check XInput state before RAWINPUT gets a hold of the device, otherwise
            when a controller is connected via the wireless adapter, it will shut down at the
@@ -167,7 +167,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
 
     while (pNewJoystick) {
         if (pNewJoystick->bXInputDevice && (pNewJoystick->XInputUserId == userid) && (pNewJoystick->SubType == SubType)) {
-            /* if we are replacing the front of the list then update it */
+            // if we are replacing the front of the list then update it
             if (pNewJoystick == *pContext) {
                 *pContext = pNewJoystick->pNext;
             } else if (pPrevJoystick) {
@@ -176,7 +176,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
 
             pNewJoystick->pNext = SYS_Joystick;
             SYS_Joystick = pNewJoystick;
-            return; /* already in the list. */
+            return; // already in the list.
         }
 
         pPrevJoystick = pNewJoystick;
@@ -185,7 +185,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
 
     pNewJoystick = (JoyStick_DeviceData *)SDL_calloc(1, sizeof(JoyStick_DeviceData));
     if (!pNewJoystick) {
-        return; /* better luck next time? */
+        return; // better luck next time?
     }
 
     name = GetXInputName(userid, SubType);
@@ -194,7 +194,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
     pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, name);
     if (!pNewJoystick->joystickname) {
         SDL_free(pNewJoystick);
-        return; /* better luck next time? */
+        return; // better luck next time?
     }
     (void)SDL_snprintf(pNewJoystick->path, sizeof(pNewJoystick->path), "XInput#%u", userid);
     pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, NULL, name, 'x', SubType);
@@ -222,7 +222,7 @@ void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
         return;
     }
 
-    /* iterate in reverse, so these are in the final list in ascending numeric order. */
+    // iterate in reverse, so these are in the final list in ascending numeric order.
     for (iuserid = XUSER_MAX_COUNT - 1; iuserid >= 0; iuserid--) {
         const Uint8 userid = (Uint8)iuserid;
         XINPUT_CAPABILITIES capabilities;
@@ -240,7 +240,7 @@ SDL_bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 versio
         return SDL_FALSE;
     }
 
-    /* iterate in reverse, so these are in the final list in ascending numeric order. */
+    // iterate in reverse, so these are in the final list in ascending numeric order.
     for (iuserid = 0; iuserid < XUSER_MAX_COUNT; ++iuserid) {
         const Uint8 userid = (Uint8)iuserid;
         Uint16 slot_vendor;
@@ -277,7 +277,7 @@ int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
     joystick->hwdata->bXInputHaptic = (XINPUTSETSTATE(userId, &state) == ERROR_SUCCESS);
     joystick->hwdata->userid = userId;
 
-    /* The XInput API has a hard coded button/axis mapping, so we just match it */
+    // The XInput API has a hard coded button/axis mapping, so we just match it
     joystick->naxes = 6;
     joystick->nbuttons = 11;
     joystick->nhats = 1;
@@ -399,10 +399,10 @@ void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
     }
 
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    /* XInputOnGameInput doesn't ever change dwPacketNumber, so have to just update every frame */
+    // XInputOnGameInput doesn't ever change dwPacketNumber, so have to just update every frame
     UpdateXInputJoystickState(joystick, &XInputState, &XBatteryInformation);
 #else
-    /* only fire events if the data changed from last time */
+    // only fire events if the data changed from last time
     if (XInputState.dwPacketNumber && XInputState.dwPacketNumber != joystick->hwdata->dwPacketNumber) {
         UpdateXInputJoystickState(joystick, &XInputState, &XBatteryInformation);
         joystick->hwdata->dwPacketNumber = XInputState.dwPacketNumber;
@@ -422,12 +422,12 @@ void SDL_XINPUT_JoystickQuit(void)
     }
 }
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
 
-#else /* !SDL_JOYSTICK_XINPUT */
+#else // !SDL_JOYSTICK_XINPUT
 
 typedef struct JoyStick_DeviceData JoyStick_DeviceData;
 
@@ -472,4 +472,4 @@ void SDL_XINPUT_JoystickQuit(void)
 {
 }
 
-#endif /* SDL_JOYSTICK_XINPUT */
+#endif // SDL_JOYSTICK_XINPUT

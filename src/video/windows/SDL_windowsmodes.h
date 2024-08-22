@@ -52,4 +52,4 @@ extern int WIN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display,
 extern void WIN_RefreshDisplays(SDL_VideoDevice *_this);
 extern void WIN_QuitModes(SDL_VideoDevice *_this);
 
-#endif /* SDL_windowsmodes_h_ */
+#endif // SDL_windowsmodes_h_

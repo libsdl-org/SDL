@@ -38,7 +38,7 @@
 
 @implementation SDL_uikitmetalview
 
-/* Returns a Metal-compatible layer. */
+// Returns a Metal-compatible layer.
 + (Class)layerClass
 {
     return [CAMetalLayer class];
@@ -56,7 +56,7 @@
     return self;
 }
 
-/* Set the size of the metal drawables when the view is resized. */
+// Set the size of the metal drawables when the view is resized.
 - (void)layoutSubviews
 {
     [super layoutSubviews];
@@ -137,4 +137,4 @@ void *UIKit_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
+#endif // SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)

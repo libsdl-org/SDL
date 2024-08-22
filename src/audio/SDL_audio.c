@@ -1722,7 +1722,7 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
             // uhoh, this device is undead, and just waiting to be cleaned up. Refuse explicit opens.
             SDL_SetError("Device was already lost and can't accept new opens");
         } else if ((logdev = (SDL_LogicalAudioDevice *) SDL_calloc(1, sizeof (SDL_LogicalAudioDevice))) == NULL) {
-            /* SDL_calloc already called SDL_OutOfMemory */
+            // SDL_calloc already called SDL_OutOfMemory
         } else if (OpenPhysicalAudioDevice(device, spec) < 0) {  // if this is the first thing using this physical device, open at the OS level if necessary...
             SDL_free(logdev);
         } else {

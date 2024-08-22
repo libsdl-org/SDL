@@ -47,7 +47,7 @@ static void NETBSDAUDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_Au
 static void NETBSDAUDIO_Status(SDL_AudioDevice *device)
 {
 #ifdef DEBUG_AUDIO
-    /* *INDENT-OFF* */ /* clang-format off */
+    /* *INDENT-OFF* */ // clang-format off
     audio_info_t info;
     const struct audio_prinfo *prinfo;
 
@@ -109,7 +109,7 @@ static void NETBSDAUDIO_Status(SDL_AudioDevice *device)
             "",
             device->spec.format,
             device->buffer_size);
-    /* *INDENT-ON* */ /* clang-format on */
+    /* *INDENT-ON* */ // clang-format on
 
 #endif // DEBUG_AUDIO
 }

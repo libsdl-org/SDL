@@ -64,4 +64,4 @@ int RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonI
     return 0;
 }
 
-#endif /* SDL_VIDEO_DRIVER_RISCOS */
+#endif // SDL_VIDEO_DRIVER_RISCOS

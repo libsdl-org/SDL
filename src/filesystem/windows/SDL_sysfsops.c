@@ -24,7 +24,7 @@
 #if defined(SDL_FSOPS_WINDOWS)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysfilesystem.h"

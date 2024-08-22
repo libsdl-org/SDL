@@ -37,7 +37,7 @@ SDL_Mutex *SDL_CreateMutex(void)
 
 #ifndef SDL_THREADS_DISABLED
     if (mutex) {
-        /* Create the mutex semaphore, with initial value 1 */
+        // Create the mutex semaphore, with initial value 1
         mutex->sem = SDL_CreateSemaphore(1);
         mutex->recursive = 0;
         mutex->owner = 0;
@@ -78,7 +78,7 @@ void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doe
             mutex->recursive = 0;
         }
     }
-#endif /* SDL_THREADS_DISABLED */
+#endif // SDL_THREADS_DISABLED
 }
 
 int SDL_TryLockMutex(SDL_Mutex *mutex)

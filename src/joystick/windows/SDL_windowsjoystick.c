@@ -40,19 +40,19 @@
 #include <dbt.h>
 #endif
 
-#define INITGUID /* Only set here, if set twice will cause mingw32 to break. */
+#define INITGUID // Only set here, if set twice will cause mingw32 to break.
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
 
-#include "../../haptic/windows/SDL_dinputhaptic_c.h" /* For haptic hot plugging */
+#include "../../haptic/windows/SDL_dinputhaptic_c.h" // For haptic hot plugging
 
 #ifndef DEVICE_NOTIFY_WINDOW_HANDLE
 #define DEVICE_NOTIFY_WINDOW_HANDLE 0x00000000
 #endif
 
-/* local variables */
+// local variables
 static SDL_bool s_bJoystickThread = SDL_FALSE;
 static SDL_Condition *s_condJoystickThread = NULL;
 static SDL_Mutex *s_mutexJoyStickEnum = NULL;
@@ -61,7 +61,7 @@ static SDL_bool s_bJoystickThreadQuit = SDL_FALSE;
 static Uint64 s_lastDeviceChange = 0;
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 
-JoyStick_DeviceData *SYS_Joystick; /* array to hold joystick ID values */
+JoyStick_DeviceData *SYS_Joystick; // array to hold joystick ID values
 
 
 static SDL_bool WindowsDeviceChanged(void)
@@ -92,7 +92,7 @@ typedef struct
 #define IDT_SDL_DEVICE_CHANGE_TIMER_1 1200
 #define IDT_SDL_DEVICE_CHANGE_TIMER_2 1201
 
-/* windowproc for our joystick detect thread message only window, to detect any USB device addition/removal */
+// windowproc for our joystick detect thread message only window, to detect any USB device addition/removal
 static LRESULT CALLBACK SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
@@ -101,7 +101,7 @@ static LRESULT CALLBACK SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARA
         case DBT_DEVICEARRIVAL:
         case DBT_DEVICEREMOVECOMPLETE:
             if (((DEV_BROADCAST_HDR *)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
-                /* notify 300ms and 2 seconds later to ensure all APIs have updated status */
+                // notify 300ms and 2 seconds later to ensure all APIs have updated status
                 SetTimer(hwnd, IDT_SDL_DEVICE_CHANGE_TIMER_1, 300, NULL);
                 SetTimer(hwnd, IDT_SDL_DEVICE_CHANGE_TIMER_2, 2000, NULL);
             }
@@ -156,7 +156,7 @@ static int SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
 
     data->wincl.hInstance = GetModuleHandle(NULL);
     data->wincl.lpszClassName = TEXT("Message");
-    data->wincl.lpfnWndProc = SDL_PrivateJoystickDetectProc; /* This function is called by windows */
+    data->wincl.lpfnWndProc = SDL_PrivateJoystickDetectProc; // This function is called by windows
     data->wincl.cbSize = sizeof(WNDCLASSEX);
 
     if (!RegisterClassEx(&data->wincl)) {
@@ -196,12 +196,12 @@ static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, 
     int lastret = 1;
 
     if (!data->messageWindow) {
-        return SDL_FALSE; /* device notifications require a window */
+        return SDL_FALSE; // device notifications require a window
     }
 
     SDL_UnlockMutex(mutex);
     while (lastret > 0 && !WindowsDeviceChanged()) {
-        lastret = GetMessage(&msg, NULL, 0, 0); /* WM_QUIT causes return value of 0 */
+        lastret = GetMessage(&msg, NULL, 0, 0); // WM_QUIT causes return value of 0
         if (lastret > 0) {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
@@ -211,7 +211,7 @@ static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, 
     return (lastret != -1);
 }
 
-#endif /* !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */
+#endif // !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #ifndef SDL_PLATFORM_WINRT
 
@@ -219,7 +219,7 @@ static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, 
 static SDL_DeviceNotificationData s_notification_data;
 #endif
 
-/* Function/thread to scan the system for joysticks. */
+// Function/thread to scan the system for joysticks.
 static int SDLCALL SDL_JoystickThread(void *_data)
 {
 #ifdef SDL_JOYSTICK_XINPUT
@@ -241,10 +241,10 @@ static int SDLCALL SDL_JoystickThread(void *_data)
         {
 #endif
 #ifdef SDL_JOYSTICK_XINPUT
-            /* WM_DEVICECHANGE not working, poll for new XINPUT controllers */
+            // WM_DEVICECHANGE not working, poll for new XINPUT controllers
             SDL_WaitConditionTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
             if (SDL_XINPUT_Enabled() && XINPUTGETCAPABILITIES) {
-                /* scan for any change in XInput devices */
+                // scan for any change in XInput devices
                 Uint8 userId;
                 for (userId = 0; userId < XUSER_MAX_COUNT; userId++) {
                     XINPUT_CAPABILITIES capabilities;
@@ -257,9 +257,9 @@ static int SDLCALL SDL_JoystickThread(void *_data)
                 }
             }
 #else
-            /* WM_DEVICECHANGE not working, no XINPUT, no point in keeping thread alive */
+            // WM_DEVICECHANGE not working, no XINPUT, no point in keeping thread alive
             break;
-#endif /* SDL_JOYSTICK_XINPUT */
+#endif // SDL_JOYSTICK_XINPUT
         }
     }
 
@@ -272,7 +272,7 @@ static int SDLCALL SDL_JoystickThread(void *_data)
     return 1;
 }
 
-/* spin up the thread to detect hotplug of devices */
+// spin up the thread to detect hotplug of devices
 static int SDL_StartJoystickThread(void)
 {
     s_mutexJoyStickEnum = SDL_CreateMutex();
@@ -301,14 +301,14 @@ static void SDL_StopJoystickThread(void)
 
     SDL_LockMutex(s_mutexJoyStickEnum);
     s_bJoystickThreadQuit = SDL_TRUE;
-    SDL_BroadcastCondition(s_condJoystickThread); /* signal the joystick thread to quit */
+    SDL_BroadcastCondition(s_condJoystickThread); // signal the joystick thread to quit
     SDL_UnlockMutex(s_mutexJoyStickEnum);
     PostThreadMessage((DWORD)SDL_GetThreadID(s_joystickThread), WM_QUIT, 0, 0);
 
-    /* Unlock joysticks while the joystick thread finishes processing messages */
+    // Unlock joysticks while the joystick thread finishes processing messages
     SDL_AssertJoysticksLocked();
     SDL_UnlockJoysticks();
-    SDL_WaitThread(s_joystickThread, NULL); /* wait for it to bugger off */
+    SDL_WaitThread(s_joystickThread, NULL); // wait for it to bugger off
     SDL_LockJoysticks();
 
     SDL_DestroyCondition(s_condJoystickThread);
@@ -320,7 +320,7 @@ static void SDL_StopJoystickThread(void)
     s_joystickThread = NULL;
 }
 
-#endif /* !defined(SDL_PLATFORM_WINRT) */
+#endif // !defined(SDL_PLATFORM_WINRT)
 
 void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
 {
@@ -365,21 +365,21 @@ static int WINDOWS_JoystickInit(void)
 #endif
 
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    /* On Xbox, force create the joystick thread for device detection (since other methods don't work */
+    // On Xbox, force create the joystick thread for device detection (since other methods don't work
     s_bJoystickThread = SDL_TRUE;
     if (SDL_StartJoystickThread() < 0) {
         return -1;
     }
 #endif
 
-    SetWindowsDeviceChanged(); /* force a scan of the system for joysticks this first time */
+    SetWindowsDeviceChanged(); // force a scan of the system for joysticks this first time
 
     WINDOWS_JoystickDetect();
 
     return 0;
 }
 
-/* return the number of joysticks that are connected right now */
+// return the number of joysticks that are connected right now
 static int WINDOWS_JoystickGetCount(void)
 {
     int nJoysticks = 0;
@@ -392,14 +392,14 @@ static int WINDOWS_JoystickGetCount(void)
     return nJoysticks;
 }
 
-/* detect any new joysticks being inserted into the system */
+// detect any new joysticks being inserted into the system
 void WINDOWS_JoystickDetect(void)
 {
     JoyStick_DeviceData *pCurList = NULL;
 
-    /* only enum the devices if the joystick thread told us something changed */
+    // only enum the devices if the joystick thread told us something changed
     if (!WindowsDeviceChanged()) {
-        return; /* thread hasn't signaled, nothing to do right now. */
+        return; // thread hasn't signaled, nothing to do right now.
     }
 
     if (s_mutexJoyStickEnum) {
@@ -411,10 +411,10 @@ void WINDOWS_JoystickDetect(void)
     pCurList = SYS_Joystick;
     SYS_Joystick = NULL;
 
-    /* Look for DirectInput joysticks, wheels, head trackers, gamepads, etc.. */
+    // Look for DirectInput joysticks, wheels, head trackers, gamepads, etc..
     SDL_DINPUT_JoystickDetect(&pCurList);
 
-    /* Look for XInput devices. Do this last, so they're first in the final list. */
+    // Look for XInput devices. Do this last, so they're first in the final list.
     SDL_XINPUT_JoystickDetect(&pCurList);
 
     if (s_mutexJoyStickEnum) {
@@ -498,7 +498,7 @@ static int WINDOWS_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     }
 
     if (device->bXInputDevice) {
-        /* The slot for XInput devices can change as controllers are seated */
+        // The slot for XInput devices can change as controllers are seated
         return SDL_XINPUT_GetSteamVirtualGamepadSlot(device->XInputUserId);
     } else {
         return device->steam_virtual_gamepad_slot;
@@ -521,7 +521,7 @@ static void WINDOWS_JoystickSetDevicePlayerIndex(int device_index, int player_in
 {
 }
 
-/* return the stable device guid for this device index */
+// return the stable device guid for this device index
 static SDL_GUID WINDOWS_JoystickGetDeviceGUID(int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
@@ -534,7 +534,7 @@ static SDL_GUID WINDOWS_JoystickGetDeviceGUID(int device_index)
     return device->guid;
 }
 
-/* Function to perform the mapping between current device instance and this joysticks instance id */
+// Function to perform the mapping between current device instance and this joysticks instance id
 static SDL_JoystickID WINDOWS_JoystickGetDeviceInstanceID(int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
@@ -561,7 +561,7 @@ static int WINDOWS_JoystickOpen(SDL_Joystick *joystick, int device_index)
         device = device->pNext;
     }
 
-    /* allocate memory for system specific hardware data */
+    // allocate memory for system specific hardware data
     joystick->hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(struct joystick_hwdata));
     if (!joystick->hwdata) {
         return -1;
@@ -617,7 +617,7 @@ static void WINDOWS_JoystickUpdate(SDL_Joystick *joystick)
     }
 }
 
-/* Function to close a joystick after use */
+// Function to close a joystick after use
 static void WINDOWS_JoystickClose(SDL_Joystick *joystick)
 {
     if (joystick->hwdata->bXInputDevice) {
@@ -629,7 +629,7 @@ static void WINDOWS_JoystickClose(SDL_Joystick *joystick)
     SDL_free(joystick->hwdata);
 }
 
-/* Function to perform any system-specific joystick related cleanup */
+// Function to perform any system-specific joystick related cleanup
 void WINDOWS_JoystickQuit(void)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
@@ -694,8 +694,8 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver = {
 #else
 
 #ifdef SDL_JOYSTICK_RAWINPUT
-/* The RAWINPUT driver needs the device notification setup above */
+// The RAWINPUT driver needs the device notification setup above
 #error SDL_JOYSTICK_RAWINPUT requires SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT
 #endif
 
-#endif /* SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT */
+#endif // SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT

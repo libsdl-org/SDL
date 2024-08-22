@@ -35,7 +35,7 @@
 
 @interface SDLEAGLContext : EAGLContext
 
-/* The OpenGL ES context owns a view / drawable. */
+// The OpenGL ES context owns a view / drawable.
 @property(nonatomic, strong) SDL_uikitopenglview *sdlView;
 
 @end
@@ -95,7 +95,7 @@ int UIKit_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SDLEAGLContext *context = (__bridge SDLEAGLContext *)SDL_GL_GetCurrentContext();
 
 #ifdef SDL_POWER_UIKIT
-        /* Check once a frame to see if we should turn off the battery monitor. */
+        // Check once a frame to see if we should turn off the battery monitor.
         SDL_UIKit_UpdateBatteryMonitoring();
 #endif
 
@@ -125,7 +125,7 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
          * versions. */
         EAGLRenderingAPI api = major;
 
-        /* iOS currently doesn't support GLES >3.0. */
+        // iOS currently doesn't support GLES >3.0.
         if (major > 3 || (major == 3 && minor > 0)) {
             SDL_SetError("OpenGL ES %d.%d context could not be created", major, minor);
             return NULL;
@@ -153,7 +153,7 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
             return NULL;
         }
 
-        /* construct our view, passing in SDL's OpenGL configuration data */
+        // construct our view, passing in SDL's OpenGL configuration data
         view = [[SDL_uikitopenglview alloc] initWithFrame:frame
                                                     scale:scale
                                             retainBacking:_this->gl_config.retained_backing
@@ -176,7 +176,7 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER, view.drawableRenderbuffer);
         SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER, view.msaaResolveFramebuffer);
 
-        /* The context owns the view / drawable. */
+        // The context owns the view / drawable.
         context.sdlView = view;
 
         if (UIKit_GL_MakeCurrent(_this, window, (__bridge SDL_GLContext)context) < 0) {
@@ -218,4 +218,4 @@ void UIKit_GL_RestoreCurrentContext(void)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

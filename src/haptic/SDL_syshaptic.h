@@ -24,15 +24,15 @@
 #ifndef SDL_syshaptic_h_
 #define SDL_syshaptic_h_
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct haptic_effect
 {
-    SDL_HapticEffect effect;          /* The current event */
-    struct haptic_hweffect *hweffect; /* The hardware behind the event */
+    SDL_HapticEffect effect;          // The current event
+    struct haptic_hweffect *hweffect; // The hardware behind the event
 };
 
 /*
@@ -40,21 +40,21 @@ struct haptic_effect
  */
 struct SDL_Haptic
 {
-    SDL_HapticID instance_id;       /* Device instance, monotonically increasing from 0 */
-    char *name;                     /* Device name - system dependent */
+    SDL_HapticID instance_id;       // Device instance, monotonically increasing from 0
+    char *name;                     // Device name - system dependent
 
-    struct haptic_effect *effects;  /* Allocated effects */
-    int neffects;                   /* Maximum amount of effects */
-    int nplaying;                   /* Maximum amount of effects to play at the same time */
-    Uint32 supported;               /* Supported effects and features */
-    int naxes;                      /* Number of axes on the device. */
+    struct haptic_effect *effects;  // Allocated effects
+    int neffects;                   // Maximum amount of effects
+    int nplaying;                   // Maximum amount of effects to play at the same time
+    Uint32 supported;               // Supported effects and features
+    int naxes;                      // Number of axes on the device.
 
-    struct haptic_hwdata *hwdata;   /* Driver dependent */
-    int ref_count;                  /* Count for multiple opens */
+    struct haptic_hwdata *hwdata;   // Driver dependent
+    int ref_count;                  // Count for multiple opens
 
-    int rumble_id;                  /* ID of rumble effect for simple rumble API. */
-    SDL_HapticEffect rumble_effect; /* Rumble effect. */
-    struct SDL_Haptic *next;        /* pointer to next haptic we have allocated */
+    int rumble_id;                  // ID of rumble effect for simple rumble API.
+    SDL_HapticEffect rumble_effect; // Rumble effect.
+    struct SDL_Haptic *next;        // pointer to next haptic we have allocated
 };
 
 /*
@@ -64,7 +64,7 @@ struct SDL_Haptic
  */
 extern int SDL_SYS_HapticInit(void);
 
-/* Function to return the number of haptic devices plugged in right now */
+// Function to return the number of haptic devices plugged in right now
 extern int SDL_SYS_NumHaptics(void);
 
 /*
@@ -208,9 +208,9 @@ extern int SDL_SYS_HapticUnpause(SDL_Haptic *haptic);
  */
 extern int SDL_SYS_HapticStopAll(SDL_Haptic *haptic);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_syshaptic_h_ */
+#endif // SDL_syshaptic_h_

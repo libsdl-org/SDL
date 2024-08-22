@@ -30,7 +30,7 @@
 
 #include <Carbon/Carbon.h>
 
-/*#define DEBUG_IME NSLog */
+// #define DEBUG_IME NSLog
 #define DEBUG_IME(...)
 
 @interface SDL3TranslatorResponder : NSView <NSTextInputClient>
@@ -59,7 +59,7 @@
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
-    /* TODO: Make use of replacementRange? */
+    // TODO: Make use of replacementRange?
 
     const char *str;
 
@@ -73,7 +73,7 @@
         str = [aString UTF8String];
     }
 
-    /* We're likely sending the composed text, so we reset the IME status. */
+    // We're likely sending the composed text, so we reset the IME status.
     if ([self hasMarkedText]) {
         [self unmarkText];
     }
@@ -280,14 +280,14 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
     UCKeyboardLayout *keyLayoutPtr = NULL;
     CFDataRef uchrDataRef;
 
-    /* See if the keymap needs to be updated */
+    // See if the keymap needs to be updated
     key_layout = TISCopyCurrentKeyboardLayoutInputSource();
     if (key_layout == data.key_layout) {
         return;
     }
     data.key_layout = key_layout;
 
-    /* Try Unicode data first */
+    // Try Unicode data first
     uchrDataRef = TISGetInputSourceProperty(key_layout, kTISPropertyUnicodeKeyLayoutData);
     if (uchrDataRef) {
         keyLayoutPtr = (UCKeyboardLayout *)CFDataGetBytePtr(uchrDataRef);
@@ -322,7 +322,7 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
             UniCharCount len;
             UInt32 dead_key_state;
 
-            /* Make sure this scancode is a valid character scancode */
+            // Make sure this scancode is a valid character scancode
             SDL_Scancode scancode = darwin_scancode_table[i];
             if (scancode == SDL_SCANCODE_UNKNOWN ||
                 scancode == SDL_SCANCODE_DELETE ||
@@ -337,7 +337,7 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
              * key '<', which is on the right of the Shift key, are inverted
             */
             if ((scancode == SDL_SCANCODE_NONUSBACKSLASH || scancode == SDL_SCANCODE_GRAVE) && KBGetLayoutType(LMGetKbdType()) == kKeyboardISO) {
-                /* see comments in scancodes_darwin.h */
+                // see comments in scancodes_darwin.h
                 scancode = (SDL_Scancode)((SDL_SCANCODE_NONUSBACKSLASH + SDL_SCANCODE_GRAVE) - scancode);
             }
 
@@ -369,9 +369,9 @@ void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
 
     UpdateKeymap(data, SDL_FALSE);
 
-    /* Set our own names for the platform-dependent but layout-independent keys */
-    /* This key is NumLock on the MacBook keyboard. :) */
-    /*SDL_SetScancodeName(SDL_SCANCODE_NUMLOCKCLEAR, "Clear");*/
+    // Set our own names for the platform-dependent but layout-independent keys
+    // This key is NumLock on the MacBook keyboard. :)
+    // SDL_SetScancodeName(SDL_SCANCODE_NUMLOCKCLEAR, "Clear");
     SDL_SetScancodeName(SDL_SCANCODE_LALT, "Left Option");
     SDL_SetScancodeName(SDL_SCANCODE_LGUI, "Left Command");
     SDL_SetScancodeName(SDL_SCANCODE_RALT, "Right Option");
@@ -400,7 +400,7 @@ int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         }
 
         if (![[data.fieldEdit superview] isEqual:parentView]) {
-            /* DEBUG_IME(@"add fieldEdit to window contentView"); */
+            // DEBUG_IME(@"add fieldEdit to window contentView");
             [data.fieldEdit removeFromSuperview];
             [parentView addSubview:data.fieldEdit];
             [nswindow makeFirstResponder:data.fieldEdit];
@@ -437,27 +437,27 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
     SDL_Scancode code;
     SDL_CocoaVideoData *data = _this ? ((__bridge SDL_CocoaVideoData *)_this->internal) : nil;
     if (!data) {
-        return; /* can happen when returning from fullscreen Space on shutdown */
+        return; // can happen when returning from fullscreen Space on shutdown
     }
 
     scancode = [event keyCode];
 
     if ((scancode == 10 || scancode == 50) && KBGetLayoutType(LMGetKbdType()) == kKeyboardISO) {
-        /* see comments in scancodes_darwin.h */
+        // see comments in scancodes_darwin.h
         scancode = 60 - scancode;
     }
 
     if (scancode < SDL_arraysize(darwin_scancode_table)) {
         code = darwin_scancode_table[scancode];
     } else {
-        /* Hmm, does this ever happen?  If so, need to extend the keymap... */
+        // Hmm, does this ever happen?  If so, need to extend the keymap...
         code = SDL_SCANCODE_UNKNOWN;
     }
 
     switch ([event type]) {
     case NSEventTypeKeyDown:
         if (![event isARepeat]) {
-            /* See if we need to rebuild the keyboard layout */
+            // See if we need to rebuild the keyboard layout
             UpdateKeymap(data, SDL_TRUE);
         }
 
@@ -490,7 +490,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
         HandleModifiers(_this, SDL_SCANCODE_RGUI, modflags);
         break;
     }
-    default: /* just to avoid compiler warnings */
+    default: // just to avoid compiler warnings
         break;
     }
 }
@@ -517,4 +517,4 @@ int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_
     return 0;
 }
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

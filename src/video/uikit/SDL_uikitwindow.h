@@ -48,9 +48,9 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 @property(nonatomic, strong) UIWindow *uiwindow;
 @property(nonatomic, strong) SDL_uikitviewcontroller *viewcontroller;
 
-/* Array of SDL_uikitviews owned by this window. */
+// Array of SDL_uikitviews owned by this window.
 @property(nonatomic, copy) NSMutableArray *views;
 
 @end
 
-#endif /* SDL_uikitwindow_h_ */
+#endif // SDL_uikitwindow_h_

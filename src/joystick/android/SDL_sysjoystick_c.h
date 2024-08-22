@@ -35,12 +35,12 @@ extern int Android_OnHat(int device_id, int hat_id, int x, int y);
 extern int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, SDL_bool can_rumble);
 extern int Android_RemoveJoystick(int device_id);
 
-/* A linked list of available joysticks */
+// A linked list of available joysticks
 typedef struct SDL_joylist_item
 {
     int device_instance;
-    int device_id; /* Android's device id */
-    char *name;    /* "SideWinder 3D Pro" or whatever */
+    int device_id; // Android's device id
+    char *name;    // "SideWinder 3D Pro" or whatever
     SDL_GUID guid;
     SDL_Joystick *joystick;
     int nbuttons, naxes, nhats;
@@ -52,6 +52,6 @@ typedef struct SDL_joylist_item
 
 typedef SDL_joylist_item joystick_hwdata;
 
-#endif /* SDL_sysjoystick_c_h_ */
+#endif // SDL_sysjoystick_c_h_
 
-#endif /* SDL_JOYSTICK_ANDROID */
+#endif // SDL_JOYSTICK_ANDROID

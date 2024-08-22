@@ -30,4 +30,4 @@ struct SDL_Mutex
     RecursiveLock lock;
 };
 
-#endif /* SDL_sysmutex_c_h */
+#endif // SDL_sysmutex_c_h

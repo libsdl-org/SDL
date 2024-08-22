@@ -43,4 +43,4 @@
 #pragma GCC diagnostic pop
 #endif
 
-#endif /* SDL_ps2video_h_ */
+#endif // SDL_ps2video_h_

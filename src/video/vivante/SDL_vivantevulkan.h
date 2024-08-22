@@ -49,4 +49,4 @@ void VIVANTE_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 
 #endif
 
-#endif /* SDL_vivantevulkan_h_ */
+#endif // SDL_vivantevulkan_h_

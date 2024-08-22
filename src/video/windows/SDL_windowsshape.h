@@ -25,4 +25,4 @@
 
 extern int WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
 
-#endif /* SDL_windowsshape_h_ */
+#endif // SDL_windowsshape_h_

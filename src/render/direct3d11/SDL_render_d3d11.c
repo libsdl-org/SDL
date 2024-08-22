@@ -47,11 +47,11 @@
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
 #include <windows.ui.xaml.media.dxinterop.h>
-/* TODO, WinRT, XAML: get the ISwapChainBackgroundPanelNative from something other than a global var */
+// TODO, WinRT, XAML: get the ISwapChainBackgroundPanelNative from something other than a global var
 extern ISwapChainBackgroundPanelNative *WINRT_GlobalSwapChainBackgroundPanelNative;
-#endif /* WINAPI_FAMILY == WINAPI_FAMILY_APP */
+#endif // WINAPI_FAMILY == WINAPI_FAMILY_APP
 
-#endif /* SDL_PLATFORM_WINRT */
+#endif // SDL_PLATFORM_WINRT
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #define SDL_COMPOSE_ERROR(str) __FUNCTION__ ", " str
@@ -68,7 +68,7 @@ extern ISwapChainBackgroundPanelNative *WINRT_GlobalSwapChainBackgroundPanelNati
 /* !!! FIXME: vertex buffer bandwidth could be lower; only use UV coords when
    !!! FIXME:  textures are needed. */
 
-/* Sampler types */
+// Sampler types
 typedef enum
 {
     SDL_D3D11_SAMPLER_NEAREST_CLAMP,
@@ -78,14 +78,14 @@ typedef enum
     SDL_NUM_D3D11_SAMPLERS
 } SDL_D3D11_sampler_type;
 
-/* Vertex shader, common values */
+// Vertex shader, common values
 typedef struct
 {
     Float4X4 model;
     Float4X4 projectionAndView;
 } VertexShaderConstants;
 
-/* These should mirror the definitions in D3D11_PixelShader_Common.hlsli */
+// These should mirror the definitions in D3D11_PixelShader_Common.hlsli
 //static const float TONEMAP_NONE = 0;
 //static const float TONEMAP_LINEAR = 1;
 static const float TONEMAP_CHROME = 2;
@@ -122,7 +122,7 @@ typedef struct
     PixelShaderConstants shader_constants;
 } PixelShaderState;
 
-/* Per-vertex data */
+// Per-vertex data
 typedef struct
 {
     Float2 pos;
@@ -130,7 +130,7 @@ typedef struct
     SDL_FColor color;
 } VertexPositionColor;
 
-/* Per-texture data */
+// Per-texture data
 typedef struct
 {
     int w, h;
@@ -144,14 +144,14 @@ typedef struct
     D3D11_Shader shader;
     const float *YCbCr_matrix;
 #if SDL_HAVE_YUV
-    /* YV12 texture support */
+    // YV12 texture support
     SDL_bool yuv;
     ID3D11Texture2D *mainTextureU;
     ID3D11ShaderResourceView *mainTextureResourceViewU;
     ID3D11Texture2D *mainTextureV;
     ID3D11ShaderResourceView *mainTextureResourceViewV;
 
-    /* NV12 texture support */
+    // NV12 texture support
     SDL_bool nv12;
     ID3D11ShaderResourceView *mainTextureResourceViewNV;
 
@@ -161,14 +161,14 @@ typedef struct
 #endif
 } D3D11_TextureData;
 
-/* Blend mode data */
+// Blend mode data
 typedef struct
 {
     SDL_BlendMode blendMode;
     ID3D11BlendState *blendState;
 } D3D11_BlendMode;
 
-/* Private renderer data */
+// Private renderer data
 typedef struct
 {
     void *hDXGIMod;
@@ -195,15 +195,15 @@ typedef struct
     D3D_FEATURE_LEVEL featureLevel;
     SDL_bool pixelSizeChanged;
 
-    /* Rasterizers */
+    // Rasterizers
     ID3D11RasterizerState *mainRasterizer;
     ID3D11RasterizerState *clippedRasterizer;
 
-    /* Vertex buffer constants */
+    // Vertex buffer constants
     VertexShaderConstants vertexShaderConstantsData;
     ID3D11Buffer *vertexShaderConstants;
 
-    /* Cached renderer properties */
+    // Cached renderer properties
     DXGI_MODE_ROTATION rotation;
     ID3D11RenderTargetView *currentRenderTargetView;
     ID3D11RasterizerState *currentRasterizerState;
@@ -320,10 +320,10 @@ static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uin
         return DXGI_FORMAT_B8G8R8X8_UNORM;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_NV12:  /* For the Y texture */
-    case SDL_PIXELFORMAT_NV21:  /* For the Y texture */
+    case SDL_PIXELFORMAT_NV12:  // For the Y texture
+    case SDL_PIXELFORMAT_NV21:  // For the Y texture
         return DXGI_FORMAT_R8_UNORM;
-    case SDL_PIXELFORMAT_P010:  /* For the Y texture */
+    case SDL_PIXELFORMAT_P010:  // For the Y texture
         return DXGI_FORMAT_R16_UNORM;
     default:
         return DXGI_FORMAT_UNKNOWN;
@@ -337,16 +337,16 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
     SDL_Texture *texture = NULL;
 
-    /* Release all textures */
+    // Release all textures
     for (texture = renderer->textures; texture; texture = texture->next) {
         D3D11_DestroyTexture(renderer, texture);
     }
 
-    /* Release/reset everything else */
+    // Release/reset everything else
     if (data) {
         int i;
 
-        /* Make sure the swap chain is fully released */
+        // Make sure the swap chain is fully released
         if (data->d3dContext) {
             ID3D11DeviceContext_ClearState(data->d3dContext);
             ID3D11DeviceContext_Flush(data->d3dContext);
@@ -397,7 +397,7 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
         data->currentShaderResource = NULL;
         data->currentSampler = NULL;
 
-        /* Check for any leaks if in debug mode */
+        // Check for any leaks if in debug mode
         if (data->dxgiDebug) {
             DXGI_DEBUG_RLO_FLAGS rloFlags = (DXGI_DEBUG_RLO_FLAGS)(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL);
             IDXGIDebug_ReportLiveObjects(data->dxgiDebug, SDL_DXGI_DEBUG_ALL, rloFlags);
@@ -517,7 +517,7 @@ static ID3D11BlendState *D3D11_CreateBlendState(SDL_Renderer *renderer, SDL_Blen
     return blendState;
 }
 
-/* Create resources that depend on the device. */
+// Create resources that depend on the device.
 static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 {
     typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID riid, void **ppFactory);
@@ -552,7 +552,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     D3D11_SAMPLER_DESC samplerDesc;
     D3D11_RASTERIZER_DESC rasterDesc;
 
-    /* See if we need debug interfaces */
+    // See if we need debug interfaces
     createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE);
 
 #ifdef SDL_PLATFORM_WINRT
@@ -585,14 +585,14 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         result = E_FAIL;
         goto done;
     }
-#endif /* SDL_PLATFORM_WINRT */
+#endif // SDL_PLATFORM_WINRT
 
     if (createDebug) {
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
         IDXGIInfoQueue *dxgiInfoQueue = NULL;
         PFN_CREATE_DXGI_FACTORY2 DXGIGetDebugInterfaceFunc;
 
-        /* If the debug hint is set, also create the DXGI factory in debug mode */
+        // If the debug hint is set, also create the DXGI factory in debug mode
         DXGIGetDebugInterfaceFunc = (PFN_CREATE_DXGI_FACTORY2)SDL_LoadFunction(data->hDXGIMod, "DXGIGetDebugInterface1");
         if (!DXGIGetDebugInterfaceFunc) {
             result = E_FAIL;
@@ -614,7 +614,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         IDXGIInfoQueue_SetBreakOnSeverity(dxgiInfoQueue, SDL_DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, TRUE);
         IDXGIInfoQueue_SetBreakOnSeverity(dxgiInfoQueue, SDL_DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, TRUE);
         SAFE_RELEASE(dxgiInfoQueue);
-#endif /* __IDXGIInfoQueue_INTERFACE_DEFINED__ */
+#endif // __IDXGIInfoQueue_INTERFACE_DEFINED__
         creationFlags = DXGI_CREATE_FACTORY_DEBUG;
     }
 
@@ -628,7 +628,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    /* FIXME: Should we use the default adapter? */
+    // FIXME: Should we use the default adapter?
     result = IDXGIFactory2_EnumAdapters(data->dxgiFactory, 0, &data->dxgiAdapter);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D11CreateDevice"), result);
@@ -640,28 +640,28 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
      */
     creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
-    /* Make sure Direct3D's debugging feature gets used, if the app requests it. */
+    // Make sure Direct3D's debugging feature gets used, if the app requests it.
     if (createDebug) {
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
     }
 
-    /* Create a single-threaded device unless the app requests otherwise. */
+    // Create a single-threaded device unless the app requests otherwise.
     if (!SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D_THREADSAFE, SDL_FALSE)) {
         creationFlags |= D3D11_CREATE_DEVICE_SINGLETHREADED;
     }
 
-    /* Create the Direct3D 11 API device object and a corresponding context. */
+    // Create the Direct3D 11 API device object and a corresponding context.
     result = D3D11CreateDeviceFunc(
         data->dxgiAdapter,
         D3D_DRIVER_TYPE_UNKNOWN,
         NULL,
-        creationFlags, /* Set set debug and Direct2D compatibility flags. */
-        featureLevels, /* List of feature levels this app can support. */
+        creationFlags, // Set set debug and Direct2D compatibility flags.
+        featureLevels, // List of feature levels this app can support.
         SDL_arraysize(featureLevels),
-        D3D11_SDK_VERSION,   /* Always set this to D3D11_SDK_VERSION for Windows Store apps. */
-        &d3dDevice,          /* Returns the Direct3D device created. */
-        &data->featureLevel, /* Returns feature level of device created. */
-        &d3dContext          /* Returns the device immediate context. */
+        D3D11_SDK_VERSION,   // Always set this to D3D11_SDK_VERSION for Windows Store apps.
+        &d3dDevice,          // Returns the Direct3D device created.
+        &data->featureLevel, // Returns feature level of device created.
+        &d3dContext          // Returns the device immediate context.
     );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D11CreateDevice"), result);
@@ -729,7 +729,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    /* Setup space to hold vertex shader constants: */
+    // Setup space to hold vertex shader constants:
     SDL_zero(constantBufferDesc);
     constantBufferDesc.ByteWidth = sizeof(VertexShaderConstants);
     constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -743,7 +743,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    /* Create samplers to use when drawing textures: */
+    // Create samplers to use when drawing textures:
     static struct
     {
         D3D11_FILTER filter;
@@ -775,7 +775,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         }
     }
 
-    /* Setup Direct3D rasterizer states */
+    // Setup Direct3D rasterizer states
     SDL_zero(rasterDesc);
     rasterDesc.AntialiasedLineEnable = FALSE;
     rasterDesc.CullMode = D3D11_CULL_NONE;
@@ -800,13 +800,13 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    /* Create blending states: */
+    // Create blending states:
     if (!D3D11_CreateBlendState(renderer, SDL_BLENDMODE_BLEND)) {
-        /* D3D11_CreateBlendState will set the SDL error, if it fails */
+        // D3D11_CreateBlendState will set the SDL error, if it fails
         goto done;
     }
 
-    /* Setup render state that doesn't change */
+    // Setup render state that doesn't change
     ID3D11DeviceContext_IASetInputLayout(data->d3dContext, data->inputLayout);
     ID3D11DeviceContext_VSSetShader(data->d3dContext, data->vertexShader, NULL, 0);
     ID3D11DeviceContext_VSSetConstantBuffers(data->d3dContext, 0, 1, &data->vertexShaderConstants);
@@ -824,11 +824,11 @@ done:
 
 static DXGI_MODE_ROTATION D3D11_GetCurrentRotation(void)
 {
-    /* FIXME */
+    // FIXME
     return DXGI_MODE_ROTATION_IDENTITY;
 }
 
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
+#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 static BOOL D3D11_IsDisplayRotated90Degrees(DXGI_MODE_ROTATION rotation)
 {
@@ -907,7 +907,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     IDXGISwapChain3 *swapChain3 = NULL;
     HRESULT result = S_OK;
 
-    /* Create a swap chain using the same adapter as the existing Direct3D device. */
+    // Create a swap chain using the same adapter as the existing Direct3D device.
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc;
     SDL_zero(swapChainDesc);
     swapChainDesc.Width = w;
@@ -920,18 +920,18 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         swapChainDesc.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
         break;
     default:
-        swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; /* This is the most common swap chain format. */
+        swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // This is the most common swap chain format.
         break;
     }
     swapChainDesc.Stereo = FALSE;
-    swapChainDesc.SampleDesc.Count = 1; /* Don't use multi-sampling. */
+    swapChainDesc.SampleDesc.Count = 1; // Don't use multi-sampling.
     swapChainDesc.SampleDesc.Quality = 0;
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount = 2; /* Use double-buffering to minimize latency. */
+    swapChainDesc.BufferCount = 2; // Use double-buffering to minimize latency.
 #if SDL_WINAPI_FAMILY_PHONE
-    swapChainDesc.Scaling = DXGI_SCALING_STRETCH;        /* On phone, only stretch and aspect-ratio stretch scaling are allowed. */
-    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; /* On phone, no swap effects are supported. */
-    /* TODO, WinRT: see if Win 8.x DXGI_SWAP_CHAIN_DESC1 settings are available on Windows Phone 8.1, and if there's any advantage to having them on */
+    swapChainDesc.Scaling = DXGI_SCALING_STRETCH;        // On phone, only stretch and aspect-ratio stretch scaling are allowed.
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; // On phone, no swap effects are supported.
+    // TODO, WinRT: see if Win 8.x DXGI_SWAP_CHAIN_DESC1 settings are available on Windows Phone 8.1, and if there's any advantage to having them on
 #else
     if (usingXAML) {
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
@@ -946,7 +946,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     } else {
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; /* All Windows Store apps must use this SwapEffect. */
+        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
     }
 #endif
     swapChainDesc.Flags = 0;
@@ -956,7 +956,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
                                                             (IUnknown *)data->d3dDevice,
                                                             coreWindow,
                                                             &swapChainDesc,
-                                                            NULL, /* Allow on all displays. */
+                                                            NULL, // Allow on all displays.
                                                             &data->swapChain);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGIFactory2::CreateSwapChainForCoreWindow"), result);
@@ -998,7 +998,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
                                                       hwnd,
                                                       &swapChainDesc,
                                                       NULL,
-                                                      NULL, /* Allow on all displays. */
+                                                      NULL, // Allow on all displays.
                                                       &data->swapChain);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGIFactory2::CreateSwapChainForHwnd"), result);
@@ -1009,7 +1009,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 #else
         SDL_SetError(__FUNCTION__ ", Unable to find something to attach a swap chain to");
         goto done;
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) / else */
+#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) / else
     }
     data->swapEffect = swapChainDesc.SwapEffect;
 
@@ -1024,7 +1024,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
             colorspace = DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
             break;
         default:
-            /* sRGB */
+            // sRGB
             colorspace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
             break;
         }
@@ -1036,7 +1036,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
                 goto done;
             }
         } else if (colorspace != DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709) {
-            /* Not the default, we're not going to be able to present in this colorspace */
+            // Not the default, we're not going to be able to present in this colorspace
             SDL_SetError("Unsupported output colorspace");
             result = DXGI_ERROR_UNSUPPORTED;
         }
@@ -1067,17 +1067,17 @@ static HRESULT D3D11_HandleDeviceLost(SDL_Renderer *renderer)
 
     result = D3D11_CreateDeviceResources(renderer);
     if (FAILED(result)) {
-        /* D3D11_CreateDeviceResources will set the SDL error */
+        // D3D11_CreateDeviceResources will set the SDL error
         return result;
     }
 
     result = D3D11_UpdateForWindowSizeChange(renderer);
     if (FAILED(result)) {
-        /* D3D11_UpdateForWindowSizeChange will set the SDL error */
+        // D3D11_UpdateForWindowSizeChange will set the SDL error
         return result;
     }
 
-    /* Let the application know that the device has been reset */
+    // Let the application know that the device has been reset
     {
         SDL_Event event;
         event.type = SDL_EVENT_RENDER_DEVICE_RESET;
@@ -1088,7 +1088,7 @@ static HRESULT D3D11_HandleDeviceLost(SDL_Renderer *renderer)
     return S_OK;
 }
 
-/* Initialize all resources that change when the window's size changes. */
+// Initialize all resources that change when the window's size changes.
 static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
@@ -1096,7 +1096,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     HRESULT result = S_OK;
     int w, h;
 
-    /* Release the previous render target view */
+    // Release the previous render target view
     D3D11_ReleaseMainRenderTargetView(renderer);
 
     /* The width and height of the swap chain must be based on the display's
@@ -1108,7 +1108,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
 #endif
     data->rotation = D3D11_GetCurrentRotation();
-    /* SDL_Log("%s: windowSize={%d,%d}, orientation=%d\n", __FUNCTION__, w, h, (int)data->rotation); */
+    // SDL_Log("%s: windowSize={%d,%d}, orientation=%d\n", __FUNCTION__, w, h, (int)data->rotation);
     if (D3D11_IsDisplayRotated90Degrees(data->rotation)) {
         int tmp = w;
         w = h;
@@ -1116,16 +1116,16 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     }
 
     if (data->swapChain) {
-        /* IDXGISwapChain::ResizeBuffers is not available on Windows Phone 8. */
+        // IDXGISwapChain::ResizeBuffers is not available on Windows Phone 8.
 #if !defined(SDL_PLATFORM_WINRT) || !SDL_WINAPI_FAMILY_PHONE
-        /* If the swap chain already exists, resize it. */
+        // If the swap chain already exists, resize it.
         result = IDXGISwapChain_ResizeBuffers(data->swapChain,
                                               0,
                                               w, h,
                                               DXGI_FORMAT_UNKNOWN,
                                               0);
         if (result == DXGI_ERROR_DEVICE_REMOVED) {
-            /* If the device was removed for any reason, a new device and swap chain will need to be created. */
+            // If the device was removed for any reason, a new device and swap chain will need to be created.
             D3D11_HandleDeviceLost(renderer);
 
             /* Everything is set up now. Do not continue execution of this method. HandleDeviceLost will reenter this method
@@ -1181,7 +1181,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    /* Create a render target view of the swap chain back buffer. */
+    // Create a render target view of the swap chain back buffer.
     result = ID3D11Device_CreateRenderTargetView(data->d3dDevice,
                                                  (ID3D11Resource *)backBuffer,
                                                  NULL,
@@ -1207,7 +1207,7 @@ done:
     return result;
 }
 
-/* This method is called when the window's size changes. */
+// This method is called when the window's size changes.
 static HRESULT D3D11_UpdateForWindowSizeChange(SDL_Renderer *renderer)
 {
     return D3D11_CreateWindowSizeDependentResources(renderer);
@@ -1304,7 +1304,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
     textureDesc.SampleDesc.Quality = 0;
     textureDesc.MiscFlags = 0;
 
-    /* NV12 textures must have even width and height */
+    // NV12 textures must have even width and height
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21 ||
         texture->format == SDL_PIXELFORMAT_P010) {
@@ -1407,7 +1407,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             return SDL_SetError("Unsupported YUV colorspace");
         }
     }
-#endif /* SDL_HAVE_YUV */
+#endif // SDL_HAVE_YUV
     SDL_zero(resourceViewDesc);
     resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(texture->format, renderer->output_colorspace);
     resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -1455,7 +1455,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateShaderResourceView"), result);
         }
     }
-#endif /* SDL_HAVE_YUV */
+#endif // SDL_HAVE_YUV
 
     if (texture->access & SDL_TEXTUREACCESS_TARGET) {
         D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
@@ -1512,7 +1512,7 @@ static int D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Tex
     D3D11_TEXTURE2D_DESC stagingTextureDesc;
     D3D11_MAPPED_SUBRESOURCE textureMemory;
 
-    /* Create a 'staging' texture, which will be used to write to a portion of the main texture. */
+    // Create a 'staging' texture, which will be used to write to a portion of the main texture.
     ID3D11Texture2D_GetDesc(texture, &stagingTextureDesc);
     stagingTextureDesc.Width = w;
     stagingTextureDesc.Height = h;
@@ -1533,7 +1533,7 @@ static int D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Tex
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D [create staging texture]"), result);
     }
 
-    /* Get a write-only pointer to data in the staging texture: */
+    // Get a write-only pointer to data in the staging texture:
     result = ID3D11DeviceContext_Map(rendererData->d3dContext,
                                      (ID3D11Resource *)stagingTexture,
                                      0,
@@ -1566,7 +1566,7 @@ static int D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Tex
 
     if (stagingTextureDesc.Format == DXGI_FORMAT_NV12 ||
         stagingTextureDesc.Format == DXGI_FORMAT_P010) {
-        /* Copy the UV plane as well */
+        // Copy the UV plane as well
         h = (h + 1) / 2;
         if (stagingTextureDesc.Format == DXGI_FORMAT_P010) {
             length = (length + 3) & ~3;
@@ -1583,12 +1583,12 @@ static int D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Tex
         }
     }
 
-    /* Commit the pixel buffer's changes back to the staging texture: */
+    // Commit the pixel buffer's changes back to the staging texture:
     ID3D11DeviceContext_Unmap(rendererData->d3dContext,
                               (ID3D11Resource *)stagingTexture,
                               0);
 
-    /* Copy the staging texture's contents back to the texture: */
+    // Copy the staging texture's contents back to the texture:
     ID3D11DeviceContext_CopySubresourceRegion(rendererData->d3dContext,
                                               (ID3D11Resource *)texture,
                                               0,
@@ -1705,7 +1705,7 @@ static int D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
     w = rect->w;
     h = rect->h;
 
-    /* Create a 'staging' texture, which will be used to write to a portion of the main texture. */
+    // Create a 'staging' texture, which will be used to write to a portion of the main texture.
     ID3D11Texture2D_GetDesc(textureData->mainTexture, &stagingTextureDesc);
     stagingTextureDesc.Width = w;
     stagingTextureDesc.Height = h;
@@ -1726,7 +1726,7 @@ static int D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D [create staging texture]"), result);
     }
 
-    /* Get a write-only pointer to data in the staging texture: */
+    // Get a write-only pointer to data in the staging texture:
     result = ID3D11DeviceContext_Map(rendererData->d3dContext,
                                      (ID3D11Resource *)stagingTexture,
                                      0,
@@ -1774,12 +1774,12 @@ static int D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
         dst += textureMemory.RowPitch;
     }
 
-    /* Commit the pixel buffer's changes back to the staging texture: */
+    // Commit the pixel buffer's changes back to the staging texture:
     ID3D11DeviceContext_Unmap(rendererData->d3dContext,
                               (ID3D11Resource *)stagingTexture,
                               0);
 
-    /* Copy the staging texture's contents back to the texture: */
+    // Copy the staging texture's contents back to the texture:
     ID3D11DeviceContext_CopySubresourceRegion(rendererData->d3dContext,
                                               (ID3D11Resource *)textureData->mainTexture,
                                               0,
@@ -1810,7 +1810,7 @@ static int D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 #if SDL_HAVE_YUV
     if (textureData->yuv || textureData->nv12) {
-        /* It's more efficient to upload directly... */
+        // It's more efficient to upload directly...
         if (!textureData->pixels) {
             textureData->pitch = texture->w;
             textureData->pixels = (Uint8 *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
@@ -1853,7 +1853,7 @@ static int D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D [create staging texture]"), result);
     }
 
-    /* Get a write-only pointer to data in the staging texture: */
+    // Get a write-only pointer to data in the staging texture:
     result = ID3D11DeviceContext_Map(rendererData->d3dContext,
                                      (ID3D11Resource *)textureData->stagingTexture,
                                      0,
@@ -1897,12 +1897,12 @@ static void D3D11_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return;
     }
 #endif
-    /* Commit the pixel buffer's changes back to the staging texture: */
+    // Commit the pixel buffer's changes back to the staging texture:
     ID3D11DeviceContext_Unmap(rendererData->d3dContext,
                               (ID3D11Resource *)textureData->stagingTexture,
                               0);
 
-    /* Copy the staging texture's contents back to the main texture: */
+    // Copy the staging texture's contents back to the main texture:
     ID3D11DeviceContext_CopySubresourceRegion(rendererData->d3dContext,
                                               (ID3D11Resource *)textureData->mainTexture,
                                               0,
@@ -1950,7 +1950,7 @@ static int D3D11_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static int D3D11_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    return 0; /* nothing to do in this backend. */
+    return 0; // nothing to do in this backend.
 }
 
 static int D3D11_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
@@ -2048,7 +2048,7 @@ static int D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
     const UINT offset = 0;
 
     if (dataSizeInBytes == 0) {
-        return 0; /* nothing to do. */
+        return 0; // nothing to do.
     }
 
     if (rendererData->vertexBuffers[vbidx] && rendererData->vertexBufferSizes[vbidx] >= dataSizeInBytes) {
@@ -2123,7 +2123,7 @@ static int D3D11_UpdateViewport(SDL_Renderer *renderer)
          * SDL_CreateRenderer is calling it, and will call it again later
          * with a non-empty viewport.
          */
-        /* SDL_Log("%s, no viewport was set!\n", __FUNCTION__); */
+        // SDL_Log("%s, no viewport was set!\n", __FUNCTION__);
         return -1;
     }
 
@@ -2149,7 +2149,7 @@ static int D3D11_UpdateViewport(SDL_Renderer *renderer)
         return SDL_SetError("An unknown DisplayOrientation is being used");
     }
 
-    /* Update the view matrix */
+    // Update the view matrix
     SDL_zero(view);
     view.m[0][0] = 2.0f / viewport->w;
     view.m[1][1] = -2.0f / viewport->h;
@@ -2183,7 +2183,7 @@ static int D3D11_UpdateViewport(SDL_Renderer *renderer)
         orientationAlignedViewport.w = (float)viewport->w;
         orientationAlignedViewport.h = (float)viewport->h;
     }
-    /* TODO, WinRT: get custom viewports working with non-Landscape modes (Portrait, PortraitFlipped, and LandscapeFlipped) */
+    // TODO, WinRT: get custom viewports working with non-Landscape modes (Portrait, PortraitFlipped, and LandscapeFlipped)
 
     d3dviewport.TopLeftX = orientationAlignedViewport.x;
     d3dviewport.TopLeftY = orientationAlignedViewport.y;
@@ -2191,7 +2191,7 @@ static int D3D11_UpdateViewport(SDL_Renderer *renderer)
     d3dviewport.Height = orientationAlignedViewport.h;
     d3dviewport.MinDepth = 0.0f;
     d3dviewport.MaxDepth = 1.0f;
-    /* SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}\n", __FUNCTION__, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height); */
+    // SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}\n", __FUNCTION__, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height);
     ID3D11DeviceContext_RSSetViewports(data->d3dContext, 1, &d3dviewport);
 
     data->viewportDirty = SDL_FALSE;
@@ -2294,7 +2294,7 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         shaderResource = NULL;
     }
 
-    /* Make sure the render target isn't bound to a shader */
+    // Make sure the render target isn't bound to a shader
     if (shaderResource != rendererData->currentShaderResource) {
         ID3D11ShaderResourceView *pNullResource = NULL;
         ID3D11DeviceContext_PSSetShaderResources(rendererData->d3dContext, 0, 1, &pNullResource);
@@ -2311,7 +2311,7 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
 
     if (rendererData->viewportDirty) {
         if (D3D11_UpdateViewport(renderer) == 0) {
-            /* vertexShaderConstantsData.projectionAndView has changed */
+            // vertexShaderConstantsData.projectionAndView has changed
             updateSubresource = SDL_TRUE;
         }
     }
@@ -2322,7 +2322,7 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         } else {
             D3D11_RECT scissorRect;
             if (D3D11_GetViewportAlignedD3DRect(renderer, &rendererData->currentCliprect, &scissorRect, TRUE) != 0) {
-                /* D3D11_GetViewportAlignedD3DRect will have set the SDL error */
+                // D3D11_GetViewportAlignedD3DRect will have set the SDL error
                 return -1;
             }
             ID3D11DeviceContext_RSSetScissorRects(rendererData->d3dContext, 1, &scissorRect);
@@ -2386,7 +2386,7 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         }
         SDL_memcpy(&shader_state->shader_constants, shader_constants, sizeof(*shader_constants));
 
-        /* Force the shader parameters to be re-set */
+        // Force the shader parameters to be re-set
         rendererData->currentShader = SHADER_NONE;
     }
     if (shader != rendererData->currentShader) {
@@ -2486,7 +2486,7 @@ static int D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         return D3D11_SetDrawState(renderer, cmd, textureData->shader, &constants,
                                   SDL_arraysize(shaderResources), shaderResources, textureSampler, matrix);
     }
-#endif /* SDL_HAVE_YUV */
+#endif // SDL_HAVE_YUV
     return D3D11_SetDrawState(renderer, cmd, textureData->shader, &constants,
                               1, &textureData->mainTextureResourceView, textureSampler, matrix);
 }
@@ -2534,7 +2534,7 @@ static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            break; /* this isn't currently used in this render backend. */
+            break; // this isn't currently used in this render backend.
         }
 
         case SDL_RENDERCMD_SETVIEWPORT:
@@ -2600,13 +2600,13 @@ static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             break;
         }
 
-        case SDL_RENDERCMD_FILL_RECTS: /* unused */
+        case SDL_RENDERCMD_FILL_RECTS: // unused
             break;
 
-        case SDL_RENDERCMD_COPY: /* unused */
+        case SDL_RENDERCMD_COPY: // unused
             break;
 
-        case SDL_RENDERCMD_COPY_EX: /* unused */
+        case SDL_RENDERCMD_COPY_EX: // unused
             break;
 
         case SDL_RENDERCMD_GEOMETRY:
@@ -2661,7 +2661,7 @@ static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         goto done;
     }
 
-    /* Create a staging texture to copy the screen's data to: */
+    // Create a staging texture to copy the screen's data to:
     ID3D11Texture2D_GetDesc(backBuffer, &stagingTextureDesc);
     stagingTextureDesc.Width = rect->w;
     stagingTextureDesc.Height = rect->h;
@@ -2678,9 +2678,9 @@ static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         goto done;
     }
 
-    /* Copy the desired portion of the back buffer to the staging texture: */
+    // Copy the desired portion of the back buffer to the staging texture:
     if (D3D11_GetViewportAlignedD3DRect(renderer, rect, &srcRect, FALSE) != 0) {
-        /* D3D11_GetViewportAlignedD3DRect will have set the SDL error */
+        // D3D11_GetViewportAlignedD3DRect will have set the SDL error
         goto done;
     }
 
@@ -2698,7 +2698,7 @@ static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
                                               0,
                                               &srcBox);
 
-    /* Map the staging texture's data to CPU-accessible memory: */
+    // Map the staging texture's data to CPU-accessible memory:
     result = ID3D11DeviceContext_Map(data->d3dContext,
                                      (ID3D11Resource *)stagingTexture,
                                      0,
@@ -2717,7 +2717,7 @@ static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         textureMemory.pData,
         textureMemory.RowPitch);
 
-    /* Unmap the texture: */
+    // Unmap the texture:
     ID3D11DeviceContext_Unmap(data->d3dContext,
                               (ID3D11Resource *)stagingTexture,
                               0);
@@ -2752,7 +2752,7 @@ static int D3D11_RenderPresent(SDL_Renderer *renderer)
      */
     ID3D11DeviceContext1_DiscardView(data->d3dContext, (ID3D11View *)data->mainRenderTargetView);
 
-    /* When the present flips, it unbinds the current view, so bind it again on the next draw call */
+    // When the present flips, it unbinds the current view, so bind it again on the next draw call
     data->currentRenderTargetView = NULL;
 
     if (FAILED(result) && result != DXGI_ERROR_WAS_STILL_DRAWING) {
@@ -2764,7 +2764,7 @@ static int D3D11_RenderPresent(SDL_Renderer *renderer)
         if (result == DXGI_ERROR_DEVICE_REMOVED) {
             D3D11_HandleDeviceLost(renderer);
         } else if (result == DXGI_ERROR_INVALID_CALL) {
-            /* We probably went through a fullscreen <-> windowed transition */
+            // We probably went through a fullscreen <-> windowed transition
             D3D11_CreateWindowSizeDependentResources(renderer);
         } else {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
@@ -2847,7 +2847,7 @@ static int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     renderer->QueueSetViewport = D3D11_QueueNoOp;
     renderer->QueueSetDrawColor = D3D11_QueueNoOp;
     renderer->QueueDrawPoints = D3D11_QueueDrawPoints;
-    renderer->QueueDrawLines = D3D11_QueueDrawPoints; /* lines and points queue vertices the same way. */
+    renderer->QueueDrawLines = D3D11_QueueDrawPoints; // lines and points queue vertices the same way.
     renderer->QueueGeometry = D3D11_QueueGeometry;
     renderer->InvalidateCachedState = D3D11_InvalidateCachedState;
     renderer->RunCommandQueue = D3D11_RunCommandQueue;
@@ -2878,7 +2878,7 @@ static int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
      */
     renderer->window = window;
 
-    /* Initialize Direct3D resources */
+    // Initialize Direct3D resources
     if (FAILED(D3D11_CreateDeviceResources(renderer))) {
         return -1;
     }
@@ -2893,4 +2893,4 @@ SDL_RenderDriver D3D11_RenderDriver = {
     D3D11_CreateRenderer, "direct3d11"
 };
 
-#endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
+#endif // SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED

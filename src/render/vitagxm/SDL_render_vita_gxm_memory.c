@@ -174,4 +174,4 @@ void vita_mem_fragment_usse_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-#endif /* SDL_VIDEO_RENDER_VITA_GXM */
+#endif // SDL_VIDEO_RENDER_VITA_GXM

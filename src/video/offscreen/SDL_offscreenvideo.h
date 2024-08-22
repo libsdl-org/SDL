@@ -25,4 +25,4 @@
 
 #include "../SDL_sysvideo.h"
 
-#endif /* SDL_offscreenvideo_h */
+#endif // SDL_offscreenvideo_h

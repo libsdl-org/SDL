@@ -27,7 +27,7 @@ int (*WINRT_SDLAppEntryPoint)(int, char **) = NULL;
 extern "C"
 SDL_WinRT_DeviceFamily SDL_GetWinRTDeviceFamily()
 {
-#if NTDDI_VERSION >= NTDDI_WIN10 /* !!! FIXME: I have no idea if this is the right test. This is a UWP API, I think. Older windows should...just return "mobile"? I don't know. --ryan. */
+#if NTDDI_VERSION >= NTDDI_WIN10 // !!! FIXME: I have no idea if this is the right test. This is a UWP API, I think. Older windows should...just return "mobile"? I don't know. --ryan.
     Platform::String ^ deviceFamily = Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamily;
 
     if (deviceFamily->Equals("Windows.Desktop")) {

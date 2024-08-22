@@ -23,7 +23,7 @@
 #ifdef SDL_FILESYSTEM_N3DS
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
 
@@ -61,7 +61,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     return pref_path;
 }
 
-/* TODO */
+// TODO
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
@@ -87,4 +87,4 @@ static int CreatePrefPathDir(const char *pref)
     return 0;
 }
 
-#endif /* SDL_FILESYSTEM_N3DS */
+#endif // SDL_FILESYSTEM_N3DS

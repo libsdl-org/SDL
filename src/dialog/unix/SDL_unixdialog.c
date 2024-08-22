@@ -44,7 +44,7 @@ static void set_callback(void)
     }
 }
 
-/* Returns non-zero on success, 0 on failure */
+// Returns non-zero on success, 0 on failure
 static int detect_available_methods(const char *value)
 {
     const char *driver = value ? value : SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER);
@@ -75,9 +75,9 @@ static int detect_available_methods(const char *value)
 
 void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
 {
-    /* Call detect_available_methods() again each time in case the situation changed */
+    // Call detect_available_methods() again each time in case the situation changed
     if (!detected_open && !detect_available_methods(NULL)) {
-        /* SetError() done by detect_available_methods() */
+        // SetError() done by detect_available_methods()
         callback(userdata, NULL, -1);
         return;
     }
@@ -87,9 +87,9 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
 
 void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location)
 {
-    /* Call detect_available_methods() again each time in case the situation changed */
+    // Call detect_available_methods() again each time in case the situation changed
     if (!detected_save && !detect_available_methods(NULL)) {
-        /* SetError() done by detect_available_methods() */
+        // SetError() done by detect_available_methods()
         callback(userdata, NULL, -1);
         return;
     }
@@ -99,9 +99,9 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
 
 void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many)
 {
-    /* Call detect_available_methods() again each time in case the situation changed */
+    // Call detect_available_methods() again each time in case the situation changed
     if (!detected_folder && !detect_available_methods(NULL)) {
-        /* SetError() done by detect_available_methods() */
+        // SetError() done by detect_available_methods()
         callback(userdata, NULL, -1);
         return;
     }

@@ -50,4 +50,4 @@ void Android_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 
 #endif
 
-#endif /* SDL_androidvulkan_h_ */
+#endif // SDL_androidvulkan_h_

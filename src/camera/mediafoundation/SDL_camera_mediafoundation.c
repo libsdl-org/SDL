@@ -449,7 +449,7 @@ static int MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, 
         *timestampNS = timestamp100NS * 100;  // the timestamps are in 100-nanosecond increments; move to full nanoseconds.
     }
 
-    ret = (retval < 0) ? E_FAIL : IMFSample_ConvertToContiguousBuffer(objs->sample, &objs->buffer);  /*IMFSample_GetBufferByIndex(objs->sample, 0, &objs->buffer);*/
+    ret = (retval < 0) ? E_FAIL : IMFSample_ConvertToContiguousBuffer(objs->sample, &objs->buffer);  // IMFSample_GetBufferByIndex(objs->sample, 0, &objs->buffer);
 
     if (FAILED(ret)) {
         SDL_free(objs);
@@ -546,7 +546,7 @@ static int MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, 
     }
 
     IMFMediaBuffer *buffer = NULL;
-    ret = (retval < 0) ? E_FAIL : IMFSample_ConvertToContiguousBuffer(sample, &buffer); /*IMFSample_GetBufferByIndex(sample, 0, &buffer);*/
+    ret = (retval < 0) ? E_FAIL : IMFSample_ConvertToContiguousBuffer(sample, &buffer); // IMFSample_GetBufferByIndex(sample, 0, &buffer);
 
     if (FAILED(ret)) {
         retval = -1;
@@ -660,7 +660,7 @@ static HRESULT GetDefaultStride(IMFMediaType *pType, LONG *plStride)
 
         GUID subtype = GUID_NULL;
         UINT32 width = 0;
-        /* UINT32 height = 0; */
+        // UINT32 height = 0;
         UINT64 val = 0;
 
         // Get the subtype and the image size.
@@ -675,7 +675,7 @@ static HRESULT GetDefaultStride(IMFMediaType *pType, LONG *plStride)
         }
 
         width = (UINT32) (val >> 32);
-        /* height = (UINT32) val; */
+        // height = (UINT32) val;
 
         ret = pMFGetStrideForBitmapInfoHeader(subtype.Data1, width, &lStride);
         if (FAILED(ret)) {

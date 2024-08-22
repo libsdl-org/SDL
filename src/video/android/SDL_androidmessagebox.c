@@ -30,4 +30,4 @@ int Android_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
     return Android_JNI_ShowMessageBox(messageboxdata, buttonID);
 }
 
-#endif /* SDL_VIDEO_DRIVER_ANDROID */
+#endif // SDL_VIDEO_DRIVER_ANDROID

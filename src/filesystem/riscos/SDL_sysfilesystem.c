@@ -23,7 +23,7 @@
 #ifdef SDL_FILESYSTEM_RISCOS
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
 
@@ -31,10 +31,10 @@
 #include <swis.h>
 #include <unixlib/local.h>
 
-/* Wrapper around __unixify_std that uses SDL's memory allocators */
+// Wrapper around __unixify_std that uses SDL's memory allocators
 static char *SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
 {
-    const char *const in_buf = buffer; /* = NULL if we allocate the buffer.  */
+    const char *const in_buf = buffer; // = NULL if we allocate the buffer.
 
     if (!buffer) {
         /* This matches the logic in __unixify, with an additional byte for the
@@ -141,7 +141,7 @@ char *SDL_SYS_GetBasePath(void)
         return NULL;
     }
 
-    /* chop off filename. */
+    // chop off filename.
     ptr = SDL_strrchr(canon, '.');
     if (ptr) {
         *ptr = '\0';
@@ -198,11 +198,11 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
-/* TODO */
+// TODO
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-#endif /* SDL_FILESYSTEM_RISCOS */
+#endif // SDL_FILESYSTEM_RISCOS

@@ -28,4 +28,4 @@
 
 extern void DUMMY_PumpEvents(SDL_VideoDevice *_this);
 
-#endif /* SDL_nullevents_c_h_ */
+#endif // SDL_nullevents_c_h_

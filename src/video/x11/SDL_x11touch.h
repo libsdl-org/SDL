@@ -27,4 +27,4 @@ extern void X11_InitTouch(SDL_VideoDevice *_this);
 extern void X11_QuitTouch(SDL_VideoDevice *_this);
 extern void X11_ResetTouch(SDL_VideoDevice *_this);
 
-#endif /* SDL_x11touch_h_ */
+#endif // SDL_x11touch_h_

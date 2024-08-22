@@ -187,4 +187,4 @@ void VITA_PollKeyboard(void)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_VITA */
+#endif // SDL_VIDEO_DRIVER_VITA

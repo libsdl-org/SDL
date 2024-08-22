@@ -23,9 +23,9 @@
 #ifndef SDL_utils_h_
 #define SDL_utils_h_
 
-/* Common utility functions that aren't in the public API */
+// Common utility functions that aren't in the public API
 
-/* Return the smallest power of 2 greater than or equal to 'x' */
+// Return the smallest power of 2 greater than or equal to 'x'
 extern int SDL_powerof2(int x);
 
 extern void SDL_CalculateFraction(float x, int *numerator, int *denominator);
@@ -67,4 +67,4 @@ extern void SDL_SetObjectsInvalid(void);
 
 extern const char *SDL_GetPersistentString(const char *string);
 
-#endif /* SDL_utils_h_ */
+#endif // SDL_utils_h_

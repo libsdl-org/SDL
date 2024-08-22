@@ -44,7 +44,7 @@
 #include <libkern/OSAtomic.h>
 #endif
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(locksize, 4==sizeof(SDL_SpinLock));
 extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
@@ -53,10 +53,10 @@ extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
   parm [ecx] [eax] \
   value [eax] \
   modify exact [eax];
-#endif /* __WATCOMC__ && __386__ */
-/* *INDENT-ON* */ /* clang-format on */
+#endif // __WATCOMC__ && __386__
+/* *INDENT-ON* */ // clang-format on
 
-/* This function is where all the magic happens... */
+// This function is where all the magic happens...
 SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
 {
 #if defined(HAVE_GCC_ATOMICS) || defined(HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
@@ -116,15 +116,15 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
     return result == 0;
 
 #elif defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
-    /* Maybe used for PowerPC, but the Intel asm or gcc atomics are favored. */
+    // Maybe used for PowerPC, but the Intel asm or gcc atomics are favored.
     return OSAtomicCompareAndSwap32Barrier(0, 1, lock);
 
 #elif defined(SDL_PLATFORM_SOLARIS) && defined(_LP64)
-    /* Used for Solaris with non-gcc compilers. */
+    // Used for Solaris with non-gcc compilers.
     return ((int)atomic_cas_64((volatile uint64_t *)lock, 0, 1) == 0);
 
 #elif defined(SDL_PLATFORM_SOLARIS) && !defined(_LP64)
-    /* Used for Solaris with non-gcc compilers. */
+    // Used for Solaris with non-gcc compilers.
     return ((int)atomic_cas_32((volatile uint32_t *)lock, 0, 1) == 0);
 #elif defined(PS2)
     uint32_t oldintr;
@@ -142,11 +142,11 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
     }
     return res;
 #else
-    /* Terrible terrible damage */
+    // Terrible terrible damage
     static SDL_Mutex *_spinlock_mutex;
 
     if (!_spinlock_mutex) {
-        /* Race condition on first lock... */
+        // Race condition on first lock...
         _spinlock_mutex = SDL_CreateMutex();
     }
     SDL_LockMutex(_spinlock_mutex);
@@ -164,13 +164,13 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
 void SDL_LockSpinlock(SDL_SpinLock *lock)
 {
     int iterations = 0;
-    /* FIXME: Should we have an eventual timeout? */
+    // FIXME: Should we have an eventual timeout?
     while (!SDL_TryLockSpinlock(lock)) {
         if (iterations < 32) {
             iterations++;
             SDL_CPUPauseInstruction();
         } else {
-            /* !!! FIXME: this doesn't definitely give up the current timeslice, it does different things on various platforms. */
+            // !!! FIXME: this doesn't definitely give up the current timeslice, it does different things on various platforms.
             SDL_Delay(0);
         }
     }
@@ -193,7 +193,7 @@ void SDL_UnlockSpinlock(SDL_SpinLock *lock)
     *lock = 0;
 
 #elif defined(SDL_PLATFORM_SOLARIS)
-    /* Used for Solaris when not using gcc. */
+    // Used for Solaris when not using gcc.
     *lock = 0;
     membar_producer();
 

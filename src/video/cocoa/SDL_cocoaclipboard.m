@@ -26,7 +26,7 @@
 #include "../../events/SDL_clipboardevents_c.h"
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 101300
-typedef NSString *NSPasteboardType; /* Defined in macOS 10.13+ */
+typedef NSString *NSPasteboardType; // Defined in macOS 10.13+
 #endif
 
 @interface Cocoa_PasteboardDataProvider : NSObject<NSPasteboardItemDataProvider>
@@ -173,4 +173,4 @@ SDL_bool Cocoa_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
 
 }
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

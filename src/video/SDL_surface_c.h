@@ -23,18 +23,18 @@
 #ifndef SDL_surface_c_h_
 #define SDL_surface_c_h_
 
-/* Useful functions and variables from SDL_surface.c */
+// Useful functions and variables from SDL_surface.c
 
 #include "../SDL_list.h"
 
-/* Surface internal flags */
+// Surface internal flags
 typedef Uint32 SDL_SurfaceDataFlags;
 
 #define SDL_INTERNAL_SURFACE_DONTFREE   0x00000001u /**< Surface is referenced internally */
 #define SDL_INTERNAL_SURFACE_STACK      0x00000002u /**< Surface is allocated on the stack */
 #define SDL_INTERNAL_SURFACE_RLEACCEL   0x00000004u /**< Surface is RLE encoded */
 
-/* Surface internal data definition */
+// Surface internal data definition
 struct SDL_SurfaceData
 {
     /** flags for this surface */
@@ -73,7 +73,7 @@ typedef struct SDL_InternalSurface
 
 } SDL_InternalSurface;
 
-/* Surface functions */
+// Surface functions
 extern SDL_bool SDL_SurfaceValid(SDL_Surface *surface);
 extern void SDL_UpdateSurfaceLockFlag(SDL_Surface *surface);
 extern float SDL_GetDefaultSDRWhitePoint(SDL_Colorspace colorspace);
@@ -83,4 +83,4 @@ extern float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colo
 extern SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale);
 extern int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 
-#endif /* SDL_surface_c_h_ */
+#endif // SDL_surface_c_h_

@@ -28,10 +28,10 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_LUNA
 
-/* Define this if you want to log all packets from the controller */
-/*#define DEBUG_LUNA_PROTOCOL*/
+// Define this if you want to log all packets from the controller
+// #define DEBUG_LUNA_PROTOCOL
 
-/* Sending rumble on macOS blocks for a long time and eventually fails */
+// Sending rumble on macOS blocks for a long time and eventually fails
 #ifndef SDL_PLATFORM_MACOS
 #define ENABLE_LUNA_BLUETOOTH_RUMBLE
 #endif
@@ -99,7 +99,7 @@ static SDL_bool HIDAPI_DriverLuna_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 
     SDL_zeroa(ctx->last_state);
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     joystick->nbuttons = SDL_GAMEPAD_NUM_LUNA_BUTTONS;
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
@@ -111,10 +111,10 @@ static int HIDAPI_DriverLuna_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
 {
 #ifdef ENABLE_LUNA_BLUETOOTH_RUMBLE
     if (device->product_id == BLUETOOTH_PRODUCT_LUNA_CONTROLLER) {
-        /* Same packet as on Xbox One controllers connected via Bluetooth */
+        // Same packet as on Xbox One controllers connected via Bluetooth
         Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xEB };
 
-        /* Magnitude is 1..100 so scale the 16-bit input here */
+        // Magnitude is 1..100 so scale the 16-bit input here
         rumble_packet[4] = (Uint8)(low_frequency_rumble / 655);
         rumble_packet[5] = (Uint8)(high_frequency_rumble / 655);
 
@@ -124,9 +124,9 @@ static int HIDAPI_DriverLuna_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
 
         return 0;
     }
-#endif /* ENABLE_LUNA_BLUETOOTH_RUMBLE */
+#endif // ENABLE_LUNA_BLUETOOTH_RUMBLE
 
-    /* There is currently no rumble packet over USB */
+    // There is currently no rumble packet over USB
     return SDL_Unsupported();
 }
 
@@ -251,20 +251,20 @@ static void HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick,
     Uint64 timestamp = SDL_GetTicksNS();
 
     if (size >= 2 && data[0] == 0x02) {
-        /* Home button has dedicated report */
+        // Home button has dedicated report
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data[1] & 0x1) ? SDL_PRESSED : SDL_RELEASED);
         return;
     }
 
     if (size >= 2 && data[0] == 0x04) {
-        /* Battery level report */
+        // Battery level report
         int percent = (int)SDL_roundf((data[1] / 255.0f) * 100.0f);
         SDL_SendJoystickPowerInfo(joystick, SDL_POWERSTATE_ON_BATTERY, percent);
         return;
     }
 
     if (size < 17 || data[0] != 0x01) {
-        /* We don't know how to handle this report */
+        // We don't know how to handle this report
         return;
     }
 
@@ -380,7 +380,7 @@ static SDL_bool HIDAPI_DriverLuna_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (size < 0) {
-        /* Read error, device is disconnected */
+        // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return size >= 0;
@@ -416,6 +416,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna = {
     HIDAPI_DriverLuna_FreeDevice,
 };
 
-#endif /* SDL_JOYSTICK_HIDAPI_LUNA */
+#endif // SDL_JOYSTICK_HIDAPI_LUNA
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

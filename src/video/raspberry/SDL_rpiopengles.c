@@ -25,7 +25,7 @@
 #include "SDL_rpivideo.h"
 #include "SDL_rpiopengles.h"
 
-/* EGL implementation of SDL OpenGL support */
+// EGL implementation of SDL OpenGL support
 
 void RPI_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor)
 {
@@ -62,4 +62,4 @@ int RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 SDL_EGL_CreateContext_impl(RPI)
     SDL_EGL_MakeCurrent_impl(RPI)
 
-#endif /* SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL

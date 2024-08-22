@@ -33,4 +33,4 @@ extern Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, in
 
 extern void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf);
 
-#endif /* SDL_time_c_h_ */
+#endif // SDL_time_c_h_

@@ -63,7 +63,7 @@ static const struct
     { SDL_PIXELFORMAT_RGBA4444, GSP_RGBA4_OES }
 };
 
-/* N3DS driver bootstrap functions */
+// N3DS driver bootstrap functions
 
 static void N3DS_DeleteDevice(SDL_VideoDevice *device)
 {
@@ -76,13 +76,13 @@ static SDL_VideoDevice *N3DS_CreateDevice(void)
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
 
-    /* Initialize all variables that we clean on shutdown */
+    // Initialize all variables that we clean on shutdown
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         return NULL;
     }
 
-    /* Initialize internal data */
+    // Initialize internal data
     phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (!phdata) {
         SDL_free(device);
@@ -253,4 +253,4 @@ static void N3DS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_free(window->internal);
 }
 
-#endif /* SDL_VIDEO_DRIVER_N3DS */
+#endif // SDL_VIDEO_DRIVER_N3DS

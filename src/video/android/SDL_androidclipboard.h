@@ -27,4 +27,4 @@ extern int Android_SetClipboardText(SDL_VideoDevice *_this, const char *text);
 extern char *Android_GetClipboardText(SDL_VideoDevice *_this);
 extern SDL_bool Android_HasClipboardText(SDL_VideoDevice *_this);
 
-#endif /* SDL_androidclipboard_h_ */
+#endif // SDL_androidclipboard_h_

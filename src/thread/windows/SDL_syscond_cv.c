@@ -38,7 +38,7 @@ typedef struct SDL_cond_impl_t
     pfnSDL_WaitConditionTimeoutNS WaitTimeoutNS;
 } SDL_cond_impl_t;
 
-/* Implementation will be chosen at runtime based on available Kernel features */
+// Implementation will be chosen at runtime based on available Kernel features
 static SDL_cond_impl_t SDL_cond_impl_active = { 0 };
 
 /**
@@ -80,13 +80,13 @@ typedef struct SDL_cond_cv
 
 static SDL_Condition *SDL_CreateCondition_cv(void)
 {
-    /* Relies on CONDITION_VARIABLE_INIT == 0. */
+    // Relies on CONDITION_VARIABLE_INIT == 0.
     return (SDL_Condition *)SDL_calloc(1, sizeof(SDL_cond_cv));
 }
 
 static void SDL_DestroyCondition_cv(SDL_Condition *cond)
 {
-    /* There are no kernel allocated resources */
+    // There are no kernel allocated resources
     SDL_free(cond);
 }
 
@@ -140,7 +140,7 @@ static int SDL_WaitConditionTimeoutNS_cv(SDL_Condition *_cond, SDL_Mutex *_mutex
             return SDL_SetError("Passed mutex is not locked or locked recursively");
         }
 
-        /* The mutex must be updated to the released state */
+        // The mutex must be updated to the released state
         mutex->count = 0;
         mutex->owner = 0;
 
@@ -154,7 +154,7 @@ static int SDL_WaitConditionTimeoutNS_cv(SDL_Condition *_cond, SDL_Mutex *_mutex
             ret = 0;
         }
 
-        /* The mutex is owned by us again, regardless of status of the wait */
+        // The mutex is owned by us again, regardless of status of the wait
         SDL_assert(mutex->count == 0 && mutex->owner == 0);
         mutex->count = 1;
         mutex->owner = GetCurrentThreadId();
@@ -187,7 +187,7 @@ static const SDL_cond_impl_t SDL_cond_impl_cv = {
 
 
 #ifndef SDL_PLATFORM_WINRT
-/* Generic Condition Variable implementation using SDL_Mutex and SDL_Semaphore */
+// Generic Condition Variable implementation using SDL_Mutex and SDL_Semaphore
 static const SDL_cond_impl_t SDL_cond_impl_generic = {
     &SDL_CreateCondition_generic,
     &SDL_DestroyCondition_generic,
@@ -203,7 +203,7 @@ SDL_Condition *SDL_CreateCondition(void)
         const SDL_cond_impl_t *impl = NULL;
 
         if (SDL_mutex_impl_active.Type == SDL_MUTEX_INVALID) {
-            /* The mutex implementation isn't decided yet, trigger it */
+            // The mutex implementation isn't decided yet, trigger it
             SDL_Mutex *mutex = SDL_CreateMutex();
             if (!mutex) {
                 return NULL;
@@ -214,10 +214,10 @@ SDL_Condition *SDL_CreateCondition(void)
         }
 
 #ifdef SDL_PLATFORM_WINRT
-        /* Link statically on this platform */
+        // Link statically on this platform
         impl = &SDL_cond_impl_cv;
 #else
-        /* Default to generic implementation, works with all mutex implementations */
+        // Default to generic implementation, works with all mutex implementations
         impl = &SDL_cond_impl_generic;
         {
             HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
@@ -227,7 +227,7 @@ SDL_Condition *SDL_CreateCondition(void)
                 pSleepConditionVariableSRW = (pfnSleepConditionVariableSRW)GetProcAddress(kernel32, "SleepConditionVariableSRW");
                 pSleepConditionVariableCS = (pfnSleepConditionVariableCS)GetProcAddress(kernel32, "SleepConditionVariableCS");
                 if (pWakeConditionVariable && pWakeAllConditionVariable && pSleepConditionVariableSRW && pSleepConditionVariableCS) {
-                    /* Use the Windows provided API */
+                    // Use the Windows provided API
                     impl = &SDL_cond_impl_cv;
                 }
             }

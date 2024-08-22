@@ -20,13 +20,13 @@
 */
 #include "SDL_internal.h"
 
-/* Simple error handling in SDL */
+// Simple error handling in SDL
 
 #include "SDL_error_c.h"
 
 int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
-    /* Ignore call if invalid format pointer was passed */
+    // Ignore call if invalid format pointer was passed
     if (fmt) {
         va_list ap;
         int result;
@@ -51,7 +51,7 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
         }
 
         if (SDL_GetLogPriority(SDL_LOG_CATEGORY_ERROR) <= SDL_LOG_PRIORITY_DEBUG) {
-            /* If we are in debug mode, print out the error message */
+            // If we are in debug mode, print out the error message
             SDL_LogDebug(SDL_LOG_CATEGORY_ERROR, "%s", error->str);
         }
     }

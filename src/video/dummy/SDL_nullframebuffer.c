@@ -35,14 +35,14 @@ int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     const SDL_PixelFormat surface_format = SDL_PIXELFORMAT_XRGB8888;
     int w, h;
 
-    /* Create a new framebuffer */
+    // Create a new framebuffer
     SDL_GetWindowSizeInPixels(window, &w, &h);
     surface = SDL_CreateSurface(w, h, surface_format);
     if (!surface) {
         return -1;
     }
 
-    /* Save the info and return! */
+    // Save the info and return!
     SDL_SetSurfaceProperty(SDL_GetWindowProperties(window), DUMMY_SURFACE, surface);
     *format = surface_format;
     *pixels = surface->pixels;
@@ -60,7 +60,7 @@ int SDL_DUMMY_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
         return SDL_SetError("Couldn't find dummy surface for window");
     }
 
-    /* Send the data to the display */
+    // Send the data to the display
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DUMMY_SAVE_FRAMES, SDL_FALSE)) {
         char file[128];
         (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIu32 "-%8.8d.bmp",
@@ -75,4 +75,4 @@ void SDL_DUMMY_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
     SDL_ClearProperty(SDL_GetWindowProperties(window), DUMMY_SURFACE);
 }
 
-#endif /* SDL_VIDEO_DRIVER_DUMMY */
+#endif // SDL_VIDEO_DRIVER_DUMMY

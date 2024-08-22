@@ -46,7 +46,7 @@ static int open_power_file(const char *base, const char *node, const char *key)
     const size_t pathlen = SDL_strlen(base) + SDL_strlen(node) + SDL_strlen(key) + 3;
     char *path = SDL_stack_alloc(char, pathlen);
     if (!path) {
-        return -1; /* oh well. */
+        return -1; // oh well.
     }
 
     (void)SDL_snprintf(path, pathlen, "%s/%s/%s", base, node, key);
@@ -68,7 +68,7 @@ static SDL_bool read_power_file(const char *base, const char *node, const char *
     if (br < 0) {
         return SDL_FALSE;
     }
-    buf[br] = '\0'; /* null-terminate the string. */
+    buf[br] = '\0'; // null-terminate the string.
     return SDL_TRUE;
 }
 
@@ -77,11 +77,11 @@ static SDL_bool make_proc_acpi_key_val(char **_ptr, char **_key, char **_val)
     char *ptr = *_ptr;
 
     while (*ptr == ' ') {
-        ptr++; /* skip whitespace. */
+        ptr++; // skip whitespace.
     }
 
     if (*ptr == '\0') {
-        return SDL_FALSE; /* EOF. */
+        return SDL_FALSE; // EOF.
     }
 
     *_key = ptr;
@@ -91,17 +91,17 @@ static SDL_bool make_proc_acpi_key_val(char **_ptr, char **_key, char **_val)
     }
 
     if (*ptr == '\0') {
-        return SDL_FALSE; /* (unexpected) EOF. */
+        return SDL_FALSE; // (unexpected) EOF.
     }
 
-    *(ptr++) = '\0'; /* terminate the key. */
+    *(ptr++) = '\0'; // terminate the key.
 
     while (*ptr == ' ') {
-        ptr++; /* skip whitespace. */
+        ptr++; // skip whitespace.
     }
 
     if (*ptr == '\0') {
-        return SDL_FALSE; /* (unexpected) EOF. */
+        return SDL_FALSE; // (unexpected) EOF.
     }
 
     *_val = ptr;
@@ -111,10 +111,10 @@ static SDL_bool make_proc_acpi_key_val(char **_ptr, char **_key, char **_val)
     }
 
     if (*ptr != '\0') {
-        *(ptr++) = '\0'; /* terminate the value. */
+        *(ptr++) = '\0'; // terminate the value.
     }
 
-    *_ptr = ptr; /* store for next time. */
+    *_ptr = ptr; // store for next time.
     return SDL_TRUE;
 }
 
@@ -147,7 +147,7 @@ static void check_proc_acpi_battery(const char *node, SDL_bool *have_battery,
                 *have_battery = SDL_TRUE;
             }
         } else if (SDL_strcasecmp(key, "charging state") == 0) {
-            /* !!! FIXME: what exactly _does_ charging/discharging mean? */
+            // !!! FIXME: what exactly _does_ charging/discharging mean?
             if (SDL_strcasecmp(val, "charging/discharging") == 0) {
                 charge = SDL_TRUE;
             } else if (SDL_strcasecmp(val, "charging") == 0) {
@@ -182,7 +182,7 @@ static void check_proc_acpi_battery(const char *node, SDL_bool *have_battery,
         }
     }
 
-    /* !!! FIXME: calculate (secs). */
+    // !!! FIXME: calculate (secs).
 
     /*
      * We pick the battery that claims to have the most minutes left.
@@ -190,7 +190,7 @@ static void check_proc_acpi_battery(const char *node, SDL_bool *have_battery,
      */
     if ((secs < 0) && (*seconds < 0)) {
         if ((pct < 0) && (*percent < 0)) {
-            choose = SDL_TRUE; /* at least we know there's a battery. */
+            choose = SDL_TRUE; // at least we know there's a battery.
         }
         if (pct > *percent) {
             choose = SDL_TRUE;
@@ -242,7 +242,7 @@ SDL_bool SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *state, int *seconds, i
 
     dirp = opendir(proc_acpi_battery_path);
     if (!dirp) {
-        return SDL_FALSE; /* can't use this interface. */
+        return SDL_FALSE; // can't use this interface.
     } else {
         while ((dent = readdir(dirp)) != NULL) {
             const char *node = dent->d_name;
@@ -254,7 +254,7 @@ SDL_bool SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *state, int *seconds, i
 
     dirp = opendir(proc_acpi_ac_adapter_path);
     if (!dirp) {
-        return SDL_FALSE; /* can't use this interface. */
+        return SDL_FALSE; // can't use this interface.
     } else {
         while ((dent = readdir(dirp)) != NULL) {
             const char *node = dent->d_name;
@@ -273,7 +273,7 @@ SDL_bool SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *state, int *seconds, i
         *state = SDL_POWERSTATE_ON_BATTERY;
     }
 
-    return SDL_TRUE; /* definitive answer. */
+    return SDL_TRUE; // definitive answer.
 }
 
 static SDL_bool next_string(char **_ptr, char **_str)
@@ -281,7 +281,7 @@ static SDL_bool next_string(char **_ptr, char **_str)
     char *ptr = *_ptr;
     char *str;
 
-    while (*ptr == ' ') { /* skip any spaces... */
+    while (*ptr == ' ') { // skip any spaces...
         ptr++;
     }
 
@@ -310,7 +310,7 @@ static SDL_bool int_string(char *str, int *val)
     return (*str != '\0') && (*endptr == '\0');
 }
 
-/* http://lxr.linux.no/linux+v2.6.29/drivers/char/apm-emulation.c */
+// http://lxr.linux.no/linux+v2.6.29/drivers/char/apm-emulation.c
 SDL_bool SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state, int *seconds, int *percent)
 {
     SDL_bool need_details = SDL_FALSE;
@@ -326,7 +326,7 @@ SDL_bool SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state, int *seconds, in
     ssize_t br;
 
     if (fd == -1) {
-        return SDL_FALSE; /* can't use this interface. */
+        return SDL_FALSE; // can't use this interface.
     }
 
     br = read(fd, buf, sizeof(buf) - 1);
@@ -336,34 +336,34 @@ SDL_bool SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state, int *seconds, in
         return SDL_FALSE;
     }
 
-    buf[br] = '\0';                 /* null-terminate the string. */
-    if (!next_string(&ptr, &str)) { /* driver version */
+    buf[br] = '\0';                 // null-terminate the string.
+    if (!next_string(&ptr, &str)) { // driver version
         return SDL_FALSE;
     }
-    if (!next_string(&ptr, &str)) { /* BIOS version */
+    if (!next_string(&ptr, &str)) { // BIOS version
         return SDL_FALSE;
     }
-    if (!next_string(&ptr, &str)) { /* APM flags */
+    if (!next_string(&ptr, &str)) { // APM flags
         return SDL_FALSE;
     }
 
-    if (!next_string(&ptr, &str)) { /* AC line status */
+    if (!next_string(&ptr, &str)) { // AC line status
         return SDL_FALSE;
     } else if (!int_string(str, &ac_status)) {
         return SDL_FALSE;
     }
 
-    if (!next_string(&ptr, &str)) { /* battery status */
+    if (!next_string(&ptr, &str)) { // battery status
         return SDL_FALSE;
     } else if (!int_string(str, &battery_status)) {
         return SDL_FALSE;
     }
-    if (!next_string(&ptr, &str)) { /* battery flag */
+    if (!next_string(&ptr, &str)) { // battery flag
         return SDL_FALSE;
     } else if (!int_string(str, &battery_flag)) {
         return SDL_FALSE;
     }
-    if (!next_string(&ptr, &str)) { /* remaining battery life percent */
+    if (!next_string(&ptr, &str)) { // remaining battery life percent
         return SDL_FALSE;
     }
     if (str[SDL_strlen(str) - 1] == '%') {
@@ -373,27 +373,27 @@ SDL_bool SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state, int *seconds, in
         return SDL_FALSE;
     }
 
-    if (!next_string(&ptr, &str)) { /* remaining battery life time */
+    if (!next_string(&ptr, &str)) { // remaining battery life time
         return SDL_FALSE;
     } else if (!int_string(str, &battery_time)) {
         return SDL_FALSE;
     }
 
-    if (!next_string(&ptr, &str)) { /* remaining battery life time units */
+    if (!next_string(&ptr, &str)) { // remaining battery life time units
         return SDL_FALSE;
     } else if (SDL_strcasecmp(str, "min") == 0) {
         battery_time *= 60;
     }
 
-    if (battery_flag == 0xFF) { /* unknown state */
+    if (battery_flag == 0xFF) { // unknown state
         *state = SDL_POWERSTATE_UNKNOWN;
-    } else if (battery_flag & (1 << 7)) { /* no battery */
+    } else if (battery_flag & (1 << 7)) { // no battery
         *state = SDL_POWERSTATE_NO_BATTERY;
-    } else if (battery_flag & (1 << 3)) { /* charging */
+    } else if (battery_flag & (1 << 3)) { // charging
         *state = SDL_POWERSTATE_CHARGING;
         need_details = SDL_TRUE;
     } else if (ac_status == 1) {
-        *state = SDL_POWERSTATE_CHARGED; /* on AC, not charging. */
+        *state = SDL_POWERSTATE_CHARGED; // on AC, not charging.
         need_details = SDL_TRUE;
     } else {
         *state = SDL_POWERSTATE_ON_BATTERY;
@@ -406,10 +406,10 @@ SDL_bool SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state, int *seconds, in
         const int pct = battery_percent;
         const int secs = battery_time;
 
-        if (pct >= 0) {                         /* -1 == unknown */
-            *percent = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
+        if (pct >= 0) {                         // -1 == unknown
+            *percent = (pct > 100) ? 100 : pct; // clamp between 0%, 100%
         }
-        if (secs >= 0) { /* -1 == unknown */
+        if (secs >= 0) { // -1 == unknown
             *seconds = secs;
         }
     }
@@ -428,7 +428,7 @@ SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, in
         return SDL_FALSE;
     }
 
-    *state = SDL_POWERSTATE_NO_BATTERY; /* assume we're just plugged in. */
+    *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
     *seconds = -1;
     *percent = -1;
 
@@ -443,11 +443,11 @@ SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, in
         int power;
 
         if ((SDL_strcmp(name, ".") == 0) || (SDL_strcmp(name, "..") == 0)) {
-            continue; /* skip these, of course. */
+            continue; // skip these, of course.
         } else if (!read_power_file(base, name, "type", str, sizeof(str))) {
-            continue; /* Don't know _what_ we're looking at. Give up on it. */
+            continue; // Don't know _what_ we're looking at. Give up on it.
         } else if (SDL_strcasecmp(str, "Battery\n") != 0) {
-            continue; /* we don't care about UPS and such. */
+            continue; // we don't care about UPS and such.
         }
 
         /* if the scope is "device," it might be something like a PS4
@@ -456,15 +456,15 @@ SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, in
            assume it's a system battery if not specified. */
         if (read_power_file(base, name, "scope", str, sizeof(str))) {
             if (SDL_strcasecmp(str, "Device\n") == 0) {
-                continue; /* skip external devices with their own batteries. */
+                continue; // skip external devices with their own batteries.
             }
         }
 
-        /* some drivers don't offer this, so if it's not explicitly reported assume it's present. */
+        // some drivers don't offer this, so if it's not explicitly reported assume it's present.
         if (read_power_file(base, name, "present", str, sizeof(str)) && (SDL_strcmp(str, "0\n") == 0)) {
             st = SDL_POWERSTATE_NO_BATTERY;
         } else if (!read_power_file(base, name, "status", str, sizeof(str))) {
-            st = SDL_POWERSTATE_UNKNOWN; /* uh oh */
+            st = SDL_POWERSTATE_UNKNOWN; // uh oh
         } else if (SDL_strcasecmp(str, "Charging\n") == 0) {
             st = SDL_POWERSTATE_CHARGING;
         } else if (SDL_strcasecmp(str, "Discharging\n") == 0) {
@@ -472,19 +472,19 @@ SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, in
         } else if ((SDL_strcasecmp(str, "Full\n") == 0) || (SDL_strcasecmp(str, "Not charging\n") == 0)) {
             st = SDL_POWERSTATE_CHARGED;
         } else {
-            st = SDL_POWERSTATE_UNKNOWN; /* uh oh */
+            st = SDL_POWERSTATE_UNKNOWN; // uh oh
         }
 
         if (!read_power_file(base, name, "capacity", str, sizeof(str))) {
             pct = -1;
         } else {
             pct = SDL_atoi(str);
-            pct = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
+            pct = (pct > 100) ? 100 : pct; // clamp between 0%, 100%
         }
 
         if (read_power_file(base, name, "time_to_empty_now", str, sizeof(str))) {
             secs = SDL_atoi(str);
-            secs = (secs <= 0) ? -1 : secs; /* 0 == unknown */
+            secs = (secs <= 0) ? -1 : secs; // 0 == unknown
         } else if (st == SDL_POWERSTATE_ON_BATTERY) {
             /* energy is Watt*hours and power is Watts */
             energy = (read_power_file(base, name, "energy_now", str, sizeof(str))) ? SDL_atoi(str) : -1;
@@ -500,7 +500,7 @@ SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, in
          */
         if ((secs < 0) && (*seconds < 0)) {
             if ((pct < 0) && (*percent < 0)) {
-                choose = SDL_TRUE; /* at least we know there's a battery. */
+                choose = SDL_TRUE; // at least we know there's a battery.
             } else if (pct > *percent) {
                 choose = SDL_TRUE;
             }
@@ -516,10 +516,10 @@ SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, in
     }
 
     closedir(dirp);
-    return SDL_TRUE; /* don't look any further. */
+    return SDL_TRUE; // don't look any further.
 }
 
-/* d-bus queries to org.freedesktop.UPower. */
+// d-bus queries to org.freedesktop.UPower.
 #ifdef SDL_USE_LIBDBUS
 #define UPOWER_DBUS_NODE             "org.freedesktop.UPower"
 #define UPOWER_DBUS_PATH             "/org/freedesktop/UPower"
@@ -537,13 +537,13 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
     double d = 0.0;
 
     if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Type", DBUS_TYPE_UINT32, &ui32)) {
-        return;             /* Don't know _what_ we're looking at. Give up on it. */
-    } else if (ui32 != 2) { /* 2==Battery*/
-        return;             /* we don't care about UPS and such. */
+        return;             // Don't know _what_ we're looking at. Give up on it.
+    } else if (ui32 != 2) { // 2==Battery
+        return;             // we don't care about UPS and such.
     } else if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "PowerSupply", DBUS_TYPE_BOOLEAN, &ui32)) {
         return;
     } else if (!ui32) {
-        return; /* we don't care about random devices with batteries, like wireless controllers, etc */
+        return; // we don't care about random devices with batteries, like wireless controllers, etc
     }
 
     if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "IsPresent", DBUS_TYPE_BOOLEAN, &ui32)) {
@@ -558,8 +558,8 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
         SDL_DBus_CallMethodOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Refresh", DBUS_TYPE_INVALID, DBUS_TYPE_INVALID);
 
         if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "State", DBUS_TYPE_UINT32, &ui32)) {
-            st = SDL_POWERSTATE_UNKNOWN; /* uh oh */
-        } else if (ui32 == 1) {          /* 1 == charging */
+            st = SDL_POWERSTATE_UNKNOWN; // uh oh
+        } else if (ui32 == 1) {          // 1 == charging
             st = SDL_POWERSTATE_CHARGING;
         } else if ((ui32 == 2) || (ui32 == 3) || (ui32 == 6)) {
             /* 2 == discharging;
@@ -574,22 +574,22 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
              * lower than 100% threshold */
             st = SDL_POWERSTATE_CHARGED;
         } else {
-            st = SDL_POWERSTATE_UNKNOWN; /* uh oh */
+            st = SDL_POWERSTATE_UNKNOWN; // uh oh
         }
     }
 
     if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Percentage", DBUS_TYPE_DOUBLE, &d)) {
-        pct = -1; /* some old/cheap batteries don't set this property. */
+        pct = -1; // some old/cheap batteries don't set this property.
     } else {
         pct = (int)d;
-        pct = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
+        pct = (pct > 100) ? 100 : pct; // clamp between 0%, 100%
     }
 
     if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "TimeToEmpty", DBUS_TYPE_INT64, &si64)) {
         secs = -1;
     } else {
         secs = (int)si64;
-        secs = (secs <= 0) ? -1 : secs; /* 0 == unknown */
+        secs = (secs <= 0) ? -1 : secs; // 0 == unknown
     }
 
     /*
@@ -598,7 +598,7 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
      */
     if ((secs < 0) && (*seconds < 0)) {
         if ((pct < 0) && (*percent < 0)) {
-            choose = SDL_TRUE; /* at least we know there's a battery. */
+            choose = SDL_TRUE; // at least we know there's a battery.
         } else if (pct > *percent) {
             choose = SDL_TRUE;
         }
@@ -626,11 +626,11 @@ SDL_bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, in
     if (!dbus || !SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
                                                          DBUS_TYPE_INVALID,
                                                          DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
-        return SDL_FALSE; /* try a different approach than UPower. */
+        return SDL_FALSE; // try a different approach than UPower.
     }
 
-    retval = SDL_TRUE;                  /* Clearly we can use this interface. */
-    *state = SDL_POWERSTATE_NO_BATTERY; /* assume we're just plugged in. */
+    retval = SDL_TRUE;                  // Clearly we can use this interface.
+    *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
     *seconds = -1;
     *percent = -1;
 
@@ -639,10 +639,10 @@ SDL_bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, in
     }
 
     dbus->free_string_array(paths);
-#endif /* SDL_USE_LIBDBUS */
+#endif // SDL_USE_LIBDBUS
 
     return retval;
 }
 
-#endif /* SDL_POWER_LINUX */
-#endif /* SDL_POWER_DISABLED */
+#endif // SDL_POWER_LINUX
+#endif // SDL_POWER_DISABLED

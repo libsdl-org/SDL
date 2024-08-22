@@ -40,7 +40,7 @@ int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 
     SDL_SetMouseFocus(window);
 
-    /* All done! */
+    // All done!
     window->internal = data;
     return 0;
 }
@@ -53,4 +53,4 @@ void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_RISCOS */
+#endif // SDL_VIDEO_DRIVER_RISCOS

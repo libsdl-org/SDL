@@ -90,4 +90,4 @@ SDL_SensorDriver SDL_DUMMY_SensorDriver = {
     SDL_DUMMY_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_DUMMY || SDL_SENSOR_DISABLED */
+#endif // SDL_SENSOR_DUMMY || SDL_SENSOR_DISABLED

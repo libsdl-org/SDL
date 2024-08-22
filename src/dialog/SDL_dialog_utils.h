@@ -30,8 +30,8 @@
    as "|" with Zenity). */
 typedef char *(NameTransform)(const char * name);
 
-/* Converts all the filters into a single string. */
-/* <prefix>[filter]{<separator>[filter]...}<suffix> */
+// Converts all the filters into a single string.
+// <prefix>[filter]{<separator>[filter]...}<suffix>
 char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
                       NameTransform ntf, const char *prefix,
                       const char *separator, const char *suffix,
@@ -39,20 +39,20 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
                       const char *filt_suffix, const char *ext_prefix,
                       const char *ext_separator, const char *ext_suffix);
 
-/* Converts one filter into a single string. */
-/* <prefix>[filter name]<separator>[filter extension list]<suffix> */
+// Converts one filter into a single string.
+// <prefix>[filter name]<separator>[filter extension list]<suffix>
 char *convert_filter(const SDL_DialogFileFilter filter, NameTransform ntf,
                      const char *prefix, const char *separator,
                      const char *suffix, const char *ext_prefix,
                      const char *ext_separator, const char *ext_suffix);
 
-/* Converts the extenstion list of a filter into a single string. */
-/* <prefix>[extension]{<separator>[extension]...}<suffix> */
+// Converts the extenstion list of a filter into a single string.
+// <prefix>[extension]{<separator>[extension]...}<suffix>
 char *convert_ext_list(const char *list, const char *prefix,
                        const char *separator, const char *suffix);
 
 /* Must be used if convert_* functions aren't used */
-/* Returns an error message if there's a problem, NULL otherwise */
+// Returns an error message if there's a problem, NULL otherwise
 const char *validate_filters(const SDL_DialogFileFilter *filters,
                              int nfilters);
 

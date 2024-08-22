@@ -84,10 +84,10 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
         return 0;
     }
 
-    /* Make sure we get events as soon as possible */
+    // Make sure we get events as soon as possible
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 
-    /* Tell the parent we're ready to go! */
+    // Tell the parent we're ready to go!
     SetEvent(data->ready_event);
 
     while (!data->done) {
@@ -95,7 +95,7 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
             break;
         }
 
-        /* Clear the queue status so MsgWaitForMultipleObjects() will wait again */
+        // Clear the queue status so MsgWaitForMultipleObjects() will wait again
         (void)GetQueueStatus(QS_RAWINPUT);
 
         WIN_PollRawInput(_this);
@@ -160,7 +160,7 @@ static int WIN_SetRawInputEnabled(SDL_VideoDevice *_this, Uint32 flags)
             goto done;
         }
 
-        /* Wait for the thread to signal ready or exit */
+        // Wait for the thread to signal ready or exit
         handles[0] = thread_data.ready_event;
         handles[1] = thread_data.thread;
         if (WaitForMultipleObjects(2, handles, FALSE, INFINITE) != WAIT_OBJECT_0) {
@@ -247,6 +247,6 @@ int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
     return SDL_Unsupported();
 }
 
-#endif /* !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES */
+#endif // !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES
 
-#endif /* SDL_VIDEO_DRIVER_WINDOWS */
+#endif // SDL_VIDEO_DRIVER_WINDOWS

@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_PSP
 
-/* PSP thread management routines for SDL */
+// PSP thread management routines for SDL
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
     SceKernelThreadInfo status;
     int priority = 32;
 
-    /* Set priority of new thread to the same as the current thread */
+    // Set priority of new thread to the same as the current thread
     status.size = sizeof(SceKernelThreadInfo);
     if (sceKernelReferThreadStatus(sceKernelGetThreadId(), &status) == 0) {
         priority = status.currentPriority;
@@ -64,7 +64,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
 
 void SDL_SYS_SetupThread(const char *name)
 {
-    /* Do nothing. */
+    // Do nothing.
 }
 
 SDL_ThreadID SDL_GetCurrentThreadID(void)
@@ -80,7 +80,7 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
 
 void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
-    /* !!! FIXME: is this correct? */
+    // !!! FIXME: is this correct?
     sceKernelDeleteThread(thread->handle);
 }
 
@@ -106,4 +106,4 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     return sceKernelChangeThreadPriority(sceKernelGetThreadId(), value);
 }
 
-#endif /* SDL_THREAD_PSP */
+#endif // SDL_THREAD_PSP

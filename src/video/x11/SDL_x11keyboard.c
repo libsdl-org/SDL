@@ -69,7 +69,7 @@ static SDL_bool X11_ScancodeIsRemappable(SDL_Scancode scancode)
     }
 }
 
-/* This function only correctly maps letters and numbers for keyboards in US QWERTY layout */
+// This function only correctly maps letters and numbers for keyboards in US QWERTY layout
 static SDL_Scancode X11_KeyCodeToSDLScancode(SDL_VideoDevice *_this, KeyCode keycode)
 {
     const KeySym keysym = X11_KeyCodeToSym(_this, keycode, 0, 0);
@@ -116,7 +116,7 @@ KeySym X11_KeyCodeToSym(SDL_VideoDevice *_this, KeyCode keycode, unsigned char g
     } else
 #endif
     {
-        /* TODO: Handle groups and modifiers on the legacy path. */
+        // TODO: Handle groups and modifiers on the legacy path.
         keysym = X11_XKeycodeToKeysym(data->display, keycode, 0);
     }
 
@@ -156,12 +156,12 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
             data->xkb = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
         }
 
-        /* This will remove KeyRelease events for held keys */
+        // This will remove KeyRelease events for held keys
         X11_XkbSetDetectableAutoRepeat(data->display, True, &xkb_repeat);
     }
 #endif
 
-    /* Open a connection to the X input manager */
+    // Open a connection to the X input manager
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
         /* Set the locale, and call XSetLocaleModifiers before XOpenIM so that
@@ -213,7 +213,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
         }
     }
 #endif
-    /* Try to determine which scancodes are being used based on fingerprint */
+    // Try to determine which scancodes are being used based on fingerprint
     best_distance = SDL_arraysize(fingerprint) + 1;
     best_index = -1;
     X11_XDisplayKeycodes(data->display, &min_keycode, &max_keycode);
@@ -238,7 +238,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
         }
     }
     if (best_index < 0 || best_distance > 2) {
-        /* This is likely to be SDL_SCANCODE_TABLE_XFREE86_2 with remapped keys, double check a rarely remapped value */
+        // This is likely to be SDL_SCANCODE_TABLE_XFREE86_2 with remapped keys, double check a rarely remapped value
         int fingerprint_value = X11_XKeysymToKeycode(data->display, 0x1008FF5B /* XF86Documents */) - min_keycode;
         if (fingerprint_value == 235) {
             for (i = 0; i < SDL_arraysize(scancode_set); ++i) {
@@ -257,7 +257,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
 #ifdef DEBUG_KEYBOARD
         SDL_Log("Using scancode set %d, min_keycode = %d, max_keycode = %d, table_size = %d\n", best_index, min_keycode, max_keycode, table_size);
 #endif
-        /* This should never happen, but just in case... */
+        // This should never happen, but just in case...
         if (table_size > (SDL_arraysize(data->key_layout) - min_keycode)) {
             table_size = (SDL_arraysize(data->key_layout) - min_keycode);
         }
@@ -281,7 +281,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
                 continue;
             }
             if ((SDL_GetKeymapKeycode(NULL, scancode, SDL_KMOD_NONE) & SDLK_SCANCODE_MASK) && X11_ScancodeIsRemappable(scancode)) {
-                /* Not a character key and the scancode is safe to remap */
+                // Not a character key and the scancode is safe to remap
 #ifdef DEBUG_KEYBOARD
                 SDL_Log("Changing scancode, was %d (%s), now %d (%s)\n", data->key_layout[i], SDL_GetScancodeName(data->key_layout[i]), scancode, SDL_GetScancodeName(scancode));
 #endif
@@ -293,7 +293,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
         SDL_Log("Keyboard layout unknown, please report the following to the SDL forums/mailing list (https://discourse.libsdl.org/):\n");
 #endif
 
-        /* Determine key_layout - only works on US QWERTY layout */
+        // Determine key_layout - only works on US QWERTY layout
         for (i = min_keycode; i <= max_keycode; ++i) {
             SDL_Scancode scancode = X11_KeyCodeToSDLScancode(_this, i);
 #ifdef DEBUG_SCANCODES
@@ -365,7 +365,7 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
         for (i = 0; i < SDL_arraysize(data->key_layout); i++) {
             SDL_Keycode keycode;
 
-            /* Make sure this is a valid scancode */
+            // Make sure this is a valid scancode
             scancode = data->key_layout[i];
             if (scancode == SDL_SCANCODE_UNKNOWN) {
                 continue;
@@ -373,7 +373,7 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
 
             KeySym keysym = X11_KeyCodeToSym(_this, i, data->xkb_group, keymod_masks[m].xkb_mask);
 
-            /* Note: The default SDL scancode table sets this to right alt instead of AltGr/Mode, so handle it separately. */
+            // Note: The default SDL scancode table sets this to right alt instead of AltGr/Mode, so handle it separately.
             if (keysym != XK_ISO_Level3_Shift) {
                 keycode = SDL_KeySymToUcs4(keysym);
             } else {
@@ -412,7 +412,7 @@ static void X11_ResetXIM(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data = window->internal;
 
     if (data && data->ic) {
-        /* Clear any partially entered dead keys */
+        // Clear any partially entered dead keys
         char *contents = X11_Xutf8ResetIC(data->ic);
         if (contents) {
             X11_XFree(contents);
@@ -508,4 +508,4 @@ SDL_bool X11_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
     return videodata->steam_keyboard_open;
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11 */
+#endif // SDL_VIDEO_DRIVER_X11

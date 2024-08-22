@@ -19,13 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* Windows includes: */
+// Windows includes:
 #include <windows.h>
 #ifdef __cplusplus_winrt
 #include <agile.h>
 #endif
 
-/* SDL includes: */
+// SDL includes:
 
 #if NTDDI_VERSION >= NTDDI_WINBLUE /* ApplicationView's functionality only becomes \
                                       useful for SDL in Win[Phone] 8.1 and up.     \
@@ -38,7 +38,7 @@ extern "C" {
 #include "../SDL_egl_c.h"
 }
 
-/* Private display data */
+// Private display data
 struct SDL_VideoData
 {
     /* An object created by ANGLE/WinRT (OpenGL ES 2 for WinRT) that gets
@@ -68,9 +68,9 @@ extern SDL_Window *WINRT_GlobalSDLWindow;
    SDL_Window flags that can be updated should be specified in 'mask'.
 */
 extern void WINRT_UpdateWindowFlags(SDL_Window *window, SDL_WindowFlags mask);
-extern "C" SDL_WindowFlags WINRT_DetectWindowFlags(SDL_Window *window); /* detects flags w/o applying them */
+extern "C" SDL_WindowFlags WINRT_DetectWindowFlags(SDL_Window *window); // detects flags w/o applying them
 
-/* Display mode internals */
+// Display mode internals
 // typedef struct
 //{
 //     Windows::Graphics::Display::DisplayOrientations currentOrientation;
@@ -78,18 +78,18 @@ extern "C" SDL_WindowFlags WINRT_DetectWindowFlags(SDL_Window *window); /* detec
 
 #ifdef __cplusplus_winrt
 
-/* A convenience macro to get a WinRT display property */
+// A convenience macro to get a WinRT display property
 #if NTDDI_VERSION > NTDDI_WIN8
 #define WINRT_DISPLAY_PROPERTY(NAME) (Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->NAME)
 #else
 #define WINRT_DISPLAY_PROPERTY(NAME) (Windows::Graphics::Display::DisplayProperties::NAME)
 #endif
 
-/* Converts DIPS to/from physical pixels */
+// Converts DIPS to/from physical pixels
 #define WINRT_DIPS_TO_PHYSICAL_PIXELS(DIPS)    ((int)(0.5f + (((float)(DIPS) * (float)WINRT_DISPLAY_PROPERTY(LogicalDpi)) / 96.f)))
 #define WINRT_PHYSICAL_PIXELS_TO_DIPS(PHYSPIX) (((float)(PHYSPIX)*96.f) / WINRT_DISPLAY_PROPERTY(LogicalDpi))
 
-/* Internal window data */
+// Internal window data
 struct SDL_WindowData
 {
     SDL_Window *sdlWindow;

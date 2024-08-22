@@ -107,22 +107,22 @@ typedef struct SteamControllerStateInternal_t
     short sPrevLeftStick[2];
 } SteamControllerStateInternal_t;
 
-/* Defines for ulButtons in SteamControllerStateInternal_t */
+// Defines for ulButtons in SteamControllerStateInternal_t
 #define STEAM_RIGHT_TRIGGER_MASK           0x00000001
 #define STEAM_LEFT_TRIGGER_MASK            0x00000002
 #define STEAM_RIGHT_BUMPER_MASK            0x00000004
 #define STEAM_LEFT_BUMPER_MASK             0x00000008
-#define STEAM_BUTTON_NORTH_MASK            0x00000010 /* Y */
-#define STEAM_BUTTON_EAST_MASK             0x00000020 /* B */
-#define STEAM_BUTTON_WEST_MASK             0x00000040 /* X */
-#define STEAM_BUTTON_SOUTH_MASK            0x00000080 /* A */
-#define STEAM_DPAD_UP_MASK                 0x00000100 /* DPAD UP */
-#define STEAM_DPAD_RIGHT_MASK              0x00000200 /* DPAD RIGHT */
-#define STEAM_DPAD_LEFT_MASK               0x00000400 /* DPAD LEFT */
-#define STEAM_DPAD_DOWN_MASK               0x00000800 /* DPAD DOWN */
-#define STEAM_BUTTON_MENU_MASK             0x00001000 /* SELECT */
-#define STEAM_BUTTON_STEAM_MASK            0x00002000 /* GUIDE */
-#define STEAM_BUTTON_ESCAPE_MASK           0x00004000 /* START */
+#define STEAM_BUTTON_NORTH_MASK            0x00000010 // Y
+#define STEAM_BUTTON_EAST_MASK             0x00000020 // B
+#define STEAM_BUTTON_WEST_MASK             0x00000040 // X
+#define STEAM_BUTTON_SOUTH_MASK            0x00000080 // A
+#define STEAM_DPAD_UP_MASK                 0x00000100 // DPAD UP
+#define STEAM_DPAD_RIGHT_MASK              0x00000200 // DPAD RIGHT
+#define STEAM_DPAD_LEFT_MASK               0x00000400 // DPAD LEFT
+#define STEAM_DPAD_DOWN_MASK               0x00000800 // DPAD DOWN
+#define STEAM_BUTTON_MENU_MASK             0x00001000 // SELECT
+#define STEAM_BUTTON_STEAM_MASK            0x00002000 // GUIDE
+#define STEAM_BUTTON_ESCAPE_MASK           0x00004000 // START
 #define STEAM_BUTTON_BACK_LEFT_MASK        0x00008000
 #define STEAM_BUTTON_BACK_RIGHT_MASK       0x00010000
 #define STEAM_BUTTON_LEFTPAD_CLICKED_MASK  0x00020000
@@ -217,7 +217,7 @@ static void ResetSteamControllerPacketAssembler(SteamControllerPacketAssembler *
 
 static void InitializeSteamControllerPacketAssembler(SteamControllerPacketAssembler *pAssembler)
 {
-    /* We only support BLE devices right now */
+    // We only support BLE devices right now
     pAssembler->bIsBle = true;
     ResetSteamControllerPacketAssembler(pAssembler);
 }
@@ -982,11 +982,11 @@ static SDL_bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
 
 #ifdef SDL_PLATFORM_WIN32
     if (device->serial) {
-        /* We get a garbage serial number on Windows */
+        // We get a garbage serial number on Windows
         SDL_free(device->serial);
         device->serial = NULL;
     }
-#endif /* SDL_PLATFORM_WIN32 */
+#endif // SDL_PLATFORM_WIN32
 
     HIDAPI_SetDeviceName(device, "Steam Controller");
 
@@ -1024,7 +1024,7 @@ static SDL_bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
 
     InitializeSteamControllerPacketAssembler(&ctx->m_assembler);
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     joystick->nbuttons = SDL_GAMEPAD_NUM_STEAM_BUTTONS;
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
@@ -1037,7 +1037,7 @@ static SDL_bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
 
 static int HIDAPI_DriverSteam_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    /* You should use the full Steam Input API for rumble support */
+    // You should use the full Steam Input API for rumble support
     return SDL_Unsupported();
 }
 
@@ -1048,13 +1048,13 @@ static int HIDAPI_DriverSteam_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, 
 
 static Uint32 HIDAPI_DriverSteam_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    /* You should use the full Steam Input API for extended capabilities */
+    // You should use the full Steam Input API for extended capabilities
     return 0;
 }
 
 static int HIDAPI_DriverSteam_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    /* You should use the full Steam Input API for LED support */
+    // You should use the full Steam Input API for LED support
     return SDL_Unsupported();
 }
 
@@ -1201,7 +1201,7 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
         }
 
         if (r <= 0) {
-            /* Failed to read from controller */
+            // Failed to read from controller
             HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
             return SDL_FALSE;
         }
@@ -1240,6 +1240,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam = {
     HIDAPI_DriverSteam_FreeDevice,
 };
 
-#endif /* SDL_JOYSTICK_HIDAPI_STEAM */
+#endif // SDL_JOYSTICK_HIDAPI_STEAM
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_VITA
 
-/* Semaphore functions for the VITA. */
+// Semaphore functions for the VITA.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,14 +36,14 @@ struct SDL_Semaphore
     SceUID semid;
 };
 
-/* Create a semaphore */
+// Create a semaphore
 SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_Semaphore *sem;
 
     sem = (SDL_Semaphore *)SDL_malloc(sizeof(*sem));
     if (sem) {
-        /* TODO: Figure out the limit on the maximum value. */
+        // TODO: Figure out the limit on the maximum value.
         sem->semid = sceKernelCreateSema("SDL sema", 0, initial_value, 255, NULL);
         if (sem->semid < 0) {
             SDL_SetError("Couldn't create semaphore");
@@ -55,7 +55,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
     return sem;
 }
 
-/* Free the semaphore */
+// Free the semaphore
 void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
     if (sem) {
@@ -93,7 +93,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     if (timeoutNS < 0) {
         pTimeout = NULL;
     } else {
-        timeoutUS = (SceUInt)SDL_NS_TO_US(timeoutNS); /* Convert to microseconds. */
+        timeoutUS = (SceUInt)SDL_NS_TO_US(timeoutNS); // Convert to microseconds.
         pTimeout = &timeoutUS;
     }
 
@@ -108,7 +108,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     }
 }
 
-/* Returns the current count of the semaphore */
+// Returns the current count of the semaphore
 Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     SceKernelSemaInfo info;
@@ -142,4 +142,4 @@ int SDL_SignalSemaphore(SDL_Semaphore *sem)
     return 0;
 }
 
-#endif /* SDL_THREAD_VITA */
+#endif // SDL_THREAD_VITA

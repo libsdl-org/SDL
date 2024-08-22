@@ -30,8 +30,8 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_GAMECUBE
 
-/* Define this if you want to log all packets from the controller */
-/*#define DEBUG_GAMECUBE_PROTOCOL*/
+// Define this if you want to log all packets from the controller
+// #define DEBUG_GAMECUBE_PROTOCOL
 
 #define MAX_CONTROLLERS 4
 
@@ -44,7 +44,7 @@ typedef struct
     Uint8 max_axis[MAX_CONTROLLERS * SDL_GAMEPAD_AXIS_MAX];
     Uint8 rumbleAllowed[MAX_CONTROLLERS];
     Uint8 rumble[1 + MAX_CONTROLLERS];
-    /* Without this variable, hid_write starts to lag a TON */
+    // Without this variable, hid_write starts to lag a TON
     SDL_bool rumbleUpdate;
     SDL_bool useRumbleBrake;
 } SDL_DriverGameCube_Context;
@@ -69,13 +69,13 @@ static SDL_bool HIDAPI_DriverGameCube_IsEnabled(void)
 static SDL_bool HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) {
-        /* Nintendo Co., Ltd.  Wii U GameCube Controller Adapter */
+        // Nintendo Co., Ltd.  Wii U GameCube Controller Adapter
         return SDL_TRUE;
     }
     if (vendor_id == USB_VENDOR_DRAGONRISE &&
         (product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1 ||
          product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2)) {
-        /* EVORETRO GameCube Controller Adapter */
+        // EVORETRO GameCube Controller Adapter
         return SDL_TRUE;
     }
     return SDL_FALSE;
@@ -86,7 +86,7 @@ static void ResetAxisRange(SDL_DriverGameCube_Context *ctx, int joystick_index)
     SDL_memset(&ctx->min_axis[joystick_index * SDL_GAMEPAD_AXIS_MAX], 128 - 88, SDL_GAMEPAD_AXIS_MAX);
     SDL_memset(&ctx->max_axis[joystick_index * SDL_GAMEPAD_AXIS_MAX], 128 + 88, SDL_GAMEPAD_AXIS_MAX);
 
-    /* Trigger axes may have a higher resting value */
+    // Trigger axes may have a higher resting value
     ctx->min_axis[joystick_index * SDL_GAMEPAD_AXIS_MAX + SDL_GAMEPAD_AXIS_LEFT_TRIGGER] = 40;
     ctx->min_axis[joystick_index * SDL_GAMEPAD_AXIS_MAX + SDL_GAMEPAD_AXIS_RIGHT_TRIGGER] = 40;
 }
@@ -136,34 +136,34 @@ static SDL_bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
             HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
         }
     } else {
-        /* This is all that's needed to initialize the device. Really! */
+        // This is all that's needed to initialize the device. Really!
         if (SDL_hid_write(device->dev, &initMagic, sizeof(initMagic)) != sizeof(initMagic)) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "HIDAPI_DriverGameCube_InitDevice(): Couldn't initialize WUP-028");
             return SDL_FALSE;
         }
 
-        /* Wait for the adapter to initialize */
+        // Wait for the adapter to initialize
         SDL_Delay(10);
 
-        /* Add all the applicable joysticks */
+        // Add all the applicable joysticks
         while ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
 #ifdef DEBUG_GAMECUBE_PROTOCOL
             HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
 #endif
             if (size < 37 || packet[0] != 0x21) {
-                continue; /* Nothing to do yet...? */
+                continue; // Nothing to do yet...?
             }
 
-            /* Go through all 4 slots */
+            // Go through all 4 slots
             curSlot = packet + 1;
             for (i = 0; i < MAX_CONTROLLERS; i += 1, curSlot += 9) {
                 ctx->wireless[i] = (curSlot[0] & 0x20) != 0;
 
-                /* Only allow rumble if the adapter's second USB cable is connected */
+                // Only allow rumble if the adapter's second USB cable is connected
                 ctx->rumbleAllowed[i] = (curSlot[0] & 0x04) && !ctx->wireless[i];
 
-                if (curSlot[0] & 0x30) { /* 0x10 - Wired, 0x20 - Wireless */
+                if (curSlot[0] & 0x30) { // 0x10 - Wired, 0x20 - Wireless
                     if (ctx->joysticks[i] == 0) {
                         ResetAxisRange(ctx, i);
                         HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
@@ -212,17 +212,17 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
     Uint64 timestamp = SDL_GetTicksNS();
 
     if (size != 10) {
-        return; /* How do we handle this packet? */
+        return; // How do we handle this packet?
     }
 
     i = packet[0] - 1;
     if (i >= MAX_CONTROLLERS) {
-        return; /* How do we handle this packet? */
+        return; // How do we handle this packet?
     }
 
     joystick = SDL_GetJoystickFromID(ctx->joysticks[i]);
     if (!joystick) {
-        /* Hasn't been opened yet, skip */
+        // Hasn't been opened yet, skip
         return;
     }
 
@@ -232,22 +232,22 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
         joystick,                       \
         button,                         \
         (packet[off] & flag) ? SDL_PRESSED : SDL_RELEASED);
-    READ_BUTTON(1, 0x02, 0) /* A */
-    READ_BUTTON(1, 0x04, 1) /* B */
-    READ_BUTTON(1, 0x08, 3) /* Y */
-    READ_BUTTON(1, 0x01, 2) /* X */
-    READ_BUTTON(2, 0x80, 4) /* DPAD_LEFT */
-    READ_BUTTON(2, 0x20, 5) /* DPAD_RIGHT */
-    READ_BUTTON(2, 0x40, 6) /* DPAD_DOWN */
-    READ_BUTTON(2, 0x10, 7) /* DPAD_UP */
-    READ_BUTTON(2, 0x02, 8) /* START */
-    READ_BUTTON(1, 0x80, 9) /* RIGHTSHOULDER */
+    READ_BUTTON(1, 0x02, 0) // A
+    READ_BUTTON(1, 0x04, 1) // B
+    READ_BUTTON(1, 0x08, 3) // Y
+    READ_BUTTON(1, 0x01, 2) // X
+    READ_BUTTON(2, 0x80, 4) // DPAD_LEFT
+    READ_BUTTON(2, 0x20, 5) // DPAD_RIGHT
+    READ_BUTTON(2, 0x40, 6) // DPAD_DOWN
+    READ_BUTTON(2, 0x10, 7) // DPAD_UP
+    READ_BUTTON(2, 0x02, 8) // START
+    READ_BUTTON(1, 0x80, 9) // RIGHTSHOULDER
     /* These two buttons are for the bottoms of the analog triggers.
      * More than likely, you're going to want to read the axes instead!
      * -flibit
      */
-    READ_BUTTON(1, 0x20, 10) /* TRIGGERRIGHT */
-    READ_BUTTON(1, 0x10, 11) /* TRIGGERLEFT */
+    READ_BUTTON(1, 0x20, 10) // TRIGGERRIGHT
+    READ_BUTTON(1, 0x10, 11) // TRIGGERLEFT
 #undef READ_BUTTON
 
 #define READ_AXIS(off, axis, invert)                                                \
@@ -279,25 +279,25 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
     Uint64 timestamp = SDL_GetTicksNS();
 
     if (size < 37 || packet[0] != 0x21) {
-        return; /* Nothing to do right now...? */
+        return; // Nothing to do right now...?
     }
 
-    /* Go through all 4 slots */
+    // Go through all 4 slots
     curSlot = packet + 1;
     for (i = 0; i < MAX_CONTROLLERS; i += 1, curSlot += 9) {
         ctx->wireless[i] = (curSlot[0] & 0x20) != 0;
 
-        /* Only allow rumble if the adapter's second USB cable is connected */
+        // Only allow rumble if the adapter's second USB cable is connected
         ctx->rumbleAllowed[i] = (curSlot[0] & 0x04) && !ctx->wireless[i];
 
-        if (curSlot[0] & 0x30) { /* 0x10 - Wired, 0x20 - Wireless */
+        if (curSlot[0] & 0x30) { // 0x10 - Wired, 0x20 - Wireless
             if (ctx->joysticks[i] == 0) {
                 ResetAxisRange(ctx, i);
                 HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
             }
             joystick = SDL_GetJoystickFromID(ctx->joysticks[i]);
 
-            /* Hasn't been opened yet, skip */
+            // Hasn't been opened yet, skip
             if (!joystick) {
                 continue;
             }
@@ -315,22 +315,22 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
         joystick,                       \
         button,                         \
         (curSlot[off] & flag) ? SDL_PRESSED : SDL_RELEASED);
-        READ_BUTTON(1, 0x01, 0) /* A */
-        READ_BUTTON(1, 0x02, 1) /* B */
-        READ_BUTTON(1, 0x04, 2) /* X */
-        READ_BUTTON(1, 0x08, 3) /* Y */
-        READ_BUTTON(1, 0x10, 4) /* DPAD_LEFT */
-        READ_BUTTON(1, 0x20, 5) /* DPAD_RIGHT */
-        READ_BUTTON(1, 0x40, 6) /* DPAD_DOWN */
-        READ_BUTTON(1, 0x80, 7) /* DPAD_UP */
-        READ_BUTTON(2, 0x01, 8) /* START */
-        READ_BUTTON(2, 0x02, 9) /* RIGHTSHOULDER */
+        READ_BUTTON(1, 0x01, 0) // A
+        READ_BUTTON(1, 0x02, 1) // B
+        READ_BUTTON(1, 0x04, 2) // X
+        READ_BUTTON(1, 0x08, 3) // Y
+        READ_BUTTON(1, 0x10, 4) // DPAD_LEFT
+        READ_BUTTON(1, 0x20, 5) // DPAD_RIGHT
+        READ_BUTTON(1, 0x40, 6) // DPAD_DOWN
+        READ_BUTTON(1, 0x80, 7) // DPAD_UP
+        READ_BUTTON(2, 0x01, 8) // START
+        READ_BUTTON(2, 0x02, 9) // RIGHTSHOULDER
         /* These two buttons are for the bottoms of the analog triggers.
          * More than likely, you're going to want to read the axes instead!
          * -flibit
          */
-        READ_BUTTON(2, 0x04, 10) /* TRIGGERRIGHT */
-        READ_BUTTON(2, 0x08, 11) /* TRIGGERLEFT */
+        READ_BUTTON(2, 0x04, 10) // TRIGGERRIGHT
+        READ_BUTTON(2, 0x08, 11) // TRIGGERLEFT
 #undef READ_BUTTON
 
 #define READ_AXIS(off, axis)                                                                \
@@ -359,7 +359,7 @@ static SDL_bool HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
     Uint8 packet[USB_PACKET_LENGTH];
     int size;
 
-    /* Read input packet */
+    // Read input packet
     while ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
 #ifdef DEBUG_GAMECUBE_PROTOCOL
         HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
@@ -371,13 +371,13 @@ static SDL_bool HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    /* Write rumble packet */
+    // Write rumble packet
     if (ctx->rumbleUpdate) {
         SDL_HIDAPI_SendRumble(device, ctx->rumble, sizeof(ctx->rumble));
         ctx->rumbleUpdate = SDL_FALSE;
     }
 
-    /* If we got here, nothing bad happened! */
+    // If we got here, nothing bad happened!
     return SDL_TRUE;
 }
 
@@ -400,7 +400,7 @@ static SDL_bool HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SD
             return SDL_TRUE;
         }
     }
-    return SDL_FALSE; /* Should never get here! */
+    return SDL_FALSE; // Should never get here!
 }
 
 static int HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
@@ -424,11 +424,11 @@ static int HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
             }
             if (ctx->useRumbleBrake) {
                 if (low_frequency_rumble == 0 && high_frequency_rumble > 0) {
-                    val = 0; /* if only low is 0 we want to do a regular stop*/
+                    val = 0; // if only low is 0 we want to do a regular stop
                 } else if (low_frequency_rumble == 0 && high_frequency_rumble == 0) {
-                    val = 2; /* if both frequencies are 0 we want to do a hard stop */
+                    val = 2; // if both frequencies are 0 we want to do a hard stop
                 } else {
-                    val = 1; /* normal rumble */
+                    val = 1; // normal rumble
                 }
             } else {
                 val = (low_frequency_rumble > 0 || high_frequency_rumble > 0);
@@ -441,7 +441,7 @@ static int HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
         }
     }
 
-    /* Should never get here! */
+    // Should never get here!
     return SDL_SetError("Couldn't find joystick");
 }
 
@@ -492,7 +492,7 @@ static void HIDAPI_DriverGameCube_CloseJoystick(SDL_HIDAPI_Device *device, SDL_J
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
 
-    /* Stop rumble activity */
+    // Stop rumble activity
     if (ctx->rumbleUpdate) {
         SDL_HIDAPI_SendRumble(device, ctx->rumble, sizeof(ctx->rumble));
         ctx->rumbleUpdate = SDL_FALSE;
@@ -529,6 +529,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube = {
     HIDAPI_DriverGameCube_FreeDevice,
 };
 
-#endif /* SDL_JOYSTICK_HIDAPI_GAMECUBE */
+#endif // SDL_JOYSTICK_HIDAPI_GAMECUBE
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

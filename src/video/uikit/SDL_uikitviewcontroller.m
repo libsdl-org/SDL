@@ -188,9 +188,9 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (void)doLoop:(CADisplayLink *)sender
 {
-    /* Don't run the game loop while a messagebox is up */
+    // Don't run the game loop while a messagebox is up
     if (!UIKit_ShowingMessageBox()) {
-        /* See the comment in the function definition. */
+        // See the comment in the function definition.
 #if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
         UIKit_GL_RestoreCurrentContext();
 #endif
@@ -201,7 +201,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (void)loadView
 {
-    /* Do nothing. */
+    // Do nothing.
 }
 
 - (void)viewDidLayoutSubviews
@@ -244,7 +244,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         }
     }
 
-    /* By default, fullscreen and borderless windows get all screen gestures */
+    // By default, fullscreen and borderless windows get all screen gestures
     if ((window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS)) != 0) {
         return UIRectEdgeAll;
     } else {
@@ -257,7 +257,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     return SDL_GCMouseRelativeMode() ? YES : NO;
 }
 
-#endif /* !SDL_PLATFORM_TVOS */
+#endif // !SDL_PLATFORM_TVOS
 
 /*
  ---- Keyboard related functionality below this line ----
@@ -268,13 +268,13 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 @synthesize keyboardHeight;
 @synthesize keyboardVisible;
 
-/* Set ourselves up as a UITextFieldDelegate */
+// Set ourselves up as a UITextFieldDelegate
 - (void)initKeyboard
 {
-    obligateForBackspace = @"                                                                "; /* 64 space */
+    obligateForBackspace = @"                                                                "; // 64 space
     textField = [[SDLUITextField alloc] initWithFrame:CGRectZero];
     textField.delegate = self;
-    /* placeholder so there is something to delete! */
+    // placeholder so there is something to delete!
     textField.text = obligateForBackspace;
     committedText = textField.text;
 
@@ -481,7 +481,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     }
 }
 
-/* reveal onscreen virtual keyboard */
+// reveal onscreen virtual keyboard
 - (void)showKeyboard
 {
     if (keyboardVisible) {
@@ -495,7 +495,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     }
 }
 
-/* hide onscreen virtual keyboard */
+// hide onscreen virtual keyboard
 - (void)hideKeyboard
 {
     if (!keyboardVisible) {
@@ -565,7 +565,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         NSUInteger compareLength = SDL_min(textField.text.length, committedText.length);
         NSUInteger matchLength;
 
-        /* Backspace over characters that are no longer in the string */
+        // Backspace over characters that are no longer in the string
         for (matchLength = 0; matchLength < compareLength; ++matchLength) {
             if ([committedText characterAtIndex:matchLength] != [textField.text characterAtIndex:matchLength]) {
                 break;
@@ -574,7 +574,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         if (matchLength < committedText.length) {
             size_t deleteLength = SDL_utf8strlen([[committedText substringFromIndex:matchLength] UTF8String]);
             while (deleteLength > 0) {
-                /* Send distinct down and up events for each backspace action */
+                // Send distinct down and up events for each backspace action
                 SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_BACKSPACE, SDL_PRESSED);
                 SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_BACKSPACE, SDL_RELEASED);
                 --deleteLength;
@@ -623,7 +623,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     t.ty = 0.0;
     offset = CGPointApplyAffineTransform(offset, t);
 
-    /* Apply the updated offset to the view's frame. */
+    // Apply the updated offset to the view's frame.
     frame.origin.x += offset.x;
     frame.origin.y += offset.y;
 
@@ -637,7 +637,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     [self updateKeyboard];
 }
 
-/* UITextFieldDelegate method.  Invoked when user types something. */
+// UITextFieldDelegate method.  Invoked when user types something.
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
     if (textField.markedTextRange == nil) {
@@ -649,7 +649,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     return YES;
 }
 
-/* Terminates the editing session */
+// Terminates the editing session
 - (BOOL)textFieldShouldReturn:(UITextField *)_textField
 {
     SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_RETURN);
@@ -664,7 +664,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 @end
 
-/* iPhone keyboard addition functions */
+// iPhone keyboard addition functions
 #ifdef SDL_IPHONE_KEYBOARD
 
 static SDL_uikitviewcontroller *GetWindowViewController(SDL_Window *window)
@@ -727,6 +727,6 @@ int UIKit_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-#endif /* SDL_IPHONE_KEYBOARD */
+#endif // SDL_IPHONE_KEYBOARD
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

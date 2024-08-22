@@ -79,7 +79,7 @@ typedef enum
 - (void)windowDidFinishMoving;
 - (void)onMovingOrFocusClickPendingStateCleared;
 
-/* Window delegate functionality */
+// Window delegate functionality
 - (BOOL)windowShouldClose:(id)sender;
 - (void)windowDidExpose:(NSNotification *)aNotification;
 - (void)windowDidMove:(NSNotification *)aNotification;
@@ -97,11 +97,11 @@ typedef enum
 - (void)windowDidExitFullScreen:(NSNotification *)aNotification;
 - (NSApplicationPresentationOptions)window:(NSWindow *)window willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)proposedOptions;
 
-/* See if event is in a drag area, toggle on window dragging. */
+// See if event is in a drag area, toggle on window dragging.
 - (void)updateHitTest;
 - (BOOL)processHitTest:(NSEvent *)theEvent;
 
-/* Window event handling */
+// Window event handling
 - (void)mouseDown:(NSEvent *)theEvent;
 - (void)rightMouseDown:(NSEvent *)theEvent;
 - (void)otherMouseDown:(NSEvent *)theEvent;
@@ -118,10 +118,10 @@ typedef enum
 - (void)touchesEndedWithEvent:(NSEvent *)theEvent;
 - (void)touchesCancelledWithEvent:(NSEvent *)theEvent;
 
-/* Touch event handling */
+// Touch event handling
 - (void)handleTouches:(NSTouchPhase)phase withEvent:(NSEvent *)theEvent;
 
-/* Tablet event handling (but these also come through on mouse events sometimes!) */
+// Tablet event handling (but these also come through on mouse events sometimes!)
 - (void)tabletProximity:(NSEvent *)theEvent;
 - (void)tabletPoint:(NSEvent *)theEvent;
 
@@ -186,4 +186,4 @@ extern int Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, 
 extern int Cocoa_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
 extern int Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_cocoawindow_h_ */
+#endif // SDL_cocoawindow_h_

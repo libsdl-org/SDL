@@ -26,7 +26,7 @@
 #ifdef SDL_PLATFORM_WINRT
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 extern "C" {
 #include "../../core/windows/SDL_windows.h"
@@ -46,8 +46,8 @@ static const wchar_t *SDL_GetWinRTFSPathUNICODE(SDL_WinRT_Path pathType)
     {
         static wstring path;
         if (path.empty()) {
-#if defined(NTDDI_WIN10_19H1) && (NTDDI_VERSION >= NTDDI_WIN10_19H1) && (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) /* Only PC supports mods */
-            /* Windows 1903 supports mods, via the EffectiveLocation API */
+#if defined(NTDDI_WIN10_19H1) && (NTDDI_VERSION >= NTDDI_WIN10_19H1) && (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) // Only PC supports mods
+            // Windows 1903 supports mods, via the EffectiveLocation API
             if (Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8, 0)) {
                 path = Windows::ApplicationModel::Package::Current->EffectiveLocation->Path->Data();
             } else {
@@ -259,4 +259,4 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     return WIN_StringToUTF8W(wpath.c_str());
 }
 
-#endif /* SDL_PLATFORM_WINRT */
+#endif // SDL_PLATFORM_WINRT

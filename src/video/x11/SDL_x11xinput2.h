@@ -41,4 +41,4 @@ extern void X11_Xinput2UngrabTouch(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_bool X11_Xinput2SelectMouseAndKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check);
 
-#endif /* SDL_x11xinput2_h_ */
+#endif // SDL_x11xinput2_h_

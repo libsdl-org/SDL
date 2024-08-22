@@ -22,7 +22,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
-#include <unistd.h> /* For getpid() and readlink() */
+#include <unistd.h> // For getpid() and readlink()
 
 #include "../../core/linux/SDL_system_theme.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -43,11 +43,11 @@
 #include "SDL_x11opengles.h"
 #endif
 
-/* Initialization/Query functions */
+// Initialization/Query functions
 static int X11_VideoInit(SDL_VideoDevice *_this);
 static void X11_VideoQuit(SDL_VideoDevice *_this);
 
-/* X11 driver bootstrap functions */
+// X11 driver bootstrap functions
 
 static int (*orig_x11_errhandler)(Display *, XErrorEvent *) = NULL;
 
@@ -74,12 +74,12 @@ static void X11_DeleteDevice(SDL_VideoDevice *device)
     SDL_X11_UnloadSymbols();
 }
 
-/* An error handler to reset the vidmode and then call the default handler. */
+// An error handler to reset the vidmode and then call the default handler.
 static SDL_bool safety_net_triggered = SDL_FALSE;
 static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
 {
     SDL_VideoDevice *device = NULL;
-    /* if we trigger an error in our error handler, don't try again. */
+    // if we trigger an error in our error handler, don't try again.
     if (!safety_net_triggered) {
         safety_net_triggered = SDL_TRUE;
         device = SDL_GetVideoDevice();
@@ -95,7 +95,7 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
     }
 
     if (orig_x11_errhandler) {
-        return orig_x11_errhandler(d, e); /* probably terminate. */
+        return orig_x11_errhandler(d, e); // probably terminate.
     }
 
     return 0;
@@ -111,7 +111,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
-    const char *display = NULL; /* Use the DISPLAY environment variable */
+    const char *display = NULL; // Use the DISPLAY environment variable
     Display *x11_display = NULL;
 
     if (!SDL_X11_LoadSymbols()) {
@@ -122,7 +122,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         nVidia driver to be threaded. */
     X11_XInitThreads();
 
-    /* Open the display first to be sure that X11 is available */
+    // Open the display first to be sure that X11 is available
     x11_display = X11_XOpenDisplay(display);
 
     if (!x11_display) {
@@ -130,7 +130,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         return NULL;
     }
 
-    /* Initialize all variables that we clean on shutdown */
+    // Initialize all variables that we clean on shutdown
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         return NULL;
@@ -146,7 +146,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     data->active_cursor_confined_window = NULL;
-#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+#endif // SDL_VIDEO_DRIVER_X11_XFIXES
 
     data->display = x11_display;
     data->request_display = X11_XOpenDisplay(display);
@@ -164,7 +164,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     X11_XSynchronize(data->display, True);
 #endif
 
-    /* Hook up an X11 error handler to recover the desktop resolution. */
+    // Hook up an X11 error handler to recover the desktop resolution.
     safety_net_triggered = SDL_FALSE;
     orig_x11_errhandler = X11_XSetErrorHandler(X11_SafetyNetErrHandler);
 
@@ -173,7 +173,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
      */
     data->is_steam_deck = SDL_GetHintBoolean("SteamDeck", SDL_FALSE);
 
-    /* Set the function pointers */
+    // Set the function pointers
     device->VideoInit = X11_VideoInit;
     device->VideoQuit = X11_VideoQuit;
     device->ResetTouch = X11_ResetTouch;
@@ -224,7 +224,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     device->SetWindowMouseRect = X11_SetWindowMouseRect;
-#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+#endif // SDL_VIDEO_DRIVER_X11_XFIXES
 
 #ifdef SDL_VIDEO_OPENGL_GLX
     device->GL_LoadLibrary = X11_GL_LoadLibrary;
@@ -330,7 +330,7 @@ static void X11_CheckWindowManager(SDL_VideoDevice *_this)
     char *wm_name;
 #endif
 
-    /* Set up a handler to gracefully catch errors */
+    // Set up a handler to gracefully catch errors
     X11_XSync(display, False);
     handler = X11_XSetErrorHandler(X11_CheckWindowManagerErrorHandler);
 
@@ -357,7 +357,7 @@ static void X11_CheckWindowManager(SDL_VideoDevice *_this)
         }
     }
 
-    /* Reset the error handler, we're done checking */
+    // Reset the error handler, we're done checking
     X11_XSync(display, False);
     X11_XSetErrorHandler(handler);
 
@@ -380,13 +380,13 @@ int X11_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
 
-    /* Get the process PID to be associated to the window */
+    // Get the process PID to be associated to the window
     data->pid = getpid();
 
-    /* I have no idea how random this actually is, or has to be. */
+    // I have no idea how random this actually is, or has to be.
     data->window_group = (XID)(((size_t)data->pid) ^ ((size_t)_this));
 
-    /* Look up some useful Atoms */
+    // Look up some useful Atoms
 #define GET_ATOM(X) data->X = X11_XInternAtom(data->display, #X, False)
     GET_ATOM(WM_PROTOCOLS);
     GET_ATOM(WM_DELETE_WINDOW);
@@ -426,7 +426,7 @@ int X11_VideoInit(SDL_VideoDevice *_this)
     GET_ATOM(XdndSelection);
     GET_ATOM(XKLAVIER_STATE);
 
-    /* Detect the window manager */
+    // Detect the window manager
     X11_CheckWindowManager(_this);
 
     if (X11_InitModes(_this) < 0) {
@@ -434,14 +434,14 @@ int X11_VideoInit(SDL_VideoDevice *_this)
     }
 
     if (!X11_InitXinput2(_this)) {
-        /* Assume a mouse and keyboard are attached */
+        // Assume a mouse and keyboard are attached
         SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
         SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
     }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     X11_InitXfixes(_this);
-#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+#endif // SDL_VIDEO_DRIVER_X11_XFIXES
 
     X11_InitXsettings(_this);
 
@@ -496,4 +496,4 @@ SDL_bool X11_UseDirectColorVisuals(void)
     return SDL_TRUE;
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11 */
+#endif // SDL_VIDEO_DRIVER_X11

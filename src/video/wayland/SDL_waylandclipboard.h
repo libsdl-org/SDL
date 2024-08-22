@@ -31,4 +31,4 @@ extern int Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *t
 extern char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this);
 extern SDL_bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this);
 
-#endif /* SDL_waylandclipboard_h_ */
+#endif // SDL_waylandclipboard_h_

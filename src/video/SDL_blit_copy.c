@@ -24,7 +24,7 @@
 #include "SDL_blit_copy.h"
 
 #ifdef SDL_SSE_INTRINSICS
-/* This assumes 16-byte aligned src and dst */
+// This assumes 16-byte aligned src and dst
 static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint8 *src, int len)
 {
     int i;
@@ -48,7 +48,7 @@ static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint
         SDL_memcpy(dst, src, len & 63);
     }
 }
-#endif /* SDL_SSE_INTRINSICS */
+#endif // SDL_SSE_INTRINSICS
 
 void SDL_BlitCopy(SDL_BlitInfo *info)
 {
@@ -64,7 +64,7 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
     srcskip = info->src_pitch;
     dstskip = info->dst_pitch;
 
-    /* Properly handle overlapping blits */
+    // Properly handle overlapping blits
     if (src < dst) {
         overlap = (dst < (src + h * srcskip));
     } else {

@@ -77,7 +77,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
         const char *namespace, *key;
 
         dbus->message_iter_init(msg, &signal_iter);
-        /* Check if the parameters are what we expect */
+        // Check if the parameters are what we expect
         if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_STRING)
             goto not_our_signal;
         dbus->message_iter_get_basic(&signal_iter, &namespace);
@@ -127,7 +127,7 @@ SDL_bool SDL_SystemTheme_Init(void)
                 DBusMessageIter reply_iter, variant_outer_iter;
 
                 dbus->message_iter_init(reply, &reply_iter);
-                /* The response has signature <<u>> */
+                // The response has signature <<u>>
                 if (dbus->message_iter_get_arg_type(&reply_iter) != DBUS_TYPE_VARIANT)
                     goto incorrect_type;
                 dbus->message_iter_recurse(&reply_iter, &variant_outer_iter);

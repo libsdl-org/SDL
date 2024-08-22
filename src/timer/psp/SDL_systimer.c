@@ -51,4 +51,4 @@ void SDL_SYS_DelayNS(Uint64 ns)
     sceKernelDelayThreadCB((SceUInt)SDL_NS_TO_US(ns));
 }
 
-#endif /* SDL_TIMER_PSP */
+#endif // SDL_TIMER_PSP

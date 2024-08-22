@@ -62,7 +62,7 @@ static Uint32 IBus_ModState(void)
     Uint32 ibus_mods = 0;
     SDL_Keymod sdl_mods = SDL_GetModState();
 
-    /* Not sure about MOD3, MOD4 and HYPER mappings */
+    // Not sure about MOD3, MOD4 and HYPER mappings
     if (sdl_mods & SDL_KMOD_LSHIFT) {
         ibus_mods |= IBUS_SHIFT_MASK;
     }
@@ -152,16 +152,16 @@ static SDL_bool IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter
             dbus->message_iter_next(&sub);
             dbus->message_iter_next(&sub);
 
-            /* From here on, the structure looks like this:                    */
-            /* Uint32 type: 1=underline, 2=foreground, 3=background            */
-            /* Uint32 value: for underline it's 0=NONE, 1=SINGLE, 2=DOUBLE,    */
-            /*                                    3=LOW,  4=ERROR              */
-            /*                 for foreground and background it's a color      */
-            /* Uint32 start_index: starting position for the style (utf8-char) */
-            /* Uint32 end_index: end position for the style (utf8-char)        */
+            // From here on, the structure looks like this:
+            // Uint32 type: 1=underline, 2=foreground, 3=background
+            // Uint32 value: for underline it's 0=NONE, 1=SINGLE, 2=DOUBLE,
+            // 3=LOW,  4=ERROR
+            // for foreground and background it's a color
+            // Uint32 start_index: starting position for the style (utf8-char)
+            // Uint32 end_index: end position for the style (utf8-char)
 
             dbus->message_iter_get_basic(&sub, &type);
-            /* We only use the background type to determine the selection */
+            // We only use the background type to determine the selection
             if (type == 3) {
                 Uint32 start = -1;
                 dbus->message_iter_next(&sub);
@@ -184,7 +184,7 @@ static SDL_bool IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter
 
 static const char *IBus_GetVariantText(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus)
 {
-    /* The text we need is nested weirdly, use dbus-monitor to see the structure better */
+    // The text we need is nested weirdly, use dbus-monitor to see the structure better
     const char *text = NULL;
     DBusMessageIter sub;
 
@@ -330,7 +330,7 @@ static char *IBus_GetDBusAddressFilename(void)
         return NULL;
     }
 
-    /* Use this environment variable if it exists. */
+    // Use this environment variable if it exists.
     addr = SDL_getenv("IBUS_ADDRESS");
     if (addr && *addr) {
         return SDL_strdup(addr);
@@ -453,7 +453,7 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
         ibus_conn = dbus->connection_open_private(addr, NULL);
 
         if (!ibus_conn) {
-            return SDL_FALSE; /* oh well. */
+            return SDL_FALSE; // oh well.
         }
 
         dbus->connection_flush(ibus_conn);
@@ -469,7 +469,7 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
                                                  DBUS_TYPE_STRING, &client_name, DBUS_TYPE_INVALID,
                                                  DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID);
     } else {
-        /* re-using dbus->session_conn */
+        // re-using dbus->session_conn
         dbus->connection_ref(ibus_conn);
     }
 
@@ -584,7 +584,7 @@ SDL_bool SDL_IBus_Init(void)
         result = IBus_SetupConnection(dbus, addr);
         SDL_free(addr);
 
-        /* don't use the addr_file if using the portal interface. */
+        // don't use the addr_file if using the portal interface.
         if (result && ibus_is_portal_interface) {
             if (inotify_fd > 0) {
                 if (inotify_wd > 0) {
@@ -616,7 +616,7 @@ void SDL_IBus_Quit(void)
 
     dbus = SDL_DBus_GetContext();
 
-    /* if using portal, ibus_conn == session_conn; don't release it here. */
+    // if using portal, ibus_conn == session_conn; don't release it here.
     if (dbus && ibus_conn && !ibus_is_portal_interface) {
         dbus->connection_close(ibus_conn);
         dbus->connection_unref(ibus_conn);
@@ -633,7 +633,7 @@ void SDL_IBus_Quit(void)
         inotify_wd = -1;
     }
 
-    /* !!! FIXME: should we close(inotify_fd) here? */
+    // !!! FIXME: should we close(inotify_fd) here?
 
     SDL_DelHintCallback(SDL_HINT_IME_IMPLEMENTED_UI, IBus_SetCapabilities, NULL);
 
@@ -733,7 +733,7 @@ void SDL_IBus_PumpEvents(void)
         dbus->connection_read_write(ibus_conn, 0);
 
         while (dbus->connection_dispatch(ibus_conn) == DBUS_DISPATCH_DATA_REMAINS) {
-            /* Do nothing, actual work happens in IBus_MessageHandler */
+            // Do nothing, actual work happens in IBus_MessageHandler
         }
     }
 }

@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_NGAGE
 
-/* N-Gage thread management routines for SDL */
+// N-Gage thread management routines for SDL
 
 #include <e32std.h>
 
@@ -109,4 +109,4 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
     return;
 }
 
-#endif /* SDL_THREAD_NGAGE */
+#endif // SDL_THREAD_NGAGE

@@ -51,15 +51,15 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
-    /* Initialize all variables that we clean on shutdown */
+    // Initialize all variables that we clean on shutdown
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
 
     device->internal = NULL; /* FIXME: Is this the cause of some of the
                                   SDL_Quit() errors? */
 
-/* TODO: Figure out if any initialization needs to go here */
+// TODO: Figure out if any initialization needs to go here
 
-    /* Set the function pointers */
+    // Set the function pointers
     device->VideoInit = HAIKU_VideoInit;
     device->VideoQuit = HAIKU_VideoQuit;
     device->GetDisplayBounds = HAIKU_GetDisplayBounds;
@@ -265,30 +265,30 @@ static void HAIKU_MouseInit(SDL_VideoDevice *_this)
 
 int HAIKU_VideoInit(SDL_VideoDevice *_this)
 {
-    /* Initialize the Be Application for appserver interaction */
+    // Initialize the Be Application for appserver interaction
     if (SDL_InitBeApp() < 0) {
         return -1;
     }
 
-    /* Initialize video modes */
+    // Initialize video modes
     HAIKU_InitModes(_this);
 
-    /* Init the keymap */
+    // Init the keymap
     HAIKU_InitOSKeymap();
 
     HAIKU_MouseInit(_this);
 
-    /* Assume we have a mouse and keyboard */
+    // Assume we have a mouse and keyboard
     SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
     SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
 
 #ifdef SDL_VIDEO_OPENGL
-        /* testgl application doesn't load library, just tries to load symbols */
-        /* is it correct? if so we have to load library here */
+        // testgl application doesn't load library, just tries to load symbols
+        // is it correct? if so we have to load library here
     HAIKU_GL_LoadLibrary(_this, NULL);
 #endif
 
-    /* We're done! */
+    // We're done!
     return 0;
 }
 
@@ -313,4 +313,4 @@ int HAIKU_OpenURL(const char *url)
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif // SDL_VIDEO_DRIVER_HAIKU

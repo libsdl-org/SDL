@@ -41,4 +41,4 @@ void KMSDRM_PumpEvents(SDL_VideoDevice *_this)
 #endif
 }
 
-#endif /* SDL_VIDEO_DRIVER_KMSDRM */
+#endif // SDL_VIDEO_DRIVER_KMSDRM

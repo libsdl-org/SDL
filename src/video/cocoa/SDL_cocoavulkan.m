@@ -43,7 +43,7 @@ const char *defaultPaths[] = {
     "libMoltenVK.dylib"
 };
 
-/* Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF. */
+// Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF.
 #define DEFAULT_HANDLE RTLD_DEFAULT
 
 int Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
@@ -59,13 +59,13 @@ int Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         return SDL_SetError("Vulkan Portability library is already loaded.");
     }
 
-    /* Load the Vulkan loader library */
+    // Load the Vulkan loader library
     if (!path) {
         path = SDL_GetHint(SDL_HINT_VULKAN_LIBRARY);
     }
 
     if (!path) {
-        /* Handle the case where Vulkan Portability is linked statically. */
+        // Handle the case where Vulkan Portability is linked statically.
         vkGetInstanceProcAddr =
             (PFN_vkGetInstanceProcAddr)dlsym(DEFAULT_HANDLE,
                                              "vkGetInstanceProcAddr");
@@ -297,7 +297,7 @@ void Cocoa_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_Vulkan_DestroySurface_Internal(_this->vulkan_config.vkGetInstanceProcAddr, instance, surface, allocator);
-        /* TODO: Add CFBridgingRelease(metalview) here perhaps? */
+        // TODO: Add CFBridgingRelease(metalview) here perhaps?
     }
 }
 

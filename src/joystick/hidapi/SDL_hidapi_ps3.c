@@ -29,8 +29,8 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_PS3
 
-/* Define this if you want to log all packets from the controller */
-/*#define DEBUG_PS3_PROTOCOL*/
+// Define this if you want to log all packets from the controller
+// #define DEBUG_PS3_PROTOCOL
 
 #define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
@@ -46,32 +46,32 @@ typedef enum
     k_EPS3SonySixaxisReportIdEffects = 0,
 } EPS3SonySixaxisReportId;
 
-/* Commands for Sony's sixaxis.sys Windows driver */
-/* All commands must be sent using 49-byte buffer containing output report */
-/* Byte 0 indicates reportId and must always be 0 */
-/* Byte 1 indicates a command, supported values are specified below: */
+// Commands for Sony's sixaxis.sys Windows driver
+// All commands must be sent using 49-byte buffer containing output report
+// Byte 0 indicates reportId and must always be 0
+// Byte 1 indicates a command, supported values are specified below:
 typedef enum
 {
-    /* This command allows to set user LEDs. */
-    /* Bytes 5,6.7.8 contain mode for corresponding LED: 0 - LED is off, 1 - LED in on, 2 - LED is flashing. */
-    /* Bytes 9-16 specify 64-bit LED flash period in 100 ns units if some LED is flashing, otherwise not used. */
+    // This command allows to set user LEDs.
+    // Bytes 5,6.7.8 contain mode for corresponding LED: 0 - LED is off, 1 - LED in on, 2 - LED is flashing.
+    // Bytes 9-16 specify 64-bit LED flash period in 100 ns units if some LED is flashing, otherwise not used.
     k_EPS3SixaxisCommandSetLEDs = 1,
 
-    /* This command allows to set left and right motors. */
-    /* Byte 5 is right motor duration (0-255) and byte 6, if not zero, activates right motor. Zero value disables right motor. */
-    /* Byte 7 is left motor duration (0-255) and byte 8 is left motor amplitude (0-255). */
+    // This command allows to set left and right motors.
+    // Byte 5 is right motor duration (0-255) and byte 6, if not zero, activates right motor. Zero value disables right motor.
+    // Byte 7 is left motor duration (0-255) and byte 8 is left motor amplitude (0-255).
     k_EPS3SixaxisCommandSetMotors = 2,
 
-    /* This command allows to block/unblock setting device LEDs by applications. */
-    /* Byte 5 is used as parameter - any non-zero value blocks LEDs, zero value will unblock LEDs. */
+    // This command allows to block/unblock setting device LEDs by applications.
+    // Byte 5 is used as parameter - any non-zero value blocks LEDs, zero value will unblock LEDs.
     k_EPS3SixaxisCommandBlockLEDs = 3,
 
-    /* This command refreshes driver settings. No parameters used. */
-    /* When sixaxis driver loads it reads 'CurrentDriverSetting' binary value from 'HKLM\System\CurrentControlSet\Services\sixaxis\Parameters' registry key. */
-    /* If the key is not present then default values are used. Sending this command forces sixaxis driver to re-read the registry and update driver settings. */
+    // This command refreshes driver settings. No parameters used.
+    // When sixaxis driver loads it reads 'CurrentDriverSetting' binary value from 'HKLM\System\CurrentControlSet\Services\sixaxis\Parameters' registry key.
+    // If the key is not present then default values are used. Sending this command forces sixaxis driver to re-read the registry and update driver settings.
     k_EPS3SixaxisCommandRefreshDriverSetting = 9,
 
-    /* This command clears current bluetooth pairing. No parameters used. */
+    // This command clears current bluetooth pairing. No parameters used.
     k_EPS3SixaxisCommandClearPairing = 10
 } EPS3SixaxisDriverCommands;
 
@@ -106,7 +106,7 @@ static SDL_bool HIDAPI_DriverPS3_IsEnabled(void)
     SDL_bool default_value;
 
 #ifdef SDL_PLATFORM_MACOS
-    /* This works well on macOS */
+    // This works well on macOS
     default_value = SDL_TRUE;
 #elif defined(SDL_PLATFORM_WIN32)
     /* For official Sony driver (sixaxis.sys) use SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER.
@@ -123,7 +123,7 @@ static SDL_bool HIDAPI_DriverPS3_IsEnabled(void)
      */
     default_value = SDL_FALSE;
 #else
-    /* Untested, default off */
+    // Untested, default off
     default_value = SDL_FALSE;
 #endif
 
@@ -180,14 +180,14 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
 
     device->context = ctx;
 
-    /* Set the controller into report mode over Bluetooth */
+    // Set the controller into report mode over Bluetooth
     if (device->is_bluetooth) {
         Uint8 data[] = { 0xf4, 0x42, 0x03, 0x00, 0x00 };
 
         SendFeatureReport(device->dev, data, sizeof(data));
     }
 
-    /* Set the controller into report mode over USB */
+    // Set the controller into report mode over USB
     if (!device->is_bluetooth) {
         Uint8 data[USB_PACKET_LENGTH];
 
@@ -210,7 +210,7 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
         HIDAPI_DumpPacket("PS3 0xF5 packet: size = %d", data, size);
 #endif
         if (!ctx->is_shanwan) {
-            /* An output report could cause ShanWan controllers to rumble non-stop */
+            // An output report could cause ShanWan controllers to rumble non-stop
             SDL_hid_write(device->dev, data, 1);
         }
     }
@@ -258,7 +258,7 @@ static void HIDAPI_DriverPS3_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL
 
     ctx->player_index = player_index;
 
-    /* This will set the new LED state based on the new player index */
+    // This will set the new LED state based on the new player index
     HIDAPI_DriverPS3_UpdateEffects(device);
 }
 
@@ -274,10 +274,10 @@ static SDL_bool HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     ctx->rumble_right = 0;
     SDL_zeroa(ctx->last_state);
 
-    /* Initialize player index (needed for setting LEDs) */
+    // Initialize player index (needed for setting LEDs)
     ctx->player_index = SDL_GetJoystickPlayerIndex(joystick);
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     joystick->nbuttons = 11;
     joystick->naxes = 6;
     if (ctx->has_analog_buttons) {
@@ -344,7 +344,7 @@ static int HIDAPI_DriverPS3_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device,
 
 static float HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
 {
-    /* Accelerometer values are in big endian order */
+    // Accelerometer values are in big endian order
     value = SDL_Swap16BE(value);
     return ((float)(value - 511) / 113.0f) * SDL_STANDARD_GRAVITY;
 }
@@ -471,31 +471,31 @@ static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_Drive
     axis = ((int)data[9] * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
-    /* Buttons are mapped as axes in the order they appear in the button enumeration */
+    // Buttons are mapped as axes in the order they appear in the button enumeration
     if (ctx->has_analog_buttons) {
         static int button_axis_offsets[] = {
-            24, /* SDL_GAMEPAD_BUTTON_SOUTH */
-            23, /* SDL_GAMEPAD_BUTTON_EAST */
-            25, /* SDL_GAMEPAD_BUTTON_WEST */
-            22, /* SDL_GAMEPAD_BUTTON_NORTH */
-            0,  /* SDL_GAMEPAD_BUTTON_BACK */
-            0,  /* SDL_GAMEPAD_BUTTON_GUIDE */
-            0,  /* SDL_GAMEPAD_BUTTON_START */
-            0,  /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
-            0,  /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
-            20, /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
-            21, /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
-            14, /* SDL_GAMEPAD_BUTTON_DPAD_UP */
-            16, /* SDL_GAMEPAD_BUTTON_DPAD_DOWN */
-            17, /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
-            15, /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
+            24, // SDL_GAMEPAD_BUTTON_SOUTH
+            23, // SDL_GAMEPAD_BUTTON_EAST
+            25, // SDL_GAMEPAD_BUTTON_WEST
+            22, // SDL_GAMEPAD_BUTTON_NORTH
+            0,  // SDL_GAMEPAD_BUTTON_BACK
+            0,  // SDL_GAMEPAD_BUTTON_GUIDE
+            0,  // SDL_GAMEPAD_BUTTON_START
+            0,  // SDL_GAMEPAD_BUTTON_LEFT_STICK
+            0,  // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+            20, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+            21, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+            14, // SDL_GAMEPAD_BUTTON_DPAD_UP
+            16, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+            17, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+            15, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
         };
         Uint8 i, axis_index = 6;
 
         for (i = 0; i < SDL_arraysize(button_axis_offsets); ++i) {
             int offset = button_axis_offsets[i];
             if (!offset) {
-                /* This button doesn't report as an axis */
+                // This button doesn't report as an axis
                 continue;
             }
 
@@ -539,10 +539,10 @@ static SDL_bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
         }
 
         if (size == 7) {
-            /* Seen on a ShanWan PS2 -> PS3 USB converter */
+            // Seen on a ShanWan PS2 -> PS3 USB converter
             HIDAPI_DriverPS3_HandleMiniStatePacket(joystick, ctx, data, size);
 
-            /* Wait for the first report to set the LED state after the controller stops blinking */
+            // Wait for the first report to set the LED state after the controller stops blinking
             if (!ctx->effects_updated) {
                 HIDAPI_DriverPS3_UpdateEffects(device);
                 ctx->effects_updated = SDL_TRUE;
@@ -553,12 +553,12 @@ static SDL_bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
         switch (data[0]) {
         case k_EPS3ReportIdState:
             if (data[1] == 0xFF) {
-                /* Invalid data packet, ignore */
+                // Invalid data packet, ignore
                 break;
             }
             HIDAPI_DriverPS3_HandleStatePacket(joystick, ctx, data, size);
 
-            /* Wait for the first report to set the LED state after the controller stops blinking */
+            // Wait for the first report to set the LED state after the controller stops blinking
             if (!ctx->effects_updated) {
                 HIDAPI_DriverPS3_UpdateEffects(device);
                 ctx->effects_updated = SDL_TRUE;
@@ -573,7 +573,7 @@ static SDL_bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (size < 0) {
-        /* Read error, device is disconnected */
+        // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return size >= 0;
@@ -634,13 +634,13 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
         if (device && device->dev) {
             size = ReadFeatureReport(device->dev, 0x03, data, sizeof(data));
             if (size == 8 && data[2] == 0x26) {
-                /* Supported third party controller */
+                // Supported third party controller
                 return SDL_TRUE;
             } else {
                 return SDL_FALSE;
             }
         } else {
-            /* Might be supported by this driver, enumerate and find out */
+            // Might be supported by this driver, enumerate and find out
             return SDL_TRUE;
         }
     }
@@ -692,7 +692,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *devic
     ctx->joystick = joystick;
     SDL_zeroa(ctx->last_state);
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     joystick->nbuttons = 11;
     joystick->naxes = 6;
     if (ctx->has_analog_buttons) {
@@ -805,31 +805,31 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystic
     axis = ((int)data[5] * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
-    /* Buttons are mapped as axes in the order they appear in the button enumeration */
+    // Buttons are mapped as axes in the order they appear in the button enumeration
     if (ctx->has_analog_buttons) {
         static int button_axis_offsets[] = {
-            12, /* SDL_GAMEPAD_BUTTON_SOUTH */
-            11, /* SDL_GAMEPAD_BUTTON_EAST */
-            13, /* SDL_GAMEPAD_BUTTON_WEST */
-            10, /* SDL_GAMEPAD_BUTTON_NORTH */
-            0,  /* SDL_GAMEPAD_BUTTON_BACK */
-            0,  /* SDL_GAMEPAD_BUTTON_GUIDE */
-            0,  /* SDL_GAMEPAD_BUTTON_START */
-            0,  /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
-            0,  /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
-            14, /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
-            15, /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
-            8,  /* SDL_GAMEPAD_BUTTON_DPAD_UP */
-            9,  /* SDL_GAMEPAD_BUTTON_DPAD_DOWN */
-            7,  /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
-            6,  /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
+            12, // SDL_GAMEPAD_BUTTON_SOUTH
+            11, // SDL_GAMEPAD_BUTTON_EAST
+            13, // SDL_GAMEPAD_BUTTON_WEST
+            10, // SDL_GAMEPAD_BUTTON_NORTH
+            0,  // SDL_GAMEPAD_BUTTON_BACK
+            0,  // SDL_GAMEPAD_BUTTON_GUIDE
+            0,  // SDL_GAMEPAD_BUTTON_START
+            0,  // SDL_GAMEPAD_BUTTON_LEFT_STICK
+            0,  // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+            14, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+            15, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+            8,  // SDL_GAMEPAD_BUTTON_DPAD_UP
+            9,  // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+            7,  // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+            6,  // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
         };
         Uint8 i, axis_index = 6;
 
         for (i = 0; i < SDL_arraysize(button_axis_offsets); ++i) {
             int offset = button_axis_offsets[i];
             if (!offset) {
-                /* This button doesn't report as an axis */
+                // This button doesn't report as an axis
                 continue;
             }
 
@@ -865,7 +865,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
     }
 
     if (ctx->device->vendor_id == USB_VENDOR_SAITEK && ctx->device->product_id == USB_PRODUCT_SAITEK_CYBORG_V3) {
-        /* Cyborg V.3 Rumble Pad doesn't set the dpad bits as expected, so use the axes instead */
+        // Cyborg V.3 Rumble Pad doesn't set the dpad bits as expected, so use the axes instead
         Uint8 hat = 0;
 
         if (data[7]) {
@@ -939,31 +939,31 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
     axis = ((int)data[6] * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
-    /* Buttons are mapped as axes in the order they appear in the button enumeration */
+    // Buttons are mapped as axes in the order they appear in the button enumeration
     if (ctx->has_analog_buttons) {
         static int button_axis_offsets[] = {
-            13, /* SDL_GAMEPAD_BUTTON_SOUTH */
-            12, /* SDL_GAMEPAD_BUTTON_EAST */
-            14, /* SDL_GAMEPAD_BUTTON_WEST */
-            11, /* SDL_GAMEPAD_BUTTON_NORTH */
-            0,  /* SDL_GAMEPAD_BUTTON_BACK */
-            0,  /* SDL_GAMEPAD_BUTTON_GUIDE */
-            0,  /* SDL_GAMEPAD_BUTTON_START */
-            0,  /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
-            0,  /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
-            15, /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
-            16, /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
-            9,  /* SDL_GAMEPAD_BUTTON_DPAD_UP */
-            10, /* SDL_GAMEPAD_BUTTON_DPAD_DOWN */
-            8,  /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
-            7,  /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
+            13, // SDL_GAMEPAD_BUTTON_SOUTH
+            12, // SDL_GAMEPAD_BUTTON_EAST
+            14, // SDL_GAMEPAD_BUTTON_WEST
+            11, // SDL_GAMEPAD_BUTTON_NORTH
+            0,  // SDL_GAMEPAD_BUTTON_BACK
+            0,  // SDL_GAMEPAD_BUTTON_GUIDE
+            0,  // SDL_GAMEPAD_BUTTON_START
+            0,  // SDL_GAMEPAD_BUTTON_LEFT_STICK
+            0,  // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+            15, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+            16, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+            9,  // SDL_GAMEPAD_BUTTON_DPAD_UP
+            10, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+            8,  // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+            7,  // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
         };
         Uint8 i, axis_index = 6;
 
         for (i = 0; i < SDL_arraysize(button_axis_offsets); ++i) {
             int offset = button_axis_offsets[i];
             if (!offset) {
-                /* This button doesn't report as an axis */
+                // This button doesn't report as an axis
                 continue;
             }
 
@@ -1000,7 +1000,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *devic
         if (size >= 19) {
             HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(joystick, ctx, data, size);
         } else if (size == 18) {
-            /* This packet format was seen with the Logitech ChillStream */
+            // This packet format was seen with the Logitech ChillStream
             HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(joystick, ctx, data, size);
         } else {
 #ifdef DEBUG_JOYSTICK
@@ -1010,7 +1010,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *devic
     }
 
     if (size < 0) {
-        /* Read error, device is disconnected */
+        // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return size >= 0;
@@ -1134,7 +1134,7 @@ static void HIDAPI_DriverPS3SonySixaxis_SetDevicePlayerIndex(SDL_HIDAPI_Device *
 
     ctx->player_index = player_index;
 
-    /* This will set the new LED state based on the new player index */
+    // This will set the new LED state based on the new player index
     HIDAPI_DriverPS3_UpdateLEDsSonySixaxis(device);
 }
 
@@ -1150,10 +1150,10 @@ static SDL_bool HIDAPI_DriverPS3SonySixaxis_OpenJoystick(SDL_HIDAPI_Device *devi
     ctx->rumble_right = 0;
     SDL_zeroa(ctx->last_state);
 
-    /* Initialize player index (needed for setting LEDs) */
+    // Initialize player index (needed for setting LEDs)
     ctx->player_index = SDL_GetJoystickPlayerIndex(joystick);
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     joystick->nbuttons = 11;
     joystick->naxes = 6;
     if (ctx->has_analog_buttons) {
@@ -1201,7 +1201,7 @@ static int HIDAPI_DriverPS3SonySixaxis_SendJoystickEffect(SDL_HIDAPI_Device *dev
     data[0] = k_EPS3SonySixaxisReportIdEffects;
     report_size = sizeof(data);
 
-    /* No offset with Sony sixaxis.sys driver*/
+    // No offset with Sony sixaxis.sys driver
     SDL_memcpy(&data, effect, SDL_min(sizeof(data), (size_t)size));
 
     if (SDL_HIDAPI_SendRumble(device, data, report_size) != report_size) {
@@ -1273,31 +1273,31 @@ static void HIDAPI_DriverPS3SonySixaxis_HandleStatePacket(SDL_Joystick *joystick
     axis = ((int)data[9] * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
-    /* Buttons are mapped as axes in the order they appear in the button enumeration */
+    // Buttons are mapped as axes in the order they appear in the button enumeration
     if (ctx->has_analog_buttons) {
         static int button_axis_offsets[] = {
-            24, /* SDL_GAMEPAD_BUTTON_SOUTH */
-            23, /* SDL_GAMEPAD_BUTTON_EAST */
-            25, /* SDL_GAMEPAD_BUTTON_WEST */
-            22, /* SDL_GAMEPAD_BUTTON_NORTH */
-            0,  /* SDL_GAMEPAD_BUTTON_BACK */
-            0,  /* SDL_GAMEPAD_BUTTON_GUIDE */
-            0,  /* SDL_GAMEPAD_BUTTON_START */
-            0,  /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
-            0,  /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
-            20, /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
-            21, /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
-            14, /* SDL_GAMEPAD_BUTTON_DPAD_UP */
-            16, /* SDL_GAMEPAD_BUTTON_DPAD_DOWN */
-            17, /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
-            15, /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
+            24, // SDL_GAMEPAD_BUTTON_SOUTH
+            23, // SDL_GAMEPAD_BUTTON_EAST
+            25, // SDL_GAMEPAD_BUTTON_WEST
+            22, // SDL_GAMEPAD_BUTTON_NORTH
+            0,  // SDL_GAMEPAD_BUTTON_BACK
+            0,  // SDL_GAMEPAD_BUTTON_GUIDE
+            0,  // SDL_GAMEPAD_BUTTON_START
+            0,  // SDL_GAMEPAD_BUTTON_LEFT_STICK
+            0,  // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+            20, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+            21, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+            14, // SDL_GAMEPAD_BUTTON_DPAD_UP
+            16, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+            17, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+            15, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
         };
         Uint8 i, axis_index = 6;
 
         for (i = 0; i < SDL_arraysize(button_axis_offsets); ++i) {
             int offset = button_axis_offsets[i];
             if (!offset) {
-                /* This button doesn't report as an axis */
+                // This button doesn't report as an axis
                 continue;
             }
 
@@ -1336,7 +1336,7 @@ static SDL_bool HIDAPI_DriverPS3SonySixaxis_UpdateDevice(SDL_HIDAPI_Device *devi
         return SDL_FALSE;
     }
 
-    /* With sixaxis.sys driver we need to use hid_get_feature_report instead of hid_read */
+    // With sixaxis.sys driver we need to use hid_get_feature_report instead of hid_read
     size = ReadFeatureReport(device->dev, 0x0, data, sizeof(data));
     if (size < 0) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
@@ -1346,9 +1346,9 @@ static SDL_bool HIDAPI_DriverPS3SonySixaxis_UpdateDevice(SDL_HIDAPI_Device *devi
 
     switch (data[0]) {
     case k_EPS3SonySixaxisReportIdState:
-        HIDAPI_DriverPS3SonySixaxis_HandleStatePacket(joystick, ctx, &data[1], size - 1); /* report data starts in data[1] */
+        HIDAPI_DriverPS3SonySixaxis_HandleStatePacket(joystick, ctx, &data[1], size - 1); // report data starts in data[1]
 
-        /* Wait for the first report to set the LED state after the controller stops blinking */
+        // Wait for the first report to set the LED state after the controller stops blinking
         if (!ctx->effects_updated) {
             HIDAPI_DriverPS3_UpdateLEDsSonySixaxis(device);
             ctx->effects_updated = SDL_TRUE;
@@ -1363,7 +1363,7 @@ static SDL_bool HIDAPI_DriverPS3SonySixaxis_UpdateDevice(SDL_HIDAPI_Device *devi
     }
 
     if (size < 0) {
-        /* Read error, device is disconnected */
+        // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return size >= 0;
@@ -1385,17 +1385,17 @@ static int HIDAPI_DriverPS3_UpdateRumbleSonySixaxis(SDL_HIDAPI_Device *device)
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
     Uint8 effects[] = {
-        0x0,                           /* Report Id */
-        k_EPS3SixaxisCommandSetMotors, /* 2 = Set Motors */
-        0x00, 0x00, 0x00,              /* padding */
-        0xff,                          /* Small Motor duration - 0xff is forever */
-        0x00,                          /* Small Motor off/on (0 or 1) */
-        0xff,                          /* Large Motor duration - 0xff is forever */
-        0x00                           /* Large Motor force (0 to 255) */
+        0x0,                           // Report Id
+        k_EPS3SixaxisCommandSetMotors, // 2 = Set Motors
+        0x00, 0x00, 0x00,              // padding
+        0xff,                          // Small Motor duration - 0xff is forever
+        0x00,                          // Small Motor off/on (0 or 1)
+        0xff,                          // Large Motor duration - 0xff is forever
+        0x00                           // Large Motor force (0 to 255)
     };
 
-    effects[6] = ctx->rumble_right ? 1 : 0; /* Small motor */
-    effects[8] = ctx->rumble_left;          /* Large motor */
+    effects[6] = ctx->rumble_right ? 1 : 0; // Small motor
+    effects[8] = ctx->rumble_left;          // Large motor
 
     return HIDAPI_DriverPS3SonySixaxis_SendJoystickEffect(device, ctx->joystick, effects, sizeof(effects));
 }
@@ -1405,13 +1405,13 @@ static int HIDAPI_DriverPS3_UpdateLEDsSonySixaxis(SDL_HIDAPI_Device *device)
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
     Uint8 effects[] = {
-        0x0,                         /* Report Id */
-        k_EPS3SixaxisCommandSetLEDs, /* 1 = Set LEDs */
-        0x00, 0x00, 0x00,            /* padding */
-        0x00, 0x00, 0x00, 0x00       /* LED #4, LED #3, LED #2, LED #1 (0 = Off, 1 = On, 2 = Flashing) */
+        0x0,                         // Report Id
+        k_EPS3SixaxisCommandSetLEDs, // 1 = Set LEDs
+        0x00, 0x00, 0x00,            // padding
+        0x00, 0x00, 0x00, 0x00       // LED #4, LED #3, LED #2, LED #1 (0 = Off, 1 = On, 2 = Flashing)
     };
 
-    /* Turn on LED light on DS3 Controller for relevant player (player_index 0 lights up LED #1, player_index 1 lights up LED #2, etc) */
+    // Turn on LED light on DS3 Controller for relevant player (player_index 0 lights up LED #1, player_index 1 lights up LED #2, etc)
     if (ctx->player_index < 4) {
         effects[8 - ctx->player_index] = 1;
     }
@@ -1441,6 +1441,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3SonySixaxis = {
     HIDAPI_DriverPS3SonySixaxis_FreeDevice,
 };
 
-#endif /* SDL_JOYSTICK_HIDAPI_PS3 */
+#endif // SDL_JOYSTICK_HIDAPI_PS3
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

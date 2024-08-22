@@ -53,7 +53,7 @@ static Uint8 *GenerateShapeMask(SDL_Surface *shape)
     }
     return mask;
 }
-#endif /* SDL_VIDEO_DRIVER_X11_XSHAPE */
+#endif // SDL_VIDEO_DRIVER_X11_XSHAPE
 
 int X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape)
 {
@@ -62,7 +62,7 @@ int X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfac
 #ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
     SDL_WindowData *windowdata = window->internal;
 
-    /* Generate a set of spans for the region */
+    // Generate a set of spans for the region
     if (shape) {
         SDL_Surface *stretched = NULL;
         Uint8 *mask;
@@ -105,9 +105,9 @@ int X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfac
         X11_XDestroyRegion(region);
         result = 0;
     }
-#endif /* SDL_VIDEO_DRIVER_X11_XSHAPE */
+#endif // SDL_VIDEO_DRIVER_X11_XSHAPE
 
     return result;
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11 */
+#endif // SDL_VIDEO_DRIVER_X11

@@ -24,7 +24,7 @@
  * Implementation based on Slim Reader/Writer (SRW) Locks for Win 7 and newer.
  */
 
-/* This header makes sure SRWLOCK is actually declared, even on ancient WinSDKs. */
+// This header makes sure SRWLOCK is actually declared, even on ancient WinSDKs.
 #include "SDL_sysmutex_c.h"
 
 typedef VOID(WINAPI *pfnInitializeSRWLock)(PSRWLOCK);
@@ -36,7 +36,7 @@ typedef VOID(WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
 typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
 
 #ifdef SDL_PLATFORM_WINRT
-/* Functions are guaranteed to be available */
+// Functions are guaranteed to be available
 #define pTryAcquireSRWLockExclusive TryAcquireSRWLockExclusive
 #define pInitializeSRWLock InitializeSRWLock
 #define pReleaseSRWLockShared ReleaseSRWLockShared
@@ -74,10 +74,10 @@ typedef struct SDL_rwlock_impl_t
     pfnSDL_UnlockRWLock Unlock;
 } SDL_rwlock_impl_t;
 
-/* Implementation will be chosen at runtime based on available Kernel features */
+// Implementation will be chosen at runtime based on available Kernel features
 static SDL_rwlock_impl_t SDL_rwlock_impl_active = { 0 };
 
-/* rwlock implementation using Win7+ slim read/write locks (SRWLOCK) */
+// rwlock implementation using Win7+ slim read/write locks (SRWLOCK)
 
 typedef struct SDL_rwlock_srw
 {
@@ -98,7 +98,7 @@ static void SDL_DestroyRWLock_srw(SDL_RWLock *_rwlock)
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     if (rwlock) {
-        /* There are no kernel allocated resources */
+        // There are no kernel allocated resources
         SDL_free(rwlock);
     }
 }
@@ -167,7 +167,7 @@ static const SDL_rwlock_impl_t SDL_rwlock_impl_srw = {
 
 #include "../generic/SDL_sysrwlock_c.h"
 
-/* Generic rwlock implementation using SDL_Mutex, SDL_Condition, and SDL_AtomicInt */
+// Generic rwlock implementation using SDL_Mutex, SDL_Condition, and SDL_AtomicInt
 static const SDL_rwlock_impl_t SDL_rwlock_impl_generic = {
     &SDL_CreateRWLock_generic,
     &SDL_DestroyRWLock_generic,
@@ -185,10 +185,10 @@ SDL_RWLock *SDL_CreateRWLock(void)
         const SDL_rwlock_impl_t *impl;
 
 #ifdef SDL_PLATFORM_WINRT
-        /* Link statically on this platform */
+        // Link statically on this platform
         impl = &SDL_rwlock_impl_srw;
 #else
-        /* Default to generic implementation, works with all mutex implementations */
+        // Default to generic implementation, works with all mutex implementations
         impl = &SDL_rwlock_impl_generic;
         {
             HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
@@ -204,7 +204,7 @@ SDL_RWLock *SDL_CreateRWLock(void)
                 LOOKUP_SRW_SYM(TryAcquireSRWLockExclusive);
                 #undef LOOKUP_SRW_SYM
                 if (okay) {
-                    impl = &SDL_rwlock_impl_srw;  /* Use the Windows provided API instead of generic fallback */
+                    impl = &SDL_rwlock_impl_srw;  // Use the Windows provided API instead of generic fallback
                 }
             }
         }

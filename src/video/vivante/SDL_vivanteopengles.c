@@ -25,7 +25,7 @@
 #include "SDL_vivanteopengles.h"
 #include "SDL_vivantevideo.h"
 
-/* EGL implementation of SDL OpenGL support */
+// EGL implementation of SDL OpenGL support
 
 int VIVANTE_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
@@ -38,4 +38,4 @@ SDL_EGL_CreateContext_impl(VIVANTE)
     SDL_EGL_SwapWindow_impl(VIVANTE)
         SDL_EGL_MakeCurrent_impl(VIVANTE)
 
-#endif /* SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL

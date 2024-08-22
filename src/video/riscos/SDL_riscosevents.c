@@ -54,7 +54,7 @@ void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
     Uint8 key = 2;
     int i;
 
-    /* Check for key releases */
+    // Check for key releases
     for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {
         if (internal->key_pressed[i] != 255) {
             if ((_kernel_osbyte(129, internal->key_pressed[i] ^ 0xff, 0xff) & 0xff) != 255) {
@@ -64,16 +64,16 @@ void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
         }
     }
 
-    /* Check for key presses */
+    // Check for key presses
     while (key < 0xff) {
         key = _kernel_osbyte(121, key + 1, 0) & 0xff;
         switch (key) {
         case 255:
-        /* Ignore mouse keys */
+        // Ignore mouse keys
         case 9:
         case 10:
         case 11:
-        /* Ignore keys with multiple INKEY codes */
+        // Ignore keys with multiple INKEY codes
         case 24:
         case 40:
         case 71:
@@ -83,7 +83,7 @@ void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
         default:
             SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, key, SDL_RISCOS_translate_keycode(key), SDL_PRESSED);
 
-            /* Record the press so we can detect release later. */
+            // Record the press so we can detect release later.
             for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {
                 if (internal->key_pressed[i] == key) {
                     break;
@@ -155,7 +155,7 @@ int RISCOS_InitEvents(SDL_VideoDevice *_this)
     _kernel_swi(OS_Mouse, &regs, &regs);
     internal->last_mouse_buttons = regs.r[2];
 
-    /* Disable escape. */
+    // Disable escape.
     _kernel_osbyte(229, 1, 0);
 
     return 0;
@@ -169,8 +169,8 @@ void RISCOS_PumpEvents(SDL_VideoDevice *_this)
 
 void RISCOS_QuitEvents(SDL_VideoDevice *_this)
 {
-    /* Re-enable escape. */
+    // Re-enable escape.
     _kernel_osbyte(229, 0, 0);
 }
 
-#endif /* SDL_VIDEO_DRIVER_RISCOS */
+#endif // SDL_VIDEO_DRIVER_RISCOS

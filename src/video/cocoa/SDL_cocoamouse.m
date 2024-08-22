@@ -27,7 +27,7 @@
 
 #include "../../events/SDL_mouse_c.h"
 
-/* #define DEBUG_COCOAMOUSE */
+// #define DEBUG_COCOAMOUSE
 
 #ifdef DEBUG_COCOAMOUSE
 #define DLog(fmt, ...) printf("%s: " fmt "\n", __func__, ##__VA_ARGS__)
@@ -42,7 +42,7 @@
 {
     static NSCursor *invisibleCursor = NULL;
     if (!invisibleCursor) {
-        /* RAW 16x16 transparent GIF */
+        // RAW 16x16 transparent GIF
         static unsigned char cursorBytes[] = {
             0x47, 0x49, 0x46, 0x38, 0x37, 0x61, 0x10, 0x00, 0x10, 0x00, 0x80,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0xF9, 0x04,
@@ -112,7 +112,7 @@ static NSCursor *LoadHiddenSystemCursor(NSString *cursorName, SEL fallback)
 {
     NSString *cursorPath = [@"/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors" stringByAppendingPathComponent:cursorName];
     NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"info.plist"]];
-    /* we can't do animation atm.  :/ */
+    // we can't do animation atm.  :/
     const int frames = (int)[[info valueForKey:@"frames"] integerValue];
     NSCursor *cursor;
     NSImage *image = [[NSImage alloc] initWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"cursor.pdf"]];
@@ -121,7 +121,7 @@ static NSCursor *LoadHiddenSystemCursor(NSString *cursorName, SEL fallback)
     }
 
     if (frames > 1) {
-#ifdef MAC_OS_VERSION_12_0 /* same value as deprecated symbol. */
+#ifdef MAC_OS_VERSION_12_0 // same value as deprecated symbol.
         const NSCompositingOperation operation = NSCompositingOperationCopy;
 #else
         const NSCompositingOperation operation = NSCompositeCopy;
@@ -161,10 +161,10 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         case SDL_SYSTEM_CURSOR_CROSSHAIR:
             nscursor = [NSCursor crosshairCursor];
             break;
-        case SDL_SYSTEM_CURSOR_WAIT: /* !!! FIXME: this is more like WAITARROW */
+        case SDL_SYSTEM_CURSOR_WAIT: // !!! FIXME: this is more like WAITARROW
             nscursor = LoadHiddenSystemCursor(@"busybutclickable", @selector(arrowCursor));
             break;
-        case SDL_SYSTEM_CURSOR_PROGRESS: /* !!! FIXME: this is meant to be animated */
+        case SDL_SYSTEM_CURSOR_PROGRESS: // !!! FIXME: this is meant to be animated
             nscursor = LoadHiddenSystemCursor(@"busybutclickable", @selector(arrowCursor));
             break;
         case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
@@ -220,7 +220,7 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         if (nscursor) {
             cursor = SDL_calloc(1, sizeof(*cursor));
             if (cursor) {
-                /* We'll free it later, so retain it here */
+                // We'll free it later, so retain it here
                 cursor->internal = (void *)CFBridgingRetain(nscursor);
             }
         }
@@ -329,7 +329,7 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
                 return 0;
             }
 
-            /* make sure the mouse isn't at the corner of the window, as this can confuse things if macOS thinks a window resize is happening on the first click. */
+            // make sure the mouse isn't at the corner of the window, as this can confuse things if macOS thinks a window resize is happening on the first click.
             const CGPoint point = CGPointMake((float)(window->x + (window->w / 2)), (float)(window->y + (window->h / 2)));
             Cocoa_HandleMouseWarp(point.x, point.y);
             CGWarpMouseCursorPosition(point);
@@ -473,14 +473,14 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
         return;
 
     default:
-        /* Ignore any other events. */
+        // Ignore any other events.
         return;
     }
 
     mouse = SDL_GetMouse();
     data = (SDL_MouseData *)mouse->internal;
     if (!data) {
-        return; /* can happen when returning from fullscreen Space on shutdown */
+        return; // can happen when returning from fullscreen Space on shutdown
     }
 
     seenWarp = data->seenWarp;
@@ -493,12 +493,12 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     data->lastMoveY = location.y;
     DLog("Last seen mouse: (%g, %g)", location.x, location.y);
 
-    /* Non-relative movement is handled in -[SDL3Cocoa_WindowListener mouseMoved:] */
+    // Non-relative movement is handled in -[SDL3Cocoa_WindowListener mouseMoved:]
     if (!mouse->relative_mode) {
         return;
     }
 
-    /* Ignore events that aren't inside the client area (i.e. title bar.) */
+    // Ignore events that aren't inside the client area (i.e. title bar.)
     if ([event window]) {
         NSRect windowRect = [[[event window] contentView] frame];
         if (!NSMouseInRect([event locationInWindow], windowRect, NO)) {
@@ -575,4 +575,4 @@ void Cocoa_QuitMouse(SDL_VideoDevice *_this)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

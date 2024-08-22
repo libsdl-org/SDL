@@ -50,4 +50,4 @@ void Cocoa_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 
 #endif
 
-#endif /* SDL_cocoavulkan_h_ */
+#endif // SDL_cocoavulkan_h_

@@ -22,12 +22,12 @@
 
 #if (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12 || SDL_VIDEO_RENDER_VULKAN)
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Direct3D matrix math functions */
+// Direct3D matrix math functions
 
 typedef struct
 {
@@ -73,9 +73,9 @@ extern Float4X4 MatrixRotationX(float r);
 extern Float4X4 MatrixRotationY(float r);
 extern Float4X4 MatrixRotationZ(float r);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12 || SDL_VIDEO_RENDER_VULKAN)*/
+#endif // (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12 || SDL_VIDEO_RENDER_VULKAN)

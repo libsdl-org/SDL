@@ -23,7 +23,7 @@
 #ifdef SDL_LOADSO_WINDOWS
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent library loading routines                           */
+// System dependent library loading routines
 
 #include "../../core/windows/SDL_windows.h"
 
@@ -48,7 +48,7 @@ void *SDL_LoadObject(const char *sofile)
 #endif
     SDL_free(wstr);
 
-    /* Generate an error message if all loads failed */
+    // Generate an error message if all loads failed
     if (!handle) {
         char errbuf[512];
         SDL_strlcpy(errbuf, "Failed loading ", SDL_arraysize(errbuf));
@@ -77,4 +77,4 @@ void SDL_UnloadObject(void *handle)
     }
 }
 
-#endif /* SDL_LOADSO_WINDOWS */
+#endif // SDL_LOADSO_WINDOWS

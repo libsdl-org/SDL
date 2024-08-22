@@ -30,4 +30,4 @@ extern void WINRT_InitGameBar(SDL_VideoDevice *_this);
 extern void WINRT_QuitGameBar(SDL_VideoDevice *_this);
 #endif
 
-#endif /* SDL_winrtgamebar_h_ */
+#endif // SDL_winrtgamebar_h_

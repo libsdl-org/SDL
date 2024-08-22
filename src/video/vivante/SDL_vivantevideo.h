@@ -25,7 +25,7 @@
 
 #include "../SDL_sysvideo.h"
 
-/* Set up definitions for Vivante EGL */
+// Set up definitions for Vivante EGL
 #include <SDL3/SDL_egl.h>
 
 #ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
@@ -39,7 +39,7 @@ struct SDL_VideoData
 #ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     vdkPrivate vdk_private;
 #else
-    void *egl_handle; /* EGL shared library handle */
+    void *egl_handle; // EGL shared library handle
     EGLNativeDisplayType(EGLAPIENTRY *fbGetDisplay)(void *context);
     EGLNativeDisplayType(EGLAPIENTRY *fbGetDisplayByIndex)(int DisplayIndex);
     void(EGLAPIENTRY *fbGetDisplayGeometry)(EGLNativeDisplayType Display, int *Width, int *Height);
@@ -64,10 +64,10 @@ struct SDL_WindowData
 };
 
 /****************************************************************************/
-/* SDL_VideoDevice functions declaration                                    */
+// SDL_VideoDevice functions declaration
 /****************************************************************************/
 
-/* Display and window functions */
+// Display and window functions
 int VIVANTE_VideoInit(SDL_VideoDevice *_this);
 void VIVANTE_VideoQuit(SDL_VideoDevice *_this);
 int VIVANTE_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
@@ -80,7 +80,7 @@ void VIVANTE_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void VIVANTE_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void VIVANTE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-/* Event functions */
+// Event functions
 void VIVANTE_PumpEvents(SDL_VideoDevice *_this);
 
-#endif /* SDL_vivantevideo_h_ */
+#endif // SDL_vivantevideo_h_

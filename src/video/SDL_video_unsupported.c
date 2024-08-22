@@ -40,7 +40,7 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
 {
 }
 
-#endif /* SDL_PLATFORM_WIN32 || SDL_PLATFORM_GDK */
+#endif // SDL_PLATFORM_WIN32 || SDL_PLATFORM_GDK
 
 SDL_DECLSPEC int SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 int SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
@@ -67,7 +67,7 @@ int SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID)
     return SDL_Unsupported();
 }
 
-#endif /* !SDL_VIDEO_DRIVER_WINDOWS */
+#endif // !SDL_VIDEO_DRIVER_WINDOWS
 
 #ifndef SDL_PLATFORM_GDK
 

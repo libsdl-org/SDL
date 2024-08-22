@@ -28,21 +28,21 @@
 int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {
     int result;
-    /* init */
+    // init
     osSetSpeedupEnable(true);
     romfsInit();
 
     SDL_SetMainReady();
     result = mainFunction(argc, argv);
 
-    /* quit */
+    // quit
     romfsExit();
 
     return result;
 }
 
 #ifdef __cplusplus
-} /* extern "C" */
+} // extern "C"
 #endif
 
 #endif

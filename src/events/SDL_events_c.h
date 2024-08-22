@@ -24,7 +24,7 @@
 
 #include "SDL_internal.h"
 
-/* Useful functions and variables from SDL_events.c */
+// Useful functions and variables from SDL_events.c
 #include "../video/SDL_sysvideo.h"
 
 #include "SDL_clipboardevents_c.h"
@@ -36,7 +36,7 @@
 #include "SDL_pen_c.h"
 #include "SDL_windowevents_c.h"
 
-/* Start and stop the event processing loop */
+// Start and stop the event processing loop
 extern int SDL_StartEventLoop(void);
 extern void SDL_StopEventLoop(void);
 extern void SDL_QuitInterrupt(void);
@@ -61,4 +61,4 @@ extern void SDL_SendPendingSignalEvents(void);
 extern int SDL_InitQuit(void);
 extern void SDL_QuitQuit(void);
 
-#endif /* SDL_events_c_h_ */
+#endif // SDL_events_c_h_
