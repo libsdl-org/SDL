@@ -1723,7 +1723,7 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
             SDL_SetError("Device was already lost and can't accept new opens");
         } else if ((logdev = (SDL_LogicalAudioDevice *) SDL_calloc(1, sizeof (SDL_LogicalAudioDevice))) == NULL) {
             /* SDL_calloc already called SDL_OutOfMemory */
-        } else if (OpenPhysicalAudioDevice(device, spec) == -1) {  // if this is the first thing using this physical device, open at the OS level if necessary...
+        } else if (OpenPhysicalAudioDevice(device, spec) < 0) {  // if this is the first thing using this physical device, open at the OS level if necessary...
             SDL_free(logdev);
         } else {
             RefPhysicalAudioDevice(device);  // unref'd on successful SDL_CloseAudioDevice
@@ -2267,7 +2267,7 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
 
         if (needs_migration) {
             // New default physical device not been opened yet? Open at the OS level...
-            if (OpenPhysicalAudioDevice(new_default_device, &spec) == -1) {
+            if (OpenPhysicalAudioDevice(new_default_device, &spec) < 0) {
                 needs_migration = SDL_FALSE;  // uhoh, just leave everything on the old default, nothing to be done.
             }
         }

@@ -235,7 +235,7 @@ static SDL_bool SendProtocolPacket(SDL_DriverXboxOne_Context *ctx, const Uint8 *
 
     ctx->send_time = SDL_GetTicks();
 
-    if (SDL_HIDAPI_LockRumble() != 0) {
+    if (SDL_HIDAPI_LockRumble() < 0) {
         return SDL_FALSE;
     }
     if (SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, size) != size) {
@@ -470,7 +470,7 @@ static int HIDAPI_DriverXboxOne_UpdateRumble(SDL_DriverXboxOne_Context *ctx)
     /* We're no longer pending, even if we fail to send the rumble below */
     ctx->rumble_pending = SDL_FALSE;
 
-    if (SDL_HIDAPI_LockRumble() != 0) {
+    if (SDL_HIDAPI_LockRumble() < 0) {
         return -1;
     }
 

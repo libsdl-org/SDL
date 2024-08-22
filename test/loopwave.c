@@ -93,7 +93,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     /* Load the wave file into memory */
-    if (SDL_LoadWAV(filename, &wave.spec, &wave.sound, &wave.soundlen) == -1) {
+    if (SDL_LoadWAV(filename, &wave.spec, &wave.sound, &wave.soundlen) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         SDL_free(filename);
         return SDL_APP_FAILURE;

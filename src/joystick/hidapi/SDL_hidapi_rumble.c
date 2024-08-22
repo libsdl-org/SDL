@@ -256,7 +256,7 @@ int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size
         return SDL_SetError("Tried to send rumble with invalid size");
     }
 
-    if (SDL_HIDAPI_LockRumble() != 0) {
+    if (SDL_HIDAPI_LockRumble() < 0) {
         return -1;
     }
 

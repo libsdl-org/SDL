@@ -703,14 +703,14 @@ static int MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
 
         /* Initialize decoder with the values from the block header. */
         result = MS_ADPCM_DecodeBlockHeader(&state);
-        if (result == -1) {
+        if (result < 0) {
             SDL_free(state.output.data);
             return -1;
         }
 
         /* Decode the block data. It stores the samples directly in the output. */
         result = MS_ADPCM_DecodeBlockData(&state);
-        if (result == -1) {
+        if (result < 0) {
             /* Unexpected end. Stop decoding and return partial data if necessary. */
             if (file->trunchint == TruncVeryStrict || file->trunchint == TruncStrict) {
                 SDL_free(state.output.data);
@@ -1105,7 +1105,7 @@ static int IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len
             result = IMA_ADPCM_DecodeBlockData(&state);
         }
 
-        if (result == -1) {
+        if (result < 0) {
             /* Unexpected end. Stop decoding and return partial data if necessary. */
             if (file->trunchint == TruncVeryStrict || file->trunchint == TruncStrict) {
                 SDL_free(state.output.data);
@@ -1860,7 +1860,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
         }
 
         result = WaveNextChunk(src, chunk);
-        if (result == -1) {
+        if (result < 0) {
             /* Unexpected EOF. Corrupt file or I/O issues. */
             if (file->trunchint == TruncVeryStrict) {
                 return SDL_SetError("Unexpected end of WAVE file");
@@ -1985,7 +1985,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
 
     if (chunk->length > 0) {
         result = WaveReadChunkData(src, chunk);
-        if (result == -1) {
+        if (result < 0) {
             return -1;
         } else if (result == -2) {
             return SDL_SetError("Could not seek data of WAVE data chunk");

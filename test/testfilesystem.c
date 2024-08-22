@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (SDL_Init(0) == -1) {
+    if (SDL_Init(0) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
         return 1;
     }
@@ -130,19 +130,19 @@ int main(int argc, char *argv[])
         }
 
         /* !!! FIXME: put this in a subroutine and make it test more thoroughly (and put it in testautomation). */
-        if (SDL_CreateDirectory("testfilesystem-test") == -1) {
+        if (SDL_CreateDirectory("testfilesystem-test") < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateDirectory('testfilesystem-test') failed: %s", SDL_GetError());
-        } else if (SDL_CreateDirectory("testfilesystem-test/1") == -1) {
+        } else if (SDL_CreateDirectory("testfilesystem-test/1") < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateDirectory('testfilesystem-test/1') failed: %s", SDL_GetError());
-        } else if (SDL_CreateDirectory("testfilesystem-test/1") == -1) {  /* THIS SHOULD NOT FAIL! Making a directory that already exists should succeed here. */
+        } else if (SDL_CreateDirectory("testfilesystem-test/1") < 0) {  /* THIS SHOULD NOT FAIL! Making a directory that already exists should succeed here. */
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateDirectory('testfilesystem-test/1') failed: %s", SDL_GetError());
-        } else if (SDL_RenamePath("testfilesystem-test/1", "testfilesystem-test/2") == -1) {
+        } else if (SDL_RenamePath("testfilesystem-test/1", "testfilesystem-test/2") < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RenamePath('testfilesystem-test/1', 'testfilesystem-test/2') failed: %s", SDL_GetError());
-        } else if (SDL_RemovePath("testfilesystem-test/2") == -1) {
+        } else if (SDL_RemovePath("testfilesystem-test/2") < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('testfilesystem-test/2') failed: %s", SDL_GetError());
-        } else if (SDL_RemovePath("testfilesystem-test") == -1) {
+        } else if (SDL_RemovePath("testfilesystem-test") < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('testfilesystem-test') failed: %s", SDL_GetError());
-        } else if (SDL_RemovePath("testfilesystem-test") == -1) {  /* THIS SHOULD NOT FAIL! Removing a directory that is already gone should succeed here. */
+        } else if (SDL_RemovePath("testfilesystem-test") < 0) {  /* THIS SHOULD NOT FAIL! Removing a directory that is already gone should succeed here. */
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('testfilesystem-test') failed: %s", SDL_GetError());
         }
 

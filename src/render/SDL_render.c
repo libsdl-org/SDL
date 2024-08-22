@@ -351,7 +351,7 @@ static int FlushRenderCommandsIfTextureNeeded(SDL_Texture *texture)
 
 int SDL_FlushRenderer(SDL_Renderer *renderer)
 {
-    if (FlushRenderCommands(renderer) == -1) {
+    if (FlushRenderCommands(renderer) < 0) {
         return -1;
     }
     renderer->InvalidateCachedState(renderer);
@@ -1001,7 +1001,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 #else
         const int rc = SDL_SetError("SDL not built with software renderer");
 #endif
-        if (rc == -1) {
+        if (rc < 0) {
             goto error;
         }
     } else {
@@ -1034,7 +1034,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
             }
         }
 
-        if (rc == -1) {
+        if (rc < 0) {
             if (!name || !attempted) {
                 SDL_SetError("Couldn't find matching render driver");
             }

@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
     }
 
     /* Load the wave file into memory */
-    if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) == -1) {
+    if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         quit(1);
     }

@@ -383,7 +383,7 @@ static int UpdateAudioStreamInputSpec(SDL_AudioStream *stream, const SDL_AudioSp
         return 0;
     }
 
-    if (SDL_ResetAudioQueueHistory(stream->queue, SDL_GetResamplerHistoryFrames()) != 0) {
+    if (SDL_ResetAudioQueueHistory(stream->queue, SDL_GetResamplerHistoryFrames()) < 0) {
         return -1;
     }
 
@@ -428,7 +428,7 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
 
     OnAudioStreamCreated(retval);
 
-    if (SDL_SetAudioStreamFormat(retval, src_spec, dst_spec) == -1) {
+    if (SDL_SetAudioStreamFormat(retval, src_spec, dst_spec) < 0) {
         SDL_DestroyAudioStream(retval);
         return NULL;
     }
@@ -1338,7 +1338,7 @@ int SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const Uint8 *src_data
         }
     }
 
-    if (retval == -1) {
+    if (retval < 0) {
         SDL_free(dst);
     } else {
         *dst_data = dst;

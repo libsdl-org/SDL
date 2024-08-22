@@ -136,12 +136,12 @@ int main(int argc, char **argv)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Rumble not supported!\n");
         return 1;
     }
-    if (SDL_InitHapticRumble(haptic) != 0) {
+    if (SDL_InitHapticRumble(haptic) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize rumble: %s\n", SDL_GetError());
         return 1;
     }
     SDL_Log("Playing 2 second rumble at 0.5 magnitude.\n");
-    if (SDL_PlayHapticRumble(haptic, 0.5, 5000) != 0) {
+    if (SDL_PlayHapticRumble(haptic, 0.5, 5000) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError());
         return 1;
     }
@@ -150,7 +150,7 @@ int main(int argc, char **argv)
     SDL_StopHapticRumble(haptic);
     SDL_Delay(2000);
     SDL_Log("Playing 2 second rumble at 0.3 magnitude.\n");
-    if (SDL_PlayHapticRumble(haptic, 0.3f, 5000) != 0) {
+    if (SDL_PlayHapticRumble(haptic, 0.3f, 5000) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError());
         return 1;
     }
