@@ -18,14 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#ifndef SDL_VIDEO_RENDER_PSP_C_H
+#define SDL_VIDEO_RENDER_PSP_C_H
 
-#ifndef SDL_pspmessagebox_h_
-#define SDL_pspmessagebox_h_
+#define PSP_SCREEN_WIDTH  480
+#define PSP_SCREEN_HEIGHT 272
 
-#if SDL_VIDEO_DRIVER_PSP
+#define PSP_FRAME_BUFFER_WIDTH 512
+#define PSP_FRAME_BUFFER_SIZE  (PSP_FRAME_BUFFER_WIDTH * PSP_SCREEN_HEIGHT)
 
-int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
-
-#endif // SDL_VIDEO_DRIVER_PSP
-
-#endif // SDL_pspmessagebox_h_
+#endif // SDL_VIDEO_RENDER_PSP_C_H

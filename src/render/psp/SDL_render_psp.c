@@ -24,6 +24,8 @@
 
 #include "../SDL_sysrender.h"
 
+#include "SDL_render_psp_c.h"
+
 #include <pspkernel.h>
 #include <pspdisplay.h>
 #include <pspgu.h>
@@ -37,12 +39,6 @@
 #include <vram.h>
 
 // PSP renderer implementation, based on the PGE
-
-#define PSP_SCREEN_WIDTH  480
-#define PSP_SCREEN_HEIGHT 272
-
-#define PSP_FRAME_BUFFER_WIDTH 512
-#define PSP_FRAME_BUFFER_SIZE  (PSP_FRAME_BUFFER_WIDTH * PSP_SCREEN_HEIGHT)
 
 static unsigned int __attribute__((aligned(16))) DisplayList[262144];
 
