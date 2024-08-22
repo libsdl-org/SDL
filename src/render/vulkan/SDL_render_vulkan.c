@@ -3159,7 +3159,7 @@ static bool VULKAN_UpdateVertexBuffer(SDL_Renderer *renderer,
     VULKAN_Buffer *vertexBuffer;
 
     if (dataSizeInBytes == 0) {
-        return 0; // nothing to do.
+        return true; // nothing to do.
     }
 
     if (rendererData->issueBatch) {
