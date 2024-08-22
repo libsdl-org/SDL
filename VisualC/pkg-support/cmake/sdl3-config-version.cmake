@@ -52,6 +52,6 @@ SDL_DetectTargetCPUArchitectures(_detected_archs)
 
 # check that the installed version has a compatible architecture as the one which is currently searching:
 if(NOT(SDL_CPU_X86 OR SDL_CPU_X64 OR SDL_CPU_ARM64 OR SDL_CPU_ARM64EC))
-    set(PACKAGE_VERSION "${PACKAGE_VERSION} (X86,X64,ARM64,ARM64EC)")
+    set(PACKAGE_VERSION "${PACKAGE_VERSION} (X86,X64,ARM64)")
     set(PACKAGE_VERSION_UNSUITABLE TRUE)
 endif()
