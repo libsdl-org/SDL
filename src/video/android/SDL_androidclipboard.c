@@ -36,7 +36,7 @@ char *Android_GetClipboardText(SDL_VideoDevice *_this)
     return Android_JNI_GetClipboardText();
 }
 
-SDL_bool Android_HasClipboardText(SDL_VideoDevice *_this)
+bool Android_HasClipboardText(SDL_VideoDevice *_this)
 {
     return Android_JNI_HasClipboardText();
 }

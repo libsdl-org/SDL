@@ -50,7 +50,7 @@ void SDL_UIKit_UpdateBatteryMonitoring(void)
 }
 #endif // !SDL_PLATFORM_TVOS
 
-SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percent)
+bool SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percent)
 {
 #ifdef SDL_PLATFORM_TVOS
     *state = SDL_POWERSTATE_NO_BATTERY;
@@ -98,7 +98,7 @@ SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percen
     }
 #endif // SDL_PLATFORM_TVOS
 
-    return SDL_TRUE; // always the definitive answer on iOS.
+    return true; // always the definitive answer on iOS.
 }
 
 #endif // SDL_POWER_UIKIT

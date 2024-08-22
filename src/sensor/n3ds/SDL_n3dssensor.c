@@ -42,7 +42,7 @@ static int InitN3DSServices(void);
 static void UpdateN3DSAccelerometer(SDL_Sensor *sensor);
 static void UpdateN3DSGyroscope(SDL_Sensor *sensor);
 
-static SDL_bool IsDeviceIndexValid(int device_index)
+static bool IsDeviceIndexValid(int device_index)
 {
     return device_index >= 0 && device_index < N3DS_SENSOR_COUNT;
 }

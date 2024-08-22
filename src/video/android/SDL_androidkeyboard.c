@@ -353,7 +353,7 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_PASTE,            // AKEYCODE_PASTE
 };
 
-static SDL_bool SDL_screen_keyboard_shown;
+static bool SDL_screen_keyboard_shown;
 
 static SDL_Scancode TranslateKeycode(int keycode)
 {
@@ -378,9 +378,9 @@ int Android_OnKeyUp(int keycode)
     return SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, keycode, TranslateKeycode(keycode), SDL_RELEASED);
 }
 
-SDL_bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
-    return SDL_TRUE;
+    return true;
 }
 
 void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
@@ -444,13 +444,13 @@ void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_
         }
     }
     Android_JNI_ShowScreenKeyboard(input_type, &window->text_input_rect);
-    SDL_screen_keyboard_shown = SDL_TRUE;
+    SDL_screen_keyboard_shown = true;
 }
 
 void Android_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
     Android_JNI_HideScreenKeyboard();
-    SDL_screen_keyboard_shown = SDL_FALSE;
+    SDL_screen_keyboard_shown = false;
 }
 
 void Android_RestoreScreenKeyboardOnResume(SDL_VideoDevice *_this, SDL_Window *window)
@@ -460,7 +460,7 @@ void Android_RestoreScreenKeyboardOnResume(SDL_VideoDevice *_this, SDL_Window *w
     }
 }
 
-SDL_bool Android_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
+bool Android_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return Android_JNI_IsScreenKeyboardShown();
 }

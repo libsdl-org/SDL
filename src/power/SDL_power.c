@@ -22,21 +22,21 @@
 #include "SDL_syspower.h"
 
 /*
- * Returns SDL_TRUE if we have a definitive answer.
- * SDL_FALSE to try next implementation.
+ * Returns true if we have a definitive answer.
+ * false to try next implementation.
  */
-typedef SDL_bool (*SDL_GetPowerInfo_Impl)(SDL_PowerState *state, int *seconds,
+typedef bool (*SDL_GetPowerInfo_Impl)(SDL_PowerState *state, int *seconds,
                                           int *percent);
 
 #ifndef SDL_POWER_DISABLED
 #ifdef SDL_POWER_HARDWIRED
 // This is for things that _never_ have a battery
-static SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *state, int *seconds, int *percent)
+static bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *state, int *seconds, int *percent)
 {
     *seconds = -1;
     *percent = -1;
     *state = SDL_POWERSTATE_NO_BATTERY;
-    return SDL_TRUE;
+    return true;
 }
 #endif
 

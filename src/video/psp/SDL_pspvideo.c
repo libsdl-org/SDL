@@ -39,7 +39,7 @@
 #include <pspdisplay.h>
 
 /* unused
-static SDL_bool PSP_initialized = SDL_FALSE;
+static bool PSP_initialized = false;
 */
 
 static void PSP_Destroy(SDL_VideoDevice *device)
@@ -77,7 +77,7 @@ static SDL_VideoDevice *PSP_Create(void)
 
     device->internal = phdata;
 
-    phdata->egl_initialized = SDL_TRUE;
+    phdata->egl_initialized = true;
 
     // Setup amount of available displays
     device->num_displays = 0;
@@ -244,9 +244,9 @@ void PSP_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-SDL_bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
-    return SDL_TRUE;
+    return true;
 }
 
 void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
@@ -349,9 +349,9 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
 void PSP_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
-SDL_bool PSP_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
+bool PSP_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 #endif // SDL_VIDEO_DRIVER_PSP

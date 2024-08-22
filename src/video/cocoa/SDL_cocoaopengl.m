@@ -52,11 +52,11 @@
 #define _Nullable
 #endif
 
-static SDL_bool SDL_opengl_async_dispatch = SDL_FALSE;
+static bool SDL_opengl_async_dispatch = false;
 
 static void SDLCALL SDL_OpenGLAsyncDispatchChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_opengl_async_dispatch = SDL_GetStringBoolean(hint, SDL_FALSE);
+    SDL_opengl_async_dispatch = SDL_GetStringBoolean(hint, false);
 }
 
 static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp *now, const CVTimeStamp *outputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext)

@@ -55,7 +55,7 @@ struct GL_ShaderContext
     PFNGLUNIFORM3FARBPROC glUniform3fARB;
     PFNGLUSEPROGRAMOBJECTARBPROC glUseProgramObjectARB;
 
-    SDL_bool GL_ARB_texture_rectangle_supported;
+    bool GL_ARB_texture_rectangle_supported;
 
     GL_ShaderData shaders[NUM_SHADERS];
     const float *shader_params[NUM_SHADERS];
@@ -330,7 +330,7 @@ static const char *shader_source[NUM_SHADERS][2] = {
 
 /* *INDENT-ON* */ // clang-format on
 
-static SDL_bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *defines, const char *source)
+static bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *defines, const char *source)
 {
     GLint status;
     const char *sources[2];
@@ -342,7 +342,7 @@ static SDL_bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const c
     ctx->glCompileShaderARB(shader);
     ctx->glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &status);
     if (status == 0) {
-        SDL_bool isstack;
+        bool isstack;
         GLint length;
         char *info;
 
@@ -357,13 +357,13 @@ static SDL_bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const c
 #endif
         SDL_small_free(info, isstack);
 
-        return SDL_FALSE;
+        return false;
     } else {
-        return SDL_TRUE;
+        return true;
     }
 }
 
-static SDL_bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData *data)
+static bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData *data)
 {
     const int num_tmus_bound = 4;
     const char *vert_defines = "";
@@ -372,7 +372,7 @@ static SDL_bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_Shader
     GLint location;
 
     if (index == SHADER_NONE) {
-        return SDL_TRUE;
+        return true;
     }
 
     ctx->glGetError();
@@ -394,13 +394,13 @@ static SDL_bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_Shader
     // Create the vertex shader
     data->vert_shader = ctx->glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
     if (!CompileShader(ctx, data->vert_shader, vert_defines, shader_source[index][0])) {
-        return SDL_FALSE;
+        return false;
     }
 
     // Create the fragment shader
     data->frag_shader = ctx->glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
     if (!CompileShader(ctx, data->frag_shader, frag_defines, shader_source[index][1])) {
-        return SDL_FALSE;
+        return false;
     }
 
     // ... and in the darkness bind them
@@ -433,7 +433,7 @@ static void DestroyShaderProgram(GL_ShaderContext *ctx, GL_ShaderData *data)
 GL_ShaderContext *GL_CreateShaderContext(void)
 {
     GL_ShaderContext *ctx;
-    SDL_bool shaders_supported;
+    bool shaders_supported;
     int i;
 
     ctx = (GL_ShaderContext *)SDL_calloc(1, sizeof(*ctx));
@@ -444,11 +444,11 @@ GL_ShaderContext *GL_CreateShaderContext(void)
     if (!SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two") &&
         (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle") ||
          SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle"))) {
-        ctx->GL_ARB_texture_rectangle_supported = SDL_TRUE;
+        ctx->GL_ARB_texture_rectangle_supported = true;
     }
 
     // Check for shader support
-    shaders_supported = SDL_FALSE;
+    shaders_supported = false;
     if (SDL_GL_ExtensionSupported("GL_ARB_shader_objects") &&
         SDL_GL_ExtensionSupported("GL_ARB_shading_language_100") &&
         SDL_GL_ExtensionSupported("GL_ARB_vertex_shader") &&
@@ -483,7 +483,7 @@ GL_ShaderContext *GL_CreateShaderContext(void)
             ctx->glUniform1fARB &&
             ctx->glUniform3fARB &&
             ctx->glUseProgramObjectARB) {
-            shaders_supported = SDL_TRUE;
+            shaders_supported = true;
         }
     }
 

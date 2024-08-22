@@ -311,22 +311,22 @@ void *WIN_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t
     return data;
 }
 
-SDL_bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
+bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
 {
     if (SDL_IsTextMimeType(mime_type)) {
         if (IsClipboardFormatAvailable(TEXT_FORMAT)) {
-            return SDL_TRUE;
+            return true;
         }
     } else if (SDL_strcmp(mime_type, IMAGE_MIME_TYPE) == 0) {
         if (IsClipboardFormatAvailable(IMAGE_FORMAT)) {
-            return SDL_TRUE;
+            return true;
         }
     } else {
         if (SDL_HasInternalClipboardData(_this, mime_type)) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 void WIN_CheckClipboardUpdate(struct SDL_VideoData *data)

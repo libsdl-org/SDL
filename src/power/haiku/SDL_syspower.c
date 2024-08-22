@@ -40,10 +40,10 @@
 #define APM_DEVICE_ALL            1
 #define APM_BIOS_CALL             (B_DEVICE_OP_CODES_END + 3)
 
-SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percent)
+bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percent)
 {
     const int fd = open("/dev/misc/apm", O_RDONLY | O_CLOEXEC);
-    SDL_bool need_details = SDL_FALSE;
+    bool need_details = false;
     uint16 regs[6];
     uint8 ac_status;
     uint8 battery_status;
@@ -53,7 +53,7 @@ SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percen
     int rc;
 
     if (fd == -1) {
-        return SDL_FALSE; // maybe some other method will work?
+        return false; // maybe some other method will work?
     }
 
     SDL_memset(regs, '\0', sizeof(regs));
@@ -63,7 +63,7 @@ SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percen
     close(fd);
 
     if (rc < 0) {
-        return SDL_FALSE;
+        return false;
     }
 
     ac_status = regs[1] >> 8;
@@ -93,13 +93,13 @@ SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percen
         *state = SDL_POWERSTATE_NO_BATTERY;
     } else if (battery_flags & (1 << 3)) { // charging
         *state = SDL_POWERSTATE_CHARGING;
-        need_details = SDL_TRUE;
+        need_details = true;
     } else if (ac_status == 1) {
         *state = SDL_POWERSTATE_CHARGED; // on AC, not charging.
-        need_details = SDL_TRUE;
+        need_details = true;
     } else {
         *state = SDL_POWERSTATE_ON_BATTERY; // not on AC.
-        need_details = SDL_TRUE;
+        need_details = true;
     }
 
     *percent = -1;
@@ -116,7 +116,7 @@ SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percen
         }
     }
 
-    return SDL_TRUE; // the definitive answer if APM driver replied.
+    return true; // the definitive answer if APM driver replied.
 }
 
 #endif // SDL_POWER_HAIKU

@@ -44,7 +44,7 @@ struct SDL_VideoData;
 typedef struct X11_PenHandle
 {
     SDL_PenID pen;
-    SDL_bool is_eraser;
+    bool is_eraser;
     int x11_deviceid;
     int valuator_for_axis[SDL_PEN_NUM_AXES];
     float slider_bias;      // shift value to add to PEN_AXIS_SLIDER (before normalisation)

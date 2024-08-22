@@ -61,7 +61,7 @@ typedef struct SDL_RenderViewState
     SDL_Rect pixel_viewport;
     SDL_Rect clip_rect;
     SDL_Rect pixel_clip_rect;
-    SDL_bool clipping_enabled;
+    bool clipping_enabled;
     SDL_FPoint scale;
 
 } SDL_RenderViewState;
@@ -128,7 +128,7 @@ typedef struct SDL_RenderCommand
         } viewport;
         struct
         {
-            SDL_bool enabled;
+            bool enabled;
             SDL_Rect rect;
         } cliprect;
         struct
@@ -169,7 +169,7 @@ struct SDL_Renderer
 {
     void (*WindowEvent)(SDL_Renderer *renderer, const SDL_WindowEvent *event);
     int (*GetOutputSize)(SDL_Renderer *renderer, int *w, int *h);
-    SDL_bool (*SupportsBlendMode)(SDL_Renderer *renderer, SDL_BlendMode blendMode);
+    bool (*SupportsBlendMode)(SDL_Renderer *renderer, SDL_BlendMode blendMode);
     int (*CreateTexture)(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
     int (*QueueSetViewport)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
     int (*QueueSetDrawColor)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
@@ -227,15 +227,15 @@ struct SDL_Renderer
     const char *name;
     SDL_PixelFormat *texture_formats;
     int num_texture_formats;
-    SDL_bool software;
+    bool software;
 
     // The window associated with the renderer
     SDL_Window *window;
-    SDL_bool hidden;
+    bool hidden;
 
     // Whether we should simulate vsync
-    SDL_bool wanted_vsync;
-    SDL_bool simulate_vsync;
+    bool wanted_vsync;
+    bool simulate_vsync;
     Uint64 simulate_vsync_interval_ns;
     Uint64 last_present;
 
@@ -280,24 +280,24 @@ struct SDL_Renderer
     float last_queued_color_scale;
     SDL_Rect last_queued_viewport;
     SDL_Rect last_queued_cliprect;
-    SDL_bool last_queued_cliprect_enabled;
-    SDL_bool color_queued;
-    SDL_bool color_scale_queued;
-    SDL_bool viewport_queued;
-    SDL_bool cliprect_queued;
+    bool last_queued_cliprect_enabled;
+    bool color_queued;
+    bool color_scale_queued;
+    bool viewport_queued;
+    bool cliprect_queued;
 
     void *vertex_data;
     size_t vertex_data_used;
     size_t vertex_data_allocation;
 
     // Shaped window support
-    SDL_bool transparent_window;
+    bool transparent_window;
     SDL_Surface *shape_surface;
     SDL_Texture *shape_texture;
 
     SDL_PropertiesID props;
 
-    SDL_bool destroyed;   // already destroyed by SDL_DestroyWindow; just free this struct in SDL_DestroyRenderer.
+    bool destroyed;   // already destroyed by SDL_DestroyWindow; just free this struct in SDL_DestroyRenderer.
 
     void *internal;
 
@@ -335,7 +335,7 @@ extern int SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormat
 extern void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props);
 
 // Colorspace conversion functions
-extern SDL_bool SDL_RenderingLinearSpace(SDL_Renderer *renderer);
+extern bool SDL_RenderingLinearSpace(SDL_Renderer *renderer);
 extern void SDL_ConvertToLinear(SDL_FColor *color);
 extern void SDL_ConvertFromLinear(SDL_FColor *color);
 

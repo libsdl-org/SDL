@@ -47,30 +47,30 @@ static int WIN_VideoInit(SDL_VideoDevice *_this);
 static void WIN_VideoQuit(SDL_VideoDevice *_this);
 
 // Hints
-SDL_bool g_WindowsEnableMessageLoop = SDL_TRUE;
-SDL_bool g_WindowsEnableMenuMnemonics = SDL_FALSE;
-SDL_bool g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
+bool g_WindowsEnableMessageLoop = true;
+bool g_WindowsEnableMenuMnemonics = false;
+bool g_WindowFrameUsableWhileCursorHidden = true;
 
 static void SDLCALL UpdateWindowsRawKeyboard(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
-    SDL_bool enabled = SDL_GetStringBoolean(newValue, SDL_FALSE);
+    bool enabled = SDL_GetStringBoolean(newValue, false);
     WIN_SetRawKeyboardEnabled(_this, enabled);
 }
 
 static void SDLCALL UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
-    g_WindowsEnableMessageLoop = SDL_GetStringBoolean(newValue, SDL_TRUE);
+    g_WindowsEnableMessageLoop = SDL_GetStringBoolean(newValue, true);
 }
 
 static void SDLCALL UpdateWindowsEnableMenuMnemonics(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
-    g_WindowsEnableMenuMnemonics = SDL_GetStringBoolean(newValue, SDL_FALSE);
+    g_WindowsEnableMenuMnemonics = SDL_GetStringBoolean(newValue, false);
 }
 
 static void SDLCALL UpdateWindowFrameUsableWhileCursorHidden(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
-    g_WindowFrameUsableWhileCursorHidden = SDL_GetStringBoolean(newValue, SDL_TRUE);
+    g_WindowFrameUsableWhileCursorHidden = SDL_GetStringBoolean(newValue, true);
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -264,7 +264,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
 #endif
 #ifdef SDL_VIDEO_OPENGL_EGL
 #ifdef SDL_VIDEO_OPENGL_WGL
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, false)) {
 #endif
         // Use EGL based functions
         device->GL_LoadLibrary = WIN_GLES_LoadLibrary;
@@ -471,12 +471,12 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
 
     hr = WIN_CoInitialize();
     if (SUCCEEDED(hr)) {
-        data->coinitialized = SDL_TRUE;
+        data->coinitialized = true;
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
         hr = OleInitialize(NULL);
         if (SUCCEEDED(hr)) {
-            data->oleinitialized = SDL_TRUE;
+            data->oleinitialized = true;
         } else {
             SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "OleInitialize() failed: 0x%.8x, using fallback drag-n-drop functionality\n", (unsigned int)hr);
         }
@@ -491,7 +491,7 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
     SDL_Log("DPI awareness: %s", WIN_GetDPIAwareness(_this));
 #endif
 
-    if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_GAMEINPUT, SDL_TRUE)) {
+    if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_GAMEINPUT, true)) {
         WIN_InitGameInput(_this);
     }
 
@@ -516,7 +516,7 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
     WIN_InitMouse(_this);
     WIN_InitDeviceNotification();
     if (!_this->internal->gameinput_context) {
-        WIN_CheckKeyboardAndMouseHotplug(_this, SDL_TRUE);
+        WIN_CheckKeyboardAndMouseHotplug(_this, true);
     }
 #endif
 
@@ -541,8 +541,8 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
     SDL_DelHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
     SDL_DelHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
 
-    WIN_SetRawMouseEnabled(_this, SDL_FALSE);
-    WIN_SetRawKeyboardEnabled(_this, SDL_FALSE);
+    WIN_SetRawMouseEnabled(_this, false);
+    WIN_SetRawKeyboardEnabled(_this, false);
     WIN_QuitGameInput(_this);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -553,13 +553,13 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
 
     if (data->oleinitialized) {
         OleUninitialize();
-        data->oleinitialized = SDL_FALSE;
+        data->oleinitialized = false;
     }
 #endif // !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 
     if (data->coinitialized) {
         WIN_CoUninitialize();
-        data->coinitialized = SDL_FALSE;
+        data->coinitialized = false;
     }
 }
 
@@ -583,7 +583,7 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
 #endif
 #endif
 
-SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
+bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
 {
     *pD3DDLL = SDL_LoadObject("D3D9.DLL");
     if (*pD3DDLL) {
@@ -593,7 +593,7 @@ SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
         /* *INDENT-ON* */ // clang-format on
         Direct3DCreate9_t Direct3DCreate9Func;
 
-        if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_USE_D3D9EX, SDL_FALSE)) {
+        if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_USE_D3D9EX, false)) {
             Direct3DCreate9Ex_t Direct3DCreate9ExFunc;
 
             Direct3DCreate9ExFunc = (Direct3DCreate9Ex_t)SDL_LoadFunction(*pD3DDLL, "Direct3DCreate9Ex");
@@ -605,7 +605,7 @@ SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
                     hr = IDirect3D9Ex_QueryInterface(pDirect3D9ExInterface, &IDirect3D9_GUID, (void **)pDirect3D9Interface);
                     IDirect3D9Ex_Release(pDirect3D9ExInterface);
                     if (SUCCEEDED(hr)) {
-                        return SDL_TRUE;
+                        return true;
                     }
                 }
             }
@@ -615,7 +615,7 @@ SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
         if (Direct3DCreate9Func) {
             *pDirect3D9Interface = Direct3DCreate9Func(D3D_SDK_VERSION);
             if (*pDirect3D9Interface) {
-                return SDL_TRUE;
+                return true;
             }
         }
 
@@ -623,7 +623,7 @@ SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
         *pD3DDLL = NULL;
     }
     *pDirect3D9Interface = NULL;
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID)
@@ -747,7 +747,7 @@ SDL_SystemTheme WIN_GetSystemTheme(void)
     return theme;
 }
 
-SDL_bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this)
+bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_VideoData *data = _this->internal;
@@ -757,7 +757,7 @@ SDL_bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this)
         return data->AreDpiAwarenessContextsEqual(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, data->GetThreadDpiAwarenessContext());
     }
 #endif
-    return SDL_FALSE;
+    return false;
 }
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS

@@ -125,36 +125,36 @@ int SDL_GetDayOfWeek(int year, int month, int day)
     return dayOfWeek;
 }
 
-static SDL_bool SDL_DateTimeIsValid(const SDL_DateTime *dt)
+static bool SDL_DateTimeIsValid(const SDL_DateTime *dt)
 {
     if (dt->month < 1 || dt->month > 12) {
         SDL_SetError("Malformed SDL_DateTime: month out of range [1-12], current: %i", dt->month);
-        return SDL_FALSE;
+        return false;
     }
 
     const int daysInMonth = SDL_GetDaysInMonth(dt->year, dt->month);
     if (dt->day < 1 || dt->day > daysInMonth) {
         SDL_SetError("Malformed SDL_DateTime: day of month out of range [1-%i], current: %i", daysInMonth, dt->month);
-        return SDL_FALSE;
+        return false;
     }
     if (dt->hour < 0 || dt->hour > 23) {
         SDL_SetError("Malformed SDL_DateTime: hour out of range [0-23], current: %i", dt->hour);
-        return SDL_FALSE;
+        return false;
     }
     if (dt->minute < 0 || dt->minute > 59) {
         SDL_SetError("Malformed SDL_DateTime: minute out of range [0-59], current: %i", dt->minute);
-        return SDL_FALSE;
+        return false;
     }
     if (dt->second < 0 || dt->second > 60) {
         SDL_SetError("Malformed SDL_DateTime: second out of range [0-60], current: %i", dt->second);
-        return SDL_FALSE; // 60 accounts for a possible leap second.
+        return false; // 60 accounts for a possible leap second.
     }
     if (dt->nanosecond < 0 || dt->nanosecond >= SDL_NS_PER_SECOND) {
         SDL_SetError("Malformed SDL_DateTime: nanosecond out of range [0-999999999], current: %i", dt->nanosecond);
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 int SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)

@@ -38,8 +38,8 @@ int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasDisplayExtension = SDL_FALSE;
+    bool hasSurfaceExtension = false;
+    bool hasDisplayExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
@@ -88,9 +88,9 @@ int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     }
     for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasSurfaceExtension = SDL_TRUE;
+            hasSurfaceExtension = true;
         } else if (SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasDisplayExtension = SDL_TRUE;
+            hasDisplayExtension = true;
         }
     }
     SDL_free(extensions);

@@ -96,9 +96,9 @@ static const SDL_UDEV_Symbols *usyms = NULL;
 
 static struct
 {
-    SDL_bool m_bInitialized;
+    bool m_bInitialized;
     Uint32 m_unDeviceChangeCounter;
-    SDL_bool m_bCanGetNotifications;
+    bool m_bCanGetNotifications;
     Uint64 m_unLastDetect;
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
@@ -225,9 +225,9 @@ static int StrIsInteger(const char *string)
 
 static void HIDAPI_InitializeDiscovery(void)
 {
-    SDL_HIDAPI_discovery.m_bInitialized = SDL_TRUE;
+    SDL_HIDAPI_discovery.m_bInitialized = true;
     SDL_HIDAPI_discovery.m_unDeviceChangeCounter = 1;
-    SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_FALSE;
+    SDL_HIDAPI_discovery.m_bCanGetNotifications = false;
     SDL_HIDAPI_discovery.m_unLastDetect = 0;
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
@@ -325,7 +325,7 @@ static void HIDAPI_InitializeDiscovery(void)
                 if (SDL_HIDAPI_discovery.m_pUdevMonitor != NULL) {
                     usyms->udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
                     SDL_HIDAPI_discovery.m_nUdevFd = usyms->udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
-                    SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
+                    SDL_HIDAPI_discovery.m_bCanGetNotifications = true;
                 }
             }
         }
@@ -357,7 +357,7 @@ static void HIDAPI_InitializeDiscovery(void)
             return;
         }
 
-        SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
+        SDL_HIDAPI_discovery.m_bCanGetNotifications = true;
 #endif // HAVE_INOTIFY
     }
 }
@@ -526,7 +526,7 @@ static void HIDAPI_ShutdownDiscovery(void)
 #endif
     }
 
-    SDL_HIDAPI_discovery.m_bInitialized = SDL_FALSE;
+    SDL_HIDAPI_discovery.m_bInitialized = false;
 }
 
 // Platform HIDAPI Implementation
@@ -891,16 +891,16 @@ static const struct {
     { 0x057e, 0x0337 } // Nintendo WUP-028, Wii U/Switch GameCube Adapter
 };
 
-static SDL_bool IsInWhitelist(Uint16 vendor, Uint16 product)
+static bool IsInWhitelist(Uint16 vendor, Uint16 product)
 {
     int i;
     for (i = 0; i < SDL_arraysize(SDL_libusb_whitelist); i += 1) {
         if (vendor == SDL_libusb_whitelist[i].vendor &&
             product == SDL_libusb_whitelist[i].product) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 #endif // HAVE_LIBUSB
@@ -909,13 +909,13 @@ static SDL_bool IsInWhitelist(Uint16 vendor, Uint16 product)
 
 #if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND)
 // We have another way to get HID devices, so use the whitelist to get devices where libusb is preferred
-#define SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_TRUE
+#define SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT true
 #else
 // libusb is the only way to get HID devices, so don't use the whitelist, get them all
-#define SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_FALSE
+#define SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT false
 #endif // HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND
 
-static SDL_bool use_libusb_whitelist = SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT;
+static bool use_libusb_whitelist = SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT;
 
 // Shared HIDAPI Implementation
 
@@ -1010,7 +1010,7 @@ struct SDL_hid_device
 static SDL_hid_device *CreateHIDDeviceWrapper(void *device, const struct hidapi_backend *backend)
 {
     SDL_hid_device *wrapper = (SDL_hid_device *)SDL_malloc(sizeof(*wrapper));
-    SDL_SetObjectValid(wrapper, SDL_OBJECT_TYPE_HIDAPI_DEVICE, SDL_TRUE);
+    SDL_SetObjectValid(wrapper, SDL_OBJECT_TYPE_HIDAPI_DEVICE, true);
     wrapper->device = device;
     wrapper->backend = backend;
     SDL_zero(wrapper->info);
@@ -1021,7 +1021,7 @@ static SDL_hid_device *CreateHIDDeviceWrapper(void *device, const struct hidapi_
 
 static void DeleteHIDDeviceWrapper(SDL_hid_device *wrapper)
 {
-    SDL_SetObjectValid(wrapper, SDL_OBJECT_TYPE_HIDAPI_DEVICE, SDL_FALSE);
+    SDL_SetObjectValid(wrapper, SDL_OBJECT_TYPE_HIDAPI_DEVICE, false);
     SDL_free(wrapper->info.path);
     SDL_free(wrapper->info.serial_number);
     SDL_free(wrapper->info.manufacturer_string);
@@ -1071,12 +1071,12 @@ static void CopyHIDDeviceInfo(struct hid_device_info *pSrc, struct SDL_hid_devic
 #undef WCOPY_IF_EXISTS
 
 static int SDL_hidapi_refcount = 0;
-static SDL_bool SDL_hidapi_only_controllers;
+static bool SDL_hidapi_only_controllers;
 static char *SDL_hidapi_ignored_devices = NULL;
 
 static void SDLCALL OnlyControllersChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_hidapi_only_controllers = SDL_GetStringBoolean(hint, SDL_TRUE);
+    SDL_hidapi_only_controllers = SDL_GetStringBoolean(hint, true);
 }
 
 static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -1091,7 +1091,7 @@ static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, cons
     }
 }
 
-SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage)
+bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage)
 {
     // See if there are any devices we should skip in enumeration
     if (SDL_hidapi_only_controllers && usage_page) {
@@ -1106,13 +1106,13 @@ SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product
 #endif
                 usage_page == USB_USAGEPAGE_GENERIC_DESKTOP &&
                 (usage == USB_USAGE_GENERIC_KEYBOARD || usage == USB_USAGE_GENERIC_MOUSE)) {
-                return SDL_TRUE;
+                return true;
             }
         } else if (usage_page == USB_USAGEPAGE_GENERIC_DESKTOP &&
                    (usage == USB_USAGE_GENERIC_JOYSTICK || usage == USB_USAGE_GENERIC_GAMEPAD || usage == USB_USAGE_GENERIC_MULTIAXISCONTROLLER)) {
             // This is a controller
         } else {
-            return SDL_TRUE;
+            return true;
         }
     }
     if (SDL_hidapi_ignored_devices) {
@@ -1121,10 +1121,10 @@ SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product
         SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", vendor_id, product_id);
         if (SDL_strcasestr(SDL_hidapi_ignored_devices, vendor_match) ||
             SDL_strcasestr(SDL_hidapi_ignored_devices, product_match)) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_hid_init(void)
@@ -1140,7 +1140,7 @@ int SDL_hid_init(void)
     SDL_AddHintCallback(SDL_HINT_HIDAPI_IGNORE_DEVICES, IgnoredDevicesChanged, NULL);
 
 #ifdef SDL_USE_LIBUDEV
-    if (!SDL_GetHintBoolean(SDL_HINT_HIDAPI_UDEV, SDL_TRUE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_HIDAPI_UDEV, true)) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      "udev disabled by SDL_HINT_HIDAPI_UDEV");
         linux_enumeration_method = ENUMERATION_FALLBACK;
@@ -1158,7 +1158,7 @@ int SDL_hid_init(void)
     use_libusb_whitelist = SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB_WHITELIST,
                                               SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT);
 #ifdef HAVE_LIBUSB
-    if (!SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB, SDL_TRUE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB, true)) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      "libusb disabled with SDL_HINT_HIDAPI_LIBUSB");
         libusb_ctx.libhandle = NULL;
@@ -1170,11 +1170,11 @@ int SDL_hid_init(void)
         libusb_ctx.libhandle = (void *)1;
 #endif
         if (libusb_ctx.libhandle != NULL) {
-            SDL_bool loaded = SDL_TRUE;
+            bool loaded = true;
 #ifdef SDL_LIBUSB_DYNAMIC
 #define LOAD_LIBUSB_SYMBOL(type, func)                                                        \
     if (!(libusb_ctx.func = (type)SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) { \
-        loaded = SDL_FALSE;                                                                   \
+        loaded = false;                                                                   \
     }
 #else
 #define LOAD_LIBUSB_SYMBOL(type, func) \

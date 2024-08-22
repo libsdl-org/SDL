@@ -83,7 +83,7 @@ extern int SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_
 extern SDL_PenID SDL_FindPenByHandle(void *handle);
 
 // Backend can optionally use this to find a SDL_PenID, selected by a callback examining all devices. Zero if not found.
-extern SDL_PenID SDL_FindPenByCallback(SDL_bool (*callback)(void *handle, void *userdata), void *userdata);
+extern SDL_PenID SDL_FindPenByCallback(bool (*callback)(void *handle, void *userdata), void *userdata);
 
 // Backend can use this to map an axis to a capability bit.
 SDL_PenCapabilityFlags SDL_GetPenCapabilityFromAxis(SDL_PenAxis axis);

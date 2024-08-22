@@ -162,7 +162,7 @@ void *SDL_GetAndroidJNIEnv(void)
     return NULL;
 }
 
-typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
+typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, const char *permission, bool granted);
 SDL_DECLSPEC int SDLCALL SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata);
 int SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
 {
@@ -201,21 +201,21 @@ SDL_DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
 SDL_bool SDL_IsAndroidTV(void)
 {
     SDL_Unsupported();
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
 SDL_bool SDL_IsChromebook(void)
 {
     SDL_Unsupported();
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
 SDL_bool SDL_IsDeXMode(void)
 {
     SDL_Unsupported();
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_DECLSPEC Sint32 SDLCALL JNI_OnLoad(void *vm, void *reserved);

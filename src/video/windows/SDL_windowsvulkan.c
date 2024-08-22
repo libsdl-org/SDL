@@ -40,8 +40,8 @@ int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
     Uint32 i;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasWin32SurfaceExtension = SDL_FALSE;
+    bool hasSurfaceExtension = false;
+    bool hasWin32SurfaceExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
@@ -81,9 +81,9 @@ int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     }
     for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasSurfaceExtension = SDL_TRUE;
+            hasSurfaceExtension = true;
         } else if (SDL_strcmp(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasWin32SurfaceExtension = SDL_TRUE;
+            hasWin32SurfaceExtension = true;
         }
     }
     SDL_free(extensions);
@@ -166,7 +166,7 @@ void WIN_Vulkan_DestroySurface(SDL_VideoDevice *_this,
     }
 }
 
-SDL_bool WIN_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
+bool WIN_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
                                            VkInstance instance,
                                            VkPhysicalDevice physicalDevice,
                                            Uint32 queueFamilyIndex)
@@ -180,13 +180,13 @@ SDL_bool WIN_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
 
     if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
+        return false;
     }
 
     if (!vkGetPhysicalDeviceWin32PresentationSupportKHR) {
         SDL_SetError(VK_KHR_WIN32_SURFACE_EXTENSION_NAME
                      " extension is not enabled in the Vulkan instance.");
-        return SDL_FALSE;
+        return false;
     }
 
     return vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice,

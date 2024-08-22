@@ -380,9 +380,9 @@ struct SDL_VideoData
 {
     int render;
 
-    SDL_bool coinitialized;
+    bool coinitialized;
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
-    SDL_bool oleinitialized;
+    bool oleinitialized;
 #endif // !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 
     DWORD clipboard_count;
@@ -425,7 +425,7 @@ struct SDL_VideoData
     IDXGIFactory *pDXGIFactory;
 #endif
 
-    SDL_bool cleared;
+    bool cleared;
 
     BYTE *rawinput;
     UINT rawinput_offset;
@@ -433,22 +433,22 @@ struct SDL_VideoData
     UINT rawinput_count;
     Uint64 last_rawinput_poll;
     SDL_Point last_raw_mouse_position;
-    SDL_bool raw_mouse_enabled;
-    SDL_bool raw_keyboard_enabled;
-    SDL_bool pending_E1_key_sequence;
+    bool raw_mouse_enabled;
+    bool raw_keyboard_enabled;
+    bool pending_E1_key_sequence;
     Uint32 raw_input_enabled;
 
     WIN_GameInputData *gameinput_context;
 
 #ifndef SDL_DISABLE_WINDOWS_IME
-    SDL_bool ime_initialized;
-    SDL_bool ime_enabled;
-    SDL_bool ime_available;
-    SDL_bool ime_internal_composition;
-    SDL_bool ime_internal_candidates;
+    bool ime_initialized;
+    bool ime_enabled;
+    bool ime_available;
+    bool ime_internal_composition;
+    bool ime_internal_candidates;
     HWND ime_hwnd_main;
     HWND ime_hwnd_current;
-    SDL_bool ime_needs_clear_composition;
+    bool ime_needs_clear_composition;
     HIMC ime_himc;
 
     WCHAR *ime_composition;
@@ -458,14 +458,14 @@ struct SDL_VideoData
     int ime_selected_start;
     int ime_selected_length;
 
-    SDL_bool ime_candidates_open;
-    SDL_bool ime_update_candidates;
+    bool ime_candidates_open;
+    bool ime_update_candidates;
     char *ime_candidates[MAX_CANDLIST];
     int ime_candcount;
     DWORD ime_candref;
     DWORD ime_candsel;
     int ime_candlistindexbase;
-    SDL_bool ime_horizontal_candidates;
+    bool ime_horizontal_candidates;
 #endif
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -491,14 +491,14 @@ struct SDL_VideoData
     UINT _SDL_WAKEUP;
 };
 
-extern SDL_bool g_WindowsEnableMessageLoop;
-extern SDL_bool g_WindowsEnableMenuMnemonics;
-extern SDL_bool g_WindowFrameUsableWhileCursorHidden;
+extern bool g_WindowsEnableMessageLoop;
+extern bool g_WindowsEnableMenuMnemonics;
+extern bool g_WindowFrameUsableWhileCursorHidden;
 
 typedef struct IDirect3D9 IDirect3D9;
-extern SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface);
+extern bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface);
 
 extern SDL_SystemTheme WIN_GetSystemTheme(void);
-extern SDL_bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this);
+extern bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this);
 
 #endif // SDL_windowsvideo_h_

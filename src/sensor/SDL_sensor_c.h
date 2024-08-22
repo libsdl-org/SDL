@@ -36,10 +36,10 @@ extern int SDL_InitSensors(void);
 extern void SDL_QuitSensors(void);
 
 // Return whether the sensor system is currently initialized
-extern SDL_bool SDL_SensorsInitialized(void);
+extern bool SDL_SensorsInitialized(void);
 
 // Return whether the sensors are currently locked
-extern SDL_bool SDL_SensorsLocked(void);
+extern bool SDL_SensorsLocked(void);
 
 // Make sure we currently have the sensors locked
 extern void SDL_AssertSensorsLocked(void) SDL_ASSERT_CAPABILITY(SDL_sensor_lock);
@@ -48,7 +48,7 @@ extern void SDL_LockSensors(void) SDL_ACQUIRE(SDL_sensor_lock);
 extern void SDL_UnlockSensors(void) SDL_RELEASE(SDL_sensor_lock);
 
 // Function to return whether there are any sensors opened by the application
-extern SDL_bool SDL_SensorsOpened(void);
+extern bool SDL_SensorsOpened(void);
 
 // Update an individual sensor, used by gamepad sensor fusion
 extern void SDL_UpdateSensor(SDL_Sensor *sensor);

@@ -495,10 +495,10 @@ static void VIRTUAL_JoystickDetect(void)
 {
 }
 
-static SDL_bool VIRTUAL_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool VIRTUAL_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     // We don't override any other drivers... or do we?
-    return SDL_FALSE;
+    return false;
 }
 
 static const char *VIRTUAL_JoystickGetDeviceName(int device_index)
@@ -580,13 +580,13 @@ static int VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
     if (hwdata->desc.SetLED) {
-        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, SDL_TRUE);
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, true);
     }
     if (hwdata->desc.Rumble) {
-        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
     }
     if (hwdata->desc.RumbleTriggers) {
-        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, SDL_TRUE);
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
     }
     return 0;
 }
@@ -671,7 +671,7 @@ static int VIRTUAL_JoystickSendEffect(SDL_Joystick *joystick, const void *data, 
     return result;
 }
 
-static int VIRTUAL_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int VIRTUAL_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     int result;
 
@@ -780,14 +780,14 @@ static void VIRTUAL_JoystickQuit(void)
     }
 }
 
-static SDL_bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
     Uint8 current_button = 0;
     Uint8 current_axis = 0;
 
     if (!hwdata || hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMEPAD) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_SOUTH))) {
@@ -950,7 +950,7 @@ static SDL_bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadM
         out->righttrigger.target = current_axis++;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver = {

@@ -26,6 +26,6 @@
 
 extern int HAIKU_SetClipboardText(SDL_VideoDevice *_this, const char *text);
 extern char *HAIKU_GetClipboardText(SDL_VideoDevice *_this);
-extern SDL_bool HAIKU_HasClipboardText(SDL_VideoDevice *_this);
+extern bool HAIKU_HasClipboardText(SDL_VideoDevice *_this);
 
 #endif

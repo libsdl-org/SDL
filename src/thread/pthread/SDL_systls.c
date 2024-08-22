@@ -27,7 +27,7 @@
 #define INVALID_PTHREAD_KEY ((pthread_key_t)-1)
 
 static pthread_key_t thread_local_storage = INVALID_PTHREAD_KEY;
-static SDL_bool generic_local_storage = SDL_FALSE;
+static bool generic_local_storage = false;
 
 void SDL_SYS_InitTLSData(void)
 {
@@ -35,7 +35,7 @@ void SDL_SYS_InitTLSData(void)
         if (pthread_key_create(&thread_local_storage, NULL) != 0) {
             thread_local_storage = INVALID_PTHREAD_KEY;
             SDL_Generic_InitTLSData();
-            generic_local_storage = SDL_TRUE;
+            generic_local_storage = true;
         }
     }
 }
@@ -68,7 +68,7 @@ void SDL_SYS_QuitTLSData(void)
 {
     if (generic_local_storage) {
         SDL_Generic_QuitTLSData();
-        generic_local_storage = SDL_FALSE;
+        generic_local_storage = false;
     } else {
         if (thread_local_storage != INVALID_PTHREAD_KEY) {
             pthread_key_delete(thread_local_storage);

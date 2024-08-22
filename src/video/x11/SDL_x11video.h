@@ -63,7 +63,7 @@ struct SDL_VideoData
     SDLX11_SettingsData xsettings_data;
 
     // This is true for ICCCM2.0-compliant window managers
-    SDL_bool net_wm;
+    bool net_wm;
 
     // Useful atoms
     Atom WM_PROTOCOLS;
@@ -113,19 +113,19 @@ struct SDL_VideoData
     Atom pen_atom_wacom_tool_type;
 
     SDL_Scancode key_layout[256];
-    SDL_bool selection_waiting;
-    SDL_bool selection_incr_waiting;
+    bool selection_waiting;
+    bool selection_incr_waiting;
 
-    SDL_bool broken_pointer_grab; // true if XGrabPointer seems unreliable.
+    bool broken_pointer_grab; // true if XGrabPointer seems unreliable.
 
     Uint64 last_mode_change_deadline;
 
-    SDL_bool global_mouse_changed;
+    bool global_mouse_changed;
     SDL_Point global_mouse_position;
     Uint32 global_mouse_buttons;
 
     SDL_XInput2DeviceInfo *mouse_device_info;
-    SDL_bool xinput_hierarchy_changed;
+    bool xinput_hierarchy_changed;
 
     int xrandr_event_base;
 
@@ -145,12 +145,12 @@ struct SDL_VideoData
 #endif
 
     // Used to interact with the on-screen keyboard
-    SDL_bool is_steam_deck;
-    SDL_bool steam_keyboard_open;
+    bool is_steam_deck;
+    bool steam_keyboard_open;
 
-    SDL_bool is_xwayland;
+    bool is_xwayland;
 };
 
-extern SDL_bool X11_UseDirectColorVisuals(void);
+extern bool X11_UseDirectColorVisuals(void);
 
 #endif // SDL_x11video_h_

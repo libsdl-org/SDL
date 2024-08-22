@@ -34,18 +34,18 @@ static void HIDAPI_DriverCombined_UnregisterHints(SDL_HintCallback callback, voi
 {
 }
 
-static SDL_bool HIDAPI_DriverCombined_IsEnabled(void)
+static bool HIDAPI_DriverCombined_IsEnabled(void)
 {
-    return SDL_TRUE;
+    return true;
 }
 
-static SDL_bool HIDAPI_DriverCombined_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static bool HIDAPI_DriverCombined_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     // This is always explicitly created for combined devices
-    return SDL_FALSE;
+    return false;
 }
 
-static SDL_bool HIDAPI_DriverCombined_InitDevice(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverCombined_InitDevice(SDL_HIDAPI_Device *device)
 {
     return HIDAPI_JoystickConnected(device, NULL);
 }
@@ -59,7 +59,7 @@ static void HIDAPI_DriverCombined_SetDevicePlayerIndex(SDL_HIDAPI_Device *device
 {
 }
 
-static SDL_bool HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static bool HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     int i;
     char *serial = NULL, *new_serial;
@@ -77,7 +77,7 @@ static SDL_bool HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SD
             if (serial) {
                 SDL_free(serial);
             }
-            return SDL_FALSE;
+            return false;
         }
 
         // Extend the serial number with the child serial number
@@ -105,7 +105,7 @@ static SDL_bool HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SD
     }
     joystick->serial = serial;
 
-    return SDL_TRUE;
+    return true;
 }
 
 static int HIDAPI_DriverCombined_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
@@ -167,7 +167,7 @@ static int HIDAPI_DriverCombined_SendJoystickEffect(SDL_HIDAPI_Device *device, S
     return SDL_Unsupported();
 }
 
-static int HIDAPI_DriverCombined_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+static int HIDAPI_DriverCombined_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     int i;
     int result = -1;
@@ -181,15 +181,15 @@ static int HIDAPI_DriverCombined_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *de
     return result;
 }
 
-static SDL_bool HIDAPI_DriverCombined_UpdateDevice(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverCombined_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     int i;
-    int result = SDL_TRUE;
+    int result = true;
 
     for (i = 0; i < device->num_children; ++i) {
         SDL_HIDAPI_Device *child = device->children[i];
         if (!child->driver->UpdateDevice(child)) {
-            result = SDL_FALSE;
+            result = false;
         }
     }
     return result;
@@ -211,7 +211,7 @@ static void HIDAPI_DriverCombined_FreeDevice(SDL_HIDAPI_Device *device)
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverCombined = {
     "SDL_JOYSTICK_HIDAPI_COMBINED",
-    SDL_TRUE,
+    true,
     HIDAPI_DriverCombined_RegisterHints,
     HIDAPI_DriverCombined_UnregisterHints,
     HIDAPI_DriverCombined_IsEnabled,

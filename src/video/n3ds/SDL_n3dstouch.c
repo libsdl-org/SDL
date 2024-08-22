@@ -58,8 +58,8 @@ void N3DS_PollTouch(SDL_VideoDevice *_this)
     touchPosition touch;
     SDL_Window *window;
     SDL_VideoDisplay *display;
-    static SDL_bool was_pressed = SDL_FALSE;
-    SDL_bool pressed;
+    static bool was_pressed = false;
+    bool pressed;
     hidTouchRead(&touch);
     pressed = (touch.px != 0 || touch.py != 0);
 

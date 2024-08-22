@@ -36,7 +36,7 @@ static const GUID SDL_IID_ID3D12Resource = { 0x696442be, 0xa72e, 0x4059, { 0xbc,
 static const GUID SDL_IID_IDXGIDevice1 = { 0x77db970f, 0x6276, 0x48ba, { 0xba, 0x28, 0x07, 0x01, 0x43, 0xb4, 0x39, 0x2c } };
 
 extern "C" HRESULT
-D3D12_XBOX_CreateDevice(ID3D12Device **device, SDL_bool createDebug)
+D3D12_XBOX_CreateDevice(ID3D12Device **device, bool createDebug)
 {
     HRESULT result;
     D3D12XBOX_CREATE_DEVICE_PARAMETERS params;

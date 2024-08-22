@@ -34,7 +34,7 @@ struct SDL_DisplayData
 
     Uint64 mode_switch_deadline_ns;
 
-    SDL_bool use_xrandr;
+    bool use_xrandr;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     RROutput xrandr_output;

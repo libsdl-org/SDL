@@ -157,7 +157,7 @@ static int VIVANTE_AddVideoDisplays(SDL_VideoDevice *_this)
     display.name = VIVANTE_GetDisplayName(_this);
     display.desktop_mode = mode;
     display.internal = data;
-    if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
+    if (SDL_AddVideoDisplay(&display, false) == 0) {
         return -1;
     }
     return 0;

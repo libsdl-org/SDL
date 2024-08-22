@@ -40,7 +40,7 @@ static const HWND SDL_HelperWindow = NULL;
 /*
  * Internal stuff.
  */
-static SDL_bool coinitialized = SDL_FALSE;
+static bool coinitialized = false;
 static LPDIRECTINPUT8 dinput = NULL;
 
 /*
@@ -71,7 +71,7 @@ int SDL_DINPUT_HapticInit(void)
         return SDL_SetError("Haptic: SubSystem already open.");
     }
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, SDL_TRUE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true)) {
         // In some environments, IDirectInput8_Initialize / _EnumDevices can take a minute even with no controllers.
         return 0;
     }
@@ -81,7 +81,7 @@ int SDL_DINPUT_HapticInit(void)
         return DI_SetError("Coinitialize", ret);
     }
 
-    coinitialized = SDL_TRUE;
+    coinitialized = true;
 
     ret = CoCreateInstance(&CLSID_DirectInput8, NULL, CLSCTX_INPROC_SERVER,
                            &IID_IDirectInput8, (LPVOID *)&dinput);
@@ -280,7 +280,7 @@ static BOOL CALLBACK DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
  *       - Reset actuators.
  *       - Get supported features.
  */
-static int SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic *haptic, LPDIRECTINPUTDEVICE8 device8, SDL_bool is_joystick)
+static int SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic *haptic, LPDIRECTINPUTDEVICE8 device8, bool is_joystick)
 {
     HRESULT ret;
     DIPROPDWORD dipdw;
@@ -428,7 +428,7 @@ int SDL_DINPUT_HapticOpen(SDL_Haptic *haptic, SDL_hapticlist_item *item)
         return -1;
     }
 
-    if (SDL_DINPUT_HapticOpenFromDevice(haptic, device, SDL_FALSE) < 0) {
+    if (SDL_DINPUT_HapticOpenFromDevice(haptic, device, false) < 0) {
         IDirectInputDevice8_Release(device);
         return -1;
     }
@@ -475,7 +475,7 @@ int SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick
         if (WIN_IsEqualGUID(&item->instance.guidInstance, &joy_instance.guidInstance)) {
             haptic->instance_id = item->instance_id;
             haptic->name = SDL_strdup(item->name);
-            return SDL_DINPUT_HapticOpenFromDevice(haptic, joystick->hwdata->InputDevice, SDL_TRUE);
+            return SDL_DINPUT_HapticOpenFromDevice(haptic, joystick->hwdata->InputDevice, true);
         }
     }
 
@@ -501,7 +501,7 @@ void SDL_DINPUT_HapticQuit(void)
 
     if (coinitialized) {
         WIN_CoUninitialize();
-        coinitialized = SDL_FALSE;
+        coinitialized = false;
     }
 }
 
@@ -1056,9 +1056,9 @@ int SDL_DINPUT_HapticGetEffectStatus(SDL_Haptic *haptic, struct haptic_effect *e
     }
 
     if (status == 0) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 int SDL_DINPUT_HapticSetGain(SDL_Haptic *haptic, int gain)

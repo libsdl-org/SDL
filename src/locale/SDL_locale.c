@@ -62,7 +62,7 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
 
     i = 0;
     retval[i++] = loc;
-    while (SDL_TRUE) { // parse out the string
+    while (true) { // parse out the string
         while (SDL_isspace(*ptr)) {
             ptr++; // skip whitespace.
         }
@@ -71,7 +71,7 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
             break;
         }
         loc->language = ptr++;
-        while (SDL_TRUE) {
+        while (true) {
             const char ch = *ptr;
             if (ch == '_' || ch == '-') {
                 *(ptr++) = '\0';

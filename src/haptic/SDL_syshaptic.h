@@ -93,7 +93,7 @@ int SDL_SYS_HapticMouse(void);
 /*
  * Checks to see if the joystick has haptic capabilities.
  */
-extern SDL_bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick);
+extern bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick);
 
 /*
  * Opens the haptic device for usage using the same device as
@@ -106,9 +106,9 @@ extern int SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic,
 /*
  * Checks to see if haptic device and joystick device are the same.
  *
- * Returns SDL_TRUE if they are the same, SDL_FALSE if they aren't.
+ * Returns true if they are the same, false if they aren't.
  */
-extern SDL_bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic,
+extern bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic,
                                       SDL_Joystick *joystick);
 
 /*

@@ -50,7 +50,7 @@ enum PW_READY_FLAGS
 #define PW_ID_TO_HANDLE(x) (void *)((uintptr_t)x)
 #define PW_HANDLE_TO_ID(x) (uint32_t)((uintptr_t)x)
 
-static SDL_bool pipewire_initialized = SDL_FALSE;
+static bool pipewire_initialized = false;
 
 // Pipewire entry points
 static const char *(*PIPEWIRE_pw_get_library_version)(void);
@@ -204,7 +204,7 @@ struct node_object
 
     Uint32 id;
     int seq;
-    SDL_bool persist;
+    bool persist;
 
     /*
      * NOTE: If used, this is *must* be allocated with SDL_malloc() or similar
@@ -226,7 +226,7 @@ struct io_node
     struct spa_list link;
 
     Uint32 id;
-    SDL_bool recording;
+    bool recording;
     SDL_AudioSpec spec;
 
     const char *name; // Friendly name
@@ -245,8 +245,8 @@ static struct spa_hook hotplug_core_listener;
 static struct spa_list hotplug_pending_list;
 static struct spa_list hotplug_io_list;
 static int hotplug_init_seq_val;
-static SDL_bool hotplug_init_complete;
-static SDL_bool hotplug_events_enabled;
+static bool hotplug_init_complete;
+static bool hotplug_events_enabled;
 
 static int pipewire_version_major;
 static int pipewire_version_minor;
@@ -254,7 +254,7 @@ static int pipewire_version_patch;
 static char *pipewire_default_sink_id = NULL;
 static char *pipewire_default_source_id = NULL;
 
-static SDL_bool pipewire_core_version_at_least(int major, int minor, int patch)
+static bool pipewire_core_version_at_least(int major, int minor, int patch)
 {
     return (pipewire_version_major >= major) &&
            (pipewire_version_major > major || pipewire_version_minor >= minor) &&
@@ -262,15 +262,15 @@ static SDL_bool pipewire_core_version_at_least(int major, int minor, int patch)
 }
 
 // The active node list
-static SDL_bool io_list_check_add(struct io_node *node)
+static bool io_list_check_add(struct io_node *node)
 {
     struct io_node *n;
-    SDL_bool ret = SDL_TRUE;
+    bool ret = true;
 
     // See if the node is already in the list
     spa_list_for_each (n, &hotplug_io_list, link) {
         if (n->id == node->id) {
-            ret = SDL_FALSE;
+            ret = false;
             goto dup_found;
         }
     }
@@ -402,7 +402,7 @@ static void core_events_hotplug_init_callback(void *object, uint32_t id, int seq
         spa_hook_remove(&hotplug_core_listener);
 
         // Signal that the initial I/O list is populated
-        hotplug_init_complete = SDL_TRUE;
+        hotplug_init_complete = true;
         PIPEWIRE_pw_thread_loop_signal(hotplug_loop, false);
     }
 }
@@ -463,7 +463,7 @@ static void hotplug_core_sync(struct node_object *node)
 }
 
 // Helpers for retrieving values from params
-static SDL_bool get_range_param(const struct spa_pod *param, Uint32 key, int *def, int *min, int *max)
+static bool get_range_param(const struct spa_pod *param, Uint32 key, int *def, int *min, int *max)
 {
     const struct spa_pod_prop *prop;
     struct spa_pod *value;
@@ -488,15 +488,15 @@ static SDL_bool get_range_param(const struct spa_pod *param, Uint32 key, int *de
                     *max = (int)v[2];
                 }
 
-                return SDL_TRUE;
+                return true;
             }
         }
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
-static SDL_bool get_int_param(const struct spa_pod *param, Uint32 key, int *val)
+static bool get_int_param(const struct spa_pod *param, Uint32 key, int *val)
 {
     const struct spa_pod_prop *prop;
     Sint32 v;
@@ -508,10 +508,10 @@ static SDL_bool get_int_param(const struct spa_pod *param, Uint32 key, int *val)
             *val = (int)v;
         }
 
-        return SDL_TRUE;
+        return true;
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
 // Interface node callbacks
@@ -607,14 +607,14 @@ static int metadata_property(void *object, Uint32 subject, const char *key, cons
                 SDL_free(pipewire_default_sink_id);
             }
             pipewire_default_sink_id = get_name_from_json(value);
-            node->persist = SDL_TRUE;
+            node->persist = true;
             change_default_device(pipewire_default_sink_id);
         } else if (!SDL_strcmp(key, "default.audio.source")) {
             if (pipewire_default_source_id) {
                 SDL_free(pipewire_default_source_id);
             }
             pipewire_default_source_id = get_name_from_json(value);
-            node->persist = SDL_TRUE;
+            node->persist = true;
             change_default_device(pipewire_default_source_id);
         }
     }
@@ -638,15 +638,15 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
             const char *node_desc;
             const char *node_path;
             struct io_node *io;
-            SDL_bool recording;
+            bool recording;
             int desc_buffer_len;
             int path_buffer_len;
 
             // Just want sink and source
             if (!SDL_strcasecmp(media_class, "Audio/Sink")) {
-                recording = SDL_FALSE;
+                recording = false;
             } else if (!SDL_strcasecmp(media_class, "Audio/Source")) {
-                recording = SDL_TRUE;
+                recording = true;
             } else {
                 return;
             }
@@ -757,8 +757,8 @@ static void hotplug_loop_destroy(void)
     pending_list_clear();
     io_list_clear();
 
-    hotplug_init_complete = SDL_FALSE;
-    hotplug_events_enabled = SDL_FALSE;
+    hotplug_init_complete = false;
+    hotplug_events_enabled = false;
 
     if (pipewire_default_sink_id) {
         SDL_free(pipewire_default_sink_id);
@@ -814,7 +814,7 @@ static void PIPEWIRE_DetectDevices(SDL_AudioDevice **default_playback, SDL_Audio
         }
     }
 
-    hotplug_events_enabled = SDL_TRUE;
+    hotplug_events_enabled = true;
 
     PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
 }
@@ -901,7 +901,7 @@ static void initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info
 
 static Uint8 *PIPEWIRE_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    // See if a buffer is available. If this returns NULL, SDL_PlaybackAudioThreadIterate will return SDL_FALSE, but since we own the thread, it won't kill playback.
+    // See if a buffer is available. If this returns NULL, SDL_PlaybackAudioThreadIterate will return false, but since we own the thread, it won't kill playback.
     // !!! FIXME: It's not clear to me if this ever returns NULL or if this was just defensive coding.
 
     struct pw_stream *stream = device->hidden->stream;
@@ -985,7 +985,7 @@ static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *) data;
 
-    if (device->recording == SDL_FALSE) {
+    if (device->recording == false) {
         /* Clamp the output spec samples and size to the max size of the Pipewire buffer.
            If they exceed the maximum size of the Pipewire buffer, double buffering will be used. */
         if (device->buffer_size > buffer->buffer->datas[0].maxsize) {
@@ -1042,7 +1042,7 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     struct pw_properties *props;
     const char *app_name, *icon_name, *app_id, *stream_name, *stream_role, *error;
     Uint32 node_id = !device->handle ? PW_ID_ANY : PW_HANDLE_TO_ID(device->handle);
-    const SDL_bool recording = device->recording;
+    const bool recording = device->recording;
     int res;
 
     // Clamp the period size to sane values
@@ -1214,23 +1214,23 @@ static void PIPEWIRE_Deinitialize(void)
 {
     if (pipewire_initialized) {
         deinit_pipewire_library();
-        pipewire_initialized = SDL_FALSE;
+        pipewire_initialized = false;
     }
 }
 
-static SDL_bool PipewireInitialize(SDL_AudioDriverImpl *impl)
+static bool PipewireInitialize(SDL_AudioDriverImpl *impl)
 {
     if (!pipewire_initialized) {
 
         if (init_pipewire_library() < 0) {
-            return SDL_FALSE;
+            return false;
         }
 
-        pipewire_initialized = SDL_TRUE;
+        pipewire_initialized = true;
 
         if (hotplug_loop_init() < 0) {
             PIPEWIRE_Deinitialize();
-            return SDL_FALSE;
+            return false;
         }
     }
 
@@ -1244,16 +1244,16 @@ static SDL_bool PipewireInitialize(SDL_AudioDriverImpl *impl)
     impl->FlushRecording = PIPEWIRE_FlushRecording;
     impl->CloseDevice = PIPEWIRE_CloseDevice;
 
-    impl->HasRecordingSupport = SDL_TRUE;
-    impl->ProvidesOwnCallbackThread = SDL_TRUE;
+    impl->HasRecordingSupport = true;
+    impl->ProvidesOwnCallbackThread = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
-static SDL_bool PIPEWIRE_PREFERRED_Init(SDL_AudioDriverImpl *impl)
+static bool PIPEWIRE_PREFERRED_Init(SDL_AudioDriverImpl *impl)
 {
     if (!PipewireInitialize(impl)) {
-        return SDL_FALSE;
+        return false;
     }
 
     // run device detection but don't add any devices to SDL; we're just waiting to see if PipeWire sees any devices. If not, fall back to the next backend.
@@ -1271,22 +1271,22 @@ static SDL_bool PIPEWIRE_PREFERRED_Init(SDL_AudioDriverImpl *impl)
     if (no_devices || !pipewire_core_version_at_least(1, 0, 0)) {
         hotplug_loop_destroy();
         PIPEWIRE_Deinitialize();
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;  // this will move on to PIPEWIRE_DetectDevices and reuse hotplug_io_list.
+    return true;  // this will move on to PIPEWIRE_DetectDevices and reuse hotplug_io_list.
 }
 
-static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
+static bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
 {
     return PipewireInitialize(impl);
 }
 
 AudioBootStrap PIPEWIRE_PREFERRED_bootstrap = {
-    "pipewire", "Pipewire", PIPEWIRE_PREFERRED_Init, SDL_FALSE
+    "pipewire", "Pipewire", PIPEWIRE_PREFERRED_Init, false
 };
 AudioBootStrap PIPEWIRE_bootstrap = {
-    "pipewire", "Pipewire", PIPEWIRE_Init, SDL_FALSE
+    "pipewire", "Pipewire", PIPEWIRE_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_PIPEWIRE

@@ -41,13 +41,13 @@ struct
     float range;
 } force_info[SCE_TOUCH_PORT_MAX_NUM];
 
-static SDL_bool disableFrontPoll;
-static SDL_bool disableBackPoll;
+static bool disableFrontPoll;
+static bool disableBackPoll;
 
 void VITA_InitTouch(void)
 {
-    disableFrontPoll = !SDL_GetHintBoolean(SDL_HINT_VITA_ENABLE_FRONT_TOUCH, SDL_TRUE);
-    disableBackPoll = !SDL_GetHintBoolean(SDL_HINT_VITA_ENABLE_BACK_TOUCH, SDL_TRUE);
+    disableFrontPoll = !SDL_GetHintBoolean(SDL_HINT_VITA_ENABLE_FRONT_TOUCH, true);
+    disableBackPoll = !SDL_GetHintBoolean(SDL_HINT_VITA_ENABLE_BACK_TOUCH, true);
 
     sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
     sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, SCE_TOUCH_SAMPLING_STATE_START);
@@ -125,7 +125,7 @@ void VITA_PollTouch(void)
                 // Skip if finger was already previously down
                 if (!finger_down) {
                     // Send an initial touch
-                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, SDL_TRUE, x, y, force);
+                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, true, x, y, force);
                 }
 
                 // Always send the motion
@@ -151,7 +151,7 @@ void VITA_PollTouch(void)
                     VITA_ConvertTouchXYToSDLXY(&x, &y, touch_old[port].report[i].x, touch_old[port].report[i].y, port);
                     finger_id = (SDL_FingerID)(touch_old[port].report[i].id + 1);
                     // Finger released from screen
-                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, SDL_FALSE, x, y, force);
+                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, false, x, y, force);
                 }
             }
         }

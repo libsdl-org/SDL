@@ -129,7 +129,7 @@ typedef struct
     const float *YCbCr_matrix;
 #if SDL_HAVE_YUV
     // YV12 texture support
-    SDL_bool yuv;
+    bool yuv;
     ID3D12Resource *mainTextureU;
     D3D12_CPU_DESCRIPTOR_HANDLE mainTextureResourceViewU;
     D3D12_RESOURCE_STATES mainResourceStateU;
@@ -140,7 +140,7 @@ typedef struct
     SIZE_T mainSRVIndexV;
 
     // NV12 texture support
-    SDL_bool nv12;
+    bool nv12;
     D3D12_CPU_DESCRIPTOR_HANDLE mainTextureResourceViewNV;
     SIZE_T mainSRVIndexNV;
 
@@ -198,7 +198,7 @@ typedef struct
     UINT syncInterval;
     UINT presentFlags;
     DXGI_FORMAT renderTargetFormat;
-    SDL_bool pixelSizeChanged;
+    bool pixelSizeChanged;
 
     // Descriptor heaps
     ID3D12DescriptorHeap *rtvDescriptorHeap;
@@ -245,15 +245,15 @@ typedef struct
     D3D12_CPU_DESCRIPTOR_HANDLE currentRenderTargetView;
     D3D12_CPU_DESCRIPTOR_HANDLE currentShaderResource;
     D3D12_CPU_DESCRIPTOR_HANDLE currentSampler;
-    SDL_bool cliprectDirty;
-    SDL_bool currentCliprectEnabled;
+    bool cliprectDirty;
+    bool currentCliprectEnabled;
     SDL_Rect currentCliprect;
     SDL_Rect currentViewport;
     int currentViewportRotation;
-    SDL_bool viewportDirty;
+    bool viewportDirty;
     Float4X4 identity;
     int currentVertexBuffer;
-    SDL_bool issueBatch;
+    bool issueBatch;
 } D3D12_RenderData;
 
 // Define D3D GUIDs here so we don't have to include uuid.lib.
@@ -529,9 +529,9 @@ static void D3D12_ResetCommandList(D3D12_RenderData *data)
     ID3D12GraphicsCommandList2_Reset(data->commandList, commandAllocator, NULL);
     data->currentPipelineState = NULL;
     data->currentVertexBuffer = 0;
-    data->issueBatch = SDL_FALSE;
-    data->cliprectDirty = SDL_TRUE;
-    data->viewportDirty = SDL_TRUE;
+    data->issueBatch = false;
+    data->cliprectDirty = true;
+    data->viewportDirty = true;
     data->currentRenderTargetView.ptr = 0;
     // FIXME should we also clear currentSampler.ptr and currentRenderTargetView.ptr ? (and use D3D12_InvalidateCachedState() instead)
 
@@ -774,7 +774,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     HRESULT result = S_OK;
     UINT creationFlags = 0;
     int i;
-    SDL_bool createDebug;
+    bool createDebug;
 
     D3D12_COMMAND_QUEUE_DESC queueDesc;
     D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc;
@@ -782,7 +782,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     ID3D12DescriptorHeap *rootDescriptorHeaps[2];
 
     // See if we need debug interfaces
-    createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE);
+    createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, false);
 
 #ifdef SDL_PLATFORM_GDK
     CreateEventExFunc = CreateEventExW;
@@ -1473,7 +1473,7 @@ static HRESULT D3D12_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
                              D3D12_RESOURCE_STATE_PRESENT,
                              D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-    data->viewportDirty = SDL_TRUE;
+    data->viewportDirty = true;
 
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     D3D12_XBOX_StartFrame(data->d3dDevice, &data->frameToken);
@@ -1497,11 +1497,11 @@ static void D3D12_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *eve
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
 
     if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
-        data->pixelSizeChanged = SDL_TRUE;
+        data->pixelSizeChanged = true;
     }
 }
 
-static SDL_bool D3D12_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
+static bool D3D12_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
     SDL_BlendFactor srcAlphaFactor = SDL_GetBlendModeSrcAlphaFactor(blendMode);
@@ -1514,9 +1514,9 @@ static SDL_bool D3D12_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode bl
         !GetBlendEquation(colorOperation) ||
         !GetBlendFunc(dstColorFactor) || !GetBlendFunc(dstAlphaFactor) ||
         !GetBlendEquation(alphaOperation)) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 static SIZE_T D3D12_GetAvailableSRVIndex(SDL_Renderer *renderer)
@@ -1634,7 +1634,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 #if SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
-        textureData->yuv = SDL_TRUE;
+        textureData->yuv = true;
 
         textureDesc.Width = (textureDesc.Width + 1) / 2;
         textureDesc.Height = (textureDesc.Height + 1) / 2;
@@ -1688,7 +1688,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         texture->format == SDL_PIXELFORMAT_P010) {
         int bits_per_pixel;
 
-        textureData->nv12 = SDL_TRUE;
+        textureData->nv12 = true;
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_P010:
@@ -2297,7 +2297,7 @@ static int D3D12_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
     int i;
     SDL_FColor color = cmd->data.draw.color;
-    SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
+    bool convert_color = SDL_RenderingLinearSpace(renderer);
 
     if (!verts) {
         return -1;
@@ -2329,7 +2329,7 @@ static int D3D12_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
     int i;
     int count = indices ? num_indices : num_vertices;
     VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
-    SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
+    bool convert_color = SDL_RenderingLinearSpace(renderer);
     D3D12_TextureData *textureData = texture ? (D3D12_TextureData *)texture->internal : NULL;
     float u_scale = textureData ? (float)texture->w / textureData->w : 0.0f;
     float v_scale = textureData ? (float)texture->h / textureData->h : 0.0f;
@@ -2421,7 +2421,7 @@ static int D3D12_UpdateVertexBuffer(SDL_Renderer *renderer,
     rendererData->currentVertexBuffer++;
     if (rendererData->currentVertexBuffer >= SDL_D3D12_NUM_VERTEX_BUFFERS) {
         rendererData->currentVertexBuffer = 0;
-        rendererData->issueBatch = SDL_TRUE;
+        rendererData->issueBatch = true;
     }
 
     return S_OK;
@@ -2513,7 +2513,7 @@ static int D3D12_UpdateViewport(SDL_Renderer *renderer)
     // SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}\n", __FUNCTION__, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height);
     ID3D12GraphicsCommandList_RSSetViewports(data->commandList, 1, &d3dviewport);
 
-    data->viewportDirty = SDL_FALSE;
+    data->viewportDirty = false;
 
     return 0;
 }
@@ -2590,7 +2590,7 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     const Float4X4 *newmatrix = matrix ? matrix : &rendererData->identity;
     D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = D3D12_GetCurrentRenderTargetView(renderer);
     const SDL_BlendMode blendMode = cmd->data.draw.blend;
-    SDL_bool updateSubresource = SDL_FALSE;
+    bool updateSubresource = false;
     int i;
     D3D12_CPU_DESCRIPTOR_HANDLE firstShaderResource;
     DXGI_FORMAT rtvFormat = rendererData->renderTargetFormat;
@@ -2640,7 +2640,7 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         ID3D12GraphicsCommandList2_SetGraphicsRootSignature(rendererData->commandList,
                  rendererData->rootSignatures[D3D12_GetRootSignatureType(currentPipelineState->shader)]);
         // When we change these we will need to re-upload the constant buffer and reset any descriptors
-        updateSubresource = SDL_TRUE;
+        updateSubresource = true;
         rendererData->currentSampler.ptr = 0;
         rendererData->currentShaderResource.ptr = 0;
         rendererData->currentPipelineState = currentPipelineState;
@@ -2654,7 +2654,7 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     if (rendererData->viewportDirty) {
         if (D3D12_UpdateViewport(renderer) == 0) {
             // vertexShaderConstantsData.projectionAndView has changed
-            updateSubresource = SDL_TRUE;
+            updateSubresource = true;
         }
     }
 
@@ -2665,7 +2665,7 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
             return -1;
         }
         ID3D12GraphicsCommandList2_RSSetScissorRects(rendererData->commandList, 1, &scissorRect);
-        rendererData->cliprectDirty = SDL_FALSE;
+        rendererData->cliprectDirty = false;
     }
 
     if (numShaderResources > 0) {
@@ -2702,7 +2702,7 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         rendererData->currentSampler = *sampler;
     }
 
-    if (updateSubresource == SDL_TRUE || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix)) != 0) {
+    if (updateSubresource == true || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix)) != 0) {
         SDL_memcpy(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix));
         ID3D12GraphicsCommandList2_SetGraphicsRoot32BitConstants(rendererData->commandList,
                  0,
@@ -2716,7 +2716,7 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         shader_constants = &solid_constants;
     }
 
-    if (updateSubresource == SDL_TRUE ||
+    if (updateSubresource == true ||
         SDL_memcmp(shader_constants, &currentPipelineState->shader_constants, sizeof(*shader_constants)) != 0) {
         ID3D12GraphicsCommandList2_SetGraphicsRoot32BitConstants(rendererData->commandList,
                  1,
@@ -2816,8 +2816,8 @@ static void D3D12_InvalidateCachedState(SDL_Renderer *renderer)
     data->currentRenderTargetView.ptr = 0;
     data->currentShaderResource.ptr = 0;
     data->currentSampler.ptr = 0;
-    data->cliprectDirty = SDL_TRUE;
-    data->viewportDirty = SDL_TRUE;
+    data->cliprectDirty = true;
+    data->viewportDirty = true;
 }
 
 static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
@@ -2827,12 +2827,12 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 
     if (rendererData->pixelSizeChanged) {
         D3D12_UpdateForWindowSizeChange(renderer);
-        rendererData->pixelSizeChanged = SDL_FALSE;
+        rendererData->pixelSizeChanged = false;
     }
 
     if (rendererData->currentViewportRotation != viewportRotation) {
         rendererData->currentViewportRotation = viewportRotation;
-        rendererData->viewportDirty = SDL_TRUE;
+        rendererData->viewportDirty = true;
     }
 
     if (D3D12_UpdateVertexBuffer(renderer, vertices, vertsize) < 0) {
@@ -2851,8 +2851,8 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             SDL_Rect *viewport = &rendererData->currentViewport;
             if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof(cmd->data.viewport.rect)) != 0) {
                 SDL_copyp(viewport, &cmd->data.viewport.rect);
-                rendererData->viewportDirty = SDL_TRUE;
-                rendererData->cliprectDirty = SDL_TRUE;
+                rendererData->viewportDirty = true;
+                rendererData->cliprectDirty = true;
             }
             break;
         }
@@ -2863,7 +2863,7 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             SDL_Rect viewport_cliprect;
             if (rendererData->currentCliprectEnabled != cmd->data.cliprect.enabled) {
                 rendererData->currentCliprectEnabled = cmd->data.cliprect.enabled;
-                rendererData->cliprectDirty = SDL_TRUE;
+                rendererData->cliprectDirty = true;
             }
             if (!rendererData->currentCliprectEnabled) {
                 /* If the clip rect is disabled, then the scissor rect should be the whole viewport,
@@ -2876,7 +2876,7 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             }
             if (SDL_memcmp(&rendererData->currentCliprect, rect, sizeof(*rect)) != 0) {
                 SDL_copyp(&rendererData->currentCliprect, rect);
-                rendererData->cliprectDirty = SDL_TRUE;
+                rendererData->cliprectDirty = true;
             }
             break;
         }
@@ -2884,7 +2884,7 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         case SDL_RENDERCMD_CLEAR:
         {
             D3D12_CPU_DESCRIPTOR_HANDLE rtvDescriptor = D3D12_GetCurrentRenderTargetView(renderer);
-            SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
+            bool convert_color = SDL_RenderingLinearSpace(renderer);
             SDL_FColor color = cmd->data.color.color;
             if (convert_color) {
                 SDL_ConvertToLinear(&color);

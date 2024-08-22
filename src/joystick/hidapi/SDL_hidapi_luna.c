@@ -57,23 +57,23 @@ static void HIDAPI_DriverLuna_UnregisterHints(SDL_HintCallback callback, void *u
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_LUNA, callback, userdata);
 }
 
-static SDL_bool HIDAPI_DriverLuna_IsEnabled(void)
+static bool HIDAPI_DriverLuna_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_LUNA, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool HIDAPI_DriverLuna_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static bool HIDAPI_DriverLuna_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return SDL_IsJoystickAmazonLunaController(vendor_id, product_id);
 }
 
-static SDL_bool HIDAPI_DriverLuna_InitDevice(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverLuna_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverLuna_Context *ctx;
 
     ctx = (SDL_DriverLuna_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
-        return SDL_FALSE;
+        return false;
     }
     device->context = ctx;
 
@@ -91,7 +91,7 @@ static void HIDAPI_DriverLuna_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SD
 {
 }
 
-static SDL_bool HIDAPI_DriverLuna_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static bool HIDAPI_DriverLuna_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverLuna_Context *ctx = (SDL_DriverLuna_Context *)device->context;
 
@@ -104,7 +104,7 @@ static SDL_bool HIDAPI_DriverLuna_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
 
-    return SDL_TRUE;
+    return true;
 }
 
 static int HIDAPI_DriverLuna_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
@@ -158,7 +158,7 @@ static int HIDAPI_DriverLuna_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_J
     return SDL_Unsupported();
 }
 
-static int HIDAPI_DriverLuna_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+static int HIDAPI_DriverLuna_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -348,7 +348,7 @@ static void HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick,
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static SDL_bool HIDAPI_DriverLuna_UpdateDevice(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverLuna_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverLuna_Context *ctx = (SDL_DriverLuna_Context *)device->context;
     SDL_Joystick *joystick = NULL;
@@ -358,7 +358,7 @@ static SDL_bool HIDAPI_DriverLuna_UpdateDevice(SDL_HIDAPI_Device *device)
     if (device->num_joysticks > 0) {
         joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     } else {
-        return SDL_FALSE;
+        return false;
     }
 
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
@@ -396,7 +396,7 @@ static void HIDAPI_DriverLuna_FreeDevice(SDL_HIDAPI_Device *device)
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna = {
     SDL_HINT_JOYSTICK_HIDAPI_LUNA,
-    SDL_TRUE,
+    true,
     HIDAPI_DriverLuna_RegisterHints,
     HIDAPI_DriverLuna_UnregisterHints,
     HIDAPI_DriverLuna_IsEnabled,

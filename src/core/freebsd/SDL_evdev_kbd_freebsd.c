@@ -53,11 +53,11 @@ struct SDL_EVDEV_keyboard_state
     keymap_t *key_map;
     keyboard_info_t *kbInfo;
     unsigned char shift_down[4]; // shift state counters..
-    SDL_bool dead_key_next;
+    bool dead_key_next;
     int npadch; // -1 or number assembled on pad
     accentmap_t *accents;
     unsigned int diacr;
-    SDL_bool rep; // flag telling character repeat
+    bool rep; // flag telling character repeat
     unsigned char lockstate;
     unsigned char ledflagstate;
     char shift_state;
@@ -265,7 +265,7 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
             kbd->key_map = &keymap_default_us_acc;
         }
 
-        if (SDL_GetHintBoolean(SDL_HINT_MUTE_CONSOLE_KEYBOARD, SDL_TRUE)) {
+        if (SDL_GetHintBoolean(SDL_HINT_MUTE_CONSOLE_KEYBOARD, true)) {
             /* Take keyboard from console and open the actual keyboard device.
              * Ensures that the keystrokes do not leak through to the console.
              */
@@ -281,7 +281,7 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
             /* Make sure to restore keyboard if application fails to call
              * SDL_Quit before exit or fatal signal is raised.
              */
-            if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
+            if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, false)) {
                 kbd_register_emerg_cleanup(kbd);
             }
             SDL_free(devicePath);
@@ -320,7 +320,7 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
     SDL_free(kbd);
 }
 
-void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
+void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, bool muted)
 {
 }
 
@@ -434,7 +434,7 @@ static void k_self(SDL_EVDEV_keyboard_state *kbd, unsigned int value, char up_fl
     }
 
     if (kbd->dead_key_next) {
-        kbd->dead_key_next = SDL_FALSE;
+        kbd->dead_key_next = false;
         kbd->diacr = value;
         return;
     }

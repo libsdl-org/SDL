@@ -162,8 +162,8 @@ int Android_VideoInit(SDL_VideoDevice *_this)
     SDL_VideoDisplay *display;
     SDL_DisplayMode mode;
 
-    videodata->isPaused = SDL_FALSE;
-    videodata->isPausing = SDL_FALSE;
+    videodata->isPaused = false;
+    videodata->isPausing = false;
 
     SDL_zero(mode);
     mode.format = Android_ScreenFormat;
@@ -271,7 +271,7 @@ void Android_SendResize(SDL_Window *window)
     }
 }
 
-void Android_SetDarkMode(SDL_bool enabled)
+void Android_SetDarkMode(bool enabled)
 {
     SDL_VideoDevice *device = SDL_GetVideoDevice();
 

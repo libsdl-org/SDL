@@ -240,8 +240,8 @@ int WINRT_VideoInit(SDL_VideoDevice *_this)
     }
 
     // Assume we have a mouse and keyboard
-    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
-    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
+    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
+    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
 
     return 0;
 }
@@ -337,7 +337,7 @@ static int WINRT_AddDisplaysForOutput(SDL_VideoDevice *_this, IDXGIAdapter1 *dxg
         }
     }
 
-    if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
+    if (SDL_AddVideoDisplay(&display, false) == 0) {
         goto done;
     }
 
@@ -417,7 +417,7 @@ static int WINRT_AddDisplaysForAdapter(SDL_VideoDevice *_this, IDXGIFactory2 *dx
                 mode.format = D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM);
 
                 display.desktop_mode = mode;
-                bool error = (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0);
+                bool error = (SDL_AddVideoDisplay(&display, false) == 0);
                 if (display.name) {
                     SDL_free(display.name);
                 }

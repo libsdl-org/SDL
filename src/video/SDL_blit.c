@@ -102,23 +102,23 @@ static int SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
 #ifdef SDL_PLATFORM_MACOS
 #include <sys/sysctl.h>
 
-static SDL_bool SDL_UseAltivecPrefetch(void)
+static bool SDL_UseAltivecPrefetch(void)
 {
     const char key[] = "hw.l3cachesize";
     u_int64_t result = 0;
     size_t typeSize = sizeof(result);
 
     if (sysctlbyname(key, &result, &typeSize, NULL, 0) == 0 && result > 0) {
-        return SDL_TRUE;
+        return true;
     } else {
-        return SDL_FALSE;
+        return false;
     }
 }
 #else
-static SDL_bool SDL_UseAltivecPrefetch(void)
+static bool SDL_UseAltivecPrefetch(void)
 {
     // Just guess G4
-    return SDL_TRUE;
+    return true;
 }
 #endif // SDL_PLATFORM_MACOS
 
@@ -192,7 +192,7 @@ int SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
 #if SDL_HAVE_RLE
     // Clean everything out to start
     if (surface->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        SDL_UnRLESurface(surface, SDL_TRUE);
+        SDL_UnRLESurface(surface, true);
     }
 #endif
 

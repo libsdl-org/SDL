@@ -37,7 +37,7 @@ struct SDL_AudioTrack
 {
     SDL_AudioSpec spec;
     int *chmap;
-    SDL_bool flushed;
+    bool flushed;
     SDL_AudioTrack *next;
 
     void *userdata;
@@ -192,7 +192,7 @@ void SDL_ClearAudioQueue(SDL_AudioQueue *queue)
 
 static void FlushAudioTrack(SDL_AudioTrack *track)
 {
-    track->flushed = SDL_TRUE;
+    track->flushed = true;
 }
 
 void SDL_FlushAudioQueue(SDL_AudioQueue *queue)
@@ -209,7 +209,7 @@ void SDL_PopAudioQueueHead(SDL_AudioQueue *queue)
     SDL_AudioTrack *track = queue->head;
 
     for (;;) {
-        SDL_bool flushed = track->flushed;
+        bool flushed = track->flushed;
 
         SDL_AudioTrack *next = track->next;
         DestroyAudioTrack(queue, track);
@@ -370,7 +370,7 @@ void *SDL_BeginAudioQueueIter(SDL_AudioQueue *queue)
     return queue->head;
 }
 
-size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_AudioSpec *out_spec, int **out_chmap, SDL_bool *out_flushed)
+size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_AudioSpec *out_spec, int **out_chmap, bool *out_flushed)
 {
     SDL_AudioTrack *iter = (SDL_AudioTrack *)(*inout_iter);
     SDL_assert(iter != NULL);
@@ -378,7 +378,7 @@ size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_Audi
     SDL_copyp(out_spec, &iter->spec);
     *out_chmap = iter->chmap;
 
-    SDL_bool flushed = SDL_FALSE;
+    bool flushed = false;
     size_t queued_bytes = 0;
 
     while (iter) {
@@ -389,7 +389,7 @@ size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_Audi
 
         if (avail >= SDL_SIZE_MAX - queued_bytes) {
             queued_bytes = SDL_SIZE_MAX;
-            flushed = SDL_FALSE;
+            flushed = false;
             break;
         }
 
@@ -548,7 +548,7 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
     size_t dst_present_bytes = present_frames * dst_frame_size;
     size_t dst_future_bytes = future_frames * dst_frame_size;
 
-    SDL_bool convert = (src_format != dst_format) || (src_channels != dst_channels);
+    bool convert = (src_format != dst_format) || (src_channels != dst_channels);
 
     if (convert && !dst) {
         // The user didn't ask for the data to be copied, but we need to convert it, so store it in the scratch buffer
@@ -609,7 +609,7 @@ size_t SDL_GetAudioQueueQueued(SDL_AudioQueue *queue)
     while (iter) {
         SDL_AudioSpec src_spec;
         int *src_chmap;
-        SDL_bool flushed;
+        bool flushed;
 
         size_t avail = SDL_NextAudioQueueIter(queue, &iter, &src_spec, &src_chmap, &flushed);
 

@@ -27,14 +27,14 @@
 
 
 // Return true if the mime type is valid clipboard text
-extern SDL_bool SDL_IsTextMimeType(const char *mime_type);
+extern bool SDL_IsTextMimeType(const char *mime_type);
 
 // Cancel the clipboard data callback, called internally for cleanup
 extern void SDL_CancelClipboardData(Uint32 sequence);
 
 // Call the clipboard callback for application data
 extern void *SDL_GetInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *size);
-extern SDL_bool SDL_HasInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type);
+extern bool SDL_HasInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type);
 
 // General purpose clipboard text callback
 const void * SDLCALL SDL_ClipboardTextCallback(void *userdata, const char *mime_type, size_t *size);

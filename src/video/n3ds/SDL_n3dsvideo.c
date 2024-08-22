@@ -167,7 +167,7 @@ static int AddN3DSDisplay(gfxScreen_t screen)
     display.desktop_mode = mode;
     display.internal = display_driver_data;
 
-    return SDL_AddVideoDisplay(&display, SDL_FALSE);
+    return SDL_AddVideoDisplay(&display, false);
 }
 
 static void N3DS_VideoQuit(SDL_VideoDevice *_this)

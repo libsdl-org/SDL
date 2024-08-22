@@ -241,7 +241,7 @@ typedef enum
 
         // Bluetooth is currently only used for Steam Controllers, so check that hint
         // before initializing Bluetooth, which will prompt the user for permission.
-		if ( SDL_GetHintBoolean( SDL_HINT_JOYSTICK_HIDAPI_STEAM, SDL_FALSE ) )
+		if ( SDL_GetHintBoolean( SDL_HINT_JOYSTICK_HIDAPI_STEAM, false ) )
 		{
 			[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appWillResignActiveNotification:) name: UIApplicationWillResignActiveNotification object:nil];
 			[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appDidBecomeActiveNotification:) name:UIApplicationDidBecomeActiveNotification object:nil];

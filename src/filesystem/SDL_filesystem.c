@@ -88,18 +88,18 @@ int SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
     return SDL_SYS_GetPathInfo(path, info);
 }
 
-static SDL_bool EverythingMatch(const char *pattern, const char *str, SDL_bool *matched_to_dir)
+static bool EverythingMatch(const char *pattern, const char *str, bool *matched_to_dir)
 {
     SDL_assert(pattern == NULL);
     SDL_assert(str != NULL);
     SDL_assert(matched_to_dir != NULL);
 
-    *matched_to_dir = SDL_TRUE;
-    return SDL_TRUE;  // everything matches!
+    *matched_to_dir = true;
+    return true;  // everything matches!
 }
 
 // this is just '*' and '?', with '/' matching nothing.
-static SDL_bool WildcardMatch(const char *pattern, const char *str, SDL_bool *matched_to_dir)
+static bool WildcardMatch(const char *pattern, const char *str, bool *matched_to_dir)
 {
     SDL_assert(pattern != NULL);
     SDL_assert(str != NULL);
@@ -127,8 +127,8 @@ static SDL_bool WildcardMatch(const char *pattern, const char *str, SDL_bool *ma
             sch = *(++str);
             pch = *(++pattern);
         } else if (!pattern_backtrack || (sch_backtrack == '/')) { // we didn't have a match. Are we in a '*' and NOT on a path separator? Keep going. Otherwise, fail.
-            *matched_to_dir = SDL_FALSE;
-            return SDL_FALSE;
+            *matched_to_dir = false;
+            return false;
         } else {  // still here? Wasn't a match, but we're definitely in a '*' pattern.
             str = ++str_backtrack;
             pattern = pattern_backtrack;
@@ -230,7 +230,7 @@ static char *CaseFoldUtf8String(const char *fname)
 
 typedef struct GlobDirCallbackData
 {
-    SDL_bool (*matcher)(const char *pattern, const char *str, SDL_bool *matched_to_dir);
+    bool (*matcher)(const char *pattern, const char *str, bool *matched_to_dir);
     const char *pattern;
     int num_entries;
     SDL_GlobFlags flags;
@@ -267,8 +267,8 @@ static int SDLCALL GlobDirectoryCallback(void *userdata, const char *dirname, co
         }
     }
 
-    SDL_bool matched_to_dir = SDL_FALSE;
-    const SDL_bool matched = data->matcher(data->pattern, (folded ? folded : fullpath) + data->basedirlen, &matched_to_dir);
+    bool matched_to_dir = false;
+    const bool matched = data->matcher(data->pattern, (folded ? folded : fullpath) + data->basedirlen, &matched_to_dir);
     //SDL_Log("GlobDirectoryCallback: Considered %spath='%s' vs pattern='%s': %smatched (matched_to_dir=%s)", folded ? "(folded) " : "", (folded ? folded : fullpath) + data->basedirlen, data->pattern, matched ? "" : "NOT ", matched_to_dir ? "TRUE" : "FALSE");
     SDL_free(folded);
 

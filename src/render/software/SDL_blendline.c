@@ -28,7 +28,7 @@
 
 static void SDL_BlendLine_RGB2(SDL_Surface *dst, int x1, int y1, int x2, int y2,
                                SDL_BlendMode blendMode, Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a,
-                               SDL_bool draw_end)
+                               bool draw_end)
 {
     const SDL_PixelFormatDetails *fmt = dst->internal->format;
     unsigned r, g, b, a, inva;
@@ -151,7 +151,7 @@ static void SDL_BlendLine_RGB2(SDL_Surface *dst, int x1, int y1, int x2, int y2,
 
 static void SDL_BlendLine_RGB555(SDL_Surface *dst, int x1, int y1, int x2, int y2,
                                  SDL_BlendMode blendMode, Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a,
-                                 SDL_bool draw_end)
+                                 bool draw_end)
 {
     unsigned r, g, b, a, inva;
 
@@ -273,7 +273,7 @@ static void SDL_BlendLine_RGB555(SDL_Surface *dst, int x1, int y1, int x2, int y
 
 static void SDL_BlendLine_RGB565(SDL_Surface *dst, int x1, int y1, int x2, int y2,
                                  SDL_BlendMode blendMode, Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a,
-                                 SDL_bool draw_end)
+                                 bool draw_end)
 {
     unsigned r, g, b, a, inva;
 
@@ -395,7 +395,7 @@ static void SDL_BlendLine_RGB565(SDL_Surface *dst, int x1, int y1, int x2, int y
 
 static void SDL_BlendLine_RGB4(SDL_Surface *dst, int x1, int y1, int x2, int y2,
                                SDL_BlendMode blendMode, Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a,
-                               SDL_bool draw_end)
+                               bool draw_end)
 {
     const SDL_PixelFormatDetails *fmt = dst->internal->format;
     unsigned r, g, b, a, inva;
@@ -518,7 +518,7 @@ static void SDL_BlendLine_RGB4(SDL_Surface *dst, int x1, int y1, int x2, int y2,
 
 static void SDL_BlendLine_RGBA4(SDL_Surface *dst, int x1, int y1, int x2, int y2,
                                 SDL_BlendMode blendMode, Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a,
-                                SDL_bool draw_end)
+                                bool draw_end)
 {
     const SDL_PixelFormatDetails *fmt = dst->internal->format;
     unsigned r, g, b, a, inva;
@@ -641,7 +641,7 @@ static void SDL_BlendLine_RGBA4(SDL_Surface *dst, int x1, int y1, int x2, int y2
 
 static void SDL_BlendLine_XRGB8888(SDL_Surface *dst, int x1, int y1, int x2, int y2,
                                  SDL_BlendMode blendMode, Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a,
-                                 SDL_bool draw_end)
+                                 bool draw_end)
 {
     unsigned r, g, b, a, inva;
 
@@ -763,7 +763,7 @@ static void SDL_BlendLine_XRGB8888(SDL_Surface *dst, int x1, int y1, int x2, int
 
 static void SDL_BlendLine_ARGB8888(SDL_Surface *dst, int x1, int y1, int x2, int y2,
                                    SDL_BlendMode blendMode, Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a,
-                                   SDL_bool draw_end)
+                                   bool draw_end)
 {
     unsigned r, g, b, a, inva;
 
@@ -887,7 +887,7 @@ typedef void (*BlendLineFunc)(SDL_Surface *dst,
                               int x1, int y1, int x2, int y2,
                               SDL_BlendMode blendMode,
                               Uint8 r, Uint8 g, Uint8 b, Uint8 a,
-                              SDL_bool draw_end);
+                              bool draw_end);
 
 static BlendLineFunc SDL_CalculateBlendLineFunc(const SDL_PixelFormatDetails *fmt)
 {
@@ -939,7 +939,7 @@ int SDL_BlendLine(SDL_Surface *dst, int x1, int y1, int x2, int y2,
         return 0;
     }
 
-    func(dst, x1, y1, x2, y2, blendMode, r, g, b, a, SDL_TRUE);
+    func(dst, x1, y1, x2, y2, blendMode, r, g, b, a, true);
     return 0;
 }
 
@@ -949,7 +949,7 @@ int SDL_BlendLines(SDL_Surface *dst, const SDL_Point *points, int count,
     int i;
     int x1, y1;
     int x2, y2;
-    SDL_bool draw_end;
+    bool draw_end;
     BlendLineFunc func;
 
     if (!SDL_SurfaceValid(dst)) {

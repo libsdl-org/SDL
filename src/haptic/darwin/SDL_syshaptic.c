@@ -587,34 +587,34 @@ int SDL_SYS_HapticMouse(void)
 /*
  * Checks to see if a joystick has haptic features.
  */
-SDL_bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
+bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_IOKIT
     if (joystick->driver != &SDL_DARWIN_JoystickDriver) {
-        return SDL_FALSE;
+        return false;
     }
     if (joystick->hwdata->ffservice != 0) {
-        return SDL_TRUE;
+        return true;
     }
 #endif
-    return SDL_FALSE;
+    return false;
 }
 
 /*
  * Checks to see if the haptic device and joystick are in reality the same.
  */
-SDL_bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
+bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_IOKIT
     if (joystick->driver != &SDL_DARWIN_JoystickDriver) {
-        return SDL_FALSE;
+        return false;
     }
     if (IOObjectIsEqualTo((io_object_t)((size_t)haptic->hwdata->device),
                           joystick->hwdata->ffservice)) {
-        return SDL_TRUE;
+        return true;
     }
 #endif
-    return SDL_FALSE;
+    return false;
 }
 
 /*
@@ -1277,9 +1277,9 @@ int SDL_SYS_HapticGetEffectStatus(SDL_Haptic *haptic,
     }
 
     if (status == 0) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE; // Assume it's playing or emulated.
+    return true; // Assume it's playing or emulated.
 }
 
 /*

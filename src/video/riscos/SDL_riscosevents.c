@@ -126,7 +126,7 @@ void RISCOS_PollMouse(SDL_VideoDevice *_this)
     buttons = regs.r[2];
 
     if (mouse->x != x || mouse->y != y) {
-        SDL_SendMouseMotion(0, mouse->focus, SDL_DEFAULT_MOUSE_ID, SDL_FALSE, (float)x, (float)y);
+        SDL_SendMouseMotion(0, mouse->focus, SDL_DEFAULT_MOUSE_ID, false, (float)x, (float)y);
     }
 
     if (internal->last_mouse_buttons != buttons) {
@@ -148,9 +148,9 @@ int RISCOS_InitEvents(SDL_VideoDevice *_this)
     }
 
     status = (_kernel_osbyte(202, 0, 255) & 0xFF);
-    SDL_ToggleModState(SDL_KMOD_NUM, (status & (1 << 2)) ? SDL_FALSE : SDL_TRUE);
-    SDL_ToggleModState(SDL_KMOD_CAPS, (status & (1 << 4)) ? SDL_FALSE : SDL_TRUE);
-    SDL_ToggleModState(SDL_KMOD_SCROLL, (status & (1 << 1)) ? SDL_TRUE : SDL_FALSE);
+    SDL_ToggleModState(SDL_KMOD_NUM, (status & (1 << 2)) ? false : true);
+    SDL_ToggleModState(SDL_KMOD_CAPS, (status & (1 << 4)) ? false : true);
+    SDL_ToggleModState(SDL_KMOD_SCROLL, (status & (1 << 1)) ? true : false);
 
     _kernel_swi(OS_Mouse, &regs, &regs);
     internal->last_mouse_buttons = regs.r[2];

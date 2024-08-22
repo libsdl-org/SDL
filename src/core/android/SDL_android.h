@@ -50,22 +50,22 @@ typedef enum
 } SDL_AndroidLifecycleEvent;
 
 void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event);
-SDL_bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS);
+bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS);
 
 void Android_LockActivityMutex(void);
 void Android_UnlockActivityMutex(void);
 
 // Interface from the SDL library into the Android Java activity
 extern void Android_JNI_SetActivityTitle(const char *title);
-extern void Android_JNI_SetWindowStyle(SDL_bool fullscreen);
+extern void Android_JNI_SetWindowStyle(bool fullscreen);
 extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint);
 extern void Android_JNI_MinizeWindow(void);
-extern SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
+extern bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
-extern SDL_bool Android_JNI_GetAccelerometerValues(float values[3]);
+extern bool Android_JNI_GetAccelerometerValues(float values[3]);
 extern void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect);
 extern void Android_JNI_HideScreenKeyboard(void);
-extern SDL_bool Android_JNI_IsScreenKeyboardShown(void);
+extern bool Android_JNI_IsScreenKeyboardShown(void);
 extern ANativeWindow *Android_JNI_GetNativeWindow(void);
 
 extern SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void);
@@ -77,8 +77,8 @@ void Android_StopAudioHotplug(void);
 extern void Android_AudioThreadInit(SDL_AudioDevice *device);
 
 // Detecting device type
-extern SDL_bool Android_IsDeXMode(void);
-extern SDL_bool Android_IsChromebook(void);
+extern bool Android_IsDeXMode(void);
+extern bool Android_IsChromebook(void);
 
 int Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode);
 Sint64 Android_JNI_FileSize(void *userdata);
@@ -94,7 +94,7 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode);
 // Clipboard support
 int Android_JNI_SetClipboardText(const char *text);
 char *Android_JNI_GetClipboardText(void);
-SDL_bool Android_JNI_HasClipboardText(void);
+bool Android_JNI_HasClipboardText(void);
 
 // Power support
 int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seconds, int *percent);
@@ -109,7 +109,7 @@ void Android_JNI_HapticRumble(int device_id, float low_frequency_intensity, floa
 void Android_JNI_HapticStop(int device_id);
 
 // Video
-int Android_JNI_SuspendScreenSaver(SDL_bool suspend);
+int Android_JNI_SuspendScreenSaver(bool suspend);
 
 // Touch support
 void Android_JNI_InitTouch(void);
@@ -131,12 +131,12 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
 // Cursor support
 int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
 void Android_JNI_DestroyCustomCursor(int cursorID);
-SDL_bool Android_JNI_SetCustomCursor(int cursorID);
-SDL_bool Android_JNI_SetSystemCursor(int cursorID);
+bool Android_JNI_SetCustomCursor(int cursorID);
+bool Android_JNI_SetSystemCursor(int cursorID);
 
 // Relative mouse support
-SDL_bool Android_JNI_SupportsRelativeMouse(void);
-SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled);
+bool Android_JNI_SupportsRelativeMouse(void);
+bool Android_JNI_SetRelativeMouseEnabled(bool enabled);
 
 // Show toast notification
 int Android_JNI_ShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset);
@@ -145,15 +145,12 @@ int Android_JNI_OpenURL(const char *url);
 
 int SDL_GetAndroidSDKVersion(void);
 
-SDL_bool SDL_IsAndroidTablet(void);
-SDL_bool SDL_IsAndroidTV(void);
-SDL_bool SDL_IsChromebook(void);
-SDL_bool SDL_IsDeXMode(void);
+bool SDL_IsAndroidTablet(void);
 
 // File Dialogs
-SDL_bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void* userdata,
-    const SDL_DialogFileFilter *filters, int nfilters, SDL_bool forwrite,
-    SDL_bool multiple);
+bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void* userdata,
+    const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
+    bool multiple);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

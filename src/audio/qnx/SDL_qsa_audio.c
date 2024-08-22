@@ -100,10 +100,10 @@ static int QSA_WaitDevice(SDL_AudioDevice *device)
         SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "QSA: SDL_IOReady() failed: %s", strerror(errno));
         return -1;
     case 0:
-        device->hidden->timeout_on_wait = SDL_TRUE;  // !!! FIXME: Should we just disconnect the device in this case?
+        device->hidden->timeout_on_wait = true;  // !!! FIXME: Should we just disconnect the device in this case?
         break;
     default:
-        device->hidden->timeout_on_wait = SDL_FALSE;
+        device->hidden->timeout_on_wait = false;
         break;
     }
 
@@ -200,7 +200,7 @@ static int QSA_OpenDevice(SDL_AudioDevice *device)
     const Uint32 sdlhandle = (Uint32) ((size_t) device->handle);
     const uint32_t cardno = (uint32_t) (sdlhandle & 0xFFFF);
     const uint32_t deviceno = (uint32_t) ((sdlhandle >> 16) & 0xFFFF);
-    const SDL_bool recording = device->recording;
+    const bool recording = device->recording;
     int status = 0;
 
     // Initialize all variables that we clean on shutdown
@@ -318,7 +318,7 @@ static void QSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevic
     // this value can be changed in the runtime
     int num_cards = 0;
     (void) snd_cards_list(NULL, 0, &alloc_num_cards);
-    SDL_bool isstack = SDL_FALSE;
+    bool isstack = false;
     int *cards = SDL_small_alloc(int, num_cards, &isstack);
     if (!cards) {
         return;  // we're in trouble.
@@ -350,13 +350,13 @@ static void QSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevic
                 SDL_snprintf(fullname, sizeof (fullname), "%s d%d", name, (int) deviceno);
 
                 // Check if this device id could play anything
-                SDL_bool recording = SDL_FALSE;
+                bool recording = false;
                 status = snd_pcm_open(&handle, card, deviceno, SND_PCM_OPEN_PLAYBACK);
                 if (status != EOK) {  // no? See if it's a recording device instead.
                     #if 0  // !!! FIXME: most of this code has support for recording devices, but there's no RecordDevice, etc functions. Fill them in!
                     status = snd_pcm_open(&handle, card, deviceno, SND_PCM_OPEN_CAPTURE);
                     if (status == EOK) {
-                        recording = SDL_TRUE;
+                        recording = true;
                     }
                     #endif
                 }
@@ -426,7 +426,7 @@ static void QSA_Deinitialize(void)
     // nothing to do here atm.
 }
 
-static SDL_bool QSA_Init(SDL_AudioDriverImpl * impl)
+static bool QSA_Init(SDL_AudioDriverImpl * impl)
 {
     impl->DetectDevices = QSA_DetectDevices;
     impl->OpenDevice = QSA_OpenDevice;
@@ -438,9 +438,9 @@ static SDL_bool QSA_Init(SDL_AudioDriverImpl * impl)
     impl->Deinitialize = QSA_Deinitialize;
 
     // !!! FIXME: most of this code has support for recording devices, but there's no RecordDevice, etc functions. Fill them in!
-    //impl->HasRecordingSupport = SDL_TRUE;
+    //impl->HasRecordingSupport = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap QSAAUDIO_bootstrap = {

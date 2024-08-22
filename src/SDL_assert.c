@@ -248,7 +248,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
 #ifdef SDL_PLATFORM_EMSCRIPTEN
         // This is nasty, but we can't block on a custom UI.
         for (;;) {
-            SDL_bool okay = SDL_TRUE;
+            bool okay = true;
             /* *INDENT-OFF* */ // clang-format off
             char *buf = (char *) MAIN_THREAD_EM_ASM_PTR({
                 var str =
@@ -275,7 +275,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
             } else if (SDL_strcmp(buf, "A") == 0) {
                 state = SDL_ASSERTION_ALWAYS_IGNORE;
             } else {
-                okay = SDL_FALSE;
+                okay = false;
             }
             free(buf);  // This should NOT be SDL_free()
 
@@ -373,7 +373,7 @@ SDL_AssertState SDL_ReportAssertion(SDL_AssertData *data, const char *func, cons
     switch (state) {
     case SDL_ASSERTION_ALWAYS_IGNORE:
         state = SDL_ASSERTION_IGNORE;
-        data->always_ignore = SDL_TRUE;
+        data->always_ignore = true;
         break;
 
     case SDL_ASSERTION_IGNORE:
@@ -430,7 +430,7 @@ void SDL_ResetAssertionReport(void)
     SDL_AssertData *item;
     for (item = triggered_assertions; item; item = next) {
         next = (SDL_AssertData *)item->next;
-        item->always_ignore = SDL_FALSE;
+        item->always_ignore = false;
         item->trigger_count = 0;
         item->next = NULL;
     }

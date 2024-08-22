@@ -26,7 +26,7 @@
 #define SDL_hints_c_h_
 
 extern void SDL_InitHints(void);
-extern SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value);
+extern bool SDL_GetStringBoolean(const char *value, bool default_value);
 extern int SDL_GetStringInteger(const char *value, int default_value);
 extern void SDL_QuitHints(void);
 

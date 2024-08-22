@@ -194,15 +194,15 @@ int Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-SDL_bool Wayland_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+bool Wayland_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     /* In reality we just want to return true when the screen keyboard is the
      * _only_ way to get text input. So, in addition to checking for the text
      * input protocol, make sure we don't have any physical keyboards either.
      */
     SDL_VideoData *internal = _this->internal;
-    SDL_bool haskeyboard = (internal->input != NULL) && (internal->input->keyboard != NULL);
-    SDL_bool hastextmanager = (internal->text_input_manager != NULL);
+    bool haskeyboard = (internal->input != NULL) && (internal->input->keyboard != NULL);
+    bool hastextmanager = (internal->text_input_manager != NULL);
     return !haskeyboard && hastextmanager;
 }
 

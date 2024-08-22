@@ -492,7 +492,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     int is8bit, angle90;
     SDL_BlendMode blendmode;
     Uint32 colorkey = 0;
-    int colorKeyAvailable = SDL_FALSE;
+    int colorKeyAvailable = false;
     double sangleinv, cangleinv;
 
     // Sanity check
@@ -502,7 +502,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
 
     if (SDL_SurfaceHasColorKey(src)) {
         if (SDL_GetSurfaceColorKey(src, &colorkey) == 0) {
-            colorKeyAvailable = SDL_TRUE;
+            colorKeyAvailable = true;
         }
     }
     // This function requires a 32-bit surface or 8-bit surface with a colorkey
@@ -538,9 +538,9 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
 
     SDL_GetSurfaceBlendMode(src, &blendmode);
 
-    if (colorKeyAvailable == SDL_TRUE) {
+    if (colorKeyAvailable == true) {
         // If available, the colorkey will be used to discard the pixels that are outside of the rotated area.
-        SDL_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey);
+        SDL_SetSurfaceColorKey(rz_dst, true, colorkey);
         SDL_FillSurfaceRect(rz_dst, NULL, colorkey);
     } else if (blendmode == SDL_BLENDMODE_NONE) {
         blendmode = SDL_BLENDMODE_BLEND;
@@ -554,7 +554,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
          * all pixels outside of the rotated area. This doesn't interfere with anything because
          * white pixels are already a no-op and the MOD blend mode does not interact with alpha.
          */
-        SDL_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey);
+        SDL_SetSurfaceColorKey(rz_dst, true, colorkey);
     }
 
     SDL_SetSurfaceBlendMode(rz_dst, blendmode);

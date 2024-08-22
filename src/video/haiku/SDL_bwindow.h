@@ -35,10 +35,10 @@ extern void HAIKU_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void HAIKU_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void HAIKU_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void HAIKU_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern void HAIKU_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered);
-extern void HAIKU_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable);
+extern void HAIKU_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bordered);
+extern void HAIKU_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable);
 extern int HAIKU_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
-extern int HAIKU_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
+extern int HAIKU_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
 extern void HAIKU_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif

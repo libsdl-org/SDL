@@ -211,7 +211,7 @@ static void VITAAUD_ThreadInit(SDL_AudioDevice *device)
     }
 }
 
-static SDL_bool VITAAUD_Init(SDL_AudioDriverImpl *impl)
+static bool VITAAUD_Init(SDL_AudioDriverImpl *impl)
 {
     impl->OpenDevice = VITAAUD_OpenDevice;
     impl->PlayDevice = VITAAUD_PlayDevice;
@@ -223,15 +223,15 @@ static SDL_bool VITAAUD_Init(SDL_AudioDriverImpl *impl)
     impl->FlushRecording = VITAAUD_FlushRecording;
     impl->RecordDevice = VITAAUD_RecordDevice;
 
-    impl->HasRecordingSupport = SDL_TRUE;
-    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
-    impl->OnlyHasDefaultRecordingDevice = SDL_TRUE;
+    impl->HasRecordingSupport = true;
+    impl->OnlyHasDefaultPlaybackDevice = true;
+    impl->OnlyHasDefaultRecordingDevice = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap VITAAUD_bootstrap = {
-    "vita", "VITA audio driver", VITAAUD_Init, SDL_FALSE
+    "vita", "VITA audio driver", VITAAUD_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_VITA

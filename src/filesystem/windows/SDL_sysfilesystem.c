@@ -51,7 +51,7 @@ char *SDL_SYS_GetBasePath(void)
     DWORD len = 0;
     int i;
 
-    while (SDL_TRUE) {
+    while (true) {
         void *ptr = SDL_realloc(path, buflen * sizeof(WCHAR));
         if (!ptr) {
             SDL_free(path);

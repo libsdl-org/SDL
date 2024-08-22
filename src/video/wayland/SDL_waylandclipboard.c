@@ -72,11 +72,11 @@ void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, si
     return buffer;
 }
 
-SDL_bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
+bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
 {
     SDL_VideoData *video_data = _this->internal;
     SDL_WaylandDataDevice *data_device = NULL;
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     if (video_data->input && video_data->input->data_device) {
         data_device = video_data->input->data_device;
@@ -153,16 +153,16 @@ char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this)
     return text;
 }
 
-SDL_bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
+bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
 {
     SDL_VideoData *video_data = _this->internal;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     if (video_data->input && video_data->input->primary_selection_device) {
         primary_selection_device = video_data->input->primary_selection_device;
         if (primary_selection_device->selection_source) {
-            result = SDL_TRUE;
+            result = true;
         } else {
             result = Wayland_primary_selection_offer_has_mime(primary_selection_device->selection_offer, TEXT_MIME);
         }

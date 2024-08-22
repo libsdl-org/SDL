@@ -23,7 +23,7 @@
 // This file contains portable random functions for SDL
 
 static Uint64 SDL_rand_state;
-static SDL_bool SDL_rand_initialized = SDL_FALSE;
+static bool SDL_rand_initialized = false;
 
 void SDL_srand(Uint64 seed)
 {
@@ -31,7 +31,7 @@ void SDL_srand(Uint64 seed)
         seed = SDL_GetPerformanceCounter();
     }
     SDL_rand_state = seed;
-    SDL_rand_initialized = SDL_TRUE;
+    SDL_rand_initialized = true;
 }
 
 Sint32 SDL_rand(Sint32 n)

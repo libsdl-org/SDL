@@ -80,9 +80,9 @@ struct SDL_VideoData
 
     struct gbm_device *gbm_dev;
 
-    SDL_bool video_init;             // Has VideoInit succeeded?
-    SDL_bool vulkan_mode;            // Are we in Vulkan mode? One VK window is enough to be.
-    SDL_bool async_pageflip_support; // Does the hardware support async. pageflips?
+    bool video_init;             // Has VideoInit succeeded?
+    bool vulkan_mode;            // Are we in Vulkan mode? One VK window is enough to be.
+    bool async_pageflip_support; // Does the hardware support async. pageflips?
 
     SDL_Window **windows;
     int max_windows;
@@ -90,7 +90,7 @@ struct SDL_VideoData
 
     /* Even if we have several displays, we only have to
        open 1 FD and create 1 gbm device. */
-    SDL_bool gbm_init;
+    bool gbm_init;
 
 };
 
@@ -108,7 +108,7 @@ struct SDL_DisplayData
     drmModeModeInfo fullscreen_mode;
 
     drmModeCrtc *saved_crtc; // CRTC to restore on quit
-    SDL_bool saved_vrr;
+    bool saved_vrr;
 
     /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's internal struct,
        because setting/unsetting up these is done on window creation/destruction,
@@ -118,7 +118,7 @@ struct SDL_DisplayData
     int cursor_bo_drm_fd;
     uint64_t cursor_w, cursor_h;
 
-    SDL_bool default_cursor_init;
+    bool default_cursor_init;
 };
 
 struct SDL_WindowData
@@ -132,11 +132,11 @@ struct SDL_WindowData
     struct gbm_bo *bo;
     struct gbm_bo *next_bo;
 
-    SDL_bool waiting_for_flip;
-    SDL_bool double_buffer;
+    bool waiting_for_flip;
+    bool double_buffer;
 
     EGLSurface egl_surface;
-    SDL_bool egl_surface_dirty;
+    bool egl_surface_dirty;
 };
 
 typedef struct KMSDRM_FBInfo
@@ -149,7 +149,7 @@ typedef struct KMSDRM_FBInfo
 int KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo);
 KMSDRM_FBInfo *KMSDRM_FBFromBO2(SDL_VideoDevice *_this, struct gbm_bo *bo, int w, int h);
-SDL_bool KMSDRM_WaitPageflip(SDL_VideoDevice *_this, SDL_WindowData *windata);
+bool KMSDRM_WaitPageflip(SDL_VideoDevice *_this, SDL_WindowData *windata);
 
 /****************************************************************************/
 // SDL_VideoDevice functions declaration

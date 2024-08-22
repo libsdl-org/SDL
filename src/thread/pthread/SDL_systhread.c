@@ -71,10 +71,10 @@ static void *RunThread(void *data)
 }
 
 #if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)) && defined(HAVE_DLOPEN)
-static SDL_bool checked_setname = SDL_FALSE;
+static bool checked_setname = false;
 static int (*ppthread_setname_np)(const char *) = NULL;
 #elif defined(SDL_PLATFORM_LINUX) && defined(HAVE_DLOPEN)
-static SDL_bool checked_setname = SDL_FALSE;
+static bool checked_setname = false;
 static int (*ppthread_setname_np)(pthread_t, const char *) = NULL;
 #endif
 int SDL_SYS_CreateThread(SDL_Thread *thread,
@@ -92,7 +92,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
 #elif defined(SDL_PLATFORM_LINUX)
         ppthread_setname_np = (int (*)(pthread_t, const char *))fn;
 #endif
-        checked_setname = SDL_TRUE;
+        checked_setname = true;
     }
 #endif
 
@@ -186,7 +186,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     int pri_policy;
     pthread_t thread = pthread_self();
     const char *policyhint = SDL_GetHint(SDL_HINT_THREAD_PRIORITY_POLICY);
-    const SDL_bool timecritical_realtime_hint = SDL_GetHintBoolean(SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL, SDL_FALSE);
+    const bool timecritical_realtime_hint = SDL_GetHintBoolean(SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL, false);
 
     if (pthread_getschedparam(thread, &policy, &sched) != 0) {
         return SDL_SetError("pthread_getschedparam() failed");

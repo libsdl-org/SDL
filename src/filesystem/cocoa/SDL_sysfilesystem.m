@@ -89,9 +89,9 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
          * actually stick around, you'll need to use iCloud storage.
          */
         {
-            static SDL_bool shown = SDL_FALSE;
+            static bool shown = false;
             if (!shown) {
-                shown = SDL_TRUE;
+                shown = true;
                 SDL_LogCritical(SDL_LOG_CATEGORY_SYSTEM, "tvOS does not have persistent local storage! Use iCloud storage if you want your data to persist between sessions.\n");
             }
         }

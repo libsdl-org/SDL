@@ -48,9 +48,9 @@ int UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasMetalSurfaceExtension = SDL_FALSE;
-    SDL_bool hasIOSSurfaceExtension = SDL_FALSE;
+    bool hasSurfaceExtension = false;
+    bool hasMetalSurfaceExtension = false;
+    bool hasIOSSurfaceExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
 
     if (_this->vulkan_config.loader_handle) {
@@ -132,11 +132,11 @@ int UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
     for (Uint32 i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasSurfaceExtension = SDL_TRUE;
+            hasSurfaceExtension = true;
         } else if (SDL_strcmp(VK_EXT_METAL_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasMetalSurfaceExtension = SDL_TRUE;
+            hasMetalSurfaceExtension = true;
         } else if (SDL_strcmp(VK_MVK_IOS_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasIOSSurfaceExtension = SDL_TRUE;
+            hasIOSSurfaceExtension = true;
         }
     }
 

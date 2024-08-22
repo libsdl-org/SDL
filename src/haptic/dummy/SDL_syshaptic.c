@@ -61,9 +61,9 @@ int SDL_SYS_HapticMouse(void)
     return -1;
 }
 
-SDL_bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
+bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
@@ -71,9 +71,9 @@ int SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
     return SDL_SYS_LogicError();
 }
 
-SDL_bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
+bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 void SDL_SYS_HapticClose(SDL_Haptic *haptic)

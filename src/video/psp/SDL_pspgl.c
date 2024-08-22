@@ -83,7 +83,7 @@ SDL_GLContext PSP_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     // EGL init taken from glutCreateWindow() in PSPGL's glut.c.
     EGLCHK(display = eglGetDisplay(0));
     EGLCHK(eglInitialize(display, NULL, NULL));
-    wdata->uses_gles = SDL_TRUE;
+    wdata->uses_gles = true;
     window->flags |= SDL_WINDOW_FULLSCREEN;
 
     // Setup the config based on SDL's current values.
@@ -170,7 +170,7 @@ int PSP_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
     SDL_VideoData *phdata = _this->internal;
     EGLBoolean status;
 
-    if (phdata->egl_initialized != SDL_TRUE) {
+    if (phdata->egl_initialized != true) {
         return SDL_SetError("PSP: GLES initialization failed, no OpenGL ES support");
     }
 

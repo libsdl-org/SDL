@@ -165,7 +165,7 @@ void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Android_JNI_MinizeWindow();
 }
 
-void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable)
+void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable)
 {
     // Set orientation
     Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));

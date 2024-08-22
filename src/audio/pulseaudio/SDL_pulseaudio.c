@@ -46,7 +46,7 @@ typedef struct PulseDeviceHandle
 } PulseDeviceHandle;
 
 // should we include monitors in the device list? Set at SDL_Init time
-static SDL_bool include_monitors = SDL_FALSE;
+static bool include_monitors = false;
 
 static pa_threaded_mainloop *pulseaudio_threaded_mainloop = NULL;
 static pa_context *pulseaudio_context = NULL;
@@ -58,8 +58,8 @@ static SDL_AtomicInt pulseaudio_hotplug_thread_active;
 // to the change.
 static char *default_sink_path = NULL;
 static char *default_source_path = NULL;
-static SDL_bool default_sink_changed = SDL_FALSE;
-static SDL_bool default_source_changed = SDL_FALSE;
+static bool default_sink_changed = false;
+static bool default_source_changed = false;
 
 
 static const char *(*PULSEAUDIO_pa_get_library_version)(void);
@@ -593,7 +593,7 @@ static void PulseStreamStateChangeCallback(pa_stream *stream, void *userdata)
 
 static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    const SDL_bool recording = device->recording;
+    const bool recording = device->recording;
     struct SDL_PrivateAudioData *h = NULL;
     SDL_AudioFormat test_format;
     const SDL_AudioFormat *closefmts;
@@ -761,7 +761,7 @@ static SDL_AudioFormat PulseFormatToSDLFormat(pa_sample_format_t format)
     }
 }
 
-static void AddPulseAudioDevice(const SDL_bool recording, const char *description, const char *name, const uint32_t index, const pa_sample_spec *sample_spec)
+static void AddPulseAudioDevice(const bool recording, const char *description, const char *name, const uint32_t index, const pa_sample_spec *sample_spec)
 {
     SDL_AudioSpec spec;
     SDL_zero(spec);
@@ -784,7 +784,7 @@ static void AddPulseAudioDevice(const SDL_bool recording, const char *descriptio
 static void SinkInfoCallback(pa_context *c, const pa_sink_info *i, int is_last, void *data)
 {
     if (i) {
-        AddPulseAudioDevice(SDL_FALSE, i->description, i->name, i->index, &i->sample_spec);
+        AddPulseAudioDevice(false, i->description, i->name, i->index, &i->sample_spec);
     }
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
@@ -794,7 +794,7 @@ static void SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_la
 {
     // Maybe skip "monitor" sources. These are just output from other sinks.
     if (i && (include_monitors || (i->monitor_of_sink == PA_INVALID_INDEX))) {
-        AddPulseAudioDevice(SDL_TRUE, i->description, i->name, i->index, &i->sample_spec);
+        AddPulseAudioDevice(true, i->description, i->name, i->index, &i->sample_spec);
     }
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
@@ -808,7 +808,7 @@ static void ServerInfoCallback(pa_context *c, const pa_server_info *i, void *dat
         if (str) {
             SDL_free(default_sink_path);
             default_sink_path = str;
-            default_sink_changed = SDL_TRUE;
+            default_sink_changed = true;
         }
     }
 
@@ -817,21 +817,21 @@ static void ServerInfoCallback(pa_context *c, const pa_server_info *i, void *dat
         if (str) {
             SDL_free(default_source_path);
             default_source_path = str;
-            default_source_changed = SDL_TRUE;
+            default_source_changed = true;
         }
     }
 
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
 
-static SDL_bool FindAudioDeviceByIndex(SDL_AudioDevice *device, void *userdata)
+static bool FindAudioDeviceByIndex(SDL_AudioDevice *device, void *userdata)
 {
     const uint32_t idx = (uint32_t) (uintptr_t) userdata;
     const PulseDeviceHandle *handle = (const PulseDeviceHandle *) device->handle;
     return (handle->device_index == idx);
 }
 
-static SDL_bool FindAudioDeviceByPath(SDL_AudioDevice *device, void *userdata)
+static bool FindAudioDeviceByPath(SDL_AudioDevice *device, void *userdata)
 {
     const char *path = (const char *) userdata;
     const PulseDeviceHandle *handle = (const PulseDeviceHandle *) device->handle;
@@ -841,13 +841,13 @@ static SDL_bool FindAudioDeviceByPath(SDL_AudioDevice *device, void *userdata)
 // This is called when PulseAudio has a device connected/removed/changed.
 static void HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint32_t idx, void *data)
 {
-    const SDL_bool added = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_NEW);
-    const SDL_bool removed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_REMOVE);
-    const SDL_bool changed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_CHANGE);
+    const bool added = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_NEW);
+    const bool removed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_REMOVE);
+    const bool changed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_CHANGE);
 
     if (added || removed || changed) { // we only care about add/remove events.
-        const SDL_bool sink = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SINK);
-        const SDL_bool source = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE);
+        const bool sink = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SINK);
+        const bool source = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE);
 
         if (changed) {
             PULSEAUDIO_pa_operation_unref(PULSEAUDIO_pa_context_get_server_info(pulseaudio_context, ServerInfoCallback, NULL));
@@ -868,20 +868,20 @@ static void HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint3
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
 
-static SDL_bool CheckDefaultDevice(const SDL_bool changed, char *device_path)
+static bool CheckDefaultDevice(const bool changed, char *device_path)
 {
     if (!changed) {
-        return SDL_FALSE;  // nothing's happening, leave the flag marked as unchanged.
+        return false;  // nothing's happening, leave the flag marked as unchanged.
     } else if (!device_path) {
-        return SDL_TRUE;  // check again later, we don't have a device name...
+        return true;  // check again later, we don't have a device name...
     }
 
     SDL_AudioDevice *device = SDL_FindPhysicalAudioDeviceByCallback(FindAudioDeviceByPath, device_path);
     if (device) {  // if NULL, we might still be waiting for a SinkInfoCallback or something, we'll try later.
         SDL_DefaultAudioDeviceChanged(device);
-        return SDL_FALSE;  // changing complete, set flag to unchanged for future tests.
+        return false;  // changing complete, set flag to unchanged for future tests.
     }
-    return SDL_TRUE;  // couldn't find the changed device, leave it marked as changed to try again later.
+    return true;  // couldn't find the changed device, leave it marked as changed to try again later.
 }
 
 // this runs as a thread while the Pulse target is initialized to catch hotplug events.
@@ -906,11 +906,11 @@ static int SDLCALL HotplugThread(void *data)
         }
 
         // Update default devices; don't hold the pulse lock during this, since it could deadlock vs a playing device that we're about to lock here.
-        SDL_bool check_default_sink = default_sink_changed;
-        SDL_bool check_default_source = default_source_changed;
+        bool check_default_sink = default_sink_changed;
+        bool check_default_source = default_source_changed;
         char *current_default_sink = check_default_sink ? SDL_strdup(default_sink_path) : NULL;
         char *current_default_source = check_default_source ? SDL_strdup(default_source_path) : NULL;
-        default_sink_changed = default_source_changed = SDL_FALSE;
+        default_sink_changed = default_source_changed = false;
         PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
         check_default_sink = CheckDefaultDevice(check_default_sink, current_default_sink);
         check_default_source = CheckDefaultDevice(check_default_source, current_default_source);
@@ -984,24 +984,24 @@ static void PULSEAUDIO_Deinitialize(void)
 
     SDL_free(default_sink_path);
     default_sink_path = NULL;
-    default_sink_changed = SDL_FALSE;
+    default_sink_changed = false;
     SDL_free(default_source_path);
     default_source_path = NULL;
-    default_source_changed = SDL_FALSE;
+    default_source_changed = false;
 
     UnloadPulseAudioLibrary();
 }
 
-static SDL_bool PULSEAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool PULSEAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     if (LoadPulseAudioLibrary() < 0) {
-        return SDL_FALSE;
+        return false;
     } else if (ConnectToPulseServer() < 0) {
         UnloadPulseAudioLibrary();
-        return SDL_FALSE;
+        return false;
     }
 
-    include_monitors = SDL_GetHintBoolean(SDL_HINT_AUDIO_INCLUDE_MONITORS, SDL_FALSE);
+    include_monitors = SDL_GetHintBoolean(SDL_HINT_AUDIO_INCLUDE_MONITORS, false);
 
     impl->DetectDevices = PULSEAUDIO_DetectDevices;
     impl->OpenDevice = PULSEAUDIO_OpenDevice;
@@ -1016,13 +1016,13 @@ static SDL_bool PULSEAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->FlushRecording = PULSEAUDIO_FlushRecording;
     impl->FreeDeviceHandle = PULSEAUDIO_FreeDeviceHandle;
 
-    impl->HasRecordingSupport = SDL_TRUE;
+    impl->HasRecordingSupport = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap PULSEAUDIO_bootstrap = {
-    "pulseaudio", "PulseAudio", PULSEAUDIO_Init, SDL_FALSE
+    "pulseaudio", "PulseAudio", PULSEAUDIO_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_PULSEAUDIO

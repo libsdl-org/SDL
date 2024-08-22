@@ -48,7 +48,7 @@ static XTaskQueueHandle g_TextTaskQueue = NULL;
 static XAsyncBlock *g_TextBlock = NULL;
 
 // Creation parameters
-static SDL_bool g_DidRegisterHints = SDL_FALSE;
+static bool g_DidRegisterHints = false;
 static char *g_TitleText = NULL;
 static char *g_DescriptionText = NULL;
 static char *g_DefaultText = NULL;
@@ -153,7 +153,7 @@ static void CALLBACK GDK_InternalTextEntryCallback(XAsyncBlock *asyncBlock)
 
 void GDK_EnsureHints(void)
 {
-    if (g_DidRegisterHints == SDL_FALSE) {
+    if (g_DidRegisterHints == false) {
         SDL_AddHintCallback(
             SDL_HINT_GDK_TEXTINPUT_TITLE,
             GDK_InternalHintCallback,
@@ -174,7 +174,7 @@ void GDK_EnsureHints(void)
             SDL_HINT_GDK_TEXTINPUT_MAX_LENGTH,
             GDK_InternalHintCallback,
             &g_MaxTextLength);
-        g_DidRegisterHints = SDL_TRUE;
+        g_DidRegisterHints = true;
     }
 }
 
@@ -220,10 +220,10 @@ int GDK_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-SDL_bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     // Currently always true for this input method
-    return SDL_TRUE;
+    return true;
 }
 
 void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
@@ -310,7 +310,7 @@ void GDK_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-SDL_bool GDK_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
+bool GDK_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return (g_TextBlock != NULL);
 }

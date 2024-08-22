@@ -22,7 +22,7 @@
 #include "../../core/windows/SDL_windows.h"
 
 // Return true if the RawInput driver is enabled
-extern SDL_bool RAWINPUT_IsEnabled();
+extern bool RAWINPUT_IsEnabled();
 
 // Registers for input events
 extern int RAWINPUT_RegisterNotifications(HWND hWnd);

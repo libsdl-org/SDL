@@ -121,6 +121,16 @@
 #include <float.h>
 #endif
 
+#ifndef __cplusplus
+#ifdef HAVE_STDBOOL_H
+#include <stdbool.h>
+#else
+typedef int bool;
+#define true    1
+#define false   0
+#endif
+#endif // !__cplusplus
+
 // If you run into a warning that O_CLOEXEC is redefined, update the SDL configuration header for your platform to add HAVE_O_CLOEXEC
 #ifndef HAVE_O_CLOEXEC
 #define O_CLOEXEC 0

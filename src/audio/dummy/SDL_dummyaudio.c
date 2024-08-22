@@ -78,7 +78,7 @@ static int DUMMYAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int bu
     return buflen;
 }
 
-static SDL_bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     impl->OpenDevice = DUMMYAUDIO_OpenDevice;
     impl->CloseDevice = DUMMYAUDIO_CloseDevice;
@@ -87,13 +87,13 @@ static SDL_bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->WaitRecordingDevice = DUMMYAUDIO_WaitDevice;
     impl->RecordDevice = DUMMYAUDIO_RecordDevice;
 
-    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
-    impl->OnlyHasDefaultRecordingDevice = SDL_TRUE;
-    impl->HasRecordingSupport = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = true;
+    impl->OnlyHasDefaultRecordingDevice = true;
+    impl->HasRecordingSupport = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap DUMMYAUDIO_bootstrap = {
-    "dummy", "SDL dummy audio driver", DUMMYAUDIO_Init, SDL_TRUE
+    "dummy", "SDL dummy audio driver", DUMMYAUDIO_Init, true
 };

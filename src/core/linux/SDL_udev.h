@@ -102,7 +102,7 @@ extern void SDL_UDEV_UnloadLibrary(void);
 extern int SDL_UDEV_LoadLibrary(void);
 extern void SDL_UDEV_Poll(void);
 extern int SDL_UDEV_Scan(void);
-extern SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class);
+extern bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class);
 extern int SDL_UDEV_AddCallback(SDL_UDEV_Callback cb);
 extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);
 extern const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void);

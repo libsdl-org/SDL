@@ -112,21 +112,21 @@ static float GetDisplayModeRefreshRate(CGDisplayModeRef vidmode, CVDisplayLinkRe
     return refreshRate;
 }
 
-static SDL_bool HasValidDisplayModeFlags(CGDisplayModeRef vidmode)
+static bool HasValidDisplayModeFlags(CGDisplayModeRef vidmode)
 {
     uint32_t ioflags = CGDisplayModeGetIOFlags(vidmode);
 
     // Filter out modes which have flags that we don't want.
     if (ioflags & (kDisplayModeNeverShowFlag | kDisplayModeNotGraphicsQualityFlag)) {
-        return SDL_FALSE;
+        return false;
     }
 
     // Filter out modes which don't have flags that we want.
     if (!(ioflags & kDisplayModeValidFlag) || !(ioflags & kDisplayModeSafeFlag)) {
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 static Uint32 GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
@@ -153,7 +153,7 @@ static Uint32 GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
     return pixelformat;
 }
 
-static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
+static bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode, bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data;
     bool usableForGUI = CGDisplayModeIsUsableForDesktopGUI(vidmode);
@@ -168,13 +168,13 @@ static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode,
     CFMutableArrayRef modes;
 
     if (format == SDL_PIXELFORMAT_UNKNOWN) {
-        return SDL_FALSE;
+        return false;
     }
 
     /* Don't fail the current mode based on flags because this could prevent Cocoa_InitModes from
      * succeeding if the current mode lacks certain flags (esp kDisplayModeSafeFlag). */
     if (!vidmodeCurrent && !HasValidDisplayModeFlags(vidmode)) {
-        return SDL_FALSE;
+        return false;
     }
 
     modes = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
@@ -221,7 +221,7 @@ static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode,
              */
             if (interlaced && ((otherioflags & kDisplayModeInterlacedFlag) == 0) && width == otherW && height == otherH && pixelW == otherpixelW && pixelH == otherpixelH && refreshrate == otherrefresh && format == otherformat && usableForGUI == otherGUI) {
                 CFRelease(modes);
-                return SDL_FALSE;
+                return false;
             }
 
             /* Ignore this mode if it's not usable for desktop UI and its
@@ -229,7 +229,7 @@ static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode,
              */
             if (width == otherW && height == otherH && pixelW == otherpixelW && pixelH == otherpixelH && !usableForGUI && otherGUI && refreshrate == otherrefresh && format == otherformat) {
                 CFRelease(modes);
-                return SDL_FALSE;
+                return false;
             }
 
             /* If multiple modes have the exact same properties, they'll all
@@ -263,7 +263,7 @@ static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode,
     data = (SDL_DisplayModeData *)SDL_malloc(sizeof(*data));
     if (!data) {
         CFRelease(modes);
-        return SDL_FALSE;
+        return false;
     }
     data->modes = modes;
     mode->format = format;
@@ -272,7 +272,7 @@ static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode,
     mode->pixel_density = (float)pixelW / width;
     mode->refresh_rate = refreshrate;
     mode->internal = data;
-    return SDL_TRUE;
+    return true;
 }
 
 static char *Cocoa_GetDisplayName(CGDirectDisplayID displayID)
@@ -315,7 +315,7 @@ void Cocoa_InitModes(SDL_VideoDevice *_this)
         CGDisplayErr result;
         CGDirectDisplayID *displays;
         CGDisplayCount numDisplays;
-        SDL_bool isstack;
+        bool isstack;
         int pass, i;
 
         result = CGGetOnlineDisplayList(0, NULL, &numDisplays);
@@ -372,7 +372,7 @@ void Cocoa_InitModes(SDL_VideoDevice *_this)
                 SDL_zero(display);
                 // this returns a strdup'ed string
                 display.name = Cocoa_GetDisplayName(displays[i]);
-                if (!GetDisplayMode(_this, moderef, SDL_TRUE, NULL, link, &mode)) {
+                if (!GetDisplayMode(_this, moderef, true, NULL, link, &mode)) {
                     CVDisplayLinkRelease(link);
                     CGDisplayModeRelease(moderef);
                     SDL_free(display.name);
@@ -387,7 +387,7 @@ void Cocoa_InitModes(SDL_VideoDevice *_this)
 
                 display.desktop_mode = mode;
                 display.internal = displaydata;
-                SDL_AddVideoDisplay(&display, SDL_FALSE);
+                SDL_AddVideoDisplay(&display, false);
                 SDL_free(display.name);
             }
         }
@@ -486,7 +486,7 @@ int Cocoa_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
             CGDisplayModeRef moderef = (CGDisplayModeRef)CFArrayGetValueAtIndex(modes, i);
             SDL_DisplayMode mode;
 
-            if (GetDisplayMode(_this, moderef, SDL_FALSE, modes, link, &mode)) {
+            if (GetDisplayMode(_this, moderef, false, modes, link, &mode)) {
                 if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
                     CFRelease(mode.internal->modes);
                     SDL_free(mode.internal);
@@ -526,7 +526,7 @@ int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
     CGDisplayFadeReservationToken fade_token = kCGDisplayFadeReservationInvalidToken;
     CGError result = kCGErrorSuccess;
 
-    b_inModeTransition = SDL_TRUE;
+    b_inModeTransition = true;
 
     // Fade to black to hide resolution-switching flicker
     if (CGAcquireDisplayFadeReservation(5, &fade_token) == kCGErrorSuccess) {
@@ -547,7 +547,7 @@ int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
         CGReleaseDisplayFadeReservation(fade_token);
     }
 
-    b_inModeTransition = SDL_FALSE;
+    b_inModeTransition = false;
 
     if (result != kCGErrorSuccess) {
         CG_SetError("CGDisplaySwitchToMode()", result);

@@ -194,10 +194,10 @@ static void HAIKUAUDIO_Deinitialize(void)
     SDL_QuitBeApp();
 }
 
-static SDL_bool HAIKUAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool HAIKUAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     if (SDL_InitBeApp() < 0) {
-        return SDL_FALSE;
+        return false;
     }
 
     // Set the function pointers
@@ -206,17 +206,17 @@ static SDL_bool HAIKUAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->PlayDevice = HAIKUAUDIO_PlayDevice;
     impl->CloseDevice = HAIKUAUDIO_CloseDevice;
     impl->Deinitialize = HAIKUAUDIO_Deinitialize;
-    impl->ProvidesOwnCallbackThread = SDL_TRUE;
-    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
+    impl->ProvidesOwnCallbackThread = true;
+    impl->OnlyHasDefaultPlaybackDevice = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 
 extern "C" { extern AudioBootStrap HAIKUAUDIO_bootstrap; }
 
 AudioBootStrap HAIKUAUDIO_bootstrap = {
-    "haiku", "Haiku BSoundPlayer", HAIKUAUDIO_Init, SDL_FALSE
+    "haiku", "Haiku BSoundPlayer", HAIKUAUDIO_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_HAIKU

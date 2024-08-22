@@ -76,7 +76,7 @@ static SDL_Cursor *WIN_CreateDefaultCursor(void)
     return WIN_CreateCursorAndData(LoadCursor(NULL, IDC_ARROW));
 }
 
-static SDL_bool IsMonochromeSurface(SDL_Surface *surface)
+static bool IsMonochromeSurface(SDL_Surface *surface)
 {
     int x, y;
     Uint8 r, g, b, a;
@@ -89,17 +89,17 @@ static SDL_bool IsMonochromeSurface(SDL_Surface *surface)
 
             // Black or white pixel.
             if (!((r == 0x00 && g == 0x00 && b == 0x00) || (r == 0xff && g == 0xff && b == 0xff))) {
-                return SDL_FALSE;
+                return false;
             }
 
             // Transparent or opaque pixel.
             if (!(a == 0x00 || a == 0xff)) {
-                return SDL_FALSE;
+                return false;
             }
         }
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 static HBITMAP CreateColorBitmap(SDL_Surface *surface)
@@ -134,10 +134,10 @@ static HBITMAP CreateColorBitmap(SDL_Surface *surface)
  * For info on the expected mask format see:
  * https://devblogs.microsoft.com/oldnewthing/20101018-00/?p=12513
  */
-static HBITMAP CreateMaskBitmap(SDL_Surface *surface, SDL_bool is_monochrome)
+static HBITMAP CreateMaskBitmap(SDL_Surface *surface, bool is_monochrome)
 {
     HBITMAP bitmap;
-    SDL_bool isstack;
+    bool isstack;
     void *pixels;
     int x, y;
     Uint8 r, g, b, a;
@@ -191,7 +191,7 @@ static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     HCURSOR hcursor;
     ICONINFO ii;
-    SDL_bool is_monochrome = IsMonochromeSurface(surface);
+    bool is_monochrome = IsMonochromeSurface(surface);
 
     SDL_zero(ii);
     ii.fIcon = FALSE;
@@ -464,7 +464,7 @@ static int WIN_WarpMouse(SDL_Window *window, float x, float y)
     WIN_SetCursorPos(pt.x, pt.y);
 
     // Send the exact mouse motion associated with this warp
-    SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
+    SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, false, x, y);
     return 0;
 }
 
@@ -478,7 +478,7 @@ static int WIN_WarpMouseGlobal(float x, float y)
     return 0;
 }
 
-static int WIN_SetRelativeMouseMode(SDL_bool enabled)
+static int WIN_SetRelativeMouseMode(bool enabled)
 {
     return WIN_SetRawMouseEnabled(SDL_GetVideoDevice(), enabled);
 }
@@ -507,7 +507,7 @@ static SDL_MouseButtonFlags WIN_GetGlobalMouseState(float *x, float *y)
 {
     SDL_MouseButtonFlags retval = 0;
     POINT pt = { 0, 0 };
-    SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+    bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
 
     GetCursorPos(&pt);
     *x = (float)pt.x;
@@ -555,7 +555,7 @@ void WIN_QuitMouse(SDL_VideoDevice *_this)
  * https://superuser.com/questions/278362/windows-mouse-acceleration-curve-smoothmousexcurve-and-smoothmouseycurve
  * http://www.esreality.com/?a=post&id=1846538/
  */
-static SDL_bool LoadFiveFixedPointFloats(const BYTE *bytes, float *values)
+static bool LoadFiveFixedPointFloats(const BYTE *bytes, float *values)
 {
     int i;
 
@@ -565,7 +565,7 @@ static SDL_bool LoadFiveFixedPointFloats(const BYTE *bytes, float *values)
         *values++ = value;
         bytes += 8;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 static void WIN_SetEnhancedMouseScale(int mouse_speed)

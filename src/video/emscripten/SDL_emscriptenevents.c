@@ -270,7 +270,7 @@ static EM_BOOL Emscripten_HandlePointerLockChange(int eventType, const Emscripte
 static EM_BOOL Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    const SDL_bool isPointerLocked = window_data->has_pointer_lock;
+    const bool isPointerLocked = window_data->has_pointer_lock;
     float mx, my;
 
     // rescale (in case canvas is being scaled)
@@ -298,7 +298,7 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
     Uint8 sdl_button_state;
     SDL_EventType sdl_event_type;
     double css_w, css_h;
-    SDL_bool prevent_default = SDL_FALSE; // needed for iframe implementation in Chrome-based browsers.
+    bool prevent_default = false; // needed for iframe implementation in Chrome-based browsers.
 
     switch (mouseEvent->button) {
     case 0:
@@ -341,7 +341,7 @@ static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseE
 {
     SDL_WindowData *window_data = userData;
 
-    const SDL_bool isPointerLocked = window_data->has_pointer_lock;
+    const bool isPointerLocked = window_data->has_pointer_lock;
 
     if (!isPointerLocked) {
         // rescale (in case canvas is being scaled)
@@ -431,7 +431,7 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
         }
 
         if (eventType == EMSCRIPTEN_EVENT_TOUCHSTART) {
-            SDL_SendTouch(0, deviceId, id, window_data->window, SDL_TRUE, x, y, 1.0f);
+            SDL_SendTouch(0, deviceId, id, window_data->window, true, x, y, 1.0f);
 
             // disable browser scrolling/pinch-to-zoom if app handles touch events
             if (!preventDefault && SDL_EventEnabled(SDL_EVENT_FINGER_DOWN)) {
@@ -440,7 +440,7 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
         } else if (eventType == EMSCRIPTEN_EVENT_TOUCHMOVE) {
             SDL_SendTouchMotion(0, deviceId, id, window_data->window, x, y, 1.0f);
         } else {
-            SDL_SendTouch(0, deviceId, id, window_data->window, SDL_FALSE, x, y, 1.0f);
+            SDL_SendTouch(0, deviceId, id, window_data->window, false, x, y, 1.0f);
 
             // block browser's simulated mousedown/mouseup on touchscreen devices
             preventDefault = 1;
@@ -458,8 +458,8 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
     SDL_WindowData *window_data = (SDL_WindowData *)userData;
     SDL_Scancode scancode = Emscripten_MapScanCode(keyEvent->code);
     SDL_Keycode keycode = SDLK_UNKNOWN;
-    SDL_bool prevent_default = SDL_FALSE;
-    SDL_bool is_nav_key = SDL_FALSE;
+    bool prevent_default = false;
+    bool is_nav_key = false;
 
     if (scancode == SDL_SCANCODE_UNKNOWN) {
         if (SDL_strcmp(keyEvent->key, "Sleep") == 0) {
@@ -527,11 +527,11 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
         (scancode == SDL_SCANCODE_DOWN) ||
         ((scancode >= SDL_SCANCODE_F1) && (scancode <= SDL_SCANCODE_F15)) ||
         keyEvent->ctrlKey) {
-        is_nav_key = SDL_TRUE;
+        is_nav_key = true;
     }
 
     if ((eventType == EMSCRIPTEN_EVENT_KEYDOWN) && SDL_TextInputActive(window_data->window) && !is_nav_key) {
-        prevent_default = SDL_FALSE;
+        prevent_default = false;
     }
 
     return prevent_default;
@@ -562,7 +562,7 @@ static EM_BOOL Emscripten_HandleFullscreenChange(int eventType, const Emscripten
         SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
     }
 
-    SDL_UpdateFullscreenMode(window_data->window, fullscreenChangeEvent->isFullscreen, SDL_FALSE);
+    SDL_UpdateFullscreenMode(window_data->window, fullscreenChangeEvent->isFullscreen, false);
 
     return 0;
 }
@@ -570,13 +570,13 @@ static EM_BOOL Emscripten_HandleFullscreenChange(int eventType, const Emscripten
 static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    SDL_bool force = SDL_FALSE;
+    bool force = false;
 
     // update pixel ratio
     if (window_data->window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
         if (window_data->pixel_ratio != emscripten_get_device_pixel_ratio()) {
             window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
-            force = SDL_TRUE;
+            force = true;
         }
     }
 
@@ -668,7 +668,7 @@ static void Emscripten_UpdatePointerFromEvent(SDL_WindowData *window_data, const
         const double xscale = window_data->window->w / client_w;
         const double yscale = window_data->window->h / client_h;
 
-        const SDL_bool isPointerLocked = window_data->has_pointer_lock;
+        const bool isPointerLocked = window_data->has_pointer_lock;
         float mx, my;
         if (isPointerLocked) {
             mx = (float)(event->movementX * xscale);

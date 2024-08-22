@@ -60,7 +60,7 @@ struct SDL_PrivateAudioData
 #ifdef MACOSX_COREAUDIO
     AudioDeviceID deviceID;
 #else
-    SDL_bool interrupted;
+    bool interrupted;
     CFTypeRef interruption_listener;
 #endif
 };

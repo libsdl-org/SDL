@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-extern HRESULT D3D12_XBOX_CreateDevice(ID3D12Device **device, SDL_bool createDebug);
+extern HRESULT D3D12_XBOX_CreateDevice(ID3D12Device **device, bool createDebug);
 extern HRESULT D3D12_XBOX_CreateBackBufferTarget(ID3D12Device1 *device, int width, int height, void **resource);
 extern HRESULT D3D12_XBOX_StartFrame(ID3D12Device1 *device, UINT64 *outToken);
 extern HRESULT D3D12_XBOX_PresentFrame(ID3D12CommandQueue *commandQueue, UINT64 token, ID3D12Resource *renderTarget);

@@ -149,7 +149,7 @@ static int LoadSNDIOLibrary(void)
 
 static int SNDIO_WaitDevice(SDL_AudioDevice *device)
 {
-    const SDL_bool recording = device->recording;
+    const bool recording = device->recording;
 
     while (!SDL_AtomicGet(&device->shutdown)) {
         if (SNDIO_sio_eof(device->hidden->dev)) {
@@ -323,14 +323,14 @@ static void SNDIO_Deinitialize(void)
 
 static void SNDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
-    *default_playback = SDL_AddAudioDevice(SDL_FALSE, DEFAULT_PLAYBACK_DEVNAME, NULL, (void *)0x1);
-    *default_recording = SDL_AddAudioDevice(SDL_TRUE, DEFAULT_RECORDING_DEVNAME, NULL, (void *)0x2);
+    *default_playback = SDL_AddAudioDevice(false, DEFAULT_PLAYBACK_DEVNAME, NULL, (void *)0x1);
+    *default_recording = SDL_AddAudioDevice(true, DEFAULT_RECORDING_DEVNAME, NULL, (void *)0x2);
 }
 
-static SDL_bool SNDIO_Init(SDL_AudioDriverImpl *impl)
+static bool SNDIO_Init(SDL_AudioDriverImpl *impl)
 {
     if (LoadSNDIOLibrary() < 0) {
-        return SDL_FALSE;
+        return false;
     }
 
     impl->OpenDevice = SNDIO_OpenDevice;
@@ -344,13 +344,13 @@ static SDL_bool SNDIO_Init(SDL_AudioDriverImpl *impl)
     impl->Deinitialize = SNDIO_Deinitialize;
     impl->DetectDevices = SNDIO_DetectDevices;
 
-    impl->HasRecordingSupport = SDL_TRUE;
+    impl->HasRecordingSupport = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap SNDIO_bootstrap = {
-    "sndio", "OpenBSD sndio", SNDIO_Init, SDL_FALSE
+    "sndio", "OpenBSD sndio", SNDIO_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_SNDIO

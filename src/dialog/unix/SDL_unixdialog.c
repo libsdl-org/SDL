@@ -23,9 +23,9 @@
 #include "./SDL_portaldialog.h"
 #include "./SDL_zenitydialog.h"
 
-static void (*detected_open)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many) = NULL;
+static void (*detected_open)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many) = NULL;
 static void (*detected_save)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location) = NULL;
-static void (*detected_folder)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many) = NULL;
+static void (*detected_folder)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many) = NULL;
 
 static int detect_available_methods(const char *value);
 
@@ -36,10 +36,10 @@ void SDLCALL hint_callback(void *userdata, const char *name, const char *oldValu
 
 static void set_callback(void)
 {
-    static SDL_bool is_set = SDL_FALSE;
+    static bool is_set = false;
 
-    if (is_set == SDL_FALSE) {
-        is_set = SDL_TRUE;
+    if (is_set == false) {
+        is_set = true;
         SDL_AddHintCallback(SDL_HINT_FILE_DIALOG_DRIVER, hint_callback, NULL);
     }
 }

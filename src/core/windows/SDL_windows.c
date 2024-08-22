@@ -126,12 +126,12 @@ void WIN_CoUninitialize(void)
 #ifndef SDL_PLATFORM_WINRT
 FARPROC WIN_LoadComBaseFunction(const char *name)
 {
-    static SDL_bool s_bLoaded;
+    static bool s_bLoaded;
     static HMODULE s_hComBase;
 
     if (!s_bLoaded) {
         s_hComBase = LoadLibraryEx(TEXT("combase.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
-        s_bLoaded = SDL_TRUE;
+        s_bLoaded = true;
     }
     if (s_hComBase) {
         return GetProcAddress(s_hComBase, name);
@@ -206,11 +206,11 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
     #define CHECKWINVER(notdesktop_platform_result, test) return (notdesktop_platform_result);
 #else
     #define CHECKWINVER(notdesktop_platform_result, test) \
-        static SDL_bool checked = SDL_FALSE; \
+        static bool checked = false; \
         static BOOL retval = FALSE; \
         if (!checked) { \
             retval = (test); \
-            checked = SDL_TRUE; \
+            checked = true; \
         } \
         return retval;
 #endif
@@ -272,7 +272,7 @@ char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     const unsigned char *ptr;
     char keystr[128];
     WCHAR *strw = NULL;
-    SDL_bool rc;
+    bool rc;
     HKEY hkey;
     DWORD len = 0;
     char *retval = NULL;

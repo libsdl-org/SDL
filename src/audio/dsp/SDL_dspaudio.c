@@ -41,7 +41,7 @@
 
 static void DSP_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
-    SDL_EnumUnixAudioDevices(SDL_FALSE, NULL);
+    SDL_EnumUnixAudioDevices(false, NULL);
 }
 
 static void DSP_CloseDevice(SDL_AudioDevice *device)
@@ -264,21 +264,21 @@ static void DSP_FlushRecording(SDL_AudioDevice *device)
     }
 }
 
-static SDL_bool InitTimeDevicesExist = SDL_FALSE;
-static SDL_bool look_for_devices_test(int fd)
+static bool InitTimeDevicesExist = false;
+static bool look_for_devices_test(int fd)
 {
-    InitTimeDevicesExist = SDL_TRUE; // note that _something_ exists.
+    InitTimeDevicesExist = true; // note that _something_ exists.
     // Don't add to the device list, we're just seeing if any devices exist.
-    return SDL_FALSE;
+    return false;
 }
 
-static SDL_bool DSP_Init(SDL_AudioDriverImpl *impl)
+static bool DSP_Init(SDL_AudioDriverImpl *impl)
 {
-    InitTimeDevicesExist = SDL_FALSE;
-    SDL_EnumUnixAudioDevices(SDL_FALSE, look_for_devices_test);
+    InitTimeDevicesExist = false;
+    SDL_EnumUnixAudioDevices(false, look_for_devices_test);
     if (!InitTimeDevicesExist) {
         SDL_SetError("dsp: No such audio device");
-        return SDL_FALSE; // maybe try a different backend.
+        return false; // maybe try a different backend.
     }
 
     impl->DetectDevices = DSP_DetectDevices;
@@ -291,13 +291,13 @@ static SDL_bool DSP_Init(SDL_AudioDriverImpl *impl)
     impl->RecordDevice = DSP_RecordDevice;
     impl->FlushRecording = DSP_FlushRecording;
 
-    impl->HasRecordingSupport = SDL_TRUE;
+    impl->HasRecordingSupport = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap DSP_bootstrap = {
-    "dsp", "Open Sound System (/dev/dsp)", DSP_Init, SDL_FALSE
+    "dsp", "Open Sound System (/dev/dsp)", DSP_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_OSS

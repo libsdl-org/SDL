@@ -34,7 +34,7 @@ int X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
     // If the profile requested is not GL ES, switch over to X11_GL functions
     if ((_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) &&
-        !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
+        !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, false)) {
 #ifdef SDL_VIDEO_OPENGL_GLX
         X11_GLES_UnloadLibrary(_this);
         _this->GL_LoadLibrary = X11_GL_LoadLibrary;
@@ -55,7 +55,7 @@ int X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
 }
 
-XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int screen, SDL_bool transparent)
+XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int screen, bool transparent)
 {
 
     XVisualInfo *egl_visualinfo = NULL;

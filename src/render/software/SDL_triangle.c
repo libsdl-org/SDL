@@ -42,7 +42,7 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                                   SDL_Point s2_x_area, SDL_Rect dstrect, int area, int bias_w0, int bias_w1, int bias_w2,
                                   int d2d1_y, int d1d2_x, int d0d2_y, int d2d0_x, int d1d0_y, int d0d1_x,
                                   int s2s0_x, int s2s1_x, int s2s0_y, int s2s1_y, int w0_row, int w1_row, int w2_row,
-                                  SDL_Color c0, SDL_Color c1, SDL_Color c2, SDL_bool is_uniform, SDL_TextureAddressMode texture_address_mode);
+                                  SDL_Color c0, SDL_Color c1, SDL_Color c2, bool is_uniform, SDL_TextureAddressMode texture_address_mode);
 
 #if 0
 int SDL_BlitTriangle(SDL_Surface *src, const SDL_Point srcpoints[3], SDL_Surface *dst, const SDL_Point dstpoints[3])
@@ -241,7 +241,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
     Sint64 w0_row, w1_row, w2_row;
     int bias_w0, bias_w1, bias_w2;
 
-    SDL_bool is_uniform;
+    bool is_uniform;
 
     SDL_Surface *tmp = NULL;
 
@@ -494,9 +494,9 @@ int SDL_SW_BlitTriangle(
     Sint64 w0_row, w1_row, w2_row;
     int bias_w0, bias_w1, bias_w2;
 
-    SDL_bool is_uniform;
+    bool is_uniform;
 
-    SDL_bool has_modulation;
+    bool has_modulation;
 
     if (!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
@@ -573,7 +573,7 @@ int SDL_SW_BlitTriangle(
         // SDL_GetSurfaceColorMod(src, &r, &g, &b);
         has_modulation = c0.r != 255 || c0.g != 255 || c0.b != 255 || c0.a != 255;
     } else {
-        has_modulation = SDL_TRUE;
+        has_modulation = true;
     }
 
     {
@@ -788,7 +788,7 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                                   SDL_Point s2_x_area, SDL_Rect dstrect, int area, int bias_w0, int bias_w1, int bias_w2,
                                   int d2d1_y, int d1d2_x, int d0d2_y, int d2d0_x, int d1d0_y, int d0d1_x,
                                   int s2s0_x, int s2s1_x, int s2s0_y, int s2s1_y, int w0_row, int w1_row, int w2_row,
-                                  SDL_Color c0, SDL_Color c1, SDL_Color c2, SDL_bool is_uniform, SDL_TextureAddressMode texture_address_mode)
+                                  SDL_Color c0, SDL_Color c1, SDL_Color c2, bool is_uniform, SDL_TextureAddressMode texture_address_mode)
 {
     SDL_Surface *src_surface = info->src_surface;
     const int flags = info->flags;

@@ -435,10 +435,10 @@ int Wayland_primary_selection_offer_add_mime(SDL_WaylandPrimarySelectionOffer *o
     return mime_data_list_add(&offer->mimes, mime_type, NULL, 0);
 }
 
-SDL_bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
+bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
                                      const char *mime_type)
 {
-    SDL_bool found = SDL_FALSE;
+    bool found = false;
 
     if (offer) {
         found = mime_data_list_find(&offer->mimes, mime_type) != NULL;
@@ -446,10 +446,10 @@ SDL_bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
     return found;
 }
 
-SDL_bool Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *offer,
+bool Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *offer,
                                                   const char *mime_type)
 {
-    SDL_bool found = SDL_FALSE;
+    bool found = false;
 
     if (offer) {
         found = mime_data_list_find(&offer->mimes, mime_type) != NULL;

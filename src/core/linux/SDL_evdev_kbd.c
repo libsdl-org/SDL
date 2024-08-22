@@ -84,15 +84,15 @@ static fn_handler_fn *fn_handler[] = {
 struct SDL_EVDEV_keyboard_state
 {
     int console_fd;
-    SDL_bool muted;
+    bool muted;
     int old_kbd_mode;
     unsigned short **key_maps;
     unsigned char shift_down[NR_SHIFT]; // shift state counters..
-    SDL_bool dead_key_next;
+    bool dead_key_next;
     int npadch; // -1 or number assembled on pad
     struct kbdiacrs *accents;
     unsigned int diacr;
-    SDL_bool rep; // flag telling character repeat
+    bool rep; // flag telling character repeat
     unsigned char lockstate;
     unsigned char slockstate;
     unsigned char ledflagstate;
@@ -321,7 +321,7 @@ static void kbd_vt_acquire_signal_action(int signum)
     SDL_AtomicSet(&vt_signal_pending, VT_SIGNAL_ACQUIRE);
 }
 
-static SDL_bool setup_vt_signal(int signum, signal_handler handler)
+static bool setup_vt_signal(int signum, signal_handler handler)
 {
     struct sigaction *old_action_p;
     struct sigaction new_action;
@@ -330,14 +330,14 @@ static SDL_bool setup_vt_signal(int signum, signal_handler handler)
     new_action.sa_handler = handler;
     new_action.sa_flags = SA_RESTART;
     if (sigaction(signum, &new_action, old_action_p) < 0) {
-        return SDL_FALSE;
+        return false;
     }
     if (old_action_p->sa_handler != SIG_DFL) {
         // This signal is already in use
         sigaction(signum, old_action_p, NULL);
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 static int find_free_signal(signal_handler handler)
@@ -462,7 +462,7 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
     return kbd;
 }
 
-void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
+void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, bool muted)
 {
     if (!state) {
         return;
@@ -473,7 +473,7 @@ void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
     }
 
     if (muted) {
-        if (SDL_GetHintBoolean(SDL_HINT_MUTE_CONSOLE_KEYBOARD, SDL_TRUE)) {
+        if (SDL_GetHintBoolean(SDL_HINT_MUTE_CONSOLE_KEYBOARD, true)) {
             /* Mute the keyboard so keystrokes only generate evdev events
              * and do not leak through to the console
              */
@@ -482,7 +482,7 @@ void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
             /* Make sure to restore keyboard if application fails to call
              * SDL_Quit before exit or fatal signal is raised.
              */
-            if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
+            if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, false)) {
                 kbd_register_emerg_cleanup(state);
             }
         }
@@ -522,7 +522,7 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
         return;
     }
 
-    SDL_EVDEV_kbd_set_muted(state, SDL_FALSE);
+    SDL_EVDEV_kbd_set_muted(state, false);
 
     kbd_vt_quit(state->console_fd);
 
@@ -690,7 +690,7 @@ static void fn_num(SDL_EVDEV_keyboard_state *kbd)
 
 static void fn_compose(SDL_EVDEV_keyboard_state *kbd)
 {
-    kbd->dead_key_next = SDL_TRUE;
+    kbd->dead_key_next = true;
 }
 
 /*
@@ -729,7 +729,7 @@ static void k_self(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_f
     }
 
     if (kbd->dead_key_next) {
-        kbd->dead_key_next = SDL_FALSE;
+        kbd->dead_key_next = false;
         kbd->diacr = value;
         return;
     }
@@ -974,7 +974,7 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
     return NULL;
 }
 
-void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
+void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, bool muted)
 {
 }
 

@@ -68,15 +68,15 @@ static void DUMMY_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 
 // DUMMY driver bootstrap functions
 
-static SDL_bool DUMMY_Available(const char *enable_hint)
+static bool DUMMY_Available(const char *enable_hint)
 {
     const char *hint = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
     if (hint) {
         if (SDL_strcmp(hint, enable_hint) == 0) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 static void DUMMY_DeleteDevice(SDL_VideoDevice *device)
@@ -97,7 +97,7 @@ static SDL_VideoDevice *DUMMY_InternalCreateDevice(const char *enable_hint)
     if (!device) {
         return NULL;
     }
-    device->is_dummy = SDL_TRUE;
+    device->is_dummy = true;
 
     // Set the function pointers
     device->VideoInit = DUMMY_VideoInit;

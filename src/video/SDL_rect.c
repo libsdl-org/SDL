@@ -24,7 +24,7 @@
 
 /* There's no float version of this at the moment, because it's not a public API
    and internally we only need the int version. */
-SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
+bool SDL_GetSpanEnclosingRect(int width, int height,
                          int numrects, const SDL_Rect *rects, SDL_Rect *span)
 {
     int i;
@@ -33,19 +33,19 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
 
     if (width < 1) {
         SDL_InvalidParamError("width");
-        return SDL_FALSE;
+        return false;
     } else if (height < 1) {
         SDL_InvalidParamError("height");
-        return SDL_FALSE;
+        return false;
     } else if (!rects) {
         SDL_InvalidParamError("rects");
-        return SDL_FALSE;
+        return false;
     } else if (!span) {
         SDL_InvalidParamError("span");
-        return SDL_FALSE;
+        return false;
     } else if (numrects < 1) {
         SDL_InvalidParamError("numrects");
-        return SDL_FALSE;
+        return false;
     }
 
     // Initialize to empty rect
@@ -73,9 +73,9 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
         span->y = span_y1;
         span->w = width;
         span->h = (span_y2 - span_y1);
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 // For use with the Cohen-Sutherland algorithm for line clipping, in SDL_rect_impl.h

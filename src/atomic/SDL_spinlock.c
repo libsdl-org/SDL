@@ -128,13 +128,13 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
     return ((int)atomic_cas_32((volatile uint32_t *)lock, 0, 1) == 0);
 #elif defined(PS2)
     uint32_t oldintr;
-    SDL_bool res = SDL_FALSE;
+    bool res = false;
     // disable interuption
     oldintr = DIntr();
 
     if (*lock == 0) {
         *lock = 1;
-        res = SDL_TRUE;
+        res = true;
     }
     // enable interuption
     if (oldintr) {
@@ -153,10 +153,10 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
     if (*lock == 0) {
         *lock = 1;
         SDL_UnlockMutex(_spinlock_mutex);
-        return SDL_TRUE;
+        return true;
     } else {
         SDL_UnlockMutex(_spinlock_mutex);
-        return SDL_FALSE;
+        return false;
     }
 #endif
 }

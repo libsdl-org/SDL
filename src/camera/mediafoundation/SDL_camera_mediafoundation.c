@@ -821,7 +821,7 @@ static int MEDIAFOUNDATION_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *
     IMFMediaSource_Release(source);  // srcreader is holding a reference to this.
 
     // There is no user permission prompt for camera access (I think?)
-    SDL_CameraPermissionOutcome(device, SDL_TRUE);
+    SDL_CameraPermissionOutcome(device, true);
 
     #undef CHECK_HRESULT
 
@@ -962,7 +962,7 @@ static void GatherCameraSpecs(IMFMediaSource *source, CameraFormatAddData *add_d
     IMFPresentationDescriptor_Release(presentdesc);
 }
 
-static SDL_bool FindMediaFoundationCameraBySymlink(SDL_Camera *device, void *userdata)
+static bool FindMediaFoundationCameraBySymlink(SDL_Camera *device, void *userdata)
 {
     return (SDL_strcmp((const char *) device->handle, (const char *) userdata) == 0);
 }
@@ -1051,29 +1051,29 @@ static void MEDIAFOUNDATION_Deinitialize(void)
     pMFGetStrideForBitmapInfoHeader = NULL;
 }
 
-static SDL_bool MEDIAFOUNDATION_Init(SDL_CameraDriverImpl *impl)
+static bool MEDIAFOUNDATION_Init(SDL_CameraDriverImpl *impl)
 {
     // !!! FIXME: slide this off into a subroutine
     HMODULE mf = LoadLibrary(TEXT("Mf.dll")); // this library is available in Vista and later, but also can be on XP with service packs and Windows
     if (!mf) {
-        return SDL_FALSE;
+        return false;
     }
 
     HMODULE mfplat = LoadLibrary(TEXT("Mfplat.dll")); // this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now!
     if (!mfplat) {
         FreeLibrary(mf);
-        return SDL_FALSE;
+        return false;
     }
 
     HMODULE mfreadwrite = LoadLibrary(TEXT("Mfreadwrite.dll")); // this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now!
     if (!mfreadwrite) {
         FreeLibrary(mfplat);
         FreeLibrary(mf);
-        return SDL_FALSE;
+        return false;
     }
 
-    SDL_bool okay = SDL_TRUE;
-    #define LOADSYM(lib, fn) if (okay) { p##fn = (pfn##fn) GetProcAddress(lib, #fn); if (!p##fn) { okay = SDL_FALSE; } }
+    bool okay = true;
+    #define LOADSYM(lib, fn) if (okay) { p##fn = (pfn##fn) GetProcAddress(lib, #fn); if (!p##fn) { okay = false; } }
     LOADSYM(mf, MFEnumDeviceSources);
     LOADSYM(mf, MFCreateDeviceSource);
     LOADSYM(mfplat, MFStartup);
@@ -1087,7 +1087,7 @@ static SDL_bool MEDIAFOUNDATION_Init(SDL_CameraDriverImpl *impl)
     if (okay) {
         const HRESULT ret = pMFStartup(MF_VERSION, MFSTARTUP_LITE);
         if (FAILED(ret)) {
-            okay = SDL_FALSE;
+            okay = false;
         }
     }
 
@@ -1095,7 +1095,7 @@ static SDL_bool MEDIAFOUNDATION_Init(SDL_CameraDriverImpl *impl)
         FreeLibrary(mfreadwrite);
         FreeLibrary(mfplat);
         FreeLibrary(mf);
-        return SDL_FALSE;
+        return false;
     }
 
     libmf = mf;
@@ -1111,11 +1111,11 @@ static SDL_bool MEDIAFOUNDATION_Init(SDL_CameraDriverImpl *impl)
     impl->FreeDeviceHandle = MEDIAFOUNDATION_FreeDeviceHandle;
     impl->Deinitialize = MEDIAFOUNDATION_Deinitialize;
 
-    return SDL_TRUE;
+    return true;
 }
 
 CameraBootStrap MEDIAFOUNDATION_bootstrap = {
-    "mediafoundation", "SDL Windows Media Foundation camera driver", MEDIAFOUNDATION_Init, SDL_FALSE
+    "mediafoundation", "SDL Windows Media Foundation camera driver", MEDIAFOUNDATION_Init, false
 };
 
 #endif // SDL_CAMERA_DRIVER_MEDIAFOUNDATION

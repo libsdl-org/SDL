@@ -184,7 +184,7 @@ static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0
 {
     SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)keyboard;
 
-    SDL_AddKeyboard(keyboardID, NULL, SDL_TRUE);
+    SDL_AddKeyboard(keyboardID, NULL, true);
 
     keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed) {
         SDL_SendKeyboardKey(0, keyboardID, 0, (SDL_Scancode)keyCode, pressed ? SDL_PRESSED : SDL_RELEASED);
@@ -199,7 +199,7 @@ static void OnGCKeyboardDisconnected(GCKeyboard *keyboard) API_AVAILABLE(macos(1
 {
     SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)keyboard;
 
-    SDL_RemoveKeyboard(keyboardID, SDL_TRUE);
+    SDL_RemoveKeyboard(keyboardID, true);
 
     keyboard.keyboardInput.keyChangedHandler = nil;
 }
@@ -272,7 +272,7 @@ void SDL_QuitGCKeyboard(void)
 
 static id mouse_connect_observer = nil;
 static id mouse_disconnect_observer = nil;
-static bool mouse_relative_mode = SDL_FALSE;
+static bool mouse_relative_mode = false;
 static SDL_MouseWheelDirection mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
 
 static void UpdateScrollDirection(void)
@@ -309,7 +309,7 @@ static void UpdatePointerLock(void)
     }
 }
 
-static int SetGCMouseRelativeMode(SDL_bool enabled)
+static int SetGCMouseRelativeMode(bool enabled)
 {
     mouse_relative_mode = enabled;
     UpdatePointerLock();
@@ -325,7 +325,7 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
 {
     SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)mouse;
 
-    SDL_AddMouse(mouseID, NULL, SDL_TRUE);
+    SDL_AddMouse(mouseID, NULL, true);
 
     mouse.mouseInput.leftButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
       OnGCMouseButtonChanged(mouseID, SDL_BUTTON_LEFT, pressed);
@@ -391,7 +391,7 @@ static void OnGCMouseDisconnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios
 
     UpdatePointerLock();
 
-    SDL_RemoveMouse(mouseID, SDL_TRUE);
+    SDL_RemoveMouse(mouseID, true);
 }
 
 void SDL_InitGCMouse(void)
@@ -434,7 +434,7 @@ void SDL_InitGCMouse(void)
     }
 }
 
-SDL_bool SDL_GCMouseRelativeMode(void)
+bool SDL_GCMouseRelativeMode(void)
 {
     return mouse_relative_mode;
 }
@@ -470,9 +470,9 @@ void SDL_InitGCMouse(void)
 {
 }
 
-SDL_bool SDL_GCMouseRelativeMode(void)
+bool SDL_GCMouseRelativeMode(void)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 void SDL_QuitGCMouse(void)

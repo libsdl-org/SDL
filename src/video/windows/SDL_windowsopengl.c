@@ -369,7 +369,7 @@ static int WIN_GL_ChoosePixelFormat(SDL_VideoDevice *_this, HDC hdc, PIXELFORMAT
     return best;
 }
 
-static SDL_bool HasExtension(const char *extension, const char *extensions)
+static bool HasExtension(const char *extension, const char *extensions)
 {
     const char *start;
     const char *where, *terminator;
@@ -377,11 +377,11 @@ static SDL_bool HasExtension(const char *extension, const char *extensions)
     // Extension names should not have spaces.
     where = SDL_strchr(extension, ' ');
     if (where || *extension == '\0') {
-        return SDL_FALSE;
+        return false;
     }
 
     if (!extensions) {
-        return SDL_FALSE;
+        return false;
     }
 
     /* It takes a bit of care to be fool-proof about parsing the
@@ -399,13 +399,13 @@ static SDL_bool HasExtension(const char *extension, const char *extensions)
         terminator = where + SDL_strlen(extension);
         if (where == start || *(where - 1) == ' ') {
             if (*terminator == ' ' || *terminator == '\0') {
-                return SDL_TRUE;
+                return true;
             }
         }
 
         start = terminator;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
@@ -454,7 +454,7 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
     }
 
     // Check for WGL_ARB_pixel_format
-    _this->gl_data->HAS_WGL_ARB_pixel_format = SDL_FALSE;
+    _this->gl_data->HAS_WGL_ARB_pixel_format = false;
     if (HasExtension("WGL_ARB_pixel_format", extensions)) {
         /* *INDENT-OFF* */ // clang-format off
         _this->gl_data->wglChoosePixelFormatARB =
@@ -467,12 +467,12 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
 
         if ((_this->gl_data->wglChoosePixelFormatARB != NULL) &&
             (_this->gl_data->wglGetPixelFormatAttribivARB != NULL)) {
-            _this->gl_data->HAS_WGL_ARB_pixel_format = SDL_TRUE;
+            _this->gl_data->HAS_WGL_ARB_pixel_format = true;
         }
     }
 
     // Check for WGL_EXT_swap_control
-    _this->gl_data->HAS_WGL_EXT_swap_control_tear = SDL_FALSE;
+    _this->gl_data->HAS_WGL_EXT_swap_control_tear = false;
     if (HasExtension("WGL_EXT_swap_control", extensions)) {
         _this->gl_data->wglSwapIntervalEXT =
             (BOOL (WINAPI *)(int))
@@ -481,7 +481,7 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
             (int (WINAPI *)(void))
             WIN_GL_GetProcAddress(_this, "wglGetSwapIntervalEXT");
         if (HasExtension("WGL_EXT_swap_control_tear", extensions)) {
-            _this->gl_data->HAS_WGL_EXT_swap_control_tear = SDL_TRUE;
+            _this->gl_data->HAS_WGL_EXT_swap_control_tear = true;
         }
     } else {
         _this->gl_data->wglSwapIntervalEXT = NULL;
@@ -497,17 +497,17 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
 
     // Check for WGL_ARB_context_flush_control
     if (HasExtension("WGL_ARB_context_flush_control", extensions)) {
-        _this->gl_data->HAS_WGL_ARB_context_flush_control = SDL_TRUE;
+        _this->gl_data->HAS_WGL_ARB_context_flush_control = true;
     }
 
     // Check for WGL_ARB_create_context_robustness
     if (HasExtension("WGL_ARB_create_context_robustness", extensions)) {
-        _this->gl_data->HAS_WGL_ARB_create_context_robustness = SDL_TRUE;
+        _this->gl_data->HAS_WGL_ARB_create_context_robustness = true;
     }
 
     // Check for WGL_ARB_create_context_no_error
     if (HasExtension("WGL_ARB_create_context_no_error", extensions)) {
-        _this->gl_data->HAS_WGL_ARB_create_context_no_error = SDL_TRUE;
+        _this->gl_data->HAS_WGL_ARB_create_context_no_error = true;
     }
 
     _this->gl_data->wglMakeCurrent(hdc, NULL);
@@ -695,12 +695,12 @@ int WIN_GL_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return retval;
 }
 
-SDL_bool WIN_GL_UseEGL(SDL_VideoDevice *_this)
+bool WIN_GL_UseEGL(SDL_VideoDevice *_this)
 {
     SDL_assert(_this->gl_data != NULL);
     SDL_assert(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
 
-    return SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, SDL_FALSE) || _this->gl_config.major_version == 1 || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor); // No WGL extension for OpenGL ES 1.x profiles.
+    return SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, false) || _this->gl_config.major_version == 1 || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor); // No WGL extension for OpenGL ES 1.x profiles.
 }
 
 SDL_GLContext WIN_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)

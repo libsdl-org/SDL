@@ -41,7 +41,7 @@
     #endif
 #endif
 
-static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, SDL_bool is_custom)
+static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, bool is_custom)
 {
     SDL_CursorData *curdata;
     SDL_Cursor *cursor = SDL_calloc(1, sizeof(SDL_Cursor));
@@ -62,7 +62,7 @@ static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, SDL
 
 static SDL_Cursor *Emscripten_CreateDefaultCursor(void)
 {
-    return Emscripten_CreateCursorFromString("default", SDL_FALSE);
+    return Emscripten_CreateCursorFromString("default", false);
 }
 
 EM_JS_DEPS(sdlmouse, "$stringToUTF8,$UTF8ToString");
@@ -113,14 +113,14 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
 
     SDL_DestroySurface(conv_surf);
 
-    return Emscripten_CreateCursorFromString(cursor_url, SDL_TRUE);
+    return Emscripten_CreateCursorFromString(cursor_url, true);
 }
 
 static SDL_Cursor *Emscripten_CreateSystemCursor(SDL_SystemCursor id)
 {
     const char *cursor_name = SDL_GetCSSCursorName(id, NULL);
 
-    return Emscripten_CreateCursorFromString(cursor_name, SDL_FALSE);
+    return Emscripten_CreateCursorFromString(cursor_name, false);
 }
 
 static void Emscripten_FreeCursor(SDL_Cursor *cursor)
@@ -169,7 +169,7 @@ static int Emscripten_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-static int Emscripten_SetRelativeMouseMode(SDL_bool enabled)
+static int Emscripten_SetRelativeMouseMode(bool enabled)
 {
     SDL_Window *window;
     SDL_WindowData *window_data;

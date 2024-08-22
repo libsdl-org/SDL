@@ -29,7 +29,7 @@
 
 
 // Pixel format functions
-extern int SDL_CalculateSurfaceSize(SDL_PixelFormat format, int width, int height, size_t *size, size_t *pitch, SDL_bool minimalPitch);
+extern int SDL_CalculateSurfaceSize(SDL_PixelFormat format, int width, int height, size_t *size, size_t *pitch, bool minimalPitch);
 extern SDL_Colorspace SDL_GetDefaultColorspaceForFormat(SDL_PixelFormat pixel_format);
 extern void SDL_QuitPixelFormatDetails(void);
 
@@ -51,7 +51,7 @@ extern int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst);
 extern void SDL_DitherPalette(SDL_Palette *palette);
 extern Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 extern Uint8 SDL_LookupRGBAColor(SDL_HashTable *palette_map, Uint32 pixel, const SDL_Palette *pal);
-extern void SDL_DetectPalette(const SDL_Palette *pal, SDL_bool *is_opaque, SDL_bool *has_alpha_channel);
+extern void SDL_DetectPalette(const SDL_Palette *pal, bool *is_opaque, bool *has_alpha_channel);
 extern SDL_Surface *SDL_DuplicatePixels(int width, int height, SDL_PixelFormat format, SDL_Colorspace colorspace, void *pixels, int pitch);
 
 #endif // SDL_pixels_c_h_

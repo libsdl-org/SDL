@@ -275,7 +275,7 @@ not_our_signal:
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-static void DBus_OpenDialog(const char *method, const char *method_title, SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many, int open_folders)
+static void DBus_OpenDialog(const char *method, const char *method_title, SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many, int open_folders)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     DBusMessage *msg;
@@ -357,7 +357,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     SDL_free(handle_str);
 
     DBus_AppendBoolOption(dbus, &options, "modal", !!window);
-    if (allow_many == SDL_TRUE) {
+    if (allow_many == true) {
         DBus_AppendBoolOption(dbus, &options, "multiple", 1);
     }
     if (open_folders) {
@@ -425,7 +425,7 @@ incorrect_type:
     dbus->message_unref(reply);
 }
 
-void SDL_Portal_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
+void SDL_Portal_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
 {
     DBus_OpenDialog("OpenFile", "Open File", callback, userdata, window, filters, nfilters, default_location, allow_many, 0);
 }
@@ -435,7 +435,7 @@ void SDL_Portal_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userda
     DBus_OpenDialog("SaveFile", "Save File", callback, userdata, window, filters, nfilters, default_location, 0, 0);
 }
 
-void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many)
+void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many)
 {
     DBus_OpenDialog("OpenFile", "Open Folder", callback, userdata, window, NULL, 0, default_location, allow_many, 1);
 }
@@ -500,7 +500,7 @@ done:
 
 // Dummy implementation to avoid compilation problems
 
-void SDL_Portal_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
+void SDL_Portal_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
 {
     SDL_Unsupported();
     callback(userdata, NULL, -1);
@@ -512,7 +512,7 @@ void SDL_Portal_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userda
     callback(userdata, NULL, -1);
 }
 
-void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many)
+void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many)
 {
     SDL_Unsupported();
     callback(userdata, NULL, -1);

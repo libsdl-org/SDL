@@ -102,12 +102,12 @@
 /* GNOME doesn't expose displays in any particular order, but we can find the
  * primary display and its logical coordinates via a DBus method.
  */
-static SDL_bool Wayland_GetGNOMEPrimaryDisplayCoordinates(int *x, int *y)
+static bool Wayland_GetGNOMEPrimaryDisplayCoordinates(int *x, int *y)
 {
 #ifdef SDL_USE_LIBDBUS
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     if (dbus == NULL) {
-        return SDL_FALSE;
+        return false;
     }
     DBusMessage *reply = NULL;
     DBusMessageIter iter[3];
@@ -189,7 +189,7 @@ static SDL_bool Wayland_GetGNOMEPrimaryDisplayCoordinates(int *x, int *y)
 
                 // We found the primary display: success.
                 dbus->message_unref(reply);
-                return SDL_TRUE;
+                return true;
             }
         } while (dbus->message_iter_next(&iter[1]));
     }
@@ -199,7 +199,7 @@ error:
         dbus->message_unref(reply);
     }
 #endif
-    return SDL_FALSE;
+    return false;
 }
 
 static void Wayland_FlushOutputOrder(SDL_VideoData *vid)
@@ -210,7 +210,7 @@ static void Wayland_FlushOutputOrder(SDL_VideoData *vid)
         SDL_free(c);
     }
 
-    vid->output_order_finalized = SDL_FALSE;
+    vid->output_order_finalized = false;
 }
 
 /* The order of wl_output displays exposed by KDE doesn't correspond to any priority, but KDE does provide a protocol
@@ -235,7 +235,7 @@ static void handle_kde_output_order_output(void *data, struct kde_output_order_v
 static void handle_kde_output_order_done(void *data, struct kde_output_order_v1 *kde_output_order_v1)
 {
     SDL_VideoData *vid = (SDL_VideoData *)data;
-    vid->output_order_finalized = SDL_TRUE;
+    vid->output_order_finalized = true;
 }
 
 static const struct kde_output_order_v1_listener kde_output_order_listener = {
@@ -314,12 +314,12 @@ void SDL_WAYLAND_register_output(struct wl_output *output)
     wl_proxy_set_tag((struct wl_proxy *)output, &SDL_WAYLAND_output_tag);
 }
 
-SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface)
+bool SDL_WAYLAND_own_surface(struct wl_surface *surface)
 {
     return wl_proxy_get_tag((struct wl_proxy *)surface) == &SDL_WAYLAND_surface_tag;
 }
 
-SDL_bool SDL_WAYLAND_own_output(struct wl_output *output)
+bool SDL_WAYLAND_own_output(struct wl_output *output)
 {
     return wl_proxy_get_tag((struct wl_proxy *)output) == &SDL_WAYLAND_output_tag;
 }
@@ -374,8 +374,8 @@ static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 
 typedef struct
 {
-    SDL_bool has_fifo_v1;
-    SDL_bool has_commit_timing_v1;
+    bool has_fifo_v1;
+    bool has_commit_timing_v1;
 } SDL_WaylandPreferredData;
 
 static void wayland_preferred_check_handle_global(void *data, struct wl_registry *registry, uint32_t id,
@@ -384,9 +384,9 @@ static void wayland_preferred_check_handle_global(void *data, struct wl_registry
     SDL_WaylandPreferredData *d = data;
 
     if (SDL_strcmp(interface, "wp_fifo_manager_v1") == 0) {
-        d->has_fifo_v1 = SDL_TRUE;
+        d->has_fifo_v1 = true;
     } else if (SDL_strcmp(interface, "wp_commit_timing_manager_v1") == 0) {
-        d->has_commit_timing_v1 = SDL_TRUE;
+        d->has_commit_timing_v1 = true;
     }
 }
 
@@ -400,14 +400,14 @@ static const struct wl_registry_listener preferred_registry_listener = {
     wayland_preferred_check_remove_global
 };
 
-static SDL_bool Wayland_IsPreferred(struct wl_display *display)
+static bool Wayland_IsPreferred(struct wl_display *display)
 {
     struct wl_registry *registry = wl_display_get_registry(display);
     SDL_WaylandPreferredData preferred_data = { 0 };
 
     if (!registry) {
         SDL_SetError("Failed to get the Wayland registry");
-        return SDL_FALSE;
+        return false;
     }
 
     wl_registry_add_listener(registry, &preferred_registry_listener, &preferred_data);
@@ -419,14 +419,14 @@ static SDL_bool Wayland_IsPreferred(struct wl_display *display)
     return preferred_data.has_fifo_v1 && preferred_data.has_commit_timing_v1;
 }
 
-static SDL_VideoDevice *Wayland_CreateDevice(SDL_bool require_preferred_protocols)
+static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
     struct SDL_WaylandInput *input;
     struct wl_display *display = SDL_GetPointerProperty(SDL_GetGlobalProperties(),
                                                  SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
-    SDL_bool display_is_external = !!display;
+    bool display_is_external = !!display;
 
     // Are we trying to connect to or are currently in a Wayland session?
     if (!SDL_getenv("WAYLAND_DISPLAY")) {
@@ -480,11 +480,11 @@ static SDL_VideoDevice *Wayland_CreateDevice(SDL_bool require_preferred_protocol
     input->sy_w = wl_fixed_from_int(0);
     input->xkb.current_group = XKB_GROUP_INVALID;
 
-    data->initializing = SDL_TRUE;
+    data->initializing = true;
     data->display = display;
     data->input = input;
     data->display_externally_owned = display_is_external;
-    data->scale_to_display_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY, SDL_FALSE);
+    data->scale_to_display_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY, false);
     WAYLAND_wl_list_init(&data->output_list);
     WAYLAND_wl_list_init(&data->output_order);
     WAYLAND_wl_list_init(&external_window_list);
@@ -595,12 +595,12 @@ static SDL_VideoDevice *Wayland_CreateDevice(SDL_bool require_preferred_protocol
 
 static SDL_VideoDevice *Wayland_Preferred_CreateDevice(void)
 {
-    return Wayland_CreateDevice(SDL_TRUE);
+    return Wayland_CreateDevice(true);
 }
 
 static SDL_VideoDevice *Wayland_Fallback_CreateDevice(void)
 {
-    return Wayland_CreateDevice(SDL_FALSE);
+    return Wayland_CreateDevice(false);
 }
 
 VideoBootStrap Wayland_preferred_bootstrap = {
@@ -622,7 +622,7 @@ static void xdg_output_handle_logical_position(void *data, struct zxdg_output_v1
 
     internal->x = x;
     internal->y = y;
-    internal->has_logical_position = SDL_TRUE;
+    internal->has_logical_position = true;
 }
 
 static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xdg_output,
@@ -632,7 +632,7 @@ static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xd
 
     internal->screen_width = width;
     internal->screen_height = height;
-    internal->has_logical_size = SDL_TRUE;
+    internal->has_logical_size = true;
 }
 
 static void xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output)
@@ -736,7 +736,7 @@ static void AddEmulatedModes(SDL_DisplayData *dispdata, int native_width, int na
     int i;
     SDL_DisplayMode mode;
     SDL_VideoDisplay *dpy = dispdata->display ? SDL_GetVideoDisplay(dispdata->display) : &dispdata->placeholder;
-    const SDL_bool rot_90 = native_width < native_height; // Reverse width/height for portrait displays.
+    const bool rot_90 = native_width < native_height; // Reverse width/height for portrait displays.
 
     for (i = 0; i < SDL_arraysize(mode_list); ++i) {
         SDL_zero(mode);
@@ -847,7 +847,7 @@ static void display_handle_mode(void *data,
 static void display_handle_done(void *data,
                                 struct wl_output *output)
 {
-    const SDL_bool mode_emulation_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION, SDL_TRUE);
+    const bool mode_emulation_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION, true);
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
     SDL_VideoData *video = internal->videodata;
     SDL_DisplayMode native_mode, desktop_mode;
@@ -978,7 +978,7 @@ static void display_handle_done(void *data,
 
         // During initialization, the displays will be added after enumeration is complete.
         if (!video->initializing) {
-            internal->display = SDL_AddVideoDisplay(&internal->placeholder, SDL_TRUE);
+            internal->display = SDL_AddVideoDisplay(&internal->placeholder, true);
             SDL_free(internal->placeholder.name);
             SDL_zero(internal->placeholder);
         }
@@ -1078,7 +1078,7 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
         // Unlink this display.
         WAYLAND_wl_list_remove(&display_data->link);
 
-        SDL_DelVideoDisplay(display->id, SDL_FALSE);
+        SDL_DelVideoDisplay(display->id, false);
     }
 }
 
@@ -1088,7 +1088,7 @@ static void Wayland_FinalizeDisplays(SDL_VideoData *vid)
 
     Wayland_SortOutputs(vid);
     wl_list_for_each (d, &vid->output_list, link) {
-        d->display = SDL_AddVideoDisplay(&d->placeholder, SDL_FALSE);
+        d->display = SDL_AddVideoDisplay(&d->placeholder, false);
         SDL_free(d->placeholder.name);
         SDL_zero(d->placeholder);
     }
@@ -1220,44 +1220,44 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 #ifdef HAVE_LIBDECOR_H
-static SDL_bool should_use_libdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
+static bool should_use_libdecor(SDL_VideoData *data, bool ignore_xdg)
 {
     if (!SDL_WAYLAND_HAVE_WAYLAND_LIBDECOR) {
-        return SDL_FALSE;
+        return false;
     }
 
-    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, SDL_TRUE)) {
-        return SDL_FALSE;
+    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, true)) {
+        return false;
     }
 
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR, SDL_FALSE)) {
-        return SDL_TRUE;
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR, false)) {
+        return true;
     }
 
     if (ignore_xdg) {
-        return SDL_TRUE;
+        return true;
     }
 
     if (data->decoration_manager) {
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 #endif
 
-SDL_bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
+bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg)
 {
 #ifdef HAVE_LIBDECOR_H
     if (data->shell.libdecor != NULL) {
-        return SDL_TRUE; // Already loaded!
+        return true; // Already loaded!
     }
     if (should_use_libdecor(data, ignore_xdg)) {
         data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
         return data->shell.libdecor != NULL;
     }
 #endif
-    return SDL_FALSE;
+    return false;
 }
 
 int Wayland_VideoInit(SDL_VideoDevice *_this)
@@ -1282,11 +1282,11 @@ int Wayland_VideoInit(SDL_VideoDevice *_this)
     // Require viewports for display scaling.
     if (data->scale_to_display_enabled && !data->viewporter) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Display scaling requires the missing 'wp_viewporter' protocol: disabling");
-        data->scale_to_display_enabled = SDL_FALSE;
+        data->scale_to_display_enabled = false;
     }
 
     // Now that we have all the protocols, load libdecor if applicable
-    Wayland_LoadLibdecor(data, SDL_FALSE);
+    Wayland_LoadLibdecor(data, false);
 
     // Second roundtrip to receive all output events.
     WAYLAND_wl_display_roundtrip(data->display);
@@ -1305,7 +1305,7 @@ int Wayland_VideoInit(SDL_VideoDevice *_this)
         _this->HasPrimarySelectionText = Wayland_HasPrimarySelectionText;
     }
 
-    data->initializing = SDL_FALSE;
+    data->initializing = false;
 
     return 0;
 }
@@ -1483,7 +1483,7 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool Wayland_VideoReconnect(SDL_VideoDevice *_this)
+bool Wayland_VideoReconnect(SDL_VideoDevice *_this)
 {
 #if 0 // TODO RECONNECT: Uncomment all when https://invent.kde.org/plasma/kwin/-/wikis/Restarting is completed
     SDL_VideoData *data = _this->internal;
@@ -1499,7 +1499,7 @@ SDL_bool Wayland_VideoReconnect(SDL_VideoDevice *_this)
     SDL_ResetKeyboard();
     SDL_ResetMouse();
     if (WAYLAND_wl_display_reconnect(data->display) < 0) {
-        return SDL_FALSE;
+        return false;
     }
 
     Wayland_VideoInit(_this);
@@ -1524,9 +1524,9 @@ SDL_bool Wayland_VideoReconnect(SDL_VideoDevice *_this)
     if (current_window && current_ctx) {
         SDL_GL_MakeCurrent (current_window, current_ctx);
     }
-    return SDL_TRUE;
+    return true;
 #else
-    return SDL_FALSE;
+    return false;
 #endif // 0
 }
 

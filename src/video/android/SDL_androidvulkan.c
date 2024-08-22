@@ -40,8 +40,8 @@ int Android_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasAndroidSurfaceExtension = SDL_FALSE;
+    bool hasSurfaceExtension = false;
+    bool hasAndroidSurfaceExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
@@ -81,9 +81,9 @@ int Android_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     }
     for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasSurfaceExtension = SDL_TRUE;
+            hasSurfaceExtension = true;
         } else if (SDL_strcmp(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasAndroidSurfaceExtension = SDL_TRUE;
+            hasAndroidSurfaceExtension = true;
         }
     }
     SDL_free(extensions);

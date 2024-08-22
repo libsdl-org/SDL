@@ -102,7 +102,7 @@ static void SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
 {
     SDL_HIDAPI_RumbleRequest *request;
 
-    SDL_AtomicSet(&ctx->running, SDL_FALSE);
+    SDL_AtomicSet(&ctx->running, false);
 
     if (ctx->thread) {
         int result;
@@ -138,7 +138,7 @@ static void SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
         SDL_HIDAPI_rumble_lock = NULL;
     }
 
-    SDL_AtomicSet(&ctx->initialized, SDL_FALSE);
+    SDL_AtomicSet(&ctx->initialized, false);
 }
 
 static int SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
@@ -155,7 +155,7 @@ static int SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
         return -1;
     }
 
-    SDL_AtomicSet(&ctx->running, SDL_TRUE);
+    SDL_AtomicSet(&ctx->running, true);
     ctx->thread = SDL_CreateThread(SDL_HIDAPI_RumbleThread, "HIDAPI Rumble", ctx);
     if (!ctx->thread) {
         SDL_HIDAPI_StopRumbleThread(ctx);
@@ -168,7 +168,7 @@ int SDL_HIDAPI_LockRumble(void)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
-    if (SDL_AtomicCompareAndSwap(&ctx->initialized, SDL_FALSE, SDL_TRUE)) {
+    if (SDL_AtomicCompareAndSwap(&ctx->initialized, false, true)) {
         if (SDL_HIDAPI_StartRumbleThread(ctx) < 0) {
             return -1;
         }
@@ -178,7 +178,7 @@ int SDL_HIDAPI_LockRumble(void)
     return 0;
 }
 
-SDL_bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size)
+bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
     SDL_HIDAPI_RumbleRequest *request, *found;
@@ -193,9 +193,9 @@ SDL_bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **da
         *data = found->data;
         *size = &found->size;
         *maximum_size = sizeof(found->data);
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_HIDAPI_SendRumbleAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size)

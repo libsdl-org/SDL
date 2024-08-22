@@ -144,16 +144,16 @@ typedef enum
 @property(nonatomic) SDL3Cocoa_WindowListener *listener;
 @property(nonatomic) NSModalSession modal_session;
 @property(nonatomic) SDL_CocoaVideoData *videodata;
-@property(nonatomic) SDL_bool send_floating_size;
-@property(nonatomic) SDL_bool send_floating_position;
-@property(nonatomic) SDL_bool border_toggled;
+@property(nonatomic) bool send_floating_size;
+@property(nonatomic) bool send_floating_position;
+@property(nonatomic) bool border_toggled;
 @property(nonatomic) BOOL checking_zoom;
 #ifdef SDL_VIDEO_OPENGL_EGL
 @property(nonatomic) EGLSurface egl_surface;
 #endif
 @end
 
-extern SDL_bool b_inModeTransition;
+extern bool b_inModeTransition;
 
 extern int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void Cocoa_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
@@ -170,19 +170,19 @@ extern void Cocoa_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Cocoa_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Cocoa_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Cocoa_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern void Cocoa_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered);
-extern void Cocoa_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable);
-extern void Cocoa_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool on_top);
+extern void Cocoa_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bordered);
+extern void Cocoa_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable);
+extern void Cocoa_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, bool on_top);
 extern int Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 extern void *Cocoa_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
 extern SDL_DisplayID Cocoa_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Cocoa_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
+extern int Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
 extern void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
-extern void Cocoa_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
+extern int Cocoa_SetWindowHitTest(SDL_Window *window, bool enabled);
+extern void Cocoa_AcceptDragAndDrop(SDL_Window *window, bool accept);
 extern int Cocoa_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
-extern int Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
+extern int Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
 extern int Cocoa_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
 extern int Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 

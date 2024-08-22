@@ -24,7 +24,7 @@
 
 void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, SDL_bool allow_many)
 {
-    if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, SDL_FALSE, allow_many)) {
+    if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, false, allow_many)) {
         // SDL_SetError is already called when it fails
         callback(userdata, NULL, -1);
     }
@@ -32,7 +32,7 @@ void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userd
 
 void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location)
 {
-    if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, SDL_TRUE, SDL_FALSE)) {
+    if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, true, false)) {
         // SDL_SetError is already called when it fails
         callback(userdata, NULL, -1);
     }

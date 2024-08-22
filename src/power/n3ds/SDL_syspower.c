@@ -32,13 +32,13 @@ static int GetBatteryPercentage(void);
 #define BATTERY_PERCENT_REG      0xB
 #define BATTERY_PERCENT_REG_SIZE 2
 
-SDL_bool SDL_GetPowerInfo_N3DS(SDL_PowerState *state, int *seconds, int *percent)
+bool SDL_GetPowerInfo_N3DS(SDL_PowerState *state, int *seconds, int *percent)
 {
     *state = GetPowerState();
     *percent = GetBatteryPercentage();
     *seconds = -1; // libctru doesn't provide a way to estimate battery life
 
-    return SDL_TRUE;
+    return true;
 }
 
 static SDL_PowerState GetPowerState(void)

@@ -35,7 +35,7 @@
 
 typedef struct
 {
-    SDL_bool done;
+    bool done;
     Uint32 flags;
     HANDLE ready_event;
     HANDLE done_event;
@@ -43,7 +43,7 @@ typedef struct
 } RawInputThreadData;
 
 static RawInputThreadData thread_data = {
-    SDL_FALSE,
+    false,
     0,
     INVALID_HANDLE_VALUE,
     INVALID_HANDLE_VALUE,
@@ -113,7 +113,7 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
 static void CleanupRawInputThreadData(RawInputThreadData *data)
 {
     if (data->thread != INVALID_HANDLE_VALUE) {
-        data->done = SDL_TRUE;
+        data->done = true;
         SetEvent(data->done_event);
         WaitForSingleObject(data->thread, 3000);
         CloseHandle(data->thread);
@@ -147,7 +147,7 @@ static int WIN_SetRawInputEnabled(SDL_VideoDevice *_this, Uint32 flags)
             goto done;
         }
 
-        thread_data.done = SDL_FALSE;
+        thread_data.done = false;
         thread_data.done_event = CreateEvent(NULL, FALSE, FALSE, NULL);
         if (thread_data.done_event == INVALID_HANDLE_VALUE) {
             WIN_SetError("CreateEvent");
@@ -199,7 +199,7 @@ static int WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
     return 0;
 }
 
-int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
+int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
 {
     SDL_VideoData *data = _this->internal;
     data->raw_mouse_enabled = enabled;
@@ -217,7 +217,7 @@ int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
     return 0;
 }
 
-int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
+int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
 {
     SDL_VideoData *data = _this->internal;
     data->raw_keyboard_enabled = enabled;
@@ -237,12 +237,12 @@ int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
 
 #else
 
-int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
+int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
 {
     return SDL_Unsupported();
 }
 
-int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
+int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
 {
     return SDL_Unsupported();
 }

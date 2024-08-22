@@ -301,7 +301,7 @@ int Android_OnHat(int device_id, int hat_id, int x, int y)
     return -1;
 }
 
-int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, SDL_bool can_rumble)
+int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, bool can_rumble)
 {
     SDL_joylist_item *item;
     SDL_GUID guid;
@@ -310,7 +310,7 @@ int Android_AddJoystick(int device_id, const char *name, const char *desc, int v
 
     SDL_LockJoysticks();
 
-    if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, true)) {
         // Ignore devices that aren't actually controllers (e.g. remotes), they'll be handled as keyboard input
         if (naxes < 2 && nhats < 1) {
             goto done;
@@ -480,10 +480,10 @@ static void ANDROID_JoystickDetect(void)
     }
 }
 
-static SDL_bool ANDROID_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool ANDROID_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     // We don't override any other drivers
-    return SDL_FALSE;
+    return false;
 }
 
 static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
@@ -580,7 +580,7 @@ static int ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->naxes = item->naxes;
 
     if (item->can_rumble) {
-        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
     }
 
     return 0;
@@ -617,7 +617,7 @@ static int ANDROID_JoystickSendEffect(SDL_Joystick *joystick, const void *data, 
     return SDL_Unsupported();
 }
 
-static int ANDROID_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int ANDROID_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -655,9 +655,9 @@ static void ANDROID_JoystickQuit(void)
 #endif // 0
 }
 
-static SDL_bool ANDROID_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool ANDROID_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_JoystickDriver SDL_ANDROID_JoystickDriver = {

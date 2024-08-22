@@ -45,7 +45,7 @@ int UIKit_SuspendScreenSaver(SDL_VideoDevice *_this);
 
 void UIKit_ForceUpdateHomeIndicator(void);
 
-SDL_bool UIKit_IsSystemVersionAtLeast(double version);
+bool UIKit_IsSystemVersionAtLeast(double version);
 
 SDL_SystemTheme UIKit_GetSystemTheme(void);
 

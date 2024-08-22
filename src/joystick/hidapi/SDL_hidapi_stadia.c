@@ -40,7 +40,7 @@ enum
 
 typedef struct
 {
-    SDL_bool rumble_supported;
+    bool rumble_supported;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverStadia_Context;
 
@@ -54,23 +54,23 @@ static void HIDAPI_DriverStadia_UnregisterHints(SDL_HintCallback callback, void 
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STADIA, callback, userdata);
 }
 
-static SDL_bool HIDAPI_DriverStadia_IsEnabled(void)
+static bool HIDAPI_DriverStadia_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STADIA, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool HIDAPI_DriverStadia_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static bool HIDAPI_DriverStadia_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return SDL_IsJoystickGoogleStadiaController(vendor_id, product_id);
 }
 
-static SDL_bool HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverStadia_Context *ctx;
 
     ctx = (SDL_DriverStadia_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
-        return SDL_FALSE;
+        return false;
     }
     device->context = ctx;
 
@@ -79,7 +79,7 @@ static SDL_bool HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
         Uint8 rumble_packet[] = { 0x05, 0x00, 0x00, 0x00, 0x00 };
 
         if (SDL_hid_write(device->dev, rumble_packet, sizeof(rumble_packet)) >= 0) {
-            ctx->rumble_supported = SDL_TRUE;
+            ctx->rumble_supported = true;
         }
     }
 
@@ -97,7 +97,7 @@ static void HIDAPI_DriverStadia_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 {
 }
 
-static SDL_bool HIDAPI_DriverStadia_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static bool HIDAPI_DriverStadia_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverStadia_Context *ctx = (SDL_DriverStadia_Context *)device->context;
 
@@ -110,7 +110,7 @@ static SDL_bool HIDAPI_DriverStadia_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
 
-    return SDL_TRUE;
+    return true;
 }
 
 static int HIDAPI_DriverStadia_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
@@ -161,7 +161,7 @@ static int HIDAPI_DriverStadia_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL
     return SDL_Unsupported();
 }
 
-static int HIDAPI_DriverStadia_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+static int HIDAPI_DriverStadia_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -258,7 +258,7 @@ static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static SDL_bool HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverStadia_Context *ctx = (SDL_DriverStadia_Context *)device->context;
     SDL_Joystick *joystick = NULL;
@@ -268,7 +268,7 @@ static SDL_bool HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
     if (device->num_joysticks > 0) {
         joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     } else {
-        return SDL_FALSE;
+        return false;
     }
 
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
@@ -299,7 +299,7 @@ static void HIDAPI_DriverStadia_FreeDevice(SDL_HIDAPI_Device *device)
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia = {
     SDL_HINT_JOYSTICK_HIDAPI_STADIA,
-    SDL_TRUE,
+    true,
     HIDAPI_DriverStadia_RegisterHints,
     HIDAPI_DriverStadia_UnregisterHints,
     HIDAPI_DriverStadia_IsEnabled,

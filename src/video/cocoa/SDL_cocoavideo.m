@@ -139,7 +139,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 #endif
 #ifdef SDL_VIDEO_OPENGL_EGL
 #ifdef SDL_VIDEO_OPENGL_CGL
-        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
+        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, false)) {
 #endif
             device->GL_LoadLibrary = Cocoa_GLES_LoadLibrary;
             device->GL_GetProcAddress = Cocoa_GLES_GetProcAddress;
@@ -207,11 +207,11 @@ int Cocoa_VideoInit(SDL_VideoDevice *_this)
 
         // Assume we have a mouse and keyboard
         // We could use GCMouse and GCKeyboard if we needed to, as is done in SDL_uikitevents.m
-        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
-        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
+        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
+        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
 
-        data.allow_spaces = SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, SDL_TRUE);
-        data.trackpad_is_touch_only = SDL_GetHintBoolean(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, SDL_FALSE);
+        data.allow_spaces = SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, true);
+        data.trackpad_is_touch_only = SDL_GetHintBoolean(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, false);
 
         data.swaplock = SDL_CreateMutex();
         if (!data.swaplock) {
@@ -273,7 +273,7 @@ NSImage *Cocoa_CreateImage(SDL_Surface *surface)
         }
 
         // Premultiply the alpha channel
-        SDL_PremultiplySurfaceAlpha(converted, SDL_FALSE);
+        SDL_PremultiplySurfaceAlpha(converted, false);
 
         NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
                                                                            pixelsWide:converted->w

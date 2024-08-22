@@ -40,23 +40,23 @@ static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
 
 static SDL_UDEV_PrivateData *_this = NULL;
 
-static SDL_bool SDL_UDEV_load_sym(const char *fn, void **addr);
+static bool SDL_UDEV_load_sym(const char *fn, void **addr);
 static int SDL_UDEV_load_syms(void);
-static SDL_bool SDL_UDEV_hotplug_update_available(void);
+static bool SDL_UDEV_hotplug_update_available(void);
 static void get_caps(struct udev_device *dev, struct udev_device *pdev, const char *attr, unsigned long *bitmask, size_t bitmask_len);
 static int guess_device_class(struct udev_device *dev);
 static int device_class(struct udev_device *dev);
 static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev);
 
-static SDL_bool SDL_UDEV_load_sym(const char *fn, void **addr)
+static bool SDL_UDEV_load_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(_this->udev_handle, fn);
     if (!*addr) {
         // Don't call SDL_SetError(): SDL_LoadFunction already did.
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 static int SDL_UDEV_load_syms(void)
@@ -98,15 +98,15 @@ static int SDL_UDEV_load_syms(void)
     return 0;
 }
 
-static SDL_bool SDL_UDEV_hotplug_update_available(void)
+static bool SDL_UDEV_hotplug_update_available(void)
 {
     if (_this->udev_mon) {
         const int fd = _this->syms.udev_monitor_get_fd(_this->udev_mon);
         if (SDL_IOReady(fd, SDL_IOR_READ, 0)) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_UDEV_Init(void)
@@ -222,7 +222,7 @@ int SDL_UDEV_Scan(void)
     return 0;
 }
 
-SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class)
+bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class)
 {
     struct stat statbuf;
     char type;
@@ -231,11 +231,11 @@ SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16
     int class_temp;
 
     if (!_this) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (stat(device_path, &statbuf) == -1) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (S_ISBLK(statbuf.st_mode)) {
@@ -245,13 +245,13 @@ SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16
         type = 'c';
     }
     else {
-        return SDL_FALSE;
+        return false;
     }
 
     dev = _this->syms.udev_device_new_from_devnum(_this->udev, type, statbuf.st_rdev);
 
     if (!dev) {
-        return SDL_FALSE;
+        return false;
     }
 
     val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
@@ -276,7 +276,7 @@ SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16
 
     _this->syms.udev_device_unref(dev);
 
-    return SDL_TRUE;
+    return true;
 }
 
 void SDL_UDEV_UnloadLibrary(void)

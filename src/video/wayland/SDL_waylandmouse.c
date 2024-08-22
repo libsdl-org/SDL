@@ -43,7 +43,7 @@
 
 static SDL_Cursor *sys_cursors[SDL_HITTEST_RESIZE_LEFT + 1];
 
-static int Wayland_SetRelativeMouseMode(SDL_bool enabled);
+static int Wayland_SetRelativeMouseMode(bool enabled);
 
 typedef struct
 {
@@ -92,7 +92,7 @@ struct SDL_CursorData
 
     int hot_x, hot_y;
 
-    SDL_bool is_system_cursor;
+    bool is_system_cursor;
 };
 
 static int dbus_cursor_size;
@@ -140,28 +140,28 @@ static DBusMessage *Wayland_ReadDBusProperty(SDL_DBusContext *dbus, const char *
     return reply;
 }
 
-static SDL_bool Wayland_ParseDBusReply(SDL_DBusContext *dbus, DBusMessage *reply, int type, void *value)
+static bool Wayland_ParseDBusReply(SDL_DBusContext *dbus, DBusMessage *reply, int type, void *value)
 {
     DBusMessageIter iter[3];
 
     dbus->message_iter_init(reply, &iter[0]);
     if (dbus->message_iter_get_arg_type(&iter[0]) != DBUS_TYPE_VARIANT) {
-        return SDL_FALSE;
+        return false;
     }
 
     dbus->message_iter_recurse(&iter[0], &iter[1]);
     if (dbus->message_iter_get_arg_type(&iter[1]) != DBUS_TYPE_VARIANT) {
-        return SDL_FALSE;
+        return false;
     }
 
     dbus->message_iter_recurse(&iter[1], &iter[2]);
     if (dbus->message_iter_get_arg_type(&iter[2]) != type) {
-        return SDL_FALSE;
+        return false;
     }
 
     dbus->message_iter_get_basic(&iter[2], value);
 
-    return SDL_TRUE;
+    return true;
 }
 
 static DBusHandlerResult Wayland_DBusCursorMessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
@@ -250,7 +250,7 @@ static void Wayland_DBusInitCursorProperties(SDL_VideoData *vdata)
 {
     DBusMessage *reply;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
-    SDL_bool add_filter = SDL_FALSE;
+    bool add_filter = false;
 
     if (!dbus) {
         return;
@@ -258,7 +258,7 @@ static void Wayland_DBusInitCursorProperties(SDL_VideoData *vdata)
 
     if ((reply = Wayland_ReadDBusProperty(dbus, CURSOR_SIZE_KEY))) {
         if (Wayland_ParseDBusReply(dbus, reply, DBUS_TYPE_INT32, &dbus_cursor_size)) {
-            add_filter = SDL_TRUE;
+            add_filter = true;
         }
         dbus->message_unref(reply);
     }
@@ -266,7 +266,7 @@ static void Wayland_DBusInitCursorProperties(SDL_VideoData *vdata)
     if ((reply = Wayland_ReadDBusProperty(dbus, CURSOR_THEME_KEY))) {
         const char *temp = NULL;
         if (Wayland_ParseDBusReply(dbus, reply, DBUS_TYPE_STRING, &temp)) {
-            add_filter = SDL_TRUE;
+            add_filter = true;
 
             if (temp) {
                 dbus_cursor_theme = SDL_strdup(temp);
@@ -332,7 +332,7 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     wl_surface_commit(c->surface);
 }
 
-static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdata, float *scale)
+static bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdata, float *scale)
 {
     struct wl_cursor_theme *theme = NULL;
     struct wl_cursor *cursor;
@@ -375,7 +375,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *
         SDL_WaylandCursorTheme *new_cursor_themes = SDL_realloc(vdata->cursor_themes,
                                                                 sizeof(SDL_WaylandCursorTheme) * (vdata->num_cursor_themes + 1));
         if (!new_cursor_themes) {
-            return SDL_FALSE;
+            return false;
         }
         vdata->cursor_themes = new_cursor_themes;
 
@@ -404,14 +404,14 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "left_ptr");
     }
     if (!cursor) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (cdata->cursor_data.system.num_frames != cursor->image_count) {
         SDL_free(cdata->cursor_data.system.frames);
         cdata->cursor_data.system.frames = SDL_calloc(cursor->image_count, sizeof(Wayland_SystemCursorFrame));
         if (!cdata->cursor_data.system.frames) {
-            return SDL_FALSE;
+            return false;
         }
     }
 
@@ -425,7 +425,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *
     }
     cdata->hot_x = cursor->images[0]->hotspot_x;
     cdata->hot_y = cursor->images[0]->hotspot_y;
-    return SDL_TRUE;
+    return true;
 }
 
 static Wayland_CachedCustomCursor *Wayland_GetCachedCustomCursor(SDL_Cursor *cursor)
@@ -474,7 +474,7 @@ static Wayland_CachedCustomCursor *Wayland_GetCachedCustomCursor(SDL_Cursor *cur
     // Wayland requires premultiplied alpha for its surfaces.
     SDL_PremultiplyAlpha(surface->w, surface->h,
                          surface->format, surface->pixels, surface->pitch,
-                         SDL_PIXELFORMAT_ARGB8888, cache->shmBuffer.shm_data, surface->w * 4, SDL_TRUE);
+                         SDL_PIXELFORMAT_ARGB8888, cache->shmBuffer.shm_data, surface->w * 4, true);
 
     cache->dst_width = data->cursor_data.custom.sdl_cursor_surface->w;
     cache->dst_height = data->cursor_data.custom.sdl_cursor_surface->h;
@@ -539,7 +539,7 @@ static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
         }
 
         cdata->cursor_data.system.id = id;
-        cdata->is_system_cursor = SDL_TRUE;
+        cdata->is_system_cursor = true;
     }
 
     return cursor;
@@ -769,7 +769,7 @@ static int Wayland_WarpMouse(SDL_Window *window, float x, float y)
     struct SDL_WaylandInput *input = d->input;
 
     if (d->pointer_constraints) {
-        const SDL_bool toggle_lock = !wind->locked_pointer;
+        const bool toggle_lock = !wind->locked_pointer;
 
         /* The pointer confinement protocol allows setting a hint to warp the pointer,
          * but only when the pointer is locked.
@@ -792,7 +792,7 @@ static int Wayland_WarpMouse(SDL_Window *window, float x, float y)
         /* NOTE: There is a pending warp event under discussion that should replace this when available.
          * https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/340
          */
-        SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
+        SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, false, x, y);
     } else {
         return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required zwp_pointer_confinement_v1 protocol");
     }
@@ -816,7 +816,7 @@ static int Wayland_WarpMouseGlobal(float x, float y)
     return SDL_SetError("wayland: can't warp the mouse when a window does not have focus");
 }
 
-static int Wayland_SetRelativeMouseMode(SDL_bool enabled)
+static int Wayland_SetRelativeMouseMode(bool enabled)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *data = vd->internal;

@@ -163,7 +163,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         point.x -= origin.x;
         point.y -= origin.y;
 
-        SDL_SendMouseMotion(0, sdlwindow, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, point.x, point.y);
+        SDL_SendMouseMotion(0, sdlwindow, SDL_GLOBAL_MOUSE_ID, false, point.x, point.y);
     }
     return [UIPointerRegion regionWithRect:self.bounds identifier:nil];
 }
@@ -277,7 +277,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
                           touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
-                          SDL_TRUE, locationInView.x, locationInView.y, pressure);
+                          true, locationInView.x, locationInView.y, pressure);
         }
     }
 }
@@ -333,7 +333,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
                           touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
-                          SDL_FALSE, locationInView.x, locationInView.y, pressure);
+                          false, locationInView.x, locationInView.y, pressure);
         }
     }
 }

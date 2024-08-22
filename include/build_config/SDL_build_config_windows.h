@@ -124,6 +124,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_MATH_H 1
 #define HAVE_SIGNAL_H 1
 #define HAVE_STDARG_H 1
+#define HAVE_STDBOOL_H 1
 #define HAVE_STDDEF_H 1
 #define HAVE_STDIO_H 1
 #define HAVE_STDLIB_H 1

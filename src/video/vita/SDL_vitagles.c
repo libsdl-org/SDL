@@ -99,7 +99,7 @@ SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window
     EGLCHK(display = eglGetDisplay(0));
 
     EGLCHK(eglInitialize(display, NULL, NULL));
-    wdata->uses_gles = SDL_TRUE;
+    wdata->uses_gles = true;
     window->flags |= SDL_WINDOW_FULLSCREEN;
 
     EGLCHK(eglBindAPI(EGL_OPENGL_ES_API));
@@ -196,7 +196,7 @@ int VITA_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
     SDL_VideoData *phdata = _this->internal;
     EGLBoolean status;
 
-    if (phdata->egl_initialized != SDL_TRUE) {
+    if (phdata->egl_initialized != true) {
         return SDL_SetError("VITA: GLES initialization failed, no OpenGL ES support");
     }
 

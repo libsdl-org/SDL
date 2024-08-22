@@ -75,28 +75,28 @@ static DBusMessage *ReadDBusSetting(SDL_DBusContext *dbus, const char *key)
     return reply;
 }
 
-static SDL_bool ParseDBusReply(SDL_DBusContext *dbus, DBusMessage *reply, int type, void *value)
+static bool ParseDBusReply(SDL_DBusContext *dbus, DBusMessage *reply, int type, void *value)
 {
     DBusMessageIter iter[3];
 
     dbus->message_iter_init(reply, &iter[0]);
     if (dbus->message_iter_get_arg_type(&iter[0]) != DBUS_TYPE_VARIANT) {
-        return SDL_FALSE;
+        return false;
     }
 
     dbus->message_iter_recurse(&iter[0], &iter[1]);
     if (dbus->message_iter_get_arg_type(&iter[1]) != DBUS_TYPE_VARIANT) {
-        return SDL_FALSE;
+        return false;
     }
 
     dbus->message_iter_recurse(&iter[1], &iter[2]);
     if (dbus->message_iter_get_arg_type(&iter[2]) != type) {
-        return SDL_FALSE;
+        return false;
     }
 
     dbus->message_iter_get_basic(&iter[2], value);
 
-    return SDL_TRUE;
+    return true;
 }
 
 static void UpdateDisplayContentScale(float scale)
@@ -367,25 +367,25 @@ SDL_PixelFormat X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *
 }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
-static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
+static bool CheckXRandR(Display *display, int *major, int *minor)
 {
     // Default the extension not available
     *major = *minor = 0;
 
     // Allow environment override
 #ifdef XRANDR_DISABLED_BY_DEFAULT
-    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, SDL_FALSE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, false)) {
 #ifdef X11MODES_DEBUG
         printf("XRandR disabled by default due to window manager issues\n");
 #endif
-        return SDL_FALSE;
+        return false;
     }
 #else
-    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, SDL_TRUE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, true)) {
 #ifdef X11MODES_DEBUG
         printf("XRandR disabled due to hint\n");
 #endif
-        return SDL_FALSE;
+        return false;
     }
 #endif // XRANDR_DISABLED_BY_DEFAULT
 
@@ -393,7 +393,7 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 #ifdef X11MODES_DEBUG
         printf("XRandR support not available\n");
 #endif
-        return SDL_FALSE;
+        return false;
     }
 
     // Query the extension version
@@ -404,12 +404,12 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
         printf("XRandR not active on the display\n");
 #endif
         *major = *minor = 0;
-        return SDL_FALSE;
+        return false;
     }
 #ifdef X11MODES_DEBUG
     printf("XRandR available at version %d.%d!\n", *major, *minor);
 #endif
-    return SDL_TRUE;
+    return true;
 }
 
 #define XRANDR_ROTATION_LEFT  (1 << 1)
@@ -439,7 +439,7 @@ static void CalculateXRandRRefreshRate(const XRRModeInfo *info, int *numerator, 
     }
 }
 
-static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,
+static bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,
                                   RRMode modeID, SDL_DisplayMode *mode)
 {
     int i;
@@ -475,10 +475,10 @@ static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRC
             printf("XRandR mode %d: %dx%d@%d/%dHz\n", (int)modeID,
                    mode->screen_w, mode->screen_h, mode->refresh_rate_numerator, mode->refresh_rate_denominator);
 #endif
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 static void SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, RROutput output, const unsigned long widthmm, const unsigned long heightmm)
@@ -621,7 +621,7 @@ static int X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int s
     displaydata->scanline_pad = scanline_pad;
     displaydata->x = display_x;
     displaydata->y = display_y;
-    displaydata->use_xrandr = SDL_TRUE;
+    displaydata->use_xrandr = true;
     displaydata->xrandr_output = outputid;
 
     SetXRandRModeInfo(dpy, res, output_crtc, modeID, &mode);
@@ -638,7 +638,7 @@ static int X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int s
     return 0;
 }
 
-static int X11_AddXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_bool send_event)
+static int X11_AddXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, bool send_event)
 {
     SDL_VideoDisplay display;
     char display_name[128];
@@ -709,7 +709,7 @@ static void X11_HandleXRandROutputChange(SDL_VideoDevice *_this, const XRROutput
 
     if (ev->connection == RR_Disconnected) { // output is going away
         if (display) {
-            SDL_DelVideoDisplay(display->id, SDL_TRUE);
+            SDL_DelVideoDisplay(display->id, true);
         }
     } else if (ev->connection == RR_Connected) { // output is coming online
         Display *dpy = ev->display;
@@ -729,7 +729,7 @@ static void X11_HandleXRandROutputChange(SDL_VideoDevice *_this, const XRROutput
                     X11_UpdateXRandRDisplay(_this, dpy, screen, ev->output, res, display);
                 }
                 else {
-                    X11_AddXRandRDisplay(_this, dpy, screen, ev->output, res, SDL_TRUE);
+                    X11_AddXRandRDisplay(_this, dpy, screen, ev->output, res, true);
                 }
 
                 X11_XRRFreeScreenResources(res);
@@ -795,7 +795,7 @@ static int X11_InitModes_XRandR(SDL_VideoDevice *_this)
                     (!looking_for_primary && (screen == default_screen) && (res->outputs[output] == primary))) {
                     continue;
                 }
-                if (X11_AddXRandRDisplay(_this, dpy, screen, res->outputs[output], res, SDL_FALSE) == -1) {
+                if (X11_AddXRandRDisplay(_this, dpy, screen, res->outputs[output], res, false) == -1) {
                     break;
                 }
             }
@@ -881,14 +881,14 @@ static int X11_InitModes_StdXlib(SDL_VideoDevice *_this)
     displaydata->scanline_pad = scanline_pad;
     displaydata->x = 0;
     displaydata->y = 0;
-    displaydata->use_xrandr = SDL_FALSE;
+    displaydata->use_xrandr = false;
 
     SDL_zero(display);
     display.name = (char *)"Generic X11 Display"; /* this is just copied and thrown away, it's safe to cast to char* here. */
     display.desktop_mode = mode;
     display.internal = displaydata;
     display.content_scale = GetGlobalContentScale(_this);
-    if (SDL_AddVideoDisplay(&display, SDL_TRUE) == 0) {
+    if (SDL_AddVideoDisplay(&display, true) == 0) {
         return -1;
     }
     return 0;

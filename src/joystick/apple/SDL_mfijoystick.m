@@ -406,9 +406,9 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 #endif
     CheckControllerSiriRemote(controller, &device->is_siri_remote);
 
-    if (device->is_siri_remote && !SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+    if (device->is_siri_remote && !SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, true)) {
         // Ignore remotes, they'll be handled as keyboard input
-        return SDL_FALSE;
+        return false;
     }
 
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
@@ -490,7 +490,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 #endif
     } else {
         // We don't know how to get input events from this device
-        return SDL_FALSE;
+        return false;
     }
 
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
@@ -636,12 +636,12 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         device->nhats = 0; // apparently the touch surface-as-dpad is buggy
         device->nbuttons = nbuttons;
 
-        controller.microGamepad.allowsRotation = SDL_GetHintBoolean(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION, SDL_FALSE);
+        controller.microGamepad.allowsRotation = SDL_GetHintBoolean(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION, false);
     }
 #endif
     else {
         // We don't know how to get input events from this device
-        return SDL_FALSE;
+        return false;
     }
 
     Uint16 signature;
@@ -662,7 +662,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, signature, NULL, name, 'm', subtype);
 
     if (SDL_ShouldIgnoreJoystick(name, device->guid)) {
-        return SDL_FALSE;
+        return false;
     }
 
     /* This will be set when the first button press of the controller is
@@ -798,7 +798,7 @@ static void SDLCALL SDL_AppleTVRemoteRotationHintChanged(void *udata, const char
 
 static int IOS_JoystickInit(void)
 {
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, SDL_TRUE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, true)) {
         return 0;
     }
 
@@ -879,10 +879,10 @@ static void IOS_JoystickDetect(void)
 {
 }
 
-static SDL_bool IOS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool IOS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     // We don't override any other drivers through this method
-    return SDL_FALSE;
+    return false;
 }
 
 static const char *IOS_JoystickGetDeviceName(int device_index)
@@ -999,7 +999,7 @@ static int IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
             GCController *controller = device->controller;
 #ifdef ENABLE_MFI_LIGHT
             if (controller.light) {
-                SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, SDL_TRUE);
+                SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, true);
             }
 #endif
 
@@ -1007,9 +1007,9 @@ static int IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
             if (controller.haptics) {
                 for (GCHapticsLocality locality in controller.haptics.supportedLocalities) {
                     if ([locality isEqualToString:GCHapticsLocalityHandles]) {
-                        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+                        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
                     } else if ([locality isEqualToString:GCHapticsLocalityTriggers]) {
-                        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, SDL_TRUE);
+                        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
                     }
                 }
             }
@@ -1116,7 +1116,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         } else
 #endif
         if (controller.extendedGamepad) {
-            SDL_bool isstack;
+            bool isstack;
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
             // Axis order matches the XInput Windows mappings.
@@ -1182,7 +1182,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
             SDL_small_free(buttons, isstack);
         } else if (controller.gamepad) {
-            SDL_bool isstack;
+            bool isstack;
             GCGamepad *gamepad = controller.gamepad;
 
             // Button order matches the XInput Windows mappings.
@@ -1608,7 +1608,7 @@ static int IOS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int 
     return SDL_Unsupported();
 }
 
-static int IOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int IOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
 #ifdef ENABLE_MFI_SENSORS
     @autoreleasepool {
@@ -1721,12 +1721,12 @@ static void IOS_JoystickQuit(void)
     numjoysticks = 0;
 }
 
-static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
     SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
     if (device == NULL) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
@@ -1740,22 +1740,22 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
                        [(NSString *)key isEqualToString:@"Direction Pad Y Axis"]) {
                 out->lefty.kind = EMappingKind_Axis;
                 out->lefty.target = axis;
-                out->lefty.axis_reversed = SDL_TRUE;
+                out->lefty.axis_reversed = true;
             } else if ([(NSString *)key isEqualToString:@"Right Thumbstick X Axis"]) {
                 out->rightx.kind = EMappingKind_Axis;
                 out->rightx.target = axis;
             } else if ([(NSString *)key isEqualToString:@"Right Thumbstick Y Axis"]) {
                 out->righty.kind = EMappingKind_Axis;
                 out->righty.target = axis;
-                out->righty.axis_reversed = SDL_TRUE;
+                out->righty.axis_reversed = true;
             } else if ([(NSString *)key isEqualToString:GCInputLeftTrigger]) {
                 out->lefttrigger.kind = EMappingKind_Axis;
                 out->lefttrigger.target = axis;
-                out->lefttrigger.half_axis_positive = SDL_TRUE;
+                out->lefttrigger.half_axis_positive = true;
             } else if ([(NSString *)key isEqualToString:GCInputRightTrigger]) {
                 out->righttrigger.kind = EMappingKind_Axis;
                 out->righttrigger.target = axis;
-                out->righttrigger.half_axis_positive = SDL_TRUE;
+                out->righttrigger.half_axis_positive = true;
             }
             ++axis;
         }
@@ -1854,32 +1854,32 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
             ++button;
         }
 
-        return SDL_TRUE;
+        return true;
     }
 #endif // ENABLE_PHYSICAL_INPUT_PROFILE
 
-    return SDL_FALSE;
+    return false;
 }
 
 #if defined(SDL_JOYSTICK_MFI) && defined(SDL_PLATFORM_MACOS)
-SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
+bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, SDL_TRUE)) {
-        return SDL_FALSE;
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, true)) {
+        return false;
     }
 
     if (@available(macOS 10.16, *)) {
         const int MAX_ATTEMPTS = 3;
         for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
             if ([GCController supportsHIDDevice:device]) {
-                return SDL_TRUE;
+                return true;
             }
 
             // The framework may not have seen the device yet
             SDL_Delay(10);
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 #endif
 

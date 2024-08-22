@@ -29,14 +29,14 @@
 
 struct SDL_VideoData
 {
-    SDL_bool egl_initialized; // OpenGL ES device initialization status
+    bool egl_initialized; // OpenGL ES device initialization status
     uint32_t egl_refcount;    // OpenGL ES reference count
 
 };
 
 struct SDL_WindowData
 {
-    SDL_bool uses_gles; // if true window must support OpenGL ES
+    bool uses_gles; // if true window must support OpenGL ES
 
 };
 
@@ -73,9 +73,9 @@ int PSP_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 int PSP_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 
 // PSP on screen keyboard
-SDL_bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
+bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 void PSP_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-SDL_bool PSP_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
+bool PSP_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif // SDL_pspvideo_h_

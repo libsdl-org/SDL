@@ -48,7 +48,7 @@ struct SDL_WindowData
     // Vsync callback cond and mutex
     SDL_Condition *vsync_cond;
     SDL_Mutex *vsync_cond_mutex;
-    SDL_bool double_buffer;
+    bool double_buffer;
 };
 
 #define SDL_RPI_VIDEOLAYER 10000 // High enough so to occlude everything

@@ -74,7 +74,7 @@ typedef struct SDL_InternalSurface
 } SDL_InternalSurface;
 
 // Surface functions
-extern SDL_bool SDL_SurfaceValid(SDL_Surface *surface);
+extern bool SDL_SurfaceValid(SDL_Surface *surface);
 extern void SDL_UpdateSurfaceLockFlag(SDL_Surface *surface);
 extern float SDL_GetDefaultSDRWhitePoint(SDL_Colorspace colorspace);
 extern float SDL_GetSurfaceSDRWhitePoint(SDL_Surface *surface, SDL_Colorspace colorspace);

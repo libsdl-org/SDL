@@ -273,7 +273,7 @@ static int JACK_OpenDevice(SDL_AudioDevice *device)
         data to us) and "input" for playback (we input audio data to them).
         Likewise, SDL's playback port will be "output" (we write data out)
         and recording will be "input" (we read data in). */
-    const SDL_bool recording = device->recording;
+    const bool recording = device->recording;
     const unsigned long sysportflags = recording ? JackPortIsOutput : JackPortIsInput;
     const unsigned long sdlportflags = recording ? JackPortIsInput : JackPortIsOutput;
     const JackProcessCallback callback = recording ? jackProcessRecordingCallback : jackProcessPlaybackCallback;
@@ -398,10 +398,10 @@ static void JACK_Deinitialize(void)
     UnloadJackLibrary();
 }
 
-static SDL_bool JACK_Init(SDL_AudioDriverImpl *impl)
+static bool JACK_Init(SDL_AudioDriverImpl *impl)
 {
     if (LoadJackLibrary() < 0) {
-        return SDL_FALSE;
+        return false;
     } else {
         // Make sure a JACK server is running and available.
         jack_status_t status;
@@ -409,7 +409,7 @@ static SDL_bool JACK_Init(SDL_AudioDriverImpl *impl)
         if (!client) {
             UnloadJackLibrary();
             SDL_SetError("Can't open JACK client");
-            return SDL_FALSE;
+            return false;
         }
         JACK_jack_client_close(client);
     }
@@ -421,16 +421,16 @@ static SDL_bool JACK_Init(SDL_AudioDriverImpl *impl)
     impl->Deinitialize = JACK_Deinitialize;
     impl->RecordDevice = JACK_RecordDevice;
     impl->FlushRecording = JACK_FlushRecording;
-    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
-    impl->OnlyHasDefaultRecordingDevice = SDL_TRUE;
-    impl->HasRecordingSupport = SDL_TRUE;
-    impl->ProvidesOwnCallbackThread = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = true;
+    impl->OnlyHasDefaultRecordingDevice = true;
+    impl->HasRecordingSupport = true;
+    impl->ProvidesOwnCallbackThread = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap JACK_bootstrap = {
-    "jack", "JACK Audio Connection Kit", JACK_Init, SDL_FALSE
+    "jack", "JACK Audio Connection Kit", JACK_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_JACK

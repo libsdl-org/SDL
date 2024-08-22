@@ -85,7 +85,7 @@ typedef struct
     uint32_t drag_serial;
     SDL_WaylandDataOffer *drag_offer;
     SDL_WaylandDataOffer *selection_offer;
-    SDL_bool has_mime_file, has_mime_text;
+    bool has_mime_file, has_mime_text;
     SDL_Window *dnd_window;
 
     // Clipboard and Primary Selection
@@ -133,9 +133,9 @@ extern void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
 extern void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
                                                      const char *mime_type,
                                                      size_t *length);
-extern SDL_bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
+extern bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
                                             const char *mime_type);
-extern SDL_bool Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *offer,
+extern bool Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *offer,
                                                          const char *mime_type);
 extern int Wayland_data_offer_add_mime(SDL_WaylandDataOffer *offer,
                                        const char *mime_type);

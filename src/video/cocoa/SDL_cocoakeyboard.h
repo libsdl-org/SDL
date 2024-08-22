@@ -31,6 +31,6 @@ extern int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 extern int Cocoa_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Cocoa_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
 
-extern int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
+extern int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
 
 #endif // SDL_cocoakeyboard_h_

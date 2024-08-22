@@ -22,10 +22,10 @@
 #include "SDL_iostreamromfs.h"
 
 // Checks if the mode is a kind of reading
-static SDL_bool IsReadMode(const char *mode);
+static bool IsReadMode(const char *mode);
 
 // Checks if the file starts with the given prefix
-static SDL_bool HasPrefix(const char *file, const char *prefix);
+static bool HasPrefix(const char *file, const char *prefix);
 
 static FILE *TryOpenFile(const char *file, const char *mode);
 static FILE *TryOpenInRomfs(const char *file, const char *mode);
@@ -50,12 +50,12 @@ FILE *N3DS_FileOpen(const char *file, const char *mode)
     return TryOpenFile(file, mode);
 }
 
-static SDL_bool IsReadMode(const char *mode)
+static bool IsReadMode(const char *mode)
 {
     return SDL_strchr(mode, 'r') != NULL;
 }
 
-static SDL_bool HasPrefix(const char *file, const char *prefix)
+static bool HasPrefix(const char *file, const char *prefix)
 {
     return SDL_strncmp(prefix, file, SDL_strlen(prefix)) == 0;
 }
