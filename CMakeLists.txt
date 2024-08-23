@@ -482,7 +482,6 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/joystick/*.c"
   "${SDL3_SOURCE_DIR}/src/haptic/*.c"
   "${SDL3_SOURCE_DIR}/src/hidapi/*.c"
-  "${SDL3_SOURCE_DIR}/src/libm/*.c"
   "${SDL3_SOURCE_DIR}/src/locale/*.c"
   "${SDL3_SOURCE_DIR}/src/main/*.c"
   "${SDL3_SOURCE_DIR}/src/misc/*.c"
@@ -498,6 +497,11 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/video/*.c"
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c"
 )
+if(NOT SDL_LIBC)
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/libm/*.c"
+  )
+endif()
 if(MSVC AND TARGET SDL3-shared)
   if(SDL_CPU_X64)
     enable_language(ASM_MASM)
@@ -1053,6 +1057,9 @@ if(SDL_LIBC)
         }
       " LIBC_HAS_${MATH_FN})
     set(HAVE_${MATH_FN} ${LIBC_HAS_${MATH_FN}})
+    if(NOT HAVE_${MATH_FN})
+      sdl_sources("${SDL3_SOURCE_DIR}/src/libm/s_${math_fn}.c")
+    endif()
 
     check_c_source_compiles("
       #include <math.h>
@@ -1070,7 +1077,10 @@ if(SDL_LIBC)
         return ${math_fn}f(f);
       }
     " LIBC_HAS_${MATH_FN}F)
-    set(HAVE_${MATH_FN}F "${LIBC_HAS_${MATH_FN}}")
+    set(HAVE_${MATH_FN}F "${LIBC_HAS_${MATH_FN}F}")
+    if(NOT HAVE_${MATH_FN}F)
+      sdl_sources("${SDL3_SOURCE_DIR}/src/libm/s_${math_fn}f.c")
+    endif()
   endforeach()
   cmake_pop_check_state()
 
