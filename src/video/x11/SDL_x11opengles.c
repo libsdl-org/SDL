@@ -28,7 +28,7 @@
 
 // EGL implementation of SDL OpenGL support
 
-int X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     SDL_VideoData *data = _this->internal;
 
@@ -45,7 +45,7 @@ int X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         _this->GL_SetSwapInterval = X11_GL_SetSwapInterval;
         _this->GL_GetSwapInterval = X11_GL_GetSwapInterval;
         _this->GL_SwapWindow = X11_GL_SwapWindow;
-        _this->GL_DeleteContext = X11_GL_DeleteContext;
+        _this->GL_DestroyContext = X11_GL_DestroyContext;
         return X11_GL_LoadLibrary(_this, path);
 #else
         return SDL_SetError("SDL not configured with OpenGL/GLX support");
@@ -124,6 +124,6 @@ SDL_EGLSurface X11_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window
 }
 
 SDL_EGL_SwapWindow_impl(X11)
-    SDL_EGL_MakeCurrent_impl(X11)
+SDL_EGL_MakeCurrent_impl(X11)
 
 #endif // SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_OPENGL_EGL

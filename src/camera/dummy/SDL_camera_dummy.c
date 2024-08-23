@@ -24,7 +24,7 @@
 
 #include "../SDL_syscamera.h"
 
-static int DUMMYCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
+static bool DUMMYCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
     return SDL_Unsupported();
 }
@@ -33,14 +33,15 @@ static void DUMMYCAMERA_CloseDevice(SDL_Camera *device)
 {
 }
 
-static int DUMMYCAMERA_WaitDevice(SDL_Camera *device)
+static bool DUMMYCAMERA_WaitDevice(SDL_Camera *device)
 {
     return SDL_Unsupported();
 }
 
-static int DUMMYCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult DUMMYCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
-    return SDL_Unsupported();
+    SDL_Unsupported();
+    return SDL_CAMERA_FRAME_ERROR;
 }
 
 static void DUMMYCAMERA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)

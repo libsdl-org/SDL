@@ -23,6 +23,5 @@
 // This is called from WIN_PumpEvents on GDK
 extern void GDK_DispatchTaskQueue(void);
 
-extern int GDK_RegisterChangeNotifications(void);
-
+extern bool GDK_RegisterChangeNotifications(void);
 extern void GDK_UnregisterChangeNotifications(void);

@@ -52,7 +52,7 @@ SDL_TLSData *SDL_SYS_GetTLSData(void)
     return NULL;
 }
 
-int SDL_SYS_SetTLSData(SDL_TLSData *data)
+bool SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
     if (generic_local_storage) {
         return SDL_Generic_SetTLSData(data);
@@ -61,7 +61,7 @@ int SDL_SYS_SetTLSData(SDL_TLSData *data)
     if (pthread_setspecific(thread_local_storage, data) != 0) {
         return SDL_SetError("pthread_setspecific() failed");
     }
-    return 0;
+    return true;
 }
 
 void SDL_SYS_QuitTLSData(void)

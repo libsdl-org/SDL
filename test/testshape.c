@@ -20,7 +20,7 @@ static SDL_HitTestResult SDLCALL ShapeHitTest(SDL_Window *window, const SDL_Poin
     SDL_Surface *shape = (SDL_Surface *)userdata;
     Uint8 r, g, b, a;
 
-    if (SDL_ReadSurfacePixel(shape, area->x, area->y, &r, &g, &b, &a) == 0) {
+    if (SDL_ReadSurfacePixel(shape, area->x, area->y, &r, &g, &b, &a)) {
         if (a != SDL_ALPHA_TRANSPARENT) {
             /* We'll just make everything draggable */
             return SDL_HITTEST_DRAGGABLE;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 
     if (!resizable) {
         /* Set the hit test callback so we can drag the window */
-        if (SDL_SetWindowHitTest(window, ShapeHitTest, shape) < 0) {
+        if (!SDL_SetWindowHitTest(window, ShapeHitTest, shape)) {
             SDL_Log("Couldn't set hit test callback: %s\n", SDL_GetError());
             goto quit;
         }

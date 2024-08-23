@@ -59,11 +59,11 @@ static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick);
 static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick);
 static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick);
 
-static int N3DS_JoystickInit(void)
+static bool N3DS_JoystickInit(void)
 {
     hidInit();
     SDL_PrivateJoystickAdded(1);
-    return 0;
+    return true;
 }
 
 static const char *N3DS_JoystickGetDeviceName(int device_index)
@@ -87,16 +87,16 @@ static SDL_JoystickID N3DS_JoystickGetDeviceInstanceID(int device_index)
     return device_index + 1;
 }
 
-static int N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     joystick->nbuttons = NB_BUTTONS;
     joystick->naxes = 4;
     joystick->nhats = 0;
 
-    return 0;
+    return true;
 }
 
-static int N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
+static bool N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -251,22 +251,22 @@ static void N3DS_JoystickSetDevicePlayerIndex(int device_index, int player_index
 {
 }
 
-static int N3DS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool N3DS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int N3DS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool N3DS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int N3DS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool N3DS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int N3DS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool N3DS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }

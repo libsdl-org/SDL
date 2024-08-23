@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     SDL_Window *window = NULL;
     SDL_Surface *screenSurface = NULL;
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Could not initialize SDL: %s\n", SDL_GetError());
         return 1;
     }

@@ -90,7 +90,7 @@ void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data)
     }
 }
 
-int Cocoa_SetClipboardData(SDL_VideoDevice *_this)
+bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
@@ -125,7 +125,7 @@ int Cocoa_SetClipboardData(SDL_VideoDevice *_this)
         }
         data.clipboard_count = [pasteboard changeCount];
     }
-    return 0;
+    return true;
 }
 
 void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *size)

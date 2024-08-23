@@ -35,13 +35,13 @@ typedef struct
 
 extern void handleKeyboardEvent(screen_event_t event);
 
-extern int glGetConfig(EGLConfig *pconf, int *pformat);
-extern int glLoadLibrary(SDL_VideoDevice *_this, const char *name);
+extern bool glGetConfig(EGLConfig *pconf, int *pformat);
+extern bool glLoadLibrary(SDL_VideoDevice *_this, const char *name);
 extern SDL_FunctionPointer glGetProcAddress(SDL_VideoDevice *_this, const char *proc);
 extern SDL_GLContext glCreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int glSetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern int glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int glMakeCurrent(SDL_VideoDevice *_this, SDL_Window * window, SDL_GLContext context);
+extern bool glSetSwapInterval(SDL_VideoDevice *_this, int interval);
+extern bool glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool glMakeCurrent(SDL_VideoDevice *_this, SDL_Window * window, SDL_GLContext context);
 extern void glDeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 extern void glUnloadLibrary(SDL_VideoDevice *_this);
 

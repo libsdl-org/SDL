@@ -141,14 +141,14 @@ static bool CheckCameraPermissions(SDL_Camera *device)
     }
 @end
 
-static int COREMEDIA_WaitDevice(SDL_Camera *device)
+static bool COREMEDIA_WaitDevice(SDL_Camera *device)
 {
-    return 0;  // this isn't used atm, since we run our own thread out of Grand Central Dispatch.
+    return true;  // this isn't used atm, since we run our own thread out of Grand Central Dispatch.
 }
 
-static int COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
-    int retval = 1;
+    SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     SDLPrivateCameraData *hidden = (__bridge SDLPrivateCameraData *) device->hidden;
     CMSampleBufferRef sample_buffer = hidden.current_sample;
     hidden.current_sample = NULL;
@@ -185,7 +185,7 @@ static int COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64
         const size_t buflen = pitch * frame->h;
         frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
         if (frame->pixels == NULL) {
-            retval = -1;
+            result = SDL_CAMERA_FRAME_ERROR;
         } else {
             frame->pitch = pitch;
             SDL_memcpy(frame->pixels, CVPixelBufferGetBaseAddress(image), buflen);
@@ -203,7 +203,7 @@ static int COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64
         frame->pitch = (int)CVPixelBufferGetBytesPerRowOfPlane(image, 0);  // this is what SDL3 currently expects
         frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
         if (frame->pixels == NULL) {
-            retval = -1;
+            result = SDL_CAMERA_FRAME_ERROR;
         } else {
             Uint8 *dst = frame->pixels;
             for (int i = 0; i < numPlanes; i++) {
@@ -219,7 +219,7 @@ static int COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64
 
     CVPixelBufferUnlockBaseAddress(image, 0);
 
-    return retval;
+    return result;
 }
 
 static void COREMEDIA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
@@ -248,7 +248,7 @@ static void COREMEDIA_CloseDevice(SDL_Camera *device)
     }
 }
 
-static int COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
+static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
     AVCaptureDevice *avdevice = (__bridge AVCaptureDevice *) device->handle;
 
@@ -364,7 +364,7 @@ static int COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 
     CheckCameraPermissions(device);  // check right away, in case the process is already granted permission.
 
-    return 0;
+    return true;
 }
 
 static void COREMEDIA_FreeDeviceHandle(SDL_Camera *device)

@@ -76,7 +76,7 @@ static void SDL_InitDynamicAPI(void);
     }
 
 #define SDL_DYNAPI_VARARGS(_static, name, initcall)                                                                                       \
-    _static int SDLCALL SDL_SetError##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                                 \
+    _static SDL_bool SDLCALL SDL_SetError##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                            \
     {                                                                                                                                     \
         char buf[128], *str = buf;                                                                                                        \
         int result;                                                                                                                       \
@@ -95,62 +95,62 @@ static void SDL_InitDynamicAPI(void);
             }                                                                                                                             \
         }                                                                                                                                 \
         if (result >= 0) {                                                                                                                \
-            result = jump_table.SDL_SetError("%s", str);                                                                                  \
+            jump_table.SDL_SetError("%s", str);                                                                                           \
         }                                                                                                                                 \
         if (str != buf) {                                                                                                                 \
             jump_table.SDL_free(str);                                                                                                     \
         }                                                                                                                                 \
-        return result;                                                                                                                    \
+        return SDL_FALSE;                                                                                                                 \
     }                                                                                                                                     \
     _static int SDLCALL SDL_sscanf##name(const char *buf, SDL_SCANF_FORMAT_STRING const char *fmt, ...)                                   \
     {                                                                                                                                     \
-        int retval;                                                                                                                       \
+        int result;                                                                                                                       \
         va_list ap;                                                                                                                       \
         initcall;                                                                                                                         \
         va_start(ap, fmt);                                                                                                                \
-        retval = jump_table.SDL_vsscanf(buf, fmt, ap);                                                                                    \
+        result = jump_table.SDL_vsscanf(buf, fmt, ap);                                                                                    \
         va_end(ap);                                                                                                                       \
-        return retval;                                                                                                                    \
+        return result;                                                                                                                    \
     }                                                                                                                                     \
     _static int SDLCALL SDL_snprintf##name(SDL_OUT_Z_CAP(maxlen) char *buf, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) \
     {                                                                                                                                     \
-        int retval;                                                                                                                       \
+        int result;                                                                                                                       \
         va_list ap;                                                                                                                       \
         initcall;                                                                                                                         \
         va_start(ap, fmt);                                                                                                                \
-        retval = jump_table.SDL_vsnprintf(buf, maxlen, fmt, ap);                                                                          \
+        result = jump_table.SDL_vsnprintf(buf, maxlen, fmt, ap);                                                                          \
         va_end(ap);                                                                                                                       \
-        return retval;                                                                                                                    \
+        return result;                                                                                                                    \
     }                                                                                                                                     \
     _static int SDLCALL SDL_swprintf##name(SDL_OUT_Z_CAP(maxlen) wchar_t *buf, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ...) \
     {                                                                                                                                     \
-        int retval;                                                                                                                       \
+        int result;                                                                                                                       \
         va_list ap;                                                                                                                       \
         initcall;                                                                                                                         \
         va_start(ap, fmt);                                                                                                                \
-        retval = jump_table.SDL_vswprintf(buf, maxlen, fmt, ap);                                                                          \
+        result = jump_table.SDL_vswprintf(buf, maxlen, fmt, ap);                                                                          \
         va_end(ap);                                                                                                                       \
-        return retval;                                                                                                                    \
+        return result;                                                                                                                    \
     }                                                                                                                                     \
     _static int SDLCALL SDL_asprintf##name(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                    \
     {                                                                                                                                     \
-        int retval;                                                                                                                       \
+        int result;                                                                                                                       \
         va_list ap;                                                                                                                       \
         initcall;                                                                                                                         \
         va_start(ap, fmt);                                                                                                                \
-        retval = jump_table.SDL_vasprintf(strp, fmt, ap);                                                                                 \
+        result = jump_table.SDL_vasprintf(strp, fmt, ap);                                                                                 \
         va_end(ap);                                                                                                                       \
-        return retval;                                                                                                                    \
+        return result;                                                                                                                    \
     }                                                                                                                                     \
     _static size_t SDLCALL SDL_IOprintf##name(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                          \
     {                                                                                                                                     \
-        size_t retval;                                                                                                                    \
+        size_t result;                                                                                                                    \
         va_list ap;                                                                                                                       \
         initcall;                                                                                                                         \
         va_start(ap, fmt);                                                                                                                \
-        retval = jump_table.SDL_IOvprintf(context, fmt, ap);                                                                              \
+        result = jump_table.SDL_IOvprintf(context, fmt, ap);                                                                              \
         va_end(ap);                                                                                                                       \
-        return retval;                                                                                                                    \
+        return result;                                                                                                                    \
     }                                                                                                                                     \
     _static void SDLCALL SDL_Log##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                                     \
     {                                                                                                                                     \
@@ -232,7 +232,7 @@ SDL_DYNAPI_VARARGS(, , )
 
 #define ENABLE_SDL_CALL_LOGGING 0
 #if ENABLE_SDL_CALL_LOGGING
-static int SDLCALL SDL_SetError_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+static SDL_bool SDLCALL SDL_SetError_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     char buf[512]; // !!! FIXME: dynamic allocation
     va_list ap;
@@ -244,53 +244,53 @@ static int SDLCALL SDL_SetError_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char 
 }
 static int SDLCALL SDL_sscanf_LOGSDLCALLS(const char *buf, SDL_SCANF_FORMAT_STRING const char *fmt, ...)
 {
-    int retval;
+    int result;
     va_list ap;
     SDL_Log_REAL("SDL3CALL SDL_sscanf");
     va_start(ap, fmt);
-    retval = SDL_vsscanf_REAL(buf, fmt, ap);
+    result = SDL_vsscanf_REAL(buf, fmt, ap);
     va_end(ap);
-    return retval;
+    return result;
 }
 static int SDLCALL SDL_snprintf_LOGSDLCALLS(SDL_OUT_Z_CAP(maxlen) char *buf, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
-    int retval;
+    int result;
     va_list ap;
     SDL_Log_REAL("SDL3CALL SDL_snprintf");
     va_start(ap, fmt);
-    retval = SDL_vsnprintf_REAL(buf, maxlen, fmt, ap);
+    result = SDL_vsnprintf_REAL(buf, maxlen, fmt, ap);
     va_end(ap);
-    return retval;
+    return result;
 }
 static int SDLCALL SDL_asprintf_LOGSDLCALLS(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
-    int retval;
+    int result;
     va_list ap;
     SDL_Log_REAL("SDL3CALL SDL_asprintf");
     va_start(ap, fmt);
-    retval = SDL_vasprintf_REAL(strp, fmt, ap);
+    result = SDL_vasprintf_REAL(strp, fmt, ap);
     va_end(ap);
-    return retval;
+    return result;
 }
 static int SDLCALL SDL_swprintf_LOGSDLCALLS(SDL_OUT_Z_CAP(maxlen) wchar_t *buf, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ...)
 {
-    int retval;
+    int result;
     va_list ap;
     SDL_Log_REAL("SDL3CALL SDL_swprintf");
     va_start(ap, fmt);
-    retval = SDL_vswprintf_REAL(buf, maxlen, fmt, ap);
+    result = SDL_vswprintf_REAL(buf, maxlen, fmt, ap);
     va_end(ap);
-    return retval;
+    return result;
 }
 static size_t SDLCALL SDL_IOprintf_LOGSDLCALLS(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
-    size_t retval;
+    size_t result;
     va_list ap;
     SDL_Log_REAL("SDL3CALL SDL_IOprintf");
     va_start(ap, fmt);
-    retval = SDL_IOvprintf_REAL(context, fmt, ap);
+    result = SDL_IOvprintf_REAL(context, fmt, ap);
     va_end(ap);
-    return retval;
+    return result;
 }
 static void SDLCALL SDL_Log_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
@@ -403,14 +403,14 @@ Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
     HMODULE lib = LoadLibraryA(fname);
-    void *retval = NULL;
+    void *result = NULL;
     if (lib) {
-        retval = (void *) GetProcAddress(lib, sym);
-        if (!retval) {
+        result = (void *) GetProcAddress(lib, sym);
+        if (!result) {
             FreeLibrary(lib);
         }
     }
-    return retval;
+    return result;
 }
 
 #elif defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE) || defined(SDL_PLATFORM_HAIKU)
@@ -418,14 +418,14 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
     void *lib = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
-    void *retval = NULL;
+    void *result = NULL;
     if (lib) {
-        retval = dlsym(lib, sym);
-        if (!retval) {
+        result = dlsym(lib, sym);
+        if (!result) {
             dlclose(lib);
         }
     }
-    return retval;
+    return result;
 }
 
 #else

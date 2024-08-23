@@ -28,7 +28,7 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 
-static int xfixes_initialized = 0;
+static bool xfixes_initialized = true;
 static int xfixes_selection_notify_event = 0;
 
 static int query_xfixes_version(Display *display, int major, int minor)
@@ -74,7 +74,7 @@ void X11_InitXfixes(SDL_VideoDevice *_this)
     xfixes_initialized = 1;
 }
 
-int X11_XfixesIsInitialized(void)
+bool X11_XfixesIsInitialized(void)
 {
     return xfixes_initialized;
 }
@@ -84,7 +84,7 @@ int X11_GetXFixesSelectionNotifyEvent(void)
     return xfixes_selection_notify_event;
 }
 
-int X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
+bool X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (SDL_RectEmpty(&window->mouse_rect)) {
         X11_ConfineCursorWithFlags(_this, window, NULL, 0);
@@ -101,10 +101,10 @@ int X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
         }
     }
 
-    return 0;
+    return true;
 }
 
-int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rect, int flags)
+bool X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rect, int flags)
 {
     /* Yaakuro: For some reason Xfixes when confining inside a rect where the
      * edges exactly match, a rectangle the cursor 'slips' out of the barrier.
@@ -190,7 +190,7 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
             wdata->pointer_barrier_active = false;
         }
     }
-    return 0;
+    return true;
 }
 
 void X11_DestroyPointerBarrier(SDL_VideoDevice *_this, SDL_Window *window)

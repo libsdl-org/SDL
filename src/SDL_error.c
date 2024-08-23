@@ -24,7 +24,7 @@
 
 #include "SDL_error_c.h"
 
-int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+SDL_bool SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     // Ignore call if invalid format pointer was passed
     if (fmt) {
@@ -56,7 +56,7 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
         }
     }
 
-    return -1;
+    return false;
 }
 
 const char *SDL_GetError(void)
@@ -77,23 +77,23 @@ const char *SDL_GetError(void)
     }
 }
 
-int SDL_ClearError(void)
+SDL_bool SDL_ClearError(void)
 {
     SDL_error *error = SDL_GetErrBuf(false);
 
     if (error) {
         error->error = SDL_ErrorCodeNone;
     }
-    return 0;
+    return true;
 }
 
-int SDL_OutOfMemory(void)
+SDL_bool SDL_OutOfMemory(void)
 {
     SDL_error *error = SDL_GetErrBuf(true);
 
     if (error) {
         error->error = SDL_ErrorCodeOutOfMemory;
     }
-    return -1;
+    return false;
 }
 

@@ -161,7 +161,7 @@ typedef GLXContext (*PFNGLXCREATECONTEXTATTRIBSARBPROC)(Display *dpy,
 
 static void X11_GL_InitExtensions(SDL_VideoDevice *_this);
 
-int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     Display *display;
     void *handle;
@@ -182,7 +182,7 @@ int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 #if defined(OPENGL_REQUIRES_DLOPEN) && defined(HAVE_DLOPEN)
         SDL_SetError("Failed loading %s: %s", path, dlerror());
 #endif
-        return -1;
+        return false;
     }
     SDL_strlcpy(_this->gl_config.driver_path, path,
                 SDL_arraysize(_this->gl_config.driver_path));
@@ -193,7 +193,7 @@ int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
                                               sizeof(struct
                                                      SDL_GLDriverData));
     if (!_this->gl_data) {
-        return -1;
+        return false;
     }
 
     // Load function pointers
@@ -262,14 +262,14 @@ int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         _this->GL_SetSwapInterval = X11_GLES_SetSwapInterval;
         _this->GL_GetSwapInterval = X11_GLES_GetSwapInterval;
         _this->GL_SwapWindow = X11_GLES_SwapWindow;
-        _this->GL_DeleteContext = X11_GLES_DeleteContext;
+        _this->GL_DestroyContext = X11_GLES_DestroyContext;
         return X11_GLES_LoadLibrary(_this, NULL);
 #else
         return SDL_SetError("SDL not configured with EGL support");
 #endif
     }
 
-    return 0;
+    return true;
 }
 
 SDL_FunctionPointer X11_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
@@ -693,7 +693,7 @@ static int X11_GL_ErrorHandler(Display *d, XErrorEvent *e)
         SDL_SetError("Could not %s: %i (Base %i)", errorHandlerOperation, errorCode, errorBase);
     }
 
-    return (0);
+    return 0;
 }
 
 bool X11_GL_UseEGL(SDL_VideoDevice *_this)
@@ -835,15 +835,15 @@ SDL_GLContext X11_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         return NULL;
     }
 
-    if (X11_GL_MakeCurrent(_this, window, context) < 0) {
-        X11_GL_DeleteContext(_this, context);
+    if (!X11_GL_MakeCurrent(_this, window, context)) {
+        X11_GL_DestroyContext(_this, context);
         return NULL;
     }
 
     return context;
 }
 
-int X11_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+bool X11_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     Display *display = _this->internal->display;
     Window drawable =
@@ -865,12 +865,12 @@ int X11_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext
     X11_XSetErrorHandler(handler);
 
     if (errorCode != Success) { // uhoh, an X error was thrown!
-        return -1;              // the error handler called SDL_SetError() already.
+        return false;              // the error handler called SDL_SetError() already.
     } else if (!rc) {           // glXMakeCurrent() failed without throwing an X error
         return SDL_SetError("Unable to make GL context current");
     }
 
-    return 0;
+    return true;
 }
 
 /*
@@ -882,9 +882,9 @@ int X11_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext
 */
 
 static int swapinterval = 0;
-int X11_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
+bool X11_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
-    int status = -1;
+    bool result = false;
 
     if ((interval < 0) && (!_this->gl_data->HAS_GLX_EXT_swap_control_tear)) {
         return SDL_SetError("Negative swap interval unsupported in this GL");
@@ -906,26 +906,28 @@ int X11_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
         X11_GL_GetSwapInterval(_this, &currentInterval);
         _this->gl_data->glXSwapIntervalEXT(display, drawable, currentInterval);
         _this->gl_data->glXSwapIntervalEXT(display, drawable, interval);
-        status = 0;
+        result = true;
         swapinterval = interval;
     } else if (_this->gl_data->glXSwapIntervalMESA) {
-        status = _this->gl_data->glXSwapIntervalMESA(interval);
-        if (status != 0) {
-            SDL_SetError("glXSwapIntervalMESA failed");
-        } else {
+        const int rc = _this->gl_data->glXSwapIntervalMESA(interval);
+        if (rc == 0) {
             swapinterval = interval;
+            result = true;
+        } else {
+            result = SDL_SetError("glXSwapIntervalMESA failed");
         }
     } else if (_this->gl_data->glXSwapIntervalSGI) {
-        status = _this->gl_data->glXSwapIntervalSGI(interval);
-        if (status != 0) {
-            SDL_SetError("glXSwapIntervalSGI failed");
-        } else {
+        const int rc = _this->gl_data->glXSwapIntervalSGI(interval);
+        if (rc == 0) {
             swapinterval = interval;
+            result = true;
+        } else {
+            result = SDL_SetError("glXSwapIntervalSGI failed");
         }
     } else {
         return SDL_Unsupported();
     }
-    return status;
+    return result;
 }
 
 static SDL_GLSwapIntervalTearBehavior CheckSwapIntervalTearBehavior(SDL_VideoDevice *_this, Window drawable, unsigned int current_val, unsigned int current_allow_late)
@@ -975,7 +977,7 @@ static SDL_GLSwapIntervalTearBehavior CheckSwapIntervalTearBehavior(SDL_VideoDev
 }
 
 
-int X11_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
+bool X11_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     if (_this->gl_data->glXSwapIntervalEXT) {
         Display *display = _this->internal->display;
@@ -1009,40 +1011,40 @@ int X11_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
                 break;
         }
 
-        return 0;
+        return true;
     } else if (_this->gl_data->glXGetSwapIntervalMESA) {
         int val = _this->gl_data->glXGetSwapIntervalMESA();
         if (val == GLX_BAD_CONTEXT) {
             return SDL_SetError("GLX_BAD_CONTEXT");
         }
         *interval = val;
-        return 0;
+        return true;
     } else {
         *interval = swapinterval;
-        return 0;
+        return true;
     }
 }
 
-int X11_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool X11_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
 
     _this->gl_data->glXSwapBuffers(display, data->xwindow);
-    return 0;
+    return true;
 }
 
-int X11_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
+bool X11_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     Display *display = _this->internal->display;
     GLXContext glx_context = (GLXContext)context;
 
     if (!_this->gl_data) {
-        return 0;
+        return true;
     }
     _this->gl_data->glXDestroyContext(display, glx_context);
     X11_XSync(display, False);
-    return 0;
+    return true;
 }
 
 #endif // SDL_VIDEO_OPENGL_GLX

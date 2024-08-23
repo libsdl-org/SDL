@@ -22,14 +22,12 @@
 
 #include "SDL_blit.h"
 
-static int SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
-static int SDL_LowerSoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+static bool SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+static bool SDL_LowerSoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 
-int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
-                    SDL_Surface *dst, const SDL_Rect *dstrect,
-                    SDL_ScaleMode scaleMode)
+bool SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
-    int ret;
+    bool result;
     int src_locked;
     int dst_locked;
     SDL_Rect full_src;
@@ -46,11 +44,11 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
         // Slow!
         SDL_Surface *src_tmp = SDL_ConvertSurfaceAndColorspace(src, dst->format, dst->internal->palette, dst->internal->colorspace, dst->internal->props);
         if (!src_tmp) {
-            return -1;
+            return false;
         }
-        ret = SDL_SoftStretch(src_tmp, srcrect, dst, dstrect, scaleMode);
+        result = SDL_SoftStretch(src_tmp, srcrect, dst, dstrect, scaleMode);
         SDL_DestroySurface(src_tmp);
-        return ret;
+        return result;
     }
 
     if (SDL_ISPIXELFORMAT_FOURCC(src->format)) {
@@ -66,20 +64,20 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
         SDL_Surface *src_tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_XRGB8888);
         SDL_Surface *dst_tmp = SDL_CreateSurface(dstrect->w, dstrect->h, SDL_PIXELFORMAT_XRGB8888);
         if (src_tmp && dst_tmp) {
-            ret = SDL_SoftStretch(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
-            if (ret == 0) {
-                SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
-                    dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
-                    dst_tmp->pixels, dst_tmp->pitch,
-                    dst->format, dst->internal->colorspace, SDL_GetSurfaceProperties(dst),
-                    (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
+            result = SDL_SoftStretch(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
+            if (result) {
+                result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
+                            dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
+                            dst_tmp->pixels, dst_tmp->pitch,
+                            dst->format, dst->internal->colorspace, SDL_GetSurfaceProperties(dst),
+                            (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
             }
         } else {
-            ret = -1;
+            result = false;
         }
         SDL_DestroySurface(src_tmp);
         SDL_DestroySurface(dst_tmp);
-        return ret;
+        return result;
     }
 
     if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {
@@ -125,7 +123,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     }
 
     if (dstrect->w <= 0 || dstrect->h <= 0) {
-        return 0;
+        return true;
     }
 
     if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
@@ -136,7 +134,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     // Lock the destination if it's in hardware
     dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (!SDL_LockSurface(dst)) {
             return SDL_SetError("Unable to lock destination surface");
         }
         dst_locked = 1;
@@ -144,7 +142,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     // Lock the source if it's in hardware
     src_locked = 0;
     if (SDL_MUSTLOCK(src)) {
-        if (SDL_LockSurface(src) < 0) {
+        if (!SDL_LockSurface(src)) {
             if (dst_locked) {
                 SDL_UnlockSurface(dst);
             }
@@ -154,9 +152,9 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     }
 
     if (scaleMode == SDL_SCALEMODE_NEAREST) {
-        ret = SDL_LowerSoftStretchNearest(src, srcrect, dst, dstrect);
+        result = SDL_LowerSoftStretchNearest(src, srcrect, dst, dstrect);
     } else {
-        ret = SDL_LowerSoftStretchLinear(src, srcrect, dst, dstrect);
+        result = SDL_LowerSoftStretchLinear(src, srcrect, dst, dstrect);
     }
 
     // We need to unlock the surfaces if they're locked
@@ -167,7 +165,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
         SDL_UnlockSurface(src);
     }
 
-    return ret;
+    return result;
 }
 
 /* bilinear interpolation precision must be < 8
@@ -325,8 +323,7 @@ static SDL_INLINE void INTERPOL_BILINEAR(const Uint32 *s0, const Uint32 *s1, int
     INTERPOL(tmp, tmp + 1, frac_w0, frac_w1, dst);
 }
 
-static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
-                     Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static bool scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     BILINEAR___START
 
@@ -371,7 +368,7 @@ static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
         }
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
     }
-    return 0;
+    return true;
 }
 
 #ifdef SDL_NEON_INTRINSICS
@@ -446,7 +443,7 @@ static SDL_INLINE void SDL_TARGETING("sse2") INTERPOL_BILINEAR_SSE(const Uint32 
     *dst = _mm_cvtsi128_si32(e0);
 }
 
-static int SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static bool SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     BILINEAR___START
 
@@ -562,7 +559,7 @@ static int SDL_TARGETING("sse2") scale_mat_SSE(const Uint32 *src, int src_w, int
         }
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
     }
-    return 0;
+    return true;
 }
 #endif
 
@@ -610,7 +607,7 @@ static SDL_INLINE void INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1
     *dst = vget_lane_u32(CAST_uint32x2_t e0, 0);
 }
 
-static int scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static bool scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     BILINEAR___START
 
@@ -824,14 +821,13 @@ static int scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch
 
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
     }
-    return 0;
+    return true;
 }
 #endif
 
-int SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
-                               SDL_Surface *d, const SDL_Rect *dstrect)
+bool SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect, SDL_Surface *d, const SDL_Rect *dstrect)
 {
-    int ret = -1;
+    bool result = false;
     int src_w = srcrect->w;
     int src_h = srcrect->h;
     int dst_w = dstrect->w;
@@ -842,22 +838,22 @@ int SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     Uint32 *dst = (Uint32 *)((Uint8 *)d->pixels + dstrect->x * 4 + dstrect->y * dst_pitch);
 
 #ifdef SDL_NEON_INTRINSICS
-    if (ret == -1 && hasNEON()) {
-        ret = scale_mat_NEON(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
+    if (!result && hasNEON()) {
+        result = scale_mat_NEON(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }
 #endif
 
 #ifdef SDL_SSE2_INTRINSICS
-    if (ret == -1 && hasSSE2()) {
-        ret = scale_mat_SSE(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
+    if (!result && hasSSE2()) {
+        result = scale_mat_SSE(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }
 #endif
 
-    if (ret == -1) {
-        ret = scale_mat(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
+    if (!result) {
+        result = scale_mat(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }
 
-    return ret;
+    return result;
 }
 
 #define SDL_SCALE_NEAREST__START          \
@@ -879,8 +875,7 @@ int SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     posx = incx / 2;                                                      \
     n = dst_w;
 
-static int scale_mat_nearest_1(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
-                               Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static bool scale_mat_nearest_1(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     Uint32 bpp = 1;
     SDL_SCALE_NEAREST__START
@@ -896,11 +891,10 @@ static int scale_mat_nearest_1(const Uint32 *src_ptr, int src_w, int src_h, int 
         }
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
     }
-    return 0;
+    return true;
 }
 
-static int scale_mat_nearest_2(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
-                               Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static bool scale_mat_nearest_2(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     Uint32 bpp = 2;
     SDL_SCALE_NEAREST__START
@@ -916,11 +910,10 @@ static int scale_mat_nearest_2(const Uint32 *src_ptr, int src_w, int src_h, int 
         }
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
     }
-    return 0;
+    return true;
 }
 
-static int scale_mat_nearest_3(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
-                               Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static bool scale_mat_nearest_3(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     Uint32 bpp = 3;
     SDL_SCALE_NEAREST__START
@@ -938,11 +931,10 @@ static int scale_mat_nearest_3(const Uint32 *src_ptr, int src_w, int src_h, int 
         }
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
     }
-    return 0;
+    return true;
 }
 
-static int scale_mat_nearest_4(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
-                               Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static bool scale_mat_nearest_4(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     Uint32 bpp = 4;
     SDL_SCALE_NEAREST__START
@@ -958,11 +950,10 @@ static int scale_mat_nearest_4(const Uint32 *src_ptr, int src_w, int src_h, int 
         }
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
     }
-    return 0;
+    return true;
 }
 
-int SDL_LowerSoftStretchNearest(SDL_Surface *s, const SDL_Rect *srcrect,
-                                SDL_Surface *d, const SDL_Rect *dstrect)
+bool SDL_LowerSoftStretchNearest(SDL_Surface *s, const SDL_Rect *srcrect, SDL_Surface *d, const SDL_Rect *dstrect)
 {
     int src_w = srcrect->w;
     int src_h = srcrect->h;

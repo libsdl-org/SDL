@@ -35,7 +35,7 @@ PAPPCONSTRAIN_REGISTRATION hCPLM = {};
 HANDLE plmSuspendComplete = nullptr;
 
 extern "C"
-int SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue)
+SDL_bool SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue)
 {
     // If this is the first call, first create the global task queue.
     if (!GDK_GlobalTaskQueue) {
@@ -57,7 +57,7 @@ int SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue)
         }
     }
 
-    return 0;
+    return true;
 }
 
 extern "C"
@@ -74,13 +74,12 @@ void GDK_DispatchTaskQueue(void)
 }
 
 extern "C"
-int GDK_RegisterChangeNotifications(void)
+bool GDK_RegisterChangeNotifications(void)
 {
     // Register suspend/resume handling
     plmSuspendComplete = CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
     if (!plmSuspendComplete) {
-        SDL_SetError("[GDK] Unable to create plmSuspendComplete event");
-        return -1;
+        return SDL_SetError("[GDK] Unable to create plmSuspendComplete event");
     }
     auto rascn = [](BOOLEAN quiesced, PVOID context) {
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppStateChangeNotification handler");
@@ -98,8 +97,7 @@ int GDK_RegisterChangeNotifications(void)
         }
     };
     if (RegisterAppStateChangeNotification(rascn, NULL, &hPLM)) {
-        SDL_SetError("[GDK] Unable to call RegisterAppStateChangeNotification");
-        return -1;
+        return SDL_SetError("[GDK] Unable to call RegisterAppStateChangeNotification");
     }
 
     // Register constrain/unconstrain handling
@@ -115,11 +113,10 @@ int GDK_RegisterChangeNotifications(void)
         }
     };
     if (RegisterAppConstrainedChangeNotification(raccn, NULL, &hCPLM)) {
-        SDL_SetError("[GDK] Unable to call RegisterAppConstrainedChangeNotification");
-        return -1;
+        return SDL_SetError("[GDK] Unable to call RegisterAppConstrainedChangeNotification");
     }
 
-    return 0;
+    return true;
 }
 
 extern "C"
@@ -142,7 +139,7 @@ void SDL_GDKSuspendComplete()
 }
 
 extern "C"
-int SDL_GetGDKDefaultUser(XUserHandle *outUserHandle)
+SDL_bool SDL_GetGDKDefaultUser(XUserHandle *outUserHandle)
 {
     XAsyncBlock block = { 0 };
     HRESULT result;
@@ -158,5 +155,5 @@ int SDL_GetGDKDefaultUser(XUserHandle *outUserHandle)
         return WIN_SetErrorFromHRESULT("XUserAddResult", result);
     }
 
-    return 0;
+    return true;
 }

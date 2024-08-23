@@ -28,13 +28,13 @@
 #include "SDL_riscosvideo.h"
 #include "SDL_riscoswindow.h"
 
-int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *data;
 
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        return -1;
+        return false;
     }
     data->window = window;
 
@@ -42,7 +42,7 @@ int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 
     // All done!
     window->internal = data;
-    return 0;
+    return true;
 }
 
 void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)

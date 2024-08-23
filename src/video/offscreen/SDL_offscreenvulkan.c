@@ -56,7 +56,7 @@ static const char *s_defaultPaths[] = {
 #define HEADLESS_SURFACE_EXTENSION_REQUIRED_TO_LOAD 0
 
 
-int OFFSCREEN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool OFFSCREEN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
@@ -153,12 +153,12 @@ int OFFSCREEN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         SDL_Log("Installed Vulkan doesn't implement the " VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME " extension");
 #endif
     }
-    return 0;
+    return true;
 
 fail:
     SDL_UnloadObject(_this->vulkan_config.loader_handle);
     _this->vulkan_config.loader_handle = NULL;
-    return -1;
+    return false;
 }
 
 void OFFSCREEN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
@@ -214,7 +214,7 @@ char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this
     return returnExtensions;
 }
 
-int OFFSCREEN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+bool OFFSCREEN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                    SDL_Window *window,
                                    VkInstance instance,
                                    const struct VkAllocationCallbacks *allocator,
@@ -245,7 +245,7 @@ int OFFSCREEN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     if (result != VK_SUCCESS) {
         return SDL_SetError("vkCreateHeadlessSurfaceEXT failed: %s", SDL_Vulkan_GetResultString(result));
     }
-    return 0;
+    return true;
 }
 
 void OFFSCREEN_Vulkan_DestroySurface(SDL_VideoDevice *_this,

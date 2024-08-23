@@ -54,7 +54,7 @@ void *SDL_GetTLS(SDL_TLSID *id)
     return storage->array[storage_index].data;
 }
 
-int SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback destructor)
+SDL_bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback destructor)
 {
     SDL_TLSData *storage;
     int storage_index;
@@ -92,7 +92,7 @@ int SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback destr
         newlimit = (storage_index + TLS_ALLOC_CHUNKSIZE);
         new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
         if (!new_storage) {
-            return -1;
+            return false;
         }
         storage = new_storage;
         storage->limit = newlimit;
@@ -100,16 +100,16 @@ int SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback destr
             storage->array[i].data = NULL;
             storage->array[i].destructor = NULL;
         }
-        if (SDL_SYS_SetTLSData(storage) != 0) {
+        if (!SDL_SYS_SetTLSData(storage)) {
             SDL_free(storage);
-            return -1;
+            return false;
         }
         SDL_AtomicIncRef(&SDL_tls_allocated);
     }
 
     storage->array[storage_index].data = SDL_const_cast(void *, value);
     storage->array[storage_index].destructor = destructor;
-    return 0;
+    return true;
 }
 
 void SDL_CleanupTLS(void)
@@ -185,11 +185,11 @@ SDL_TLSData *SDL_Generic_GetTLSData(void)
     return storage;
 }
 
-int SDL_Generic_SetTLSData(SDL_TLSData *data)
+bool SDL_Generic_SetTLSData(SDL_TLSData *data)
 {
     SDL_ThreadID thread = SDL_GetCurrentThreadID();
     SDL_TLSEntry *prev, *entry;
-    int retval = 0;
+    bool result = true;
 
     SDL_LockMutex(SDL_generic_TLS_mutex);
     prev = NULL;
@@ -217,12 +217,12 @@ int SDL_Generic_SetTLSData(SDL_TLSData *data)
             entry->next = SDL_generic_TLS;
             SDL_generic_TLS = entry;
         } else {
-            retval = -1;
+            result = false;
         }
     }
     SDL_UnlockMutex(SDL_generic_TLS_mutex);
 
-    return retval;
+    return result;
 }
 
 void SDL_Generic_QuitTLSData(void)
@@ -380,7 +380,7 @@ SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
     thread->stacksize = stacksize;
 
     // Create the thread and go!
-    if (SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread) < 0) {
+    if (!SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread)) {
         // Oops, failed.  Gotta free everything
         SDL_free(thread->name);
         SDL_free(thread);
@@ -439,7 +439,7 @@ const char *SDL_GetThreadName(SDL_Thread *thread)
     }
 }
 
-int SDL_SetThreadPriority(SDL_ThreadPriority priority)
+SDL_bool SDL_SetThreadPriority(SDL_ThreadPriority priority)
 {
     return SDL_SYS_SetThreadPriority(priority);
 }
@@ -478,17 +478,17 @@ void SDL_DetachThread(SDL_Thread *thread)
     }
 }
 
-int SDL_WaitSemaphore(SDL_Semaphore *sem)
+void SDL_WaitSemaphore(SDL_Semaphore *sem)
 {
-    return SDL_WaitSemaphoreTimeoutNS(sem, -1);
+    SDL_WaitSemaphoreTimeoutNS(sem, -1);
 }
 
-int SDL_TryWaitSemaphore(SDL_Semaphore *sem)
+SDL_bool SDL_TryWaitSemaphore(SDL_Semaphore *sem)
 {
     return SDL_WaitSemaphoreTimeoutNS(sem, 0);
 }
 
-int SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sint32 timeoutMS)
+SDL_bool SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sint32 timeoutMS)
 {
     Sint64 timeoutNS;
 
@@ -500,12 +500,12 @@ int SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sint32 timeoutMS)
     return SDL_WaitSemaphoreTimeoutNS(sem, timeoutNS);
 }
 
-int SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex *mutex)
+void SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex *mutex)
 {
-    return SDL_WaitConditionTimeoutNS(cond, mutex, -1);
+    SDL_WaitConditionTimeoutNS(cond, mutex, -1);
 }
 
-int SDL_WaitConditionTimeout(SDL_Condition *cond, SDL_Mutex *mutex, Sint32 timeoutMS)
+SDL_bool SDL_WaitConditionTimeout(SDL_Condition *cond, SDL_Mutex *mutex, Sint32 timeoutMS)
 {
     Sint64 timeoutNS;
 
@@ -516,3 +516,4 @@ int SDL_WaitConditionTimeout(SDL_Condition *cond, SDL_Mutex *mutex, Sint32 timeo
     }
     return SDL_WaitConditionTimeoutNS(cond, mutex, timeoutNS);
 }
+

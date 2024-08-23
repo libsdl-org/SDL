@@ -34,17 +34,17 @@
 
 EM_JS_DEPS(sdlcamera, "$dynCall");
 
-static int EMSCRIPTENCAMERA_WaitDevice(SDL_Camera *device)
+static bool EMSCRIPTENCAMERA_WaitDevice(SDL_Camera *device)
 {
     SDL_assert(!"This shouldn't be called");  // we aren't using SDL's internal thread.
-    return -1;
+    return false;
 }
 
-static int EMSCRIPTENCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult EMSCRIPTENCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
     void *rgba = SDL_malloc(device->actual_spec.width * device->actual_spec.height * 4);
     if (!rgba) {
-        return -1;
+        return SDL_CAMERA_FRAME_ERROR;
     }
 
     *timestampNS = SDL_GetTicksNS();  // best we can do here.
@@ -67,13 +67,13 @@ static int EMSCRIPTENCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame,
 
     if (!rc) {
         SDL_free(rgba);
-        return 0;  // something went wrong, maybe shutting down; just don't return a frame.
+        return SDL_CAMERA_FRAME_ERROR;  // something went wrong, maybe shutting down; just don't return a frame.
     }
 
     frame->pixels = rgba;
     frame->pitch = device->actual_spec.width * 4;
 
-    return 1;
+    return SDL_CAMERA_FRAME_READY;
 }
 
 static void EMSCRIPTENCAMERA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
@@ -110,7 +110,7 @@ static void SDLEmscriptenCameraPermissionOutcome(SDL_Camera *device, int approve
     SDL_CameraPermissionOutcome(device, approved ? true : false);
 }
 
-static int EMSCRIPTENCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
+static bool EMSCRIPTENCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
     MAIN_THREAD_EM_ASM({
         // Since we can't get actual specs until we make a move that prompts the user for
@@ -203,7 +203,7 @@ static int EMSCRIPTENCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec 
             });
     }, device, spec->width, spec->height, spec->framerate_numerator, spec->framerate_denominator, SDLEmscriptenCameraPermissionOutcome, SDL_CameraThreadIterate);
 
-    return 0;  // the real work waits until the user approves a camera.
+    return true;  // the real work waits until the user approves a camera.
 }
 
 static void EMSCRIPTENCAMERA_FreeDeviceHandle(SDL_Camera *device)

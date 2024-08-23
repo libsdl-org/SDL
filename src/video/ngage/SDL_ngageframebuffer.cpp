@@ -38,13 +38,13 @@
  */
 static TUint32 NGAGE_HWPalette_256_to_Screen[256];
 
-int GetBpp(TDisplayMode displaymode);
+bool GetBpp(TDisplayMode displaymode);
 void DirectUpdate(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects);
 void DrawBackground(SDL_VideoDevice *_this);
 void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *screenBuffer);
 void RedrawWindowL(SDL_VideoDevice *_this);
 
-int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
+bool SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_VideoData *phdata = _this->internal;
     SDL_Surface *surface;
@@ -58,7 +58,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     SDL_GetWindowSizeInPixels(window, &w, &h);
     surface = SDL_CreateSurface(w, h, surface_format);
     if (!surface) {
-        return -1;
+        return false;
     }
 
     // Save the info and return!
@@ -140,13 +140,13 @@ int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     SDL_Log("SDL:DrawBackground");
     DrawBackground(_this); // Clear screen
 
-    return 0;
+    return true;
 }
 
-int SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+bool SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     DirectUpdate(_this, numrects, (SDL_Rect *)rects);
-    return 0;
+    return true;
 }
 
 void SDL_NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
@@ -175,7 +175,7 @@ EXPORT_C void NGAGE_Runtime::GetScreenInfo(TScreenInfoV01 &screenInfo2)
 // Internal
 /*****************************************************************************/
 
-int GetBpp(TDisplayMode displaymode)
+bool GetBpp(TDisplayMode displaymode)
 {
     return TDisplayModeUtils::NumDisplayModeBitsPerPixel(displaymode);
 }

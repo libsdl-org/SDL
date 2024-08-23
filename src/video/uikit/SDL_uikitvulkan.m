@@ -44,7 +44,7 @@ const char *defaultPaths[] = {
  * proofing. */
 #define DEFAULT_HANDLE RTLD_DEFAULT
 
-int UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
@@ -150,11 +150,11 @@ int UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         goto fail;
     }
 
-    return 0;
+    return true;
 
 fail:
     _this->vulkan_config.loader_handle = NULL;
-    return -1;
+    return false;
 }
 
 void UIKit_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
@@ -179,7 +179,7 @@ char const* const* UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
     return extensionsForUIKit;
 }
 
-int UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                SDL_Window *window,
                                VkInstance instance,
                                const struct VkAllocationCallbacks *allocator,
@@ -209,7 +209,7 @@ int UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
 
     metalview = UIKit_Metal_CreateView(_this, window);
     if (metalview == NULL) {
-        return -1;
+        return false;
     }
 
     if (vkCreateMetalSurfaceEXT) {
@@ -248,7 +248,7 @@ int UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
      * knowledge of Metal can proceed. */
     CFBridgingRelease(metalview);
 
-    return 0;
+    return true;
 }
 
 void UIKit_Vulkan_DestroySurface(SDL_VideoDevice *_this,

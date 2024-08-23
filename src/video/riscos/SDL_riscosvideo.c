@@ -39,7 +39,7 @@
 #define RISCOSVID_DRIVER_NAME "riscos"
 
 // Initialization/Query functions
-static int RISCOS_VideoInit(SDL_VideoDevice *_this);
+static bool RISCOS_VideoInit(SDL_VideoDevice *_this);
 static void RISCOS_VideoQuit(SDL_VideoDevice *_this);
 
 // RISC OS driver bootstrap functions
@@ -99,26 +99,26 @@ VideoBootStrap RISCOS_bootstrap = {
     RISCOS_ShowMessageBox
 };
 
-static int RISCOS_VideoInit(SDL_VideoDevice *_this)
+static bool RISCOS_VideoInit(SDL_VideoDevice *_this)
 {
-    if (RISCOS_InitEvents(_this) < 0) {
-        return -1;
+    if (!RISCOS_InitEvents(_this)) {
+        return false;
     }
 
-    if (RISCOS_InitMouse(_this) < 0) {
-        return -1;
+    if (!RISCOS_InitMouse(_this)) {
+        return false;
     }
 
     // Assume we have a mouse and keyboard
     SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
     SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
 
-    if (RISCOS_InitModes(_this) < 0) {
-        return -1;
+    if (!RISCOS_InitModes(_this)) {
+        return false;
     }
 
     // We're done!
-    return 0;
+    return true;
 }
 
 static void RISCOS_VideoQuit(SDL_VideoDevice *_this)

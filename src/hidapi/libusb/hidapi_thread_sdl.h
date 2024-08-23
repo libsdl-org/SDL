@@ -74,7 +74,7 @@ static int SDL_WaitThreadBarrier(SDL_ThreadBarrier *barrier)
 
 #include "../../thread/SDL_systhread.h"
 
-#define HIDAPI_THREAD_TIMED_OUT SDL_MUTEX_TIMEDOUT
+#define HIDAPI_THREAD_TIMED_OUT 1
 
 typedef Uint64 hidapi_timespec;
 
@@ -136,7 +136,11 @@ static int hidapi_thread_cond_timedwait(hidapi_thread_state *state, hidapi_times
     } else {
         timeout_ms = (Sint32)SDL_NS_TO_MS(timeout_ns);
     }
-    return SDL_WaitConditionTimeout(state->condition, state->mutex, timeout_ms);
+    if (SDL_WaitConditionTimeout(state->condition, state->mutex, timeout_ms)) {
+        return 0;
+    } else {
+        return HIDAPI_THREAD_TIMED_OUT;
+    }
 }
 
 static void hidapi_thread_cond_signal(hidapi_thread_state *state)

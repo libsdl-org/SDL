@@ -36,8 +36,8 @@ struct SDL_Condition
 };
 
 // Create a condition variable
-extern "C" SDL_Condition *
-SDL_CreateCondition(void)
+extern "C"
+SDL_Condition *SDL_CreateCondition(void)
 {
     // Allocate and initialize the condition variable
     try {
@@ -53,8 +53,8 @@ SDL_CreateCondition(void)
 }
 
 // Destroy a condition variable
-extern "C" void
-SDL_DestroyCondition(SDL_Condition *cond)
+extern "C"
+void SDL_DestroyCondition(SDL_Condition *cond)
 {
     if (cond) {
         delete cond;
@@ -62,80 +62,52 @@ SDL_DestroyCondition(SDL_Condition *cond)
 }
 
 // Restart one of the threads that are waiting on the condition variable
-extern "C" int
-SDL_SignalCondition(SDL_Condition *cond)
+extern "C"
+void SDL_SignalCondition(SDL_Condition *cond)
 {
     if (!cond) {
-        return SDL_InvalidParamError("cond");
+        return;
     }
 
     cond->cpp_cond.notify_one();
-    return 0;
 }
 
 // Restart all threads that are waiting on the condition variable
-extern "C" int
-SDL_BroadcastCondition(SDL_Condition *cond)
+extern "C"
+void SDL_BroadcastCondition(SDL_Condition *cond)
 {
     if (!cond) {
-        return SDL_InvalidParamError("cond");
+        return;
     }
 
     cond->cpp_cond.notify_all();
-    return 0;
 }
 
-/* Wait on the condition variable for at most 'timeoutNS' nanoseconds.
-   The mutex must be locked before entering this function!
-   The mutex is unlocked during the wait, and locked again after the wait.
-
-Typical use:
-
-Thread A:
-    SDL_LockMutex(lock);
-    while ( ! condition ) {
-        SDL_WaitCondition(cond, lock);
-    }
-    SDL_UnlockMutex(lock);
-
-Thread B:
-    SDL_LockMutex(lock);
-    ...
-    condition = true;
-    ...
-    SDL_SignalCondition(cond);
-    SDL_UnlockMutex(lock);
- */
-extern "C" int
-SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+extern "C"
+SDL_bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
-    if (cond == NULL) {
-        return SDL_InvalidParamError("cond");
-    }
-
-    if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+    if (!cond || !mutex) {
+        return true;
     }
 
     try {
         std::unique_lock<std::recursive_mutex> cpp_lock(mutex->cpp_mutex, std::adopt_lock_t());
         if (timeoutNS < 0) {
-            cond->cpp_cond.wait(
-                cpp_lock);
+            cond->cpp_cond.wait(cpp_lock);
             cpp_lock.release();
-            return 0;
+            return true;
         } else {
             auto wait_result = cond->cpp_cond.wait_for(
                 cpp_lock,
                 std::chrono::duration<Sint64, std::nano>(timeoutNS));
             cpp_lock.release();
             if (wait_result == std::cv_status::timeout) {
-                return SDL_MUTEX_TIMEDOUT;
+                return false;
             } else {
-                return 0;
+                return true;
             }
         }
-    } catch (std::system_error &ex) {
-        return SDL_SetError("Unable to wait on a C++ condition variable: code=%d; %s", ex.code(), ex.what());
+    } catch (std::system_error &) {
+        return false;
     }
 }

@@ -29,7 +29,7 @@
 #define URI_Dispatch 0x4e381
 #endif
 
-int SDL_SYS_OpenURL(const char *url)
+bool SDL_SYS_OpenURL(const char *url)
 {
     _kernel_swi_regs regs;
     _kernel_oserror *error;
@@ -42,5 +42,8 @@ int SDL_SYS_OpenURL(const char *url)
         return SDL_SetError("Couldn't open given URL: %s", error->errmess);
     }
 
-    return (regs.r[0] & 1) ? SDL_SetError("Couldn't open given URL.") : 0;
+    if (regs.r[0] & 1) {
+        return SDL_SetError("Couldn't open given URL.");
+    }
+    return true;
 }

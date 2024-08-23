@@ -85,17 +85,14 @@ static inline uint8_t rumble_status(uint8_t index)
     return info->rumble_ready == 1;
 }
 
-/* Function to scan the system for joysticks.
- *  Joystick 0 should be the system default joystick.
- *  This function should return 0, or -1 on an unrecoverable error.
- */
-static int PS2_JoystickInit(void)
+// Function to scan the system for joysticks.
+static bool PS2_JoystickInit(void)
 {
     uint32_t port = 0;
     uint32_t slot = 0;
 
     if (init_joystick_driver(true) < 0) {
-        return -1;
+        return false;
     }
 
     for (port = 0; port < PS2_MAX_PORT; port++) {
@@ -127,7 +124,7 @@ static int PS2_JoystickInit(void)
         }
     }
 
-    return enabled_pads > 0 ? 0 : -1;
+    return (enabled_pads > 0);
 }
 
 // Function to return the number of joystick devices plugged in right now
@@ -200,7 +197,7 @@ static SDL_JoystickID PS2_JoystickGetDeviceInstanceID(int device_index)
     This should fill the nbuttons and naxes fields of the joystick structure.
     It returns 0, or -1 if there is an error.
 */
-static int PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     int index = joystick->instance_id;
     struct JoyInfo *info = &joyInfo[index];
@@ -209,7 +206,7 @@ static int PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
         if (padPortOpen(info->port, info->slot, (void *)info->padBuf) > 0) {
             info->opened = 1;
         } else {
-            return -1;
+            return false;
         }
     }
     joystick->nbuttons = PS2_BUTTONS;
@@ -218,11 +215,11 @@ static int PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
 
-    return 0;
+    return true;
 }
 
 // Rumble functionality
-static int PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     char actAlign[6];
     int res;
@@ -230,7 +227,7 @@ static int PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     struct JoyInfo *info = &joyInfo[index];
 
     if (!rumble_status(index)) {
-        return -1;
+        return false;
     }
 
     // Initial value
@@ -242,29 +239,29 @@ static int PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     actAlign[5] = 0xff;
 
     res = padSetActDirect(info->port, info->slot, actAlign);
-    return res == 1 ? 0 : -1;
+    return (res == 1);
 }
 
 // Rumble functionality
-static int PS2_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
+static bool PS2_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
 {
     return SDL_Unsupported();
 }
 
 // LED functionality
-static int PS2_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool PS2_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
 // General effects
-static int PS2_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool PS2_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
 // Sensor functionality
-static int PS2_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
+static bool PS2_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }

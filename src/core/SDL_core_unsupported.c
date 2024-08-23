@@ -31,16 +31,16 @@ void SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata)
 
 #ifndef SDL_PLATFORM_LINUX
 
-SDL_DECLSPEC int SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
-int SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
+SDL_DECLSPEC SDL_bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
+SDL_bool SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
 {
     (void)threadID;
     (void)priority;
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC int SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
-int SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
+SDL_DECLSPEC SDL_bool SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
+SDL_bool SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
     (void)threadID;
     (void)sdlPriority;
@@ -58,8 +58,8 @@ void SDL_GDKSuspendComplete(void)
     SDL_Unsupported();
 }
 
-SDL_DECLSPEC int SDLCALL SDL_GetGDKDefaultUser(void *outUserHandle); /* XUserHandle *outUserHandle */
-int SDL_GetGDKDefaultUser(void *outUserHandle)
+SDL_DECLSPEC SDL_bool SDLCALL SDL_GetGDKDefaultUser(void *outUserHandle); /* XUserHandle *outUserHandle */
+SDL_bool SDL_GetGDKDefaultUser(void *outUserHandle)
 {
     return SDL_Unsupported();
 }
@@ -68,8 +68,8 @@ int SDL_GetGDKDefaultUser(void *outUserHandle)
 
 #if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK))
 
-SDL_DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
-int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+SDL_DECLSPEC SDL_bool SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
+SDL_bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
     (void)name;
     (void)style;
@@ -163,8 +163,8 @@ void *SDL_GetAndroidJNIEnv(void)
 }
 
 typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, const char *permission, bool granted);
-SDL_DECLSPEC int SDLCALL SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata);
-int SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
+SDL_DECLSPEC SDL_bool SDLCALL SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata);
+SDL_bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
 {
     (void)permission;
     (void)cb;
@@ -172,16 +172,16 @@ int SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermi
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC int SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
-int SDL_SendAndroidMessage(Uint32 command, int param)
+SDL_DECLSPEC SDL_bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
+SDL_bool SDL_SendAndroidMessage(Uint32 command, int param)
 {
     (void)command;
     (void)param;
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC int SDLCALL SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
-int SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset)
+SDL_DECLSPEC SDL_bool SDLCALL SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
+SDL_bool SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset)
 {
     (void)message;
     (void)duration;

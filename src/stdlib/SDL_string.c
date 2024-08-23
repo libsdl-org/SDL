@@ -213,10 +213,10 @@ static Uint32 StepUTF8(const char **_str, const size_t slen)
     } else if (((octet & 0xE0) == 0xC0) && (slen >= 2)) {  // 110xxxxx 10xxxxxx: two byte codepoint.
         const Uint8 str1 = str[1];
         if ((str1 & 0xC0) == 0x80) {  // If trailing bytes aren't 10xxxxxx, sequence is bogus.
-            const Uint32 retval = ((octet & 0x1F) << 6) | (str1 & 0x3F);
-            if (retval >= 0x0080) {  // rfc3629 says you can't use overlong sequences for smaller values.
+            const Uint32 result = ((octet & 0x1F) << 6) | (str1 & 0x3F);
+            if (result >= 0x0080) {  // rfc3629 says you can't use overlong sequences for smaller values.
                 *_str += 2;
-                return retval;
+                return result;
             }
         }
     } else if (((octet & 0xF0) == 0xE0) && (slen >= 3)) {  // 1110xxxx 10xxxxxx 10xxxxxx: three byte codepoint.
@@ -225,11 +225,11 @@ static Uint32 StepUTF8(const char **_str, const size_t slen)
         if (((str1 & 0xC0) == 0x80) && ((str2 & 0xC0) == 0x80)) {  // If trailing bytes aren't 10xxxxxx, sequence is bogus.
             const Uint32 octet2 = ((Uint32) (str1 & 0x3F)) << 6;
             const Uint32 octet3 = ((Uint32) (str2 & 0x3F));
-            const Uint32 retval = ((octet & 0x0F) << 12) | octet2 | octet3;
-            if (retval >= 0x800) {  // rfc3629 says you can't use overlong sequences for smaller values.
-                if ((retval < 0xD800) || (retval > 0xDFFF)) {  // UTF-16 surrogate values are illegal in UTF-8.
+            const Uint32 result = ((octet & 0x0F) << 12) | octet2 | octet3;
+            if (result >= 0x800) {  // rfc3629 says you can't use overlong sequences for smaller values.
+                if ((result < 0xD800) || (result > 0xDFFF)) {  // UTF-16 surrogate values are illegal in UTF-8.
                     *_str += 3;
-                    return retval;
+                    return result;
                 }
             }
         }
@@ -241,10 +241,10 @@ static Uint32 StepUTF8(const char **_str, const size_t slen)
             const Uint32 octet2 = ((Uint32) (str1 & 0x1F)) << 12;
             const Uint32 octet3 = ((Uint32) (str2 & 0x3F)) << 6;
             const Uint32 octet4 = ((Uint32) (str3 & 0x3F));
-            const Uint32 retval = ((octet & 0x07) << 18) | octet2 | octet3 | octet4;
-            if (retval >= 0x10000) {  // rfc3629 says you can't use overlong sequences for smaller values.
+            const Uint32 result = ((octet & 0x07) << 18) | octet2 | octet3 | octet4;
+            if (result >= 0x10000) {  // rfc3629 says you can't use overlong sequences for smaller values.
                 *_str += 4;
-                return retval;
+                return result;
             }
         }
     }
@@ -260,9 +260,9 @@ Uint32 SDL_StepUTF8(const char **pstr, size_t *pslen)
         return StepUTF8(pstr, 4);  // 4 == max codepoint size.
     }
     const char *origstr = *pstr;
-    const Uint32 retval = StepUTF8(pstr, *pslen);
+    const Uint32 result = StepUTF8(pstr, *pslen);
     *pslen -= (size_t) (*pstr - origstr);
-    return retval;
+    return result;
 }
 
 #if (SDL_SIZEOF_WCHAR_T == 2)
@@ -891,20 +891,20 @@ size_t SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size
 
 size_t SDL_utf8strlen(const char *str)
 {
-    size_t retval = 0;
+    size_t result = 0;
     while (SDL_StepUTF8(&str, NULL)) {
-        retval++;
+        result++;
     }
-    return retval;
+    return result;
 }
 
 size_t SDL_utf8strnlen(const char *str, size_t bytes)
 {
-    size_t retval = 0;
+    size_t result = 0;
     while (SDL_StepUTF8(&str, &bytes)) {
-        retval++;
+        result++;
     }
-    return retval;
+    return result;
 }
 
 size_t SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
@@ -1405,7 +1405,7 @@ static bool CharacterMatchesSet(char c, const char *set, size_t set_len)
 // NOLINTNEXTLINE(readability-non-const-parameter)
 int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_list ap)
 {
-    int retval = 0;
+    int result = 0;
 
     if (!text || !*text) {
         return -1;
@@ -1462,7 +1462,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                     while (count--) {
                         *valuep++ = *text++;
                     }
-                    ++retval;
+                    ++result;
                 }
                 continue;
             }
@@ -1521,7 +1521,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                         if (advance && !suppress) {
                             Sint64 *valuep = va_arg(ap, Sint64 *);
                             *valuep = value;
-                            ++retval;
+                            ++result;
                         }
                     } else if (inttype == DO_SIZE_T) {
                         Sint64 value = 0;
@@ -1530,7 +1530,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                         if (advance && !suppress) {
                             size_t *valuep = va_arg(ap, size_t *);
                             *valuep = (size_t)value;
-                            ++retval;
+                            ++result;
                         }
                     } else {
                         long value = 0;
@@ -1558,7 +1558,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                                 // Handled above
                                 break;
                             }
-                            ++retval;
+                            ++result;
                         }
                     }
                     done = true;
@@ -1582,7 +1582,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                         if (advance && !suppress) {
                             Uint64 *valuep = va_arg(ap, Uint64 *);
                             *valuep = value;
-                            ++retval;
+                            ++result;
                         }
                     } else if (inttype == DO_SIZE_T) {
                         Uint64 value = 0;
@@ -1591,7 +1591,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                         if (advance && !suppress) {
                             size_t *valuep = va_arg(ap, size_t *);
                             *valuep = (size_t)value;
-                            ++retval;
+                            ++result;
                         }
                     } else {
                         unsigned long value = 0;
@@ -1619,7 +1619,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                                 // Handled above
                                 break;
                             }
-                            ++retval;
+                            ++result;
                         }
                     }
                     done = true;
@@ -1632,7 +1632,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                     if (advance && !suppress) {
                         void **valuep = va_arg(ap, void **);
                         *valuep = (void *)value;
-                        ++retval;
+                        ++result;
                     }
                 }
                     done = true;
@@ -1645,7 +1645,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                     if (advance && !suppress) {
                         float *valuep = va_arg(ap, float *);
                         *valuep = (float)value;
-                        ++retval;
+                        ++result;
                     }
                 }
                     done = true;
@@ -1671,7 +1671,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                             }
                         }
                         *valuep = '\0';
-                        ++retval;
+                        ++result;
                     }
                     done = true;
                     break;
@@ -1706,7 +1706,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                             }
                             *valuep = '\0';
                             if (had_match) {
-                                ++retval;
+                                ++result;
                             }
                         }
                     }
@@ -1730,50 +1730,50 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
         break;
     }
 
-    return retval;
+    return result;
 }
 #endif // HAVE_VSSCANF
 
 int SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     va_list ap;
-    int retval;
+    int result;
 
     va_start(ap, fmt);
-    retval = SDL_vsnprintf(text, maxlen, fmt, ap);
+    result = SDL_vsnprintf(text, maxlen, fmt, ap);
     va_end(ap);
 
-    return retval;
+    return result;
 }
 
 int SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ...)
 {
     va_list ap;
-    int retval;
+    int result;
 
     va_start(ap, fmt);
-    retval = SDL_vswprintf(text, maxlen, fmt, ap);
+    result = SDL_vswprintf(text, maxlen, fmt, ap);
     va_end(ap);
 
-    return retval;
+    return result;
 }
 
 #if defined(HAVE_LIBC) && defined(__WATCOMC__)
 // _vsnprintf() doesn't ensure nul termination
 int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
 {
-    int retval;
+    int result;
     if (!fmt) {
         fmt = "";
     }
-    retval = _vsnprintf(text, maxlen, fmt, ap);
+    result = _vsnprintf(text, maxlen, fmt, ap);
     if (maxlen > 0) {
         text[maxlen - 1] = '\0';
     }
-    if (retval < 0) {
-        retval = (int)maxlen;
+    if (result < 0) {
+        result = (int)maxlen;
     }
-    return retval;
+    return result;
 }
 #elif defined(HAVE_VSNPRINTF)
 int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
@@ -2305,7 +2305,7 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FO
 int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wchar_t *fmt, va_list ap)
 {
     char *text_utf8 = NULL, *fmt_utf8 = NULL;
-    int retval;
+    int result;
 
     if (fmt) {
         fmt_utf8 = SDL_iconv_string("UTF-8", "WCHAR_T", (const char *)fmt, (SDL_wcslen(fmt) + 1) * sizeof(wchar_t));
@@ -2324,42 +2324,42 @@ int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wcha
         return -1;
     }
 
-    retval = SDL_vsnprintf(text_utf8, maxlen * 4, fmt_utf8, ap);
+    result = SDL_vsnprintf(text_utf8, maxlen * 4, fmt_utf8, ap);
 
-    if (retval >= 0) {
+    if (result >= 0) {
         wchar_t *text_wchar =  (wchar_t *)SDL_iconv_string("WCHAR_T", "UTF-8", text_utf8, SDL_strlen(text_utf8) + 1);
         if (text_wchar) {
             if (text) {
                 SDL_wcslcpy(text, text_wchar, maxlen);
             }
-            retval = (int)SDL_wcslen(text_wchar);
+            result = (int)SDL_wcslen(text_wchar);
             SDL_free(text_wchar);
         } else {
-            retval = -1;
+            result = -1;
         }
     }
 
     SDL_free(text_utf8);
     SDL_free(fmt_utf8);
 
-    return retval;
+    return result;
 }
 
 int SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     va_list ap;
-    int retval;
+    int result;
 
     va_start(ap, fmt);
-    retval = SDL_vasprintf(strp, fmt, ap);
+    result = SDL_vasprintf(strp, fmt, ap);
     va_end(ap);
 
-    return retval;
+    return result;
 }
 
 int SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 {
-    int retval;
+    int result;
     int size = 100; // Guess we need no more than 100 bytes
     char *p, *np;
     va_list aq;
@@ -2374,23 +2374,23 @@ int SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list
     while (1) {
         // Try to print in the allocated space
         va_copy(aq, ap);
-        retval = SDL_vsnprintf(p, size, fmt, aq);
+        result = SDL_vsnprintf(p, size, fmt, aq);
         va_end(aq);
 
         // Check error code
-        if (retval < 0) {
+        if (result < 0) {
             SDL_free(p);
-            return retval;
+            return result;
         }
 
         // If that worked, return the string
-        if (retval < size) {
+        if (result < size) {
             *strp = p;
-            return retval;
+            return result;
         }
 
         // Else try again with more space
-        size = retval + 1; // Precisely what is needed
+        size = result + 1; // Precisely what is needed
 
         np = (char *)SDL_realloc(p, size);
         if (!np) {

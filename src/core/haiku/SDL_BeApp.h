@@ -26,7 +26,7 @@ extern "C" {
 // Handle the BeApp specific portions of the application
 
 // Initialize the Be Application, if it's not already started
-extern int SDL_InitBeApp(void);
+extern bool SDL_InitBeApp(void);
 
 // Quit the Be Application, if there's nothing left to do
 extern void SDL_QuitBeApp(void);

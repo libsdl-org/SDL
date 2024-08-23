@@ -24,7 +24,7 @@
 
 #include "SDL_windowsvideo.h"
 
-int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
+bool WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_WindowData *data = window->internal;
     bool isstack;
@@ -47,7 +47,7 @@ int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
     size = sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD);
     info = (LPBITMAPINFO)SDL_small_alloc(Uint8, size, &isstack);
     if (!info) {
-        return -1;
+        return false;
     }
 
     SDL_memset(info, 0, size);
@@ -95,10 +95,10 @@ int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
     }
     SelectObject(data->mdc, data->hbm);
 
-    return 0;
+    return true;
 }
 
-int WIN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+bool WIN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_WindowData *data = window->internal;
     int i;
@@ -107,7 +107,7 @@ int WIN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, cons
         BitBlt(data->hdc, rects[i].x, rects[i].y, rects[i].w, rects[i].h,
                data->mdc, rects[i].x, rects[i].y, SRCCOPY);
     }
-    return 0;
+    return true;
 }
 
 void WIN_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)

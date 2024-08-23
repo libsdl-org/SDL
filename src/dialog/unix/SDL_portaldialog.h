@@ -26,4 +26,4 @@ void SDL_Portal_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userda
 void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many);
 
 /** @returns non-zero if available, zero if unavailable */
-int SDL_Portal_detect(void);
+bool SDL_Portal_detect(void);

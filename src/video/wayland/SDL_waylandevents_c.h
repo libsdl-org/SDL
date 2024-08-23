@@ -162,17 +162,17 @@ extern void Wayland_create_text_input(SDL_VideoData *d);
 extern void Wayland_input_initialize_seat(SDL_VideoData *d);
 extern void Wayland_display_destroy_input(SDL_VideoData *d);
 
-extern int Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input);
-extern int Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input);
+extern bool Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input);
+extern bool Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input);
 
-extern int Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
-extern int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
+extern bool Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
+extern bool Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
 
-extern int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
-extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
+extern bool Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
+extern bool Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
 
-extern int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input);
-extern int Wayland_input_ungrab_keyboard(SDL_Window *window);
+extern bool Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input);
+extern bool Wayland_input_ungrab_keyboard(SDL_Window *window);
 
 extern void Wayland_input_init_tablet_support(struct SDL_WaylandInput *input, struct zwp_tablet_manager_v2 *tablet_manager);
 extern void Wayland_input_quit_tablet_support(struct SDL_WaylandInput *input);

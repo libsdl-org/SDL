@@ -1558,12 +1558,12 @@ static void SetKeyboardFocus(SDL_Window *window)
     SDL_SetKeyboardFocus(window);
 }
 
-int Wayland_SetWindowHitTest(SDL_Window *window, bool enabled)
+bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled)
 {
-    return 0; // just succeed, the real work is done elsewhere.
+    return true; // just succeed, the real work is done elsewhere.
 }
 
-int Wayland_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
+bool Wayland_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
 {
     SDL_VideoData *viddata = _this->internal;
     SDL_WindowData *modal_data = modal_window->internal;
@@ -1576,7 +1576,7 @@ int Wayland_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, 
     if (parent_data && parent_data->surface_status != WAYLAND_SURFACE_STATUS_SHOWN) {
         // Need to wait for the parent to become mapped, or it's the same as setting a null parent.
         modal_data->modal_reparenting_required = true;
-        return 0;
+        return true;
     }
 
     /* Libdecor crashes on attempts to unset the parent by passing null, which is allowed by the
@@ -1619,7 +1619,7 @@ int Wayland_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, 
         }
     }
 
-    return 0;
+    return true;
 }
 
 static void show_hide_sync_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
@@ -2097,16 +2097,16 @@ void Wayland_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Wayland_activate_window(_this->internal, window->internal, true);
 }
 
-int Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation)
+bool Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation)
 {
     /* Not setting the serial will specify 'urgency' without switching focus as per
      * https://gitlab.freedesktop.org/wayland/wayland-protocols/-/merge_requests/9#note_854977
      */
     Wayland_activate_window(_this->internal, window->internal, false);
-    return 0;
+    return true;
 }
 
-int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
+SDL_FullscreenResult Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
                                  SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     SDL_WindowData *wind = window->internal;
@@ -2114,7 +2114,7 @@ int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
 
     // Custom surfaces have no toplevel to make fullscreen.
     if (wind->shell_surface_type == WAYLAND_SURFACE_CUSTOM) {
-        return -1;
+        return SDL_FULLSCREEN_FAILED;
     }
 
     if (wind->show_hide_sync_required) {
@@ -2123,7 +2123,7 @@ int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
 
     // Flushing old events pending a new one, ignore this request.
     if (wind->drop_fullscreen_requests) {
-        return 0;
+        return SDL_FULLSCREEN_SUCCEEDED;
     }
 
     wind->drop_fullscreen_requests = true;
@@ -2133,11 +2133,11 @@ int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
     // Nothing to do if the window is not fullscreen, and this isn't an explicit enter request.
     if (!wind->is_fullscreen) {
         if (fullscreen == SDL_FULLSCREEN_OP_UPDATE) {
-            // Request was out of date; return 1 to signal the video core not to update any state.
-            return 1;
+            // Request was out of date; signal the video core not to update any state.
+            return SDL_FULLSCREEN_PENDING;
         } else if (fullscreen == SDL_FULLSCREEN_OP_LEAVE) {
             // Already not fullscreen; nothing to do.
-            return 0;
+            return SDL_FULLSCREEN_SUCCEEDED;
         }
     }
 
@@ -2160,11 +2160,11 @@ int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
             ConfigureWindowGeometry(window);
             CommitLibdecorFrame(window);
 
-            return 0;
+            return SDL_FULLSCREEN_SUCCEEDED;
         }
     }
 
-    return 1;
+    return SDL_FULLSCREEN_PENDING;
 }
 
 void Wayland_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -2292,7 +2292,7 @@ void Wayland_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-int Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
+bool Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *data = _this->internal;
 
@@ -2311,7 +2311,7 @@ int Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-int Wayland_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
+bool Wayland_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
     SDL_VideoData *data = _this->internal;
 
@@ -2321,10 +2321,10 @@ int Wayland_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool 
         return Wayland_input_unconfine_pointer(data->input, window);
     }
 
-    return 0;
+    return true;
 }
 
-int Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
+bool Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
     SDL_VideoData *data = _this->internal;
 
@@ -2335,7 +2335,7 @@ int Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bo
     }
 }
 
-int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *data;
     SDL_VideoData *c = _this->internal;
@@ -2347,7 +2347,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 
     data = SDL_calloc(1, sizeof(*data));
     if (!data) {
-        return -1;
+        return false;
     }
 
     window->internal = data;
@@ -2477,7 +2477,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         data->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)data->egl_window);
 
         if (data->egl_surface == EGL_NO_SURFACE) {
-            return -1; // SDL_EGL_CreateSurface should have set error
+            return false; // SDL_EGL_CreateSurface should have set error
         }
     }
 #endif
@@ -2519,7 +2519,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 
     data->hit_test_result = SDL_HITTEST_NORMAL;
 
-    return 0;
+    return true;
 }
 
 void Wayland_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window)
@@ -2534,7 +2534,7 @@ void Wayland_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window)
     SetMinMaxDimensions(window);
 }
 
-int Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+bool Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->internal;
 
@@ -2546,7 +2546,7 @@ int Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         }
 
         RepositionPopup(window, false);
-        return 0;
+        return true;
     } else if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR || wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
         const int x = window->floating.x;
         const int y = window->floating.y;
@@ -2577,7 +2577,7 @@ int Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
                 struct wl_output *output = display->internal->output;
                 SetFullscreen(window, output);
 
-                return 0;
+                return true;
             }
         }
     }
@@ -2637,7 +2637,7 @@ SDL_DisplayID Wayland_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *wi
     return 0;
 }
 
-int Wayland_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
+bool Wayland_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
 {
     SDL_WindowData *wind = window->internal;
 
@@ -2645,7 +2645,7 @@ int Wayland_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float o
         SetSurfaceOpaqueRegion(wind, !(window->flags & SDL_WINDOW_TRANSPARENT) && opacity == 1.0f);
         wp_alpha_modifier_surface_v1_set_multiplier(wind->wp_alpha_modifier_surface_v1, (Uint32)((double)SDL_MAX_UINT32 * (double)opacity));
 
-        return 0;
+        return true;
     }
 
     return SDL_SetError("wayland: set window opacity failed; compositor lacks support for the required wp_alpha_modifier_v1 protocol");
@@ -2666,7 +2666,7 @@ void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-int Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->internal;
 
@@ -2674,7 +2674,7 @@ int Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
         WAYLAND_wl_display_roundtrip(_this->internal->display);
     } while (wind->fullscreen_deadline_count || wind->maximized_deadline_count);
 
-    return 0;
+    return true;
 }
 
 void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
@@ -2700,13 +2700,13 @@ void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
     }
 }
 
-int Wayland_SuspendScreenSaver(SDL_VideoDevice *_this)
+bool Wayland_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
 
 #ifdef SDL_USE_LIBDBUS
     if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
-        return 0;
+        return true;
     }
 #endif
 
@@ -2736,7 +2736,7 @@ int Wayland_SuspendScreenSaver(SDL_VideoDevice *_this)
         }
     }
 
-    return 0;
+    return true;
 }
 
 void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)

@@ -43,7 +43,7 @@
 #define ANDROID_VID_DRIVER_NAME "android"
 
 // Initialization/Query functions
-static int Android_VideoInit(SDL_VideoDevice *_this);
+static bool Android_VideoInit(SDL_VideoDevice *_this);
 static void Android_VideoQuit(SDL_VideoDevice *_this);
 
 #include "../SDL_egl_c.h"
@@ -51,7 +51,7 @@ static void Android_VideoQuit(SDL_VideoDevice *_this);
 #define Android_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define Android_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define Android_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define Android_GLES_DeleteContext   SDL_EGL_DeleteContext
+#define Android_GLES_DestroyContext   SDL_EGL_DestroyContext
 
 // Android driver bootstrap functions
 
@@ -65,7 +65,7 @@ float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
 static SDL_SystemTheme Android_SystemTheme;
 
-static int Android_SuspendScreenSaver(SDL_VideoDevice *_this)
+static bool Android_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     return Android_JNI_SuspendScreenSaver(_this->suspend_screensaver);
 }
@@ -119,7 +119,7 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->GL_SetSwapInterval = Android_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = Android_GLES_GetSwapInterval;
     device->GL_SwapWindow = Android_GLES_SwapWindow;
-    device->GL_DeleteContext = Android_GLES_DeleteContext;
+    device->GL_DestroyContext = Android_GLES_DestroyContext;
 #endif
 
 #ifdef SDL_VIDEO_VULKAN
@@ -155,7 +155,7 @@ VideoBootStrap Android_bootstrap = {
     Android_ShowMessageBox
 };
 
-int Android_VideoInit(SDL_VideoDevice *_this)
+bool Android_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->internal;
     SDL_DisplayID displayID;
@@ -173,7 +173,7 @@ int Android_VideoInit(SDL_VideoDevice *_this)
 
     displayID = SDL_AddBasicVideoDisplay(&mode);
     if (displayID == 0) {
-        return -1;
+        return false;
     }
     display = SDL_GetVideoDisplay(displayID);
     display->natural_orientation = Android_JNI_GetDisplayNaturalOrientation();
@@ -185,7 +185,7 @@ int Android_VideoInit(SDL_VideoDevice *_this)
     Android_InitMouse();
 
     // We're done!
-    return 0;
+    return true;
 }
 
 void Android_VideoQuit(SDL_VideoDevice *_this)

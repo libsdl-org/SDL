@@ -30,7 +30,8 @@ struct SDL_RWLock
     SDL_ThreadID write_owner;
 };
 
-extern "C" SDL_RWLock *SDL_CreateRWLock(void)
+extern "C"
+SDL_RWLock *SDL_CreateRWLock(void)
 {
     try {
         SDL_RWLock *rwlock = new SDL_RWLock;
@@ -44,14 +45,16 @@ extern "C" SDL_RWLock *SDL_CreateRWLock(void)
     }
 }
 
-extern "C" void SDL_DestroyRWLock(SDL_RWLock *rwlock)
+extern "C"
+void SDL_DestroyRWLock(SDL_RWLock *rwlock)
 {
     if (rwlock) {
         delete rwlock;
     }
 }
 
-extern "C" void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+extern "C"
+void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         try {
@@ -63,7 +66,8 @@ extern "C" void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFET
     }
 }
 
-extern "C" void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
+extern "C"
+void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         try {
@@ -76,31 +80,31 @@ extern "C" void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFET
     }
 }
 
-extern "C" int SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
+extern "C"
+SDL_bool SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
 {
-    int retval = 0;
+    bool result = true;
     if (rwlock) {
-        if (rwlock->cpp_mutex.try_lock_shared() == false) {
-            retval = SDL_RWLOCK_TIMEDOUT;
-        }
+        result = rwlock->cpp_mutex.try_lock_shared();
     }
-    return retval;
+    return result;
 }
 
-extern "C" int SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
+extern "C"
+SDL_bool SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
 {
-    int retval = 0;
+    bool result = true;
     if (rwlock) {
-        if (rwlock->cpp_mutex.try_lock() == false) {
-            retval = SDL_RWLOCK_TIMEDOUT;
-        } else {
+        result = rwlock->cpp_mutex.try_lock();
+        if (result) {
             rwlock->write_owner = SDL_GetCurrentThreadID();
         }
     }
-    return retval;
+    return result;
 }
 
-extern "C" void SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+extern "C"
+void SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         if (rwlock->write_owner == SDL_GetCurrentThreadID()) {

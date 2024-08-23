@@ -194,7 +194,7 @@ int main(int argc, char **argv)
     int ret = -1;
     SDL_PropertiesID props;
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         return -1;
     }
 

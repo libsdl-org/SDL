@@ -616,7 +616,7 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
 
 bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *seconds, int *percent)
 {
-    bool retval = false;
+    bool result = false;
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
@@ -629,7 +629,7 @@ bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *s
         return false; // try a different approach than UPower.
     }
 
-    retval = true;                  // Clearly we can use this interface.
+    result = true;                  // Clearly we can use this interface.
     *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
     *seconds = -1;
     *percent = -1;
@@ -641,7 +641,7 @@ bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *s
     dbus->free_string_array(paths);
 #endif // SDL_USE_LIBDBUS
 
-    return retval;
+    return result;
 }
 
 #endif // SDL_POWER_LINUX

@@ -141,41 +141,41 @@ static void SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
     SDL_AtomicSet(&ctx->initialized, false);
 }
 
-static int SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
+static bool SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
 {
     SDL_HIDAPI_rumble_lock = SDL_CreateMutex();
     if (!SDL_HIDAPI_rumble_lock) {
         SDL_HIDAPI_StopRumbleThread(ctx);
-        return -1;
+        return false;
     }
 
     ctx->request_sem = SDL_CreateSemaphore(0);
     if (!ctx->request_sem) {
         SDL_HIDAPI_StopRumbleThread(ctx);
-        return -1;
+        return false;
     }
 
     SDL_AtomicSet(&ctx->running, true);
     ctx->thread = SDL_CreateThread(SDL_HIDAPI_RumbleThread, "HIDAPI Rumble", ctx);
     if (!ctx->thread) {
         SDL_HIDAPI_StopRumbleThread(ctx);
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
-int SDL_HIDAPI_LockRumble(void)
+bool SDL_HIDAPI_LockRumble(void)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
     if (SDL_AtomicCompareAndSwap(&ctx->initialized, false, true)) {
-        if (SDL_HIDAPI_StartRumbleThread(ctx) < 0) {
-            return -1;
+        if (!SDL_HIDAPI_StartRumbleThread(ctx)) {
+            return false;
         }
     }
 
     SDL_LockMutex(SDL_HIDAPI_rumble_lock);
-    return 0;
+    return true;
 }
 
 bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size)
@@ -210,7 +210,8 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
 
     if (size > sizeof(request->data)) {
         SDL_HIDAPI_UnlockRumble();
-        return SDL_SetError("Couldn't send rumble, size %d is greater than %d", size, (int)sizeof(request->data));
+        SDL_SetError("Couldn't send rumble, size %d is greater than %d", size, (int)sizeof(request->data));
+        return -1;
     }
 
     request = (SDL_HIDAPI_RumbleRequest *)SDL_calloc(1, sizeof(*request));
@@ -253,10 +254,11 @@ int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size
     int maximum_size;
 
     if (size <= 0) {
-        return SDL_SetError("Tried to send rumble with invalid size");
+        SDL_SetError("Tried to send rumble with invalid size");
+        return -1;
     }
 
-    if (SDL_HIDAPI_LockRumble() < 0) {
+    if (!SDL_HIDAPI_LockRumble()) {
         return -1;
     }
 

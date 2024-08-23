@@ -140,7 +140,7 @@ static void Emscripten_FreeCursor(SDL_Cursor *cursor)
     }
 }
 
-static int Emscripten_ShowCursor(SDL_Cursor *cursor)
+static bool Emscripten_ShowCursor(SDL_Cursor *cursor)
 {
     SDL_CursorData *curdata;
     if (SDL_GetMouseFocus() != NULL) {
@@ -166,10 +166,10 @@ static int Emscripten_ShowCursor(SDL_Cursor *cursor)
             /* *INDENT-ON* */ // clang-format on
         }
     }
-    return 0;
+    return true;
 }
 
-static int Emscripten_SetRelativeMouseMode(bool enabled)
+static bool Emscripten_SetRelativeMouseMode(bool enabled)
 {
     SDL_Window *window;
     SDL_WindowData *window_data;
@@ -178,20 +178,20 @@ static int Emscripten_SetRelativeMouseMode(bool enabled)
     if (enabled) {
         window = SDL_GetMouseFocus();
         if (!window) {
-            return -1;
+            return false;
         }
 
         window_data = window->internal;
 
         if (emscripten_request_pointerlock(window_data->canvas_id, 1) >= EMSCRIPTEN_RESULT_SUCCESS) {
-            return 0;
+            return true;
         }
     } else {
         if (emscripten_exit_pointerlock() >= EMSCRIPTEN_RESULT_SUCCESS) {
-            return 0;
+            return true;
         }
     }
-    return -1;
+    return false;
 }
 
 void Emscripten_InitMouse(void)

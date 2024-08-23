@@ -44,30 +44,30 @@
 
 static char *readSymLink(const char *path)
 {
-    char *retval = NULL;
+    char *result = NULL;
     ssize_t len = 64;
     ssize_t rc = -1;
 
     while (1) {
-        char *ptr = (char *)SDL_realloc(retval, (size_t)len);
+        char *ptr = (char *)SDL_realloc(result, (size_t)len);
         if (!ptr) {
             break;
         }
 
-        retval = ptr;
+        result = ptr;
 
-        rc = readlink(path, retval, len);
+        rc = readlink(path, result, len);
         if (rc == -1) {
             break; // not a symlink, i/o error, etc.
         } else if (rc < len) {
-            retval[rc] = '\0'; // readlink doesn't null-terminate.
-            return retval;     // we're good to go.
+            result[rc] = '\0'; // readlink doesn't null-terminate.
+            return result;     // we're good to go.
         }
 
         len *= 2; // grow buffer, try again.
     }
 
-    SDL_free(retval);
+    SDL_free(result);
     return NULL;
 }
 
@@ -124,15 +124,15 @@ static char *search_path_for_binary(const char *bin)
 
 char *SDL_SYS_GetBasePath(void)
 {
-    char *retval = NULL;
+    char *result = NULL;
 
 #ifdef SDL_PLATFORM_FREEBSD
     char fullpath[PATH_MAX];
     size_t buflen = sizeof(fullpath);
     const int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
     if (sysctl(mib, SDL_arraysize(mib), fullpath, &buflen, NULL, 0) != -1) {
-        retval = SDL_strdup(fullpath);
-        if (!retval) {
+        result = SDL_strdup(fullpath);
+        if (!result) {
             return NULL;
         }
     }
@@ -173,11 +173,11 @@ char *SDL_SYS_GetBasePath(void)
         if (exe) {
             if (!pwddst) {
                 if (realpath(exe, realpathbuf) != NULL) {
-                    retval = realpathbuf;
+                    result = realpathbuf;
                 }
             } else {
                 if (realpath(pwddst, realpathbuf) != NULL) {
-                    retval = realpathbuf;
+                    result = realpathbuf;
                 }
                 SDL_free(pwddst);
             }
@@ -187,7 +187,7 @@ char *SDL_SYS_GetBasePath(void)
             }
         }
 
-        if (!retval) {
+        if (!result) {
             SDL_free(realpathbuf);
         }
 
@@ -196,37 +196,37 @@ char *SDL_SYS_GetBasePath(void)
 #endif
 
     // is a Linux-style /proc filesystem available?
-    if (!retval && (access("/proc", F_OK) == 0)) {
+    if (!result && (access("/proc", F_OK) == 0)) {
         /* !!! FIXME: after 2.0.6 ships, let's delete this code and just
                       use the /proc/%llu version. There's no reason to have
                       two copies of this plus all the #ifdefs. --ryan. */
 #ifdef SDL_PLATFORM_FREEBSD
-        retval = readSymLink("/proc/curproc/file");
+        result = readSymLink("/proc/curproc/file");
 #elif defined(SDL_PLATFORM_NETBSD)
-        retval = readSymLink("/proc/curproc/exe");
+        result = readSymLink("/proc/curproc/exe");
 #elif defined(SDL_PLATFORM_SOLARIS)
-        retval = readSymLink("/proc/self/path/a.out");
+        result = readSymLink("/proc/self/path/a.out");
 #else
-        retval = readSymLink("/proc/self/exe"); // linux.
-        if (!retval) {
+        result = readSymLink("/proc/self/exe"); // linux.
+        if (!result) {
             // older kernels don't have /proc/self ... try PID version...
             char path[64];
             const int rc = SDL_snprintf(path, sizeof(path),
                                         "/proc/%llu/exe",
                                         (unsigned long long)getpid());
             if ((rc > 0) && (rc < sizeof(path))) {
-                retval = readSymLink(path);
+                result = readSymLink(path);
             }
         }
 #endif
     }
 
 #ifdef SDL_PLATFORM_SOLARIS  // try this as a fallback if /proc didn't pan out
-    if (!retval) {
+    if (!result) {
         const char *path = getexecname();
         if ((path) && (path[0] == '/')) { // must be absolute path...
-            retval = SDL_strdup(path);
-            if (!retval) {
+            result = SDL_strdup(path);
+            if (!result) {
                 return NULL;
             }
         }
@@ -235,25 +235,25 @@ char *SDL_SYS_GetBasePath(void)
     /* If we had access to argv[0] here, we could check it for a path,
         or troll through $PATH looking for it, too. */
 
-    if (retval) { // chop off filename.
-        char *ptr = SDL_strrchr(retval, '/');
+    if (result) { // chop off filename.
+        char *ptr = SDL_strrchr(result, '/');
         if (ptr) {
             *(ptr + 1) = '\0';
         } else { // shouldn't happen, but just in case...
-            SDL_free(retval);
-            retval = NULL;
+            SDL_free(result);
+            result = NULL;
         }
     }
 
-    if (retval) {
+    if (result) {
         // try to shrink buffer...
-        char *ptr = (char *)SDL_realloc(retval, SDL_strlen(retval) + 1);
+        char *ptr = (char *)SDL_realloc(result, SDL_strlen(result) + 1);
         if (ptr) {
-            retval = ptr; // oh well if it failed.
+            result = ptr; // oh well if it failed.
         }
     }
 
-    return retval;
+    return result;
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
@@ -267,7 +267,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
      */
     const char *envr = SDL_getenv("XDG_DATA_HOME");
     const char *append;
-    char *retval = NULL;
+    char *result = NULL;
     char *ptr = NULL;
     size_t len = 0;
 
@@ -298,34 +298,34 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     }
 
     len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
-    retval = (char *)SDL_malloc(len);
-    if (!retval) {
+    result = (char *)SDL_malloc(len);
+    if (!result) {
         return NULL;
     }
 
     if (*org) {
-        (void)SDL_snprintf(retval, len, "%s%s%s/%s/", envr, append, org, app);
+        (void)SDL_snprintf(result, len, "%s%s%s/%s/", envr, append, org, app);
     } else {
-        (void)SDL_snprintf(retval, len, "%s%s%s/", envr, append, app);
+        (void)SDL_snprintf(result, len, "%s%s%s/", envr, append, app);
     }
 
-    for (ptr = retval + 1; *ptr; ptr++) {
+    for (ptr = result + 1; *ptr; ptr++) {
         if (*ptr == '/') {
             *ptr = '\0';
-            if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
+            if (mkdir(result, 0700) != 0 && errno != EEXIST) {
                 goto error;
             }
             *ptr = '/';
         }
     }
-    if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
+    if (mkdir(result, 0700) != 0 && errno != EEXIST) {
     error:
-        SDL_SetError("Couldn't create directory '%s': '%s'", retval, strerror(errno));
-        SDL_free(retval);
+        SDL_SetError("Couldn't create directory '%s': '%s'", result, strerror(errno));
+        SDL_free(result);
         return NULL;
     }
 
-    return retval;
+    return result;
 }
 
 /*
@@ -518,8 +518,8 @@ static char *xdg_user_dir_lookup (const char *type)
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     const char *param = NULL;
-    char *retval;
-    char *newretval;
+    char *result;
+    char *newresult;
 
     /* According to `man xdg-user-dir`, the possible values are:
         DESKTOP
@@ -540,7 +540,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
             return NULL;
         }
 
-        retval = SDL_strdup(param);
+        result = SDL_strdup(param);
         goto append_slash;
 
     case SDL_FOLDER_DESKTOP:
@@ -594,25 +594,25 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         return NULL;
     }
 
-    retval = xdg_user_dir_lookup(param);
+    result = xdg_user_dir_lookup(param);
 
-    if (!retval) {
+    if (!result) {
         SDL_SetError("XDG directory not available");
         return NULL;
     }
 
 append_slash:
-    newretval = (char *) SDL_realloc(retval, SDL_strlen(retval) + 2);
+    newresult = (char *) SDL_realloc(result, SDL_strlen(result) + 2);
 
-    if (!newretval) {
-        SDL_free(retval);
+    if (!newresult) {
+        SDL_free(result);
         return NULL;
     }
 
-    retval = newretval;
-    SDL_strlcat(retval, "/", SDL_strlen(retval) + 2);
+    result = newresult;
+    SDL_strlcat(result, "/", SDL_strlen(result) + 2);
 
-    return retval;
+    return result;
 }
 
 #endif // SDL_FILESYSTEM_UNIX

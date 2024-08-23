@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
                                        "Simple MessageBox",
                                        "This is a simple error MessageBox",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
                                        "Simple MessageBox",
                                        "This is a simple MessageBox with a newline:\r\nHello world!",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
                                        NULL,
                                        "NULL Title",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
                                        "NULL Message",
                                        NULL,
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
                                        "UTF-8 Simple MessageBox",
                                        "Unicode text: '牛肉西蘭花' ...",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
                                        "UTF-8 Simple MessageBox",
                                        "Unicode text and newline:\r\n'牛肉西蘭花'\n'牛肉西蘭花'",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
                                        "牛肉西蘭花",
                                        "Unicode text in the title.",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
        to work, since the message box events are dispatched by the Cocoa
        subsystem on the main thread.
      */
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video subsystem: %s\n", SDL_GetError());
         return 1;
     }
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
                                            "Simple MessageBox",
                                            "This is a simple error MessageBox with a parent window. Press a key or close the window after dismissing this messagebox.",
                                            window);
-        if (success == -1) {
+        if (!success) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
             quit(1);
         }

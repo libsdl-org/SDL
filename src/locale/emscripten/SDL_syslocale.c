@@ -24,7 +24,7 @@
 #include "SDL_internal.h"
 #include "../SDL_syslocale.h"
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     /* *INDENT-OFF* */ // clang-format off
     EM_ASM({
@@ -67,5 +67,5 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         }
     }, buf, buflen);
     /* *INDENT-ON* */ // clang-format on
-    return 0;
+    return true;
 }

@@ -517,7 +517,7 @@ static void METAL_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *eve
 {
 }
 
-static int METAL_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
+static bool METAL_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
@@ -527,7 +527,7 @@ static int METAL_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
         if (h) {
             *h = (int)data.mtllayer.drawableSize.height;
         }
-        return 0;
+        return true;
     }
 }
 
@@ -629,7 +629,7 @@ size_t GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, in
     return 0;
 }
 
-static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
+static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
@@ -771,7 +771,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 #endif
         texture->internal = (void *)CFBridgingRetain(texturedata);
 
-        return 0;
+        return true;
     }
 }
 
@@ -795,7 +795,7 @@ static MTLStorageMode METAL_GetStorageMode(id<MTLResource> resource)
     return MTLStorageModeShared;
 }
 
-static int METAL_UpdateTextureInternal(SDL_Renderer *renderer, SDL3METAL_TextureData *texturedata,
+static bool METAL_UpdateTextureInternal(SDL_Renderer *renderer, SDL3METAL_TextureData *texturedata,
                                        id<MTLTexture> texture, SDL_Rect rect, int slice,
                                        const void *pixels, int pitch)
 {
@@ -810,7 +810,7 @@ static int METAL_UpdateTextureInternal(SDL_Renderer *renderer, SDL3METAL_Texture
      * to a staging texture and copy that over. */
     if (!texturedata.hasdata && METAL_GetStorageMode(texture) != MTLStorageModePrivate) {
         METAL_UploadTextureData(texture, rect, slice, pixels, pitch);
-        return 0;
+        return true;
     }
 
     desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:texture.pixelFormat
@@ -860,17 +860,17 @@ static int METAL_UpdateTextureInternal(SDL_Renderer *renderer, SDL3METAL_Texture
     [data.mtlcmdbuffer commit];
     data.mtlcmdbuffer = nil;
 
-    return 0;
+    return true;
 }
 
-static int METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                const SDL_Rect *rect, const void *pixels, int pitch)
 {
     @autoreleasepool {
         SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
 
-        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, pixels, pitch) < 0) {
-            return -1;
+        if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, pixels, pitch)) {
+            return false;
         }
 #if SDL_HAVE_YUV
         if (texturedata.yuv) {
@@ -881,14 +881,14 @@ static int METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
             // Skip to the correct offset into the next texture
             pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
-            if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Uslice, pixels, UVpitch) < 0) {
-                return -1;
+            if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Uslice, pixels, UVpitch)) {
+                return false;
             }
 
             // Skip to the correct offset into the next texture
             pixels = (const void *)((const Uint8 *)pixels + UVrect.h * UVpitch);
-            if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Vslice, pixels, UVpitch) < 0) {
-                return -1;
+            if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Vslice, pixels, UVpitch)) {
+                return false;
             }
         }
 
@@ -898,19 +898,19 @@ static int METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
             // Skip to the correct offset into the next texture
             pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
-            if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, 0, pixels, UVpitch) < 0) {
-                return -1;
+            if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, 0, pixels, UVpitch)) {
+                return false;
             }
         }
 #endif
         texturedata.hasdata = YES;
 
-        return 0;
+        return true;
     }
 }
 
 #if SDL_HAVE_YUV
-static int METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
                                   const Uint8 *Yplane, int Ypitch,
                                   const Uint8 *Uplane, int Upitch,
@@ -924,26 +924,26 @@ static int METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 
         // Bail out if we're supposed to update an empty rectangle
         if (rect->w <= 0 || rect->h <= 0) {
-            return 0;
+            return true;
         }
 
-        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, Yplane, Ypitch) < 0) {
-            return -1;
+        if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, Yplane, Ypitch)) {
+            return false;
         }
-        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Uslice, Uplane, Upitch)) {
-            return -1;
+        if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Uslice, Uplane, Upitch)) {
+            return false;
         }
-        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Vslice, Vplane, Vpitch)) {
-            return -1;
+        if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Vslice, Vplane, Vpitch)) {
+            return false;
         }
 
         texturedata.hasdata = YES;
 
-        return 0;
+        return true;
     }
 }
 
-static int METAL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool METAL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const SDL_Rect *rect,
                                  const Uint8 *Yplane, int Ypitch,
                                  const Uint8 *UVplane, int UVpitch)
@@ -954,25 +954,25 @@ static int METAL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
 
         // Bail out if we're supposed to update an empty rectangle
         if (rect->w <= 0 || rect->h <= 0) {
-            return 0;
+            return true;
         }
 
-        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, Yplane, Ypitch) < 0) {
-            return -1;
+        if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, Yplane, Ypitch)) {
+            return false;
         }
 
-        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, 0, UVplane, UVpitch) < 0) {
-            return -1;
+        if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, 0, UVplane, UVpitch)) {
+            return false;
         }
 
         texturedata.hasdata = YES;
 
-        return 0;
+        return true;
     }
 }
 #endif
 
-static int METAL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool METAL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                              const SDL_Rect *rect, void **pixels, int *pitch)
 {
     @autoreleasepool {
@@ -1004,7 +1004,7 @@ static int METAL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         texturedata.lockedbuffer = lockedbuffer;
         *pixels = [lockedbuffer contents];
 
-        return 0;
+        return true;
     }
 }
 
@@ -1099,7 +1099,7 @@ static void METAL_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
 {
 }
 
-static int METAL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
+static bool METAL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
@@ -1117,11 +1117,11 @@ static int METAL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         /* We don't begin a new render pass right away - we delay it until an actual
          * draw or clear happens. That way we can use hardware clears when possible,
          * which are only available when beginning a new render pass. */
-        return 0;
+        return true;
     }
 }
 
-static int METAL_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static bool METAL_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     float projection[4][4]; // Prepare an orthographic projection
     const int w = cmd->data.viewport.rect.w;
@@ -1129,7 +1129,7 @@ static int METAL_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     const size_t matrixlen = sizeof(projection);
     float *matrix = (float *)SDL_AllocateRenderVertices(renderer, matrixlen, CONSTANT_ALIGN(16), &cmd->data.viewport.first);
     if (!matrix) {
-        return -1;
+        return false;
     }
 
     SDL_memset(projection, '\0', matrixlen);
@@ -1142,15 +1142,15 @@ static int METAL_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     }
     SDL_memcpy(matrix, projection, matrixlen);
 
-    return 0;
+    return true;
 }
 
-static int METAL_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static bool METAL_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    return 0; // nothing to do in this backend.
+    return true; // nothing to do in this backend.
 }
 
-static int METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
+static bool METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
     SDL_FColor color = cmd->data.draw.color;
     bool convert_color = SDL_RenderingLinearSpace(renderer);
@@ -1158,7 +1158,7 @@ static int METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     const size_t vertlen = (2 * sizeof(float) + 4 * sizeof(float)) * count;
     float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
-        return -1;
+        return false;
     }
     cmd->data.draw.count = count;
 
@@ -1174,10 +1174,10 @@ static int METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         *(verts++) = color.b;
         *(verts++) = color.a;
     }
-    return 0;
+    return true;
 }
 
-static int METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
+static bool METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
     SDL_FColor color = cmd->data.draw.color;
     bool convert_color = SDL_RenderingLinearSpace(renderer);
@@ -1189,7 +1189,7 @@ static int METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
     vertlen = (2 * sizeof(float) + 4 * sizeof(float)) * count;
     verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
-        return -1;
+        return false;
     }
     cmd->data.draw.count = count;
 
@@ -1230,10 +1230,10 @@ static int METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         }
     }
 
-    return 0;
+    return true;
 }
 
-static int METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+static bool METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                                const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
                                int num_vertices, const void *indices, int num_indices, int size_indices,
                                float scale_x, float scale_y)
@@ -1243,7 +1243,7 @@ static int METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
     const size_t vertlen = (2 * sizeof(float) + 4 * sizeof(float) + (texture ? 2 : 0) * sizeof(float)) * count;
     float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
-        return -1;
+        return false;
     }
 
     cmd->data.draw.count = count;
@@ -1286,7 +1286,7 @@ static int METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
         }
     }
 
-    return 0;
+    return true;
 }
 
 // These should mirror the definitions in SDL_shaders_metal.metal
@@ -1540,7 +1540,7 @@ static void METAL_InvalidateCachedState(SDL_Renderer *renderer)
     // METAL_DrawStateCache only exists during a run of METAL_RunCommandQueue, so there's nothing to invalidate!
 }
 
-static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
+static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
@@ -1685,7 +1685,7 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             cmd = cmd->next;
         }
 
-        return 0;
+        return true;
     }
 }
 
@@ -1754,7 +1754,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
     }
 }
 
-static int METAL_RenderPresent(SDL_Renderer *renderer)
+static bool METAL_RenderPresent(SDL_Renderer *renderer)
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
@@ -1788,9 +1788,9 @@ static int METAL_RenderPresent(SDL_Renderer *renderer)
         data.mtlbackbuffer = nil;
 
         if (renderer->hidden || !ready) {
-            return -1;
+            return false;
         }
-        return 0;
+        return true;
     }
 }
 
@@ -1844,7 +1844,7 @@ static void *METAL_GetMetalCommandEncoder(SDL_Renderer *renderer)
     }
 }
 
-static int METAL_SetVSync(SDL_Renderer *renderer, const int vsync)
+static bool METAL_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
 #if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
     if (@available(macOS 10.13, *)) {
@@ -1859,12 +1859,12 @@ static int METAL_SetVSync(SDL_Renderer *renderer, const int vsync)
         default:
             return SDL_Unsupported();
         }
-        return 0;
+        return true;
     }
 #endif
     switch (vsync) {
     case 1:
-        return 0;
+        return true;
     default:
         return SDL_Unsupported();
     }
@@ -1900,7 +1900,7 @@ static SDL_MetalView GetWindowView(SDL_Window *window)
     return nil;
 }
 
-static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
+static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = NULL;
@@ -1963,7 +1963,7 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         const size_t YCbCr_shader_matrix_size = 4 * 4 * sizeof(float);
 
         if (!IsMetalAvailable()) {
-            return -1;
+            return false;
         }
 
         SDL_SetupRendererColorspace(renderer, create_props);
@@ -2008,7 +2008,7 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         }
 
         if (view == NULL) {
-            return -1;
+            return false;
         }
 
         // !!! FIXME: error checking on all of this.
@@ -2232,7 +2232,7 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
 
         SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, maxtexsize);
 
-        return 0;
+        return true;
     }
 }
 

@@ -42,7 +42,7 @@
 #define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
-int KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
@@ -65,7 +65,7 @@ int KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
 
     if (!_this->vulkan_config.loader_handle) {
-        return -1;
+        return false;
     }
 
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
@@ -114,12 +114,12 @@ int KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         goto fail;
     }
 
-    return 0;
+    return true;
 
 fail:
     SDL_UnloadObject(_this->vulkan_config.loader_handle);
     _this->vulkan_config.loader_handle = NULL;
-    return -1;
+    return false;
 }
 
 void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
@@ -146,7 +146,9 @@ char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
     static const char *const extensionsForKMSDRM[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
     };
-    if(count) { *count = SDL_arraysize(extensionsForKMSDRM); }
+    if (count) {
+        *count = SDL_arraysize(extensionsForKMSDRM);
+    }
     return extensionsForKMSDRM;
 }
 
@@ -158,7 +160,7 @@ char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 // KMSDRM_Vulkan_GetInstanceExtensions(), like we do with
 // VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK.
 /***********************************************************************/
-int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                 SDL_Window *window,
                                 VkInstance instance,
                                 const struct VkAllocationCallbacks *allocator,

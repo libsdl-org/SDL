@@ -569,12 +569,12 @@ static void SDLCALL SDL_HIDAPIDriverHintChanged(void *userdata, const char *name
     SDL_HIDAPI_change_count = 0;
 }
 
-static int HIDAPI_JoystickInit(void)
+static bool HIDAPI_JoystickInit(void)
 {
     int i;
 
     if (initialized) {
-        return 0;
+        return true;
     }
 
 #ifdef SDL_USE_LIBUDEV
@@ -614,7 +614,7 @@ static int HIDAPI_JoystickInit(void)
 
     initialized = true;
 
-    return 0;
+    return true;
 }
 
 static bool HIDAPI_AddJoystickInstanceToDevice(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
@@ -1249,7 +1249,7 @@ bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type)
     bool result = false;
 
     // Make sure we're initialized, as this could be called from other drivers during startup
-    if (HIDAPI_JoystickInit() < 0) {
+    if (!HIDAPI_JoystickInit()) {
         return false;
     }
 
@@ -1280,7 +1280,7 @@ bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version,
     bool result = false;
 
     // Make sure we're initialized, as this could be called from other drivers during startup
-    if (HIDAPI_JoystickInit() < 0) {
+    if (!HIDAPI_JoystickInit()) {
         return false;
     }
 
@@ -1385,7 +1385,7 @@ void HIDAPI_UpdateDevices(void)
                 continue;
             }
             if (device->driver) {
-                if (SDL_TryLockMutex(device->dev_lock) == 0) {
+                if (SDL_TryLockMutex(device->dev_lock)) {
                     device->updating = true;
                     device->driver->UpdateDevice(device);
                     device->updating = false;
@@ -1477,7 +1477,7 @@ static SDL_JoystickID HIDAPI_JoystickGetDeviceInstanceID(int device_index)
     return joystickID;
 }
 
-static int HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_JoystickID joystickID = 0;
     SDL_HIDAPI_Device *device = HIDAPI_GetDeviceByIndex(device_index, &joystickID);
@@ -1492,7 +1492,7 @@ static int HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*hwdata));
     if (!hwdata) {
-        return -1;
+        return false;
     }
     hwdata->device = device;
 
@@ -1520,7 +1520,7 @@ static int HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
         // The open failed, mark this device as disconnected and update devices
         HIDAPI_JoystickDisconnected(device, joystickID);
         SDL_free(hwdata);
-        return -1;
+        return false;
     }
 
     HIDAPI_UpdateJoystickProperties(device, joystick);
@@ -1530,7 +1530,7 @@ static int HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
     joystick->hwdata = hwdata;
-    return 0;
+    return true;
 }
 
 static bool HIDAPI_GetJoystickDevice(SDL_Joystick *joystick, SDL_HIDAPI_Device **device)
@@ -1546,9 +1546,9 @@ static bool HIDAPI_GetJoystickDevice(SDL_Joystick *joystick, SDL_HIDAPI_Device *
     return false;
 }
 
-static int HIDAPI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    int result;
+    bool result;
     SDL_HIDAPI_Device *device = NULL;
 
     if (HIDAPI_GetJoystickDevice(joystick, &device)) {
@@ -1560,9 +1560,9 @@ static int HIDAPI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_ru
     return result;
 }
 
-static int HIDAPI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-    int result;
+    bool result;
     SDL_HIDAPI_Device *device = NULL;
 
     if (HIDAPI_GetJoystickDevice(joystick, &device)) {
@@ -1574,9 +1574,9 @@ static int HIDAPI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rum
     return result;
 }
 
-static int HIDAPI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    int result;
+    bool result;
     SDL_HIDAPI_Device *device = NULL;
 
     if (HIDAPI_GetJoystickDevice(joystick, &device)) {
@@ -1588,9 +1588,9 @@ static int HIDAPI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green,
     return result;
 }
 
-static int HIDAPI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool HIDAPI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
-    int result;
+    bool result;
     SDL_HIDAPI_Device *device = NULL;
 
     if (HIDAPI_GetJoystickDevice(joystick, &device)) {
@@ -1602,9 +1602,9 @@ static int HIDAPI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, i
     return result;
 }
 
-static int HIDAPI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
+static bool HIDAPI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
-    int result;
+    bool result;
     SDL_HIDAPI_Device *device = NULL;
 
     if (HIDAPI_GetJoystickDevice(joystick, &device)) {

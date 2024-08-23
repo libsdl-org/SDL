@@ -25,9 +25,9 @@
 #include "SDL_dummysensor.h"
 #include "../SDL_syssensor.h"
 
-static int SDL_DUMMY_SensorInit(void)
+static bool SDL_DUMMY_SensorInit(void)
 {
-    return 0;
+    return true;
 }
 
 static int SDL_DUMMY_SensorGetCount(void)
@@ -59,7 +59,7 @@ static SDL_SensorID SDL_DUMMY_SensorGetDeviceInstanceID(int device_index)
     return -1;
 }
 
-static int SDL_DUMMY_SensorOpen(SDL_Sensor *sensor, int device_index)
+static bool SDL_DUMMY_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     return SDL_Unsupported();
 }

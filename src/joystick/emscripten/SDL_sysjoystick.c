@@ -167,20 +167,18 @@ static void EMSCRIPTEN_JoystickQuit(void)
     emscripten_set_gamepaddisconnected_callback(NULL, 0, NULL);
 }
 
-/* Function to scan the system for joysticks.
- * It should return 0, or -1 on an unrecoverable fatal error.
- */
-static int EMSCRIPTEN_JoystickInit(void)
+// Function to scan the system for joysticks.
+static bool EMSCRIPTEN_JoystickInit(void)
 {
-    int retval, i, numjs;
+    int rc, i, numjs;
     EmscriptenGamepadEvent gamepadState;
 
     numjoysticks = 0;
 
-    retval = emscripten_sample_gamepad_data();
+    rc = emscripten_sample_gamepad_data();
 
     // Check if gamepad is supported by browser
-    if (retval == EMSCRIPTEN_RESULT_NOT_SUPPORTED) {
+    if (rc == EMSCRIPTEN_RESULT_NOT_SUPPORTED) {
         return SDL_SetError("Gamepads not supported");
     }
 
@@ -189,8 +187,8 @@ static int EMSCRIPTEN_JoystickInit(void)
     // handle already connected gamepads
     if (numjs > 0) {
         for (i = 0; i < numjs; i++) {
-            retval = emscripten_get_gamepad_status(i, &gamepadState);
-            if (retval == EMSCRIPTEN_RESULT_SUCCESS) {
+            rc = emscripten_get_gamepad_status(i, &gamepadState);
+            if (rc == EMSCRIPTEN_RESULT_SUCCESS) {
                 Emscripten_JoyStickConnected(EMSCRIPTEN_EVENT_GAMEPADCONNECTED,
                                              &gamepadState,
                                              NULL);
@@ -198,24 +196,24 @@ static int EMSCRIPTEN_JoystickInit(void)
         }
     }
 
-    retval = emscripten_set_gamepadconnected_callback(NULL,
-                                                      0,
-                                                      Emscripten_JoyStickConnected);
+    rc = emscripten_set_gamepadconnected_callback(NULL,
+                                                  0,
+                                                  Emscripten_JoyStickConnected);
 
-    if (retval != EMSCRIPTEN_RESULT_SUCCESS) {
+    if (rc != EMSCRIPTEN_RESULT_SUCCESS) {
         EMSCRIPTEN_JoystickQuit();
         return SDL_SetError("Could not set gamepad connect callback");
     }
 
-    retval = emscripten_set_gamepaddisconnected_callback(NULL,
+    rc = emscripten_set_gamepaddisconnected_callback(NULL,
                                                          0,
                                                          Emscripten_JoyStickDisconnected);
-    if (retval != EMSCRIPTEN_RESULT_SUCCESS) {
+    if (rc != EMSCRIPTEN_RESULT_SUCCESS) {
         EMSCRIPTEN_JoystickQuit();
         return SDL_SetError("Could not set gamepad disconnect callback");
     }
 
-    return 0;
+    return true;
 }
 
 // Returns item matching given SDL device index.
@@ -294,12 +292,7 @@ static SDL_JoystickID EMSCRIPTEN_JoystickGetDeviceInstanceID(int device_index)
     return JoystickByDeviceIndex(device_index)->device_instance;
 }
 
-/* Function to open a joystick for use.
-   The joystick to open is specified by the device index.
-   This should fill the nbuttons and naxes fields of the joystick structure.
-   It returns 0, or -1 if there is an error.
- */
-static int EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDeviceIndex(device_index);
 
@@ -320,7 +313,7 @@ static int EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nbuttons = item->nbuttons;
     joystick->naxes = item->naxes;
 
-    return 0;
+    return true;
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -385,12 +378,12 @@ static SDL_GUID EMSCRIPTEN_JoystickGetDeviceGUID(int device_index)
     return SDL_CreateJoystickGUIDForName(name);
 }
 
-static int EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
@@ -400,17 +393,17 @@ static bool EMSCRIPTEN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMa
     return false;
 }
 
-static int EMSCRIPTEN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool EMSCRIPTEN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int EMSCRIPTEN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool EMSCRIPTEN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int EMSCRIPTEN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
+static bool EMSCRIPTEN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }

@@ -202,11 +202,10 @@ static void Render(void)
 static void LogSwapInterval(void)
 {
     int interval = 0;
-    const int ret_interval = SDL_GL_GetSwapInterval(&interval);
-    if (ret_interval < 0) {
-       SDL_Log("Swap Interval : %d error: %s\n", interval, SDL_GetError());
-    } else {
+    if (SDL_GL_GetSwapInterval(&interval)) {
        SDL_Log("Swap Interval : %d\n", interval);
+    } else {
+       SDL_Log("Swap Interval : %d error: %s\n", interval, SDL_GetError());
     }
 }
 
@@ -219,7 +218,6 @@ int main(int argc, char *argv[])
     SDL_Event event;
     Uint64 then, now;
     Uint32 frames;
-    int status;
     int dw, dh;
     int swap_interval = 0;
 
@@ -316,40 +314,34 @@ int main(int argc, char *argv[])
     SDL_Log("Extensions    : %s\n", ctx.glGetString(GL_EXTENSIONS));
     SDL_Log("\n");
 
-    status = SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
-    if (!status) {
+    if (SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value)) {
         SDL_Log("SDL_GL_RED_SIZE: requested %d, got %d\n", 5, value);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_RED_SIZE: %s\n", SDL_GetError());
     }
-    status = SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
-    if (!status) {
+    if (SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value)) {
         SDL_Log("SDL_GL_GREEN_SIZE: requested %d, got %d\n", 5, value);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_GREEN_SIZE: %s\n", SDL_GetError());
     }
-    status = SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
-    if (!status) {
+    if (SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value)) {
         SDL_Log("SDL_GL_BLUE_SIZE: requested %d, got %d\n", 5, value);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_BLUE_SIZE: %s\n", SDL_GetError());
     }
-    status = SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
-    if (!status) {
+    if (SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value)) {
         SDL_Log("SDL_GL_DEPTH_SIZE: requested %d, got %d\n", 16, value);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_DEPTH_SIZE: %s\n", SDL_GetError());
     }
     if (fsaa) {
-        status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
-        if (!status) {
+        if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value)) {
             SDL_Log("SDL_GL_MULTISAMPLEBUFFERS: requested 1, got %d\n", value);
         } else {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_MULTISAMPLEBUFFERS: %s\n",
                          SDL_GetError());
         }
-        status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &value);
-        if (!status) {
+        if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &value)) {
             SDL_Log("SDL_GL_MULTISAMPLESAMPLES: requested %d, got %d\n", fsaa,
                     value);
         } else {
@@ -358,8 +350,7 @@ int main(int argc, char *argv[])
         }
     }
     if (accel >= 0) {
-        status = SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &value);
-        if (!status) {
+        if (SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &value)) {
             SDL_Log("SDL_GL_ACCELERATED_VISUAL: requested %d, got %d\n", accel,
                     value);
         } else {

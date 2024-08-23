@@ -31,7 +31,7 @@
 
 extern void SDL_InitTicks(void);
 extern void SDL_QuitTicks(void);
-extern int SDL_InitTimers(void);
+extern bool SDL_InitTimers(void);
 extern void SDL_QuitTimers(void);
 
 extern void SDL_SYS_DelayNS(Uint64 ns);

@@ -35,21 +35,22 @@
 extern "C" {
 #endif
 
-static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
+static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window)
+{
     return (SDL_BWin *)(window->internal);
 }
 
-static SDL_INLINE SDL_BLooper *_GetBeLooper() {
+static SDL_INLINE SDL_BLooper *_GetBeLooper()
+{
     return SDL_Looper;
 }
 
-int HAIKU_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
-                                       SDL_PixelFormat * format,
-                                       void ** pixels, int *pitch) {
+bool HAIKU_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, SDL_PixelFormat * format, void ** pixels, int *pitch)
+{
     SDL_BWin *bwin = _ToBeWin(window);
     BScreen bscreen;
     if (!bscreen.IsValid()) {
-        return -1;
+        return false;
     }
 
     // Make sure we have exclusive access to frame buffer data
@@ -87,22 +88,22 @@ int HAIKU_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
     *pitch = bitmap->BytesPerRow();
 
     bwin->UnlockBuffer();
-    return 0;
+    return true;
 }
 
 
 
-int HAIKU_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
+bool HAIKU_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
                                       const SDL_Rect * rects, int numrects) {
     if (!window) {
-        return 0;
+        return true;
     }
 
     SDL_BWin *bwin = _ToBeWin(window);
 
     bwin->PostMessage(BWIN_UPDATE_FRAMEBUFFER);
 
-    return 0;
+    return true;
 }
 
 void HAIKU_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window) {

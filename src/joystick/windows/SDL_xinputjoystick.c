@@ -44,14 +44,14 @@ bool SDL_XINPUT_Enabled(void)
     return s_bXInputEnabled;
 }
 
-int SDL_XINPUT_JoystickInit(void)
+bool SDL_XINPUT_JoystickInit(void)
 {
     s_bXInputEnabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, true);
 
-    if (s_bXInputEnabled && WIN_LoadXInputDLL() < 0) {
+    if (s_bXInputEnabled && !WIN_LoadXInputDLL()) {
         s_bXInputEnabled = false; // oh well.
     }
-    return 0;
+    return true;
 }
 
 static const char *GetXInputName(const Uint8 userid, BYTE SubType)
@@ -255,7 +255,7 @@ bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
     return false;
 }
 
-int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
+bool SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
 {
     const Uint8 userId = joystickdevice->XInputUserId;
     XINPUT_CAPABILITIES capabilities;
@@ -284,7 +284,7 @@ int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
 
     SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
 
-    return 0;
+    return true;
 }
 
 static void UpdateXInputJoystickBatteryInformation(SDL_Joystick *joystick, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
@@ -362,7 +362,7 @@ static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE *pXIn
     UpdateXInputJoystickBatteryInformation(joystick, pBatteryInformation);
 }
 
-int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+bool SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     XINPUT_VIBRATION XVibration;
 
@@ -375,7 +375,7 @@ int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     if (XINPUTSETSTATE(joystick->hwdata->userid, &XVibration) != ERROR_SUCCESS) {
         return SDL_SetError("XInputSetState() failed");
     }
-    return 0;
+    return true;
 }
 
 void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
@@ -436,9 +436,9 @@ bool SDL_XINPUT_Enabled(void)
     return false;
 }
 
-int SDL_XINPUT_JoystickInit(void)
+bool SDL_XINPUT_JoystickInit(void)
 {
-    return 0;
+    return true;
 }
 
 void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
@@ -450,12 +450,12 @@ bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
     return false;
 }
 
-int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
+bool SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
 {
     return SDL_Unsupported();
 }
 
-int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+bool SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }

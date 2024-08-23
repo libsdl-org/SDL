@@ -28,12 +28,12 @@
 
 #include "../SDL_sysjoystick.h"
 
-extern int Android_OnPadDown(int device_id, int keycode);
-extern int Android_OnPadUp(int device_id, int keycode);
-extern int Android_OnJoy(int device_id, int axisnum, float value);
-extern int Android_OnHat(int device_id, int hat_id, int x, int y);
-extern int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, bool can_rumble);
-extern int Android_RemoveJoystick(int device_id);
+extern bool Android_OnPadDown(int device_id, int keycode);
+extern bool Android_OnPadUp(int device_id, int keycode);
+extern bool Android_OnJoy(int device_id, int axisnum, float value);
+extern bool Android_OnHat(int device_id, int hat_id, int x, int y);
+extern void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, bool can_rumble);
+extern void Android_RemoveJoystick(int device_id);
 
 // A linked list of available joysticks
 typedef struct SDL_joylist_item

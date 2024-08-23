@@ -72,21 +72,17 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     }
 }
 
-int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+SDL_bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-    int ret;
     u64 timeout_usec;
     u64 *timeout_ptr;
 
     if (!sem) {
-        return SDL_InvalidParamError("sem");
+        return true;
     }
 
     if (timeoutNS == 0) {
-        if (PollSema(sem->semid) < 0) {
-            return SDL_MUTEX_TIMEDOUT;
-        }
-        return 0;
+        return (PollSema(sem->semid) == 0);
     }
 
     timeout_ptr = NULL;
@@ -96,12 +92,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         timeout_ptr = &timeout_usec;
     }
 
-    ret = WaitSemaEx(sem->semid, 1, timeout_ptr);
-
-    if (ret < 0) {
-        return SDL_MUTEX_TIMEDOUT;
-    }
-    return 0; // Wait condition satisfied.
+    return (WaitSemaEx(sem->semid, 1, timeout_ptr) == 0);
 }
 
 // Returns the current count of the semaphore
@@ -110,31 +101,22 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     ee_sema_t info;
 
     if (!sem) {
-        SDL_InvalidParamError("sem");
         return 0;
     }
 
-    if (ReferSemaStatus(sem->semid, &info) >= 0) {
+    if (ReferSemaStatus(sem->semid, &info) == 0) {
         return info.count;
     }
-
     return 0;
 }
 
-int SDL_SignalSemaphore(SDL_Semaphore *sem)
+void SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
-    int res;
-
     if (!sem) {
-        return SDL_InvalidParamError("sem");
+        return;
     }
 
-    res = SignalSema(sem->semid);
-    if (res < 0) {
-        return SDL_SetError("sceKernelSignalSema() failed");
-    }
-
-    return 0;
+    SignalSema(sem->semid);
 }
 
 #endif // SDL_THREAD_PS2

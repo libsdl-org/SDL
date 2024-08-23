@@ -406,7 +406,7 @@ error:
     return NULL;
 }
 
-static int WIN_ShowCursor(SDL_Cursor *cursor)
+static bool WIN_ShowCursor(SDL_Cursor *cursor)
 {
     if (!cursor) {
         cursor = SDL_blank_cursor;
@@ -423,7 +423,7 @@ static int WIN_ShowCursor(SDL_Cursor *cursor)
     if (SDL_GetMouseFocus() != NULL) {
         SetCursor(SDL_cursor);
     }
-    return 0;
+    return true;
 }
 
 void WIN_SetCursorPos(int x, int y)
@@ -447,7 +447,7 @@ void WIN_SetCursorPos(int x, int y)
 #endif
 }
 
-static int WIN_WarpMouse(SDL_Window *window, float x, float y)
+static bool WIN_WarpMouse(SDL_Window *window, float x, float y)
 {
     SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
@@ -455,7 +455,7 @@ static int WIN_WarpMouse(SDL_Window *window, float x, float y)
 
     // Don't warp the mouse while we're doing a modal interaction
     if (data->in_title_click || data->focus_click_pending) {
-        return 0;
+        return true;
     }
 
     pt.x = (int)SDL_roundf(x);
@@ -465,25 +465,25 @@ static int WIN_WarpMouse(SDL_Window *window, float x, float y)
 
     // Send the exact mouse motion associated with this warp
     SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, false, x, y);
-    return 0;
+    return true;
 }
 
-static int WIN_WarpMouseGlobal(float x, float y)
+static bool WIN_WarpMouseGlobal(float x, float y)
 {
     POINT pt;
 
     pt.x = (int)SDL_roundf(x);
     pt.y = (int)SDL_roundf(y);
     SetCursorPos(pt.x, pt.y);
-    return 0;
+    return true;
 }
 
-static int WIN_SetRelativeMouseMode(bool enabled)
+static bool WIN_SetRelativeMouseMode(bool enabled)
 {
     return WIN_SetRawMouseEnabled(SDL_GetVideoDevice(), enabled);
 }
 
-static int WIN_CaptureMouse(SDL_Window *window)
+static bool WIN_CaptureMouse(SDL_Window *window)
 {
     if (window) {
         SDL_WindowData *data = window->internal;
@@ -500,12 +500,12 @@ static int WIN_CaptureMouse(SDL_Window *window)
         ReleaseCapture();
     }
 
-    return 0;
+    return true;
 }
 
 static SDL_MouseButtonFlags WIN_GetGlobalMouseState(float *x, float *y)
 {
-    SDL_MouseButtonFlags retval = 0;
+    SDL_MouseButtonFlags result = 0;
     POINT pt = { 0, 0 };
     bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
 
@@ -513,13 +513,13 @@ static SDL_MouseButtonFlags WIN_GetGlobalMouseState(float *x, float *y)
     *x = (float)pt.x;
     *y = (float)pt.y;
 
-    retval |= GetAsyncKeyState(!swapButtons ? VK_LBUTTON : VK_RBUTTON) & 0x8000 ? SDL_BUTTON_LMASK : 0;
-    retval |= GetAsyncKeyState(!swapButtons ? VK_RBUTTON : VK_LBUTTON) & 0x8000 ? SDL_BUTTON_RMASK : 0;
-    retval |= GetAsyncKeyState(VK_MBUTTON) & 0x8000 ? SDL_BUTTON_MMASK : 0;
-    retval |= GetAsyncKeyState(VK_XBUTTON1) & 0x8000 ? SDL_BUTTON_X1MASK : 0;
-    retval |= GetAsyncKeyState(VK_XBUTTON2) & 0x8000 ? SDL_BUTTON_X2MASK : 0;
+    result |= GetAsyncKeyState(!swapButtons ? VK_LBUTTON : VK_RBUTTON) & 0x8000 ? SDL_BUTTON_LMASK : 0;
+    result |= GetAsyncKeyState(!swapButtons ? VK_RBUTTON : VK_LBUTTON) & 0x8000 ? SDL_BUTTON_RMASK : 0;
+    result |= GetAsyncKeyState(VK_MBUTTON) & 0x8000 ? SDL_BUTTON_MMASK : 0;
+    result |= GetAsyncKeyState(VK_XBUTTON1) & 0x8000 ? SDL_BUTTON_X1MASK : 0;
+    result |= GetAsyncKeyState(VK_XBUTTON2) & 0x8000 ? SDL_BUTTON_X2MASK : 0;
 
-    return retval;
+    return result;
 }
 
 void WIN_InitMouse(SDL_VideoDevice *_this)

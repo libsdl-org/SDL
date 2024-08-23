@@ -86,13 +86,12 @@ static const Uint8 mix8[] = {
 // !!! FIXME: Add fast-path for volume = 1
 // !!! FIXME: Use larger scales for 16-bit/32-bit integers
 
-int SDL_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
-                 Uint32 len, float fvolume)
+SDL_bool SDL_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format, Uint32 len, float fvolume)
 {
     int volume = (int)SDL_roundf(fvolume * MIX_MAXVOLUME);
 
     if (volume == 0) {
-        return 0;
+        return true;
     }
 
     switch (format) {
@@ -287,5 +286,5 @@ int SDL_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         return SDL_SetError("SDL_MixAudio(): unknown audio format");
     }
 
-    return 0;
+    return true;
 }

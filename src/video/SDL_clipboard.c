@@ -53,7 +53,7 @@ void SDL_CancelClipboardData(Uint32 sequence)
     _this->clipboard_userdata = NULL;
 }
 
-int SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types)
+SDL_bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t i;
@@ -70,7 +70,7 @@ int SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanu
 
     if (!callback && !_this->clipboard_callback) {
         // Nothing to do, don't modify the system clipboard
-        return 0;
+        return true;
     }
 
     SDL_CancelClipboardData(_this->clipboard_sequence);
@@ -97,14 +97,14 @@ int SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanu
         }
         if (num_allocated < num_mime_types) {
             SDL_ClearClipboardData();
-            return -1;
+            return false;
         }
         _this->num_clipboard_mime_types = num_mime_types;
     }
 
     if (_this->SetClipboardData) {
-        if (_this->SetClipboardData(_this) < 0) {
-            return -1;
+        if (!_this->SetClipboardData(_this)) {
+            return false;
         }
     } else if (_this->SetClipboardText) {
         char *text = NULL;
@@ -118,9 +118,9 @@ int SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanu
                     text = (char *)SDL_malloc(size + 1);
                     SDL_memcpy(text, data, size);
                     text[size] = '\0';
-                    if (_this->SetClipboardText(_this, text) < 0) {
+                    if (!_this->SetClipboardText(_this, text)) {
                         SDL_free(text);
-                        return -1;
+                        return false;
                     }
                     break;
                 }
@@ -129,17 +129,17 @@ int SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanu
         if (text) {
             SDL_free(text);
         } else {
-            if (_this->SetClipboardText(_this, "") < 0) {
-                return -1;
+            if (!_this->SetClipboardText(_this, "")) {
+                return false;
             }
         }
     }
 
     SDL_SendClipboardUpdate();
-    return 0;
+    return true;
 }
 
-int SDL_ClearClipboardData(void)
+SDL_bool SDL_ClearClipboardData(void)
 {
     return SDL_SetClipboardData(NULL, NULL, NULL, NULL, 0);
 }
@@ -264,7 +264,7 @@ const void * SDLCALL SDL_ClipboardTextCallback(void *userdata, const char *mime_
     return text;
 }
 
-int SDL_SetClipboardText(const char *text)
+SDL_bool SDL_SetClipboardText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t num_mime_types;
@@ -332,7 +332,7 @@ SDL_bool SDL_HasClipboardText(void)
 
 // Primary selection text
 
-int SDL_SetPrimarySelectionText(const char *text)
+SDL_bool SDL_SetPrimarySelectionText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -344,8 +344,8 @@ int SDL_SetPrimarySelectionText(const char *text)
         text = "";
     }
     if (_this->SetPrimarySelectionText) {
-        if (_this->SetPrimarySelectionText(_this, text) < 0) {
-            return -1;
+        if (!_this->SetPrimarySelectionText(_this, text)) {
+            return false;
         }
     } else {
         SDL_free(_this->primary_selection_text);
@@ -353,7 +353,7 @@ int SDL_SetPrimarySelectionText(const char *text)
     }
 
     SDL_SendClipboardUpdate();
-    return 0;
+    return true;
 }
 
 char *SDL_GetPrimarySelectionText(void)

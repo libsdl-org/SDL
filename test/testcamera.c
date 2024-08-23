@@ -298,9 +298,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         frame_count++;
 
         if (frame_current) {
-            if (SDL_ReleaseCameraFrame(camera, frame_current) < 0) {
-                SDL_Log("err SDL_ReleaseCameraFrame: %s", SDL_GetError());
-            }
+            SDL_ReleaseCameraFrame(camera, frame_current);
         }
 
         /* It's not needed to keep the frame once updated the texture is updated.
@@ -312,7 +310,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     if (frame_current) {
         if (!texture ||
-            SDL_GetTextureSize(texture, &tw, &th) < 0 ||
+            !SDL_GetTextureSize(texture, &tw, &th) ||
             (int)tw != frame_current->w || (int)th != frame_current->h) {
             /* Resize the window to match */
             SDL_SetWindowSize(window, frame_current->w, frame_current->h);

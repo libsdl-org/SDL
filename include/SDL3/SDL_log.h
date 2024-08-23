@@ -191,7 +191,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
  * \param priority the SDL_LogPriority to modify.
  * \param prefix the prefix to use for that log priority, or NULL to use no
  *               prefix.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -199,7 +199,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
  * \sa SDL_SetLogPriorities
  * \sa SDL_SetLogPriority
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix);
 
 /**
  * Log a message with SDL_LOG_CATEGORY_APPLICATION and SDL_LOG_PRIORITY_INFO.

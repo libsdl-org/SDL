@@ -26,12 +26,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_CameraID *devices = NULL;
     int devcount = 0;
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_CAMERA) == -1) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_CAMERA)) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't initialize SDL!", SDL_GetError(), NULL);
         return SDL_APP_FAILURE;
     }
 
-    if (SDL_CreateWindowAndRenderer("examples/camera/read-and-draw", 640, 480, 0, &window, &renderer) == -1) {
+    if (!SDL_CreateWindowAndRenderer("examples/camera/read-and-draw", 640, 480, 0, &window, &renderer)) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create window/renderer!", SDL_GetError(), NULL);
         return SDL_APP_FAILURE;
     }

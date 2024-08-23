@@ -110,7 +110,7 @@ static SDL_VideoDevice *PSP_Create(void)
     device->GL_SetSwapInterval = PSP_GL_SetSwapInterval;
     device->GL_GetSwapInterval = PSP_GL_GetSwapInterval;
     device->GL_SwapWindow = PSP_GL_SwapWindow;
-    device->GL_DeleteContext = PSP_GL_DeleteContext;
+    device->GL_DestroyContext = PSP_GL_DestroyContext;
     device->HasScreenKeyboardSupport = PSP_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = PSP_ShowScreenKeyboard;
     device->HideScreenKeyboard = PSP_HideScreenKeyboard;
@@ -181,7 +181,7 @@ static void term_temporal_gu(void *guBuffer)
 	sceDisplayWaitVblankStart();
 }
 
-int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+bool PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
 	unsigned char list[64] __attribute__((aligned(64)));
 	pspUtilityMsgDialogParams dialog;
@@ -243,7 +243,7 @@ int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 		sceGuSwapBuffers();
 
 	} while (status != PSP_UTILITY_DIALOG_NONE);
-	
+
     // cleanup
 	if (guBuffer)
 	{
@@ -258,7 +258,7 @@ int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 	else
 		*buttonID = messageboxdata->buttons[0].buttonID;
 
-	return 0;
+	return true;
 }
 
 VideoBootStrap PSP_bootstrap = {
@@ -271,12 +271,12 @@ VideoBootStrap PSP_bootstrap = {
 /*****************************************************************************/
 // SDL Video and Display initialization/handling functions
 /*****************************************************************************/
-int PSP_VideoInit(SDL_VideoDevice *_this)
+bool PSP_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
-    if (PSP_EventInit(_this) == -1) {
-        return -1;  // error string would already be set
+    if (!PSP_EventInit(_this)) {
+        return false;  // error string would already be set
     }
 
     SDL_zero(mode);
@@ -288,9 +288,9 @@ int PSP_VideoInit(SDL_VideoDevice *_this)
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
 void PSP_VideoQuit(SDL_VideoDevice *_this)
@@ -298,7 +298,7 @@ void PSP_VideoQuit(SDL_VideoDevice *_this)
     PSP_EventQuit(_this);
 }
 
-int PSP_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+bool PSP_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
     SDL_DisplayMode mode;
 
@@ -314,12 +314,12 @@ int PSP_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     // 16 bpp secondary mode
     mode.format = SDL_PIXELFORMAT_BGR565;
     SDL_AddFullscreenDisplayMode(display, &mode);
-    return 0;
+    return true;
 }
 
-int PSP_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+bool PSP_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    return 0;
+    return true;
 }
 
 #define EGLCHK(stmt)                           \
@@ -330,18 +330,18 @@ int PSP_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Di
         err = eglGetError();                   \
         if (err != EGL_SUCCESS) {              \
             SDL_SetError("EGL error %d", err); \
-            return 0;                          \
+            return true;                          \
         }                                      \
     } while (0)
 
-int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *wdata;
 
     // Allocate window internal data
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!wdata) {
-        return -1;
+        return false;
     }
 
     // Setup driver data for this window
@@ -350,13 +350,13 @@ int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     SDL_SetKeyboardFocus(window);
 
     // Window has been successfully created
-    return 0;
+    return true;
 }
 
 void PSP_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
-int PSP_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+bool PSP_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return SDL_Unsupported();
 }

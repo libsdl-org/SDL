@@ -238,7 +238,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
     messagebox.numbuttons = SDL_arraysize(buttons);
     messagebox.buttons = buttons;
 
-    if (SDL_ShowMessageBox(&messagebox, &selected) == 0) {
+    if (SDL_ShowMessageBox(&messagebox, &selected)) {
         if (selected == -1) {
             state = SDL_ASSERTION_IGNORE;
         } else {

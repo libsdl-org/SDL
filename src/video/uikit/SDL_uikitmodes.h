@@ -45,15 +45,15 @@
 extern bool UIKit_IsDisplayLandscape(UIScreen *uiscreen);
 #endif
 
-extern int UIKit_InitModes(SDL_VideoDevice *_this);
+extern bool UIKit_InitModes(SDL_VideoDevice *_this);
 #ifndef SDL_PLATFORM_VISIONOS
-extern int UIKit_AddDisplay(UIScreen *uiscreen, bool send_event);
+extern bool UIKit_AddDisplay(UIScreen *uiscreen, bool send_event);
 extern void UIKit_DelDisplay(UIScreen *uiscreen, bool send_event);
 #endif
-extern int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-extern int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+extern bool UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern bool UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void UIKit_QuitModes(SDL_VideoDevice *_this);
-extern int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
+extern bool UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
 
 // because visionOS does not have a screen
 // we create a fake display to maintain compatibility.

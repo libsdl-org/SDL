@@ -23,18 +23,18 @@
 #include "./SDL_list.h"
 
 // Push
-int SDL_ListAdd(SDL_ListNode **head, void *ent)
+bool SDL_ListAdd(SDL_ListNode **head, void *ent)
 {
     SDL_ListNode *node = (SDL_ListNode *)SDL_malloc(sizeof(*node));
 
     if (!node) {
-        return -1;
+        return false;
     }
 
     node->entry = ent;
     node->next = *head;
     *head = node;
-    return 0;
+    return true;
 }
 
 // Pop from end as a FIFO (if add with SDL_ListAdd)

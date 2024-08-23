@@ -54,7 +54,7 @@ typedef struct SDL_AudioDevice SDL_AudioDevice;
 typedef struct SDL_LogicalAudioDevice SDL_LogicalAudioDevice;
 
 // Used by src/SDL.c to initialize a particular audio driver.
-extern int SDL_InitAudio(const char *driver_name);
+extern bool SDL_InitAudio(const char *driver_name);
 
 // Used by src/SDL.c to shut down previously-initialized audio.
 extern void SDL_QuitAudio(void);
@@ -79,10 +79,10 @@ extern void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device);
 extern void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device);
 
 // Backends should call this if a device's format is changing (opened or not); SDL will update state and carry on with the new format.
-extern int SDL_AudioDeviceFormatChanged(SDL_AudioDevice *device, const SDL_AudioSpec *newspec, int new_sample_frames);
+extern bool SDL_AudioDeviceFormatChanged(SDL_AudioDevice *device, const SDL_AudioSpec *newspec, int new_sample_frames);
 
 // Same as above, but assume the device is already locked.
-extern int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL_AudioSpec *newspec, int new_sample_frames);
+extern bool SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL_AudioSpec *newspec, int new_sample_frames);
 
 // Find the SDL_AudioDevice associated with the handle supplied to SDL_AddAudioDevice. NULL if not found. DOES NOT LOCK THE DEVICE.
 extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle);
@@ -138,19 +138,19 @@ extern void OnAudioStreamDestroy(SDL_AudioStream *stream);
 extern int SDL_GetAudioStreamDataAdjustGain(SDL_AudioStream *stream, void *voidbuf, int len, float extra_gain);
 
 // This is the bulk of `SDL_SetAudioStream*putChannelMap`'s work, but it lets you skip the check about changing the device end of a stream if isinput==-1.
-extern int SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec, int **stream_chmap, const int *chmap, int channels, int isinput);
+extern bool SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec, int **stream_chmap, const int *chmap, int channels, int isinput);
 
 
 typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices)(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
-    int (*OpenDevice)(SDL_AudioDevice *device);
+    bool (*OpenDevice)(SDL_AudioDevice *device);
     void (*ThreadInit)(SDL_AudioDevice *device);   // Called by audio thread at start
     void (*ThreadDeinit)(SDL_AudioDevice *device); // Called by audio thread at end
-    int (*WaitDevice)(SDL_AudioDevice *device);
-    int (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen);  // buffer and buflen are always from GetDeviceBuf, passed here for convenience.
+    bool (*WaitDevice)(SDL_AudioDevice *device);
+    bool (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen); // buffer and buflen are always from GetDeviceBuf, passed here for convenience.
     Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
-    int (*WaitRecordingDevice)(SDL_AudioDevice *device);
+    bool (*WaitRecordingDevice)(SDL_AudioDevice *device);
     int (*RecordDevice)(SDL_AudioDevice *device, void *buffer, int buflen);
     void (*FlushRecording)(SDL_AudioDevice *device);
     void (*CloseDevice)(SDL_AudioDevice *device);
@@ -282,10 +282,10 @@ struct SDL_AudioDevice
     SDL_AtomicInt refcount;
 
     // These are, initially, set from current_audio, but we might swap them out with Zombie versions on disconnect/failure.
-    int (*WaitDevice)(SDL_AudioDevice *device);
-    int (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen);
+    bool (*WaitDevice)(SDL_AudioDevice *device);
+    bool (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen);
     Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
-    int (*WaitRecordingDevice)(SDL_AudioDevice *device);
+    bool (*WaitRecordingDevice)(SDL_AudioDevice *device);
     int (*RecordDevice)(SDL_AudioDevice *device, void *buffer, int buflen);
     void (*FlushRecording)(SDL_AudioDevice *device);
 

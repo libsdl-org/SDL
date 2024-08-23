@@ -23,7 +23,7 @@
 
 #include "../SDL_sysvideo.h"
 
-extern int UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text);
+extern bool UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text);
 extern char *UIKit_GetClipboardText(SDL_VideoDevice *_this);
 extern bool UIKit_HasClipboardText(SDL_VideoDevice *_this);
 

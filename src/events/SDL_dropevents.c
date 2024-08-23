@@ -27,12 +27,12 @@
 
 #include "../video/SDL_sysvideo.h" // for SDL_Window internals.
 
-static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *source, const char *data, float x, float y)
+static bool SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *source, const char *data, float x, float y)
 {
     static bool app_is_dropping = false;
     static float last_drop_x = 0;
     static float last_drop_y = 0;
-    int posted = 0;
+    bool posted = false;
 
     // Post the event, if desired
     if (SDL_EventEnabled(evtype)) {
@@ -44,9 +44,9 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
             event.type = SDL_EVENT_DROP_BEGIN;
             event.common.timestamp = 0;
             event.drop.windowID = window ? window->id : 0;
-            posted = (SDL_PushEvent(&event) > 0);
+            posted = SDL_PushEvent(&event);
             if (!posted) {
-                return 0;
+                return false;
             }
             if (window) {
                 window->is_dropping = true;
@@ -61,13 +61,13 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
         if (source) {
             event.drop.source = SDL_CreateTemporaryString(source);
             if (!event.drop.source) {
-                return 0;
+                return false;
             }
         }
         if (data) {
             event.drop.data = SDL_CreateTemporaryString(data);
             if (!event.drop.data) {
-                return 0;
+                return false;
             }
         }
         event.drop.windowID = window ? window->id : 0;
@@ -78,7 +78,7 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
         }
         event.drop.x = last_drop_x;
         event.drop.y = last_drop_y;
-        posted = (SDL_PushEvent(&event) > 0);
+        posted = SDL_PushEvent(&event);
 
         if (posted && (evtype == SDL_EVENT_DROP_COMPLETE)) {
             if (window) {
@@ -94,22 +94,22 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
     return posted;
 }
 
-int SDL_SendDropFile(SDL_Window *window, const char *source, const char *file)
+bool SDL_SendDropFile(SDL_Window *window, const char *source, const char *file)
 {
     return SDL_SendDrop(window, SDL_EVENT_DROP_FILE, source, file, 0, 0);
 }
 
-int SDL_SendDropPosition(SDL_Window *window, float x, float y)
+bool SDL_SendDropPosition(SDL_Window *window, float x, float y)
 {
     return SDL_SendDrop(window, SDL_EVENT_DROP_POSITION, NULL, NULL, x, y);
 }
 
-int SDL_SendDropText(SDL_Window *window, const char *text)
+bool SDL_SendDropText(SDL_Window *window, const char *text)
 {
     return SDL_SendDrop(window, SDL_EVENT_DROP_TEXT, NULL, text, 0, 0);
 }
 
-int SDL_SendDropComplete(SDL_Window *window)
+bool SDL_SendDropComplete(SDL_Window *window)
 {
     return SDL_SendDrop(window, SDL_EVENT_DROP_COMPLETE, NULL, NULL, 0, 0);
 }

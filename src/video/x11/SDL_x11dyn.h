@@ -78,8 +78,8 @@ typedef Bool (*SDL_X11_XESetWireToEventRetType)(Display *, XEvent *, xEvent *);
 typedef int (*SDL_X11_XSynchronizeRetType)(Display *);
 typedef Status (*SDL_X11_XESetEventToWireRetType)(Display *, XEvent *, xEvent *);
 
-int SDL_X11_LoadSymbols(void);
-void SDL_X11_UnloadSymbols(void);
+extern bool SDL_X11_LoadSymbols(void);
+extern void SDL_X11_UnloadSymbols(void);
 
 // Declare all the function pointers and wrappers...
 #define SDL_X11_SYM(rc, fn, params, args, ret) \

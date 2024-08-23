@@ -182,7 +182,7 @@ static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
-static int report_alloc(struct report *, struct report_desc *, int);
+static bool report_alloc(struct report *, struct report_desc *, int);
 static void report_free(struct report *);
 
 #if defined(USBHID_UCR_DATA) || (defined(__FreeBSD_kernel__) && __FreeBSD_kernel_version <= 800063)
@@ -250,8 +250,7 @@ static void FreeHwData(struct joystick_hwdata *hw)
     SDL_free(hw);
 }
 
-static struct joystick_hwdata *
-CreateHwData(const char *path)
+static struct joystick_hwdata *CreateHwData(const char *path)
 {
     struct joystick_hwdata *hw;
     struct hid_item hitem;
@@ -304,7 +303,7 @@ CreateHwData(const char *path)
 #endif
             rep->rid = -1; // XXX
         }
-        if (report_alloc(rep, hw->repdesc, REPORT_INPUT) < 0) {
+        if (!report_alloc(rep, hw->repdesc, REPORT_INPUT)) {
             goto usberr;
         }
         if (rep->size <= 0) {
@@ -389,7 +388,7 @@ usberr:
     return NULL;
 }
 
-static int MaybeAddDevice(const char *path)
+static bool MaybeAddDevice(const char *path)
 {
     struct stat sb;
     char *name = NULL;
@@ -398,23 +397,23 @@ static int MaybeAddDevice(const char *path)
     struct joystick_hwdata *hw;
 
     if (!path) {
-        return -1;
+        return false;
     }
 
     if (stat(path, &sb) == -1) {
-        return -1;
+        return false;
     }
 
     // Check to make sure it's not already in list.
     for (item = SDL_joylist; item; item = item->next) {
         if (sb.st_rdev == item->devnum) {
-            return -1; // already have this one
+            return false; // already have this one
         }
     }
 
     hw = CreateHwData(path);
     if (!hw) {
-        return -1;
+        return false;
     }
 
     if (hw->type == BSDJOY_JOY) {
@@ -431,7 +430,7 @@ static int MaybeAddDevice(const char *path)
                 SDL_JoystickHandledByAnotherDriver(&SDL_BSD_JoystickDriver, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
                 SDL_free(name);
                 FreeHwData(hw);
-                return -1;
+                return false;
             }
         }
 #endif // USB_GET_DEVICEINFO
@@ -445,7 +444,7 @@ static int MaybeAddDevice(const char *path)
     item = (SDL_joylist_item *)SDL_calloc(1, sizeof(SDL_joylist_item));
     if (!item) {
         SDL_free(name);
-        return -1;
+        return false;
     }
 
     item->devnum = sb.st_rdev;
@@ -455,7 +454,7 @@ static int MaybeAddDevice(const char *path)
 
     if ((!item->path) || (!item->name)) {
         FreeJoylistItem(item);
-        return -1;
+        return false;
     }
 
     item->device_instance = SDL_GetNextObjectID();
@@ -471,10 +470,10 @@ static int MaybeAddDevice(const char *path)
 
     SDL_PrivateJoystickAdded(item->device_instance);
 
-    return numjoysticks;
+    return true;
 }
 
-static int BSD_JoystickInit(void)
+static bool BSD_JoystickInit(void)
 {
     char s[16];
     int i;
@@ -497,7 +496,7 @@ static int BSD_JoystickInit(void)
     // Read the default USB HID usage table.
     hid_init(NULL);
 
-    return numjoysticks;
+    return true;
 }
 
 static int BSD_JoystickGetCount(void)
@@ -581,7 +580,7 @@ static unsigned hatval_to_sdl(Sint32 hatval)
     return result;
 }
 
-static int BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
+static bool BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
 {
     SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
     struct joystick_hwdata *hw;
@@ -592,7 +591,7 @@ static int BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
 
     hw = CreateHwData(item->path);
     if (!hw) {
-        return -1;
+        return false;
     }
 
     joy->hwdata = hw;
@@ -600,7 +599,7 @@ static int BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
     joy->nbuttons = hw->nbuttons;
     joy->nhats = hw->nhats;
 
-    return 0;
+    return true;
 }
 
 static void BSD_JoystickUpdate(SDL_Joystick *joy)
@@ -759,7 +758,7 @@ static void BSD_JoystickQuit(void)
     numjoysticks = 0;
 }
 
-static int report_alloc(struct report *r, struct report_desc *rd, int repind)
+static bool report_alloc(struct report *r, struct report_desc *rd, int repind)
 {
     int len;
 
@@ -796,14 +795,14 @@ static int report_alloc(struct report *r, struct report_desc *rd, int repind)
                             r->size);
 #endif
         if (!r->buf) {
-            return -1;
+            return false;
         }
     } else {
         r->buf = NULL;
     }
 
     r->status = SREPORT_CLEAN;
-    return 0;
+    return true;
 }
 
 static void report_free(struct report *r)
@@ -812,12 +811,12 @@ static void report_free(struct report *r)
     r->status = SREPORT_UNINIT;
 }
 
-static int BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
@@ -827,17 +826,17 @@ static bool BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *
     return false;
 }
 
-static int BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int BSD_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool BSD_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
+static bool BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }

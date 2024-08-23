@@ -231,7 +231,7 @@ void PSP_InitOSKeymap(SDL_VideoDevice *_this)
 #endif
 }
 
-int PSP_EventInit(SDL_VideoDevice *_this)
+bool PSP_EventInit(SDL_VideoDevice *_this)
 {
 #ifdef PSPIRKEYB
     int outputmode = PSP_IRKBD_OUTPUT_MODE_SCANCODE;
@@ -251,7 +251,7 @@ int PSP_EventInit(SDL_VideoDevice *_this)
     if ((thread = SDL_CreateThreadWithStackSize(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
         return SDL_SetError("Can't create input thread");
     }
-    return 0;
+    return true;
 }
 
 void PSP_EventQuit(SDL_VideoDevice *_this)

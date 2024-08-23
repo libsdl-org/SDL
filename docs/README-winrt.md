@@ -298,9 +298,9 @@ int main(int argc, char **argv)
     SDL_Event evt;
     SDL_bool keep_going = SDL_TRUE;
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         return 1;
-    } else if (SDL_CreateWindowAndRenderer("Hello SDL", 0, 0, SDL_WINDOW_FULLSCREEN, &window, &renderer) != 0) {
+    } else if (!SDL_CreateWindowAndRenderer("Hello SDL", 0, 0, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
         return 1;
     }
 

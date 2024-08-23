@@ -116,14 +116,14 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_CreateProperties(void);
  *
  * \param src the properties to copy.
  * \param dst the destination properties.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst);
 
 /**
  * Lock a group of properties.
@@ -138,7 +138,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_CopyProperties(SDL_PropertiesID src, SDL_Pro
  * thread.
  *
  * \param props the properties to lock.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -147,7 +147,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_CopyProperties(SDL_PropertiesID src, SDL_Pro
  *
  * \sa SDL_UnlockProperties
  */
-extern SDL_DECLSPEC int SDLCALL SDL_LockProperties(SDL_PropertiesID props);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_LockProperties(SDL_PropertiesID props);
 
 /**
  * Unlock a group of properties.
@@ -204,7 +204,7 @@ typedef void (SDLCALL *SDL_CleanupPropertyCallback)(void *userdata, void *value)
  * \param cleanup the function to call when this property is deleted, or NULL
  *                if no cleanup is necessary.
  * \param userdata a pointer that is passed to the cleanup function.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -215,7 +215,7 @@ typedef void (SDLCALL *SDL_CleanupPropertyCallback)(void *userdata, void *value)
  * \sa SDL_SetPointerProperty
  * \sa SDL_CleanupPropertyCallback
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata);
 
 /**
  * Set a pointer property in a group of properties.
@@ -223,7 +223,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPointerPropertyWithCleanup(SDL_Properties
  * \param props the properties to modify.
  * \param name the name of the property to modify.
  * \param value the new value of the property, or NULL to delete the property.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -238,7 +238,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPointerPropertyWithCleanup(SDL_Properties
  * \sa SDL_SetPointerPropertyWithCleanup
  * \sa SDL_SetStringProperty
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetPointerProperty(SDL_PropertiesID props, const char *name, void *value);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetPointerProperty(SDL_PropertiesID props, const char *name, void *value);
 
 /**
  * Set a string property in a group of properties.
@@ -249,7 +249,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPointerProperty(SDL_PropertiesID props, c
  * \param props the properties to modify.
  * \param name the name of the property to modify.
  * \param value the new value of the property, or NULL to delete the property.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -258,7 +258,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPointerProperty(SDL_PropertiesID props, c
  *
  * \sa SDL_GetStringProperty
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char *value);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char *value);
 
 /**
  * Set an integer property in a group of properties.
@@ -266,7 +266,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetStringProperty(SDL_PropertiesID props, co
  * \param props the properties to modify.
  * \param name the name of the property to modify.
  * \param value the new value of the property.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -275,7 +275,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetStringProperty(SDL_PropertiesID props, co
  *
  * \sa SDL_GetNumberProperty
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 value);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 value);
 
 /**
  * Set a floating point property in a group of properties.
@@ -283,7 +283,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetNumberProperty(SDL_PropertiesID props, co
  * \param props the properties to modify.
  * \param name the name of the property to modify.
  * \param value the new value of the property.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -292,7 +292,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetNumberProperty(SDL_PropertiesID props, co
  *
  * \sa SDL_GetFloatProperty
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetFloatProperty(SDL_PropertiesID props, const char *name, float value);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetFloatProperty(SDL_PropertiesID props, const char *name, float value);
 
 /**
  * Set a boolean property in a group of properties.
@@ -300,7 +300,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetFloatProperty(SDL_PropertiesID props, con
  * \param props the properties to modify.
  * \param name the name of the property to modify.
  * \param value the new value of the property.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -309,7 +309,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetFloatProperty(SDL_PropertiesID props, con
  *
  * \sa SDL_GetBooleanProperty
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool value);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool value);
 
 /**
  * Return whether a property exists in a group of properties.
@@ -470,14 +470,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetBooleanProperty(SDL_PropertiesID pro
  *
  * \param props the properties to modify.
  * \param name the name of the property to clear.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char *name);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char *name);
 
 /**
  * A callback used to enumerate all the properties in a group of properties.
@@ -507,14 +507,14 @@ typedef void (SDLCALL *SDL_EnumeratePropertiesCallback)(void *userdata, SDL_Prop
  * \param props the properties to query.
  * \param callback the function to call for each property.
  * \param userdata a pointer that is passed to `callback`.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallback callback, void *userdata);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallback callback, void *userdata);
 
 /**
  * Destroy a group of properties.

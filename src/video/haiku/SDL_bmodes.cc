@@ -48,15 +48,18 @@ struct SDL_DisplayModeData {
 };
 #endif
 
-static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
+static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window)
+{
     return (SDL_BWin *)(window->internal);
 }
 
-static SDL_INLINE SDL_BLooper *_GetBeLooper() {
+static SDL_INLINE SDL_BLooper *_GetBeLooper()
+{
     return SDL_Looper;
 }
 
-static SDL_INLINE display_mode * _ExtractBMode(SDL_DisplayMode *mode) {
+static SDL_INLINE display_mode * _ExtractBMode(SDL_DisplayMode *mode)
+{
 #if WRAP_BMODE
     return mode->internal->bmode;
 #else
@@ -76,7 +79,8 @@ static void get_refresh_rate(display_mode &mode, int *numerator, int *denominato
 /* TODO:
  * This is a useful debugging tool.  Uncomment and insert into code as needed.
  */
-void _SpoutModeData(display_mode *bmode) {
+void _SpoutModeData(display_mode *bmode)
+{
     printf("BMode:\n");
     printf("\tw,h = (%i,%i)\n", bmode->virtual_width, bmode->virtual_height);
     printf("\th,v = (%i,%i)\n", bmode->h_display_start,
@@ -166,7 +170,8 @@ SDL_PixelFormat HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-static void _BDisplayModeToSdlDisplayMode(display_mode *bmode, SDL_DisplayMode *mode) {
+static void _BDisplayModeToSdlDisplayMode(display_mode *bmode, SDL_DisplayMode *mode)
+{
     SDL_zerop(mode);
     mode->w = bmode->virtual_width;
     mode->h = bmode->virtual_height;
@@ -186,7 +191,8 @@ static void _BDisplayModeToSdlDisplayMode(display_mode *bmode, SDL_DisplayMode *
 }
 
 // Later, there may be more than one monitor available
-static void _AddDisplay(BScreen *screen) {
+static void _AddDisplay(BScreen *screen)
+{
     SDL_DisplayMode mode;
     display_mode bmode;
     screen->GetMode(&bmode);
@@ -200,32 +206,35 @@ static void _AddDisplay(BScreen *screen) {
  * Functions called by SDL
  */
 
-int HAIKU_InitModes(SDL_VideoDevice *_this) {
+bool HAIKU_InitModes(SDL_VideoDevice *_this)
+{
     BScreen screen;
 
     /* TODO: When Haiku supports multiple display screens, call
        _AddDisplayScreen() for each of them. */
     _AddDisplay(&screen);
-    return 0;
+    return true;
 }
 
-int HAIKU_QuitModes(SDL_VideoDevice *_this) {
-    // FIXME: Nothing really needs to be done here at the moment?
-    return 0;
+void HAIKU_QuitModes(SDL_VideoDevice *_this)
+{
+    return;
 }
 
 
-int HAIKU_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect) {
+bool HAIKU_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+{
     BScreen bscreen;
     BRect rc = bscreen.Frame();
     rect->x = (int)rc.left;
     rect->y = (int)rc.top;
     rect->w = (int)rc.Width() + 1;
     rect->h = (int)rc.Height() + 1;
-    return 0;
+    return true;
 }
 
-int HAIKU_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display) {
+bool HAIKU_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+{
     // Get the current screen
     BScreen bscreen;
 
@@ -247,11 +256,12 @@ int HAIKU_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display) {
         }
     }
     free(bmodes); // This should not be SDL_free()
-    return 0;
+    return true;
 }
 
 
-int HAIKU_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode) {
+bool HAIKU_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+{
     // Get the current screen
     BScreen bscreen;
     if (!bscreen.IsValid()) {
@@ -287,7 +297,7 @@ int HAIKU_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
 //    HAIKU_GL_RebootContexts(_this);
 #endif
 
-    return 0;
+    return true;
 }
 
 #ifdef __cplusplus

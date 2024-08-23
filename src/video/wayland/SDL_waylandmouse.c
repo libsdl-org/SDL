@@ -43,7 +43,7 @@
 
 static SDL_Cursor *sys_cursors[SDL_HITTEST_RESIZE_LEFT + 1];
 
-static int Wayland_SetRelativeMouseMode(bool enabled);
+static bool Wayland_SetRelativeMouseMode(bool enabled);
 
 typedef struct
 {
@@ -465,7 +465,7 @@ static Wayland_CachedCustomCursor *Wayland_GetCachedCustomCursor(SDL_Cursor *cur
     }
 
     // Allocate shared memory buffer for this cursor
-    if (Wayland_AllocSHMBuffer(surface->w, surface->h, &cache->shmBuffer) != 0) {
+    if (!Wayland_AllocSHMBuffer(surface->w, surface->h, &cache->shmBuffer)) {
         SDL_free(cache);
         SDL_DestroySurface(surface);
         return NULL;
@@ -669,7 +669,7 @@ static void Wayland_SetSystemCursorShape(struct SDL_WaylandInput *input, SDL_Sys
     wp_cursor_shape_device_v1_set_shape(input->cursor_shape, input->pointer_enter_serial, shape);
 }
 
-static int Wayland_ShowCursor(SDL_Cursor *cursor)
+static bool Wayland_ShowCursor(SDL_Cursor *cursor)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = vd->internal;
@@ -680,7 +680,7 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
     int dst_height = 0;
 
     if (!pointer) {
-        return -1;
+        return false;
     }
 
     // Stop the frame callback for old animated cursors.
@@ -698,11 +698,11 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
                 Wayland_SetSystemCursorShape(input, data->cursor_data.system.id);
                 input->current_cursor = data;
 
-                return 0;
+                return true;
             }
 
             if (!wayland_get_system_cursor(d, data, &scale)) {
-                return -1;
+                return false;
             }
         }
 
@@ -719,7 +719,7 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
         } else {
             Wayland_CachedCustomCursor *cached = Wayland_GetCachedCustomCursor(cursor);
             if (!cached) {
-                return -1;
+                return false;
             }
             dst_width = cached->dst_width;
             dst_height = cached->dst_height;
@@ -758,10 +758,10 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
         wl_pointer_set_cursor(pointer, input->pointer_enter_serial, NULL, 0, 0);
     }
 
-    return 0;
+    return true;
 }
 
-static int Wayland_WarpMouse(SDL_Window *window, float x, float y)
+static bool Wayland_WarpMouse(SDL_Window *window, float x, float y)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = vd->internal;
@@ -797,10 +797,10 @@ static int Wayland_WarpMouse(SDL_Window *window, float x, float y)
         return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required zwp_pointer_confinement_v1 protocol");
     }
 
-    return 0;
+    return true;
 }
 
-static int Wayland_WarpMouseGlobal(float x, float y)
+static bool Wayland_WarpMouseGlobal(float x, float y)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = vd->internal;
@@ -816,7 +816,7 @@ static int Wayland_WarpMouseGlobal(float x, float y)
     return SDL_SetError("wayland: can't warp the mouse when a window does not have focus");
 }
 
-static int Wayland_SetRelativeMouseMode(bool enabled)
+static bool Wayland_SetRelativeMouseMode(bool enabled)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *data = vd->internal;
@@ -843,18 +843,18 @@ static int Wayland_SetRelativeMouseMode(bool enabled)
 static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float *y)
 {
     SDL_Window *focus = SDL_GetMouseFocus();
-    SDL_MouseButtonFlags ret = 0;
+    SDL_MouseButtonFlags result = 0;
 
     if (focus) {
         int off_x, off_y;
 
-        ret = SDL_GetMouseState(x, y);
+        result = SDL_GetMouseState(x, y);
         SDL_RelativeToGlobalForWindow(focus, focus->x, focus->y, &off_x, &off_y);
         *x += off_x;
         *y += off_y;
     }
 
-    return ret;
+    return result;
 }
 
 #if 0  // TODO RECONNECT: See waylandvideo.c for more information!

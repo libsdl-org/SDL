@@ -160,7 +160,7 @@ typedef struct SDL_JoystickDriver
      * Joystick 0 should be the system default joystick.
      * This function should return 0, or -1 on an unrecoverable error.
      */
-    int (*Init)(void);
+    bool (*Init)(void);
 
     // Function to return the number of joystick devices plugged in right now
     int (*GetCount)(void);
@@ -197,20 +197,20 @@ typedef struct SDL_JoystickDriver
        This should fill the nbuttons and naxes fields of the joystick structure.
        It returns 0, or -1 if there is an error.
      */
-    int (*Open)(SDL_Joystick *joystick, int device_index);
+    bool (*Open)(SDL_Joystick *joystick, int device_index);
 
     // Rumble functionality
-    int (*Rumble)(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
-    int (*RumbleTriggers)(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
+    bool (*Rumble)(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
+    bool (*RumbleTriggers)(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
 
     // LED functionality
-    int (*SetLED)(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
+    bool (*SetLED)(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 
     // General effects
-    int (*SendEffect)(SDL_Joystick *joystick, const void *data, int size);
+    bool (*SendEffect)(SDL_Joystick *joystick, const void *data, int size);
 
     // Sensor functionality
-    int (*SetSensorsEnabled)(SDL_Joystick *joystick, bool enabled);
+    bool (*SetSensorsEnabled)(SDL_Joystick *joystick, bool enabled);
 
     /* Function to update the state of a joystick - called as a device poll.
      * This function shouldn't update the joystick structure directly,

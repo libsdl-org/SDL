@@ -26,7 +26,7 @@
 
 #import <UIKit/UIKit.h>
 
-int SDL_SYS_OpenURL(const char *url)
+bool SDL_SYS_OpenURL(const char *url)
 {
     @autoreleasepool {
 
@@ -35,7 +35,7 @@ int SDL_SYS_OpenURL(const char *url)
 #else
         NSString *nsstr = [NSString stringWithUTF8String:url];
         NSURL *nsurl = [NSURL URLWithString:nsstr];
-        return [[UIApplication sharedApplication] openURL:nsurl] ? 0 : -1;
+        return [[UIApplication sharedApplication] openURL:nsurl];
 #endif
     }
 }

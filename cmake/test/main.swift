@@ -2,7 +2,7 @@
 
 import SDL3
 
-guard SDL_Init(Uint32(SDL_INIT_VIDEO)) == 0 else {
+guard SDL_Init(SDL_INIT_VIDEO) != 0 else {
   fatalError("SDL_Init error: \(String(cString: SDL_GetError()))")
 }
 

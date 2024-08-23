@@ -28,7 +28,7 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "text-input-unstable-v3-client-protocol.h"
 
-int Wayland_InitKeyboard(SDL_VideoDevice *_this)
+bool Wayland_InitKeyboard(SDL_VideoDevice *_this)
 {
 #ifdef SDL_USE_IME
     SDL_VideoData *internal = _this->internal;
@@ -38,7 +38,7 @@ int Wayland_InitKeyboard(SDL_VideoDevice *_this)
 #endif
     SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
 
-    return 0;
+    return true;
 }
 
 void Wayland_QuitKeyboard(SDL_VideoDevice *_this)
@@ -51,7 +51,7 @@ void Wayland_QuitKeyboard(SDL_VideoDevice *_this)
 #endif
 }
 
-int Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
+bool Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_VideoData *internal = _this->internal;
     struct SDL_WaylandInput *input = internal->input;
@@ -144,7 +144,7 @@ int Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prope
     return Wayland_UpdateTextInputArea(_this, window);
 }
 
-int Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+bool Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *internal = _this->internal;
     struct SDL_WaylandInput *input = internal->input;
@@ -165,10 +165,10 @@ int Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
         // Reset compose state so composite and dead keys don't carry over
         WAYLAND_xkb_compose_state_reset(input->xkb.compose_state);
     }
-    return 0;
+    return true;
 }
 
-int Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
+bool Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *internal = _this->internal;
     if (internal->text_input_manager) {
@@ -191,7 +191,7 @@ int Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_IME_UpdateTextInputArea(window);
     }
 #endif
-    return 0;
+    return true;
 }
 
 bool Wayland_HasScreenKeyboardSupport(SDL_VideoDevice *_this)

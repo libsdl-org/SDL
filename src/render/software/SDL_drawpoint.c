@@ -25,7 +25,7 @@
 #include "SDL_draw.h"
 #include "SDL_drawpoint.h"
 
-int SDL_DrawPoint(SDL_Surface *dst, int x, int y, Uint32 color)
+bool SDL_DrawPoint(SDL_Surface *dst, int x, int y, Uint32 color)
 {
     if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_DrawPoint(): dst");
@@ -40,7 +40,7 @@ int SDL_DrawPoint(SDL_Surface *dst, int x, int y, Uint32 color)
     if (x < dst->internal->clip_rect.x || y < dst->internal->clip_rect.y ||
         x >= (dst->internal->clip_rect.x + dst->internal->clip_rect.w) ||
         y >= (dst->internal->clip_rect.y + dst->internal->clip_rect.h)) {
-        return 0;
+        return true;
     }
 
     switch (dst->internal->format->bytes_per_pixel) {
@@ -56,11 +56,10 @@ int SDL_DrawPoint(SDL_Surface *dst, int x, int y, Uint32 color)
         DRAW_FASTSETPIXELXY4(x, y);
         break;
     }
-    return 0;
+    return true;
 }
 
-int SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count,
-                   Uint32 color)
+bool SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count, Uint32 color)
 {
     int minx, miny;
     int maxx, maxy;
@@ -103,7 +102,7 @@ int SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count,
             break;
         }
     }
-    return 0;
+    return true;
 }
 
 #endif // SDL_VIDEO_RENDER_SW

@@ -335,7 +335,7 @@ protected:
 extern "C" {
 #endif
 
-int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+bool HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
 	// Initialize button by closed or error value first.
 	*buttonID = G_CLOSE_BUTTON_ID;
@@ -373,7 +373,7 @@ int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID
 	// Initialize button by real pushed value then.
 	*buttonID = pushedButton;
 
-	return 0;
+	return true;
 }
 
 #ifdef __cplusplus

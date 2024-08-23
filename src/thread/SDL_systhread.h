@@ -36,15 +36,15 @@ extern "C" {
    saves a system-dependent thread id in thread->id, and returns 0
    on success.
 */
-extern int SDL_SYS_CreateThread(SDL_Thread *thread,
-                                SDL_FunctionPointer pfnBeginThread,
-                                SDL_FunctionPointer pfnEndThread);
+extern bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                                 SDL_FunctionPointer pfnBeginThread,
+                                 SDL_FunctionPointer pfnEndThread);
 
 // This function does any necessary setup in the child thread
 extern void SDL_SYS_SetupThread(const char *name);
 
 // This function sets the current thread priority
-extern int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority);
+extern bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority);
 
 /* This function waits for the thread to finish and frees any data
    allocated by SDL_SYS_CreateThread()
@@ -61,7 +61,7 @@ extern void SDL_SYS_InitTLSData(void);
 extern SDL_TLSData *SDL_SYS_GetTLSData(void);
 
 // Set the thread local storage for this thread
-extern int SDL_SYS_SetTLSData(SDL_TLSData *data);
+extern bool SDL_SYS_SetTLSData(SDL_TLSData *data);
 
 // Quit the global TLS data
 extern void SDL_SYS_QuitTLSData(void);

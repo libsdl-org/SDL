@@ -77,9 +77,9 @@ static int (*ppthread_setname_np)(const char *) = NULL;
 static bool checked_setname = false;
 static int (*ppthread_setname_np)(pthread_t, const char *) = NULL;
 #endif
-int SDL_SYS_CreateThread(SDL_Thread *thread,
-                         SDL_FunctionPointer pfnBeginThread,
-                         SDL_FunctionPointer pfnEndThread)
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                          SDL_FunctionPointer pfnBeginThread,
+                          SDL_FunctionPointer pfnEndThread)
 {
     pthread_attr_t type;
 
@@ -112,7 +112,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
         return SDL_SetError("Not enough resources to create thread");
     }
 
-    return 0;
+    return true;
 }
 
 void SDL_SYS_SetupThread(const char *name)
@@ -175,11 +175,11 @@ SDL_ThreadID SDL_GetCurrentThreadID(void)
     return (SDL_ThreadID)pthread_self();
 }
 
-int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
 #ifdef SDL_PLATFORM_RISCOS
     // FIXME: Setting thread priority does not seem to be supported
-    return 0;
+    return true;
 #else
     struct sched_param sched;
     int policy;
@@ -269,7 +269,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     if (pthread_setschedparam(thread, policy, &sched) != 0) {
         return SDL_SetError("pthread_setschedparam() failed");
     }
-    return 0;
+    return true;
 #endif // linux
 #endif // #if SDL_PLATFORM_RISCOS
 }

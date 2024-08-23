@@ -548,7 +548,7 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
 #endif
 
 
-static int COREAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool COREAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     AudioQueueBufferRef current_buffer = device->hidden->current_buffer;
     SDL_assert(current_buffer != NULL);  // should have been called from PlaybackBufferReadyCallback
@@ -556,7 +556,7 @@ static int COREAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
     current_buffer->mAudioDataByteSize = current_buffer->mAudioDataBytesCapacity;
     device->hidden->current_buffer = NULL;
     AudioQueueEnqueueBuffer(device->hidden->audioQueue, current_buffer, 0, NULL);
-    return 0;
+    return true;
 }
 
 static Uint8 *COREAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -660,7 +660,7 @@ static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
 }
 
 #ifdef MACOSX_COREAUDIO
-static int PrepareDevice(SDL_AudioDevice *device)
+static bool PrepareDevice(SDL_AudioDevice *device)
 {
     SDL_assert(device->handle != NULL);  // this meant "system default" in SDL2, but doesn't anymore
 
@@ -696,10 +696,10 @@ static int PrepareDevice(SDL_AudioDevice *device)
 
     device->hidden->deviceID = devid;
 
-    return 0;
+    return true;
 }
 
-static int AssignDeviceToAudioQueue(SDL_AudioDevice *device)
+static bool AssignDeviceToAudioQueue(SDL_AudioDevice *device)
 {
     const AudioObjectPropertyAddress prop = {
         kAudioDevicePropertyDeviceUID,
@@ -715,11 +715,11 @@ static int AssignDeviceToAudioQueue(SDL_AudioDevice *device)
     result = AudioQueueSetProperty(device->hidden->audioQueue, kAudioQueueProperty_CurrentDevice, &devuid, devuidsize);
     CFRelease(devuid);  // Release devuid; we're done with it and AudioQueueSetProperty should have retained if it wants to keep it.
     CHECK_RESULT("AudioQueueSetProperty (kAudioQueueProperty_CurrentDevice)");
-    return 0;
+    return true;
 }
 #endif
 
-static int PrepareAudioQueue(SDL_AudioDevice *device)
+static bool PrepareAudioQueue(SDL_AudioDevice *device)
 {
     const AudioStreamBasicDescription *strdesc = &device->hidden->strdesc;
     const bool recording = device->recording;
@@ -736,8 +736,8 @@ static int PrepareAudioQueue(SDL_AudioDevice *device)
     }
 
     #ifdef MACOSX_COREAUDIO
-    if (AssignDeviceToAudioQueue(device) < 0) {
-        return -1;
+    if (!AssignDeviceToAudioQueue(device)) {
+        return false;
     }
     #endif
 
@@ -796,7 +796,7 @@ static int PrepareAudioQueue(SDL_AudioDevice *device)
     device->hidden->numAudioBuffers = numAudioBuffers;
     device->hidden->audioBuffer = SDL_calloc(numAudioBuffers, sizeof(AudioQueueBufferRef));
     if (device->hidden->audioBuffer == NULL) {
-        return -1;
+        return false;
     }
 
     #if DEBUG_COREAUDIO
@@ -816,7 +816,7 @@ static int PrepareAudioQueue(SDL_AudioDevice *device)
     result = AudioQueueStart(device->hidden->audioQueue, NULL);
     CHECK_RESULT("AudioQueueStart");
 
-    return 0;  // We're running!
+    return true;  // We're running!
 }
 
 static int AudioQueueThreadEntry(void *arg)
@@ -829,7 +829,7 @@ static int AudioQueueThreadEntry(void *arg)
         SDL_PlaybackAudioThreadSetup(device);
     }
 
-    if (PrepareAudioQueue(device) < 0) {
+    if (!PrepareAudioQueue(device)) {
         device->hidden->thread_error = SDL_strdup(SDL_GetError());
         SDL_SignalSemaphore(device->hidden->ready_semaphore);
         return 0;
@@ -855,17 +855,17 @@ static int AudioQueueThreadEntry(void *arg)
     return 0;
 }
 
-static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool COREAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (device->hidden == NULL) {
-        return -1;
+        return false;
     }
 
     #ifndef MACOSX_COREAUDIO
     if (!UpdateAudioSession(device, true, true)) {
-        return -1;
+        return false;
     }
 
     // Stop CoreAudio from doing expensive audio rate conversion
@@ -935,22 +935,22 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
     strdesc->mBytesPerPacket = strdesc->mBytesPerFrame * strdesc->mFramesPerPacket;
 
 #ifdef MACOSX_COREAUDIO
-    if (PrepareDevice(device) < 0) {
-        return -1;
+    if (!PrepareDevice(device)) {
+        return false;
     }
 #endif
 
     // This has to init in a new thread so it can get its own CFRunLoop. :/
     device->hidden->ready_semaphore = SDL_CreateSemaphore(0);
     if (!device->hidden->ready_semaphore) {
-        return -1; // oh well.
+        return false; // oh well.
     }
 
     char threadname[64];
     SDL_GetAudioThreadName(device, threadname, sizeof(threadname));
     device->hidden->thread = SDL_CreateThread(AudioQueueThreadEntry, threadname, device);
     if (!device->hidden->thread) {
-        return -1;
+        return false;
     }
 
     SDL_WaitSemaphore(device->hidden->ready_semaphore);
@@ -963,7 +963,7 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("%s", device->hidden->thread_error);
     }
 
-    return (device->hidden->thread != NULL) ? 0 : -1;
+    return (device->hidden->thread != NULL);
 }
 
 static void COREAUDIO_DeinitializeStart(void)

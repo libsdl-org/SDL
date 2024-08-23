@@ -22,7 +22,7 @@
 
 #include "SDL_sysurl.h"
 
-int SDL_OpenURL(const char *url)
+SDL_bool SDL_OpenURL(const char *url)
 {
     if (!url) {
         return SDL_InvalidParamError("url");

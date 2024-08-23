@@ -5257,10 +5257,10 @@ void SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
     }
 }
 
-int SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
-                           SDL_calloc_func calloc_func,
-                           SDL_realloc_func realloc_func,
-                           SDL_free_func free_func)
+SDL_bool SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
+                                SDL_calloc_func calloc_func,
+                                SDL_realloc_func realloc_func,
+                                SDL_free_func free_func)
 {
     if (!malloc_func) {
         return SDL_InvalidParamError("malloc_func");
@@ -5279,7 +5279,7 @@ int SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
     s_mem.calloc_func = calloc_func;
     s_mem.realloc_func = realloc_func;
     s_mem.free_func = free_func;
-    return 0;
+    return true;
 }
 
 int SDL_GetNumAllocations(void)

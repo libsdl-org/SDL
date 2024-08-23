@@ -108,7 +108,7 @@ static void SDL_EventSignal_Quit(const int sig)
 }
 
 // Public functions
-static int SDL_QuitInit_Internal(void)
+static bool SDL_QuitInit_Internal(void)
 {
     // Both SIGINT and SIGTERM are translated into quit interrupts
     // and SDL can be built to simulate iOS/Android semantics with arbitrary signals.
@@ -124,7 +124,7 @@ static int SDL_QuitInit_Internal(void)
 #endif
 
     // That's it!
-    return 0;
+    return true;
 }
 
 static void SDL_QuitQuit_Internal(void)
@@ -142,14 +142,14 @@ static void SDL_QuitQuit_Internal(void)
 }
 #endif
 
-int SDL_InitQuit(void)
+bool SDL_InitQuit(void)
 {
 #ifdef HAVE_SIGNAL_SUPPORT
     if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, false)) {
         return SDL_QuitInit_Internal();
     }
 #endif
-    return 0;
+    return true;
 }
 
 void SDL_QuitQuit(void)
@@ -185,11 +185,10 @@ void SDL_SendPendingSignalEvents(void)
 #endif
 }
 
-// This function returns 1 if it's okay to close the application window
-int SDL_SendQuit(void)
+void SDL_SendQuit(void)
 {
 #ifdef HAVE_SIGNAL_SUPPORT
     send_quit_pending = false;
 #endif
-    return SDL_SendAppEvent(SDL_EVENT_QUIT);
+    SDL_SendAppEvent(SDL_EVENT_QUIT);
 }

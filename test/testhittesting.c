@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     }
 
     for (i = 0; i < state->num_windows; i++) {
-        if (SDL_SetWindowHitTest(state->windows[i], hitTest, NULL) < 0) {
+        if (!SDL_SetWindowHitTest(state->windows[i], hitTest, NULL)) {
             SDL_Log("Enabling hit-testing failed for window %d: %s", i, SDL_GetError());
             SDL_Quit();
             return 1;

@@ -70,14 +70,14 @@ typedef struct joystick_hwdata
 } joystick_hwdata;
 
 extern SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc);
-extern int SDL_JoystickDetachVirtualInner(SDL_JoystickID instance_id);
+extern bool SDL_JoystickDetachVirtualInner(SDL_JoystickID instance_id);
 
-extern int SDL_SetJoystickVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 value);
-extern int SDL_SetJoystickVirtualBallInner(SDL_Joystick *joystick, int ball, Sint16 xrel, Sint16 yrel);
-extern int SDL_SetJoystickVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 value);
-extern int SDL_SetJoystickVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value);
-extern int SDL_SetJoystickVirtualTouchpadInner(SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure);
-extern int SDL_SendJoystickVirtualSensorDataInner(SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
+extern bool SDL_SetJoystickVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 value);
+extern bool SDL_SetJoystickVirtualBallInner(SDL_Joystick *joystick, int ball, Sint16 xrel, Sint16 yrel);
+extern bool SDL_SetJoystickVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 value);
+extern bool SDL_SetJoystickVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value);
+extern bool SDL_SetJoystickVirtualTouchpadInner(SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure);
+extern bool SDL_SendJoystickVirtualSensorDataInner(SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
 
 #endif // SDL_JOYSTICK_VIRTUAL
 

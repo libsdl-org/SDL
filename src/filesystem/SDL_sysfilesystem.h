@@ -27,16 +27,16 @@ extern char *SDL_SYS_GetBasePath(void);
 extern char *SDL_SYS_GetPrefPath(const char *org, const char *app);
 extern char *SDL_SYS_GetUserFolder(SDL_Folder folder);
 
-int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata);
-int SDL_SYS_RemovePath(const char *path);
-int SDL_SYS_RenamePath(const char *oldpath, const char *newpath);
-int SDL_SYS_CopyFile(const char *oldpath, const char *newpath);
-int SDL_SYS_CreateDirectory(const char *path);
-int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info);
+extern int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata);
+extern bool SDL_SYS_RemovePath(const char *path);
+extern bool SDL_SYS_RenamePath(const char *oldpath, const char *newpath);
+extern bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath);
+extern bool SDL_SYS_CreateDirectory(const char *path);
+extern bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info);
 
-typedef int (*SDL_GlobEnumeratorFunc)(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata);
-typedef int (*SDL_GlobGetPathInfoFunc)(const char *path, SDL_PathInfo *info, void *userdata);
-char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata);
+typedef SDL_bool (*SDL_GlobEnumeratorFunc)(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata);
+typedef SDL_bool (*SDL_GlobGetPathInfoFunc)(const char *path, SDL_PathInfo *info, void *userdata);
+extern char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata);
 
 #endif
 

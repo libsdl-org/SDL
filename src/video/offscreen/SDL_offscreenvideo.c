@@ -40,8 +40,8 @@
 #define OFFSCREENVID_DRIVER_NAME "offscreen"
 
 // Initialization/Query functions
-static int OFFSCREEN_VideoInit(SDL_VideoDevice *_this);
-static int OFFSCREEN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+static bool OFFSCREEN_VideoInit(SDL_VideoDevice *_this);
+static bool OFFSCREEN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void OFFSCREEN_VideoQuit(SDL_VideoDevice *_this);
 
 // OFFSCREEN driver bootstrap functions
@@ -91,7 +91,7 @@ static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
     device->GL_SwapWindow = OFFSCREEN_GLES_SwapWindow;
     device->GL_MakeCurrent = OFFSCREEN_GLES_MakeCurrent;
     device->GL_CreateContext = OFFSCREEN_GLES_CreateContext;
-    device->GL_DeleteContext = OFFSCREEN_GLES_DeleteContext;
+    device->GL_DestroyContext = OFFSCREEN_GLES_DestroyContext;
     device->GL_LoadLibrary = OFFSCREEN_GLES_LoadLibrary;
     device->GL_UnloadLibrary = OFFSCREEN_GLES_UnloadLibrary;
     device->GL_GetProcAddress = OFFSCREEN_GLES_GetProcAddress;
@@ -121,7 +121,7 @@ VideoBootStrap OFFSCREEN_bootstrap = {
     NULL // no ShowMessageBox implementation
 };
 
-int OFFSCREEN_VideoInit(SDL_VideoDevice *_this)
+static bool OFFSCREEN_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
@@ -131,16 +131,16 @@ int OFFSCREEN_VideoInit(SDL_VideoDevice *_this)
     mode.w = 1024;
     mode.h = 768;
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
-        return -1;
+        return false;
     }
 
     // We're done!
-    return 0;
+    return true;
 }
 
-static int OFFSCREEN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static bool OFFSCREEN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    return 0;
+    return true;
 }
 
 void OFFSCREEN_VideoQuit(SDL_VideoDevice *_this)

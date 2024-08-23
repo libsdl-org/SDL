@@ -290,7 +290,7 @@ static void X11_FreeCursor(SDL_Cursor *cursor)
     SDL_free(cursor);
 }
 
-static int X11_ShowCursor(SDL_Cursor *cursor)
+static bool X11_ShowCursor(SDL_Cursor *cursor)
 {
     Cursor x11_cursor = 0;
 
@@ -320,7 +320,7 @@ static int X11_ShowCursor(SDL_Cursor *cursor)
         }
         X11_XFlush(display);
     }
-    return 0;
+    return true;
 }
 
 static void X11_WarpMouseInternal(Window xwindow, float x, float y)
@@ -363,7 +363,7 @@ static void X11_WarpMouseInternal(Window xwindow, float x, float y)
     videodata->global_mouse_changed = true;
 }
 
-static int X11_WarpMouse(SDL_Window *window, float x, float y)
+static bool X11_WarpMouse(SDL_Window *window, float x, float y)
 {
     SDL_WindowData *data = window->internal;
 
@@ -375,24 +375,24 @@ static int X11_WarpMouse(SDL_Window *window, float x, float y)
 #else
     X11_WarpMouseInternal(data->xwindow, x, y);
 #endif
-    return 0;
+    return true;
 }
 
-static int X11_WarpMouseGlobal(float x, float y)
+static bool X11_WarpMouseGlobal(float x, float y)
 {
     X11_WarpMouseInternal(DefaultRootWindow(GetDisplay()), x, y);
-    return 0;
+    return true;
 }
 
-static int X11_SetRelativeMouseMode(bool enabled)
+static bool X11_SetRelativeMouseMode(bool enabled)
 {
     if (!X11_Xinput2IsInitialized()) {
         return SDL_Unsupported();
     }
-    return 0;
+    return true;
 }
 
-static int X11_CaptureMouse(SDL_Window *window)
+static bool X11_CaptureMouse(SDL_Window *window)
 {
     Display *display = GetDisplay();
     SDL_Window *mouse_focus = SDL_GetMouseFocus();
@@ -421,7 +421,7 @@ static int X11_CaptureMouse(SDL_Window *window)
 
     X11_XSync(display, False);
 
-    return 0;
+    return true;
 }
 
 static SDL_MouseButtonFlags X11_GetGlobalMouseState(float *x, float *y)

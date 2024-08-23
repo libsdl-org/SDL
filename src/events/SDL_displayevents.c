@@ -24,17 +24,15 @@
 
 #include "SDL_events_c.h"
 
-int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1, int data2)
+void SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1, int data2)
 {
-    int posted;
-
     if (!display || display->id == 0) {
-        return 0;
+        return;
     }
     switch (displayevent) {
     case SDL_EVENT_DISPLAY_ORIENTATION:
         if (data1 == SDL_ORIENTATION_UNKNOWN || data1 == display->current_orientation) {
-            return 0;
+            return;
         }
         display->current_orientation = (SDL_DisplayOrientation)data1;
         break;
@@ -43,7 +41,6 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
     }
 
     // Post the event, if desired
-    posted = 0;
     if (SDL_EventEnabled(displayevent)) {
         SDL_Event event;
         event.type = displayevent;
@@ -51,7 +48,7 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
         event.display.displayID = display->id;
         event.display.data1 = data1;
         event.display.data2 = data2;
-        posted = (SDL_PushEvent(&event) > 0);
+        SDL_PushEvent(&event);
     }
 
     switch (displayevent) {
@@ -64,6 +61,4 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
     default:
         break;
     }
-
-    return posted;
 }

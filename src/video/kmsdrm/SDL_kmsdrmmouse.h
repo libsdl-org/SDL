@@ -46,7 +46,7 @@ struct SDL_CursorData
 extern void KMSDRM_InitMouse(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 extern void KMSDRM_QuitMouse(SDL_VideoDevice *_this);
 
-extern int KMSDRM_CreateCursorBO(SDL_VideoDisplay *display);
+extern bool KMSDRM_CreateCursorBO(SDL_VideoDisplay *display);
 extern void KMSDRM_DestroyCursorBO(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 extern void KMSDRM_InitCursor(void);
 

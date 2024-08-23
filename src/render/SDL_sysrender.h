@@ -168,60 +168,60 @@ typedef enum
 struct SDL_Renderer
 {
     void (*WindowEvent)(SDL_Renderer *renderer, const SDL_WindowEvent *event);
-    int (*GetOutputSize)(SDL_Renderer *renderer, int *w, int *h);
+    bool (*GetOutputSize)(SDL_Renderer *renderer, int *w, int *h);
     bool (*SupportsBlendMode)(SDL_Renderer *renderer, SDL_BlendMode blendMode);
-    int (*CreateTexture)(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
-    int (*QueueSetViewport)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
-    int (*QueueSetDrawColor)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
-    int (*QueueDrawPoints)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
+    bool (*CreateTexture)(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
+    bool (*QueueSetViewport)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
+    bool (*QueueSetDrawColor)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
+    bool (*QueueDrawPoints)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
                            int count);
-    int (*QueueDrawLines)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
+    bool (*QueueDrawLines)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
                           int count);
-    int (*QueueFillRects)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FRect *rects,
+    bool (*QueueFillRects)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FRect *rects,
                           int count);
-    int (*QueueCopy)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+    bool (*QueueCopy)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                      const SDL_FRect *srcrect, const SDL_FRect *dstrect);
-    int (*QueueCopyEx)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+    bool (*QueueCopyEx)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                        const SDL_FRect *srcquad, const SDL_FRect *dstrect,
                        const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y);
-    int (*QueueGeometry)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+    bool (*QueueGeometry)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                          const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
                          int num_vertices, const void *indices, int num_indices, int size_indices,
                          float scale_x, float scale_y);
 
     void (*InvalidateCachedState)(SDL_Renderer *renderer);
-    int (*RunCommandQueue)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
-    int (*UpdateTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
+    bool (*RunCommandQueue)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
+    bool (*UpdateTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                          const SDL_Rect *rect, const void *pixels,
                          int pitch);
 #if SDL_HAVE_YUV
-    int (*UpdateTextureYUV)(SDL_Renderer *renderer, SDL_Texture *texture,
+    bool (*UpdateTextureYUV)(SDL_Renderer *renderer, SDL_Texture *texture,
                             const SDL_Rect *rect,
                             const Uint8 *Yplane, int Ypitch,
                             const Uint8 *Uplane, int Upitch,
                             const Uint8 *Vplane, int Vpitch);
-    int (*UpdateTextureNV)(SDL_Renderer *renderer, SDL_Texture *texture,
+    bool (*UpdateTextureNV)(SDL_Renderer *renderer, SDL_Texture *texture,
                            const SDL_Rect *rect,
                            const Uint8 *Yplane, int Ypitch,
                            const Uint8 *UVplane, int UVpitch);
 #endif
-    int (*LockTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
+    bool (*LockTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                        const SDL_Rect *rect, void **pixels, int *pitch);
     void (*UnlockTexture)(SDL_Renderer *renderer, SDL_Texture *texture);
     void (*SetTextureScaleMode)(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode);
-    int (*SetRenderTarget)(SDL_Renderer *renderer, SDL_Texture *texture);
+    bool (*SetRenderTarget)(SDL_Renderer *renderer, SDL_Texture *texture);
     SDL_Surface *(*RenderReadPixels)(SDL_Renderer *renderer, const SDL_Rect *rect);
-    int (*RenderPresent)(SDL_Renderer *renderer);
+    bool (*RenderPresent)(SDL_Renderer *renderer);
     void (*DestroyTexture)(SDL_Renderer *renderer, SDL_Texture *texture);
 
     void (*DestroyRenderer)(SDL_Renderer *renderer);
 
-    int (*SetVSync)(SDL_Renderer *renderer, int vsync);
+    bool (*SetVSync)(SDL_Renderer *renderer, int vsync);
 
     void *(*GetMetalLayer)(SDL_Renderer *renderer);
     void *(*GetMetalCommandEncoder)(SDL_Renderer *renderer);
 
-    int (*AddVulkanRenderSemaphores)(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore);
+    bool (*AddVulkanRenderSemaphores)(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore);
 
     // The current renderer info
     const char *name;
@@ -307,7 +307,7 @@ struct SDL_Renderer
 // Define the SDL render driver structure
 struct SDL_RenderDriver
 {
-    int (*CreateRenderer)(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID props);
+    bool (*CreateRenderer)(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID props);
 
     const char *name;
 };
@@ -329,7 +329,7 @@ extern SDL_RenderDriver VITA_GXM_RenderDriver;
 extern void SDL_QuitRender(void);
 
 // Add a supported texture format to a renderer
-extern int SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormat format);
+extern bool SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormat format);
 
 // Setup colorspace conversion
 extern void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props);

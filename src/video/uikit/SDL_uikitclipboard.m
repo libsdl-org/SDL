@@ -27,14 +27,14 @@
 
 #import <UIKit/UIPasteboard.h>
 
-int UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text)
+bool UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text)
 {
 #ifdef SDL_PLATFORM_TVOS
     return SDL_SetError("The clipboard is not available on tvOS");
 #else
     @autoreleasepool {
         [UIPasteboard generalPasteboard].string = @(text);
-        return 0;
+        return true;
     }
 #endif
 }

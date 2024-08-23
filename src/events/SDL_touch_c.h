@@ -34,7 +34,7 @@ typedef struct SDL_Touch
 } SDL_Touch;
 
 // Initialize the touch subsystem
-extern int SDL_InitTouch(void);
+extern bool SDL_InitTouch(void);
 
 // Returns true if _any_ connected touch devices are known to SDL
 extern bool SDL_TouchDevicesAvailable(void);
@@ -46,10 +46,10 @@ extern int SDL_AddTouch(SDL_TouchID id, SDL_TouchDeviceType type, const char *na
 extern SDL_Touch *SDL_GetTouch(SDL_TouchID id);
 
 // Send a touch down/up event for a touch
-extern int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, bool down, float x, float y, float pressure);
+extern void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, bool down, float x, float y, float pressure);
 
 // Send a touch motion event for a touch
-extern int SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, float x, float y, float pressure);
+extern void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, float x, float y, float pressure);
 
 // Remove a touch
 extern void SDL_DelTouch(SDL_TouchID id);

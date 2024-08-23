@@ -41,7 +41,7 @@ static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
 static SDL_UDEV_PrivateData *_this = NULL;
 
 static bool SDL_UDEV_load_sym(const char *fn, void **addr);
-static int SDL_UDEV_load_syms(void);
+static bool SDL_UDEV_load_syms(void);
 static bool SDL_UDEV_hotplug_update_available(void);
 static void get_caps(struct udev_device *dev, struct udev_device *pdev, const char *attr, unsigned long *bitmask, size_t bitmask_len);
 static int guess_device_class(struct udev_device *dev);
@@ -59,12 +59,12 @@ static bool SDL_UDEV_load_sym(const char *fn, void **addr)
     return true;
 }
 
-static int SDL_UDEV_load_syms(void)
+static bool SDL_UDEV_load_syms(void)
 {
 /* cast funcs to char* first, to please GCC's strict aliasing rules. */
 #define SDL_UDEV_SYM(x)                                          \
     if (!SDL_UDEV_load_sym(#x, (void **)(char *)&_this->syms.x)) \
-    return -1
+        return false
 
     SDL_UDEV_SYM(udev_device_get_action);
     SDL_UDEV_SYM(udev_device_get_devnode);
@@ -95,7 +95,7 @@ static int SDL_UDEV_load_syms(void)
     SDL_UDEV_SYM(udev_device_get_devnum);
 #undef SDL_UDEV_SYM
 
-    return 0;
+    return true;
 }
 
 static bool SDL_UDEV_hotplug_update_available(void)
@@ -109,20 +109,17 @@ static bool SDL_UDEV_hotplug_update_available(void)
     return false;
 }
 
-int SDL_UDEV_Init(void)
+bool SDL_UDEV_Init(void)
 {
-    int retval = 0;
-
     if (!_this) {
         _this = (SDL_UDEV_PrivateData *)SDL_calloc(1, sizeof(*_this));
         if (!_this) {
-            return -1;
+            return false;
         }
 
-        retval = SDL_UDEV_LoadLibrary();
-        if (retval < 0) {
+        if (!SDL_UDEV_LoadLibrary()) {
             SDL_UDEV_Quit();
-            return retval;
+            return false;
         }
 
         /* Set up udev monitoring
@@ -152,7 +149,7 @@ int SDL_UDEV_Init(void)
 
     _this->ref_count += 1;
 
-    return retval;
+    return true;
 }
 
 void SDL_UDEV_Quit(void)
@@ -187,14 +184,14 @@ void SDL_UDEV_Quit(void)
     }
 }
 
-int SDL_UDEV_Scan(void)
+bool SDL_UDEV_Scan(void)
 {
     struct udev_enumerate *enumerate = NULL;
     struct udev_list_entry *devs = NULL;
     struct udev_list_entry *item = NULL;
 
     if (!_this) {
-        return 0;
+        return true;
     }
 
     enumerate = _this->syms.udev_enumerate_new(_this->udev);
@@ -219,7 +216,7 @@ int SDL_UDEV_Scan(void)
     }
 
     _this->syms.udev_enumerate_unref(enumerate);
-    return 0;
+    return true;
 }
 
 bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class)
@@ -291,17 +288,17 @@ void SDL_UDEV_UnloadLibrary(void)
     }
 }
 
-int SDL_UDEV_LoadLibrary(void)
+bool SDL_UDEV_LoadLibrary(void)
 {
-    int retval = 0, i;
+    bool result = true;
 
     if (!_this) {
         return SDL_SetError("UDEV not initialized");
     }
 
     // See if there is a udev library already loaded
-    if (SDL_UDEV_load_syms() == 0) {
-        return 0;
+    if (SDL_UDEV_load_syms()) {
+        return true;
     }
 
 #ifdef SDL_UDEV_DYNAMIC
@@ -309,8 +306,8 @@ int SDL_UDEV_LoadLibrary(void)
     if (!_this->udev_handle) {
         _this->udev_handle = SDL_LoadObject(SDL_UDEV_DYNAMIC);
         if (_this->udev_handle) {
-            retval = SDL_UDEV_load_syms();
-            if (retval < 0) {
+            result = SDL_UDEV_load_syms();
+            if (!result) {
                 SDL_UDEV_UnloadLibrary();
             }
         }
@@ -318,11 +315,11 @@ int SDL_UDEV_LoadLibrary(void)
 #endif
 
     if (!_this->udev_handle) {
-        for (i = 0; i < SDL_arraysize(SDL_UDEV_LIBS); i++) {
+        for (int i = 0; i < SDL_arraysize(SDL_UDEV_LIBS); i++) {
             _this->udev_handle = SDL_LoadObject(SDL_UDEV_LIBS[i]);
             if (_this->udev_handle) {
-                retval = SDL_UDEV_load_syms();
-                if (retval < 0) {
+                result = SDL_UDEV_load_syms();
+                if (!result) {
                     SDL_UDEV_UnloadLibrary();
                 } else {
                     break;
@@ -331,12 +328,12 @@ int SDL_UDEV_LoadLibrary(void)
         }
 
         if (!_this->udev_handle) {
-            retval = -1;
+            result = false;
             // Don't call SDL_SetError(): SDL_LoadObject already did.
         }
     }
 
-    return retval;
+    return result;
 }
 
 static void get_caps(struct udev_device *dev, struct udev_device *pdev, const char *attr, unsigned long *bitmask, size_t bitmask_len)
@@ -529,12 +526,12 @@ void SDL_UDEV_Poll(void)
     }
 }
 
-int SDL_UDEV_AddCallback(SDL_UDEV_Callback cb)
+bool SDL_UDEV_AddCallback(SDL_UDEV_Callback cb)
 {
     SDL_UDEV_CallbackList *item;
     item = (SDL_UDEV_CallbackList *)SDL_calloc(1, sizeof(SDL_UDEV_CallbackList));
     if (!item) {
-        return -1;
+        return false;
     }
 
     item->callback = cb;
@@ -546,7 +543,7 @@ int SDL_UDEV_AddCallback(SDL_UDEV_Callback cb)
         _this->last = item;
     }
 
-    return 0;
+    return true;
 }
 
 void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
@@ -579,7 +576,7 @@ void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
 
 const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void)
 {
-    if (SDL_UDEV_Init() < 0) {
+    if (!SDL_UDEV_Init()) {
         SDL_SetError("Could not initialize UDEV");
         return NULL;
     }

@@ -139,12 +139,12 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
     return bmp;
 }
 
-static int WIN_SetClipboardImage(SDL_VideoDevice *_this)
+static bool WIN_SetClipboardImage(SDL_VideoDevice *_this)
 {
     HANDLE hMem;
     size_t clipboard_data_size;
     const void *clipboard_data;
-    int result = 0;
+    bool result = true;
 
     clipboard_data = _this->clipboard_callback(_this->clipboard_userdata, IMAGE_MIME_TYPE, &clipboard_data_size);
     hMem = WIN_ConvertBMPtoDIB(clipboard_data, clipboard_data_size);
@@ -155,17 +155,17 @@ static int WIN_SetClipboardImage(SDL_VideoDevice *_this)
         }
     } else {
         // WIN_ConvertBMPtoDIB() set the error
-        result = -1;
+        result = false;
     }
     return result;
 }
 
-static int WIN_SetClipboardText(SDL_VideoDevice *_this, const char *mime_type)
+static bool WIN_SetClipboardText(SDL_VideoDevice *_this, const char *mime_type)
 {
     HANDLE hMem;
     size_t clipboard_data_size;
     const void *clipboard_data;
-    int result = 0;
+    bool result = true;
 
     clipboard_data = _this->clipboard_callback(_this->clipboard_userdata, mime_type, &clipboard_data_size);
     if (clipboard_data && clipboard_data_size > 0) {
@@ -211,11 +211,11 @@ static int WIN_SetClipboardText(SDL_VideoDevice *_this, const char *mime_type)
     return result;
 }
 
-int WIN_SetClipboardData(SDL_VideoDevice *_this)
+bool WIN_SetClipboardData(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
     size_t i;
-    int result = 0;
+    bool result = true;
 
     /* I investigated delayed clipboard rendering, and at least with text and image
      * formats you have to use an output window, not SDL_HelperWindow, and the system
@@ -230,8 +230,8 @@ int WIN_SetClipboardData(SDL_VideoDevice *_this)
             const char *mime_type = _this->clipboard_mime_types[i];
 
             if (SDL_IsTextMimeType(mime_type)) {
-                if (WIN_SetClipboardText(_this, mime_type) < 0) {
-                    result = -1;
+                if (!WIN_SetClipboardText(_this, mime_type)) {
+                    result = false;
                 }
                 // Only set the first clipboard text
                 break;
@@ -243,8 +243,8 @@ int WIN_SetClipboardData(SDL_VideoDevice *_this)
             const char *mime_type = _this->clipboard_mime_types[i];
 
             if (SDL_strcmp(mime_type, IMAGE_MIME_TYPE) == 0) {
-                if (WIN_SetClipboardImage(_this) < 0) {
-                    result = -1;
+                if (!WIN_SetClipboardImage(_this)) {
+                    result = false;
                 }
                 break;
             }

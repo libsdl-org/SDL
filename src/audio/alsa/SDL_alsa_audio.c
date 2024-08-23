@@ -93,26 +93,26 @@ static int (*ALSA_snd_pcm_chmap_print)(const snd_pcm_chmap_t *map, size_t maxlen
 static const char *alsa_library = SDL_AUDIO_DRIVER_ALSA_DYNAMIC;
 static void *alsa_handle = NULL;
 
-static int load_alsa_sym(const char *fn, void **addr)
+static bool load_alsa_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(alsa_handle, fn);
     if (!*addr) {
         // Don't call SDL_SetError(): SDL_LoadFunction already did.
-        return 0;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 // cast funcs to char* first, to please GCC's strict aliasing rules.
 #define SDL_ALSA_SYM(x)                                 \
     if (!load_alsa_sym(#x, (void **)(char *)&ALSA_##x)) \
-    return -1
+        return false
 #else
 #define SDL_ALSA_SYM(x) ALSA_##x = x
 #endif
 
-static int load_alsa_syms(void)
+static bool load_alsa_syms(void)
 {
     SDL_ALSA_SYM(snd_pcm_open);
     SDL_ALSA_SYM(snd_pcm_close);
@@ -156,7 +156,7 @@ static int load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_chmap_print);
 #endif
 
-    return 0;
+    return true;
 }
 
 #undef SDL_ALSA_SYM
@@ -171,17 +171,17 @@ static void UnloadALSALibrary(void)
     }
 }
 
-static int LoadALSALibrary(void)
+static bool LoadALSALibrary(void)
 {
-    int retval = 0;
+    bool retval = true;
     if (!alsa_handle) {
         alsa_handle = SDL_LoadObject(alsa_library);
         if (!alsa_handle) {
-            retval = -1;
+            retval = false;
             // Don't call SDL_SetError(): SDL_LoadObject already did.
         } else {
             retval = load_alsa_syms();
-            if (retval < 0) {
+            if (!retval) {
                 UnloadALSALibrary();
             }
         }
@@ -195,10 +195,10 @@ static void UnloadALSALibrary(void)
 {
 }
 
-static int LoadALSALibrary(void)
+static bool LoadALSALibrary(void)
 {
     load_alsa_syms();
-    return 0;
+    return true;
 }
 
 #endif // SDL_AUDIO_DRIVER_ALSA_DYNAMIC
@@ -260,7 +260,7 @@ static const int swizzle_alsa_channels_8[8] = { 0, 1, 6, 7, 2, 3, 4, 5 };
 
 
 // This function waits until it is possible to write a full sound buffer
-static int ALSA_WaitDevice(SDL_AudioDevice *device)
+static bool ALSA_WaitDevice(SDL_AudioDevice *device)
 {
     const int fulldelay = (int) ((((Uint64) device->sample_frames) * 1000) / device->spec.freq);
     const int delay = SDL_max(fulldelay, 10);
@@ -272,7 +272,7 @@ static int ALSA_WaitDevice(SDL_AudioDevice *device)
             if (status < 0) {
                 // Hmm, not much we can do - abort
                 SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA: snd_pcm_wait failed (unrecoverable): %s", ALSA_snd_strerror(rc));
-                return -1;
+                return false;
             }
             continue;
         }
@@ -284,10 +284,10 @@ static int ALSA_WaitDevice(SDL_AudioDevice *device)
         // Timed out! Make sure we aren't shutting down and then wait again.
     }
 
-    return 0;
+    return true;
 }
 
-static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     SDL_assert(buffer == device->hidden->mixbuf);
     Uint8 *sample_buf = (Uint8 *) buffer;  // !!! FIXME: deal with this without casting away constness
@@ -304,7 +304,7 @@ static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
             if (status < 0) {
                 // Hmm, not much we can do - abort
                 SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA write failed (unrecoverable): %s", ALSA_snd_strerror(rc));
-                return -1;
+                return false;
             }
             continue;
         }
@@ -313,7 +313,7 @@ static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
         frames_left -= rc;
     }
 
-    return 0;
+    return true;
 }
 
 static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -434,7 +434,7 @@ static int ALSA_set_buffer_size(SDL_AudioDevice *device, snd_pcm_hw_params_t *pa
     return 0;
 }
 
-static int ALSA_OpenDevice(SDL_AudioDevice *device)
+static bool ALSA_OpenDevice(SDL_AudioDevice *device)
 {
     const bool recording = device->recording;
     int status = 0;
@@ -442,7 +442,7 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     // Open the audio device
@@ -559,7 +559,7 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
     if (swizmap) {
         device->chmap = SDL_ChannelMapDup(swizmap, channels);
         if (!device->chmap) {
-            return -1;
+            return false;
         }
     }
 
@@ -606,7 +606,7 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
     if (!recording) {
         device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
-            return -1;
+            return false;
         }
         SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
     }
@@ -619,7 +619,7 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
 
     ALSA_snd_pcm_start(pcm_handle);
 
-    return 0;  // We're ready to rock and roll. :-)
+    return true;  // We're ready to rock and roll. :-)
 }
 
 static void add_device(const bool recording, const char *name, void *hint, ALSA_Device **pSeen)
@@ -889,7 +889,7 @@ static void ALSA_Deinitialize(void)
 
 static bool ALSA_Init(SDL_AudioDriverImpl *impl)
 {
-    if (LoadALSALibrary() < 0) {
+    if (!LoadALSALibrary()) {
         return false;
     }
 

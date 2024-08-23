@@ -25,7 +25,7 @@
 #include "SDL_draw.h"
 #include "SDL_blendpoint.h"
 
-static int SDL_BlendPoint_RGB555(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
+static bool SDL_BlendPoint_RGB555(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                                  Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
@@ -51,10 +51,10 @@ static int SDL_BlendPoint_RGB555(SDL_Surface *dst, int x, int y, SDL_BlendMode b
         DRAW_SETPIXELXY_RGB555(x, y);
         break;
     }
-    return 0;
+    return true;
 }
 
-static int SDL_BlendPoint_RGB565(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
+static bool SDL_BlendPoint_RGB565(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                                  Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
@@ -80,10 +80,10 @@ static int SDL_BlendPoint_RGB565(SDL_Surface *dst, int x, int y, SDL_BlendMode b
         DRAW_SETPIXELXY_RGB565(x, y);
         break;
     }
-    return 0;
+    return true;
 }
 
-static int SDL_BlendPoint_XRGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
+static bool SDL_BlendPoint_XRGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                                  Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
@@ -109,10 +109,10 @@ static int SDL_BlendPoint_XRGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode
         DRAW_SETPIXELXY_XRGB8888(x, y);
         break;
     }
-    return 0;
+    return true;
 }
 
-static int SDL_BlendPoint_ARGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode,
+static bool SDL_BlendPoint_ARGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode,
                                    Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
@@ -138,10 +138,10 @@ static int SDL_BlendPoint_ARGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode
         DRAW_SETPIXELXY_ARGB8888(x, y);
         break;
     }
-    return 0;
+    return true;
 }
 
-static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
+static bool SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                               Uint8 g, Uint8 b, Uint8 a)
 {
     const SDL_PixelFormatDetails *fmt = dst->internal->format;
@@ -170,7 +170,7 @@ static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blen
             DRAW_SETPIXELXY2_RGB(x, y);
             break;
         }
-        return 0;
+        return true;
     case 4:
         switch (blendMode) {
         case SDL_BLENDMODE_BLEND:
@@ -193,13 +193,13 @@ static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blen
             DRAW_SETPIXELXY4_RGB(x, y);
             break;
         }
-        return 0;
+        return true;
     default:
         return SDL_Unsupported();
     }
 }
 
-static int SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
+static bool SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                                Uint8 g, Uint8 b, Uint8 a)
 {
     const SDL_PixelFormatDetails *fmt = dst->internal->format;
@@ -228,14 +228,13 @@ static int SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode ble
             DRAW_SETPIXELXY4_RGBA(x, y);
             break;
         }
-        return 0;
+        return true;
     default:
         return SDL_Unsupported();
     }
 }
 
-int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
-                   Uint8 g, Uint8 b, Uint8 a)
+bool SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_BlendPoint(): dst");
@@ -250,7 +249,7 @@ int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint
     if (x < dst->internal->clip_rect.x || y < dst->internal->clip_rect.y ||
         x >= (dst->internal->clip_rect.x + dst->internal->clip_rect.w) ||
         y >= (dst->internal->clip_rect.y + dst->internal->clip_rect.h)) {
-        return 0;
+        return true;
     }
 
     if (blendMode == SDL_BLENDMODE_BLEND || blendMode == SDL_BLENDMODE_ADD) {
@@ -294,16 +293,14 @@ int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint
     }
 }
 
-int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
-                    SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+bool SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     int minx, miny;
     int maxx, maxy;
     int i;
     int x, y;
-    int (*func)(SDL_Surface * dst, int x, int y,
-                SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
-    int status = 0;
+    bool (*func)(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
+    bool result = true;
 
     if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_BlendPoints(): dst");
@@ -371,9 +368,9 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
         if (x < minx || x > maxx || y < miny || y > maxy) {
             continue;
         }
-        status = func(dst, x, y, blendMode, r, g, b, a);
+        result = func(dst, x, y, blendMode, r, g, b, a);
     }
-    return status;
+    return result;
 }
 
 #endif // SDL_VIDEO_RENDER_SW

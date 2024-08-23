@@ -30,7 +30,7 @@ extern "C" {
 #include "../SDL_sysvideo.h"
 
 extern void HAIKU_VideoQuit(SDL_VideoDevice *_this);
-extern int HAIKU_VideoInit(SDL_VideoDevice *_this);
+extern bool HAIKU_VideoInit(SDL_VideoDevice *_this);
 extern void HAIKU_DeleteDevice(SDL_VideoDevice *_this);
 
 #ifdef __cplusplus

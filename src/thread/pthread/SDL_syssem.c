@@ -60,39 +60,33 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     }
 }
 
-int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+SDL_bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-    int retval = 0;
 #ifdef HAVE_SEM_TIMEDWAIT
 #ifndef HAVE_CLOCK_GETTIME
     struct timeval now;
 #endif
     struct timespec ts_timeout;
 #else
-    Uint64 end;
+    Uint64 stop_time;
 #endif
 
     if (!sem) {
-        return SDL_InvalidParamError("sem");
+        return true;
     }
 
     // Try the easy cases first
     if (timeoutNS == 0) {
-        retval = SDL_MUTEX_TIMEDOUT;
-        if (sem_trywait(&sem->sem) == 0) {
-            retval = 0;
-        }
-        return retval;
+        return (sem_trywait(&sem->sem) == 0);
     }
-    if (timeoutNS < 0) {
-        do {
-            retval = sem_wait(&sem->sem);
-        } while (retval < 0 && errno == EINTR);
 
-        if (retval < 0) {
-            retval = SDL_SetError("sem_wait() failed");
-        }
-        return retval;
+    if (timeoutNS < 0) {
+        int rc;
+        do {
+            rc = sem_wait(&sem->sem);
+        } while (rc < 0 && errno == EINTR);
+
+        return (rc == 0);
     }
 
 #ifdef HAVE_SEM_TIMEDWAIT
@@ -121,29 +115,22 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     }
 
     // Wait.
+    int rc;
     do {
-        retval = sem_timedwait(&sem->sem, &ts_timeout);
-    } while (retval < 0 && errno == EINTR);
+        rc = sem_timedwait(&sem->sem, &ts_timeout);
+    } while (rc < 0 && errno == EINTR);
 
-    if (retval < 0) {
-        if (errno == ETIMEDOUT) {
-            retval = SDL_MUTEX_TIMEDOUT;
-        } else {
-            SDL_SetError("sem_timedwait returned an error: %s", strerror(errno));
-        }
-    }
+    return (rc == 0);
 #else
-    end = SDL_GetTicksNS() + timeoutNS;
+    stop_time = SDL_GetTicksNS() + timeoutNS;
     while (sem_trywait(&sem->sem) != 0) {
-        if (SDL_GetTicksNS() >= end) {
-            retval = SDL_MUTEX_TIMEDOUT;
-            break;
+        if (SDL_GetTicksNS() >= stop_time) {
+            return false;
         }
         SDL_DelayNS(100);
     }
+    return true;
 #endif // HAVE_SEM_TIMEDWAIT
-
-    return retval;
 }
 
 Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
@@ -151,7 +138,6 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     int ret = 0;
 
     if (!sem) {
-        SDL_InvalidParamError("sem");
         return 0;
     }
 
@@ -162,19 +148,13 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     return (Uint32)ret;
 }
 
-int SDL_SignalSemaphore(SDL_Semaphore *sem)
+void SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
-    int retval;
-
     if (!sem) {
-        return SDL_InvalidParamError("sem");
+        return;
     }
 
-    retval = sem_post(&sem->sem);
-    if (retval < 0) {
-        SDL_SetError("sem_post() failed");
-    }
-    return retval;
+    sem_post(&sem->sem);
 }
 
 #endif // SDL_PLATFORM_MACOS

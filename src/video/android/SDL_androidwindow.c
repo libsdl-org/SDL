@@ -36,17 +36,17 @@
 // Currently only one window
 SDL_Window *Android_Window = NULL;
 
-int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *data;
-    int retval = 0;
+    bool result = true;
 
-    if (Android_WaitActiveAndLockActivity() < 0) {
-        return -1;
+    if (!Android_WaitActiveAndLockActivity()) {
+        return false;
     }
 
     if (Android_Window) {
-        retval = SDL_SetError("Android only supports one window");
+        result = SDL_SetError("Android only supports one window");
         goto endfunction;
     }
 
@@ -65,14 +65,14 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        retval = -1;
+        result = SDL_FALSE;
         goto endfunction;
     }
 
     data->native_window = Android_JNI_GetNativeWindow();
     if (!data->native_window) {
         SDL_free(data);
-        retval = SDL_SetError("Could not fetch native window");
+        result = SDL_SetError("Could not fetch native window");
         goto endfunction;
     }
     SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, data->native_window);
@@ -86,7 +86,7 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         if (data->egl_surface == EGL_NO_SURFACE) {
             ANativeWindow_release(data->native_window);
             SDL_free(data);
-            retval = -1;
+            result = SDL_FALSE;
             goto endfunction;
         }
     }
@@ -100,7 +100,7 @@ endfunction:
 
     Android_UnlockActivityMutex();
 
-    return retval;
+    return result;
 }
 
 void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
@@ -108,7 +108,7 @@ void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
     Android_JNI_SetActivityTitle(window->title);
 }
 
-int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
+SDL_FullscreenResult Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     Android_LockActivityMutex();
 
@@ -157,7 +157,8 @@ int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 endfunction:
 
     Android_UnlockActivityMutex();
-    return 0;
+
+    return SDL_FULLSCREEN_SUCCEEDED;
 }
 
 void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)

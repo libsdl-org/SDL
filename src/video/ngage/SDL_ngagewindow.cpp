@@ -32,12 +32,12 @@ const TUint32 WindowClientHandle = 9210;
 void DisableKeyBlocking(SDL_VideoDevice *_this);
 void ConstructWindowL(SDL_VideoDevice *_this);
 
-int NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     NGAGE_Window *ngage_window = (NGAGE_Window *)SDL_calloc(1, sizeof(NGAGE_Window));
 
     if (!ngage_window) {
-        return -1;
+        return false;
     }
 
     window->internal = ngage_window;
@@ -54,7 +54,7 @@ int NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
 
     ConstructWindowL(_this);
 
-    return 0;
+    return true;
 }
 
 void NGAGE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)

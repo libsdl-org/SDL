@@ -46,7 +46,7 @@ static int (*JACK_jack_set_process_callback)(jack_client_t *, JackProcessCallbac
 static int (*JACK_jack_set_sample_rate_callback)(jack_client_t *, JackSampleRateCallback, void *);
 static int (*JACK_jack_set_buffer_size_callback)(jack_client_t *, JackBufferSizeCallback, void *);
 
-static int load_jack_syms(void);
+static bool load_jack_syms(void);
 
 #ifdef SDL_AUDIO_DRIVER_JACK_DYNAMIC
 
@@ -54,21 +54,21 @@ static const char *jack_library = SDL_AUDIO_DRIVER_JACK_DYNAMIC;
 static void *jack_handle = NULL;
 
 // !!! FIXME: this is copy/pasted in several places now
-static int load_jack_sym(const char *fn, void **addr)
+static bool load_jack_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(jack_handle, fn);
     if (!*addr) {
         // Don't call SDL_SetError(): SDL_LoadFunction already did.
-        return 0;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 // cast funcs to char* first, to please GCC's strict aliasing rules.
 #define SDL_JACK_SYM(x)                                 \
     if (!load_jack_sym(#x, (void **)(char *)&JACK_##x)) \
-    return -1
+        return false
 
 static void UnloadJackLibrary(void)
 {
@@ -78,22 +78,22 @@ static void UnloadJackLibrary(void)
     }
 }
 
-static int LoadJackLibrary(void)
+static bool LoadJackLibrary(void)
 {
-    int retval = 0;
+    bool result = true;
     if (!jack_handle) {
         jack_handle = SDL_LoadObject(jack_library);
         if (!jack_handle) {
-            retval = -1;
+            result = false;
             // Don't call SDL_SetError(): SDL_LoadObject already did.
         } else {
-            retval = load_jack_syms();
-            if (retval < 0) {
+            result = load_jack_syms();
+            if (!result) {
                 UnloadJackLibrary();
             }
         }
     }
-    return retval;
+    return result;
 }
 
 #else
@@ -104,15 +104,15 @@ static void UnloadJackLibrary(void)
 {
 }
 
-static int LoadJackLibrary(void)
+static bool LoadJackLibrary(void)
 {
     load_jack_syms();
-    return 0;
+    return true;
 }
 
 #endif // SDL_AUDIO_DRIVER_JACK_DYNAMIC
 
-static int load_jack_syms(void)
+static bool load_jack_syms(void)
 {
     SDL_JACK_SYM(jack_client_open);
     SDL_JACK_SYM(jack_client_close);
@@ -134,7 +134,7 @@ static int load_jack_syms(void)
     SDL_JACK_SYM(jack_set_sample_rate_callback);
     SDL_JACK_SYM(jack_set_buffer_size_callback);
 
-    return 0;
+    return true;
 }
 
 static void jackShutdownCallback(void *arg) // JACK went away; device is lost.
@@ -149,7 +149,7 @@ static int jackSampleRateCallback(jack_nframes_t nframes, void *arg)
     SDL_AudioSpec newspec;
     SDL_copyp(&newspec, &device->spec);
     newspec.freq = (int) nframes;
-    if (SDL_AudioDeviceFormatChanged(device, &newspec, device->sample_frames) < 0) {
+    if (!SDL_AudioDeviceFormatChanged(device, &newspec, device->sample_frames)) {
         SDL_AudioDeviceDisconnected(device);
     }
     return 0;
@@ -161,7 +161,7 @@ static int jackBufferSizeCallback(jack_nframes_t nframes, void *arg)
     SDL_AudioDevice *device = (SDL_AudioDevice *) arg;
     SDL_AudioSpec newspec;
     SDL_copyp(&newspec, &device->spec);
-    if (SDL_AudioDeviceFormatChanged(device, &newspec, (int) nframes) < 0) {
+    if (!SDL_AudioDeviceFormatChanged(device, &newspec, (int) nframes)) {
         SDL_AudioDeviceDisconnected(device);
     }
     return 0;
@@ -174,7 +174,7 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
     return 0;
 }
 
-static int JACK_PlayDevice(SDL_AudioDevice *device, const Uint8 *ui8buffer, int buflen)
+static bool JACK_PlayDevice(SDL_AudioDevice *device, const Uint8 *ui8buffer, int buflen)
 {
     const float *buffer = (float *) ui8buffer;
     jack_port_t **ports = device->hidden->sdlports;
@@ -193,7 +193,7 @@ static int JACK_PlayDevice(SDL_AudioDevice *device, const Uint8 *ui8buffer, int 
         }
     }
 
-    return 0;
+    return true;
 }
 
 static Uint8 *JACK_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -267,7 +267,7 @@ static const char *GetJackAppName(void)
     return SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
 }
 
-static int JACK_OpenDevice(SDL_AudioDevice *device)
+static bool JACK_OpenDevice(SDL_AudioDevice *device)
 {
     /* Note that JACK uses "output" for recording devices (they output audio
         data to us) and "input" for playback (we input audio data to them).
@@ -289,7 +289,7 @@ static int JACK_OpenDevice(SDL_AudioDevice *device)
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     client = JACK_jack_client_open(GetJackAppName(), JackNoStartServer, &status, NULL);
@@ -335,7 +335,7 @@ static int JACK_OpenDevice(SDL_AudioDevice *device)
         device->hidden->iobuffer = (float *)SDL_calloc(1, device->buffer_size);
         if (!device->hidden->iobuffer) {
             SDL_free(audio_ports);
-            return -1;
+            return false;
         }
     }
 
@@ -343,7 +343,7 @@ static int JACK_OpenDevice(SDL_AudioDevice *device)
     device->hidden->sdlports = (jack_port_t **)SDL_calloc(channels, sizeof(jack_port_t *));
     if (!device->hidden->sdlports) {
         SDL_free(audio_ports);
-        return -1;
+        return false;
     }
 
     for (i = 0; i < channels; i++) {
@@ -390,7 +390,7 @@ static int JACK_OpenDevice(SDL_AudioDevice *device)
     SDL_free(audio_ports);
 
     // We're ready to rock and roll. :-)
-    return 0;
+    return true;
 }
 
 static void JACK_Deinitialize(void)
@@ -400,7 +400,7 @@ static void JACK_Deinitialize(void)
 
 static bool JACK_Init(SDL_AudioDriverImpl *impl)
 {
-    if (LoadJackLibrary() < 0) {
+    if (!LoadJackLibrary()) {
         return false;
     } else {
         // Make sure a JACK server is running and available.
@@ -408,8 +408,7 @@ static bool JACK_Init(SDL_AudioDriverImpl *impl)
         jack_client_t *client = JACK_jack_client_open("SDL", JackNoStartServer, &status, NULL);
         if (!client) {
             UnloadJackLibrary();
-            SDL_SetError("Can't open JACK client");
-            return false;
+            return SDL_SetError("Can't open JACK client");
         }
         JACK_jack_client_close(client);
     }

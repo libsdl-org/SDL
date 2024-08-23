@@ -45,13 +45,13 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                                   SDL_Color c0, SDL_Color c1, SDL_Color c2, bool is_uniform, SDL_TextureAddressMode texture_address_mode);
 
 #if 0
-int SDL_BlitTriangle(SDL_Surface *src, const SDL_Point srcpoints[3], SDL_Surface *dst, const SDL_Point dstpoints[3])
+bool SDL_BlitTriangle(SDL_Surface *src, const SDL_Point srcpoints[3], SDL_Surface *dst, const SDL_Point dstpoints[3])
 {
     int i;
     SDL_Point points[6];
 
     if (src == NULL || dst == NULL) {
-        return -1;
+        return false;
     }
 
     for (i = 0; i < 3; i++) {
@@ -72,12 +72,12 @@ int SDL_BlitTriangle(SDL_Surface *src, const SDL_Point srcpoints[3], SDL_Surface
     return SDL_SW_BlitTriangle(src, dst, points);
 }
 
-int SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], Uint32 color)
+bool SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], Uint32 color)
 {
     int i;
     SDL_Point points_tmp[3];
     if (dst == NULL) {
-        return -1;
+        return false;
     }
     for (i = 0; i < 3; i++) {
         points_tmp[i] = points[i];
@@ -94,24 +94,24 @@ static Sint64 cross_product(const SDL_Point *a, const SDL_Point *b, int c_x, int
 }
 
 // check for top left rules
-static int is_top_left(const SDL_Point *a, const SDL_Point *b, int is_clockwise)
+static bool is_top_left(const SDL_Point *a, const SDL_Point *b, int is_clockwise)
 {
     if (is_clockwise) {
         if (a->y == b->y && a->x < b->x) {
-            return 1;
+            return true;
         }
         if (b->y < a->y) {
-            return 1;
+            return true;
         }
     } else {
         if (a->y == b->y && b->x < a->x) {
-            return 1;
+            return true;
         }
         if (a->y < b->y) {
-            return 1;
+            return true;
         }
     }
-    return 0;
+    return false;
 }
 
 // x = (y << FP_BITS)
@@ -223,9 +223,9 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
     }                     \
     }
 
-int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Point *d2, SDL_BlendMode blend, SDL_Color c0, SDL_Color c1, SDL_Color c2)
+bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Point *d2, SDL_BlendMode blend, SDL_Color c0, SDL_Color c1, SDL_Color c2)
 {
-    int ret = 0;
+    bool result = true;
     int dst_locked = 0;
 
     SDL_Rect dstrect;
@@ -246,7 +246,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
     SDL_Surface *tmp = NULL;
 
     if (!SDL_SurfaceValid(dst)) {
-        return -1;
+        return false;
     }
 
     area = cross_product(d0, d1, d2->x, d2->y);
@@ -255,13 +255,13 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
 
     // Flat triangle
     if (area == 0) {
-        return 0;
+        return true;
     }
 
     // Lock the destination, if needed
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
-            ret = -1;
+        if (!SDL_LockSurface(dst)) {
+            result = false;
             goto end;
         } else {
             dst_locked = 1;
@@ -298,7 +298,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
         // Use an intermediate surface
         tmp = SDL_CreateSurface(dstrect.w, dstrect.h, format);
         if (!tmp) {
-            ret = -1;
+            result = false;
             goto end;
         }
 
@@ -456,10 +456,10 @@ end:
         SDL_UnlockSurface(dst);
     }
 
-    return ret;
+    return result;
 }
 
-int SDL_SW_BlitTriangle(
+bool SDL_SW_BlitTriangle(
     SDL_Surface *src,
     SDL_Point *s0, SDL_Point *s1, SDL_Point *s2,
     SDL_Surface *dst,
@@ -467,8 +467,8 @@ int SDL_SW_BlitTriangle(
     SDL_Color c0, SDL_Color c1, SDL_Color c2,
     SDL_TextureAddressMode texture_address_mode)
 {
+    bool result = true;
     SDL_Surface *src_surface = src;
-    int ret = 0;
     int src_locked = 0;
     int dst_locked = 0;
 
@@ -509,13 +509,13 @@ int SDL_SW_BlitTriangle(
 
     // Flat triangle
     if (area == 0) {
-        return 0;
+        return true;
     }
 
     // Lock the destination, if needed
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
-            ret = -1;
+        if (!SDL_LockSurface(dst)) {
+            result = false;
             goto end;
         } else {
             dst_locked = 1;
@@ -524,8 +524,8 @@ int SDL_SW_BlitTriangle(
 
     // Lock the source, if needed
     if (SDL_MUSTLOCK(src)) {
-        if (SDL_LockSurface(src) < 0) {
-            ret = -1;
+        if (!SDL_LockSurface(src)) {
+            result = false;
             goto end;
         } else {
             src_locked = 1;
@@ -648,14 +648,14 @@ int SDL_SW_BlitTriangle(
     if (tmp64 >= INT_MIN && tmp64 <= INT_MAX) {
         s2_x_area.x = (int)tmp64;
     } else {
-        ret = SDL_SetError("triangle area overflow");
+        result = SDL_SetError("triangle area overflow");
         goto end;
     }
     tmp64 = s2->y * area;
     if (tmp64 >= INT_MIN && tmp64 <= INT_MAX) {
         s2_x_area.y = (int)tmp64;
     } else {
-        ret = SDL_SetError("triangle area overflow");
+        result = SDL_SetError("triangle area overflow");
         goto end;
     }
 
@@ -706,7 +706,7 @@ int SDL_SW_BlitTriangle(
 
 #define CHECK_INT_RANGE(X) \
     if ((X) < INT_MIN || (X) > INT_MAX) { \
-        ret = SDL_SetError("integer overflow (%s = %" SDL_PRIs64 ")", #X, X); \
+        result = SDL_SetError("integer overflow (%s = %" SDL_PRIs64 ")", #X, X); \
         goto end; \
     }
         CHECK_INT_RANGE(area);
@@ -765,7 +765,7 @@ end:
         SDL_UnlockSurface(src);
     }
 
-    return ret;
+    return result;
 }
 
 #define FORMAT_ALPHA                0

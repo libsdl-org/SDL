@@ -85,8 +85,7 @@ int main(int argc, char **argv)
     }
 
     /* Initialize the force feedbackness */
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK |
-             SDL_INIT_HAPTIC);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC);
     haptics = SDL_GetHaptics(&num_haptics);
     SDL_Log("%d Haptic devices detected.\n", num_haptics);
     if (num_haptics == 0) {
@@ -132,16 +131,16 @@ int main(int argc, char **argv)
     /* We only want force feedback errors. */
     SDL_ClearError();
 
-    if (SDL_HapticRumbleSupported(haptic) == SDL_FALSE) {
+    if (!SDL_HapticRumbleSupported(haptic)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Rumble not supported!\n");
         return 1;
     }
-    if (SDL_InitHapticRumble(haptic) < 0) {
+    if (!SDL_InitHapticRumble(haptic)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize rumble: %s\n", SDL_GetError());
         return 1;
     }
     SDL_Log("Playing 2 second rumble at 0.5 magnitude.\n");
-    if (SDL_PlayHapticRumble(haptic, 0.5, 5000) < 0) {
+    if (!SDL_PlayHapticRumble(haptic, 0.5, 5000)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError());
         return 1;
     }
@@ -150,7 +149,7 @@ int main(int argc, char **argv)
     SDL_StopHapticRumble(haptic);
     SDL_Delay(2000);
     SDL_Log("Playing 2 second rumble at 0.3 magnitude.\n");
-    if (SDL_PlayHapticRumble(haptic, 0.3f, 5000) < 0) {
+    if (!SDL_PlayHapticRumble(haptic, 0.3f, 5000)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError());
         return 1;
     }

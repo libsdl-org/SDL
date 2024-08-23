@@ -36,7 +36,7 @@ static Uint8 *EMSCRIPTENAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_
     return device->hidden->mixbuf;
 }
 
-static int EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     const int framelen = SDL_AUDIO_FRAMESIZE(device->spec);
     MAIN_THREAD_EM_ASM({
@@ -53,7 +53,7 @@ static int EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buff
             }
         }
     }, buffer, buffer_size / framelen);
-    return 0;
+    return true;
 }
 
 
@@ -138,12 +138,12 @@ static void EMSCRIPTENAUDIO_CloseDevice(SDL_AudioDevice *device)
 
 EM_JS_DEPS(sdlaudio, "$autoResumeAudioContext,$dynCall");
 
-static int EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     // based on parts of library_sdl.js
 
     // create context
-    const int result = MAIN_THREAD_EM_ASM_INT({
+    const bool result = MAIN_THREAD_EM_ASM_INT({
         if (typeof(Module['SDL3']) === 'undefined') {
             Module['SDL3'] = {};
         }
@@ -166,10 +166,10 @@ static int EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
                 }
             }
         }
-        return SDL3.audioContext === undefined ? -1 : 0;
+        return (SDL3.audioContext !== undefined);
     }, device->recording);
 
-    if (result < 0) {
+    if (!result) {
         return SDL_SetError("Web Audio API is not available!");
     }
 
@@ -178,7 +178,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     // limit to native freq
@@ -189,7 +189,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
     if (!device->recording) {
         device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
-            return -1;
+            return false;
         }
         SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
     }
@@ -294,7 +294,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
         }, device->spec.channels, device->sample_frames, SDL_PlaybackAudioThreadIterate, device);
     }
 
-    return 0;
+    return true;
 }
 
 static bool EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl *impl)

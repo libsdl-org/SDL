@@ -36,7 +36,7 @@
 #else
 #define SDL_DebugIMELog(...)
 #endif
-static int IME_Init(SDL_VideoData *videodata, SDL_Window *window);
+static bool IME_Init(SDL_VideoData *videodata, SDL_Window *window);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_SetTextInputArea(SDL_VideoData *videodata, HWND hwnd, const SDL_Rect *rect, int cursor);
@@ -208,7 +208,7 @@ void WIN_ResetDeadKeys(void)
     }
 }
 
-int WIN_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
+bool WIN_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     WIN_ResetDeadKeys();
 
@@ -221,10 +221,10 @@ int WIN_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
     WIN_UpdateTextInputArea(_this, window);
 #endif // !SDL_DISABLE_WINDOWS_IME
 
-    return 0;
+    return true;
 }
 
-int WIN_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+bool WIN_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     WIN_ResetDeadKeys();
 
@@ -235,26 +235,26 @@ int WIN_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
     IME_Disable(videodata, hwnd);
 #endif // !SDL_DISABLE_WINDOWS_IME
 
-    return 0;
+    return true;
 }
 
-int WIN_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
+bool WIN_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *videodata = _this->internal;
     SDL_WindowData *data = window->internal;
 
     IME_SetTextInputArea(videodata, data->hwnd, &window->text_input_rect, window->text_input_cursor);
-    return 0;
+    return true;
 }
 
-int WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
+bool WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_VideoData *videodata = _this->internal;
 
     IME_ClearComposition(videodata);
 #endif
-    return 0;
+    return true;
 }
 
 #ifdef SDL_DISABLE_WINDOWS_IME
@@ -313,12 +313,12 @@ static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex);
 static void IME_SendEditingEvent(SDL_VideoData *videodata);
 static void IME_SendClearComposition(SDL_VideoData *videodata);
 
-static int IME_Init(SDL_VideoData *videodata, SDL_Window *window)
+static bool IME_Init(SDL_VideoData *videodata, SDL_Window *window)
 {
     HWND hwnd = window->internal->hwnd;
 
     if (videodata->ime_initialized) {
-        return 0;
+        return true;
     }
 
     const char *hint = SDL_GetHint(SDL_HINT_IME_IMPLEMENTED_UI);
@@ -335,7 +335,7 @@ static int IME_Init(SDL_VideoData *videodata, SDL_Window *window)
     if (!videodata->ime_himm32) {
         videodata->ime_available = false;
         SDL_ClearError();
-        return 0;
+        return true;
     }
     /* *INDENT-OFF* */ // clang-format off
     videodata->ImmLockIMC = (LPINPUTCONTEXT2 (WINAPI *)(HIMC))SDL_LoadFunction(videodata->ime_himm32, "ImmLockIMC");
@@ -350,14 +350,14 @@ static int IME_Init(SDL_VideoData *videodata, SDL_Window *window)
     if (!videodata->ime_himc) {
         videodata->ime_available = false;
         IME_Disable(videodata, hwnd);
-        return 0;
+        return true;
     }
     videodata->ime_available = true;
     IME_UpdateInputLocale(videodata);
     IME_SetupAPI(videodata);
     IME_UpdateInputLocale(videodata);
     IME_Disable(videodata, hwnd);
-    return 0;
+    return true;
 }
 
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd)
@@ -875,11 +875,11 @@ static void IME_SendClearComposition(SDL_VideoData *videodata)
     }
 }
 
-static int IME_OpenCandidateList(SDL_VideoData *videodata)
+static bool IME_OpenCandidateList(SDL_VideoData *videodata)
 {
     videodata->ime_candidates_open = true;
     videodata->ime_candcount = 0;
-    return 0;
+    return true;
 }
 
 static void IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
@@ -932,7 +932,7 @@ static void IME_GetCandidateList(SDL_VideoData *videodata, HWND hwnd)
             if (cand_list != NULL) {
                 size = ImmGetCandidateListW(himc, 0, cand_list, size);
                 if (size != 0) {
-                    if (IME_OpenCandidateList(videodata) == 0) {
+                    if (IME_OpenCandidateList(videodata)) {
                         UINT i, j;
                         UINT page_start = 0;
                         UINT page_size = 0;

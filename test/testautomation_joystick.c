@@ -23,7 +23,7 @@ static int TestVirtualJoystick(void *arg)
     SDL_Gamepad *gamepad = NULL;
     SDL_JoystickID device_id;
 
-    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD) == 0, "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD), "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
 
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 
@@ -86,11 +86,11 @@ static int TestVirtualJoystick(void *arg)
                 SDLTest_AssertCheck(nbuttons == desc.nbuttons, "SDL_GetNumJoystickButtons() -> %d (expected %d)", nbuttons, desc.nbuttons);
             }
 
-            SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED)");
+            SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED), "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED)");
             SDL_UpdateJoysticks();
             SDLTest_AssertCheck(SDL_GetJoystickButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_PRESSED, "SDL_GetJoystickButton(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_PRESSED");
 
-            SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED)");
+            SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED), "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED)");
             SDL_UpdateJoysticks();
             SDLTest_AssertCheck(SDL_GetJoystickButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_RELEASED, "SDL_GetJoystickButton(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_RELEASED");
 
@@ -124,11 +124,11 @@ static int TestVirtualJoystick(void *arg)
                 SDLTest_AssertCheck(SDL_GetGamepadButtonLabel(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_A, "SDL_GetGamepadButtonLabel(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_A");
 
                 /* Set the south button and verify that the gamepad responds */
-                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED) == 0");
+                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED), "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED)");
                 SDL_UpdateJoysticks();
                 SDLTest_AssertCheck(SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_PRESSED, "SDL_GetGamepadButton(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_PRESSED");
 
-                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED) == 0");
+                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED), "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED)");
                 SDL_UpdateJoysticks();
                 SDLTest_AssertCheck(SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_RELEASED, "SDL_GetGamepadButton(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_RELEASED");
 
@@ -141,11 +141,11 @@ static int TestVirtualJoystick(void *arg)
                 SDLTest_AssertCheck(SDL_GetGamepadButtonLabel(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_B, "SDL_GetGamepadButtonLabel(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_B");
 
                 /* Set the south button and verify that the gamepad responds */
-                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED) == 0");
+                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED), "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED)");
                 SDL_UpdateJoysticks();
                 SDLTest_AssertCheck(SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_PRESSED, "SDL_GetGamepadButton(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_PRESSED");
 
-                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED) == 0");
+                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED), "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED)");
                 SDL_UpdateJoysticks();
                 SDLTest_AssertCheck(SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_RELEASED, "SDL_GetGamepadButton(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_RELEASED");
 
@@ -158,11 +158,11 @@ static int TestVirtualJoystick(void *arg)
                 SDLTest_AssertCheck(SDL_GetGamepadButtonLabel(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_CROSS, "SDL_GetGamepadButtonLabel(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_CROSS");
 
                 /* Set the south button and verify that the gamepad responds */
-                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED) == 0");
+                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED), "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_PRESSED)");
                 SDL_UpdateJoysticks();
                 SDLTest_AssertCheck(SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_PRESSED, "SDL_GetGamepadButton(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_PRESSED");
 
-                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED) == 0, "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED) == 0");
+                SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED), "SDL_SetJoystickVirtualButton(SDL_GAMEPAD_BUTTON_SOUTH, SDL_RELEASED)");
                 SDL_UpdateJoysticks();
                 SDLTest_AssertCheck(SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_RELEASED, "SDL_GetGamepadButton(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_RELEASED");
 
@@ -171,7 +171,7 @@ static int TestVirtualJoystick(void *arg)
 
             SDL_CloseJoystick(joystick);
         }
-        SDLTest_AssertCheck(SDL_DetachVirtualJoystick(device_id) == 0, "SDL_DetachVirtualJoystick()");
+        SDLTest_AssertCheck(SDL_DetachVirtualJoystick(device_id), "SDL_DetachVirtualJoystick()");
     }
     SDLTest_AssertCheck(!SDL_IsJoystickVirtual(device_id), "!SDL_IsJoystickVirtual()");
 

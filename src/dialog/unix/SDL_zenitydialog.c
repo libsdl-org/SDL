@@ -407,7 +407,7 @@ void SDL_Zenity_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* user
     SDL_DetachThread(thread);
 }
 
-int SDL_Zenity_detect(void)
+bool SDL_Zenity_detect(void)
 {
     pid_t process;
     int status = -1;
@@ -416,7 +416,7 @@ int SDL_Zenity_detect(void)
 
     if (process < 0) {
         SDL_SetError("Could not fork process: %s", strerror(errno));
-        return 0;
+        return false;
     } else if (process == 0){
         // Disable output
         close(STDERR_FILENO);
@@ -426,13 +426,13 @@ int SDL_Zenity_detect(void)
     } else {
         if (waitpid(process, &status, 0) == -1) {
             SDL_SetError("waitpid failed");
-            return 0;
+            return false;
         }
 
         if (WIFEXITED(status)) {
             status = WEXITSTATUS(status);
         }
 
-        return !status;
+        return (status == 0);
     }
 }

@@ -68,16 +68,16 @@ extern void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id);
 extern void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handle, void *userdata), void *userdata);
 
 // Backend calls this when a pen's button changes, to generate events and update state.
-extern int SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 eraser);
+extern void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 eraser);
 
 // Backend calls this when a pen moves on the tablet, to generate events and update state.
-extern int SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, float x, float y);
+extern void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, float x, float y);
 
 // Backend calls this when a pen's axis changes, to generate events and update state.
-extern int SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, SDL_PenAxis axis, float value);
+extern void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, SDL_PenAxis axis, float value);
 
 // Backend calls this when a pen's button changes, to generate events and update state.
-extern int SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 button);
+extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 button);
 
 // Backend can optionally use this to find the SDL_PenID for the `handle` that was passed to SDL_AddPenDevice.
 extern SDL_PenID SDL_FindPenByHandle(void *handle);
@@ -89,7 +89,7 @@ extern SDL_PenID SDL_FindPenByCallback(bool (*callback)(void *handle, void *user
 SDL_PenCapabilityFlags SDL_GetPenCapabilityFromAxis(SDL_PenAxis axis);
 
 // Higher-level SDL video subsystem code calls this when starting up. Backends shouldn't.
-extern int SDL_InitPen(void);
+extern bool SDL_InitPen(void);
 
 // Higher-level SDL video subsystem code calls this when shutting down. Backends shouldn't.
 extern void SDL_QuitPen(void);

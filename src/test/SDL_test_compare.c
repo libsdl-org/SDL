@@ -79,14 +79,14 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
             int temp;
 
             temp = SDL_ReadSurfacePixel(surface, i, j, &R, &G, &B, &A);
-            if (temp != 0) {
+            if (!temp) {
                 SDLTest_LogError("Failed to retrieve pixel (%d,%d): %s", i, j, SDL_GetError());
                 ret++;
                 continue;
             }
 
             temp = SDL_ReadSurfacePixel(referenceSurface, i, j, &Rd, &Gd, &Bd, &Ad);
-            if (temp != 0) {
+            if (!temp) {
                 SDLTest_LogError("Failed to retrieve reference pixel (%d,%d): %s", i, j, SDL_GetError());
                 ret++;
                 continue;

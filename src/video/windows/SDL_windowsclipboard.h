@@ -26,7 +26,7 @@
 // Forward declaration
 struct SDL_VideoData;
 
-extern int WIN_SetClipboardData(SDL_VideoDevice *_this);
+extern bool WIN_SetClipboardData(SDL_VideoDevice *_this);
 extern void *WIN_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *size);
 extern bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
 extern void WIN_CheckClipboardUpdate(struct SDL_VideoData *data);

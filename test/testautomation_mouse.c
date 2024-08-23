@@ -402,7 +402,7 @@ static int mouse_getSetRelativeMouseMode(void *arg)
         /* Disable - should always be supported */
         result = SDL_SetWindowRelativeMouseMode(window, SDL_FALSE);
         SDLTest_AssertPass("Call to SDL_SetWindowRelativeMouseMode(window, FALSE)");
-        SDLTest_AssertCheck(result == 0, "Validate result value from SDL_SetWindowRelativeMouseMode, expected: 0, got: %i", result);
+        SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value from SDL_SetWindowRelativeMouseMode, expected: SDL_TRUE, got: %i", result);
         currentState = SDL_GetWindowRelativeMouseMode(window);
         SDLTest_AssertPass("Call to SDL_GetWindowRelativeMouseMode(window)");
         SDLTest_AssertCheck(currentState == SDL_FALSE, "Validate current state is FALSE, got: %i", currentState);
@@ -414,7 +414,7 @@ static int mouse_getSetRelativeMouseMode(void *arg)
         result = SDL_SetWindowRelativeMouseMode(window, SDL_TRUE);
         SDLTest_AssertPass("Call to SDL_SetWindowRelativeMouseMode(window, TRUE)");
         if (result != -1) {
-            SDLTest_AssertCheck(result == 0, "Validate result value from SDL_SetWindowRelativeMouseMode, expected: 0, got: %i", result);
+            SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value from SDL_SetWindowRelativeMouseMode, expected: SDL_TRUE, got: %i", result);
             currentState = SDL_GetWindowRelativeMouseMode(window);
             SDLTest_AssertPass("Call to SDL_GetWindowRelativeMouseMode(window)");
             SDLTest_AssertCheck(currentState == SDL_TRUE, "Validate current state is TRUE, got: %i", currentState);
@@ -424,7 +424,7 @@ static int mouse_getSetRelativeMouseMode(void *arg)
     /* Disable to check E->D transition */
     result = SDL_SetWindowRelativeMouseMode(window, SDL_FALSE);
     SDLTest_AssertPass("Call to SDL_SetWindowRelativeMouseMode(window, FALSE)");
-    SDLTest_AssertCheck(result == 0, "Validate result value from SDL_SetWindowRelativeMouseMode, expected: 0, got: %i", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value from SDL_SetWindowRelativeMouseMode, expected: SDL_TRUE, got: %i", result);
     currentState = SDL_GetWindowRelativeMouseMode(window);
     SDLTest_AssertPass("Call to SDL_GetWindowRelativeMouseMode(window)");
     SDLTest_AssertCheck(currentState == SDL_FALSE, "Validate current state is FALSE, got: %i", currentState);

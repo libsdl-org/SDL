@@ -262,7 +262,7 @@ static void loadInstanceFunctions(void)
 
 static void createSurface(void)
 {
-    if (SDL_Vulkan_CreateSurface(vulkanContext->window, vulkanContext->instance, NULL, &vulkanContext->surface) < 0) {
+    if (!SDL_Vulkan_CreateSurface(vulkanContext->window, vulkanContext->instance, NULL, &vulkanContext->surface)) {
         vulkanContext->surface = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Vulkan_CreateSurface(): %s\n", SDL_GetError());
         quit(2);
@@ -1007,7 +1007,7 @@ static void shutdownVulkan(SDL_bool doDestroySwapchain)
 static SDL_bool render(void)
 {
     uint32_t frameIndex;
-    VkResult result;
+    VkResult rc;
     double currentTime;
     VkClearColorValue clearColor = { { 0 } };
     VkPipelineStageFlags waitDestStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -1016,36 +1016,36 @@ static SDL_bool render(void)
     int w, h;
 
     if (!vulkanContext->swapchain) {
-        SDL_bool retval = createNewSwapchainAndSwapchainSpecificStuff();
-        if (!retval) {
+        SDL_bool result = createNewSwapchainAndSwapchainSpecificStuff();
+        if (!result) {
             SDL_Delay(100);
         }
-        return retval;
+        return result;
     }
-    result = vkAcquireNextImageKHR(vulkanContext->device,
-                                   vulkanContext->swapchain,
-                                   UINT64_MAX,
-                                   vulkanContext->imageAvailableSemaphore,
-                                   VK_NULL_HANDLE,
-                                   &frameIndex);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+    rc = vkAcquireNextImageKHR(vulkanContext->device,
+                               vulkanContext->swapchain,
+                               UINT64_MAX,
+                               vulkanContext->imageAvailableSemaphore,
+                               VK_NULL_HANDLE,
+                               &frameIndex);
+    if (rc == VK_ERROR_OUT_OF_DATE_KHR) {
         return createNewSwapchainAndSwapchainSpecificStuff();
     }
 
-    if ((result != VK_SUBOPTIMAL_KHR) && (result != VK_SUCCESS)) {
+    if ((rc != VK_SUBOPTIMAL_KHR) && (rc != VK_SUCCESS)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "vkAcquireNextImageKHR(): %s\n",
-                     getVulkanResultString(result));
+                     getVulkanResultString(rc));
         quit(2);
     }
-    result = vkWaitForFences(vulkanContext->device, 1, &vulkanContext->fences[frameIndex], VK_FALSE, UINT64_MAX);
-    if (result != VK_SUCCESS) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkWaitForFences(): %s\n", getVulkanResultString(result));
+    rc = vkWaitForFences(vulkanContext->device, 1, &vulkanContext->fences[frameIndex], VK_FALSE, UINT64_MAX);
+    if (rc != VK_SUCCESS) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkWaitForFences(): %s\n", getVulkanResultString(rc));
         quit(2);
     }
-    result = vkResetFences(vulkanContext->device, 1, &vulkanContext->fences[frameIndex]);
-    if (result != VK_SUCCESS) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkResetFences(): %s\n", getVulkanResultString(result));
+    rc = vkResetFences(vulkanContext->device, 1, &vulkanContext->fences[frameIndex]);
+    if (rc != VK_SUCCESS) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkResetFences(): %s\n", getVulkanResultString(rc));
         quit(2);
     }
     currentTime = (double)SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency();
@@ -1062,10 +1062,10 @@ static SDL_bool render(void)
     submitInfo.pCommandBuffers = &vulkanContext->commandBuffers[frameIndex];
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &vulkanContext->renderingFinishedSemaphore;
-    result = vkQueueSubmit(vulkanContext->graphicsQueue, 1, &submitInfo, vulkanContext->fences[frameIndex]);
+    rc = vkQueueSubmit(vulkanContext->graphicsQueue, 1, &submitInfo, vulkanContext->fences[frameIndex]);
 
-    if (result != VK_SUCCESS) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkQueueSubmit(): %s\n", getVulkanResultString(result));
+    if (rc != VK_SUCCESS) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkQueueSubmit(): %s\n", getVulkanResultString(rc));
         quit(2);
     }
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -1074,15 +1074,15 @@ static SDL_bool render(void)
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &vulkanContext->swapchain;
     presentInfo.pImageIndices = &frameIndex;
-    result = vkQueuePresentKHR(vulkanContext->presentQueue, &presentInfo);
-    if ((result == VK_ERROR_OUT_OF_DATE_KHR) || (result == VK_SUBOPTIMAL_KHR)) {
+    rc = vkQueuePresentKHR(vulkanContext->presentQueue, &presentInfo);
+    if ((rc == VK_ERROR_OUT_OF_DATE_KHR) || (rc == VK_SUBOPTIMAL_KHR)) {
         return createNewSwapchainAndSwapchainSpecificStuff();
     }
 
-    if (result != VK_SUCCESS) {
+    if (rc != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "vkQueuePresentKHR(): %s\n",
-                     getVulkanResultString(result));
+                     getVulkanResultString(rc));
         quit(2);
     }
     SDL_GetWindowSizeInPixels(vulkanContext->window, &w, &h);

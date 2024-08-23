@@ -623,7 +623,7 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
         if (sws_container->context) {
             uint8_t *pixels[4];
             int pitch[4];
-            if (SDL_LockTexture(*texture, NULL, (void **)&pixels[0], &pitch[0]) == 0) {
+            if (SDL_LockTexture(*texture, NULL, (void **)&pixels[0], &pitch[0])) {
                 sws_scale(sws_container->context, (const uint8_t *const *)frame->data, frame->linesize, 0, frame->height, pixels, pitch);
                 SDL_UnlockTexture(*texture);
             }
@@ -1166,7 +1166,7 @@ static AVCodecContext *OpenAudioStream(AVFormatContext *ic, int stream, const AV
     SDL_AudioSpec spec = { SDL_AUDIO_F32, codecpar->ch_layout.nb_channels, codecpar->sample_rate };
     audio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
     if (audio) {
-        SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audio));
+        SDL_ResumeAudioStreamDevice(audio);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s", SDL_GetError());
     }
@@ -1366,7 +1366,7 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO)) {
         return_code = 2;
         goto quit;
     }
@@ -1403,7 +1403,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (SDL_SetWindowTitle(window, file) < 0) {
+    if (!SDL_SetWindowTitle(window, file)) {
         SDL_Log("SDL_SetWindowTitle: %s", SDL_GetError());
     }
 

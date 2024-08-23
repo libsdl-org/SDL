@@ -23,7 +23,7 @@
 #include "../SDL_sysurl.h"
 #include "../../core/android/SDL_android.h"
 
-int SDL_SYS_OpenURL(const char *url)
+bool SDL_SYS_OpenURL(const char *url)
 {
     return Android_JNI_OpenURL(url);
 }

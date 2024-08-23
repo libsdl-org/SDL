@@ -5,7 +5,7 @@
 int main(int argc, char *argv[])
 {
     SDL_SetMainReady();
-    if (SDL_Init(0) < 0) {
+    if (!SDL_Init(0)) {
         SDL_Log("Could not initialize SDL: %s\n", SDL_GetError());
         return 1;
     }

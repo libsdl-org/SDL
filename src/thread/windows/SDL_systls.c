@@ -65,7 +65,7 @@ SDL_TLSData *SDL_SYS_GetTLSData(void)
     return NULL;
 }
 
-int SDL_SYS_SetTLSData(SDL_TLSData *data)
+bool SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
     if (generic_local_storage) {
         return SDL_Generic_SetTLSData(data);
@@ -74,7 +74,7 @@ int SDL_SYS_SetTLSData(SDL_TLSData *data)
     if (!TlsSetValue(thread_local_storage, data)) {
         return WIN_SetError("TlsSetValue()");
     }
-    return 0;
+    return true;
 }
 
 void SDL_SYS_QuitTLSData(void)

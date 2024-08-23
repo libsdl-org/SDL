@@ -29,7 +29,7 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
     size_t alloclen;
     char *ptr;
     SDL_Locale *loc;
-    SDL_Locale **retval;
+    SDL_Locale **result;
 
     if (count) {
         *count = 0;
@@ -52,16 +52,16 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
     slen = ((size_t)(ptr - csv)) + 1; // SDL_strlen(csv) + 1
     alloclen = ((num_locales + 1) * sizeof(SDL_Locale *)) + (num_locales * sizeof(SDL_Locale)) + slen;
 
-    retval = (SDL_Locale **)SDL_calloc(1, alloclen);
-    if (!retval) {
+    result = (SDL_Locale **)SDL_calloc(1, alloclen);
+    if (!result) {
         return NULL; // oh well
     }
-    loc = (SDL_Locale *)(retval + (num_locales + 1));
+    loc = (SDL_Locale *)(result + (num_locales + 1));
     ptr = (char *)(loc + num_locales);
     SDL_memcpy(ptr, csv, slen);
 
     i = 0;
-    retval[i++] = loc;
+    result[i++] = loc;
     while (true) { // parse out the string
         while (SDL_isspace(*ptr)) {
             ptr++; // skip whitespace.
@@ -81,7 +81,7 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
             } else if (ch == ',') {
                 *(ptr++) = '\0';
                 loc++;
-                retval[i++] = loc;
+                result[i++] = loc;
                 break;
             } else if (ch == '\0') {
                 break;
@@ -95,7 +95,7 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
         *count = num_locales;
     }
 
-    return retval;
+    return result;
 }
 
 SDL_Locale **SDL_GetPreferredLocales(int *count)

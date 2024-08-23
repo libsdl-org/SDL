@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-extern int SDL_InitProperties(void);
-extern int SDL_SetFreeableProperty(SDL_PropertiesID props, const char *name, void *value);
-extern int SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surface *surface);
-extern int SDL_DumpProperties(SDL_PropertiesID props);
+extern bool SDL_InitProperties(void);
+extern bool SDL_SetFreeableProperty(SDL_PropertiesID props, const char *name, void *value);
+extern bool SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surface *surface);
+extern bool SDL_DumpProperties(SDL_PropertiesID props);
 extern void SDL_QuitProperties(void);

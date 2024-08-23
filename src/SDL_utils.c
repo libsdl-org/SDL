@@ -53,6 +53,14 @@ int SDL_powerof2(int x)
     return value;
 }
 
+Uint32 SDL_CalculateGCD(Uint32 a, Uint32 b)
+{
+    if (b == 0) {
+        return a;
+    }
+    return SDL_CalculateGCD(b, (a % b));
+}
+
 // Algorithm adapted with thanks from John Cook's blog post:
 // http://www.johndcook.com/blog/2010/10/20/best-rational-approximation
 void SDL_CalculateFraction(float x, int *numerator, int *denominator)
@@ -90,6 +98,14 @@ void SDL_CalculateFraction(float x, int *numerator, int *denominator)
         *numerator = a;
         *denominator = b;
     }
+}
+
+bool SDL_startswith(const char *string, const char *prefix)
+{
+    if (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0) {
+        return true;
+    }
+    return false;
 }
 
 bool SDL_endswith(const char *string, const char *suffix)
@@ -352,8 +368,8 @@ const char *SDL_GetPersistentString(const char *string)
         SDL_SetTLS(&SDL_string_storage, strings, SDL_FreePersistentStrings);
     }
 
-    const char *retval;
-    if (!SDL_FindInHashTable(strings, string, (const void **)&retval)) {
+    const char *result;
+    if (!SDL_FindInHashTable(strings, string, (const void **)&result)) {
         char *new_string = SDL_strdup(string);
         if (!new_string) {
             return NULL;
@@ -361,7 +377,7 @@ const char *SDL_GetPersistentString(const char *string)
 
         // If the hash table insert fails, at least we can return the string we allocated
         SDL_InsertIntoHashTable(strings, new_string, new_string);
-        retval = new_string;
+        result = new_string;
     }
-    return retval;
+    return result;
 }

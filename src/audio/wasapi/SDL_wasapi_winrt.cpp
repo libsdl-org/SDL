@@ -214,9 +214,9 @@ void SDL_WasapiDeviceEventHandler::WaitForCompletion()
 static SDL_WasapiDeviceEventHandler *playback_device_event_handler;
 static SDL_WasapiDeviceEventHandler *recording_device_event_handler;
 
-int WASAPI_PlatformInit(void)
+bool WASAPI_PlatformInit(void)
 {
-    return 0;
+    return true;
 }
 
 static void StopWasapiHotplug(void)
@@ -292,7 +292,7 @@ void WASAPI_PlatformDeleteActivationHandler(void *handler)
     ((SDL_WasapiActivationHandler *)handler)->Release();
 }
 
-int WASAPI_ActivateDevice(SDL_AudioDevice *device)
+bool WASAPI_ActivateDevice(SDL_AudioDevice *device)
 {
     LPCWSTR devid = (LPCWSTR) device->handle;
     SDL_assert(devid != NULL);
@@ -334,11 +334,11 @@ int WASAPI_ActivateDevice(SDL_AudioDevice *device)
         return SDL_SetError("Failed to query WASAPI client interface");
     }
 
-    if (WASAPI_PrepDevice(device) == -1) {
-        return -1;
+    if (!WASAPI_PrepDevice(device)) {
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 void WASAPI_PlatformThreadInit(SDL_AudioDevice *device)

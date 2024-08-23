@@ -38,7 +38,8 @@ SDL_EventCategory SDL_GetEventCategory(Uint32 type)
     }
     switch (type) {
     default:
-        return SDL_SetError("Unknown event type");
+        SDL_SetError("Unknown event type");
+        return SDL_EVENTCATEGORY_UNKNOWN;
 
     case SDL_EVENT_KEYMAP_CHANGED:
     case SDL_EVENT_TERMINATING:

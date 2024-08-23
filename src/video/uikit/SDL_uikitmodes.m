@@ -99,7 +99,7 @@
 #endif
 
 #ifndef SDL_PLATFORM_VISIONOS
-static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
+static bool UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
                                          UIScreenMode *uiscreenmode)
 {
     SDL_UIKitDisplayModeData *data = nil;
@@ -116,7 +116,7 @@ static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
 
     mode->internal = (void *)CFBridgingRetain(data);
 
-    return 0;
+    return true;
 }
 #endif
 
@@ -139,14 +139,14 @@ static float UIKit_GetDisplayModeRefreshRate(UIScreen *uiscreen)
     return 0.0f;
 }
 
-static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
+static bool UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
                                       UIScreen *uiscreen, UIScreenMode *uiscreenmode)
 {
     SDL_DisplayMode mode;
 
     SDL_zero(mode);
-    if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
-        return -1;
+    if (!UIKit_AllocateDisplayModeData(&mode, uiscreenmode)) {
+        return false;
     }
 
     mode.w = w;
@@ -156,28 +156,28 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     if (SDL_AddFullscreenDisplayMode(display, &mode)) {
-        return 0;
+        return true;
     } else {
         UIKit_FreeDisplayModeData(&mode);
-        return -1;
+        return false;
     }
 }
 
-static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h,
+static bool UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h,
                                 UIScreen *uiscreen, UIScreenMode *uiscreenmode, bool addRotation)
 {
-    if (UIKit_AddSingleDisplayMode(display, w, h, uiscreen, uiscreenmode) < 0) {
-        return -1;
+    if (!UIKit_AddSingleDisplayMode(display, w, h, uiscreen, uiscreenmode)) {
+        return false;
     }
 
     if (addRotation) {
         // Add the rotated version
-        if (UIKit_AddSingleDisplayMode(display, h, w, uiscreen, uiscreenmode) < 0) {
-            return -1;
+        if (!UIKit_AddSingleDisplayMode(display, h, w, uiscreen, uiscreenmode)) {
+            return false;
         }
     }
 
-    return 0;
+    return true;
 }
 
 static CGSize GetUIScreenModeSize(UIScreen *uiscreen, UIScreenMode *mode)
@@ -203,7 +203,7 @@ static CGSize GetUIScreenModeSize(UIScreen *uiscreen, UIScreenMode *mode)
     return size;
 }
 
-int UIKit_AddDisplay(UIScreen *uiscreen, bool send_event)
+bool UIKit_AddDisplay(UIScreen *uiscreen, bool send_event)
 {
     UIScreenMode *uiscreenmode = uiscreen.currentMode;
     CGSize size = GetUIScreenModeSize(uiscreen, uiscreenmode);
@@ -224,8 +224,8 @@ int UIKit_AddDisplay(UIScreen *uiscreen, bool send_event)
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
 
-    if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
-        return -1;
+    if (!UIKit_AllocateDisplayModeData(&mode, uiscreenmode)) {
+        return false;
     }
 
     SDL_zero(display);
@@ -268,14 +268,14 @@ int UIKit_AddDisplay(UIScreen *uiscreen, bool send_event)
 
     display.internal = (SDL_DisplayData *)CFBridgingRetain(data);
     if (SDL_AddVideoDisplay(&display, send_event) == 0) {
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 #endif
 
 #ifdef SDL_PLATFORM_VISIONOS
-int UIKit_AddDisplay(bool send_event){
+bool UIKit_AddDisplay(bool send_event){
     CGSize size = CGSizeMake(SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
@@ -300,9 +300,9 @@ int UIKit_AddDisplay(bool send_event){
 
     display.internal = (SDL_DisplayData *)CFBridgingRetain(data);
     if (SDL_AddVideoDisplay(&display, send_event) == 0) {
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 #endif
 
@@ -343,15 +343,15 @@ bool UIKit_IsDisplayLandscape(UIScreen *uiscreen)
     }
 }
 #endif
-int UIKit_InitModes(SDL_VideoDevice *_this)
+bool UIKit_InitModes(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
 #ifdef SDL_PLATFORM_VISIONOS
         UIKit_AddDisplay(false);
 #else
         for (UIScreen *uiscreen in [UIScreen screens]) {
-            if (UIKit_AddDisplay(uiscreen, false) < 0) {
-                return -1;
+            if (!UIKit_AddDisplay(uiscreen, false)) {
+                return false;
             }
         }
 #endif
@@ -365,10 +365,10 @@ int UIKit_InitModes(SDL_VideoDevice *_this)
 #endif
     }
 
-    return 0;
+    return true;
 }
 
-int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+bool UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
 #ifndef SDL_PLATFORM_VISIONOS
     @autoreleasepool {
@@ -401,10 +401,10 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
         }
     }
 #endif
-    return 0;
+    return true;
 }
 
-int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+bool UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
 #ifndef SDL_PLATFORM_VISIONOS
     @autoreleasepool {
@@ -431,10 +431,10 @@ int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
         }
     }
 #endif
-    return 0;
+    return true;
 }
 
-int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+bool UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     @autoreleasepool {
         SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
@@ -446,8 +446,8 @@ int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
 
         /* the default function iterates displays to make a fake offset,
          as if all the displays were side-by-side, which is fine for iOS. */
-        if (SDL_GetDisplayBounds(display->id, rect) < 0) {
-            return -1;
+        if (!SDL_GetDisplayBounds(display->id, rect)) {
+            return false;
         }
 
         rect->x += (int)frame.origin.x;
@@ -456,7 +456,7 @@ int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
         rect->h = (int)frame.size.height;
     }
 
-    return 0;
+    return true;
 }
 
 void UIKit_QuitModes(SDL_VideoDevice *_this)

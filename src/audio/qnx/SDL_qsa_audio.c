@@ -52,7 +52,7 @@
 
 #define QSA_MAX_NAME_LENGTH   81+16     // Hardcoded in QSA, can't be changed
 
-static int QSA_SetError(const char *fn, int status)
+static bool QSA_SetError(const char *fn, int status)
 {
     return SDL_SetError("QSA: %s() failed: %s", fn, snd_strerror(status));
 }
@@ -86,7 +86,7 @@ static void QSA_InitAudioParams(snd_pcm_channel_params_t * cpars)
 }
 
 // This function waits until it is possible to write a full sound buffer
-static int QSA_WaitDevice(SDL_AudioDevice *device)
+static bool QSA_WaitDevice(SDL_AudioDevice *device)
 {
     // Setup timeout for playing one fragment equal to 2 seconds
     // If timeout occurred than something wrong with hardware or driver
@@ -98,7 +98,7 @@ static int QSA_WaitDevice(SDL_AudioDevice *device)
     switch (result) {
     case -1:
         SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "QSA: SDL_IOReady() failed: %s", strerror(errno));
-        return -1;
+        return false;
     case 0:
         device->hidden->timeout_on_wait = true;  // !!! FIXME: Should we just disconnect the device in this case?
         break;
@@ -107,13 +107,13 @@ static int QSA_WaitDevice(SDL_AudioDevice *device)
         break;
     }
 
-    return 0;
+    return true;
 }
 
-static int QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     if (SDL_AtomicGet(&device->shutdown) || !device->hidden) {
-        return 0;
+        return true;
     }
 
     int towrite = buflen;
@@ -125,7 +125,7 @@ static int QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bufl
             // Check if samples playback got stuck somewhere in hardware or in the audio device driver
             if ((errno == EAGAIN) && (bw == 0)) {
                 if (device->hidden->timeout_on_wait) {
-                    return 0;  // oh well, try again next time.  !!! FIXME: Should we just disconnect the device in this case?
+                    return true;  // oh well, try again next time.  !!! FIXME: Should we just disconnect the device in this case?
                 }
             }
 
@@ -145,17 +145,17 @@ static int QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bufl
                 int status = snd_pcm_plugin_status(device->hidden->audio_handle, &cstatus);
                 if (status < 0) {
                     QSA_SetError("snd_pcm_plugin_status", status);
-                    return -1;
+                    return false;
                 } else if ((cstatus.status == SND_PCM_STATUS_UNDERRUN) || (cstatus.status == SND_PCM_STATUS_READY)) {
                     status = snd_pcm_plugin_prepare(device->hidden->audio_handle, device->recording ? SND_PCM_CHANNEL_CAPTURE : SND_PCM_CHANNEL_PLAYBACK);
                     if (status < 0) {
                         QSA_SetError("snd_pcm_plugin_prepare", status);
-                        return -1;
+                        return false;
                     }
                 }
                 continue;
             } else {
-                return -1;
+                return false;
             }
         } else {
             // we wrote all remaining data
@@ -165,7 +165,7 @@ static int QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bufl
     }
 
     // If we couldn't write, assume fatal error for now
-    return (towrite != 0) ? -1 : 0;
+    return (towrite == 0);
 }
 
 static Uint8 *QSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -190,7 +190,7 @@ static void QSA_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
-static int QSA_OpenDevice(SDL_AudioDevice *device)
+static bool QSA_OpenDevice(SDL_AudioDevice *device)
 {
     if (device->recording) {
         return SDL_SetError("SDL recording support isn't available on QNX atm"); // !!! FIXME: most of this code has support for recording devices, but there's no RecordDevice, etc functions. Fill them in!
@@ -206,7 +206,7 @@ static int QSA_OpenDevice(SDL_AudioDevice *device)
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, (sizeof (struct SDL_PrivateAudioData)));
     if (device->hidden == NULL) {
-        return -1;
+        return false;
     }
 
     // Initialize channel transfer parameters to default
@@ -275,7 +275,7 @@ static int QSA_OpenDevice(SDL_AudioDevice *device)
 
     device->hidden->pcm_buf = (Uint8 *) SDL_malloc(device->buffer_size);
     if (device->hidden->pcm_buf == NULL) {
-        return -1;
+        return false;
     }
     SDL_memset(device->hidden->pcm_buf, device->silence_value, device->buffer_size);
 
@@ -291,7 +291,7 @@ static int QSA_OpenDevice(SDL_AudioDevice *device)
         return QSA_SetError("snd_pcm_plugin_prepare", status);
     }
 
-    return 0;  // We're really ready to rock and roll. :-)
+    return true;  // We're really ready to rock and roll. :-)
 }
 
 static SDL_AudioFormat QnxFormatToSDLFormat(const int32_t qnxfmt)

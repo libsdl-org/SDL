@@ -501,7 +501,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     }
 
     if (SDL_SurfaceHasColorKey(src)) {
-        if (SDL_GetSurfaceColorKey(src, &colorkey) == 0) {
+        if (SDL_GetSurfaceColorKey(src, &colorkey)) {
             colorKeyAvailable = true;
         }
     }
@@ -561,7 +561,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
 
     // Lock source surface
     if (SDL_MUSTLOCK(src)) {
-        if (SDL_LockSurface(src) < 0) {
+        if (!SDL_LockSurface(src)) {
             SDL_DestroySurface(rz_dst);
             return NULL;
         }

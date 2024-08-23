@@ -113,7 +113,7 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
 
 static void *WIN_GetDXGIOutput(SDL_VideoDevice *_this, const WCHAR *DeviceName)
 {
-    void *retval = NULL;
+    void *result = NULL;
 
 #ifdef HAVE_DXGI_H
     const SDL_VideoData *videodata = (const SDL_VideoData *)_this->internal;
@@ -126,16 +126,16 @@ static void *WIN_GetDXGIOutput(SDL_VideoDevice *_this, const WCHAR *DeviceName)
     }
 
     nAdapter = 0;
-    while (!retval && SUCCEEDED(IDXGIFactory_EnumAdapters(videodata->pDXGIFactory, nAdapter, &pDXGIAdapter))) {
+    while (!result && SUCCEEDED(IDXGIFactory_EnumAdapters(videodata->pDXGIFactory, nAdapter, &pDXGIAdapter))) {
         nOutput = 0;
-        while (!retval && SUCCEEDED(IDXGIAdapter_EnumOutputs(pDXGIAdapter, nOutput, &pDXGIOutput))) {
+        while (!result && SUCCEEDED(IDXGIAdapter_EnumOutputs(pDXGIAdapter, nOutput, &pDXGIOutput))) {
             DXGI_OUTPUT_DESC outputDesc;
             if (SUCCEEDED(IDXGIOutput_GetDesc(pDXGIOutput, &outputDesc))) {
                 if (SDL_wcscmp(outputDesc.DeviceName, DeviceName) == 0) {
-                    retval = pDXGIOutput;
+                    result = pDXGIOutput;
                 }
             }
-            if (pDXGIOutput != retval) {
+            if (pDXGIOutput != result) {
                 IDXGIOutput_Release(pDXGIOutput);
             }
             nOutput++;
@@ -144,7 +144,7 @@ static void *WIN_GetDXGIOutput(SDL_VideoDevice *_this, const WCHAR *DeviceName)
         nAdapter++;
     }
 #endif
-    return retval;
+    return result;
 }
 
 static void WIN_ReleaseDXGIOutput(void *dxgi_output)
@@ -313,7 +313,7 @@ static char *WIN_GetDisplayNameVista(SDL_VideoData *videodata, const WCHAR *devi
 {
     DISPLAYCONFIG_PATH_INFO *paths = NULL;
     DISPLAYCONFIG_MODE_INFO *modes = NULL;
-    char *retval = NULL;
+    char *result = NULL;
     UINT32 pathCount = 0;
     UINT32 modeCount = 0;
     UINT32 i;
@@ -365,12 +365,12 @@ static char *WIN_GetDisplayNameVista(SDL_VideoData *videodata, const WCHAR *devi
             targetName.header.size = sizeof(targetName);
             rc = videodata->DisplayConfigGetDeviceInfo(&targetName.header);
             if (rc == ERROR_SUCCESS) {
-                retval = WIN_StringToUTF8W(targetName.monitorFriendlyDeviceName);
+                result = WIN_StringToUTF8W(targetName.monitorFriendlyDeviceName);
                 /* if we got an empty string, treat it as failure so we'll fallback
                    to getting the generic name. */
-                if (retval && (*retval == '\0')) {
-                    SDL_free(retval);
-                    retval = NULL;
+                if (result && (*result == '\0')) {
+                    SDL_free(result);
+                    result = NULL;
                 }
             }
             break;
@@ -379,10 +379,10 @@ static char *WIN_GetDisplayNameVista(SDL_VideoData *videodata, const WCHAR *devi
 
     SDL_free(paths);
     SDL_free(modes);
-    return retval;
+    return result;
 
 WIN_GetDisplayNameVista_failed:
-    SDL_free(retval);
+    SDL_free(result);
     SDL_free(paths);
     SDL_free(modes);
     return NULL;
@@ -607,7 +607,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 
                 SDL_ResetFullscreenDisplayModes(existing_display);
                 SDL_SetDesktopDisplayMode(existing_display, &mode);
-                if (WIN_GetDisplayBounds(_this, existing_display, &bounds) == 0 &&
+                if (WIN_GetDisplayBounds(_this, existing_display, &bounds) &&
                     SDL_memcmp(&internal->bounds, &bounds, sizeof(bounds)) != 0) {
                     changed_bounds = true;
                     SDL_copyp(&internal->bounds, &bounds);
@@ -706,17 +706,17 @@ static void WIN_AddDisplays(SDL_VideoDevice *_this)
     EnumDisplayMonitors(NULL, NULL, WIN_AddDisplaysCallback, (LPARAM)&callback_data);
 }
 
-int WIN_InitModes(SDL_VideoDevice *_this)
+bool WIN_InitModes(SDL_VideoDevice *_this)
 {
     WIN_AddDisplays(_this);
 
     if (_this->num_displays == 0) {
         return SDL_SetError("No displays available");
     }
-    return 0;
+    return true;
 }
 
-int WIN_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+bool WIN_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     const SDL_DisplayData *data = display->internal;
     MONITORINFO minfo;
@@ -735,10 +735,10 @@ int WIN_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
     rect->w = minfo.rcMonitor.right - minfo.rcMonitor.left;
     rect->h = minfo.rcMonitor.bottom - minfo.rcMonitor.top;
 
-    return 0;
+    return true;
 }
 
-int WIN_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+bool WIN_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     const SDL_DisplayData *data = display->internal;
     MONITORINFO minfo;
@@ -757,10 +757,10 @@ int WIN_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display
     rect->w = minfo.rcWork.right - minfo.rcWork.left;
     rect->h = minfo.rcWork.bottom - minfo.rcWork.top;
 
-    return 0;
+    return true;
 }
 
-int WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+bool WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *data = display->internal;
     void *dxgi_output;
@@ -789,7 +789,7 @@ int WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
     WIN_ReleaseDXGIOutput(dxgi_output);
 
-    return 0;
+    return true;
 }
 
 #ifdef DEBUG_MODES
@@ -822,7 +822,7 @@ static void WIN_LogMonitor(SDL_VideoDevice *_this, HMONITOR mon)
 }
 #endif
 
-int WIN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+bool WIN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     SDL_DisplayData *displaydata = display->internal;
     SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->internal;
@@ -880,7 +880,7 @@ int WIN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Di
 
     EnumDisplaySettingsW(displaydata->DeviceName, ENUM_CURRENT_SETTINGS, &data->DeviceMode);
     WIN_UpdateDisplayMode(_this, displaydata->DeviceName, ENUM_CURRENT_SETTINGS, mode);
-    return 0;
+    return true;
 }
 
 void WIN_RefreshDisplays(SDL_VideoDevice *_this)

@@ -26,7 +26,7 @@
 extern void X11_PumpEvents(SDL_VideoDevice *_this);
 extern int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 extern void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
-extern int X11_SuspendScreenSaver(SDL_VideoDevice *_this);
+extern bool X11_SuspendScreenSaver(SDL_VideoDevice *_this);
 extern void X11_ReconcileKeyboardState(SDL_VideoDevice *_this);
 extern void X11_GetBorderValues(SDL_WindowData *data);
 extern void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_KeyboardID keyboardID, XEvent *xevent);

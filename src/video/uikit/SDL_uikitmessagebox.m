@@ -124,30 +124,30 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
     return YES;
 }
 
-static void UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID, int *returnValue)
+static void UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID, int *result)
 {
     @autoreleasepool {
         if (UIKit_ShowMessageBoxAlertController(messageboxdata, buttonID)) {
-            *returnValue = 0;
+            *result = true;
         } else {
-            *returnValue = SDL_SetError("Could not show message box.");
+            *result = SDL_SetError("Could not show message box.");
         }
     }
 }
 
-int UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+bool UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     @autoreleasepool {
-        __block int returnValue = 0;
+        __block int result = true;
 
         if ([NSThread isMainThread]) {
-            UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &returnValue);
+            UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &result);
         } else {
             dispatch_sync(dispatch_get_main_queue(), ^{
-              UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &returnValue);
+              UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &result);
             });
         }
-        return returnValue;
+        return result;
     }
 }
 

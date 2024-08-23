@@ -87,7 +87,7 @@ static SDL_VideoDevice *VIVANTE_Create(void)
     device->GL_SetSwapInterval = VIVANTE_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = VIVANTE_GLES_GetSwapInterval;
     device->GL_SwapWindow = VIVANTE_GLES_SwapWindow;
-    device->GL_DeleteContext = VIVANTE_GLES_DeleteContext;
+    device->GL_DestroyContext = VIVANTE_GLES_DestroyContext;
 #endif
 
 #ifdef SDL_VIDEO_VULKAN
@@ -114,7 +114,7 @@ VideoBootStrap VIVANTE_bootstrap = {
 // SDL Video and Display initialization/handling functions
 /*****************************************************************************/
 
-static int VIVANTE_AddVideoDisplays(SDL_VideoDevice *_this)
+static bool VIVANTE_AddVideoDisplays(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->internal;
     SDL_VideoDisplay display;
@@ -125,7 +125,7 @@ static int VIVANTE_AddVideoDisplays(SDL_VideoDevice *_this)
 
     data = (SDL_DisplayData *)SDL_calloc(1, sizeof(SDL_DisplayData));
     if (!data) {
-        return -1;
+        return false;
     }
 
     SDL_zero(mode);
@@ -158,12 +158,12 @@ static int VIVANTE_AddVideoDisplays(SDL_VideoDevice *_this)
     display.desktop_mode = mode;
     display.internal = data;
     if (SDL_AddVideoDisplay(&display, false) == 0) {
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
-int VIVANTE_VideoInit(SDL_VideoDevice *_this)
+bool VIVANTE_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->internal;
 
@@ -177,13 +177,13 @@ int VIVANTE_VideoInit(SDL_VideoDevice *_this)
     if (!videodata->egl_handle) {
         videodata->egl_handle = SDL_LoadObject("libEGL.so");
         if (!videodata->egl_handle) {
-            return -1;
+            return false;
         }
     }
 #define LOAD_FUNC(TYPE, NAME)                                               \
     videodata->NAME = (TYPE)SDL_LoadFunction(videodata->egl_handle, #NAME); \
     if (!videodata->NAME)                                                   \
-        return -1;
+        return false;
 
     LOAD_FUNC(EGLNativeDisplayType (EGLAPIENTRY *)(void *), fbGetDisplay);
     LOAD_FUNC(EGLNativeDisplayType (EGLAPIENTRY *)(int), fbGetDisplayByIndex);
@@ -196,23 +196,23 @@ int VIVANTE_VideoInit(SDL_VideoDevice *_this)
     LOAD_FUNC(void (EGLAPIENTRY *)(EGLNativeWindowType), fbDestroyWindow);
 #endif
 
-    if (VIVANTE_SetupPlatform(_this) < 0) {
-        return -1;
+    if (!VIVANTE_SetupPlatform(_this)) {
+        return false;
     }
 
-    if (VIVANTE_AddVideoDisplays(_this) < 0) {
-        return -1;
+    if (!VIVANTE_AddVideoDisplays(_this)) {
+        return false;
     }
 
     VIVANTE_UpdateDisplayScale(_this);
 
 #ifdef SDL_INPUT_LINUXEV
-    if (SDL_EVDEV_Init() < 0) {
-        return -1;
+    if (!SDL_EVDEV_Init()) {
+        return false;
     }
 #endif
 
-    return 0;
+    return true;
 }
 
 void VIVANTE_VideoQuit(SDL_VideoDevice *_this)
@@ -238,7 +238,7 @@ void VIVANTE_VideoQuit(SDL_VideoDevice *_this)
 #endif
 }
 
-int VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_VideoData *videodata = _this->internal;
     SDL_DisplayData *displaydata;
@@ -249,7 +249,7 @@ int VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     // Allocate window internal data
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!data) {
-        return -1;
+        return false;
     }
 
     // Setup driver data for this window
@@ -281,7 +281,7 @@ int VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 #endif
 
     // Window has been successfully created
-    return 0;
+    return true;
 }
 
 void VIVANTE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -318,7 +318,7 @@ void VIVANTE_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
 }
 
-int VIVANTE_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+bool VIVANTE_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     // FIXME
     return SDL_Unsupported();

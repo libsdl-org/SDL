@@ -20,7 +20,7 @@
 */
 #include <Windows.h>
 
-extern int SDL_WinRTInitNonXAMLApp(int (*mainFunction)(int, char **));
+extern bool SDL_WinRTInitNonXAMLApp(int (*mainFunction)(int, char **));
 
 ref class SDL_WinRTApp sealed : public Windows::ApplicationModel::Core::IFrameworkView
 {

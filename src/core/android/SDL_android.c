@@ -268,11 +268,11 @@ static JNINativeMethod SDLAudioManager_tab[] = {
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(
     JNIEnv *env, jclass jcls);
 
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
+JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint keycode);
 
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
+JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint keycode);
 
@@ -284,33 +284,33 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint hat_id, jint x, jint y);
 
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc, jint vendor_id, jint product_id,
     jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble);
 
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id);
 
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic)(
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name);
 
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
     JNIEnv *env, jclass jcls,
     jint device_id);
 
 static JNINativeMethod SDLControllerManager_tab[] = {
     { "nativeSetupJNI", "()I", SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI) },
-    { "onNativePadDown", "(II)I", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown) },
-    { "onNativePadUp", "(II)I", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
+    { "onNativePadDown", "(II)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown) },
+    { "onNativePadUp", "(II)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
     { "onNativeJoy", "(IIF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy) },
     { "onNativeHat", "(IIII)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat) },
-    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZ)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
-    { "nativeRemoveJoystick", "(I)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick) },
-    { "nativeAddHaptic", "(ILjava/lang/String;)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic) },
-    { "nativeRemoveHaptic", "(I)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic) }
+    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZ)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
+    { "nativeRemoveJoystick", "(I)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick) },
+    { "nativeAddHaptic", "(ILjava/lang/String;)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic) },
+    { "nativeRemoveHaptic", "(I)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic) }
 };
 
 // Uncomment this to log messages entering and exiting methods in this file
@@ -434,13 +434,14 @@ static int Android_NumLifecycleEvents;
  */
 
 // Set local storage value
-static int Android_JNI_SetEnv(JNIEnv *env)
+static bool Android_JNI_SetEnv(JNIEnv *env)
 {
     int status = pthread_setspecific(mThreadKey, env);
     if (status < 0) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed pthread_setspecific() in Android_JNI_SetEnv() (err=%d)", status);
+        return false;
     }
-    return status;
+    return true;
 }
 
 // Get local storage value
@@ -467,7 +468,7 @@ JNIEnv *Android_JNI_GetEnv(void)
         }
 
         // Save JNIEnv into the Thread local storage
-        if (Android_JNI_SetEnv(env) < 0) {
+        if (!Android_JNI_SetEnv(env)) {
             return NULL;
         }
     }
@@ -476,7 +477,7 @@ JNIEnv *Android_JNI_GetEnv(void)
 }
 
 // Set up an external thread for using JNI with Android_JNI_GetEnv()
-int Android_JNI_SetupThread(void)
+bool Android_JNI_SetupThread(void)
 {
     JNIEnv *env;
     int status;
@@ -484,7 +485,7 @@ int Android_JNI_SetupThread(void)
     // There should be a JVM
     if (!mJavaVM) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed, there is no JavaVM");
-        return 0;
+        return false;
     }
 
     /* Attach the current thread to the JVM and get a JNIEnv.
@@ -492,15 +493,15 @@ int Android_JNI_SetupThread(void)
     status = (*mJavaVM)->AttachCurrentThread(mJavaVM, &env, NULL);
     if (status < 0) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to attach current thread (err=%d)", status);
-        return 0;
+        return false;
     }
 
     // Save JNIEnv into the Thread local storage
-    if (Android_JNI_SetEnv(env) < 0) {
-        return 0;
+    if (!Android_JNI_SetEnv(env)) {
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 // Destructor called for each thread where mThreadKey is not NULL
@@ -642,9 +643,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midIsTablet = (*env)->GetStaticMethodID(env, mActivityClass, "isTablet", "()Z");
     midManualBackButton = (*env)->GetStaticMethodID(env, mActivityClass, "manualBackButton", "()V");
     midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass, "minimizeWindow", "()V");
-    midOpenURL = (*env)->GetStaticMethodID(env, mActivityClass, "openURL", "(Ljava/lang/String;)I");
+    midOpenURL = (*env)->GetStaticMethodID(env, mActivityClass, "openURL", "(Ljava/lang/String;)Z");
     midRequestPermission = (*env)->GetStaticMethodID(env, mActivityClass, "requestPermission", "(Ljava/lang/String;I)V");
-    midShowToast = (*env)->GetStaticMethodID(env, mActivityClass, "showToast", "(Ljava/lang/String;IIII)I");
+    midShowToast = (*env)->GetStaticMethodID(env, mActivityClass, "showToast", "(Ljava/lang/String;IIII)Z");
     midSendMessage = (*env)->GetStaticMethodID(env, mActivityClass, "sendMessage", "(II)Z");
     midSetActivityTitle = (*env)->GetStaticMethodID(env, mActivityClass, "setActivityTitle", "(Ljava/lang/String;)Z");
     midSetCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setCustomCursor", "(I)Z");
@@ -960,7 +961,7 @@ bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeout
 {
     bool got_event = false;
 
-    while (!got_event && SDL_WaitSemaphoreTimeoutNS(Android_LifecycleEventSem, timeoutNS) == 0) {
+    while (!got_event && SDL_WaitSemaphoreTimeoutNS(Android_LifecycleEventSem, timeoutNS)) {
         SDL_LockMutex(Android_LifecycleMutex);
         {
             if (Android_NumLifecycleEvents > 0) {
@@ -1117,26 +1118,26 @@ SDL_JAVA_AUDIO_INTERFACE(removeAudioDevice)(JNIEnv *env, jclass jcls, jboolean r
 }
 
 // Paddown
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
+JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint keycode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
     return Android_OnPadDown(device_id, keycode);
 #else
-    return -1;
+    return false;
 #endif // SDL_JOYSTICK_ANDROID
 }
 
 // Padup
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
+JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint keycode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
     return Android_OnPadUp(device_id, keycode);
 #else
-    return -1;
+    return false;
 #endif // SDL_JOYSTICK_ANDROID
 }
 
@@ -1160,61 +1161,49 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
 #endif // SDL_JOYSTICK_ANDROID
 }
 
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc,
     jint vendor_id, jint product_id,
     jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble)
 {
-    int retval;
 #ifdef SDL_JOYSTICK_ANDROID
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
-    retval = Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats, can_rumble);
+    Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats, can_rumble);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);
-#else
-    retval = -1;
 #endif // SDL_JOYSTICK_ANDROID
-    return retval;
 }
 
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-    return Android_RemoveJoystick(device_id);
-#else
-    return -1;
+    Android_RemoveJoystick(device_id);
 #endif // SDL_JOYSTICK_ANDROID
 }
 
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic)(
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic)(
     JNIEnv *env, jclass jcls, jint device_id, jstring device_name)
 {
-    int retval;
 #ifdef SDL_HAPTIC_ANDROID
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
 
-    retval = Android_AddHaptic(device_id, name);
+    Android_AddHaptic(device_id, name);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
-#else
-    retval = -1;
 #endif // SDL_HAPTIC_ANDROID
-    return retval;
 }
 
-JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
     JNIEnv *env, jclass jcls, jint device_id)
 {
 #ifdef SDL_HAPTIC_ANDROID
-    return Android_RemoveHaptic(device_id);
-#else
-    return -1;
+    Android_RemoveHaptic(device_id);
 #endif
 }
 
@@ -1650,7 +1639,7 @@ bool Android_JNI_ShouldMinimizeOnFocusLoss(void)
 
 bool Android_JNI_GetAccelerometerValues(float values[3])
 {
-    bool retval = false;
+    bool result = false;
 
     if (bHasNewData) {
         int i;
@@ -1658,10 +1647,10 @@ bool Android_JNI_GetAccelerometerValues(float values[3])
             values[i] = fLastAccelerometer[i];
         }
         bHasNewData = false;
-        retval = true;
+        result = true;
     }
 
-    return retval;
+    return result;
 }
 
 /*
@@ -1789,7 +1778,7 @@ static void Internal_Android_Destroy_AssetManager(void)
     }
 }
 
-int Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode)
+bool Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode)
 {
     SDL_assert(puserdata != NULL);
 
@@ -1810,7 +1799,7 @@ int Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mod
     }
 
     *puserdata = (void *)asset;
-    return 0;
+    return true;
 }
 
 size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOStatus *status)
@@ -1825,7 +1814,8 @@ size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOSta
 
 size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SDL_IOStatus *status)
 {
-    return SDL_SetError("Cannot write to Android package filesystem");
+    SDL_SetError("Cannot write to Android package filesystem");
+    return 0;
 }
 
 Sint64 Android_JNI_FileSize(void *userdata)
@@ -1838,19 +1828,19 @@ Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence)
     return (Sint64) AAsset_seek64((AAsset *)userdata, offset, (int)whence);
 }
 
-int Android_JNI_FileClose(void *userdata)
+SDL_bool Android_JNI_FileClose(void *userdata)
 {
     AAsset_close((AAsset *)userdata);
-    return 0;
+    return true;
 }
 
-int Android_JNI_SetClipboardText(const char *text)
+bool Android_JNI_SetClipboardText(const char *text)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     jstring string = (*env)->NewStringUTF(env, text);
     (*env)->CallStaticVoidMethod(env, mActivityClass, midClipboardSetText, string);
     (*env)->DeleteLocalRef(env, string);
-    return 0;
+    return true;
 }
 
 char *Android_JNI_GetClipboardText(void)
@@ -2038,24 +2028,22 @@ void Android_JNI_HapticStop(int device_id)
 // See SDLActivity.java for constants.
 #define COMMAND_SET_KEEP_SCREEN_ON 5
 
-int SDL_SendAndroidMessage(Uint32 command, int param)
+SDL_bool SDL_SendAndroidMessage(Uint32 command, int param)
 {
-    if (command >= 0x8000) {
-        return Android_JNI_SendMessage(command, param);
+    if (command < 0x8000) {
+        return SDL_InvalidParamError("command");
     }
-    return -1;
+    return Android_JNI_SendMessage(command, param);
 }
 
 // sends message to be handled on the UI event dispatch thread
-int Android_JNI_SendMessage(int command, int param)
+bool Android_JNI_SendMessage(int command, int param)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-    jboolean success;
-    success = (*env)->CallStaticBooleanMethod(env, mActivityClass, midSendMessage, command, param);
-    return success ? 0 : -1;
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSendMessage, command, param);
 }
 
-int Android_JNI_SuspendScreenSaver(bool suspend)
+bool Android_JNI_SuspendScreenSaver(bool suspend)
 {
     return Android_JNI_SendMessage(COMMAND_SET_KEEP_SCREEN_ON, (suspend == false) ? 0 : 1);
 }
@@ -2086,7 +2074,7 @@ bool Android_JNI_IsScreenKeyboardShown(void)
     return is_shown;
 }
 
-int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     JNIEnv *env;
     jclass clazz;
@@ -2176,7 +2164,7 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
     (*env)->DeleteLocalRef(env, button_texts);
     (*env)->DeleteLocalRef(env, colors);
 
-    return 0;
+    return true;
 }
 
 /*
@@ -2431,7 +2419,7 @@ const char *SDL_GetAndroidCachePath(void)
     return s_AndroidCachePath;
 }
 
-int SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
+SDL_bool SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
 {
     return Android_JNI_ShowToast(message, duration, gravity, xOffset, yOffset);
 }
@@ -2530,7 +2518,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-int SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
+SDL_bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
 {
     if (!permission) {
         return SDL_InvalidParamError("permission");
@@ -2540,13 +2528,13 @@ int SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermi
 
     NativePermissionRequestInfo *info = (NativePermissionRequestInfo *) SDL_calloc(1, sizeof (NativePermissionRequestInfo));
     if (!info) {
-        return -1;
+        return false;
     }
 
     info->permission = SDL_strdup(permission);
     if (!info->permission) {
         SDL_free(info);
-        return -1;
+        return false;
     }
 
     static SDL_AtomicInt next_request_code;
@@ -2565,13 +2553,13 @@ int SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermi
     (*env)->CallStaticVoidMethod(env, mActivityClass, midRequestPermission, jpermission, info->request_code);
     (*env)->DeleteLocalRef(env, jpermission);
 
-    return 0;
+    return true;
 }
 
 // Show toast notification
-int Android_JNI_ShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
+bool Android_JNI_ShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
 {
-    int result = 0;
+    bool result;
     JNIEnv *env = Android_JNI_GetEnv();
     jstring jmessage = (*env)->NewStringUTF(env, message);
     result = (*env)->CallStaticIntMethod(env, mActivityClass, midShowToast, jmessage, duration, gravity, xOffset, yOffset);
@@ -2579,7 +2567,7 @@ int Android_JNI_ShowToast(const char *message, int duration, int gravity, int xO
     return result;
 }
 
-int Android_JNI_GetLocale(char *buf, size_t buflen)
+bool Android_JNI_GetLocale(char *buf, size_t buflen)
 {
     AConfiguration *cfg;
 
@@ -2593,12 +2581,12 @@ int Android_JNI_GetLocale(char *buf, size_t buflen)
     }
 
     if (!asset_manager) {
-        return -1;
+        return false;
     }
 
     cfg = AConfiguration_new();
     if (!cfg) {
-        return -1;
+        return false;
     }
 
     {
@@ -2634,16 +2622,17 @@ int Android_JNI_GetLocale(char *buf, size_t buflen)
 
     AConfiguration_delete(cfg);
 
-    return 0;
+    return true;
 }
 
-int Android_JNI_OpenURL(const char *url)
+bool Android_JNI_OpenURL(const char *url)
 {
+    bool result;
     JNIEnv *env = Android_JNI_GetEnv();
     jstring jurl = (*env)->NewStringUTF(env, url);
-    const int ret = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenURL, jurl);
+    result = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenURL, jurl);
     (*env)->DeleteLocalRef(env, jurl);
-    return ret;
+    return result;
 }
 
 int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)

@@ -43,9 +43,9 @@ static void ThreadEntry(void *arg)
 }
 
 
-int SDL_SYS_CreateThread(SDL_Thread *thread,
-                         SDL_FunctionPointer pfnBeginThread,
-                         SDL_FunctionPointer pfnEndThread)
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                          SDL_FunctionPointer pfnBeginThread,
+                          SDL_FunctionPointer pfnEndThread)
 {
     s32 priority = 0x30;
     int cpu = -1;
@@ -69,7 +69,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
         return SDL_SetError("Couldn't create thread");
     }
 
-    return 0;
+    return true;
 }
 
 static size_t GetStackSize(size_t requested_size)
@@ -93,7 +93,7 @@ SDL_ThreadID SDL_GetCurrentThreadID(void)
     return (SDL_ThreadID)thread_ID;
 }
 
-int SDL_SYS_SetThreadPriority(SDL_ThreadPriority sdl_priority)
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority sdl_priority)
 {
     s32 svc_priority;
     switch (sdl_priority) {
@@ -112,7 +112,10 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority sdl_priority)
     default:
         svc_priority = N3DS_THREAD_PRIORITY_MEDIUM;
     }
-    return (int)svcSetThreadPriority(CUR_THREAD_HANDLE, svc_priority);
+    if (svcSetThreadPriority(CUR_THREAD_HANDLE, svc_priority) < 0) {
+        return SDL_SetError("svcSetThreadPriority failed");
+    }
+    return true;
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)

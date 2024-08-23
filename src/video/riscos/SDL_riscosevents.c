@@ -116,7 +116,7 @@ void RISCOS_PollMouse(SDL_VideoDevice *_this)
     _kernel_swi_regs regs;
     int i, x, y, buttons;
 
-    if (SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &rect) < 0) {
+    if (!SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &rect)) {
         return;
     }
 
@@ -137,7 +137,7 @@ void RISCOS_PollMouse(SDL_VideoDevice *_this)
     }
 }
 
-int RISCOS_InitEvents(SDL_VideoDevice *_this)
+bool RISCOS_InitEvents(SDL_VideoDevice *_this)
 {
     SDL_VideoData *internal = _this->internal;
     _kernel_swi_regs regs;
@@ -158,7 +158,7 @@ int RISCOS_InitEvents(SDL_VideoDevice *_this)
     // Disable escape.
     _kernel_osbyte(229, 1, 0);
 
-    return 0;
+    return true;
 }
 
 void RISCOS_PumpEvents(SDL_VideoDevice *_this)

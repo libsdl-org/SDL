@@ -123,7 +123,7 @@ KeySym X11_KeyCodeToSym(SDL_VideoDevice *_this, KeyCode keycode, unsigned char g
     return keysym;
 }
 
-int X11_InitKeyboard(SDL_VideoDevice *_this)
+bool X11_InitKeyboard(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
     int i = 0;
@@ -323,7 +323,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
 
     X11_ReconcileKeyboardState(_this);
 
-    return 0;
+    return true;
 }
 
 void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
@@ -421,28 +421,28 @@ static void X11_ResetXIM(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
 }
 
-int X11_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
+bool X11_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     X11_ResetXIM(_this, window);
 
     return X11_UpdateTextInputArea(_this, window);
 }
 
-int X11_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+bool X11_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     X11_ResetXIM(_this, window);
 #ifdef SDL_USE_IME
     SDL_IME_Reset();
 #endif
-    return 0;
+    return true;
 }
 
-int X11_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
+bool X11_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef SDL_USE_IME
     SDL_IME_UpdateTextInputArea(window);
 #endif
-    return 0;
+    return true;
 }
 
 bool X11_HasScreenKeyboardSupport(SDL_VideoDevice *_this)

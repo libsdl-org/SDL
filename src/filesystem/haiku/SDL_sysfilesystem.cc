@@ -54,14 +54,14 @@ char *SDL_SYS_GetBasePath(void)
     SDL_assert(str != NULL);
 
     const size_t len = SDL_strlen(str);
-    char *retval = (char *) SDL_malloc(len + 2);
-    if (retval) {
-        SDL_memcpy(retval, str, len);
-        retval[len] = '/';
-        retval[len+1] = '\0';
+    char *result = (char *) SDL_malloc(len + 2);
+    if (result) {
+        SDL_memcpy(result, str, len);
+        result[len] = '/';
+        result[len+1] = '\0';
     }
 
-    return retval;
+    return result;
 }
 
 
@@ -84,23 +84,23 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
         ++append; // home empty or ends with separator, skip the one from append
     }
     len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
-    char *retval = (char *) SDL_malloc(len);
-    if (retval) {
+    char *result = (char *) SDL_malloc(len);
+    if (result) {
         if (*org) {
-            SDL_snprintf(retval, len, "%s%s%s/%s/", home, append, org, app);
+            SDL_snprintf(result, len, "%s%s%s/%s/", home, append, org, app);
         } else {
-            SDL_snprintf(retval, len, "%s%s%s/", home, append, app);
+            SDL_snprintf(result, len, "%s%s%s/", home, append, app);
         }
-        create_directory(retval, 0700);  // Haiku api: creates missing dirs
+        create_directory(result, 0700);  // Haiku api: creates missing dirs
     }
 
-    return retval;
+    return result;
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     const char *home = NULL;
-    char *retval;
+    char *result;
 
     home = SDL_getenv("HOME");
     if (!home) {
@@ -110,33 +110,33 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 
     switch (folder) {
     case SDL_FOLDER_HOME:
-        retval = (char *) SDL_malloc(SDL_strlen(home) + 2);
-        if (!retval) {
+        result = (char *) SDL_malloc(SDL_strlen(home) + 2);
+        if (!result) {
             return NULL;
         }
 
-        if (SDL_snprintf(retval, SDL_strlen(home) + 2, "%s/", home) < 0) {
+        if (SDL_snprintf(result, SDL_strlen(home) + 2, "%s/", home) < 0) {
             SDL_SetError("Couldn't snprintf home path for Haiku: %s", home);
-            SDL_free(retval);
+            SDL_free(result);
             return NULL;
         }
 
-        return retval;
+        return result;
 
         // TODO: Is Haiku's desktop folder always ~/Desktop/ ?
     case SDL_FOLDER_DESKTOP:
-        retval = (char *) SDL_malloc(SDL_strlen(home) + 10);
-        if (!retval) {
+        result = (char *) SDL_malloc(SDL_strlen(home) + 10);
+        if (!result) {
             return NULL;
         }
 
-        if (SDL_snprintf(retval, SDL_strlen(home) + 10, "%s/Desktop/", home) < 0) {
+        if (SDL_snprintf(result, SDL_strlen(home) + 10, "%s/Desktop/", home) < 0) {
             SDL_SetError("Couldn't snprintf desktop path for Haiku: %s/Desktop/", home);
-            SDL_free(retval);
+            SDL_free(result);
             return NULL;
         }
 
-        return retval;
+        return result;
 
     case SDL_FOLDER_DOCUMENTS:
     case SDL_FOLDER_DOWNLOADS:

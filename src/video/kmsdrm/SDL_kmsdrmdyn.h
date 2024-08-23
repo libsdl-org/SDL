@@ -32,8 +32,8 @@
 extern "C" {
 #endif
 
-int SDL_KMSDRM_LoadSymbols(void);
-void SDL_KMSDRM_UnloadSymbols(void);
+extern bool SDL_KMSDRM_LoadSymbols(void);
+extern void SDL_KMSDRM_UnloadSymbols(void);
 
 // Declare all the function pointers and wrappers...
 #define SDL_KMSDRM_SYM(rc, fn, params)        \

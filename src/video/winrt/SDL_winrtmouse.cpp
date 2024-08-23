@@ -146,11 +146,11 @@ static void WINRT_FreeCursor(SDL_Cursor *cursor)
     SDL_free(cursor);
 }
 
-static int WINRT_ShowCursor(SDL_Cursor *cursor)
+static bool WINRT_ShowCursor(SDL_Cursor *cursor)
 {
     // TODO, WinRT, XAML: make WINRT_ShowCursor work when XAML support is enabled.
     if (!CoreWindow::GetForCurrentThread()) {
-        return 0;
+        return true;
     }
 
     CoreWindow ^ coreWindow = CoreWindow::GetForCurrentThread();
@@ -217,13 +217,13 @@ static int WINRT_ShowCursor(SDL_Cursor *cursor)
             coreWindow->PointerCursor = nullptr;
         }
     }
-    return 0;
+    return true;
 }
 
-static int WINRT_SetRelativeMouseMode(bool enabled)
+static bool WINRT_SetRelativeMouseMode(bool enabled)
 {
     WINRT_UsingRelativeMouseMode = enabled;
-    return 0;
+    return true;
 }
 
 void WINRT_InitMouse(SDL_VideoDevice *_this)

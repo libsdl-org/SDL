@@ -47,7 +47,7 @@ char *SDL_SYS_GetBasePath(void)
 {
     DWORD buflen = 128;
     WCHAR *path = NULL;
-    char *retval = NULL;
+    char *result = NULL;
     DWORD len = 0;
     int i;
 
@@ -86,10 +86,10 @@ char *SDL_SYS_GetBasePath(void)
     SDL_assert(i > 0);  // Should have been an absolute path.
     path[i + 1] = '\0'; // chop off filename.
 
-    retval = WIN_StringToUTF8W(path);
+    result = WIN_StringToUTF8W(path);
     SDL_free(path);
 
-    return retval;
+    return result;
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
@@ -103,7 +103,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
      */
 
     WCHAR path[MAX_PATH];
-    char *retval = NULL;
+    char *result = NULL;
     WCHAR *worg = NULL;
     WCHAR *wapp = NULL;
     size_t new_wpath_len = 0;
@@ -171,9 +171,9 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 
     SDL_wcslcat(path, L"\\", SDL_arraysize(path));
 
-    retval = WIN_StringToUTF8W(path);
+    result = WIN_StringToUTF8W(path);
 
-    return retval;
+    return result;
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
@@ -181,7 +181,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     typedef HRESULT (WINAPI *pfnSHGetKnownFolderPath)(REFGUID /* REFKNOWNFOLDERID */, DWORD, HANDLE, PWSTR*);
     HMODULE lib = LoadLibrary(L"Shell32.dll");
     pfnSHGetKnownFolderPath pSHGetKnownFolderPath = NULL;
-    char *retval = NULL;
+    char *result = NULL;
 
     if (lib) {
         pSHGetKnownFolderPath = (pfnSHGetKnownFolderPath)GetProcAddress(lib, "SHGetKnownFolderPath");
@@ -189,7 +189,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 
     if (pSHGetKnownFolderPath) {
         GUID type; // KNOWNFOLDERID
-        HRESULT result;
+        HRESULT hr;
         wchar_t *path;
 
         switch (folder) {
@@ -242,16 +242,16 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
             goto done;
         };
 
-        result = pSHGetKnownFolderPath(&type, 0x00008000 /* KF_FLAG_CREATE */, NULL, &path);
-        if (SUCCEEDED(result)) {
-            retval = WIN_StringToUTF8W(path);
+        hr = pSHGetKnownFolderPath(&type, 0x00008000 /* KF_FLAG_CREATE */, NULL, &path);
+        if (SUCCEEDED(hr)) {
+            result = WIN_StringToUTF8W(path);
         } else {
-            WIN_SetErrorFromHRESULT("Couldn't get folder", result);
+            WIN_SetErrorFromHRESULT("Couldn't get folder", hr);
         }
 
     } else {
         int type;
-        HRESULT result;
+        HRESULT hr;
         wchar_t path[MAX_PATH];
 
         switch (folder) {
@@ -309,38 +309,38 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 
 #if 0
         // Apparently the oldest, but not supported in modern Windows
-        HRESULT result = SHGetSpecialFolderPath(NULL, path, type, TRUE);
+        HRESULT hr = SHGetSpecialFolderPath(NULL, path, type, TRUE);
 #endif
 
         /* Windows 2000/XP and later, deprecated as of Windows 10 (still
            available), available in Wine (tested 6.0.3) */
-        result = SHGetFolderPathW(NULL, type, NULL, SHGFP_TYPE_CURRENT, path);
+        hr = SHGetFolderPathW(NULL, type, NULL, SHGFP_TYPE_CURRENT, path);
 
         // use `== TRUE` for SHGetSpecialFolderPath
-        if (SUCCEEDED(result)) {
-            retval = WIN_StringToUTF8W(path);
+        if (SUCCEEDED(hr)) {
+            result = WIN_StringToUTF8W(path);
         } else {
-            WIN_SetErrorFromHRESULT("Couldn't get folder", result);
+            WIN_SetErrorFromHRESULT("Couldn't get folder", hr);
         }
     }
 
-    if (retval) {
-        char *newretval = (char *) SDL_realloc(retval, SDL_strlen(retval) + 2);
+    if (result) {
+        char *newresult = (char *) SDL_realloc(result, SDL_strlen(result) + 2);
 
-        if (!newretval) {
-            SDL_free(retval);
-            retval = NULL; // will be returned
+        if (!newresult) {
+            SDL_free(result);
+            result = NULL; // will be returned
             goto done;
         }
 
-        retval = newretval;
-        SDL_strlcat(retval, "\\", SDL_strlen(retval) + 2);
+        result = newresult;
+        SDL_strlcat(result, "\\", SDL_strlen(result) + 2);
     }
 
 done:
     if (lib) {
         FreeLibrary(lib);
     }
-    return retval;
+    return result;
 }
 #endif // SDL_FILESYSTEM_WINDOWS

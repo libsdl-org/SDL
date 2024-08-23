@@ -40,7 +40,7 @@ extern "C" {
 #include "SDL_ngagevideo.h"
 #include "SDL_ngageevents_c.h"
 
-int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent);
+static void HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent);
 
 void NGAGE_PumpEvents(SDL_VideoDevice *_this)
 {
@@ -147,10 +147,9 @@ static SDL_Scancode ConvertScancode(SDL_VideoDevice *_this, int key)
     return scancode;
 }
 
-int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
+static void HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
 {
     SDL_VideoData *data = _this->internal;
-    int posted = 0;
 
     switch (aWsEvent.Type()) {
     case EEventKeyDown: // Key events
@@ -188,7 +187,6 @@ int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
     default:
         break;
     }
-    return posted;
 }
 
 #endif // SDL_VIDEO_DRIVER_NGAGE

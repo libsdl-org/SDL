@@ -42,7 +42,7 @@ typedef uint32_t xcb_window_t;
 typedef uint32_t xcb_visualid_t;
 */
 
-int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     SDL_VideoData *videoData = _this->internal;
     VkExtensionProperties *extensions = NULL;
@@ -65,7 +65,7 @@ int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
     if (!_this->vulkan_config.loader_handle) {
-        return -1;
+        return false;
     }
     SDL_strlcpy(_this->vulkan_config.loader_path, path, SDL_arraysize(_this->vulkan_config.loader_path));
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
@@ -122,12 +122,12 @@ int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
             goto fail;
         }
     }
-    return 0;
+    return true;
 
 fail:
     SDL_UnloadObject(_this->vulkan_config.loader_handle);
     _this->vulkan_config.loader_handle = NULL;
-    return -1;
+    return false;
 }
 
 void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
@@ -167,7 +167,7 @@ char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
     }
 }
 
-int X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+bool X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                              SDL_Window *window,
                              VkInstance instance,
                              const struct VkAllocationCallbacks *allocator,
@@ -219,7 +219,7 @@ int X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         }
     }
 
-    return 0;  // success!
+    return true;  // success!
 }
 
 void X11_Vulkan_DestroySurface(SDL_VideoDevice *_this,
@@ -243,8 +243,7 @@ bool X11_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
     VisualID visualid;
 
     if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return false;
+        return SDL_SetError("Vulkan is not loaded");
     }
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
 
@@ -262,8 +261,7 @@ bool X11_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
                 "vkGetPhysicalDeviceXcbPresentationSupportKHR");
 
         if (!vkGetPhysicalDeviceXcbPresentationSupportKHR) {
-            SDL_SetError(VK_KHR_XCB_SURFACE_EXTENSION_NAME " extension is not enabled in the Vulkan instance.");
-            return false;
+            return SDL_SetError(VK_KHR_XCB_SURFACE_EXTENSION_NAME " extension is not enabled in the Vulkan instance.");
         }
 
         return vkGetPhysicalDeviceXcbPresentationSupportKHR(physicalDevice,
@@ -277,8 +275,7 @@ bool X11_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
                 "vkGetPhysicalDeviceXlibPresentationSupportKHR");
 
         if (!vkGetPhysicalDeviceXlibPresentationSupportKHR) {
-            SDL_SetError(VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension is not enabled in the Vulkan instance.");
-            return false;
+            return SDL_SetError(VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension is not enabled in the Vulkan instance.");
         }
 
         return vkGetPhysicalDeviceXlibPresentationSupportKHR(physicalDevice,

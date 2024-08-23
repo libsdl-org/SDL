@@ -165,7 +165,7 @@ static int GetHitButtonIndex(SDL_MessageBoxDataX11 *data, int x, int y)
 }
 
 // Initialize SDL_MessageBoxData structure and Display, etc.
-static int X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBoxData *messageboxdata, int *pbuttonid)
+static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBoxData *messageboxdata, int *pbuttonid)
 {
     int i;
     int numbuttons = messageboxdata->numbuttons;
@@ -220,22 +220,22 @@ static int X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBoxD
         data->color[i] = SDL_MAKE_RGB(colorhints[i].r, colorhints[i].g, colorhints[i].b);
     }
 
-    return 0;
+    return true;
 }
 
 static int CountLinesOfText(const char *text)
 {
-    int retval = 0;
+    int result = 0;
     while (text && *text) {
         const char *lf = SDL_strchr(text, '\n');
-        retval++; // even without an endline, this counts as a line.
+        result++; // even without an endline, this counts as a line.
         text = lf ? lf + 1 : NULL;
     }
-    return retval;
+    return result;
 }
 
 // Calculate and initialize text and button locations.
-static int X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
+static bool X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
 {
     int i;
     int ybuttons;
@@ -251,7 +251,7 @@ static int X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
         TextLineData *plinedata = (TextLineData *)SDL_malloc(sizeof(TextLineData) * linecount);
 
         if (!plinedata) {
-            return -1;
+            return false;
         }
 
         data->linedata = plinedata;
@@ -361,7 +361,7 @@ static int X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
         }
     }
 
-    return 0;
+    return true;
 }
 
 // Free SDL_MessageBoxData data.
@@ -398,7 +398,7 @@ static void X11_MessageBoxShutdown(SDL_MessageBoxDataX11 *data)
 }
 
 // Create and set up our X11 dialog box indow.
-static int X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
+static bool X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
 {
     int x, y;
     XSizeHints *sizehints;
@@ -516,7 +516,7 @@ static int X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
     }
 #endif
 
-    return 0;
+    return true;
 }
 
 // Draw our message box.
@@ -606,7 +606,7 @@ static Bool X11_MessageBoxEventTest(Display *display, XEvent *event, XPointer ar
 }
 
 // Loop and handle message box event messages until something kills it.
-static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
+static bool X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
 {
     GC ctx;
     XGCValues ctx_vals;
@@ -758,12 +758,12 @@ static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
     }
 
     X11_XFreeGC(data->display, ctx);
-    return 0;
+    return true;
 }
 
-static int X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
-    int ret;
+    bool result = false;
     SDL_MessageBoxDataX11 data;
 #if SDL_SET_LOCALE
     char *origlocale;
@@ -772,7 +772,7 @@ static int X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int 
     SDL_zero(data);
 
     if (!SDL_X11_LoadSymbols()) {
-        return -1;
+        return false;
     }
 
 #if SDL_SET_LOCALE
@@ -780,7 +780,7 @@ static int X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int 
     if (origlocale) {
         origlocale = SDL_strdup(origlocale);
         if (!origlocale) {
-            return -1;
+            return false;
         }
         (void)setlocale(LC_ALL, "");
     }
@@ -793,15 +793,10 @@ static int X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int 
     *buttonID = -1;
 
     // Init and display the message box.
-    ret = X11_MessageBoxInit(&data, messageboxdata, buttonID);
-    if (ret != -1) {
-        ret = X11_MessageBoxInitPositions(&data);
-        if (ret != -1) {
-            ret = X11_MessageBoxCreateWindow(&data);
-            if (ret != -1) {
-                ret = X11_MessageBoxLoop(&data);
-            }
-        }
+    if (X11_MessageBoxInit(&data, messageboxdata, buttonID) &&
+        X11_MessageBoxInitPositions(&data) &&
+        X11_MessageBoxCreateWindow(&data)) {
+        result = X11_MessageBoxLoop(&data);
     }
 
     X11_MessageBoxShutdown(&data);
@@ -813,17 +808,18 @@ static int X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int 
     }
 #endif
 
-    return ret;
+    return result;
 }
 
 // Display an x11 message box.
-int X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+bool X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
 #if SDL_FORK_MESSAGEBOX
     // Use a child process to protect against setlocale(). Annoying.
     pid_t pid;
     int fds[2];
     int status = 0;
+    bool result = true;
 
     if (pipe(fds) == -1) {
         return X11_ShowMessageBoxImpl(messageboxdata, buttonID); // oh well.
@@ -837,10 +833,10 @@ int X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     } else if (pid == 0) {                                       // we're the child
         int exitcode = 0;
         close(fds[0]);
-        status = X11_ShowMessageBoxImpl(messageboxdata, buttonID);
-        if (write(fds[1], &status, sizeof(int)) != sizeof(int)) {
+        result = X11_ShowMessageBoxImpl(messageboxdata, buttonID);
+        if (write(fds[1], &result, sizeof(result)) != sizeof(result)) {
             exitcode = 1;
-        } else if (write(fds[1], buttonID, sizeof(int)) != sizeof(int)) {
+        } else if (write(fds[1], buttonID, sizeof(*buttonID)) != sizeof(*buttonID)) {
             exitcode = 1;
         }
         close(fds[1]);
@@ -855,15 +851,15 @@ int X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
         SDL_assert(rc == pid); // not sure what to do if this fails.
 
         if ((rc == -1) || (!WIFEXITED(status)) || (WEXITSTATUS(status) != 0)) {
-            status = SDL_SetError("msgbox child process failed");
-        } else if ((read(fds[0], &status, sizeof(int)) != sizeof(int)) ||
-                   (read(fds[0], buttonID, sizeof(int)) != sizeof(int))) {
-            status = SDL_SetError("read from msgbox child process failed");
+            result = SDL_SetError("msgbox child process failed");
+        } else if ((read(fds[0], &result, sizeof(result)) != sizeof(result)) ||
+                   (read(fds[0], buttonID, sizeof(*buttonID)) != sizeof(*buttonID))) {
+            result = SDL_SetError("read from msgbox child process failed");
             *buttonID = 0;
         }
         close(fds[0]);
 
-        return status;
+        return result;
     }
 #else
     return X11_ShowMessageBoxImpl(messageboxdata, buttonID);

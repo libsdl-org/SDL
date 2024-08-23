@@ -123,9 +123,9 @@ void SDL_WAYLAND_UnloadSymbols(void)
 }
 
 // returns non-zero if all needed symbols were loaded.
-int SDL_WAYLAND_LoadSymbols(void)
+bool SDL_WAYLAND_LoadSymbols(void)
 {
-    int rc = 1; // always succeed if not using Dynamic WAYLAND stuff.
+    bool result = true; // always succeed if not using Dynamic WAYLAND stuff.
 
     // deal with multiple modules (dga, wayland, etc) needing these symbols...
     if (wayland_load_refcount++ == 0) {
@@ -156,7 +156,7 @@ int SDL_WAYLAND_LoadSymbols(void)
         } else {
             // in case something got loaded...
             SDL_WAYLAND_UnloadSymbols();
-            rc = 0;
+            result = false;
         }
 
 #else // no dynamic WAYLAND
@@ -170,7 +170,7 @@ int SDL_WAYLAND_LoadSymbols(void)
 #endif
     }
 
-    return rc;
+    return result;
 }
 
 #endif // SDL_VIDEO_DRIVER_WAYLAND

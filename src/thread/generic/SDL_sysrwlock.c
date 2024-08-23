@@ -36,8 +36,6 @@
 #define SDL_DestroyRWLock_generic SDL_DestroyRWLock
 #define SDL_LockRWLockForReading_generic SDL_LockRWLockForReading
 #define SDL_LockRWLockForWriting_generic SDL_LockRWLockForWriting
-#define SDL_TryLockRWLockForReading_generic SDL_TryLockRWLockForReading
-#define SDL_TryLockRWLockForWriting_generic SDL_TryLockRWLockForWriting
 #define SDL_UnlockRWLock_generic SDL_UnlockRWLock
 #endif
 
@@ -122,14 +120,13 @@ void SDL_LockRWLockForWriting_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_A
 #endif
 }
 
-int SDL_TryLockRWLockForReading_generic(SDL_RWLock *rwlock)
+bool SDL_TryLockRWLockForReading_generic(SDL_RWLock *rwlock)
 {
 #ifndef SDL_THREADS_DISABLED
     if (rwlock) {
-        const int rc = SDL_TryLockMutex(rwlock->lock);
-        if (rc != 0) {
+        if (!SDL_TryLockMutex(rwlock->lock)) {
             // !!! FIXME: there is a small window where a reader has to lock the mutex, and if we hit that, we will return SDL_RWLOCK_TIMEDOUT even though we could have shared the lock.
-            return rc;
+            return false;
         }
 
         SDL_assert(SDL_AtomicGet(&rwlock->writer_count) == 0);  // shouldn't be able to grab lock if there's a writer!
@@ -138,21 +135,27 @@ int SDL_TryLockRWLockForReading_generic(SDL_RWLock *rwlock)
     }
 #endif
 
-    return 0;
+    return true;
 }
 
-int SDL_TryLockRWLockForWriting_generic(SDL_RWLock *rwlock)
+#ifndef SDL_THREAD_GENERIC_RWLOCK_SUFFIX
+SDL_bool SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
+{
+    return SDL_TryLockRWLockForReading_generic(rwlock);
+}
+#endif
+
+bool SDL_TryLockRWLockForWriting_generic(SDL_RWLock *rwlock)
 {
 #ifndef SDL_THREADS_DISABLED
     if (rwlock) {
-        const int rc = SDL_TryLockMutex(rwlock->lock);
-        if (rc != 0) {
-            return rc;
+        if (!SDL_TryLockMutex(rwlock->lock)) {
+            return false;
         }
 
         if (SDL_AtomicGet(&rwlock->reader_count) > 0) {  // a reader is using the shared lock, treat it as unavailable.
             SDL_UnlockMutex(rwlock->lock);
-            return SDL_RWLOCK_TIMEDOUT;
+            return false;
         }
 
         // we hold the lock!
@@ -160,8 +163,15 @@ int SDL_TryLockRWLockForWriting_generic(SDL_RWLock *rwlock)
     }
 #endif
 
-    return 0;
+    return true;
 }
+
+#ifndef SDL_THREAD_GENERIC_RWLOCK_SUFFIX
+SDL_bool SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
+{
+    return SDL_TryLockRWLockForWriting_generic(rwlock);
+}
+#endif
 
 void SDL_UnlockRWLock_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {

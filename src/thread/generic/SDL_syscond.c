@@ -37,7 +37,6 @@
 #define SDL_DestroyCondition_generic     SDL_DestroyCondition
 #define SDL_SignalCondition_generic      SDL_SignalCondition
 #define SDL_BroadcastCondition_generic   SDL_BroadcastCondition
-#define SDL_WaitConditionTimeoutNS_generic SDL_WaitConditionTimeoutNS
 #endif
 
 typedef struct SDL_cond_generic
@@ -89,11 +88,11 @@ void SDL_DestroyCondition_generic(SDL_Condition *_cond)
 }
 
 // Restart one of the threads that are waiting on the condition variable
-int SDL_SignalCondition_generic(SDL_Condition *_cond)
+void SDL_SignalCondition_generic(SDL_Condition *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (!cond) {
-        return SDL_InvalidParamError("cond");
+        return;
     }
 
 #ifndef SDL_THREADS_DISABLED
@@ -110,16 +109,14 @@ int SDL_SignalCondition_generic(SDL_Condition *_cond)
         SDL_UnlockMutex(cond->lock);
     }
 #endif
-
-    return 0;
 }
 
 // Restart all threads that are waiting on the condition variable
-int SDL_BroadcastCondition_generic(SDL_Condition *_cond)
+void SDL_BroadcastCondition_generic(SDL_Condition *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (!cond) {
-        return SDL_InvalidParamError("cond");
+        return;
     }
 
 #ifndef SDL_THREADS_DISABLED
@@ -146,8 +143,6 @@ int SDL_BroadcastCondition_generic(SDL_Condition *_cond)
         SDL_UnlockMutex(cond->lock);
     }
 #endif
-
-    return 0;
 }
 
 /* Wait on the condition variable for at most 'timeoutNS' nanoseconds.
@@ -171,13 +166,13 @@ Thread B:
     SDL_SignalCondition(cond);
     SDL_UnlockMutex(lock);
  */
-int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+bool SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
-    int retval = 0;
+    bool result = true;
 
-    if (!cond) {
-        return SDL_InvalidParamError("cond");
+    if (!cond || !mutex) {
+        return true;
     }
 
 #ifndef SDL_THREADS_DISABLED
@@ -193,7 +188,7 @@ int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, S
     SDL_UnlockMutex(mutex);
 
     // Wait for a signal
-    retval = SDL_WaitSemaphoreTimeoutNS(cond->wait_sem, timeoutNS);
+    result = SDL_WaitSemaphoreTimeoutNS(cond->wait_sem, timeoutNS);
 
     /* Let the signaler know we have completed the wait, otherwise
        the signaler can race ahead and get the condition semaphore
@@ -204,7 +199,7 @@ int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, S
     SDL_LockMutex(cond->lock);
     if (cond->signals > 0) {
         // If we timed out, we need to eat a condition signal
-        if (retval > 0) {
+        if (!result) {
             SDL_WaitSemaphore(cond->wait_sem);
         }
         // We always notify the signal thread that we are done
@@ -220,5 +215,12 @@ int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, S
     SDL_LockMutex(mutex);
 #endif
 
-    return retval;
+    return result;
 }
+
+#ifndef SDL_THREAD_GENERIC_COND_SUFFIX
+SDL_bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+{
+    return SDL_WaitConditionTimeoutNS_generic(cond, mutex, timeoutNS);
+}
+#endif

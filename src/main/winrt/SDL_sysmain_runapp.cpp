@@ -29,12 +29,17 @@ extern "C"
 int SDL_RunApp(int, char**, SDL_main_func mainFunction, void * xamlBackgroundPanel)
 {
     if (xamlBackgroundPanel) {
-        return SDL_WinRTInitXAMLApp(mainFunction, xamlBackgroundPanel);
+        if (!SDL_WinRTInitXAMLApp(mainFunction, xamlBackgroundPanel)) {
+            return 1;
+        }
     } else {
         if (FAILED(Windows::Foundation::Initialize(RO_INIT_MULTITHREADED))) {
             return 1;
         }
-        return SDL_WinRTInitNonXAMLApp(mainFunction);
+        if (!SDL_WinRTInitNonXAMLApp(mainFunction)) {
+            return 1;
+        }
     }
+    return 0;
 }
 

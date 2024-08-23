@@ -27,9 +27,9 @@
 // Useful functions and variables from SDL_gamepad.c
 
 // Initialization and shutdown functions
-extern int SDL_InitGamepadMappings(void);
+extern bool SDL_InitGamepadMappings(void);
 extern void SDL_QuitGamepadMappings(void);
-extern int SDL_InitGamepads(void);
+extern bool SDL_InitGamepads(void);
 extern void SDL_QuitGamepads(void);
 
 extern void SDL_PrivateGamepadAdded(SDL_JoystickID instance_id);

@@ -91,5 +91,5 @@ bool UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 void UIKit_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 void UIKit_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
 bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
-int UIKit_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
+bool UIKit_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
 #endif

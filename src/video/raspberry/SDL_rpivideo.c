@@ -123,7 +123,7 @@ static SDL_VideoDevice *RPI_Create(void)
     device->GL_SetSwapInterval = RPI_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = RPI_GLES_GetSwapInterval;
     device->GL_SwapWindow = RPI_GLES_SwapWindow;
-    device->GL_DeleteContext = RPI_GLES_DeleteContext;
+    device->GL_DestroyContext = RPI_GLES_DestroyContext;
     device->GL_DefaultProfileConfig = RPI_GLES_DefaultProfileConfig;
 
     device->PumpEvents = RPI_PumpEvents;
@@ -186,7 +186,7 @@ static void AddDispManXDisplay(const int display_id)
     SDL_AddVideoDisplay(&display, false);
 }
 
-int RPI_VideoInit(SDL_VideoDevice *_this)
+bool RPI_VideoInit(SDL_VideoDevice *_this)
 {
     // Initialize BCM Host
     bcm_host_init();
@@ -195,14 +195,14 @@ int RPI_VideoInit(SDL_VideoDevice *_this)
     AddDispManXDisplay(DISPMANX_ID_FORCE_OTHER); // an "other" display...maybe DSI-connected screen while HDMI is your main
 
 #ifdef SDL_INPUT_LINUXEV
-    if (SDL_EVDEV_Init() < 0) {
-        return -1;
+    if (!SDL_EVDEV_Init()) {
+        return false;
     }
 #endif
 
     RPI_InitMouse(_this);
 
-    return 1;
+    return true;
 }
 
 void RPI_VideoQuit(SDL_VideoDevice *_this)
@@ -221,7 +221,7 @@ static void RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)
     SDL_UnlockMutex(wdata->vsync_cond_mutex);
 }
 
-int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *wdata;
     SDL_VideoDisplay *display;
@@ -241,7 +241,7 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     // Allocate window internal data
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!wdata) {
-        return -1;
+        return false;
     }
     display = SDL_GetVideoDisplayForWindow(window);
     displaydata = display->internal;
@@ -285,8 +285,8 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     vc_dispmanx_update_submit_sync(dispman_update);
 
     if (!_this->egl_data) {
-        if (SDL_GL_LoadLibrary(NULL) < 0) {
-            return -1;
+        if (!SDL_GL_LoadLibrary(NULL)) {
+            return false;
         }
     }
     wdata->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)&wdata->dispman_window);
@@ -312,7 +312,7 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     SDL_SetKeyboardFocus(window);
 
     // Window has been successfully created
-    return 0;
+    return true;
 }
 
 void RPI_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -346,7 +346,7 @@ void RPI_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 void RPI_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
-int RPI_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+bool RPI_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return SDL_Unsupported();
 }

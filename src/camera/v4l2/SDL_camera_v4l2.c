@@ -22,13 +22,14 @@
 
 #ifdef SDL_CAMERA_DRIVER_V4L2
 
-#include <stddef.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>              // low-level i/o
+#include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>              // low-level i/o
+#include <stddef.h>
+#include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <linux/videodev2.h>
 
 #ifndef V4L2_CAP_DEVICE_CAPS
@@ -88,11 +89,11 @@ static int xioctl(int fh, int request, void *arg)
     return r;
 }
 
-static int V4L2_WaitDevice(SDL_Camera *device)
+static bool V4L2_WaitDevice(SDL_Camera *device)
 {
     const int fd = device->hidden->fd;
 
-    int retval;
+    int rc;
 
     do {
         fd_set fds;
@@ -103,22 +104,22 @@ static int V4L2_WaitDevice(SDL_Camera *device)
         tv.tv_sec = 0;
         tv.tv_usec = 100 * 1000;
 
-        retval = select(fd + 1, &fds, NULL, NULL, &tv);
-        if ((retval == -1) && (errno == EINTR)) {
-            retval = 0;  // pretend it was a timeout, keep looping.
+        rc = select(fd + 1, &fds, NULL, NULL, &tv);
+        if ((rc == -1) && (errno == EINTR)) {
+            rc = 0;  // pretend it was a timeout, keep looping.
         }
 
         // Thread is requested to shut down
         if (SDL_AtomicGet(&device->shutdown)) {
-            return 0;
+            return true;
         }
 
-    } while (retval == 0);
+    } while (rc == 0);
 
-    return retval;
+    return false;
 }
 
-static int V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
     const int fd = device->hidden->fd;
     const io_method io = device->hidden->io;
@@ -129,15 +130,16 @@ static int V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *tim
         case IO_METHOD_READ:
             if (read(fd, device->hidden->buffers[0].start, size) == -1) {
                 switch (errno) {
-                    case EAGAIN:
-                        return 0;
+                case EAGAIN:
+                    return SDL_CAMERA_FRAME_SKIP;
 
-                    case EIO:
-                        // Could ignore EIO, see spec.
-                        // fall through
+                case EIO:
+                    // Could ignore EIO, see spec.
+                    // fall through
 
-                    default:
-                        return SDL_SetError("read");
+                default:
+                    SDL_SetError("read");
+                    return SDL_CAMERA_FRAME_ERROR;
                 }
             }
 
@@ -154,20 +156,22 @@ static int V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *tim
 
             if (xioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
                 switch (errno) {
-                    case EAGAIN:
-                        return 0;
+                case EAGAIN:
+                    return SDL_CAMERA_FRAME_SKIP;
 
-                    case EIO:
-                        // Could ignore EIO, see spec.
-                        // fall through
+                case EIO:
+                    // Could ignore EIO, see spec.
+                    // fall through
 
-                    default:
-                        return SDL_SetError("VIDIOC_DQBUF: %d", errno);
+                default:
+                    SDL_SetError("VIDIOC_DQBUF: %d", errno);
+                    return SDL_CAMERA_FRAME_ERROR;
                 }
             }
 
             if ((int)buf.index < 0 || (int)buf.index >= device->hidden->nb_buffers) {
-                return SDL_SetError("invalid buffer index");
+                SDL_SetError("invalid buffer index");
+                return SDL_CAMERA_FRAME_ERROR;
             }
 
             frame->pixels = device->hidden->buffers[buf.index].start;
@@ -189,16 +193,16 @@ static int V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *tim
 
             if (xioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
                 switch (errno) {
-                    case EAGAIN:
-                        return 0;
+                case EAGAIN:
+                    return SDL_CAMERA_FRAME_SKIP;
 
-                    case EIO:
-                        // Could ignore EIO, see spec.
+                case EIO:
+                    // Could ignore EIO, see spec.
+                    // fall through
 
-                        // fall through
-
-                    default:
-                        return SDL_SetError("VIDIOC_DQBUF");
+                default:
+                    SDL_SetError("VIDIOC_DQBUF");
+                    return SDL_CAMERA_FRAME_ERROR;
                 }
             }
 
@@ -210,7 +214,8 @@ static int V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *tim
             }
 
             if (i >= device->hidden->nb_buffers) {
-                return SDL_SetError("invalid buffer index");
+                SDL_SetError("invalid buffer index");
+                return SDL_CAMERA_FRAME_ERROR;
             }
 
             frame->pixels = (void*)buf.m.userptr;
@@ -229,7 +234,7 @@ static int V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *tim
             break;
     }
 
-    return 1;
+    return SDL_CAMERA_FRAME_READY;
 }
 
 static void V4L2_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
@@ -289,7 +294,7 @@ static void V4L2_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
     }
 }
 
-static int EnqueueBuffers(SDL_Camera *device)
+static bool EnqueueBuffers(SDL_Camera *device)
 {
     const int fd = device->hidden->fd;
     const io_method io = device->hidden->io;
@@ -335,17 +340,17 @@ static int EnqueueBuffers(SDL_Camera *device)
 
         case IO_METHOD_INVALID: SDL_assert(!"Shouldn't have hit this"); break;
     }
-    return 0;
+    return true;
 }
 
-static int AllocBufferRead(SDL_Camera *device, size_t buffer_size)
+static bool AllocBufferRead(SDL_Camera *device, size_t buffer_size)
 {
     device->hidden->buffers[0].length = buffer_size;
     device->hidden->buffers[0].start = SDL_calloc(1, buffer_size);
-    return device->hidden->buffers[0].start ? 0 : -1;
+    return (device->hidden->buffers[0].start != NULL);
 }
 
-static int AllocBufferMmap(SDL_Camera *device)
+static bool AllocBufferMmap(SDL_Camera *device)
 {
     const int fd = device->hidden->fd;
     int i;
@@ -374,10 +379,10 @@ static int AllocBufferMmap(SDL_Camera *device)
             return SDL_SetError("mmap");
         }
     }
-    return 0;
+    return true;
 }
 
-static int AllocBufferUserPtr(SDL_Camera *device, size_t buffer_size)
+static bool AllocBufferUserPtr(SDL_Camera *device, size_t buffer_size)
 {
     int i;
     for (i = 0; i < device->hidden->nb_buffers; ++i) {
@@ -385,10 +390,10 @@ static int AllocBufferUserPtr(SDL_Camera *device, size_t buffer_size)
         device->hidden->buffers[i].start = SDL_calloc(1, buffer_size);
 
         if (!device->hidden->buffers[i].start) {
-            return -1;
+            return false;
         }
     }
-    return 0;
+    return true;
 }
 
 static void format_v4l2_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
@@ -415,7 +420,7 @@ static Uint32 format_sdl_to_v4l2(SDL_PixelFormat fmt)
         CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_UNKNOWN);
         #undef CASE
         default:
-            return 0;
+            return true;
     }
 }
 
@@ -470,7 +475,7 @@ static void V4L2_CloseDevice(SDL_Camera *device)
     }
 }
 
-static int V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
+static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
     const V4L2DeviceHandle *handle = (const V4L2DeviceHandle *) device->handle;
     struct stat st;
@@ -501,7 +506,7 @@ static int V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     device->hidden = (struct SDL_PrivateCameraData *) SDL_calloc(1, sizeof (struct SDL_PrivateCameraData));
     if (device->hidden == NULL) {
         close(fd);
-        return -1;
+        return false;
     }
 
     device->hidden->fd = fd;
@@ -597,13 +602,15 @@ static int V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 
     device->hidden->buffers = SDL_calloc(device->hidden->nb_buffers, sizeof(*device->hidden->buffers));
     if (!device->hidden->buffers) {
-        return -1;
+        return false;
     }
 
     size_t size, pitch;
-    SDL_CalculateSurfaceSize(device->spec.format, device->spec.width, device->spec.height, &size, &pitch, false);
+    if (!SDL_CalculateSurfaceSize(device->spec.format, device->spec.width, device->spec.height, &size, &pitch, false)) {
+        return false;
+    }
 
-    int rc = 0;
+    bool rc = true;
     switch (io) {
         case IO_METHOD_READ:
             rc = AllocBufferRead(device, size);
@@ -622,10 +629,10 @@ static int V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
             break;
     }
 
-    if (rc < 0) {
-        return -1;
-    } else if (EnqueueBuffers(device) < 0) {
-        return -1;
+    if (!rc) {
+        return false;
+    } else if (!EnqueueBuffers(device)) {
+        return false;
     } else if (io != IO_METHOD_READ) {
         enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         if (xioctl(fd, VIDIOC_STREAMON, &type) == -1) {
@@ -636,7 +643,7 @@ static int V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     // Currently there is no user permission prompt for camera access, but maybe there will be a D-Bus portal interface at some point.
     SDL_CameraPermissionOutcome(device, true);
 
-    return 0;
+    return true;
 }
 
 static bool FindV4L2CameraByBusInfoCallback(SDL_Camera *device, void *userdata)
@@ -645,7 +652,7 @@ static bool FindV4L2CameraByBusInfoCallback(SDL_Camera *device, void *userdata)
     return (SDL_strcmp(handle->bus_info, (const char *) userdata) == 0);
 }
 
-static int AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFormat sdlfmt, SDL_Colorspace colorspace, Uint32 v4l2fmt, int w, int h)
+static bool AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFormat sdlfmt, SDL_Colorspace colorspace, Uint32 v4l2fmt, int w, int h)
 {
     struct v4l2_frmivalenum frmivalenum;
     SDL_zero(frmivalenum);
@@ -661,8 +668,8 @@ static int AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFor
             const float fps = (float) denominator / (float) numerator;
             SDL_Log("CAMERA:       * Has discrete frame interval (%d / %d), fps=%f", numerator, denominator, fps);
             #endif
-            if (SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, denominator, numerator) == -1) {
-                return -1;  // Probably out of memory; we'll go with what we have, if anything.
+            if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, denominator, numerator)) {
+                return false;  // Probably out of memory; we'll go with what we have, if anything.
             }
             frmivalenum.index++;  // set up for the next one.
         } else if ((frmivalenum.type == V4L2_FRMIVAL_TYPE_STEPWISE) || (frmivalenum.type == V4L2_FRMIVAL_TYPE_CONTINUOUS)) {
@@ -674,8 +681,8 @@ static int AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFor
                 SDL_Log("CAMERA:       * Has %s frame interval (%d / %d), fps=%f", (frmivalenum.type == V4L2_FRMIVAL_TYPE_STEPWISE) ? "stepwise" : "continuous", n, d, fps);
                 #endif
                 // SDL expects framerate, V4L2 provides interval
-                if (SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, d, n) == -1) {
-                    return -1;  // Probably out of memory; we'll go with what we have, if anything.
+                if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, d, n)) {
+                    return false;  // Probably out of memory; we'll go with what we have, if anything.
                 }
                 d += (int) frmivalenum.stepwise.step.denominator;
             }
@@ -683,7 +690,7 @@ static int AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFor
         }
     }
 
-    return 0;
+    return true;
 }
 
 
@@ -756,7 +763,7 @@ static void MaybeAddDevice(const char *path)
                 #if DEBUG_CAMERA
                 SDL_Log("CAMERA:     * Has discrete size %dx%d", w, h);
                 #endif
-                if (AddCameraFormat(fd, &add_data, sdlfmt, colorspace, fmtdesc.pixelformat, w, h) == -1) {
+                if (!AddCameraFormat(fd, &add_data, sdlfmt, colorspace, fmtdesc.pixelformat, w, h)) {
                     break;  // Probably out of memory; we'll go with what we have, if anything.
                 }
                 frmsizeenum.index++;  // set up for the next one.
@@ -772,7 +779,7 @@ static void MaybeAddDevice(const char *path)
                         #if DEBUG_CAMERA
                         SDL_Log("CAMERA:     * Has %s size %dx%d", (frmsizeenum.type == V4L2_FRMSIZE_TYPE_STEPWISE) ? "stepwise" : "continuous", w, h);
                         #endif
-                        if (AddCameraFormat(fd, &add_data, sdlfmt, colorspace, fmtdesc.pixelformat, w, h) == -1) {
+                        if (!AddCameraFormat(fd, &add_data, sdlfmt, colorspace, fmtdesc.pixelformat, w, h)) {
                             break;  // Probably out of memory; we'll go with what we have, if anything.
                         }
                     }
@@ -856,12 +863,14 @@ static void V4L2_Deinitialize(void)
 static void V4L2_DetectDevices(void)
 {
 #ifdef SDL_USE_LIBUDEV
-    if (SDL_UDEV_Init() == 0) {
-        if (SDL_UDEV_AddCallback(CameraUdevCallback) == 0) {
+    if (SDL_UDEV_Init()) {
+        if (SDL_UDEV_AddCallback(CameraUdevCallback)) {
             SDL_UDEV_Scan();  // Force a scan to build the initial device list
         }
+        return;
     }
-#else
+#endif // SDL_USE_LIBUDEV
+
     DIR *dirp = opendir("/dev");
     if (dirp) {
         struct dirent *dent;
@@ -875,7 +884,6 @@ static void V4L2_DetectDevices(void)
         }
         closedir(dirp);
     }
-#endif // SDL_USE_LIBUDEV
 }
 
 static bool V4L2_Init(SDL_CameraDriverImpl *impl)

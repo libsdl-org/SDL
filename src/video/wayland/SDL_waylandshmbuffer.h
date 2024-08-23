@@ -32,7 +32,7 @@ struct Wayland_SHMBuffer
 };
 
 // Allocates an SHM buffer with the format WL_SHM_FORMAT_ARGB8888
-extern int Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shmBuffer);
+extern bool Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shmBuffer);
 extern void Wayland_ReleaseSHMBuffer(struct Wayland_SHMBuffer *shmBuffer);
 
 #endif

@@ -51,11 +51,7 @@ extern "C"
 
     static int numjoysticks = 0;
 
-/* Function to scan the system for joysticks.
- * Joystick 0 should be the system default joystick.
- * It should return 0, or -1 on an unrecoverable fatal error.
- */
-    static int HAIKU_JoystickInit(void)
+    static bool HAIKU_JoystickInit(void)
     {
         BJoystick joystick;
         int i;
@@ -81,7 +77,7 @@ extern "C"
                 }
             }
         }
-        return (numjoysticks);
+        return true;
     }
 
     static int HAIKU_JoystickGetCount(void)
@@ -123,7 +119,6 @@ extern "C"
     {
     }
 
-// Function to perform the mapping from device index to the instance id for this index
     static SDL_JoystickID HAIKU_JoystickGetDeviceInstanceID(int device_index)
     {
         return device_index + 1;
@@ -131,19 +126,14 @@ extern "C"
 
     static void HAIKU_JoystickClose(SDL_Joystick *joystick);
 
-/* Function to open a joystick for use.
-   The joystick to open is specified by the device index.
-   This should fill the nbuttons and naxes fields of the joystick structure.
-   It returns 0, or -1 if there is an error.
- */
-    static int HAIKU_JoystickOpen(SDL_Joystick *joystick, int device_index)
+    static bool HAIKU_JoystickOpen(SDL_Joystick *joystick, int device_index)
     {
         BJoystick *stick;
 
         // Create the joystick data structure
         joystick->hwdata = (struct joystick_hwdata *) SDL_calloc(1, sizeof(*joystick->hwdata));
         if (joystick->hwdata == NULL) {
-            return -1;
+            return false;
         }
         stick = new BJoystick;
         joystick->hwdata->stick = stick;
@@ -166,11 +156,11 @@ extern "C"
         joystick->hwdata->new_hats = (uint8 *) SDL_calloc(joystick->nhats, sizeof(uint8));
         if (!joystick->hwdata->new_hats || !joystick->hwdata->new_axes) {
             HAIKU_JoystickClose(joystick);
-            return -1;
+            return false;
         }
 
         // We're done!
-        return 0;
+        return true;
     }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -262,35 +252,34 @@ extern "C"
         return SDL_CreateJoystickGUIDForName(name);
     }
 
-    static int HAIKU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+    static bool HAIKU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
     {
         return SDL_Unsupported();
     }
 
 
-    static int HAIKU_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+    static bool HAIKU_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
     {
         return SDL_Unsupported();
     }
 
-    static bool
-    HAIKU_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+    static bool HAIKU_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     {
         return false;
     }
 
-    static int HAIKU_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+    static bool HAIKU_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
     {
         return SDL_Unsupported();
     }
 
 
-    static int HAIKU_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+    static bool HAIKU_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
     {
         return SDL_Unsupported();
     }
 
-    static int HAIKU_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
+    static bool HAIKU_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
     {
         return SDL_Unsupported();
     }

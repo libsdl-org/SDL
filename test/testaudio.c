@@ -152,14 +152,14 @@ static void SetDefaultTitleBar(void)
 static Thing *FindThingAtPoint(const float x, const float y)
 {
     const SDL_FPoint pt = { x, y };
-    Thing *retval = NULL;
+    Thing *result = NULL;
     Thing *i;
     for (i = things; i; i = i->next) {
         if ((i != dragging_thing) && SDL_PointInRectFloat(&pt, &i->rect)) {
-            retval = i;  /* keep going, though, because things drawn on top are later in the list. */
+            result = i;  /* keep going, though, because things drawn on top are later in the list. */
         }
     }
-    return retval;
+    return result;
 }
 
 static Thing *UpdateMouseOver(const float x, const float y)
@@ -667,7 +667,7 @@ static Thing *LoadWavThing(const char *fname, float x, float y)
         fname = path;
     }
 
-    if (SDL_LoadWAV(fname, &spec, &buf, &buflen) == 0) {
+    if (SDL_LoadWAV(fname, &spec, &buf, &buflen)) {
         static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_NULL };
         char *titlebar = NULL;
         const char *nodirs = SDL_strrchr(fname, '/');

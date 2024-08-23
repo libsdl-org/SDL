@@ -41,7 +41,7 @@
 #define kDisplayModeNativeFlag 0x02000000
 #endif
 
-static int CG_SetError(const char *prefix, CGDisplayErr result)
+static bool CG_SetError(const char *prefix, CGDisplayErr result)
 {
     const char *error;
 
@@ -409,7 +409,7 @@ void Cocoa_UpdateDisplays(SDL_VideoDevice *_this)
     }
 }
 
-int Cocoa_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+bool Cocoa_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->internal;
     CGRect cgrect;
@@ -419,10 +419,10 @@ int Cocoa_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SD
     rect->y = (int)cgrect.origin.y;
     rect->w = (int)cgrect.size.width;
     rect->h = (int)cgrect.size.height;
-    return 0;
+    return true;
 }
 
-int Cocoa_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+bool Cocoa_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->internal;
     NSScreen *screen = GetNSScreenForDisplayID(displaydata->display);
@@ -439,10 +439,10 @@ int Cocoa_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
         rect->h = (int)frame.size.height;
     }
 
-    return 0;
+    return true;
 }
 
-int Cocoa_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+bool Cocoa_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *data = (SDL_DisplayData *)display->internal;
     CVDisplayLinkRef link = NULL;
@@ -498,7 +498,7 @@ int Cocoa_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     }
 
     CVDisplayLinkRelease(link);
-    return 0;
+    return true;
 }
 
 static CGError SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayModeData *data)
@@ -519,7 +519,7 @@ static CGError SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayMo
     return result;
 }
 
-int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+bool Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->internal;
     SDL_DisplayModeData *data = mode->internal;
@@ -550,10 +550,9 @@ int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
     b_inModeTransition = false;
 
     if (result != kCGErrorSuccess) {
-        CG_SetError("CGDisplaySwitchToMode()", result);
-        return -1;
+        return CG_SetError("CGDisplaySwitchToMode()", result);
     }
-    return 0;
+    return true;
 }
 
 void Cocoa_QuitModes(SDL_VideoDevice *_this)

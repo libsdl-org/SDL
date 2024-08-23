@@ -136,16 +136,16 @@ SDL_bool SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval)
 #elif defined(SDL_PLATFORM_SOLARIS)
     return ((int)atomic_cas_uint((volatile uint_t *)&a->value, (uint_t)oldval, (uint_t)newval) == oldval);
 #elif defined(EMULATE_CAS)
-    bool retval = false;
+    bool result = false;
 
     enterLock(a);
     if (a->value == oldval) {
         a->value = newval;
-        retval = true;
+        result = true;
     }
     leaveLock(a);
 
-    return retval;
+    return result;
 #else
 #error Please define your platform.
 #endif
@@ -166,16 +166,16 @@ SDL_bool SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval)
 #elif defined(SDL_PLATFORM_SOLARIS)
     return (atomic_cas_ptr(a, oldval, newval) == oldval);
 #elif defined(EMULATE_CAS)
-    bool retval = false;
+    bool result = false;
 
     enterLock(a);
     if (*a == oldval) {
         *a = newval;
-        retval = true;
+        result = true;
     }
     leaveLock(a);
 
-    return retval;
+    return result;
 #else
 #error Please define your platform.
 #endif

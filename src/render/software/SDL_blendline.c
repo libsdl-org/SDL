@@ -919,8 +919,7 @@ static BlendLineFunc SDL_CalculateBlendLineFunc(const SDL_PixelFormatDetails *fm
     return NULL;
 }
 
-int SDL_BlendLine(SDL_Surface *dst, int x1, int y1, int x2, int y2,
-                  SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+bool SDL_BlendLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     BlendLineFunc func;
 
@@ -936,15 +935,14 @@ int SDL_BlendLine(SDL_Surface *dst, int x1, int y1, int x2, int y2,
     // Perform clipping
     // FIXME: We don't actually want to clip, as it may change line slope
     if (!SDL_GetRectAndLineIntersection(&dst->internal->clip_rect, &x1, &y1, &x2, &y2)) {
-        return 0;
+        return true;
     }
 
     func(dst, x1, y1, x2, y2, blendMode, r, g, b, a, true);
-    return 0;
+    return true;
 }
 
-int SDL_BlendLines(SDL_Surface *dst, const SDL_Point *points, int count,
-                   SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+bool SDL_BlendLines(SDL_Surface *dst, const SDL_Point *points, int count, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     int i;
     int x1, y1;
@@ -982,7 +980,7 @@ int SDL_BlendLines(SDL_Surface *dst, const SDL_Point *points, int count,
         SDL_BlendPoint(dst, points[count - 1].x, points[count - 1].y,
                        blendMode, r, g, b, a);
     }
-    return 0;
+    return true;
 }
 
 #endif // SDL_VIDEO_RENDER_SW

@@ -96,7 +96,7 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     device->GL_SetSwapInterval = HAIKU_GL_SetSwapInterval;
     device->GL_GetSwapInterval = HAIKU_GL_GetSwapInterval;
     device->GL_SwapWindow = HAIKU_GL_SwapWindow;
-    device->GL_DeleteContext = HAIKU_GL_DeleteContext;
+    device->GL_DestroyContext = HAIKU_GL_DestroyContext;
 #endif
 
     device->SetClipboardText = HAIKU_SetClipboardText;
@@ -208,12 +208,12 @@ static SDL_Cursor * HAIKU_CreateCursor(SDL_Surface * surface, int hot_x, int hot
     return HAIKU_CreateCursorAndData(new BCursor(cursorBitmap, BPoint(hot_x, hot_y)));
 }
 
-static int HAIKU_ShowCursor(SDL_Cursor *cursor)
+static bool HAIKU_ShowCursor(SDL_Cursor *cursor)
 {
 	SDL_Mouse *mouse = SDL_GetMouse();
 
 	if (!mouse) {
-		return 0;
+		return true;
 	}
 
 	if (cursor) {
@@ -225,14 +225,14 @@ static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 		delete hCursor;
 	}
 
-	return 0;
+	return true;
 }
 
-static int HAIKU_SetRelativeMouseMode(bool enabled)
+static bool HAIKU_SetRelativeMouseMode(bool enabled)
 {
     SDL_Window *window = SDL_GetMouseFocus();
     if (!window) {
-      return 0;
+      return true;
     }
 
 	SDL_BWin *bewin = _ToBeWin(window);
@@ -245,7 +245,7 @@ static int HAIKU_SetRelativeMouseMode(bool enabled)
 		_SDL_GLView->SetEventMask(0, 0);
 	bewin->Unlock();
 
-    return 0;
+    return true;
 }
 
 static void HAIKU_MouseInit(SDL_VideoDevice *_this)
@@ -263,11 +263,11 @@ static void HAIKU_MouseInit(SDL_VideoDevice *_this)
 	SDL_SetDefaultCursor(HAIKU_CreateDefaultCursor());
 }
 
-int HAIKU_VideoInit(SDL_VideoDevice *_this)
+bool HAIKU_VideoInit(SDL_VideoDevice *_this)
 {
     // Initialize the Be Application for appserver interaction
-    if (SDL_InitBeApp() < 0) {
-        return -1;
+    if (!SDL_InitBeApp()) {
+        return false;
     }
 
     // Initialize video modes
@@ -289,7 +289,7 @@ int HAIKU_VideoInit(SDL_VideoDevice *_this)
 #endif
 
     // We're done!
-    return 0;
+    return true;
 }
 
 void HAIKU_VideoQuit(SDL_VideoDevice *_this)
@@ -301,12 +301,15 @@ void HAIKU_VideoQuit(SDL_VideoDevice *_this)
 }
 
 // just sticking this function in here so it's in a C++ source file.
-extern "C" { int HAIKU_OpenURL(const char *url); }
-int HAIKU_OpenURL(const char *url)
+extern "C"
+bool HAIKU_OpenURL(const char *url)
 {
     BUrl burl(url);
     const status_t rc = burl.OpenWithPreferredApplication(false);
-    return (rc == B_NO_ERROR) ? 0 : SDL_SetError("URL open failed (err=%d)", (int)rc);
+    if (rc != B_NO_ERROR) {
+        return SDL_SetError("URL open failed (err=%d)", (int)rc);
+    }
+    return true;
 }
 
 #ifdef __cplusplus

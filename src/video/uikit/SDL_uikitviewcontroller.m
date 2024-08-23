@@ -712,7 +712,7 @@ bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-int UIKit_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
+bool UIKit_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
@@ -724,7 +724,7 @@ int UIKit_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
             }
         }
     }
-    return 0;
+    return true;
 }
 
 #endif // SDL_IPHONE_KEYBOARD

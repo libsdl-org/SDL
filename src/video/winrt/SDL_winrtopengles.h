@@ -33,13 +33,13 @@
 #define WINRT_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
 #define WINRT_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define WINRT_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define WINRT_GLES_DeleteContext   SDL_EGL_DeleteContext
+#define WINRT_GLES_DestroyContext   SDL_EGL_DestroyContext
 
-extern int WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern bool WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern void WINRT_GLES_UnloadLibrary(SDL_VideoDevice *_this);
 extern SDL_GLContext WINRT_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WINRT_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WINRT_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern bool WINRT_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool WINRT_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 
 #ifdef __cplusplus
 

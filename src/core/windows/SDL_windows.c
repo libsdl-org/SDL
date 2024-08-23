@@ -54,7 +54,7 @@ typedef enum RO_INIT_TYPE
 #endif
 
 // Sets an error message based on an HRESULT
-int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
+bool WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
 {
     TCHAR buffer[1024];
     char *message;
@@ -73,11 +73,11 @@ int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
     message = WIN_StringToUTF8(buffer);
     SDL_SetError("%s%s%s", prefix ? prefix : "", prefix ? ": " : "", message);
     SDL_free(message);
-    return -1;
+    return false;
 }
 
 // Sets an error message based on GetLastError()
-int WIN_SetError(const char *prefix)
+bool WIN_SetError(const char *prefix)
 {
     return WIN_SetErrorFromHRESULT(prefix, GetLastError());
 }
@@ -207,12 +207,12 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 #else
     #define CHECKWINVER(notdesktop_platform_result, test) \
         static bool checked = false; \
-        static BOOL retval = FALSE; \
+        static BOOL result = FALSE; \
         if (!checked) { \
-            retval = (test); \
+            result = (test); \
             checked = true; \
         } \
-        return retval;
+        return result;
 #endif
 
 // this is the oldest thing we run on (and we may lose support for this in SDL3 at any time!),
@@ -275,7 +275,7 @@ char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     bool rc;
     HKEY hkey;
     DWORD len = 0;
-    char *retval = NULL;
+    char *result = NULL;
 
     if (WIN_IsEqualGUID(guid, &nullguid)) {
         return WIN_StringToUTF8(name); // No GUID, go with what we've got.
@@ -315,9 +315,9 @@ char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 
     strw[len / 2] = 0; // make sure it's null-terminated.
 
-    retval = WIN_StringToUTF8(strw);
+    result = WIN_StringToUTF8(strw);
     SDL_free(strw);
-    return retval ? retval : WIN_StringToUTF8(name);
+    return result ? result : WIN_StringToUTF8(name);
 #endif // if SDL_PLATFORM_WINRT / else
 }
 
