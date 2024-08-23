@@ -234,7 +234,7 @@ static int GAMEINPUT_JoystickInit(void)
 {
     HRESULT hR;
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, true)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, false)) {
         return 0;
     }
 
