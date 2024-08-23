@@ -48,9 +48,9 @@ static int ThreadEntry(SceSize args, void *argp)
     return 0;
 }
 
-int SDL_SYS_CreateThread(SDL_Thread *thread,
-                         SDL_FunctionPointer pfnBeginThread,
-                         SDL_FunctionPointer pfnEndThread)
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                          SDL_FunctionPointer pfnBeginThread,
+                          SDL_FunctionPointer pfnEndThread)
 
 {
     char thread_name[VITA_THREAD_NAME_MAX];
@@ -87,7 +87,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
     }
 
     sceKernelStartThread(thread->handle, 4, &thread);
-    return 0;
+    return true;
 }
 
 void SDL_SYS_SetupThread(const char *name)
@@ -111,7 +111,7 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
     // Do nothing.
 }
 
-int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
     int value = VITA_THREAD_PRIORITY_NORMAL;
 
@@ -130,7 +130,10 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         break;
     }
 
-    return sceKernelChangeThreadPriority(0, value);
+    if (sceKernelChangeThreadPriority(0, value) < 0) {
+        return SDL_SetError("sceKernelChangeThreadPriority() failed");
+    }
+    return true;
 }
 
 #endif // SDL_THREAD_VITA

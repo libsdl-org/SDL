@@ -29,7 +29,7 @@
 
 
 // Pixel format functions
-extern int SDL_CalculateSurfaceSize(SDL_PixelFormat format, int width, int height, size_t *size, size_t *pitch, bool minimalPitch);
+extern bool SDL_CalculateSurfaceSize(SDL_PixelFormat format, int width, int height, size_t *size, size_t *pitch, bool minimalPitch);
 extern SDL_Colorspace SDL_GetDefaultColorspaceForFormat(SDL_PixelFormat pixel_format);
 extern void SDL_QuitPixelFormatDetails(void);
 
@@ -43,9 +43,9 @@ extern const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src
 extern void SDL_ConvertColorPrimaries(float *fR, float *fG, float *fB, const float *matrix);
 
 // Blit mapping functions
-extern int SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst);
+extern bool SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst);
 extern void SDL_InvalidateMap(SDL_BlitMap *map);
-extern int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst);
+extern bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst);
 
 // Miscellaneous functions
 extern void SDL_DitherPalette(SDL_Palette *palette);

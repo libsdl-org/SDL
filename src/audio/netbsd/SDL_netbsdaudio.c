@@ -114,7 +114,7 @@ static void NETBSDAUDIO_Status(SDL_AudioDevice *device)
 #endif // DEBUG_AUDIO
 }
 
-static int NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
+static bool NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     const bool recording = device->recording;
     while (!SDL_AtomicGet(&device->shutdown)) {
@@ -126,7 +126,7 @@ static int NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
             }
             // Hmm, not much we can do - abort
             fprintf(stderr, "netbsdaudio WaitDevice ioctl failed (unrecoverable): %s\n", strerror(errno));
-            return -1;
+            return false;
         }
         const size_t remain = (size_t)((recording ? info.record.seek : info.play.seek) * SDL_AUDIO_BYTESIZE(device->spec.format));
         if (!recording && (remain >= device->buffer_size)) {
@@ -138,21 +138,21 @@ static int NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
         }
     }
 
-    return 0;
+    return true;
 }
 
-static int NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     const int written = write(h->audio_fd, buffer, buflen);
     if (written != buflen) {  // Treat even partial writes as fatal errors.
-        return -1;
+        return false;
     }
 
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);
 #endif
-    return 0;
+    return true;
 }
 
 static Uint8 *NETBSDAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -206,7 +206,7 @@ static void NETBSDAUDIO_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
-static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     const bool recording = device->recording;
     int encoding = AUDIO_ENCODING_NONE;
@@ -216,7 +216,7 @@ static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     // Open the audio device; we hardcode the device path in `device->name` for lack of better info, so use that.
@@ -294,14 +294,14 @@ static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
         device->hidden->mixlen = device->buffer_size;
         device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->hidden->mixlen);
         if (!device->hidden->mixbuf) {
-            return -1;
+            return false;
         }
         SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
     }
 
     NETBSDAUDIO_Status(device);
 
-    return 0;  // We're ready to rock and roll. :-)
+    return true;  // We're ready to rock and roll. :-)
 }
 
 static bool NETBSDAUDIO_Init(SDL_AudioDriverImpl *impl)

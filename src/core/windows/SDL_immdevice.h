@@ -34,9 +34,9 @@ typedef struct SDL_IMMDevice_callbacks
     void (*default_audio_device_changed)(SDL_AudioDevice *new_default_device);
 } SDL_IMMDevice_callbacks;
 
-int SDL_IMMDevice_Init(const SDL_IMMDevice_callbacks *callbacks);
+bool SDL_IMMDevice_Init(const SDL_IMMDevice_callbacks *callbacks);
 void SDL_IMMDevice_Quit(void);
-int SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, bool recording);
+bool SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, bool recording);
 void SDL_IMMDevice_EnumerateEndpoints(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
 LPGUID SDL_IMMDevice_GetDirectSoundGUID(SDL_AudioDevice *device);
 LPCWSTR SDL_IMMDevice_GetDevID(SDL_AudioDevice *device);

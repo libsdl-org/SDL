@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    if (SDL_CreateWindowAndRenderer("testspriteminimal", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer) < 0) {
+    if (!SDL_CreateWindowAndRenderer("testspriteminimal", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer)) {
         return_code = 2;
         goto quit;
     }

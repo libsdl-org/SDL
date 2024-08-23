@@ -129,28 +129,28 @@ static void (*PULSEAUDIO_pa_stream_set_write_callback)(pa_stream *, pa_stream_re
 static void (*PULSEAUDIO_pa_stream_set_read_callback)(pa_stream *, pa_stream_request_cb_t, void *);
 static pa_operation *(*PULSEAUDIO_pa_context_get_server_info)(pa_context *, pa_server_info_cb_t, void *);
 
-static int load_pulseaudio_syms(void);
+static bool load_pulseaudio_syms(void);
 
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
 
 static const char *pulseaudio_library = SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC;
 static void *pulseaudio_handle = NULL;
 
-static int load_pulseaudio_sym(const char *fn, void **addr)
+static bool load_pulseaudio_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(pulseaudio_handle, fn);
     if (!*addr) {
         // Don't call SDL_SetError(): SDL_LoadFunction already did.
-        return 0;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 // cast funcs to char* first, to please GCC's strict aliasing rules.
 #define SDL_PULSEAUDIO_SYM(x)                                       \
     if (!load_pulseaudio_sym(#x, (void **)(char *)&PULSEAUDIO_##x)) \
-    return -1
+        return -1
 
 static void UnloadPulseAudioLibrary(void)
 {
@@ -160,22 +160,22 @@ static void UnloadPulseAudioLibrary(void)
     }
 }
 
-static int LoadPulseAudioLibrary(void)
+static bool LoadPulseAudioLibrary(void)
 {
-    int retval = 0;
+    bool result = true;
     if (!pulseaudio_handle) {
         pulseaudio_handle = SDL_LoadObject(pulseaudio_library);
         if (!pulseaudio_handle) {
-            retval = -1;
+            result = false;
             // Don't call SDL_SetError(): SDL_LoadObject already did.
         } else {
-            retval = load_pulseaudio_syms();
-            if (retval < 0) {
+            result = load_pulseaudio_syms();
+            if (!result) {
                 UnloadPulseAudioLibrary();
             }
         }
     }
-    return retval;
+    return result;
 }
 
 #else
@@ -186,15 +186,15 @@ static void UnloadPulseAudioLibrary(void)
 {
 }
 
-static int LoadPulseAudioLibrary(void)
+static bool LoadPulseAudioLibrary(void)
 {
     load_pulseaudio_syms();
-    return 0;
+    return true;
 }
 
 #endif // SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
 
-static int load_pulseaudio_syms(void)
+static bool load_pulseaudio_syms(void)
 {
     SDL_PULSEAUDIO_SYM(pa_get_library_version);
     SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_new);
@@ -261,7 +261,7 @@ static int load_pulseaudio_syms(void)
     PULSEAUDIO_pa_threaded_mainloop_set_name = NULL;
 #endif
 
-    return 0;
+    return true;
 }
 
 static const char *getAppName(void)
@@ -316,7 +316,7 @@ static void PulseContextStateChangeCallback(pa_context *context, void *userdata)
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // just signal any waiting code, it can look up the details.
 }
 
-static int ConnectToPulseServer(void)
+static bool ConnectToPulseServer(void)
 {
     pa_mainloop_api *mainloop_api = NULL;
     pa_proplist *proplist = NULL;
@@ -384,12 +384,12 @@ static int ConnectToPulseServer(void)
 
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
 
-    return 0; // connected and ready!
+    return true; // connected and ready!
 
 failed:
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
     DisconnectFromPulseServer();
-    return -1;
+    return false;
 }
 
 static void WriteCallback(pa_stream *p, size_t nbytes, void *userdata)
@@ -401,10 +401,10 @@ static void WriteCallback(pa_stream *p, size_t nbytes, void *userdata)
 }
 
 // This function waits until it is possible to write a full sound buffer
-static int PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
+static bool PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
-    int retval = 0;
+    bool result = true;
 
     //SDL_Log("PULSEAUDIO PLAYDEVICE START! mixlen=%d", available);
 
@@ -416,17 +416,17 @@ static int PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
 
         if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
             //SDL_Log("PULSEAUDIO DEVICE FAILURE IN WAITDEVICE!");
-            retval = -1;
+            result = false;
             break;
         }
     }
 
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
 
-    return retval;
+    return result;
 }
 
-static int PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
 
@@ -439,14 +439,14 @@ static int PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
 
     if (rc < 0) {
-        return -1;
+        return false;
     }
 
     //SDL_Log("PULSEAUDIO FEED! nbytes=%d", buffer_size);
     h->bytes_requested -= buffer_size;
 
     //SDL_Log("PULSEAUDIO PLAYDEVICE END! written=%d", written);
-    return 0;
+    return true;
 }
 
 static Uint8 *PULSEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -471,15 +471,15 @@ static void ReadCallback(pa_stream *p, size_t nbytes, void *userdata)
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // the recording code queries what it needs, we just need to signal to end any wait
 }
 
-static int PULSEAUDIO_WaitRecordingDevice(SDL_AudioDevice *device)
+static bool PULSEAUDIO_WaitRecordingDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
 
     if (h->recordingbuf) {
-        return 0;  // there's still data available to read.
+        return true;  // there's still data available to read.
     }
 
-    int retval = 0;
+    bool result = true;
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
@@ -487,7 +487,7 @@ static int PULSEAUDIO_WaitRecordingDevice(SDL_AudioDevice *device)
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
         if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
             //SDL_Log("PULSEAUDIO DEVICE FAILURE IN WAITRECORDINGDEVICE!");
-            retval = -1;
+            result = false;
             break;
         } else if (PULSEAUDIO_pa_stream_readable_size(h->stream) > 0) {
             // a new fragment is available!
@@ -509,7 +509,7 @@ static int PULSEAUDIO_WaitRecordingDevice(SDL_AudioDevice *device)
 
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
 
-    return retval;
+    return result;
 }
 
 static int PULSEAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
@@ -591,7 +591,7 @@ static void PulseStreamStateChangeCallback(pa_stream *stream, void *userdata)
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // just signal any waiting code, it can look up the details.
 }
 
-static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     const bool recording = device->recording;
     struct SDL_PrivateAudioData *h = NULL;
@@ -602,7 +602,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     pa_channel_map pacmap;
     pa_stream_flags_t flags = 0;
     int format = PA_SAMPLE_INVALID;
-    int retval = 0;
+    bool result = true;
 
     SDL_assert(pulseaudio_threaded_mainloop != NULL);
     SDL_assert(pulseaudio_context != NULL);
@@ -610,7 +610,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     // Initialize all variables that we clean on shutdown
     h = device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     // Try for a closest match on audio format
@@ -659,7 +659,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     if (!recording) {
         h->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
         if (!h->mixbuf) {
-            return -1;
+            return false;
         }
         SDL_memset(h->mixbuf, device->silence_value, device->buffer_size);
     }
@@ -690,7 +690,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     );
 
     if (!h->stream) {
-        retval = SDL_SetError("Could not set up PulseAudio stream");
+        result = SDL_SetError("Could not set up PulseAudio stream");
     } else {
         int rc;
 
@@ -709,7 +709,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
         }
 
         if (rc < 0) {
-            retval = SDL_SetError("Could not connect PulseAudio stream");
+            result = SDL_SetError("Could not connect PulseAudio stream");
         } else {
             int state = PULSEAUDIO_pa_stream_get_state(h->stream);
             while (PA_STREAM_IS_GOOD(state) && (state != PA_STREAM_READY)) {
@@ -718,11 +718,11 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
             }
 
             if (!PA_STREAM_IS_GOOD(state)) {
-                retval = SDL_SetError("Could not connect PulseAudio stream");
+                result = SDL_SetError("Could not connect PulseAudio stream");
             } else {
                 const pa_buffer_attr *actual_bufattr = PULSEAUDIO_pa_stream_get_buffer_attr(h->stream);
                 if (!actual_bufattr) {
-                    retval = SDL_SetError("Could not determine connected PulseAudio stream's buffer attributes");
+                    result = SDL_SetError("Could not determine connected PulseAudio stream's buffer attributes");
                 } else {
                     device->buffer_size = (int) recording ? actual_bufattr->tlength : actual_bufattr->fragsize;
                     device->sample_frames = device->buffer_size / SDL_AUDIO_FRAMESIZE(device->spec);
@@ -734,7 +734,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
 
     // We're (hopefully) ready to rock and roll. :-)
-    return retval;
+    return result;
 }
 
 // device handles are device index + 1, cast to void*, so we never pass a NULL.
@@ -994,9 +994,9 @@ static void PULSEAUDIO_Deinitialize(void)
 
 static bool PULSEAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    if (LoadPulseAudioLibrary() < 0) {
+    if (!LoadPulseAudioLibrary()) {
         return false;
-    } else if (ConnectToPulseServer() < 0) {
+    } else if (!ConnectToPulseServer()) {
         UnloadPulseAudioLibrary();
         return false;
     }

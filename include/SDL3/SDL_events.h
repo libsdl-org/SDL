@@ -1039,7 +1039,7 @@ typedef enum SDL_EventAction
  *                SDL_EVENT_FIRST is a safe choice.
  * \param maxType maximum value of the event type to be considered;
  *                SDL_EVENT_LAST is a safe choice.
- * \returns the number of events actually stored or a negative error code on
+ * \returns the number of events actually stored or -1 on
  *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1254,8 +1254,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint
  * its own custom event types.
  *
  * \param event the SDL_Event to be added to the queue.
- * \returns 1 on success, 0 if the event was filtered, or a negative error
- *          code on failure; call SDL_GetError() for more information. A
+ * \returns SDL_TRUE on success, SDL_FALSE if the event was filtered or on failure; call SDL_GetError() for more information. A
  *          common reason for error is the event queue being full.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1264,7 +1263,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint
  * \sa SDL_PollEvent
  * \sa SDL_RegisterEvents
  */
-extern SDL_DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event *event);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PushEvent(SDL_Event *event);
 
 /**
  * A function pointer used for callbacks that watch the event queue.
@@ -1372,7 +1371,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter,
  *
  * \param filter an SDL_EventFilter function to call when an event happens.
  * \param userdata a pointer that is passed to `filter`.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1382,7 +1381,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter,
  * \sa SDL_DelEventWatch
  * \sa SDL_SetEventFilter
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AddEventWatch(SDL_EventFilter filter, void *userdata);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AddEventWatch(SDL_EventFilter filter, void *userdata);
 
 /**
  * Remove an event watch callback added with SDL_AddEventWatch().

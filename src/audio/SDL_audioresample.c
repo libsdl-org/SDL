@@ -613,24 +613,24 @@ int SDL_GetResamplerPaddingFrames(Sint64 resample_rate)
 }
 
 // These are not general purpose. They do not check for all possible underflow/overflow
-SDL_FORCE_INLINE Sint64 ResamplerAdd(Sint64 a, Sint64 b, Sint64 *ret)
+SDL_FORCE_INLINE bool ResamplerAdd(Sint64 a, Sint64 b, Sint64 *ret)
 {
     if ((b > 0) && (a > SDL_MAX_SINT64 - b)) {
-        return -1;
+        return false;
     }
 
     *ret = a + b;
-    return 0;
+    return true;
 }
 
-SDL_FORCE_INLINE Sint64 ResamplerMul(Sint64 a, Sint64 b, Sint64 *ret)
+SDL_FORCE_INLINE bool ResamplerMul(Sint64 a, Sint64 b, Sint64 *ret)
 {
     if ((b > 0) && (a > SDL_MAX_SINT64 / b)) {
-        return -1;
+        return false;
     }
 
     *ret = a * b;
-    return 0;
+    return true;
 }
 
 Sint64 SDL_GetResamplerInputFrames(Sint64 output_frames, Sint64 resample_rate, Sint64 resample_offset)
@@ -639,8 +639,8 @@ Sint64 SDL_GetResamplerInputFrames(Sint64 output_frames, Sint64 resample_rate, S
     // ((((output_frames - 1) * resample_rate) + resample_offset) >> 32) + 1
 
     Sint64 output_offset;
-    if (ResamplerMul(output_frames, resample_rate, &output_offset) ||
-        ResamplerAdd(output_offset, -resample_rate + resample_offset + 0x100000000, &output_offset)) {
+    if (!ResamplerMul(output_frames, resample_rate, &output_offset) ||
+        !ResamplerAdd(output_offset, -resample_rate + resample_offset + 0x100000000, &output_offset)) {
         output_offset = SDL_MAX_SINT64;
     }
 
@@ -656,8 +656,8 @@ Sint64 SDL_GetResamplerOutputFrames(Sint64 input_frames, Sint64 resample_rate, S
 
     // input_offset = (input_frames << 32) - resample_offset;
     Sint64 input_offset;
-    if (ResamplerMul(input_frames, 0x100000000, &input_offset) ||
-        ResamplerAdd(input_offset, -resample_offset, &input_offset)) {
+    if (!ResamplerMul(input_frames, 0x100000000, &input_offset) ||
+        !ResamplerAdd(input_offset, -resample_offset, &input_offset)) {
         input_offset = SDL_MAX_SINT64;
     }
 

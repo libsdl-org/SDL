@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
     }
 
     /* Initialize SDL (Note: video is required to start event loop) */
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }

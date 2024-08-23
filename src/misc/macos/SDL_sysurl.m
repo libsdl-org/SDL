@@ -26,13 +26,16 @@
 
 #import <Cocoa/Cocoa.h>
 
-int SDL_SYS_OpenURL(const char *url)
+bool SDL_SYS_OpenURL(const char *url)
 {
     @autoreleasepool {
         CFURLRef cfurl = CFURLCreateWithBytes(NULL, (const UInt8 *)url, SDL_strlen(url), kCFStringEncodingUTF8, NULL);
         OSStatus status = LSOpenCFURLRef(cfurl, NULL);
         CFRelease(cfurl);
-        return status == noErr ? 0 : -1;
+        if (status != noErr) {
+            return SDL_SetError("LSOpenCFURLRef() failed: %d", status);
+        }
+        return true;
     }
 }
 

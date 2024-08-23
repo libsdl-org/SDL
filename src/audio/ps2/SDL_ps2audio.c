@@ -27,11 +27,11 @@
 #include <audsrv.h>
 #include <ps2_audio_driver.h>
 
-static int PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     // These are the native supported audio PS2 configs
@@ -82,19 +82,19 @@ static int PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
         device->hidden->mixbufs[i] = &device->hidden->rawbuf[i * device->buffer_size];
     }
 
-    return 0;
+    return true;
 }
 
-static int PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     // this returns number of bytes accepted or a negative error. We assume anything other than buflen is a fatal error.
-    return (audsrv_play_audio((char *)buffer, buflen) != buflen) ? -1 : 0;
+    return (audsrv_play_audio((char *)buffer, buflen) == buflen);
 }
 
-static int PS2AUDIO_WaitDevice(SDL_AudioDevice *device)
+static bool PS2AUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     audsrv_wait_audio(device->buffer_size);
-    return 0;
+    return true;
 }
 
 static Uint8 *PS2AUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

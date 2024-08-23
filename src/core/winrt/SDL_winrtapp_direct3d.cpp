@@ -94,12 +94,12 @@ IFrameworkView ^ SDLApplicationSource::CreateView()
     return app;
 }
 
-int SDL_WinRTInitNonXAMLApp(int (*mainFunction)(int, char **))
+bool SDL_WinRTInitNonXAMLApp(int (*mainFunction)(int, char **))
 {
     WINRT_SDLAppEntryPoint = mainFunction;
     auto direct3DApplicationSource = ref new SDLApplicationSource();
     CoreApplication::Run(direct3DApplicationSource);
-    return 0;
+    return true;
 }
 
 static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identifying thing into WINRT_ProcessWindowSizeChange()

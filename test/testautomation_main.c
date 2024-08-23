@@ -26,7 +26,7 @@ static int main_testInitQuitSubSystem(void *arg)
         int subsystem = subsystems[i];
 
         SDLTest_AssertCheck((SDL_WasInit(subsystem) & subsystem) == 0, "SDL_WasInit(%x) before init should be false", subsystem);
-        SDLTest_AssertCheck(SDL_InitSubSystem(subsystem) == 0, "SDL_InitSubSystem(%x)", subsystem);
+        SDLTest_AssertCheck(SDL_InitSubSystem(subsystem), "SDL_InitSubSystem(%x)", subsystem);
 
         initialized_system = SDL_WasInit(subsystem);
         SDLTest_AssertCheck((initialized_system & subsystem) != 0, "SDL_WasInit(%x) should be true (%x)", subsystem, initialized_system);
@@ -46,7 +46,7 @@ static int main_testImpliedJoystickInit(void *arg)
 
     /* First initialize the controller */
     SDLTest_AssertCheck((SDL_WasInit(joy_and_controller) & joy_and_controller) == 0, "SDL_WasInit() before init should be false for joystick & controller");
-    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD) == 0, "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD), "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
 
     /* Then make sure this implicitly initialized the joystick subsystem */
     initialized_system = SDL_WasInit(joy_and_controller);
@@ -67,8 +67,8 @@ static int main_testImpliedJoystickQuit(void *arg)
 
     /* First initialize the controller and the joystick (explicitly) */
     SDLTest_AssertCheck((SDL_WasInit(joy_and_controller) & joy_and_controller) == 0, "SDL_WasInit() before init should be false for joystick & controller");
-    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0, "SDL_InitSubSystem(SDL_INIT_JOYSTICK)");
-    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD) == 0, "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_JOYSTICK), "SDL_InitSubSystem(SDL_INIT_JOYSTICK)");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMEPAD), "SDL_InitSubSystem(SDL_INIT_GAMEPAD)");
 
     /* Then make sure they're both initialized properly */
     initialized_system = SDL_WasInit(joy_and_controller);
@@ -101,13 +101,13 @@ main_testSetError(void *arg)
 
     SDLTest_AssertPass("SDL_SetError(NULL)");
     result = SDL_SetError(NULL);
-    SDLTest_AssertCheck(result == -1, "SDL_SetError(NULL) -> %d (expected %d)", result, -1);
+    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError(NULL) -> %d (expected %d)", result, SDL_FALSE);
     error = SDL_GetError();
     SDLTest_AssertCheck(SDL_strcmp(error, "") == 0, "SDL_GetError() -> \"%s\" (expected \"%s\")", error, "");
 
     SDLTest_AssertPass("SDL_SetError(\"\")");
     result = SDL_SetError("");
-    SDLTest_AssertCheck(result == -1, "SDL_SetError(\"\") -> %d (expected %d)", result, -1);
+    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError(\"\") -> %d (expected %d)", result, SDL_FALSE);
     error = SDL_GetError();
     SDLTest_AssertCheck(SDL_strcmp(error, "") == 0, "SDL_GetError() -> \"%s\" (expected \"%s\")", error, "");
 
@@ -118,7 +118,7 @@ main_testSetError(void *arg)
     error_input[i] = '\0';
     SDLTest_AssertPass("SDL_SetError(\"abc...\")");
     result = SDL_SetError("%s", error_input);
-    SDLTest_AssertCheck(result == -1, "SDL_SetError(\"abc...\") -> %d (expected %d)", result, -1);
+    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError(\"abc...\") -> %d (expected %d)", result, SDL_FALSE);
     error = SDL_GetError();
 
 #ifdef SDL_THREADS_DISABLED

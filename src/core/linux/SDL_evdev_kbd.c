@@ -378,7 +378,7 @@ static void kbd_vt_quit(int console_fd)
     ioctl(console_fd, VT_SETMODE, &mode);
 }
 
-static int kbd_vt_init(int console_fd)
+static bool kbd_vt_init(int console_fd)
 {
     struct vt_mode mode;
 
@@ -386,7 +386,7 @@ static int kbd_vt_init(int console_fd)
     vt_acquire_signal = find_free_signal(kbd_vt_acquire_signal_action);
     if (!vt_release_signal || !vt_acquire_signal ) {
         kbd_vt_quit(console_fd);
-        return -1;
+        return false;
     }
 
     SDL_zero(mode);
@@ -396,9 +396,9 @@ static int kbd_vt_init(int console_fd)
     mode.frsig = SIGIO;
     if (ioctl(console_fd, VT_SETMODE, &mode) < 0) {
         kbd_vt_quit(console_fd);
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
 static void kbd_vt_update(SDL_EVDEV_keyboard_state *state)
@@ -618,7 +618,7 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
     return ch;
 }
 
-static int vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
+static bool vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
 {
     return (kbd->ledflagstate & flag) != 0;
 }

@@ -104,7 +104,7 @@ static int StartBeApp(void *unused)
 }
 
 
-static int StartBeLooper()
+static bool StartBeLooper()
 {
     if (!be_app) {
         SDL_AppThread = SDL_CreateThread(StartBeApp, "SDLApplication", NULL);
@@ -119,16 +119,18 @@ static int StartBeLooper()
 
     SDL_Looper = new SDL_BLooper("SDLLooper");
     SDL_Looper->Run();
-    return (0);
+    return true;
 }
 
 
 // Initialize the Be Application, if it's not already started
-int SDL_InitBeApp(void)
+bool SDL_InitBeApp(void)
 {
     // Create the BApplication that handles appserver interaction
     if (SDL_BeAppActive <= 0) {
-        StartBeLooper();
+        if (!StartBeLooper()) {
+            return false;
+        }
 
         // Mark the application active
         SDL_BeAppActive = 0;
@@ -138,7 +140,7 @@ int SDL_InitBeApp(void)
     ++SDL_BeAppActive;
 
     // The app is running, and we're ready to go
-    return 0;
+    return true;
 }
 
 // Quit the Be Application, if there's nothing left to do

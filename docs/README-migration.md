@@ -6,6 +6,36 @@ Details on API changes are organized by SDL 2.0 header below.
 
 The file with your main() function should include <SDL3/SDL_main.h>, as that is no longer included in SDL.h.
 
+Functions that previously returned a negative error code now return SDL_bool.
+
+Code that used to look like this:
+```c
+    if (SDL_Function() < 0 || SDL_Function() == -1) {
+        /* Failure... */
+    }
+```
+or
+```c
+    if (SDL_Function() == 0) {
+        /* Success... */
+    }
+```
+or
+```c
+    if (!SDL_Function()) {
+        /* Success... */
+    }
+```
+should be changed to:
+```c
+    if (SDL_Function()) {
+        /* Success... */
+    } else {
+        /* Failure... */
+    }
+```
+This only applies to camel case functions, e.g. `SDL_[A-Z]*`. Lower case functions like SDL_strcmp() and SDL_memcmp() are unchanged, matching their C runtime counterpart.
+
 Many functions and symbols have been renamed. We have provided a handy Python script [rename_symbols.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_symbols.py) to rename SDL2 functions to their SDL3 counterparts:
 ```sh
 rename_symbols.py --all-symbols source_code_path
@@ -152,7 +182,7 @@ Rather than iterating over audio devices using a device index, there are new fun
 
 ```c
 {
-    if (SDL_InitSubSystem(SDL_INIT_AUDIO) == 0) {
+    if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
         int i, num_devices;
         SDL_AudioDeviceID *devices = SDL_GetAudioPlaybackDevices(&num_devices);
         if (devices) {
@@ -191,7 +221,7 @@ SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
 SDL_LoadWAV() is a proper function now and no longer a macro (but offers the same functionality otherwise).
 
-SDL_LoadWAV_IO() and SDL_LoadWAV() return an int now: zero on success, -1 on error, like most of SDL. They no longer return a pointer to an SDL_AudioSpec.
+SDL_LoadWAV_IO() and SDL_LoadWAV() return an SDL_bool now, like most of SDL. They no longer return a pointer to an SDL_AudioSpec.
 
 SDL_AudioCVT interface has been removed, the SDL_AudioStream interface (for audio supplied in pieces) or the new SDL_ConvertAudioSamples() function (for converting a complete audio buffer in one call) can be used instead.
 
@@ -211,7 +241,7 @@ should be changed to:
     int dst_len = 0;
     const SDL_AudioSpec src_spec = { src_format, src_channels, src_rate };
     const SDL_AudioSpec dst_spec = { dst_format, dst_channels, dst_rate };
-    if (SDL_ConvertAudioSamples(&src_spec, src_data, src_len, &dst_spec, &dst_data, &dst_len) < 0) {
+    if (!SDL_ConvertAudioSamples(&src_spec, src_data, src_len, &dst_spec, &dst_data, &dst_len)) {
         /* error */
     }
     do_something(dst_data, dst_len);
@@ -375,7 +405,7 @@ The iscapture field of SDL_AudioDeviceEvent has been renamed recording.
 
 SDL_QUERY, SDL_IGNORE, SDL_ENABLE, and SDL_DISABLE have been removed. You can use the functions SDL_SetEventEnabled() and SDL_EventEnabled() to set and query event processing state.
 
-SDL_AddEventWatch() now returns -1 if it fails because it ran out of memory and couldn't add the event watch callback.
+SDL_AddEventWatch() now returns SDL_FALSE_ if it fails because it ran out of memory and couldn't add the event watch callback.
 
 SDL_RegisterEvents() now returns 0 if it couldn't allocate any user events.
 
@@ -702,7 +732,7 @@ Gamepads with simple rumble capability no longer show up in the SDL haptics inte
 Rather than iterating over haptic devices using device index, there is a new function SDL_GetHaptics() to get the current list of haptic devices, and new functions to get information about haptic devices from their instance ID:
 ```c
 {
-    if (SDL_InitSubSystem(SDL_INIT_HAPTIC) == 0) {
+    if (SDL_InitSubSystem(SDL_INIT_HAPTIC)) {
         int i, num_haptics;
         SDL_HapticID *haptics = SDL_GetHaptics(&num_haptics);
         if (haptics) {
@@ -717,7 +747,7 @@ Rather than iterating over haptic devices using device index, there is a new fun
 }
 ```
 
-SDL_HapticEffectSupported(), SDL_HapticRumbleSupported(), and SDL_IsJoystickHaptic() now return SDL_bool instead of an optional negative error code.
+SDL_GetHapticEffectStatus() now returns SDL_bool instead of an int result. You should call SDL_GetHapticFeatures() to make sure effect status is supported before calling this function.
 
 The following functions have been renamed:
 * SDL_HapticClose() => SDL_CloseHaptic()
@@ -753,11 +783,7 @@ The following functions have been removed:
 
 ## SDL_hints.h
 
-SDL_AddHintCallback() now returns a standard int result instead of void, returning 0 if the function succeeds or a negative error code if there was an error.
-
 Calling SDL_GetHint() with the name of the hint being changed from within a hint callback will now return the new value rather than the old value. The old value is still passed as a parameter to the hint callback.
-
-SDL_SetHint, SDL_SetHintWithPriority, and SDL_ResetHint now return int (-1 on error, 0 on success) instead of SDL_bool (SDL_FALSE on error, SDL_TRUE on success).
 
 The environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER have been renamed to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER.
 
@@ -861,7 +887,7 @@ SDL_JoystickID has changed from Sint32 to Uint32, with an invalid ID being 0.
 Rather than iterating over joysticks using device index, there is a new function SDL_GetJoysticks() to get the current list of joysticks, and new functions to get information about joysticks from their instance ID:
 ```c
 {
-    if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0) {
+    if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
         int i, num_joysticks;
         SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
         if (joysticks) {
@@ -1128,7 +1154,11 @@ The following symbols have been renamed:
 
 SDL_MUTEX_MAXWAIT has been removed; it suggested there was a maximum timeout one could outlive, instead of an infinite wait. Instead, pass a -1 to functions that accepted this symbol.
 
-SDL_LockMutex and SDL_UnlockMutex now return void; if the mutex is valid (including being a NULL pointer, which returns immediately), these functions never fail. If the mutex is invalid or the caller does something illegal, like unlock another thread's mutex, this is considered undefined behavior.
+SDL_MUTEX_TIMEDOUT has been removed, the wait functions return SDL_TRUE if the operation succeeded or SDL_FALSE if they timed out.
+
+SDL_LockMutex(), SDL_UnlockMutex(), SDL_WaitSemaphore(), SDL_SignalSemaphore(), SDL_WaitCondition(), SDL_SignalCondition(), and SDL_BroadcastCondition() now return void; if the object is valid (including being a NULL pointer, which returns immediately), these functions never fail. If the object is invalid or the caller does something illegal, like unlock another thread's mutex, this is considered undefined behavior.
+
+SDL_TryWaitSemaphore(), SDL_WaitSemaphoreTimeout(), and SDL_WaitConditionTimeout() now return SDL_TRUE if the operation succeeded or SDL_FALSE if they timed out.
 
 The following functions have been renamed:
 * SDL_CondBroadcast() => SDL_BroadcastCondition()
@@ -1173,8 +1203,6 @@ should be changed to:
 ```c
     pixel = SDL_MapSurfaceRGBA(surface, r, g, b, a);
 ```
-
-SDL_GetMasksForPixelFormat() now returns the standard int error code.
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
 
@@ -1472,17 +1500,20 @@ static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
         stdiowhence = SEEK_END;
         break;
     default:
-        return SDL_SetError("Unknown value for 'whence'");
+        SDL_SetError("Unknown value for 'whence'");
+        return -1;
     }
 
     if (fseek(fp, (fseek_off_t)offset, stdiowhence) == 0) {
         const Sint64 pos = ftell(fp);
         if (pos < 0) {
-            return SDL_SetError("Couldn't get stream offset");
+            SDL_SetError("Couldn't get stream offset");
+            return -1;
         }
         return pos;
     }
-    return SDL_Error(SDL_EFSEEK);
+    SDL_SetError("Couldn't seek in stream");
+    return -1;
 }
 
 static size_t SDLCALL stdio_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
@@ -1490,7 +1521,7 @@ static size_t SDLCALL stdio_read(void *userdata, void *ptr, size_t size, SDL_IOS
     FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
     const size_t bytes = fread(ptr, 1, size, fp);
     if (bytes == 0 && ferror(fp)) {
-        SDL_Error(SDL_EFREAD);
+        SDL_SetError("Couldn't read stream");
     }
     return bytes;
 }
@@ -1500,18 +1531,19 @@ static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size, 
     FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
     const size_t bytes = fwrite(ptr, 1, size, fp);
     if (bytes == 0 && ferror(fp)) {
-        SDL_Error(SDL_EFWRITE);
+        SDL_SetError("Couldn't write stream");
     }
     return bytes;
 }
 
-static int SDLCALL stdio_close(void *userdata)
+static SDL_bool SDLCALL stdio_close(void *userdata)
 {
     IOStreamStdioData *rwopsdata = (IOStreamStdioData *) userdata;
-    int status = 0;
+    SDL_bool status = SDL_TRUE;
     if (rwopsdata->autoclose) {
         if (fclose(rwopsdata->fp) != 0) {
-            status = SDL_Error(SDL_EFWRITE);
+            SDL_SetError("Couldn't close stream");
+            status = SDL_FALSE;
         }
     }
     return status;
@@ -1614,7 +1646,7 @@ SDL_SensorID has changed from Sint32 to Uint32, with an invalid ID being 0.
 Rather than iterating over sensors using device index, there is a new function SDL_GetSensors() to get the current list of sensors, and new functions to get information about sensors from their instance ID:
 ```c
 {
-    if (SDL_InitSubSystem(SDL_INIT_SENSOR) == 0) {
+    if (SDL_InitSubSystem(SDL_INIT_SENSOR)) {
         int i, num_sensors;
         SDL_SensorID *sensors = SDL_GetSensors(&num_sensors);
         if (sensors) {
@@ -1805,8 +1837,6 @@ SDL_RequestAndroidPermission is no longer a blocking call; the caller now provid
 
 SDL_iPhoneSetAnimationCallback() and SDL_iPhoneSetEventPump() have been renamed to SDL_SetiOSAnimationCallback() and SDL_SetiOSEventPump(), respectively. SDL2 has had macros to provide this new name with the old symbol since the introduction of the iPad, but now the correctly-named symbol is the only option.
 
-SDL_GetDXGIOutputInfo() now returns the standard int error code.
-
 The following functions have been removed:
 * SDL_RenderGetD3D11Device() - replaced with the "SDL.renderer.d3d11.device" property
 * SDL_RenderGetD3D12Device() - replaced with the "SDL.renderer.d3d12.device" property
@@ -1982,8 +2012,6 @@ The callback passed to SDL_AddTimer() has changed parameters to:
 Uint32 SDLCALL TimerCallback(void *userdata, SDL_TimerID timerID, Uint32 interval);
 ````
 
-SDL_RemoveTimer() now returns the standard int error code.
-
 ## SDL_touch.h
 
 SDL_GetTouchName is replaced with SDL_GetTouchDeviceName(), which takes an SDL_TouchID instead of an index.
@@ -2023,7 +2051,7 @@ SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_
 Rather than iterating over displays using display index, there is a new function SDL_GetDisplays() to get the current list of displays, and functions which used to take a display index now take SDL_DisplayID, with an invalid ID being 0.
 ```c
 {
-    if (SDL_InitSubSystem(SDL_INIT_VIDEO) == 0) {
+    if (SDL_InitSubSystem(SDL_INIT_VIDEO)) {
         int i, num_displays = 0;
         SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
         if (displays) {
@@ -2097,11 +2125,9 @@ Removed SDL_GL_CONTEXT_EGL from OpenGL configuration attributes. You can instead
 
 SDL_GL_GetProcAddress() and SDL_EGL_GetProcAddress() now return `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
 
-SDL_GL_SwapWindow() returns 0 if the function succeeds or a negative error code if there was an error.
+SDL_GL_DeleteContext() has been renamed to SDL_GL_DestroyContext to match SDL naming conventions (and glX/EGL!).
 
-SDL_GL_DeleteContext() has been renamed to SDL_GL_DestroyContext to match SDL naming conventions (and glX!). It also now returns 0 if the function succeeds or a negative error code if there was an error (it returned void in SDL2).
-
-SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
+SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns SDL_TRUE if the function succeeds or SDL_FALSE if there was an error.
 
 SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
 
@@ -2187,8 +2213,6 @@ or not contain the expected values.
 SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter, and no longer makes the app allocate query/allocate space for the result, instead returning a static const internal string.
 
 SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to PFN_vkGetInstanceProcAddr.
-
-SDL_Vulkan_CreateSurface() now returns an int (0=success, -1=error) instead of an SDL_bool (true=success, false=error).
 
 SDL_Vulkan_CreateSurface() now takes a VkAllocationCallbacks pointer as its third parameter. If you don't have an allocator to supply, pass a NULL here to use the system default allocator (SDL2 always used the system default allocator here).
 

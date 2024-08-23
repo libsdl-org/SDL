@@ -2001,7 +2001,7 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     }
 }
 
-int X11_SuspendScreenSaver(SDL_VideoDevice *_this)
+bool X11_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
     SDL_VideoData *data = _this->internal;
@@ -2011,7 +2011,7 @@ int X11_SuspendScreenSaver(SDL_VideoDevice *_this)
 
 #ifdef SDL_USE_LIBDBUS
     if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
-        return 0;
+        return true;
     }
 
     if (_this->suspend_screensaver) {
@@ -2031,7 +2031,7 @@ int X11_SuspendScreenSaver(SDL_VideoDevice *_this)
 
         X11_XScreenSaverSuspend(data->display, _this->suspend_screensaver);
         X11_XResetScreenSaver(data->display);
-        return 0;
+        return true;
     }
 #endif
     return SDL_Unsupported();

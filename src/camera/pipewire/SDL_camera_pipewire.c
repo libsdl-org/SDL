@@ -86,8 +86,7 @@ static int (*PIPEWIRE_pw_core_disconnect)(struct pw_core *);
 static struct pw_node_info * (*PIPEWIRE_pw_node_info_merge)(struct pw_node_info *info, const struct pw_node_info *update, bool reset);
 static void (*PIPEWIRE_pw_node_info_free)(struct pw_node_info *info);
 static struct pw_stream *(*PIPEWIRE_pw_stream_new)(struct pw_core *, const char *, struct pw_properties *);
-static void (*PIPEWIRE_pw_stream_add_listener)(struct pw_stream *stream, struct spa_hook *listener,
-		const struct pw_stream_events *events, void *data);
+static void (*PIPEWIRE_pw_stream_add_listener)(struct pw_stream *stream, struct spa_hook *listener, const struct pw_stream_events *events, void *data);
 static void (*PIPEWIRE_pw_stream_destroy)(struct pw_stream *);
 static int (*PIPEWIRE_pw_stream_connect)(struct pw_stream *, enum pw_direction, uint32_t, enum pw_stream_flags,
                                          const struct spa_pod **, uint32_t);
@@ -104,26 +103,25 @@ static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, 
 static const char *pipewire_library = SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC;
 static void *pipewire_handle = NULL;
 
-static int pipewire_dlsym(const char *fn, void **addr)
+static bool pipewire_dlsym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(pipewire_handle, fn);
     if (!*addr) {
         // Don't call SDL_SetError(): SDL_LoadFunction already did.
-        return 0;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
-#define SDL_PIPEWIRE_SYM(x)                                    \
-    if (!pipewire_dlsym(#x, (void **)(char *)&PIPEWIRE_##x)) { \
-        return -1;                                             \
-    }
+#define SDL_PIPEWIRE_SYM(x)                                     \
+    if (!pipewire_dlsym(#x, (void **)(char *)&PIPEWIRE_##x))    \
+        return false
 
-static int load_pipewire_library(void)
+static bool load_pipewire_library(void)
 {
     pipewire_handle = SDL_LoadObject(pipewire_library);
-    return pipewire_handle ? 0 : -1;
+    return pipewire_handle ? true : false;
 }
 
 static void unload_pipewire_library(void)
@@ -138,9 +136,9 @@ static void unload_pipewire_library(void)
 
 #define SDL_PIPEWIRE_SYM(x) PIPEWIRE_##x = x
 
-static int load_pipewire_library(void)
+static bool load_pipewire_library(void)
 {
-    return 0;
+    return true;
 }
 
 static void unload_pipewire_library(void)
@@ -150,7 +148,7 @@ static void unload_pipewire_library(void)
 
 #endif // SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
 
-static int load_pipewire_syms(void)
+static bool load_pipewire_syms(void)
 {
     SDL_PIPEWIRE_SYM(pw_get_library_version);
     SDL_PIPEWIRE_SYM(pw_check_library_version);
@@ -192,18 +190,18 @@ static int load_pipewire_syms(void)
     SDL_PIPEWIRE_SYM(pw_properties_set);
     SDL_PIPEWIRE_SYM(pw_properties_setf);
 
-    return 0;
+    return true;
 }
 
-static int init_pipewire_library(void)
+static bool init_pipewire_library(void)
 {
-    if (!load_pipewire_library()) {
-        if (!load_pipewire_syms()) {
+    if (load_pipewire_library()) {
+        if (load_pipewire_syms()) {
             PIPEWIRE_pw_init(NULL, NULL);
-            return 0;
+            return true;
         }
     }
-    return -1;
+    return false;
 }
 
 static void deinit_pipewire_library(void)
@@ -293,9 +291,9 @@ static uint32_t param_clear(struct spa_list *param_list, uint32_t id)
 }
 
 #if PW_CHECK_VERSION(0,3,60)
-#define SPA_PARAMS_INFO_SEQ(p)	((p).seq)
+#define SPA_PARAMS_INFO_SEQ(p)  ((p).seq)
 #else
-#define SPA_PARAMS_INFO_SEQ(p)	((p).padding[0])
+#define SPA_PARAMS_INFO_SEQ(p)  ((p).padding[0])
 #endif
 
 static struct param *param_add(struct spa_list *params,
@@ -472,7 +470,7 @@ static const struct pw_stream_events stream_events = {
     .process = on_process,
 };
 
-static int PIPEWIRECAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
+static bool PIPEWIRECAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
     struct pw_properties *props;
     const struct spa_pod *params[3];
@@ -481,11 +479,11 @@ static int PIPEWIRECAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *s
     struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
 
     if (!device) {
-        return -1;
+        return false;
     }
     device->hidden = (struct SDL_PrivateCameraData *) SDL_calloc(1, sizeof (struct SDL_PrivateCameraData));
     if (device->hidden == NULL) {
-        return -1;
+        return false;
     }
     pw_array_init(&device->hidden->buffers, 64);
 
@@ -497,13 +495,12 @@ static int PIPEWIRECAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *s
                     PW_KEY_TARGET_OBJECT, device->name,
                     NULL);
     if (props == NULL) {
-        return -1;
+        return false;
     }
 
-    device->hidden->stream = PIPEWIRE_pw_stream_new(hotplug.core,
-		    "SDL PipeWire Camera", props);
+    device->hidden->stream = PIPEWIRE_pw_stream_new(hotplug.core, "SDL PipeWire Camera", props);
     if (device->hidden->stream == NULL) {
-        return -1;
+        return false;
     }
 
     PIPEWIRE_pw_stream_add_listener(device->hidden->stream,
@@ -525,12 +522,12 @@ static int PIPEWIRECAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *s
                                     PW_STREAM_FLAG_AUTOCONNECT |
                                     PW_STREAM_FLAG_MAP_BUFFERS,
                                     params, n_params)) < 0) {
-        return -1;
+        return false;
     }
 
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
 
-    return 0;
+    return true;
 }
 
 static void PIPEWIRECAMERA_CloseDevice(SDL_Camera *device)
@@ -550,15 +547,15 @@ static void PIPEWIRECAMERA_CloseDevice(SDL_Camera *device)
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
 }
 
-static int PIPEWIRECAMERA_WaitDevice(SDL_Camera *device)
+static bool PIPEWIRECAMERA_WaitDevice(SDL_Camera *device)
 {
     PIPEWIRE_pw_thread_loop_lock(hotplug.loop);
     PIPEWIRE_pw_thread_loop_wait(hotplug.loop);
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
-    return 0;
+    return true;
 }
 
-static int PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
     struct pw_buffer *b;
 
@@ -574,7 +571,7 @@ static int PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, U
     }
     if (b == NULL) {
         PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
-        return 0;
+        return SDL_CAMERA_FRAME_SKIP;
     }
 
 #if PW_CHECK_VERSION(1,0,5)
@@ -587,7 +584,7 @@ static int PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, U
 
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
 
-    return 1;
+    return SDL_CAMERA_FRAME_READY;
 }
 
 static void PIPEWIRECAMERA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
@@ -625,7 +622,7 @@ static void collect_rates(CameraFormatAddData *data, struct param *p, SDL_PixelF
     SPA_FALLTHROUGH;
     case SPA_CHOICE_Enum:
         for (i = 0; i < n_vals; i++) {
-            if (SDL_AddCameraFormat(data, sdlfmt, colorspace, size->width, size->height, rates[i].num, rates[i].denom) < 0) {
+            if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, size->width, size->height, rates[i].num, rates[i].denom)) {
                 return;  // Probably out of memory; we'll go with what we have, if anything.
             }
         }
@@ -976,7 +973,7 @@ static bool pipewire_server_version_at_least(int major, int minor, int patch)
 }
 
 // The hotplug thread
-static int hotplug_loop_init(void)
+static bool hotplug_loop_init(void)
 {
     int res;
 
@@ -1028,7 +1025,7 @@ static int hotplug_loop_init(void)
                     PW_REQUIRED_MAJOR, PW_REQUIRED_MINOR, PW_REQUIRED_PATCH);
     }
 
-    return 0;
+    return true;
 }
 
 
@@ -1037,24 +1034,24 @@ static void PIPEWIRECAMERA_Deinitialize(void)
     if (pipewire_initialized) {
         if (hotplug.loop) {
             PIPEWIRE_pw_thread_loop_lock(hotplug.loop);
-	}
+        }
         if (hotplug.registry) {
-	    spa_hook_remove(&hotplug.registry_listener);
-	    PIPEWIRE_pw_proxy_destroy((struct pw_proxy*)hotplug.registry);
-	}
+            spa_hook_remove(&hotplug.registry_listener);
+            PIPEWIRE_pw_proxy_destroy((struct pw_proxy *)hotplug.registry);
+        }
         if (hotplug.core) {
-	    spa_hook_remove(&hotplug.core_listener);
-	    PIPEWIRE_pw_core_disconnect(hotplug.core);
-	}
+            spa_hook_remove(&hotplug.core_listener);
+            PIPEWIRE_pw_core_disconnect(hotplug.core);
+        }
         if (hotplug.context) {
             PIPEWIRE_pw_context_destroy(hotplug.context);
-	}
+        }
         if (hotplug.loop) {
             PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
             PIPEWIRE_pw_thread_loop_destroy(hotplug.loop);
-	}
+        }
         deinit_pipewire_library();
-	spa_zero(hotplug);
+        spa_zero(hotplug);
         pipewire_initialized = false;
     }
 }
@@ -1063,13 +1060,13 @@ static bool PIPEWIRECAMERA_Init(SDL_CameraDriverImpl *impl)
 {
     if (!pipewire_initialized) {
 
-        if (init_pipewire_library() < 0) {
+        if (!init_pipewire_library()) {
             return false;
         }
 
         pipewire_initialized = true;
 
-        if (hotplug_loop_init() < 0) {
+        if (!hotplug_loop_init()) {
             PIPEWIRECAMERA_Deinitialize();
             return false;
         }

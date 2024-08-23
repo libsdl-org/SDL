@@ -111,28 +111,28 @@ static void SDL_ANDROID_StopSensorThread(SDL_AndroidSensorThreadContext *ctx)
     }
 }
 
-static int SDL_ANDROID_StartSensorThread(SDL_AndroidSensorThreadContext *ctx)
+static bool SDL_ANDROID_StartSensorThread(SDL_AndroidSensorThreadContext *ctx)
 {
     ctx->sem = SDL_CreateSemaphore(0);
     if (!ctx->sem) {
         SDL_ANDROID_StopSensorThread(ctx);
-        return -1;
+        return false;
     }
 
     SDL_AtomicSet(&ctx->running, true);
     ctx->thread = SDL_CreateThread(SDL_ANDROID_SensorThread, "Sensors", ctx);
     if (!ctx->thread) {
         SDL_ANDROID_StopSensorThread(ctx);
-        return -1;
+        return false;
     }
 
     // Wait for the sensor thread to start
     SDL_WaitSemaphore(ctx->sem);
 
-    return 0;
+    return true;
 }
 
-static int SDL_ANDROID_SensorInit(void)
+static bool SDL_ANDROID_SensorInit(void)
 {
     int i, sensors_count;
     ASensorList sensors;
@@ -147,7 +147,7 @@ static int SDL_ANDROID_SensorInit(void)
     if (sensors_count > 0) {
         SDL_sensors = (SDL_AndroidSensor *)SDL_calloc(sensors_count, sizeof(*SDL_sensors));
         if (!SDL_sensors) {
-            return -1;
+            return false;
         }
 
         for (i = 0; i < sensors_count; ++i) {
@@ -157,10 +157,10 @@ static int SDL_ANDROID_SensorInit(void)
         SDL_sensors_count = sensors_count;
     }
 
-    if (SDL_ANDROID_StartSensorThread(&SDL_sensor_thread_context) < 0) {
-        return -1;
+    if (!SDL_ANDROID_StartSensorThread(&SDL_sensor_thread_context)) {
+        return false;
     }
-    return 0;
+    return true;
 }
 
 static int SDL_ANDROID_SensorGetCount(void)
@@ -199,7 +199,7 @@ static SDL_SensorID SDL_ANDROID_SensorGetDeviceInstanceID(int device_index)
     return SDL_sensors[device_index].instance_id;
 }
 
-static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
+static bool SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     int delay_us, min_delay_us;
 
@@ -230,7 +230,7 @@ static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
     }
     SDL_UnlockSensors();
 
-    return 0;
+    return true;
 }
 
 static void SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)

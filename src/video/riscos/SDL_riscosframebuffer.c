@@ -30,7 +30,7 @@
 #include <kernel.h>
 #include <swis.h>
 
-int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
+bool RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_WindowData *internal = window->internal;
     const char *sprite_name = "display";
@@ -63,7 +63,7 @@ int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, S
     size = sizeof(sprite_area) + sizeof(sprite_header) + ((*pitch) * h);
     internal->fb_area = SDL_malloc(size);
     if (!internal->fb_area) {
-        return -1;
+        return false;
     }
 
     internal->fb_area->size = size;
@@ -88,10 +88,10 @@ int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, S
     internal->fb_sprite = (sprite_header *)(((Uint8 *)internal->fb_area) + internal->fb_area->start);
     *pixels = ((Uint8 *)internal->fb_sprite) + internal->fb_sprite->image_offset;
 
-    return 0;
+    return true;
 }
 
-int RISCOS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+bool RISCOS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_WindowData *internal = window->internal;
     _kernel_swi_regs regs;
@@ -110,7 +110,7 @@ int RISCOS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, c
         return SDL_SetError("OS_SpriteOp 52 failed: %s (%i)", error->errmess, error->errnum);
     }
 
-    return 0;
+    return true;
 }
 
 void RISCOS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)

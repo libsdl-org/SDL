@@ -39,7 +39,7 @@ static void android_egl_context_restore(SDL_Window *window)
         SDL_Event event;
         SDL_WindowData *data = window->internal;
         SDL_GL_MakeCurrent(window, NULL);
-        if (SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context) < 0) {
+        if (!SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context)) {
             // The context is no longer valid, create a new one
             data->egl_context = (EGLContext)SDL_GL_CreateContext(window);
             SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context);
@@ -65,7 +65,7 @@ static void android_egl_context_backup(SDL_Window *window)
         data->egl_context = SDL_GL_GetCurrentContext();
 
         // Save/Restore the swap interval / vsync
-        if (SDL_GL_GetSwapInterval(&interval) == 0) {
+        if (SDL_GL_GetSwapInterval(&interval)) {
             data->has_swap_interval = 1;
             data->swap_interval = interval;
         }
@@ -245,7 +245,7 @@ void Android_PumpEvents(Sint64 timeoutNS)
     }
 }
 
-int Android_WaitActiveAndLockActivity(void)
+bool Android_WaitActiveAndLockActivity(void)
 {
     while (Android_Paused && !Android_Destroyed) {
         Android_PumpEvents(-1);
@@ -253,11 +253,11 @@ int Android_WaitActiveAndLockActivity(void)
 
     if (Android_Destroyed) {
         SDL_SetError("Android activity has been destroyed");
-        return -1;
+        return false;
     }
 
     Android_LockActivityMutex();
-    return 0;
+    return true;
 }
 
 void Android_QuitEvents(void)

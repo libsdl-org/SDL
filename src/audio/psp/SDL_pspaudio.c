@@ -38,11 +38,11 @@ static bool isBasicAudioConfig(const SDL_AudioSpec *spec)
     return spec->freq == 44100;
 }
 
-static int PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     // device only natively supports S16LSB
@@ -102,10 +102,10 @@ static int PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
         device->hidden->mixbufs[i] = &device->hidden->rawbuf[i * device->buffer_size];
     }
 
-    return 0;
+    return true;
 }
 
-static int PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     int rc;
     if (!isBasicAudioConfig(&device->spec)) {
@@ -114,12 +114,12 @@ static int PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int
     } else {
         rc = sceAudioOutputPannedBlocking(device->hidden->channel, PSP_AUDIO_VOLUME_MAX, PSP_AUDIO_VOLUME_MAX, (void *) buffer);
     }
-    return (rc == 0) ? 0 : -1;
+    return (rc == 0);
 }
 
-static int PSPAUDIO_WaitDevice(SDL_AudioDevice *device)
+static bool PSPAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
-    return 0;  // Because we block when sending audio, there's no need for this function to do anything.
+    return true;  // Because we block when sending audio, there's no need for this function to do anything.
 }
 
 static Uint8 *PSPAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

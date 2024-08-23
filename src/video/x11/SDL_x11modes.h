@@ -50,16 +50,16 @@ struct SDL_DisplayModeData
 #endif
 };
 
-extern int X11_InitModes(SDL_VideoDevice *_this);
-extern int X11_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-extern int X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+extern bool X11_InitModes(SDL_VideoDevice *_this);
+extern bool X11_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern bool X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void X11_QuitModes(SDL_VideoDevice *_this);
 
 // Some utility functions for working with visuals
-extern int X11_GetVisualInfoFromVisual(Display *display, Visual *visual, XVisualInfo *vinfo);
+extern bool X11_GetVisualInfoFromVisual(Display *display, Visual *visual, XVisualInfo *vinfo);
 extern SDL_PixelFormat X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *vinfo);
-extern int X11_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
-extern int X11_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
+extern bool X11_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
+extern bool X11_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 extern void X11_HandleXRandREvent(SDL_VideoDevice *_this, const XEvent *xevent);

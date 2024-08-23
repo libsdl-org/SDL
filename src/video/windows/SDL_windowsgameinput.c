@@ -69,12 +69,12 @@ struct WIN_GameInputData
     uint64_t timestamp_offset;
 };
 
-static int GAMEINPUT_InternalAddOrFind(WIN_GameInputData *data, IGameInputDevice *pDevice)
+static bool GAMEINPUT_InternalAddOrFind(WIN_GameInputData *data, IGameInputDevice *pDevice)
 {
     GAMEINPUT_Device **devicelist = NULL;
     GAMEINPUT_Device *device = NULL;
     const GameInputDeviceInfo *info;
-    int retval = -1;
+    bool result = false;
 
     info = IGameInputDevice_GetDeviceInfo(pDevice);
 
@@ -85,7 +85,7 @@ static int GAMEINPUT_InternalAddOrFind(WIN_GameInputData *data, IGameInputDevice
             if (device && device->pDevice == pDevice) {
                 // we're already added
                 device->delete_requested = false;
-                retval = 0;
+                result = true;
                 goto done;
             }
         }
@@ -117,24 +117,24 @@ static int GAMEINPUT_InternalAddOrFind(WIN_GameInputData *data, IGameInputDevice
         data->devices = devicelist;
         data->devices[data->num_devices++] = device;
 
-        retval = 0;
+        result = true;
     }
 done:
     SDL_UnlockMutex(data->lock);
 
-    return retval;
+    return result;
 }
 
-static int GAMEINPUT_InternalRemoveByIndex(WIN_GameInputData *data, int idx)
+static bool GAMEINPUT_InternalRemoveByIndex(WIN_GameInputData *data, int idx)
 {
     GAMEINPUT_Device **devicelist = NULL;
     GAMEINPUT_Device *device;
-    int retval = -1;
+    bool result = false;
 
     SDL_LockMutex(data->lock);
     {
         if (idx < 0 || idx >= data->num_devices) {
-            retval = SDL_SetError("GAMEINPUT_InternalRemoveByIndex argument idx %d is out of range", idx);
+            result = SDL_SetError("GAMEINPUT_InternalRemoveByIndex argument idx %d is out of range", idx);
             goto done;
         }
 
@@ -168,18 +168,19 @@ static int GAMEINPUT_InternalRemoveByIndex(WIN_GameInputData *data, int idx)
             data->devices = NULL;
         } else {
             if (idx != data->num_devices - 1) {
-                size_t bytes = sizeof(*devicelist) * (data->num_devices - idx);
+                size_t bytes = sizeof(*devicelist) * (data->num_devices - idx - 1);
                 SDL_memmove(&data->devices[idx], &data->devices[idx + 1], bytes);
             }
         }
 
         // decrement the count and return
-        retval = data->num_devices--;
+        --data->num_devices;
+        result = true;
     }
 done:
     SDL_UnlockMutex(data->lock);
 
-    return retval;
+    return result;
 }
 
 static void CALLBACK GAMEINPUT_InternalDeviceCallback(
@@ -213,14 +214,14 @@ static void CALLBACK GAMEINPUT_InternalDeviceCallback(
     }
 }
 
-int WIN_InitGameInput(SDL_VideoDevice *_this)
+bool WIN_InitGameInput(SDL_VideoDevice *_this)
 {
     WIN_GameInputData *data;
     HRESULT hr;
-    int retval = -1;
+    bool result = false;
 
     if (_this->internal->gameinput_context) {
-        return 0;
+        return true;
     }
 
     data = (WIN_GameInputData *)SDL_calloc(1, sizeof(*data));
@@ -269,13 +270,13 @@ int WIN_InitGameInput(SDL_VideoDevice *_this)
     uint64_t timestampUS = IGameInput_GetCurrentTimestamp(data->pGameInput);
     data->timestamp_offset = (SDL_NS_TO_US(now) - timestampUS);
 
-    retval = 0;
+    result = true;
 
 done:
-    if (retval < 0) {
+    if (!result) {
         WIN_QuitGameInput(_this);
     }
-    return retval;
+    return result;
 }
 
 static void GAMEINPUT_InitialMouseReading(WIN_GameInputData *data, SDL_Window *window, GAMEINPUT_Device *device, IGameInputReading *reading)
@@ -527,7 +528,7 @@ void WIN_UpdateGameInput(SDL_VideoDevice *_this)
     SDL_UnlockMutex(data->lock);
 }
 
-int WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this)
+bool WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this)
 {
     WIN_GameInputData *data = _this->internal->gameinput_context;
     bool raw_mouse_enabled = _this->internal->raw_mouse_enabled;
@@ -555,7 +556,7 @@ int WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this)
     }
     SDL_UnlockMutex(data->lock);
 
-    return 0;
+    return true;
 }
 
 void WIN_QuitGameInput(SDL_VideoDevice *_this)
@@ -598,12 +599,12 @@ void WIN_QuitGameInput(SDL_VideoDevice *_this)
 
 #else // !HAVE_GAMEINPUT_H
 
-int WIN_InitGameInput(SDL_VideoDevice* _this)
+bool WIN_InitGameInput(SDL_VideoDevice* _this)
 {
     return SDL_Unsupported();
 }
 
-int WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this)
+bool WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this)
 {
     return SDL_Unsupported();
 }

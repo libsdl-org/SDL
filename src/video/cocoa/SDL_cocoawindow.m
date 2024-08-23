@@ -441,7 +441,7 @@ static void ScheduleContextUpdates(SDL_CocoaWindowData *data)
 }
 
 // !!! FIXME: this should use a hint callback.
-static int GetHintCtrlClickEmulateRightClick(void)
+static bool GetHintCtrlClickEmulateRightClick(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, false);
 }
@@ -925,7 +925,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
             int y = (int)SDL_roundf(((window->h - point.y) / (window->h - 1)) * (shape->h - 1));
             Uint8 a;
 
-            if (SDL_ReadSurfacePixel(shape, x, y, NULL, NULL, NULL, &a) < 0 || a == SDL_ALPHA_TRANSPARENT) {
+            if (!SDL_ReadSurfacePixel(shape, x, y, NULL, NULL, NULL, &a) || a == SDL_ALPHA_TRANSPARENT) {
                 ignoresMouseEvents = YES;
             }
         }
@@ -1538,12 +1538,11 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     return NO; // not a special area, carry on.
 }
 
-static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_Window *window, const Uint8 state, const Uint8 button)
+static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_Window *window, const Uint8 state, const Uint8 button)
 {
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     const int clicks = (int)[theEvent clickCount];
     SDL_Window *focus = SDL_GetKeyboardFocus();
-    int rc;
 
     // macOS will send non-left clicks to background windows without raising them, so we need to
     //  temporarily adjust the mouse position when this happens, as `mouse` will be tracking
@@ -1551,19 +1550,17 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     //  event for the background window, this just makes sure the button is reported at the
     //  correct position in its own event.
     if (focus && ([theEvent window] == ((__bridge SDL_CocoaWindowData *)focus->internal).nswindow)) {
-        rc = SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, state, button, clicks);
+        SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, state, button, clicks);
     } else {
         const float orig_x = mouse->x;
         const float orig_y = mouse->y;
         const NSPoint point = [theEvent locationInWindow];
         mouse->x = (int)point.x;
         mouse->y = (int)(window->h - point.y);
-        rc = SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, state, button, clicks);
+        SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, state, button, clicks);
         mouse->x = orig_x;
         mouse->y = orig_y;
     }
-
-    return rc;
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
@@ -2005,7 +2002,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
 @end
 
-static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow *nswindow, NSView *nsview)
+static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow *nswindow, NSView *nsview)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->internal;
@@ -2137,11 +2134,11 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
 
         // All done!
         window->internal = (SDL_WindowData *)CFBridgingRetain(data);
-        return 0;
+        return true;
     }
 }
 
-int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->internal;
@@ -2273,29 +2270,29 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
 #endif // SDL_VIDEO_OPENGL_ES2
         [nswindow setContentView:nsview];
 
-        if (SetupWindowData(_this, window, nswindow, nsview) < 0) {
-            return -1;
+        if (!SetupWindowData(_this, window, nswindow, nsview)) {
+            return false;
         }
 
         if (!(window->flags & SDL_WINDOW_OPENGL)) {
-            return 0;
+            return true;
         }
 
         // The rest of this macro mess is for OpenGL or OpenGL ES windows
 #ifdef SDL_VIDEO_OPENGL_ES2
         if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
 #ifdef SDL_VIDEO_OPENGL_EGL
-            if (Cocoa_GLES_SetupWindow(_this, window) < 0) {
+            if (!Cocoa_GLES_SetupWindow(_this, window)) {
                 Cocoa_DestroyWindow(_this, window);
-                return -1;
+                return false;
             }
-            return 0;
+            return true;
 #else
             return SDL_SetError("Could not create GLES window surface (EGL support not configured)");
 #endif // SDL_VIDEO_OPENGL_EGL
         }
 #endif // SDL_VIDEO_OPENGL_ES2
-        return 0;
+        return true;
     }
 }
 
@@ -2309,7 +2306,7 @@ void Cocoa_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-int Cocoa_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
+bool Cocoa_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
 {
     @autoreleasepool {
         NSImage *nsimage = Cocoa_CreateImage(icon);
@@ -2317,14 +2314,14 @@ int Cocoa_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface 
         if (nsimage) {
             [NSApp setApplicationIconImage:nsimage];
 
-            return 0;
+            return true;
         }
 
         return SDL_SetError("Unable to set the window's icon");
     }
 }
 
-int Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+bool Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->internal;
@@ -2374,7 +2371,7 @@ int Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
             windata.send_floating_position = true;
         }
     }
-    return 0;
+    return true;
 }
 
 void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
@@ -2702,7 +2699,7 @@ void Cocoa_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, bool
     }
 }
 
-int Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
+SDL_FullscreenResult Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
@@ -2821,7 +2818,7 @@ int Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vi
         ScheduleContextUpdates(data);
     }
 
-    return 0;
+    return SDL_FULLSCREEN_SUCCEEDED;
 }
 
 void *Cocoa_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size)
@@ -2896,13 +2893,13 @@ SDL_DisplayID Cocoa_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *wind
     }
 }
 
-int Cocoa_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
+bool Cocoa_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     Cocoa_UpdateClipCursor(window);
-    return 0;
+    return true;
 }
 
-int Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
+bool Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
@@ -2922,7 +2919,7 @@ int Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool gr
         }
     }
 
-    return 0;
+    return true;
 }
 
 void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -3036,12 +3033,12 @@ bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, bool state, bool blockin
     }
 }
 
-int Cocoa_SetWindowHitTest(SDL_Window *window, bool enabled)
+bool Cocoa_SetWindowHitTest(SDL_Window *window, bool enabled)
 {
     SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
 
     [data.listener updateHitTest];
-    return 0;
+    return true;
 }
 
 void Cocoa_AcceptDragAndDrop(SDL_Window *window, bool accept)
@@ -3057,7 +3054,7 @@ void Cocoa_AcceptDragAndDrop(SDL_Window *window, bool accept)
     }
 }
 
-int Cocoa_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
+bool Cocoa_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *modal_data = (__bridge SDL_CocoaWindowData *)modal_window->internal;
@@ -3072,10 +3069,10 @@ int Cocoa_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SD
         }
     }
 
-    return 0;
+    return true;
 }
 
-int Cocoa_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation)
+bool Cocoa_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation)
 {
     @autoreleasepool {
         // Note that this is app-wide and not window-specific!
@@ -3099,27 +3096,27 @@ int Cocoa_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOpera
         default:
             return SDL_Unsupported();
         }
-        return 0;
+        return true;
     }
 }
 
-int Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable)
+bool Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable)
 {
-    return 0; // just succeed, the real work is done elsewhere.
+    return true; // just succeed, the real work is done elsewhere.
 }
 
-int Cocoa_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
+bool Cocoa_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
         [data.nswindow setAlphaValue:opacity];
-        return 0;
+        return true;
     }
 }
 
-int Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    int ret = 0;
+    bool result = true;
 
     @autoreleasepool {
         /* The timeout needs to be high enough that animated fullscreen
@@ -3131,7 +3128,7 @@ int Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
             SDL_PumpEvents();
 
             if (SDL_GetTicksNS() >= timeout) {
-                ret = 1;
+                result = false;
                 break;
             }
             if (![data.listener hasPendingWindowOperation]) {
@@ -3142,7 +3139,7 @@ int Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
     }
 
-    return ret;
+    return result;
 }
 
 #endif // SDL_VIDEO_DRIVER_COCOA

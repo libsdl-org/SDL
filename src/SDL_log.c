@@ -338,7 +338,7 @@ static const char *SDL_GetLogPriorityPrefix(SDL_LogPriority priority)
     }
 }
 
-int SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix)
+SDL_bool SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix)
 {
     if (priority < SDL_LOG_PRIORITY_VERBOSE || priority >= SDL_NUM_LOG_PRIORITIES) {
         return SDL_InvalidParamError("priority");
@@ -349,11 +349,11 @@ int SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix)
     } else {
         prefix = SDL_GetPersistentString(prefix);
         if (!prefix) {
-            return -1;
+            return false;
         }
     }
     SDL_priority_prefixes[priority] = prefix;
-    return 0;
+    return true;
 }
 
 void SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)

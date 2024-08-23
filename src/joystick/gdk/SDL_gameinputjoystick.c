@@ -75,7 +75,7 @@ static bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
     return false;
 }
 
-static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
+static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 {
     GAMEINPUT_InternalDevice **devicelist = NULL;
     GAMEINPUT_InternalDevice *elem = NULL;
@@ -102,7 +102,7 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     version = (info->firmwareVersion.major << 8) | info->firmwareVersion.minor;
 
     if (SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, "")) {
-        return 0;
+        return true;
     }
 
     for (idx = 0; idx < g_GameInputList.count; ++idx) {
@@ -110,19 +110,19 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
         if (elem && elem->device == pDevice) {
             // we're already added
             elem->isDeleteRequested = false;
-            return 0;
+            return true;
         }
     }
 
     elem = (GAMEINPUT_InternalDevice *)SDL_calloc(1, sizeof(*elem));
     if (!elem) {
-        return -1;
+        return false;
     }
 
     devicelist = (GAMEINPUT_InternalDevice **)SDL_realloc(g_GameInputList.devices, sizeof(elem) * (g_GameInputList.count + 1LL));
     if (!devicelist) {
         SDL_free(elem);
-        return -1;
+        return false;
     }
 
     // Generate a device path
@@ -149,10 +149,10 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     g_GameInputList.devices = devicelist;
     g_GameInputList.devices[g_GameInputList.count++] = elem;
 
-    return 0;
+    return true;
 }
 
-static int GAMEINPUT_InternalRemoveByIndex(int idx)
+static bool GAMEINPUT_InternalRemoveByIndex(int idx)
 {
     GAMEINPUT_InternalDevice **devicelist = NULL;
     GAMEINPUT_InternalDevice *elem;
@@ -184,7 +184,8 @@ static int GAMEINPUT_InternalRemoveByIndex(int idx)
     }
 
     // decrement the count and return
-    return g_GameInputList.count--;
+    --g_GameInputList.count;
+    return true;
 }
 
 static GAMEINPUT_InternalDevice *GAMEINPUT_InternalFindByIndex(int idx)
@@ -230,18 +231,18 @@ static void CALLBACK GAMEINPUT_InternalJoystickDeviceCallback(
 
 static void GAMEINPUT_JoystickDetect(void);
 
-static int GAMEINPUT_JoystickInit(void)
+static bool GAMEINPUT_JoystickInit(void)
 {
     HRESULT hR;
 
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, false)) {
-        return 0;
+        return true;
     }
 
     if (!g_hGameInputDLL) {
         g_hGameInputDLL = SDL_LoadObject("gameinput.dll");
         if (!g_hGameInputDLL) {
-            return -1;
+            return false;
         }
     }
 
@@ -249,7 +250,7 @@ static int GAMEINPUT_JoystickInit(void)
         typedef HRESULT (WINAPI *GameInputCreate_t)(IGameInput * *gameInput);
         GameInputCreate_t GameInputCreateFunc = (GameInputCreate_t)SDL_LoadFunction(g_hGameInputDLL, "GameInputCreate");
         if (!GameInputCreateFunc) {
-            return -1;
+            return false;
         }
 
         hR = GameInputCreateFunc(&g_pGameInput);
@@ -277,7 +278,7 @@ static int GAMEINPUT_JoystickInit(void)
 
     GAMEINPUT_JoystickDetect();
 
-    return 0;
+    return true;
 }
 
 static int GAMEINPUT_JoystickGetCount(void)
@@ -346,7 +347,6 @@ static const char *GAMEINPUT_JoystickGetDevicePath(int device_index)
 
 static int GAMEINPUT_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
 {
-    // Steamworks API is not available in GDK
     return -1;
 }
 
@@ -430,19 +430,19 @@ static void CALLBACK GAMEINPUT_InternalSystemButtonCallback(
 
 #endif // IGameInput_RegisterSystemButtonCallback
 
-static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     GAMEINPUT_InternalDevice *elem = GAMEINPUT_InternalFindByIndex(device_index);
     const GameInputDeviceInfo *info = elem->info;
     GAMEINPUT_InternalJoystickHwdata *hwdata = NULL;
 
     if (!elem) {
-        return -1;
+        return false;
     }
 
     hwdata = (GAMEINPUT_InternalJoystickHwdata *)SDL_calloc(1, sizeof(*hwdata));
     if (!hwdata) {
-        return -1;
+        return false;
     }
 
     hwdata->devref = elem;
@@ -494,10 +494,10 @@ static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     } else {
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
     }
-    return 0;
+    return true;
 }
 
-static int GAMEINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool GAMEINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     // don't check for caps here, since SetRumbleState doesn't return any result - we don't need to check it
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
@@ -505,10 +505,10 @@ static int GAMEINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency
     params->lowFrequency = (float)low_frequency_rumble / (float)SDL_MAX_UINT16;
     params->highFrequency = (float)high_frequency_rumble / (float)SDL_MAX_UINT16;
     IGameInputDevice_SetRumbleState(hwdata->devref->device, params);
-    return 0;
+    return true;
 }
 
-static int GAMEINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool GAMEINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     // don't check for caps here, since SetRumbleState doesn't return any result - we don't need to check it
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
@@ -516,23 +516,23 @@ static int GAMEINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_
     params->leftTrigger = (float)left_rumble / (float)SDL_MAX_UINT16;
     params->rightTrigger = (float)right_rumble / (float)SDL_MAX_UINT16;
     IGameInputDevice_SetRumbleState(hwdata->devref->device, params);
-    return 0;
+    return true;
 }
 
-static int GAMEINPUT_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool GAMEINPUT_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int GAMEINPUT_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool GAMEINPUT_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int GAMEINPUT_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
+static bool GAMEINPUT_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     joystick->hwdata->report_sensors = enabled;
-    return 0;
+    return true;
 }
 
 static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)

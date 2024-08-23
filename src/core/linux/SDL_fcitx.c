@@ -252,7 +252,7 @@ static void SDLCALL Fcitx_SetCapabilities(void *data,
 static bool FcitxCreateInputContext(SDL_DBusContext *dbus, const char *appname, char **ic_path)
 {
     const char *program = "program";
-    bool retval = false;
+    bool result = false;
 
     if (dbus && dbus->session_conn) {
         DBusMessage *msg = dbus->message_new_method_call(FCITX_DBUS_SERVICE, FCITX_IM_DBUS_PATH, FCITX_IM_DBUS_INTERFACE, "CreateInputContext");
@@ -269,14 +269,14 @@ static bool FcitxCreateInputContext(SDL_DBusContext *dbus, const char *appname, 
             reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, 300, NULL);
             if (reply) {
                 if (dbus->message_get_args(reply, NULL, DBUS_TYPE_OBJECT_PATH, ic_path, DBUS_TYPE_INVALID)) {
-                    retval = true;
+                    result = true;
                 }
                 dbus->message_unref(reply);
             }
             dbus->message_unref(msg);
         }
     }
-    return retval;
+    return result;
 }
 
 static bool FcitxClientCreateIC(FcitxClient *client)

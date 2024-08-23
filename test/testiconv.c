@@ -28,7 +28,7 @@ widelen(char *data)
 
 static char *get_next_line(Uint8 **fdataptr, size_t *fdatalen)
 {
-    char *retval = (char *) *fdataptr;
+    char *result = (char *) *fdataptr;
     Uint8 *ptr = *fdataptr;
     size_t len = *fdatalen;
 
@@ -51,7 +51,7 @@ static char *get_next_line(Uint8 **fdataptr, size_t *fdatalen)
 
     *fdataptr = ptr;
     *fdatalen = len;
-    return retval;
+    return result;
 }
 
 int main(int argc, char *argv[])

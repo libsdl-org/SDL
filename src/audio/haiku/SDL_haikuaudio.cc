@@ -45,14 +45,14 @@ static Uint8 *HAIKUAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     return device->hidden->current_buffer;
 }
 
-static int HAIKUAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool HAIKUAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     // We already wrote our output right into the BSoundPlayer's callback's stream. Just clean up our stuff.
     SDL_assert(device->hidden->current_buffer != NULL);
     SDL_assert(device->hidden->current_buffer_len > 0);
     device->hidden->current_buffer = NULL;
     device->hidden->current_buffer_len = 0;
-    return 0;
+    return true;
 }
 
 // The Haiku callback for handling the audio buffer
@@ -102,12 +102,12 @@ static inline void UnmaskSignals(sigset_t * omask)
 }
 
 
-static int HAIKUAUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool HAIKUAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     // Initialize all variables that we clean on shutdown
     device->hidden = new SDL_PrivateAudioData;
-    if (device->hidden == NULL) {
-        return SDL_OutOfMemory();
+    if (!device->hidden) {
+        return false;
     }
     SDL_zerop(device->hidden);
 
@@ -186,7 +186,7 @@ static int HAIKUAUDIO_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("Unable to start Haiku audio");
     }
 
-    return 0;  // We're running!
+    return true;  // We're running!
 }
 
 static void HAIKUAUDIO_Deinitialize(void)
@@ -196,7 +196,7 @@ static void HAIKUAUDIO_Deinitialize(void)
 
 static bool HAIKUAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    if (SDL_InitBeApp() < 0) {
+    if (!SDL_InitBeApp()) {
         return false;
     }
 

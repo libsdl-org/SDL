@@ -58,7 +58,7 @@ typedef struct SDL_SensorDriver
      * sensor 0 should be the system default sensor.
      * This function should return 0, or -1 on an unrecoverable fatal error.
      */
-    int (*Init)(void);
+    bool (*Init)(void);
 
     // Function to return the number of sensors available right now
     int (*GetCount)(void);
@@ -82,7 +82,7 @@ typedef struct SDL_SensorDriver
        The sensor to open is specified by the device index.
        It returns 0, or -1 if there is an error.
      */
-    int (*Open)(SDL_Sensor *sensor, int device_index);
+    bool (*Open)(SDL_Sensor *sensor, int device_index);
 
     /* Function to update the state of a sensor - called as a device poll.
      * This function shouldn't update the sensor structure directly,

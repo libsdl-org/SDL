@@ -231,7 +231,7 @@ const DIDATAFORMAT SDL_c_dfDIJoystick2 = {
 };
 
 // Convert a DirectInput return code to a text message
-static int SetDIerror(const char *function, HRESULT code)
+static bool SetDIerror(const char *function, HRESULT code)
 {
     return SDL_SetError("%s() DirectX error 0x%8.8lx", function, code);
 }
@@ -393,7 +393,7 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     return effect;
 }
 
-int SDL_DINPUT_JoystickInit(void)
+bool SDL_DINPUT_JoystickInit(void)
 {
     HRESULT result;
     HINSTANCE instance;
@@ -401,7 +401,7 @@ int SDL_DINPUT_JoystickInit(void)
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true)) {
         // In some environments, IDirectInput8_Initialize / _EnumDevices can take a minute even with no controllers.
         dinput = NULL;
-        return 0;
+        return true;
     }
 
     result = WIN_CoInitialize();
@@ -432,7 +432,7 @@ int SDL_DINPUT_JoystickInit(void)
         dinput = NULL;
         return SetDIerror("IDirectInput::Initialize", result);
     }
-    return 0;
+    return true;
 }
 
 static int GetSteamVirtualGamepadSlot(Uint16 vendor_id, Uint16 product_id, const char *device_path)
@@ -734,7 +734,7 @@ static void SortDevObjects(SDL_Joystick *joystick)
     }
 }
 
-int SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
+bool SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
 {
     HRESULT result;
     DIPROPDWORD dipdw;
@@ -859,10 +859,10 @@ int SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
     }
     SDL_Delay(50);
 
-    return 0;
+    return true;
 }
 
-static int SDL_DINPUT_JoystickInitRumble(SDL_Joystick *joystick, Sint16 magnitude)
+static bool SDL_DINPUT_JoystickInitRumble(SDL_Joystick *joystick, Sint16 magnitude)
 {
     HRESULT result;
 
@@ -886,7 +886,7 @@ static int SDL_DINPUT_JoystickInitRumble(SDL_Joystick *joystick, Sint16 magnitud
     // Create the effect
     joystick->hwdata->ffeffect = CreateRumbleEffectData(magnitude);
     if (!joystick->hwdata->ffeffect) {
-        return -1;
+        return false;
     }
 
     result = IDirectInputDevice8_CreateEffect(joystick->hwdata->InputDevice, &GUID_Sine,
@@ -894,10 +894,10 @@ static int SDL_DINPUT_JoystickInitRumble(SDL_Joystick *joystick, Sint16 magnitud
     if (FAILED(result)) {
         return SetDIerror("IDirectInputDevice8::CreateEffect", result);
     }
-    return 0;
+    return true;
 }
 
-int SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+bool SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     HRESULT result;
 
@@ -923,8 +923,8 @@ int SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
             return SetDIerror("IDirectInputDevice8::SetParameters", result);
         }
     } else {
-        if (SDL_DINPUT_JoystickInitRumble(joystick, magnitude) < 0) {
-            return -1;
+        if (!SDL_DINPUT_JoystickInitRumble(joystick, magnitude)) {
+            return false;
         }
         joystick->hwdata->ff_initialized = true;
     }
@@ -939,7 +939,7 @@ int SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     if (FAILED(result)) {
         return SetDIerror("IDirectInputDevice8::Start", result);
     }
-    return 0;
+    return true;
 }
 
 static Uint8 TranslatePOV(DWORD value)
@@ -1162,9 +1162,9 @@ void SDL_DINPUT_JoystickQuit(void)
 
 typedef struct JoyStick_DeviceData JoyStick_DeviceData;
 
-int SDL_DINPUT_JoystickInit(void)
+bool SDL_DINPUT_JoystickInit(void)
 {
-    return 0;
+    return true;
 }
 
 void SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
@@ -1176,12 +1176,12 @@ bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
     return false;
 }
 
-int SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
+bool SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
 {
     return SDL_Unsupported();
 }
 
-int SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+bool SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }

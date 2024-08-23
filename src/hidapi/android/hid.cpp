@@ -1040,7 +1040,7 @@ static bool RequestBluetoothPermissions(const char *permission)
     // !!! FIXME: make this non-blocking!
     SDL_AtomicInt permission_response;
     SDL_AtomicSet(&permission_response, 0);
-    if (SDL_RequestAndroidPermission(permission, RequestAndroidPermissionBlockingCallback, &permission_response) == -1) {
+    if (!SDL_RequestAndroidPermission(permission, RequestAndroidPermissionBlockingCallback, &permission_response)) {
         return false;
     }
 

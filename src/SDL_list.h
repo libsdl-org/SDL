@@ -28,7 +28,7 @@ typedef struct SDL_ListNode
     struct SDL_ListNode *next;
 } SDL_ListNode;
 
-int SDL_ListAdd(SDL_ListNode **head, void *ent);
+bool SDL_ListAdd(SDL_ListNode **head, void *ent);
 void SDL_ListPop(SDL_ListNode **head, void **ent);
 void SDL_ListRemove(SDL_ListNode **head, void *ent);
 void SDL_ListClear(SDL_ListNode **head);

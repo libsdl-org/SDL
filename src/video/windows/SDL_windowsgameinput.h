@@ -22,8 +22,8 @@
 
 typedef struct WIN_GameInputData WIN_GameInputData;
 
-extern int WIN_InitGameInput(SDL_VideoDevice *_this);
-extern int WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this);
+extern bool WIN_InitGameInput(SDL_VideoDevice *_this);
+extern bool WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this);
 extern void WIN_UpdateGameInput(SDL_VideoDevice *_this);
 extern void WIN_QuitGameInput(SDL_VideoDevice *_this);
 

@@ -32,23 +32,23 @@
 
 char *SDL_SYS_GetBasePath(void)
 {
-    char *retval = NULL;
+    char *result = NULL;
     size_t len;
     char cwd[FILENAME_MAX];
 
     getcwd(cwd, sizeof(cwd));
     len = SDL_strlen(cwd) + 2;
-    retval = (char *)SDL_malloc(len);
-    if (retval) {
-        SDL_snprintf(retval, len, "%s/", cwd);
+    result = (char *)SDL_malloc(len);
+    if (result) {
+        SDL_snprintf(result, len, "%s/", cwd);
     }
 
-    return retval;
+    return result;
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
-    char *retval = NULL;
+    char *result = NULL;
     size_t len;
     if (!app) {
         SDL_InvalidParamError("app");
@@ -65,18 +65,18 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     }
 
     len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
-    retval = (char *)SDL_malloc(len);
-    if (retval) {
+    result = (char *)SDL_malloc(len);
+    if (result) {
         if (*org) {
-            SDL_snprintf(retval, len, "%s%s/%s/", base, org, app);
+            SDL_snprintf(result, len, "%s%s/%s/", base, org, app);
         } else {
-            SDL_snprintf(retval, len, "%s%s/", base, app);
+            SDL_snprintf(result, len, "%s%s/", base, app);
         }
 
-        mkdir(retval, 0755);
+        mkdir(result, 0755);
     }
 
-    return retval;
+    return result;
 }
 
 // TODO

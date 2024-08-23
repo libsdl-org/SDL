@@ -23,8 +23,7 @@
 #include "../SDL_syslocale.h"
 #include "../../core/android/SDL_android.h"
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
-    Android_JNI_GetLocale(buf, buflen);
-    return 0;
+    return Android_JNI_GetLocale(buf, buflen);
 }

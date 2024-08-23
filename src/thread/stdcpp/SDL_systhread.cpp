@@ -39,15 +39,15 @@ static void RunThread(void *args)
     SDL_RunThread((SDL_Thread *)args);
 }
 
-extern "C" int
-SDL_SYS_CreateThread(SDL_Thread *thread,
+extern "C"
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
                      SDL_FunctionPointer pfnBeginThread,
                      SDL_FunctionPointer pfnEndThread)
 {
     try {
         // !!! FIXME: no way to set a thread stack size here.
         thread->handle = (void *)new std::thread(RunThread, thread);
-        return 0;
+        return true;
     } catch (std::system_error &ex) {
         return SDL_SetError("unable to start a C++ thread: code=%d; %s", ex.code().value(), ex.what());
     } catch (std::bad_alloc &) {
@@ -55,14 +55,14 @@ SDL_SYS_CreateThread(SDL_Thread *thread,
     }
 }
 
-extern "C" void
-SDL_SYS_SetupThread(const char *name)
+extern "C"
+void SDL_SYS_SetupThread(const char *name)
 {
     // Do nothing.
 }
 
-extern "C" SDL_ThreadID
-SDL_GetCurrentThreadID(void)
+extern "C"
+SDL_ThreadID SDL_GetCurrentThreadID(void)
 {
     static_assert(sizeof(std::thread::id) <= sizeof(SDL_ThreadID), "std::thread::id must not be bigger than SDL_ThreadID");
     SDL_ThreadID thread_id{};
@@ -71,8 +71,8 @@ SDL_GetCurrentThreadID(void)
     return thread_id;
 }
 
-extern "C" int
-SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+extern "C"
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
 #ifdef SDL_PLATFORM_WINRT
     int value;
@@ -91,14 +91,14 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     if (!SetThreadPriority(GetCurrentThread(), value)) {
         return WIN_SetError("SetThreadPriority()");
     }
-    return 0;
+    return true;
 #else
     return SDL_Unsupported();
 #endif
 }
 
-extern "C" void
-SDL_SYS_WaitThread(SDL_Thread *thread)
+extern "C"
+void SDL_SYS_WaitThread(SDL_Thread *thread)
 {
     if (!thread) {
         return;
@@ -120,8 +120,8 @@ SDL_SYS_WaitThread(SDL_Thread *thread)
     }
 }
 
-extern "C" void
-SDL_SYS_DetachThread(SDL_Thread *thread)
+extern "C"
+void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
     if (!thread) {
         return;
@@ -157,10 +157,10 @@ SDL_TLSData * SDL_SYS_GetTLSData(void)
 }
 
 extern "C"
-int SDL_SYS_SetTLSData(SDL_TLSData *data)
+bool SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
     thread_local_storage = data;
-    return 0;
+    return true;
 }
 
 extern "C"

@@ -61,7 +61,7 @@ static Window GetWindow(SDL_VideoDevice *_this)
     return data->clipboard_window;
 }
 
-static int SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_ClipboardDataCallback callback,
+static bool SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_ClipboardDataCallback callback,
                             void *userdata, const char **mime_types, size_t mime_count, Uint32 sequence)
 {
     SDL_VideoData *videodata = _this->internal;
@@ -83,7 +83,7 @@ static int SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_Clipboar
 
     clipboard_owner = X11_XGetSelectionOwner(display, selection) == window;
 
-    // If we are cancelling our own data we need to clean it up
+    // If we are canceling our own data we need to clean it up
     if (clipboard_owner && clipboard->sequence == 0) {
         SDL_free(clipboard->userdata);
     }
@@ -95,7 +95,7 @@ static int SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_Clipboar
     clipboard->sequence = sequence;
 
     X11_XSetSelectionOwner(display, selection, window, CurrentTime);
-    return 0;
+    return true;
 }
 
 static void *CloneDataBuffer(const void *buffer, const size_t len)
@@ -265,7 +265,7 @@ const char **X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types
     return text_mime_types;
 }
 
-int X11_SetClipboardData(SDL_VideoDevice *_this)
+bool X11_SetClipboardData(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->internal;
     Atom XA_CLIPBOARD = X11_XInternAtom(videodata->display, "CLIPBOARD", 0);
@@ -298,7 +298,7 @@ bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     return length > 0;
 }
 
-int X11_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
+bool X11_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
 {
     return SetSelectionData(_this, XA_PRIMARY, SDL_ClipboardTextCallback, SDL_strdup(text), text_mime_types, SDL_arraysize(text_mime_types), 0);
 }

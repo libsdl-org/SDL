@@ -38,29 +38,28 @@ static SDL_bool SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *
     return true;
 }
 
-int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
-                        int data1, int data2)
+bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data1, int data2)
 {
-    int posted;
+    bool posted = false;
 
     if (!window) {
-        return 0;
+        return false;
     }
     SDL_assert(SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW));
 
     if (window->is_destroying && windowevent != SDL_EVENT_WINDOW_DESTROYED) {
-        return 0;
+        return false;
     }
     switch (windowevent) {
     case SDL_EVENT_WINDOW_SHOWN:
         if (!(window->flags & SDL_WINDOW_HIDDEN)) {
-            return 0;
+            return false;
         }
         window->flags &= ~(SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED);
         break;
     case SDL_EVENT_WINDOW_HIDDEN:
         if (window->flags & SDL_WINDOW_HIDDEN) {
-            return 0;
+            return false;
         }
         window->flags |= SDL_WINDOW_HIDDEN;
         break;
@@ -80,7 +79,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
             }
         }
         if (data1 == window->x && data2 == window->y) {
-            return 0;
+            return false;
         }
         window->x = data1;
         window->y = data2;
@@ -97,83 +96,83 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         }
         if (data1 == window->w && data2 == window->h) {
             SDL_CheckWindowPixelSizeChanged(window);
-            return 0;
+            return false;
         }
         window->w = data1;
         window->h = data2;
         break;
     case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
         if (data1 == window->last_pixel_w && data2 == window->last_pixel_h) {
-            return 0;
+            return false;
         }
         window->last_pixel_w = data1;
         window->last_pixel_h = data2;
         break;
     case SDL_EVENT_WINDOW_MINIMIZED:
         if (window->flags & SDL_WINDOW_MINIMIZED) {
-            return 0;
+            return false;
         }
         window->flags &= ~SDL_WINDOW_MAXIMIZED;
         window->flags |= SDL_WINDOW_MINIMIZED;
         break;
     case SDL_EVENT_WINDOW_MAXIMIZED:
         if (window->flags & SDL_WINDOW_MAXIMIZED) {
-            return 0;
+            return false;
         }
         window->flags &= ~SDL_WINDOW_MINIMIZED;
         window->flags |= SDL_WINDOW_MAXIMIZED;
         break;
     case SDL_EVENT_WINDOW_RESTORED:
         if (!(window->flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED))) {
-            return 0;
+            return false;
         }
         window->flags &= ~(SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED);
         break;
     case SDL_EVENT_WINDOW_MOUSE_ENTER:
         if (window->flags & SDL_WINDOW_MOUSE_FOCUS) {
-            return 0;
+            return false;
         }
         window->flags |= SDL_WINDOW_MOUSE_FOCUS;
         break;
     case SDL_EVENT_WINDOW_MOUSE_LEAVE:
         if (!(window->flags & SDL_WINDOW_MOUSE_FOCUS)) {
-            return 0;
+            return false;
         }
         window->flags &= ~SDL_WINDOW_MOUSE_FOCUS;
         break;
     case SDL_EVENT_WINDOW_FOCUS_GAINED:
         if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
-            return 0;
+            return false;
         }
         window->flags |= SDL_WINDOW_INPUT_FOCUS;
         break;
     case SDL_EVENT_WINDOW_FOCUS_LOST:
         if (!(window->flags & SDL_WINDOW_INPUT_FOCUS)) {
-            return 0;
+            return false;
         }
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
         break;
     case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
         if (data1 == 0 || (SDL_DisplayID)data1 == window->last_displayID) {
-            return 0;
+            return false;
         }
         window->last_displayID = (SDL_DisplayID)data1;
         break;
     case SDL_EVENT_WINDOW_OCCLUDED:
         if (window->flags & SDL_WINDOW_OCCLUDED) {
-            return 0;
+            return false;
         }
         window->flags |= SDL_WINDOW_OCCLUDED;
         break;
     case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
         if (window->flags & SDL_WINDOW_FULLSCREEN) {
-            return 0;
+            return false;
         }
         window->flags |= SDL_WINDOW_FULLSCREEN;
         break;
     case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-            return 0;
+            return false;
         }
         window->flags &= ~SDL_WINDOW_FULLSCREEN;
         break;
@@ -182,7 +181,6 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
     }
 
     // Post the event, if desired
-    posted = 0;
     if (SDL_EventEnabled(windowevent)) {
         SDL_Event event;
         event.type = windowevent;
@@ -200,7 +198,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
             windowevent == SDL_EVENT_WINDOW_OCCLUDED) {
             SDL_FilterEvents(RemoveSupercededWindowEvents, &event);
         }
-        posted = (SDL_PushEvent(&event) > 0);
+        posted = SDL_PushEvent(&event);
     }
 
     switch (windowevent) {

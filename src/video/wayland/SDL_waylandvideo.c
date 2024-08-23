@@ -296,9 +296,8 @@ static void Wayland_SortOutputs(SDL_VideoData *vid)
 static void display_handle_done(void *data, struct wl_output *output);
 
 // Initialization/Query functions
-static int Wayland_VideoInit(SDL_VideoDevice *_this);
-
-static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
+static bool Wayland_VideoInit(SDL_VideoDevice *_this);
+static bool Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
 static void Wayland_VideoQuit(SDL_VideoDevice *_this);
 
 static const char *SDL_WAYLAND_surface_tag = "sdl-window";
@@ -526,7 +525,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->GL_LoadLibrary = Wayland_GLES_LoadLibrary;
     device->GL_UnloadLibrary = Wayland_GLES_UnloadLibrary;
     device->GL_GetProcAddress = Wayland_GLES_GetProcAddress;
-    device->GL_DeleteContext = Wayland_GLES_DeleteContext;
+    device->GL_DestroyContext = Wayland_GLES_DestroyContext;
     device->GL_GetEGLSurface = Wayland_GLES_GetEGLSurface;
 #endif
 
@@ -1023,7 +1022,7 @@ static const struct wl_output_listener output_listener = {
     display_handle_description // Version 4
 };
 
-static int Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
+static bool Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
     struct wl_output *output;
     SDL_DisplayData *data;
@@ -1048,7 +1047,7 @@ static int Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
         data->xdg_output = zxdg_output_manager_v1_get_xdg_output(data->videodata->xdg_output_manager, output);
         zxdg_output_v1_add_listener(data->xdg_output, &xdg_output_listener, data);
     }
-    return 0;
+    return true;
 }
 
 static void Wayland_free_display(SDL_VideoDisplay *display)
@@ -1260,7 +1259,7 @@ bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg)
     return false;
 }
 
-int Wayland_VideoInit(SDL_VideoDevice *_this)
+bool Wayland_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
 
@@ -1307,10 +1306,10 @@ int Wayland_VideoInit(SDL_VideoDevice *_this)
 
     data->initializing = false;
 
-    return 0;
+    return true;
 }
 
-static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+static bool Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_VideoData *viddata = _this->internal;
     SDL_DisplayData *internal = display->internal;
@@ -1337,7 +1336,7 @@ static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *di
             rect->h = internal->pixel_height;
         }
     }
-    return 0;
+    return true;
 }
 
 static void Wayland_VideoCleanup(SDL_VideoDevice *_this)

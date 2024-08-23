@@ -43,7 +43,7 @@ static void getFBSize(int *width, int *height)
     *height = FB_HEIGHT;
 }
 
-int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
     char *default_path = "app0:module";

@@ -144,9 +144,9 @@ void SDL_X11_UnloadSymbols(void)
 }
 
 // returns non-zero if all needed symbols were loaded.
-int SDL_X11_LoadSymbols(void)
+bool SDL_X11_LoadSymbols(void)
 {
-    int rc = 1; // always succeed if not using Dynamic X11 stuff.
+    bool result = true; // always succeed if not using Dynamic X11 stuff.
 
     // deal with multiple modules (dga, x11, etc) needing these symbols...
     if (x11_load_refcount++ == 0) {
@@ -179,7 +179,7 @@ int SDL_X11_LoadSymbols(void)
         } else {
             // in case something got loaded...
             SDL_X11_UnloadSymbols();
-            rc = 0;
+            result = false;
         }
 
 #else // no dynamic X11
@@ -195,7 +195,7 @@ int SDL_X11_LoadSymbols(void)
 #endif
     }
 
-    return rc;
+    return result;
 }
 
 #endif // SDL_VIDEO_DRIVER_X11

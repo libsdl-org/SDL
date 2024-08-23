@@ -26,9 +26,9 @@
 
 #ifdef VIVANTE_PLATFORM_GENERIC
 
-int VIVANTE_SetupPlatform(SDL_VideoDevice *_this)
+bool VIVANTE_SetupPlatform(SDL_VideoDevice *_this)
 {
-    return 0;
+    return true;
 }
 
 char *VIVANTE_GetDisplayName(SDL_VideoDevice *_this)

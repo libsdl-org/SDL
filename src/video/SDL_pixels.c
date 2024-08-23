@@ -165,7 +165,7 @@ const char *SDL_GetPixelFormatName(SDL_PixelFormat format)
 }
 #undef CASE
 
-int SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask)
+SDL_bool SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask)
 {
     Uint32 masks[4];
 
@@ -184,7 +184,7 @@ int SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, 
             default:
                 *bpp = 0;  // oh well.
         }
-        return 0;
+        return true;
     }
 #else
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
@@ -210,7 +210,7 @@ int SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, 
         *Gmask = 0x0000FF00;
         *Bmask = 0x00FF0000;
 #endif
-        return 0;
+        return true;
     }
 
     if (format == SDL_PIXELFORMAT_BGR24) {
@@ -223,14 +223,14 @@ int SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, 
         *Gmask = 0x0000FF00;
         *Bmask = 0x000000FF;
 #endif
-        return 0;
+        return true;
     }
 
     if (SDL_PIXELTYPE(format) != SDL_PIXELTYPE_PACKED8 &&
         SDL_PIXELTYPE(format) != SDL_PIXELTYPE_PACKED16 &&
         SDL_PIXELTYPE(format) != SDL_PIXELTYPE_PACKED32) {
         // Not a format that uses masks
-        return 0;
+        return true;
     }
 
     switch (SDL_PIXELLAYOUT(format)) {
@@ -334,7 +334,7 @@ int SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, 
     default:
         return SDL_SetError("Unknown pixel format");
     }
-    return 0;
+    return true;
 }
 
 SDL_PixelFormat SDL_GetPixelFormatForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
@@ -578,14 +578,14 @@ SDL_PixelFormat SDL_GetPixelFormatForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, 
 static SDL_HashTable *SDL_format_details;
 static SDL_Mutex *SDL_format_details_lock;
 
-static int SDL_InitPixelFormatDetails(SDL_PixelFormatDetails *details, SDL_PixelFormat format)
+static SDL_bool SDL_InitPixelFormatDetails(SDL_PixelFormatDetails *details, SDL_PixelFormat format)
 {
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
     Uint32 mask;
 
-    if (SDL_GetMasksForPixelFormat(format, &bpp, &Rmask, &Gmask, &Bmask, &Amask) < 0) {
-        return -1;
+    if (!SDL_GetMasksForPixelFormat(format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
+        return false;
     }
 
     // Set up the format
@@ -642,7 +642,7 @@ static int SDL_InitPixelFormatDetails(SDL_PixelFormatDetails *details, SDL_Pixel
         }
     }
 
-    return 0;
+    return true;
 }
 
 const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
@@ -669,7 +669,7 @@ const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
         goto done;
     }
 
-    if (SDL_InitPixelFormatDetails(details, format) < 0) {
+    if (!SDL_InitPixelFormatDetails(details, format)) {
         SDL_free(details);
         details = NULL;
         goto done;
@@ -1035,18 +1035,17 @@ SDL_Palette *SDL_CreatePalette(int ncolors)
     return palette;
 }
 
-int SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors,
-                         int firstcolor, int ncolors)
+SDL_bool SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int firstcolor, int ncolors)
 {
-    int status = 0;
+    bool result = true;
 
     // Verify the parameters
     if (!palette) {
-        return -1;
+        return false;
     }
     if (ncolors > (palette->ncolors - firstcolor)) {
         ncolors = (palette->ncolors - firstcolor);
-        status = -1;
+        result = false;
     }
 
     if (colors != (palette->colors + firstcolor)) {
@@ -1058,7 +1057,7 @@ int SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors,
         palette->version = 1;
     }
 
-    return status;
+    return result;
 }
 
 void SDL_DestroyPalette(SDL_Palette *palette)
@@ -1418,7 +1417,7 @@ static Uint8 *Map1toN(const SDL_Palette *pal, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod
     return map;
 }
 
-int SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst)
+bool SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst)
 {
     SDL_BlitMap *map = &src->internal->map;
 
@@ -1428,8 +1427,8 @@ int SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst)
          map->dst_palette_version != dst->internal->palette->version) ||
         (src->internal->palette &&
          map->src_palette_version != src->internal->palette->version)) {
-        if (SDL_MapSurface(src, dst) < 0) {
-            return -1;
+        if (!SDL_MapSurface(src, dst)) {
+            return false;
         }
         // just here for debugging
         // printf
@@ -1439,7 +1438,7 @@ int SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst)
     } else {
         map->info.dst_surface = dst;
     }
-    return 0;
+    return true;
 }
 
 void SDL_InvalidateMap(SDL_BlitMap *map)
@@ -1458,7 +1457,7 @@ void SDL_InvalidateMap(SDL_BlitMap *map)
     }
 }
 
-int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
+bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
 {
     const SDL_PixelFormatDetails *srcfmt;
     const SDL_Palette *srcpal;
@@ -1491,7 +1490,7 @@ int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
             }
             if (!map->identity) {
                 if (!map->info.table) {
-                    return -1;
+                    return false;
                 }
             }
             if (srcfmt->bits_per_pixel != dstfmt->bits_per_pixel) {
@@ -1503,7 +1502,7 @@ int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
                 Map1toN(srcpal, src->internal->map.info.r, src->internal->map.info.g,
                         src->internal->map.info.b, src->internal->map.info.a, dstfmt);
             if (!map->info.table) {
-                return -1;
+                return false;
             }
         }
     } else {

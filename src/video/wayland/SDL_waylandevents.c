@@ -357,7 +357,7 @@ void Wayland_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
 
 static int dispatch_queued_events(SDL_VideoData *viddata)
 {
-    int ret;
+    int rc;
 
     /*
      * NOTE: When reconnection is implemented, check if libdecor needs to be
@@ -369,8 +369,8 @@ static int dispatch_queued_events(SDL_VideoData *viddata)
     }
 #endif
 
-    ret = WAYLAND_wl_display_dispatch_pending(viddata->display);
-    return ret >= 0 ? 1 : ret;
+    rc = WAYLAND_wl_display_dispatch_pending(viddata->display);
+    return rc >= 0 ? 1 : rc;
 }
 
 int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
@@ -3007,13 +3007,13 @@ static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
     locked_pointer_unlocked,
 };
 
-int Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
+bool Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
 {
     SDL_WindowData *w = window->internal;
     SDL_VideoData *d = input->display;
 
     if (!d->pointer_constraints || !input->pointer) {
-        return -1;
+        return false;
     }
 
     if (!w->locked_pointer) {
@@ -3032,10 +3032,10 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *windo
                                            window);
     }
 
-    return 0;
+    return true;
 }
 
-int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
+bool Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
 {
     SDL_WindowData *w = window->internal;
 
@@ -3047,7 +3047,7 @@ int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *win
     // Restore existing pointer confinement.
     Wayland_input_confine_pointer(input, window);
 
-    return 0;
+    return true;
 }
 
 static void pointer_confine_destroy(SDL_Window *window)
@@ -3059,7 +3059,7 @@ static void pointer_confine_destroy(SDL_Window *window)
     }
 }
 
-int Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input)
+bool Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = input->display;
@@ -3067,15 +3067,15 @@ int Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input)
     struct zwp_relative_pointer_v1 *relative_pointer;
 
     if (!d->relative_pointer_manager) {
-        return -1;
+        return false;
     }
 
     if (!d->pointer_constraints) {
-        return -1;
+        return false;
     }
 
     if (!input->pointer) {
-        return -1;
+        return false;
     }
 
     /* If we have a pointer confine active, we must destroy it here because
@@ -3099,10 +3099,10 @@ int Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input)
 
     d->relative_mouse_mode = 1;
 
-    return 0;
+    return true;
 }
 
-int Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input)
+bool Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = input->display;
@@ -3123,7 +3123,7 @@ int Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input)
         Wayland_input_confine_pointer(input, window);
     }
 
-    return 0;
+    return true;
 }
 
 static void confined_pointer_confined(void *data,
@@ -3141,7 +3141,7 @@ static const struct zwp_confined_pointer_v1_listener confined_pointer_listener =
     confined_pointer_unconfined,
 };
 
-int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
+bool Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
 {
     SDL_WindowData *w = window->internal;
     SDL_VideoData *d = input->display;
@@ -3165,12 +3165,12 @@ int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *wi
      * the pointer is unlocked.
      */
     if (d->relative_mouse_mode) {
-        return 0;
+        return true;
     }
 
     // Don't confine the pointer if it shouldn't be confined.
     if (SDL_RectEmpty(&window->mouse_rect) && !(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
-        return 0;
+        return true;
     }
 
     if (SDL_RectEmpty(&window->mouse_rect)) {
@@ -3206,16 +3206,16 @@ int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *wi
     }
 
     w->confined_pointer = confined_pointer;
-    return 0;
+    return true;
 }
 
-int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
+bool Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
 {
     pointer_confine_destroy(window);
-    return 0;
+    return true;
 }
 
-int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input)
+bool Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input)
 {
     SDL_WindowData *w = window->internal;
     SDL_VideoData *d = input->display;
@@ -3225,7 +3225,7 @@ int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *inp
     }
 
     if (w->key_inhibitor) {
-        return 0;
+        return true;
     }
 
     w->key_inhibitor =
@@ -3233,10 +3233,10 @@ int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *inp
                                                                     w->surface,
                                                                     input->seat);
 
-    return 0;
+    return true;
 }
 
-int Wayland_input_ungrab_keyboard(SDL_Window *window)
+bool Wayland_input_ungrab_keyboard(SDL_Window *window)
 {
     SDL_WindowData *w = window->internal;
 
@@ -3245,7 +3245,7 @@ int Wayland_input_ungrab_keyboard(SDL_Window *window)
         w->key_inhibitor = NULL;
     }
 
-    return 0;
+    return true;
 }
 
 void Wayland_UpdateImplicitGrabSerial(struct SDL_WaylandInput *input, Uint32 serial)

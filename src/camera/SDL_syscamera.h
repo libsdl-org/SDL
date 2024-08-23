@@ -64,7 +64,14 @@ typedef struct CameraFormatAddData
     int allocated_specs;
 } CameraFormatAddData;
 
-int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormat format, SDL_Colorspace colorspace, int w, int h, int framerate_numerator, int framerate_denominator);
+bool SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormat format, SDL_Colorspace colorspace, int w, int h, int framerate_numerator, int framerate_denominator);
+
+typedef enum SDL_CameraFrameResult
+{
+    SDL_CAMERA_FRAME_ERROR,
+    SDL_CAMERA_FRAME_SKIP,
+    SDL_CAMERA_FRAME_READY
+} SDL_CameraFrameResult;
 
 typedef struct SurfaceList
 {
@@ -89,8 +96,8 @@ struct SDL_Camera
     SDL_AtomicInt refcount;
 
     // These are, initially, set from camera_driver, but we might swap them out with Zombie versions on disconnect/failure.
-    int (*WaitDevice)(SDL_Camera *device);
-    int (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS);
+    bool (*WaitDevice)(SDL_Camera *device);
+    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS);
     void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame);
 
     // All supported formats/dimensions for this device.
@@ -161,10 +168,10 @@ struct SDL_Camera
 typedef struct SDL_CameraDriverImpl
 {
     void (*DetectDevices)(void);
-    int (*OpenDevice)(SDL_Camera *device, const SDL_CameraSpec *spec);
+    bool (*OpenDevice)(SDL_Camera *device, const SDL_CameraSpec *spec);
     void (*CloseDevice)(SDL_Camera *device);
-    int (*WaitDevice)(SDL_Camera *device);
-    int (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS); // set frame->pixels, frame->pitch, and *timestampNS!
+    bool (*WaitDevice)(SDL_Camera *device);
+    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS); // set frame->pixels, frame->pitch, and *timestampNS!
     void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame); // Reclaim frame->pixels and frame->pitch!
     void (*FreeDeviceHandle)(SDL_Camera *device); // SDL is done with this device; free the handle from SDL_AddCamera()
     void (*Deinitialize)(void);

@@ -102,18 +102,18 @@ struct SDL_GLDriverData
 };
 
 // OpenGL functions
-extern int WIN_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern bool WIN_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_FunctionPointer WIN_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 extern void WIN_GL_UnloadLibrary(SDL_VideoDevice *_this);
 extern bool WIN_GL_UseEGL(SDL_VideoDevice *_this);
-extern int WIN_GL_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool WIN_GL_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_GLContext WIN_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WIN_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
+extern bool WIN_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
                               SDL_GLContext context);
-extern int WIN_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern int WIN_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
-extern int WIN_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WIN_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern bool WIN_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
+extern bool WIN_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
+extern bool WIN_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool WIN_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);
 extern void WIN_GL_InitExtensions(SDL_VideoDevice *_this);
 
 #ifndef WGL_ARB_pixel_format

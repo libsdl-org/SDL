@@ -272,7 +272,7 @@ typedef struct
     } last_state;
 } SDL_DriverPS5_Context;
 
-static int HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *ctx, const void *effect, int size, bool application_usage);
+static bool HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *ctx, const void *effect, int size, bool application_usage);
 
 static void HIDAPI_DriverPS5_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -669,7 +669,7 @@ static float HIDAPI_DriverPS5_ApplyCalibrationData(SDL_DriverPS5_Context *ctx, i
     return result;
 }
 
-static int HIDAPI_DriverPS5_UpdateEffects(SDL_DriverPS5_Context *ctx, int effect_mask, bool application_usage)
+static bool HIDAPI_DriverPS5_UpdateEffects(SDL_DriverPS5_Context *ctx, int effect_mask, bool application_usage)
 {
     DS5EffectsState_t effects;
 
@@ -678,7 +678,7 @@ static int HIDAPI_DriverPS5_UpdateEffects(SDL_DriverPS5_Context *ctx, int effect
         (effect_mask & (k_EDS5EffectLED | k_EDS5EffectPadLights)) != 0) {
         if (ctx->led_reset_state != k_EDS5LEDResetStateComplete) {
             ctx->led_reset_state = k_EDS5LEDResetStatePending;
-            return 0;
+            return true;
         }
     }
 
@@ -790,7 +790,7 @@ static void HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
         data[0] = k_EPS5ReportIdBluetoothEffects;
         data[1] = 0x02; // Magic value
 
-        if (SDL_HIDAPI_LockRumble() == 0) {
+        if (SDL_HIDAPI_LockRumble()) {
             SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
         }
     } else {
@@ -970,7 +970,7 @@ static bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     return true;
 }
 
-static int HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
@@ -988,7 +988,7 @@ static int HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
     return HIDAPI_DriverPS5_UpdateEffects(ctx, k_EDS5EffectRumble, true);
 }
 
-static int HIDAPI_DriverPS5_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_DriverPS5_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
@@ -1013,7 +1013,7 @@ static Uint32 HIDAPI_DriverPS5_GetJoystickCapabilities(SDL_HIDAPI_Device *device
     return result;
 }
 
-static int HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
@@ -1029,7 +1029,7 @@ static int HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joysti
     return HIDAPI_DriverPS5_UpdateEffects(ctx, k_EDS5EffectLED, true);
 }
 
-static int HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *ctx, const void *effect, int size, bool application_usage)
+static bool HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *ctx, const void *effect, int size, bool application_usage)
 {
     Uint8 data[78];
     int report_size, offset;
@@ -1079,8 +1079,8 @@ static int HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *ct
         SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
     }
 
-    if (SDL_HIDAPI_LockRumble() < 0) {
-        return -1;
+    if (!SDL_HIDAPI_LockRumble()) {
+        return false;
     }
 
     // See if we can update an existing pending request
@@ -1093,25 +1093,25 @@ static int HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *ct
             // We're simply updating the data for this request
             SDL_memcpy(pending_data, data, report_size);
             SDL_HIDAPI_UnlockRumble();
-            return 0;
+            return true;
         }
     }
 
     if (SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, report_size) != report_size) {
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
-static int HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
+static bool HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
     return HIDAPI_DriverPS5_InternalSendJoystickEffect(ctx, effect, size, true);
 }
 
-static int HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
+static bool HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
@@ -1126,7 +1126,7 @@ static int HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device,
     }
     ctx->report_sensors = enabled;
 
-    return 0;
+    return true;
 }
 
 static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5SimpleStatePacket_t *packet, Uint64 timestamp)
@@ -1582,7 +1582,7 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
-    return size >= 0;
+    return (size >= 0);
 }
 
 static void HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)

@@ -671,21 +671,22 @@ static const char *EscapeAmpersands(char **dst, size_t *dstlen, const char *src)
 }
 
 // This function is called if a Task Dialog is unsupported.
-static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+static bool WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     WIN_DialogData *dialog;
-    int i, x, y, retval;
+    int i, x, y;
     HFONT DialogFont;
     SIZE Size;
     RECT TextSize;
     wchar_t *wmessage;
     TEXTMETRIC TM;
     HDC FontDC;
-    INT_PTR result;
+    INT_PTR rc;
     char *ampescape = NULL;
     size_t ampescapesize = 0;
     Uint16 defbuttoncount = 0;
     Uint16 icon = 0;
+    bool result;
 
     HWND ParentWindow = NULL;
 
@@ -817,17 +818,17 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
 
     dialog = CreateDialogData(Size.cx, Size.cy, messageboxdata->title);
     if (!dialog) {
-        return -1;
+        return false;
     }
 
     if (icon && !AddDialogStaticIcon(dialog, IconMargin, IconMargin, IconWidth, IconHeight, icon)) {
         FreeDialogData(dialog);
-        return -1;
+        return false;
     }
 
     if (!AddDialogStaticText(dialog, TextSize.left, TextSize.top, TextSize.right - TextSize.left, TextSize.bottom - TextSize.top, messageboxdata->message)) {
         FreeDialogData(dialog);
-        return -1;
+        return false;
     }
 
     // Align the buttons to the right/bottom.
@@ -860,7 +861,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
         if (!buttontext || !AddDialogButton(dialog, x, y, ButtonWidth, ButtonHeight, buttontext, IDBUTTONINDEX0 + (int)(sdlButton - messageboxdata->buttons), isdefault)) {
             FreeDialogData(dialog);
             SDL_free(ampescape);
-            return -1;
+            return false;
         }
 
         x += ButtonWidth + ButtonMargin;
@@ -873,32 +874,32 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
         ParentWindow = messageboxdata->window->internal->hwnd;
     }
 
-    result = DialogBoxIndirectParam(NULL, (DLGTEMPLATE *)dialog->lpDialog, ParentWindow, MessageBoxDialogProc, (LPARAM)messageboxdata);
-    if (result >= IDBUTTONINDEX0 && result - IDBUTTONINDEX0 < messageboxdata->numbuttons) {
-        *buttonID = messageboxdata->buttons[result - IDBUTTONINDEX0].buttonID;
-        retval = 0;
-    } else if (result == IDCLOSED) {
+    rc = DialogBoxIndirectParam(NULL, (DLGTEMPLATE *)dialog->lpDialog, ParentWindow, MessageBoxDialogProc, (LPARAM)messageboxdata);
+    if (rc >= IDBUTTONINDEX0 && rc - IDBUTTONINDEX0 < messageboxdata->numbuttons) {
+        *buttonID = messageboxdata->buttons[rc - IDBUTTONINDEX0].buttonID;
+        result = true;
+    } else if (rc == IDCLOSED) {
         // Dialog window closed by user or system.
         // This could use a special return code.
-        retval = 0;
+        result = true;
         *buttonID = -1;
     } else {
-        if (result == 0) {
+        if (rc == 0) {
             SDL_SetError("Invalid parent window handle");
-        } else if (result == -1) {
+        } else if (rc == -1) {
             SDL_SetError("The message box encountered an error.");
-        } else if (result == IDINVALPTRINIT || result == IDINVALPTRSETFOCUS || result == IDINVALPTRCOMMAND) {
+        } else if (rc == IDINVALPTRINIT || rc == IDINVALPTRSETFOCUS || rc == IDINVALPTRCOMMAND) {
             SDL_SetError("Invalid message box pointer in dialog procedure");
-        } else if (result == IDINVALPTRDLGITEM) {
+        } else if (rc == IDINVALPTRDLGITEM) {
             SDL_SetError("Couldn't find dialog control of the default enter-key button");
         } else {
             SDL_SetError("An unknown error occurred");
         }
-        retval = -1;
+        result = false;
     }
 
     FreeDialogData(dialog);
-    return retval;
+    return result;
 }
 
 /* TaskDialogIndirect procedure
@@ -908,7 +909,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
 typedef HRESULT (FAR WINAPI *TASKDIALOGINDIRECTPROC)(const TASKDIALOGCONFIG *pTaskConfig, int *pnButton, int *pnRadioButton, BOOL *pfVerificationFlagChecked);
 /* *INDENT-ON* */ // clang-format on
 
-int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     HWND ParentWindow = NULL;
     wchar_t *wmessage;
@@ -1001,7 +1002,7 @@ int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
                 SDL_free((wchar_t *)pButtons[j].pszButtonText);
             }
             SDL_free(pButtons);
-            return -1;
+            return false;
         }
         pButton->pszButtonText = WIN_UTF8ToStringW(buttontext);
         if (messageboxdata->buttons[i].flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
@@ -1032,7 +1033,7 @@ int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
         } else {
             *buttonID = -1;
         }
-        return 0;
+        return true;
     }
 
     // We failed showing the Task Dialog, use the old message box!

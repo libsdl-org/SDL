@@ -88,7 +88,7 @@ static void iteration(void)
                     /* !!! FIXME: laziness, this used to loop the audio, but we'll just play it once for now on each connect. */
                     SDL_PutAudioStreamData(stream, sound, soundlen);
                     SDL_FlushAudioStream(stream);
-                    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
+                    SDL_ResumeAudioStreamDevice(stream);
                     /* !!! FIXME: this is leaking the stream for now. We'll wire it up to a dictionary or whatever later. */
                 }
             }
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
     }
 
     /* Load the SDL library */
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
     }
 
     /* Load the wave file into memory */
-    if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) < 0) {
+    if (!SDL_LoadWAV(filename, &spec, &sound, &soundlen)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         quit(1);
     }

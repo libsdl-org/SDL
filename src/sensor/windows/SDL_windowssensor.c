@@ -57,8 +57,8 @@ static ISensorManager *SDL_sensor_manager;
 static int SDL_num_sensors;
 static SDL_Windows_Sensor *SDL_sensors;
 
-static int ConnectSensor(ISensor *sensor);
-static int DisconnectSensor(ISensor *sensor);
+static bool ConnectSensor(ISensor *sensor);
+static bool DisconnectSensor(ISensor *sensor);
 
 static HRESULT STDMETHODCALLTYPE ISensorManagerEventsVtbl_QueryInterface(ISensorManagerEvents *This, REFIID riid, void **ppvObject)
 {
@@ -258,7 +258,7 @@ static ISensorEvents sensor_events = {
     &sensor_events_vtbl
 };
 
-static int ConnectSensor(ISensor *sensor)
+static bool ConnectSensor(ISensor *sensor)
 {
     SDL_Windows_Sensor *new_sensor, *new_sensors;
     HRESULT hr;
@@ -296,7 +296,7 @@ static int ConnectSensor(ISensor *sensor)
         SysFreeString(bstr_name);
     }
     if (!name) {
-        return -1;
+        return false;
     }
 
     SDL_LockSensors();
@@ -304,7 +304,7 @@ static int ConnectSensor(ISensor *sensor)
     if (!new_sensors) {
         SDL_UnlockSensors();
         SDL_free(name);
-        return -1;
+        return false;
     }
 
     ISensor_AddRef(sensor);
@@ -322,10 +322,10 @@ static int ConnectSensor(ISensor *sensor)
 
     SDL_UnlockSensors();
 
-    return 0;
+    return true;
 }
 
-static int DisconnectSensor(ISensor *sensor)
+static bool DisconnectSensor(ISensor *sensor)
 {
     SDL_Windows_Sensor *old_sensor;
     int i;
@@ -349,10 +349,10 @@ static int DisconnectSensor(ISensor *sensor)
     }
     SDL_UnlockSensors();
 
-    return 0;
+    return true;
 }
 
-static int SDL_WINDOWS_SensorInit(void)
+static bool SDL_WINDOWS_SensorInit(void)
 {
     HRESULT hr;
     ISensorCollection *sensor_collection = NULL;
@@ -364,7 +364,7 @@ static int SDL_WINDOWS_SensorInit(void)
     hr = CoCreateInstance(&SDL_CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_SensorManager, (LPVOID *)&SDL_sensor_manager);
     if (FAILED(hr)) {
         // If we can't create a sensor manager (i.e. on Wine), we won't have any sensors, but don't fail the init
-        return 0; // WIN_SetErrorFromHRESULT("Couldn't create the sensor manager", hr);
+        return true; // WIN_SetErrorFromHRESULT("Couldn't create the sensor manager", hr);
     }
 
     hr = ISensorManager_SetEventSink(SDL_sensor_manager, &sensor_manager_events);
@@ -397,7 +397,7 @@ static int SDL_WINDOWS_SensorInit(void)
         }
         ISensorCollection_Release(sensor_collection);
     }
-    return 0;
+    return true;
 }
 
 static int SDL_WINDOWS_SensorGetCount(void)
@@ -429,10 +429,10 @@ static SDL_SensorID SDL_WINDOWS_SensorGetDeviceInstanceID(int device_index)
     return SDL_sensors[device_index].id;
 }
 
-static int SDL_WINDOWS_SensorOpen(SDL_Sensor *sensor, int device_index)
+static bool SDL_WINDOWS_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     SDL_sensors[device_index].sensor_opened = sensor;
-    return 0;
+    return true;
 }
 
 static void SDL_WINDOWS_SensorUpdate(SDL_Sensor *sensor)

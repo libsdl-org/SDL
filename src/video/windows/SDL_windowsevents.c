@@ -2363,7 +2363,7 @@ static BOOL CALLBACK WIN_ResourceNameCallback(HMODULE hModule, LPCTSTR lpType, L
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 // Register the class for this application
-int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+SDL_bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
     WNDCLASSEX wcex;
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -2373,7 +2373,7 @@ int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     // Only do this once...
     if (app_registered) {
         ++app_registered;
-        return 0;
+        return true;
     }
     SDL_assert(!SDL_Appname);
     if (!name) {
@@ -2421,7 +2421,7 @@ int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     }
 
     app_registered = 1;
-    return 0;
+    return true;
 }
 
 // Unregisters the windowclass registered in SDL_RegisterApp above.

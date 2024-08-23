@@ -44,7 +44,7 @@
 #endif
 
 // Initialization/Query functions
-static int X11_VideoInit(SDL_VideoDevice *_this);
+static bool X11_VideoInit(SDL_VideoDevice *_this);
 static void X11_VideoQuit(SDL_VideoDevice *_this);
 
 // X11 driver bootstrap functions
@@ -235,7 +235,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->GL_SetSwapInterval = X11_GL_SetSwapInterval;
     device->GL_GetSwapInterval = X11_GL_GetSwapInterval;
     device->GL_SwapWindow = X11_GL_SwapWindow;
-    device->GL_DeleteContext = X11_GL_DeleteContext;
+    device->GL_DestroyContext = X11_GL_DestroyContext;
     device->GL_GetEGLSurface = NULL;
 #endif
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -250,7 +250,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         device->GL_SetSwapInterval = X11_GLES_SetSwapInterval;
         device->GL_GetSwapInterval = X11_GLES_GetSwapInterval;
         device->GL_SwapWindow = X11_GLES_SwapWindow;
-        device->GL_DeleteContext = X11_GLES_DeleteContext;
+        device->GL_DestroyContext = X11_GLES_DestroyContext;
         device->GL_GetEGLSurface = X11_GLES_GetEGLSurface;
 #ifdef SDL_VIDEO_OPENGL_GLX
     }
@@ -376,7 +376,7 @@ static void X11_CheckWindowManager(SDL_VideoDevice *_this)
 #endif
 }
 
-int X11_VideoInit(SDL_VideoDevice *_this)
+static bool X11_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
 
@@ -429,8 +429,8 @@ int X11_VideoInit(SDL_VideoDevice *_this)
     // Detect the window manager
     X11_CheckWindowManager(_this);
 
-    if (X11_InitModes(_this) < 0) {
-        return -1;
+    if (!X11_InitModes(_this)) {
+        return false;
     }
 
     if (!X11_InitXinput2(_this)) {
@@ -449,8 +449,8 @@ int X11_VideoInit(SDL_VideoDevice *_this)
 #warning X server does not support UTF8_STRING, a feature introduced in 2000! This is likely to become a hard error in a future libSDL3.
 #endif
 
-    if (X11_InitKeyboard(_this) != 0) {
-        return -1;
+    if (!X11_InitKeyboard(_this)) {
+        return false;
     }
     X11_InitMouse(_this);
 
@@ -458,7 +458,7 @@ int X11_VideoInit(SDL_VideoDevice *_this)
 
     X11_InitPen(_this);
 
-    return 0;
+    return true;
 }
 
 void X11_VideoQuit(SDL_VideoDevice *_this)

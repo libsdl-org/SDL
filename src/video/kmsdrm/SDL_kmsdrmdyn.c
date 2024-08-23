@@ -109,9 +109,9 @@ void SDL_KMSDRM_UnloadSymbols(void)
 }
 
 // returns non-zero if all needed symbols were loaded.
-int SDL_KMSDRM_LoadSymbols(void)
+bool SDL_KMSDRM_LoadSymbols(void)
 {
-    int rc = 1; // always succeed if not using Dynamic KMSDRM stuff.
+    bool result = true; // always succeed if not using Dynamic KMSDRM stuff.
 
     // deal with multiple modules needing these symbols...
     if (kmsdrm_load_refcount++ == 0) {
@@ -138,7 +138,7 @@ int SDL_KMSDRM_LoadSymbols(void)
         } else {
             // in case something got loaded...
             SDL_KMSDRM_UnloadSymbols();
-            rc = 0;
+            result = false;
         }
 
 #else // no dynamic KMSDRM
@@ -151,7 +151,7 @@ int SDL_KMSDRM_LoadSymbols(void)
 #endif
     }
 
-    return rc;
+    return result;
 }
 
 #endif // SDL_VIDEO_DRIVER_KMSDRM

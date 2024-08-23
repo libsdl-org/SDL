@@ -95,7 +95,7 @@ static int calc_bezier_y(float t)
  * Joystick 0 should be the system default joystick.
  * It should return number of joysticks, or -1 on an unrecoverable fatal error.
  */
-static int VITA_JoystickInit(void)
+static bool VITA_JoystickInit(void)
 {
     int i;
     SceCtrlPortInfo myPortInfo;
@@ -201,7 +201,7 @@ static void VITA_JoystickSetDevicePlayerIndex(int device_index, int player_index
    This should fill the nbuttons and naxes fields of the joystick structure.
    It returns 0, or -1 if there is an error.
  */
-static int VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     joystick->nbuttons = SDL_arraysize(ext_button_map);
     joystick->naxes = 6;
@@ -210,7 +210,7 @@ static int VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
     SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, true);
     SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
 
-    return 0;
+    return true;
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -325,13 +325,13 @@ static SDL_GUID VITA_JoystickGetDeviceGUID(int device_index)
     return SDL_CreateJoystickGUIDForName(name);
 }
 
-static int VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     int index = (int)SDL_GetJoystickID(joystick) - 1;
     SceCtrlActuator act;
 
     if (index < 0 || index > 3) {
-        return -1;
+        return false;
     }
     SDL_zero(act);
     act.small = high_frequency_rumble / 256;
@@ -339,32 +339,32 @@ static int VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     if (sceCtrlSetActuator(ext_port_map[index], &act) < 0) {
         return SDL_Unsupported();
     }
-    return 0;
+    return true;
 }
 
-static int VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
+static bool VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
 {
     return SDL_Unsupported();
 }
 
-static int VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int index = (int)SDL_GetJoystickID(joystick) - 1;
     if (index < 0 || index > 3) {
-        return -1;
+        return false;
     }
     if (sceCtrlSetLightBar(ext_port_map[index], red, green, blue) < 0) {
         return SDL_Unsupported();
     }
-    return 0;
+    return true;
 }
 
-static int VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
+static bool VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }

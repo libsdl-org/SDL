@@ -54,9 +54,9 @@ static int childThread(void *arg)
     return res;
 }
 
-int SDL_SYS_CreateThread(SDL_Thread *thread,
-                         SDL_FunctionPointer pfnBeginThread,
-                         SDL_FunctionPointer pfnEndThread)
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                          SDL_FunctionPointer pfnBeginThread,
+                          SDL_FunctionPointer pfnEndThread)
 {
     ee_thread_status_t status;
     ee_thread_t eethread;
@@ -92,7 +92,10 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
     sema.option = 0;
     thread->endfunc = (void *)CreateSema(&sema);
 
-    return StartThread(thread->handle, thread);
+    if (StartThread(thread->handle, thread) < 0) {
+        return SDL_SetError("StartThread() failed");
+    }
+    return true;
 }
 
 void SDL_SYS_SetupThread(const char *name)
@@ -117,7 +120,7 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
     // Do nothing.
 }
 
-int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
     int value;
 
@@ -131,7 +134,10 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         value = 50;
     }
 
-    return ChangeThreadPriority(GetThreadId(), value);
+    if (ChangeThreadPriority(GetThreadId(), value) < 0) {
+        return SDL_SetError("ChangeThreadPriority() failed");
+    }
+    return true;
 }
 
 #endif // SDL_THREAD_PS2

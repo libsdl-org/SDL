@@ -40,7 +40,7 @@ char *SDL_SYS_GetBasePath(void)
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     const char *append = "/libsdl/";
-    char *retval;
+    char *result;
     char *ptr = NULL;
     size_t len = 0;
 
@@ -53,35 +53,35 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     }
 
     len = SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
-    retval = (char *)SDL_malloc(len);
-    if (!retval) {
+    result = (char *)SDL_malloc(len);
+    if (!result) {
         return NULL;
     }
 
     if (*org) {
-        SDL_snprintf(retval, len, "%s%s/%s/", append, org, app);
+        SDL_snprintf(result, len, "%s%s/%s/", append, org, app);
     } else {
-        SDL_snprintf(retval, len, "%s%s/", append, app);
+        SDL_snprintf(result, len, "%s%s/", append, app);
     }
 
-    for (ptr = retval + 1; *ptr; ptr++) {
+    for (ptr = result + 1; *ptr; ptr++) {
         if (*ptr == '/') {
             *ptr = '\0';
-            if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
+            if (mkdir(result, 0700) != 0 && errno != EEXIST) {
                 goto error;
             }
             *ptr = '/';
         }
     }
 
-    if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
+    if (mkdir(result, 0700) != 0 && errno != EEXIST) {
     error:
-        SDL_SetError("Couldn't create directory '%s': '%s'", retval, strerror(errno));
-        SDL_free(retval);
+        SDL_SetError("Couldn't create directory '%s': '%s'", result, strerror(errno));
+        SDL_free(result);
         return NULL;
     }
 
-    return retval;
+    return result;
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
@@ -99,18 +99,18 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         return NULL;
     }
 
-    char *retval = SDL_malloc(SDL_strlen(home) + 2);
-    if (!retval) {
+    char *result = SDL_malloc(SDL_strlen(home) + 2);
+    if (!result) {
         return NULL;
     }
 
-    if (SDL_snprintf(retval, SDL_strlen(home) + 2, "%s/", home) < 0) {
+    if (SDL_snprintf(result, SDL_strlen(home) + 2, "%s/", home) < 0) {
         SDL_SetError("Couldn't snprintf home path for Emscripten: %s", home);
-        SDL_free(retval);
+        SDL_free(result);
         return NULL;
     }
 
-    return retval;
+    return result;
 }
 
 #endif // SDL_FILESYSTEM_EMSCRIPTEN

@@ -249,13 +249,13 @@ static bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 #endif // threads
 
 // this is a public symbol, so it has to exist even if threads are disabled.
-int SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
+SDL_bool SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
 {
 #ifdef SDL_THREADS_DISABLED
     return SDL_Unsupported();
 #else
     if (setpriority(PRIO_PROCESS, (id_t)threadID, priority) == 0) {
-        return 0;
+        return true;
     }
 
 #ifdef SDL_USE_LIBDBUS
@@ -272,7 +272,7 @@ int SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
        README and sample code at: http://git.0pointer.net/rtkit.git
     */
     if (rtkit_setpriority_nice((pid_t)threadID, priority)) {
-        return 0;
+        return true;
     }
 #endif
 
@@ -281,7 +281,7 @@ int SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
 }
 
 // this is a public symbol, so it has to exist even if threads are disabled.
-int SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
+SDL_bool SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
 #ifdef SDL_THREADS_DISABLED
     return SDL_Unsupported();
@@ -310,7 +310,7 @@ int SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
         }
 
         if (setpriority(PRIO_PROCESS, (id_t)threadID, osPriority) == 0) {
-            return 0;
+            return true;
         }
     }
 
@@ -329,11 +329,11 @@ int SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
     */
     if (schedPolicy == SCHED_RR || schedPolicy == SCHED_FIFO) {
         if (rtkit_setpriority_realtime((pid_t)threadID, osPriority)) {
-            return 0;
+            return true;
         }
     } else {
         if (rtkit_setpriority_nice((pid_t)threadID, osPriority)) {
-            return 0;
+            return true;
         }
     }
 #endif

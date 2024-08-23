@@ -190,7 +190,7 @@ typedef struct
 #define HIDP_STATUS_REPORT_DOES_NOT_EXIST   HIDP_ERROR_CODES(0xC, 0x0010)
 #define HIDP_STATUS_NOT_IMPLEMENTED         HIDP_ERROR_CODES(0xC, 0x0020)
 
-extern int WIN_LoadHIDDLL(void);
+extern bool WIN_LoadHIDDLL(void);
 extern void WIN_UnloadHIDDLL(void);
 
 typedef BOOLEAN (WINAPI *HidD_GetString_t)(HANDLE HidDeviceObject, PVOID Buffer, ULONG BufferLength);

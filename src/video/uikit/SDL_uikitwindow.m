@@ -79,7 +79,7 @@
 
 @end
 
-static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, bool created)
+static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, bool created)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->internal;
@@ -149,10 +149,10 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow 
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, (__bridge void *)data.uiwindow);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
 
-    return 0;
+    return true;
 }
 
-int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
@@ -177,7 +177,7 @@ int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
             if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
                 include_high_density_modes = true;
             }
-            if (SDL_GetClosestFullscreenDisplayMode(display->id, window->w, window->h, 0.0f, include_high_density_modes, &bestmode) == 0) {
+            if (SDL_GetClosestFullscreenDisplayMode(display->id, window->w, window->h, 0.0f, include_high_density_modes, &bestmode)) {
                 SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)bestmode.internal;
                 [data.uiscreen setCurrentMode:modedata.uiscreenmode];
 
@@ -212,12 +212,12 @@ int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
         }
 #endif
 
-        if (SetupWindowData(_this, window, uiwindow, true) < 0) {
-            return -1;
+        if (!SetupWindowData(_this, window, uiwindow, true)) {
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }
 
 void UIKit_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
@@ -305,13 +305,13 @@ void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bo
     }
 }
 
-int UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
+SDL_FullscreenResult UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     @autoreleasepool {
         SDL_SendWindowEvent(window, fullscreen ? SDL_EVENT_WINDOW_ENTER_FULLSCREEN : SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
         UIKit_UpdateWindowBorder(_this, window);
     }
-    return 0;
+    return SDL_FULLSCREEN_SUCCEEDED;
 }
 
 void UIKit_UpdatePointerLock(SDL_VideoDevice *_this, SDL_Window *window)
@@ -452,7 +452,7 @@ UIKit_GetSupportedOrientations(SDL_Window *window)
 }
 #endif // !SDL_PLATFORM_TVOS
 
-int SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam)
+SDL_bool SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam)
 {
     if (!window || !window->internal) {
         return SDL_SetError("Invalid window");
@@ -465,7 +465,7 @@ int SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimati
                                     callbackParam:callbackParam];
     }
 
-    return 0;
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_UIKIT

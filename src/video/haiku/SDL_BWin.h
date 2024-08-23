@@ -127,7 +127,7 @@ class SDL_BWin : public BWindow
             if (_SDL_GLView == _cur_view)
                 RemoveChild(_SDL_GLView);
             _SDL_GLView = NULL;
-            // _SDL_GLView deleted by HAIKU_GL_DeleteContext
+            // _SDL_GLView deleted by HAIKU_GL_DestroyContext
         }
 
 #endif
@@ -213,7 +213,7 @@ class SDL_BWin : public BWindow
                 SDL_Looper->SetCurrentContext(NULL);
             _SDL_GLView = NULL;
             UpdateCurrentView();
-            // _SDL_GLView deleted by HAIKU_GL_DeleteContext
+            // _SDL_GLView deleted by HAIKU_GL_DestroyContext
         }
         Unlock();
     }

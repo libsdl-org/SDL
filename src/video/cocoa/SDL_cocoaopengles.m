@@ -28,7 +28,7 @@
 
 // EGL implementation of SDL OpenGL support
 
-int Cocoa_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool Cocoa_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     // If the profile requested is not GL ES, switch over to WIN_GL functions
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
@@ -42,7 +42,7 @@ int Cocoa_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         _this->GL_SetSwapInterval = Cocoa_GL_SetSwapInterval;
         _this->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
         _this->GL_SwapWindow = Cocoa_GL_SwapWindow;
-        _this->GL_DeleteContext = Cocoa_GL_DeleteContext;
+        _this->GL_DestroyContext = Cocoa_GL_DestroyContext;
         _this->GL_GetEGLSurface = NULL;
         return Cocoa_GL_LoadLibrary(_this, path);
 #else
@@ -54,7 +54,7 @@ int Cocoa_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform);
     }
 
-    return 0;
+    return true;
 }
 
 SDL_GLContext Cocoa_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
@@ -75,10 +75,10 @@ SDL_GLContext Cocoa_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *windo
             _this->GL_SetSwapInterval = Cocoa_GL_SetSwapInterval;
             _this->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
             _this->GL_SwapWindow = Cocoa_GL_SwapWindow;
-            _this->GL_DeleteContext = Cocoa_GL_DeleteContext;
+            _this->GL_DestroyContext = Cocoa_GL_DestroyContext;
             _this->GL_GetEGLSurface = NULL;
 
-            if (Cocoa_GL_LoadLibrary(_this, NULL) != 0) {
+            if (!Cocoa_GL_LoadLibrary(_this, NULL)) {
                 return NULL;
             }
 
@@ -91,29 +91,29 @@ SDL_GLContext Cocoa_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *windo
     }
 }
 
-int Cocoa_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
+bool Cocoa_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     @autoreleasepool {
-        SDL_EGL_DeleteContext(_this, context);
+        SDL_EGL_DestroyContext(_this, context);
     }
-    return 0;
+    return true;
 }
 
-int Cocoa_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool Cocoa_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         return SDL_EGL_SwapBuffers(_this, ((__bridge SDL_CocoaWindowData *)window->internal).egl_surface);
     }
 }
 
-int Cocoa_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+bool Cocoa_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     @autoreleasepool {
         return SDL_EGL_MakeCurrent(_this, window ? ((__bridge SDL_CocoaWindowData *)window->internal).egl_surface : EGL_NO_SURFACE, context);
     }
 }
 
-int Cocoa_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool Cocoa_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         NSView *v;
@@ -127,9 +127,9 @@ int Cocoa_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #if 0 // When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 1, while the below lines function.
         SDL_assert(!_this->gl_config.driver_loaded);
 #endif
-            if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform) < 0) {
+            if (!SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform)) {
                 SDL_EGL_UnloadLibrary(_this);
-                return -1;
+                return false;
             }
             _this->gl_config.driver_loaded = 1;
         }

@@ -235,7 +235,7 @@ static bool SendProtocolPacket(SDL_DriverXboxOne_Context *ctx, const Uint8 *data
 
     ctx->send_time = SDL_GetTicks();
 
-    if (SDL_HIDAPI_LockRumble() < 0) {
+    if (!SDL_HIDAPI_LockRumble()) {
         return false;
     }
     if (SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, size) != size) {
@@ -443,7 +443,7 @@ static void HIDAPI_DriverXboxOne_RumbleSent(void *userdata)
     ctx->rumble_time = SDL_GetTicks();
 }
 
-static int HIDAPI_DriverXboxOne_UpdateRumble(SDL_DriverXboxOne_Context *ctx)
+static bool HIDAPI_DriverXboxOne_UpdateRumble(SDL_DriverXboxOne_Context *ctx)
 {
     if (ctx->rumble_state == XBOX_ONE_RUMBLE_STATE_QUEUED) {
         if (ctx->rumble_time) {
@@ -460,18 +460,18 @@ static int HIDAPI_DriverXboxOne_UpdateRumble(SDL_DriverXboxOne_Context *ctx)
     }
 
     if (!ctx->rumble_pending) {
-        return 0;
+        return true;
     }
 
     if (ctx->rumble_state != XBOX_ONE_RUMBLE_STATE_IDLE) {
-        return 0;
+        return true;
     }
 
     // We're no longer pending, even if we fail to send the rumble below
     ctx->rumble_pending = false;
 
-    if (SDL_HIDAPI_LockRumble() < 0) {
-        return -1;
+    if (!SDL_HIDAPI_LockRumble()) {
+        return false;
     }
 
     if (ctx->device->is_bluetooth) {
@@ -500,10 +500,10 @@ static int HIDAPI_DriverXboxOne_UpdateRumble(SDL_DriverXboxOne_Context *ctx)
 
     ctx->rumble_state = XBOX_ONE_RUMBLE_STATE_QUEUED;
 
-    return 0;
+    return true;
 }
 
-static int HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
 
@@ -515,7 +515,7 @@ static int HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     return HIDAPI_DriverXboxOne_UpdateRumble(ctx);
 }
 
-static int HIDAPI_DriverXboxOne_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_DriverXboxOne_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
 
@@ -548,7 +548,7 @@ static Uint32 HIDAPI_DriverXboxOne_GetJoystickCapabilities(SDL_HIDAPI_Device *de
     return result;
 }
 
-static int HIDAPI_DriverXboxOne_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_DriverXboxOne_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
 
@@ -563,18 +563,18 @@ static int HIDAPI_DriverXboxOne_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Jo
         if (SDL_HIDAPI_SendRumble(device, led_packet, sizeof(led_packet)) != sizeof(led_packet)) {
             return SDL_SetError("Couldn't send LED packet");
         }
-        return 0;
+        return true;
     } else {
         return SDL_Unsupported();
     }
 }
 
-static int HIDAPI_DriverXboxOne_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
+static bool HIDAPI_DriverXboxOne_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
+static bool HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -1627,7 +1627,7 @@ static bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
         // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
-    return size >= 0;
+    return (size >= 0);
 }
 
 static void HIDAPI_DriverXboxOne_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)

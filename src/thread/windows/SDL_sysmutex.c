@@ -90,11 +90,11 @@ static void SDL_LockMutex_srw(SDL_Mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  
     }
 }
 
-static int SDL_TryLockMutex_srw(SDL_Mutex *_mutex)
+static bool SDL_TryLockMutex_srw(SDL_Mutex *_mutex)
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
     const DWORD this_thread = GetCurrentThreadId();
-    int retval = 0;
+    bool retval = true;
 
     if (mutex->owner == this_thread) {
         ++mutex->count;
@@ -104,7 +104,7 @@ static int SDL_TryLockMutex_srw(SDL_Mutex *_mutex)
             mutex->owner = this_thread;
             mutex->count = 1;
         } else {
-            retval = SDL_MUTEX_TIMEDOUT;
+            retval = false;
         }
     }
     return retval;
@@ -166,10 +166,10 @@ static void SDL_LockMutex_cs(SDL_Mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS  /
     EnterCriticalSection(&mutex->cs);
 }
 
-static int SDL_TryLockMutex_cs(SDL_Mutex *mutex_)
+static bool SDL_TryLockMutex_cs(SDL_Mutex *mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
-    return (TryEnterCriticalSection(&mutex->cs) == 0) ? SDL_MUTEX_TIMEDOUT : 0;
+    return TryEnterCriticalSection(&mutex->cs);
 }
 
 static void SDL_UnlockMutex_cs(SDL_Mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
@@ -234,9 +234,14 @@ void SDL_LockMutex(SDL_Mutex *mutex)
     }
 }
 
-int SDL_TryLockMutex(SDL_Mutex *mutex)
+SDL_bool SDL_TryLockMutex(SDL_Mutex *mutex)
 {
-    return mutex ? SDL_mutex_impl_active.TryLock(mutex) : 0;
+    bool result = true;
+
+    if (mutex) {
+        result = SDL_mutex_impl_active.TryLock(mutex);
+    }
+    return result;
 }
 
 void SDL_UnlockMutex(SDL_Mutex *mutex)

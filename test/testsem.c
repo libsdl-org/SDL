@@ -108,13 +108,13 @@ TestWaitTimeout(void)
     Uint64 start_ticks;
     Uint64 end_ticks;
     Uint64 duration;
-    int retval;
+    SDL_bool result;
 
     sem = SDL_CreateSemaphore(0);
     SDL_Log("Waiting 2 seconds on semaphore\n");
 
     start_ticks = SDL_GetTicks();
-    retval = SDL_WaitSemaphoreTimeout(sem, 2000);
+    result = SDL_WaitSemaphoreTimeout(sem, 2000);
     end_ticks = SDL_GetTicks();
 
     duration = end_ticks - start_ticks;
@@ -124,8 +124,8 @@ TestWaitTimeout(void)
     SDL_assert(duration > 1900 && duration < 2050);
 
     /* Check to make sure the return value indicates timed out */
-    if (retval != SDL_MUTEX_TIMEDOUT) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_WaitSemaphoreTimeout returned: %d; expected: %d\n\n", retval, SDL_MUTEX_TIMEDOUT);
+    if (result) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_WaitSemaphoreTimeout returned: %d; expected: SDL_FALSE\n\n", result);
     }
 
     SDL_DestroySemaphore(sem);
@@ -166,7 +166,7 @@ ThreadFuncOverheadContended(void *data)
 
     if (state->flag) {
         while (alive) {
-            if (SDL_TryWaitSemaphore(sem) == SDL_MUTEX_TIMEDOUT) {
+            if (!SDL_TryWaitSemaphore(sem)) {
                 ++state->content_count;
             }
             ++state->loop_count;
@@ -174,7 +174,7 @@ ThreadFuncOverheadContended(void *data)
     } else {
         while (alive) {
             /* Timeout needed to allow check on alive flag */
-            if (SDL_WaitSemaphoreTimeout(sem, 50) == SDL_MUTEX_TIMEDOUT) {
+            if (!SDL_WaitSemaphoreTimeout(sem, 50)) {
                 ++state->content_count;
             }
             ++state->loop_count;
@@ -302,7 +302,7 @@ int main(int argc, char **argv)
     }
 
     /* Load the SDL library */
-    if (SDL_Init(0) < 0) {
+    if (!SDL_Init(0)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }

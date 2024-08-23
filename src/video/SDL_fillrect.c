@@ -229,7 +229,7 @@ static void SDL_FillSurfaceRect4(Uint8 *pixels, int pitch, Uint32 color, int w, 
 /*
  * This function performs a fast fill of the given rectangle with 'color'
  */
-int SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
+SDL_bool SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 {
     if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRect(): dst");
@@ -240,15 +240,14 @@ int SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
         rect = &dst->internal->clip_rect;
         // Don't attempt to fill if the surface's clip_rect is empty
         if (SDL_RectEmpty(rect)) {
-            return 0;
+            return true;
         }
     }
 
     return SDL_FillSurfaceRects(dst, rect, 1, color);
 }
 
-int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
-                  Uint32 color)
+SDL_bool SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Uint32 color)
 {
     SDL_Rect clipped;
     Uint8 *pixels;
@@ -262,7 +261,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
 
     // Nothing to do
     if (dst->w == 0 || dst->h == 0) {
-        return 0;
+        return true;
     }
 
     // Perform software fill
@@ -284,7 +283,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
                 if (SDL_BITSPERPIXEL(dst->format) == 4) {
                     Uint8 b = (((Uint8)color << 4) | (Uint8)color);
                     SDL_memset(dst->pixels, b, (size_t)dst->h * dst->pitch);
-                    return 1;
+                    return true;
                 }
             }
         }
@@ -359,5 +358,5 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 
     // We're done!
-    return 0;
+    return true;
 }

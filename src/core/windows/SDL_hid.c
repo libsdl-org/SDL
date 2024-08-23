@@ -36,17 +36,17 @@ static HMODULE s_pHIDDLL = 0;
 static int s_HIDDLLRefCount = 0;
 
 
-int WIN_LoadHIDDLL(void)
+bool WIN_LoadHIDDLL(void)
 {
     if (s_pHIDDLL) {
         SDL_assert(s_HIDDLLRefCount > 0);
         s_HIDDLLRefCount++;
-        return 0; // already loaded
+        return true; // already loaded
     }
 
     s_pHIDDLL = LoadLibrary(TEXT("hid.dll"));
     if (!s_pHIDDLL) {
-        return -1;
+        return false;
     }
 
     SDL_assert(s_HIDDLLRefCount == 0);
@@ -63,10 +63,10 @@ int WIN_LoadHIDDLL(void)
         !SDL_HidP_GetCaps || !SDL_HidP_GetButtonCaps ||
         !SDL_HidP_GetValueCaps || !SDL_HidP_MaxDataListLength || !SDL_HidP_GetData) {
         WIN_UnloadHIDDLL();
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 void WIN_UnloadHIDDLL(void)

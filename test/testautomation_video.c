@@ -360,7 +360,7 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
                 /* Make call */
                 result = SDL_GetClosestFullscreenDisplayMode(displays[i], current.w, current.h, current.refresh_rate, SDL_FALSE, &closest);
                 SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=current)");
-                SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+                SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
                 /* Check that one gets the current resolution back again */
                 if (result == 0) {
@@ -815,7 +815,7 @@ static int video_getSetWindowPosition(void *arg)
 
     /* Sanity check */
     SDL_GetWindowPosition(window, &currentX, &currentY);
-    if (SDL_SetWindowPosition(window, currentX, currentY) < 0) {
+    if (!SDL_SetWindowPosition(window, currentX, currentY)) {
         SDLTest_Log("Skipping window positioning tests: %s reports window positioning as unsupported", SDL_GetCurrentVideoDriver());
         goto null_tests;
     }
@@ -891,7 +891,7 @@ static int video_getSetWindowPosition(void *arg)
 
             result = SDL_SyncWindow(window);
             SDLTest_AssertPass("SDL_SyncWindow()");
-            SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+            SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
             /* Get position */
             currentX = desiredX + 1;
@@ -1013,9 +1013,9 @@ static int video_getSetWindowSize(void *arg)
 
     /* Get display bounds for size range */
     result = SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &display);
-    SDLTest_AssertPass("SDL_GetDisplayBounds()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
-    if (result != 0) {
+    SDLTest_AssertPass("SDL_GetDisplayUsableBounds()");
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
+    if (!result) {
         return TEST_ABORTED;
     }
 
@@ -1098,7 +1098,7 @@ static int video_getSetWindowSize(void *arg)
 
             result = SDL_SyncWindow(window);
             SDLTest_AssertPass("SDL_SyncWindow()");
-            SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+            SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
             /* Get size */
             currentW = desiredW + 1;
@@ -1213,8 +1213,8 @@ static int video_getSetWindowMinimumSize(void *arg)
     /* Get display bounds for size range */
     result = SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &display);
     SDLTest_AssertPass("SDL_GetDisplayBounds()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
-    if (result != 0) {
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
+    if (!result) {
         return TEST_ABORTED;
     }
 
@@ -1355,8 +1355,8 @@ static int video_getSetWindowMaximumSize(void *arg)
     /* Get display bounds for size range */
     result = SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &display);
     SDLTest_AssertPass("SDL_GetDisplayBounds()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
-    if (result != 0) {
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
+    if (!result) {
         return TEST_ABORTED;
     }
 
@@ -1693,15 +1693,15 @@ static int video_setWindowCenteredOnDisplay(void *arg)
         /* Get display bounds */
         result = SDL_GetDisplayUsableBounds(displays[0 % displayNum], &display0);
         SDLTest_AssertPass("SDL_GetDisplayUsableBounds()");
-        SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
-        if (result != 0) {
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
+        if (!result) {
             return TEST_ABORTED;
         }
 
         result = SDL_GetDisplayUsableBounds(displays[1 % displayNum], &display1);
         SDLTest_AssertPass("SDL_GetDisplayUsableBounds()");
-        SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
-        if (result != 0) {
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
+        if (!result) {
             return TEST_ABORTED;
         }
 
@@ -1781,11 +1781,11 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 /* Enter fullscreen desktop */
                 SDL_SetWindowPosition(window, x, y);
                 result = SDL_SetWindowFullscreen(window, SDL_TRUE);
-                SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+                SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
                 result = SDL_SyncWindow(window);
                 SDLTest_AssertPass("SDL_SyncWindow()");
-                SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+                SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
                 /* Check we are filling the full display */
                 currentDisplay = SDL_GetDisplayForWindow(window);
@@ -1798,7 +1798,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                  */
                 result = SDL_GetDisplayBounds(expectedDisplay, &expectedFullscreenRect);
                 SDLTest_AssertPass("SDL_GetDisplayBounds()");
-                SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+                SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
                 if (video_driver_is_wayland) {
                     SDLTest_Log("Skipping display ID validation: Wayland driver does not support window positioning");
@@ -1821,11 +1821,11 @@ static int video_setWindowCenteredOnDisplay(void *arg)
 
                 /* Leave fullscreen desktop */
                 result = SDL_SetWindowFullscreen(window, SDL_FALSE);
-                SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+                SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
                 result = SDL_SyncWindow(window);
                 SDLTest_AssertPass("SDL_SyncWindow()");
-                SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+                SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
                 /* Check window was restored correctly */
                 currentDisplay = SDL_GetDisplayForWindow(window);
@@ -1862,7 +1862,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
 
                 result = SDL_SyncWindow(window);
                 SDLTest_AssertPass("SDL_SyncWindow()");
-                SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+                SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
                 currentDisplay = SDL_GetDisplayForWindow(window);
                 SDL_GetWindowSize(window, &currentW, &currentH);
@@ -1958,16 +1958,15 @@ static int video_getSetWindowState(void *arg)
     /* Maximize and check the dimensions */
     result = SDL_MaximizeWindow(window);
     SDLTest_AssertPass("SDL_MaximizeWindow()");
-    if (result < 0) {
+    if (!result) {
         SDLTest_Log("Skipping state transition tests: %s reports window maximizing as unsupported", SDL_GetCurrentVideoDriver());
         skipFlags |= SDL_WINDOW_MAXIMIZED;
         goto minimize_test;
     }
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
 
     result = SDL_SyncWindow(window);
     SDLTest_AssertPass("SDL_SyncWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     flags = SDL_GetWindowFlags(window);
     SDLTest_AssertPass("SDL_GetWindowFlags()");
@@ -1980,7 +1979,7 @@ static int video_getSetWindowState(void *arg)
     if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "windows") != 0) {
         result = SDL_GetDisplayUsableBounds(SDL_GetDisplayForWindow(window), &display);
         SDLTest_AssertPass("SDL_GetDisplayUsableBounds()");
-        SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
         desiredW = display.w;
         desiredH = display.h;
@@ -1997,11 +1996,11 @@ static int video_getSetWindowState(void *arg)
     /* Restore and check the dimensions */
     result = SDL_RestoreWindow(window);
     SDLTest_AssertPass("SDL_RestoreWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     result = SDL_SyncWindow(window);
     SDLTest_AssertPass("SDL_SyncWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     flags = SDL_GetWindowFlags(window);
     SDLTest_AssertPass("SDL_GetWindowFlags()");
@@ -2026,15 +2025,15 @@ static int video_getSetWindowState(void *arg)
     /* Maximize, then immediately restore */
     result = SDL_MaximizeWindow(window);
     SDLTest_AssertPass("SDL_MaximizeWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     result = SDL_RestoreWindow(window);
     SDLTest_AssertPass("SDL_RestoreWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     result = SDL_SyncWindow(window);
     SDLTest_AssertPass("SDL_SyncWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     flags = SDL_GetWindowFlags(window);
     SDLTest_AssertPass("SDL_GetWindowFlags()");
@@ -2060,15 +2059,15 @@ static int video_getSetWindowState(void *arg)
     /* Maximize, then enter fullscreen */
     result = SDL_MaximizeWindow(window);
     SDLTest_AssertPass("SDL_MaximizeWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     result = SDL_SetWindowFullscreen(window, SDL_TRUE);
     SDLTest_AssertPass("SDL_SetWindowFullscreen(SDL_TRUE)");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     result = SDL_SyncWindow(window);
     SDLTest_AssertPass("SDL_SyncWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     flags = SDL_GetWindowFlags(window);
     SDLTest_AssertPass("SDL_GetWindowFlags()");
@@ -2078,7 +2077,7 @@ static int video_getSetWindowState(void *arg)
     /* Verify the fullscreen size and position */
     result = SDL_GetDisplayBounds(SDL_GetDisplayForWindow(window), &display);
     SDLTest_AssertPass("SDL_GetDisplayBounds()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     if (!skipPos) {
         desiredX = display.x;
@@ -2103,15 +2102,15 @@ static int video_getSetWindowState(void *arg)
     /* Leave fullscreen and restore the window */
     result = SDL_SetWindowFullscreen(window, SDL_FALSE);
     SDLTest_AssertPass("SDL_SetWindowFullscreen(SDL_FALSE)");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     result = SDL_RestoreWindow(window);
     SDLTest_AssertPass("SDL_RestoreWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     result = SDL_SyncWindow(window);
     SDLTest_AssertPass("SDL_SyncWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     flags = SDL_GetWindowFlags(window);
     SDLTest_AssertPass("SDL_GetWindowFlags()");
@@ -2137,29 +2136,29 @@ static int video_getSetWindowState(void *arg)
     /* Maximize, change size, and restore */
     result = SDL_MaximizeWindow(window);
     SDLTest_AssertPass("SDL_MaximizeWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     desiredW = windowedW + 10;
     desiredH = windowedH + 10;
     result = SDL_SetWindowSize(window, desiredW, desiredH);
     SDLTest_AssertPass("SDL_SetWindowSize()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     if (!skipPos) {
         desiredX = windowedX + 10;
         desiredY = windowedY + 10;
         result = SDL_SetWindowPosition(window, desiredX, desiredY);
         SDLTest_AssertPass("SDL_SetWindowPosition()");
-        SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
     }
 
     result = SDL_RestoreWindow(window);
     SDLTest_AssertPass("SDL_RestoreWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     result = SDL_SyncWindow(window);
     SDLTest_AssertPass("SDL_SyncWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     flags = SDL_GetWindowFlags(window);
     SDLTest_AssertPass("SDL_GetWindowFlags()");
@@ -2186,27 +2185,27 @@ static int video_getSetWindowState(void *arg)
     desiredH = windowedH - 5;
     result = SDL_SetWindowSize(window, desiredW, desiredH);
     SDLTest_AssertPass("SDL_SetWindowSize()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     if (!skipPos) {
         desiredX = windowedX + 5;
         desiredY = windowedY + 5;
         result = SDL_SetWindowPosition(window, desiredX, desiredY);
         SDLTest_AssertPass("SDL_SetWindowPosition()");
-        SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
     }
 
     result = SDL_MaximizeWindow(window);
     SDLTest_AssertPass("SDL_MaximizeWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     result = SDL_RestoreWindow(window);
     SDLTest_AssertPass("SDL_RestoreWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     result = SDL_SyncWindow(window);
     SDLTest_AssertPass("SDL_SyncWindow()");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     flags = SDL_GetWindowFlags(window);
     SDLTest_AssertPass("SDL_GetWindowFlags()");
@@ -2232,13 +2231,13 @@ minimize_test:
 
     /* Minimize */
     result = SDL_MinimizeWindow(window);
-    if (result == 0) {
+    if (result) {
         SDLTest_AssertPass("SDL_MinimizeWindow()");
-        SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
         result = SDL_SyncWindow(window);
         SDLTest_AssertPass("SDL_SyncWindow()");
-        SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
         flags = SDL_GetWindowFlags(window);
         SDLTest_AssertPass("SDL_GetWindowFlags()");
@@ -2286,7 +2285,7 @@ static int video_createMinimized(void *arg)
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) {
         result = SDL_RestoreWindow(window);
         SDLTest_AssertPass("SDL_RestoreWindow()");
-        SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
     } else {
         SDLTest_Log("Requested minimized window on creation, but that isn't supported on this platform.");
     }
@@ -2325,7 +2324,7 @@ static int video_createMaximized(void *arg)
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED) {
         result = SDL_RestoreWindow(window);
         SDLTest_AssertPass("SDL_RestoreWindow()");
-        SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+        SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
     } else {
         SDLTest_Log("Requested maximized window on creation, but that isn't supported on this platform.");
     }
@@ -2365,7 +2364,7 @@ static int video_getWindowSurface(void *arg)
 
     result = SDL_UpdateWindowSurface(window);
     SDLTest_AssertPass("Call to SDL_UpdateWindowSurface(window)");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
 
     /* We shouldn't be able to create a renderer on a window with a surface */
     renderer = SDL_CreateRenderer(window, renderer_name);
@@ -2374,7 +2373,7 @@ static int video_getWindowSurface(void *arg)
 
     result = SDL_DestroyWindowSurface(window);
     SDLTest_AssertPass("Call to SDL_DestroyWindowSurface(window)");
-    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Verify return value; expected: SDL_TRUE, got: %d", result);
     SDLTest_AssertCheck(!SDL_WindowHasSurface(window), "Validate that window does not have a surface");
 
     /* We should be able to create a renderer on the window now */

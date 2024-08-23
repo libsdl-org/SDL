@@ -101,7 +101,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHoo
  * controls on which monitor a full screen application will appear.
  *
  * \param displayID the instance of the display to query.
- * \returns the D3D9 adapter index on success or a negative error code on
+ * \returns the D3D9 adapter index on success or -1 on
  *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -122,12 +122,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displ
  * \param displayID the instance of the display to query.
  * \param adapterIndex a pointer to be filled in with the adapter index.
  * \param outputIndex a pointer to be filled in with the output index.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 
 #endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
@@ -162,12 +162,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, 
  *
  * \param threadID the Unix thread ID to change priority of.
  * \param priority the new, Unix-specific, priority value.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
 
 /**
  * Sets the priority (not nice level) and scheduling policy for a thread.
@@ -178,12 +178,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int 
  * \param sdlPriority the new SDL_ThreadPriority value.
  * \param schedPolicy the new scheduling policy (SCHED_FIFO, SCHED_RR,
  *                    SCHED_OTHER, etc...).
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
 
 #endif /* SDL_PLATFORM_LINUX */
 
@@ -240,14 +240,14 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  *                 called.
  * \param callback the function to call for every frame.
  * \param callbackParam a pointer that is passed to `callback`.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetiOSEventPump
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
 
 /**
  * Use this function to enable or disable the SDL event pump on Apple iOS.
@@ -503,7 +503,7 @@ typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, con
  * \param permission the permission to request.
  * \param cb the callback to trigger when the request has a response.
  * \param userdata an app-controlled pointer that is passed to the callback.
- * \returns zero if the request was submitted, -1 if there was an error
+ * \returns SDL_TRUE if the request was submitted, SDL_FALSE if there was an error
  *          submitting. The result of the request is only ever reported
  *          through the callback, not this return value.
  *
@@ -511,7 +511,7 @@ typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, con
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata);
 
 /**
  * Shows an Android toast notification.
@@ -532,14 +532,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_RequestAndroidPermission(const char *permiss
  * \param gravity where the notification should appear on the screen.
  * \param xoffset set this parameter only when gravity >=0.
  * \param yoffset set this parameter only when gravity >=0.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xoffset, int yoffset);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xoffset, int yoffset);
 
 /**
  * Send a user command to SDLActivity.
@@ -548,14 +548,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_ShowAndroidToast(const char *message, int du
  *
  * \param command user command that must be greater or equal to 0x8000.
  * \param param user parameter.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
 
 #endif /* SDL_PLATFORM_ANDROID */
 
@@ -794,12 +794,12 @@ typedef struct XUser *XUserHandle;
  * leak.
  *
  * \param outTaskQueue a pointer to be filled in with task queue handle.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue);
 
 /**
  * Gets a reference to the default user handle for GDK.
@@ -809,12 +809,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQue
  *
  * \param outUserHandle a pointer to be filled in with the default user
  *                      handle.
- * \returns 0 if success or a negative error code on failure; call
+ * \returns SDL_TRUE if success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetGDKDefaultUser(XUserHandle *outUserHandle);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetGDKDefaultUser(XUserHandle *outUserHandle);
 
 #endif
 

@@ -35,12 +35,12 @@
 #define WIN_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 #define WIN_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 
-extern int WIN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern bool WIN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_GLContext WIN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WIN_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WIN_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
-extern int WIN_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
-extern int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool WIN_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool WIN_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern bool WIN_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern bool WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_EGLSurface WIN_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif // SDL_VIDEO_OPENGL_EGL

@@ -742,7 +742,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat 
  * \param Gmask a pointer filled in with the green mask for the format.
  * \param Bmask a pointer filled in with the blue mask for the format.
  * \param Amask a pointer filled in with the alpha mask for the format.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -751,7 +751,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat 
  *
  * \sa SDL_GetPixelFormatForMasks
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask);
 
 /**
  * Convert a bpp value and RGBA masks to an enumerated pixel format.
@@ -819,7 +819,7 @@ extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreatePalette(int ncolors);
  * \param colors an array of SDL_Color structures to copy into the palette.
  * \param firstcolor the index of the first palette entry to modify.
  * \param ncolors the number of entries to modify.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread, as long as
@@ -827,7 +827,7 @@ extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreatePalette(int ncolors);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int firstcolor, int ncolors);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int firstcolor, int ncolors);
 
 /**
  * Free a palette created with SDL_CreatePalette().

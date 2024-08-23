@@ -33,7 +33,7 @@
 extern char **environ;
 #endif
 
-int SDL_SYS_OpenURL(const char *url)
+bool SDL_SYS_OpenURL(const char *url)
 {
     const pid_t pid1 = fork();
     if (pid1 == 0) { // child process
@@ -71,7 +71,7 @@ int SDL_SYS_OpenURL(const char *url)
         if (waitpid(pid1, &status, 0) == pid1) {
             if (WIFEXITED(status)) {
                 if (WEXITSTATUS(status) == 0) {
-                    return 0; // success!
+                    return true; // success!
                 } else {
                     return SDL_SetError("xdg-open reported error or failed to launch: %d", WEXITSTATUS(status));
                 }

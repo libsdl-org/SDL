@@ -933,14 +933,14 @@ static const char *SDL_scancode_names[SDL_NUM_SCANCODES] =
     /* 290 */ "EndCall",
 };
 
-int SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
+SDL_bool SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 {
     if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
         return SDL_InvalidParamError("scancode");
     }
 
     SDL_scancode_names[scancode] = name;
-    return 0;
+    return true;
 }
 
 const char *SDL_GetScancodeName(SDL_Scancode scancode)

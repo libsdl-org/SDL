@@ -34,17 +34,17 @@
 
 // EGL implementation of SDL OpenGL ES support
 
-int Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-    int ret;
+    bool result;
     SDL_VideoData *data = _this->internal;
 
-    ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
+    result = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
 
     Wayland_PumpEvents(_this);
     WAYLAND_wl_display_flush(data->display);
 
-    return ret;
+    return result;
 }
 
 SDL_GLContext Wayland_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
@@ -70,7 +70,7 @@ SDL_GLContext Wayland_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *win
    libretro, Wayland, probably others...it feels like we're eventually going to have
    to give in with a future SDL API revision, since we can bend the other APIs to
    this style, but this style is much harder to bend the other way.  :/ */
-int Wayland_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
+bool Wayland_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
@@ -89,20 +89,20 @@ int Wayland_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
     // !!! FIXME: technically, this should be per-context, right?
     _this->egl_data->egl_swapinterval = interval;
     _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0);
-    return 0;
+    return true;
 }
 
-int Wayland_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
+bool Wayland_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
     }
 
     *interval =_this->egl_data->egl_swapinterval;
-    return 0;
+    return true;
 }
 
-int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
     const int swap_interval = _this->egl_data->egl_swapinterval;
@@ -117,7 +117,7 @@ int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
      */
     if (data->surface_status != WAYLAND_SURFACE_STATUS_SHOWN &&
         data->surface_status != WAYLAND_SURFACE_STATUS_WAITING_FOR_FRAME) {
-        return 0;
+        return true;
     }
 
     /* By default, we wait for the Wayland frame callback and then issue the pageflip (eglSwapBuffers),
@@ -144,7 +144,7 @@ int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
             WAYLAND_wl_display_flush(display);
 
-            /* wl_display_prepare_read_queue() will return -1 if the event queue is not empty.
+            /* wl_display_prepare_read_queue() will return false if the event queue is not empty.
              * If the event queue is empty, it will prepare us for our SDL_IOReady() call. */
             if (WAYLAND_wl_display_prepare_read_queue(display, data->gles_swap_frame_event_queue) != 0) {
                 // We have some pending events. Check if the frame callback happened.
@@ -183,31 +183,31 @@ int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
         WAYLAND_wl_display_flush(data->waylandData->display);
     }
 
-    return 0;
+    return true;
 }
 
-int Wayland_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+bool Wayland_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
-    int ret;
+    bool result;
 
     if (window && context) {
-        ret = SDL_EGL_MakeCurrent(_this, window->internal->egl_surface, context);
+        result = SDL_EGL_MakeCurrent(_this, window->internal->egl_surface, context);
     } else {
-        ret = SDL_EGL_MakeCurrent(_this, NULL, NULL);
+        result = SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
 
     WAYLAND_wl_display_flush(_this->internal->display);
 
     _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0); // see comments on Wayland_GLES_SetSwapInterval.
 
-    return ret;
+    return result;
 }
 
-int Wayland_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
+bool Wayland_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
-    SDL_EGL_DeleteContext(_this, context);
+    bool result = SDL_EGL_DestroyContext(_this, context);
     WAYLAND_wl_display_flush(_this->internal->display);
-    return 0;
+    return result;
 }
 
 EGLSurface Wayland_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)

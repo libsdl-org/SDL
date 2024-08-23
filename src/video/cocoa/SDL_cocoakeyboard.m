@@ -381,7 +381,7 @@ void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
     SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? true : false);
 }
 
-int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
+bool Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     @autoreleasepool {
         NSView *parentView;
@@ -409,7 +409,7 @@ int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     return Cocoa_UpdateTextInputArea(_this, window);
 }
 
-int Cocoa_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+bool Cocoa_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
@@ -419,16 +419,16 @@ int Cocoa_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
             data.fieldEdit = nil;
         }
     }
-    return 0;
+    return true;
 }
 
-int Cocoa_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
+bool Cocoa_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
     if (data.fieldEdit) {
         [data.fieldEdit setInputRect:&window->text_input_rect];
     }
-    return 0;
+    return true;
 }
 
 void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
@@ -509,12 +509,12 @@ typedef enum
 extern CGSConnection _CGSDefaultConnection(void);
 extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
 
-int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
+bool Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
 #ifdef SDL_MAC_NO_SANDBOX
     CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);
 #endif
-    return 0;
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_COCOA

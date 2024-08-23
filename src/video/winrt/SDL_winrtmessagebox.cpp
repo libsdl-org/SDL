@@ -40,7 +40,8 @@ static String ^ WINRT_UTF8ToPlatformString(const char *str) {
     return rtstr;
 }
 
-extern "C" int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+extern "C"
+bool WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
 #if SDL_WINAPI_FAMILY_PHONE && NTDDI_VERSION == NTDDI_WIN8
     /* Sadly, Windows Phone 8 doesn't include the MessageDialog class that
@@ -104,7 +105,7 @@ extern "C" int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, in
         int clicked_index = results.ToInt32();
         *buttonID = messageboxdata->buttons[clicked_index].buttonID;
     }
-    return 0;
+    return true;
 #endif // if SDL_WINAPI_FAMILY_PHONE / else
 }
 

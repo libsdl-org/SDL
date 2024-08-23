@@ -44,7 +44,7 @@ static void RISCOS_FreeCursor(SDL_Cursor *cursor)
     SDL_free(cursor);
 }
 
-static int RISCOS_ShowCursor(SDL_Cursor *cursor)
+static bool RISCOS_ShowCursor(SDL_Cursor *cursor)
 {
     if (cursor) {
         // Turn the mouse pointer on
@@ -54,10 +54,10 @@ static int RISCOS_ShowCursor(SDL_Cursor *cursor)
         _kernel_osbyte(106, 0, 0);
     }
 
-    return 0;
+    return true;
 }
 
-int RISCOS_InitMouse(SDL_VideoDevice *_this)
+bool RISCOS_InitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -73,7 +73,7 @@ int RISCOS_InitMouse(SDL_VideoDevice *_this)
 
     SDL_SetDefaultCursor(RISCOS_CreateDefaultCursor());
 
-    return 0;
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_RISCOS

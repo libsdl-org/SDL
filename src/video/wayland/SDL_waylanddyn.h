@@ -71,8 +71,8 @@ enum libdecor_window_state;
 extern "C" {
 #endif
 
-int SDL_WAYLAND_LoadSymbols(void);
-void SDL_WAYLAND_UnloadSymbols(void);
+extern bool SDL_WAYLAND_LoadSymbols(void);
+extern void SDL_WAYLAND_UnloadSymbols(void);
 
 #define SDL_WAYLAND_MODULE(modname) extern int SDL_WAYLAND_HAVE_##modname;
 #define SDL_WAYLAND_SYM(rc, fn, params)        \

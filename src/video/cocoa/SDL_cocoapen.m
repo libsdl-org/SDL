@@ -27,9 +27,9 @@
 
 #include "../../events/SDL_pen_c.h"
 
-int Cocoa_InitPen(SDL_VideoDevice *_this)
+bool Cocoa_InitPen(SDL_VideoDevice *_this)
 {
-    return 0;
+    return true;
 }
 
 typedef struct Cocoa_PenHandle

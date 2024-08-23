@@ -26,17 +26,11 @@ typedef struct
 
 static Uint32 sdl_timer_callback_(void *payload, SDL_TimerID timer_id, Uint32 interval)
 {
-    SDL_Event e;
-    SDL_UserEvent ue;
     /* NOTE: snake_step is not called here directly for multithreaded concerns. */
-    (void)payload;
-    ue.type = SDL_EVENT_USER;
-    ue.code = 0;
-    ue.data1 = NULL;
-    ue.data2 = NULL;
-    e.type = SDL_EVENT_USER;
-    e.user = ue;
-    SDL_PushEvent(&e);
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = SDL_EVENT_USER;
+    SDL_PushEvent(&event);
     return interval;
 }
 
@@ -113,14 +107,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     (void)argc;
     (void)argv;
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
         return SDL_APP_FAILURE;
     }
     SDL_SetHint("SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR", "0");
     AppState *as = malloc(sizeof(AppState));
     *appstate = as;
     as->step_timer = 0;
-    if (SDL_CreateWindowAndRenderer("examples/game/snake", SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT, 0, &as->window, &as->renderer) == -1) {
+    if (!SDL_CreateWindowAndRenderer("examples/game/snake", SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT, 0, &as->window, &as->renderer)) {
         return SDL_APP_FAILURE;
     }
     snake_initialize(&as->snake_ctx, SDL_rand);

@@ -29,23 +29,23 @@
 #include <emscripten/emscripten.h>
 #endif
 
-static int DUMMYAUDIO_WaitDevice(SDL_AudioDevice *device)
+static bool DUMMYAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     SDL_Delay(device->hidden->io_delay);
-    return 0;
+    return true;
 }
 
-static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     if (!device->recording) {
         device->hidden->mixbuf = (Uint8 *) SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
-            return -1;
+            return false;
         }
     }
 
@@ -68,7 +68,7 @@ static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
     }, device->recording ? 1 : 0, device->sample_frames, device->spec.freq, device->recording ? SDL_RecordingAudioThreadIterate : SDL_PlaybackAudioThreadIterate, device);
     #endif
 
-    return 0; // we're good; don't change reported device format.
+    return true; // we're good; don't change reported device format.
 }
 
 static void DUMMYAUDIO_CloseDevice(SDL_AudioDevice *device)

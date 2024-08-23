@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 
     /* Initialize SDL (Note: video is required to start event loop) */
-    if (SDL_Init(init_subsystems) < 0) {
+    if (!SDL_Init(init_subsystems)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
                             haptic = SDL_OpenHapticFromJoystick(joystick);
                             if (haptic) {
                                 SDL_Log("Joy Haptic Opened\n");
-                                if (SDL_InitHapticRumble(haptic) < 0) {
+                                if (!SDL_InitHapticRumble(haptic)) {
                                     SDL_Log("Could not init Rumble!: %s\n", SDL_GetError());
                                     SDL_CloseHaptic(haptic);
                                     haptic = NULL;

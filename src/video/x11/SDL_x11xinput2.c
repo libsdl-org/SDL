@@ -33,10 +33,10 @@
 #define MAX_AXIS 16
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
-static int xinput2_initialized = 0;
+static bool xinput2_initialized;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
-static int xinput2_multitouch_supported = 0;
+static bool xinput2_multitouch_supported;
 #endif
 
 /* Opcode returned X11_XQueryExtension
@@ -149,7 +149,7 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
         return false; // X server does not support the version we want at all.
     }
 
-    xinput2_initialized = 1;
+    xinput2_initialized = true;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH // Multitouch needs XInput 2.2
     xinput2_multitouch_supported = xinput2_version_atleast(version, 2, 2);
@@ -542,12 +542,12 @@ void X11_Xinput2SelectTouch(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
 }
 
-int X11_Xinput2IsInitialized(void)
+bool X11_Xinput2IsInitialized(void)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     return xinput2_initialized;
 #else
-    return 0;
+    return false;
 #endif
 }
 
@@ -600,12 +600,12 @@ bool X11_Xinput2SelectMouseAndKeyboard(SDL_VideoDevice *_this, SDL_Window *windo
     return false;
 }
 
-int X11_Xinput2IsMultitouchSupported(void)
+bool X11_Xinput2IsMultitouchSupported(void)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     return xinput2_initialized && xinput2_multitouch_supported;
 #else
-    return 0;
+    return true;
 #endif
 }
 

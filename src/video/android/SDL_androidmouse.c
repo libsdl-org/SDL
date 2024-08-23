@@ -132,7 +132,7 @@ static void Android_DestroyEmptyCursor(void)
     }
 }
 
-static int Android_ShowCursor(SDL_Cursor *cursor)
+static bool Android_ShowCursor(SDL_Cursor *cursor)
 {
     if (!cursor) {
         cursor = Android_CreateEmptyCursor();
@@ -148,14 +148,14 @@ static int Android_ShowCursor(SDL_Cursor *cursor)
                 return SDL_Unsupported();
             }
         }
-        return 0;
+        return true;
     } else {
         // SDL error set inside Android_CreateEmptyCursor()
-        return -1;
+        return false;
     }
 }
 
-static int Android_SetRelativeMouseMode(bool enabled)
+static bool Android_SetRelativeMouseMode(bool enabled)
 {
     if (!Android_JNI_SupportsRelativeMouse()) {
         return SDL_Unsupported();
@@ -165,7 +165,7 @@ static int Android_SetRelativeMouseMode(bool enabled)
         return SDL_Unsupported();
     }
 
-    return 0;
+    return true;
 }
 
 void Android_InitMouse(void)

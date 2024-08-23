@@ -25,7 +25,7 @@
 
 #include "SDL_cocoavideo.h"
 
-extern int Cocoa_InitPen(SDL_VideoDevice *_this);
+extern bool Cocoa_InitPen(SDL_VideoDevice *_this);
 extern bool Cocoa_HandlePenEvent(SDL_CocoaWindowData *_data, NSEvent *event);  // return false if we didn't handle this event.
 extern void Cocoa_QuitPen(SDL_VideoDevice *_this);
 

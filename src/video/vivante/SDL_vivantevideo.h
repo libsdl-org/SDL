@@ -68,13 +68,13 @@ struct SDL_WindowData
 /****************************************************************************/
 
 // Display and window functions
-int VIVANTE_VideoInit(SDL_VideoDevice *_this);
+bool VIVANTE_VideoInit(SDL_VideoDevice *_this);
 void VIVANTE_VideoQuit(SDL_VideoDevice *_this);
-int VIVANTE_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-int VIVANTE_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
+bool VIVANTE_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+bool VIVANTE_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+bool VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 void VIVANTE_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
-int VIVANTE_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
+bool VIVANTE_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 void VIVANTE_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 void VIVANTE_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void VIVANTE_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);

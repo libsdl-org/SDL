@@ -252,7 +252,7 @@ typedef DWORD(WINAPI *XInputGetBatteryInformation_t)(
     BYTE devType,
     XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation);
 
-extern int WIN_LoadXInputDLL(void);
+extern bool WIN_LoadXInputDLL(void);
 extern void WIN_UnloadXInputDLL(void);
 
 extern XInputGetState_t SDL_XInputGetState;

@@ -45,7 +45,7 @@
 @end
 
 // Initialization/Query functions
-static int UIKit_VideoInit(SDL_VideoDevice *_this);
+static bool UIKit_VideoInit(SDL_VideoDevice *_this);
 static void UIKit_VideoQuit(SDL_VideoDevice *_this);
 
 // DUMMY driver bootstrap functions
@@ -112,7 +112,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->GL_MakeCurrent = UIKit_GL_MakeCurrent;
         device->GL_SwapWindow = UIKit_GL_SwapWindow;
         device->GL_CreateContext = UIKit_GL_CreateContext;
-        device->GL_DeleteContext = UIKit_GL_DeleteContext;
+        device->GL_DestroyContext = UIKit_GL_DestroyContext;
         device->GL_GetProcAddress = UIKit_GL_GetProcAddress;
         device->GL_LoadLibrary = UIKit_GL_LoadLibrary;
 #endif
@@ -146,12 +146,12 @@ VideoBootStrap UIKIT_bootstrap = {
     UIKit_ShowMessageBox
 };
 
-int UIKit_VideoInit(SDL_VideoDevice *_this)
+static bool UIKit_VideoInit(SDL_VideoDevice *_this)
 {
     _this->gl_config.driver_loaded = 1;
 
-    if (UIKit_InitModes(_this) < 0) {
-        return -1;
+    if (!UIKit_InitModes(_this)) {
+        return false;
     }
 
     SDL_InitGCKeyboard();
@@ -159,10 +159,10 @@ int UIKit_VideoInit(SDL_VideoDevice *_this)
 
     UIKit_InitClipboard(_this);
 
-    return 0;
+    return true;
 }
 
-void UIKit_VideoQuit(SDL_VideoDevice *_this)
+static void UIKit_VideoQuit(SDL_VideoDevice *_this)
 {
     UIKit_QuitClipboard(_this);
 
@@ -172,7 +172,7 @@ void UIKit_VideoQuit(SDL_VideoDevice *_this)
     UIKit_QuitModes(_this);
 }
 
-int UIKit_SuspendScreenSaver(SDL_VideoDevice *_this)
+bool UIKit_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         UIApplication *app = [UIApplication sharedApplication];
@@ -180,7 +180,7 @@ int UIKit_SuspendScreenSaver(SDL_VideoDevice *_this)
         // Prevent the display from dimming and going to sleep.
         app.idleTimerDisabled = (_this->suspend_screensaver != false);
     }
-    return 0;
+    return true;
 }
 
 bool UIKit_IsSystemVersionAtLeast(double version)

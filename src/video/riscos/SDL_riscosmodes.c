@@ -96,7 +96,7 @@ static size_t measure_mode_block(const int *block)
     return blockSize * 4;
 }
 
-static int read_mode_variable(int *block, int var)
+static bool read_mode_variable(int *block, int var)
 {
     _kernel_swi_regs regs;
     regs.r[0] = (int)block;
@@ -198,7 +198,7 @@ static void *copy_memory(const void *src, size_t size, size_t alloc)
     return dst;
 }
 
-int RISCOS_InitModes(SDL_VideoDevice *_this)
+bool RISCOS_InitModes(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
     int *current_mode;
@@ -220,16 +220,16 @@ int RISCOS_InitModes(SDL_VideoDevice *_this)
     size = measure_mode_block(current_mode);
     mode.internal = copy_memory(current_mode, size, size);
     if (!mode.internal) {
-        return -1;
+        return false;
     }
 
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
-int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+bool RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
     SDL_DisplayMode mode;
     _kernel_swi_regs regs;
@@ -247,7 +247,7 @@ int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
     block = SDL_malloc(-regs.r[7]);
     if (!block) {
-        return -1;
+        return false;
     }
 
     regs.r[6] = (int)block;
@@ -270,7 +270,7 @@ int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
         mode.internal = convert_mode_block(pos + 4);
         if (!mode.internal) {
             SDL_free(block);
-            return -1;
+            return false;
         }
 
         if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
@@ -279,10 +279,10 @@ int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     }
 
     SDL_free(block);
-    return 0;
+    return true;
 }
 
-int RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+bool RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     const char disable_cursor[] = { 23, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     _kernel_swi_regs regs;
@@ -304,7 +304,7 @@ int RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL
     // Update cursor visibility, since it may have been disabled by the mode change.
     SDL_SetCursor(NULL);
 
-    return 0;
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_RISCOS

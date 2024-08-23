@@ -47,7 +47,7 @@ static bool have_mitshm(Display *dpy)
 
 #endif // !NO_SHARED_MEMORY
 
-int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format,
+bool X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format,
                                 void **pixels, int *pitch)
 {
     SDL_WindowData *data = window->internal;
@@ -69,7 +69,7 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
     }
 
     // Find out the pixel format and depth
-    if (X11_GetVisualInfoFromVisual(display, data->visual, &vinfo) < 0) {
+    if (!X11_GetVisualInfoFromVisual(display, data->visual, &vinfo)) {
         return SDL_SetError("Couldn't get window visual information");
     }
 
@@ -120,7 +120,7 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
                 data->ximage->byte_order = (SDL_BYTEORDER == SDL_BIG_ENDIAN) ? MSBFirst : LSBFirst;
                 data->use_mitshm = true;
                 *pixels = shminfo->shmaddr;
-                return 0;
+                return true;
             }
         }
     }
@@ -128,7 +128,7 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 
     *pixels = SDL_malloc((size_t)h * (*pitch));
     if (!*pixels) {
-        return -1;
+        return false;
     }
 
     data->ximage = X11_XCreateImage(display, data->visual,
@@ -139,10 +139,10 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
         return SDL_SetError("Couldn't create XImage");
     }
     data->ximage->byte_order = (SDL_BYTEORDER == SDL_BIG_ENDIAN) ? MSBFirst : LSBFirst;
-    return 0;
+    return true;
 }
 
-int X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects,
+bool X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects,
                                 int numrects)
 {
     SDL_WindowData *data = window->internal;
@@ -218,7 +218,7 @@ int X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, cons
 
     X11_XSync(display, False);
 
-    return 0;
+    return true;
 }
 
 void X11_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)

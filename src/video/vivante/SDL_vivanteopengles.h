@@ -34,12 +34,12 @@
 #define VIVANTE_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define VIVANTE_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define VIVANTE_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define VIVANTE_GLES_DeleteContext   SDL_EGL_DeleteContext
+#define VIVANTE_GLES_DestroyContext   SDL_EGL_DestroyContext
 
-extern int VIVANTE_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern bool VIVANTE_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_GLContext VIVANTE_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int VIVANTE_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int VIVANTE_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern bool VIVANTE_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool VIVANTE_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 
 #endif // SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL
 

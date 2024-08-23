@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 
     /* Force the offscreen renderer, if it cannot be created then fail out */
     SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
-    if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
         SDL_Log("Couldn't initialize the offscreen video driver: %s\n",
                 SDL_GetError());
         return SDL_FALSE;

@@ -57,7 +57,7 @@ Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_
     return z;
 }
 
-int SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat)
+SDL_bool SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat)
 {
     // Default to ISO 8061 date format, as it is unambiguous, and 24 hour time.
     if (dateFormat) {
@@ -69,7 +69,7 @@ int SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat 
 
     SDL_GetSystemTimeLocalePreferences(dateFormat, timeFormat);
 
-    return 0;
+    return true;
 }
 
 int SDL_GetDaysInMonth(int year, int month)
@@ -79,7 +79,8 @@ int SDL_GetDaysInMonth(int year, int month)
     };
 
     if (month < 1 || month > 12) {
-        return SDL_SetError("Month out of range [1-12], requested: %i", month);
+        SDL_SetError("Month out of range [1-12], requested: %i", month);
+        return -1;
     }
 
     int days = DAYS_IN_MONTH[month - 1];
@@ -100,10 +101,12 @@ int SDL_GetDayOfYear(int year, int month, int day)
     int dayOfYear;
 
     if (month < 1 || month > 12) {
-        return SDL_SetError("Month out of range [1-12], requested: %i", month);
+        SDL_SetError("Month out of range [1-12], requested: %i", month);
+        return -1;
     }
     if (day < 1 || day > SDL_GetDaysInMonth(year, month)) {
-        return SDL_SetError("Day out of range [1-%i], requested: %i", SDL_GetDaysInMonth(year, month), month);
+        SDL_SetError("Day out of range [1-%i], requested: %i", SDL_GetDaysInMonth(year, month), month);
+        return -1;
     }
 
     SDL_CivilToDays(year, month, day, NULL, &dayOfYear);
@@ -115,10 +118,12 @@ int SDL_GetDayOfWeek(int year, int month, int day)
     int dayOfWeek;
 
     if (month < 1 || month > 12) {
-        return SDL_SetError("Month out of range [1-12], requested: %i", month);
+        SDL_SetError("Month out of range [1-12], requested: %i", month);
+        return -1;
     }
     if (day < 1 || day > SDL_GetDaysInMonth(year, month)) {
-        return SDL_SetError("Day out of range [1-%i], requested: %i", SDL_GetDaysInMonth(year, month), month);
+        SDL_SetError("Day out of range [1-%i], requested: %i", SDL_GetDaysInMonth(year, month), month);
+        return -1;
     }
 
     SDL_CivilToDays(year, month, day, &dayOfWeek, NULL);
@@ -157,11 +162,11 @@ static bool SDL_DateTimeIsValid(const SDL_DateTime *dt)
     return true;
 }
 
-int SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
+SDL_bool SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
 {
     static const Sint64 max_seconds = SDL_NS_TO_SECONDS(SDL_MAX_TIME) - 1;
     static const Sint64 min_seconds = SDL_NS_TO_SECONDS(SDL_MIN_TIME) + 1;
-    int ret = 0;
+    bool result = true;
 
     if (!dt) {
         return SDL_InvalidParamError("dt");
@@ -171,18 +176,18 @@ int SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
     }
     if (!SDL_DateTimeIsValid(dt)) {
         // The validation function sets the error string.
-        return -1;
+        return false;
     }
 
     *ticks = SDL_CivilToDays(dt->year, dt->month, dt->day, NULL, NULL) * SDL_SECONDS_PER_DAY;
     *ticks += (((dt->hour * 60) + dt->minute) * 60) + dt->second - dt->utc_offset;
     if (*ticks > max_seconds || *ticks < min_seconds) {
         *ticks = SDL_clamp(*ticks, min_seconds, max_seconds);
-        ret = SDL_SetError("Date out of range for SDL_Time representation; SDL_Time value clamped");
+        result = SDL_SetError("Date out of range for SDL_Time representation; SDL_Time value clamped");
     }
     *ticks = SDL_SECONDS_TO_NS(*ticks) + dt->nanosecond;
 
-    return ret;
+    return result;
 }
 
 #define DELTA_EPOCH_1601_100NS (11644473600ll * 10000000ll) // [100 ns] (100 ns units between 1601-01-01 and 1970-01-01, 11644473600 seconds)

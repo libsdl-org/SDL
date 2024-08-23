@@ -245,7 +245,7 @@ const char *SDL_getenv(const char *name)
 {
     DWORD length, maxlen = 0;
     char *string = NULL;
-    const char *retval = NULL;
+    const char *result = NULL;
 
     // Input validation
     if (!name || *name == '\0') {
@@ -274,10 +274,10 @@ const char *SDL_getenv(const char *name)
         }
     }
     if (string) {
-        retval = SDL_GetPersistentString(string);
+        result = SDL_GetPersistentString(string);
         SDL_free(string);
     }
-    return retval;
+    return result;
 }
 #else
 const char *SDL_getenv(const char *name)

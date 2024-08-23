@@ -1473,11 +1473,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (SDLControllerManager.isDeviceSDLJoystick(deviceId)) {
             // Note that we process events with specific key codes here
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (SDLControllerManager.onNativePadDown(deviceId, keyCode) == 0) {
+                if (SDLControllerManager.onNativePadDown(deviceId, keyCode)) {
                     return true;
                 }
             } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                if (SDLControllerManager.onNativePadUp(deviceId, keyCode) == 0) {
+                if (SDLControllerManager.onNativePadUp(deviceId, keyCode)) {
                     return true;
                 }
             }
@@ -1951,7 +1951,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
-    public static int openURL(String url)
+    public static boolean openURL(String url)
     {
         try {
             Intent i = new Intent(Intent.ACTION_VIEW);
@@ -1967,18 +1967,18 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
             mSingleton.startActivity(i);
         } catch (Exception ex) {
-            return -1;
+            return false;
         }
-        return 0;
+        return true;
     }
 
     /**
      * This method is called by SDL using JNI.
      */
-    public static int showToast(String message, int duration, int gravity, int xOffset, int yOffset)
+    public static boolean showToast(String message, int duration, int gravity, int xOffset, int yOffset)
     {
         if(null == mSingleton) {
-            return - 1;
+            return false;
         }
 
         try
@@ -2013,9 +2013,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             }
             mSingleton.runOnUiThread(new OneShotTask(message, duration, gravity, xOffset, yOffset));
         } catch(Exception ex) {
-            return -1;
+            return false;
         }
-        return 0;
+        return true;
     }
 
     /**

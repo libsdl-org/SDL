@@ -62,7 +62,7 @@ static void normalize_locales(char *dst, char *src, size_t buflen)
     normalize_locale_str(dst, src, buflen);
 }
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     // !!! FIXME: should we be using setlocale()? Or some D-Bus thing?
     bool isstack;
@@ -72,7 +72,7 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     SDL_assert(buflen > 0);
     tmp = SDL_small_alloc(char, buflen, &isstack);
     if (!tmp) {
-        return -1;
+        return false;
     }
 
     *tmp = '\0';
@@ -99,5 +99,5 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     }
 
     SDL_small_free(tmp, isstack);
-    return 0;
+    return true;
 }

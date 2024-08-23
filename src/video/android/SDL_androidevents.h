@@ -22,5 +22,5 @@
 
 extern void Android_InitEvents(void);
 extern void Android_PumpEvents(Sint64 timeoutNS);
-extern int Android_WaitActiveAndLockActivity(void);
+extern bool Android_WaitActiveAndLockActivity(void);
 extern void Android_QuitEvents(void);

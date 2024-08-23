@@ -37,7 +37,7 @@ char *SDL_SYS_GetBasePath(void)
         NSBundle *bundle = [NSBundle mainBundle];
         const char *baseType = [[[bundle infoDictionary] objectForKey:@"SDL_FILESYSTEM_BASE_DIR_TYPE"] UTF8String];
         const char *base = NULL;
-        char *retval = NULL;
+        char *result = NULL;
 
         if (baseType == NULL) {
             baseType = "resource";
@@ -53,20 +53,20 @@ char *SDL_SYS_GetBasePath(void)
 
         if (base) {
             const size_t len = SDL_strlen(base) + 2;
-            retval = (char *)SDL_malloc(len);
-            if (retval != NULL) {
-                SDL_snprintf(retval, len, "%s/", base);
+            result = (char *)SDL_malloc(len);
+            if (result != NULL) {
+                SDL_snprintf(result, len, "%s/", base);
             }
         }
 
-        return retval;
+        return result;
     }
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     @autoreleasepool {
-        char *retval = NULL;
+        char *result = NULL;
         NSArray *array;
 
         if (!app) {
@@ -104,27 +104,27 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
             const char *base = [str fileSystemRepresentation];
             if (base) {
                 const size_t len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
-                retval = (char *)SDL_malloc(len);
-                if (retval != NULL) {
+                result = (char *)SDL_malloc(len);
+                if (result != NULL) {
                     char *ptr;
                     if (*org) {
-                        SDL_snprintf(retval, len, "%s/%s/%s/", base, org, app);
+                        SDL_snprintf(result, len, "%s/%s/%s/", base, org, app);
                     } else {
-                        SDL_snprintf(retval, len, "%s/%s/", base, app);
+                        SDL_snprintf(result, len, "%s/%s/", base, app);
                     }
-                    for (ptr = retval + 1; *ptr; ptr++) {
+                    for (ptr = result + 1; *ptr; ptr++) {
                         if (*ptr == '/') {
                             *ptr = '\0';
-                            mkdir(retval, 0700);
+                            mkdir(result, 0700);
                             *ptr = '/';
                         }
                     }
-                    mkdir(retval, 0700);
+                    mkdir(result, 0700);
                 }
             }
         }
 
-        return retval;
+        return result;
     }
 }
 
@@ -135,7 +135,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         SDL_SetError("tvOS does not have persistent storage");
         return NULL;
 #else
-        char *retval = NULL;
+        char *result = NULL;
         const char* base;
         NSArray *array;
         NSSearchPathDirectory dir;
@@ -213,26 +213,26 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         }
 
 append_slash:
-        retval = SDL_malloc(SDL_strlen(base) + 2);
-        if (retval == NULL) {
+        result = SDL_malloc(SDL_strlen(base) + 2);
+        if (result == NULL) {
             return NULL;
         }
 
-        if (SDL_snprintf(retval, SDL_strlen(base) + 2, "%s/", base) < 0) {
+        if (SDL_snprintf(result, SDL_strlen(base) + 2, "%s/", base) < 0) {
             SDL_SetError("Couldn't snprintf folder path for Cocoa: %s", base);
-            SDL_free(retval);
+            SDL_free(result);
             return NULL;
         }
 
-        for (ptr = retval + 1; *ptr; ptr++) {
+        for (ptr = result + 1; *ptr; ptr++) {
             if (*ptr == '/') {
                 *ptr = '\0';
-                mkdir(retval, 0700);
+                mkdir(result, 0700);
                 *ptr = '/';
             }
         }
 
-        return retval;
+        return result;
 #endif // SDL_PLATFORM_TVOS
     }
 }

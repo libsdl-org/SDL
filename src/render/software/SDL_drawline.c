@@ -133,7 +133,7 @@ static DrawLineFunc SDL_CalculateDrawLineFunc(const SDL_PixelFormatDetails *fmt)
     return NULL;
 }
 
-int SDL_DrawLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color)
+bool SDL_DrawLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color)
 {
     DrawLineFunc func;
 
@@ -149,15 +149,14 @@ int SDL_DrawLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color)
     // Perform clipping
     // FIXME: We don't actually want to clip, as it may change line slope
     if (!SDL_GetRectAndLineIntersection(&dst->internal->clip_rect, &x1, &y1, &x2, &y2)) {
-        return 0;
+        return true;
     }
 
     func(dst, x1, y1, x2, y2, color, true);
-    return 0;
+    return true;
 }
 
-int SDL_DrawLines(SDL_Surface *dst, const SDL_Point *points, int count,
-                  Uint32 color)
+bool SDL_DrawLines(SDL_Surface *dst, const SDL_Point *points, int count, Uint32 color)
 {
     int i;
     int x1, y1;
@@ -194,7 +193,7 @@ int SDL_DrawLines(SDL_Surface *dst, const SDL_Point *points, int count,
     if (points[0].x != points[count - 1].x || points[0].y != points[count - 1].y) {
         SDL_DrawPoint(dst, points[count - 1].x, points[count - 1].y, color);
     }
-    return 0;
+    return true;
 }
 
 #endif // SDL_VIDEO_RENDER_SW

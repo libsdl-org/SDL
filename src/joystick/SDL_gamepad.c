@@ -129,12 +129,12 @@ struct SDL_Gamepad
 
 #undef _guarded
 
-#define CHECK_GAMEPAD_MAGIC(gamepad, retval)                    \
+#define CHECK_GAMEPAD_MAGIC(gamepad, result)                    \
     if (!SDL_ObjectValid(gamepad, SDL_OBJECT_TYPE_GAMEPAD) ||   \
         !SDL_IsJoystickValid(gamepad->joystick)) {              \
         SDL_InvalidParamError("gamepad");                       \
         SDL_UnlockJoysticks();                                  \
-        return retval;                                          \
+        return result;                                          \
     }
 
 static SDL_vidpid_list SDL_allowed_gamepads = {
@@ -153,8 +153,8 @@ static SDL_vidpid_list SDL_ignored_gamepads = {
 static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_GUID jGUID, const char *mappingString, bool *existing, SDL_GamepadMappingPriority priority);
 static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t *pGamepadMapping);
 static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id, bool create_mapping);
-static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadAxis axis, Sint16 value);
-static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, Uint8 state);
+static void SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadAxis axis, Sint16 value);
+static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, Uint8 state);
 
 static bool HasSameOutput(SDL_GamepadBinding *a, SDL_GamepadBinding *b)
 {
@@ -1254,7 +1254,7 @@ static bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
 /*
  * given a gamepad mapping string update our mapping object
  */
-static int SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char *pchString)
+static bool SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char *pchString)
 {
     char szGameButton[20];
     char szJoystickButton[20];
@@ -1300,7 +1300,7 @@ static int SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char 
     if (szGameButton[0] != '\0' || szJoystickButton[0] != '\0') {
         SDL_PrivateParseGamepadElement(gamepad, szGameButton, szJoystickButton);
     }
-    return 0;
+    return true;
 }
 
 static void SDL_UpdateGamepadType(SDL_Gamepad *gamepad)
@@ -1809,7 +1809,8 @@ int SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, SDL_bool closeio)
 
     buf = (char *)SDL_LoadFile_IO(src, &db_size, closeio);
     if (!buf) {
-        return SDL_SetError("Could not allocate space to read DB into memory");
+        SDL_SetError("Could not allocate space to read DB into memory");
+        return -1;
     }
     line = buf;
 
@@ -1858,7 +1859,7 @@ int SDL_AddGamepadMappingsFromFile(const char *file)
     return SDL_AddGamepadMappingsFromIO(SDL_IOFromFile(file, "rb"), true);
 }
 
-int SDL_ReloadGamepadMappings(void)
+SDL_bool SDL_ReloadGamepadMappings(void)
 {
     SDL_Gamepad *gamepad;
 
@@ -1877,7 +1878,7 @@ int SDL_ReloadGamepadMappings(void)
 
     SDL_UnlockJoysticks();
 
-    return 0;
+    return true;
 }
 
 static char *SDL_ConvertMappingToPositional(const char *mapping)
@@ -1932,7 +1933,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
     bool is_xinput_mapping = false;
     bool existing = false;
     GamepadMapping_t *pGamepadMapping;
-    int retval = -1;
+    int result = false;
 
     SDL_AssertJoysticksLocked();
 
@@ -1989,7 +1990,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
                     value = !value;
                 }
                 if (!value) {
-                    retval = 0;
+                    result = true;
                     goto done;
                 }
             }
@@ -2038,20 +2039,20 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
     }
 
     if (existing) {
-        retval = 0;
+        result = true;
     } else {
         if (is_default_mapping) {
             s_pDefaultMapping = pGamepadMapping;
         } else if (is_xinput_mapping) {
             s_pXInputMapping = pGamepadMapping;
         }
-        retval = 1;
+        result = 1;
     }
 done:
     if (remapped) {
         SDL_free(remapped);
     }
-    return retval;
+    return result;
 }
 
 /*
@@ -2059,15 +2060,15 @@ done:
  */
 int SDL_AddGamepadMapping(const char *mapping)
 {
-    int retval;
+    int result;
 
     SDL_LockJoysticks();
     {
-        retval = SDL_PrivateAddGamepadMapping(mapping, SDL_GAMEPAD_MAPPING_PRIORITY_API);
+        result = SDL_PrivateAddGamepadMapping(mapping, SDL_GAMEPAD_MAPPING_PRIORITY_API);
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -2128,7 +2129,7 @@ static char *CreateMappingString(GamepadMapping_t *mapping, SDL_GUID guid)
 char **SDL_GetGamepadMappings(int *count)
 {
     int num_mappings = 0;
-    char **retval = NULL;
+    char **result = NULL;
     char **mappings = NULL;
 
     if (count) {
@@ -2172,18 +2173,18 @@ char **SDL_GetGamepadMappings(int *count)
     SDL_UnlockJoysticks();
 
     if (!failed) {
-        retval = (char **) SDL_malloc(final_allocation);
-        if (retval) {
+        result = (char **) SDL_malloc(final_allocation);
+        if (result) {
             final_allocation -= (sizeof (char *) * num_mappings + 1);
-            char *strptr = (char *) (retval + (num_mappings + 1));
+            char *strptr = (char *) (result + (num_mappings + 1));
             for (int i = 0; i < num_mappings; i++) {
-                retval[i] = strptr;
+                result[i] = strptr;
                 const size_t slen = SDL_strlcpy(strptr, mappings[i], final_allocation) + 1;
                 SDL_assert(final_allocation >= slen);
                 final_allocation -= slen;
                 strptr += slen;
             }
-            retval[num_mappings] = NULL;
+            result[num_mappings] = NULL;
 
             if (count) {
                 *count = num_mappings;
@@ -2198,7 +2199,7 @@ char **SDL_GetGamepadMappings(int *count)
         SDL_free(mappings);
     }
 
-    return retval;
+    return result;
 }
 
 /*
@@ -2206,21 +2207,21 @@ char **SDL_GetGamepadMappings(int *count)
  */
 char *SDL_GetGamepadMappingForGUID(SDL_GUID guid)
 {
-    char *retval;
+    char *result;
 
     SDL_LockJoysticks();
     {
         GamepadMapping_t *mapping = SDL_PrivateGetGamepadMappingForGUID(guid, false);
         if (mapping) {
-            retval = CreateMappingString(mapping, guid);
+            result = CreateMappingString(mapping, guid);
         } else {
             SDL_SetError("Mapping not available");
-            retval = NULL;
+            result = NULL;
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -2228,26 +2229,26 @@ char *SDL_GetGamepadMappingForGUID(SDL_GUID guid)
  */
 char *SDL_GetGamepadMapping(SDL_Gamepad *gamepad)
 {
-    char *retval;
+    char *result;
 
     SDL_LockJoysticks();
     {
         CHECK_GAMEPAD_MAGIC(gamepad, NULL);
 
-        retval = CreateMappingString(gamepad->mapping, gamepad->joystick->guid);
+        result = CreateMappingString(gamepad->mapping, gamepad->joystick->guid);
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
  * Set the mapping string for this device
  */
-int SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping)
+SDL_bool SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping)
 {
     SDL_GUID guid = SDL_GetJoystickGUIDForID(instance_id);
-    int retval = -1;
+    bool result = false;
 
     if (SDL_memcmp(&guid, &s_zeroGUID, sizeof(guid)) == 0) {
         return SDL_InvalidParamError("instance_id");
@@ -2260,12 +2261,12 @@ int SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping)
     SDL_LockJoysticks();
     {
         if (SDL_PrivateAddMappingForGUID(guid, mapping, NULL, SDL_GAMEPAD_MAPPING_PRIORITY_API)) {
-            retval = 0;
+            result = true;
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 static void SDL_LoadGamepadHints(void)
@@ -2322,7 +2323,7 @@ static bool SDL_GetGamepadMappingFilePath(char *path, size_t size)
 /*
  * Initialize the gamepad system, mostly load our DB of gamepad config mappings
  */
-int SDL_InitGamepadMappings(void)
+bool SDL_InitGamepadMappings(void)
 {
     char szGamepadMapPath[1024];
     int i = 0;
@@ -2352,10 +2353,10 @@ int SDL_InitGamepadMappings(void)
 
     PopMappingChangeTracking();
 
-    return 0;
+    return true;
 }
 
-int SDL_InitGamepads(void)
+bool SDL_InitGamepads(void)
 {
     int i;
     SDL_JoystickID *joysticks;
@@ -2376,7 +2377,7 @@ int SDL_InitGamepads(void)
         SDL_free(joysticks);
     }
 
-    return 0;
+    return true;
 }
 
 SDL_bool SDL_HasGamepad(void)
@@ -2422,22 +2423,22 @@ SDL_JoystickID *SDL_GetGamepads(int *count)
 
 const char *SDL_GetGamepadNameForID(SDL_JoystickID instance_id)
 {
-    const char *retval = NULL;
+    const char *result = NULL;
 
     SDL_LockJoysticks();
     {
         GamepadMapping_t *mapping = SDL_PrivateGetGamepadMapping(instance_id, true);
         if (mapping) {
             if (SDL_strcmp(mapping->name, "*") == 0) {
-                retval = SDL_GetJoystickNameForID(instance_id);
+                result = SDL_GetJoystickNameForID(instance_id);
             } else {
-                retval = SDL_GetPersistentString(mapping->name);
+                result = SDL_GetPersistentString(mapping->name);
             }
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 const char *SDL_GetGamepadPathForID(SDL_JoystickID instance_id)
@@ -2521,7 +2522,7 @@ SDL_GamepadType SDL_GetRealGamepadTypeForID(SDL_JoystickID instance_id)
 
 char *SDL_GetGamepadMappingForID(SDL_JoystickID instance_id)
 {
-    char *retval = NULL;
+    char *result = NULL;
 
     SDL_LockJoysticks();
     {
@@ -2530,12 +2531,12 @@ char *SDL_GetGamepadMappingForID(SDL_JoystickID instance_id)
             char pchGUID[33];
             SDL_GUID guid = SDL_GetJoystickGUIDForID(instance_id);
             SDL_GUIDToString(guid, pchGUID, sizeof(pchGUID));
-            SDL_asprintf(&retval, "%s,%s,%s", pchGUID, mapping->name, mapping->mapping);
+            SDL_asprintf(&result, "%s,%s,%s", pchGUID, mapping->name, mapping->mapping);
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -2543,19 +2544,19 @@ char *SDL_GetGamepadMappingForID(SDL_JoystickID instance_id)
  */
 bool SDL_IsGamepadNameAndGUID(const char *name, SDL_GUID guid)
 {
-    bool retval;
+    bool result;
 
     SDL_LockJoysticks();
     {
         if (s_pDefaultMapping || SDL_PrivateGetGamepadMappingForNameAndGUID(name, guid) != NULL) {
-            retval = true;
+            result = true;
         } else {
-            retval = false;
+            result = false;
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -2563,29 +2564,29 @@ bool SDL_IsGamepadNameAndGUID(const char *name, SDL_GUID guid)
  */
 SDL_bool SDL_IsGamepad(SDL_JoystickID instance_id)
 {
-    bool retval;
+    bool result;
 
     SDL_LockJoysticks();
     {
         const void *value;
         if (SDL_FindInHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, &value)) {
-            retval = (bool)(uintptr_t)value;
+            result = (bool)(uintptr_t)value;
         } else {
             if (SDL_PrivateGetGamepadMapping(instance_id, true) != NULL) {
-                retval = true;
+                result = true;
             } else {
-                retval = false;
+                result = false;
             }
 
             if (!s_gamepadInstanceIDs) {
                 s_gamepadInstanceIDs = SDL_CreateHashTable(NULL, 4, SDL_HashID, SDL_KeyMatchID, NULL, false);
             }
-            SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, (void *)(uintptr_t)retval);
+            SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, (void *)(uintptr_t)result);
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -2752,7 +2753,7 @@ void SDL_UpdateGamepads(void)
  */
 SDL_bool SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
-    bool retval = false;
+    bool result = false;
 
     SDL_LockJoysticks();
     {
@@ -2763,14 +2764,14 @@ SDL_bool SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
         for (i = 0; i < gamepad->num_bindings; ++i) {
             SDL_GamepadBinding *binding = &gamepad->bindings[i];
             if (binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS && binding->output.axis.axis == axis) {
-                retval = true;
+                result = true;
                 break;
             }
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -2778,7 +2779,7 @@ SDL_bool SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
  */
 Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
-    Sint16 retval = 0;
+    Sint16 result = true;
 
     SDL_LockJoysticks();
     {
@@ -2827,7 +2828,7 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
                 }
                 // If the value is zero, there might be another binding that makes it non-zero
                 if (value != 0 && valid_output_range) {
-                    retval = (Sint16)value;
+                    result = (Sint16)value;
                     break;
                 }
             }
@@ -2835,7 +2836,7 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /**
@@ -2843,7 +2844,7 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
  */
 SDL_bool SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
-    bool retval = false;
+    bool result = false;
 
     SDL_LockJoysticks();
     {
@@ -2854,14 +2855,14 @@ SDL_bool SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
         for (i = 0; i < gamepad->num_bindings; ++i) {
             SDL_GamepadBinding *binding = &gamepad->bindings[i];
             if (binding->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON && binding->output.button == button) {
-                retval = true;
+                result = true;
                 break;
             }
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -2869,7 +2870,7 @@ SDL_bool SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
  */
 Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
-    Uint8 retval = SDL_RELEASED;
+    Uint8 result = SDL_RELEASED;
 
     SDL_LockJoysticks();
     {
@@ -2888,22 +2889,22 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
                     if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
                         valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
                         if (valid_input_range) {
-                            retval = (value >= threshold) ? SDL_PRESSED : SDL_RELEASED;
+                            result = (value >= threshold) ? SDL_PRESSED : SDL_RELEASED;
                             break;
                         }
                     } else {
                         valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
                         if (valid_input_range) {
-                            retval = (value <= threshold) ? SDL_PRESSED : SDL_RELEASED;
+                            result = (value <= threshold) ? SDL_PRESSED : SDL_RELEASED;
                             break;
                         }
                     }
                 } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
-                    retval = SDL_GetJoystickButton(gamepad->joystick, binding->input.button);
+                    result = SDL_GetJoystickButton(gamepad->joystick, binding->input.button);
                     break;
                 } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
                     int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
-                    retval = (hat_mask & binding->input.hat.hat_mask) ? SDL_PRESSED : SDL_RELEASED;
+                    result = (hat_mask & binding->input.hat.hat_mask) ? SDL_PRESSED : SDL_RELEASED;
                     break;
                 }
             }
@@ -2911,7 +2912,7 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /**
@@ -3013,18 +3014,18 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabel(SDL_Gamepad *gamepad, SDL_Gamep
  */
 int SDL_GetNumGamepadTouchpads(SDL_Gamepad *gamepad)
 {
-    int retval = 0;
+    int result = true;
 
     SDL_LockJoysticks();
     {
         SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
         if (joystick) {
-            retval = joystick->ntouchpads;
+            result = joystick->ntouchpads;
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /**
@@ -3032,30 +3033,30 @@ int SDL_GetNumGamepadTouchpads(SDL_Gamepad *gamepad)
  */
 int SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *gamepad, int touchpad)
 {
-    int retval = 0;
+    int result = true;
 
     SDL_LockJoysticks();
     {
         SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
         if (joystick) {
             if (touchpad >= 0 && touchpad < joystick->ntouchpads) {
-                retval = joystick->touchpads[touchpad].nfingers;
+                result = joystick->touchpads[touchpad].nfingers;
             } else {
-                retval = SDL_InvalidParamError("touchpad");
+                result = SDL_InvalidParamError("touchpad");
             }
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /**
  *  Get the current state of a finger on a touchpad on a gamepad.
  */
-int SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger, Uint8 *state, float *x, float *y, float *pressure)
+SDL_bool SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger, Uint8 *state, float *x, float *y, float *pressure)
 {
-    int retval = -1;
+    bool result = false;
 
     SDL_LockJoysticks();
     {
@@ -3078,18 +3079,18 @@ int SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger,
                     if (pressure) {
                         *pressure = info->pressure;
                     }
-                    retval = 0;
+                    result = true;
                 } else {
-                    retval = SDL_InvalidParamError("finger");
+                    result = SDL_InvalidParamError("finger");
                 }
             } else {
-                retval = SDL_InvalidParamError("touchpad");
+                result = SDL_InvalidParamError("touchpad");
             }
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /**
@@ -3097,7 +3098,7 @@ int SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger,
  */
 SDL_bool SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
-    bool retval = false;
+    bool result = false;
 
     SDL_LockJoysticks();
     {
@@ -3106,7 +3107,7 @@ SDL_bool SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_SensorType type)
             int i;
             for (i = 0; i < joystick->nsensors; ++i) {
                 if (joystick->sensors[i].type == type) {
-                    retval = true;
+                    result = true;
                     break;
                 }
             }
@@ -3114,13 +3115,13 @@ SDL_bool SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_SensorType type)
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
  *  Set whether data reporting for a gamepad sensor is enabled
  */
-int SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_bool enabled)
+SDL_bool SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_bool enabled)
 {
     SDL_LockJoysticks();
     {
@@ -3133,7 +3134,7 @@ int SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_b
                 if (sensor->type == type) {
                     if (sensor->enabled == enabled) {
                         SDL_UnlockJoysticks();
-                        return 0;
+                        return true;
                     }
 
                     if (type == SDL_SENSOR_ACCEL && joystick->accel_sensor) {
@@ -3141,7 +3142,7 @@ int SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_b
                             joystick->accel = SDL_OpenSensor(joystick->accel_sensor);
                             if (!joystick->accel) {
                                 SDL_UnlockJoysticks();
-                                return -1;
+                                return false;
                             }
                         } else {
                             if (joystick->accel) {
@@ -3154,7 +3155,7 @@ int SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_b
                             joystick->gyro = SDL_OpenSensor(joystick->gyro_sensor);
                             if (!joystick->gyro) {
                                 SDL_UnlockJoysticks();
-                                return -1;
+                                return false;
                             }
                         } else {
                             if (joystick->gyro) {
@@ -3165,17 +3166,17 @@ int SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_b
                     } else {
                         if (enabled) {
                             if (joystick->nsensors_enabled == 0) {
-                                if (joystick->driver->SetSensorsEnabled(joystick, true) < 0) {
+                                if (!joystick->driver->SetSensorsEnabled(joystick, true)) {
                                     SDL_UnlockJoysticks();
-                                    return -1;
+                                    return false;
                                 }
                             }
                             ++joystick->nsensors_enabled;
                         } else {
                             if (joystick->nsensors_enabled == 1) {
-                                if (joystick->driver->SetSensorsEnabled(joystick, false) < 0) {
+                                if (!joystick->driver->SetSensorsEnabled(joystick, false)) {
                                     SDL_UnlockJoysticks();
-                                    return -1;
+                                    return false;
                                 }
                             }
                             --joystick->nsensors_enabled;
@@ -3184,7 +3185,7 @@ int SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_b
 
                     sensor->enabled = enabled;
                     SDL_UnlockJoysticks();
-                    return 0;
+                    return true;
                 }
             }
         }
@@ -3199,7 +3200,7 @@ int SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_b
  */
 SDL_bool SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
-    bool retval = false;
+    bool result = false;
 
     SDL_LockJoysticks();
     {
@@ -3208,7 +3209,7 @@ SDL_bool SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
             int i;
             for (i = 0; i < joystick->nsensors; ++i) {
                 if (joystick->sensors[i].type == type) {
-                    retval = joystick->sensors[i].enabled;
+                    result = joystick->sensors[i].enabled;
                     break;
                 }
             }
@@ -3216,7 +3217,7 @@ SDL_bool SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -3224,7 +3225,7 @@ SDL_bool SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
  */
 float SDL_GetGamepadSensorDataRate(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
-    float retval = 0.0f;
+    float result = 0.0f;
 
     SDL_LockJoysticks();
     {
@@ -3235,7 +3236,7 @@ float SDL_GetGamepadSensorDataRate(SDL_Gamepad *gamepad, SDL_SensorType type)
                 SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
 
                 if (sensor->type == type) {
-                    retval = sensor->rate;
+                    result = sensor->rate;
                     break;
                 }
             }
@@ -3243,13 +3244,13 @@ float SDL_GetGamepadSensorDataRate(SDL_Gamepad *gamepad, SDL_SensorType type)
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
  *  Get the current state of a gamepad sensor.
  */
-int SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values)
+SDL_bool SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values)
 {
     SDL_LockJoysticks();
     {
@@ -3263,7 +3264,7 @@ int SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *d
                     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
                     SDL_memcpy(data, sensor->data, num_values * sizeof(*data));
                     SDL_UnlockJoysticks();
-                    return 0;
+                    return true;
                 }
             }
         }
@@ -3285,22 +3286,22 @@ SDL_JoystickID SDL_GetGamepadID(SDL_Gamepad *gamepad)
 
 SDL_PropertiesID SDL_GetGamepadProperties(SDL_Gamepad *gamepad)
 {
-    SDL_PropertiesID retval = 0;
+    SDL_PropertiesID result = true;
 
     SDL_LockJoysticks();
     {
         CHECK_GAMEPAD_MAGIC(gamepad, 0);
 
-        retval = SDL_GetJoystickProperties(gamepad->joystick);
+        result = SDL_GetJoystickProperties(gamepad->joystick);
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 const char *SDL_GetGamepadName(SDL_Gamepad *gamepad)
 {
-    const char *retval = NULL;
+    const char *result = NULL;
 
     SDL_LockJoysticks();
     {
@@ -3308,14 +3309,14 @@ const char *SDL_GetGamepadName(SDL_Gamepad *gamepad)
 
         if (SDL_strcmp(gamepad->name, "*") == 0 ||
             gamepad->joystick->steam_handle != 0) {
-            retval = SDL_GetJoystickName(gamepad->joystick);
+            result = SDL_GetJoystickName(gamepad->joystick);
         } else {
-            retval = SDL_GetPersistentString(gamepad->name);
+            result = SDL_GetPersistentString(gamepad->name);
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 const char *SDL_GetGamepadPath(SDL_Gamepad *gamepad)
@@ -3372,13 +3373,13 @@ int SDL_GetGamepadPlayerIndex(SDL_Gamepad *gamepad)
 /**
  *  Set the player index of an opened gamepad
  */
-int SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index)
+SDL_bool SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
     if (!joystick) {
         // SDL_SetError() will have been called already by SDL_GetGamepadJoystick()
-        return -1;
+        return false;
     }
     return SDL_SetJoystickPlayerIndex(joystick, player_index);
 }
@@ -3529,18 +3530,18 @@ SDL_Gamepad *SDL_GetGamepadFromID(SDL_JoystickID joyid)
  */
 SDL_Gamepad *SDL_GetGamepadFromPlayerIndex(int player_index)
 {
-    SDL_Gamepad *retval = NULL;
+    SDL_Gamepad *result = NULL;
 
     SDL_LockJoysticks();
     {
         SDL_Joystick *joystick = SDL_GetJoystickFromPlayerIndex(player_index);
         if (joystick) {
-            retval = SDL_GetGamepadFromID(joystick->instance_id);
+            result = SDL_GetGamepadFromID(joystick->instance_id);
         }
     }
     SDL_UnlockJoysticks();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -3580,42 +3581,42 @@ SDL_GamepadBinding **SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count)
     return bindings;
 }
 
-int SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+SDL_bool SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
     if (!joystick) {
-        return -1;
+        return false;
     }
     return SDL_RumbleJoystick(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
 }
 
-int SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
+SDL_bool SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
     if (!joystick) {
-        return -1;
+        return false;
     }
     return SDL_RumbleJoystickTriggers(joystick, left_rumble, right_rumble, duration_ms);
 }
 
-int SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue)
+SDL_bool SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
     if (!joystick) {
-        return -1;
+        return false;
     }
     return SDL_SetJoystickLED(joystick, red, green, blue);
 }
 
-int SDL_SendGamepadEffect(SDL_Gamepad *gamepad, const void *data, int size)
+SDL_bool SDL_SendGamepadEffect(SDL_Gamepad *gamepad, const void *data, int size)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
     if (!joystick) {
-        return -1;
+        return false;
     }
     return SDL_SendJoystickEffect(joystick, data, size);
 }
@@ -3715,14 +3716,11 @@ void SDL_QuitGamepadMappings(void)
 /*
  * Event filter to transform joystick events into appropriate gamepad ones
  */
-static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadAxis axis, Sint16 value)
+static void SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadAxis axis, Sint16 value)
 {
-    int posted;
-
     SDL_AssertJoysticksLocked();
 
     // translate the event, if desired
-    posted = 0;
     if (SDL_EventEnabled(SDL_EVENT_GAMEPAD_AXIS_MOTION)) {
         SDL_Event event;
         event.type = SDL_EVENT_GAMEPAD_AXIS_MOTION;
@@ -3730,23 +3728,18 @@ static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gamep
         event.gaxis.which = gamepad->joystick->instance_id;
         event.gaxis.axis = axis;
         event.gaxis.value = value;
-        posted = SDL_PushEvent(&event) == 1;
+        SDL_PushEvent(&event);
     }
-    return posted;
 }
 
-/*
- * Event filter to transform joystick events into appropriate gamepad ones
- */
-static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, Uint8 state)
+static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, Uint8 state)
 {
-    int posted;
     SDL_Event event;
 
     SDL_AssertJoysticksLocked();
 
     if (button == SDL_GAMEPAD_BUTTON_INVALID) {
-        return 0;
+        return;
     }
 
     switch (state) {
@@ -3758,7 +3751,7 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
         break;
     default:
         // Invalid state -- bail
-        return 0;
+        return;
     }
 
     if (button == SDL_GAMEPAD_BUTTON_GUIDE) {
@@ -3768,27 +3761,25 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
 
             if (gamepad->joystick->delayed_guide_button) {
                 // Skip duplicate press
-                return 0;
+                return;
             }
         } else {
             if (now < (gamepad->guide_button_down + SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS)) {
                 gamepad->joystick->delayed_guide_button = true;
-                return 0;
+                return;
             }
             gamepad->joystick->delayed_guide_button = false;
         }
     }
 
     // translate the event, if desired
-    posted = 0;
     if (SDL_EventEnabled(event.type)) {
         event.common.timestamp = timestamp;
         event.gbutton.which = gamepad->joystick->instance_id;
         event.gbutton.button = button;
         event.gbutton.state = state;
-        posted = SDL_PushEvent(&event) == 1;
+        SDL_PushEvent(&event);
     }
-    return posted;
 }
 
 static const Uint32 SDL_gamepad_event_list[] = {
@@ -3848,7 +3839,7 @@ void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick)
 
 const char *SDL_GetGamepadAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
-    const char *retval = NULL;
+    const char *result = NULL;
 #ifdef SDL_JOYSTICK_MFI
     const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
 
@@ -3856,16 +3847,16 @@ const char *SDL_GetGamepadAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_
     {
         CHECK_GAMEPAD_MAGIC(gamepad, NULL);
 
-        retval = IOS_GetAppleSFSymbolsNameForButton(gamepad, button);
+        result = IOS_GetAppleSFSymbolsNameForButton(gamepad, button);
     }
     SDL_UnlockJoysticks();
 #endif
-    return retval;
+    return result;
 }
 
 const char *SDL_GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
-    const char *retval = NULL;
+    const char *result = NULL;
 #ifdef SDL_JOYSTICK_MFI
     const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
 
@@ -3873,9 +3864,9 @@ const char *SDL_GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_Ga
     {
         CHECK_GAMEPAD_MAGIC(gamepad, NULL);
 
-        retval = IOS_GetAppleSFSymbolsNameForAxis(gamepad, axis);
+        result = IOS_GetAppleSFSymbolsNameForAxis(gamepad, axis);
     }
     SDL_UnlockJoysticks();
 #endif
-    return retval;
+    return result;
 }

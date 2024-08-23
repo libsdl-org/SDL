@@ -237,7 +237,7 @@ static void Cocoa_FreeCursor(SDL_Cursor *cursor)
     }
 }
 
-static int Cocoa_ShowCursor(SDL_Cursor *cursor)
+static bool Cocoa_ShowCursor(SDL_Cursor *cursor)
 {
     @autoreleasepool {
         SDL_VideoDevice *device = SDL_GetVideoDevice();
@@ -250,7 +250,7 @@ static int Cocoa_ShowCursor(SDL_Cursor *cursor)
                                                    waitUntilDone:NO];
             }
         }
-        return 0;
+        return true;
     }
 }
 
@@ -268,7 +268,7 @@ static SDL_Window *SDL_FindWindowAtPoint(const float x, const float y)
     return NULL;
 }
 
-static int Cocoa_WarpMouseGlobal(float x, float y)
+static bool Cocoa_WarpMouseGlobal(float x, float y)
 {
     CGPoint point;
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -277,7 +277,7 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
         if ([data.listener isMovingOrFocusClickPending]) {
             DLog("Postponing warp, window being moved or focused.");
             [data.listener setPendingMoveX:x Y:y];
-            return 0;
+            return true;
         }
     }
     point = CGPointMake(x, y);
@@ -306,15 +306,15 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
         }
     }
 
-    return 0;
+    return true;
 }
 
-static int Cocoa_WarpMouse(SDL_Window *window, float x, float y)
+static bool Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 {
     return Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
 }
 
-static int Cocoa_SetRelativeMouseMode(bool enabled)
+static bool Cocoa_SetRelativeMouseMode(bool enabled)
 {
     CGError result;
 
@@ -326,7 +326,7 @@ static int Cocoa_SetRelativeMouseMode(bool enabled)
              */
             SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
             if ([data.listener isMovingOrFocusClickPending]) {
-                return 0;
+                return true;
             }
 
             // make sure the mouse isn't at the corner of the window, as this can confuse things if macOS thinks a window resize is happening on the first click.
@@ -352,41 +352,41 @@ static int Cocoa_SetRelativeMouseMode(bool enabled)
     } else {
         [NSCursor unhide];
     }
-    return 0;
+    return true;
 }
 
-static int Cocoa_CaptureMouse(SDL_Window *window)
+static bool Cocoa_CaptureMouse(SDL_Window *window)
 {
     /* our Cocoa event code already tracks the mouse outside the window,
         so all we have to do here is say "okay" and do what we always do. */
-    return 0;
+    return true;
 }
 
 static SDL_MouseButtonFlags Cocoa_GetGlobalMouseState(float *x, float *y)
 {
     const NSUInteger cocoaButtons = [NSEvent pressedMouseButtons];
     const NSPoint cocoaLocation = [NSEvent mouseLocation];
-    SDL_MouseButtonFlags retval = 0;
+    SDL_MouseButtonFlags result = 0;
 
     *x = cocoaLocation.x;
     *y = (CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);
 
-    retval |= (cocoaButtons & (1 << 0)) ? SDL_BUTTON_LMASK : 0;
-    retval |= (cocoaButtons & (1 << 1)) ? SDL_BUTTON_RMASK : 0;
-    retval |= (cocoaButtons & (1 << 2)) ? SDL_BUTTON_MMASK : 0;
-    retval |= (cocoaButtons & (1 << 3)) ? SDL_BUTTON_X1MASK : 0;
-    retval |= (cocoaButtons & (1 << 4)) ? SDL_BUTTON_X2MASK : 0;
+    result |= (cocoaButtons & (1 << 0)) ? SDL_BUTTON_LMASK : 0;
+    result |= (cocoaButtons & (1 << 1)) ? SDL_BUTTON_RMASK : 0;
+    result |= (cocoaButtons & (1 << 2)) ? SDL_BUTTON_MMASK : 0;
+    result |= (cocoaButtons & (1 << 3)) ? SDL_BUTTON_X1MASK : 0;
+    result |= (cocoaButtons & (1 << 4)) ? SDL_BUTTON_X2MASK : 0;
 
-    return retval;
+    return result;
 }
 
-int Cocoa_InitMouse(SDL_VideoDevice *_this)
+bool Cocoa_InitMouse(SDL_VideoDevice *_this)
 {
     NSPoint location;
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_MouseData *internal = (SDL_MouseData *)SDL_calloc(1, sizeof(SDL_MouseData));
     if (internal == NULL) {
-        return -1;
+        return false;
     }
 
     mouse->internal = internal;
@@ -405,7 +405,7 @@ int Cocoa_InitMouse(SDL_VideoDevice *_this)
     location = [NSEvent mouseLocation];
     internal->lastMoveX = location.x;
     internal->lastMoveY = location.y;
-    return 0;
+    return true;
 }
 
 static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)

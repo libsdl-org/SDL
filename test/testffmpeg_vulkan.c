@@ -253,7 +253,7 @@ static int createInstance(VulkanVideoContext *context)
 
 static int createSurface(VulkanVideoContext *context, SDL_Window *window)
 {
-    if (SDL_Vulkan_CreateSurface(window, context->instance, NULL, &context->surface) < 0) {
+    if (!SDL_Vulkan_CreateSurface(window, context->instance, NULL, &context->surface)) {
         context->surface = VK_NULL_HANDLE;
         return -1;
     }

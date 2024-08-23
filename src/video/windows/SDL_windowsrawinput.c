@@ -131,9 +131,9 @@ static void CleanupRawInputThreadData(RawInputThreadData *data)
     }
 }
 
-static int WIN_SetRawInputEnabled(SDL_VideoDevice *_this, Uint32 flags)
+static bool WIN_SetRawInputEnabled(SDL_VideoDevice *_this, Uint32 flags)
 {
-    int result = -1;
+    bool result = false;
 
     CleanupRawInputThreadData(&thread_data);
 
@@ -167,19 +167,19 @@ static int WIN_SetRawInputEnabled(SDL_VideoDevice *_this, Uint32 flags)
             SDL_SetError("Couldn't set up raw input handling");
             goto done;
         }
-        result = 0;
+        result = true;
     } else {
-        result = 0;
+        result = true;
     }
 
 done:
-    if (result < 0) {
+    if (!result) {
         CleanupRawInputThreadData(&thread_data);
     }
     return result;
 }
 
-static int WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
+static bool WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
     Uint32 flags = 0;
@@ -190,59 +190,59 @@ static int WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
         flags |= ENABLE_RAW_KEYBOARD_INPUT;
     }
     if (flags != data->raw_input_enabled) {
-        if (WIN_SetRawInputEnabled(_this, flags) == 0) {
+        if (WIN_SetRawInputEnabled(_this, flags)) {
             data->raw_input_enabled = flags;
         } else {
-            return -1;
+            return false;
         }
     }
-    return 0;
+    return true;
 }
 
-int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
+bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
 {
     SDL_VideoData *data = _this->internal;
     data->raw_mouse_enabled = enabled;
     if (data->gameinput_context) {
-        if (WIN_UpdateGameInputEnabled(_this) < 0) {
+        if (!WIN_UpdateGameInputEnabled(_this)) {
             data->raw_mouse_enabled = !enabled;
-            return -1;
+            return false;
         }
     } else {
-        if (WIN_UpdateRawInputEnabled(_this) < 0) {
+        if (!WIN_UpdateRawInputEnabled(_this)) {
             data->raw_mouse_enabled = !enabled;
-            return -1;
+            return false;
         }
     }
-    return 0;
+    return true;
 }
 
-int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
+bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
 {
     SDL_VideoData *data = _this->internal;
     data->raw_keyboard_enabled = enabled;
     if (data->gameinput_context) {
-        if (WIN_UpdateGameInputEnabled(_this) < 0) {
+        if (!WIN_UpdateGameInputEnabled(_this)) {
             data->raw_keyboard_enabled = !enabled;
-            return -1;
+            return false;
         }
     } else {
-        if (WIN_UpdateRawInputEnabled(_this) < 0) {
+        if (!WIN_UpdateRawInputEnabled(_this)) {
             data->raw_keyboard_enabled = !enabled;
-            return -1;
+            return false;
         }
     }
-    return 0;
+    return true;
 }
 
 #else
 
-int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
+bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
 {
     return SDL_Unsupported();
 }
 
-int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
+bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
 {
     return SDL_Unsupported();
 }

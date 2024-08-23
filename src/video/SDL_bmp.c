@@ -591,7 +591,7 @@ SDL_Surface *SDL_LoadBMP(const char *file)
     return SDL_LoadBMP_IO(SDL_IOFromFile(file, "rb"), 1);
 }
 
-int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
+SDL_bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
 {
     bool was_error = true;
     Sint64 fp_offset, new_offset;
@@ -696,7 +696,7 @@ int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
         saveLegacyBMP = SDL_GetHintBoolean(SDL_HINT_BMP_SAVE_LEGACY_FORMAT, false);
     }
 
-    if (SDL_LockSurface(intermediate_surface) == 0) {
+    if (SDL_LockSurface(intermediate_surface)) {
         const size_t bw = intermediate_surface->w * intermediate_surface->internal->format->bytes_per_pixel;
 
         // Set the BMP file header values
@@ -860,17 +860,17 @@ done:
         SDL_DestroySurface(intermediate_surface);
     }
     if (closeio && dst) {
-        if (SDL_CloseIO(dst) < 0) {
+        if (!SDL_CloseIO(dst)) {
             was_error = true;
         }
     }
     if (was_error) {
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
-int SDL_SaveBMP(SDL_Surface *surface, const char *file)
+SDL_bool SDL_SaveBMP(SDL_Surface *surface, const char *file)
 {
-    return SDL_SaveBMP_IO(surface, SDL_IOFromFile(file, "wb"), 1);
+    return SDL_SaveBMP_IO(surface, SDL_IOFromFile(file, "wb"), true);
 }

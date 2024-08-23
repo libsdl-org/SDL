@@ -32,7 +32,7 @@ static pfnGetUserPreferredUILanguages pGetUserPreferredUILanguages = NULL;
 static HMODULE kernel32 = 0;
 
 // this is the fallback for WinXP...one language, not a list.
-static void SDL_SYS_GetPreferredLocales_winxp(char *buf, size_t buflen)
+static bool SDL_SYS_GetPreferredLocales_winxp(char *buf, size_t buflen)
 {
     char lang[16];
     char country[16];
@@ -47,14 +47,15 @@ static void SDL_SYS_GetPreferredLocales_winxp(char *buf, size_t buflen)
 
     /* Win95 systems will fail, because they don't have LOCALE_SISO*NAME ... */
     if (langrc == 0) {
-        SDL_SetError("Couldn't obtain language info");
+        return SDL_SetError("Couldn't obtain language info");
     } else {
         (void)SDL_snprintf(buf, buflen, "%s%s%s", lang, ctryrc ? "_" : "", ctryrc ? country : "");
+        return true;
     }
 }
 
 // this works on Windows Vista and later.
-static int SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
+static bool SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
 {
     ULONG numlangs = 0;
     WCHAR *wbuf = NULL;
@@ -66,7 +67,7 @@ static int SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
 
     wbuf = SDL_small_alloc(WCHAR, wbuflen, &isstack);
     if (!wbuf) {
-        return -1;
+        return false;
     }
 
     if (!pGetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numlangs, wbuf, &wbuflen)) {
@@ -90,10 +91,10 @@ static int SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
     }
 
     SDL_small_free(wbuf, isstack);
-    return 0;
+    return true;
 }
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     if (!kernel32) {
         kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
@@ -103,9 +104,8 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     }
 
     if (!pGetUserPreferredUILanguages) {
-        SDL_SYS_GetPreferredLocales_winxp(buf, buflen); // this is always available
+        return SDL_SYS_GetPreferredLocales_winxp(buf, buflen); // this is always available
     } else {
-        SDL_SYS_GetPreferredLocales_vista(buf, buflen); // available on Vista and later.
+        return SDL_SYS_GetPreferredLocales_vista(buf, buflen); // available on Vista and later.
     }
-    return 0;
 }

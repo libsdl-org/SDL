@@ -38,9 +38,9 @@ static int ThreadEntry(SceSize args, void *argp)
     return 0;
 }
 
-int SDL_SYS_CreateThread(SDL_Thread *thread,
-                         SDL_FunctionPointer pfnBeginThread,
-                         SDL_FunctionPointer pfnEndThread)
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                          SDL_FunctionPointer pfnBeginThread,
+                          SDL_FunctionPointer pfnEndThread)
 {
     SceKernelThreadInfo status;
     int priority = 32;
@@ -59,7 +59,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
     }
 
     sceKernelStartThread(thread->handle, 4, &thread);
-    return 0;
+    return true;
 }
 
 void SDL_SYS_SetupThread(const char *name)
@@ -89,7 +89,7 @@ void SDL_SYS_KillThread(SDL_Thread *thread)
     sceKernelTerminateDeleteThread(thread->handle);
 }
 
-int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
     int value;
 
@@ -103,7 +103,10 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         value = 50;
     }
 
-    return sceKernelChangeThreadPriority(sceKernelGetThreadId(), value);
+    if (sceKernelChangeThreadPriority(sceKernelGetThreadId(), value) < 0) {
+        return SDL_SetError("sceKernelChangeThreadPriority() failed");
+    }
+    return true;
 }
 
 #endif // SDL_THREAD_PSP

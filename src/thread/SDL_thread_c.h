@@ -98,7 +98,7 @@ extern void SDL_QuitTLSData(void);
  */
 extern void SDL_Generic_InitTLSData(void);
 extern SDL_TLSData *SDL_Generic_GetTLSData(void);
-extern int SDL_Generic_SetTLSData(SDL_TLSData *data);
+extern bool SDL_Generic_SetTLSData(SDL_TLSData *data);
 extern void SDL_Generic_QuitTLSData(void);
 
 #endif // SDL_thread_c_h_

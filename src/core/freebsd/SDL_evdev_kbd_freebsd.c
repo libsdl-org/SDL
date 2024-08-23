@@ -65,7 +65,7 @@ struct SDL_EVDEV_keyboard_state
     unsigned int text_len;
 };
 
-static int SDL_EVDEV_kbd_load_keymaps(SDL_EVDEV_keyboard_state *kbd)
+static bool SDL_EVDEV_kbd_load_keymaps(SDL_EVDEV_keyboard_state *kbd)
 {
     return ioctl(kbd->keyboard_fd, GIO_KEYMAP, kbd->key_map) >= 0;
 }
@@ -408,7 +408,7 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
     return ch;
 }
 
-static int vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
+static bool vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
 {
     return (kbd->ledflagstate & flag) != 0;
 }

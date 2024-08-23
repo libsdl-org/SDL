@@ -27,7 +27,7 @@
 
 #include <emscripten/threading.h>
 
-int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
+bool Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
     const SDL_PixelFormat surface_format = SDL_PIXELFORMAT_XBGR8888;
@@ -43,7 +43,7 @@ int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
 
     surface = SDL_CreateSurface(w, h, surface_format);
     if (!surface) {
-        return -1;
+        return false;
     }
 
     // Save the info and return!
@@ -51,10 +51,10 @@ int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
     *format = surface_format;
     *pixels = surface->pixels;
     *pitch = surface->pitch;
-    return 0;
+    return true;
 }
 
-int Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_Surface *surface;
 
@@ -147,7 +147,7 @@ int Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
         emscripten_sleep(0);
     }
 
-    return 0;
+    return true;
 }
 
 void Emscripten_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)

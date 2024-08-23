@@ -47,7 +47,7 @@ extern "C" {
 #define NGAGEVID_DRIVER_NAME "ngage"
 
 // Initialization/Query functions
-static int NGAGE_VideoInit(SDL_VideoDevice *_this);
+static bool NGAGE_VideoInit(SDL_VideoDevice *_this);
 static void NGAGE_VideoQuit(SDL_VideoDevice *_this);
 
 // NGAGE driver bootstrap functions
@@ -140,7 +140,7 @@ VideoBootStrap NGAGE_bootstrap = {
     NULL // no ShowMessageBox implementation
 };
 
-int NGAGE_VideoInit(SDL_VideoDevice *_this)
+static bool NGAGE_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
@@ -150,14 +150,14 @@ int NGAGE_VideoInit(SDL_VideoDevice *_this)
     mode.w = 176;
     mode.h = 208;
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
-        return -1;
+        return false;
     }
 
     // We're done!
-    return 0;
+    return true;
 }
 
-void NGAGE_VideoQuit(SDL_VideoDevice *_this)
+static void NGAGE_VideoQuit(SDL_VideoDevice *_this)
 {
 }
 

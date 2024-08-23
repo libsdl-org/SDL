@@ -580,12 +580,12 @@ static RawGameControllerDelegate controller_removed = {
 #pragma warning(pop)
 #endif
 
-static int WGI_JoystickInit(void)
+static bool WGI_JoystickInit(void)
 {
     HRESULT hr;
 
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, true)) {
-        return 0;
+        return true;
     }
 
     if (FAILED(WIN_RoInitialize())) {
@@ -661,7 +661,7 @@ static int WGI_JoystickInit(void)
         }
     }
 
-    return 0;
+    return true;
 }
 
 static int WGI_JoystickGetCount(void)
@@ -696,7 +696,7 @@ static int WGI_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
 
 static int WGI_JoystickGetDevicePlayerIndex(int device_index)
 {
-    return -1;
+    return false;
 }
 
 static void WGI_JoystickSetDevicePlayerIndex(int device_index, int player_index)
@@ -713,7 +713,7 @@ static SDL_JoystickID WGI_JoystickGetDeviceInstanceID(int device_index)
     return wgi.controllers[device_index].instance_id;
 }
 
-static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     WindowsGamingInputControllerState *state = &wgi.controllers[device_index];
     struct joystick_hwdata *hwdata;
@@ -721,7 +721,7 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*hwdata));
     if (!hwdata) {
-        return -1;
+        return false;
     }
     joystick->hwdata = hwdata;
 
@@ -753,10 +753,10 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
     }
-    return 0;
+    return true;
 }
 
-static int WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -768,7 +768,7 @@ static int WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
         hwdata->vibration.RightMotor = (DOUBLE)high_frequency_rumble / SDL_MAX_UINT16;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
         if (SUCCEEDED(hr)) {
-            return 0;
+            return true;
         } else {
             return WIN_SetErrorFromHRESULT("Windows.Gaming.Input.IGamepad.put_Vibration failed", hr);
         }
@@ -777,7 +777,7 @@ static int WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     }
 }
 
-static int WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -789,7 +789,7 @@ static int WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble
         hwdata->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
         if (SUCCEEDED(hr)) {
-            return 0;
+            return true;
         } else {
             return WIN_SetErrorFromHRESULT("Windows.Gaming.Input.IGamepad.put_Vibration failed", hr);
         }
@@ -798,17 +798,17 @@ static int WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble
     }
 }
 
-static int WGI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool WGI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int WGI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool WGI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
+static bool WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }

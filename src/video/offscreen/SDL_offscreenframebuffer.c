@@ -29,7 +29,7 @@
 #define OFFSCREEN_SURFACE "SDL.internal.window.surface"
 
 
-int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
+bool SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
     const SDL_PixelFormat surface_format = SDL_PIXELFORMAT_XRGB8888;
@@ -39,7 +39,7 @@ int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wi
     SDL_GetWindowSizeInPixels(window, &w, &h);
     surface = SDL_CreateSurface(w, h, surface_format);
     if (!surface) {
-        return -1;
+        return false;
     }
 
     // Save the info and return!
@@ -48,10 +48,10 @@ int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wi
     *pixels = surface->pixels;
     *pitch = surface->pitch;
 
-    return 0;
+    return true;
 }
 
-int SDL_OFFSCREEN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+bool SDL_OFFSCREEN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     static int frame_number;
     SDL_Surface *surface;
@@ -68,7 +68,7 @@ int SDL_OFFSCREEN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wi
                            SDL_GetWindowID(window), ++frame_number);
         SDL_SaveBMP(surface, file);
     }
-    return 0;
+    return true;
 }
 
 void SDL_OFFSCREEN_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)

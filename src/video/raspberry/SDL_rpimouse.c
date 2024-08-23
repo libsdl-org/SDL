@@ -41,8 +41,8 @@
 
 static SDL_Cursor *RPI_CreateDefaultCursor(void);
 static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y);
-static int RPI_ShowCursor(SDL_Cursor *cursor);
-static int RPI_MoveCursor(SDL_Cursor *cursor);
+static bool RPI_ShowCursor(SDL_Cursor *cursor);
+static bool RPI_MoveCursor(SDL_Cursor *cursor);
 static void RPI_FreeCursor(SDL_Cursor *cursor);
 
 static SDL_Cursor *global_cursor;
@@ -55,9 +55,9 @@ static SDL_Cursor *RPI_CreateDefaultCursor(void)
 // Create a cursor from a surface
 static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
+    int rc;
     SDL_CursorData *curdata;
     SDL_Cursor *cursor;
-    int ret;
     VC_RECT_T dst_rect;
     Uint32 dummy;
 
@@ -89,8 +89,8 @@ static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
      * the size of the transfer as rect.height * stride.
      * Therefore we can only write rows starting at x=0.
      */
-    ret = vc_dispmanx_resource_write_data(curdata->resource, VC_IMAGE_ARGB8888, surface->pitch, surface->pixels, &dst_rect);
-    SDL_assert(ret == DISPMANX_SUCCESS);
+    rc = vc_dispmanx_resource_write_data(curdata->resource, VC_IMAGE_ARGB8888, surface->pitch, surface->pixels, &dst_rect);
+    SDL_assert(rc == DISPMANX_SUCCESS);
 
     cursor->internal = curdata;
 
@@ -98,22 +98,18 @@ static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 }
 
 // Show the specified cursor, or hide if cursor is NULL
-static int RPI_ShowCursor(SDL_Cursor *cursor)
+static bool RPI_ShowCursor(SDL_Cursor *cursor)
 {
-    int ret;
+    int rc;
     DISPMANX_UPDATE_HANDLE_T update;
     SDL_CursorData *curdata;
     VC_RECT_T src_rect, dst_rect;
-    SDL_Mouse *mouse;
+    SDL_Mouse *mouse = SDL_GetMouse();
     SDL_DisplayData *data;
     VC_DISPMANX_ALPHA_T alpha = { DISPMANX_FLAGS_ALPHA_FROM_SOURCE /* flags */, 255 /*opacity 0->255*/, 0 /* mask */ };
     uint32_t layer = SDL_RPI_MOUSELAYER;
-    const char *env;
-
-    mouse = SDL_GetMouse();
-    if (!mouse) {
-        return -1;
-    }
+    const char *int;
+    bool result;
 
     if (cursor != global_cursor) {
         if (global_cursor) {
@@ -121,10 +117,10 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
             if (curdata && curdata->element > DISPMANX_NO_HANDLE) {
                 update = vc_dispmanx_update_start(0);
                 SDL_assert(update);
-                ret = vc_dispmanx_element_remove(update, curdata->element);
-                SDL_assert(ret == DISPMANX_SUCCESS);
-                ret = vc_dispmanx_update_submit_sync(update);
-                SDL_assert(ret == DISPMANX_SUCCESS);
+                rc = vc_dispmanx_element_remove(update, curdata->element);
+                SDL_assert(rc == DISPMANX_SUCCESS);
+                rc = vc_dispmanx_update_submit_sync(update);
+                SDL_assert(rc == DISPMANX_SUCCESS);
                 curdata->element = DISPMANX_NO_HANDLE;
             }
         }
@@ -132,21 +128,21 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
     }
 
     if (!cursor) {
-        return 0;
+        return true;
     }
 
     curdata = cursor->internal;
     if (!curdata) {
-        return -1;
+        return false;
     }
 
     if (!mouse->focus) {
-        return -1;
+        return false;
     }
 
     data = SDL_GetDisplayDriverDataForWindow(mouse->focus);
     if (!data) {
-        return -1;
+        return false;
     }
 
     if (curdata->element == DISPMANX_NO_HANDLE) {
@@ -156,9 +152,9 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
         update = vc_dispmanx_update_start(0);
         SDL_assert(update);
 
-        env = SDL_GetHint(SDL_HINT_RPI_VIDEO_LAYER);
-        if (env) {
-            layer = SDL_atoi(env) + 1;
+        hint = SDL_GetHint(SDL_HINT_RPI_VIDEO_LAYER);
+        if (hint) {
+            layer = SDL_atoi(hint) + 1;
         }
 
         curdata->element = vc_dispmanx_element_add(update,
@@ -172,17 +168,17 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
                                                    DISPMANX_NO_HANDLE, // clamp
                                                    DISPMANX_NO_ROTATE);
         SDL_assert(curdata->element > DISPMANX_NO_HANDLE);
-        ret = vc_dispmanx_update_submit_sync(update);
-        SDL_assert(ret == DISPMANX_SUCCESS);
+        rc = vc_dispmanx_update_submit_sync(update);
+        SDL_assert(rc == DISPMANX_SUCCESS);
     }
 
-    return 0;
+    return true;
 }
 
 // Free a window manager cursor
 static void RPI_FreeCursor(SDL_Cursor *cursor)
 {
-    int ret;
+    int rc;
     DISPMANX_UPDATE_HANDLE_T update;
     SDL_CursorData *curdata;
 
@@ -193,15 +189,15 @@ static void RPI_FreeCursor(SDL_Cursor *cursor)
             if (curdata->element != DISPMANX_NO_HANDLE) {
                 update = vc_dispmanx_update_start(0);
                 SDL_assert(update);
-                ret = vc_dispmanx_element_remove(update, curdata->element);
-                SDL_assert(ret == DISPMANX_SUCCESS);
-                ret = vc_dispmanx_update_submit_sync(update);
-                SDL_assert(ret == DISPMANX_SUCCESS);
+                rc = vc_dispmanx_element_remove(update, curdata->element);
+                SDL_assert(rc == DISPMANX_SUCCESS);
+                rc = vc_dispmanx_update_submit_sync(update);
+                SDL_assert(rc == DISPMANX_SUCCESS);
             }
 
             if (curdata->resource != DISPMANX_NO_HANDLE) {
-                ret = vc_dispmanx_resource_delete(curdata->resource);
-                SDL_assert(ret == DISPMANX_SUCCESS);
+                rc = vc_dispmanx_resource_delete(curdata->resource);
+                SDL_assert(rc == DISPMANX_SUCCESS);
             }
 
             SDL_free(cursor->internal);
@@ -213,27 +209,27 @@ static void RPI_FreeCursor(SDL_Cursor *cursor)
     }
 }
 
-static int RPI_WarpMouseGlobalGraphically(float x, float y)
+static bool RPI_WarpMouseGlobalGraphically(float x, float y)
 {
+    int rc;
     SDL_CursorData *curdata;
     DISPMANX_UPDATE_HANDLE_T update;
-    int ret;
     VC_RECT_T dst_rect;
     VC_RECT_T src_rect;
     SDL_Mouse *mouse = SDL_GetMouse();
 
     if (!mouse || !mouse->cur_cursor || !mouse->cur_cursor->internal) {
-        return 0;
+        return true;
     }
 
     curdata = mouse->cur_cursor->internal;
     if (curdata->element == DISPMANX_NO_HANDLE) {
-        return 0;
+        return true;
     }
 
     update = vc_dispmanx_update_start(0);
     if (!update) {
-        return 0;
+        return true;
     }
 
     src_rect.x = 0;
@@ -245,7 +241,7 @@ static int RPI_WarpMouseGlobalGraphically(float x, float y)
     dst_rect.width = curdata->w;
     dst_rect.height = curdata->h;
 
-    ret = vc_dispmanx_element_change_attributes(
+    rc = vc_dispmanx_element_change_attributes(
         update,
         curdata->element,
         0,
@@ -255,24 +251,24 @@ static int RPI_WarpMouseGlobalGraphically(float x, float y)
         &src_rect,
         DISPMANX_NO_HANDLE,
         DISPMANX_NO_ROTATE);
-    if (ret != DISPMANX_SUCCESS) {
+    if (rc != DISPMANX_SUCCESS) {
         return SDL_SetError("vc_dispmanx_element_change_attributes() failed");
     }
 
     // Submit asynchronously, otherwise the performance suffers a lot
-    ret = vc_dispmanx_update_submit(update, 0, NULL);
-    if (ret != DISPMANX_SUCCESS) {
+    rc = vc_dispmanx_update_submit(update, 0, NULL);
+    if (rc != DISPMANX_SUCCESS) {
         return SDL_SetError("vc_dispmanx_update_submit() failed");
     }
-    return 0;
+    return true;
 }
 
-static int RPI_WarpMouseGlobal(float x, float y)
+static bool RPI_WarpMouseGlobal(float x, float y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
     if (!mouse || !mouse->cur_cursor || !mouse->cur_cursor->internal) {
-        return 0;
+        return true;
     }
 
     // Update internal mouse position.
@@ -281,7 +277,7 @@ static int RPI_WarpMouseGlobal(float x, float y)
     return RPI_WarpMouseGlobalGraphically(x, y);
 }
 
-static int RPI_WarpMouse(SDL_Window *window, float x, float y)
+static bool RPI_WarpMouse(SDL_Window *window, float x, float y)
 {
     return RPI_WarpMouseGlobal(x, y);
 }
@@ -308,7 +304,7 @@ void RPI_QuitMouse(SDL_VideoDevice *_this)
 }
 
 // This is called when a mouse motion event occurs
-static int RPI_MoveCursor(SDL_Cursor *cursor)
+static bool RPI_MoveCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     /* We must NOT call SDL_SendMouseMotion() on the next call or we will enter recursivity,

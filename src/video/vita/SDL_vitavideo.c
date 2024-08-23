@@ -48,7 +48,7 @@
 #define VITA_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define VITA_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define VITA_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define VITA_GLES_DeleteContext   SDL_EGL_DeleteContext
+#define VITA_GLES_DestroyContext   SDL_EGL_DestroyContext
 #endif
 
 SDL_Window *Vita_Window;
@@ -143,7 +143,7 @@ static SDL_VideoDevice *VITA_Create(void)
     device->GL_SetSwapInterval = VITA_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = VITA_GLES_GetSwapInterval;
     device->GL_SwapWindow = VITA_GLES_SwapWindow;
-    device->GL_DeleteContext = VITA_GLES_DeleteContext;
+    device->GL_DestroyContext = VITA_GLES_DestroyContext;
 #endif
 
     device->HasScreenKeyboardSupport = VITA_HasScreenKeyboardSupport;
@@ -166,7 +166,7 @@ VideoBootStrap VITA_bootstrap = {
 /*****************************************************************************/
 // SDL Video and Display initialization/handling functions
 /*****************************************************************************/
-int VITA_VideoInit(SDL_VideoDevice *_this)
+bool VITA_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 #ifdef SDL_VIDEO_VITA_PVR
@@ -202,14 +202,14 @@ int VITA_VideoInit(SDL_VideoDevice *_this)
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
-        return -1;
+        return false;
     }
 
     VITA_InitTouch();
     VITA_InitKeyboard();
     VITA_InitMouse();
 
-    return 1;
+    return true;
 }
 
 void VITA_VideoQuit(SDL_VideoDevice *_this)
@@ -217,7 +217,7 @@ void VITA_VideoQuit(SDL_VideoDevice *_this)
     VITA_QuitTouch();
 }
 
-int VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *wdata;
 #ifdef SDL_VIDEO_VITA_PVR
@@ -230,7 +230,7 @@ int VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     // Allocate window internal data
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!wdata) {
-        return -1;
+        return false;
     }
 
     // Setup driver data for this window
@@ -289,13 +289,13 @@ int VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     SDL_SetKeyboardFocus(window);
 
     // Window has been successfully created
-    return 0;
+    return true;
 }
 
 void VITA_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
-int VITA_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+bool VITA_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return SDL_Unsupported();
 }
@@ -320,9 +320,9 @@ void VITA_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 void VITA_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
-int VITA_SetWindowGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
+bool VITA_SetWindowGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
-    return 0;
+    return true;
 }
 
 void VITA_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)

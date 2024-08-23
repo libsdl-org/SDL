@@ -44,7 +44,7 @@ static SDL_RWLock *pen_device_rwlock = NULL;
 static SDL_Pen *pen_devices SDL_GUARDED_BY(pen_device_rwlock) = NULL;
 static int pen_device_count SDL_GUARDED_BY(pen_device_rwlock) = 0;
 
-// You must hold pen_device_rwlock before calling this, and retval is only safe while lock is held!
+// You must hold pen_device_rwlock before calling this, and result is only safe while lock is held!
 // If SDL isn't initialized, grabbing the NULL lock is a no-op and there will be zero devices, so
 // locking and calling this in that case will do the right thing.
 static SDL_Pen *FindPenByInstanceId(SDL_PenID instance_id) SDL_REQUIRES_SHARED(pen_device_rwlock)
@@ -62,46 +62,46 @@ static SDL_Pen *FindPenByInstanceId(SDL_PenID instance_id) SDL_REQUIRES_SHARED(p
 
 SDL_PenID SDL_FindPenByHandle(void *handle)
 {
-    SDL_PenID retval = 0;
+    SDL_PenID result = 0;
     SDL_LockRWLockForReading(pen_device_rwlock);
     for (int i = 0; i < pen_device_count; i++) {
         if (pen_devices[i].driverdata == handle) {
-            retval = pen_devices[i].instance_id;
+            result = pen_devices[i].instance_id;
             break;
         }
     }
     SDL_UnlockRWLock(pen_device_rwlock);
-    return retval;
+    return result;
 }
 
 SDL_PenID SDL_FindPenByCallback(bool (*callback)(void *handle, void *userdata), void *userdata)
 {
-    SDL_PenID retval = 0;
+    SDL_PenID result = 0;
     SDL_LockRWLockForReading(pen_device_rwlock);
     for (int i = 0; i < pen_device_count; i++) {
         if (callback(pen_devices[i].driverdata, userdata)) {
-            retval = pen_devices[i].instance_id;
+            result = pen_devices[i].instance_id;
             break;
         }
     }
     SDL_UnlockRWLock(pen_device_rwlock);
-    return retval;
+    return result;
 }
 
 
 
 // public API ...
 
-int SDL_InitPen(void)
+bool SDL_InitPen(void)
 {
     SDL_assert(pen_device_rwlock == NULL);
     SDL_assert(pen_devices == NULL);
     SDL_assert(pen_device_count == 0);
     pen_device_rwlock = SDL_CreateRWLock();
     if (!pen_device_rwlock) {
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
 void SDL_QuitPen(void)
@@ -118,19 +118,19 @@ SDL_PenID *SDL_GetPens(int *count)
 {
     SDL_LockRWLockForReading(pen_device_rwlock);
     const int num_devices = pen_device_count;
-    SDL_PenID *retval = (SDL_PenID *) SDL_malloc((num_devices + 1) * sizeof (SDL_PenID));
-    if (retval) {
+    SDL_PenID *result = (SDL_PenID *) SDL_malloc((num_devices + 1) * sizeof (SDL_PenID));
+    if (result) {
         for (int i = 0; i < num_devices; i++) {
-            retval[i] = pen_devices[i].instance_id;
+            result[i] = pen_devices[i].instance_id;
         }
-        retval[num_devices] = 0;  // null-terminated.
+        result[num_devices] = 0;  // null-terminated.
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 
     if (count) {
-        *count = retval ? num_devices : 0;
+        *count = result ? num_devices : 0;
     }
-    return retval;
+    return result;
 }
 
 const char *SDL_GetPenName(SDL_PenID instance_id)
@@ -142,20 +142,20 @@ const char *SDL_GetPenName(SDL_PenID instance_id)
     return result;
 }
 
-int SDL_GetPenInfo(SDL_PenID instance_id, SDL_PenInfo *info)
+SDL_bool SDL_GetPenInfo(SDL_PenID instance_id, SDL_PenInfo *info)
 {
     SDL_LockRWLockForReading(pen_device_rwlock);
     const SDL_Pen *pen = FindPenByInstanceId(instance_id);
-    const int retval = pen ? 0 : -1;
+    const bool result = pen ? true : false;
     if (info) {
-        if (retval == 0) {
+        if (result) {
             SDL_copyp(info, &pen->info);
         } else {
             SDL_zerop(info);
         }
     }
     SDL_UnlockRWLock(pen_device_rwlock);
-    return retval;
+    return result;
 }
 
 SDL_PenInputFlags SDL_GetPenStatus(SDL_PenID instance_id, float *axes, int num_axes)
@@ -166,9 +166,9 @@ SDL_PenInputFlags SDL_GetPenStatus(SDL_PenID instance_id, float *axes, int num_a
 
     SDL_LockRWLockForReading(pen_device_rwlock);
     const SDL_Pen *pen = FindPenByInstanceId(instance_id);
-    SDL_PenInputFlags retval = 0;
+    SDL_PenInputFlags result = 0;
     if (pen) {
-        retval = pen->input_state;
+        result = pen->input_state;
         if (axes && num_axes) {
             SDL_memcpy(axes, pen->axes, SDL_min(num_axes, SDL_PEN_NUM_AXES) * sizeof (*axes));
             // zero out axes we don't know about, in case the caller built with newer SDL headers that support more of them.
@@ -178,16 +178,16 @@ SDL_PenInputFlags SDL_GetPenStatus(SDL_PenID instance_id, float *axes, int num_a
         }
     }
     SDL_UnlockRWLock(pen_device_rwlock);
-    return retval;
+    return result;
 }
 
 bool SDL_PenConnected(SDL_PenID instance_id)
 {
     SDL_LockRWLockForReading(pen_device_rwlock);
     const SDL_Pen *pen = FindPenByInstanceId(instance_id);
-    const bool retval = (pen != NULL);
+    const bool result = (pen != NULL);
     SDL_UnlockRWLock(pen_device_rwlock);
-    return retval;
+    return result;
 }
 #endif
 
@@ -212,20 +212,20 @@ SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, const SDL_PenInfo
         return 0;
     }
 
-    SDL_PenID retval = 0;
+    SDL_PenID result = 0;
 
     SDL_LockRWLockForWriting(pen_device_rwlock);
 
     SDL_Pen *pen = NULL;
     void *ptr = SDL_realloc(pen_devices, (pen_device_count + 1) * sizeof (*pen));
     if (ptr) {
-        retval = (SDL_PenID) SDL_GetNextObjectID();
+        result = (SDL_PenID) SDL_GetNextObjectID();
         pen_devices = (SDL_Pen *) ptr;
         pen = &pen_devices[pen_device_count];
         pen_device_count++;
 
         SDL_zerop(pen);
-        pen->instance_id = retval;
+        pen->instance_id = result;
         pen->name = namecpy;
         if (info) {
             SDL_copyp(&pen->info, info);
@@ -239,16 +239,16 @@ SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, const SDL_PenInfo
         SDL_free(namecpy);
     }
 
-    if (retval && SDL_EventEnabled(SDL_EVENT_PEN_PROXIMITY_IN)) {
+    if (result && SDL_EventEnabled(SDL_EVENT_PEN_PROXIMITY_IN)) {
         SDL_Event event;
         SDL_zero(event);
         event.pproximity.type = SDL_EVENT_PEN_PROXIMITY_IN;
         event.pproximity.timestamp = timestamp;
-        event.pproximity.which = retval;
+        event.pproximity.which = result;
         SDL_PushEvent(&event);
     }
 
-    return retval;
+    return result;
 }
 
 void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id)
@@ -309,9 +309,9 @@ void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handl
     SDL_UnlockRWLock(pen_device_rwlock);
 }
 
-int SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 eraser)
+void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 eraser)
 {
-    bool push_event = false;
+    bool send_event = false;
     SDL_PenInputFlags input_state = 0;
     float x = 0.0f;
     float y = 0.0f;
@@ -329,28 +329,27 @@ int SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *
 
         if (state && ((input_state & SDL_PEN_INPUT_DOWN) == 0)) {
             input_state |= SDL_PEN_INPUT_DOWN;
-            push_event = true;
+            send_event = true;
         } else if (!state && (input_state & SDL_PEN_INPUT_DOWN)) {
             input_state &= ~SDL_PEN_INPUT_DOWN;
-            push_event = true;
+            send_event = true;
         }
 
         if (eraser && ((input_state & SDL_PEN_INPUT_ERASER_TIP) == 0)) {
             input_state |= SDL_PEN_INPUT_ERASER_TIP;
-            push_event = true;
+            send_event = true;
         } else if (!state && (input_state & SDL_PEN_INPUT_ERASER_TIP)) {
             input_state &= ~SDL_PEN_INPUT_ERASER_TIP;
-            push_event = true;
+            send_event = true;
         }
 
         pen->input_state = input_state;  // we could do an SDL_AtomicSet here if we run into trouble...
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 
-    int posted = 0;
-    if (push_event) {
+    if (send_event) {
         const SDL_EventType evtype = state ? SDL_EVENT_PEN_DOWN : SDL_EVENT_PEN_UP;
-        if (push_event && SDL_EventEnabled(evtype)) {
+        if (send_event && SDL_EventEnabled(evtype)) {
             SDL_Event event;
             SDL_zero(event);
             event.ptouch.type = evtype;
@@ -362,18 +361,16 @@ int SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *
             event.ptouch.y = y;
             event.ptouch.eraser = eraser ? 1 : 0;
             event.ptouch.state = state ? SDL_PRESSED : SDL_RELEASED;
-            posted = (SDL_PushEvent(&event) > 0);
+            SDL_PushEvent(&event);
         }
     }
-
-    return posted;
 }
 
-int SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, SDL_PenAxis axis, float value)
+void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, SDL_PenAxis axis, float value)
 {
     SDL_assert((axis >= 0) && (axis < SDL_PEN_NUM_AXES));  // fix the backend if this triggers.
 
-    bool push_event = false;
+    bool send_event = false;
     SDL_PenInputFlags input_state = 0;
     float x = 0.0f;
     float y = 0.0f;
@@ -390,13 +387,12 @@ int SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *w
             input_state = pen->input_state;
             x = pen->x;
             y = pen->y;
-            push_event = true;
+            send_event = true;
         }
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 
-    int posted = 0;
-    if (push_event && SDL_EventEnabled(SDL_EVENT_PEN_AXIS)) {
+    if (send_event && SDL_EventEnabled(SDL_EVENT_PEN_AXIS)) {
         SDL_Event event;
         SDL_zero(event);
         event.paxis.type = SDL_EVENT_PEN_AXIS;
@@ -408,15 +404,13 @@ int SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *w
         event.paxis.y = y;
         event.paxis.axis = axis;
         event.paxis.value = value;
-        posted = (SDL_PushEvent(&event) > 0);
+        SDL_PushEvent(&event);
     }
-
-    return posted;
 }
 
-int SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, float x, float y)
+void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, float x, float y)
 {
-    bool push_event = false;
+    bool send_event = false;
     SDL_PenInputFlags input_state = 0;
 
     // note that this locks for _reading_ because the lock protects the
@@ -430,13 +424,12 @@ int SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
             pen->x = x;  // we could do an SDL_AtomicSet here if we run into trouble...
             pen->y = y;  // we could do an SDL_AtomicSet here if we run into trouble...
             input_state = pen->input_state;
-            push_event = true;
+            send_event = true;
         }
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 
-    int posted = 0;
-    if (push_event && SDL_EventEnabled(SDL_EVENT_PEN_MOTION)) {
+    if (send_event && SDL_EventEnabled(SDL_EVENT_PEN_MOTION)) {
         SDL_Event event;
         SDL_zero(event);
         event.pmotion.type = SDL_EVENT_PEN_MOTION;
@@ -446,21 +439,20 @@ int SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
         event.pmotion.pen_state = input_state;
         event.pmotion.x = x;
         event.pmotion.y = y;
-        posted = (SDL_PushEvent(&event) > 0);
+        SDL_PushEvent(&event);
     }
-
-    return posted;
 }
 
-int SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 button)
+void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 button)
 {
-    if ((button < 1) || (button > 5)) {
-        return 0;  // clamp for now.
-    }
-    bool push_event = false;
+    bool send_event = false;
     SDL_PenInputFlags input_state = 0;
     float x = 0.0f;
     float y = 0.0f;
+
+    if ((button < 1) || (button > 5)) {
+        return; // clamp for now.
+    }
 
     // note that this locks for _reading_ because the lock protects the
     // pen_devices array from being reallocated from under us, not the data in it;
@@ -476,19 +468,18 @@ int SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
         y = pen->y;
         if (state && !current) {
             input_state |= flag;
-            push_event = true;
+            send_event = true;
         } else if (!state && current) {
             input_state &= ~flag;
-            push_event = true;
+            send_event = true;
         }
         pen->input_state = input_state;  // we could do an SDL_AtomicSet here if we run into trouble...
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 
-    int posted = 0;
-    if (push_event) {
+    if (send_event) {
         const SDL_EventType evtype = state ? SDL_EVENT_PEN_BUTTON_DOWN : SDL_EVENT_PEN_BUTTON_UP;
-        if (push_event && SDL_EventEnabled(evtype)) {
+        if (SDL_EventEnabled(evtype)) {
             SDL_Event event;
             SDL_zero(event);
             event.pbutton.type = evtype;
@@ -500,10 +491,8 @@ int SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
             event.pbutton.y = y;
             event.pbutton.button = button;
             event.pbutton.state = state ? SDL_PRESSED : SDL_RELEASED;
-            posted = (SDL_PushEvent(&event) > 0);
+            SDL_PushEvent(&event);
         }
     }
-
-    return posted;
 }
 

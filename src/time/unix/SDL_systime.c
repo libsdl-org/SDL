@@ -98,7 +98,7 @@ found_date:
 #endif
 }
 
-int SDL_GetCurrentTime(SDL_Time *ticks)
+SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     if (!ticks) {
         return SDL_InvalidParamError("ticks");
@@ -109,7 +109,7 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
     if (clock_gettime(CLOCK_REALTIME, &tp) == 0) {
         //tp.tv_sec = SDL_min(tp.tv_sec, SDL_NS_TO_SECONDS(SDL_MAX_TIME) - 1);
         *ticks = SDL_SECONDS_TO_NS(tp.tv_sec) + tp.tv_nsec;
-        return 0;
+        return true;
     }
 
     SDL_SetError("Failed to retrieve system time (%i)", errno);
@@ -129,7 +129,7 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
         mach_port_deallocate(mach_task_self(), cclock);
 
         if (!ret) {
-            return 0;
+            return true;
         }
     }
 
@@ -141,16 +141,16 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
     if (gettimeofday(&tv, NULL) == 0) {
         tv.tv_sec = SDL_min(tv.tv_sec, SDL_NS_TO_SECONDS(SDL_MAX_TIME) - 1);
         *ticks = SDL_SECONDS_TO_NS(tv.tv_sec) + SDL_US_TO_NS(tv.tv_usec);
-        return 0;
+        return true;
     }
 
     SDL_SetError("Failed to retrieve system time (%i)", errno);
 #endif
 
-    return -1;
+    return false;
 }
 
-int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
+SDL_bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
 {
 #if defined (HAVE_GMTIME_R) || defined(HAVE_LOCALTIME_R)
     struct tm tm_storage;
@@ -188,7 +188,7 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
         dt->day_of_week = tm->tm_wday;
         dt->utc_offset = (int)tm->tm_gmtoff;
 
-        return 0;
+        return true;
     }
 
     return SDL_SetError("SDL_DateTime conversion failed (%i)", errno);

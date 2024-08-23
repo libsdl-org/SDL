@@ -37,7 +37,7 @@
 #define SCE_AUDIO_SAMPLE_ALIGN(s) (((s) + 63) & ~63)
 #define SCE_AUDIO_MAX_VOLUME      0x8000
 
-static int VITAAUD_OpenRecordingDevice(SDL_AudioDevice *device)
+static bool VITAAUD_OpenRecordingDevice(SDL_AudioDevice *device)
 {
     device->spec.freq = 16000;
     device->spec.channels = 1;
@@ -51,10 +51,10 @@ static int VITAAUD_OpenRecordingDevice(SDL_AudioDevice *device)
         return SDL_SetError("Couldn't open audio in port: %x", device->hidden->port);
     }
 
-    return 0;
+    return true;
 }
 
-static int VITAAUD_OpenDevice(SDL_AudioDevice *device)
+static bool VITAAUD_OpenDevice(SDL_AudioDevice *device)
 {
     int format, mixlen, i, port = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
     int vols[2] = { SCE_AUDIO_MAX_VOLUME, SCE_AUDIO_MAX_VOLUME };
@@ -64,7 +64,7 @@ static int VITAAUD_OpenDevice(SDL_AudioDevice *device)
     device->hidden = (struct SDL_PrivateAudioData *)
         SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     closefmts = SDL_ClosestAudioFormats(device->spec.format);
@@ -125,29 +125,29 @@ static int VITAAUD_OpenDevice(SDL_AudioDevice *device)
     }
 
     device->hidden->next_buffer = 0;
-    return 0;
+    return true;
 }
 
-static int VITAAUD_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool VITAAUD_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
-    return (sceAudioOutOutput(device->hidden->port, buffer) == 0) ? 0 : -1;
+    return (sceAudioOutOutput(device->hidden->port, buffer) == 0);
 }
 
 // This function waits until it is possible to write a full sound buffer
-static int VITAAUD_WaitDevice(SDL_AudioDevice *device)
+static bool VITAAUD_WaitDevice(SDL_AudioDevice *device)
 {
     // !!! FIXME: we might just need to sleep roughly as long as playback buffers take to process, based on sample rate, etc.
     while (!SDL_AtomicGet(&device->shutdown) && (sceAudioOutGetRestSample(device->hidden->port) >= device->buffer_size)) {
         SDL_Delay(1);
     }
-    return 0;
+    return true;
 }
 
 static Uint8 *VITAAUD_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    Uint8 *retval = device->hidden->mixbufs[device->hidden->next_buffer];
+    Uint8 *result = device->hidden->mixbufs[device->hidden->next_buffer];
     device->hidden->next_buffer = (device->hidden->next_buffer + 1) % NUM_BUFFERS;
-    return retval;
+    return result;
 }
 
 static void VITAAUD_CloseDevice(SDL_AudioDevice *device)
@@ -171,7 +171,7 @@ static void VITAAUD_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
-static int VITAAUD_WaitRecordingDevice(SDL_AudioDevice *device)
+static bool VITAAUD_WaitRecordingDevice(SDL_AudioDevice *device)
 {
     // there's only a blocking call to obtain more data, so we'll just sleep as
     //  long as a buffer would run.
@@ -179,7 +179,7 @@ static int VITAAUD_WaitRecordingDevice(SDL_AudioDevice *device)
     while (!SDL_AtomicGet(&device->shutdown) && (SDL_GetTicks() < endticks)) {
         SDL_Delay(1);
     }
-    return 0;
+    return true;
 }
 
 static int VITAAUD_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
@@ -188,7 +188,8 @@ static int VITAAUD_RecordDevice(SDL_AudioDevice *device, void *buffer, int bufle
     SDL_assert(buflen == device->buffer_size);
     ret = sceAudioInInput(device->hidden->port, buffer);
     if (ret < 0) {
-        return SDL_SetError("Failed to record from device: %x", ret);
+        SDL_SetError("Failed to record from device: %x", ret);
+        return -1;
     }
     return device->buffer_size;
 }

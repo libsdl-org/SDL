@@ -85,7 +85,7 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
 
     hr = XGameRuntimeInitialize();
 
-    if (SUCCEEDED(hr) && SDL_GetGDKTaskQueue(&taskQueue) == 0) {
+    if (SUCCEEDED(hr) && SDL_GetGDKTaskQueue(&taskQueue)) {
         Uint32 titleid = 0;
         char scidBuffer[64];
         XblInitArgs xblArgs;
@@ -106,7 +106,7 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
 
         SDL_SetMainReady();
 
-        if (GDK_RegisterChangeNotifications() != 0) {
+        if (!GDK_RegisterChangeNotifications()) {
             return -1;
         }
 

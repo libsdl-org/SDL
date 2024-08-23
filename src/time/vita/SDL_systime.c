@@ -71,7 +71,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
     sceAppUtilShutdown();
 }
 
-int SDL_GetCurrentTime(SDL_Time *ticks)
+SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     SceRtcTick sceTicks;
 
@@ -92,13 +92,13 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
         sceTicks.tick = SDL_clamp(sceTicks.tick, scetime_min, scetime_max);
         *ticks = (SDL_Time)(sceTicks.tick - epoch_offset) * div;
 
-        return 0;
+        return true;
     }
 
     return SDL_SetError("Failed to retrieve system time (%i)", ret);
 }
 
-int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
+SDL_bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
 {
     SceDateTime t;
     SceRtcTick sceTicks, sceLocalTicks;
@@ -132,7 +132,7 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
 
             SDL_CivilToDays(dt->year, dt->month, dt->day, &dt->day_of_week, NULL);
 
-            return 0;
+            return true;
         }
     }
 

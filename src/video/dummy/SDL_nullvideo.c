@@ -52,13 +52,13 @@
 #define DUMMYVID_DRIVER_EVDEV_NAME "evdev"
 
 // Initialization/Query functions
-static int DUMMY_VideoInit(SDL_VideoDevice *_this);
+static bool DUMMY_VideoInit(SDL_VideoDevice *_this);
 static void DUMMY_VideoQuit(SDL_VideoDevice *_this);
 
-static int DUMMY_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+static bool DUMMY_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, window->floating.x, window->floating.y);
-    return 0;
+    return true;
 }
 
 static void DUMMY_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
@@ -149,7 +149,7 @@ VideoBootStrap DUMMY_evdev_bootstrap = {
 
 #endif // SDL_INPUT_LINUXEV
 
-int DUMMY_VideoInit(SDL_VideoDevice *_this)
+bool DUMMY_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
@@ -159,7 +159,7 @@ int DUMMY_VideoInit(SDL_VideoDevice *_this)
     mode.w = 1024;
     mode.h = 768;
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
-        return -1;
+        return false;
     }
 
 #ifdef SDL_INPUT_LINUXEV
@@ -167,7 +167,7 @@ int DUMMY_VideoInit(SDL_VideoDevice *_this)
 #endif
 
     // We're done!
-    return 0;
+    return true;
 }
 
 void DUMMY_VideoQuit(SDL_VideoDevice *_this)

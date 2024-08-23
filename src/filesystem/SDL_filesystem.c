@@ -25,7 +25,7 @@
 #include "SDL_sysfilesystem.h"
 #include "../stdlib/SDL_sysstdlib.h"
 
-int SDL_RemovePath(const char *path)
+SDL_bool SDL_RemovePath(const char *path)
 {
     if (!path) {
         return SDL_InvalidParamError("path");
@@ -33,7 +33,7 @@ int SDL_RemovePath(const char *path)
     return SDL_SYS_RemovePath(path);
 }
 
-int SDL_RenamePath(const char *oldpath, const char *newpath)
+SDL_bool SDL_RenamePath(const char *oldpath, const char *newpath)
 {
     if (!oldpath) {
         return SDL_InvalidParamError("oldpath");
@@ -43,7 +43,7 @@ int SDL_RenamePath(const char *oldpath, const char *newpath)
     return SDL_SYS_RenamePath(oldpath, newpath);
 }
 
-int SDL_CopyFile(const char *oldpath, const char *newpath)
+SDL_bool SDL_CopyFile(const char *oldpath, const char *newpath)
 {
     if (!oldpath) {
         return SDL_InvalidParamError("oldpath");
@@ -53,7 +53,7 @@ int SDL_CopyFile(const char *oldpath, const char *newpath)
     return SDL_SYS_CopyFile(oldpath, newpath);
 }
 
-int SDL_CreateDirectory(const char *path)
+SDL_bool SDL_CreateDirectory(const char *path)
 {
     // TODO: Recursively create subdirectories
     if (!path) {
@@ -62,17 +62,20 @@ int SDL_CreateDirectory(const char *path)
     return SDL_SYS_CreateDirectory(path);
 }
 
-int SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata)
+SDL_bool SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata)
 {
     if (!path) {
         return SDL_InvalidParamError("path");
     } else if (!callback) {
         return SDL_InvalidParamError("callback");
     }
-    return (SDL_SYS_EnumerateDirectory(path, path, callback, userdata) < 0) ? -1 : 0;
+    if (SDL_SYS_EnumerateDirectory(path, path, callback, userdata) < 0) {
+        return false;
+    }
+    return true;
 }
 
-int SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
+SDL_bool SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
     SDL_PathInfo dummy;
 
@@ -189,13 +192,13 @@ static char *CaseFoldUtf8String(const char *fname)
 {
     SDL_assert(fname != NULL);
     const size_t allocation = (SDL_strlen(fname) + 1) * 3 * 4;
-    char *retval = (char *) SDL_malloc(allocation);  // lazy: just allocating the max needed.
-    if (!retval) {
+    char *result = (char *) SDL_malloc(allocation);  // lazy: just allocating the max needed.
+    if (!result) {
         return NULL;
     }
 
     Uint32 codepoint;
-    char *ptr = retval;
+    char *ptr = result;
     size_t remaining = allocation;
     while ((codepoint = SDL_StepUTF8(&fname, NULL)) != 0) {
         Uint32 folded[3];
@@ -218,13 +221,13 @@ static char *CaseFoldUtf8String(const char *fname)
 
     if (remaining > 0) {
         SDL_assert(allocation > remaining);
-        ptr = SDL_realloc(retval, allocation - remaining);  // shrink it down.
-        if (ptr) {  // shouldn't fail, but if it does, `retval` is still valid.
-            retval = ptr;
+        ptr = SDL_realloc(result, allocation - remaining);  // shrink it down.
+        if (ptr) {  // shouldn't fail, but if it does, `result` is still valid.
+            result = ptr;
         }
     }
 
-    return retval;
+    return result;
 }
 
 
@@ -282,20 +285,20 @@ static int SDLCALL GlobDirectoryCallback(void *userdata, const char *dirname, co
         data->num_entries++;
     }
 
-    int retval = 1;  // keep enumerating by default.
+    int result = 1;  // keep enumerating by default.
     if (matched_to_dir) {
         SDL_PathInfo info;
-        if ((data->getpathinfo(fullpath, &info, data->fsuserdata) == 0) && (info.type == SDL_PATHTYPE_DIRECTORY)) {
+        if (data->getpathinfo(fullpath, &info, data->fsuserdata) && (info.type == SDL_PATHTYPE_DIRECTORY)) {
             //SDL_Log("GlobDirectoryCallback: Descending into subdir '%s'", fname);
-            if (data->enumerator(fullpath, GlobDirectoryCallback, data, data->fsuserdata) < 0) {
-                retval = -1;
+            if (!data->enumerator(fullpath, GlobDirectoryCallback, data, data->fsuserdata)) {
+                result = -1;
             }
         }
     }
 
     SDL_free(fullpath);
 
-    return retval;
+    return result;
 }
 
 char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata)
@@ -367,24 +370,24 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
     data.fsuserdata = userdata;
     data.basedirlen = SDL_strlen(path) + 1;  // +1 for the '/' we'll be adding.
 
-    char **retval = NULL;
-    if (data.enumerator(path, GlobDirectoryCallback, &data, data.fsuserdata) == 0) {
+    char **result = NULL;
+    if (data.enumerator(path, GlobDirectoryCallback, &data, data.fsuserdata)) {
         const size_t streamlen = (size_t) SDL_GetIOSize(data.string_stream);
         const size_t buflen = streamlen + ((data.num_entries + 1) * sizeof (char *));  // +1 for NULL terminator at end of array.
-        retval = (char **) SDL_malloc(buflen);
-        if (retval) {
+        result = (char **) SDL_malloc(buflen);
+        if (result) {
             if (data.num_entries > 0) {
                 Sint64 iorc = SDL_SeekIO(data.string_stream, 0, SDL_IO_SEEK_SET);
                 SDL_assert(iorc == 0);  // this should never fail for a memory stream!
-                char *ptr = (char *) (retval + (data.num_entries + 1));
+                char *ptr = (char *) (result + (data.num_entries + 1));
                 iorc = SDL_ReadIO(data.string_stream, ptr, streamlen);
                 SDL_assert(iorc == (Sint64) streamlen);  // this should never fail for a memory stream!
                 for (int i = 0; i < data.num_entries; i++) {
-                    retval[i] = ptr;
+                    result[i] = ptr;
                     ptr += SDL_strlen(ptr) + 1;
                 }
             }
-            retval[data.num_entries] = NULL;  // NULL terminate the list.
+            result[data.num_entries] = NULL;  // NULL terminate the list.
             *count = data.num_entries;
         }
     }
@@ -393,15 +396,15 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
     SDL_free(folded);
     SDL_free(pathcpy);
 
-    return retval;
+    return result;
 }
 
-static int GlobDirectoryGetPathInfo(const char *path, SDL_PathInfo *info, void *userdata)
+static SDL_bool GlobDirectoryGetPathInfo(const char *path, SDL_PathInfo *info, void *userdata)
 {
     return SDL_GetPathInfo(path, info);
 }
 
-static int GlobDirectoryEnumerator(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata)
+static SDL_bool GlobDirectoryEnumerator(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata)
 {
     return SDL_EnumerateDirectory(path, cb, cbuserdata);
 }

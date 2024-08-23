@@ -129,7 +129,7 @@ char *SDL_SYS_GetBasePath(void)
 {
     _kernel_swi_regs regs;
     _kernel_oserror *error;
-    char *canon, *ptr, *retval;
+    char *canon, *ptr, *result;
 
     error = _kernel_swi(OS_GetEnv, &regs, &regs);
     if (error) {
@@ -147,14 +147,14 @@ char *SDL_SYS_GetBasePath(void)
         *ptr = '\0';
     }
 
-    retval = SDL_unixify_std(canon, NULL, 0, __RISCOSIFY_FILETYPE_NOTSPECIFIED);
+    result = SDL_unixify_std(canon, NULL, 0, __RISCOSIFY_FILETYPE_NOTSPECIFIED);
     SDL_free(canon);
-    return retval;
+    return result;
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
-    char *canon, *dir, *retval;
+    char *canon, *dir, *result;
     size_t len;
     _kernel_oserror *error;
 
@@ -193,9 +193,9 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
         return NULL;
     }
 
-    retval = SDL_unixify_std(dir, NULL, 0, __RISCOSIFY_FILETYPE_NOTSPECIFIED);
+    result = SDL_unixify_std(dir, NULL, 0, __RISCOSIFY_FILETYPE_NOTSPECIFIED);
     SDL_free(dir);
-    return retval;
+    return result;
 }
 
 // TODO

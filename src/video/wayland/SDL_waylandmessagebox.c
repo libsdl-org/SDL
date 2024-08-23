@@ -36,7 +36,7 @@
 
 #define MAX_BUTTONS 8 // Maximum number of buttons supported
 
-static int run_zenity(const char **args, int fd_pipe[2])
+static bool run_zenity(const char **args, int fd_pipe[2])
 {
     int status;
     pid_t pid1;
@@ -70,11 +70,11 @@ static int run_zenity(const char **args, int fd_pipe[2])
             return SDL_SetError("zenity reported error or failed to launch: %d", WEXITSTATUS(status));
         }
 
-        return 0; // success!
+        return true; // success!
     }
 }
 
-static int get_zenity_version(int *major, int *minor)
+static bool get_zenity_version(int *major, int *minor)
 {
     int fd_pipe[2]; // fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe
     const char *argv[] = { "zenity", "--version", NULL };
@@ -123,15 +123,15 @@ static int get_zenity_version(int *major, int *minor)
             *minor = 0;
         }
 
-        return 0; // success
+        return true; // success
     }
 
     close(fd_pipe[0]);
     close(fd_pipe[1]);
-    return -1; // run_zenity should've called SDL_SetError()
+    return false; // run_zenity should've called SDL_SetError()
 }
 
-int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     int fd_pipe[2]; // fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe
     int zenity_major = 0, zenity_minor = 0, output_len = 0;
@@ -153,8 +153,8 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
     }
 
     // get zenity version so we know which arg to use
-    if (get_zenity_version(&zenity_major, &zenity_minor) != 0) {
-        return -1; // get_zenity_version() calls SDL_SetError(), so message is already set
+    if (!get_zenity_version(&zenity_major, &zenity_minor)) {
+        return false; // get_zenity_version() calls SDL_SetError(), so message is already set
     }
 
     if (pipe(fd_pipe) != 0) { // create a pipe
@@ -208,7 +208,7 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
     }
     argv[argc] = NULL;
 
-    if (run_zenity(argv, fd_pipe) == 0) {
+    if (run_zenity(argv, fd_pipe)) {
         FILE *outputfp = NULL;
         char *output = NULL;
         char *tmp = NULL;
@@ -217,14 +217,14 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
         if (!buttonID) {
             // if we don't need buttonID, we can return immediately
             close(fd_pipe[0]);
-            return 0; // success
+            return true; // success
         }
         *buttonID = -1;
 
         output = SDL_malloc(output_len + 1);
         if (!output) {
             close(fd_pipe[0]);
-            return -1;
+            return false;
         }
         output[0] = '\0';
 
@@ -239,7 +239,7 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
 
         if ((!tmp) || (*tmp == '\0') || (*tmp == '\n')) {
             SDL_free(output);
-            return 0; // User simply closed the dialog
+            return true; // User simply closed the dialog
         }
 
         // It likes to add a newline...
@@ -259,12 +259,12 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
         }
 
         SDL_free(output);
-        return 0; // success!
+        return true; // success!
     }
 
     close(fd_pipe[0]);
     close(fd_pipe[1]);
-    return -1; // run_zenity() calls SDL_SetError(), so message is already set
+    return false; // run_zenity() calls SDL_SetError(), so message is already set
 }
 
 #endif // SDL_VIDEO_DRIVER_WAYLAND

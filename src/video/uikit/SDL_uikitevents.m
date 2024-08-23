@@ -309,11 +309,11 @@ static void UpdatePointerLock(void)
     }
 }
 
-static int SetGCMouseRelativeMode(bool enabled)
+static bool SetGCMouseRelativeMode(bool enabled)
 {
     mouse_relative_mode = enabled;
     UpdatePointerLock();
-    return 0;
+    return true;
 }
 
 static void OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button, BOOL pressed)

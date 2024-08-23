@@ -175,7 +175,7 @@ static recDevice *FreeDevice(recDevice *removeDevice)
 static bool GetHIDElementState(recDevice *pDevice, recElement *pElement, SInt32 *pValue)
 {
     SInt32 value = 0;
-    int returnValue = false;
+    bool result = false;
 
     if (pDevice && pDevice->deviceRef && pElement) {
         IOHIDValueRef valueRef;
@@ -191,26 +191,26 @@ static bool GetHIDElementState(recDevice *pDevice, recElement *pElement, SInt32 
             }
             *pValue = value;
 
-            returnValue = true;
+            result = true;
         }
     }
-    return returnValue;
+    return result;
 }
 
 static bool GetHIDScaledCalibratedState(recDevice *pDevice, recElement *pElement, SInt32 min, SInt32 max, SInt32 *pValue)
 {
     const float deviceScale = max - min;
     const float readScale = pElement->maxReport - pElement->minReport;
-    int returnValue = false;
+    bool result = false;
     if (GetHIDElementState(pDevice, pElement, pValue)) {
         if (readScale == 0) {
-            returnValue = true; // no scaling at all
+            result = true; // no scaling at all
         } else {
             *pValue = (Sint32)(((*pValue - pElement->minReport) * deviceScale / readScale) + min);
-            returnValue = true;
+            result = true;
         }
     }
-    return returnValue;
+    return result;
 }
 
 static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
@@ -609,14 +609,14 @@ static bool ConfigHIDManager(CFArrayRef matchingArray)
 
 static CFDictionaryRef CreateHIDDeviceMatchDictionary(const UInt32 page, const UInt32 usage, int *okay)
 {
-    CFDictionaryRef retval = NULL;
+    CFDictionaryRef result = NULL;
     CFNumberRef pageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page);
     CFNumberRef usageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &usage);
     const void *keys[2] = { (void *)CFSTR(kIOHIDDeviceUsagePageKey), (void *)CFSTR(kIOHIDDeviceUsageKey) };
     const void *vals[2] = { (void *)pageNumRef, (void *)usageNumRef };
 
     if (pageNumRef && usageNumRef) {
-        retval = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        result = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     }
 
     if (pageNumRef) {
@@ -626,16 +626,16 @@ static CFDictionaryRef CreateHIDDeviceMatchDictionary(const UInt32 page, const U
         CFRelease(usageNumRef);
     }
 
-    if (!retval) {
+    if (!result) {
         *okay = 0;
     }
 
-    return retval;
+    return result;
 }
 
 static bool CreateHIDManager(void)
 {
-    bool retval = false;
+    bool result = false;
     int okay = 1;
     const void *vals[] = {
         (void *)CreateHIDDeviceMatchDictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_Joystick, &okay),
@@ -655,25 +655,25 @@ static bool CreateHIDManager(void)
     if (array) {
         hidman = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
         if (hidman != NULL) {
-            retval = ConfigHIDManager(array);
+            result = ConfigHIDManager(array);
         }
         CFRelease(array);
     }
 
-    return retval;
+    return result;
 }
 
-static int DARWIN_JoystickInit(void)
+static bool DARWIN_JoystickInit(void)
 {
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_IOKIT, true)) {
-        return 0;
+        return true;
     }
 
     if (!CreateHIDManager()) {
         return SDL_SetError("Joystick: Couldn't initialize HID Manager");
     }
 
-    return 0;
+    return true;
 }
 
 static int DARWIN_JoystickGetCount(void)
@@ -761,7 +761,7 @@ static SDL_JoystickID DARWIN_JoystickGetDeviceInstanceID(int device_index)
     return device ? device->instance_id : 0;
 }
 
-static int DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
 
@@ -777,7 +777,7 @@ static int DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
     }
 
-    return 0;
+    return true;
 }
 
 /*
@@ -835,7 +835,7 @@ static const char *FFStrError(unsigned int err)
     }
 }
 
-static int DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
+static bool DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
 {
     HRESULT result;
 
@@ -860,7 +860,7 @@ static int DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
     // Create the effect
     device->ffeffect = CreateRumbleEffectData(magnitude);
     if (!device->ffeffect) {
-        return -1;
+        return false;
     }
 
     result = FFDeviceCreateEffect(device->ffdevice, kFFEffectType_Sine_ID,
@@ -868,10 +868,10 @@ static int DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
     if (result != FF_OK) {
         return SDL_SetError("Haptic: Unable to create effect: %s", FFStrError(result));
     }
-    return 0;
+    return true;
 }
 
-static int DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     HRESULT result;
     recDevice *device = joystick->hwdata;
@@ -897,8 +897,8 @@ static int DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_ru
             return SDL_SetError("Unable to update rumble effect: %s", FFStrError(result));
         }
     } else {
-        if (DARWIN_JoystickInitRumble(device, magnitude) < 0) {
-            return -1;
+        if (!DARWIN_JoystickInitRumble(device, magnitude)) {
+            return false;
         }
         device->ff_initialized = true;
     }
@@ -907,25 +907,25 @@ static int DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_ru
     if (result != FF_OK) {
         return SDL_SetError("Unable to run the rumble effect: %s", FFStrError(result));
     }
-    return 0;
+    return true;
 }
 
-static int DARWIN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool DARWIN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int DARWIN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool DARWIN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int DARWIN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool DARWIN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int DARWIN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
+static bool DARWIN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }

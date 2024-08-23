@@ -78,7 +78,7 @@ DrawComposite(DrawState *s)
         surface = SDL_RenderReadPixels(s->renderer, NULL);
         if (surface) {
             Uint8 r, g, b, a;
-            if (SDL_ReadSurfacePixel(surface, 0, 0, &r, &g, &b, &a) == 0) {
+            if (SDL_ReadSurfacePixel(surface, 0, 0, &r, &g, &b, &a)) {
                 SDL_Log("Blended pixel: 0x%.2x%.2x%.2x%.2x\n", r, g, b, a);
             }
             SDL_DestroySurface(surface);

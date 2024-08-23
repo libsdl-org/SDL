@@ -44,7 +44,7 @@ char *SDL_SYS_GetBasePath(void)
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     const char *envr = "ux0:/data/";
-    char *retval = NULL;
+    char *result = NULL;
     char *ptr = NULL;
     size_t len = 0;
 
@@ -59,27 +59,27 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     len = SDL_strlen(envr);
 
     len += SDL_strlen(org) + SDL_strlen(app) + 3;
-    retval = (char *)SDL_malloc(len);
-    if (!retval) {
+    result = (char *)SDL_malloc(len);
+    if (!result) {
         return NULL;
     }
 
     if (*org) {
-        SDL_snprintf(retval, len, "%s%s/%s/", envr, org, app);
+        SDL_snprintf(result, len, "%s%s/%s/", envr, org, app);
     } else {
-        SDL_snprintf(retval, len, "%s%s/", envr, app);
+        SDL_snprintf(result, len, "%s%s/", envr, app);
     }
 
-    for (ptr = retval + 1; *ptr; ptr++) {
+    for (ptr = result + 1; *ptr; ptr++) {
         if (*ptr == '/') {
             *ptr = '\0';
-            sceIoMkdir(retval, 0777);
+            sceIoMkdir(result, 0777);
             *ptr = '/';
         }
     }
-    sceIoMkdir(retval, 0777);
+    sceIoMkdir(result, 0777);
 
-    return retval;
+    return result;
 }
 
 // TODO

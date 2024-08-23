@@ -134,7 +134,7 @@ static SDL_TemporaryMemoryState *SDL_GetTemporaryMemoryState(bool create)
             return NULL;
         }
 
-        if (SDL_SetTLS(&SDL_temporary_memory, state, SDL_CleanupTemporaryMemory) < 0) {
+        if (!SDL_SetTLS(&SDL_temporary_memory, state, SDL_CleanupTemporaryMemory)) {
             SDL_free(state);
             return NULL;
         }
@@ -885,7 +885,7 @@ void SDL_StopEventLoop(void)
 }
 
 // This function (and associated calls) may be called more than once
-int SDL_StartEventLoop(void)
+bool SDL_StartEventLoop(void)
 {
     /* We'll leave the event queue alone, since we might have gotten
        some important events at launch (like SDL_EVENT_DROP_FILE)
@@ -898,7 +898,7 @@ int SDL_StartEventLoop(void)
     if (!SDL_EventQ.lock) {
         SDL_EventQ.lock = SDL_CreateMutex();
         if (SDL_EventQ.lock == NULL) {
-            return -1;
+            return false;
         }
     }
     SDL_LockMutex(SDL_EventQ.lock);
@@ -907,14 +907,14 @@ int SDL_StartEventLoop(void)
         SDL_event_watchers_lock = SDL_CreateMutex();
         if (SDL_event_watchers_lock == NULL) {
             SDL_UnlockMutex(SDL_EventQ.lock);
-            return -1;
+            return false;
         }
     }
 #endif // !SDL_THREADS_DISABLED
 
     SDL_EventQ.active = true;
     SDL_UnlockMutex(SDL_EventQ.lock);
-    return 0;
+    return true;
 }
 
 // Add an event to the event queue -- called with the queue locked
@@ -1004,14 +1004,14 @@ static void SDL_CutEvent(SDL_EventEntry *entry)
     SDL_AtomicAdd(&SDL_EventQ.count, -1);
 }
 
-static int SDL_SendWakeupEvent(void)
+static void SDL_SendWakeupEvent(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
     Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_WAKE);
 #else
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this == NULL || !_this->SendWakeupEvent) {
-        return 0;
+        return;
     }
 
     SDL_LockMutex(_this->wakeup_lock);
@@ -1025,8 +1025,6 @@ static int SDL_SendWakeupEvent(void)
     }
     SDL_UnlockMutex(_this->wakeup_lock);
 #endif
-
-    return 0;
 }
 
 // Lock the event queue, take a peep at it, and unlock it
@@ -1502,21 +1500,22 @@ static bool SDL_CallEventWatchers(SDL_Event *event)
     return true;
 }
 
-int SDL_PushEvent(SDL_Event *event)
+SDL_bool SDL_PushEvent(SDL_Event *event)
 {
     if (!event->common.timestamp) {
         event->common.timestamp = SDL_GetTicksNS();
     }
 
     if (!SDL_CallEventWatchers(event)) {
-        return 0;
+        SDL_ClearError();
+        return false;
     }
 
     if (SDL_PeepEvents(event, 1, SDL_ADDEVENT, 0, 0) <= 0) {
-        return -1;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 void SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
@@ -1563,9 +1562,9 @@ SDL_bool SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata)
     return event_ok.callback ? true : false;
 }
 
-int SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
+SDL_bool SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
 {
-    int result = 0;
+    bool result = true;
 
     SDL_LockMutex(SDL_event_watchers_lock);
     {
@@ -1582,7 +1581,7 @@ int SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
             watcher->removed = false;
             ++SDL_event_watchers_count;
         } else {
-            result = -1;
+            result = false;
         }
     }
     SDL_UnlockMutex(SDL_event_watchers_lock);
@@ -1715,11 +1714,8 @@ Uint32 SDL_RegisterEvents(int numevents)
     return event_base;
 }
 
-int SDL_SendAppEvent(SDL_EventType eventType)
+void SDL_SendAppEvent(SDL_EventType eventType)
 {
-    int posted;
-
-    posted = 0;
     if (SDL_EventEnabled(eventType)) {
         SDL_Event event;
         event.type = eventType;
@@ -1736,32 +1732,31 @@ int SDL_SendAppEvent(SDL_EventType eventType)
             if (SDL_EventLoggingVerbosity > 0) {
                 SDL_LogEvent(&event);
             }
-            posted = SDL_CallEventWatchers(&event);
+            SDL_CallEventWatchers(&event);
             break;
         default:
-            posted = (SDL_PushEvent(&event) > 0);
+            SDL_PushEvent(&event);
             break;
         }
     }
-    return posted;
 }
 
-int SDL_SendKeymapChangedEvent(void)
+void SDL_SendKeymapChangedEvent(void)
 {
-    return SDL_SendAppEvent(SDL_EVENT_KEYMAP_CHANGED);
+    SDL_SendAppEvent(SDL_EVENT_KEYMAP_CHANGED);
 }
 
-int SDL_SendLocaleChangedEvent(void)
+void SDL_SendLocaleChangedEvent(void)
 {
-    return SDL_SendAppEvent(SDL_EVENT_LOCALE_CHANGED);
+    SDL_SendAppEvent(SDL_EVENT_LOCALE_CHANGED);
 }
 
-int SDL_SendSystemThemeChangedEvent(void)
+void SDL_SendSystemThemeChangedEvent(void)
 {
-    return SDL_SendAppEvent(SDL_EVENT_SYSTEM_THEME_CHANGED);
+    SDL_SendAppEvent(SDL_EVENT_SYSTEM_THEME_CHANGED);
 }
 
-int SDL_InitEvents(void)
+bool SDL_InitEvents(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
     Android_InitEvents();
@@ -1774,14 +1769,14 @@ int SDL_InitEvents(void)
 #endif
     SDL_AddHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
     SDL_AddHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
-    if (SDL_StartEventLoop() < 0) {
+    if (!SDL_StartEventLoop()) {
         SDL_DelHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
-        return -1;
+        return false;
     }
 
     SDL_InitQuit();
 
-    return 0;
+    return true;
 }
 
 void SDL_QuitEvents(void)

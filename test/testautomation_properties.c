@@ -45,7 +45,7 @@ static int properties_testBasic(void *arg)
         SDL_snprintf(expected_value, SDL_arraysize(expected_value), "%c", 'a' + i);
         result = SDL_SetPointerProperty(props, key, expected_value);
         SDLTest_AssertPass("Call to SDL_SetPointerProperty()");
-        SDLTest_AssertCheck(result == 0,
+        SDLTest_AssertCheck(result == SDL_TRUE,
             "Verify property value was set, got: %d", result);
         value = SDL_GetPointerProperty(props, key, NULL);
         SDLTest_AssertPass("Call to SDL_GetPointerProperty()");
@@ -62,7 +62,7 @@ static int properties_testBasic(void *arg)
         SDL_snprintf(key, SDL_arraysize(key), "%c", 'a' + i);
         result = SDL_SetPointerProperty(props, key, NULL);
         SDLTest_AssertPass("Call to SDL_SetPointerProperty(NULL)");
-        SDLTest_AssertCheck(result == 0,
+        SDLTest_AssertCheck(result == SDL_TRUE,
             "Verify property value was set, got: %d", result);
         value = SDL_GetPointerProperty(props, key, NULL);
         SDLTest_AssertPass("Call to SDL_GetPointerProperty()");
@@ -238,18 +238,18 @@ static int properties_testCopy(void *arg)
 
     SDLTest_AssertPass("Call to SDL_CopyProperties(a, 0)");
     result = SDL_CopyProperties(a, 0);
-    SDLTest_AssertCheck(result == -1,
-                        "SDL_CopyProperties() result, got %d, expected -1", result);
+    SDLTest_AssertCheck(result == SDL_FALSE,
+                        "SDL_CopyProperties() result, got %d, expected SDL_FALSE", result);
 
     SDLTest_AssertPass("Call to SDL_CopyProperties(0, b)");
     result = SDL_CopyProperties(0, b);
-    SDLTest_AssertCheck(result == -1,
-                        "SDL_CopyProperties() result, got %d, expected -1", result);
+    SDLTest_AssertCheck(result == SDL_FALSE,
+                        "SDL_CopyProperties() result, got %d, expected SDL_FALSE", result);
 
     SDLTest_AssertPass("Call to SDL_CopyProperties(a, b)");
     result = SDL_CopyProperties(a, b);
-    SDLTest_AssertCheck(result == 0,
-        "SDL_CopyProperties() result, got %d, expected 0", result);
+    SDLTest_AssertCheck(result == SDL_TRUE,
+        "SDL_CopyProperties() result, got %d, expected SDL_TRUE", result);
 
     SDL_DestroyProperties(a);
 

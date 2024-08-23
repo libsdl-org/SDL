@@ -146,42 +146,42 @@ typedef struct KMSDRM_FBInfo
 } KMSDRM_FBInfo;
 
 // Helper functions
-int KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window);
-KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo);
-KMSDRM_FBInfo *KMSDRM_FBFromBO2(SDL_VideoDevice *_this, struct gbm_bo *bo, int w, int h);
-bool KMSDRM_WaitPageflip(SDL_VideoDevice *_this, SDL_WindowData *windata);
+extern bool KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window);
+extern KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo);
+extern KMSDRM_FBInfo *KMSDRM_FBFromBO2(SDL_VideoDevice *_this, struct gbm_bo *bo, int w, int h);
+extern bool KMSDRM_WaitPageflip(SDL_VideoDevice *_this, SDL_WindowData *windata);
 
 /****************************************************************************/
 // SDL_VideoDevice functions declaration
 /****************************************************************************/
 
 // Display and window functions
-int KMSDRM_VideoInit(SDL_VideoDevice *_this);
-void KMSDRM_VideoQuit(SDL_VideoDevice *_this);
-int KMSDRM_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-int KMSDRM_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
-void KMSDRM_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
-int KMSDRM_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
-void KMSDRM_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
-int KMSDRM_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_FullscreenOp fullscreen);
-void KMSDRM_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void KMSDRM_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void KMSDRM_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void KMSDRM_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void KMSDRM_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void KMSDRM_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void KMSDRM_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool KMSDRM_VideoInit(SDL_VideoDevice *_this);
+extern void KMSDRM_VideoQuit(SDL_VideoDevice *_this);
+extern bool KMSDRM_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern bool KMSDRM_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+extern bool KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
+extern void KMSDRM_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool KMSDRM_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
+extern void KMSDRM_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
+extern SDL_FullscreenResult KMSDRM_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_FullscreenOp fullscreen);
+extern void KMSDRM_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void KMSDRM_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void KMSDRM_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void KMSDRM_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void KMSDRM_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void KMSDRM_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void KMSDRM_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 // OpenGL/OpenGL ES functions
-int KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-SDL_FunctionPointer KMSDRM_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
-void KMSDRM_GLES_UnloadLibrary(SDL_VideoDevice *_this);
-SDL_GLContext KMSDRM_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-int KMSDRM_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
-int KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-int KMSDRM_GLES_GetSwapInterval(SDL_VideoDevice *_this);
-int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-int KMSDRM_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern bool KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern SDL_FunctionPointer KMSDRM_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
+extern void KMSDRM_GLES_UnloadLibrary(SDL_VideoDevice *_this);
+extern SDL_GLContext KMSDRM_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool KMSDRM_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern bool KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
+extern bool KMSDRM_GLES_GetSwapInterval(SDL_VideoDevice *_this);
+extern bool KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool KMSDRM_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);
 
 #endif // SDL_kmsdrmvideo_h

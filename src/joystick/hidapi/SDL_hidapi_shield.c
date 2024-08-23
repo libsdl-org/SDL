@@ -136,7 +136,7 @@ static void HIDAPI_DriverShield_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 {
 }
 
-static int HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void *data, int size)
+static bool HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void *data, int size)
 {
     SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
     ShieldCommandReport_t cmd_pkt;
@@ -145,8 +145,8 @@ static int HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd,
         return SDL_SetError("Command data exceeds HID report size");
     }
 
-    if (SDL_HIDAPI_LockRumble() < 0) {
-        return -1;
+    if (!SDL_HIDAPI_LockRumble()) {
+        return false;
     }
 
     cmd_pkt.report_id = k_ShieldReportIdCommandRequest;
@@ -165,7 +165,7 @@ static int HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd,
         return SDL_SetError("Couldn't send command packet");
     }
 
-    return 0;
+    return true;
 }
 
 static bool HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -202,13 +202,13 @@ static bool HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     return true;
 }
 
-static int HIDAPI_DriverShield_SendNextRumble(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverShield_SendNextRumble(SDL_HIDAPI_Device *device)
 {
     SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
     Uint8 rumble_data[3];
 
     if (!ctx->rumble_update_pending) {
-        return 0;
+        return true;
     }
 
     rumble_data[0] = 0x01; // enable
@@ -221,7 +221,7 @@ static int HIDAPI_DriverShield_SendNextRumble(SDL_HIDAPI_Device *device)
     return HIDAPI_DriverShield_SendCommand(device, CMD_RUMBLE, rumble_data, sizeof(rumble_data));
 }
 
-static int HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     if (device->product_id == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
         Uint8 rumble_packet[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
@@ -232,7 +232,7 @@ static int HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
             return SDL_SetError("Couldn't send rumble packet");
         }
-        return 0;
+        return true;
 
     } else {
         SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
@@ -244,14 +244,14 @@ static int HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
         if (ctx->rumble_report_pending) {
             // We will service this after the hardware acknowledges the previous request
-            return 0;
+            return true;
         }
 
         return HIDAPI_DriverShield_SendNextRumble(device);
     }
 }
 
-static int HIDAPI_DriverShield_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_DriverShield_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
@@ -261,12 +261,12 @@ static Uint32 HIDAPI_DriverShield_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     return SDL_JOYSTICK_CAP_RUMBLE;
 }
 
-static int HIDAPI_DriverShield_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_DriverShield_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
+static bool HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
     const Uint8 *data_bytes = (const Uint8 *)data;
 
@@ -281,7 +281,7 @@ static int HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL
     }
 }
 
-static int HIDAPI_DriverShield_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
+static bool HIDAPI_DriverShield_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -538,7 +538,7 @@ static bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
         // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
-    return size >= 0;
+    return (size >= 0);
 }
 
 static void HIDAPI_DriverShield_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)

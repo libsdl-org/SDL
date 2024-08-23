@@ -29,21 +29,21 @@
 #include "SDL_pixels_c.h"
 
 // The general purpose software blit routine
-static int SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
+static bool SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
                                 SDL_Surface *dst, const SDL_Rect *dstrect)
 {
-    int okay;
+    bool okay;
     int src_locked;
     int dst_locked;
 
     // Everything is okay at the beginning...
-    okay = 1;
+    okay = true;
 
     // Lock the destination if it's in hardware
     dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
-            okay = 0;
+        if (!SDL_LockSurface(dst)) {
+            okay = false;
         } else {
             dst_locked = 1;
         }
@@ -51,8 +51,8 @@ static int SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
     // Lock the source if it's in hardware
     src_locked = 0;
     if (SDL_MUSTLOCK(src)) {
-        if (SDL_LockSurface(src) < 0) {
-            okay = 0;
+        if (!SDL_LockSurface(src)) {
+            okay = false;
         } else {
             src_locked = 1;
         }
@@ -94,7 +94,7 @@ static int SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
         SDL_UnlockSurface(src);
     }
     // Blit is done!
-    return okay ? 0 : -1;
+    return okay;
 }
 
 #if SDL_HAVE_BLIT_AUTO
@@ -176,7 +176,7 @@ static SDL_BlitFunc SDL_ChooseBlitFunc(SDL_PixelFormat src_format, SDL_PixelForm
 #endif // SDL_HAVE_BLIT_AUTO
 
 // Figure out which of many blit routines to set up on a surface
-int SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
+bool SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
 {
     SDL_BlitFunc blit = NULL;
     SDL_BlitMap *map = &surface->internal->map;
@@ -207,8 +207,8 @@ int SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
 #if SDL_HAVE_RLE
     // See if we can do RLE acceleration
     if (map->info.flags & SDL_COPY_RLE_DESIRED) {
-        if (SDL_RLESurface(surface) == 0) {
-            return 0;
+        if (SDL_RLESurface(surface)) {
+            return true;
         }
     }
 #endif
@@ -286,5 +286,5 @@ int SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
         return SDL_SetError("Blit combination not supported");
     }
 
-    return 0;
+    return true;
 }

@@ -191,8 +191,8 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
     }
 
     /* Init SDL timer if not initialized before */
-    if (SDL_WasInit(SDL_INIT_TIMER) == 0) {
-        if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
+    if (!SDL_WasInit(SDL_INIT_TIMER)) {
+        if (!SDL_InitSubSystem(SDL_INIT_TIMER)) {
             SDLTest_LogError("Failed to init timer subsystem: %s", SDL_GetError());
             return 0;
         }

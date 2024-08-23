@@ -89,7 +89,7 @@ typedef struct
     SDL_BlitFunc func;
 } SDL_BlitFuncEntry;
 
-typedef int (SDLCALL *SDL_Blit) (struct SDL_Surface *src, const SDL_Rect *srcrect, struct SDL_Surface *dst, const SDL_Rect *dstrect);
+typedef bool (SDLCALL *SDL_Blit) (struct SDL_Surface *src, const SDL_Rect *srcrect, struct SDL_Surface *dst, const SDL_Rect *dstrect);
 
 // Blit mapping definition
 typedef struct SDL_BlitMap
@@ -106,7 +106,7 @@ typedef struct SDL_BlitMap
 } SDL_BlitMap;
 
 // Functions found in SDL_blit.c
-extern int SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst);
+extern bool SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst);
 
 /* Functions found in SDL_blit_*.c */
 extern SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface);

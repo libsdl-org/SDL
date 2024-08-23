@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
     threads = SDL_malloc(nb_threads * sizeof(SDL_Thread*));
 
     /* Load the SDL library */
-    if (SDL_Init(0) < 0) {
+    if (!SDL_Init(0)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         exit(1);
     }

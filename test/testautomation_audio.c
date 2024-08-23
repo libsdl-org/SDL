@@ -22,10 +22,10 @@
 static void audioSetUp(void *arg)
 {
     /* Start SDL audio subsystem */
-    int ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
+    SDL_bool ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
     SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO)");
-    SDLTest_AssertCheck(ret == 0, "Check result from SDL_InitSubSystem(SDL_INIT_AUDIO)");
-    if (ret != 0) {
+    SDLTest_AssertCheck(ret == SDL_TRUE, "Check result from SDL_InitSubSystem(SDL_INIT_AUDIO)");
+    if (!ret) {
         SDLTest_LogError("%s", SDL_GetError());
     }
 }
@@ -111,7 +111,7 @@ static int audio_initQuitAudio(void *arg)
         SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
         result = SDL_InitSubSystem(SDL_INIT_AUDIO);
         SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO) with driver='%s'", audioDriver);
-        SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0 got: %d", result);
+        SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value; expected: SDL_TRUE got: %d", result);
 
         /* Call Quit */
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -125,7 +125,7 @@ static int audio_initQuitAudio(void *arg)
     SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
     result = SDL_InitSubSystem(SDL_INIT_AUDIO);
     SDLTest_AssertPass("Call to SDL_AudioInit(NULL)");
-    SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0 got: %d", result);
+    SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value; expected: SDL_TRUE got: %d", result);
 
     /* Call Quit */
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -178,7 +178,7 @@ static int audio_initOpenCloseQuitAudio(void *arg)
             SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
             result = SDL_InitSubSystem(SDL_INIT_AUDIO);
             SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO) with driver='%s'", audioDriver);
-            SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0 got: %d", result);
+            SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value; expected: SDL_TRUE got: %d", result);
 
             /* Set spec */
             SDL_zero(desired);
@@ -269,7 +269,7 @@ static int audio_pauseUnpauseAudio(void *arg)
             SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
             result = SDL_InitSubSystem(SDL_INIT_AUDIO);
             SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO) with driver='%s'", audioDriver);
-            SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0 got: %d", result);
+            SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value; expected: SDL_TRUE got: %d", result);
 
             /* Set spec */
             SDL_zero(desired);
@@ -826,8 +826,8 @@ static int audio_convertAudio(void *arg)
                         SDLTest_AssertCheck(0 == real_dst_len, "Verify available (pre-put); expected: %i; got: %i", 0, real_dst_len);
 
                         /* Run the audio converter */
-                        if (SDL_PutAudioStreamData(stream, src_buf, src_len) < 0 ||
-                                SDL_FlushAudioStream(stream) < 0) {
+                        if (!SDL_PutAudioStreamData(stream, src_buf, src_len) ||
+                            !SDL_FlushAudioStream(stream)) {
                             return TEST_ABORTED;
                         }
 
@@ -894,8 +894,8 @@ static int put_audio_data_split(SDL_AudioStream* stream, const void* buf, int le
   int frame_size;
   int ret = SDL_GetAudioStreamFormat(stream, &spec, NULL);
 
-  if (ret != 0) {
-      return ret;
+  if (!ret) {
+      return -1;
   }
 
   frame_size = SDL_AUDIO_FRAMESIZE(spec);
@@ -905,8 +905,8 @@ static int put_audio_data_split(SDL_AudioStream* stream, const void* buf, int le
     n = SDL_min(n, len);
     ret = SDL_PutAudioStreamData(stream, buf, n);
 
-    if (ret != 0) {
-        return ret;
+    if (!ret) {
+        return -1;
     }
 
     buf = ((const Uint8*) buf) + n;
@@ -923,8 +923,8 @@ static int get_audio_data_split(SDL_AudioStream* stream, void* buf, int len) {
   int ret = SDL_GetAudioStreamFormat(stream, NULL, &spec);
   int total = 0;
 
-  if (ret != 0) {
-      return ret;
+  if (!ret) {
+      return -1;
   }
 
   frame_size = SDL_AUDIO_FRAMESIZE(spec);
@@ -936,7 +936,7 @@ static int get_audio_data_split(SDL_AudioStream* stream, void* buf, int len) {
     ret = SDL_GetAudioStreamData(stream, buf, n);
 
     if (ret <= 0) {
-        return total ? total : ret;
+        return total ? total : -1;
     }
 
     buf = ((Uint8*) buf) + ret;
@@ -955,8 +955,8 @@ static int convert_audio_chunks(SDL_AudioStream* stream, const void* src, int sr
     int total_in = 0, total_out = 0;
     int ret = SDL_GetAudioStreamFormat(stream, &src_spec, &dst_spec);
 
-    if (ret) {
-        return ret;
+    if (!ret) {
+        return -1;
     }
 
     src_frame_size = SDL_AUDIO_FRAMESIZE(src_spec);
@@ -981,8 +981,8 @@ static int convert_audio_chunks(SDL_AudioStream* stream, const void* src, int sr
             if (total_in == srclen) {
                 ret = SDL_FlushAudioStream(stream);
 
-                if (ret) {
-                    return total_out ? total_out : ret;
+                if (!ret) {
+                    return total_out ? total_out : -1;
                 }
             }
         }
@@ -1245,8 +1245,8 @@ static int audio_convertAccuracy(void *arg)
         tmp_data = NULL;
         tmp_len = 0;
         ret = SDL_ConvertAudioSamples(&src_spec, (const Uint8*) src_data, src_len, &tmp_spec, &tmp_data, &tmp_len);
-        SDLTest_AssertCheck(ret == 0, "Expected SDL_ConvertAudioSamples(F32->%s) to succeed", format_name);
-        if (ret != 0) {
+        SDLTest_AssertCheck(ret == SDL_TRUE, "Expected SDL_ConvertAudioSamples(F32->%s) to succeed", format_name);
+        if (!ret) {
             SDL_free(src_data);
             return TEST_ABORTED;
         }
@@ -1254,8 +1254,8 @@ static int audio_convertAccuracy(void *arg)
         dst_data = NULL;
         dst_len = 0;
         ret = SDL_ConvertAudioSamples(&tmp_spec, tmp_data, tmp_len, &src_spec, &dst_data, &dst_len);
-        SDLTest_AssertCheck(ret == 0, "Expected SDL_ConvertAudioSamples(%s->F32) to succeed", format_name);
-        if (ret != 0) {
+        SDLTest_AssertCheck(ret == SDL_TRUE, "Expected SDL_ConvertAudioSamples(%s->F32) to succeed", format_name);
+        if (!ret) {
             SDL_free(tmp_data);
             SDL_free(src_data);
             return TEST_ABORTED;
@@ -1297,7 +1297,7 @@ static int audio_formatChange(void *arg)
     SDL_AudioSpec spec1, spec2, spec3;
     int frames_1, frames_2, frames_3;
     int length_1, length_2, length_3;
-    int retval = 0;
+    int result = 0;
     int status = TEST_ABORTED;
     float* buffer_1 = NULL;
     float* buffer_2 = NULL;
@@ -1362,53 +1362,53 @@ static int audio_formatChange(void *arg)
         goto cleanup;
     }
 
-    retval = SDL_SetAudioStreamFormat(stream, &spec1, &spec3);
-    if (!SDLTest_AssertCheck(retval == 0, "Expected SDL_SetAudioStreamFormat(spec1, spec3) to succeed")) {
+    result = SDL_SetAudioStreamFormat(stream, &spec1, &spec3);
+    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_SetAudioStreamFormat(spec1, spec3) to succeed")) {
         goto cleanup;
     }
 
-    retval = SDL_GetAudioStreamAvailable(stream);
-    if (!SDLTest_AssertCheck(retval == 0, "Expected SDL_GetAudioStreamAvailable return 0")) {
+    result = SDL_GetAudioStreamAvailable(stream);
+    if (!SDLTest_AssertCheck(result == 0, "Expected SDL_GetAudioStreamAvailable return 0")) {
         goto cleanup;
     }
 
-    retval = SDL_PutAudioStreamData(stream, buffer_1, length_1);
-    if (!SDLTest_AssertCheck(retval == 0, "Expected SDL_PutAudioStreamData(buffer_1) to succeed")) {
+    result = SDL_PutAudioStreamData(stream, buffer_1, length_1);
+    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_PutAudioStreamData(buffer_1) to succeed")) {
         goto cleanup;
     }
 
-    retval = SDL_FlushAudioStream(stream);
-    if (!SDLTest_AssertCheck(retval == 0, "Expected SDL_FlushAudioStream to succeed")) {
+    result = SDL_FlushAudioStream(stream);
+    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_FlushAudioStream to succeed")) {
         goto cleanup;
     }
 
-    retval = SDL_SetAudioStreamFormat(stream, &spec2, &spec3);
-    if (!SDLTest_AssertCheck(retval == 0, "Expected SDL_SetAudioStreamFormat(spec2, spec3) to succeed")) {
+    result = SDL_SetAudioStreamFormat(stream, &spec2, &spec3);
+    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_SetAudioStreamFormat(spec2, spec3) to succeed")) {
         goto cleanup;
     }
 
-    retval = SDL_PutAudioStreamData(stream, buffer_2, length_2);
-    if (!SDLTest_AssertCheck(retval == 0, "Expected SDL_PutAudioStreamData(buffer_1) to succeed")) {
+    result = SDL_PutAudioStreamData(stream, buffer_2, length_2);
+    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_PutAudioStreamData(buffer_1) to succeed")) {
         goto cleanup;
     }
 
-    retval = SDL_FlushAudioStream(stream);
-    if (!SDLTest_AssertCheck(retval == 0, "Expected SDL_FlushAudioStream to succeed")) {
+    result = SDL_FlushAudioStream(stream);
+    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_FlushAudioStream to succeed")) {
         goto cleanup;
     }
 
-    retval = SDL_GetAudioStreamAvailable(stream);
-    if (!SDLTest_AssertCheck(retval == length_3, "Expected SDL_GetAudioStreamAvailable to return %i, got %i", length_3, retval)) {
+    result = SDL_GetAudioStreamAvailable(stream);
+    if (!SDLTest_AssertCheck(result == length_3, "Expected SDL_GetAudioStreamAvailable to return %i, got %i", length_3, result)) {
         goto cleanup;
     }
 
-    retval = SDL_GetAudioStreamData(stream, buffer_3, length_3);
-    if (!SDLTest_AssertCheck(retval == length_3, "Expected SDL_GetAudioStreamData to return %i, got %i", length_3, retval)) {
+    result = SDL_GetAudioStreamData(stream, buffer_3, length_3);
+    if (!SDLTest_AssertCheck(result == length_3, "Expected SDL_GetAudioStreamData to return %i, got %i", length_3, result)) {
         goto cleanup;
     }
 
-    retval = SDL_GetAudioStreamAvailable(stream);
-    if (!SDLTest_AssertCheck(retval == 0, "Expected SDL_GetAudioStreamAvailable to return 0")) {
+    result = SDL_GetAudioStreamAvailable(stream);
+    if (!SDLTest_AssertCheck(result == 0, "Expected SDL_GetAudioStreamAvailable to return 0")) {
         goto cleanup;
     }
 

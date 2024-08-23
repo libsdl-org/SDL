@@ -35,7 +35,7 @@
 
 #include "SDL_windowsvulkan.h"
 
-int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
@@ -56,7 +56,7 @@ int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
     if (!_this->vulkan_config.loader_handle) {
-        return -1;
+        return false;
     }
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
                 SDL_arraysize(_this->vulkan_config.loader_path));
@@ -94,12 +94,12 @@ int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_WIN32_SURFACE_EXTENSION_NAME "extension");
         goto fail;
     }
-    return 0;
+    return true;
 
 fail:
     SDL_UnloadObject(_this->vulkan_config.loader_handle);
     _this->vulkan_config.loader_handle = NULL;
-    return -1;
+    return false;
 }
 
 void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
@@ -116,11 +116,13 @@ char const* const* WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
     static const char *const extensionsForWin32[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME
     };
-    if(count) { *count = SDL_arraysize(extensionsForWin32); }
+    if (count) {
+        *count = SDL_arraysize(extensionsForWin32);
+    }
     return extensionsForWin32;
 }
 
-int WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                              SDL_Window *window,
                              VkInstance instance,
                              const struct VkAllocationCallbacks *allocator,
@@ -153,7 +155,7 @@ int WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     if (result != VK_SUCCESS) {
         return SDL_SetError("vkCreateWin32SurfaceKHR failed: %s", SDL_Vulkan_GetResultString(result));
     }
-    return 0;
+    return true;
 }
 
 void WIN_Vulkan_DestroySurface(SDL_VideoDevice *_this,
@@ -179,14 +181,11 @@ bool WIN_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
             "vkGetPhysicalDeviceWin32PresentationSupportKHR");
 
     if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return false;
+        return SDL_SetError("Vulkan is not loaded");
     }
 
     if (!vkGetPhysicalDeviceWin32PresentationSupportKHR) {
-        SDL_SetError(VK_KHR_WIN32_SURFACE_EXTENSION_NAME
-                     " extension is not enabled in the Vulkan instance.");
-        return false;
+        return SDL_SetError(VK_KHR_WIN32_SURFACE_EXTENSION_NAME " extension is not enabled in the Vulkan instance.");
     }
 
     return vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice,

@@ -65,7 +65,7 @@ static struct
 };
 SDL_COMPILE_TIME_ASSERT(D3D11_shaders, SDL_arraysize(D3D11_shaders) == NUM_SHADERS);
 
-int D3D11_CreateVertexShader(ID3D11Device1 *d3dDevice, ID3D11VertexShader **vertexShader, ID3D11InputLayout **inputLayout)
+bool D3D11_CreateVertexShader(ID3D11Device1 *d3dDevice, ID3D11VertexShader **vertexShader, ID3D11InputLayout **inputLayout)
 {
     // Declare how the input layout for SDL's vertex shader will be setup:
     const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = {
@@ -95,10 +95,10 @@ int D3D11_CreateVertexShader(ID3D11Device1 *d3dDevice, ID3D11VertexShader **vert
     if (FAILED(result)) {
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateInputLayout"), result);
     }
-    return 0;
+    return true;
 }
 
-int D3D11_CreatePixelShader(ID3D11Device1 *d3dDevice, D3D11_Shader shader, ID3D11PixelShader **pixelShader)
+bool D3D11_CreatePixelShader(ID3D11Device1 *d3dDevice, D3D11_Shader shader, ID3D11PixelShader **pixelShader)
 {
     HRESULT result;
 
@@ -110,7 +110,7 @@ int D3D11_CreatePixelShader(ID3D11Device1 *d3dDevice, D3D11_Shader shader, ID3D1
     if (FAILED(result)) {
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreatePixelShader"), result);
     }
-    return 0;
+    return true;
 }
 
 #endif // SDL_VIDEO_RENDER_D3D11

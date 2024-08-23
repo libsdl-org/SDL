@@ -32,7 +32,7 @@ struct SDL_SensorDriver;
 // Useful functions and variables from SDL_sensor.c
 
 // Initialization and shutdown functions
-extern int SDL_InitSensors(void);
+extern bool SDL_InitSensors(void);
 extern void SDL_QuitSensors(void);
 
 // Return whether the sensor system is currently initialized
@@ -54,6 +54,6 @@ extern bool SDL_SensorsOpened(void);
 extern void SDL_UpdateSensor(SDL_Sensor *sensor);
 
 // Internal event queueing functions
-extern int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
+extern void SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values);
 
 #endif // SDL_sensor_c_h_

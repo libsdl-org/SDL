@@ -1029,10 +1029,10 @@ static void DeleteHIDDeviceWrapper(SDL_hid_device *wrapper)
     SDL_free(wrapper);
 }
 
-#define CHECK_DEVICE_MAGIC(device, retval)                          \
+#define CHECK_DEVICE_MAGIC(device, result)                          \
     if (!SDL_ObjectValid(device, SDL_OBJECT_TYPE_HIDAPI_DEVICE)) {  \
         SDL_SetError("Invalid device");                             \
-        return retval;                                              \
+        return result;                                              \
     }
 
 #define COPY_IF_EXISTS(var)                \

@@ -29,9 +29,9 @@
 #include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenopengles.h"
 
-int Emscripten_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool Emscripten_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-    return 0;
+    return true;
 }
 
 void Emscripten_GLES_UnloadLibrary(SDL_VideoDevice *_this)
@@ -43,7 +43,7 @@ SDL_FunctionPointer Emscripten_GLES_GetProcAddress(SDL_VideoDevice *_this, const
     return emscripten_webgl_get_proc_address(proc);
 }
 
-int Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
+bool Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     if (interval < 0) {
         return SDL_SetError("Late swap tearing currently unsupported");
@@ -53,10 +53,10 @@ int Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
         emscripten_set_main_loop_timing(EM_TIMING_RAF, interval);
     }
 
-    return 0;
+    return true;
 }
 
-int Emscripten_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
+bool Emscripten_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     int mode, value;
 
@@ -64,10 +64,10 @@ int Emscripten_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 
     if (mode == EM_TIMING_RAF) {
         *interval = value;
-        return 0;
+        return true;
     } else {
         *interval = 0;
-        return 0;
+        return true;
     }
 }
 
@@ -112,7 +112,7 @@ SDL_GLContext Emscripten_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *
     return (SDL_GLContext)context;
 }
 
-int Emscripten_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
+bool Emscripten_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     SDL_Window *window;
 
@@ -126,19 +126,19 @@ int Emscripten_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
     }
 
     emscripten_webgl_destroy_context((EMSCRIPTEN_WEBGL_CONTEXT_HANDLE)context);
-    return 0;
+    return true;
 }
 
-int Emscripten_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool Emscripten_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, true)) {
         // give back control to browser for screen refresh
         emscripten_sleep(0);
     }
-    return 0;
+    return true;
 }
 
-int Emscripten_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+bool Emscripten_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     // it isn't possible to reuse contexts across canvases
     if (window && context) {
@@ -152,7 +152,7 @@ int Emscripten_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_
     if (emscripten_webgl_make_context_current((EMSCRIPTEN_WEBGL_CONTEXT_HANDLE)context) != EMSCRIPTEN_RESULT_SUCCESS) {
         return SDL_SetError("Unable to make context current");
     }
-    return 0;
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN

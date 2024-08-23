@@ -24,7 +24,7 @@
 
 typedef SDL_Mutex *(*pfnSDL_CreateMutex)(void);
 typedef void (*pfnSDL_LockMutex)(SDL_Mutex *);
-typedef int (*pfnSDL_TryLockMutex)(SDL_Mutex *);
+typedef bool (*pfnSDL_TryLockMutex)(SDL_Mutex *);
 typedef void (*pfnSDL_UnlockMutex)(SDL_Mutex *);
 typedef void (*pfnSDL_DestroyMutex)(SDL_Mutex *);
 

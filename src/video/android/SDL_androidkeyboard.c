@@ -368,14 +368,14 @@ static SDL_Scancode TranslateKeycode(int keycode)
     return scancode;
 }
 
-int Android_OnKeyDown(int keycode)
+void Android_OnKeyDown(int keycode)
 {
-    return SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, keycode, TranslateKeycode(keycode), SDL_PRESSED);
+    SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, keycode, TranslateKeycode(keycode), SDL_PRESSED);
 }
 
-int Android_OnKeyUp(int keycode)
+void Android_OnKeyUp(int keycode)
 {
-    return SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, keycode, TranslateKeycode(keycode), SDL_RELEASED);
+    SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, keycode, TranslateKeycode(keycode), SDL_RELEASED);
 }
 
 bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)

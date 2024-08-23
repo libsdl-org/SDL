@@ -135,7 +135,7 @@ static void OPENSLES_DestroyEngine(void)
     }
 }
 
-static int OPENSLES_CreateEngine(void)
+static bool OPENSLES_CreateEngine(void)
 {
     const SLInterfaceID ids[1] = { SL_IID_VOLUME };
     const SLboolean req[1] = { SL_BOOLEAN_FALSE };
@@ -181,11 +181,11 @@ static int OPENSLES_CreateEngine(void)
         LOGE("RealizeOutputMix failed: %d", result);
         goto error;
     }
-    return 1;
+    return true;
 
 error:
     OPENSLES_DestroyEngine();
-    return 0;
+    return false;
 }
 
 // this callback handler is called every time a buffer finishes recording
@@ -234,7 +234,7 @@ static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, con
     SDL_AtomicSet((SDL_AtomicInt *) userdata, granted ? 1 : -1);
 }
 
-static int OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
+static bool OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *audiodata = device->hidden;
     SLDataFormat_PCM format_pcm;
@@ -251,8 +251,8 @@ static int OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
     {
         SDL_AtomicInt permission_response;
         SDL_AtomicSet(&permission_response, 0);
-        if (SDL_RequestAndroidPermission("android.permission.RECORD_AUDIO", RequestAndroidPermissionBlockingCallback, &permission_response) == -1) {
-            return -1;
+        if (!SDL_RequestAndroidPermission("android.permission.RECORD_AUDIO", RequestAndroidPermissionBlockingCallback, &permission_response)) {
+            return false;
         }
 
         while (SDL_AtomicGet(&permission_response) == 0) {
@@ -378,7 +378,7 @@ static int OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
         goto failed;
     }
 
-    return 0;
+    return true;
 
 failed:
     return SDL_SetError("Open device failed!");
@@ -424,7 +424,7 @@ static void OPENSLES_DestroyPCMPlayer(SDL_AudioDevice *device)
     }
 }
 
-static int OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
+static bool OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
 {
     /* If we want to add floating point audio support (requires API level 21)
        it can be done as described here:
@@ -609,27 +609,27 @@ static int OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
         goto failed;
     }
 
-    return 0;
+    return true;
 
 failed:
-    return -1;
+    return false;
 }
 
-static int OPENSLES_OpenDevice(SDL_AudioDevice *device)
+static bool OPENSLES_OpenDevice(SDL_AudioDevice *device)
 {
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     if (device->recording) {
         LOGI("OPENSLES_OpenDevice() for recording");
         return OPENSLES_CreatePCMRecorder(device);
     } else {
-        int ret;
+        bool ret;
         LOGI("OPENSLES_OpenDevice() for playback");
         ret = OPENSLES_CreatePCMPlayer(device);
-        if (ret < 0) {
+        if (!ret) {
             // Another attempt to open the device with a lower frequency
             if (device->spec.freq > 48000) {
                 OPENSLES_DestroyPCMPlayer(device);
@@ -638,15 +638,15 @@ static int OPENSLES_OpenDevice(SDL_AudioDevice *device)
             }
         }
 
-        if (ret != 0) {
+        if (!ret) {
             return SDL_SetError("Open device failed!");
         }
     }
 
-    return 0;
+    return true;
 }
 
-static int OPENSLES_WaitDevice(SDL_AudioDevice *device)
+static bool OPENSLES_WaitDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *audiodata = device->hidden;
 
@@ -654,20 +654,15 @@ static int OPENSLES_WaitDevice(SDL_AudioDevice *device)
 
     while (!SDL_AtomicGet(&device->shutdown)) {
         // this semaphore won't fire when the app is in the background (OPENSLES_PauseDevices was called).
-        const int rc = SDL_WaitSemaphoreTimeout(audiodata->playsem, 100);
-        if (rc == -1) {  // uh, what?
-            return -1;
-        } else if (rc == 0) {
-            return 0;  // semaphore was signaled, let's go!
-        } else {
-            SDL_assert(rc == SDL_MUTEX_TIMEDOUT);
+        if (SDL_WaitSemaphoreTimeout(audiodata->playsem, 100)) {
+            return true;  // semaphore was signaled, let's go!
         }
         // Still waiting on the semaphore (or the system), check other things then wait again.
     }
-    return 0;
+    return true;
 }
 
-static int OPENSLES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool OPENSLES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *audiodata = device->hidden;
 
@@ -687,7 +682,7 @@ static int OPENSLES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int
         SDL_SignalSemaphore(audiodata->playsem);
     }
 
-    return 0;
+    return true;
 }
 
 ///           n   playn sem

@@ -32,7 +32,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 {
 }
 
-int SDL_GetCurrentTime(SDL_Time *ticks)
+SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     if (!ticks) {
         return SDL_InvalidParamError("ticks");
@@ -40,10 +40,10 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
 
     *ticks = 0;
 
-    return 0;
+    return true;
 }
 
-int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
+SDL_bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
 {
     if (!dt) {
         return SDL_InvalidParamError("dt");
@@ -59,7 +59,7 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
     dt->day_of_week = 4;
     dt->utc_offset = 0;
 
-    return 0;
+    return true;
 }
 
 #endif // SDL_TIME_PS2

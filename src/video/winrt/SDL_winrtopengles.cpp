@@ -51,13 +51,13 @@ static const int ANGLE_D3D_FEATURE_LEVEL_ANY = 0;
  * SDL/EGL top-level implementation
  */
 
-extern "C" int
-WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+extern "C"
+bool WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     SDL_VideoData *video_data = _this->internal;
 
-    if (SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0) != 0) {
-        return -1;
+    if (!SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0)) {
+        return false;
     }
 
     // Load ANGLE/WinRT-specific functions
@@ -74,7 +74,7 @@ WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         Microsoft::WRL::ComPtr<IUnknown> cpp_win = reinterpret_cast<IUnknown *>(native_win);
         HRESULT result = CreateWinrtEglWindow(cpp_win, ANGLE_D3D_FEATURE_LEVEL_ANY, &(video_data->winrtEglWindow));
         if (FAILED(result)) {
-            return -1;
+            return false;
         }
 
         /* Call eglGetDisplay and eglInitialize as appropriate.  On other
@@ -180,11 +180,11 @@ WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         }
     }
 
-    return 0;
+    return true;
 }
 
-extern "C" void
-WINRT_GLES_UnloadLibrary(SDL_VideoDevice *_this)
+extern "C"
+void WINRT_GLES_UnloadLibrary(SDL_VideoDevice *_this)
 {
     SDL_VideoData *video_data = _this->internal;
 
@@ -200,8 +200,8 @@ WINRT_GLES_UnloadLibrary(SDL_VideoDevice *_this)
 
 extern "C" {
 SDL_EGL_CreateContext_impl(WINRT)
-    SDL_EGL_SwapWindow_impl(WINRT)
-        SDL_EGL_MakeCurrent_impl(WINRT)
+SDL_EGL_SwapWindow_impl(WINRT)
+SDL_EGL_MakeCurrent_impl(WINRT)
 }
 
 #endif // SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL

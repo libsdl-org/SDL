@@ -75,7 +75,7 @@ found_date:
     }
 }
 
-int SDL_GetCurrentTime(SDL_Time *ticks)
+SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     FILETIME ft;
 
@@ -109,10 +109,10 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
 
     *ticks = SDL_TimeFromWindows(ft.dwLowDateTime, ft.dwHighDateTime);
 
-    return 0;
+    return true;
 }
 
-int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
+SDL_bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
 {
     FILETIME ft, local_ft;
     SYSTEMTIME utc_st, local_st;
@@ -151,7 +151,7 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
             dt->nanosecond = ticks % SDL_NS_PER_SECOND;
             dt->day_of_week = st->wDayOfWeek;
 
-            return 0;
+            return true;
         }
     }
 

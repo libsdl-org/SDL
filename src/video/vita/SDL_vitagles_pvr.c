@@ -32,7 +32,7 @@
 
 #define MAX_PATH 256 // vita limits are somehow wrong
 
-int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
     const char *default_path = "app0:module";
@@ -71,7 +71,7 @@ SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window
     return SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 }
 
-int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+bool VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     if (window && context) {
         return SDL_EGL_MakeCurrent(_this, window->internal->egl_surface, context);
@@ -80,7 +80,7 @@ int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLCont
     }
 }
 
-int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *videodata = _this->internal;
     if (videodata->ime_active) {

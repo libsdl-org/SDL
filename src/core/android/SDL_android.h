@@ -80,19 +80,19 @@ extern void Android_AudioThreadInit(SDL_AudioDevice *device);
 extern bool Android_IsDeXMode(void);
 extern bool Android_IsChromebook(void);
 
-int Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode);
+bool Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode);
 Sint64 Android_JNI_FileSize(void *userdata);
 Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence);
 size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOStatus *status);
 size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SDL_IOStatus *status);
-int Android_JNI_FileClose(void *userdata);
+SDL_bool Android_JNI_FileClose(void *userdata);
 
 // Environment support
 void Android_JNI_GetManifestEnvironmentVariables(void);
 int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode);
 
 // Clipboard support
-int Android_JNI_SetClipboardText(const char *text);
+bool Android_JNI_SetClipboardText(const char *text);
 char *Android_JNI_GetClipboardText(void);
 bool Android_JNI_HasClipboardText(void);
 
@@ -109,7 +109,7 @@ void Android_JNI_HapticRumble(int device_id, float low_frequency_intensity, floa
 void Android_JNI_HapticStop(int device_id);
 
 // Video
-int Android_JNI_SuspendScreenSaver(bool suspend);
+bool Android_JNI_SuspendScreenSaver(bool suspend);
 
 // Touch support
 void Android_JNI_InitTouch(void);
@@ -117,16 +117,16 @@ void Android_JNI_InitTouch(void);
 // Threads
 #include <jni.h>
 JNIEnv *Android_JNI_GetEnv(void);
-int Android_JNI_SetupThread(void);
+bool Android_JNI_SetupThread(void);
 
 // Locale
-int Android_JNI_GetLocale(char *buf, size_t buflen);
+bool Android_JNI_GetLocale(char *buf, size_t buflen);
 
 // Generic messages
-int Android_JNI_SendMessage(int command, int param);
+bool Android_JNI_SendMessage(int command, int param);
 
 // MessageBox
-int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
+bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
 // Cursor support
 int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
@@ -139,9 +139,9 @@ bool Android_JNI_SupportsRelativeMouse(void);
 bool Android_JNI_SetRelativeMouseEnabled(bool enabled);
 
 // Show toast notification
-int Android_JNI_ShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset);
+bool Android_JNI_ShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset);
 
-int Android_JNI_OpenURL(const char *url);
+bool Android_JNI_OpenURL(const char *url);
 
 int SDL_GetAndroidSDKVersion(void);
 

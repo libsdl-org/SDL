@@ -440,7 +440,7 @@ void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* user
     DBus_OpenDialog("OpenFile", "Open Folder", callback, userdata, window, NULL, 0, default_location, allow_many, 1);
 }
 
-int SDL_Portal_detect(void)
+bool SDL_Portal_detect(void)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     DBusMessage *msg = NULL, *reply = NULL;
@@ -450,14 +450,14 @@ int SDL_Portal_detect(void)
 
     // No need for this if the result is cached.
     if (portal_present != -1) {
-        return portal_present;
+        return (portal_present > 0);
     }
 
     portal_present = 0;
 
     if (!dbus) {
         SDL_SetError("%s", "Failed to connect to DBus!");
-        return 0;
+        return false;
     }
 
     // Use introspection to get the available services.
@@ -493,7 +493,7 @@ done:
         dbus->message_unref(reply);
     }
 
-    return portal_present;
+    return (portal_present > 0);
 }
 
 #else
@@ -518,9 +518,9 @@ void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* user
     callback(userdata, NULL, -1);
 }
 
-int SDL_Portal_detect(void)
+bool SDL_Portal_detect(void)
 {
-    return 0;
+    return false;
 }
 
 #endif // SDL_USE_LIBDBUS

@@ -25,17 +25,12 @@
 #include "SDL_events_c.h"
 #include "SDL_clipboardevents_c.h"
 
-int SDL_SendClipboardUpdate(void)
+void SDL_SendClipboardUpdate(void)
 {
-    int posted;
-
-    // Post the event, if desired
-    posted = 0;
     if (SDL_EventEnabled(SDL_EVENT_CLIPBOARD_UPDATE)) {
         SDL_Event event;
         event.type = SDL_EVENT_CLIPBOARD_UPDATE;
         event.clipboard.timestamp = 0;
-        posted = (SDL_PushEvent(&event) > 0);
+        SDL_PushEvent(&event);
     }
-    return posted;
 }

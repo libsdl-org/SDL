@@ -39,7 +39,7 @@ static int s_XInputDLLRefCount = 0;
 
 #if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 
-int WIN_LoadXInputDLL(void)
+bool WIN_LoadXInputDLL(void)
 {
     /* Getting handles to system dlls (via LoadLibrary and its variants) is not
      * supported on WinRT, thus, pointers to XInput's functions can't be
@@ -61,7 +61,7 @@ int WIN_LoadXInputDLL(void)
     // XInput 1.4 ships with Windows 8 and 8.1:
     SDL_XInputVersion = (1 << 16) | 4;
 
-    return 0;
+    return true;
 }
 
 void WIN_UnloadXInputDLL(void)
@@ -70,14 +70,14 @@ void WIN_UnloadXInputDLL(void)
 
 #else // !(defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 
-int WIN_LoadXInputDLL(void)
+bool WIN_LoadXInputDLL(void)
 {
     DWORD version = 0;
 
     if (s_pXInputDLL) {
         SDL_assert(s_XInputDLLRefCount > 0);
         s_XInputDLLRefCount++;
-        return 0; // already loaded
+        return true; // already loaded
     }
 
     /* NOTE: Don't load XinputUap.dll
@@ -98,7 +98,7 @@ int WIN_LoadXInputDLL(void)
         s_pXInputDLL = LoadLibrary(TEXT("XInput9_1_0.dll"));
     }
     if (!s_pXInputDLL) {
-        return -1;
+        return false;
     }
 
     SDL_assert(s_XInputDLLRefCount == 0);
@@ -117,10 +117,10 @@ int WIN_LoadXInputDLL(void)
     SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)GetProcAddress(s_pXInputDLL, "XInputGetBatteryInformation");
     if (!SDL_XInputGetState || !SDL_XInputSetState || !SDL_XInputGetCapabilities) {
         WIN_UnloadXInputDLL();
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 void WIN_UnloadXInputDLL(void)

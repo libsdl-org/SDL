@@ -97,16 +97,15 @@ static void SDLCALL GDK_InternalHintCallback(
     }
 }
 
-static int GDK_InternalEnsureTaskQueue(void)
+static bool GDK_InternalEnsureTaskQueue(void)
 {
     if (!g_TextTaskQueue) {
-        if (SDL_GetGDKTaskQueue(&g_TextTaskQueue) < 0) {
+        if (!SDL_GetGDKTaskQueue(&g_TextTaskQueue)) {
             // SetError will be done for us.
-            return -1;
+            return false;
         }
     }
-
-    return 0;
+    return true;
 }
 
 static void CALLBACK GDK_InternalTextEntryCallback(XAsyncBlock *asyncBlock)
@@ -178,7 +177,7 @@ void GDK_EnsureHints(void)
     }
 }
 
-int GDK_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
+bool GDK_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     /*
      * Currently a stub, since all input is handled by the virtual keyboard,
@@ -191,16 +190,16 @@ int GDK_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
      * Right now this function isn't implemented on Desktop
      * and seems to be present only in the docs? So I didn't bother.
      */
-    return 0;
+    return true;
 }
 
-int GDK_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+bool GDK_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     // See notice in GDK_StartTextInput
-    return 0;
+    return true;
 }
 
-int GDK_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
+bool GDK_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /*
      * XGameUiShowTextEntryAsync does not allow you to set
@@ -211,13 +210,13 @@ int GDK_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
      *
      * Right now it's a stub which may be useful later.
      */
-    return 0;
+    return true;
 }
 
-int GDK_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
+bool GDK_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     // See notice in GDK_StartTextInput
-    return 0;
+    return true;
 }
 
 bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
@@ -243,7 +242,7 @@ void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
         return;
     }
 
-    if (GDK_InternalEnsureTaskQueue() < 0) {
+    if (!GDK_InternalEnsureTaskQueue()) {
         // unable to obtain the SDL GDK queue
         return;
     }

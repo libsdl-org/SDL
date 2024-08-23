@@ -108,17 +108,17 @@ struct SDL_WindowData
 extern void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, SDL_WindowFlags flags);
 extern Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow);
 
-extern int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
+extern bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern char *X11_GetWindowTitle(SDL_VideoDevice *_this, Window xwindow);
 extern void X11_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
-extern int X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
-extern int X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
+extern bool X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_SetWindowAspectRatio(SDL_VideoDevice *_this, SDL_Window *window);
-extern int X11_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right);
-extern int X11_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
-extern int X11_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
+extern bool X11_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right);
+extern bool X11_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
+extern bool X11_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
 extern void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
@@ -129,20 +129,20 @@ extern void X11_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bordered);
 extern void X11_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable);
 extern void X11_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, bool on_top);
-extern int X11_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
+extern SDL_FullscreenResult X11_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 extern void *X11_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
-extern int X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
-extern int X11_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
+extern bool X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
+extern bool X11_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
 extern void X11_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int X11_SetWindowHitTest(SDL_Window *window, bool enabled);
+extern bool X11_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern void X11_AcceptDragAndDrop(SDL_Window *window, bool accept);
-extern int X11_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
+extern bool X11_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
 extern void X11_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
-extern int X11_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int X11_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
+extern bool X11_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool X11_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
 
-int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title);
-void X11_UpdateWindowPosition(SDL_Window *window, bool use_current_position);
-void X11_SetWindowMinMax(SDL_Window *window, bool use_current);
+extern bool SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title);
+extern void X11_UpdateWindowPosition(SDL_Window *window, bool use_current_position);
+extern void X11_SetWindowMinMax(SDL_Window *window, bool use_current);
 
 #endif // SDL_x11window_h_

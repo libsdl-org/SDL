@@ -149,7 +149,7 @@ extern "C" char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 
     const WCHAR *srcPath = NULL;
     WCHAR path[MAX_PATH];
-    char *retval = NULL;
+    char *result = NULL;
     WCHAR *worg = NULL;
     WCHAR *wapp = NULL;
     size_t new_wpath_len = 0;
@@ -224,9 +224,9 @@ extern "C" char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 
     SDL_wcslcat(path, L"\\", new_wpath_len + 1);
 
-    retval = WIN_StringToUTF8W(path);
+    result = WIN_StringToUTF8W(path);
 
-    return retval;
+    return result;
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)

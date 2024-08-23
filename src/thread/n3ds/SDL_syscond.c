@@ -50,25 +50,23 @@ void SDL_DestroyCondition(SDL_Condition *cond)
 }
 
 // Restart one of the threads that are waiting on the condition variable
-int SDL_SignalCondition(SDL_Condition *cond)
+void SDL_SignalCondition(SDL_Condition *cond)
 {
     if (!cond) {
-        return SDL_InvalidParamError("cond");
+        return;
     }
 
     CondVar_Signal(&cond->cond_variable);
-    return 0;
 }
 
 // Restart all threads that are waiting on the condition variable
-int SDL_BroadcastCondition(SDL_Condition *cond)
+void SDL_BroadcastCondition(SDL_Condition *cond)
 {
     if (!cond) {
-        return SDL_InvalidParamError("cond");
+        return;
     }
 
     CondVar_Broadcast(&cond->cond_variable);
-    return 0;
 }
 
 /* Wait on the condition variable for at most 'timeoutNS' nanoseconds.
@@ -92,15 +90,12 @@ Thread B:
     SDL_SignalCondition(cond);
     SDL_UnlockMutex(lock);
  */
-int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+SDL_bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
     Result res;
 
-    if (!cond) {
-        return SDL_InvalidParamError("cond");
-    }
-    if (!mutex) {
-        return SDL_InvalidParamError("mutex");
+    if (!cond || !mutex) {
+        return true;
     }
 
     res = 0;
@@ -110,7 +105,7 @@ int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 tim
         res = CondVar_WaitTimeout(&cond->cond_variable, &mutex->lock.lock, timeoutNS);
     }
 
-    return R_SUCCEEDED(res) ? 0 : SDL_MUTEX_TIMEDOUT;
+    return R_SUCCEEDED(res);
 }
 
 #endif // SDL_THREAD_N3DS

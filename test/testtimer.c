@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
         i += consumed;
     }
 
-    if (SDL_Init(SDL_INIT_TIMER) < 0) {
+    if (!SDL_Init(SDL_INIT_TIMER)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }

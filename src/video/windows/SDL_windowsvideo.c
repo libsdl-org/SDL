@@ -43,7 +43,7 @@
 // #define HIGHDPI_DEBUG
 
 // Initialization/Query functions
-static int WIN_VideoInit(SDL_VideoDevice *_this);
+static bool WIN_VideoInit(SDL_VideoDevice *_this);
 static void WIN_VideoQuit(SDL_VideoDevice *_this);
 
 // Hints
@@ -74,14 +74,14 @@ static void SDLCALL UpdateWindowFrameUsableWhileCursorHidden(void *userdata, con
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-static int WIN_SuspendScreenSaver(SDL_VideoDevice *_this)
+static bool WIN_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     if (_this->suspend_screensaver) {
         SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
     } else {
         SetThreadExecutionState(ES_CONTINUOUS);
     }
-    return 0;
+    return true;
 }
 #endif
 
@@ -259,7 +259,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->GL_SetSwapInterval = WIN_GL_SetSwapInterval;
     device->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
     device->GL_SwapWindow = WIN_GL_SwapWindow;
-    device->GL_DeleteContext = WIN_GL_DeleteContext;
+    device->GL_DestroyContext = WIN_GL_DestroyContext;
     device->GL_GetEGLSurface = NULL;
 #endif
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -275,7 +275,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
         device->GL_SetSwapInterval = WIN_GLES_SetSwapInterval;
         device->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
         device->GL_SwapWindow = WIN_GLES_SwapWindow;
-        device->GL_DeleteContext = WIN_GLES_DeleteContext;
+        device->GL_DestroyContext = WIN_GLES_DestroyContext;
         device->GL_GetEGLSurface = WIN_GLES_GetEGLSurface;
 #ifdef SDL_VIDEO_OPENGL_WGL
     }
@@ -464,7 +464,7 @@ static void WIN_InitDPIAwareness(SDL_VideoDevice *_this)
     }
 }
 
-int WIN_VideoInit(SDL_VideoDevice *_this)
+static bool WIN_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
     HRESULT hr;
@@ -508,8 +508,8 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
         SDL_AddBasicVideoDisplay(&mode);
     }
 #else // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    if (WIN_InitModes(_this) < 0) {
-        return -1;
+    if (!WIN_InitModes(_this)) {
+        return false;
     }
 
     WIN_InitKeyboard(_this);
@@ -529,7 +529,7 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
     data->_SDL_WAKEUP = RegisterWindowMessageA("_SDL_WAKEUP");
 #endif
 
-    return 0;
+    return true;
 }
 
 void WIN_VideoQuit(SDL_VideoDevice *_this)
@@ -632,7 +632,7 @@ int SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID)
     IDirect3D9 *pD3D;
     if (!D3D_LoadDLL(&pD3DDLL, &pD3D)) {
         SDL_SetError("Unable to create Direct3D interface");
-        return D3DADAPTER_DEFAULT;
+        return -1;
     } else {
         SDL_DisplayData *pData = SDL_GetDisplayDriverData(displayID);
         int adapterIndex = D3DADAPTER_DEFAULT;
@@ -665,7 +665,7 @@ int SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID)
 }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-int SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
+SDL_bool SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
 #ifndef HAVE_DXGI_H
     if (adapterIndex) {
@@ -723,7 +723,7 @@ int SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outpu
     if (*adapterIndex == -1) {
         return SDL_SetError("Couldn't find matching adapter");
     }
-    return 0;
+    return true;
 #endif
 }
 

@@ -197,7 +197,7 @@ LoadSprite(const char *file)
         if (!sprites[i]) {
             return -1;
         }
-        if (SDL_SetTextureBlendMode(sprites[i], blendMode) < 0) {
+        if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
             return -1;
@@ -425,7 +425,7 @@ main(int argc, char *argv[])
     }
 
     /* Load the wave file into memory */
-    if (SDL_LoadWAV(soundname, &wave.spec, &wave.sound, &wave.soundlen) == -1) {
+    if (!SDL_LoadWAV(soundname, &wave.spec, &wave.sound, &wave.soundlen)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", soundname, SDL_GetError());
         quit(1);
     }

@@ -85,7 +85,7 @@ static void WINRT_OnRenderViaXAML(_In_ Platform::Object ^ sender, _In_ Platform:
  * SDL + XAML Initialization
  */
 
-int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void *backgroundPanelAsIInspectable)
+bool SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void *backgroundPanelAsIInspectable)
 {
 #if SDL_WINAPI_FAMILY_PHONE
     return SDL_SetError("XAML support is not yet available in Windows Phone.");
@@ -133,14 +133,14 @@ int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void *backgroundPane
     // Make sure video modes are detected now, while we still have access to the WinRT
     // CoreWindow.  WinRT will not allow the app's CoreWindow to be accessed via the
     // SDL/WinRT thread.
-    if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
         // SDL_InitSubSystem will, on error, set the SDL error.  Let that propagate to
         // the caller to here:
         WINRT_XAMLWasEnabled = oldXAMLWasEnabledValue;
-        return -1;
+        return false;
     }
 
     // All done, for now.
-    return 0;
+    return true;
 #endif // SDL_WINAPI_FAMILY_PHONE
 }

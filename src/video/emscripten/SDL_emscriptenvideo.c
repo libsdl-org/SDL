@@ -35,16 +35,16 @@
 #define EMSCRIPTENVID_DRIVER_NAME "emscripten"
 
 // Initialization/Query functions
-static int Emscripten_VideoInit(SDL_VideoDevice *_this);
-static int Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+static bool Emscripten_VideoInit(SDL_VideoDevice *_this);
+static bool Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void Emscripten_VideoQuit(SDL_VideoDevice *_this);
-static int Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
+static bool Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
 
-static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
+static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
 static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-static int Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
+static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 
@@ -107,7 +107,7 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->GL_SetSwapInterval = Emscripten_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = Emscripten_GLES_GetSwapInterval;
     device->GL_SwapWindow = Emscripten_GLES_SwapWindow;
-    device->GL_DeleteContext = Emscripten_GLES_DeleteContext;
+    device->GL_DestroyContext = Emscripten_GLES_DestroyContext;
 
     device->free = Emscripten_DeleteDevice;
 
@@ -120,7 +120,7 @@ VideoBootStrap Emscripten_bootstrap = {
     NULL // no ShowMessageBox implementation
 };
 
-int Emscripten_VideoInit(SDL_VideoDevice *_this)
+bool Emscripten_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
@@ -131,7 +131,7 @@ int Emscripten_VideoInit(SDL_VideoDevice *_this)
     mode.pixel_density = emscripten_get_device_pixel_ratio();
 
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
-        return -1;
+        return false;
     }
 
     Emscripten_InitMouse();
@@ -141,13 +141,13 @@ int Emscripten_VideoInit(SDL_VideoDevice *_this)
     SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
 
     // We're done!
-    return 0;
+    return true;
 }
 
-static int Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static bool Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     // can't do this
-    return 0;
+    return true;
 }
 
 static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
@@ -155,7 +155,7 @@ static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
     Emscripten_QuitMouse();
 }
 
-static int Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+static bool Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     if (rect) {
         rect->x = 0;
@@ -167,7 +167,7 @@ static int Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDi
             return window.innerHeight;
         });
     }
-    return 0;
+    return true;
 }
 
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this)
@@ -175,7 +175,7 @@ static void Emscripten_PumpEvents(SDL_VideoDevice *_this)
     // do nothing.
 }
 
-static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
+static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_WindowData *wdata;
     double scaled_w, scaled_h;
@@ -185,7 +185,7 @@ static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, S
     // Allocate window internal data
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!wdata) {
-        return -1;
+        return false;
     }
 
     selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR);
@@ -239,7 +239,7 @@ static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, S
     Emscripten_RegisterEventHandlers(wdata);
 
     // Window has been successfully created
-    return 0;
+    return true;
 }
 
 static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
@@ -291,7 +291,7 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-static int Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
+static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     SDL_WindowData *data;
     int res = -1;
@@ -329,11 +329,11 @@ static int Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *wi
     }
 
     if (res == EMSCRIPTEN_RESULT_SUCCESS) {
-        return 0;
+        return SDL_FULLSCREEN_SUCCEEDED;
     } else if (res == EMSCRIPTEN_RESULT_DEFERRED) {
-        return 1;
+        return SDL_FULLSCREEN_PENDING;
     } else {
-        return -1;
+        return SDL_FULLSCREEN_FAILED;
     }
 }
 
