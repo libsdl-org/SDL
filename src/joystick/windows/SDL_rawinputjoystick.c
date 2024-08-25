@@ -1294,6 +1294,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     value_caps = SDL_stack_alloc(HIDP_VALUE_CAPS, caps.NumberInputValueCaps);
     if (SDL_HidP_GetValueCaps(HidP_Input, value_caps, &caps.NumberInputValueCaps, ctx->preparsed_data) != HIDP_STATUS_SUCCESS) {
         RAWINPUT_JoystickClose(joystick);
+        SDL_stack_free(button_caps);
         return SDL_SetError("Couldn't get device value capabilities");
     }
 
@@ -1322,6 +1323,8 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->button_indices = (USHORT *)SDL_malloc(joystick->nbuttons * sizeof(*ctx->button_indices));
         if (!ctx->button_indices) {
             RAWINPUT_JoystickClose(joystick);
+            SDL_stack_free(value_caps);
+            SDL_stack_free(button_caps);
             return -1;
         }
 
@@ -1345,6 +1348,8 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->guide_hack = true;
         joystick->nbuttons += 1;
     }
+
+    SDL_stack_free(button_caps);
 
     for (i = 0; i < caps.NumberInputValueCaps; ++i) {
         HIDP_VALUE_CAPS *cap = &value_caps[i];
@@ -1375,6 +1380,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->axis_indices = (USHORT *)SDL_malloc(joystick->naxes * sizeof(*ctx->axis_indices));
         if (!ctx->axis_indices) {
             RAWINPUT_JoystickClose(joystick);
+            SDL_stack_free(value_caps);
             return -1;
         }
 
@@ -1408,6 +1414,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->hat_indices = (USHORT *)SDL_malloc(joystick->nhats * sizeof(*ctx->hat_indices));
         if (!ctx->hat_indices) {
             RAWINPUT_JoystickClose(joystick);
+            SDL_stack_free(value_caps);
             return -1;
         }
 
@@ -1425,6 +1432,8 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
             ctx->hat_indices[hat_index++] = cap->NotRange.DataIndex;
         }
     }
+
+    SDL_stack_free(value_caps);
 
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
     if (ctx->is_xinput) {
