@@ -127,6 +127,7 @@ extern "C" {
  */
 typedef enum SDL_AudioFormat
 {
+    SDL_AUDIO_UNKNOWN   = 0x0000u,  /**< Unspecified audio format */
     SDL_AUDIO_U8        = 0x0008u,  /**< Unsigned 8-bit samples */
         /* SDL_DEFINE_AUDIO_FORMAT(0, 0, 0, 8), */
     SDL_AUDIO_S8        = 0x8008u,  /**< Signed 8-bit samples */

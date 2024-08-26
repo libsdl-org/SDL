@@ -123,7 +123,7 @@ static SDL_TemporaryMemoryState *SDL_GetTemporaryMemoryState(bool create)
 {
     SDL_TemporaryMemoryState *state;
 
-    state = SDL_GetTLS(&SDL_temporary_memory);
+    state = (SDL_TemporaryMemoryState *)SDL_GetTLS(&SDL_temporary_memory);
     if (!state) {
         if (!create) {
             return NULL;
@@ -298,7 +298,7 @@ void *SDL_AllocateTemporaryMemory(size_t size)
 const char *SDL_CreateTemporaryString(const char *string)
 {
     if (string) {
-        return SDL_FreeLater(SDL_strdup(string));
+        return (const char *)SDL_FreeLater(SDL_strdup(string));
     }
     return NULL;
 }
@@ -1634,8 +1634,6 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
     Uint8 hi = ((type >> 8) & 0xff);
     Uint8 lo = (type & 0xff);
 
-    enabled = !!enabled;  // make sure this is definitely either true or false.
-
     if (SDL_disabled_events[hi] &&
         (SDL_disabled_events[hi]->bits[lo / 32] & (1 << (lo & 31)))) {
         current_state = false;
@@ -1643,7 +1641,7 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
         current_state = true;
     }
 
-    if (enabled != current_state) {
+    if ((enabled != SDL_FALSE) != current_state) {
         if (enabled) {
             SDL_assert(SDL_disabled_events[hi] != NULL);
             SDL_disabled_events[hi]->bits[lo / 32] &= ~(1 << (lo & 31));

@@ -1286,7 +1286,7 @@ static bool IsSupportedFormat(SDL_Renderer *renderer, SDL_PixelFormat format)
     return false;
 }
 
-static Uint32 GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_PixelFormat format)
+static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_PixelFormat format)
 {
     int i;
 
@@ -1405,7 +1405,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
             return NULL;
         }
     } else {
-        int closest_format;
+        SDL_PixelFormat closest_format;
         SDL_PropertiesID native_props = SDL_CreateProperties();
 
         if (!texture_is_fourcc_and_target) {

@@ -1371,13 +1371,13 @@ SDL_bool SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int
     return true;
 }
 
-static bool DisplayModeChanged(const SDL_DisplayMode *old, const SDL_DisplayMode *new)
+static bool DisplayModeChanged(const SDL_DisplayMode *old_mode, const SDL_DisplayMode *new_mode)
 {
-    return ((old->displayID && old->displayID != new->displayID) ||
-            (old->format && old->format != new->format) ||
-            (old->w && old->h && (old->w != new->w ||old->h != new->h)) ||
-            (old->pixel_density != 0.0f && old->pixel_density != new->pixel_density) ||
-            (old->refresh_rate != 0.0f && old->refresh_rate != new->refresh_rate));
+    return ((old_mode->displayID && old_mode->displayID != new_mode->displayID) ||
+            (old_mode->format && old_mode->format != new_mode->format) ||
+            (old_mode->w && old_mode->h && (old_mode->w != new_mode->w ||old_mode->h != new_mode->h)) ||
+            (old_mode->pixel_density != 0.0f && old_mode->pixel_density != new_mode->pixel_density) ||
+            (old_mode->refresh_rate != 0.0f && old_mode->refresh_rate != new_mode->refresh_rate));
 }
 
 void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
@@ -1781,7 +1781,7 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
 
     // If we are in the process of hiding don't go back to fullscreen
     if (window->is_destroying || window->is_hiding) {
-        fullscreen = false;
+        fullscreen = SDL_FULLSCREEN_OP_LEAVE;
     }
 
     // Get the correct display for this operation
@@ -2132,7 +2132,7 @@ SDL_Window **SDLCALL SDL_GetWindows(int *count)
         ++num_windows;
     }
 
-    SDL_Window **windows = SDL_malloc((num_windows + 1) * sizeof(*windows));
+    SDL_Window **windows = (SDL_Window **)SDL_malloc((num_windows + 1) * sizeof(*windows));
     if (!windows) {
         return NULL;
     }

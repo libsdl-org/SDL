@@ -1085,9 +1085,9 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
 
     _this->egl_data->egl_swapinterval = 0;
 
-    if (!SDL_EGL_MakeCurrent(_this, egl_surface, egl_context)) {
+    if (!SDL_EGL_MakeCurrent(_this, egl_surface, (SDL_GLContext)egl_context)) {
         // Delete the context
-        SDL_EGL_DestroyContext(_this, egl_context);
+        SDL_EGL_DestroyContext(_this, (SDL_GLContext)egl_context);
         return NULL;
     }
 

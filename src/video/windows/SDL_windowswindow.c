@@ -375,7 +375,7 @@ static SDL_WindowEraseBackgroundMode GetEraseBackgroundModeHint(void)
         return SDL_ERASEBACKGROUNDMODE_INITIAL;
     }
 
-    return mode;
+    return (SDL_WindowEraseBackgroundMode)mode;
 }
 
 static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd, HWND parent)
@@ -904,7 +904,7 @@ bool WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
             window->internal->floating_rect_pending = true;
         }
     } else {
-        return SDL_UpdateFullscreenMode(window, true, true);
+        return SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_ENTER, true);
     }
 
     return true;
@@ -1306,7 +1306,7 @@ SDL_FullscreenResult WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window 
     } else {
         BOOL menu;
 
-        WIN_UpdateCornerRoundingForHWND(hwnd, data->windowed_mode_corner_rounding);
+        WIN_UpdateCornerRoundingForHWND(hwnd, (DWM_WINDOW_CORNER_PREFERENCE)data->windowed_mode_corner_rounding);
         WIN_UpdateBorderColorForHWND(hwnd, data->dwma_border_color);
 
         /* Restore window-maximization state, as applicable.
@@ -1896,7 +1896,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                              ". In Drop File for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
-                    char *text = SDL_malloc(bsize + sizeof(Uint32));
+                    char *text = (char *)SDL_malloc(bsize + sizeof(Uint32));
                     SDL_memcpy((Uint8 *)text, buffer, bsize);
                     SDL_memset((Uint8 *)text + bsize, 0, sizeof(Uint32));
                     char *saveptr = NULL;
@@ -1944,7 +1944,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                              ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
-                    char *text = SDL_malloc(bsize + sizeof(Uint32));
+                    char *text = (char *)SDL_malloc(bsize + sizeof(Uint32));
                     SDL_memcpy((Uint8 *)text, buffer, bsize);
                     SDL_memset((Uint8 *)text + bsize, 0, sizeof(Uint32));
                     char *saveptr = NULL;
@@ -1990,13 +1990,13 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                              ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
-                    buffer = WIN_StringToUTF8(buffer);
+                    buffer = WIN_StringToUTF8((const wchar_t *)buffer);
                     if (buffer) {
-                        const size_t lbuffer = SDL_strlen(buffer);
+                        const size_t lbuffer = SDL_strlen((const char *)buffer);
                         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                                      ". In Drop Text for StringToUTF8, format %08x '%s', memory (%lu) %p\n",
                                      fetc.cfFormat, format_mime, (unsigned long)lbuffer, buffer);
-                        char *text = SDL_malloc(lbuffer + sizeof(Uint32));
+                        char *text = (char *)SDL_malloc(lbuffer + sizeof(Uint32));
                         SDL_memcpy((Uint8 *)text, buffer, lbuffer);
                         SDL_memset((Uint8 *)text + lbuffer, 0, sizeof(Uint32));
                         char *saveptr = NULL;
@@ -2044,7 +2044,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                              ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
-                    char *text = SDL_malloc(bsize + sizeof(Uint32));
+                    char *text = (char *)SDL_malloc(bsize + sizeof(Uint32));
                     SDL_memcpy((Uint8 *)text, buffer, bsize);
                     SDL_memset((Uint8 *)text + bsize, 0, sizeof(Uint32));
                     char *saveptr = NULL;

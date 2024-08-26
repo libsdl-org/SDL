@@ -2165,7 +2165,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchainCreateInfo.preTransform = rendererData->surfaceCapabilities.currentTransform;
-    swapchainCreateInfo.compositeAlpha = (renderer->window->flags & SDL_WINDOW_TRANSPARENT) ? 0 : VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swapchainCreateInfo.compositeAlpha = (renderer->window->flags & SDL_WINDOW_TRANSPARENT) ? (VkCompositeAlphaFlagBitsKHR)0 : VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     swapchainCreateInfo.presentMode = presentMode;
     swapchainCreateInfo.clipped = VK_TRUE;
     swapchainCreateInfo.oldSwapchain = rendererData->swapchain;
