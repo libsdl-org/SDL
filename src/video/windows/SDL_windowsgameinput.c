@@ -536,8 +536,8 @@ bool WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this)
 
     SDL_LockMutex(data->lock);
     {
-        data->enabled_input = (raw_mouse_enabled ? GameInputKindMouse : 0) |
-                             (raw_keyboard_enabled ? GameInputKindKeyboard : 0);
+        data->enabled_input = (raw_mouse_enabled ? GameInputKindMouse : GameInputKindUnknown) |
+                             (raw_keyboard_enabled ? GameInputKindKeyboard : GameInputKindUnknown);
 
         // Reset input if not enabled
         for (int i = 0; i < data->num_devices; ++i) {

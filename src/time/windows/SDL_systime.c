@@ -93,7 +93,7 @@ SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
 
     // Only available in Win8/Server 2012 or higher.
     if (!pGetSystemTimePreciseAsFileTime && !load_attempted) {
-        HANDLE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
+        HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
         if (kernel32) {
             pGetSystemTimePreciseAsFileTime = (pfnGetSystemTimePreciseAsFileTime)GetProcAddress(kernel32, "GetSystemTimePreciseAsFileTime");
         }

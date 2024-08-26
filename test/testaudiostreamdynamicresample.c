@@ -168,23 +168,6 @@ static void skip_audio(float amount)
     }
 }
 
-static const char *AudioFmtToString(const SDL_AudioFormat fmt)
-{
-    switch (fmt) {
-        #define FMTCASE(x) case SDL_AUDIO_##x: return #x
-        FMTCASE(U8);
-        FMTCASE(S8);
-        FMTCASE(S16LE);
-        FMTCASE(S16BE);
-        FMTCASE(S32LE);
-        FMTCASE(S32BE);
-        FMTCASE(F32LE);
-        FMTCASE(F32BE);
-        #undef FMTCASE
-    }
-    return "?";
-}
-
 static const char *AudioChansToStr(const int channels)
 {
     switch (channels) {
@@ -343,15 +326,15 @@ static void loop(void)
         draw_y = state->window_h - FONT_LINE_HEIGHT * 3;
 
         draw_textf(rend, 0, draw_y, "Wav: %6s/%6s/%i",
-            AudioFmtToString(spec.format), AudioChansToStr(spec.channels), spec.freq);
+            SDL_GetAudioFormatName(spec.format), AudioChansToStr(spec.channels), spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Src: %6s/%6s/%i",
-            AudioFmtToString(src_spec.format), AudioChansToStr(src_spec.channels), src_spec.freq);
+            SDL_GetAudioFormatName(src_spec.format), AudioChansToStr(src_spec.channels), src_spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Dst: %6s/%6s/%i",
-            AudioFmtToString(dst_spec.format), AudioChansToStr(dst_spec.channels), dst_spec.freq);
+            SDL_GetAudioFormatName(dst_spec.format), AudioChansToStr(dst_spec.channels), dst_spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         SDL_RenderPresent(rend);

@@ -2032,7 +2032,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
      */
     spec->freq = format->frequency;
     spec->channels = (Uint8)format->channels;
-    spec->format = 0;
+    spec->format = SDL_AUDIO_UNKNOWN;
 
     switch (format->encoding) {
     case MS_ADPCM_CODE:

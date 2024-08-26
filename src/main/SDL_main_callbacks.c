@@ -110,7 +110,7 @@ SDL_AppResult SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func app
         }
     }
 
-    return SDL_AtomicGet(&apprc);
+    return (SDL_AppResult)SDL_AtomicGet(&apprc);
 }
 
 SDL_AppResult SDL_IterateMainCallbacks(bool pump_events)
@@ -120,11 +120,11 @@ SDL_AppResult SDL_IterateMainCallbacks(bool pump_events)
     }
     SDL_DispatchMainCallbackEvents();
 
-    SDL_AppResult rc = SDL_AtomicGet(&apprc);
+    SDL_AppResult rc = (SDL_AppResult)SDL_AtomicGet(&apprc);
     if (rc == SDL_APP_CONTINUE) {
         rc = SDL_main_iteration_callback(SDL_main_appstate);
         if (!SDL_AtomicCompareAndSwap(&apprc, SDL_APP_CONTINUE, rc)) {
-            rc = SDL_AtomicGet(&apprc); // something else already set a quit result, keep that.
+            rc = (SDL_AppResult)SDL_AtomicGet(&apprc); // something else already set a quit result, keep that.
         }
     }
     return rc;

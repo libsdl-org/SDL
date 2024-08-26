@@ -233,7 +233,7 @@ SDL_AudioTrack *SDL_CreateAudioTrack(
     Uint8 *data, size_t len, size_t capacity,
     SDL_ReleaseAudioBufferCallback callback, void *userdata)
 {
-    SDL_AudioTrack *track = AllocMemoryPoolBlock(&queue->track_pool);
+    SDL_AudioTrack *track = (SDL_AudioTrack *)AllocMemoryPoolBlock(&queue->track_pool);
 
     if (!track) {
         return NULL;
@@ -261,14 +261,14 @@ SDL_AudioTrack *SDL_CreateAudioTrack(
 
 static void SDLCALL FreeChunkedAudioBuffer(void *userdata, const void *buf, int len)
 {
-    SDL_AudioQueue *queue = userdata;
+    SDL_AudioQueue *queue = (SDL_AudioQueue *)userdata;
 
     FreeMemoryPoolBlock(&queue->chunk_pool, (void *)buf);
 }
 
 static SDL_AudioTrack *CreateChunkedAudioTrack(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const int *chmap)
 {
-    void *chunk = AllocMemoryPoolBlock(&queue->chunk_pool);
+    Uint8 *chunk = (Uint8 *)AllocMemoryPoolBlock(&queue->chunk_pool);
 
     if (!chunk) {
         return NULL;
@@ -636,7 +636,7 @@ bool SDL_ResetAudioQueueHistory(SDL_AudioQueue *queue, int num_frames)
     Uint8 *history_buffer = queue->history_buffer;
 
     if (queue->history_capacity < length) {
-        history_buffer = SDL_aligned_alloc(SDL_GetSIMDAlignment(), length);
+        history_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), length);
         if (!history_buffer) {
             return false;
         }

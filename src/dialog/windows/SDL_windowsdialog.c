@@ -172,8 +172,7 @@ void windows_ShowFileDialog(void *ptr)
         }
 
         int filter_wlen = MultiByteToWideChar(CP_UTF8, 0, filterlist, filter_len, NULL, 0);
-        filter_wchar = SDL_malloc(filter_wlen * sizeof(wchar_t));
-
+        filter_wchar = (wchar_t *)SDL_malloc(filter_wlen * sizeof(wchar_t));
         if (!filter_wchar) {
             SDL_free(filterlist);
             callback(userdata, NULL, -1);
@@ -439,7 +438,7 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
         return;
     }
 
-    args = SDL_malloc(sizeof(winArgs));
+    args = (winArgs *)SDL_malloc(sizeof(*args));
     if (args == NULL) {
         callback(userdata, NULL, -1);
         return;
@@ -450,7 +449,7 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
     args->nfilters = nfilters;
     args->default_file = default_location;
     args->parent = window;
-    args->flags = (allow_many == true) ? OFN_ALLOWMULTISELECT : 0;
+    args->flags = (allow_many != SDL_FALSE) ? OFN_ALLOWMULTISELECT : 0;
     args->callback = callback;
     args->userdata = userdata;
 
@@ -476,7 +475,7 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
         return;
     }
 
-    args = SDL_malloc(sizeof(winArgs));
+    args = (winArgs *)SDL_malloc(sizeof(*args));
     if (args == NULL) {
         callback(userdata, NULL, -1);
         return;
@@ -513,7 +512,7 @@ void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, S
         return;
     }
 
-    args = SDL_malloc(sizeof(winFArgs));
+    args = (winFArgs *)SDL_malloc(sizeof(*args));
     if (args == NULL) {
         callback(userdata, NULL, -1);
         return;

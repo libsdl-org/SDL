@@ -221,7 +221,7 @@ static char *CaseFoldUtf8String(const char *fname)
 
     if (remaining > 0) {
         SDL_assert(allocation > remaining);
-        ptr = SDL_realloc(result, allocation - remaining);  // shrink it down.
+        ptr = (char *)SDL_realloc(result, allocation - remaining);  // shrink it down.
         if (ptr) {  // shouldn't fail, but if it does, `result` is still valid.
             result = ptr;
         }

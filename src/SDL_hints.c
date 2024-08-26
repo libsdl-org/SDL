@@ -86,7 +86,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
 
     SDL_LockProperties(hints);
 
-    SDL_Hint *hint = SDL_GetPointerProperty(hints, name, NULL);
+    SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
     if (hint) {
         if (priority >= hint->priority) {
             if (hint->value != value && (!value || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
@@ -137,7 +137,7 @@ SDL_bool SDL_ResetHint(const char *name)
 
     SDL_LockProperties(hints);
 
-    SDL_Hint *hint = SDL_GetPointerProperty(hints, name, NULL);
+    SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
     if (hint) {
         if ((!env && hint->value) || (env && !hint->value) || (env && SDL_strcmp(env, hint->value) != 0)) {
             for (SDL_HintWatch *entry = hint->callbacks; entry;) {
@@ -160,7 +160,7 @@ SDL_bool SDL_ResetHint(const char *name)
 
 static void SDLCALL ResetHintsCallback(void *userdata, SDL_PropertiesID hints, const char *name)
 {
-    SDL_Hint *hint = SDL_GetPointerProperty(hints, name, NULL);
+    SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
     if (!hint) {
         return;  // uh...okay.
     }
@@ -202,7 +202,7 @@ const char *SDL_GetHint(const char *name)
     if (hints) {
         SDL_LockProperties(hints);
 
-        SDL_Hint *hint = SDL_GetPointerProperty(hints, name, NULL);
+        SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
         if (hint) {
             if (!result || hint->priority == SDL_HINT_OVERRIDE) {
                 result = SDL_GetPersistentString(hint->value);
@@ -275,7 +275,7 @@ SDL_bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *
 
     SDL_DelHintCallback(name, callback, userdata);
 
-    SDL_Hint *hint = SDL_GetPointerProperty(hints, name, NULL);
+    SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
     if (hint) {
         result = true;
     } else {  // Need to add a hint entry for this watcher
@@ -317,7 +317,7 @@ void SDL_DelHintCallback(const char *name, SDL_HintCallback callback, void *user
     }
 
     SDL_LockProperties(hints);
-    SDL_Hint *hint = SDL_GetPointerProperty(hints, name, NULL);
+    SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
     if (hint) {
         SDL_HintWatch *prev = NULL;
         for (SDL_HintWatch *entry = hint->callbacks; entry; entry = entry->next) {

@@ -257,7 +257,7 @@ static bool WriteRegister(SDL_DriverWii_Context *ctx, Uint32 address, const Uint
 
     SDL_zeroa(writeRequest);
     writeRequest[0] = k_eWiiOutputReportIDs_WriteMemory;
-    writeRequest[1] = (Uint8)(0x04 | ctx->m_bRumbleActive);
+    writeRequest[1] = (Uint8)(0x04 | (Uint8)ctx->m_bRumbleActive);
     writeRequest[2] = (address >> 16) & 0xff;
     writeRequest[3] = (address >> 8) & 0xff;
     writeRequest[4] = address & 0xff;
@@ -286,7 +286,7 @@ static bool ReadRegister(SDL_DriverWii_Context *ctx, Uint32 address, int size, b
     Uint8 readRequest[7];
 
     readRequest[0] = k_eWiiOutputReportIDs_ReadMemory;
-    readRequest[1] = (Uint8)(0x04 | ctx->m_bRumbleActive);
+    readRequest[1] = (Uint8)(0x04 | (Uint8)ctx->m_bRumbleActive);
     readRequest[2] = (address >> 16) & 0xff;
     readRequest[3] = (address >> 8) & 0xff;
     readRequest[4] = address & 0xff;

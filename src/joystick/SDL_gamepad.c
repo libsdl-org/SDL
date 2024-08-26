@@ -3132,7 +3132,7 @@ SDL_bool SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, 
                 SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
 
                 if (sensor->type == type) {
-                    if (sensor->enabled == enabled) {
+                    if (sensor->enabled == (enabled != SDL_FALSE)) {
                         SDL_UnlockJoysticks();
                         return true;
                     }

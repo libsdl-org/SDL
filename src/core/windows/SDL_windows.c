@@ -377,7 +377,7 @@ SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat)
             return SDL_AUDIO_S32;
         }
     }
-    return 0;
+    return SDL_AUDIO_UNKNOWN;
 }
 
 

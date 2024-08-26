@@ -492,7 +492,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     int is8bit, angle90;
     SDL_BlendMode blendmode;
     Uint32 colorkey = 0;
-    int colorKeyAvailable = false;
+    bool colorKeyAvailable = false;
     double sangleinv, cangleinv;
 
     // Sanity check
@@ -538,7 +538,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
 
     SDL_GetSurfaceBlendMode(src, &blendmode);
 
-    if (colorKeyAvailable == true) {
+    if (colorKeyAvailable) {
         // If available, the colorkey will be used to discard the pixels that are outside of the rotated area.
         SDL_SetSurfaceColorKey(rz_dst, true, colorkey);
         SDL_FillSurfaceRect(rz_dst, NULL, colorkey);

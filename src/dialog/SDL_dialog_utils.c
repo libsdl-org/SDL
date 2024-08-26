@@ -63,7 +63,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
         new_length = SDL_strlen(combined) + SDL_strlen(converted)
                    + SDL_strlen(terminator) + 1;
 
-        new_combined = SDL_realloc(combined, new_length);
+        new_combined = (char *)SDL_realloc(combined, new_length);
 
         if (!new_combined) {
             SDL_free(converted);
@@ -82,7 +82,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
     if (!filters->name || !filters->pattern) {
         new_length = SDL_strlen(combined) + SDL_strlen(suffix) + 1;
 
-        new_combined = SDL_realloc(combined, new_length);
+        new_combined = (char *)SDL_realloc(combined, new_length);
 
         if (!new_combined) {
             SDL_free(combined);
