@@ -36,6 +36,9 @@
 #include <inttypes.h>
 #endif
 #include <stdarg.h>
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
 #include <stdint.h>
 #include <string.h>
 #include <wchar.h>
@@ -191,7 +194,7 @@ void *alloca(size_t);
  *
  * \sa SDL_bool
  */
-#define SDL_FALSE 0
+#define SDL_FALSE false
 
 /**
  * A boolean true.
@@ -200,7 +203,7 @@ void *alloca(size_t);
  *
  * \sa SDL_bool
  */
-#define SDL_TRUE 1
+#define SDL_TRUE true
 
 /**
  * A boolean type: true or false.
@@ -210,7 +213,7 @@ void *alloca(size_t);
  * \sa SDL_TRUE
  * \sa SDL_FALSE
  */
-typedef int SDL_bool;
+typedef bool SDL_bool;
 
 /**
  * A signed 8-bit integer type.
@@ -482,6 +485,7 @@ typedef Sint64 SDL_Time;
 
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
+SDL_COMPILE_TIME_ASSERT(bool, sizeof(SDL_bool) == 1);
 SDL_COMPILE_TIME_ASSERT(uint8, sizeof(Uint8) == 1);
 SDL_COMPILE_TIME_ASSERT(sint8, sizeof(Sint8) == 1);
 SDL_COMPILE_TIME_ASSERT(uint16, sizeof(Uint16) == 2);
