@@ -1696,6 +1696,8 @@ This header has been removed and a simplified version of this API has been added
 The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
 
+SDL_bool is now defined as bool, and is 1 byte instead of the size of an int.
+
 SDL3 attempts to apply consistency to case-insensitive string functions. In SDL2, things like SDL_strcasecmp() would usually only work on English letters, and depending on the user's locale, possibly not even those. In SDL3, consistency is applied:
 
 - Many things that don't care about case-insensitivity, like SDL_strcmp(), continue to work with any null-terminated string of bytes, even if it happens to be malformed UTF-8.
