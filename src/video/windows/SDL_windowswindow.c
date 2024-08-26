@@ -523,6 +523,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
 
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     window->flags |= SDL_WINDOW_INPUT_FOCUS;
+    SDL_SetKeyboardFocus(window);
 #else
     if (GetFocus() == hwnd) {
         window->flags |= SDL_WINDOW_INPUT_FOCUS;
