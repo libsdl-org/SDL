@@ -121,7 +121,7 @@ tryagain:
         result = false;
         break;
     default:
-        result = false;
+        result = true;
         break;
     }
     return result;
