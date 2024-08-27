@@ -190,7 +190,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LockMutex(SDL_Mutex *mutex) SDL_ACQUIRE(mut
  * don't want to wait for it, and will return to it to try again later.
  *
  * This function returns SDL_TRUE if passed a NULL mutex.
- * 
+ *
  * \param mutex the mutex to try to lock.
  * \returns SDL_TRUE on success, SDL_FALSE if the mutex would block.
  *
@@ -388,7 +388,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SD
  * holding read-only locks, as this won't prevent access.
  *
  * This function returns SDL_TRUE if passed a NULL rwlock.
- * 
+ *
  * \param rwlock the rwlock to try to lock.
  * \returns SDL_TRUE on success, SDL_FALSE if the lock would block.
  *
@@ -418,7 +418,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TryLockRWLockForReading(SDL_RWLock *rwl
  * read-only lock before requesting a write lock.
  *
  * This function returns SDL_TRUE if passed a NULL rwlock.
- * 
+ *
  * \param rwlock the rwlock to try to lock.
  * \returns SDL_TRUE on success, SDL_FALSE if the lock would block.
  *
@@ -537,8 +537,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroySemaphore(SDL_Semaphore *sem);
 /**
  * Wait until a semaphore has a positive value and then decrements it.
  *
- * This function suspends the calling thread until the semaphore
- * pointed to by `sem` has a positive value, and then atomically decrement the semaphore value.
+ * This function suspends the calling thread until the semaphore pointed to by
+ * `sem` has a positive value, and then atomically decrement the semaphore
+ * value.
  *
  * This function is the equivalent of calling SDL_WaitSemaphoreTimeout() with
  * a time length of -1.
@@ -562,8 +563,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitSemaphore(SDL_Semaphore *sem);
  * returns SDL_FALSE.
  *
  * \param sem the semaphore to wait on.
- * \returns SDL_TRUE if the wait succeeds, SDL_FALSE if the wait would
- *          block.
+ * \returns SDL_TRUE if the wait succeeds, SDL_FALSE if the wait would block.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -577,11 +577,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TryWaitSemaphore(SDL_Semaphore *sem);
  * Wait until a semaphore has a positive value and then decrements it.
  *
  * This function suspends the calling thread until either the semaphore
- * pointed to by `sem` has a positive value or the specified time has elapsed. If the call is
- * successful it will atomically decrement the semaphore value.
+ * pointed to by `sem` has a positive value or the specified time has elapsed.
+ * If the call is successful it will atomically decrement the semaphore value.
  *
  * \param sem the semaphore to wait on.
- * \param timeoutMS the length of the timeout, in milliseconds, or -1 to wait indefinitely.
+ * \param timeoutMS the length of the timeout, in milliseconds, or -1 to wait
+ *                  indefinitely.
  * \returns SDL_TRUE if the wait succeeds or SDL_FALSE if the wait times out.
  *
  * \since This function is available since SDL 3.0.0.
@@ -740,8 +741,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitCondition(SDL_Condition *cond, SDL_Mute
  * \param mutex the mutex used to coordinate thread access.
  * \param timeoutMS the maximum time to wait, in milliseconds, or -1 to wait
  *                  indefinitely.
- * \returns SDL_TRUE if the condition variable is signaled, SDL_FALSE if
- *          the condition is not signaled in the allotted time.
+ * \returns SDL_TRUE if the condition variable is signaled, SDL_FALSE if the
+ *          condition is not signaled in the allotted time.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

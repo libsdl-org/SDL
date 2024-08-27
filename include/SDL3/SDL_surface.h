@@ -224,8 +224,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surfac
  * \param surface the SDL_Surface structure to update.
  * \param colorspace an SDL_ColorSpace value describing the surface
  *                   colorspace.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -285,8 +285,8 @@ extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreateSurfacePalette(SDL_Surface *
  *
  * \param surface the SDL_Surface structure to update.
  * \param palette the SDL_Palette structure to use.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -322,8 +322,8 @@ extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_GetSurfacePalette(SDL_Surface *sur
  * \param surface the SDL_Surface structure to update.
  * \param image a pointer to an alternate SDL_Surface to associate with this
  *              surface.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -402,8 +402,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_RemoveSurfaceAlternateImages(SDL_Surface *s
  * format of the surface will not change.
  *
  * \param surface the SDL_Surface structure to be locked.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -474,8 +474,8 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP(const char *file);
  * \param dst a data stream to save to.
  * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `dst` before returning,
  *                even in the case of an error.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -495,8 +495,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IO
  *
  * \param surface the SDL_Surface structure containing the image to be saved.
  * \param file a file to save to.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -514,8 +514,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SaveBMP(SDL_Surface *surface, const cha
  * \param surface the SDL_Surface structure to optimize.
  * \param enabled SDL_TRUE to enable RLE acceleration, SDL_FALSE to disable
  *                it.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -553,8 +553,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);
  * \param enabled SDL_TRUE to enable color key, SDL_FALSE to disable color
  *                key.
  * \param key the transparent pixel.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -589,8 +589,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasColorKey(SDL_Surface *surface
  *
  * \param surface the SDL_Surface structure to query.
  * \param key a pointer filled in with the transparent pixel.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -612,8 +612,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetSurfaceColorKey(SDL_Surface *surface
  * \param r the red color value multiplied into blit operations.
  * \param g the green color value multiplied into blit operations.
  * \param b the blue color value multiplied into blit operations.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -630,8 +630,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceColorMod(SDL_Surface *surface
  * \param r a pointer filled in with the current red color value.
  * \param g a pointer filled in with the current green color value.
  * \param b a pointer filled in with the current blue color value.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -650,8 +650,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetSurfaceColorMod(SDL_Surface *surface
  *
  * \param surface the SDL_Surface structure to update.
  * \param alpha the alpha value multiplied into blit operations.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -665,8 +665,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface *surface
  *
  * \param surface the SDL_Surface structure to query.
  * \param alpha a pointer filled in with the current alpha value.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -684,8 +684,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetSurfaceAlphaMod(SDL_Surface *surface
  *
  * \param surface the SDL_Surface structure to update.
  * \param blendMode the SDL_BlendMode to use for blit blending.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -698,8 +698,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceBlendMode(SDL_Surface *surfac
  *
  * \param surface the SDL_Surface structure to query.
  * \param blendMode a pointer filled in with the current SDL_BlendMode.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -738,8 +738,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface
  *                clipped.
  * \param rect an SDL_Rect structure filled in with the clipping rectangle for
  *             the surface.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -752,8 +752,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface
  *
  * \param surface the surface to flip.
  * \param flip the direction to flip.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -860,8 +860,8 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurfaceAndColorspace(SDL_Su
  * \param dst_format an SDL_PixelFormat value of the `dst` pixels format.
  * \param dst a pointer to be filled in with new pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
- * \returns SDL_FALSE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_FALSE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -889,8 +889,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ConvertPixels(int width, int height, SD
  *                       properties, or 0.
  * \param dst a pointer to be filled in with new pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
- * \returns SDL_FALSE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_FALSE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -913,8 +913,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ConvertPixelsAndColorspace(int width, i
  * \param dst_pitch the pitch of the destination pixels, in bytes.
  * \param linear SDL_TRUE to convert from sRGB to linear space for the alpha
  *               multiplication, SDL_FALSE to do multiplication in sRGB space.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -928,8 +928,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PremultiplyAlpha(int width, int height,
  * \param surface the surface to modify.
  * \param linear SDL_TRUE to convert from sRGB to linear space for the alpha
  *               multiplication, SDL_FALSE to do multiplication in sRGB space.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -948,8 +948,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PremultiplySurfaceAlpha(SDL_Surface *su
  * \param g the green component of the pixel, normally in the range 0-1.
  * \param b the blue component of the pixel, normally in the range 0-1.
  * \param a the alpha component of the pixel, normally in the range 0-1.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -971,8 +971,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClearSurface(SDL_Surface *surface, floa
  * \param rect the SDL_Rect structure representing the rectangle to fill, or
  *             NULL to fill the entire surface.
  * \param color the color to fill with.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -996,8 +996,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_FillSurfaceRect(SDL_Surface *dst, const
  * \param rects an array of SDL_Rects representing the rectangles to fill.
  * \param count the number of rectangles in the array.
  * \param color the color to fill with.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1067,8 +1067,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, cons
  *                height are ignored, and are copied from `srcrect`. If you
  *                want a specific width and height, you should use
  *                SDL_BlitSurfaceScaled().
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety The same destination surface should not be used from two
  *               threads at once. It is safe to use the same source surface
@@ -1092,8 +1092,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL
  * \param dst the SDL_Surface structure that is the blit target.
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface, may not be NULL.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety The same destination surface should not be used from two
  *               threads at once. It is safe to use the same source surface
@@ -1117,8 +1117,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_BlitSurfaceUnchecked(SDL_Surface *src, 
  *                the destination surface, or NULL to fill the entire
  *                destination surface.
  * \param scaleMode the SDL_ScaleMode to be used.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety The same destination surface should not be used from two
  *               threads at once. It is safe to use the same source surface
@@ -1143,8 +1143,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, con
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface, may not be NULL.
  * \param scaleMode the SDL_ScaleMode to be used.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety The same destination surface should not be used from two
  *               threads at once. It is safe to use the same source surface
@@ -1169,8 +1169,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface 
  * \param dst the SDL_Surface structure that is the blit target.
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface, or NULL to fill the entire surface.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety The same destination surface should not be used from two
  *               threads at once. It is safe to use the same source surface
@@ -1199,8 +1199,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, cons
  * \param dst the SDL_Surface structure that is the blit target.
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface, or NULL to fill the entire surface.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety The same destination surface should not be used from two
  *               threads at once. It is safe to use the same source surface
@@ -1236,8 +1236,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *
  * \param dst the SDL_Surface structure that is the blit target.
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface, or NULL to fill the entire surface.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety The same destination surface should not be used from two
  *               threads at once. It is safe to use the same source surface
@@ -1330,8 +1330,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint
  *          ignore this channel.
  * \param a a pointer filled in with the alpha channel, 0-255, or NULL to
  *          ignore this channel.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1354,8 +1354,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, 
  *          0-1, or NULL to ignore this channel.
  * \param a a pointer filled in with the alpha channel, normally in the range
  *          0-1, or NULL to ignore this channel.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1377,8 +1377,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ReadSurfacePixelFloat(SDL_Surface *surf
  * \param g the green channel value, 0-255.
  * \param b the blue channel value, 0-255.
  * \param a the alpha channel value, 0-255.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1397,8 +1397,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WriteSurfacePixel(SDL_Surface *surface,
  * \param g the green channel value, normally in the range 0-1.
  * \param b the blue channel value, normally in the range 0-1.
  * \param a the alpha channel value, normally in the range 0-1.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

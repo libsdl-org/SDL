@@ -372,15 +372,15 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_OpenIO(const SDL_IOStreamInterfac
  *
  * SDL_CloseIO() closes and cleans up the SDL_IOStream stream. It releases any
  * resources used by the stream and frees the SDL_IOStream itself. This
- * returns SDL_TRUE on success, or SDL_FALSE if the stream failed to flush to its output
- * (e.g. to disk).
+ * returns SDL_TRUE on success, or SDL_FALSE if the stream failed to flush to
+ * its output (e.g. to disk).
  *
  * Note that if this fails to flush the stream to disk, this function reports
  * an error, but the SDL_IOStream is still invalid once this function returns.
  *
  * \param context SDL_IOStream structure to close.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

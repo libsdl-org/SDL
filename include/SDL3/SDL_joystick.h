@@ -472,8 +472,8 @@ extern SDL_DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystick(const SDL_V
  *
  * \param instance_id the joystick instance ID, previously returned from
  *                    SDL_AttachVirtualJoystick().
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -507,8 +507,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsJoystickVirtual(SDL_JoystickID instan
  * \param joystick the virtual joystick on which to set state.
  * \param axis the index of the axis on the virtual joystick to update.
  * \param value the new value for the specified axis.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -527,8 +527,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualAxis(SDL_Joystick *jo
  * \param ball the index of the ball on the virtual joystick to update.
  * \param xrel the relative motion on the X axis.
  * \param yrel the relative motion on the Y axis.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -546,8 +546,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualBall(SDL_Joystick *jo
  * \param joystick the virtual joystick on which to set state.
  * \param button the index of the button on the virtual joystick to update.
  * \param value the new value for the specified button.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -565,8 +565,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualButton(SDL_Joystick *
  * \param joystick the virtual joystick on which to set state.
  * \param hat the index of the hat on the virtual joystick to update.
  * \param value the new value for the specified hat.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -592,8 +592,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joy
  * \param y the y coordinate of the finger on the touchpad, normalized 0 to 1,
  *          with the origin in the upper left.
  * \param pressure the pressure of the finger.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -614,8 +614,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualTouchpad(SDL_Joystick
  *                         the sensor reading.
  * \param data the data associated with the sensor reading.
  * \param num_values the number of values pointed to by `data`.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -698,8 +698,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetJoystickPlayerIndex(SDL_Joystick *joystic
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick().
  * \param player_index player index to assign to this joystick, or -1 to clear
  *                     the player index and turn off player LEDs.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -853,9 +853,8 @@ extern SDL_DECLSPEC SDL_JoystickID SDLCALL SDL_GetJoystickID(SDL_Joystick *joyst
  * device and platform.
  *
  * \param joystick an SDL_Joystick structure containing joystick information.
- * \returns the number of axis controls/number of axes on success or -1
- *          on failure; call SDL_GetError() for more
- *          information.
+ * \returns the number of axis controls/number of axes on success or -1 on
+ *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -875,8 +874,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumJoystickAxes(SDL_Joystick *joystick);
  * Most joysticks do not have trackballs.
  *
  * \param joystick an SDL_Joystick structure containing joystick information.
- * \returns the number of trackballs on success or -1 on
- *          failure; call SDL_GetError() for more information.
+ * \returns the number of trackballs on success or -1 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -891,8 +890,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumJoystickBalls(SDL_Joystick *joystick);
  * Get the number of POV hats on a joystick.
  *
  * \param joystick an SDL_Joystick structure containing joystick information.
- * \returns the number of POV hats on success or -1 on
- *          failure; call SDL_GetError() for more information.
+ * \returns the number of POV hats on success or -1 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -907,8 +906,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumJoystickHats(SDL_Joystick *joystick);
  * Get the number of buttons on a joystick.
  *
  * \param joystick an SDL_Joystick structure containing joystick information.
- * \returns the number of buttons on success or -1 on
- *          failure; call SDL_GetError() for more information.
+ * \returns the number of buttons on success or -1 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1013,8 +1012,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetJoystickAxisInitialState(SDL_Joystic
  * \param ball the ball index to query; ball indices start at index 0.
  * \param dx stores the difference in the x axis position since the last poll.
  * \param dy stores the difference in the y axis position since the last poll.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1102,8 +1101,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RumbleJoystick(SDL_Joystick *joystick, 
  * \param right_rumble the intensity of the right trigger rumble motor, from 0
  *                     to 0xFFFF.
  * \param duration_ms the duration of the rumble effect, in milliseconds.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1124,8 +1123,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *jo
  * \param red the intensity of the red LED.
  * \param green the intensity of the green LED.
  * \param blue the intensity of the blue LED.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1137,8 +1136,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickLED(SDL_Joystick *joystick, 
  * \param joystick the joystick to affect.
  * \param data the data to send to the joystick.
  * \param size the size of the data to send to the joystick.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

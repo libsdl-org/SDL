@@ -191,8 +191,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
  * \param priority the SDL_LogPriority to modify.
  * \param prefix the prefix to use for that log priority, or NULL to use no
  *               prefix.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

@@ -266,8 +266,8 @@ typedef Uint32 SDL_GlobFlags;
  * Create a directory.
  *
  * \param path the path of the directory to create.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -289,8 +289,8 @@ typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char
  * \param path the path of the directory to enumerate.
  * \param callback a function that is called for each entry in the directory.
  * \param userdata a pointer that is passed to `callback`.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -300,8 +300,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_EnumerateDirectory(const char *path, SD
  * Remove a file or an empty directory.
  *
  * \param path the path of the directory to enumerate.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -312,8 +312,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RemovePath(const char *path);
  *
  * \param oldpath the old path.
  * \param newpath the new path.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -324,8 +324,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RenamePath(const char *oldpath, const c
  *
  * \param oldpath the old path.
  * \param newpath the new path.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -337,8 +337,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CopyFile(const char *oldpath, const cha
  * \param path the path to query.
  * \param info a pointer filled in with information about the path, or NULL to
  *             check for the existence of a file.
- * \returns SDL_TRUE on success or SDL_FALSE if the file doesn't exist,
- *          or another failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE if the file doesn't exist, or
+ *          another failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

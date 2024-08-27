@@ -1039,8 +1039,8 @@ typedef enum SDL_EventAction
  *                SDL_EVENT_FIRST is a safe choice.
  * \param maxType maximum value of the event type to be considered;
  *                SDL_EVENT_LAST is a safe choice.
- * \returns the number of events actually stored or -1 on
- *          failure; call SDL_GetError() for more information.
+ * \returns the number of events actually stored or -1 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1254,8 +1254,9 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint
  * its own custom event types.
  *
  * \param event the SDL_Event to be added to the queue.
- * \returns SDL_TRUE on success, SDL_FALSE if the event was filtered or on failure; call SDL_GetError() for more information. A
- *          common reason for error is the event queue being full.
+ * \returns SDL_TRUE on success, SDL_FALSE if the event was filtered or on
+ *          failure; call SDL_GetError() for more information. A common reason
+ *          for error is the event queue being full.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1371,8 +1372,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter,
  *
  * \param filter an SDL_EventFilter function to call when an event happens.
  * \param userdata a pointer that is passed to `filter`.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

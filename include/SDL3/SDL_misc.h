@@ -62,8 +62,8 @@ extern "C" {
  *
  * \param url a valid URL/URI to open. Use `file:///full/path/to/file` for
  *            local files, if supported.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

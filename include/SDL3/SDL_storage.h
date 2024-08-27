@@ -230,8 +230,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
  * \param storage a storage container to query.
  * \param path the relative path of the file to query.
  * \param length a pointer to be filled with the file's length.
- * \returns SDL_TRUE if the file could be queried or SDL_FALSE on
- *          failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE if the file could be queried or SDL_FALSE on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -266,8 +266,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, c
  * \param path the relative path of the file to write.
  * \param source a client-provided buffer to write from.
  * \param length the length of the source buffer.
- * \returns SDL_TRUE if the file was written or SDL_FALSE on failure;
- *          call SDL_GetError() for more information.
+ * \returns SDL_TRUE if the file was written or SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -282,8 +282,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WriteStorageFile(SDL_Storage *storage, 
  *
  * \param storage a storage container.
  * \param path the path of the directory to create.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -302,8 +302,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CreateStorageDirectory(SDL_Storage *sto
  * \param path the path of the directory to enumerate.
  * \param callback a function that is called for each entry in the directory.
  * \param userdata a pointer that is passed to `callback`.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -316,8 +316,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_EnumerateStorageDirectory(SDL_Storage *
  *
  * \param storage a storage container.
  * \param path the path of the directory to enumerate.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -331,8 +331,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RemoveStoragePath(SDL_Storage *storage,
  * \param storage a storage container.
  * \param oldpath the old path.
  * \param newpath the new path.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -346,8 +346,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RenameStoragePath(SDL_Storage *storage,
  * \param storage a storage container.
  * \param oldpath the old path.
  * \param newpath the new path.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -362,8 +362,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CopyStorageFile(SDL_Storage *storage, c
  * \param path the path to query.
  * \param info a pointer filled in with information about the path, or NULL to
  *             check for the existence of a file.
- * \returns SDL_TRUE on success or SDL_FALSE if the file doesn't exist,
- *          or another failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE if the file doesn't exist, or
+ *          another failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

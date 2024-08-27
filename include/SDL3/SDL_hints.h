@@ -4168,8 +4168,8 @@ typedef enum SDL_HintPriority
  * \param name the hint to set.
  * \param value the value of the hint variable.
  * \param priority the SDL_HintPriority level for the hint.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4190,8 +4190,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name, c
  *
  * \param name the hint to set.
  * \param value the value of the hint variable.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4211,8 +4211,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name, const char *v
  * change.
  *
  * \param name the hint to set.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4306,8 +4306,8 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  * \param callback An SDL_HintCallback function that will be called when the
  *                 hint value changes.
  * \param userdata a pointer to pass to the callback function.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

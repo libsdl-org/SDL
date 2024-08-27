@@ -478,8 +478,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetMainReady(void);
  *                     literally have to be `main`.
  * \param reserved should be NULL (reserved for future use, will probably be
  *                 platform-specific then).
- * \returns the return value from mainFunction: 0 on success, otherwise failure;
- *          SDL_GetError() might have more information on the failure.
+ * \returns the return value from mainFunction: 0 on success, otherwise
+ *          failure; SDL_GetError() might have more information on the
+ *          failure.
  *
  * \threadsafety Generally this is called once, near startup, from the
  *               process's initial thread.
@@ -537,8 +538,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char *argv[]
  *              what is specified here.
  * \param hInst the HINSTANCE to use in WNDCLASSEX::hInstance. If zero, SDL
  *              will use `GetModuleHandle(NULL)` instead.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

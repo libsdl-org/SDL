@@ -154,8 +154,8 @@ typedef struct SDL_MessageBoxData
  *                       other options.
  * \param buttonid the pointer to which user id of hit button should be
  *                 copied.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -196,8 +196,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData
  * \param title uTF-8 title text.
  * \param message uTF-8 message text.
  * \param window the parent window, or NULL for no parent.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

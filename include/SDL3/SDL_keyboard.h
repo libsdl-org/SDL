@@ -231,8 +231,8 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key,
  * \param name the name to use for the scancode, encoded as UTF-8. The string
  *             is not copied, so the pointer given to this function must stay
  *             valid while SDL is being used.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -322,8 +322,8 @@ extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
  * On some platforms using this function shows the screen keyboard.
  *
  * \param window the window to enable text input.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -414,8 +414,8 @@ typedef enum SDL_Capitalization
  *
  * \param window the window to enable text input.
  * \param props the properties to use.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -451,8 +451,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TextInputActive(SDL_Window *window);
  * it.
  *
  * \param window the window to disable text input.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -464,8 +464,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_StopTextInput(SDL_Window *window);
  * Dismiss the composition window/IME without disabling the subsystem.
  *
  * \param window the window to affect.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -485,8 +485,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClearComposition(SDL_Window *window);
  *             coordinates, or NULL to clear it.
  * \param cursor the offset of the current cursor location relative to
  *               `rect->x`, in window coordinates.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -505,8 +505,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetTextInputArea(SDL_Window *window, co
  *             may be NULL.
  * \param cursor a pointer to the offset of the current cursor location
  *               relative to `rect->x`, may be NULL.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
