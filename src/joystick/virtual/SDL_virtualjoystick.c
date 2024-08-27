@@ -70,6 +70,10 @@ static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
         return;
     }
 
+    if (hwdata->desc.Cleanup) {
+        hwdata->desc.Cleanup(hwdata->desc.userdata);
+    }
+
     // Remove hwdata from SDL-global list
     for (cur = g_VJoys; cur; prev = cur, cur = cur->next) {
         if (hwdata == cur) {
