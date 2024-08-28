@@ -259,6 +259,7 @@
     <ClInclude Include="..\..\include\SDL3\SDL_haptic.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_hints.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_hidapi.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_asyncio.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_joystick.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_keyboard.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_keycode.h" />
@@ -352,6 +353,8 @@
     <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h" />
     <ClInclude Include="..\..\src\gpu\SDL_sysgpu.h" />
     <ClInclude Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan_vkfuncs.h" />
+    <ClInclude Include="..\..\src\file\SDL_asyncio_c.h" />
+    <ClInclude Include="..\..\src\file\SDL_sysasyncio.h" />
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h" />
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
@@ -415,6 +418,8 @@
     <ClCompile Include="..\..\src\gpu\SDL_gpu.c" />
     <ClCompile Include="..\..\src\gpu\d3d12\SDL_gpu_d3d12.c" />
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c" />
+    <ClCompile Include="..\..\src\file\generic\SDL_asyncio_generic.c" />
+    <ClCompile Include="..\..\src\file\SDL_asyncio.c" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_runapp.c" />

@@ -35,6 +35,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/dynapi/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/events/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/file/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/file/generic/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/gpu/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/gpu/vulkan/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/haptic/*.c) \

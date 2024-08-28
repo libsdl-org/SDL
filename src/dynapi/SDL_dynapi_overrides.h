@@ -1214,3 +1214,14 @@
 #define SDL_GetCurrentDirectory SDL_GetCurrentDirectory_REAL
 #define SDL_IsAudioDevicePhysical SDL_IsAudioDevicePhysical_REAL
 #define SDL_IsAudioDevicePlayback SDL_IsAudioDevicePlayback_REAL
+#define SDL_AsyncIOFromFile SDL_AsyncIOFromFile_REAL
+#define SDL_GetAsyncIOSize SDL_GetAsyncIOSize_REAL
+#define SDL_ReadAsyncIO SDL_ReadAsyncIO_REAL
+#define SDL_WriteAsyncIO SDL_WriteAsyncIO_REAL
+#define SDL_CloseAsyncIO SDL_CloseAsyncIO_REAL
+#define SDL_CreateAsyncIOQueue SDL_CreateAsyncIOQueue_REAL
+#define SDL_DestroyAsyncIOQueue SDL_DestroyAsyncIOQueue_REAL
+#define SDL_GetAsyncIOResult SDL_GetAsyncIOResult_REAL
+#define SDL_WaitAsyncIOResult SDL_WaitAsyncIOResult_REAL
+#define SDL_SignalAsyncIOQueue SDL_SignalAsyncIOQueue_REAL
+#define SDL_LoadFileAsync SDL_LoadFileAsync_REAL

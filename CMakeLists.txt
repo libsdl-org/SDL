@@ -1119,6 +1119,7 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/dynapi/*.c"
   "${SDL3_SOURCE_DIR}/src/events/*.c"
   "${SDL3_SOURCE_DIR}/src/file/*.c"
+  "${SDL3_SOURCE_DIR}/src/file/generic/*.c"
   "${SDL3_SOURCE_DIR}/src/filesystem/*.c"
   "${SDL3_SOURCE_DIR}/src/gpu/*.c"
   "${SDL3_SOURCE_DIR}/src/joystick/*.c"
@@ -2110,8 +2111,6 @@ elseif(APPLE)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ios/*.m")
     set(HAVE_SDL_MAIN_CALLBACKS TRUE)
   endif()
-
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/cocoa/*.m")
 
   if(SDL_CAMERA)
     if(MACOS OR IOS)
