@@ -545,6 +545,13 @@
 		F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */; };
 		F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
+		0000E5D7110DFF81FF660000 /* SDL_cocoapen.h in Headers */ = {isa = PBXBuildFile; fileRef = 00002F2F5496FA184A0F0000 /* SDL_cocoapen.h */; };
+		0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */ = {isa = PBXBuildFile; fileRef = 0000CCA310B73A7B59910000 /* SDL_cocoapen.m */; };
+		0000AEB9AE90228CA2D60000 /* SDL_asyncio.c in Sources */ = {isa = PBXBuildFile; fileRef = 00003928A612EC33D42C0000 /* SDL_asyncio.c */; };
+		000062F9C843687F50F70000 /* SDL_asyncio_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0000919399B1A908267F0000 /* SDL_asyncio_c.h */; };
+		00005081394CCF8322BE0000 /* SDL_sysasyncio.h in Headers */ = {isa = PBXBuildFile; fileRef = 0000585B2CAB450B40540000 /* SDL_sysasyncio.h */; };
+		000018AF97C08F2DAFFD0000 /* SDL_asyncio.h in Headers */ = {isa = PBXBuildFile; fileRef = 00004945A946DF5B1AED0000 /* SDL_asyncio.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		00004D0B73767647AD550000 /* SDL_asyncio_generic.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1120,6 +1127,13 @@
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		00002F2F5496FA184A0F0000 /* SDL_cocoapen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_cocoapen.h; path = SDL_cocoapen.h; sourceTree = "<group>"; };
+		0000CCA310B73A7B59910000 /* SDL_cocoapen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_cocoapen.m; path = SDL_cocoapen.m; sourceTree = "<group>"; };
+		00003928A612EC33D42C0000 /* SDL_asyncio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_asyncio.c; path = SDL_asyncio.c; sourceTree = "<group>"; };
+		0000919399B1A908267F0000 /* SDL_asyncio_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_asyncio_c.h; path = SDL_asyncio_c.h; sourceTree = "<group>"; };
+		0000585B2CAB450B40540000 /* SDL_sysasyncio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_sysasyncio.h; path = SDL_sysasyncio.h; sourceTree = "<group>"; };
+		00004945A946DF5B1AED0000 /* SDL_asyncio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_asyncio.h; path = SDL3/SDL_asyncio.h; sourceTree = "<group>"; };
+		0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_asyncio_generic.c; path = SDL_asyncio_generic.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1295,6 +1309,7 @@
 				F3F7D8C52933074B00816151 /* SDL_video.h */,
 				F3F7D8D42933074C00816151 /* SDL_vulkan.h */,
 				F3F7D8CF2933074C00816151 /* SDL.h */,
+				00004945A946DF5B1AED0000 /* SDL_asyncio.h */,
 			);
 			name = "Public Headers";
 			path = ../../include;
@@ -1928,6 +1943,10 @@
 			isa = PBXGroup;
 			children = (
 				A7D8A7DB23E2513F00DCD162 /* SDL_iostream.c */,
+				00003928A612EC33D42C0000 /* SDL_asyncio.c */,
+				0000919399B1A908267F0000 /* SDL_asyncio_c.h */,
+				0000585B2CAB450B40540000 /* SDL_sysasyncio.h */,
+				000013C0F2EADC24ADC10000 /* generic */,
 			);
 			path = file;
 			sourceTree = "<group>";
@@ -2418,6 +2437,14 @@
 				F59C710300D5CB5801000001 /* ReadMe.txt */,
 			);
 			path = resources;
+			sourceTree = "<group>";
+		};
+		000013C0F2EADC24ADC10000 /* generic */ = {
+			isa = PBXGroup;
+			children = (
+				0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */,
+			);
+			path = generic;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -3044,6 +3071,8 @@
 				0000140640E77F73F1DF0000 /* SDL_dialog_utils.c in Sources */,
 				0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */,
 				6312C66D2B42341400A7BB00 /* SDL_murmur3.c in Sources */,
+				0000AEB9AE90228CA2D60000 /* SDL_asyncio.c in Sources */,
+				00004D0B73767647AD550000 /* SDL_asyncio_generic.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
