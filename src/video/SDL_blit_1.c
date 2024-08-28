@@ -538,8 +538,14 @@ SDL_BlitFunc SDL_CalculateBlit1(SDL_Surface *surface)
         break;
 
     case SDL_COPY_COLORKEY | SDL_COPY_BLEND:  // this is not super-robust but handles a specific case we found sdl12-compat.
-        return (surface->internal->map.info.a == 255) ? one_blitkey[which] :
-                which >= 2 ? Blit1toNAlphaKey : (SDL_BlitFunc)NULL;
+        if (surface->internal->map.info.a == 255) {
+            if (which < SDL_arraysize(one_blitkey)) {
+                return one_blitkey[which];
+            }
+        } else {
+            return which >= 2 ? Blit1toNAlphaKey : (SDL_BlitFunc)NULL;
+        }
+        break;
 
     case SDL_COPY_BLEND:
     case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
