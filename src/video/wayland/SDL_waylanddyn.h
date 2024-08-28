@@ -46,7 +46,6 @@ enum libdecor_resize_edge;
 enum libdecor_capabilities;
 enum libdecor_window_state;
 
-#include <stdint.h>
 #include "wayland-cursor.h"
 #include "wayland-util.h"
 #include "xkbcommon/xkbcommon.h"
