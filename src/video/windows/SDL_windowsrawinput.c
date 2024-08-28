@@ -63,6 +63,8 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
         return 0;
     }
 
+    SDL_zeroa(devices);
+
     if (data->flags & ENABLE_RAW_MOUSE_INPUT) {
         devices[count].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
         devices[count].usUsage = USB_USAGE_GENERIC_MOUSE;
