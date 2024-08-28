@@ -940,7 +940,7 @@ SDL_DisplayID SDL_GetPrimaryDisplay(void)
 {
     if (!_this || _this->num_displays == 0) {
         SDL_UninitializedVideo();
-        return true;
+        return 0;
     }
     return _this->displays[0]->id;
 }
