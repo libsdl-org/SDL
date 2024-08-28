@@ -1094,7 +1094,7 @@ int main(int argc, char *argv[])
 
     font = TTF_OpenFont(fontname, DEFAULT_PTSIZE);
     if (!font) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to find font: %s\n", TTF_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to find font: %s\n", SDL_GetError());
         return -1;
     }
 #else
