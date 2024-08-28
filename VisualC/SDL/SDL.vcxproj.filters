@@ -211,6 +211,9 @@
     <Filter Include="main\windows">
       <UniqueIdentifier>{00009d5ded166cc6c6680ec771a30000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="file\generic">
+      <UniqueIdentifier>{00004d6806b6238cae0ed62db5440000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
@@ -277,6 +280,9 @@
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_hidapi.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_asyncio.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_joystick.h">
@@ -437,6 +443,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h">
       <Filter>filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\file\SDL_asyncio_c.h">
+      <Filter>file</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\file\SDL_sysasyncio.h">
+      <Filter>file</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\main\SDL_main_callbacks.h">
       <Filter>main</Filter>
@@ -943,6 +955,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c">
       <Filter>filesystem\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\file\generic\SDL_asyncio_generic.c">
+      <Filter>file\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\file\SDL_asyncio.c">
+      <Filter>file</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c">
       <Filter>main\generic</Filter>
