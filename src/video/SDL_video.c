@@ -950,7 +950,8 @@ int SDL_GetDisplayIndex(SDL_DisplayID displayID)
     int display_index;
 
     if (!_this) {
-        return SDL_UninitializedVideo();
+        SDL_UninitializedVideo();
+        return -1;
     }
 
     for (display_index = 0; display_index < _this->num_displays; ++display_index) {
