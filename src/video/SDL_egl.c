@@ -505,9 +505,8 @@ static void SDL_EGL_GetVersion(SDL_VideoDevice *_this)
 
 bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDisplayType native_display, EGLenum platform)
 {
-    int library_load_retcode = SDL_EGL_LoadLibraryOnly(_this, egl_path);
-    if (library_load_retcode != 0) {
-        return library_load_retcode;
+    if (!SDL_EGL_LoadLibraryOnly(_this, egl_path)) {
+        return false;
     }
 
     _this->egl_data->egl_display = EGL_NO_DISPLAY;
