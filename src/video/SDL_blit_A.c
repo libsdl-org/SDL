@@ -1036,28 +1036,29 @@ static void SDL_TARGETING("sse4.1") Blit8888to8888PixelAlphaSwizzleSSE41(SDL_Bli
             // Set the alpha channels of src to 255
             src128 = _mm_or_si128(src128, alpha_fill_mask);
 
-            __m128i src_lo = _mm_unpacklo_epi8(src128, _mm_setzero_si128());
-            __m128i src_hi = _mm_unpackhi_epi8(src128, _mm_setzero_si128());
+            // Duplicate each 8-bit alpha value into both bytes of 16-bit lanes
+            __m128i srca_lo = _mm_unpacklo_epi8(srcA, srcA);
+            __m128i srca_hi = _mm_unpackhi_epi8(srcA, srcA);
 
-            __m128i dst_lo = _mm_unpacklo_epi8(dst128, _mm_setzero_si128());
-            __m128i dst_hi = _mm_unpackhi_epi8(dst128, _mm_setzero_si128());
+            // Calculate 255-srcA in every second 8-bit lane (255-srcA = srcA^0xff)
+            srca_lo = _mm_xor_si128(srca_lo, _mm_set1_epi16(0xff00));
+            srca_hi = _mm_xor_si128(srca_hi, _mm_set1_epi16(0xff00));
 
-            __m128i srca_lo = _mm_unpacklo_epi8(srcA, _mm_setzero_si128());
-            __m128i srca_hi = _mm_unpackhi_epi8(srcA, _mm_setzero_si128());
+            // maddubs expects second argument to be signed, so subtract 128
+            src128 = _mm_sub_epi8(src128, _mm_set1_epi8((char)128));
+            dst128 = _mm_sub_epi8(dst128, _mm_set1_epi8((char)128));
 
-            // dst = ((src - dst) * srcA) + ((dst << 8) - dst)
-            dst_lo = _mm_add_epi16(_mm_mullo_epi16(_mm_sub_epi16(src_lo, dst_lo), srca_lo),
-                                      _mm_sub_epi16(_mm_slli_epi16(dst_lo, 8), dst_lo));
-            dst_hi = _mm_add_epi16(_mm_mullo_epi16(_mm_sub_epi16(src_hi, dst_hi), srca_hi),
-                                      _mm_sub_epi16(_mm_slli_epi16(dst_hi, 8), dst_hi));
+            // dst = srcA*(src-128) + (255-srcA)*(dst-128) = srcA*src + (255-srcA)*dst - 128*255
+            __m128i dst_lo = _mm_maddubs_epi16(srca_lo, _mm_unpacklo_epi8(src128, dst128));
+            __m128i dst_hi = _mm_maddubs_epi16(srca_hi, _mm_unpackhi_epi8(src128, dst128));
 
-            // dst += 0x1U (use 0x80 to round instead of floor)
-            dst_lo = _mm_add_epi16(dst_lo, _mm_set1_epi16(1));
-            dst_hi = _mm_add_epi16(dst_hi, _mm_set1_epi16(1));
+            // dst += 0x1U (use 0x80 to round instead of floor) + 128*255 (to fix maddubs result)
+            dst_lo = _mm_add_epi16(dst_lo, _mm_set1_epi16(1 + 128*255));
+            dst_hi = _mm_add_epi16(dst_hi, _mm_set1_epi16(1 + 128*255));
 
-            // dst = (dst + (dst >> 8)) >> 8
-            dst_lo = _mm_srli_epi16(_mm_add_epi16(dst_lo, _mm_srli_epi16(dst_lo, 8)), 8);
-            dst_hi = _mm_srli_epi16(_mm_add_epi16(dst_hi, _mm_srli_epi16(dst_hi, 8)), 8);
+            // dst = (dst + (dst >> 8)) >> 8 = (dst * 257) >> 16
+            dst_lo = _mm_mulhi_epu16(dst_lo, _mm_set1_epi16(257));
+            dst_hi = _mm_mulhi_epu16(dst_hi, _mm_set1_epi16(257));
 
             // Blend the pixels together and save the result
             _mm_storeu_si128((__m128i *)dst, _mm_packus_epi16(dst_lo, dst_hi));
@@ -1128,28 +1129,29 @@ static void SDL_TARGETING("avx2") Blit8888to8888PixelAlphaSwizzleAVX2(SDL_BlitIn
             // Set the alpha channels of src to 255
             src256 = _mm256_or_si256(src256, alpha_fill_mask);
 
-            __m256i src_lo = _mm256_unpacklo_epi8(src256, _mm256_setzero_si256());
-            __m256i src_hi = _mm256_unpackhi_epi8(src256, _mm256_setzero_si256());
+            // Duplicate each 8-bit alpha value into both bytes of 16-bit lanes
+            __m256i alpha_lo = _mm256_unpacklo_epi8(srcA, srcA);
+            __m256i alpha_hi = _mm256_unpackhi_epi8(srcA, srcA);
 
-            __m256i dst_lo = _mm256_unpacklo_epi8(dst256, _mm256_setzero_si256());
-            __m256i dst_hi = _mm256_unpackhi_epi8(dst256, _mm256_setzero_si256());
+            // Calculate 255-srcA in every second 8-bit lane (255-srcA = srcA^0xff)
+            alpha_lo = _mm256_xor_si256(alpha_lo, _mm256_set1_epi16(0xff00));
+            alpha_hi = _mm256_xor_si256(alpha_hi, _mm256_set1_epi16(0xff00));
 
-            __m256i srca_lo = _mm256_unpacklo_epi8(srcA, _mm256_setzero_si256());
-            __m256i srca_hi = _mm256_unpackhi_epi8(srcA, _mm256_setzero_si256());
+            // maddubs expects second argument to be signed, so subtract 128
+            src256 = _mm256_sub_epi8(src256, _mm256_set1_epi8((char)128));
+            dst256 = _mm256_sub_epi8(dst256, _mm256_set1_epi8((char)128));
 
-            // dst = ((src - dst) * srcA) + ((dst << 8) - dst)
-            dst_lo = _mm256_add_epi16(_mm256_mullo_epi16(_mm256_sub_epi16(src_lo, dst_lo), srca_lo),
-                                      _mm256_sub_epi16(_mm256_slli_epi16(dst_lo, 8), dst_lo));
-            dst_hi = _mm256_add_epi16(_mm256_mullo_epi16(_mm256_sub_epi16(src_hi, dst_hi), srca_hi),
-                                      _mm256_sub_epi16(_mm256_slli_epi16(dst_hi, 8), dst_hi));
+            // dst = srcA*(src-128) + (255-srcA)*(dst-128) = srcA*src + (255-srcA)*dst - 128*255
+            __m256i dst_lo = _mm256_maddubs_epi16(alpha_lo, _mm256_unpacklo_epi8(src256, dst256));
+            __m256i dst_hi = _mm256_maddubs_epi16(alpha_hi, _mm256_unpackhi_epi8(src256, dst256));
 
-            // dst += 0x1U (use 0x80 to round instead of floor)
-            dst_lo = _mm256_add_epi16(dst_lo, _mm256_set1_epi16(1));
-            dst_hi = _mm256_add_epi16(dst_hi, _mm256_set1_epi16(1));
+            // dst += 0x1U (use 0x80 to round instead of floor) + 128*255 (to fix maddubs result)
+            dst_lo = _mm256_add_epi16(dst_lo, _mm256_set1_epi16(1 + 128*255));
+            dst_hi = _mm256_add_epi16(dst_hi, _mm256_set1_epi16(1 + 128*255));
 
-            // dst = (dst + (dst >> 8)) >> 8
-            dst_lo = _mm256_srli_epi16(_mm256_add_epi16(dst_lo, _mm256_srli_epi16(dst_lo, 8)), 8);
-            dst_hi = _mm256_srli_epi16(_mm256_add_epi16(dst_hi, _mm256_srli_epi16(dst_hi, 8)), 8);
+            // dst = (dst + (dst >> 8)) >> 8 = (dst * 257) >> 16
+            dst_lo = _mm256_mulhi_epu16(dst_lo, _mm256_set1_epi16(257));
+            dst_hi = _mm256_mulhi_epu16(dst_hi, _mm256_set1_epi16(257));
 
             // Blend the pixels together and save the result
             _mm256_storeu_si256((__m256i *)dst, _mm256_packus_epi16(dst_lo, dst_hi));
