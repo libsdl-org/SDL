@@ -926,21 +926,17 @@ static bool SDL_EGL_PrivateChooseConfig(SDL_VideoDevice *_this, bool set_config_
 
 bool SDL_EGL_ChooseConfig(SDL_VideoDevice *_this)
 {
-    int ret;
-
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
     }
 
     // Try with EGL_CONFIG_CAVEAT set to EGL_NONE, to avoid any EGL_SLOW_CONFIG or EGL_NON_CONFORMANT_CONFIG
-    ret = SDL_EGL_PrivateChooseConfig(_this, true);
-    if (ret == 0) {
+    if (SDL_EGL_PrivateChooseConfig(_this, true)) {
         return true;
     }
 
     // Fallback with all configs
-    ret = SDL_EGL_PrivateChooseConfig(_this, false);
-    if (ret == 0) {
+    if (SDL_EGL_PrivateChooseConfig(_this, false)) {
         SDL_Log("SDL_EGL_ChooseConfig: found a slow EGL config");
         return true;
     }
