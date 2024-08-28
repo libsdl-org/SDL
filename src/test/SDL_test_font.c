@@ -3205,7 +3205,7 @@ SDL_bool SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 
          */
         character = SDL_CreateSurface(charWidth, charHeight, SDL_PIXELFORMAT_RGBA8888);
         if (!character) {
-            return -1;
+            return SDL_FALSE;
         }
 
         charpos = SDLTest_FontData + ci * 8;
@@ -3237,7 +3237,7 @@ SDL_bool SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 
          * Check pointer
          */
         if (cache->charTextureCache[ci] == NULL) {
-            return -1;
+            return SDL_FALSE;
         }
 
         SDL_SetTextureScaleMode(cache->charTextureCache[ci], SDL_SCALEMODE_NEAREST);
