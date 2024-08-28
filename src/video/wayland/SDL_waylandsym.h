@@ -37,8 +37,6 @@
 #define SDL_WAYLAND_INTERFACE(iface)
 #endif
 
-#include <stdbool.h>
-
 SDL_WAYLAND_MODULE(WAYLAND_CLIENT)
 SDL_WAYLAND_SYM(void, wl_proxy_marshal, (struct wl_proxy *, uint32_t, ...))
 SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_create, (struct wl_proxy *, const struct wl_interface *))

@@ -23,8 +23,6 @@
 
 #include "../SDL_sysstorage.h"
 
-#include <stdbool.h> // Needed by Steamworks
-
 // !!! FIXME: Async API can use SteamRemoteStorage_ReadFileAsync
 // !!! FIXME: Async API can use SteamRemoteStorage_WriteFileAsync
 

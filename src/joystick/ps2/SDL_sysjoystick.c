@@ -29,7 +29,6 @@
 
 #include <stdio.h> // For the definition of NULL
 #include <stdlib.h>
-#include <stdbool.h>
 
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"

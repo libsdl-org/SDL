@@ -24,7 +24,6 @@
 
 #ifdef HAVE_GAMEINPUT_H
 
-#include <stdbool.h>
 #define COBJMACROS
 #include <gameinput.h>
 

@@ -26,7 +26,6 @@
 #include "SDL_aaudio.h"
 
 #include "../../core/android/SDL_android.h"
-#include <stdbool.h>
 #include <aaudio/AAudio.h>
 
 #if __ANDROID_API__ < 31
