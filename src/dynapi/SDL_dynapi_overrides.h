@@ -122,6 +122,8 @@
 #define SDL_CreateMutex SDL_CreateMutex_REAL
 #define SDL_CreatePalette SDL_CreatePalette_REAL
 #define SDL_CreatePopupWindow SDL_CreatePopupWindow_REAL
+#define SDL_CreateProcess SDL_CreateProcess_REAL
+#define SDL_CreateProcessWithProperties SDL_CreateProcessWithProperties_REAL
 #define SDL_CreateProperties SDL_CreateProperties_REAL
 #define SDL_CreateRWLock SDL_CreateRWLock_REAL
 #define SDL_CreateRenderer SDL_CreateRenderer_REAL
@@ -152,6 +154,7 @@
 #define SDL_DestroyHapticEffect SDL_DestroyHapticEffect_REAL
 #define SDL_DestroyMutex SDL_DestroyMutex_REAL
 #define SDL_DestroyPalette SDL_DestroyPalette_REAL
+#define SDL_DestroyProcess SDL_DestroyProcess_REAL
 #define SDL_DestroyProperties SDL_DestroyProperties_REAL
 #define SDL_DestroyRWLock SDL_DestroyRWLock_REAL
 #define SDL_DestroyRenderer SDL_DestroyRenderer_REAL
@@ -445,6 +448,7 @@
 #define SDL_GetPreferredLocales SDL_GetPreferredLocales_REAL
 #define SDL_GetPrimaryDisplay SDL_GetPrimaryDisplay_REAL
 #define SDL_GetPrimarySelectionText SDL_GetPrimarySelectionText_REAL
+#define SDL_GetProcessProperties SDL_GetProcessProperties_REAL
 #define SDL_GetPropertyType SDL_GetPropertyType_REAL
 #define SDL_GetRGB SDL_GetRGB_REAL
 #define SDL_GetRGBA SDL_GetRGBA_REAL
@@ -615,6 +619,7 @@
 #define SDL_IsTablet SDL_IsTablet_REAL
 #define SDL_JoystickConnected SDL_JoystickConnected_REAL
 #define SDL_JoystickEventsEnabled SDL_JoystickEventsEnabled_REAL
+#define SDL_KillProcess SDL_KillProcess_REAL
 #define SDL_LoadBMP SDL_LoadBMP_REAL
 #define SDL_LoadBMP_IO SDL_LoadBMP_IO_REAL
 #define SDL_LoadFile SDL_LoadFile_REAL
@@ -701,6 +706,7 @@
 #define SDL_QuitSubSystem SDL_QuitSubSystem_REAL
 #define SDL_RaiseWindow SDL_RaiseWindow_REAL
 #define SDL_ReadIO SDL_ReadIO_REAL
+#define SDL_ReadProcess SDL_ReadProcess_REAL
 #define SDL_ReadS16BE SDL_ReadS16BE_REAL
 #define SDL_ReadS16LE SDL_ReadS16LE_REAL
 #define SDL_ReadS32BE SDL_ReadS32BE_REAL
@@ -976,6 +982,7 @@
 #define SDL_WaitEventTimeout SDL_WaitEventTimeout_REAL
 #define SDL_WaitForGPUFences SDL_WaitForGPUFences_REAL
 #define SDL_WaitForGPUIdle SDL_WaitForGPUIdle_REAL
+#define SDL_WaitProcess SDL_WaitProcess_REAL
 #define SDL_WaitSemaphore SDL_WaitSemaphore_REAL
 #define SDL_WaitSemaphoreTimeout SDL_WaitSemaphoreTimeout_REAL
 #define SDL_WaitThread SDL_WaitThread_REAL
@@ -986,6 +993,7 @@
 #define SDL_WindowSupportsGPUPresentMode SDL_WindowSupportsGPUPresentMode_REAL
 #define SDL_WindowSupportsGPUSwapchainComposition SDL_WindowSupportsGPUSwapchainComposition_REAL
 #define SDL_WriteIO SDL_WriteIO_REAL
+#define SDL_WriteProcess SDL_WriteProcess_REAL
 #define SDL_WriteS16BE SDL_WriteS16BE_REAL
 #define SDL_WriteS16LE SDL_WriteS16LE_REAL
 #define SDL_WriteS32BE SDL_WriteS32BE_REAL

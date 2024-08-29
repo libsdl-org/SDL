@@ -152,6 +152,9 @@
 #define SDL_JOYSTICK_MFI 1
 #define SDL_JOYSTICK_VIRTUAL    1
 
+/* Enable various process implementations */
+#define SDL_PROCESS_DUMMY 1
+
 #ifdef SDL_PLATFORM_TVOS
 #define SDL_SENSOR_DUMMY    1
 #else

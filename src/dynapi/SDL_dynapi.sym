@@ -97,6 +97,8 @@ SDL3_0.0.0 {
     SDL_CreateMutex;
     SDL_CreatePalette;
     SDL_CreatePopupWindow;
+    SDL_CreateProcess;
+    SDL_CreateProcessWithProperties;
     SDL_CreateProperties;
     SDL_CreateRWLock;
     SDL_CreateRenderer;
@@ -127,6 +129,7 @@ SDL3_0.0.0 {
     SDL_DestroyHapticEffect;
     SDL_DestroyMutex;
     SDL_DestroyPalette;
+    SDL_DestroyProcess;
     SDL_DestroyProperties;
     SDL_DestroyRWLock;
     SDL_DestroyRenderer;
@@ -420,6 +423,7 @@ SDL3_0.0.0 {
     SDL_GetPreferredLocales;
     SDL_GetPrimaryDisplay;
     SDL_GetPrimarySelectionText;
+    SDL_GetProcessProperties;
     SDL_GetPropertyType;
     SDL_GetRGB;
     SDL_GetRGBA;
@@ -590,6 +594,7 @@ SDL3_0.0.0 {
     SDL_IsTablet;
     SDL_JoystickConnected;
     SDL_JoystickEventsEnabled;
+    SDL_KillProcess;
     SDL_LoadBMP;
     SDL_LoadBMP_IO;
     SDL_LoadFile;
@@ -676,6 +681,7 @@ SDL3_0.0.0 {
     SDL_QuitSubSystem;
     SDL_RaiseWindow;
     SDL_ReadIO;
+    SDL_ReadProcess;
     SDL_ReadS16BE;
     SDL_ReadS16LE;
     SDL_ReadS32BE;
@@ -951,6 +957,7 @@ SDL3_0.0.0 {
     SDL_WaitEventTimeout;
     SDL_WaitForGPUFences;
     SDL_WaitForGPUIdle;
+    SDL_WaitProcess;
     SDL_WaitSemaphore;
     SDL_WaitSemaphoreTimeout;
     SDL_WaitThread;
@@ -961,6 +968,7 @@ SDL3_0.0.0 {
     SDL_WindowSupportsGPUPresentMode;
     SDL_WindowSupportsGPUSwapchainComposition;
     SDL_WriteIO;
+    SDL_WriteProcess;
     SDL_WriteS16BE;
     SDL_WriteS16LE;
     SDL_WriteS32BE;
