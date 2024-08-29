@@ -64,13 +64,13 @@ SDL_bool SDL_GetGDKDefaultUser(void *outUserHandle)
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGpu(SDL_GpuDevice *device);
-void SDL_GDKSuspendGpu(SDL_GpuDevice *device)
+SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(SDL_GPUDevice *device);
+void SDL_GDKSuspendGPU(SDL_GPUDevice *device)
 {
 }
 
-SDL_DECLSPEC void SDLCALL SDL_GDKResumeGpu(SDL_GpuDevice *device);
-void SDL_GDKResumeGpu(SDL_GpuDevice *device)
+SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(SDL_GPUDevice *device);
+void SDL_GDKResumeGPU(SDL_GPUDevice *device)
 {
 }
 

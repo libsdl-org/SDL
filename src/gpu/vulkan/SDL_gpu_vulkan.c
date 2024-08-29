@@ -70,7 +70,7 @@ typedef struct VulkanExtensions
 #define LARGE_ALLOCATION_INCREMENT    67108864 // 64  MiB
 #define MAX_UBO_SECTION_SIZE          4096     // 4   KiB
 #define DESCRIPTOR_POOL_STARTING_SIZE 128
-#define WINDOW_PROPERTY_DATA          "SDL_GpuVulkanWindowPropertyData"
+#define WINDOW_PROPERTY_DATA          "SDL_GPUVulkanWindowPropertyData"
 
 #define IDENTITY_SWIZZLE               \
     {                                  \
@@ -82,7 +82,7 @@ typedef struct VulkanExtensions
 
 #define NULL_DESC_LAYOUT     (VkDescriptorSetLayout)0
 #define NULL_PIPELINE_LAYOUT (VkPipelineLayout)0
-#define NULL_RENDER_PASS     (SDL_GpuRenderPass *)0
+#define NULL_RENDER_PASS     (SDL_GPURenderPass *)0
 
 #define EXPAND_ELEMENTS_IF_NEEDED(arr, initialValue, type) \
     if (arr->count == arr->capacity) {                     \
@@ -254,8 +254,8 @@ static VkFormat SwapchainCompositionToFallbackFormat[] = {
     VK_FORMAT_UNDEFINED  // no fallback
 };
 
-static SDL_GpuTextureFormat SwapchainCompositionToSDLFormat(
-    SDL_GpuSwapchainComposition composition,
+static SDL_GPUTextureFormat SwapchainCompositionToSDLFormat(
+    SDL_GPUSwapchainComposition composition,
     SDL_bool usingFallback)
 {
     switch (composition) {
@@ -536,7 +536,7 @@ struct VulkanBuffer
     VulkanMemoryUsedRegion *usedRegion;
 
     VulkanBufferType type;
-    SDL_GpuBufferUsageFlags usageFlags;
+    SDL_GPUBufferUsageFlags usageFlags;
 
     SDL_AtomicInt referenceCount; // Tracks command buffer usage
 
@@ -549,7 +549,7 @@ struct VulkanBuffer
 /* Buffer resources consist of multiple backing buffer handles so that data transfers
  * can occur without blocking or the client having to manage extra resources.
  *
- * Cast from SDL_GpuBuffer or SDL_GpuTransferBuffer.
+ * Cast from SDL_GPUBuffer or SDL_GPUTransferBuffer.
  */
 struct VulkanBufferContainer
 {
@@ -626,7 +626,7 @@ struct VulkanTexture
     VkImageView fullView; // used for samplers and storage reads
     VkExtent2D dimensions;
 
-    SDL_GpuTextureType type;
+    SDL_GPUTextureType type;
     Uint8 isMSAAColorTarget;
 
     Uint32 depth;
@@ -635,7 +635,7 @@ struct VulkanTexture
     VkSampleCountFlagBits sampleCount; // NOTE: This refers to the sample count of a render target pass using this texture, not the actual sample count of the texture
     VkFormat format;
     VkComponentMapping swizzle;
-    SDL_GpuTextureUsageFlags usageFlags;
+    SDL_GPUTextureUsageFlags usageFlags;
     VkImageAspectFlags aspectFlags;
 
     Uint32 subresourceCount;
@@ -650,7 +650,7 @@ struct VulkanTexture
 /* Texture resources consist of multiple backing texture handles so that data transfers
  * can occur without blocking or the client having to manage extra resources.
  *
- * Cast from SDL_GpuTexture.
+ * Cast from SDL_GPUTexture.
  */
 struct VulkanTextureContainer
 {
@@ -739,8 +739,8 @@ typedef struct VulkanSwapchainData
 typedef struct WindowData
 {
     SDL_Window *window;
-    SDL_GpuSwapchainComposition swapchainComposition;
-    SDL_GpuPresentMode presentMode;
+    SDL_GPUSwapchainComposition swapchainComposition;
+    SDL_GPUPresentMode presentMode;
     VulkanSwapchainData *swapchainData;
     SDL_bool needsSwapchainRecreate;
 } WindowData;
@@ -820,7 +820,7 @@ typedef struct VulkanGraphicsPipelineResourceLayout
 typedef struct VulkanGraphicsPipeline
 {
     VkPipeline pipeline;
-    SDL_GpuPrimitiveType primitiveType;
+    SDL_GPUPrimitiveType primitiveType;
 
     VulkanGraphicsPipelineResourceLayout resourceLayout;
 
@@ -860,17 +860,17 @@ typedef struct VulkanComputePipeline
 typedef struct RenderPassColorTargetDescription
 {
     VkFormat format;
-    SDL_GpuLoadOp loadOp;
-    SDL_GpuStoreOp storeOp;
+    SDL_GPULoadOp loadOp;
+    SDL_GPUStoreOp storeOp;
 } RenderPassColorTargetDescription;
 
 typedef struct RenderPassDepthStencilTargetDescription
 {
     VkFormat format;
-    SDL_GpuLoadOp loadOp;
-    SDL_GpuStoreOp storeOp;
-    SDL_GpuLoadOp stencilLoadOp;
-    SDL_GpuStoreOp stencilStoreOp;
+    SDL_GPULoadOp loadOp;
+    SDL_GPUStoreOp storeOp;
+    SDL_GPULoadOp stencilLoadOp;
+    SDL_GPUStoreOp stencilStoreOp;
 } RenderPassDepthStencilTargetDescription;
 
 typedef struct CommandPoolHashTableKey
@@ -1160,23 +1160,23 @@ struct VulkanRenderer
 
 static Uint8 VULKAN_INTERNAL_DefragmentMemory(VulkanRenderer *renderer);
 static void VULKAN_INTERNAL_BeginCommandBuffer(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
-static void VULKAN_UnclaimWindow(SDL_GpuRenderer *driverData, SDL_Window *window);
-static void VULKAN_Wait(SDL_GpuRenderer *driverData);
-static void VULKAN_WaitForFences(SDL_GpuRenderer *driverData, SDL_bool waitAll, SDL_GpuFence **pFences, Uint32 fenceCount);
-static void VULKAN_Submit(SDL_GpuCommandBuffer *commandBuffer);
+static void VULKAN_UnclaimWindow(SDL_GPURenderer *driverData, SDL_Window *window);
+static void VULKAN_Wait(SDL_GPURenderer *driverData);
+static void VULKAN_WaitForFences(SDL_GPURenderer *driverData, SDL_bool waitAll, SDL_GPUFence **pFences, Uint32 fenceCount);
+static void VULKAN_Submit(SDL_GPUCommandBuffer *commandBuffer);
 static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     VulkanRenderer *renderer,
     Uint32 width,
     Uint32 height,
     Uint32 depth,
-    SDL_GpuTextureType type,
+    SDL_GPUTextureType type,
     Uint32 layerCount,
     Uint32 levelCount,
     VkSampleCountFlagBits sampleCount,
     VkFormat format,
     VkComponentMapping swizzle,
     VkImageAspectFlags aspectMask,
-    SDL_GpuTextureUsageFlags textureUsageFlags,
+    SDL_GPUTextureUsageFlags textureUsageFlags,
     SDL_bool isMSAAColorTarget);
 
 // Error Handling
@@ -1260,7 +1260,7 @@ static inline VkSampleCountFlagBits VULKAN_INTERNAL_GetMaxMultiSampleCount(
 
 static inline VkPolygonMode SDLToVK_PolygonMode(
     VulkanRenderer *renderer,
-    SDL_GpuFillMode mode)
+    SDL_GPUFillMode mode)
 {
     if (mode == SDL_GPU_FILLMODE_FILL) {
         return VK_POLYGON_MODE_FILL; // always available!
@@ -3802,7 +3802,7 @@ static SDL_bool VULKAN_INTERNAL_InitializeGraphicsPipelineResourceLayout(
 
 static SDL_bool VULKAN_INTERNAL_InitializeComputePipelineResourceLayout(
     VulkanRenderer *renderer,
-    SDL_GpuComputePipelineCreateInfo *pipelineCreateInfo,
+    SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo,
     VulkanComputePipelineResourceLayout *pipelineResourceLayout)
 {
     VkDescriptorSetLayoutBinding descriptorSetLayoutBindings[MAX_UNIFORM_BUFFERS_PER_STAGE];
@@ -4007,7 +4007,7 @@ static SDL_bool VULKAN_INTERNAL_InitializeComputePipelineResourceLayout(
 static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
     VulkanRenderer *renderer,
     VkDeviceSize size,
-    SDL_GpuBufferUsageFlags usageFlags,
+    SDL_GPUBufferUsageFlags usageFlags,
     VulkanBufferType type)
 {
     VulkanBuffer *buffer;
@@ -4096,7 +4096,7 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
 static VulkanBufferHandle *VULKAN_INTERNAL_CreateBufferHandle(
     VulkanRenderer *renderer,
     VkDeviceSize sizeInBytes,
-    SDL_GpuBufferUsageFlags usageFlags,
+    SDL_GPUBufferUsageFlags usageFlags,
     VulkanBufferType type)
 {
     VulkanBufferHandle *bufferHandle;
@@ -4125,7 +4125,7 @@ static VulkanBufferHandle *VULKAN_INTERNAL_CreateBufferHandle(
 static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
     VulkanRenderer *renderer,
     VkDeviceSize sizeInBytes,
-    SDL_GpuBufferUsageFlags usageFlags,
+    SDL_GPUBufferUsageFlags usageFlags,
     VulkanBufferType type)
 {
     VulkanBufferContainer *bufferContainer;
@@ -4780,7 +4780,7 @@ static void VULKAN_INTERNAL_EndCommandBuffer(
 }
 
 static void VULKAN_DestroyDevice(
-    SDL_GpuDevice *device)
+    SDL_GPUDevice *device)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)device->driverData;
     VulkanMemorySubAllocator *allocator;
@@ -5299,7 +5299,7 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
 }
 
 static void VULKAN_DrawIndexedPrimitives(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 indexCount,
     Uint32 instanceCount,
     Uint32 firstIndex,
@@ -5321,7 +5321,7 @@ static void VULKAN_DrawIndexedPrimitives(
 }
 
 static void VULKAN_DrawPrimitives(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 vertexCount,
     Uint32 instanceCount,
     Uint32 firstVertex,
@@ -5341,8 +5341,8 @@ static void VULKAN_DrawPrimitives(
 }
 
 static void VULKAN_DrawPrimitivesIndirect(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBuffer *buffer,
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBuffer *buffer,
     Uint32 offsetInBytes,
     Uint32 drawCount,
     Uint32 stride)
@@ -5378,8 +5378,8 @@ static void VULKAN_DrawPrimitivesIndirect(
 }
 
 static void VULKAN_DrawIndexedPrimitivesIndirect(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBuffer *buffer,
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBuffer *buffer,
     Uint32 offsetInBytes,
     Uint32 drawCount,
     Uint32 stride)
@@ -5437,8 +5437,8 @@ static void VULKAN_INTERNAL_SetBufferName(
 }
 
 static void VULKAN_SetBufferName(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuBuffer *buffer,
+    SDL_GPURenderer *driverData,
+    SDL_GPUBuffer *buffer,
     const char *text)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
@@ -5485,8 +5485,8 @@ static void VULKAN_INTERNAL_SetTextureName(
 }
 
 static void VULKAN_SetTextureName(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuTexture *texture,
+    SDL_GPURenderer *driverData,
+    SDL_GPUTexture *texture,
     const char *text)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
@@ -5513,7 +5513,7 @@ static void VULKAN_SetTextureName(
 }
 
 static void VULKAN_InsertDebugLabel(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     const char *text)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -5532,7 +5532,7 @@ static void VULKAN_InsertDebugLabel(
 }
 
 static void VULKAN_PushDebugGroup(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     const char *name)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -5551,7 +5551,7 @@ static void VULKAN_PushDebugGroup(
 }
 
 static void VULKAN_PopDebugGroup(
-    SDL_GpuCommandBuffer *commandBuffer)
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
@@ -5566,14 +5566,14 @@ static VulkanTextureHandle *VULKAN_INTERNAL_CreateTextureHandle(
     Uint32 width,
     Uint32 height,
     Uint32 depth,
-    SDL_GpuTextureType type,
+    SDL_GPUTextureType type,
     Uint32 layerCount,
     Uint32 levelCount,
     VkSampleCountFlagBits sampleCount,
     VkFormat format,
     VkComponentMapping swizzle,
     VkImageAspectFlags aspectMask,
-    SDL_GpuTextureUsageFlags textureUsageFlags,
+    SDL_GPUTextureUsageFlags textureUsageFlags,
     SDL_bool isMSAAColorTarget)
 {
     VulkanTextureHandle *textureHandle;
@@ -5613,14 +5613,14 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     Uint32 width,
     Uint32 height,
     Uint32 depth,
-    SDL_GpuTextureType type,
+    SDL_GPUTextureType type,
     Uint32 layerCount,
     Uint32 levelCount,
     VkSampleCountFlagBits sampleCount,
     VkFormat format,
     VkComponentMapping swizzle,
     VkImageAspectFlags aspectMask,
-    SDL_GpuTextureUsageFlags textureUsageFlags,
+    SDL_GPUTextureUsageFlags textureUsageFlags,
     SDL_bool isMSAAColorTarget)
 {
     VkResult vulkanResult;
@@ -6015,9 +6015,9 @@ static VulkanTextureSubresource *VULKAN_INTERNAL_PrepareTextureSubresourceForWri
 static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
     VulkanRenderer *renderer,
     VulkanCommandBuffer *commandBuffer,
-    SDL_GpuColorAttachmentInfo *colorAttachmentInfos,
+    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GpuDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
+    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
 {
     VkResult vulkanResult;
     VkAttachmentDescription attachmentDescriptions[2 * MAX_COLOR_TARGET_BINDINGS + 1];
@@ -6182,14 +6182,14 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
 
 static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     VulkanRenderer *renderer,
-    SDL_GpuGraphicsPipelineAttachmentInfo attachmentInfo,
+    SDL_GPUGraphicsPipelineAttachmentInfo attachmentInfo,
     VkSampleCountFlagBits sampleCount)
 {
     VkAttachmentDescription attachmentDescriptions[2 * MAX_COLOR_TARGET_BINDINGS + 1];
     VkAttachmentReference colorAttachmentReferences[MAX_COLOR_TARGET_BINDINGS];
     VkAttachmentReference resolveReferences[MAX_COLOR_TARGET_BINDINGS + 1];
     VkAttachmentReference depthStencilAttachmentReference;
-    SDL_GpuColorAttachmentDescription attachmentDescription;
+    SDL_GPUColorAttachmentDescription attachmentDescription;
     VkSubpassDescription subpass;
     VkRenderPassCreateInfo renderPassCreateInfo;
     VkRenderPass renderPass;
@@ -6337,9 +6337,9 @@ static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     return renderPass;
 }
 
-static SDL_GpuGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuGraphicsPipelineCreateInfo *pipelineCreateInfo)
+static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
+    SDL_GPURenderer *driverData,
+    SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo)
 {
     VkResult vulkanResult;
     Uint32 i;
@@ -6574,7 +6574,7 @@ static SDL_GpuGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     // Color Blend
 
     for (i = 0; i < pipelineCreateInfo->attachmentInfo.colorAttachmentCount; i += 1) {
-        SDL_GpuColorAttachmentBlendState blendState = pipelineCreateInfo->attachmentInfo.colorAttachmentDescriptions[i].blendState;
+        SDL_GPUColorAttachmentBlendState blendState = pipelineCreateInfo->attachmentInfo.colorAttachmentDescriptions[i].blendState;
 
         colorBlendAttachmentStates[i].blendEnable =
             blendState.blendEnable;
@@ -6674,12 +6674,12 @@ static SDL_GpuGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     SDL_AtomicSet(&graphicsPipeline->referenceCount, 0);
 
-    return (SDL_GpuGraphicsPipeline *)graphicsPipeline;
+    return (SDL_GPUGraphicsPipeline *)graphicsPipeline;
 }
 
-static SDL_GpuComputePipeline *VULKAN_CreateComputePipeline(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuComputePipelineCreateInfo *pipelineCreateInfo)
+static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
+    SDL_GPURenderer *driverData,
+    SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo)
 {
     VkShaderModuleCreateInfo shaderModuleCreateInfo;
     VkComputePipelineCreateInfo computePipelineCreateInfo;
@@ -6775,12 +6775,12 @@ static SDL_GpuComputePipeline *VULKAN_CreateComputePipeline(
 
     SDL_AtomicSet(&vulkanComputePipeline->referenceCount, 0);
 
-    return (SDL_GpuComputePipeline *)vulkanComputePipeline;
+    return (SDL_GPUComputePipeline *)vulkanComputePipeline;
 }
 
-static SDL_GpuSampler *VULKAN_CreateSampler(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuSamplerCreateInfo *samplerCreateInfo)
+static SDL_GPUSampler *VULKAN_CreateSampler(
+    SDL_GPURenderer *driverData,
+    SDL_GPUSamplerCreateInfo *samplerCreateInfo)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VulkanSampler *vulkanSampler = SDL_malloc(sizeof(VulkanSampler));
@@ -6820,12 +6820,12 @@ static SDL_GpuSampler *VULKAN_CreateSampler(
 
     SDL_AtomicSet(&vulkanSampler->referenceCount, 0);
 
-    return (SDL_GpuSampler *)vulkanSampler;
+    return (SDL_GPUSampler *)vulkanSampler;
 }
 
-static SDL_GpuShader *VULKAN_CreateShader(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuShaderCreateInfo *shaderCreateInfo)
+static SDL_GPUShader *VULKAN_CreateShader(
+    SDL_GPURenderer *driverData,
+    SDL_GPUShaderCreateInfo *shaderCreateInfo)
 {
     VulkanShader *vulkanShader;
     VkResult vulkanResult;
@@ -6864,13 +6864,13 @@ static SDL_GpuShader *VULKAN_CreateShader(
 
     SDL_AtomicSet(&vulkanShader->referenceCount, 0);
 
-    return (SDL_GpuShader *)vulkanShader;
+    return (SDL_GPUShader *)vulkanShader;
 }
 
 static SDL_bool VULKAN_SupportsSampleCount(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuTextureFormat format,
-    SDL_GpuSampleCount sampleCount)
+    SDL_GPURenderer *driverData,
+    SDL_GPUTextureFormat format,
+    SDL_GPUSampleCount sampleCount)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VkSampleCountFlags bits = IsDepthFormat(format) ? renderer->physicalDeviceProperties.properties.limits.framebufferDepthSampleCounts : renderer->physicalDeviceProperties.properties.limits.framebufferColorSampleCounts;
@@ -6878,9 +6878,9 @@ static SDL_bool VULKAN_SupportsSampleCount(
     return !!(bits & vkSampleCount);
 }
 
-static SDL_GpuTexture *VULKAN_CreateTexture(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuTextureCreateInfo *textureCreateInfo)
+static SDL_GPUTexture *VULKAN_CreateTexture(
+    SDL_GPURenderer *driverData,
+    SDL_GPUTextureCreateInfo *textureCreateInfo)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VkImageAspectFlags imageAspectFlags;
@@ -6936,15 +6936,15 @@ static SDL_GpuTexture *VULKAN_CreateTexture(
 
     textureHandle->container = container;
 
-    return (SDL_GpuTexture *)container;
+    return (SDL_GPUTexture *)container;
 }
 
-static SDL_GpuBuffer *VULKAN_CreateBuffer(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuBufferUsageFlags usageFlags,
+static SDL_GPUBuffer *VULKAN_CreateBuffer(
+    SDL_GPURenderer *driverData,
+    SDL_GPUBufferUsageFlags usageFlags,
     Uint32 sizeInBytes)
 {
-    return (SDL_GpuBuffer *)VULKAN_INTERNAL_CreateBufferContainer(
+    return (SDL_GPUBuffer *)VULKAN_INTERNAL_CreateBufferContainer(
         (VulkanRenderer *)driverData,
         (VkDeviceSize)sizeInBytes,
         usageFlags,
@@ -6969,12 +6969,12 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
     return uniformBuffer;
 }
 
-static SDL_GpuTransferBuffer *VULKAN_CreateTransferBuffer(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuTransferBufferUsage usage, // ignored on Vulkan
+static SDL_GPUTransferBuffer *VULKAN_CreateTransferBuffer(
+    SDL_GPURenderer *driverData,
+    SDL_GPUTransferBufferUsage usage, // ignored on Vulkan
     Uint32 sizeInBytes)
 {
-    return (SDL_GpuTransferBuffer *)VULKAN_INTERNAL_CreateBufferContainer(
+    return (SDL_GPUTransferBuffer *)VULKAN_INTERNAL_CreateBufferContainer(
         (VulkanRenderer *)driverData,
         (VkDeviceSize)sizeInBytes,
         0,
@@ -7007,8 +7007,8 @@ static void VULKAN_INTERNAL_ReleaseTexture(
 }
 
 static void VULKAN_ReleaseTexture(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuTexture *texture)
+    SDL_GPURenderer *driverData,
+    SDL_GPUTexture *texture)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VulkanTextureContainer *vulkanTextureContainer = (VulkanTextureContainer *)texture;
@@ -7032,8 +7032,8 @@ static void VULKAN_ReleaseTexture(
 }
 
 static void VULKAN_ReleaseSampler(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuSampler *sampler)
+    SDL_GPURenderer *driverData,
+    SDL_GPUSampler *sampler)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VulkanSampler *vulkanSampler = (VulkanSampler *)sampler;
@@ -7102,8 +7102,8 @@ static void VULKAN_INTERNAL_ReleaseBufferContainer(
 }
 
 static void VULKAN_ReleaseBuffer(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuBuffer *buffer)
+    SDL_GPURenderer *driverData,
+    SDL_GPUBuffer *buffer)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VulkanBufferContainer *vulkanBufferContainer = (VulkanBufferContainer *)buffer;
@@ -7114,8 +7114,8 @@ static void VULKAN_ReleaseBuffer(
 }
 
 static void VULKAN_ReleaseTransferBuffer(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuTransferBuffer *transferBuffer)
+    SDL_GPURenderer *driverData,
+    SDL_GPUTransferBuffer *transferBuffer)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)transferBuffer;
@@ -7126,8 +7126,8 @@ static void VULKAN_ReleaseTransferBuffer(
 }
 
 static void VULKAN_ReleaseShader(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuShader *shader)
+    SDL_GPURenderer *driverData,
+    SDL_GPUShader *shader)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VulkanShader *vulkanShader = (VulkanShader *)shader;
@@ -7148,8 +7148,8 @@ static void VULKAN_ReleaseShader(
 }
 
 static void VULKAN_ReleaseComputePipeline(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuComputePipeline *computePipeline)
+    SDL_GPURenderer *driverData,
+    SDL_GPUComputePipeline *computePipeline)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VulkanComputePipeline *vulkanComputePipeline = (VulkanComputePipeline *)computePipeline;
@@ -7170,8 +7170,8 @@ static void VULKAN_ReleaseComputePipeline(
 }
 
 static void VULKAN_ReleaseGraphicsPipeline(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuGraphicsPipeline *graphicsPipeline)
+    SDL_GPURenderer *driverData,
+    SDL_GPUGraphicsPipeline *graphicsPipeline)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VulkanGraphicsPipeline *vulkanGraphicsPipeline = (VulkanGraphicsPipeline *)graphicsPipeline;
@@ -7196,9 +7196,9 @@ static void VULKAN_ReleaseGraphicsPipeline(
 static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
     VulkanRenderer *renderer,
     VulkanCommandBuffer *commandBuffer,
-    SDL_GpuColorAttachmentInfo *colorAttachmentInfos,
+    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GpuDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
+    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
 {
     VulkanRenderPassHashTableValue *renderPassWrapper = NULL;
     VkRenderPass renderPassHandle;
@@ -7278,9 +7278,9 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
 static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     VulkanRenderer *renderer,
     VkRenderPass renderPass,
-    SDL_GpuColorAttachmentInfo *colorAttachmentInfos,
+    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GpuDepthStencilAttachmentInfo *depthStencilAttachmentInfo,
+    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo,
     Uint32 width,
     Uint32 height)
 {
@@ -7420,7 +7420,7 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
 
 static void VULKAN_INTERNAL_SetCurrentViewport(
     VulkanCommandBuffer *commandBuffer,
-    SDL_GpuViewport *viewport)
+    SDL_GPUViewport *viewport)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
 
@@ -7436,8 +7436,8 @@ static void VULKAN_INTERNAL_SetCurrentViewport(
 }
 
 static void VULKAN_SetViewport(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuViewport *viewport)
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUViewport *viewport)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
@@ -7464,7 +7464,7 @@ static void VULKAN_INTERNAL_SetCurrentScissor(
 }
 
 static void VULKAN_SetScissor(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     SDL_Rect *scissor)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7482,9 +7482,9 @@ static void VULKAN_SetScissor(
 }
 
 static void VULKAN_BindVertexSamplers(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GpuTextureSamplerBinding *textureSamplerBindings,
+    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7507,9 +7507,9 @@ static void VULKAN_BindVertexSamplers(
 }
 
 static void VULKAN_BindVertexStorageTextures(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GpuTexture **storageTextures,
+    SDL_GPUTexture **storageTextures,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7528,9 +7528,9 @@ static void VULKAN_BindVertexStorageTextures(
 }
 
 static void VULKAN_BindVertexStorageBuffers(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GpuBuffer **storageBuffers,
+    SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7551,9 +7551,9 @@ static void VULKAN_BindVertexStorageBuffers(
 }
 
 static void VULKAN_BindFragmentSamplers(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GpuTextureSamplerBinding *textureSamplerBindings,
+    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7576,9 +7576,9 @@ static void VULKAN_BindFragmentSamplers(
 }
 
 static void VULKAN_BindFragmentStorageTextures(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GpuTexture **storageTextures,
+    SDL_GPUTexture **storageTextures,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7598,9 +7598,9 @@ static void VULKAN_BindFragmentStorageTextures(
 }
 
 static void VULKAN_BindFragmentStorageBuffers(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GpuBuffer **storageBuffers,
+    SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7748,10 +7748,10 @@ static void VULKAN_INTERNAL_PushUniformData(
 }
 
 static void VULKAN_BeginRenderPass(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuColorAttachmentInfo *colorAttachmentInfos,
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GpuDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
+    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
@@ -7764,7 +7764,7 @@ static void VULKAN_BeginRenderPass(
     Uint32 multisampleAttachmentCount = 0;
     Uint32 totalColorAttachmentCount = 0;
     Uint32 i;
-    SDL_GpuViewport defaultViewport;
+    SDL_GPUViewport defaultViewport;
     SDL_Rect defaultScissor;
     Uint32 framebufferWidth = UINT32_MAX;
     Uint32 framebufferHeight = UINT32_MAX;
@@ -7961,8 +7961,8 @@ static void VULKAN_BeginRenderPass(
 }
 
 static void VULKAN_BindGraphicsPipeline(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuGraphicsPipeline *graphicsPipeline)
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUGraphicsPipeline *graphicsPipeline)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
@@ -8014,9 +8014,9 @@ static void VULKAN_BindGraphicsPipeline(
 }
 
 static void VULKAN_BindVertexBuffers(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstBinding,
-    SDL_GpuBufferBinding *pBindings,
+    SDL_GPUBufferBinding *pBindings,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8045,9 +8045,9 @@ static void VULKAN_BindVertexBuffers(
 }
 
 static void VULKAN_BindIndexBuffer(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBufferBinding *pBinding,
-    SDL_GpuIndexElementSize indexElementSize)
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBufferBinding *pBinding,
+    SDL_GPUIndexElementSize indexElementSize)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
@@ -8063,7 +8063,7 @@ static void VULKAN_BindIndexBuffer(
 }
 
 static void VULKAN_PushVertexUniformData(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
     Uint32 dataLengthInBytes)
@@ -8079,7 +8079,7 @@ static void VULKAN_PushVertexUniformData(
 }
 
 static void VULKAN_PushFragmentUniformData(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
     Uint32 dataLengthInBytes)
@@ -8095,7 +8095,7 @@ static void VULKAN_PushFragmentUniformData(
 }
 
 static void VULKAN_EndRenderPass(
-    SDL_GpuCommandBuffer *commandBuffer)
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
@@ -8145,10 +8145,10 @@ static void VULKAN_EndRenderPass(
 }
 
 static void VULKAN_BeginComputePass(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuStorageTextureWriteOnlyBinding *storageTextureBindings,
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
     Uint32 storageTextureBindingCount,
-    SDL_GpuStorageBufferWriteOnlyBinding *storageBufferBindings,
+    SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
     Uint32 storageBufferBindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8199,8 +8199,8 @@ static void VULKAN_BeginComputePass(
 }
 
 static void VULKAN_BindComputePipeline(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuComputePipeline *computePipeline)
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUComputePipeline *computePipeline)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
@@ -8231,9 +8231,9 @@ static void VULKAN_BindComputePipeline(
 }
 
 static void VULKAN_BindComputeStorageTextures(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GpuTexture **storageTextures,
+    SDL_GPUTexture **storageTextures,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8268,9 +8268,9 @@ static void VULKAN_BindComputeStorageTextures(
 }
 
 static void VULKAN_BindComputeStorageBuffers(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GpuBuffer **storageBuffers,
+    SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8306,7 +8306,7 @@ static void VULKAN_BindComputeStorageBuffers(
 }
 
 static void VULKAN_PushComputeUniformData(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
     Uint32 dataLengthInBytes)
@@ -8568,7 +8568,7 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 }
 
 static void VULKAN_DispatchCompute(
-    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 groupCountX,
     Uint32 groupCountY,
     Uint32 groupCountZ)
@@ -8586,8 +8586,8 @@ static void VULKAN_DispatchCompute(
 }
 
 static void VULKAN_DispatchComputeIndirect(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBuffer *buffer,
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBuffer *buffer,
     Uint32 offsetInBytes)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8605,7 +8605,7 @@ static void VULKAN_DispatchComputeIndirect(
 }
 
 static void VULKAN_EndComputePass(
-    SDL_GpuCommandBuffer *commandBuffer)
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     Uint32 i;
@@ -8664,8 +8664,8 @@ static void VULKAN_EndComputePass(
 }
 
 static void *VULKAN_MapTransferBuffer(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuTransferBuffer *transferBuffer,
+    SDL_GPURenderer *driverData,
+    SDL_GPUTransferBuffer *transferBuffer,
     SDL_bool cycle)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
@@ -8687,8 +8687,8 @@ static void *VULKAN_MapTransferBuffer(
 }
 
 static void VULKAN_UnmapTransferBuffer(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuTransferBuffer *transferBuffer)
+    SDL_GPURenderer *driverData,
+    SDL_GPUTransferBuffer *transferBuffer)
 {
     // no-op because transfer buffers are persistently mapped
     (void)driverData;
@@ -8696,16 +8696,16 @@ static void VULKAN_UnmapTransferBuffer(
 }
 
 static void VULKAN_BeginCopyPass(
-    SDL_GpuCommandBuffer *commandBuffer)
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     // no-op
     (void)commandBuffer;
 }
 
 static void VULKAN_UploadToTexture(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTextureTransferInfo *source,
-    SDL_GpuTextureRegion *destination,
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUTextureTransferInfo *source,
+    SDL_GPUTextureRegion *destination,
     SDL_bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8759,9 +8759,9 @@ static void VULKAN_UploadToTexture(
 }
 
 static void VULKAN_UploadToBuffer(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTransferBufferLocation *source,
-    SDL_GpuBufferRegion *destination,
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUTransferBufferLocation *source,
+    SDL_GPUBufferRegion *destination,
     SDL_bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8803,9 +8803,9 @@ static void VULKAN_UploadToBuffer(
 // Readback
 
 static void VULKAN_DownloadFromTexture(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTextureRegion *source,
-    SDL_GpuTextureTransferInfo *destination)
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUTextureRegion *source,
+    SDL_GPUTextureTransferInfo *destination)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
@@ -8859,9 +8859,9 @@ static void VULKAN_DownloadFromTexture(
 }
 
 static void VULKAN_DownloadFromBuffer(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBufferRegion *source,
-    SDL_GpuTransferBufferLocation *destination)
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBufferRegion *source,
+    SDL_GPUTransferBufferLocation *destination)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
@@ -8899,9 +8899,9 @@ static void VULKAN_DownloadFromBuffer(
 }
 
 static void VULKAN_CopyTextureToTexture(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTextureLocation *source,
-    SDL_GpuTextureLocation *destination,
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUTextureLocation *source,
+    SDL_GPUTextureLocation *destination,
     Uint32 w,
     Uint32 h,
     Uint32 d,
@@ -8977,9 +8977,9 @@ static void VULKAN_CopyTextureToTexture(
 }
 
 static void VULKAN_CopyBufferToBuffer(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBufferLocation *source,
-    SDL_GpuBufferLocation *destination,
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBufferLocation *source,
+    SDL_GPUBufferLocation *destination,
     Uint32 size,
     SDL_bool cycle)
 {
@@ -9030,8 +9030,8 @@ static void VULKAN_CopyBufferToBuffer(
 }
 
 static void VULKAN_GenerateMipmaps(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTexture *texture)
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUTexture *texture)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
@@ -9124,18 +9124,18 @@ static void VULKAN_GenerateMipmaps(
 }
 
 static void VULKAN_EndCopyPass(
-    SDL_GpuCommandBuffer *commandBuffer)
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     // no-op
     (void)commandBuffer;
 }
 
 static void VULKAN_Blit(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBlitRegion *source,
-    SDL_GpuBlitRegion *destination,
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBlitRegion *source,
+    SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
-    SDL_GpuFilter filterMode,
+    SDL_GPUFilter filterMode,
     SDL_bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -9453,8 +9453,8 @@ static VulkanCommandBuffer *VULKAN_INTERNAL_GetInactiveCommandBufferFromPool(
     return commandBuffer;
 }
 
-static SDL_GpuCommandBuffer *VULKAN_AcquireCommandBuffer(
-    SDL_GpuRenderer *driverData)
+static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
+    SDL_GPURenderer *driverData)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VkResult result;
@@ -9544,12 +9544,12 @@ static SDL_GpuCommandBuffer *VULKAN_AcquireCommandBuffer(
 
     VULKAN_INTERNAL_BeginCommandBuffer(renderer, commandBuffer);
 
-    return (SDL_GpuCommandBuffer *)commandBuffer;
+    return (SDL_GPUCommandBuffer *)commandBuffer;
 }
 
 static SDL_bool VULKAN_QueryFence(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuFence *fence)
+    SDL_GPURenderer *driverData,
+    SDL_GPUFence *fence)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VkResult result;
@@ -9588,8 +9588,8 @@ static void VULKAN_INTERNAL_ReturnFenceToPool(
 }
 
 static void VULKAN_ReleaseFence(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuFence *fence)
+    SDL_GPURenderer *driverData,
+    SDL_GPUFence *fence)
 {
     VulkanFenceHandle *handle = (VulkanFenceHandle *)fence;
 
@@ -9618,9 +9618,9 @@ static SDL_bool VULKAN_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
 }
 
 static SDL_bool VULKAN_SupportsSwapchainComposition(
-    SDL_GpuRenderer *driverData,
+    SDL_GPURenderer *driverData,
     SDL_Window *window,
-    SDL_GpuSwapchainComposition swapchainComposition)
+    SDL_GPUSwapchainComposition swapchainComposition)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     WindowData *windowData = VULKAN_INTERNAL_FetchWindowData(window);
@@ -9664,9 +9664,9 @@ static SDL_bool VULKAN_SupportsSwapchainComposition(
 }
 
 static SDL_bool VULKAN_SupportsPresentMode(
-    SDL_GpuRenderer *driverData,
+    SDL_GPURenderer *driverData,
     SDL_Window *window,
-    SDL_GpuPresentMode presentMode)
+    SDL_GPUPresentMode presentMode)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     WindowData *windowData = VULKAN_INTERNAL_FetchWindowData(window);
@@ -9700,7 +9700,7 @@ static SDL_bool VULKAN_SupportsPresentMode(
 }
 
 static SDL_bool VULKAN_ClaimWindow(
-    SDL_GpuRenderer *driverData,
+    SDL_GPURenderer *driverData,
     SDL_Window *window)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
@@ -9740,7 +9740,7 @@ static SDL_bool VULKAN_ClaimWindow(
 }
 
 static void VULKAN_UnclaimWindow(
-    SDL_GpuRenderer *driverData,
+    SDL_GPURenderer *driverData,
     SDL_Window *window)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
@@ -9758,7 +9758,7 @@ static void VULKAN_UnclaimWindow(
             if (windowData->swapchainData->inFlightFences[i] != NULL) {
                 VULKAN_ReleaseFence(
                     driverData,
-                    (SDL_GpuFence *)windowData->swapchainData->inFlightFences[i]);
+                    (SDL_GPUFence *)windowData->swapchainData->inFlightFences[i]);
             }
         }
 
@@ -9788,13 +9788,13 @@ static SDL_bool VULKAN_INTERNAL_RecreateSwapchain(
     Uint32 i;
 
     if (windowData->swapchainData != NULL) {
-        VULKAN_Wait((SDL_GpuRenderer *)renderer);
+        VULKAN_Wait((SDL_GPURenderer *)renderer);
 
         for (i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
             if (windowData->swapchainData->inFlightFences[i] != NULL) {
                 VULKAN_ReleaseFence(
-                    (SDL_GpuRenderer *)renderer,
-                    (SDL_GpuFence *)windowData->swapchainData->inFlightFences[i]);
+                    (SDL_GPURenderer *)renderer,
+                    (SDL_GPUFence *)windowData->swapchainData->inFlightFences[i]);
             }
         }
     }
@@ -9803,8 +9803,8 @@ static SDL_bool VULKAN_INTERNAL_RecreateSwapchain(
     return VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
 }
 
-static SDL_GpuTexture *VULKAN_AcquireSwapchainTexture(
-    SDL_GpuCommandBuffer *commandBuffer,
+static SDL_GPUTexture *VULKAN_AcquireSwapchainTexture(
+    SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
     Uint32 *pWidth,
     Uint32 *pHeight)
@@ -9846,14 +9846,14 @@ static SDL_GpuTexture *VULKAN_AcquireSwapchainTexture(
         if (swapchainData->presentMode == VK_PRESENT_MODE_FIFO_KHR) {
             // In VSYNC mode, block until the least recent presented frame is done
             VULKAN_WaitForFences(
-                (SDL_GpuRenderer *)renderer,
+                (SDL_GPURenderer *)renderer,
                 SDL_TRUE,
-                (SDL_GpuFence **)&swapchainData->inFlightFences[swapchainData->frameCounter],
+                (SDL_GPUFence **)&swapchainData->inFlightFences[swapchainData->frameCounter],
                 1);
         } else {
             if (!VULKAN_QueryFence(
-                    (SDL_GpuRenderer *)renderer,
-                    (SDL_GpuFence *)swapchainData->inFlightFences[swapchainData->frameCounter])) {
+                    (SDL_GPURenderer *)renderer,
+                    (SDL_GPUFence *)swapchainData->inFlightFences[swapchainData->frameCounter])) {
                 /*
                  * In MAILBOX or IMMEDIATE mode, if the least recent fence is not signaled,
                  * return NULL to indicate that rendering should be skipped
@@ -9863,8 +9863,8 @@ static SDL_GpuTexture *VULKAN_AcquireSwapchainTexture(
         }
 
         VULKAN_ReleaseFence(
-            (SDL_GpuRenderer *)renderer,
-            (SDL_GpuFence *)swapchainData->inFlightFences[swapchainData->frameCounter]);
+            (SDL_GPURenderer *)renderer,
+            (SDL_GPUFence *)swapchainData->inFlightFences[swapchainData->frameCounter]);
 
         swapchainData->inFlightFences[swapchainData->frameCounter] = NULL;
     }
@@ -9987,11 +9987,11 @@ static SDL_GpuTexture *VULKAN_AcquireSwapchainTexture(
     *pWidth = swapchainData->textureContainers[swapchainData->frameCounter].header.info.width;
     *pHeight = swapchainData->textureContainers[swapchainData->frameCounter].header.info.height;
 
-    return (SDL_GpuTexture *)swapchainTextureContainer;
+    return (SDL_GPUTexture *)swapchainTextureContainer;
 }
 
-static SDL_GpuTextureFormat VULKAN_GetSwapchainTextureFormat(
-    SDL_GpuRenderer *driverData,
+static SDL_GPUTextureFormat VULKAN_GetSwapchainTextureFormat(
+    SDL_GPURenderer *driverData,
     SDL_Window *window)
 {
     WindowData *windowData = VULKAN_INTERNAL_FetchWindowData(window);
@@ -10012,10 +10012,10 @@ static SDL_GpuTextureFormat VULKAN_GetSwapchainTextureFormat(
 }
 
 static SDL_bool VULKAN_SetSwapchainParameters(
-    SDL_GpuRenderer *driverData,
+    SDL_GPURenderer *driverData,
     SDL_Window *window,
-    SDL_GpuSwapchainComposition swapchainComposition,
-    SDL_GpuPresentMode presentMode)
+    SDL_GPUSwapchainComposition swapchainComposition,
+    SDL_GPUPresentMode presentMode)
 {
     WindowData *windowData = VULKAN_INTERNAL_FetchWindowData(window);
 
@@ -10188,8 +10188,8 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
 
     if (commandBuffer->autoReleaseFence) {
         VULKAN_ReleaseFence(
-            (SDL_GpuRenderer *)renderer,
-            (SDL_GpuFence *)commandBuffer->inFlightFence);
+            (SDL_GPURenderer *)renderer,
+            (SDL_GPUFence *)commandBuffer->inFlightFence);
 
         commandBuffer->inFlightFence = NULL;
     }
@@ -10299,9 +10299,9 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
 }
 
 static void VULKAN_WaitForFences(
-    SDL_GpuRenderer *driverData,
+    SDL_GPURenderer *driverData,
     SDL_bool waitAll,
-    SDL_GpuFence **pFences,
+    SDL_GPUFence **pFences,
     Uint32 fenceCount)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
@@ -10345,7 +10345,7 @@ static void VULKAN_WaitForFences(
 }
 
 static void VULKAN_Wait(
-    SDL_GpuRenderer *driverData)
+    SDL_GPURenderer *driverData)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VulkanCommandBuffer *commandBuffer;
@@ -10371,8 +10371,8 @@ static void VULKAN_Wait(
     SDL_UnlockMutex(renderer->submitLock);
 }
 
-static SDL_GpuFence *VULKAN_SubmitAndAcquireFence(
-    SDL_GpuCommandBuffer *commandBuffer)
+static SDL_GPUFence *VULKAN_SubmitAndAcquireFence(
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     VulkanCommandBuffer *vulkanCommandBuffer;
 
@@ -10381,11 +10381,11 @@ static SDL_GpuFence *VULKAN_SubmitAndAcquireFence(
 
     VULKAN_Submit(commandBuffer);
 
-    return (SDL_GpuFence *)vulkanCommandBuffer->inFlightFence;
+    return (SDL_GPUFence *)vulkanCommandBuffer->inFlightFence;
 }
 
 static void VULKAN_Submit(
-    SDL_GpuCommandBuffer *commandBuffer)
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
@@ -10565,7 +10565,7 @@ static Uint8 VULKAN_INTERNAL_DefragmentMemory(
 
     renderer->defragInProgress = 1;
 
-    commandBuffer = (VulkanCommandBuffer *)VULKAN_AcquireCommandBuffer((SDL_GpuRenderer *)renderer);
+    commandBuffer = (VulkanCommandBuffer *)VULKAN_AcquireCommandBuffer((SDL_GPURenderer *)renderer);
     if (commandBuffer == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create defrag command buffer!");
         return 0;
@@ -10754,7 +10754,7 @@ static Uint8 VULKAN_INTERNAL_DefragmentMemory(
     SDL_UnlockMutex(renderer->allocatorLock);
 
     VULKAN_Submit(
-        (SDL_GpuCommandBuffer *)commandBuffer);
+        (SDL_GPUCommandBuffer *)commandBuffer);
 
     return 1;
 }
@@ -10762,10 +10762,10 @@ static Uint8 VULKAN_INTERNAL_DefragmentMemory(
 // Format Info
 
 static SDL_bool VULKAN_SupportsTextureFormat(
-    SDL_GpuRenderer *driverData,
-    SDL_GpuTextureFormat format,
-    SDL_GpuTextureType type,
-    SDL_GpuTextureUsageFlags usage)
+    SDL_GPURenderer *driverData,
+    SDL_GPUTextureFormat format,
+    SDL_GPUTextureType type,
+    SDL_GPUTextureUsageFlags usage)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VkFormat vulkanFormat = SDLToVK_SurfaceFormat[format];
@@ -11535,11 +11535,11 @@ static SDL_bool VULKAN_PrepareDriver(SDL_VideoDevice *_this)
     return result;
 }
 
-static SDL_GpuDevice *VULKAN_CreateDevice(SDL_bool debugMode, SDL_bool preferLowPower, SDL_PropertiesID props)
+static SDL_GPUDevice *VULKAN_CreateDevice(SDL_bool debugMode, SDL_bool preferLowPower, SDL_PropertiesID props)
 {
     VulkanRenderer *renderer;
 
-    SDL_GpuDevice *result;
+    SDL_GPUDevice *result;
     VkResult vulkanResult;
     Uint32 i;
 
@@ -11563,7 +11563,7 @@ static SDL_GpuDevice *VULKAN_CreateDevice(SDL_bool debugMode, SDL_bool preferLow
         return NULL;
     }
 
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_Gpu Driver: Vulkan");
+    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: Vulkan");
     SDL_LogInfo(
         SDL_LOG_CATEGORY_GPU,
         "Vulkan Device: %s",
@@ -11593,10 +11593,10 @@ static SDL_GpuDevice *VULKAN_CreateDevice(SDL_bool debugMode, SDL_bool preferLow
     }
 
     // FIXME: just move this into this function
-    result = (SDL_GpuDevice *)SDL_malloc(sizeof(SDL_GpuDevice));
+    result = (SDL_GPUDevice *)SDL_malloc(sizeof(SDL_GPUDevice));
     ASSIGN_DRIVER(VULKAN)
 
-    result->driverData = (SDL_GpuRenderer *)renderer;
+    result->driverData = (SDL_GPURenderer *)renderer;
 
     /*
      * Create initial swapchain array
@@ -11786,7 +11786,7 @@ static SDL_GpuDevice *VULKAN_CreateDevice(SDL_bool debugMode, SDL_bool preferLow
     return result;
 }
 
-SDL_GpuBootstrap VulkanDriver = {
+SDL_GPUBootstrap VulkanDriver = {
     "Vulkan",
     SDL_GPU_DRIVER_VULKAN,
     SDL_GPU_SHADERFORMAT_SPIRV,

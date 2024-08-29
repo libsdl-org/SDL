@@ -120,7 +120,7 @@
 
 // Drivers
 
-static const SDL_GpuBootstrap *backends[] = {
+static const SDL_GPUBootstrap *backends[] = {
 #ifdef SDL_GPU_METAL
     &MetalDriver,
 #endif
@@ -138,22 +138,22 @@ static const SDL_GpuBootstrap *backends[] = {
 
 // Internal Utility Functions
 
-SDL_GpuGraphicsPipeline *SDL_Gpu_FetchBlitPipeline(
-    SDL_GpuDevice *device,
-    SDL_GpuTextureType sourceTextureType,
-    SDL_GpuTextureFormat destinationFormat,
-    SDL_GpuShader *blitVertexShader,
-    SDL_GpuShader *blitFrom2DShader,
-    SDL_GpuShader *blitFrom2DArrayShader,
-    SDL_GpuShader *blitFrom3DShader,
-    SDL_GpuShader *blitFromCubeShader,
+SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
+    SDL_GPUDevice *device,
+    SDL_GPUTextureType sourceTextureType,
+    SDL_GPUTextureFormat destinationFormat,
+    SDL_GPUShader *blitVertexShader,
+    SDL_GPUShader *blitFrom2DShader,
+    SDL_GPUShader *blitFrom2DArrayShader,
+    SDL_GPUShader *blitFrom3DShader,
+    SDL_GPUShader *blitFromCubeShader,
     BlitPipelineCacheEntry **blitPipelines,
     Uint32 *blitPipelineCount,
     Uint32 *blitPipelineCapacity)
 {
-    SDL_GpuGraphicsPipelineCreateInfo blitPipelineCreateInfo;
-    SDL_GpuColorAttachmentDescription colorAttachmentDesc;
-    SDL_GpuGraphicsPipeline *pipeline;
+    SDL_GPUGraphicsPipelineCreateInfo blitPipelineCreateInfo;
+    SDL_GPUColorAttachmentDescription colorAttachmentDesc;
+    SDL_GPUGraphicsPipeline *pipeline;
 
     if (blitPipelineCount == NULL) {
         // use pre-created, format-agnostic pipelines
@@ -199,7 +199,7 @@ SDL_GpuGraphicsPipeline *SDL_Gpu_FetchBlitPipeline(
     blitPipelineCreateInfo.blendConstants[2] = 1.0f;
     blitPipelineCreateInfo.blendConstants[3] = 1.0f;
 
-    pipeline = SDL_CreateGpuGraphicsPipeline(
+    pipeline = SDL_CreateGPUGraphicsPipeline(
         device,
         &blitPipelineCreateInfo);
 
@@ -224,36 +224,36 @@ SDL_GpuGraphicsPipeline *SDL_Gpu_FetchBlitPipeline(
     return pipeline;
 }
 
-void SDL_Gpu_BlitCommon(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBlitRegion *source,
-    SDL_GpuBlitRegion *destination,
+void SDL_GPU_BlitCommon(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBlitRegion *source,
+    SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
-    SDL_GpuFilter filterMode,
+    SDL_GPUFilter filterMode,
     SDL_bool cycle,
-    SDL_GpuSampler *blitLinearSampler,
-    SDL_GpuSampler *blitNearestSampler,
-    SDL_GpuShader *blitVertexShader,
-    SDL_GpuShader *blitFrom2DShader,
-    SDL_GpuShader *blitFrom2DArrayShader,
-    SDL_GpuShader *blitFrom3DShader,
-    SDL_GpuShader *blitFromCubeShader,
+    SDL_GPUSampler *blitLinearSampler,
+    SDL_GPUSampler *blitNearestSampler,
+    SDL_GPUShader *blitVertexShader,
+    SDL_GPUShader *blitFrom2DShader,
+    SDL_GPUShader *blitFrom2DArrayShader,
+    SDL_GPUShader *blitFrom3DShader,
+    SDL_GPUShader *blitFromCubeShader,
     BlitPipelineCacheEntry **blitPipelines,
     Uint32 *blitPipelineCount,
     Uint32 *blitPipelineCapacity)
 {
     CommandBufferCommonHeader *cmdbufHeader = (CommandBufferCommonHeader *)commandBuffer;
-    SDL_GpuRenderPass *renderPass;
+    SDL_GPURenderPass *renderPass;
     TextureCommonHeader *srcHeader = (TextureCommonHeader *)source->texture;
     TextureCommonHeader *dstHeader = (TextureCommonHeader *)destination->texture;
-    SDL_GpuGraphicsPipeline *blitPipeline;
-    SDL_GpuColorAttachmentInfo colorAttachmentInfo;
-    SDL_GpuViewport viewport;
-    SDL_GpuTextureSamplerBinding textureSamplerBinding;
+    SDL_GPUGraphicsPipeline *blitPipeline;
+    SDL_GPUColorAttachmentInfo colorAttachmentInfo;
+    SDL_GPUViewport viewport;
+    SDL_GPUTextureSamplerBinding textureSamplerBinding;
     BlitFragmentUniforms blitFragmentUniforms;
     Uint32 layerDivisor;
 
-    blitPipeline = SDL_Gpu_FetchBlitPipeline(
+    blitPipeline = SDL_GPU_FetchBlitPipeline(
         cmdbufHeader->device,
         srcHeader->info.type,
         dstHeader->info.format,
@@ -290,7 +290,7 @@ void SDL_Gpu_BlitCommon(
     colorAttachmentInfo.layerOrDepthPlane = destination->layerOrDepthPlane;
     colorAttachmentInfo.cycle = cycle;
 
-    renderPass = SDL_BeginGpuRenderPass(
+    renderPass = SDL_BeginGPURenderPass(
         commandBuffer,
         &colorAttachmentInfo,
         1,
@@ -303,11 +303,11 @@ void SDL_Gpu_BlitCommon(
     viewport.minDepth = 0;
     viewport.maxDepth = 1;
 
-    SDL_SetGpuViewport(
+    SDL_SetGPUViewport(
         renderPass,
         &viewport);
 
-    SDL_BindGpuGraphicsPipeline(
+    SDL_BindGPUGraphicsPipeline(
         renderPass,
         blitPipeline);
 
@@ -315,7 +315,7 @@ void SDL_Gpu_BlitCommon(
     textureSamplerBinding.sampler =
         filterMode == SDL_GPU_FILTER_NEAREST ? blitNearestSampler : blitLinearSampler;
 
-    SDL_BindGpuFragmentSamplers(
+    SDL_BindGPUFragmentSamplers(
         renderPass,
         0,
         &textureSamplerBinding,
@@ -340,22 +340,22 @@ void SDL_Gpu_BlitCommon(
         blitFragmentUniforms.height *= -1;
     }
 
-    SDL_PushGpuFragmentUniformData(
+    SDL_PushGPUFragmentUniformData(
         commandBuffer,
         0,
         &blitFragmentUniforms,
         sizeof(blitFragmentUniforms));
 
-    SDL_DrawGpuPrimitives(renderPass, 3, 1, 0, 0);
-    SDL_EndGpuRenderPass(renderPass);
+    SDL_DrawGPUPrimitives(renderPass, 3, 1, 0, 0);
+    SDL_EndGPURenderPass(renderPass);
 }
 
 // Driver Functions
 
-static SDL_GpuDriver SDL_GpuSelectBackend(
+static SDL_GPUDriver SDL_GPUSelectBackend(
     SDL_VideoDevice *_this,
     const char *gpudriver,
-    SDL_GpuShaderFormat formatFlags)
+    SDL_GPUShaderFormat formatFlags)
 {
     Uint32 i;
 
@@ -387,17 +387,17 @@ static SDL_GpuDriver SDL_GpuSelectBackend(
         }
     }
 
-    SDL_LogError(SDL_LOG_CATEGORY_GPU, "No supported SDL_Gpu backend found!");
+    SDL_LogError(SDL_LOG_CATEGORY_GPU, "No supported SDL_GPU backend found!");
     return SDL_GPU_DRIVER_INVALID;
 }
 
-SDL_GpuDevice *SDL_CreateGpuDevice(
-    SDL_GpuShaderFormat formatFlags,
+SDL_GPUDevice *SDL_CreateGPUDevice(
+    SDL_GPUShaderFormat formatFlags,
     SDL_bool debugMode,
     SDL_bool preferLowPower,
     const char *name)
 {
-    SDL_GpuDevice *result;
+    SDL_GPUDevice *result;
     SDL_PropertiesID props = SDL_CreateProperties();
     if (formatFlags & SDL_GPU_SHADERFORMAT_SECRET) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_SECRET_BOOL, SDL_TRUE);
@@ -420,21 +420,21 @@ SDL_GpuDevice *SDL_CreateGpuDevice(
     SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_DEBUGMODE_BOOL, debugMode);
     SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_PREFERLOWPOWER_BOOL, preferLowPower);
     SDL_SetStringProperty(props, SDL_PROP_GPU_CREATEDEVICE_NAME_STRING, name);
-    result = SDL_CreateGpuDeviceWithProperties(props);
+    result = SDL_CreateGPUDeviceWithProperties(props);
     SDL_DestroyProperties(props);
     return result;
 }
 
-SDL_GpuDevice *SDL_CreateGpuDeviceWithProperties(SDL_PropertiesID props)
+SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
 {
-    SDL_GpuShaderFormat formatFlags = 0;
+    SDL_GPUShaderFormat formatFlags = 0;
     SDL_bool debugMode;
     SDL_bool preferLowPower;
 
     int i;
     const char *gpudriver;
-    SDL_GpuDevice *result = NULL;
-    SDL_GpuDriver selectedBackend;
+    SDL_GPUDevice *result = NULL;
+    SDL_GPUDriver selectedBackend;
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     if (_this == NULL) {
@@ -469,7 +469,7 @@ SDL_GpuDevice *SDL_CreateGpuDeviceWithProperties(SDL_PropertiesID props)
         gpudriver = SDL_GetStringProperty(props, SDL_PROP_GPU_CREATEDEVICE_NAME_STRING, NULL);
     }
 
-    selectedBackend = SDL_GpuSelectBackend(_this, gpudriver, formatFlags);
+    selectedBackend = SDL_GPUSelectBackend(_this, gpudriver, formatFlags);
     if (selectedBackend != SDL_GPU_DRIVER_INVALID) {
         for (i = 0; backends[i]; i += 1) {
             if (backends[i]->backendflag == selectedBackend) {
@@ -486,22 +486,22 @@ SDL_GpuDevice *SDL_CreateGpuDeviceWithProperties(SDL_PropertiesID props)
     return result;
 }
 
-void SDL_DestroyGpuDevice(SDL_GpuDevice *device)
+void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
 {
     CHECK_DEVICE_MAGIC(device, );
 
     device->DestroyDevice(device);
 }
 
-SDL_GpuDriver SDL_GetGpuDriver(SDL_GpuDevice *device)
+SDL_GPUDriver SDL_GetGPUDriver(SDL_GPUDevice *device)
 {
     CHECK_DEVICE_MAGIC(device, SDL_GPU_DRIVER_INVALID);
 
     return device->backend;
 }
 
-Uint32 SDL_GpuTextureFormatTexelBlockSize(
-    SDL_GpuTextureFormat textureFormat)
+Uint32 SDL_GPUTextureFormatTexelBlockSize(
+    SDL_GPUTextureFormat textureFormat)
 {
     switch (textureFormat) {
     case SDL_GPU_TEXTUREFORMAT_BC1_UNORM:
@@ -548,11 +548,11 @@ Uint32 SDL_GpuTextureFormatTexelBlockSize(
     }
 }
 
-SDL_bool SDL_SupportsGpuTextureFormat(
-    SDL_GpuDevice *device,
-    SDL_GpuTextureFormat format,
-    SDL_GpuTextureType type,
-    SDL_GpuTextureUsageFlags usage)
+SDL_bool SDL_SupportsGPUTextureFormat(
+    SDL_GPUDevice *device,
+    SDL_GPUTextureFormat format,
+    SDL_GPUTextureType type,
+    SDL_GPUTextureUsageFlags usage)
 {
     CHECK_DEVICE_MAGIC(device, SDL_FALSE);
 
@@ -567,10 +567,10 @@ SDL_bool SDL_SupportsGpuTextureFormat(
         usage);
 }
 
-SDL_bool SDL_SupportsGpuSampleCount(
-    SDL_GpuDevice *device,
-    SDL_GpuTextureFormat format,
-    SDL_GpuSampleCount sampleCount)
+SDL_bool SDL_SupportsGPUSampleCount(
+    SDL_GPUDevice *device,
+    SDL_GPUTextureFormat format,
+    SDL_GPUSampleCount sampleCount)
 {
     CHECK_DEVICE_MAGIC(device, 0);
 
@@ -586,9 +586,9 @@ SDL_bool SDL_SupportsGpuSampleCount(
 
 // State Creation
 
-SDL_GpuComputePipeline *SDL_CreateGpuComputePipeline(
-    SDL_GpuDevice *device,
-    SDL_GpuComputePipelineCreateInfo *computePipelineCreateInfo)
+SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
+    SDL_GPUDevice *device,
+    SDL_GPUComputePipelineCreateInfo *computePipelineCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (computePipelineCreateInfo == NULL) {
@@ -623,9 +623,9 @@ SDL_GpuComputePipeline *SDL_CreateGpuComputePipeline(
         computePipelineCreateInfo);
 }
 
-SDL_GpuGraphicsPipeline *SDL_CreateGpuGraphicsPipeline(
-    SDL_GpuDevice *device,
-    SDL_GpuGraphicsPipelineCreateInfo *graphicsPipelineCreateInfo)
+SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
+    SDL_GPUDevice *device,
+    SDL_GPUGraphicsPipelineCreateInfo *graphicsPipelineCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (graphicsPipelineCreateInfo == NULL) {
@@ -655,9 +655,9 @@ SDL_GpuGraphicsPipeline *SDL_CreateGpuGraphicsPipeline(
         graphicsPipelineCreateInfo);
 }
 
-SDL_GpuSampler *SDL_CreateGpuSampler(
-    SDL_GpuDevice *device,
-    SDL_GpuSamplerCreateInfo *samplerCreateInfo)
+SDL_GPUSampler *SDL_CreateGPUSampler(
+    SDL_GPUDevice *device,
+    SDL_GPUSamplerCreateInfo *samplerCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (samplerCreateInfo == NULL) {
@@ -670,9 +670,9 @@ SDL_GpuSampler *SDL_CreateGpuSampler(
         samplerCreateInfo);
 }
 
-SDL_GpuShader *SDL_CreateGpuShader(
-    SDL_GpuDevice *device,
-    SDL_GpuShaderCreateInfo *shaderCreateInfo)
+SDL_GPUShader *SDL_CreateGPUShader(
+    SDL_GPUDevice *device,
+    SDL_GPUShaderCreateInfo *shaderCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (shaderCreateInfo == NULL) {
@@ -692,9 +692,9 @@ SDL_GpuShader *SDL_CreateGpuShader(
         shaderCreateInfo);
 }
 
-SDL_GpuTexture *SDL_CreateGpuTexture(
-    SDL_GpuDevice *device,
-    SDL_GpuTextureCreateInfo *textureCreateInfo)
+SDL_GPUTexture *SDL_CreateGPUTexture(
+    SDL_GPUDevice *device,
+    SDL_GPUTextureCreateInfo *textureCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (textureCreateInfo == NULL) {
@@ -750,7 +750,7 @@ SDL_GpuTexture *SDL_CreateGpuTexture(
                 SDL_assert_release(!"For cube textures: sampleCount must be SDL_GPU_SAMPLECOUNT_1");
                 failed = SDL_TRUE;
             }
-            if (!SDL_SupportsGpuTextureFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_CUBE, textureCreateInfo->usageFlags)) {
+            if (!SDL_SupportsGPUTextureFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_CUBE, textureCreateInfo->usageFlags)) {
                 SDL_assert_release(!"For cube textures: the format is unsupported for the given usageFlags");
                 failed = SDL_TRUE;
             }
@@ -768,7 +768,7 @@ SDL_GpuTexture *SDL_CreateGpuTexture(
                 SDL_assert_release(!"For 3D textures: sampleCount must be SDL_GPU_SAMPLECOUNT_1");
                 failed = SDL_TRUE;
             }
-            if (!SDL_SupportsGpuTextureFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_3D, textureCreateInfo->usageFlags)) {
+            if (!SDL_SupportsGPUTextureFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_3D, textureCreateInfo->usageFlags)) {
                 SDL_assert_release(!"For 3D textures: the format is unsupported for the given usageFlags");
                 failed = SDL_TRUE;
             }
@@ -790,7 +790,7 @@ SDL_GpuTexture *SDL_CreateGpuTexture(
                     failed = SDL_TRUE;
                 }
             }
-            if (!SDL_SupportsGpuTextureFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_2D, textureCreateInfo->usageFlags)) {
+            if (!SDL_SupportsGPUTextureFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_2D, textureCreateInfo->usageFlags)) {
                 SDL_assert_release(!"For 2D textures: the format is unsupported for the given usageFlags");
                 failed = SDL_TRUE;
             }
@@ -806,9 +806,9 @@ SDL_GpuTexture *SDL_CreateGpuTexture(
         textureCreateInfo);
 }
 
-SDL_GpuBuffer *SDL_CreateGpuBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuBufferCreateInfo *bufferCreateInfo)
+SDL_GPUBuffer *SDL_CreateGPUBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUBufferCreateInfo *bufferCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (bufferCreateInfo == NULL) {
@@ -822,9 +822,9 @@ SDL_GpuBuffer *SDL_CreateGpuBuffer(
         bufferCreateInfo->sizeInBytes);
 }
 
-SDL_GpuTransferBuffer *SDL_CreateGpuTransferBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuTransferBufferCreateInfo *transferBufferCreateInfo)
+SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUTransferBufferCreateInfo *transferBufferCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (transferBufferCreateInfo == NULL) {
@@ -840,9 +840,9 @@ SDL_GpuTransferBuffer *SDL_CreateGpuTransferBuffer(
 
 // Debug Naming
 
-void SDL_SetGpuBufferName(
-    SDL_GpuDevice *device,
-    SDL_GpuBuffer *buffer,
+void SDL_SetGPUBufferName(
+    SDL_GPUDevice *device,
+    SDL_GPUBuffer *buffer,
     const char *text)
 {
     CHECK_DEVICE_MAGIC(device, );
@@ -860,9 +860,9 @@ void SDL_SetGpuBufferName(
         text);
 }
 
-void SDL_SetGpuTextureName(
-    SDL_GpuDevice *device,
-    SDL_GpuTexture *texture,
+void SDL_SetGPUTextureName(
+    SDL_GPUDevice *device,
+    SDL_GPUTexture *texture,
     const char *text)
 {
     CHECK_DEVICE_MAGIC(device, );
@@ -880,8 +880,8 @@ void SDL_SetGpuTextureName(
         text);
 }
 
-void SDL_InsertGpuDebugLabel(
-    SDL_GpuCommandBuffer *commandBuffer,
+void SDL_InsertGPUDebugLabel(
+    SDL_GPUCommandBuffer *commandBuffer,
     const char *text)
 {
     if (commandBuffer == NULL) {
@@ -902,8 +902,8 @@ void SDL_InsertGpuDebugLabel(
         text);
 }
 
-void SDL_PushGpuDebugGroup(
-    SDL_GpuCommandBuffer *commandBuffer,
+void SDL_PushGPUDebugGroup(
+    SDL_GPUCommandBuffer *commandBuffer,
     const char *name)
 {
     if (commandBuffer == NULL) {
@@ -924,8 +924,8 @@ void SDL_PushGpuDebugGroup(
         name);
 }
 
-void SDL_PopGpuDebugGroup(
-    SDL_GpuCommandBuffer *commandBuffer)
+void SDL_PopGPUDebugGroup(
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     if (commandBuffer == NULL) {
         SDL_InvalidParamError("commandBuffer");
@@ -942,9 +942,9 @@ void SDL_PopGpuDebugGroup(
 
 // Disposal
 
-void SDL_ReleaseGpuTexture(
-    SDL_GpuDevice *device,
-    SDL_GpuTexture *texture)
+void SDL_ReleaseGPUTexture(
+    SDL_GPUDevice *device,
+    SDL_GPUTexture *texture)
 {
     CHECK_DEVICE_MAGIC(device, );
     if (texture == NULL) {
@@ -956,9 +956,9 @@ void SDL_ReleaseGpuTexture(
         texture);
 }
 
-void SDL_ReleaseGpuSampler(
-    SDL_GpuDevice *device,
-    SDL_GpuSampler *sampler)
+void SDL_ReleaseGPUSampler(
+    SDL_GPUDevice *device,
+    SDL_GPUSampler *sampler)
 {
     CHECK_DEVICE_MAGIC(device, );
     if (sampler == NULL) {
@@ -970,9 +970,9 @@ void SDL_ReleaseGpuSampler(
         sampler);
 }
 
-void SDL_ReleaseGpuBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuBuffer *buffer)
+void SDL_ReleaseGPUBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUBuffer *buffer)
 {
     CHECK_DEVICE_MAGIC(device, );
     if (buffer == NULL) {
@@ -984,9 +984,9 @@ void SDL_ReleaseGpuBuffer(
         buffer);
 }
 
-void SDL_ReleaseGpuTransferBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuTransferBuffer *transferBuffer)
+void SDL_ReleaseGPUTransferBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUTransferBuffer *transferBuffer)
 {
     CHECK_DEVICE_MAGIC(device, );
     if (transferBuffer == NULL) {
@@ -998,9 +998,9 @@ void SDL_ReleaseGpuTransferBuffer(
         transferBuffer);
 }
 
-void SDL_ReleaseGpuShader(
-    SDL_GpuDevice *device,
-    SDL_GpuShader *shader)
+void SDL_ReleaseGPUShader(
+    SDL_GPUDevice *device,
+    SDL_GPUShader *shader)
 {
     CHECK_DEVICE_MAGIC(device, );
     if (shader == NULL) {
@@ -1012,9 +1012,9 @@ void SDL_ReleaseGpuShader(
         shader);
 }
 
-void SDL_ReleaseGpuComputePipeline(
-    SDL_GpuDevice *device,
-    SDL_GpuComputePipeline *computePipeline)
+void SDL_ReleaseGPUComputePipeline(
+    SDL_GPUDevice *device,
+    SDL_GPUComputePipeline *computePipeline)
 {
     CHECK_DEVICE_MAGIC(device, );
     if (computePipeline == NULL) {
@@ -1026,9 +1026,9 @@ void SDL_ReleaseGpuComputePipeline(
         computePipeline);
 }
 
-void SDL_ReleaseGpuGraphicsPipeline(
-    SDL_GpuDevice *device,
-    SDL_GpuGraphicsPipeline *graphicsPipeline)
+void SDL_ReleaseGPUGraphicsPipeline(
+    SDL_GPUDevice *device,
+    SDL_GPUGraphicsPipeline *graphicsPipeline)
 {
     CHECK_DEVICE_MAGIC(device, );
     if (graphicsPipeline == NULL) {
@@ -1042,10 +1042,10 @@ void SDL_ReleaseGpuGraphicsPipeline(
 
 // Command Buffer
 
-SDL_GpuCommandBuffer *SDL_AcquireGpuCommandBuffer(
-    SDL_GpuDevice *device)
+SDL_GPUCommandBuffer *SDL_AcquireGPUCommandBuffer(
+    SDL_GPUDevice *device)
 {
-    SDL_GpuCommandBuffer *commandBuffer;
+    SDL_GPUCommandBuffer *commandBuffer;
     CommandBufferCommonHeader *commandBufferHeader;
 
     CHECK_DEVICE_MAGIC(device, NULL);
@@ -1074,8 +1074,8 @@ SDL_GpuCommandBuffer *SDL_AcquireGpuCommandBuffer(
 
 // Uniforms
 
-void SDL_PushGpuVertexUniformData(
-    SDL_GpuCommandBuffer *commandBuffer,
+void SDL_PushGPUVertexUniformData(
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
     Uint32 dataLengthInBytes)
@@ -1100,8 +1100,8 @@ void SDL_PushGpuVertexUniformData(
         dataLengthInBytes);
 }
 
-void SDL_PushGpuFragmentUniformData(
-    SDL_GpuCommandBuffer *commandBuffer,
+void SDL_PushGPUFragmentUniformData(
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
     Uint32 dataLengthInBytes)
@@ -1126,8 +1126,8 @@ void SDL_PushGpuFragmentUniformData(
         dataLengthInBytes);
 }
 
-void SDL_PushGpuComputeUniformData(
-    SDL_GpuCommandBuffer *commandBuffer,
+void SDL_PushGPUComputeUniformData(
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
     Uint32 dataLengthInBytes)
@@ -1154,11 +1154,11 @@ void SDL_PushGpuComputeUniformData(
 
 // Render Pass
 
-SDL_GpuRenderPass *SDL_BeginGpuRenderPass(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuColorAttachmentInfo *colorAttachmentInfos,
+SDL_GPURenderPass *SDL_BeginGPURenderPass(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GpuDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
+    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
@@ -1199,12 +1199,12 @@ SDL_GpuRenderPass *SDL_BeginGpuRenderPass(
 
     commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
     commandBufferHeader->renderPass.inProgress = SDL_TRUE;
-    return (SDL_GpuRenderPass *)&(commandBufferHeader->renderPass);
+    return (SDL_GPURenderPass *)&(commandBufferHeader->renderPass);
 }
 
-void SDL_BindGpuGraphicsPipeline(
-    SDL_GpuRenderPass *renderPass,
-    SDL_GpuGraphicsPipeline *graphicsPipeline)
+void SDL_BindGPUGraphicsPipeline(
+    SDL_GPURenderPass *renderPass,
+    SDL_GPUGraphicsPipeline *graphicsPipeline)
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
@@ -1225,9 +1225,9 @@ void SDL_BindGpuGraphicsPipeline(
     commandBufferHeader->graphicsPipelineBound = SDL_TRUE;
 }
 
-void SDL_SetGpuViewport(
-    SDL_GpuRenderPass *renderPass,
-    SDL_GpuViewport *viewport)
+void SDL_SetGPUViewport(
+    SDL_GPURenderPass *renderPass,
+    SDL_GPUViewport *viewport)
 {
     if (renderPass == NULL) {
         SDL_InvalidParamError("renderPass");
@@ -1247,8 +1247,8 @@ void SDL_SetGpuViewport(
         viewport);
 }
 
-void SDL_SetGpuScissor(
-    SDL_GpuRenderPass *renderPass,
+void SDL_SetGPUScissor(
+    SDL_GPURenderPass *renderPass,
     SDL_Rect *scissor)
 {
     if (renderPass == NULL) {
@@ -1269,10 +1269,10 @@ void SDL_SetGpuScissor(
         scissor);
 }
 
-void SDL_BindGpuVertexBuffers(
-    SDL_GpuRenderPass *renderPass,
+void SDL_BindGPUVertexBuffers(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstBinding,
-    SDL_GpuBufferBinding *pBindings,
+    SDL_GPUBufferBinding *pBindings,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1295,10 +1295,10 @@ void SDL_BindGpuVertexBuffers(
         bindingCount);
 }
 
-void SDL_BindGpuIndexBuffer(
-    SDL_GpuRenderPass *renderPass,
-    SDL_GpuBufferBinding *pBinding,
-    SDL_GpuIndexElementSize indexElementSize)
+void SDL_BindGPUIndexBuffer(
+    SDL_GPURenderPass *renderPass,
+    SDL_GPUBufferBinding *pBinding,
+    SDL_GPUIndexElementSize indexElementSize)
 {
     if (renderPass == NULL) {
         SDL_InvalidParamError("renderPass");
@@ -1319,10 +1319,10 @@ void SDL_BindGpuIndexBuffer(
         indexElementSize);
 }
 
-void SDL_BindGpuVertexSamplers(
-    SDL_GpuRenderPass *renderPass,
+void SDL_BindGPUVertexSamplers(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuTextureSamplerBinding *textureSamplerBindings,
+    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1345,10 +1345,10 @@ void SDL_BindGpuVertexSamplers(
         bindingCount);
 }
 
-void SDL_BindGpuVertexStorageTextures(
-    SDL_GpuRenderPass *renderPass,
+void SDL_BindGPUVertexStorageTextures(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuTexture **storageTextures,
+    SDL_GPUTexture **storageTextures,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1371,10 +1371,10 @@ void SDL_BindGpuVertexStorageTextures(
         bindingCount);
 }
 
-void SDL_BindGpuVertexStorageBuffers(
-    SDL_GpuRenderPass *renderPass,
+void SDL_BindGPUVertexStorageBuffers(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuBuffer **storageBuffers,
+    SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1397,10 +1397,10 @@ void SDL_BindGpuVertexStorageBuffers(
         bindingCount);
 }
 
-void SDL_BindGpuFragmentSamplers(
-    SDL_GpuRenderPass *renderPass,
+void SDL_BindGPUFragmentSamplers(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuTextureSamplerBinding *textureSamplerBindings,
+    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1423,10 +1423,10 @@ void SDL_BindGpuFragmentSamplers(
         bindingCount);
 }
 
-void SDL_BindGpuFragmentStorageTextures(
-    SDL_GpuRenderPass *renderPass,
+void SDL_BindGPUFragmentStorageTextures(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuTexture **storageTextures,
+    SDL_GPUTexture **storageTextures,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1449,10 +1449,10 @@ void SDL_BindGpuFragmentStorageTextures(
         bindingCount);
 }
 
-void SDL_BindGpuFragmentStorageBuffers(
-    SDL_GpuRenderPass *renderPass,
+void SDL_BindGPUFragmentStorageBuffers(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuBuffer **storageBuffers,
+    SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1475,8 +1475,8 @@ void SDL_BindGpuFragmentStorageBuffers(
         bindingCount);
 }
 
-void SDL_DrawGpuIndexedPrimitives(
-    SDL_GpuRenderPass *renderPass,
+void SDL_DrawGPUIndexedPrimitives(
+    SDL_GPURenderPass *renderPass,
     Uint32 indexCount,
     Uint32 instanceCount,
     Uint32 firstIndex,
@@ -1502,8 +1502,8 @@ void SDL_DrawGpuIndexedPrimitives(
         firstInstance);
 }
 
-void SDL_DrawGpuPrimitives(
-    SDL_GpuRenderPass *renderPass,
+void SDL_DrawGPUPrimitives(
+    SDL_GPURenderPass *renderPass,
     Uint32 vertexCount,
     Uint32 instanceCount,
     Uint32 firstVertex,
@@ -1527,9 +1527,9 @@ void SDL_DrawGpuPrimitives(
         firstInstance);
 }
 
-void SDL_DrawGpuPrimitivesIndirect(
-    SDL_GpuRenderPass *renderPass,
-    SDL_GpuBuffer *buffer,
+void SDL_DrawGPUPrimitivesIndirect(
+    SDL_GPURenderPass *renderPass,
+    SDL_GPUBuffer *buffer,
     Uint32 offsetInBytes,
     Uint32 drawCount,
     Uint32 stride)
@@ -1556,9 +1556,9 @@ void SDL_DrawGpuPrimitivesIndirect(
         stride);
 }
 
-void SDL_DrawGpuIndexedPrimitivesIndirect(
-    SDL_GpuRenderPass *renderPass,
-    SDL_GpuBuffer *buffer,
+void SDL_DrawGPUIndexedPrimitivesIndirect(
+    SDL_GPURenderPass *renderPass,
+    SDL_GPUBuffer *buffer,
     Uint32 offsetInBytes,
     Uint32 drawCount,
     Uint32 stride)
@@ -1585,8 +1585,8 @@ void SDL_DrawGpuIndexedPrimitivesIndirect(
         stride);
 }
 
-void SDL_EndGpuRenderPass(
-    SDL_GpuRenderPass *renderPass)
+void SDL_EndGPURenderPass(
+    SDL_GPURenderPass *renderPass)
 {
     CommandBufferCommonHeader *commandBufferCommonHeader;
 
@@ -1609,11 +1609,11 @@ void SDL_EndGpuRenderPass(
 
 // Compute Pass
 
-SDL_GpuComputePass *SDL_BeginGpuComputePass(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuStorageTextureWriteOnlyBinding *storageTextureBindings,
+SDL_GPUComputePass *SDL_BeginGPUComputePass(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
     Uint32 storageTextureBindingCount,
-    SDL_GpuStorageBufferWriteOnlyBinding *storageBufferBindings,
+    SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
     Uint32 storageBufferBindingCount)
 {
     CommandBufferCommonHeader *commandBufferHeader;
@@ -1652,12 +1652,12 @@ SDL_GpuComputePass *SDL_BeginGpuComputePass(
 
     commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
     commandBufferHeader->computePass.inProgress = SDL_TRUE;
-    return (SDL_GpuComputePass *)&(commandBufferHeader->computePass);
+    return (SDL_GPUComputePass *)&(commandBufferHeader->computePass);
 }
 
-void SDL_BindGpuComputePipeline(
-    SDL_GpuComputePass *computePass,
-    SDL_GpuComputePipeline *computePipeline)
+void SDL_BindGPUComputePipeline(
+    SDL_GPUComputePass *computePass,
+    SDL_GPUComputePipeline *computePipeline)
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
@@ -1682,10 +1682,10 @@ void SDL_BindGpuComputePipeline(
     commandBufferHeader->computePipelineBound = SDL_TRUE;
 }
 
-void SDL_BindGpuComputeStorageTextures(
-    SDL_GpuComputePass *computePass,
+void SDL_BindGPUComputeStorageTextures(
+    SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    SDL_GpuTexture **storageTextures,
+    SDL_GPUTexture **storageTextures,
     Uint32 bindingCount)
 {
     if (computePass == NULL) {
@@ -1708,10 +1708,10 @@ void SDL_BindGpuComputeStorageTextures(
         bindingCount);
 }
 
-void SDL_BindGpuComputeStorageBuffers(
-    SDL_GpuComputePass *computePass,
+void SDL_BindGPUComputeStorageBuffers(
+    SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    SDL_GpuBuffer **storageBuffers,
+    SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount)
 {
     if (computePass == NULL) {
@@ -1734,8 +1734,8 @@ void SDL_BindGpuComputeStorageBuffers(
         bindingCount);
 }
 
-void SDL_DispatchGpuCompute(
-    SDL_GpuComputePass *computePass,
+void SDL_DispatchGPUCompute(
+    SDL_GPUComputePass *computePass,
     Uint32 groupCountX,
     Uint32 groupCountY,
     Uint32 groupCountZ)
@@ -1757,9 +1757,9 @@ void SDL_DispatchGpuCompute(
         groupCountZ);
 }
 
-void SDL_DispatchGpuComputeIndirect(
-    SDL_GpuComputePass *computePass,
-    SDL_GpuBuffer *buffer,
+void SDL_DispatchGPUComputeIndirect(
+    SDL_GPUComputePass *computePass,
+    SDL_GPUBuffer *buffer,
     Uint32 offsetInBytes)
 {
     if (computePass == NULL) {
@@ -1778,8 +1778,8 @@ void SDL_DispatchGpuComputeIndirect(
         offsetInBytes);
 }
 
-void SDL_EndGpuComputePass(
-    SDL_GpuComputePass *computePass)
+void SDL_EndGPUComputePass(
+    SDL_GPUComputePass *computePass)
 {
     CommandBufferCommonHeader *commandBufferCommonHeader;
 
@@ -1802,9 +1802,9 @@ void SDL_EndGpuComputePass(
 
 // TransferBuffer Data
 
-void *SDL_MapGpuTransferBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuTransferBuffer *transferBuffer,
+void *SDL_MapGPUTransferBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUTransferBuffer *transferBuffer,
     SDL_bool cycle)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
@@ -1819,9 +1819,9 @@ void *SDL_MapGpuTransferBuffer(
         cycle);
 }
 
-void SDL_UnmapGpuTransferBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuTransferBuffer *transferBuffer)
+void SDL_UnmapGPUTransferBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUTransferBuffer *transferBuffer)
 {
     CHECK_DEVICE_MAGIC(device, );
     if (transferBuffer == NULL) {
@@ -1836,8 +1836,8 @@ void SDL_UnmapGpuTransferBuffer(
 
 // Copy Pass
 
-SDL_GpuCopyPass *SDL_BeginGpuCopyPass(
-    SDL_GpuCommandBuffer *commandBuffer)
+SDL_GPUCopyPass *SDL_BeginGPUCopyPass(
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
@@ -1856,13 +1856,13 @@ SDL_GpuCopyPass *SDL_BeginGpuCopyPass(
 
     commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
     commandBufferHeader->copyPass.inProgress = SDL_TRUE;
-    return (SDL_GpuCopyPass *)&(commandBufferHeader->copyPass);
+    return (SDL_GPUCopyPass *)&(commandBufferHeader->copyPass);
 }
 
-void SDL_UploadToGpuTexture(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuTextureTransferInfo *source,
-    SDL_GpuTextureRegion *destination,
+void SDL_UploadToGPUTexture(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUTextureTransferInfo *source,
+    SDL_GPUTextureRegion *destination,
     SDL_bool cycle)
 {
     if (copyPass == NULL) {
@@ -1889,10 +1889,10 @@ void SDL_UploadToGpuTexture(
         cycle);
 }
 
-void SDL_UploadToGpuBuffer(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuTransferBufferLocation *source,
-    SDL_GpuBufferRegion *destination,
+void SDL_UploadToGPUBuffer(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUTransferBufferLocation *source,
+    SDL_GPUBufferRegion *destination,
     SDL_bool cycle)
 {
     if (copyPass == NULL) {
@@ -1915,10 +1915,10 @@ void SDL_UploadToGpuBuffer(
         cycle);
 }
 
-void SDL_CopyGpuTextureToTexture(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuTextureLocation *source,
-    SDL_GpuTextureLocation *destination,
+void SDL_CopyGPUTextureToTexture(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUTextureLocation *source,
+    SDL_GPUTextureLocation *destination,
     Uint32 w,
     Uint32 h,
     Uint32 d,
@@ -1947,10 +1947,10 @@ void SDL_CopyGpuTextureToTexture(
         cycle);
 }
 
-void SDL_CopyGpuBufferToBuffer(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuBufferLocation *source,
-    SDL_GpuBufferLocation *destination,
+void SDL_CopyGPUBufferToBuffer(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUBufferLocation *source,
+    SDL_GPUBufferLocation *destination,
     Uint32 size,
     SDL_bool cycle)
 {
@@ -1975,10 +1975,10 @@ void SDL_CopyGpuBufferToBuffer(
         cycle);
 }
 
-void SDL_DownloadFromGpuTexture(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuTextureRegion *source,
-    SDL_GpuTextureTransferInfo *destination)
+void SDL_DownloadFromGPUTexture(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUTextureRegion *source,
+    SDL_GPUTextureTransferInfo *destination)
 {
     if (copyPass == NULL) {
         SDL_InvalidParamError("copyPass");
@@ -1999,10 +1999,10 @@ void SDL_DownloadFromGpuTexture(
         destination);
 }
 
-void SDL_DownloadFromGpuBuffer(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuBufferRegion *source,
-    SDL_GpuTransferBufferLocation *destination)
+void SDL_DownloadFromGPUBuffer(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUBufferRegion *source,
+    SDL_GPUTransferBufferLocation *destination)
 {
     if (copyPass == NULL) {
         SDL_InvalidParamError("copyPass");
@@ -2023,8 +2023,8 @@ void SDL_DownloadFromGpuBuffer(
         destination);
 }
 
-void SDL_EndGpuCopyPass(
-    SDL_GpuCopyPass *copyPass)
+void SDL_EndGPUCopyPass(
+    SDL_GPUCopyPass *copyPass)
 {
     if (copyPass == NULL) {
         SDL_InvalidParamError("copyPass");
@@ -2041,9 +2041,9 @@ void SDL_EndGpuCopyPass(
     ((CommandBufferCommonHeader *)COPYPASS_COMMAND_BUFFER)->copyPass.inProgress = SDL_FALSE;
 }
 
-void SDL_GenerateGpuMipmaps(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTexture *texture)
+void SDL_GenerateGPUMipmaps(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUTexture *texture)
 {
     if (commandBuffer == NULL) {
         SDL_InvalidParamError("commandBuffer");
@@ -2075,12 +2075,12 @@ void SDL_GenerateGpuMipmaps(
         texture);
 }
 
-void SDL_BlitGpu(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBlitRegion *source,
-    SDL_GpuBlitRegion *destination,
+void SDL_BlitGPU(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBlitRegion *source,
+    SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
-    SDL_GpuFilter filterMode,
+    SDL_GPUFilter filterMode,
     SDL_bool cycle)
 {
     if (commandBuffer == NULL) {
@@ -2142,10 +2142,10 @@ void SDL_BlitGpu(
 
 // Submission/Presentation
 
-SDL_bool SDL_SupportsGpuSwapchainComposition(
-    SDL_GpuDevice *device,
+SDL_bool SDL_SupportsGPUSwapchainComposition(
+    SDL_GPUDevice *device,
     SDL_Window *window,
-    SDL_GpuSwapchainComposition swapchainComposition)
+    SDL_GPUSwapchainComposition swapchainComposition)
 {
     CHECK_DEVICE_MAGIC(device, SDL_FALSE);
     if (window == NULL) {
@@ -2163,10 +2163,10 @@ SDL_bool SDL_SupportsGpuSwapchainComposition(
         swapchainComposition);
 }
 
-SDL_bool SDL_SupportsGpuPresentMode(
-    SDL_GpuDevice *device,
+SDL_bool SDL_SupportsGPUPresentMode(
+    SDL_GPUDevice *device,
     SDL_Window *window,
-    SDL_GpuPresentMode presentMode)
+    SDL_GPUPresentMode presentMode)
 {
     CHECK_DEVICE_MAGIC(device, SDL_FALSE);
     if (window == NULL) {
@@ -2184,8 +2184,8 @@ SDL_bool SDL_SupportsGpuPresentMode(
         presentMode);
 }
 
-SDL_bool SDL_ClaimGpuWindow(
-    SDL_GpuDevice *device,
+SDL_bool SDL_ClaimGPUWindow(
+    SDL_GPUDevice *device,
     SDL_Window *window)
 {
     CHECK_DEVICE_MAGIC(device, SDL_FALSE);
@@ -2199,8 +2199,8 @@ SDL_bool SDL_ClaimGpuWindow(
         window);
 }
 
-void SDL_UnclaimGpuWindow(
-    SDL_GpuDevice *device,
+void SDL_UnclaimGPUWindow(
+    SDL_GPUDevice *device,
     SDL_Window *window)
 {
     CHECK_DEVICE_MAGIC(device, );
@@ -2214,11 +2214,11 @@ void SDL_UnclaimGpuWindow(
         window);
 }
 
-SDL_bool SDL_SetGpuSwapchainParameters(
-    SDL_GpuDevice *device,
+SDL_bool SDL_SetGPUSwapchainParameters(
+    SDL_GPUDevice *device,
     SDL_Window *window,
-    SDL_GpuSwapchainComposition swapchainComposition,
-    SDL_GpuPresentMode presentMode)
+    SDL_GPUSwapchainComposition swapchainComposition,
+    SDL_GPUPresentMode presentMode)
 {
     CHECK_DEVICE_MAGIC(device, SDL_FALSE);
     if (window == NULL) {
@@ -2238,8 +2238,8 @@ SDL_bool SDL_SetGpuSwapchainParameters(
         presentMode);
 }
 
-SDL_GpuTextureFormat SDL_GetGpuSwapchainTextureFormat(
-    SDL_GpuDevice *device,
+SDL_GPUTextureFormat SDL_GetGPUSwapchainTextureFormat(
+    SDL_GPUDevice *device,
     SDL_Window *window)
 {
     CHECK_DEVICE_MAGIC(device, SDL_GPU_TEXTUREFORMAT_INVALID);
@@ -2253,8 +2253,8 @@ SDL_GpuTextureFormat SDL_GetGpuSwapchainTextureFormat(
         window);
 }
 
-SDL_GpuTexture *SDL_AcquireGpuSwapchainTexture(
-    SDL_GpuCommandBuffer *commandBuffer,
+SDL_GPUTexture *SDL_AcquireGPUSwapchainTexture(
+    SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
     Uint32 *pWidth,
     Uint32 *pHeight)
@@ -2288,8 +2288,8 @@ SDL_GpuTexture *SDL_AcquireGpuSwapchainTexture(
         pHeight);
 }
 
-void SDL_SubmitGpu(
-    SDL_GpuCommandBuffer *commandBuffer)
+void SDL_SubmitGPU(
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
 
@@ -2315,8 +2315,8 @@ void SDL_SubmitGpu(
         commandBuffer);
 }
 
-SDL_GpuFence *SDL_SubmitGpuAndAcquireFence(
-    SDL_GpuCommandBuffer *commandBuffer)
+SDL_GPUFence *SDL_SubmitGPUAndAcquireFence(
+    SDL_GPUCommandBuffer *commandBuffer)
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
 
@@ -2342,8 +2342,8 @@ SDL_GpuFence *SDL_SubmitGpuAndAcquireFence(
         commandBuffer);
 }
 
-void SDL_WaitGpu(
-    SDL_GpuDevice *device)
+void SDL_WaitGPU(
+    SDL_GPUDevice *device)
 {
     CHECK_DEVICE_MAGIC(device, );
 
@@ -2351,10 +2351,10 @@ void SDL_WaitGpu(
         device->driverData);
 }
 
-void SDL_WaitGpuForFences(
-    SDL_GpuDevice *device,
+void SDL_WaitGPUForFences(
+    SDL_GPUDevice *device,
     SDL_bool waitAll,
-    SDL_GpuFence **pFences,
+    SDL_GPUFence **pFences,
     Uint32 fenceCount)
 {
     CHECK_DEVICE_MAGIC(device, );
@@ -2370,9 +2370,9 @@ void SDL_WaitGpuForFences(
         fenceCount);
 }
 
-SDL_bool SDL_QueryGpuFence(
-    SDL_GpuDevice *device,
-    SDL_GpuFence *fence)
+SDL_bool SDL_QueryGPUFence(
+    SDL_GPUDevice *device,
+    SDL_GPUFence *fence)
 {
     CHECK_DEVICE_MAGIC(device, SDL_FALSE);
     if (fence == NULL) {
@@ -2385,9 +2385,9 @@ SDL_bool SDL_QueryGpuFence(
         fence);
 }
 
-void SDL_ReleaseGpuFence(
-    SDL_GpuDevice *device,
-    SDL_GpuFence *fence)
+void SDL_ReleaseGPUFence(
+    SDL_GPUDevice *device,
+    SDL_GPUFence *fence)
 {
     CHECK_DEVICE_MAGIC(device, );
     if (fence == NULL) {

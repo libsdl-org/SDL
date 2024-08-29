@@ -24,7 +24,7 @@
 
 #include "SDL_internal.h"
 
-// SDL_Gpu shader implementation
+// SDL_GPU shader implementation
 
 typedef enum
 {
@@ -48,16 +48,16 @@ typedef enum
 
 struct GPU_Shaders
 {
-    SDL_GpuShader *vert_shaders[NUM_VERT_SHADERS];
-    SDL_GpuShader *frag_shaders[NUM_FRAG_SHADERS];
+    SDL_GPUShader *vert_shaders[NUM_VERT_SHADERS];
+    SDL_GPUShader *frag_shaders[NUM_FRAG_SHADERS];
 };
 
 typedef struct GPU_Shaders GPU_Shaders;
 
 void GPU_FillSupportedShaderFormats(SDL_PropertiesID props);
-extern bool GPU_InitShaders(GPU_Shaders *shaders, SDL_GpuDevice *device);
-extern void GPU_ReleaseShaders(GPU_Shaders *shaders, SDL_GpuDevice *device);
-extern SDL_GpuShader *GPU_GetVertexShader(GPU_Shaders *shaders, GPU_VertexShaderID id);
-extern SDL_GpuShader *GPU_GetFragmentShader(GPU_Shaders *shaders, GPU_FragmentShaderID id);
+extern bool GPU_InitShaders(GPU_Shaders *shaders, SDL_GPUDevice *device);
+extern void GPU_ReleaseShaders(GPU_Shaders *shaders, SDL_GPUDevice *device);
+extern SDL_GPUShader *GPU_GetVertexShader(GPU_Shaders *shaders, GPU_VertexShaderID id);
+extern SDL_GPUShader *GPU_GetFragmentShader(GPU_Shaders *shaders, GPU_FragmentShaderID id);
 
 #endif // SDL_shaders_gpu_h_

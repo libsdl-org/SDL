@@ -20,7 +20,7 @@
 */
 
 /**
- * # CategoryGpu
+ * # CategoryGPU
  *
  * Include file for SDL GPU API functions
  */
@@ -36,50 +36,50 @@ extern "C" {
 
 /* Type Declarations */
 
-typedef struct SDL_GpuDevice SDL_GpuDevice;
-typedef struct SDL_GpuBuffer SDL_GpuBuffer;
-typedef struct SDL_GpuTransferBuffer SDL_GpuTransferBuffer;
-typedef struct SDL_GpuTexture SDL_GpuTexture;
-typedef struct SDL_GpuSampler SDL_GpuSampler;
-typedef struct SDL_GpuShader SDL_GpuShader;
-typedef struct SDL_GpuComputePipeline SDL_GpuComputePipeline;
-typedef struct SDL_GpuGraphicsPipeline SDL_GpuGraphicsPipeline;
-typedef struct SDL_GpuCommandBuffer SDL_GpuCommandBuffer;
-typedef struct SDL_GpuRenderPass SDL_GpuRenderPass;
-typedef struct SDL_GpuComputePass SDL_GpuComputePass;
-typedef struct SDL_GpuCopyPass SDL_GpuCopyPass;
-typedef struct SDL_GpuFence SDL_GpuFence;
+typedef struct SDL_GPUDevice SDL_GPUDevice;
+typedef struct SDL_GPUBuffer SDL_GPUBuffer;
+typedef struct SDL_GPUTransferBuffer SDL_GPUTransferBuffer;
+typedef struct SDL_GPUTexture SDL_GPUTexture;
+typedef struct SDL_GPUSampler SDL_GPUSampler;
+typedef struct SDL_GPUShader SDL_GPUShader;
+typedef struct SDL_GPUComputePipeline SDL_GPUComputePipeline;
+typedef struct SDL_GPUGraphicsPipeline SDL_GPUGraphicsPipeline;
+typedef struct SDL_GPUCommandBuffer SDL_GPUCommandBuffer;
+typedef struct SDL_GPURenderPass SDL_GPURenderPass;
+typedef struct SDL_GPUComputePass SDL_GPUComputePass;
+typedef struct SDL_GPUCopyPass SDL_GPUCopyPass;
+typedef struct SDL_GPUFence SDL_GPUFence;
 
-typedef enum SDL_GpuPrimitiveType
+typedef enum SDL_GPUPrimitiveType
 {
     SDL_GPU_PRIMITIVETYPE_POINTLIST,
     SDL_GPU_PRIMITIVETYPE_LINELIST,
     SDL_GPU_PRIMITIVETYPE_LINESTRIP,
     SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
     SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP
-} SDL_GpuPrimitiveType;
+} SDL_GPUPrimitiveType;
 
-typedef enum SDL_GpuLoadOp
+typedef enum SDL_GPULoadOp
 {
     SDL_GPU_LOADOP_LOAD,
     SDL_GPU_LOADOP_CLEAR,
     SDL_GPU_LOADOP_DONT_CARE
-} SDL_GpuLoadOp;
+} SDL_GPULoadOp;
 
-typedef enum SDL_GpuStoreOp
+typedef enum SDL_GPUStoreOp
 {
     SDL_GPU_STOREOP_STORE,
     SDL_GPU_STOREOP_DONT_CARE
-} SDL_GpuStoreOp;
+} SDL_GPUStoreOp;
 
-typedef enum SDL_GpuIndexElementSize
+typedef enum SDL_GPUIndexElementSize
 {
     SDL_GPU_INDEXELEMENTSIZE_16BIT,
     SDL_GPU_INDEXELEMENTSIZE_32BIT
-} SDL_GpuIndexElementSize;
+} SDL_GPUIndexElementSize;
 
 /* Texture format support varies depending on driver, hardware, and usage flags.
- * In general, you should use SDL_SupportsGpuTextureFormat to query if a format
+ * In general, you should use SDL_SupportsGPUTextureFormat to query if a format
  * is supported before using it. However, there are a few guaranteed formats.
  *
  * For SAMPLER usage, the following formats are universally supported:
@@ -139,7 +139,7 @@ typedef enum SDL_GpuIndexElementSize
  * Unless D16_UNORM is sufficient for your purposes, always check which
  * of D24/D32 is supported before creating a depth-stencil texture!
  */
-typedef enum SDL_GpuTextureFormat
+typedef enum SDL_GPUTextureFormat
 {
     SDL_GPU_TEXTUREFORMAT_INVALID = -1,
 
@@ -188,9 +188,9 @@ typedef enum SDL_GpuTextureFormat
     SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
     SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT,
     SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT
-} SDL_GpuTextureFormat;
+} SDL_GPUTextureFormat;
 
-typedef enum SDL_GpuTextureUsageFlagBits
+typedef enum SDL_GPUTextureUsageFlagBits
 {
     SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT = 0x00000001,
     SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT = 0x00000002,
@@ -198,27 +198,27 @@ typedef enum SDL_GpuTextureUsageFlagBits
     SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT = 0x00000008,
     SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT = 0x00000020,
     SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT = 0x00000040
-} SDL_GpuTextureUsageFlagBits;
+} SDL_GPUTextureUsageFlagBits;
 
-typedef Uint32 SDL_GpuTextureUsageFlags;
+typedef Uint32 SDL_GPUTextureUsageFlags;
 
-typedef enum SDL_GpuTextureType
+typedef enum SDL_GPUTextureType
 {
     SDL_GPU_TEXTURETYPE_2D,
     SDL_GPU_TEXTURETYPE_2D_ARRAY,
     SDL_GPU_TEXTURETYPE_3D,
     SDL_GPU_TEXTURETYPE_CUBE
-} SDL_GpuTextureType;
+} SDL_GPUTextureType;
 
-typedef enum SDL_GpuSampleCount
+typedef enum SDL_GPUSampleCount
 {
     SDL_GPU_SAMPLECOUNT_1,
     SDL_GPU_SAMPLECOUNT_2,
     SDL_GPU_SAMPLECOUNT_4,
     SDL_GPU_SAMPLECOUNT_8
-} SDL_GpuSampleCount;
+} SDL_GPUSampleCount;
 
-typedef enum SDL_GpuCubeMapFace
+typedef enum SDL_GPUCubeMapFace
 {
     SDL_GPU_CUBEMAPFACE_POSITIVEX,
     SDL_GPU_CUBEMAPFACE_NEGATIVEX,
@@ -226,9 +226,9 @@ typedef enum SDL_GpuCubeMapFace
     SDL_GPU_CUBEMAPFACE_NEGATIVEY,
     SDL_GPU_CUBEMAPFACE_POSITIVEZ,
     SDL_GPU_CUBEMAPFACE_NEGATIVEZ
-} SDL_GpuCubeMapFace;
+} SDL_GPUCubeMapFace;
 
-typedef enum SDL_GpuBufferUsageFlagBits
+typedef enum SDL_GPUBufferUsageFlagBits
 {
     SDL_GPU_BUFFERUSAGE_VERTEX_BIT = 0x00000001,
     SDL_GPU_BUFFERUSAGE_INDEX_BIT = 0x00000002,
@@ -236,23 +236,23 @@ typedef enum SDL_GpuBufferUsageFlagBits
     SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT = 0x00000008,
     SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT = 0x00000020,
     SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT = 0x00000040
-} SDL_GpuBufferUsageFlagBits;
+} SDL_GPUBufferUsageFlagBits;
 
-typedef Uint32 SDL_GpuBufferUsageFlags;
+typedef Uint32 SDL_GPUBufferUsageFlags;
 
-typedef enum SDL_GpuTransferBufferUsage
+typedef enum SDL_GPUTransferBufferUsage
 {
     SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
     SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD
-} SDL_GpuTransferBufferUsage;
+} SDL_GPUTransferBufferUsage;
 
-typedef enum SDL_GpuShaderStage
+typedef enum SDL_GPUShaderStage
 {
     SDL_GPU_SHADERSTAGE_VERTEX,
     SDL_GPU_SHADERSTAGE_FRAGMENT
-} SDL_GpuShaderStage;
+} SDL_GPUShaderStage;
 
-typedef enum SDL_GpuShaderFormatFlagBits
+typedef enum SDL_GPUShaderFormatFlagBits
 {
     SDL_GPU_SHADERFORMAT_INVALID = 0x00000000,
     SDL_GPU_SHADERFORMAT_SECRET = 0x00000001,   /* NDA'd platforms */
@@ -261,11 +261,11 @@ typedef enum SDL_GpuShaderFormatFlagBits
     SDL_GPU_SHADERFORMAT_DXIL = 0x00000008,     /* D3D12 */
     SDL_GPU_SHADERFORMAT_MSL = 0x00000010,      /* Metal */
     SDL_GPU_SHADERFORMAT_METALLIB = 0x00000020, /* Metal */
-} SDL_GpuShaderFormatFlagBits;
+} SDL_GPUShaderFormatFlagBits;
 
-typedef Uint32 SDL_GpuShaderFormat;
+typedef Uint32 SDL_GPUShaderFormat;
 
-typedef enum SDL_GpuVertexElementFormat
+typedef enum SDL_GPUVertexElementFormat
 {
     /* 32-bit Signed Integers */
     SDL_GPU_VERTEXELEMENTFORMAT_INT,
@@ -320,34 +320,34 @@ typedef enum SDL_GpuVertexElementFormat
     /* 16-bit Floats */
     SDL_GPU_VERTEXELEMENTFORMAT_HALF2,
     SDL_GPU_VERTEXELEMENTFORMAT_HALF4
-} SDL_GpuVertexElementFormat;
+} SDL_GPUVertexElementFormat;
 
-typedef enum SDL_GpuVertexInputRate
+typedef enum SDL_GPUVertexInputRate
 {
     SDL_GPU_VERTEXINPUTRATE_VERTEX = 0,
     SDL_GPU_VERTEXINPUTRATE_INSTANCE = 1
-} SDL_GpuVertexInputRate;
+} SDL_GPUVertexInputRate;
 
-typedef enum SDL_GpuFillMode
+typedef enum SDL_GPUFillMode
 {
     SDL_GPU_FILLMODE_FILL,
     SDL_GPU_FILLMODE_LINE
-} SDL_GpuFillMode;
+} SDL_GPUFillMode;
 
-typedef enum SDL_GpuCullMode
+typedef enum SDL_GPUCullMode
 {
     SDL_GPU_CULLMODE_NONE,
     SDL_GPU_CULLMODE_FRONT,
     SDL_GPU_CULLMODE_BACK
-} SDL_GpuCullMode;
+} SDL_GPUCullMode;
 
-typedef enum SDL_GpuFrontFace
+typedef enum SDL_GPUFrontFace
 {
     SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE,
     SDL_GPU_FRONTFACE_CLOCKWISE
-} SDL_GpuFrontFace;
+} SDL_GPUFrontFace;
 
-typedef enum SDL_GpuCompareOp
+typedef enum SDL_GPUCompareOp
 {
     SDL_GPU_COMPAREOP_NEVER,
     SDL_GPU_COMPAREOP_LESS,
@@ -357,9 +357,9 @@ typedef enum SDL_GpuCompareOp
     SDL_GPU_COMPAREOP_NOT_EQUAL,
     SDL_GPU_COMPAREOP_GREATER_OR_EQUAL,
     SDL_GPU_COMPAREOP_ALWAYS
-} SDL_GpuCompareOp;
+} SDL_GPUCompareOp;
 
-typedef enum SDL_GpuStencilOp
+typedef enum SDL_GPUStencilOp
 {
     SDL_GPU_STENCILOP_KEEP,
     SDL_GPU_STENCILOP_ZERO,
@@ -369,18 +369,18 @@ typedef enum SDL_GpuStencilOp
     SDL_GPU_STENCILOP_INVERT,
     SDL_GPU_STENCILOP_INCREMENT_AND_WRAP,
     SDL_GPU_STENCILOP_DECREMENT_AND_WRAP
-} SDL_GpuStencilOp;
+} SDL_GPUStencilOp;
 
-typedef enum SDL_GpuBlendOp
+typedef enum SDL_GPUBlendOp
 {
     SDL_GPU_BLENDOP_ADD,
     SDL_GPU_BLENDOP_SUBTRACT,
     SDL_GPU_BLENDOP_REVERSE_SUBTRACT,
     SDL_GPU_BLENDOP_MIN,
     SDL_GPU_BLENDOP_MAX
-} SDL_GpuBlendOp;
+} SDL_GPUBlendOp;
 
-typedef enum SDL_GpuBlendFactor
+typedef enum SDL_GPUBlendFactor
 {
     SDL_GPU_BLENDFACTOR_ZERO,
     SDL_GPU_BLENDFACTOR_ONE,
@@ -395,36 +395,36 @@ typedef enum SDL_GpuBlendFactor
     SDL_GPU_BLENDFACTOR_CONSTANT_COLOR,
     SDL_GPU_BLENDFACTOR_ONE_MINUS_CONSTANT_COLOR,
     SDL_GPU_BLENDFACTOR_SRC_ALPHA_SATURATE
-} SDL_GpuBlendFactor;
+} SDL_GPUBlendFactor;
 
-typedef enum SDL_GpuColorComponentFlagBits
+typedef enum SDL_GPUColorComponentFlagBits
 {
     SDL_GPU_COLORCOMPONENT_R_BIT = 0x00000001,
     SDL_GPU_COLORCOMPONENT_G_BIT = 0x00000002,
     SDL_GPU_COLORCOMPONENT_B_BIT = 0x00000004,
     SDL_GPU_COLORCOMPONENT_A_BIT = 0x00000008
-} SDL_GpuColorComponentFlagBits;
+} SDL_GPUColorComponentFlagBits;
 
-typedef Uint8 SDL_GpuColorComponentFlags;
+typedef Uint8 SDL_GPUColorComponentFlags;
 
-typedef enum SDL_GpuFilter
+typedef enum SDL_GPUFilter
 {
     SDL_GPU_FILTER_NEAREST,
     SDL_GPU_FILTER_LINEAR
-} SDL_GpuFilter;
+} SDL_GPUFilter;
 
-typedef enum SDL_GpuSamplerMipmapMode
+typedef enum SDL_GPUSamplerMipmapMode
 {
     SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
     SDL_GPU_SAMPLERMIPMAPMODE_LINEAR
-} SDL_GpuSamplerMipmapMode;
+} SDL_GPUSamplerMipmapMode;
 
-typedef enum SDL_GpuSamplerAddressMode
+typedef enum SDL_GPUSamplerAddressMode
 {
     SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
     SDL_GPU_SAMPLERADDRESSMODE_MIRRORED_REPEAT,
     SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
-} SDL_GpuSamplerAddressMode;
+} SDL_GPUSamplerAddressMode;
 
 /*
  * VSYNC:
@@ -442,12 +442,12 @@ typedef enum SDL_GpuSamplerAddressMode
  *   Similar to VSYNC, but with reduced visual latency.
  *   When using this mode, AcquireSwapchainTexture will return NULL if too many frames are in flight.
  */
-typedef enum SDL_GpuPresentMode
+typedef enum SDL_GPUPresentMode
 {
     SDL_GPU_PRESENTMODE_VSYNC,
     SDL_GPU_PRESENTMODE_IMMEDIATE,
     SDL_GPU_PRESENTMODE_MAILBOX
-} SDL_GpuPresentMode;
+} SDL_GPUPresentMode;
 
 /*
  * SDR:
@@ -459,15 +459,15 @@ typedef enum SDL_GpuPresentMode
  * HDR10_ST2048:
  *   A2R10G10B10 or A2B10G10R10 swapchain. Pixel values are in PQ ST2048 encoding. Blends raw pixel values. (TODO: verify this)
  */
-typedef enum SDL_GpuSwapchainComposition
+typedef enum SDL_GPUSwapchainComposition
 {
     SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
     SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR,
     SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR,
     SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048
-} SDL_GpuSwapchainComposition;
+} SDL_GPUSwapchainComposition;
 
-typedef enum SDL_GpuDriver
+typedef enum SDL_GPUDriver
 {
     SDL_GPU_DRIVER_INVALID = -1,
     SDL_GPU_DRIVER_SECRET, /* NDA'd platforms */
@@ -475,17 +475,17 @@ typedef enum SDL_GpuDriver
     SDL_GPU_DRIVER_D3D11,
     SDL_GPU_DRIVER_D3D12,
     SDL_GPU_DRIVER_METAL
-} SDL_GpuDriver;
+} SDL_GPUDriver;
 
 /* Structures */
 
-typedef struct SDL_GpuDepthStencilValue
+typedef struct SDL_GPUDepthStencilValue
 {
     float depth;
     Uint8 stencil;
-} SDL_GpuDepthStencilValue;
+} SDL_GPUDepthStencilValue;
 
-typedef struct SDL_GpuViewport
+typedef struct SDL_GPUViewport
 {
     float x;
     float y;
@@ -493,35 +493,35 @@ typedef struct SDL_GpuViewport
     float h;
     float minDepth;
     float maxDepth;
-} SDL_GpuViewport;
+} SDL_GPUViewport;
 
-typedef struct SDL_GpuTextureTransferInfo
+typedef struct SDL_GPUTextureTransferInfo
 {
-    SDL_GpuTransferBuffer *transferBuffer;
+    SDL_GPUTransferBuffer *transferBuffer;
     Uint32 offset;      /* starting location of the image data */
     Uint32 imagePitch;  /* number of pixels from one row to the next */
     Uint32 imageHeight; /* number of rows from one layer/depth-slice to the next */
-} SDL_GpuTextureTransferInfo;
+} SDL_GPUTextureTransferInfo;
 
-typedef struct SDL_GpuTransferBufferLocation
+typedef struct SDL_GPUTransferBufferLocation
 {
-    SDL_GpuTransferBuffer *transferBuffer;
+    SDL_GPUTransferBuffer *transferBuffer;
     Uint32 offset;
-} SDL_GpuTransferBufferLocation;
+} SDL_GPUTransferBufferLocation;
 
-typedef struct SDL_GpuTextureLocation
+typedef struct SDL_GPUTextureLocation
 {
-    SDL_GpuTexture *texture;
+    SDL_GPUTexture *texture;
     Uint32 mipLevel;
     Uint32 layer;
     Uint32 x;
     Uint32 y;
     Uint32 z;
-} SDL_GpuTextureLocation;
+} SDL_GPUTextureLocation;
 
-typedef struct SDL_GpuTextureRegion
+typedef struct SDL_GPUTextureRegion
 {
-    SDL_GpuTexture *texture;
+    SDL_GPUTexture *texture;
     Uint32 mipLevel;
     Uint32 layer;
     Uint32 x;
@@ -530,154 +530,154 @@ typedef struct SDL_GpuTextureRegion
     Uint32 w;
     Uint32 h;
     Uint32 d;
-} SDL_GpuTextureRegion;
+} SDL_GPUTextureRegion;
 
-typedef struct SDL_GpuBlitRegion
+typedef struct SDL_GPUBlitRegion
 {
-    SDL_GpuTexture *texture;
+    SDL_GPUTexture *texture;
     Uint32 mipLevel;
     Uint32 layerOrDepthPlane;
     Uint32 x;
     Uint32 y;
     Uint32 w;
     Uint32 h;
-} SDL_GpuBlitRegion;
+} SDL_GPUBlitRegion;
 
-typedef struct SDL_GpuBufferLocation
+typedef struct SDL_GPUBufferLocation
 {
-    SDL_GpuBuffer *buffer;
+    SDL_GPUBuffer *buffer;
     Uint32 offset;
-} SDL_GpuBufferLocation;
+} SDL_GPUBufferLocation;
 
-typedef struct SDL_GpuBufferRegion
+typedef struct SDL_GPUBufferRegion
 {
-    SDL_GpuBuffer *buffer;
+    SDL_GPUBuffer *buffer;
     Uint32 offset;
     Uint32 size;
-} SDL_GpuBufferRegion;
+} SDL_GPUBufferRegion;
 
 /* Note that the `firstVertex` and `firstInstance` parameters are NOT compatible with
  * built-in vertex/instance ID variables in shaders (for example, SV_VertexID). If
  * your shader depends on these variables, the correlating draw call parameter MUST
  * be 0.
  */
-typedef struct SDL_GpuIndirectDrawCommand
+typedef struct SDL_GPUIndirectDrawCommand
 {
     Uint32 vertexCount;   /* number of vertices to draw */
     Uint32 instanceCount; /* number of instances to draw */
     Uint32 firstVertex;   /* index of the first vertex to draw */
     Uint32 firstInstance; /* ID of the first instance to draw */
-} SDL_GpuIndirectDrawCommand;
+} SDL_GPUIndirectDrawCommand;
 
-typedef struct SDL_GpuIndexedIndirectDrawCommand
+typedef struct SDL_GPUIndexedIndirectDrawCommand
 {
     Uint32 indexCount;    /* number of vertices to draw per instance */
     Uint32 instanceCount; /* number of instances to draw */
     Uint32 firstIndex;    /* base index within the index buffer */
     Sint32 vertexOffset;  /* value added to vertex index before indexing into the vertex buffer */
     Uint32 firstInstance; /* ID of the first instance to draw */
-} SDL_GpuIndexedIndirectDrawCommand;
+} SDL_GPUIndexedIndirectDrawCommand;
 
-typedef struct SDL_GpuIndirectDispatchCommand
+typedef struct SDL_GPUIndirectDispatchCommand
 {
     Uint32 groupCountX;
     Uint32 groupCountY;
     Uint32 groupCountZ;
-} SDL_GpuIndirectDispatchCommand;
+} SDL_GPUIndirectDispatchCommand;
 
 /* State structures */
 
-typedef struct SDL_GpuSamplerCreateInfo
+typedef struct SDL_GPUSamplerCreateInfo
 {
-    SDL_GpuFilter minFilter;
-    SDL_GpuFilter magFilter;
-    SDL_GpuSamplerMipmapMode mipmapMode;
-    SDL_GpuSamplerAddressMode addressModeU;
-    SDL_GpuSamplerAddressMode addressModeV;
-    SDL_GpuSamplerAddressMode addressModeW;
+    SDL_GPUFilter minFilter;
+    SDL_GPUFilter magFilter;
+    SDL_GPUSamplerMipmapMode mipmapMode;
+    SDL_GPUSamplerAddressMode addressModeU;
+    SDL_GPUSamplerAddressMode addressModeV;
+    SDL_GPUSamplerAddressMode addressModeW;
     float mipLodBias;
     SDL_bool anisotropyEnable;
     float maxAnisotropy;
     SDL_bool compareEnable;
-    SDL_GpuCompareOp compareOp;
+    SDL_GPUCompareOp compareOp;
     float minLod;
     float maxLod;
 
     SDL_PropertiesID props;
-} SDL_GpuSamplerCreateInfo;
+} SDL_GPUSamplerCreateInfo;
 
-typedef struct SDL_GpuVertexBinding
+typedef struct SDL_GPUVertexBinding
 {
     Uint32 binding;
     Uint32 stride;
-    SDL_GpuVertexInputRate inputRate;
+    SDL_GPUVertexInputRate inputRate;
     Uint32 instanceStepRate; /* ignored unless inputRate is INSTANCE */
-} SDL_GpuVertexBinding;
+} SDL_GPUVertexBinding;
 
-typedef struct SDL_GpuVertexAttribute
+typedef struct SDL_GPUVertexAttribute
 {
     Uint32 location;
     Uint32 binding;
-    SDL_GpuVertexElementFormat format;
+    SDL_GPUVertexElementFormat format;
     Uint32 offset;
-} SDL_GpuVertexAttribute;
+} SDL_GPUVertexAttribute;
 
-typedef struct SDL_GpuVertexInputState
+typedef struct SDL_GPUVertexInputState
 {
-    const SDL_GpuVertexBinding *vertexBindings;
+    const SDL_GPUVertexBinding *vertexBindings;
     Uint32 vertexBindingCount;
-    const SDL_GpuVertexAttribute *vertexAttributes;
+    const SDL_GPUVertexAttribute *vertexAttributes;
     Uint32 vertexAttributeCount;
-} SDL_GpuVertexInputState;
+} SDL_GPUVertexInputState;
 
-typedef struct SDL_GpuStencilOpState
+typedef struct SDL_GPUStencilOpState
 {
-    SDL_GpuStencilOp failOp;
-    SDL_GpuStencilOp passOp;
-    SDL_GpuStencilOp depthFailOp;
-    SDL_GpuCompareOp compareOp;
-} SDL_GpuStencilOpState;
+    SDL_GPUStencilOp failOp;
+    SDL_GPUStencilOp passOp;
+    SDL_GPUStencilOp depthFailOp;
+    SDL_GPUCompareOp compareOp;
+} SDL_GPUStencilOpState;
 
-typedef struct SDL_GpuColorAttachmentBlendState
+typedef struct SDL_GPUColorAttachmentBlendState
 {
     SDL_bool blendEnable;
-    SDL_GpuBlendFactor srcColorBlendFactor;
-    SDL_GpuBlendFactor dstColorBlendFactor;
-    SDL_GpuBlendOp colorBlendOp;
-    SDL_GpuBlendFactor srcAlphaBlendFactor;
-    SDL_GpuBlendFactor dstAlphaBlendFactor;
-    SDL_GpuBlendOp alphaBlendOp;
-    SDL_GpuColorComponentFlags colorWriteMask;
-} SDL_GpuColorAttachmentBlendState;
+    SDL_GPUBlendFactor srcColorBlendFactor;
+    SDL_GPUBlendFactor dstColorBlendFactor;
+    SDL_GPUBlendOp colorBlendOp;
+    SDL_GPUBlendFactor srcAlphaBlendFactor;
+    SDL_GPUBlendFactor dstAlphaBlendFactor;
+    SDL_GPUBlendOp alphaBlendOp;
+    SDL_GPUColorComponentFlags colorWriteMask;
+} SDL_GPUColorAttachmentBlendState;
 
-typedef struct SDL_GpuShaderCreateInfo
+typedef struct SDL_GPUShaderCreateInfo
 {
     size_t codeSize;
     const Uint8 *code;
     const char *entryPointName;
-    SDL_GpuShaderFormat format;
-    SDL_GpuShaderStage stage;
+    SDL_GPUShaderFormat format;
+    SDL_GPUShaderStage stage;
     Uint32 samplerCount;
     Uint32 storageTextureCount;
     Uint32 storageBufferCount;
     Uint32 uniformBufferCount;
 
     SDL_PropertiesID props;
-} SDL_GpuShaderCreateInfo;
+} SDL_GPUShaderCreateInfo;
 
-typedef struct SDL_GpuTextureCreateInfo
+typedef struct SDL_GPUTextureCreateInfo
 {
-    SDL_GpuTextureType type;
-    SDL_GpuTextureFormat format;
-    SDL_GpuTextureUsageFlags usageFlags;
+    SDL_GPUTextureType type;
+    SDL_GPUTextureFormat format;
+    SDL_GPUTextureUsageFlags usageFlags;
     Uint32 width;
     Uint32 height;
     Uint32 layerCountOrDepth;
     Uint32 levelCount;
-    SDL_GpuSampleCount sampleCount;
+    SDL_GPUSampleCount sampleCount;
 
     SDL_PropertiesID props;
-} SDL_GpuTextureCreateInfo;
+} SDL_GPUTextureCreateInfo;
 
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_R_FLOAT       "SDL.gpu.createtexture.d3d12.clear.r"
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_G_FLOAT       "SDL.gpu.createtexture.d3d12.clear.g"
@@ -686,89 +686,89 @@ typedef struct SDL_GpuTextureCreateInfo
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_DEPTH_FLOAT   "SDL.gpu.createtexture.d3d12.clear.depth"
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8 "SDL.gpu.createtexture.d3d12.clear.stencil"
 
-typedef struct SDL_GpuBufferCreateInfo
+typedef struct SDL_GPUBufferCreateInfo
 {
-    SDL_GpuBufferUsageFlags usageFlags;
+    SDL_GPUBufferUsageFlags usageFlags;
     Uint32 sizeInBytes;
 
     SDL_PropertiesID props;
-} SDL_GpuBufferCreateInfo;
+} SDL_GPUBufferCreateInfo;
 
-typedef struct SDL_GpuTransferBufferCreateInfo
+typedef struct SDL_GPUTransferBufferCreateInfo
 {
-    SDL_GpuTransferBufferUsage usage;
+    SDL_GPUTransferBufferUsage usage;
     Uint32 sizeInBytes;
 
     SDL_PropertiesID props;
-} SDL_GpuTransferBufferCreateInfo;
+} SDL_GPUTransferBufferCreateInfo;
 
 /* Pipeline state structures */
 
-typedef struct SDL_GpuRasterizerState
+typedef struct SDL_GPURasterizerState
 {
-    SDL_GpuFillMode fillMode;
-    SDL_GpuCullMode cullMode;
-    SDL_GpuFrontFace frontFace;
+    SDL_GPUFillMode fillMode;
+    SDL_GPUCullMode cullMode;
+    SDL_GPUFrontFace frontFace;
     SDL_bool depthBiasEnable;
     float depthBiasConstantFactor;
     float depthBiasClamp;
     float depthBiasSlopeFactor;
-} SDL_GpuRasterizerState;
+} SDL_GPURasterizerState;
 
-typedef struct SDL_GpuMultisampleState
+typedef struct SDL_GPUMultisampleState
 {
-    SDL_GpuSampleCount sampleCount;
+    SDL_GPUSampleCount sampleCount;
     Uint32 sampleMask;
-} SDL_GpuMultisampleState;
+} SDL_GPUMultisampleState;
 
-typedef struct SDL_GpuDepthStencilState
+typedef struct SDL_GPUDepthStencilState
 {
     SDL_bool depthTestEnable;
     SDL_bool depthWriteEnable;
-    SDL_GpuCompareOp compareOp;
+    SDL_GPUCompareOp compareOp;
     SDL_bool stencilTestEnable;
-    SDL_GpuStencilOpState backStencilState;
-    SDL_GpuStencilOpState frontStencilState;
+    SDL_GPUStencilOpState backStencilState;
+    SDL_GPUStencilOpState frontStencilState;
     Uint8 compareMask;
     Uint8 writeMask;
     Uint8 reference;
-} SDL_GpuDepthStencilState;
+} SDL_GPUDepthStencilState;
 
-typedef struct SDL_GpuColorAttachmentDescription
+typedef struct SDL_GPUColorAttachmentDescription
 {
-    SDL_GpuTextureFormat format;
-    SDL_GpuColorAttachmentBlendState blendState;
-} SDL_GpuColorAttachmentDescription;
+    SDL_GPUTextureFormat format;
+    SDL_GPUColorAttachmentBlendState blendState;
+} SDL_GPUColorAttachmentDescription;
 
-typedef struct SDL_GpuGraphicsPipelineAttachmentInfo
+typedef struct SDL_GPUGraphicsPipelineAttachmentInfo
 {
-    SDL_GpuColorAttachmentDescription *colorAttachmentDescriptions;
+    SDL_GPUColorAttachmentDescription *colorAttachmentDescriptions;
     Uint32 colorAttachmentCount;
     SDL_bool hasDepthStencilAttachment;
-    SDL_GpuTextureFormat depthStencilFormat;
-} SDL_GpuGraphicsPipelineAttachmentInfo;
+    SDL_GPUTextureFormat depthStencilFormat;
+} SDL_GPUGraphicsPipelineAttachmentInfo;
 
-typedef struct SDL_GpuGraphicsPipelineCreateInfo
+typedef struct SDL_GPUGraphicsPipelineCreateInfo
 {
-    SDL_GpuShader *vertexShader;
-    SDL_GpuShader *fragmentShader;
-    SDL_GpuVertexInputState vertexInputState;
-    SDL_GpuPrimitiveType primitiveType;
-    SDL_GpuRasterizerState rasterizerState;
-    SDL_GpuMultisampleState multisampleState;
-    SDL_GpuDepthStencilState depthStencilState;
-    SDL_GpuGraphicsPipelineAttachmentInfo attachmentInfo;
+    SDL_GPUShader *vertexShader;
+    SDL_GPUShader *fragmentShader;
+    SDL_GPUVertexInputState vertexInputState;
+    SDL_GPUPrimitiveType primitiveType;
+    SDL_GPURasterizerState rasterizerState;
+    SDL_GPUMultisampleState multisampleState;
+    SDL_GPUDepthStencilState depthStencilState;
+    SDL_GPUGraphicsPipelineAttachmentInfo attachmentInfo;
     float blendConstants[4];
 
     SDL_PropertiesID props;
-} SDL_GpuGraphicsPipelineCreateInfo;
+} SDL_GPUGraphicsPipelineCreateInfo;
 
-typedef struct SDL_GpuComputePipelineCreateInfo
+typedef struct SDL_GPUComputePipelineCreateInfo
 {
     size_t codeSize;
     const Uint8 *code;
     const char *entryPointName;
-    SDL_GpuShaderFormat format;
+    SDL_GPUShaderFormat format;
     Uint32 readOnlyStorageTextureCount;
     Uint32 readOnlyStorageBufferCount;
     Uint32 writeOnlyStorageTextureCount;
@@ -779,12 +779,12 @@ typedef struct SDL_GpuComputePipelineCreateInfo
     Uint32 threadCountZ;
 
     SDL_PropertiesID props;
-} SDL_GpuComputePipelineCreateInfo;
+} SDL_GPUComputePipelineCreateInfo;
 
-typedef struct SDL_GpuColorAttachmentInfo
+typedef struct SDL_GPUColorAttachmentInfo
 {
     /* The texture that will be used as a color attachment by a render pass. */
-    SDL_GpuTexture *texture;
+    SDL_GPUTexture *texture;
     Uint32 mipLevel;
     Uint32 layerOrDepthPlane; /* For 3D textures, you can bind an individual depth plane as an attachment. */
 
@@ -803,7 +803,7 @@ typedef struct SDL_GpuColorAttachmentInfo
      *     The driver will do whatever it wants with the texture memory.
      *     This is a good option if you know that every single pixel will be touched in the render pass.
      */
-    SDL_GpuLoadOp loadOp;
+    SDL_GPULoadOp loadOp;
 
     /* Determines what is done with the texture at the end of the render pass.
      *
@@ -814,19 +814,19 @@ typedef struct SDL_GpuColorAttachmentInfo
      *     The driver will do whatever it wants with the texture memory.
      *     This is often a good option for depth/stencil textures.
      */
-    SDL_GpuStoreOp storeOp;
+    SDL_GPUStoreOp storeOp;
 
     /* if SDL_TRUE, cycles the texture if the texture is bound and loadOp is not LOAD */
     SDL_bool cycle;
-} SDL_GpuColorAttachmentInfo;
+} SDL_GPUColorAttachmentInfo;
 
-typedef struct SDL_GpuDepthStencilAttachmentInfo
+typedef struct SDL_GPUDepthStencilAttachmentInfo
 {
     /* The texture that will be used as the depth stencil attachment by a render pass. */
-    SDL_GpuTexture *texture;
+    SDL_GPUTexture *texture;
 
     /* Can be ignored by the render pass if CLEAR is not used */
-    SDL_GpuDepthStencilValue depthStencilClearValue;
+    SDL_GPUDepthStencilValue depthStencilClearValue;
 
     /* Determines what is done with the depth values at the beginning of the render pass.
      *
@@ -840,7 +840,7 @@ typedef struct SDL_GpuDepthStencilAttachmentInfo
      *     The driver will do whatever it wants with the memory.
      *     This is a good option if you know that every single pixel will be touched in the render pass.
      */
-    SDL_GpuLoadOp loadOp;
+    SDL_GPULoadOp loadOp;
 
     /* Determines what is done with the depth values at the end of the render pass.
      *
@@ -851,7 +851,7 @@ typedef struct SDL_GpuDepthStencilAttachmentInfo
      *     The driver will do whatever it wants with the texture memory.
      *     This is often a good option for depth/stencil textures.
      */
-    SDL_GpuStoreOp storeOp;
+    SDL_GPUStoreOp storeOp;
 
     /* Determines what is done with the stencil values at the beginning of the render pass.
      *
@@ -865,7 +865,7 @@ typedef struct SDL_GpuDepthStencilAttachmentInfo
      *     The driver will do whatever it wants with the memory.
      *     This is a good option if you know that every single pixel will be touched in the render pass.
      */
-    SDL_GpuLoadOp stencilLoadOp;
+    SDL_GPULoadOp stencilLoadOp;
 
     /* Determines what is done with the stencil values at the end of the render pass.
      *
@@ -876,43 +876,43 @@ typedef struct SDL_GpuDepthStencilAttachmentInfo
      *     The driver will do whatever it wants with the texture memory.
      *     This is often a good option for depth/stencil textures.
      */
-    SDL_GpuStoreOp stencilStoreOp;
+    SDL_GPUStoreOp stencilStoreOp;
 
     /* if SDL_TRUE, cycles the texture if the texture is bound and any load ops are not LOAD */
     SDL_bool cycle;
-} SDL_GpuDepthStencilAttachmentInfo;
+} SDL_GPUDepthStencilAttachmentInfo;
 
 /* Binding structs */
 
-typedef struct SDL_GpuBufferBinding
+typedef struct SDL_GPUBufferBinding
 {
-    SDL_GpuBuffer *buffer;
+    SDL_GPUBuffer *buffer;
     Uint32 offset;
-} SDL_GpuBufferBinding;
+} SDL_GPUBufferBinding;
 
-typedef struct SDL_GpuTextureSamplerBinding
+typedef struct SDL_GPUTextureSamplerBinding
 {
-    SDL_GpuTexture *texture;
-    SDL_GpuSampler *sampler;
-} SDL_GpuTextureSamplerBinding;
+    SDL_GPUTexture *texture;
+    SDL_GPUSampler *sampler;
+} SDL_GPUTextureSamplerBinding;
 
-typedef struct SDL_GpuStorageBufferWriteOnlyBinding
+typedef struct SDL_GPUStorageBufferWriteOnlyBinding
 {
-    SDL_GpuBuffer *buffer;
+    SDL_GPUBuffer *buffer;
 
     /* if SDL_TRUE, cycles the buffer if it is bound. */
     SDL_bool cycle;
-} SDL_GpuStorageBufferWriteOnlyBinding;
+} SDL_GPUStorageBufferWriteOnlyBinding;
 
-typedef struct SDL_GpuStorageTextureWriteOnlyBinding
+typedef struct SDL_GPUStorageTextureWriteOnlyBinding
 {
-    SDL_GpuTexture *texture;
+    SDL_GPUTexture *texture;
     Uint32 mipLevel;
     Uint32 layer;
 
     /* if SDL_TRUE, cycles the texture if the texture is bound. */
     SDL_bool cycle;
-} SDL_GpuStorageTextureWriteOnlyBinding;
+} SDL_GPUStorageTextureWriteOnlyBinding;
 
 /* Functions */
 
@@ -932,11 +932,11 @@ typedef struct SDL_GpuStorageTextureWriteOnlyBinding
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGpuDriver
- * \sa SDL_DestroyGpuDevice
+ * \sa SDL_GetGPUDriver
+ * \sa SDL_DestroyGPUDevice
  */
-extern SDL_DECLSPEC SDL_GpuDevice *SDLCALL SDL_CreateGpuDevice(
-    SDL_GpuShaderFormat formatFlags,
+extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
+    SDL_GPUShaderFormat formatFlags,
     SDL_bool debugMode,
     SDL_bool preferLowPower,
     const char *name);
@@ -975,10 +975,10 @@ extern SDL_DECLSPEC SDL_GpuDevice *SDLCALL SDL_CreateGpuDevice(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGpuDriver
- * \sa SDL_DestroyGpuDevice
+ * \sa SDL_GetGPUDriver
+ * \sa SDL_DestroyGPUDevice
  */
-extern SDL_DECLSPEC SDL_GpuDevice *SDLCALL SDL_CreateGpuDeviceWithProperties(
+extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
     SDL_PropertiesID props);
 
 #define SDL_PROP_GPU_CREATEDEVICE_DEBUGMODE_BOOL             "SDL.gpu.createdevice.debugmode"
@@ -993,25 +993,25 @@ extern SDL_DECLSPEC SDL_GpuDevice *SDLCALL SDL_CreateGpuDeviceWithProperties(
 #define SDL_PROP_GPU_CREATEDEVICE_D3D12_SEMANTIC_NAME_STRING "SDL.gpu.createdevice.d3d12.semantic"
 
 /**
- * Destroys a GPU context previously returned by SDL_CreateGpuDevice.
+ * Destroys a GPU context previously returned by SDL_CreateGPUDevice.
  *
  * \param device a GPU Context to destroy.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateGpuDevice
+ * \sa SDL_CreateGPUDevice
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DestroyGpuDevice(SDL_GpuDevice *device);
+extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPUDevice(SDL_GPUDevice *device);
 
 /**
  * Returns the backend used to create this GPU context.
  *
  * \param device a GPU context to query.
- * \returns an SDL_GpuDriver value, or SDL_GPU_DRIVER_INVALID on error.
+ * \returns an SDL_GPUDriver value, or SDL_GPU_DRIVER_INVALID on error.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_GpuDriver SDLCALL SDL_GetGpuDriver(SDL_GpuDevice *device);
+extern SDL_DECLSPEC SDL_GPUDriver SDLCALL SDL_GetGPUDriver(SDL_GPUDevice *device);
 
 /* State Creation */
 
@@ -1045,12 +1045,12 @@ extern SDL_DECLSPEC SDL_GpuDriver SDLCALL SDL_GetGpuDriver(SDL_GpuDevice *device
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_BindGpuComputePipeline
- * \sa SDL_ReleaseGpuComputePipeline
+ * \sa SDL_BindGPUComputePipeline
+ * \sa SDL_ReleaseGPUComputePipeline
  */
-extern SDL_DECLSPEC SDL_GpuComputePipeline *SDLCALL SDL_CreateGpuComputePipeline(
-    SDL_GpuDevice *device,
-    SDL_GpuComputePipelineCreateInfo *computePipelineCreateInfo);
+extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline(
+    SDL_GPUDevice *device,
+    SDL_GPUComputePipelineCreateInfo *computePipelineCreateInfo);
 
 /**
  * Creates a pipeline object to be used in a graphics workflow.
@@ -1062,13 +1062,13 @@ extern SDL_DECLSPEC SDL_GpuComputePipeline *SDLCALL SDL_CreateGpuComputePipeline
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateGpuShader
- * \sa SDL_BindGpuGraphicsPipeline
- * \sa SDL_ReleaseGpuGraphicsPipeline
+ * \sa SDL_CreateGPUShader
+ * \sa SDL_BindGPUGraphicsPipeline
+ * \sa SDL_ReleaseGPUGraphicsPipeline
  */
-extern SDL_DECLSPEC SDL_GpuGraphicsPipeline *SDLCALL SDL_CreateGpuGraphicsPipeline(
-    SDL_GpuDevice *device,
-    SDL_GpuGraphicsPipelineCreateInfo *pipelineCreateInfo);
+extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeline(
+    SDL_GPUDevice *device,
+    SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo);
 
 /**
  * Creates a sampler object to be used when binding textures in a graphics
@@ -1081,13 +1081,13 @@ extern SDL_DECLSPEC SDL_GpuGraphicsPipeline *SDLCALL SDL_CreateGpuGraphicsPipeli
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_BindGpuVertexSamplers
- * \sa SDL_BindGpuFragmentSamplers
+ * \sa SDL_BindGPUVertexSamplers
+ * \sa SDL_BindGPUFragmentSamplers
  * \sa SDL_ReleaseSampler
  */
-extern SDL_DECLSPEC SDL_GpuSampler *SDLCALL SDL_CreateGpuSampler(
-    SDL_GpuDevice *device,
-    SDL_GpuSamplerCreateInfo *samplerCreateInfo);
+extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
+    SDL_GPUDevice *device,
+    SDL_GPUSamplerCreateInfo *samplerCreateInfo);
 
 /**
  * Creates a shader to be used when creating a graphics pipeline.
@@ -1120,7 +1120,7 @@ extern SDL_DECLSPEC SDL_GpuSampler *SDLCALL SDL_CreateGpuSampler(
  * [[buffer(30)]], vertex buffer 1 at [[buffer(29)]], and so on. Rather than
  * manually authoring vertex buffer indices, use the [[stage_in]] attribute
  * which will automatically use the vertex input information from the
- * SDL_GpuPipeline.
+ * SDL_GPUPipeline.
  *
  * \param device a GPU Context.
  * \param shaderCreateInfo a struct describing the state of the desired
@@ -1129,12 +1129,12 @@ extern SDL_DECLSPEC SDL_GpuSampler *SDLCALL SDL_CreateGpuSampler(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateGpuGraphicsPipeline
- * \sa SDL_ReleaseGpuShader
+ * \sa SDL_CreateGPUGraphicsPipeline
+ * \sa SDL_ReleaseGPUShader
  */
-extern SDL_DECLSPEC SDL_GpuShader *SDLCALL SDL_CreateGpuShader(
-    SDL_GpuDevice *device,
-    SDL_GpuShaderCreateInfo *shaderCreateInfo);
+extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
+    SDL_GPUDevice *device,
+    SDL_GPUShaderCreateInfo *shaderCreateInfo);
 
 /**
  * Creates a texture object to be used in graphics or compute workflows.
@@ -1156,20 +1156,20 @@ extern SDL_DECLSPEC SDL_GpuShader *SDLCALL SDL_CreateGpuShader(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_UploadToGpuTexture
- * \sa SDL_DownloadFromGpuTexture
- * \sa SDL_BindGpuVertexSamplers
- * \sa SDL_BindGpuVertexStorageTextures
- * \sa SDL_BindGpuFragmentSamplers
- * \sa SDL_BindGpuFragmentStorageTextures
- * \sa SDL_BindGpuComputeStorageTextures
- * \sa SDL_BlitGpu
- * \sa SDL_ReleaseGpuTexture
- * \sa SDL_SupportsGpuTextureFormat
+ * \sa SDL_UploadToGPUTexture
+ * \sa SDL_DownloadFromGPUTexture
+ * \sa SDL_BindGPUVertexSamplers
+ * \sa SDL_BindGPUVertexStorageTextures
+ * \sa SDL_BindGPUFragmentSamplers
+ * \sa SDL_BindGPUFragmentStorageTextures
+ * \sa SDL_BindGPUComputeStorageTextures
+ * \sa SDL_BlitGPU
+ * \sa SDL_ReleaseGPUTexture
+ * \sa SDL_SupportsGPUTextureFormat
  */
-extern SDL_DECLSPEC SDL_GpuTexture *SDLCALL SDL_CreateGpuTexture(
-    SDL_GpuDevice *device,
-    SDL_GpuTextureCreateInfo *textureCreateInfo);
+extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
+    SDL_GPUDevice *device,
+    SDL_GPUTextureCreateInfo *textureCreateInfo);
 
 /**
  * Creates a buffer object to be used in graphics or compute workflows.
@@ -1187,17 +1187,17 @@ extern SDL_DECLSPEC SDL_GpuTexture *SDLCALL SDL_CreateGpuTexture(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_UploadToGpuBuffer
- * \sa SDL_BindGpuVertexBuffers
- * \sa SDL_BindGpuIndexBuffer
- * \sa SDL_BindGpuVertexStorageBuffers
- * \sa SDL_BindGpuFragmentStorageBuffers
- * \sa SDL_BindGpuComputeStorageBuffers
- * \sa SDL_ReleaseGpuBuffer
+ * \sa SDL_UploadToGPUBuffer
+ * \sa SDL_BindGPUVertexBuffers
+ * \sa SDL_BindGPUIndexBuffer
+ * \sa SDL_BindGPUVertexStorageBuffers
+ * \sa SDL_BindGPUFragmentStorageBuffers
+ * \sa SDL_BindGPUComputeStorageBuffers
+ * \sa SDL_ReleaseGPUBuffer
  */
-extern SDL_DECLSPEC SDL_GpuBuffer *SDLCALL SDL_CreateGpuBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuBufferCreateInfo *bufferCreateInfo);
+extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUBufferCreateInfo *bufferCreateInfo);
 
 /**
  * Creates a transfer buffer to be used when uploading to or downloading from
@@ -1210,15 +1210,15 @@ extern SDL_DECLSPEC SDL_GpuBuffer *SDLCALL SDL_CreateGpuBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_UploadToGpuBuffer
- * \sa SDL_DownloadFromGpuBuffer
- * \sa SDL_UploadToGpuTexture
- * \sa SDL_DownloadFromGpuTexture
- * \sa SDL_ReleaseGpuTransferBuffer
+ * \sa SDL_UploadToGPUBuffer
+ * \sa SDL_DownloadFromGPUBuffer
+ * \sa SDL_UploadToGPUTexture
+ * \sa SDL_DownloadFromGPUTexture
+ * \sa SDL_ReleaseGPUTransferBuffer
  */
-extern SDL_DECLSPEC SDL_GpuTransferBuffer *SDLCALL SDL_CreateGpuTransferBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuTransferBufferCreateInfo *transferBufferCreateInfo);
+extern SDL_DECLSPEC SDL_GPUTransferBuffer *SDLCALL SDL_CreateGPUTransferBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUTransferBufferCreateInfo *transferBufferCreateInfo);
 
 /* Debug Naming */
 
@@ -1233,9 +1233,9 @@ extern SDL_DECLSPEC SDL_GpuTransferBuffer *SDLCALL SDL_CreateGpuTransferBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SetGpuBufferName(
-    SDL_GpuDevice *device,
-    SDL_GpuBuffer *buffer,
+extern SDL_DECLSPEC void SDLCALL SDL_SetGPUBufferName(
+    SDL_GPUDevice *device,
+    SDL_GPUBuffer *buffer,
     const char *text);
 
 /**
@@ -1249,9 +1249,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGpuBufferName(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SetGpuTextureName(
-    SDL_GpuDevice *device,
-    SDL_GpuTexture *texture,
+extern SDL_DECLSPEC void SDLCALL SDL_SetGPUTextureName(
+    SDL_GPUDevice *device,
+    SDL_GPUTexture *texture,
     const char *text);
 
 /**
@@ -1264,8 +1264,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGpuTextureName(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_InsertGpuDebugLabel(
-    SDL_GpuCommandBuffer *commandBuffer,
+extern SDL_DECLSPEC void SDLCALL SDL_InsertGPUDebugLabel(
+    SDL_GPUCommandBuffer *commandBuffer,
     const char *text);
 
 /**
@@ -1274,8 +1274,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_InsertGpuDebugLabel(
  * Used for denoting groups of calls when viewing the command buffer
  * callstream in a graphics debugging tool.
  *
- * Each call to SDL_PushGpuDebugGroup must have a corresponding call to
- * SDL_PopGpuDebugGroup.
+ * Each call to SDL_PushGPUDebugGroup must have a corresponding call to
+ * SDL_PopGPUDebugGroup.
  *
  * On some backends (e.g. Metal), pushing a debug group during a
  * render/blit/compute pass will create a group that is scoped to the native
@@ -1287,10 +1287,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_InsertGpuDebugLabel(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_PopGpuDebugGroup
+ * \sa SDL_PopGPUDebugGroup
  */
-extern SDL_DECLSPEC void SDLCALL SDL_PushGpuDebugGroup(
-    SDL_GpuCommandBuffer *commandBuffer,
+extern SDL_DECLSPEC void SDLCALL SDL_PushGPUDebugGroup(
+    SDL_GPUCommandBuffer *commandBuffer,
     const char *name);
 
 /**
@@ -1300,10 +1300,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGpuDebugGroup(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_PushGpuDebugGroup
+ * \sa SDL_PushGPUDebugGroup
  */
-extern SDL_DECLSPEC void SDLCALL SDL_PopGpuDebugGroup(
-    SDL_GpuCommandBuffer *commandBuffer);
+extern SDL_DECLSPEC void SDLCALL SDL_PopGPUDebugGroup(
+    SDL_GPUCommandBuffer *commandBuffer);
 
 /* Disposal */
 
@@ -1317,9 +1317,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_PopGpuDebugGroup(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuTexture(
-    SDL_GpuDevice *device,
-    SDL_GpuTexture *texture);
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUTexture(
+    SDL_GPUDevice *device,
+    SDL_GPUTexture *texture);
 
 /**
  * Frees the given sampler as soon as it is safe to do so.
@@ -1331,9 +1331,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuTexture(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuSampler(
-    SDL_GpuDevice *device,
-    SDL_GpuSampler *sampler);
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUSampler(
+    SDL_GPUDevice *device,
+    SDL_GPUSampler *sampler);
 
 /**
  * Frees the given buffer as soon as it is safe to do so.
@@ -1345,9 +1345,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuSampler(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuBuffer *buffer);
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUBuffer *buffer);
 
 /**
  * Frees the given transfer buffer as soon as it is safe to do so.
@@ -1359,9 +1359,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuTransferBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuTransferBuffer *transferBuffer);
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUTransferBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUTransferBuffer *transferBuffer);
 
 /**
  * Frees the given compute pipeline as soon as it is safe to do so.
@@ -1373,9 +1373,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuTransferBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuComputePipeline(
-    SDL_GpuDevice *device,
-    SDL_GpuComputePipeline *computePipeline);
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUComputePipeline(
+    SDL_GPUDevice *device,
+    SDL_GPUComputePipeline *computePipeline);
 
 /**
  * Frees the given shader as soon as it is safe to do so.
@@ -1387,9 +1387,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuComputePipeline(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuShader(
-    SDL_GpuDevice *device,
-    SDL_GpuShader *shader);
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUShader(
+    SDL_GPUDevice *device,
+    SDL_GPUShader *shader);
 
 /**
  * Frees the given graphics pipeline as soon as it is safe to do so.
@@ -1401,9 +1401,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuShader(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuGraphicsPipeline(
-    SDL_GpuDevice *device,
-    SDL_GpuGraphicsPipeline *graphicsPipeline);
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUGraphicsPipeline(
+    SDL_GPUDevice *device,
+    SDL_GPUGraphicsPipeline *graphicsPipeline);
 
 /*
  * COMMAND BUFFERS
@@ -1434,11 +1434,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuGraphicsPipeline(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SubmitGpu
- * \sa SDL_SubmitGpuAndAcquireFence
+ * \sa SDL_SubmitGPU
+ * \sa SDL_SubmitGPUAndAcquireFence
  */
-extern SDL_DECLSPEC SDL_GpuCommandBuffer *SDLCALL SDL_AcquireGpuCommandBuffer(
-    SDL_GpuDevice *device);
+extern SDL_DECLSPEC SDL_GPUCommandBuffer *SDLCALL SDL_AcquireGPUCommandBuffer(
+    SDL_GPUDevice *device);
 
 /*
  * UNIFORM DATA
@@ -1472,8 +1472,8 @@ extern SDL_DECLSPEC SDL_GpuCommandBuffer *SDLCALL SDL_AcquireGpuCommandBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_PushGpuVertexUniformData(
-    SDL_GpuCommandBuffer *commandBuffer,
+extern SDL_DECLSPEC void SDLCALL SDL_PushGPUVertexUniformData(
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
     Uint32 dataLengthInBytes);
@@ -1490,8 +1490,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGpuVertexUniformData(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_PushGpuFragmentUniformData(
-    SDL_GpuCommandBuffer *commandBuffer,
+extern SDL_DECLSPEC void SDLCALL SDL_PushGPUFragmentUniformData(
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
     Uint32 dataLengthInBytes);
@@ -1508,8 +1508,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGpuFragmentUniformData(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_PushGpuComputeUniformData(
-    SDL_GpuCommandBuffer *commandBuffer,
+extern SDL_DECLSPEC void SDLCALL SDL_PushGPUComputeUniformData(
+    SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
     Uint32 dataLengthInBytes);
@@ -1528,7 +1528,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGpuComputeUniformData(
  * However, this doesn't mean you need to track resource usage manually.
  *
  * All of the functions and structs that involve writing to a resource have a "cycle" bool.
- * GpuTransferBuffer, GpuBuffer, and GpuTexture all effectively function as ring buffers on internal resources.
+ * GPUTransferBuffer, GPUBuffer, and GPUTexture all effectively function as ring buffers on internal resources.
  * When cycle is SDL_TRUE, if the resource is bound, the cycle rotates to the next unbound internal resource,
  * or if none are available, a new one is created.
  * This means you don't have to worry about complex state tracking and synchronization as long as cycling is correctly employed.
@@ -1578,13 +1578,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGpuComputeUniformData(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_EndGpuRenderPass
+ * \sa SDL_EndGPURenderPass
  */
-extern SDL_DECLSPEC SDL_GpuRenderPass *SDLCALL SDL_BeginGpuRenderPass(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuColorAttachmentInfo *colorAttachmentInfos,
+extern SDL_DECLSPEC SDL_GPURenderPass *SDLCALL SDL_BeginGPURenderPass(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GpuDepthStencilAttachmentInfo *depthStencilAttachmentInfo);
+    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo);
 
 /**
  * Binds a graphics pipeline on a render pass to be used in rendering.
@@ -1596,9 +1596,9 @@ extern SDL_DECLSPEC SDL_GpuRenderPass *SDLCALL SDL_BeginGpuRenderPass(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuGraphicsPipeline(
-    SDL_GpuRenderPass *renderPass,
-    SDL_GpuGraphicsPipeline *graphicsPipeline);
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUGraphicsPipeline(
+    SDL_GPURenderPass *renderPass,
+    SDL_GPUGraphicsPipeline *graphicsPipeline);
 
 /**
  * Sets the current viewport state on a command buffer.
@@ -1608,9 +1608,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuGraphicsPipeline(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SetGpuViewport(
-    SDL_GpuRenderPass *renderPass,
-    SDL_GpuViewport *viewport);
+extern SDL_DECLSPEC void SDLCALL SDL_SetGPUViewport(
+    SDL_GPURenderPass *renderPass,
+    SDL_GPUViewport *viewport);
 
 /**
  * Sets the current scissor state on a command buffer.
@@ -1620,8 +1620,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGpuViewport(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SetGpuScissor(
-    SDL_GpuRenderPass *renderPass,
+extern SDL_DECLSPEC void SDLCALL SDL_SetGPUScissor(
+    SDL_GPURenderPass *renderPass,
     SDL_Rect *scissor);
 
 /**
@@ -1630,16 +1630,16 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGpuScissor(
  *
  * \param renderPass a render pass handle.
  * \param firstBinding the starting bind point for the vertex buffers.
- * \param pBindings an array of SDL_GpuBufferBinding structs containing vertex
+ * \param pBindings an array of SDL_GPUBufferBinding structs containing vertex
  *                  buffers and offset values.
  * \param bindingCount the number of bindings in the pBindings array.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuVertexBuffers(
-    SDL_GpuRenderPass *renderPass,
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexBuffers(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstBinding,
-    SDL_GpuBufferBinding *pBindings,
+    SDL_GPUBufferBinding *pBindings,
     Uint32 bindingCount);
 
 /**
@@ -1654,10 +1654,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuVertexBuffers(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuIndexBuffer(
-    SDL_GpuRenderPass *renderPass,
-    SDL_GpuBufferBinding *pBinding,
-    SDL_GpuIndexElementSize indexElementSize);
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUIndexBuffer(
+    SDL_GPURenderPass *renderPass,
+    SDL_GPUBufferBinding *pBinding,
+    SDL_GPUIndexElementSize indexElementSize);
 
 /**
  * Binds texture-sampler pairs for use on the vertex shader.
@@ -1672,10 +1672,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuIndexBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuVertexSamplers(
-    SDL_GpuRenderPass *renderPass,
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexSamplers(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuTextureSamplerBinding *textureSamplerBindings,
+    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount);
 
 /**
@@ -1691,10 +1691,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuVertexSamplers(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuVertexStorageTextures(
-    SDL_GpuRenderPass *renderPass,
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageTextures(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuTexture **storageTextures,
+    SDL_GPUTexture **storageTextures,
     Uint32 bindingCount);
 
 /**
@@ -1710,10 +1710,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuVertexStorageTextures(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuVertexStorageBuffers(
-    SDL_GpuRenderPass *renderPass,
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageBuffers(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuBuffer **storageBuffers,
+    SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount);
 
 /**
@@ -1729,10 +1729,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuVertexStorageBuffers(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuFragmentSamplers(
-    SDL_GpuRenderPass *renderPass,
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentSamplers(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuTextureSamplerBinding *textureSamplerBindings,
+    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount);
 
 /**
@@ -1748,10 +1748,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuFragmentSamplers(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuFragmentStorageTextures(
-    SDL_GpuRenderPass *renderPass,
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageTextures(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuTexture **storageTextures,
+    SDL_GPUTexture **storageTextures,
     Uint32 bindingCount);
 
 /**
@@ -1767,10 +1767,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuFragmentStorageTextures(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuFragmentStorageBuffers(
-    SDL_GpuRenderPass *renderPass,
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageBuffers(
+    SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GpuBuffer **storageBuffers,
+    SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount);
 
 /* Drawing */
@@ -1796,8 +1796,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuFragmentStorageBuffers(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DrawGpuIndexedPrimitives(
-    SDL_GpuRenderPass *renderPass,
+extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUIndexedPrimitives(
+    SDL_GPURenderPass *renderPass,
     Uint32 indexCount,
     Uint32 instanceCount,
     Uint32 firstIndex,
@@ -1822,8 +1822,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGpuIndexedPrimitives(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DrawGpuPrimitives(
-    SDL_GpuRenderPass *renderPass,
+extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUPrimitives(
+    SDL_GPURenderPass *renderPass,
     Uint32 vertexCount,
     Uint32 instanceCount,
     Uint32 firstVertex,
@@ -1833,7 +1833,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGpuPrimitives(
  * Draws data using bound graphics state and with draw parameters set from a
  * buffer.
  *
- * The buffer layout should match the layout of SDL_GpuIndirectDrawCommand.
+ * The buffer layout should match the layout of SDL_GPUIndirectDrawCommand.
  * You must not call this function before binding a graphics pipeline.
  *
  * \param renderPass a render pass handle.
@@ -1845,9 +1845,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGpuPrimitives(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DrawGpuPrimitivesIndirect(
-    SDL_GpuRenderPass *renderPass,
-    SDL_GpuBuffer *buffer,
+extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUPrimitivesIndirect(
+    SDL_GPURenderPass *renderPass,
+    SDL_GPUBuffer *buffer,
     Uint32 offsetInBytes,
     Uint32 drawCount,
     Uint32 stride);
@@ -1857,7 +1857,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGpuPrimitivesIndirect(
  * draw parameters set from a buffer.
  *
  * The buffer layout should match the layout of
- * SDL_GpuIndexedIndirectDrawCommand. You must not call this function before
+ * SDL_GPUIndexedIndirectDrawCommand. You must not call this function before
  * binding a graphics pipeline.
  *
  * \param renderPass a render pass handle.
@@ -1869,9 +1869,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGpuPrimitivesIndirect(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DrawGpuIndexedPrimitivesIndirect(
-    SDL_GpuRenderPass *renderPass,
-    SDL_GpuBuffer *buffer,
+extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUIndexedPrimitivesIndirect(
+    SDL_GPURenderPass *renderPass,
+    SDL_GPUBuffer *buffer,
     Uint32 offsetInBytes,
     Uint32 drawCount,
     Uint32 stride);
@@ -1886,8 +1886,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGpuIndexedPrimitivesIndirect(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_EndGpuRenderPass(
-    SDL_GpuRenderPass *renderPass);
+extern SDL_DECLSPEC void SDLCALL SDL_EndGPURenderPass(
+    SDL_GPURenderPass *renderPass);
 
 /* Compute Pass */
 
@@ -1920,13 +1920,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGpuRenderPass(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_EndGpuComputePass
+ * \sa SDL_EndGPUComputePass
  */
-extern SDL_DECLSPEC SDL_GpuComputePass *SDLCALL SDL_BeginGpuComputePass(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuStorageTextureWriteOnlyBinding *storageTextureBindings,
+extern SDL_DECLSPEC SDL_GPUComputePass *SDLCALL SDL_BeginGPUComputePass(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
     Uint32 storageTextureBindingCount,
-    SDL_GpuStorageBufferWriteOnlyBinding *storageBufferBindings,
+    SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
     Uint32 storageBufferBindingCount);
 
 /**
@@ -1937,9 +1937,9 @@ extern SDL_DECLSPEC SDL_GpuComputePass *SDLCALL SDL_BeginGpuComputePass(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuComputePipeline(
-    SDL_GpuComputePass *computePass,
-    SDL_GpuComputePipeline *computePipeline);
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputePipeline(
+    SDL_GPUComputePass *computePass,
+    SDL_GPUComputePipeline *computePipeline);
 
 /**
  * Binds storage textures as readonly for use on the compute pipeline.
@@ -1954,10 +1954,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuComputePipeline(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuComputeStorageTextures(
-    SDL_GpuComputePass *computePass,
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
+    SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    SDL_GpuTexture **storageTextures,
+    SDL_GPUTexture **storageTextures,
     Uint32 bindingCount);
 
 /**
@@ -1973,10 +1973,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuComputeStorageTextures(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BindGpuComputeStorageBuffers(
-    SDL_GpuComputePass *computePass,
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageBuffers(
+    SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    SDL_GpuBuffer **storageBuffers,
+    SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount);
 
 /**
@@ -1999,8 +1999,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGpuComputeStorageBuffers(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DispatchGpuCompute(
-    SDL_GpuComputePass *computePass,
+extern SDL_DECLSPEC void SDLCALL SDL_DispatchGPUCompute(
+    SDL_GPUComputePass *computePass,
     Uint32 groupCountX,
     Uint32 groupCountY,
     Uint32 groupCountZ);
@@ -2009,7 +2009,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DispatchGpuCompute(
  * Dispatches compute work with parameters set from a buffer.
  *
  * The buffer layout should match the layout of
- * SDL_GpuIndirectDispatchCommand. You must not call this function before
+ * SDL_GPUIndirectDispatchCommand. You must not call this function before
  * binding a compute pipeline.
  *
  * A VERY IMPORTANT NOTE If you dispatch multiple times in a compute pass, and
@@ -2023,9 +2023,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_DispatchGpuCompute(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DispatchGpuComputeIndirect(
-    SDL_GpuComputePass *computePass,
-    SDL_GpuBuffer *buffer,
+extern SDL_DECLSPEC void SDLCALL SDL_DispatchGPUComputeIndirect(
+    SDL_GPUComputePass *computePass,
+    SDL_GPUBuffer *buffer,
     Uint32 offsetInBytes);
 
 /**
@@ -2038,8 +2038,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DispatchGpuComputeIndirect(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_EndGpuComputePass(
-    SDL_GpuComputePass *computePass);
+extern SDL_DECLSPEC void SDLCALL SDL_EndGPUComputePass(
+    SDL_GPUComputePass *computePass);
 
 /* TransferBuffer Data */
 
@@ -2055,9 +2055,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGpuComputePass(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void *SDLCALL SDL_MapGpuTransferBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuTransferBuffer *transferBuffer,
+extern SDL_DECLSPEC void *SDLCALL SDL_MapGPUTransferBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUTransferBuffer *transferBuffer,
     SDL_bool cycle);
 
 /**
@@ -2068,9 +2068,9 @@ extern SDL_DECLSPEC void *SDLCALL SDL_MapGpuTransferBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UnmapGpuTransferBuffer(
-    SDL_GpuDevice *device,
-    SDL_GpuTransferBuffer *transferBuffer);
+extern SDL_DECLSPEC void SDLCALL SDL_UnmapGPUTransferBuffer(
+    SDL_GPUDevice *device,
+    SDL_GPUTransferBuffer *transferBuffer);
 
 /* Copy Pass */
 
@@ -2086,8 +2086,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnmapGpuTransferBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_GpuCopyPass *SDLCALL SDL_BeginGpuCopyPass(
-    SDL_GpuCommandBuffer *commandBuffer);
+extern SDL_DECLSPEC SDL_GPUCopyPass *SDLCALL SDL_BeginGPUCopyPass(
+    SDL_GPUCommandBuffer *commandBuffer);
 
 /**
  * Uploads data from a transfer buffer to a texture.
@@ -2106,10 +2106,10 @@ extern SDL_DECLSPEC SDL_GpuCopyPass *SDLCALL SDL_BeginGpuCopyPass(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UploadToGpuTexture(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuTextureTransferInfo *source,
-    SDL_GpuTextureRegion *destination,
+extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUTexture(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUTextureTransferInfo *source,
+    SDL_GPUTextureRegion *destination,
     SDL_bool cycle);
 
 /* Uploads data from a TransferBuffer to a Buffer. */
@@ -2128,10 +2128,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGpuTexture(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UploadToGpuBuffer(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuTransferBufferLocation *source,
-    SDL_GpuBufferRegion *destination,
+extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUBuffer(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUTransferBufferLocation *source,
+    SDL_GPUBufferRegion *destination,
     SDL_bool cycle);
 
 /**
@@ -2151,10 +2151,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGpuBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_CopyGpuTextureToTexture(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuTextureLocation *source,
-    SDL_GpuTextureLocation *destination,
+extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUTextureToTexture(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUTextureLocation *source,
+    SDL_GPUTextureLocation *destination,
     Uint32 w,
     Uint32 h,
     Uint32 d,
@@ -2177,10 +2177,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_CopyGpuTextureToTexture(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_CopyGpuBufferToBuffer(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuBufferLocation *source,
-    SDL_GpuBufferLocation *destination,
+extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUBufferToBuffer(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUBufferLocation *source,
+    SDL_GPUBufferLocation *destination,
     Uint32 size,
     SDL_bool cycle);
 
@@ -2197,10 +2197,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_CopyGpuBufferToBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DownloadFromGpuTexture(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuTextureRegion *source,
-    SDL_GpuTextureTransferInfo *destination);
+extern SDL_DECLSPEC void SDLCALL SDL_DownloadFromGPUTexture(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUTextureRegion *source,
+    SDL_GPUTextureTransferInfo *destination);
 
 /**
  * Copies data from a buffer to a transfer buffer on the GPU timeline.
@@ -2214,10 +2214,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_DownloadFromGpuTexture(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DownloadFromGpuBuffer(
-    SDL_GpuCopyPass *copyPass,
-    SDL_GpuBufferRegion *source,
-    SDL_GpuTransferBufferLocation *destination);
+extern SDL_DECLSPEC void SDLCALL SDL_DownloadFromGPUBuffer(
+    SDL_GPUCopyPass *copyPass,
+    SDL_GPUBufferRegion *source,
+    SDL_GPUTransferBufferLocation *destination);
 
 /**
  * Ends the current copy pass.
@@ -2226,8 +2226,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DownloadFromGpuBuffer(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_EndGpuCopyPass(
-    SDL_GpuCopyPass *copyPass);
+extern SDL_DECLSPEC void SDLCALL SDL_EndGPUCopyPass(
+    SDL_GPUCopyPass *copyPass);
 
 /**
  * Generates mipmaps for the given texture.
@@ -2239,9 +2239,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGpuCopyPass(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GenerateGpuMipmaps(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTexture *texture);
+extern SDL_DECLSPEC void SDLCALL SDL_GenerateGPUMipmaps(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUTexture *texture);
 
 /**
  * Blits from a source texture region to a destination texture region.
@@ -2258,12 +2258,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_GenerateGpuMipmaps(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BlitGpu(
-    SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBlitRegion *source,
-    SDL_GpuBlitRegion *destination,
+extern SDL_DECLSPEC void SDLCALL SDL_BlitGPU(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBlitRegion *source,
+    SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
-    SDL_GpuFilter filterMode,
+    SDL_GPUFilter filterMode,
     SDL_bool cycle);
 
 /* Submission/Presentation */
@@ -2280,12 +2280,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_BlitGpu(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ClaimGpuWindow
+ * \sa SDL_ClaimGPUWindow
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGpuSwapchainComposition(
-    SDL_GpuDevice *device,
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUSwapchainComposition(
+    SDL_GPUDevice *device,
     SDL_Window *window,
-    SDL_GpuSwapchainComposition swapchainComposition);
+    SDL_GPUSwapchainComposition swapchainComposition);
 
 /**
  * Determines whether a presentation mode is supported by the window.
@@ -2299,17 +2299,17 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGpuSwapchainComposition(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ClaimGpuWindow
+ * \sa SDL_ClaimGPUWindow
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGpuPresentMode(
-    SDL_GpuDevice *device,
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUPresentMode(
+    SDL_GPUDevice *device,
     SDL_Window *window,
-    SDL_GpuPresentMode presentMode);
+    SDL_GPUPresentMode presentMode);
 
 /**
  * Claims a window, creating a swapchain structure for it.
  *
- * This must be called before SDL_AcquireGpuSwapchainTexture is called using
+ * This must be called before SDL_AcquireGPUSwapchainTexture is called using
  * the window.
  *
  * The swapchain will be created with SDL_GPU_SWAPCHAINCOMPOSITION_SDR and
@@ -2322,13 +2322,13 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGpuPresentMode(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AcquireGpuSwapchainTexture
- * \sa SDL_UnclaimGpuWindow
- * \sa SDL_SupportsGpuPresentMode
- * \sa SDL_SupportsGpuSwapchainComposition
+ * \sa SDL_AcquireGPUSwapchainTexture
+ * \sa SDL_UnclaimGPUWindow
+ * \sa SDL_SupportsGPUPresentMode
+ * \sa SDL_SupportsGPUSwapchainComposition
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClaimGpuWindow(
-    SDL_GpuDevice *device,
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClaimGPUWindow(
+    SDL_GPUDevice *device,
     SDL_Window *window);
 
 /**
@@ -2339,10 +2339,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClaimGpuWindow(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ClaimGpuWindow
+ * \sa SDL_ClaimGPUWindow
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UnclaimGpuWindow(
-    SDL_GpuDevice *device,
+extern SDL_DECLSPEC void SDLCALL SDL_UnclaimGPUWindow(
+    SDL_GPUDevice *device,
     SDL_Window *window);
 
 /**
@@ -2350,8 +2350,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnclaimGpuWindow(
  *
  * This function will fail if the requested present mode or swapchain
  * composition are unsupported by the device. Check if the parameters are
- * supported via SDL_SupportsGpuPresentMode /
- * SDL_SupportsGpuSwapchainComposition prior to calling this function.
+ * supported via SDL_SupportsGPUPresentMode /
+ * SDL_SupportsGPUSwapchainComposition prior to calling this function.
  *
  * SDL_GPU_PRESENTMODE_VSYNC and SDL_GPU_SWAPCHAINCOMPOSITION_SDR are always
  * supported.
@@ -2364,14 +2364,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnclaimGpuWindow(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SupportsGpuPresentMode
- * \sa SDL_SupportsGpuSwapchainComposition
+ * \sa SDL_SupportsGPUPresentMode
+ * \sa SDL_SupportsGPUSwapchainComposition
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetGpuSwapchainParameters(
-    SDL_GpuDevice *device,
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetGPUSwapchainParameters(
+    SDL_GPUDevice *device,
     SDL_Window *window,
-    SDL_GpuSwapchainComposition swapchainComposition,
-    SDL_GpuPresentMode presentMode);
+    SDL_GPUSwapchainComposition swapchainComposition,
+    SDL_GPUPresentMode presentMode);
 
 /**
  * Obtains the texture format of the swapchain for the given window.
@@ -2382,8 +2382,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetGpuSwapchainParameters(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_GpuTextureFormat SDLCALL SDL_GetGpuSwapchainTextureFormat(
-    SDL_GpuDevice *device,
+extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureFormat(
+    SDL_GPUDevice *device,
     SDL_Window *window);
 
 /**
@@ -2405,12 +2405,12 @@ extern SDL_DECLSPEC SDL_GpuTextureFormat SDLCALL SDL_GetGpuSwapchainTextureForma
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ClaimGpuWindow
- * \sa SDL_SubmitGpu
- * \sa SDL_SubmitGpuAndAcquireFence
+ * \sa SDL_ClaimGPUWindow
+ * \sa SDL_SubmitGPU
+ * \sa SDL_SubmitGPUAndAcquireFence
  */
-extern SDL_DECLSPEC SDL_GpuTexture *SDLCALL SDL_AcquireGpuSwapchainTexture(
-    SDL_GpuCommandBuffer *commandBuffer,
+extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_AcquireGPUSwapchainTexture(
+    SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
     Uint32 *pWidth,
     Uint32 *pHeight);
@@ -2429,12 +2429,12 @@ extern SDL_DECLSPEC SDL_GpuTexture *SDLCALL SDL_AcquireGpuSwapchainTexture(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AcquireGpuCommandBuffer
- * \sa SDL_AcquireGpuSwapchainTexture
- * \sa SDL_SubmitGpuAndAcquireFence
+ * \sa SDL_AcquireGPUCommandBuffer
+ * \sa SDL_AcquireGPUSwapchainTexture
+ * \sa SDL_SubmitGPUAndAcquireFence
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SubmitGpu(
-    SDL_GpuCommandBuffer *commandBuffer);
+extern SDL_DECLSPEC void SDLCALL SDL_SubmitGPU(
+    SDL_GPUCommandBuffer *commandBuffer);
 
 /**
  * Submits a command buffer so its commands can be processed on the GPU, and
@@ -2453,13 +2453,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_SubmitGpu(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AcquireGpuCommandBuffer
- * \sa SDL_AcquireGpuSwapchainTexture
- * \sa SDL_SubmitGpu
- * \sa SDL_ReleaseGpuFence
+ * \sa SDL_AcquireGPUCommandBuffer
+ * \sa SDL_AcquireGPUSwapchainTexture
+ * \sa SDL_SubmitGPU
+ * \sa SDL_ReleaseGPUFence
  */
-extern SDL_DECLSPEC SDL_GpuFence *SDLCALL SDL_SubmitGpuAndAcquireFence(
-    SDL_GpuCommandBuffer *commandBuffer);
+extern SDL_DECLSPEC SDL_GPUFence *SDLCALL SDL_SubmitGPUAndAcquireFence(
+    SDL_GPUCommandBuffer *commandBuffer);
 
 /**
  * Blocks the thread until the GPU is completely idle.
@@ -2468,10 +2468,10 @@ extern SDL_DECLSPEC SDL_GpuFence *SDLCALL SDL_SubmitGpuAndAcquireFence(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_WaitGpuForFences
+ * \sa SDL_WaitGPUForFences
  */
-extern SDL_DECLSPEC void SDLCALL SDL_WaitGpu(
-    SDL_GpuDevice *device);
+extern SDL_DECLSPEC void SDLCALL SDL_WaitGPU(
+    SDL_GPUDevice *device);
 
 /**
  * Blocks the thread until the given fences are signaled.
@@ -2484,13 +2484,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitGpu(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SubmitGpuAndAcquireFence
- * \sa SDL_WaitGpu
+ * \sa SDL_SubmitGPUAndAcquireFence
+ * \sa SDL_WaitGPU
  */
-extern SDL_DECLSPEC void SDLCALL SDL_WaitGpuForFences(
-    SDL_GpuDevice *device,
+extern SDL_DECLSPEC void SDLCALL SDL_WaitGPUForFences(
+    SDL_GPUDevice *device,
     SDL_bool waitAll,
-    SDL_GpuFence **pFences,
+    SDL_GPUFence **pFences,
     Uint32 fenceCount);
 
 /**
@@ -2502,25 +2502,25 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitGpuForFences(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SubmitGpuAndAcquireFence
+ * \sa SDL_SubmitGPUAndAcquireFence
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_QueryGpuFence(
-    SDL_GpuDevice *device,
-    SDL_GpuFence *fence);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_QueryGPUFence(
+    SDL_GPUDevice *device,
+    SDL_GPUFence *fence);
 
 /**
- * Releases a fence obtained from SDL_SubmitGpuAndAcquireFence.
+ * Releases a fence obtained from SDL_SubmitGPUAndAcquireFence.
  *
  * \param device a GPU context.
  * \param fence a fence.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SubmitGpuAndAcquireFence
+ * \sa SDL_SubmitGPUAndAcquireFence
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuFence(
-    SDL_GpuDevice *device,
-    SDL_GpuFence *fence);
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUFence(
+    SDL_GPUDevice *device,
+    SDL_GPUFence *fence);
 
 /* Format Info */
 
@@ -2532,10 +2532,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGpuFence(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_UploadToGpuTexture
+ * \sa SDL_UploadToGPUTexture
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_GpuTextureFormatTexelBlockSize(
-    SDL_GpuTextureFormat textureFormat);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_GPUTextureFormatTexelBlockSize(
+    SDL_GPUTextureFormat textureFormat);
 
 /**
  * Determines whether a texture format is supported for a given type and
@@ -2549,11 +2549,11 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GpuTextureFormatTexelBlockSize(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGpuTextureFormat(
-    SDL_GpuDevice *device,
-    SDL_GpuTextureFormat format,
-    SDL_GpuTextureType type,
-    SDL_GpuTextureUsageFlags usage);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUTextureFormat(
+    SDL_GPUDevice *device,
+    SDL_GPUTextureFormat format,
+    SDL_GPUTextureType type,
+    SDL_GPUTextureUsageFlags usage);
 
 /**
  * Determines if a sample count for a texture format is supported.
@@ -2565,10 +2565,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGpuTextureFormat(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGpuSampleCount(
-    SDL_GpuDevice *device,
-    SDL_GpuTextureFormat format,
-    SDL_GpuSampleCount sampleCount);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUSampleCount(
+    SDL_GPUDevice *device,
+    SDL_GPUTextureFormat format,
+    SDL_GPUSampleCount sampleCount);
 
 #ifdef SDL_PLATFORM_GDK
 
@@ -2576,7 +2576,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGpuSampleCount(
  * Call this to suspend GPU operation on Xbox when you receive the
  * SDL_EVENT_DID_ENTER_BACKGROUND event.
  *
- * Do NOT call any SDL_Gpu functions after calling this function! This must
+ * Do NOT call any SDL_GPU functions after calling this function! This must
  * also be called before calling SDL_GDKSuspendComplete.
  *
  * \param device a GPU context.
@@ -2585,14 +2585,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGpuSampleCount(
  *
  * \sa SDL_AddEventWatch
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGpu(SDL_GpuDevice *device);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(SDL_GPUDevice *device);
 
 /**
  * Call this to resume GPU operation on Xbox when you receive the
  * SDL_EVENT_WILL_ENTER_FOREGROUND event.
  *
  * When resuming, this function MUST be called before calling any other
- * SDL_Gpu functions.
+ * SDL_GPU functions.
  *
  * \param device a GPU context.
  *
@@ -2600,7 +2600,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGpu(SDL_GpuDevice *device);
  *
  * \sa SDL_AddEventWatch
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGpu(SDL_GpuDevice *device);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(SDL_GPUDevice *device);
 
 #endif /* SDL_PLATFORM_GDK */
 

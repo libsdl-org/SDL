@@ -691,8 +691,8 @@
     ( (This)->Wait(pFence,Value) ) 
 #define ID3D12CommandQueue_GetTimestampFrequency(This,pFrequency)	\
     ( (This)->GetTimestampFrequency(pFrequency) ) 
-#define ID3D12CommandQueue_GetClockCalibration(This,pGpuTimestamp,pCpuTimestamp)	\
-    ( (This)->GetClockCalibration(pGpuTimestamp,pCpuTimestamp) ) 
+#define ID3D12CommandQueue_GetClockCalibration(This,pGPUTimestamp,pCpuTimestamp)	\
+    ( (This)->GetClockCalibration(pGPUTimestamp,pCpuTimestamp) ) 
 #define ID3D12Device_QueryInterface(This,riid,ppvObject)	\
     ( (This)->QueryInterface(riid,ppvObject) ) 
 #define ID3D12Device_AddRef(This)	\
