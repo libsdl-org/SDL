@@ -34,6 +34,9 @@
 #ifndef DBUS_TIMEOUT_INFINITE
 #define DBUS_TIMEOUT_INFINITE ((int) 0x7fffffff)
 #endif
+#ifndef DBUS_TYPE_UNIX_FD
+#define DBUS_TYPE_UNIX_FD ((int) 'h')
+#endif
 
 typedef struct SDL_DBusContext
 {
