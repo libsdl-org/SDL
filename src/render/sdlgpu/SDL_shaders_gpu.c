@@ -24,13 +24,13 @@
 
 #include "SDL_shaders_gpu.h"
 
-// SDL_Gpu shader implementation
+// SDL_GPU shader implementation
 
 typedef struct GPU_ShaderModuleSource
 {
     const unsigned char *code;
     unsigned int code_len;
-    SDL_GpuShaderFormat format;
+    SDL_GPUShaderFormat format;
 } GPU_ShaderModuleSource;
 
 #ifdef SDL_GPU_VULKAN
@@ -147,10 +147,10 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
 };
 // clang-format on
 
-static SDL_GpuShader *CompileShader(const GPU_ShaderSources *sources, SDL_GpuDevice *device, SDL_GpuShaderStage stage)
+static SDL_GPUShader *CompileShader(const GPU_ShaderSources *sources, SDL_GPUDevice *device, SDL_GPUShaderStage stage)
 {
     const GPU_ShaderModuleSource *sms = NULL;
-    SDL_GpuDriver driver = SDL_GetGpuDriver(device);
+    SDL_GPUDriver driver = SDL_GetGPUDriver(device);
 
     switch (driver) {
         // clang-format off
@@ -165,7 +165,7 @@ static SDL_GpuShader *CompileShader(const GPU_ShaderSources *sources, SDL_GpuDev
         return NULL;
     }
 
-    SDL_GpuShaderCreateInfo sci = { 0 };
+    SDL_GPUShaderCreateInfo sci = { 0 };
     sci.code = sms->code;
     sci.codeSize = sms->code_len;
     sci.format = sms->format;
@@ -175,10 +175,10 @@ static SDL_GpuShader *CompileShader(const GPU_ShaderSources *sources, SDL_GpuDev
     sci.uniformBufferCount = sources->num_uniform_buffers;
     sci.stage = stage;
 
-    return SDL_CreateGpuShader(device, &sci);
+    return SDL_CreateGPUShader(device, &sci);
 }
 
-bool GPU_InitShaders(GPU_Shaders *shaders, SDL_GpuDevice *device)
+bool GPU_InitShaders(GPU_Shaders *shaders, SDL_GPUDevice *device)
 {
     for (int i = 0; i < SDL_arraysize(vert_shader_sources); ++i) {
         shaders->vert_shaders[i] = CompileShader(
@@ -201,31 +201,31 @@ bool GPU_InitShaders(GPU_Shaders *shaders, SDL_GpuDevice *device)
     return true;
 }
 
-void GPU_ReleaseShaders(GPU_Shaders *shaders, SDL_GpuDevice *device)
+void GPU_ReleaseShaders(GPU_Shaders *shaders, SDL_GPUDevice *device)
 {
     for (int i = 0; i < SDL_arraysize(shaders->vert_shaders); ++i) {
-        SDL_ReleaseGpuShader(device, shaders->vert_shaders[i]);
+        SDL_ReleaseGPUShader(device, shaders->vert_shaders[i]);
         shaders->vert_shaders[i] = NULL;
     }
 
     for (int i = 0; i < SDL_arraysize(shaders->frag_shaders); ++i) {
-        SDL_ReleaseGpuShader(device, shaders->frag_shaders[i]);
+        SDL_ReleaseGPUShader(device, shaders->frag_shaders[i]);
         shaders->frag_shaders[i] = NULL;
     }
 }
 
-SDL_GpuShader *GPU_GetVertexShader(GPU_Shaders *shaders, GPU_VertexShaderID id)
+SDL_GPUShader *GPU_GetVertexShader(GPU_Shaders *shaders, GPU_VertexShaderID id)
 {
     SDL_assert((unsigned int)id < SDL_arraysize(shaders->vert_shaders));
-    SDL_GpuShader *shader = shaders->vert_shaders[id];
+    SDL_GPUShader *shader = shaders->vert_shaders[id];
     SDL_assert(shader != NULL);
     return shader;
 }
 
-SDL_GpuShader *GPU_GetFragmentShader(GPU_Shaders *shaders, GPU_FragmentShaderID id)
+SDL_GPUShader *GPU_GetFragmentShader(GPU_Shaders *shaders, GPU_FragmentShaderID id)
 {
     SDL_assert((unsigned int)id < SDL_arraysize(shaders->frag_shaders));
-    SDL_GpuShader *shader = shaders->frag_shaders[id];
+    SDL_GPUShader *shader = shaders->frag_shaders[id];
     SDL_assert(shader != NULL);
     return shader;
 }

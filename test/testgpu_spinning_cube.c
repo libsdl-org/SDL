@@ -34,40 +34,40 @@ static Uint32 frames = 0;
 
 typedef struct RenderState
 {
-    SDL_GpuBuffer *buf_vertex;
-    SDL_GpuGraphicsPipeline *pipeline;
-    SDL_GpuSampleCount sample_count;
+    SDL_GPUBuffer *buf_vertex;
+    SDL_GPUGraphicsPipeline *pipeline;
+    SDL_GPUSampleCount sample_count;
 } RenderState;
 
 typedef struct WindowState
 {
     int angle_x, angle_y, angle_z;
-    SDL_GpuTexture *tex_depth, *tex_msaa;
+    SDL_GPUTexture *tex_depth, *tex_msaa;
     Uint32 prev_drawablew, prev_drawableh;
 } WindowState;
 
-static SDL_GpuDevice *gpu_device = NULL;
+static SDL_GPUDevice *gpu_device = NULL;
 static RenderState render_state;
 static SDLTest_CommonState *state = NULL;
 static WindowState *window_states = NULL;
 
-static void shutdownGpu(void)
+static void shutdownGPU(void)
 {
     if (window_states) {
         int i;
         for (i = 0; i < state->num_windows; i++) {
             WindowState *winstate = &window_states[i];
-            SDL_ReleaseGpuTexture(gpu_device, winstate->tex_depth);
-            SDL_ReleaseGpuTexture(gpu_device, winstate->tex_msaa);
-            SDL_UnclaimGpuWindow(gpu_device, state->windows[i]);
+            SDL_ReleaseGPUTexture(gpu_device, winstate->tex_depth);
+            SDL_ReleaseGPUTexture(gpu_device, winstate->tex_msaa);
+            SDL_UnclaimGPUWindow(gpu_device, state->windows[i]);
         }
         SDL_free(window_states);
         window_states = NULL;
     }
 
-    SDL_ReleaseGpuBuffer(gpu_device, render_state.buf_vertex);
-    SDL_ReleaseGpuGraphicsPipeline(gpu_device, render_state.pipeline);
-    SDL_DestroyGpuDevice(gpu_device);
+    SDL_ReleaseGPUBuffer(gpu_device, render_state.buf_vertex);
+    SDL_ReleaseGPUGraphicsPipeline(gpu_device, render_state.pipeline);
+    SDL_DestroyGPUDevice(gpu_device);
 
     SDL_zero(render_state);
     gpu_device = NULL;
@@ -78,7 +78,7 @@ static void shutdownGpu(void)
 static void
 quit(int rc)
 {
-    shutdownGpu();
+    shutdownGPU();
     SDLTest_CommonQuit(state);
     exit(rc);
 }
@@ -246,11 +246,11 @@ static const VertexData vertex_data[] = {
     {  0.5, -0.5,  0.5, 1.0, 0.0, 1.0 } /* magenta */
 };
 
-static SDL_GpuTexture*
+static SDL_GPUTexture*
 CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
 {
-    SDL_GpuTextureCreateInfo depthtex_createinfo;
-    SDL_GpuTexture *result;
+    SDL_GPUTextureCreateInfo depthtex_createinfo;
+    SDL_GPUTexture *result;
 
     depthtex_createinfo.type = SDL_GPU_TEXTURETYPE_2D;
     depthtex_createinfo.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
@@ -262,24 +262,24 @@ CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
     depthtex_createinfo.usageFlags = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT;
     depthtex_createinfo.props = 0;
 
-    result = SDL_CreateGpuTexture(gpu_device, &depthtex_createinfo);
+    result = SDL_CreateGPUTexture(gpu_device, &depthtex_createinfo);
     CHECK_CREATE(result, "Depth Texture")
 
     return result;
 }
 
-static SDL_GpuTexture*
+static SDL_GPUTexture*
 CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
 {
-    SDL_GpuTextureCreateInfo msaatex_createinfo;
-    SDL_GpuTexture *result;
+    SDL_GPUTextureCreateInfo msaatex_createinfo;
+    SDL_GPUTexture *result;
 
     if (render_state.sample_count == SDL_GPU_SAMPLECOUNT_1) {
         return NULL;
     }
 
     msaatex_createinfo.type = SDL_GPU_TEXTURETYPE_2D;
-    msaatex_createinfo.format = SDL_GetGpuSwapchainTextureFormat(gpu_device, state->windows[0]);
+    msaatex_createinfo.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
     msaatex_createinfo.width = drawablew;
     msaatex_createinfo.height = drawableh;
     msaatex_createinfo.layerCountOrDepth = 1;
@@ -288,7 +288,7 @@ CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
     msaatex_createinfo.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT | SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT;
     msaatex_createinfo.props = 0;
 
-    result = SDL_CreateGpuTexture(gpu_device, &msaatex_createinfo);
+    result = SDL_CreateGPUTexture(gpu_device, &msaatex_createinfo);
     CHECK_CREATE(result, "MSAA Texture")
 
     return result;
@@ -298,25 +298,25 @@ static void
 Render(SDL_Window *window, const int windownum)
 {
     WindowState *winstate = &window_states[windownum];
-    SDL_GpuTexture *swapchain;
-    SDL_GpuColorAttachmentInfo color_attachment;
-    SDL_GpuDepthStencilAttachmentInfo depth_attachment;
+    SDL_GPUTexture *swapchain;
+    SDL_GPUColorAttachmentInfo color_attachment;
+    SDL_GPUDepthStencilAttachmentInfo depth_attachment;
     float matrix_rotate[16], matrix_modelview[16], matrix_perspective[16], matrix_final[16];
     Uint32 drawablew, drawableh;
-    SDL_GpuCommandBuffer *cmd;
-    SDL_GpuRenderPass *pass;
-    SDL_GpuBufferBinding vertex_binding;
-    SDL_GpuBlitRegion src_region;
-    SDL_GpuBlitRegion dst_region;
+    SDL_GPUCommandBuffer *cmd;
+    SDL_GPURenderPass *pass;
+    SDL_GPUBufferBinding vertex_binding;
+    SDL_GPUBlitRegion src_region;
+    SDL_GPUBlitRegion dst_region;
 
     /* Acquire the swapchain texture */
 
-    cmd = SDL_AcquireGpuCommandBuffer(gpu_device);
-    swapchain = SDL_AcquireGpuSwapchainTexture(cmd, state->windows[windownum], &drawablew, &drawableh);
+    cmd = SDL_AcquireGPUCommandBuffer(gpu_device);
+    swapchain = SDL_AcquireGPUSwapchainTexture(cmd, state->windows[windownum], &drawablew, &drawableh);
 
     if (!swapchain) {
         /* No swapchain was acquired, probably too many frames in flight */
-        SDL_SubmitGpu(cmd);
+        SDL_SubmitGPU(cmd);
         return;
     }
 
@@ -353,8 +353,8 @@ Render(SDL_Window *window, const int windownum)
     /* Resize the depth buffer if the window size changed */
 
     if (winstate->prev_drawablew != drawablew || winstate->prev_drawableh != drawableh) {
-        SDL_ReleaseGpuTexture(gpu_device, winstate->tex_depth);
-        SDL_ReleaseGpuTexture(gpu_device, winstate->tex_msaa);
+        SDL_ReleaseGPUTexture(gpu_device, winstate->tex_depth);
+        SDL_ReleaseGPUTexture(gpu_device, winstate->tex_msaa);
         winstate->tex_depth = CreateDepthTexture(drawablew, drawableh);
         winstate->tex_msaa = CreateMSAATexture(drawablew, drawableh);
     }
@@ -383,13 +383,13 @@ Render(SDL_Window *window, const int windownum)
 
     /* Draw the cube! */
 
-    SDL_PushGpuVertexUniformData(cmd, 0, matrix_final, sizeof(matrix_final));
+    SDL_PushGPUVertexUniformData(cmd, 0, matrix_final, sizeof(matrix_final));
 
-    pass = SDL_BeginGpuRenderPass(cmd, &color_attachment, 1, &depth_attachment);
-    SDL_BindGpuGraphicsPipeline(pass, render_state.pipeline);
-    SDL_BindGpuVertexBuffers(pass, 0, &vertex_binding, 1);
-    SDL_DrawGpuPrimitives(pass, 36, 1, 0, 0);
-    SDL_EndGpuRenderPass(pass);
+    pass = SDL_BeginGPURenderPass(cmd, &color_attachment, 1, &depth_attachment);
+    SDL_BindGPUGraphicsPipeline(pass, render_state.pipeline);
+    SDL_BindGPUVertexBuffers(pass, 0, &vertex_binding, 1);
+    SDL_DrawGPUPrimitives(pass, 36, 1, 0, 0);
+    SDL_EndGPURenderPass(pass);
 
     /* Blit MSAA to swapchain, if needed */
     if (render_state.sample_count > SDL_GPU_SAMPLECOUNT_1) {
@@ -401,26 +401,26 @@ Render(SDL_Window *window, const int windownum)
         dst_region = src_region;
         dst_region.texture = swapchain;
 
-        SDL_BlitGpu(cmd, &src_region, &dst_region, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, SDL_FALSE);
+        SDL_BlitGPU(cmd, &src_region, &dst_region, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, SDL_FALSE);
     }
 
     /* Submit the command buffer! */
-    SDL_SubmitGpu(cmd);
+    SDL_SubmitGPU(cmd);
 
     ++frames;
 }
 
-static SDL_GpuShader*
+static SDL_GPUShader*
 load_shader(SDL_bool is_vertex)
 {
-    SDL_GpuShaderCreateInfo createinfo;
+    SDL_GPUShaderCreateInfo createinfo;
     createinfo.samplerCount = 0;
     createinfo.storageBufferCount = 0;
     createinfo.storageTextureCount = 0;
     createinfo.uniformBufferCount = is_vertex ? 1 : 0;
     createinfo.props = 0;
 
-    SDL_GpuDriver backend = SDL_GetGpuDriver(gpu_device);
+    SDL_GPUDriver backend = SDL_GetGPUDriver(gpu_device);
     if (backend == SDL_GPU_DRIVER_D3D11) {
         createinfo.format = SDL_GPU_SHADERFORMAT_DXBC;
         createinfo.code = is_vertex ? D3D11_CubeVert : D3D11_CubeFrag;
@@ -444,30 +444,30 @@ load_shader(SDL_bool is_vertex)
     }
 
     createinfo.stage = is_vertex ? SDL_GPU_SHADERSTAGE_VERTEX : SDL_GPU_SHADERSTAGE_FRAGMENT;
-    return SDL_CreateGpuShader(gpu_device, &createinfo);
+    return SDL_CreateGPUShader(gpu_device, &createinfo);
 }
 
 static void
 init_render_state(int msaa)
 {
-    SDL_GpuCommandBuffer *cmd;
-    SDL_GpuTransferBuffer *buf_transfer;
+    SDL_GPUCommandBuffer *cmd;
+    SDL_GPUTransferBuffer *buf_transfer;
     void *map;
-    SDL_GpuTransferBufferLocation buf_location;
-    SDL_GpuBufferRegion dst_region;
-    SDL_GpuCopyPass *copy_pass;
-    SDL_GpuBufferCreateInfo buffer_desc;
-    SDL_GpuTransferBufferCreateInfo transfer_buffer_desc;
-    SDL_GpuGraphicsPipelineCreateInfo pipelinedesc;
-    SDL_GpuColorAttachmentDescription color_attachment_desc;
+    SDL_GPUTransferBufferLocation buf_location;
+    SDL_GPUBufferRegion dst_region;
+    SDL_GPUCopyPass *copy_pass;
+    SDL_GPUBufferCreateInfo buffer_desc;
+    SDL_GPUTransferBufferCreateInfo transfer_buffer_desc;
+    SDL_GPUGraphicsPipelineCreateInfo pipelinedesc;
+    SDL_GPUColorAttachmentDescription color_attachment_desc;
     Uint32 drawablew, drawableh;
-    SDL_GpuVertexAttribute vertex_attributes[2];
-    SDL_GpuVertexBinding vertex_binding;
-    SDL_GpuShader *vertex_shader;
-    SDL_GpuShader *fragment_shader;
+    SDL_GPUVertexAttribute vertex_attributes[2];
+    SDL_GPUVertexBinding vertex_binding;
+    SDL_GPUShader *vertex_shader;
+    SDL_GPUShader *fragment_shader;
     int i;
 
-    gpu_device = SDL_CreateGpuDevice(
+    gpu_device = SDL_CreateGPUDevice(
         TESTGPU_SUPPORTED_FORMATS,
         1,
         0,
@@ -478,7 +478,7 @@ init_render_state(int msaa)
     /* Claim the windows */
 
     for (i = 0; i < state->num_windows; i++) {
-        SDL_ClaimGpuWindow(
+        SDL_ClaimGPUWindow(
             gpu_device,
             state->windows[i]
         );
@@ -496,46 +496,46 @@ init_render_state(int msaa)
     buffer_desc.usageFlags = SDL_GPU_BUFFERUSAGE_VERTEX_BIT;
     buffer_desc.sizeInBytes = sizeof(vertex_data);
     buffer_desc.props = 0;
-    render_state.buf_vertex = SDL_CreateGpuBuffer(
+    render_state.buf_vertex = SDL_CreateGPUBuffer(
         gpu_device,
         &buffer_desc
     );
     CHECK_CREATE(render_state.buf_vertex, "Static vertex buffer")
 
-    SDL_SetGpuBufferName(gpu_device, render_state.buf_vertex, "космонавт");
+    SDL_SetGPUBufferName(gpu_device, render_state.buf_vertex, "космонавт");
 
     transfer_buffer_desc.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
     transfer_buffer_desc.sizeInBytes = sizeof(vertex_data);
     transfer_buffer_desc.props = 0;
-    buf_transfer = SDL_CreateGpuTransferBuffer(
+    buf_transfer = SDL_CreateGPUTransferBuffer(
         gpu_device,
         &transfer_buffer_desc
     );
     CHECK_CREATE(buf_transfer, "Vertex transfer buffer")
 
     /* We just need to upload the static data once. */
-    map = SDL_MapGpuTransferBuffer(gpu_device, buf_transfer, SDL_FALSE);
+    map = SDL_MapGPUTransferBuffer(gpu_device, buf_transfer, SDL_FALSE);
     SDL_memcpy(map, vertex_data, sizeof(vertex_data));
-    SDL_UnmapGpuTransferBuffer(gpu_device, buf_transfer);
+    SDL_UnmapGPUTransferBuffer(gpu_device, buf_transfer);
 
-    cmd = SDL_AcquireGpuCommandBuffer(gpu_device);
-    copy_pass = SDL_BeginGpuCopyPass(cmd);
+    cmd = SDL_AcquireGPUCommandBuffer(gpu_device);
+    copy_pass = SDL_BeginGPUCopyPass(cmd);
     buf_location.transferBuffer = buf_transfer;
     buf_location.offset = 0;
     dst_region.buffer = render_state.buf_vertex;
     dst_region.offset = 0;
     dst_region.size = sizeof(vertex_data);
-    SDL_UploadToGpuBuffer(copy_pass, &buf_location, &dst_region, SDL_FALSE);
-    SDL_EndGpuCopyPass(copy_pass);
-    SDL_SubmitGpu(cmd);
+    SDL_UploadToGPUBuffer(copy_pass, &buf_location, &dst_region, SDL_FALSE);
+    SDL_EndGPUCopyPass(copy_pass);
+    SDL_SubmitGPU(cmd);
 
-    SDL_ReleaseGpuTransferBuffer(gpu_device, buf_transfer);
+    SDL_ReleaseGPUTransferBuffer(gpu_device, buf_transfer);
 
     /* Determine which sample count to use */
     render_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    if (msaa && SDL_SupportsGpuSampleCount(
+    if (msaa && SDL_SupportsGPUSampleCount(
         gpu_device,
-        SDL_GetGpuSwapchainTextureFormat(gpu_device, state->windows[0]),
+        SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]),
         SDL_GPU_SAMPLECOUNT_4)) {
         render_state.sample_count = SDL_GPU_SAMPLECOUNT_4;
     }
@@ -544,7 +544,7 @@ init_render_state(int msaa)
 
     SDL_zero(pipelinedesc);
 
-    color_attachment_desc.format = SDL_GetGpuSwapchainTextureFormat(gpu_device, state->windows[0]);
+    color_attachment_desc.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
 
     color_attachment_desc.blendState.blendEnable = 0;
     color_attachment_desc.blendState.alphaBlendOp = SDL_GPU_BLENDOP_ADD;
@@ -590,16 +590,16 @@ init_render_state(int msaa)
     pipelinedesc.vertexInputState.vertexBindingCount = 1;
     pipelinedesc.vertexInputState.vertexBindings = &vertex_binding;
     pipelinedesc.vertexInputState.vertexAttributeCount = 2;
-    pipelinedesc.vertexInputState.vertexAttributes = (SDL_GpuVertexAttribute*) &vertex_attributes;
+    pipelinedesc.vertexInputState.vertexAttributes = (SDL_GPUVertexAttribute*) &vertex_attributes;
 
     pipelinedesc.props = 0;
 
-    render_state.pipeline = SDL_CreateGpuGraphicsPipeline(gpu_device, &pipelinedesc);
+    render_state.pipeline = SDL_CreateGPUGraphicsPipeline(gpu_device, &pipelinedesc);
     CHECK_CREATE(render_state.pipeline, "Render Pipeline")
 
     /* These are reference-counted; once the pipeline is created, you don't need to keep these. */
-    SDL_ReleaseGpuShader(gpu_device, vertex_shader);
-    SDL_ReleaseGpuShader(gpu_device, fragment_shader);
+    SDL_ReleaseGPUShader(gpu_device, vertex_shader);
+    SDL_ReleaseGPUShader(gpu_device, fragment_shader);
 
     /* Set up per-window state */
 

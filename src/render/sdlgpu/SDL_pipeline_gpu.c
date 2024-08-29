@@ -47,7 +47,7 @@ SDL_COMPILE_TIME_ASSERT(GPU_PipelineCacheKey_Size, sizeof(GPU_PipelineCacheKey) 
 typedef struct GPU_PipelineCacheEntry
 {
     GPU_PipelineCacheKey key;
-    SDL_GpuGraphicsPipeline *pipeline;
+    SDL_GPUGraphicsPipeline *pipeline;
 } GPU_PipelineCacheEntry;
 
 static Uint32 HashPipelineCacheKey(const GPU_PipelineCacheKey *key)
@@ -74,13 +74,13 @@ static bool MatchPipelineCacheKey(const void *a, const void *b, void *data)
 static void NukePipelineCacheEntry(const void *key, const void *value, void *data)
 {
     GPU_PipelineCacheEntry *entry = (GPU_PipelineCacheEntry *)value;
-    SDL_GpuDevice *device = data;
+    SDL_GPUDevice *device = data;
 
-    SDL_ReleaseGpuGraphicsPipeline(device, entry->pipeline);
+    SDL_ReleaseGPUGraphicsPipeline(device, entry->pipeline);
     SDL_free(entry);
 }
 
-bool GPU_InitPipelineCache(GPU_PipelineCache *cache, SDL_GpuDevice *device)
+bool GPU_InitPipelineCache(GPU_PipelineCache *cache, SDL_GPUDevice *device)
 {
     // FIXME how many buckets do we need?
     cache->table = SDL_CreateHashTable(device, 32, HashPassthrough, MatchPipelineCacheKey, NukePipelineCacheEntry, true);
@@ -93,9 +93,9 @@ void GPU_DestroyPipelineCache(GPU_PipelineCache *cache)
     SDL_DestroyHashTable(cache->table);
 }
 
-static SDL_GpuGraphicsPipeline *MakePipeline(SDL_GpuDevice *device, GPU_Shaders *shaders, const GPU_PipelineParameters *params)
+static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders *shaders, const GPU_PipelineParameters *params)
 {
-    SDL_GpuColorAttachmentDescription ad;
+    SDL_GPUColorAttachmentDescription ad;
     SDL_zero(ad);
     ad.format = params->attachment_format;
 
@@ -109,7 +109,7 @@ static SDL_GpuGraphicsPipeline *MakePipeline(SDL_GpuDevice *device, GPU_Shaders 
     ad.blendState.dstColorBlendFactor = GPU_ConvertBlendFactor(SDL_GetBlendModeDstColorFactor(blend));
     ad.blendState.srcColorBlendFactor = GPU_ConvertBlendFactor(SDL_GetBlendModeSrcColorFactor(blend));
 
-    SDL_GpuGraphicsPipelineCreateInfo pci;
+    SDL_GPUGraphicsPipelineCreateInfo pci;
     SDL_zero(pci);
     pci.attachmentInfo.hasDepthStencilAttachment = false;
     pci.attachmentInfo.colorAttachmentCount = 1;
@@ -124,11 +124,11 @@ static SDL_GpuGraphicsPipeline *MakePipeline(SDL_GpuDevice *device, GPU_Shaders 
     pci.rasterizerState.fillMode = SDL_GPU_FILLMODE_FILL;
     pci.rasterizerState.frontFace = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
 
-    SDL_GpuVertexBinding bind;
+    SDL_GPUVertexBinding bind;
     SDL_zero(bind);
 
     Uint32 num_attribs = 0;
-    SDL_GpuVertexAttribute attribs[4];
+    SDL_GPUVertexAttribute attribs[4];
     SDL_zero(attribs);
 
     bool have_attr_color = false;
@@ -175,7 +175,7 @@ static SDL_GpuGraphicsPipeline *MakePipeline(SDL_GpuDevice *device, GPU_Shaders 
     pci.vertexInputState.vertexBindingCount = 1;
     pci.vertexInputState.vertexBindings = &bind;
 
-    return SDL_CreateGpuGraphicsPipeline(device, &pci);
+    return SDL_CreateGPUGraphicsPipeline(device, &pci);
 }
 
 static GPU_PipelineCacheKey MakePipelineCacheKey(const GPU_PipelineParameters *params)
@@ -190,11 +190,11 @@ static GPU_PipelineCacheKey MakePipelineCacheKey(const GPU_PipelineParameters *p
     return key;
 }
 
-SDL_GpuGraphicsPipeline *GPU_GetPipeline(GPU_PipelineCache *cache, GPU_Shaders *shaders, SDL_GpuDevice *device, const GPU_PipelineParameters *params)
+SDL_GPUGraphicsPipeline *GPU_GetPipeline(GPU_PipelineCache *cache, GPU_Shaders *shaders, SDL_GPUDevice *device, const GPU_PipelineParameters *params)
 {
     GPU_PipelineCacheKey key = MakePipelineCacheKey(params);
     void *keyval = (void *)(uintptr_t)HashPipelineCacheKey(&key);
-    SDL_GpuGraphicsPipeline *pipeline = NULL;
+    SDL_GPUGraphicsPipeline *pipeline = NULL;
 
     void *iter = NULL;
     GPU_PipelineCacheEntry *entry = NULL;

@@ -33,8 +33,8 @@ typedef struct GPU_PipelineParameters
     SDL_BlendMode blend_mode;
     GPU_FragmentShaderID frag_shader;
     GPU_VertexShaderID vert_shader;
-    SDL_GpuTextureFormat attachment_format;
-    SDL_GpuPrimitiveType primitive_type;
+    SDL_GPUTextureFormat attachment_format;
+    SDL_GPUPrimitiveType primitive_type;
 } GPU_PipelineParameters;
 
 typedef struct GPU_PipelineCache
@@ -42,8 +42,8 @@ typedef struct GPU_PipelineCache
     SDL_HashTable *table;
 } GPU_PipelineCache;
 
-extern bool GPU_InitPipelineCache(GPU_PipelineCache *cache, SDL_GpuDevice *device);
+extern bool GPU_InitPipelineCache(GPU_PipelineCache *cache, SDL_GPUDevice *device);
 extern void GPU_DestroyPipelineCache(GPU_PipelineCache *cache);
-extern SDL_GpuGraphicsPipeline *GPU_GetPipeline(GPU_PipelineCache *cache, GPU_Shaders *shaders, SDL_GpuDevice *device, const GPU_PipelineParameters *params);
+extern SDL_GPUGraphicsPipeline *GPU_GetPipeline(GPU_PipelineCache *cache, GPU_Shaders *shaders, SDL_GPUDevice *device, const GPU_PipelineParameters *params);
 
 #endif // SDL_pipeline_gpu_h_

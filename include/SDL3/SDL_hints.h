@@ -1014,7 +1014,7 @@ extern "C" {
  * force a specific target, such as "d3d11" if, say, your hardware supports
  * D3D12 but want to try using D3D11 instead.
  *
- * This hint should be set before SDL_GpuSelectBackend() is called.
+ * This hint should be set before SDL_GPUSelectBackend() is called.
  *
  * \since This hint is available since SDL 3.0.0.
  */

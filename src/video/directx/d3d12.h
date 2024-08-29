@@ -8670,7 +8670,7 @@ EXTERN_C const IID IID_ID3D12CommandQueue;
             _Out_  UINT64 *pFrequency) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE GetClockCalibration( 
-            _Out_  UINT64 *pGpuTimestamp,
+            _Out_  UINT64 *pGPUTimestamp,
             _Out_  UINT64 *pCpuTimestamp) = 0;
         
 #if defined(_MSC_VER) || !defined(_WIN32)
@@ -8802,7 +8802,7 @@ EXTERN_C const IID IID_ID3D12CommandQueue;
         DECLSPEC_XFGVIRT(ID3D12CommandQueue, GetClockCalibration)
         HRESULT ( STDMETHODCALLTYPE *GetClockCalibration )( 
             ID3D12CommandQueue * This,
-            _Out_  UINT64 *pGpuTimestamp,
+            _Out_  UINT64 *pGPUTimestamp,
             _Out_  UINT64 *pCpuTimestamp);
         
         DECLSPEC_XFGVIRT(ID3D12CommandQueue, GetDesc)
@@ -8885,8 +8885,8 @@ EXTERN_C const IID IID_ID3D12CommandQueue;
 #define ID3D12CommandQueue_GetTimestampFrequency(This,pFrequency)	\
     ( (This)->lpVtbl -> GetTimestampFrequency(This,pFrequency) ) 
 
-#define ID3D12CommandQueue_GetClockCalibration(This,pGpuTimestamp,pCpuTimestamp)	\
-    ( (This)->lpVtbl -> GetClockCalibration(This,pGpuTimestamp,pCpuTimestamp) ) 
+#define ID3D12CommandQueue_GetClockCalibration(This,pGPUTimestamp,pCpuTimestamp)	\
+    ( (This)->lpVtbl -> GetClockCalibration(This,pGPUTimestamp,pCpuTimestamp) ) 
 #if !defined(_WIN32)
 
 #define ID3D12CommandQueue_GetDesc(This)	\
@@ -29176,7 +29176,7 @@ DEFINE_ENUM_FLAG_OPERATORS( D3D12_DEVICE_FLAGS )
 typedef struct D3D12_DEVICE_CONFIGURATION_DESC
     {
     D3D12_DEVICE_FLAGS Flags;
-    UINT GpuBasedValidationFlags;
+    UINT GPUBasedValidationFlags;
     UINT SDKVersion;
     UINT NumEnabledExperimentalFeatures;
     } 	D3D12_DEVICE_CONFIGURATION_DESC;

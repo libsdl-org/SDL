@@ -22,10 +22,10 @@
 #ifndef SDL_gpu_util_h_
 #define SDL_gpu_util_h_
 
-#define SDL_GPU_BLENDOP_INVALID     ((SDL_GpuBlendOp)0x7fffffff)
-#define SDL_GPU_BLENDFACTOR_INVALID ((SDL_GpuBlendFactor)0x7fffffff)
+#define SDL_GPU_BLENDOP_INVALID     ((SDL_GPUBlendOp)0x7fffffff)
+#define SDL_GPU_BLENDFACTOR_INVALID ((SDL_GPUBlendFactor)0x7fffffff)
 
-static SDL_INLINE SDL_GpuBlendFactor GPU_ConvertBlendFactor(SDL_BlendFactor factor)
+static SDL_INLINE SDL_GPUBlendFactor GPU_ConvertBlendFactor(SDL_BlendFactor factor)
 {
     switch (factor) {
     case SDL_BLENDFACTOR_ZERO:
@@ -53,7 +53,7 @@ static SDL_INLINE SDL_GpuBlendFactor GPU_ConvertBlendFactor(SDL_BlendFactor fact
     }
 }
 
-static SDL_INLINE SDL_GpuBlendOp GPU_ConvertBlendOperation(SDL_BlendOperation operation)
+static SDL_INLINE SDL_GPUBlendOp GPU_ConvertBlendOperation(SDL_BlendOperation operation)
 {
     switch (operation) {
     case SDL_BLENDOPERATION_ADD:

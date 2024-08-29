@@ -891,7 +891,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
                       D3D_GUID(SDL_IID_IDXGIAdapter4),
                       (void **)&data->dxgiAdapter);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGIFactory6::EnumAdapterByGpuPreference"), result);
+        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGIFactory6::EnumAdapterByGPUPreference"), result);
         goto done;
     }
 
