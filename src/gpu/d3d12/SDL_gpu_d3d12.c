@@ -8161,7 +8161,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(SDL_bool debugMode, SDL_bool preferLowP
 
     renderer->debugMode = debugMode;
 
-    renderer->semantic = SDL_GetStringProperty(props, SDL_PROP_GPU_CREATEDEVICE_D3D12_SEMANTIC_NAME_STRING, "TEXCOORD");
+    renderer->semantic = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING, "TEXCOORD");
 
     // Blit resources
     D3D12_INTERNAL_InitBlitResources(renderer);

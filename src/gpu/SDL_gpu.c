@@ -400,26 +400,26 @@ SDL_GPUDevice *SDL_CreateGPUDevice(
     SDL_GPUDevice *result;
     SDL_PropertiesID props = SDL_CreateProperties();
     if (formatFlags & SDL_GPU_SHADERFORMAT_SECRET) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_SECRET_BOOL, SDL_TRUE);
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL, SDL_TRUE);
     }
     if (formatFlags & SDL_GPU_SHADERFORMAT_SPIRV) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_SPIRV_BOOL, SDL_TRUE);
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, SDL_TRUE);
     }
     if (formatFlags & SDL_GPU_SHADERFORMAT_DXBC) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_DXBC_BOOL, SDL_TRUE);
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL, SDL_TRUE);
     }
     if (formatFlags & SDL_GPU_SHADERFORMAT_DXIL) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_DXIL_BOOL, SDL_TRUE);
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL, SDL_TRUE);
     }
     if (formatFlags & SDL_GPU_SHADERFORMAT_MSL) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_MSL_BOOL, SDL_TRUE);
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL, SDL_TRUE);
     }
     if (formatFlags & SDL_GPU_SHADERFORMAT_METALLIB) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_METALLIB_BOOL, SDL_TRUE);
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, SDL_TRUE);
     }
-    SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_DEBUGMODE_BOOL, debugMode);
-    SDL_SetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_PREFERLOWPOWER_BOOL, preferLowPower);
-    SDL_SetStringProperty(props, SDL_PROP_GPU_CREATEDEVICE_NAME_STRING, name);
+    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, debugMode);
+    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, preferLowPower);
+    SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);
     result = SDL_CreateGPUDeviceWithProperties(props);
     SDL_DestroyProperties(props);
     return result;
@@ -442,31 +442,31 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
         return NULL;
     }
 
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_SECRET_BOOL, SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL, SDL_FALSE)) {
         formatFlags |= SDL_GPU_SHADERFORMAT_SECRET;
     }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_SPIRV_BOOL, SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, SDL_FALSE)) {
         formatFlags |= SDL_GPU_SHADERFORMAT_SPIRV;
     }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_DXBC_BOOL, SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL, SDL_FALSE)) {
         formatFlags |= SDL_GPU_SHADERFORMAT_DXBC;
     }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_DXIL_BOOL, SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL, SDL_FALSE)) {
         formatFlags |= SDL_GPU_SHADERFORMAT_DXIL;
     }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_MSL_BOOL, SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL, SDL_FALSE)) {
         formatFlags |= SDL_GPU_SHADERFORMAT_MSL;
     }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_SHADERS_METALLIB_BOOL, SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, SDL_FALSE)) {
         formatFlags |= SDL_GPU_SHADERFORMAT_METALLIB;
     }
 
-    debugMode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_DEBUGMODE_BOOL, SDL_TRUE);
-    preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_CREATEDEVICE_PREFERLOWPOWER_BOOL, SDL_TRUE);
+    debugMode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, SDL_TRUE);
+    preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, SDL_TRUE);
 
     gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);
     if (gpudriver == NULL) {
-        gpudriver = SDL_GetStringProperty(props, SDL_PROP_GPU_CREATEDEVICE_NAME_STRING, NULL);
+        gpudriver = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, NULL);
     }
 
     selectedBackend = SDL_GPUSelectBackend(_this, gpudriver, formatFlags);
