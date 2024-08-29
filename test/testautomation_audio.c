@@ -1047,6 +1047,7 @@ static int audio_resampleLoss(void *arg)
     const int frames_target = spec->time * spec->rate_out;
     const int len_in = (frames_in * num_channels) * (int)sizeof(float);
     const int len_target = (frames_target * num_channels) * (int)sizeof(float);
+    const int max_target = len_target * 2;
 
     SDL_AudioSpec tmpspec1, tmpspec2;
     Uint64 tick_beg = 0;
@@ -1097,14 +1098,14 @@ static int audio_resampleLoss(void *arg)
 
     tick_beg = SDL_GetPerformanceCounter();
 
-    buf_out = (float *)SDL_malloc(len_target);
+    buf_out = (float *)SDL_malloc(max_target);
     SDLTest_AssertCheck(buf_out != NULL, "Expected output buffer to be created.");
     if (buf_out == NULL) {
       SDL_DestroyAudioStream(stream);
       return TEST_ABORTED;
     }
 
-    len_out = convert_audio_chunks(stream, buf_in, len_in, buf_out, len_target);
+    len_out = convert_audio_chunks(stream, buf_in, len_in, buf_out, max_target);
     SDLTest_AssertPass("Call to convert_audio_chunks(stream, buf_in, %i, buf_out, %i)", len_in, len_target);
     SDLTest_AssertCheck(len_out == len_target, "Expected output length to be %i, got %i.",
                         len_target, len_out);
