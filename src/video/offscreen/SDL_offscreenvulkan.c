@@ -220,7 +220,7 @@ bool OFFSCREEN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                    const struct VkAllocationCallbacks *allocator,
                                    VkSurfaceKHR *surface)
 {
-    surface = NULL;
+    *surface = VK_NULL_HANDLE;
 
     if (!_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan is not loaded");
