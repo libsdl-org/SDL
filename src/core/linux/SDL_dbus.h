@@ -43,6 +43,7 @@ typedef struct SDL_DBusContext
     DBusConnection *(*bus_get_private)(DBusBusType, DBusError *);
     dbus_bool_t (*bus_register)(DBusConnection *, DBusError *);
     void (*bus_add_match)(DBusConnection *, const char *, DBusError *);
+    void (*bus_remove_match)(DBusConnection *, const char *, DBusError *);
     DBusConnection *(*connection_open_private)(const char *, DBusError *);
     void (*connection_set_exit_on_disconnect)(DBusConnection *, dbus_bool_t);
     dbus_bool_t (*connection_get_is_connected)(DBusConnection *);
@@ -57,6 +58,7 @@ typedef struct SDL_DBusContext
     void (*connection_unref)(DBusConnection *);
     void (*connection_flush)(DBusConnection *);
     dbus_bool_t (*connection_read_write)(DBusConnection *, int);
+    dbus_bool_t (*connection_read_write_dispatch)(DBusConnection *, int);
     DBusDispatchStatus (*connection_dispatch)(DBusConnection *);
     dbus_bool_t (*message_is_signal)(DBusMessage *, const char *, const char *);
     dbus_bool_t (*message_has_path)(DBusMessage *, const char *);
@@ -78,6 +80,7 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*threads_init_default)(void);
     void (*error_init)(DBusError *);
     dbus_bool_t (*error_is_set)(const DBusError *);
+    dbus_bool_t (*error_has_name)(const DBusError *, const char *);
     void (*error_free)(DBusError *);
     char *(*get_local_machine_id)(void);
     char *(*try_get_local_machine_id)(DBusError *);
@@ -108,6 +111,8 @@ extern void SDL_DBus_PumpEvents(void);
 extern char *SDL_DBus_GetLocalMachineId(void);
 
 extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_count);
+
+extern int SDL_DBus_CameraPortalRequestAccess(void);
 
 #endif // HAVE_DBUS_DBUS_H
 
