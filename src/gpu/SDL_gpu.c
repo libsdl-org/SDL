@@ -394,7 +394,6 @@ static SDL_GPUDriver SDL_GPUSelectBackend(
 SDL_GPUDevice *SDL_CreateGPUDevice(
     SDL_GPUShaderFormat formatFlags,
     SDL_bool debugMode,
-    SDL_bool preferLowPower,
     const char *name)
 {
     SDL_GPUDevice *result;
@@ -418,7 +417,6 @@ SDL_GPUDevice *SDL_CreateGPUDevice(
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, SDL_TRUE);
     }
     SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, debugMode);
-    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, preferLowPower);
     SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);
     result = SDL_CreateGPUDeviceWithProperties(props);
     SDL_DestroyProperties(props);
@@ -462,7 +460,7 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
     }
 
     debugMode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, SDL_TRUE);
-    preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, SDL_TRUE);
+    preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, SDL_FALSE);
 
     gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);
     if (gpudriver == NULL) {

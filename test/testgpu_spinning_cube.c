@@ -469,8 +469,7 @@ init_render_state(int msaa)
 
     gpu_device = SDL_CreateGPUDevice(
         TESTGPU_SUPPORTED_FORMATS,
-        1,
-        0,
+        SDL_TRUE,
         NULL
     );
     CHECK_CREATE(gpu_device, "GPU device");
