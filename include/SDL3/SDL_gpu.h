@@ -19,8 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/* WIKI CATEGORY: GPU */
+
 /**
- * # CategoryGpu
+ * # CategoryGPU
  *
  * Include file for SDL GPU API functions
  */
