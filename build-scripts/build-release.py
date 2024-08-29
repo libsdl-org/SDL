@@ -609,21 +609,28 @@ class Releaser:
         aar_path =  self.dist_path / f"{self.project}-{self.version}.aar"
         added_global_files = False
         with zipfile.ZipFile(aar_path, "w", compression=zipfile.ZIP_DEFLATED) as zip_object:
-            install_txt = (self.root / "build-scripts/pkg-support/android/INSTALL.md.in").read_text()
-            install_txt = install_txt.replace("@PROJECT_VERSION@", self.version)
-            install_txt = install_txt.replace("@PROJECT_NAME@", self.project)
+            def configure_file(path: Path) -> str:
+                text = path.read_text()
+                text = text.replace("@PROJECT_VERSION@", self.version)
+                text = text.replace("@PROJECT_NAME@", self.project)
+                return text
+
+            install_txt = configure_file(self.root / "build-scripts/pkg-support/android/INSTALL.md.in")
             zip_object.writestr("INSTALL.md", install_txt)
+
             project_description = {
                 "name": self.project,
                 "version": self.version,
                 "git-hash": self.commit,
             }
             zip_object.writestr("description.json", json.dumps(project_description, indent=0))
+            main_py = configure_file(self.root / "build-scripts/pkg-support/android/__main__.py.in")
+            zip_object.writestr("__main__.py", main_py)
+
             zip_object.writestr("AndroidManifest.xml", self.get_android_manifest_text())
             zip_object.write(self.root / "android-project/app/proguard-rules.pro", arcname="proguard.txt")
             zip_object.write(self.root / "LICENSE.txt", arcname="META-INF/LICENSE.txt")
             zip_object.write(self.root / "cmake/sdlcpu.cmake", arcname="cmake/sdlcpu.cmake")
-            zip_object.write(self.root / "build-scripts/pkg-support/android/__main__.py", arcname="__main__.py")
             zip_object.write(self.root / "build-scripts/pkg-support/android/cmake/SDL3Config.cmake", arcname="cmake/SDL3Config.cmake")
             zip_object.write(self.root / "build-scripts/pkg-support/android/cmake/SDL3ConfigVersion.cmake", arcname="cmake/SDL3ConfigVersion.cmake")
             zip_object.writestr("prefab/prefab.json", self.get_prefab_json_text())
