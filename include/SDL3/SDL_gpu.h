@@ -947,28 +947,30 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  * These are the supported properties:
  *
  * - `SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL`: enable debug mode properties
- *   and validations, default is true
+ *   and validations, defaults to SDL_TRUE.
  * - `SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL`: enable to prefer energy
- *   efficiency over maximum GPU performance
+ *   efficiency over maximum GPU performance, defaults to SDL_FALSE.
  * - `SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING`: the name of the GPU driver to
- *   use, if a specific one is desired
+ *   use, if a specific one is desired.
  *
  * These are the current shader format properties:
  *
- * `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL`: The app is able to provide
- * shaders for an NDA platform `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL`:
- * The app is able to provide SPIR-V shaders if applicable
- * `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL`: The app is able to provide
+ * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL`: The app is able to provide
+ * shaders for an NDA platform.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL`:
+ * The app is able to provide SPIR-V shaders if applicable.
+ * - SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL`: The app is able to provide
  * DXBC shaders if applicable `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL`:
- * The app is able to provide DXIL shaders if applicable
- * `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL`: The app is able to provide
- * MSL shaders if applicable
- * `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL`: The app is able to
- * provide Metal shader libraries if applicable
+ * The app is able to provide DXIL shaders if applicable.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL`: The app is able to provide
+ * MSL shaders if applicable.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL`: The app is able to
+ * provide Metal shader libraries if applicable.
  *
- * With the D3D12 renderer: -
- * `SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING`: the prefix to use
- * for all vertex semantics, default is "TEXCOORD"
+ * With the D3D12 renderer:
+ *
+ * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING`: the prefix to use
+ * for all vertex semantics, default is "TEXCOORD".
  *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure.
