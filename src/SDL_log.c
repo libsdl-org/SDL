@@ -512,12 +512,11 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
     }
 }
 
-#if defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WIN32) && !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
 enum {
     CONSOLE_UNATTACHED = 0,
     CONSOLE_ATTACHED_CONSOLE = 1,
     CONSOLE_ATTACHED_FILE = 2,
-    CONSOLE_ATTACHED_MSVC = 3,
     CONSOLE_ATTACHED_ERROR = -1,
 } consoleAttached = CONSOLE_UNATTACHED;
 
@@ -537,13 +536,11 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         LPTSTR tstr;
         bool isstack;
 
-#if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
+#if !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
         BOOL attachResult;
         DWORD attachError;
         DWORD consoleMode;
-#if !defined(HAVE_STDIO_H)
         DWORD charsWritten;
-#endif
 
         // Maybe attach console and get stderr handle
         if (consoleAttached == CONSOLE_UNATTACHED) {
@@ -553,7 +550,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
                 if (attachError == ERROR_INVALID_HANDLE) {
                     // This is expected when running from Visual Studio
                     // OutputDebugString(TEXT("Parent process has no console\r\n"));
-                    consoleAttached = CONSOLE_ATTACHED_MSVC;
+                    consoleAttached = CONSOLE_ATTACHED_ERROR;
                 } else if (attachError == ERROR_GEN_FAILURE) {
                     OutputDebugString(TEXT("Could not attach to console of parent process\r\n"));
                     consoleAttached = CONSOLE_ATTACHED_ERROR;
@@ -584,17 +581,8 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         (void)SDL_snprintf(output, length, "%s%s\r\n", SDL_GetLogPriorityPrefix(priority), message);
         tstr = WIN_UTF8ToString(output);
 
-
-#if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
-        // When running in MSVC and using stdio, rely on forwarding of stderr to the debug stream
-        if (consoleAttached != CONSOLE_ATTACHED_MSVC) {
-            // Output to debugger
-            OutputDebugString(tstr);
-        }
-#else
         // Output to debugger
         OutputDebugString(tstr);
-#endif
 
 #if !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
         // Screen output to stderr, if console was attached.
