@@ -946,28 +946,28 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  *
  * These are the supported properties:
  *
- * - `SDL_PROP_GPU_CREATEDEVICE_DEBUGMODE_BOOL`: enable debug mode properties
+ * - `SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL`: enable debug mode properties
  *   and validations, default is true
- * - `SDL_PROP_GPU_CREATEDEVICE_PREFERLOWPOWER_BOOL`: enable to prefer energy
+ * - `SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL`: enable to prefer energy
  *   efficiency over maximum GPU performance
- * - `SDL_PROP_GPU_CREATEDEVICE_NAME_STRING`: the name of the GPU driver to
+ * - `SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING`: the name of the GPU driver to
  *   use, if a specific one is desired
  *
  * These are the current shader format properties:
  *
- * `SDL_PROP_GPU_CREATEDEVICE_SHADERS_SECRET_BOOL`: The app is able to provide
- * shaders for an NDA platform `SDL_PROP_GPU_CREATEDEVICE_SHADERS_SPIRV_BOOL`:
+ * `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL`: The app is able to provide
+ * shaders for an NDA platform `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL`:
  * The app is able to provide SPIR-V shaders if applicable
- * `SDL_PROP_GPU_CREATEDEVICE_SHADERS_DXBC_BOOL`: The app is able to provide
- * DXBC shaders if applicable `SDL_PROP_GPU_CREATEDEVICE_SHADERS_DXIL_BOOL`:
+ * `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL`: The app is able to provide
+ * DXBC shaders if applicable `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL`:
  * The app is able to provide DXIL shaders if applicable
- * `SDL_PROP_GPU_CREATEDEVICE_SHADERS_MSL_BOOL`: The app is able to provide
+ * `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL`: The app is able to provide
  * MSL shaders if applicable
- * `SDL_PROP_GPU_CREATEDEVICE_SHADERS_METALLIB_BOOL`: The app is able to
+ * `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL`: The app is able to
  * provide Metal shader libraries if applicable
  *
  * With the D3D12 renderer: -
- * `SDL_PROP_GPU_CREATEDEVICE_D3D12_SEMANTIC_NAME_STRING`: the prefix to use
+ * `SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING`: the prefix to use
  * for all vertex semantics, default is "TEXCOORD"
  *
  * \param props the properties to use.
@@ -981,16 +981,16 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
 extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
     SDL_PropertiesID props);
 
-#define SDL_PROP_GPU_CREATEDEVICE_DEBUGMODE_BOOL             "SDL.gpu.createdevice.debugmode"
-#define SDL_PROP_GPU_CREATEDEVICE_PREFERLOWPOWER_BOOL        "SDL.gpu.createdevice.preferlowpower"
-#define SDL_PROP_GPU_CREATEDEVICE_NAME_STRING                "SDL.gpu.createdevice.name"
-#define SDL_PROP_GPU_CREATEDEVICE_SHADERS_SECRET_BOOL        "SDL.gpu.createdevice.shaders.secret"
-#define SDL_PROP_GPU_CREATEDEVICE_SHADERS_SPIRV_BOOL         "SDL.gpu.createdevice.shaders.spirv"
-#define SDL_PROP_GPU_CREATEDEVICE_SHADERS_DXBC_BOOL          "SDL.gpu.createdevice.shaders.dxbc"
-#define SDL_PROP_GPU_CREATEDEVICE_SHADERS_DXIL_BOOL          "SDL.gpu.createdevice.shaders.dxil"
-#define SDL_PROP_GPU_CREATEDEVICE_SHADERS_MSL_BOOL           "SDL.gpu.createdevice.shaders.msl"
-#define SDL_PROP_GPU_CREATEDEVICE_SHADERS_METALLIB_BOOL      "SDL.gpu.createdevice.shaders.metallib"
-#define SDL_PROP_GPU_CREATEDEVICE_D3D12_SEMANTIC_NAME_STRING "SDL.gpu.createdevice.d3d12.semantic"
+#define SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL             "SDL.gpu.device.create.debugmode"
+#define SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL        "SDL.gpu.device.create.preferlowpower"
+#define SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING                "SDL.gpu.device.create.name"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL        "SDL.gpu.device.create.shaders.secret"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL         "SDL.gpu.device.create.shaders.spirv"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL          "SDL.gpu.device.create.shaders.dxbc"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL          "SDL.gpu.device.create.shaders.dxil"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL           "SDL.gpu.device.create.shaders.msl"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL      "SDL.gpu.device.create.shaders.metallib"
+#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING "SDL.gpu.device.create.d3d12.semantic"
 
 /**
  * Destroys a GPU context previously returned by SDL_CreateGPUDevice.
