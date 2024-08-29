@@ -2739,7 +2739,8 @@ extern "C" {
 #define SDL_HINT_RENDER_GPU_DEBUG "SDL_RENDER_GPU_DEBUG"
 
 /**
- * A variable controlling whether to prefer a low-power GPU on multi-GPU systems.
+ * A variable controlling whether to prefer a low-power GPU on multi-GPU
+ * systems.
  *
  * This variable can be set to the following values:
  *
