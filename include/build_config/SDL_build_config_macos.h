@@ -170,6 +170,9 @@
 #define SDL_JOYSTICK_MFI 1
 #endif
 
+/* Enable various process implementations */
+#define SDL_PROCESS_POSIX 1
+
 /* Enable the dummy sensor driver */
 #define SDL_SENSOR_DUMMY  1
 

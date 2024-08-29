@@ -57,6 +57,8 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/misc/android/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/power/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/power/android/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/process/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/process/dummy/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/filesystem/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/filesystem/android/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/filesystem/posix/*.c) \

@@ -348,6 +348,9 @@
     <ClInclude Include="..\..\include\SDL3\SDL_power.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_process.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_properties.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -1538,10 +1541,16 @@
     <ClCompile Include="..\..\src\power\SDL_power.c">
       <Filter>power</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SDL_log.c" />
     <ClCompile Include="..\..\src\power\windows\SDL_syspower.c">
       <Filter>power\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\process\SDL_process.c">
+      <Filter>process</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\process\windows\SDL_windowsprocess.c">
+      <Filter>process\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL_log.c" />
     <ClCompile Include="..\..\src\render\direct3d12\SDL_render_d3d12.c">
       <Filter>render\direct3d12</Filter>
     </ClCompile>

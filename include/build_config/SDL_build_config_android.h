@@ -159,6 +159,9 @@
 #define SDL_HAPTIC_ANDROID  1
 #endif /* SDL_HAPTIC_DISABLED */
 
+/* Enable the stub process support */
+#define SDL_PROCESS_DUMMY 1
+
 /* Enable sensor driver */
 #ifndef SDL_SENSOR_DISABLED
 #define SDL_SENSOR_ANDROID  1

@@ -325,6 +325,11 @@
 #cmakedefine SDL_LIBUSB_DYNAMIC @SDL_LIBUSB_DYNAMIC@
 #cmakedefine SDL_UDEV_DYNAMIC @SDL_UDEV_DYNAMIC@
 
+/* Enable various process implementations */
+#cmakedefine SDL_PROCESS_DUMMY @SDL_PROCESS_DUMMY@
+#cmakedefine SDL_PROCESS_POSIX @SDL_PROCESS_POSIX@
+#cmakedefine SDL_PROCESS_WINDOWS @SDL_PROCESS_WINDOWS@
+
 /* Enable various sensor drivers */
 #cmakedefine SDL_SENSOR_ANDROID @SDL_SENSOR_ANDROID@
 #cmakedefine SDL_SENSOR_COREMOTION @SDL_SENSOR_COREMOTION@

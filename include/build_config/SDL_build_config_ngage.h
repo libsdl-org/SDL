@@ -77,6 +77,9 @@ typedef unsigned long      uintptr_t;
 /* Enable the stub HIDAPI */
 #define SDL_HIDAPI_DISABLED 1
 
+/* Enable the stub process support */
+#define SDL_PROCESS_DUMMY 1
+
 /* Enable the stub sensor driver (src/sensor/dummy/\*.c) */
 #define SDL_SENSOR_DISABLED 1
 

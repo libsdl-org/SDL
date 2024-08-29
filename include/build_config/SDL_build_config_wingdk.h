@@ -174,6 +174,9 @@
 #define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_DINPUT   1
 
+/* Enable various process implementations */
+#define SDL_PROCESS_WINDOWS 1
+
 /* Enable the sensor driver */
 #ifdef HAVE_SENSORSAPI_H
 #define SDL_SENSOR_WINDOWS  1
