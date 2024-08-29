@@ -926,8 +926,6 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
  * \param formatFlags a bitflag indicating which shader formats the app is
  *                    able to provide.
  * \param debugMode enable debug mode properties and validations.
- * \param preferLowPower set this to SDL_TRUE if your app prefers energy
- *                       efficiency over maximum GPU performance.
  * \param name the preferred GPU driver, or NULL to let SDL pick the optimal
  *             driver.
  * \returns a GPU context on success or NULL on failure.
@@ -940,7 +938,6 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
 extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
     SDL_GPUShaderFormat formatFlags,
     SDL_bool debugMode,
-    SDL_bool preferLowPower,
     const char *name);
 
 /**
