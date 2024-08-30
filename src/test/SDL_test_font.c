@@ -3356,7 +3356,7 @@ SDL_bool SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char
     float cury = y;
     size_t len = SDL_strlen(s);
 
-    while (len > 0 && !result) {
+    while (len > 0 && result) {
         int advance = 0;
         Uint32 ch = UTF8_getch(s, len, &advance);
         result &= SDLTest_DrawCharacter(renderer, curx, cury, ch);
