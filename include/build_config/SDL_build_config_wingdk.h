@@ -232,11 +232,16 @@
 /* Enable Vulkan support */
 #define SDL_VIDEO_VULKAN 1
 
-#define SDL_GPU_D3D11 HAVE_D3D11_H
+
+#if !defined(SDL_GPU_D3D11) && defined(HAVE_D3D11_H)
+#define SDL_GPU_D3D11 1
+#endif
 #if !defined(SDL_GPU_D3D12)
 #define SDL_GPU_D3D12 1
 #endif
-#define SDL_GPU_VULKAN SDL_VIDEO_VULKAN
+#if !defined(SDL_GPU_VULKAN) && defined(SDL_VIDEO_VULKAN)
+#define SDL_GPU_VULKAN 1
+#endif
 
 /* Enable system power support */
 #define SDL_POWER_WINDOWS 1
