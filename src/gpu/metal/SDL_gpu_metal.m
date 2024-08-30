@@ -425,8 +425,8 @@ typedef struct MetalBufferContainer
     Uint32 bufferCount;
     MetalBuffer **buffers;
 
-    SDL_bool isPrivate;
-    SDL_bool isWriteOnly;
+    bool isPrivate;
+    bool isWriteOnly;
     char *debugName;
 } MetalBufferContainer;
 
@@ -467,19 +467,19 @@ typedef struct MetalCommandBuffer
     MetalComputePipeline *computePipeline;
 
     // Resource slot state
-    SDL_bool needVertexSamplerBind;
-    SDL_bool needVertexStorageTextureBind;
-    SDL_bool needVertexStorageBufferBind;
-    SDL_bool needVertexUniformBind;
+    bool needVertexSamplerBind;
+    bool needVertexStorageTextureBind;
+    bool needVertexStorageBufferBind;
+    bool needVertexUniformBind;
 
-    SDL_bool needFragmentSamplerBind;
-    SDL_bool needFragmentStorageTextureBind;
-    SDL_bool needFragmentStorageBufferBind;
-    SDL_bool needFragmentUniformBind;
+    bool needFragmentSamplerBind;
+    bool needFragmentStorageTextureBind;
+    bool needFragmentStorageBufferBind;
+    bool needFragmentUniformBind;
 
-    SDL_bool needComputeTextureBind;
-    SDL_bool needComputeBufferBind;
-    SDL_bool needComputeUniformBind;
+    bool needComputeTextureBind;
+    bool needComputeBufferBind;
+    bool needComputeUniformBind;
 
     id<MTLSamplerState> vertexSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     id<MTLTexture> vertexTextures[MAX_TEXTURE_SAMPLERS_PER_STAGE];
@@ -538,7 +538,7 @@ struct MetalRenderer
     id<MTLDevice> device;
     id<MTLCommandQueue> queue;
 
-    SDL_bool debugMode;
+    bool debugMode;
 
     MetalWindowData **claimedWindows;
     Uint32 claimedWindowCount;
@@ -1346,7 +1346,7 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
     return metalTexture;
 }
 
-static SDL_bool METAL_SupportsSampleCount(
+static bool METAL_SupportsSampleCount(
     SDL_GPURenderer *driverData,
     SDL_GPUTextureFormat format,
     SDL_GPUSampleCount sampleCount)
@@ -1395,7 +1395,7 @@ static SDL_GPUTexture *METAL_CreateTexture(
 static MetalTexture *METAL_INTERNAL_PrepareTextureForWrite(
     MetalRenderer *renderer,
     MetalTextureContainer *container,
-    SDL_bool cycle)
+    bool cycle)
 {
     Uint32 i;
 
@@ -1459,8 +1459,8 @@ static MetalBuffer *METAL_INTERNAL_CreateBuffer(
 static MetalBufferContainer *METAL_INTERNAL_CreateBufferContainer(
     MetalRenderer *renderer,
     Uint32 sizeInBytes,
-    SDL_bool isPrivate,
-    SDL_bool isWriteOnly)
+    bool isPrivate,
+    bool isWriteOnly)
 {
     MetalBufferContainer *container = SDL_malloc(sizeof(MetalBufferContainer));
     MTLResourceOptions resourceOptions;
@@ -1502,8 +1502,8 @@ static SDL_GPUBuffer *METAL_CreateBuffer(
         return (SDL_GPUBuffer *)METAL_INTERNAL_CreateBufferContainer(
             (MetalRenderer *)driverData,
             sizeInBytes,
-            SDL_TRUE,
-            SDL_FALSE);
+            true,
+            false);
     }
 }
 
@@ -1516,7 +1516,7 @@ static SDL_GPUTransferBuffer *METAL_CreateTransferBuffer(
         return (SDL_GPUTransferBuffer *)METAL_INTERNAL_CreateBufferContainer(
             (MetalRenderer *)driverData,
             sizeInBytes,
-            SDL_FALSE,
+            false,
             usage == SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD);
     }
 }
@@ -1547,7 +1547,7 @@ static MetalUniformBuffer *METAL_INTERNAL_CreateUniformBuffer(
 static MetalBuffer *METAL_INTERNAL_PrepareBufferForWrite(
     MetalRenderer *renderer,
     MetalBufferContainer *container,
-    SDL_bool cycle)
+    bool cycle)
 {
     MTLResourceOptions resourceOptions;
     Uint32 i;
@@ -1599,7 +1599,7 @@ static MetalBuffer *METAL_INTERNAL_PrepareBufferForWrite(
 static void *METAL_MapTransferBuffer(
     SDL_GPURenderer *driverData,
     SDL_GPUTransferBuffer *transferBuffer,
-    SDL_bool cycle)
+    bool cycle)
 {
     @autoreleasepool {
         MetalRenderer *renderer = (MetalRenderer *)driverData;
@@ -1640,7 +1640,7 @@ static void METAL_UploadToTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUTextureTransferInfo *source,
     SDL_GPUTextureRegion *destination,
-    SDL_bool cycle)
+    bool cycle)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -1670,7 +1670,7 @@ static void METAL_UploadToBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUTransferBufferLocation *source,
     SDL_GPUBufferRegion *destination,
-    SDL_bool cycle)
+    bool cycle)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -1702,7 +1702,7 @@ static void METAL_CopyTextureToTexture(
     Uint32 w,
     Uint32 h,
     Uint32 d,
-    SDL_bool cycle)
+    bool cycle)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -1737,7 +1737,7 @@ static void METAL_CopyBufferToBuffer(
     SDL_GPUBufferLocation *source,
     SDL_GPUBufferLocation *destination,
     Uint32 size,
-    SDL_bool cycle)
+    bool cycle)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -1781,7 +1781,7 @@ static void METAL_DownloadFromTexture(
         MetalBuffer *dstBuffer = METAL_INTERNAL_PrepareBufferForWrite(
             renderer,
             bufferContainer,
-            SDL_FALSE);
+            false);
 
         MTLOrigin regionOrigin = MTLOriginMake(
             source->x,
@@ -1831,7 +1831,7 @@ static void METAL_DownloadFromBuffer(
         &sourceLocation,
         (SDL_GPUBufferLocation *)destination,
         source->size,
-        SDL_FALSE);
+        false);
 }
 
 static void METAL_EndCopyPass(
@@ -1994,17 +1994,17 @@ static SDL_GPUCommandBuffer *METAL_AcquireCommandBuffer(
         }
 
         // FIXME: Do we actually need to set this?
-        commandBuffer->needVertexSamplerBind = SDL_TRUE;
-        commandBuffer->needVertexStorageTextureBind = SDL_TRUE;
-        commandBuffer->needVertexStorageBufferBind = SDL_TRUE;
-        commandBuffer->needVertexUniformBind = SDL_TRUE;
-        commandBuffer->needFragmentSamplerBind = SDL_TRUE;
-        commandBuffer->needFragmentStorageTextureBind = SDL_TRUE;
-        commandBuffer->needFragmentStorageBufferBind = SDL_TRUE;
-        commandBuffer->needFragmentUniformBind = SDL_TRUE;
-        commandBuffer->needComputeBufferBind = SDL_TRUE;
-        commandBuffer->needComputeTextureBind = SDL_TRUE;
-        commandBuffer->needComputeUniformBind = SDL_TRUE;
+        commandBuffer->needVertexSamplerBind = true;
+        commandBuffer->needVertexStorageTextureBind = true;
+        commandBuffer->needVertexStorageBufferBind = true;
+        commandBuffer->needVertexUniformBind = true;
+        commandBuffer->needFragmentSamplerBind = true;
+        commandBuffer->needFragmentStorageTextureBind = true;
+        commandBuffer->needFragmentStorageBufferBind = true;
+        commandBuffer->needFragmentUniformBind = true;
+        commandBuffer->needComputeBufferBind = true;
+        commandBuffer->needComputeTextureBind = true;
+        commandBuffer->needComputeUniformBind = true;
 
         METAL_INTERNAL_AcquireFence(renderer, commandBuffer);
         commandBuffer->autoReleaseFence = 1;
@@ -2240,8 +2240,8 @@ static void METAL_BindGraphicsPipeline(
             }
         }
 
-        metalCommandBuffer->needVertexUniformBind = SDL_TRUE;
-        metalCommandBuffer->needFragmentUniformBind = SDL_TRUE;
+        metalCommandBuffer->needVertexUniformBind = true;
+        metalCommandBuffer->needFragmentUniformBind = true;
     }
 }
 
@@ -2345,7 +2345,7 @@ static void METAL_BindVertexSamplers(
             textureContainer->activeTexture->handle;
     }
 
-    metalCommandBuffer->needVertexSamplerBind = SDL_TRUE;
+    metalCommandBuffer->needVertexSamplerBind = true;
 }
 
 static void METAL_BindVertexStorageTextures(
@@ -2368,7 +2368,7 @@ static void METAL_BindVertexStorageTextures(
             textureContainer->activeTexture->handle;
     }
 
-    metalCommandBuffer->needVertexStorageTextureBind = SDL_TRUE;
+    metalCommandBuffer->needVertexStorageTextureBind = true;
 }
 
 static void METAL_BindVertexStorageBuffers(
@@ -2391,7 +2391,7 @@ static void METAL_BindVertexStorageBuffers(
             bufferContainer->activeBuffer->handle;
     }
 
-    metalCommandBuffer->needVertexStorageBufferBind = SDL_TRUE;
+    metalCommandBuffer->needVertexStorageBufferBind = true;
 }
 
 static void METAL_BindFragmentSamplers(
@@ -2417,7 +2417,7 @@ static void METAL_BindFragmentSamplers(
             textureContainer->activeTexture->handle;
     }
 
-    metalCommandBuffer->needFragmentSamplerBind = SDL_TRUE;
+    metalCommandBuffer->needFragmentSamplerBind = true;
 }
 
 static void METAL_BindFragmentStorageTextures(
@@ -2440,7 +2440,7 @@ static void METAL_BindFragmentStorageTextures(
             textureContainer->activeTexture->handle;
     }
 
-    metalCommandBuffer->needFragmentStorageTextureBind = SDL_TRUE;
+    metalCommandBuffer->needFragmentStorageTextureBind = true;
 }
 
 static void METAL_BindFragmentStorageBuffers(
@@ -2463,7 +2463,7 @@ static void METAL_BindFragmentStorageBuffers(
             bufferContainer->activeBuffer->handle;
     }
 
-    metalCommandBuffer->needFragmentStorageBufferBind = SDL_TRUE;
+    metalCommandBuffer->needFragmentStorageBufferBind = true;
 }
 
 // This function assumes that it's called from within an autorelease pool
@@ -2480,7 +2480,7 @@ static void METAL_INTERNAL_BindGraphicsResources(
                                                    withRange:NSMakeRange(0, graphicsPipeline->vertexSamplerCount)];
         [commandBuffer->renderEncoder setVertexTextures:commandBuffer->vertexTextures
                                               withRange:NSMakeRange(0, graphicsPipeline->vertexSamplerCount)];
-        commandBuffer->needVertexSamplerBind = SDL_FALSE;
+        commandBuffer->needVertexSamplerBind = false;
     }
 
     // Vertex Storage Textures
@@ -2489,7 +2489,7 @@ static void METAL_INTERNAL_BindGraphicsResources(
         [commandBuffer->renderEncoder setVertexTextures:commandBuffer->vertexStorageTextures
                                               withRange:NSMakeRange(graphicsPipeline->vertexSamplerCount,
                                                                     graphicsPipeline->vertexStorageTextureCount)];
-        commandBuffer->needVertexStorageTextureBind = SDL_FALSE;
+        commandBuffer->needVertexStorageTextureBind = false;
     }
 
     // Vertex Storage Buffers
@@ -2499,7 +2499,7 @@ static void METAL_INTERNAL_BindGraphicsResources(
                                                offsets:offsets
                                              withRange:NSMakeRange(graphicsPipeline->vertexUniformBufferCount,
                                                                    graphicsPipeline->vertexStorageBufferCount)];
-        commandBuffer->needVertexStorageBufferBind = SDL_FALSE;
+        commandBuffer->needVertexStorageBufferBind = false;
     }
 
     // Vertex Uniform Buffers
@@ -2511,7 +2511,7 @@ static void METAL_INTERNAL_BindGraphicsResources(
                          offset:commandBuffer->vertexUniformBuffers[i]->drawOffset
                         atIndex:i];
         }
-        commandBuffer->needVertexUniformBind = SDL_FALSE;
+        commandBuffer->needVertexUniformBind = false;
     }
 
     // Fragment Samplers+Textures
@@ -2521,7 +2521,7 @@ static void METAL_INTERNAL_BindGraphicsResources(
                                                      withRange:NSMakeRange(0, graphicsPipeline->fragmentSamplerCount)];
         [commandBuffer->renderEncoder setFragmentTextures:commandBuffer->fragmentTextures
                                                 withRange:NSMakeRange(0, graphicsPipeline->fragmentSamplerCount)];
-        commandBuffer->needFragmentSamplerBind = SDL_FALSE;
+        commandBuffer->needFragmentSamplerBind = false;
     }
 
     // Fragment Storage Textures
@@ -2530,7 +2530,7 @@ static void METAL_INTERNAL_BindGraphicsResources(
         [commandBuffer->renderEncoder setFragmentTextures:commandBuffer->fragmentStorageTextures
                                                 withRange:NSMakeRange(graphicsPipeline->fragmentSamplerCount,
                                                                       graphicsPipeline->fragmentStorageTextureCount)];
-        commandBuffer->needFragmentStorageTextureBind = SDL_FALSE;
+        commandBuffer->needFragmentStorageTextureBind = false;
     }
 
     // Fragment Storage Buffers
@@ -2540,7 +2540,7 @@ static void METAL_INTERNAL_BindGraphicsResources(
                                                  offsets:offsets
                                                withRange:NSMakeRange(graphicsPipeline->fragmentUniformBufferCount,
                                                                      graphicsPipeline->fragmentStorageBufferCount)];
-        commandBuffer->needFragmentStorageBufferBind = SDL_FALSE;
+        commandBuffer->needFragmentStorageBufferBind = false;
     }
 
     // Fragment Uniform Buffers
@@ -2551,7 +2551,7 @@ static void METAL_INTERNAL_BindGraphicsResources(
                            offset:commandBuffer->fragmentUniformBuffers[i]->drawOffset
                           atIndex:i];
         }
-        commandBuffer->needFragmentUniformBind = SDL_FALSE;
+        commandBuffer->needFragmentUniformBind = false;
     }
 }
 
@@ -2576,7 +2576,7 @@ static void METAL_INTERNAL_BindComputeResources(
                                                            computePipeline->readOnlyStorageTextureCount,
                                                            computePipeline->writeOnlyStorageTextureCount)];
         }
-        commandBuffer->needComputeTextureBind = SDL_FALSE;
+        commandBuffer->needComputeTextureBind = false;
     }
 
     if (commandBuffer->needComputeBufferBind) {
@@ -2596,7 +2596,7 @@ static void METAL_INTERNAL_BindComputeResources(
                                                               computePipeline->readOnlyStorageBufferCount,
                                                           computePipeline->writeOnlyStorageBufferCount)];
         }
-        commandBuffer->needComputeBufferBind = SDL_FALSE;
+        commandBuffer->needComputeBufferBind = false;
     }
 
     if (commandBuffer->needComputeUniformBind) {
@@ -2607,7 +2607,7 @@ static void METAL_INTERNAL_BindComputeResources(
                   atIndex:i];
         }
 
-        commandBuffer->needComputeUniformBind = SDL_FALSE;
+        commandBuffer->needComputeUniformBind = false;
     }
 }
 
@@ -2808,11 +2808,11 @@ static void METAL_INTERNAL_PushUniformData(
     metalUniformBuffer->writeOffset += alignedDataLength;
 
     if (shaderStage == SDL_GPU_SHADERSTAGE_VERTEX) {
-        metalCommandBuffer->needVertexUniformBind = SDL_TRUE;
+        metalCommandBuffer->needVertexUniformBind = true;
     } else if (shaderStage == SDL_GPU_SHADERSTAGE_FRAGMENT) {
-        metalCommandBuffer->needFragmentUniformBind = SDL_TRUE;
+        metalCommandBuffer->needFragmentUniformBind = true;
     } else if (shaderStage == SDL_GPU_SHADERSTAGE_COMPUTE) {
-        metalCommandBuffer->needComputeUniformBind = SDL_TRUE;
+        metalCommandBuffer->needComputeUniformBind = true;
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Unrecognized shader stage!");
     }
@@ -2858,7 +2858,7 @@ static void METAL_Blit(
     SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filterMode,
-    SDL_bool cycle)
+    bool cycle)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
     MetalRenderer *renderer = (MetalRenderer *)metalCommandBuffer->renderer;
@@ -2917,7 +2917,7 @@ static void METAL_BeginComputePass(
                                                                   slices:NSMakeRange(storageTextureBindings[i].layer, 1)];
 
             metalCommandBuffer->computeWriteOnlyTextures[i] = textureView;
-            metalCommandBuffer->needComputeTextureBind = SDL_TRUE;
+            metalCommandBuffer->needComputeTextureBind = true;
         }
 
         for (Uint32 i = 0; i < storageBufferBindingCount; i += 1) {
@@ -2933,7 +2933,7 @@ static void METAL_BeginComputePass(
                 buffer);
 
             metalCommandBuffer->computeWriteOnlyBuffers[i] = buffer->handle;
-            metalCommandBuffer->needComputeBufferBind = SDL_TRUE;
+            metalCommandBuffer->needComputeBufferBind = true;
         }
     }
 }
@@ -2957,7 +2957,7 @@ static void METAL_BindComputePipeline(
             }
         }
 
-        metalCommandBuffer->needComputeUniformBind = SDL_TRUE;
+        metalCommandBuffer->needComputeUniformBind = true;
     }
 }
 
@@ -2981,7 +2981,7 @@ static void METAL_BindComputeStorageTextures(
             textureContainer->activeTexture->handle;
     }
 
-    metalCommandBuffer->needComputeTextureBind = SDL_TRUE;
+    metalCommandBuffer->needComputeTextureBind = true;
 }
 
 static void METAL_BindComputeStorageBuffers(
@@ -3004,7 +3004,7 @@ static void METAL_BindComputeStorageBuffers(
             bufferContainer->activeBuffer->handle;
     }
 
-    metalCommandBuffer->needComputeBufferBind = SDL_TRUE;
+    metalCommandBuffer->needComputeBufferBind = true;
 }
 
 static void METAL_PushComputeUniformData(
@@ -3254,13 +3254,13 @@ static void METAL_INTERNAL_PerformPendingDestroys(
 
 static void METAL_WaitForFences(
     SDL_GPURenderer *driverData,
-    SDL_bool waitAll,
+    bool waitAll,
     SDL_GPUFence **pFences,
     Uint32 fenceCount)
 {
     @autoreleasepool {
         MetalRenderer *renderer = (MetalRenderer *)driverData;
-        SDL_bool waiting;
+        bool waiting;
 
         if (waitAll) {
             for (Uint32 i = 0; i < fenceCount; i += 1) {
@@ -3284,7 +3284,7 @@ static void METAL_WaitForFences(
     }
 }
 
-static SDL_bool METAL_QueryFence(
+static bool METAL_QueryFence(
     SDL_GPURenderer *driverData,
     SDL_GPUFence *fence)
 {
@@ -3300,19 +3300,19 @@ static MetalWindowData *METAL_INTERNAL_FetchWindowData(SDL_Window *window)
     return (MetalWindowData *)SDL_GetPointerProperty(properties, WINDOW_PROPERTY_DATA, NULL);
 }
 
-static SDL_bool METAL_SupportsSwapchainComposition(
+static bool METAL_SupportsSwapchainComposition(
     SDL_GPURenderer *driverData,
     SDL_Window *window,
     SDL_GPUSwapchainComposition swapchainComposition)
 {
 #ifndef SDL_PLATFORM_MACOS
     if (swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048) {
-        return SDL_FALSE;
+        return false;
     }
 #endif
 
     if (@available(macOS 11.0, *)) {
-        return SDL_TRUE;
+        return true;
     } else {
         return swapchainComposition != SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048;
     }
@@ -3382,7 +3382,7 @@ static Uint8 METAL_INTERNAL_CreateSwapchain(
     return 1;
 }
 
-static SDL_bool METAL_SupportsPresentMode(
+static bool METAL_SupportsPresentMode(
     SDL_GPURenderer *driverData,
     SDL_Window *window,
     SDL_GPUPresentMode presentMode)
@@ -3392,13 +3392,13 @@ static SDL_bool METAL_SupportsPresentMode(
     case SDL_GPU_PRESENTMODE_IMMEDIATE:
 #endif
     case SDL_GPU_PRESENTMODE_VSYNC:
-        return SDL_TRUE;
+        return true;
     default:
-        return SDL_FALSE;
+        return false;
     }
 }
 
-static SDL_bool METAL_ClaimWindow(
+static bool METAL_ClaimWindow(
     SDL_GPURenderer *driverData,
     SDL_Window *window)
 {
@@ -3426,15 +3426,15 @@ static SDL_bool METAL_ClaimWindow(
 
                 SDL_UnlockMutex(renderer->windowLock);
 
-                return SDL_TRUE;
+                return true;
             } else {
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not create swapchain, failed to claim window!");
                 SDL_free(windowData);
-                return SDL_FALSE;
+                return false;
             }
         } else {
             SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Window already claimed!");
-            return SDL_FALSE;
+            return false;
         }
     }
 }
@@ -3528,7 +3528,7 @@ static SDL_GPUTextureFormat METAL_GetSwapchainTextureFormat(
     return windowData->textureContainer.header.info.format;
 }
 
-static SDL_bool METAL_SetSwapchainParameters(
+static bool METAL_SetSwapchainParameters(
     SDL_GPURenderer *driverData,
     SDL_Window *window,
     SDL_GPUSwapchainComposition swapchainComposition,
@@ -3540,17 +3540,17 @@ static SDL_bool METAL_SetSwapchainParameters(
 
         if (windowData == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot set swapchain parameters, window has not been claimed!");
-            return SDL_FALSE;
+            return false;
         }
 
         if (!METAL_SupportsSwapchainComposition(driverData, window, swapchainComposition)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Swapchain composition not supported!");
-            return SDL_FALSE;
+            return false;
         }
 
         if (!METAL_SupportsPresentMode(driverData, window, presentMode)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Present mode not supported!");
-            return SDL_FALSE;
+            return false;
         }
 
         METAL_Wait(driverData);
@@ -3569,7 +3569,7 @@ static SDL_bool METAL_SetSwapchainParameters(
 
         windowData->textureContainer.header.info.format = SwapchainCompositionToFormat[swapchainComposition];
 
-        return SDL_TRUE;
+        return true;
     }
 }
 
@@ -3669,7 +3669,7 @@ static void METAL_Wait(
 
 // Format Info
 
-static SDL_bool METAL_SupportsTextureFormat(
+static bool METAL_SupportsTextureFormat(
     SDL_GPURenderer *driverData,
     SDL_GPUTextureFormat format,
     SDL_GPUTextureType type,
@@ -3681,7 +3681,7 @@ static SDL_bool METAL_SupportsTextureFormat(
         // Only depth textures can be used as... depth textures
         if ((usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT)) {
             if (!IsDepthFormat(format)) {
-                return SDL_FALSE;
+                return false;
             }
         }
 
@@ -3705,11 +3705,11 @@ static SDL_bool METAL_SupportsTextureFormat(
                     [renderer->device supportsBCTextureCompression] &&
                     !(usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT));
             } else {
-                return SDL_FALSE;
+                return false;
             }
 #else
             // FIXME: iOS 16.4+ allows these formats!
-            return SDL_FALSE;
+            return false;
 #endif
 
         // Requires D24S8 support
@@ -3718,18 +3718,18 @@ static SDL_bool METAL_SupportsTextureFormat(
 #ifdef SDL_PLATFORM_MACOS
             return [renderer->device isDepth24Stencil8PixelFormatSupported];
 #else
-            return SDL_FALSE;
+            return false;
 #endif
 
         default:
-            return SDL_TRUE;
+            return true;
         }
     }
 }
 
 // Device Creation
 
-static SDL_bool METAL_PrepareDriver(SDL_VideoDevice *_this)
+static bool METAL_PrepareDriver(SDL_VideoDevice *_this)
 {
     // FIXME: Add a macOS / iOS version check! Maybe support >= 10.14?
     return (_this->Metal_CreateView != NULL);
@@ -3872,7 +3872,7 @@ static void METAL_INTERNAL_DestroyBlitResources(
     SDL_free(renderer->blitPipelines);
 }
 
-static SDL_GPUDevice *METAL_CreateDevice(SDL_bool debugMode, SDL_bool preferLowPower, SDL_PropertiesID props)
+static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
 {
     @autoreleasepool {
         MetalRenderer *renderer;

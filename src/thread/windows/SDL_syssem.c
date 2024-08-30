@@ -252,7 +252,7 @@ static bool SDL_WaitSemaphoreTimeoutNS_kern(SDL_Semaphore *_sem, Sint64 timeoutN
     DWORD dwMilliseconds;
 
     if (!sem) {
-        return SDL_TRUE;
+        return true;
     }
 
     if (timeoutNS < 0) {

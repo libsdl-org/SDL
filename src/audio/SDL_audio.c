@@ -1897,7 +1897,7 @@ SDL_bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams
             SDL_AudioStream *stream = streams[i];
             if (!stream) {
                 SDL_SetError("Stream #%d is NULL", i);
-                result = false;  // to pacify the static analyzer, that doesn't realize SDL_SetError() always returns SDL_FALSE.
+                result = false;  // to pacify the static analyzer, that doesn't realize SDL_SetError() always returns false.
             } else {
                 SDL_LockMutex(stream->lock);
                 SDL_assert((stream->bound_device == NULL) == ((stream->prev_binding == NULL) || (stream->next_binding == NULL)));
