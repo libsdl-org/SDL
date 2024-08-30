@@ -20,6 +20,7 @@
 */
 #include "SDL_config.h"
 #include "SDL_assert.h"
+#include "SDL_atomic.h"
 #include "SDL_stdinc.h"
 #include "SDL_log.h"
 #include "SDL_test_crc32.h"
@@ -53,6 +54,16 @@ static SDL_realloc_func SDL_realloc_orig = NULL;
 static SDL_free_func SDL_free_orig = NULL;
 static int s_previous_allocations = 0;
 static SDL_tracked_allocation *s_tracked_allocations[256];
+static SDL_atomic_t s_lock;
+
+#define LOCK_ALLOCATOR()                               \
+    do {                                               \
+        if (SDL_AtomicCAS(&s_lock, 0, 1)) {            \
+            break;                                     \
+        }                                              \
+        SDL_CPUPauseInstruction();                     \
+    } while (SDL_TRUE)
+#define UNLOCK_ALLOCATOR() do { SDL_AtomicSet(&s_lock, 0); } while (0)
 
 static unsigned int get_allocation_bucket(void *mem)
 {
@@ -66,12 +77,17 @@ static unsigned int get_allocation_bucket(void *mem)
 static SDL_bool SDL_IsAllocationTracked(void *mem)
 {
     SDL_tracked_allocation *entry;
-    int index = get_allocation_bucket(mem);
+    int index;
+
+    LOCK_ALLOCATOR();
+    index = get_allocation_bucket(mem);
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
+            UNLOCK_ALLOCATOR();
             return SDL_TRUE;
         }
     }
+    UNLOCK_ALLOCATOR();
     return SDL_FALSE;
 }
 
@@ -83,8 +99,10 @@ static void SDL_TrackAllocation(void *mem, size_t size)
     if (SDL_IsAllocationTracked(mem)) {
         return;
     }
+    LOCK_ALLOCATOR();
     entry = (SDL_tracked_allocation *)SDL_malloc_orig(sizeof(*entry));
     if (!entry) {
+        UNLOCK_ALLOCATOR();
         return;
     }
     entry->mem = mem;
@@ -123,6 +141,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
 
     entry->next = s_tracked_allocations[index];
     s_tracked_allocations[index] = entry;
+    UNLOCK_ALLOCATOR();
 }
 
 static void SDL_UntrackAllocation(void *mem)
@@ -130,6 +149,7 @@ static void SDL_UntrackAllocation(void *mem)
     SDL_tracked_allocation *entry, *prev;
     int index = get_allocation_bucket(mem);
 
+    LOCK_ALLOCATOR();
     prev = NULL;
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
@@ -139,10 +159,12 @@ static void SDL_UntrackAllocation(void *mem)
                 s_tracked_allocations[index] = entry->next;
             }
             SDL_free_orig(entry);
+            UNLOCK_ALLOCATOR();
             return;
         }
         prev = entry;
     }
+    UNLOCK_ALLOCATOR();
 }
 
 static void *SDLCALL SDLTest_TrackedMalloc(size_t size)
