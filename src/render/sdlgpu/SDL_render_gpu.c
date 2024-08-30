@@ -1170,20 +1170,40 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 {
     GPU_RenderData *data = NULL;
 
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        // TODO
+        return SDL_SetError("Unsupported output colorspace");
+    }
+
     data = (GPU_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         return false;
     }
 
+    renderer->SupportsBlendMode = GPU_SupportsBlendMode;
+    renderer->CreateTexture = GPU_CreateTexture;
+    renderer->UpdateTexture = GPU_UpdateTexture;
+    renderer->LockTexture = GPU_LockTexture;
+    renderer->UnlockTexture = GPU_UnlockTexture;
+    renderer->SetTextureScaleMode = GPU_SetTextureScaleMode;
+    renderer->SetRenderTarget = GPU_SetRenderTarget;
+    renderer->QueueSetViewport = GPU_QueueNoOp;
+    renderer->QueueSetDrawColor = GPU_QueueNoOp;
+    renderer->QueueDrawPoints = GPU_QueueDrawPoints;
+    renderer->QueueDrawLines = GPU_QueueDrawPoints; // lines and points queue vertices the same way.
+    renderer->QueueGeometry = GPU_QueueGeometry;
+    renderer->InvalidateCachedState = GPU_InvalidateCachedState;
+    renderer->RunCommandQueue = GPU_RunCommandQueue;
+    renderer->RenderReadPixels = GPU_RenderReadPixels;
+    renderer->RenderPresent = GPU_RenderPresent;
+    renderer->DestroyTexture = GPU_DestroyTexture;
+    renderer->DestroyRenderer = GPU_DestroyRenderer;
+    renderer->SetVSync = GPU_SetVSync;
     renderer->internal = data;
-
-    SDL_SetupRendererColorspace(renderer, create_props);
-
-    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        // TODO
-        SDL_SetError("Unsupported output colorspace");
-        return false;
-    }
+    renderer->window = window;
+    renderer->name = GPU_RenderDriver.name;
 
     bool debug = SDL_GetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, false);
     bool lowpower = SDL_GetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, false);
@@ -1218,29 +1238,6 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     if (!InitSamplers(data)) {
         return false;
     }
-
-    renderer->SupportsBlendMode = GPU_SupportsBlendMode;
-    renderer->CreateTexture = GPU_CreateTexture;
-    renderer->UpdateTexture = GPU_UpdateTexture;
-    renderer->LockTexture = GPU_LockTexture;
-    renderer->UnlockTexture = GPU_UnlockTexture;
-    renderer->SetTextureScaleMode = GPU_SetTextureScaleMode;
-    renderer->SetRenderTarget = GPU_SetRenderTarget;
-    renderer->QueueSetViewport = GPU_QueueNoOp;
-    renderer->QueueSetDrawColor = GPU_QueueNoOp;
-    renderer->QueueDrawPoints = GPU_QueueDrawPoints;
-    renderer->QueueDrawLines = GPU_QueueDrawPoints; // lines and points queue vertices the same way.
-    renderer->QueueGeometry = GPU_QueueGeometry;
-    renderer->InvalidateCachedState = GPU_InvalidateCachedState;
-    renderer->RunCommandQueue = GPU_RunCommandQueue;
-    renderer->RenderReadPixels = GPU_RenderReadPixels;
-    renderer->RenderPresent = GPU_RenderPresent;
-    renderer->DestroyTexture = GPU_DestroyTexture;
-    renderer->DestroyRenderer = GPU_DestroyRenderer;
-    renderer->SetVSync = GPU_SetVSync;
-    GPU_InvalidateCachedState(renderer);
-    renderer->window = window;
-    renderer->name = GPU_RenderDriver.name;
 
     if (!SDL_ClaimGPUWindow(data->device, window)) {
         return false;
