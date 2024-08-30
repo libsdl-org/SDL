@@ -164,7 +164,7 @@ class JobDetails:
     no_cmake: bool
     build_tests: bool = True
     container: str = ""
-    cmake_build_type: str = "Release"
+    cmake_build_type: str = "RelWithDebInfo"
     shell: str = "sh"
     sudo: str = "sudo"
     cmake_config_emulator: str = ""
@@ -432,6 +432,9 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                 "libibus-1.0-dev",
                 "libudev-dev",
                 "fcitx-libs-dev",
+            ))
+            job.apt_packages.extend((
+                "libunwind-dev",  # For SDL_test memory tracking
             ))
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
