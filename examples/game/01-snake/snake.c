@@ -53,8 +53,6 @@ typedef struct
     unsigned occupied_cells;
 } SnakeContext;
 
-typedef Sint32 (SDLCALL *RandFunc)(Sint32 n);
-
 typedef struct
 {
     SDL_Window *window;
@@ -94,11 +92,11 @@ static int are_cells_full_(SnakeContext *ctx)
     return ctx->occupied_cells == SNAKE_GAME_WIDTH * SNAKE_GAME_HEIGHT;
 }
 
-static void new_food_pos_(SnakeContext *ctx, RandFunc rand)
+static void new_food_pos_(SnakeContext *ctx)
 {
     while (SDL_TRUE) {
-        const char x = (char) rand(SNAKE_GAME_WIDTH);
-        const char y = (char) rand(SNAKE_GAME_HEIGHT);
+        const char x = (char) SDL_rand(SNAKE_GAME_WIDTH);
+        const char y = (char) SDL_rand(SNAKE_GAME_HEIGHT);
         if (snake_cell_at(ctx, x, y) == SNAKE_CELL_NOTHING) {
             put_cell_at_(ctx, x, y, SNAKE_CELL_FOOD);
             break;
@@ -106,7 +104,7 @@ static void new_food_pos_(SnakeContext *ctx, RandFunc rand)
     }
 }
 
-void snake_initialize(SnakeContext *ctx, RandFunc rand)
+void snake_initialize(SnakeContext *ctx)
 {
     int i;
     SDL_zeroa(ctx->cells);
@@ -117,7 +115,7 @@ void snake_initialize(SnakeContext *ctx, RandFunc rand)
     --ctx->occupied_cells;
     put_cell_at_(ctx, ctx->tail_xpos, ctx->tail_ypos, SNAKE_CELL_SRIGHT);
     for (i = 0; i < 4; i++) {
-        new_food_pos_(ctx, rand);
+        new_food_pos_(ctx);
         ++ctx->occupied_cells;
     }
 }
@@ -142,7 +140,7 @@ static void wrap_around_(char *val, char max)
     }
 }
 
-void snake_step(SnakeContext *ctx, RandFunc rand)
+void snake_step(SnakeContext *ctx)
 {
     const SnakeCell dir_as_cell = (SnakeCell)(ctx->next_dir + 1);
     SnakeCell ct;
@@ -194,17 +192,17 @@ void snake_step(SnakeContext *ctx, RandFunc rand)
     /* Collisions */
     ct = snake_cell_at(ctx, ctx->head_xpos, ctx->head_ypos);
     if (ct != SNAKE_CELL_NOTHING && ct != SNAKE_CELL_FOOD) {
-        snake_initialize(ctx, rand);
+        snake_initialize(ctx);
         return;
     }
     put_cell_at_(ctx, prev_xpos, prev_ypos, dir_as_cell);
     put_cell_at_(ctx, ctx->head_xpos, ctx->head_ypos, dir_as_cell);
     if (ct == SNAKE_CELL_FOOD) {
         if (are_cells_full_(ctx)) {
-            snake_initialize(ctx, rand);
+            snake_initialize(ctx);
             return;
         }
-        new_food_pos_(ctx, rand);
+        new_food_pos_(ctx);
         ++ctx->inhibit_tail_step;
         ++ctx->occupied_cells;
     }
@@ -229,7 +227,7 @@ static int handle_key_event_(SnakeContext *ctx, SDL_Scancode key_code)
         return SDL_APP_SUCCESS;
     /* Restart the game as if the program was launched. */
     case SDL_SCANCODE_R:
-        snake_initialize(ctx, SDL_rand);
+        snake_initialize(ctx);
         break;
     /* Decide new direction of the snake. */
     case SDL_SCANCODE_RIGHT:
@@ -297,7 +295,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    snake_initialize(&as->snake_ctx, SDL_rand);
+    snake_initialize(&as->snake_ctx);
 
     as->step_timer = SDL_AddTimer(STEP_RATE_IN_MILLISECONDS, sdl_timer_callback_, NULL);
     if (as->step_timer == 0) {
@@ -314,7 +312,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
     case SDL_EVENT_QUIT:
         return SDL_APP_SUCCESS;
     case SDL_EVENT_USER:
-        snake_step(ctx, SDL_rand);
+        snake_step(ctx);
         break;
     case SDL_EVENT_KEY_DOWN:
         return handle_key_event_(ctx, event->key.scancode);
