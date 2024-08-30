@@ -74,6 +74,7 @@ static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
     MTLPixelFormatBGR5A1Unorm,  // B5G5R5A1_UNORM
     MTLPixelFormatABGR4Unorm,   // B4G4R4A4_UNORM
     MTLPixelFormatRGB10A2Unorm, // A2R10G10B10_UNORM
+    MTLPixelFormatRG8Unorm,     // R8G8_UNORM
     MTLPixelFormatRG16Unorm,    // R16G16_UNORM
     MTLPixelFormatRGBA16Unorm,  // R16G16B16A16_UNORM
     MTLPixelFormatR8Unorm,      // R8_UNORM
