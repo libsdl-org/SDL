@@ -887,8 +887,8 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     SDL_DownloadFromGPUTexture(pass, &src, &dst);
     SDL_EndGPUCopyPass(pass);
 
-    SDL_GPUFence *fence = SDL_SubmitGPUAndAcquireFence(data->state.command_buffer);
-    SDL_WaitGPUForFences(data->device, true, &fence, 1);
+    SDL_GPUFence *fence = SDL_SubmitGPUCommandBufferAndAcquireGPUFence(data->state.command_buffer);
+    SDL_WaitForGPUFences(data->device, true, &fence, 1);
     SDL_ReleaseGPUFence(data->device, fence);
     data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
 
@@ -960,7 +960,7 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
         dst.w = swapchain_w;
         dst.h = swapchain_h;
 
-        SDL_BlitGPU(data->state.command_buffer, &src, &dst, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, true);
+        SDL_BlitGPUTexture(data->state.command_buffer, &src, &dst, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, true);
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
         CreateBackbuffer(data, swapchain_w, swapchain_h, swapchain_fmt);
     } else {
@@ -986,13 +986,13 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
 submit:
 #if 1
     if (data->present_fence) {
-        SDL_WaitGPUForFences(data->device, true, &data->present_fence, 1);
+        SDL_WaitForGPUFences(data->device, true, &data->present_fence, 1);
         SDL_ReleaseGPUFence(data->device, data->present_fence);
     }
 
-    data->present_fence = SDL_SubmitGPUAndAcquireFence(data->state.command_buffer);
+    data->present_fence = SDL_SubmitGPUCommandBufferAndAcquireGPUFence(data->state.command_buffer);
 #else
-    SDL_SubmitGPU(data->state.command_buffer);
+    SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
 #endif
 
     data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
@@ -1028,12 +1028,12 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
     }
 
     if (data->present_fence) {
-        SDL_WaitGPUForFences(data->device, true, &data->present_fence, 1);
+        SDL_WaitForGPUFences(data->device, true, &data->present_fence, 1);
         SDL_ReleaseGPUFence(data->device, data->present_fence);
     }
 
     if (data->state.command_buffer) {
-        SDL_SubmitGPU(data->state.command_buffer);
+        SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
         data->state.command_buffer = NULL;
     }
 
@@ -1046,7 +1046,7 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
     }
 
     if (renderer->window) {
-        SDL_UnclaimGPUWindow(data->device, renderer->window);
+        SDL_UnclaimWindowForGPUDevice(data->device, renderer->window);
     }
 
     ReleaseVertexBuffer(data);
@@ -1239,7 +1239,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         return false;
     }
 
-    if (!SDL_ClaimGPUWindow(data->device, window)) {
+    if (!SDL_ClaimWindowForGPUDevice(data->device, window)) {
         return false;
     }
 

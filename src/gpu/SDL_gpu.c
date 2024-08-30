@@ -565,7 +565,7 @@ SDL_bool SDL_SupportsGPUTextureFormat(
         usage);
 }
 
-SDL_bool SDL_SupportsGPUSampleCount(
+SDL_bool SDL_SupportsGPUTextureSampleCount(
     SDL_GPUDevice *device,
     SDL_GPUTextureFormat format,
     SDL_GPUSampleCount sampleCount)
@@ -2039,7 +2039,7 @@ void SDL_EndGPUCopyPass(
     ((CommandBufferCommonHeader *)COPYPASS_COMMAND_BUFFER)->copyPass.inProgress = false;
 }
 
-void SDL_GenerateGPUMipmaps(
+void SDL_GenerateMipmapsForGPUTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUTexture *texture)
 {
@@ -2073,7 +2073,7 @@ void SDL_GenerateGPUMipmaps(
         texture);
 }
 
-void SDL_BlitGPU(
+void SDL_BlitGPUTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBlitRegion *source,
     SDL_GPUBlitRegion *destination,
@@ -2182,7 +2182,7 @@ SDL_bool SDL_SupportsGPUPresentMode(
         presentMode);
 }
 
-SDL_bool SDL_ClaimGPUWindow(
+SDL_bool SDL_ClaimWindowForGPUDevice(
     SDL_GPUDevice *device,
     SDL_Window *window)
 {
@@ -2197,7 +2197,7 @@ SDL_bool SDL_ClaimGPUWindow(
         window);
 }
 
-void SDL_UnclaimGPUWindow(
+void SDL_UnclaimWindowForGPUDevice(
     SDL_GPUDevice *device,
     SDL_Window *window)
 {
@@ -2286,7 +2286,7 @@ SDL_GPUTexture *SDL_AcquireGPUSwapchainTexture(
         pHeight);
 }
 
-void SDL_SubmitGPU(
+void SDL_SubmitGPUCommandBuffer(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
@@ -2313,7 +2313,7 @@ void SDL_SubmitGPU(
         commandBuffer);
 }
 
-SDL_GPUFence *SDL_SubmitGPUAndAcquireFence(
+SDL_GPUFence *SDL_SubmitGPUCommandBufferAndAcquireGPUFence(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
@@ -2340,7 +2340,7 @@ SDL_GPUFence *SDL_SubmitGPUAndAcquireFence(
         commandBuffer);
 }
 
-void SDL_WaitGPU(
+void SDL_WaitForGPUIdle(
     SDL_GPUDevice *device)
 {
     CHECK_DEVICE_MAGIC(device, );
@@ -2349,7 +2349,7 @@ void SDL_WaitGPU(
         device->driverData);
 }
 
-void SDL_WaitGPUForFences(
+void SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     SDL_bool waitAll,
     SDL_GPUFence **pFences,

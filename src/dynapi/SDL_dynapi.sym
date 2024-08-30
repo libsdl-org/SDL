@@ -40,7 +40,7 @@ SDL3_0.0.0 {
     SDL_BindGPUVertexSamplers;
     SDL_BindGPUVertexStorageBuffers;
     SDL_BindGPUVertexStorageTextures;
-    SDL_BlitGPU;
+    SDL_BlitGPUTexture;
     SDL_BlitSurface9Grid;
     SDL_BlitSurface;
     SDL_BlitSurfaceScaled;
@@ -50,7 +50,7 @@ SDL3_0.0.0 {
     SDL_BlitSurfaceUncheckedScaled;
     SDL_BroadcastCondition;
     SDL_CaptureMouse;
-    SDL_ClaimGPUWindow;
+    SDL_ClaimWindowForGPUDevice;
     SDL_CleanupTLS;
     SDL_ClearAudioStream;
     SDL_ClearClipboardData;
@@ -197,7 +197,7 @@ SDL3_0.0.0 {
     SDL_GamepadHasButton;
     SDL_GamepadHasSensor;
     SDL_GamepadSensorEnabled;
-    SDL_GenerateGPUMipmaps;
+    SDL_GenerateMipmapsForGPUTexture;
     SDL_GetAndroidActivity;
     SDL_GetAndroidCachePath;
     SDL_GetAndroidExternalStoragePath;
@@ -886,10 +886,10 @@ SDL3_0.0.0 {
     SDL_StopTextInput;
     SDL_StorageReady;
     SDL_StringToGUID;
-    SDL_SubmitGPU;
-    SDL_SubmitGPUAndAcquireFence;
+    SDL_SubmitGPUCommandBuffer;
+    SDL_SubmitGPUCommandBufferAndAcquireGPUFence;
     SDL_SupportsGPUPresentMode;
-    SDL_SupportsGPUSampleCount;
+    SDL_SupportsGPUTextureSampleCount;
     SDL_SupportsGPUSwapchainComposition;
     SDL_SupportsGPUTextureFormat;
     SDL_SurfaceHasAlternateImages;
@@ -909,7 +909,7 @@ SDL3_0.0.0 {
     SDL_UCS4ToUTF8;
     SDL_UnbindAudioStream;
     SDL_UnbindAudioStreams;
-    SDL_UnclaimGPUWindow;
+    SDL_UnclaimWindowForGPUDevice;
     SDL_UnloadObject;
     SDL_UnlockAudioStream;
     SDL_UnlockJoysticks;
@@ -943,8 +943,8 @@ SDL3_0.0.0 {
     SDL_WaitConditionTimeout;
     SDL_WaitEvent;
     SDL_WaitEventTimeout;
-    SDL_WaitGPU;
-    SDL_WaitGPUForFences;
+    SDL_WaitForGPUIdle;
+    SDL_WaitForGPUFences;
     SDL_WaitSemaphore;
     SDL_WaitSemaphoreTimeout;
     SDL_WaitThread;

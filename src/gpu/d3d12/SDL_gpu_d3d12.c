@@ -5724,7 +5724,7 @@ static void D3D12_GenerateMipmaps(
             dstRegion.w = container->header.info.width >> levelIndex;
             dstRegion.h = container->header.info.height >> levelIndex;
 
-            SDL_BlitGPU(
+            SDL_BlitGPUTexture(
                 commandBuffer,
                 &srcRegion,
                 &dstRegion,
