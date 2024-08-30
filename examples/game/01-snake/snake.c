@@ -270,7 +270,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                 continue;
             set_rect_xy_(&r, i, j);
             if (ct == SNAKE_CELL_FOOD)
-                SDL_SetRenderDrawColor(as->renderer, 0, 0, 128, 255);
+                SDL_SetRenderDrawColor(as->renderer, 80, 80, 255, 255);
             else /* body */
                 SDL_SetRenderDrawColor(as->renderer, 0, 128, 0, 255);
             SDL_RenderFillRect(as->renderer, &r);
