@@ -286,7 +286,7 @@ static SDL_bool SDLCALL windows_file_close(void *userdata)
     }
     SDL_free(iodata->data);
     SDL_free(iodata);
-    return SDL_TRUE;
+    return true;
 }
 #endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 
@@ -514,7 +514,7 @@ static size_t SDLCALL mem_write(void *userdata, const void *ptr, size_t size, SD
 static SDL_bool SDLCALL mem_close(void *userdata)
 {
     SDL_free(userdata);
-    return SDL_TRUE;
+    return true;
 }
 
 // Functions to create SDL_IOStream structures from various data sources

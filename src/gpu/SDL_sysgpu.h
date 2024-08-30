@@ -29,18 +29,18 @@
 typedef struct Pass
 {
     SDL_GPUCommandBuffer *commandBuffer;
-    SDL_bool inProgress;
+    bool inProgress;
 } Pass;
 
 typedef struct CommandBufferCommonHeader
 {
     SDL_GPUDevice *device;
     Pass renderPass;
-    SDL_bool graphicsPipelineBound;
+    bool graphicsPipelineBound;
     Pass computePass;
-    SDL_bool computePipelineBound;
+    bool computePipelineBound;
     Pass copyPass;
-    SDL_bool submitted;
+    bool submitted;
 } CommandBufferCommonHeader;
 
 typedef struct TextureCommonHeader
@@ -117,7 +117,7 @@ static inline Sint32 Texture_GetBlockSize(
     }
 }
 
-static inline SDL_bool IsDepthFormat(
+static inline bool IsDepthFormat(
     SDL_GPUTextureFormat format)
 {
     switch (format) {
@@ -126,27 +126,27 @@ static inline SDL_bool IsDepthFormat(
     case SDL_GPU_TEXTUREFORMAT_D32_FLOAT:
     case SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT:
     case SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT:
-        return SDL_TRUE;
+        return true;
 
     default:
-        return SDL_FALSE;
+        return false;
     }
 }
 
-static inline SDL_bool IsStencilFormat(
+static inline bool IsStencilFormat(
     SDL_GPUTextureFormat format)
 {
     switch (format) {
     case SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT:
     case SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT:
-        return SDL_TRUE;
+        return true;
 
     default:
-        return SDL_FALSE;
+        return false;
     }
 }
 
-static inline SDL_bool IsIntegerFormat(
+static inline bool IsIntegerFormat(
     SDL_GPUTextureFormat format)
 {
     switch (format) {
@@ -156,10 +156,10 @@ static inline SDL_bool IsIntegerFormat(
     case SDL_GPU_TEXTUREFORMAT_R16_UINT:
     case SDL_GPU_TEXTUREFORMAT_R16G16_UINT:
     case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
-        return SDL_TRUE;
+        return true;
 
     default:
-        return SDL_FALSE;
+        return false;
     }
 }
 
@@ -252,7 +252,7 @@ void SDL_GPU_BlitCommon(
     SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filterMode,
-    SDL_bool cycle,
+    bool cycle,
     SDL_GPUSampler *blitLinearSampler,
     SDL_GPUSampler *blitNearestSampler,
     SDL_GPUShader *blitVertexShader,
@@ -524,7 +524,7 @@ struct SDL_GPUDevice
     void *(*MapTransferBuffer)(
         SDL_GPURenderer *device,
         SDL_GPUTransferBuffer *transferBuffer,
-        SDL_bool cycle);
+        bool cycle);
 
     void (*UnmapTransferBuffer)(
         SDL_GPURenderer *device,
@@ -539,13 +539,13 @@ struct SDL_GPUDevice
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUTextureTransferInfo *source,
         SDL_GPUTextureRegion *destination,
-        SDL_bool cycle);
+        bool cycle);
 
     void (*UploadToBuffer)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUTransferBufferLocation *source,
         SDL_GPUBufferRegion *destination,
-        SDL_bool cycle);
+        bool cycle);
 
     void (*CopyTextureToTexture)(
         SDL_GPUCommandBuffer *commandBuffer,
@@ -554,14 +554,14 @@ struct SDL_GPUDevice
         Uint32 w,
         Uint32 h,
         Uint32 d,
-        SDL_bool cycle);
+        bool cycle);
 
     void (*CopyBufferToBuffer)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUBufferLocation *source,
         SDL_GPUBufferLocation *destination,
         Uint32 size,
-        SDL_bool cycle);
+        bool cycle);
 
     void (*GenerateMipmaps)(
         SDL_GPUCommandBuffer *commandBuffer,
@@ -586,21 +586,21 @@ struct SDL_GPUDevice
         SDL_GPUBlitRegion *destination,
         SDL_FlipMode flipMode,
         SDL_GPUFilter filterMode,
-        SDL_bool cycle);
+        bool cycle);
 
     // Submission/Presentation
 
-    SDL_bool (*SupportsSwapchainComposition)(
+    bool (*SupportsSwapchainComposition)(
         SDL_GPURenderer *driverData,
         SDL_Window *window,
         SDL_GPUSwapchainComposition swapchainComposition);
 
-    SDL_bool (*SupportsPresentMode)(
+    bool (*SupportsPresentMode)(
         SDL_GPURenderer *driverData,
         SDL_Window *window,
         SDL_GPUPresentMode presentMode);
 
-    SDL_bool (*ClaimWindow)(
+    bool (*ClaimWindow)(
         SDL_GPURenderer *driverData,
         SDL_Window *window);
 
@@ -608,7 +608,7 @@ struct SDL_GPUDevice
         SDL_GPURenderer *driverData,
         SDL_Window *window);
 
-    SDL_bool (*SetSwapchainParameters)(
+    bool (*SetSwapchainParameters)(
         SDL_GPURenderer *driverData,
         SDL_Window *window,
         SDL_GPUSwapchainComposition swapchainComposition,
@@ -638,11 +638,11 @@ struct SDL_GPUDevice
 
     void (*WaitForFences)(
         SDL_GPURenderer *driverData,
-        SDL_bool waitAll,
+        bool waitAll,
         SDL_GPUFence **pFences,
         Uint32 fenceCount);
 
-    SDL_bool (*QueryFence)(
+    bool (*QueryFence)(
         SDL_GPURenderer *driverData,
         SDL_GPUFence *fence);
 
@@ -652,13 +652,13 @@ struct SDL_GPUDevice
 
     // Feature Queries
 
-    SDL_bool (*SupportsTextureFormat)(
+    bool (*SupportsTextureFormat)(
         SDL_GPURenderer *driverData,
         SDL_GPUTextureFormat format,
         SDL_GPUTextureType type,
         SDL_GPUTextureUsageFlags usage);
 
-    SDL_bool (*SupportsSampleCount)(
+    bool (*SupportsSampleCount)(
         SDL_GPURenderer *driverData,
         SDL_GPUTextureFormat format,
         SDL_GPUSampleCount desiredSampleCount);
@@ -670,7 +670,7 @@ struct SDL_GPUDevice
     SDL_GPUDriver backend;
 
     // Store this for SDL_gpu.c's debug layer
-    SDL_bool debugMode;
+    bool debugMode;
     SDL_GPUShaderFormat shaderFormats;
 };
 
@@ -758,8 +758,8 @@ typedef struct SDL_GPUBootstrap
     const char *Name;
     const SDL_GPUDriver backendflag;
     const SDL_GPUShaderFormat shaderFormats;
-    SDL_bool (*PrepareDriver)(SDL_VideoDevice *_this);
-    SDL_GPUDevice *(*CreateDevice)(SDL_bool debugMode, SDL_bool preferLowPower, SDL_PropertiesID props);
+    bool (*PrepareDriver)(SDL_VideoDevice *_this);
+    SDL_GPUDevice *(*CreateDevice)(bool debugMode, bool preferLowPower, SDL_PropertiesID props);
 } SDL_GPUBootstrap;
 
 #ifdef __cplusplus

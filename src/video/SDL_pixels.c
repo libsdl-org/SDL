@@ -578,7 +578,7 @@ SDL_PixelFormat SDL_GetPixelFormatForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, 
 static SDL_HashTable *SDL_format_details;
 static SDL_Mutex *SDL_format_details_lock;
 
-static SDL_bool SDL_InitPixelFormatDetails(SDL_PixelFormatDetails *details, SDL_PixelFormat format)
+static bool SDL_InitPixelFormatDetails(SDL_PixelFormatDetails *details, SDL_PixelFormat format)
 {
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;

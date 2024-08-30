@@ -65,7 +65,7 @@ bool Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
 
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        result = SDL_FALSE;
+        result = false;
         goto endfunction;
     }
 
@@ -86,7 +86,7 @@ bool Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
         if (data->egl_surface == EGL_NO_SURFACE) {
             ANativeWindow_release(data->native_window);
             SDL_free(data);
-            result = SDL_FALSE;
+            result = false;
             goto endfunction;
         }
     }
