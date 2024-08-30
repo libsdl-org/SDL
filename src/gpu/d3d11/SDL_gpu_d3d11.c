@@ -140,7 +140,7 @@ static const GUID D3D_IID_DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, { 0x87,
 // Forward Declarations
 
 static void D3D11_Wait(SDL_GPURenderer *driverData);
-static void D3D11_UnclaimWindow(
+static void D3D11_ReleaseWindow(
     SDL_GPURenderer *driverData,
     SDL_Window *window);
 static void D3D11_INTERNAL_DestroyBlitPipelines(SDL_GPURenderer *driverData);
@@ -898,7 +898,7 @@ static void D3D11_DestroyDevice(
 
     // Release the window data
     for (Sint32 i = renderer->claimedWindowCount - 1; i >= 0; i -= 1) {
-        D3D11_UnclaimWindow(device->driverData, renderer->claimedWindows[i]->window);
+        D3D11_ReleaseWindow(device->driverData, renderer->claimedWindows[i]->window);
     }
     SDL_free(renderer->claimedWindows);
 
@@ -5161,7 +5161,7 @@ static void D3D11_INTERNAL_DestroySwapchain(
     }
 }
 
-static void D3D11_UnclaimWindow(
+static void D3D11_ReleaseWindow(
     SDL_GPURenderer *driverData,
     SDL_Window *window)
 {

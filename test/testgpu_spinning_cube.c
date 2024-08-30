@@ -59,7 +59,7 @@ static void shutdownGPU(void)
             WindowState *winstate = &window_states[i];
             SDL_ReleaseGPUTexture(gpu_device, winstate->tex_depth);
             SDL_ReleaseGPUTexture(gpu_device, winstate->tex_msaa);
-            SDL_UnclaimWindowForGPUDevice(gpu_device, state->windows[i]);
+            SDL_ReleaseWindowFromGPUDevice(gpu_device, state->windows[i]);
         }
         SDL_free(window_states);
         window_states = NULL;

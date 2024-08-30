@@ -909,7 +909,7 @@ SDL3_0.0.0 {
     SDL_UCS4ToUTF8;
     SDL_UnbindAudioStream;
     SDL_UnbindAudioStreams;
-    SDL_UnclaimWindowForGPUDevice;
+    SDL_ReleaseWindowFromGPUDevice;
     SDL_UnloadObject;
     SDL_UnlockAudioStream;
     SDL_UnlockJoysticks;

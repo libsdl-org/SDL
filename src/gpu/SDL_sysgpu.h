@@ -604,7 +604,7 @@ struct SDL_GPUDevice
         SDL_GPURenderer *driverData,
         SDL_Window *window);
 
-    void (*UnclaimWindow)(
+    void (*ReleaseWindow)(
         SDL_GPURenderer *driverData,
         SDL_Window *window);
 
@@ -739,7 +739,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(SupportsSwapchainComposition, name)  \
     ASSIGN_DRIVER_FUNC(SupportsPresentMode, name)           \
     ASSIGN_DRIVER_FUNC(ClaimWindow, name)                   \
-    ASSIGN_DRIVER_FUNC(UnclaimWindow, name)                 \
+    ASSIGN_DRIVER_FUNC(ReleaseWindow, name)                 \
     ASSIGN_DRIVER_FUNC(SetSwapchainParameters, name)        \
     ASSIGN_DRIVER_FUNC(GetSwapchainTextureFormat, name)     \
     ASSIGN_DRIVER_FUNC(AcquireCommandBuffer, name)          \

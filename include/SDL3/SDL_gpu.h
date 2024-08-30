@@ -2325,7 +2325,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUPresentMode(
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AcquireGPUSwapchainTexture
- * \sa SDL_UnclaimWindowForGPUDevice
+ * \sa SDL_ReleaseWindowFromGPUDevice
  * \sa SDL_SupportsGPUPresentMode
  * \sa SDL_SupportsGPUSwapchainComposition
  */
@@ -2343,7 +2343,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClaimWindowForGPUDevice(
  *
  * \sa SDL_ClaimWindowForGPUDevice
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UnclaimWindowForGPUDevice(
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseWindowFromGPUDevice(
     SDL_GPUDevice *device,
     SDL_Window *window);
 

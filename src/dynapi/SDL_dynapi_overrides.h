@@ -934,7 +934,7 @@
 #define SDL_UCS4ToUTF8 SDL_UCS4ToUTF8_REAL
 #define SDL_UnbindAudioStream SDL_UnbindAudioStream_REAL
 #define SDL_UnbindAudioStreams SDL_UnbindAudioStreams_REAL
-#define SDL_UnclaimWindowForGPUDevice SDL_UnclaimWindowForGPUDevice_REAL
+#define SDL_ReleaseWindowFromGPUDevice SDL_ReleaseWindowFromGPUDevice_REAL
 #define SDL_UnloadObject SDL_UnloadObject_REAL
 #define SDL_UnlockAudioStream SDL_UnlockAudioStream_REAL
 #define SDL_UnlockJoysticks SDL_UnlockJoysticks_REAL

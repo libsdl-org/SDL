@@ -1,4 +1,4 @@
-/*
+﻿/*
   Simple DirectMedia Layer
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
@@ -2197,7 +2197,7 @@ SDL_bool SDL_ClaimWindowForGPUDevice(
         window);
 }
 
-void SDL_UnclaimWindowForGPUDevice(
+void SDL_ReleaseWindowFromGPUDevice(
     SDL_GPUDevice *device,
     SDL_Window *window)
 {
@@ -2207,7 +2207,7 @@ void SDL_UnclaimWindowForGPUDevice(
         return;
     }
 
-    device->UnclaimWindow(
+    device->ReleaseWindow(
         device->driverData,
         window);
 }

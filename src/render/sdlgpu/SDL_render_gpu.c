@@ -1046,7 +1046,7 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
     }
 
     if (renderer->window) {
-        SDL_UnclaimWindowForGPUDevice(data->device, renderer->window);
+        SDL_ReleaseWindowFromGPUDevice(data->device, renderer->window);
     }
 
     ReleaseVertexBuffer(data);

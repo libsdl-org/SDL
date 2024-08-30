@@ -1160,7 +1160,7 @@ struct VulkanRenderer
 
 static Uint8 VULKAN_INTERNAL_DefragmentMemory(VulkanRenderer *renderer);
 static void VULKAN_INTERNAL_BeginCommandBuffer(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
-static void VULKAN_UnclaimWindow(SDL_GPURenderer *driverData, SDL_Window *window);
+static void VULKAN_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window);
 static void VULKAN_Wait(SDL_GPURenderer *driverData);
 static void VULKAN_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, SDL_GPUFence **pFences, Uint32 fenceCount);
 static void VULKAN_Submit(SDL_GPUCommandBuffer *commandBuffer);
@@ -4788,7 +4788,7 @@ static void VULKAN_DestroyDevice(
     VULKAN_Wait(device->driverData);
 
     for (Sint32 i = renderer->claimedWindowCount - 1; i >= 0; i -= 1) {
-        VULKAN_UnclaimWindow(device->driverData, renderer->claimedWindows[i]->window);
+        VULKAN_ReleaseWindow(device->driverData, renderer->claimedWindows[i]->window);
     }
 
     SDL_free(renderer->claimedWindows);
@@ -9740,7 +9740,7 @@ static bool VULKAN_ClaimWindow(
     }
 }
 
-static void VULKAN_UnclaimWindow(
+static void VULKAN_ReleaseWindow(
     SDL_GPURenderer *driverData,
     SDL_Window *window)
 {
