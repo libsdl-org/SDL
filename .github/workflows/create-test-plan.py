@@ -293,7 +293,7 @@ def my_shlex_join(s):
     return " ".join(escape(s))
 
 
-def spec_to_job(spec: JobSpec) -> JobDetails:
+def spec_to_job(spec: JobSpec, trackmem_symbol_names: bool) -> JobDetails:
     job = JobDetails(
         name=spec.name,
         os=spec.os.value,
@@ -308,6 +308,11 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             "ninja-build",
             "pkg-config",
         ])
+    pretest_cmd = []
+    if trackmem_symbol_names:
+        pretest_cmd.append("export SDL_TRACKMEM_SYMBOL_NAMES=1")
+    else:
+        pretest_cmd.append("export SDL_TRACKMEM_SYMBOL_NAMES=0")
     win32 = spec.platform in (SdlPlatform.Msys2, SdlPlatform.Msvc)
     fpic = None
     build_parallel = True
@@ -433,7 +438,9 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                 "libudev-dev",
                 "fcitx-libs-dev",
             ))
-            job.cmake_arguments.append("-DSDLTEST_TIMEOUT_MULTIPLIER=2")  # older libunwind is slow
+            if trackmem_symbol_names:
+                # older libunwind is slow
+                job.cmake_arguments.append("-DSDLTEST_TIMEOUT_MULTIPLIER=2")
             job.apt_packages.extend((
                 "libunwind-dev",  # For SDL_test memory tracking
             ))
@@ -541,12 +548,12 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             job.ldflags.extend((
                 "--source-map-base", "/",
             ))
-            job.pretest_cmd = "\n".join([
+            pretest_cmd.extend((
                 "# Start local HTTP server",
                 "cmake --build build --target serve-sdl-tests --verbose &",
                 "chrome --version",
                 "chromedriver --version",
-            ])
+            ))
             job.static_lib = StaticLibType.A
         case SdlPlatform.Ps2:
             build_parallel = False
@@ -703,7 +710,7 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
     if job.ldflags:
         job.cmake_arguments.append(f"-DCMAKE_SHARED_LINKER_FLAGS=\"{my_shlex_join(job.ldflags)}\"")
         job.cmake_arguments.append(f"-DCMAKE_EXE_LINKER_FLAGS=\"{my_shlex_join(job.ldflags)}\"")
-
+    job.pretest_cmd = "\n".join(pretest_cmd)
     def tf(b):
         return "ON" if b else "OFF"
 
@@ -716,9 +723,9 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
     return job
 
 
-def spec_to_platform(spec: JobSpec, enable_artifacts: bool) -> dict[str, str|bool]:
+def spec_to_platform(spec: JobSpec, enable_artifacts: bool, trackmem_symbol_names: bool) -> dict[str, str|bool]:
     logger.info("spec=%r", spec)
-    job = spec_to_job(spec)
+    job = spec_to_job(spec, trackmem_symbol_names=trackmem_symbol_names)
     logger.info("job=%r", job)
     platform = job.to_workflow(enable_artifacts=enable_artifacts)
     logger.info("platform=%r", platform)
@@ -732,6 +739,7 @@ def main():
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--commit-message-file")
     parser.add_argument("--no-artifact", dest="enable_artifacts", action="store_false")
+    parser.add_argument("--trackmem-symbol-names", dest="trackmem_symbol_names", action="store_true")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING)
@@ -755,6 +763,9 @@ def main():
             if re.search(r"\[sdl-ci-artifacts?]", commit_message, flags=re.M):
                 args.enable_artifacts = True
 
+            if re.search(r"\[sdl-ci-(full-)?trackmem(-symbol-names)?]", commit_message, flags=re.M):
+                args.trackmem_symbol_names = True
+
     if not filters:
         filters.append("*")
 
@@ -762,7 +773,7 @@ def main():
 
     all_level_platforms = {}
 
-    all_platforms = {k: spec_to_platform(spec, enable_artifacts=args.enable_artifacts) for k, spec in JOB_SPECS.items()}
+    all_platforms = {k: spec_to_platform(spec, enable_artifacts=args.enable_artifacts, trackmem_symbol_names=args.trackmem_symbol_names) for k, spec in JOB_SPECS.items()}
 
     for level_i, level_keys in enumerate(all_level_keys, 1):
         level_key = f"level{level_i}"
