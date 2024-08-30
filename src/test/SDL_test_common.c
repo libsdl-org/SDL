@@ -526,10 +526,6 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
                 state->logical_scale_mode = SDL_SCALEMODE_LINEAR;
                 return 2;
             }
-            if (SDL_strcasecmp(argv[index], "best") == 0) {
-                state->logical_scale_mode = SDL_SCALEMODE_BEST;
-                return 2;
-            }
             return -1;
         }
         if (SDL_strcasecmp(argv[index], "--scale") == 0) {
@@ -1048,9 +1044,6 @@ static void SDLTest_PrintScaleMode(char *text, size_t maxlen, SDL_ScaleMode scal
         break;
     case SDL_SCALEMODE_LINEAR:
         SDL_snprintfcat(text, maxlen, "LINEAR");
-        break;
-    case SDL_SCALEMODE_BEST:
-        SDL_snprintfcat(text, maxlen, "BEST");
         break;
     default:
         SDL_snprintfcat(text, maxlen, "0x%8.8x", scale_mode);

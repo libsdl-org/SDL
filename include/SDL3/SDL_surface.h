@@ -71,8 +71,7 @@ typedef Uint32 SDL_SurfaceFlags;
 typedef enum SDL_ScaleMode
 {
     SDL_SCALEMODE_NEAREST, /**< nearest pixel sampling */
-    SDL_SCALEMODE_LINEAR,  /**< linear filtering */
-    SDL_SCALEMODE_BEST     /**< anisotropic filtering */
+    SDL_SCALEMODE_LINEAR   /**< linear filtering */
 } SDL_ScaleMode;
 
 /**

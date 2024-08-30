@@ -2263,11 +2263,6 @@ symbol SDL_ScaleModeLinear;
 - SDL_ScaleModeLinear
 + SDL_SCALEMODE_LINEAR
 @@
-symbol SDL_ScaleModeBest;
-@@
-- SDL_ScaleModeBest
-+ SDL_SCALEMODE_BEST
-@@
 @@
 - SDL_RenderCopy
 + SDL_RenderTexture

@@ -1093,8 +1093,7 @@ SDL_bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Su
     } else if ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
     } else if (scaleMode != SDL_SCALEMODE_NEAREST &&
-               scaleMode != SDL_SCALEMODE_LINEAR &&
-               scaleMode != SDL_SCALEMODE_BEST) {
+               scaleMode != SDL_SCALEMODE_LINEAR) {
         return SDL_InvalidParamError("scaleMode");
     }
 

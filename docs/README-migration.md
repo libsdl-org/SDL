@@ -1407,7 +1407,6 @@ The following enums have been renamed:
 * SDL_RendererFlip => SDL_FlipMode - moved to SDL_surface.h
 
 The following symbols have been renamed:
-* SDL_ScaleModeBest => SDL_SCALEMODE_BEST
 * SDL_ScaleModeLinear => SDL_SCALEMODE_LINEAR
 * SDL_ScaleModeNearest => SDL_SCALEMODE_NEAREST
 
@@ -1416,6 +1415,7 @@ The following symbols have been removed:
 * SDL_RENDERER_PRESENTVSYNC - replaced with SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER during renderer creation and SDL_PROP_RENDERER_VSYNC_NUMBER after renderer creation
 * SDL_RENDERER_SOFTWARE - you can check whether the name of the renderer is `SDL_SOFTWARE_RENDERER`
 * SDL_RENDERER_TARGETTEXTURE - all renderers support target texture functionality
+* SDL_ScaleModeBest = use SDL_SCALEMODE_LINEAR instead
 
 ## SDL_rwops.h
 

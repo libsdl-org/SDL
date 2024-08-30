@@ -80,7 +80,7 @@ bool SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst
         return result;
     }
 
-    if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {
+    if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR) {
         return SDL_InvalidParamError("scaleMode");
     }
 
