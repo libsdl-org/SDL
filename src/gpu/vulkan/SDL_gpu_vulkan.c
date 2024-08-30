@@ -4854,6 +4854,7 @@ static void VULKAN_DestroyDevice(
     SDL_free(renderer->shadersToDestroy);
     SDL_free(renderer->samplersToDestroy);
     SDL_free(renderer->framebuffersToDestroy);
+    SDL_free(renderer->allocationsToDefrag);
 
     SDL_DestroyMutex(renderer->allocatorLock);
     SDL_DestroyMutex(renderer->disposeLock);
