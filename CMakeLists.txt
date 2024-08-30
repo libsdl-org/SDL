@@ -2961,6 +2961,7 @@ if(SDL_GPU)
   endif()
   if(SDL_RENDER_GPU)
     set(SDL_VIDEO_RENDER_GPU 1)
+    set(HAVE_RENDER_GPU TRUE)
   endif()
 endif()
 
