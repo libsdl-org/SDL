@@ -72,6 +72,7 @@ static const char *video_usage[] = {
     "[--usable-bounds]",
     "[--utility]",
     "[--video driver]",
+    "[--gpu driver]",
     "[--vsync]"
 };
 
@@ -614,6 +615,15 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
         if (SDL_strcasecmp(argv[index], "--hide-cursor") == 0) {
             state->hide_cursor = SDL_TRUE;
             return 1;
+        }
+        if (SDL_strcasecmp(argv[index], "--gpu") == 0) {
+            ++index;
+            if (!argv[index]) {
+                return -1;
+            }
+            state->gpudriver = argv[index];
+            SDL_SetHint(SDL_HINT_GPU_DRIVER, state->gpudriver);
+            return 2;
         }
     } else {
         if (SDL_strcasecmp(argv[index], "--info") == 0) {

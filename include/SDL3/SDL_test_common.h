@@ -91,6 +91,7 @@ typedef struct
     SDL_DisplayMode fullscreen_mode;
     int num_windows;
     SDL_Window **windows;
+    const char *gpudriver;
 
     /* Renderer info */
     const char *renderdriver;
