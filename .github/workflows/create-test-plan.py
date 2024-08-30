@@ -433,6 +433,7 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                 "libudev-dev",
                 "fcitx-libs-dev",
             ))
+            job.cmake_arguments.append("-DSDLTEST_TIMEOUT_MULTIPLIER=2")  # older libunwind is slow
             job.apt_packages.extend((
                 "libunwind-dev",  # For SDL_test memory tracking
             ))
