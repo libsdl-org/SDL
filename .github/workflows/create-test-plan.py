@@ -158,6 +158,7 @@ class SharedLibType(Enum):
 @dataclasses.dataclass(slots=True)
 class JobDetails:
     name: str
+    key: str
     os: str
     platform: str
     artifact: str
@@ -221,6 +222,7 @@ class JobDetails:
     def to_workflow(self, enable_artifacts: bool) -> dict[str, str|bool]:
         data = {
             "name": self.name,
+            "key": self.key,
             "os": self.os,
             "container": self.container if self.container else "",
             "platform": self.platform,
@@ -293,9 +295,10 @@ def my_shlex_join(s):
     return " ".join(escape(s))
 
 
-def spec_to_job(spec: JobSpec, trackmem_symbol_names: bool) -> JobDetails:
+def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDetails:
     job = JobDetails(
         name=spec.name,
+        key=key,
         os=spec.os.value,
         artifact=spec.artifact or "",
         container=spec.container or "",
@@ -723,9 +726,9 @@ def spec_to_job(spec: JobSpec, trackmem_symbol_names: bool) -> JobDetails:
     return job
 
 
-def spec_to_platform(spec: JobSpec, enable_artifacts: bool, trackmem_symbol_names: bool) -> dict[str, str|bool]:
+def spec_to_platform(spec: JobSpec, key: str, enable_artifacts: bool, trackmem_symbol_names: bool) -> dict[str, str|bool]:
     logger.info("spec=%r", spec)
-    job = spec_to_job(spec, trackmem_symbol_names=trackmem_symbol_names)
+    job = spec_to_job(spec, key=key, trackmem_symbol_names=trackmem_symbol_names)
     logger.info("job=%r", job)
     platform = job.to_workflow(enable_artifacts=enable_artifacts)
     logger.info("platform=%r", platform)
@@ -773,7 +776,7 @@ def main():
 
     all_level_platforms = {}
 
-    all_platforms = {k: spec_to_platform(spec, enable_artifacts=args.enable_artifacts, trackmem_symbol_names=args.trackmem_symbol_names) for k, spec in JOB_SPECS.items()}
+    all_platforms = {key: spec_to_platform(spec, key=key, enable_artifacts=args.enable_artifacts, trackmem_symbol_names=args.trackmem_symbol_names) for key, spec in JOB_SPECS.items()}
 
     for level_i, level_keys in enumerate(all_level_keys, 1):
         level_key = f"level{level_i}"
