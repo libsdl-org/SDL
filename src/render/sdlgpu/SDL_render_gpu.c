@@ -1190,7 +1190,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
         // TODO
         SDL_SetError("Unsupported output colorspace");
-        goto error;
+        return false;
     }
 
     bool debug = SDL_GetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, false);
@@ -1207,24 +1207,24 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     data->device = SDL_CreateGPUDeviceWithProperties(create_props);
 
     if (!data->device) {
-        goto error;
+        return false;
     }
 
     if (!GPU_InitShaders(&data->shaders, data->device)) {
-        goto error;
+        return false;
     }
 
     if (!GPU_InitPipelineCache(&data->pipeline_cache, data->device)) {
-        goto error;
+        return false;
     }
 
     // XXX what's a good initial size?
     if (!InitVertexBuffer(data, 1 << 16)) {
-        goto error;
+        return false;
     }
 
     if (!InitSamplers(data)) {
-        goto error;
+        return false;
     }
 
     renderer->SupportsBlendMode = GPU_SupportsBlendMode;
@@ -1251,7 +1251,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     renderer->name = GPU_RenderDriver.name;
 
     if (!SDL_ClaimGPUWindow(data->device, window)) {
-        goto error;
+        return false;
     }
 
     data->swapchain.composition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
@@ -1286,14 +1286,10 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
     if (!CreateBackbuffer(data, w, h, SDL_GetGPUSwapchainTextureFormat(data->device, window))) {
-        goto error;
+        return false;
     }
 
     return true;
-
-error:
-    GPU_DestroyRenderer(renderer);
-    return false;
 }
 
 SDL_RenderDriver GPU_RenderDriver = {
