@@ -176,6 +176,7 @@ typedef enum SDL_GPUTextureFormat
     /* Compressed Unsigned Float Color Formats */
     SDL_GPU_TEXTUREFORMAT_BC6H_UFLOAT,
     /* Signed Normalized Float Color Formats  */
+    SDL_GPU_TEXTUREFORMAT_R8_SNORM,
     SDL_GPU_TEXTUREFORMAT_R8G8_SNORM,
     SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM,
     /* Signed Float Color Formats */
