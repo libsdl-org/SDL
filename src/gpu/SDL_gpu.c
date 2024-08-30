@@ -1,4 +1,4 @@
-/*
+﻿/*
   Simple DirectMedia Layer
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
@@ -546,7 +546,7 @@ Uint32 SDL_GPUTextureFormatTexelBlockSize(
     }
 }
 
-SDL_bool SDL_SupportsGPUTextureFormat(
+SDL_bool SDL_GPUTextureSupportsFormat(
     SDL_GPUDevice *device,
     SDL_GPUTextureFormat format,
     SDL_GPUTextureType type,
@@ -565,7 +565,7 @@ SDL_bool SDL_SupportsGPUTextureFormat(
         usage);
 }
 
-SDL_bool SDL_SupportsGPUSampleCount(
+SDL_bool SDL_GPUTextureSupportsSampleCount(
     SDL_GPUDevice *device,
     SDL_GPUTextureFormat format,
     SDL_GPUSampleCount sampleCount)
@@ -748,7 +748,7 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                 SDL_assert_release(!"For cube textures: sampleCount must be SDL_GPU_SAMPLECOUNT_1");
                 failed = true;
             }
-            if (!SDL_SupportsGPUTextureFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_CUBE, textureCreateInfo->usageFlags)) {
+            if (!SDL_GPUTextureSupportsFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_CUBE, textureCreateInfo->usageFlags)) {
                 SDL_assert_release(!"For cube textures: the format is unsupported for the given usageFlags");
                 failed = true;
             }
@@ -766,7 +766,7 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                 SDL_assert_release(!"For 3D textures: sampleCount must be SDL_GPU_SAMPLECOUNT_1");
                 failed = true;
             }
-            if (!SDL_SupportsGPUTextureFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_3D, textureCreateInfo->usageFlags)) {
+            if (!SDL_GPUTextureSupportsFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_3D, textureCreateInfo->usageFlags)) {
                 SDL_assert_release(!"For 3D textures: the format is unsupported for the given usageFlags");
                 failed = true;
             }
@@ -788,7 +788,7 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                     failed = true;
                 }
             }
-            if (!SDL_SupportsGPUTextureFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_2D, textureCreateInfo->usageFlags)) {
+            if (!SDL_GPUTextureSupportsFormat(device, textureCreateInfo->format, SDL_GPU_TEXTURETYPE_2D, textureCreateInfo->usageFlags)) {
                 SDL_assert_release(!"For 2D textures: the format is unsupported for the given usageFlags");
                 failed = true;
             }
@@ -2039,7 +2039,7 @@ void SDL_EndGPUCopyPass(
     ((CommandBufferCommonHeader *)COPYPASS_COMMAND_BUFFER)->copyPass.inProgress = false;
 }
 
-void SDL_GenerateGPUMipmaps(
+void SDL_GenerateMipmapsForGPUTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUTexture *texture)
 {
@@ -2073,7 +2073,7 @@ void SDL_GenerateGPUMipmaps(
         texture);
 }
 
-void SDL_BlitGPU(
+void SDL_BlitGPUTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBlitRegion *source,
     SDL_GPUBlitRegion *destination,
@@ -2140,7 +2140,7 @@ void SDL_BlitGPU(
 
 // Submission/Presentation
 
-SDL_bool SDL_SupportsGPUSwapchainComposition(
+SDL_bool SDL_WindowSupportsGPUSwapchainComposition(
     SDL_GPUDevice *device,
     SDL_Window *window,
     SDL_GPUSwapchainComposition swapchainComposition)
@@ -2161,7 +2161,7 @@ SDL_bool SDL_SupportsGPUSwapchainComposition(
         swapchainComposition);
 }
 
-SDL_bool SDL_SupportsGPUPresentMode(
+SDL_bool SDL_WindowSupportsGPUPresentMode(
     SDL_GPUDevice *device,
     SDL_Window *window,
     SDL_GPUPresentMode presentMode)
@@ -2182,7 +2182,7 @@ SDL_bool SDL_SupportsGPUPresentMode(
         presentMode);
 }
 
-SDL_bool SDL_ClaimGPUWindow(
+SDL_bool SDL_ClaimWindowForGPUDevice(
     SDL_GPUDevice *device,
     SDL_Window *window)
 {
@@ -2197,7 +2197,7 @@ SDL_bool SDL_ClaimGPUWindow(
         window);
 }
 
-void SDL_UnclaimGPUWindow(
+void SDL_ReleaseWindowFromGPUDevice(
     SDL_GPUDevice *device,
     SDL_Window *window)
 {
@@ -2207,7 +2207,7 @@ void SDL_UnclaimGPUWindow(
         return;
     }
 
-    device->UnclaimWindow(
+    device->ReleaseWindow(
         device->driverData,
         window);
 }
@@ -2286,7 +2286,7 @@ SDL_GPUTexture *SDL_AcquireGPUSwapchainTexture(
         pHeight);
 }
 
-void SDL_SubmitGPU(
+void SDL_SubmitGPUCommandBuffer(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
@@ -2313,7 +2313,7 @@ void SDL_SubmitGPU(
         commandBuffer);
 }
 
-SDL_GPUFence *SDL_SubmitGPUAndAcquireFence(
+SDL_GPUFence *SDL_SubmitGPUCommandBufferAndAcquireFence(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
@@ -2340,7 +2340,7 @@ SDL_GPUFence *SDL_SubmitGPUAndAcquireFence(
         commandBuffer);
 }
 
-void SDL_WaitGPU(
+void SDL_WaitForGPUIdle(
     SDL_GPUDevice *device)
 {
     CHECK_DEVICE_MAGIC(device, );
@@ -2349,7 +2349,7 @@ void SDL_WaitGPU(
         device->driverData);
 }
 
-void SDL_WaitGPUForFences(
+void SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     SDL_bool waitAll,
     SDL_GPUFence **pFences,

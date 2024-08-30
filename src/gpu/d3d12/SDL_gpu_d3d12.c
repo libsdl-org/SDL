@@ -843,7 +843,7 @@ struct D3D12UniformBuffer
 
 // Foward function declarations
 
-static void D3D12_UnclaimWindow(SDL_GPURenderer *driverData, SDL_Window *window);
+static void D3D12_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window);
 static void D3D12_Wait(SDL_GPURenderer *driverData);
 static void D3D12_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, SDL_GPUFence **pFences, Uint32 fenceCount);
 static void D3D12_INTERNAL_ReleaseBlitPipelines(SDL_GPURenderer *driverData);
@@ -1391,7 +1391,7 @@ static void D3D12_DestroyDevice(SDL_GPUDevice *device)
 
     // Release window data
     for (Sint32 i = renderer->claimedWindowCount - 1; i >= 0; i -= 1) {
-        D3D12_UnclaimWindow((SDL_GPURenderer *)renderer, renderer->claimedWindows[i]->window);
+        D3D12_ReleaseWindow((SDL_GPURenderer *)renderer, renderer->claimedWindows[i]->window);
     }
 
     D3D12_INTERNAL_DestroyRenderer(renderer);
@@ -5724,7 +5724,7 @@ static void D3D12_GenerateMipmaps(
             dstRegion.w = container->header.info.width >> levelIndex;
             dstRegion.h = container->header.info.height >> levelIndex;
 
-            SDL_BlitGPU(
+            SDL_BlitGPUTexture(
                 commandBuffer,
                 &srcRegion,
                 &dstRegion,
@@ -6357,7 +6357,7 @@ static bool D3D12_ClaimWindow(
     }
 }
 
-static void D3D12_UnclaimWindow(
+static void D3D12_ReleaseWindow(
     SDL_GPURenderer *driverData,
     SDL_Window *window)
 {

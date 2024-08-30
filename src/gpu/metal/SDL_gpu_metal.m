@@ -60,7 +60,7 @@
 // Forward Declarations
 
 static void METAL_Wait(SDL_GPURenderer *driverData);
-static void METAL_UnclaimWindow(
+static void METAL_ReleaseWindow(
     SDL_GPURenderer *driverData,
     SDL_Window *window);
 static void METAL_INTERNAL_DestroyBlitResources(SDL_GPURenderer *driverData);
@@ -617,7 +617,7 @@ static void METAL_DestroyDevice(SDL_GPUDevice *device)
 
     // Release the window data
     for (Sint32 i = renderer->claimedWindowCount - 1; i >= 0; i -= 1) {
-        METAL_UnclaimWindow(device->driverData, renderer->claimedWindows[i]->window);
+        METAL_ReleaseWindow(device->driverData, renderer->claimedWindows[i]->window);
     }
     SDL_free(renderer->claimedWindows);
 
@@ -3439,7 +3439,7 @@ static bool METAL_ClaimWindow(
     }
 }
 
-static void METAL_UnclaimWindow(
+static void METAL_ReleaseWindow(
     SDL_GPURenderer *driverData,
     SDL_Window *window)
 {

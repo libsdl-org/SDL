@@ -59,7 +59,7 @@ static void shutdownGPU(void)
             WindowState *winstate = &window_states[i];
             SDL_ReleaseGPUTexture(gpu_device, winstate->tex_depth);
             SDL_ReleaseGPUTexture(gpu_device, winstate->tex_msaa);
-            SDL_UnclaimGPUWindow(gpu_device, state->windows[i]);
+            SDL_ReleaseWindowFromGPUDevice(gpu_device, state->windows[i]);
         }
         SDL_free(window_states);
         window_states = NULL;
@@ -316,7 +316,7 @@ Render(SDL_Window *window, const int windownum)
 
     if (!swapchain) {
         /* No swapchain was acquired, probably too many frames in flight */
-        SDL_SubmitGPU(cmd);
+        SDL_SubmitGPUCommandBuffer(cmd);
         return;
     }
 
@@ -401,11 +401,11 @@ Render(SDL_Window *window, const int windownum)
         dst_region = src_region;
         dst_region.texture = swapchain;
 
-        SDL_BlitGPU(cmd, &src_region, &dst_region, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, SDL_FALSE);
+        SDL_BlitGPUTexture(cmd, &src_region, &dst_region, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, SDL_FALSE);
     }
 
     /* Submit the command buffer! */
-    SDL_SubmitGPU(cmd);
+    SDL_SubmitGPUCommandBuffer(cmd);
 
     ++frames;
 }
@@ -477,7 +477,7 @@ init_render_state(int msaa)
     /* Claim the windows */
 
     for (i = 0; i < state->num_windows; i++) {
-        SDL_ClaimGPUWindow(
+        SDL_ClaimWindowForGPUDevice(
             gpu_device,
             state->windows[i]
         );
@@ -526,13 +526,13 @@ init_render_state(int msaa)
     dst_region.size = sizeof(vertex_data);
     SDL_UploadToGPUBuffer(copy_pass, &buf_location, &dst_region, SDL_FALSE);
     SDL_EndGPUCopyPass(copy_pass);
-    SDL_SubmitGPU(cmd);
+    SDL_SubmitGPUCommandBuffer(cmd);
 
     SDL_ReleaseGPUTransferBuffer(gpu_device, buf_transfer);
 
     /* Determine which sample count to use */
     render_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    if (msaa && SDL_SupportsGPUSampleCount(
+    if (msaa && SDL_GPUTextureSupportsSampleCount(
         gpu_device,
         SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]),
         SDL_GPU_SAMPLECOUNT_4)) {

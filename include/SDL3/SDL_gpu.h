@@ -81,7 +81,7 @@ typedef enum SDL_GPUIndexElementSize
 } SDL_GPUIndexElementSize;
 
 /* Texture format support varies depending on driver, hardware, and usage flags.
- * In general, you should use SDL_SupportsGPUTextureFormat to query if a format
+ * In general, you should use SDL_GPUTextureSupportsFormat to query if a format
  * is supported before using it. However, there are a few guaranteed formats.
  *
  * For SAMPLER usage, the following formats are universally supported:
@@ -1165,9 +1165,9 @@ extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
  * \sa SDL_BindGPUFragmentSamplers
  * \sa SDL_BindGPUFragmentStorageTextures
  * \sa SDL_BindGPUComputeStorageTextures
- * \sa SDL_BlitGPU
+ * \sa SDL_BlitGPUTexture
  * \sa SDL_ReleaseGPUTexture
- * \sa SDL_SupportsGPUTextureFormat
+ * \sa SDL_GPUTextureSupportsFormat
  */
 extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
     SDL_GPUDevice *device,
@@ -1436,8 +1436,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUGraphicsPipeline(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SubmitGPU
- * \sa SDL_SubmitGPUAndAcquireFence
+ * \sa SDL_SubmitGPUCommandBuffer
+ * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  */
 extern SDL_DECLSPEC SDL_GPUCommandBuffer *SDLCALL SDL_AcquireGPUCommandBuffer(
     SDL_GPUDevice *device);
@@ -2241,7 +2241,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPUCopyPass(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GenerateGPUMipmaps(
+extern SDL_DECLSPEC void SDLCALL SDL_GenerateMipmapsForGPUTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUTexture *texture);
 
@@ -2260,7 +2260,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GenerateGPUMipmaps(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_BlitGPU(
+extern SDL_DECLSPEC void SDLCALL SDL_BlitGPUTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBlitRegion *source,
     SDL_GPUBlitRegion *destination,
@@ -2282,9 +2282,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_BlitGPU(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ClaimGPUWindow
+ * \sa SDL_ClaimWindowForGPUDevice
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUSwapchainComposition(
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WindowSupportsGPUSwapchainComposition(
     SDL_GPUDevice *device,
     SDL_Window *window,
     SDL_GPUSwapchainComposition swapchainComposition);
@@ -2301,9 +2301,9 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUSwapchainComposition(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ClaimGPUWindow
+ * \sa SDL_ClaimWindowForGPUDevice
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUPresentMode(
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WindowSupportsGPUPresentMode(
     SDL_GPUDevice *device,
     SDL_Window *window,
     SDL_GPUPresentMode presentMode);
@@ -2325,11 +2325,11 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUPresentMode(
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AcquireGPUSwapchainTexture
- * \sa SDL_UnclaimGPUWindow
- * \sa SDL_SupportsGPUPresentMode
- * \sa SDL_SupportsGPUSwapchainComposition
+ * \sa SDL_ReleaseWindowFromGPUDevice
+ * \sa SDL_WindowSupportsGPUPresentMode
+ * \sa SDL_WindowSupportsGPUSwapchainComposition
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClaimGPUWindow(
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClaimWindowForGPUDevice(
     SDL_GPUDevice *device,
     SDL_Window *window);
 
@@ -2341,9 +2341,9 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClaimGPUWindow(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ClaimGPUWindow
+ * \sa SDL_ClaimWindowForGPUDevice
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UnclaimGPUWindow(
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseWindowFromGPUDevice(
     SDL_GPUDevice *device,
     SDL_Window *window);
 
@@ -2352,8 +2352,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnclaimGPUWindow(
  *
  * This function will fail if the requested present mode or swapchain
  * composition are unsupported by the device. Check if the parameters are
- * supported via SDL_SupportsGPUPresentMode /
- * SDL_SupportsGPUSwapchainComposition prior to calling this function.
+ * supported via SDL_WindowSupportsGPUPresentMode /
+ * SDL_WindowSupportsGPUSwapchainComposition prior to calling this function.
  *
  * SDL_GPU_PRESENTMODE_VSYNC and SDL_GPU_SWAPCHAINCOMPOSITION_SDR are always
  * supported.
@@ -2366,8 +2366,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnclaimGPUWindow(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SupportsGPUPresentMode
- * \sa SDL_SupportsGPUSwapchainComposition
+ * \sa SDL_WindowSupportsGPUPresentMode
+ * \sa SDL_WindowSupportsGPUSwapchainComposition
  */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetGPUSwapchainParameters(
     SDL_GPUDevice *device,
@@ -2407,9 +2407,9 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ClaimGPUWindow
- * \sa SDL_SubmitGPU
- * \sa SDL_SubmitGPUAndAcquireFence
+ * \sa SDL_ClaimWindowForGPUDevice
+ * \sa SDL_SubmitGPUCommandBuffer
+ * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  */
 extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_AcquireGPUSwapchainTexture(
     SDL_GPUCommandBuffer *commandBuffer,
@@ -2433,9 +2433,9 @@ extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_AcquireGPUSwapchainTexture(
  *
  * \sa SDL_AcquireGPUCommandBuffer
  * \sa SDL_AcquireGPUSwapchainTexture
- * \sa SDL_SubmitGPUAndAcquireFence
+ * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SubmitGPU(
+extern SDL_DECLSPEC void SDLCALL SDL_SubmitGPUCommandBuffer(
     SDL_GPUCommandBuffer *commandBuffer);
 
 /**
@@ -2457,10 +2457,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_SubmitGPU(
  *
  * \sa SDL_AcquireGPUCommandBuffer
  * \sa SDL_AcquireGPUSwapchainTexture
- * \sa SDL_SubmitGPU
+ * \sa SDL_SubmitGPUCommandBuffer
  * \sa SDL_ReleaseGPUFence
  */
-extern SDL_DECLSPEC SDL_GPUFence *SDLCALL SDL_SubmitGPUAndAcquireFence(
+extern SDL_DECLSPEC SDL_GPUFence *SDLCALL SDL_SubmitGPUCommandBufferAndAcquireFence(
     SDL_GPUCommandBuffer *commandBuffer);
 
 /**
@@ -2470,9 +2470,9 @@ extern SDL_DECLSPEC SDL_GPUFence *SDLCALL SDL_SubmitGPUAndAcquireFence(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_WaitGPUForFences
+ * \sa SDL_WaitForGPUFences
  */
-extern SDL_DECLSPEC void SDLCALL SDL_WaitGPU(
+extern SDL_DECLSPEC void SDLCALL SDL_WaitForGPUIdle(
     SDL_GPUDevice *device);
 
 /**
@@ -2486,10 +2486,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitGPU(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SubmitGPUAndAcquireFence
- * \sa SDL_WaitGPU
+ * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
+ * \sa SDL_WaitForGPUIdle
  */
-extern SDL_DECLSPEC void SDLCALL SDL_WaitGPUForFences(
+extern SDL_DECLSPEC void SDLCALL SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     SDL_bool waitAll,
     SDL_GPUFence **pFences,
@@ -2504,21 +2504,21 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitGPUForFences(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SubmitGPUAndAcquireFence
+ * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_QueryGPUFence(
     SDL_GPUDevice *device,
     SDL_GPUFence *fence);
 
 /**
- * Releases a fence obtained from SDL_SubmitGPUAndAcquireFence.
+ * Releases a fence obtained from SDL_SubmitGPUCommandBufferAndAcquireFence.
  *
  * \param device a GPU context.
  * \param fence a fence.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SubmitGPUAndAcquireFence
+ * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  */
 extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUFence(
     SDL_GPUDevice *device,
@@ -2551,7 +2551,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GPUTextureFormatTexelBlockSize(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUTextureFormat(
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GPUTextureSupportsFormat(
     SDL_GPUDevice *device,
     SDL_GPUTextureFormat format,
     SDL_GPUTextureType type,
@@ -2567,7 +2567,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUTextureFormat(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SupportsGPUSampleCount(
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GPUTextureSupportsSampleCount(
     SDL_GPUDevice *device,
     SDL_GPUTextureFormat format,
     SDL_GPUSampleCount sampleCount);
