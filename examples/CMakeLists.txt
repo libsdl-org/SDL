@@ -188,7 +188,7 @@ add_sdl_example_executable(audio-simple-playback-callback SOURCES audio/02-simpl
 add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.wav)
 add_sdl_example_executable(camera-read-and-draw SOURCES camera/01-read-and-draw/read-and-draw.c)
 add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawing-lines.c)
-add_sdl_example_executable(game-snake SOURCES game/01-snake/main.c game/01-snake/snake.c)
+add_sdl_example_executable(game-snake SOURCES game/01-snake/snake.c)
 
 
 if(PSP)
