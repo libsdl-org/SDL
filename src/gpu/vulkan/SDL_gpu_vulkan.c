@@ -146,6 +146,7 @@ static VkFormat SDLToVK_SurfaceFormat[] = {
     VK_FORMAT_R16G16_UNORM,             // R16G16_UNORM
     VK_FORMAT_R16G16B16A16_UNORM,       // R16G16B16A16_UNORM
     VK_FORMAT_R8_UNORM,                 // R8_UNORM
+    VK_FORMAT_R16_UNORM,                // R16_UNORM
     VK_FORMAT_R8_UNORM,                 // A8_UNORM
     VK_FORMAT_BC1_RGBA_UNORM_BLOCK,     // BC1_UNORM
     VK_FORMAT_BC2_UNORM_BLOCK,          // BC2_UNORM
@@ -208,6 +209,7 @@ static VkComponentMapping SDLToVK_SurfaceSwizzle[] = {
     IDENTITY_SWIZZLE, // R16G16
     IDENTITY_SWIZZLE, // R16G16B16A16
     IDENTITY_SWIZZLE, // R8
+    IDENTITY_SWIZZLE, // R16
     {
         // A8
         VK_COMPONENT_SWIZZLE_ZERO,
