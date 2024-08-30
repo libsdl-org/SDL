@@ -1557,8 +1557,8 @@ typedef void (SDLCALL *SDL_AudioStreamCallback)(void *userdata, SDL_AudioStream 
  * Setting a NULL function turns off the callback.
  *
  * \param stream the audio stream to set the new callback on.
- * \param callback the new callback function to call when data is requested from the
- *                 stream.
+ * \param callback the new callback function to call when data is requested
+ *                 from the stream.
  * \param userdata an opaque pointer provided to the callback for its own
  *                 personal use.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
