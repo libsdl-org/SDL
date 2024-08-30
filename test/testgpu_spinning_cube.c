@@ -532,7 +532,7 @@ init_render_state(int msaa)
 
     /* Determine which sample count to use */
     render_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    if (msaa && SDL_SupportsGPUTextureSampleCount(
+    if (msaa && SDL_GPUTextureSupportsSampleCount(
         gpu_device,
         SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]),
         SDL_GPU_SAMPLECOUNT_4)) {

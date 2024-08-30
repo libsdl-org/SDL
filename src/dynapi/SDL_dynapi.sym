@@ -887,11 +887,11 @@ SDL3_0.0.0 {
     SDL_StorageReady;
     SDL_StringToGUID;
     SDL_SubmitGPUCommandBuffer;
-    SDL_SubmitGPUCommandBufferAndAcquireGPUFence;
-    SDL_SupportsGPUPresentMode;
-    SDL_SupportsGPUTextureSampleCount;
-    SDL_SupportsGPUSwapchainComposition;
-    SDL_SupportsGPUTextureFormat;
+    SDL_SubmitGPUCommandBufferAndAcquireFence;
+    SDL_WindowSupportsGPUPresentMode;
+    SDL_GPUTextureSupportsSampleCount;
+    SDL_WindowSupportsGPUSwapchainComposition;
+    SDL_GPUTextureSupportsFormat;
     SDL_SurfaceHasAlternateImages;
     SDL_SurfaceHasColorKey;
     SDL_SurfaceHasRLE;
