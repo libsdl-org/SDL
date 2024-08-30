@@ -503,6 +503,7 @@ Uint32 SDL_GPUTextureFormatTexelBlockSize(
 {
     switch (textureFormat) {
     case SDL_GPU_TEXTUREFORMAT_BC1_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC1_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_BC4_UNORM:
         return 8;
     case SDL_GPU_TEXTUREFORMAT_BC2_UNORM:
