@@ -190,6 +190,8 @@ SDL3_0.0.0 {
     SDL_GL_SwapWindow;
     SDL_GL_UnloadLibrary;
     SDL_GPUTextureFormatTexelBlockSize;
+    SDL_GPUTextureSupportsFormat;
+    SDL_GPUTextureSupportsSampleCount;
     SDL_GUIDToString;
     SDL_GamepadConnected;
     SDL_GamepadEventsEnabled;
@@ -699,6 +701,7 @@ SDL3_0.0.0 {
     SDL_ReleaseGPUShader;
     SDL_ReleaseGPUTexture;
     SDL_ReleaseGPUTransferBuffer;
+    SDL_ReleaseWindowFromGPUDevice;
     SDL_ReloadGamepadMappings;
     SDL_RemovePath;
     SDL_RemoveStoragePath;
@@ -888,10 +891,6 @@ SDL3_0.0.0 {
     SDL_StringToGUID;
     SDL_SubmitGPUCommandBuffer;
     SDL_SubmitGPUCommandBufferAndAcquireFence;
-    SDL_WindowSupportsGPUPresentMode;
-    SDL_GPUTextureSupportsSampleCount;
-    SDL_WindowSupportsGPUSwapchainComposition;
-    SDL_GPUTextureSupportsFormat;
     SDL_SurfaceHasAlternateImages;
     SDL_SurfaceHasColorKey;
     SDL_SurfaceHasRLE;
@@ -909,7 +908,6 @@ SDL3_0.0.0 {
     SDL_UCS4ToUTF8;
     SDL_UnbindAudioStream;
     SDL_UnbindAudioStreams;
-    SDL_ReleaseWindowFromGPUDevice;
     SDL_UnloadObject;
     SDL_UnlockAudioStream;
     SDL_UnlockJoysticks;
@@ -943,8 +941,8 @@ SDL3_0.0.0 {
     SDL_WaitConditionTimeout;
     SDL_WaitEvent;
     SDL_WaitEventTimeout;
-    SDL_WaitForGPUIdle;
     SDL_WaitForGPUFences;
+    SDL_WaitForGPUIdle;
     SDL_WaitSemaphore;
     SDL_WaitSemaphoreTimeout;
     SDL_WaitThread;
@@ -952,6 +950,8 @@ SDL3_0.0.0 {
     SDL_WarpMouseInWindow;
     SDL_WasInit;
     SDL_WindowHasSurface;
+    SDL_WindowSupportsGPUPresentMode;
+    SDL_WindowSupportsGPUSwapchainComposition;
     SDL_WriteIO;
     SDL_WriteS16BE;
     SDL_WriteS16LE;

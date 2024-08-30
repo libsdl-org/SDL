@@ -215,6 +215,8 @@
 #define SDL_GL_SwapWindow SDL_GL_SwapWindow_REAL
 #define SDL_GL_UnloadLibrary SDL_GL_UnloadLibrary_REAL
 #define SDL_GPUTextureFormatTexelBlockSize SDL_GPUTextureFormatTexelBlockSize_REAL
+#define SDL_GPUTextureSupportsFormat SDL_GPUTextureSupportsFormat_REAL
+#define SDL_GPUTextureSupportsSampleCount SDL_GPUTextureSupportsSampleCount_REAL
 #define SDL_GUIDToString SDL_GUIDToString_REAL
 #define SDL_GamepadConnected SDL_GamepadConnected_REAL
 #define SDL_GamepadEventsEnabled SDL_GamepadEventsEnabled_REAL
@@ -724,6 +726,7 @@
 #define SDL_ReleaseGPUShader SDL_ReleaseGPUShader_REAL
 #define SDL_ReleaseGPUTexture SDL_ReleaseGPUTexture_REAL
 #define SDL_ReleaseGPUTransferBuffer SDL_ReleaseGPUTransferBuffer_REAL
+#define SDL_ReleaseWindowFromGPUDevice SDL_ReleaseWindowFromGPUDevice_REAL
 #define SDL_ReloadGamepadMappings SDL_ReloadGamepadMappings_REAL
 #define SDL_RemovePath SDL_RemovePath_REAL
 #define SDL_RemoveStoragePath SDL_RemoveStoragePath_REAL
@@ -913,10 +916,6 @@
 #define SDL_StringToGUID SDL_StringToGUID_REAL
 #define SDL_SubmitGPUCommandBuffer SDL_SubmitGPUCommandBuffer_REAL
 #define SDL_SubmitGPUCommandBufferAndAcquireFence SDL_SubmitGPUCommandBufferAndAcquireFence_REAL
-#define SDL_WindowSupportsGPUPresentMode SDL_WindowSupportsGPUPresentMode_REAL
-#define SDL_GPUTextureSupportsSampleCount SDL_GPUTextureSupportsSampleCount_REAL
-#define SDL_WindowSupportsGPUSwapchainComposition SDL_WindowSupportsGPUSwapchainComposition_REAL
-#define SDL_GPUTextureSupportsFormat SDL_GPUTextureSupportsFormat_REAL
 #define SDL_SurfaceHasAlternateImages SDL_SurfaceHasAlternateImages_REAL
 #define SDL_SurfaceHasColorKey SDL_SurfaceHasColorKey_REAL
 #define SDL_SurfaceHasRLE SDL_SurfaceHasRLE_REAL
@@ -934,7 +933,6 @@
 #define SDL_UCS4ToUTF8 SDL_UCS4ToUTF8_REAL
 #define SDL_UnbindAudioStream SDL_UnbindAudioStream_REAL
 #define SDL_UnbindAudioStreams SDL_UnbindAudioStreams_REAL
-#define SDL_ReleaseWindowFromGPUDevice SDL_ReleaseWindowFromGPUDevice_REAL
 #define SDL_UnloadObject SDL_UnloadObject_REAL
 #define SDL_UnlockAudioStream SDL_UnlockAudioStream_REAL
 #define SDL_UnlockJoysticks SDL_UnlockJoysticks_REAL
@@ -968,8 +966,8 @@
 #define SDL_WaitConditionTimeout SDL_WaitConditionTimeout_REAL
 #define SDL_WaitEvent SDL_WaitEvent_REAL
 #define SDL_WaitEventTimeout SDL_WaitEventTimeout_REAL
-#define SDL_WaitForGPUIdle SDL_WaitForGPUIdle_REAL
 #define SDL_WaitForGPUFences SDL_WaitForGPUFences_REAL
+#define SDL_WaitForGPUIdle SDL_WaitForGPUIdle_REAL
 #define SDL_WaitSemaphore SDL_WaitSemaphore_REAL
 #define SDL_WaitSemaphoreTimeout SDL_WaitSemaphoreTimeout_REAL
 #define SDL_WaitThread SDL_WaitThread_REAL
@@ -977,6 +975,8 @@
 #define SDL_WarpMouseInWindow SDL_WarpMouseInWindow_REAL
 #define SDL_WasInit SDL_WasInit_REAL
 #define SDL_WindowHasSurface SDL_WindowHasSurface_REAL
+#define SDL_WindowSupportsGPUPresentMode SDL_WindowSupportsGPUPresentMode_REAL
+#define SDL_WindowSupportsGPUSwapchainComposition SDL_WindowSupportsGPUSwapchainComposition_REAL
 #define SDL_WriteIO SDL_WriteIO_REAL
 #define SDL_WriteS16BE SDL_WriteS16BE_REAL
 #define SDL_WriteS16LE SDL_WriteS16LE_REAL
