@@ -476,7 +476,7 @@ static void log_usage(const char *argv0) {
 
 int main(int argc, char *argv[]) {
     int i;
-    int cmd_i = 1;
+    int cmd_start;
     size_t command_line_len = 0;
     char *command_line;
     STARTUPINFOA startup_info;
@@ -487,9 +487,10 @@ int main(int argc, char *argv[]) {
     DWORD creation_flags;
     BOOL log_debug_stream = FALSE;
 
-    for (i = 1; i < argc; i++, cmd_i = i + 1) {
+    cmd_start = -1;
+    for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--") == 0) {
-            cmd_i = i + 1;
+            cmd_start = i + 1;
             break;
         } else if (strcmp(argv[i], "--debug-stream") == 0) {
             log_debug_stream = TRUE;
@@ -498,17 +499,16 @@ int main(int argc, char *argv[]) {
             log_usage(argv[0]);
             return 0;
         } else {
-            cmd_i = i;
+            cmd_start = i;
             break;
         }
     }
-
-    if (cmd_i >= argc) {
+    if (cmd_start < 0 || cmd_start >= argc) {
         log_usage(argv[0]);
         return 1;
     }
 
-    for (i = cmd_i; i < argc; i++) {
+    for (i = cmd_start; i < argc; i++) {
         command_line_len += strlen(argv[i]) + 1;
     }
     command_line = malloc(command_line_len + 1);
@@ -517,7 +517,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     command_line[0] = '\0';
-    for (i = cmd_i; i < argc; i++) {
+    for (i = cmd_start; i < argc; i++) {
         strcat_s(command_line, command_line_len, argv[i]);
         if (i != argc - 1) {
             strcat_s(command_line, command_line_len, " ");
@@ -533,7 +533,7 @@ int main(int argc, char *argv[]) {
         creation_flags |= DEBUG_PROCESS | DEBUG_ONLY_THIS_PROCESS;
     }
     success = CreateProcessA(
-        argv[cmd_i],            /* LPCSTR                lpApplicationName, */
+        argv[cmd_start],        /* LPCSTR                lpApplicationName, */
         command_line,           /* LPSTR                 lpCommandLine, */
         NULL,                   /* LPSECURITY_ATTRIBUTES lpProcessAttributes, */
         NULL,                   /* LPSECURITY_ATTRIBUTES lpThreadAttributes, */
@@ -545,7 +545,7 @@ int main(int argc, char *argv[]) {
         &process_information);  /* LPPROCESS_INFORMATION lpProcessInformation */
 
     if (!success) {
-        printf_windows_message("Failed to start application \"%s\"", argv[cmd_i]);
+        printf_windows_message("Failed to start application \"%s\"", argv[cmd_start]);
         return 1;
     }
 
@@ -625,7 +625,7 @@ int main(int argc, char *argv[]) {
 
                     printf_message("    (Non-continuable exception debug event)");
                     context = FillInThreadContext(&process_information, &context_buffer);
-                    write_minidump(argv[1], &process_information, event.dwThreadId, &event.u.Exception.ExceptionRecord, context);
+                    write_minidump(argv[cmd_start], &process_information, event.dwThreadId, &event.u.Exception.ExceptionRecord, context);
                     printf_message("");
 #ifdef SDLPROCDUMP_PRINTSTACK
                     print_stacktrace(&process_information, event.u.Exception.ExceptionRecord.ExceptionAddress, context);
