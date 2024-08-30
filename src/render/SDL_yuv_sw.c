@@ -28,7 +28,7 @@
 #include "../video/SDL_blit.h"
 #include "../video/SDL_yuv_c.h"
 
-SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, int w, int h)
+SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspace colorspace, int w, int h)
 {
     SDL_SW_YUVTexture *swdata;
 
@@ -52,6 +52,7 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, int w, int h)
     }
 
     swdata->format = format;
+    swdata->colorspace = colorspace;
     swdata->target_format = SDL_PIXELFORMAT_UNKNOWN;
     swdata->w = w;
     swdata->h = h;
@@ -368,6 +369,7 @@ bool SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect, SDL
             if (!swdata->display) {
                 return false;
             }
+            swdata->target_format = target_format;
         }
         if (!swdata->stretch) {
             swdata->stretch = SDL_CreateSurface(swdata->w, swdata->h, target_format);
@@ -378,7 +380,7 @@ bool SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect, SDL
         pixels = swdata->stretch->pixels;
         pitch = swdata->stretch->pitch;
     }
-    if (!SDL_ConvertPixels(swdata->w, swdata->h, swdata->format, swdata->planes[0], swdata->pitches[0], target_format, pixels, pitch)) {
+    if (!SDL_ConvertPixelsAndColorspace(swdata->w, swdata->h, swdata->format, swdata->colorspace, 0, swdata->planes[0], swdata->pitches[0], target_format, SDL_COLORSPACE_SRGB, 0, pixels, pitch)) {
         return false;
     }
     if (stretch) {

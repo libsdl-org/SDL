@@ -1453,7 +1453,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
 
         if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
 #if SDL_HAVE_YUV
-            texture->yuv = SDL_SW_CreateYUVTexture(format, w, h);
+            texture->yuv = SDL_SW_CreateYUVTexture(texture->format, texture->colorspace, w, h);
 #else
             SDL_SetError("SDL not built with YUV support");
 #endif
