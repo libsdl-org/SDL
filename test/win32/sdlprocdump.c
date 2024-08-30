@@ -1,13 +1,20 @@
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <windows.h>
 #include <dbghelp.h>
 
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define DUMP_FOLDER "minidumps"
 #define APPNAME "SDLPROCDUMP"
+
+#define PRODCUMP_MIN(A,B) (((A) < (B)) ? (A) : (B))
 
 #if defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) ||defined( __i386) || defined(_M_IX86)
 #define SDLPROCDUMP_CPU_X86 1
@@ -180,6 +187,7 @@ static const char *exceptionFlags_to_string(DWORD dwFlags, char *buffer, size_t 
     }
 
     FOREACH_EXCEPTION_FLAGS(APPEND_OR_STR)
+#undef APPEND_OR_STR
     return buffer;
 }
 
@@ -224,7 +232,6 @@ static void write_minidump(const char *child_file_path, const LPPROCESS_INFORMAT
     char child_file_name[64];
     EXCEPTION_POINTERS exception_pointers;
     HANDLE hFile = INVALID_HANDLE_VALUE;
-    HMODULE dbghelp_module = NULL;
     MINIDUMP_EXCEPTION_INFORMATION minidump_exception_information;
     SYSTEMTIME system_time;
 
@@ -241,7 +248,7 @@ static void write_minidump(const char *child_file_path, const LPPROCESS_INFORMAT
     _splitpath_s(child_file_path, NULL, 0, NULL, 0, child_file_name, sizeof(child_file_name), NULL, 0);
     GetLocalTime(&system_time);
 
-    snprintf(dump_file_path, sizeof(dump_file_path), "minidumps/%s_%04d-%02d-%02d_%d-%02d-%02d.dmp",
+    snprintf(dump_file_path, sizeof(dump_file_path), "minidumps/%s_%04d-%02d-%02d_%02d-%02d-%02d.dmp",
              child_file_name,
              system_time.wYear, system_time.wMonth, system_time.wDay,
              system_time.wHour, system_time.wMinute, system_time.wSecond);
@@ -280,12 +287,9 @@ post_dump:
     if (hFile != INVALID_HANDLE_VALUE) {
         CloseHandle(hFile);
     }
-    if (dbghelp_module != NULL) {
-        FreeLibrary(dbghelp_module);
-    }
 }
 
-static void print_stacktrace(const LPPROCESS_INFORMATION process_information, PCONTEXT context, LPVOID address) {
+static void print_stacktrace(const LPPROCESS_INFORMATION process_information, LPVOID address, PCONTEXT context) {
     STACKFRAME64 stack_frame;
     DWORD machine_type;
 
@@ -353,12 +357,11 @@ static void print_stacktrace(const LPPROCESS_INFORMATION process_information, PC
                                     process_information->hProcess,         /* HANDLE                           hProcess */
                                     process_information->hThread,          /* HANDLE                           hThread */
                                     &stack_frame,                          /* LPSTACKFRAME64                   StackFrame */
-                                    &context,                              /* PVOID                            ContextRecord */
+                                    context,                               /* PVOID                            ContextRecord */
                                     NULL,                                  /* PREAD_PROCESS_MEMORY_ROUTINE64   ReadMemoryRoutine */
                                     dyn_dbghelp.pSymFunctionTableAccess64, /* PFUNCTION_TABLE_ACCESS_ROUTINE64 FunctionTableAccessRoutine */
                                     dyn_dbghelp.pSymGetModuleBase64,       /* PGET_MODULE_BASE_ROUTINE64       GetModuleBaseRoutine */
                                     NULL)) {                               /* PTRANSLATE_ADDRESS_ROUTINE64     TranslateAddress */
-
         IMAGEHLP_MODULE64 module_info;
         union {
             char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(CHAR)];
@@ -467,8 +470,13 @@ static void GetMSCExceptionName(HANDLE hProcess, ULONG_PTR *parameters, DWORD co
 #undef CHECKED_ReadProcessMemory
 }
 
+static void log_usage(const char *argv0) {
+    fprintf(stderr, "Usage: %s [--help] [--debug-stream] [--] PROGRAM [ARG1 [ARG2 [ARG3 ... ]]]\n", argv0);
+}
+
 int main(int argc, char *argv[]) {
     int i;
+    int cmd_start;
     size_t command_line_len = 0;
     char *command_line;
     STARTUPINFOA startup_info;
@@ -477,13 +485,30 @@ int main(int argc, char *argv[]) {
     BOOL debugger_present;
     DWORD exit_code;
     DWORD creation_flags;
+    BOOL log_debug_stream = FALSE;
 
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s PROGRAM [ARG1 [ARG2 [ARG3 ... ]]]\n", argv[0]);
+    cmd_start = -1;
+    for (i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--") == 0) {
+            cmd_start = i + 1;
+            break;
+        } else if (strcmp(argv[i], "--debug-stream") == 0) {
+            log_debug_stream = TRUE;
+            continue;
+        } else if (strcmp(argv[i], "--help") == 0) {
+            log_usage(argv[0]);
+            return 0;
+        } else {
+            cmd_start = i;
+            break;
+        }
+    }
+    if (cmd_start < 0 || cmd_start >= argc) {
+        log_usage(argv[0]);
         return 1;
     }
 
-    for (i = 1; i < argc; i++) {
+    for (i = cmd_start; i < argc; i++) {
         command_line_len += strlen(argv[i]) + 1;
     }
     command_line = malloc(command_line_len + 1);
@@ -492,7 +517,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     command_line[0] = '\0';
-    for (i = 1; i < argc; i++) {
+    for (i = cmd_start; i < argc; i++) {
         strcat_s(command_line, command_line_len, argv[i]);
         if (i != argc - 1) {
             strcat_s(command_line, command_line_len, " ");
@@ -508,7 +533,7 @@ int main(int argc, char *argv[]) {
         creation_flags |= DEBUG_PROCESS | DEBUG_ONLY_THIS_PROCESS;
     }
     success = CreateProcessA(
-        argv[1],                /* LPCSTR                lpApplicationName, */
+        argv[cmd_start],        /* LPCSTR                lpApplicationName, */
         command_line,           /* LPSTR                 lpCommandLine, */
         NULL,                   /* LPSECURITY_ATTRIBUTES lpProcessAttributes, */
         NULL,                   /* LPSECURITY_ATTRIBUTES lpThreadAttributes, */
@@ -520,7 +545,7 @@ int main(int argc, char *argv[]) {
         &process_information);  /* LPPROCESS_INFORMATION lpProcessInformation */
 
     if (!success) {
-        printf_windows_message("Failed to start application");
+        printf_windows_message("Failed to start application \"%s\"", argv[cmd_start]);
         return 1;
     }
 
@@ -533,10 +558,44 @@ int main(int argc, char *argv[]) {
             DWORD continue_status = DBG_CONTINUE;
             success = WaitForDebugEvent(&event, INFINITE);
             if (!success) {
-                printf_message("Failed to get a debug event");
+                printf_windows_message("Failed to get a debug event");
                 return 1;
             }
             switch (event.dwDebugEventCode) {
+            case OUTPUT_DEBUG_STRING_EVENT:
+            {
+                if (log_debug_stream) {
+                    SIZE_T bytes_read = 0;
+                    union {
+                        char char_buffer[512];
+                        WCHAR wchar_buffer[256];
+                    } buffer;
+                    if (ReadProcessMemory(process_information.hProcess, event.u.DebugString.lpDebugStringData, buffer.char_buffer, PRODCUMP_MIN(sizeof(buffer), event.u.DebugString.nDebugStringLength), &bytes_read) && bytes_read) {
+                        if (event.u.DebugString.fUnicode) {
+                            size_t len = bytes_read / 2;
+                            buffer.wchar_buffer[255] = '\0';
+                            while (len > 0 && (buffer.wchar_buffer[len - 1] == '\0' || buffer.wchar_buffer[len - 1] == '\n' || buffer.wchar_buffer[len - 1] == '\r')) {
+                                buffer.wchar_buffer[len - 1] = '\0';
+                                len -= 1;
+                            }
+                            if (len > 0) {
+                                printf("[" APPNAME "] (debug) %S\n", buffer.wchar_buffer);
+                            }
+                        } else {
+                            size_t len = bytes_read;
+                            buffer.char_buffer[511] = '\0';
+                            while (len > 0 && (buffer.char_buffer[len - 1] == '\0' || buffer.char_buffer[len - 1] == '\n' || buffer.char_buffer[len - 1] == '\r')) {
+                                buffer.char_buffer[len - 1] = '\0';
+                                len -= 1;
+                            }
+                            if (len > 0) {
+                                printf("[" APPNAME "] (debug) %s\n", buffer.char_buffer);
+                            }
+                        }
+                    }
+                }
+                break;
+            }
             case EXCEPTION_DEBUG_EVENT:
             {
                 const BOOL cxx_exception = IsCXXException(event.u.Exception.ExceptionRecord.ExceptionCode);
@@ -566,7 +625,7 @@ int main(int argc, char *argv[]) {
 
                     printf_message("    (Non-continuable exception debug event)");
                     context = FillInThreadContext(&process_information, &context_buffer);
-                    write_minidump(argv[1], &process_information, event.dwThreadId, &event.u.Exception.ExceptionRecord, context);
+                    write_minidump(argv[cmd_start], &process_information, event.dwThreadId, &event.u.Exception.ExceptionRecord, context);
                     printf_message("");
 #ifdef SDLPROCDUMP_PRINTSTACK
                     print_stacktrace(&process_information, event.u.Exception.ExceptionRecord.ExceptionAddress, context);
@@ -574,6 +633,7 @@ int main(int argc, char *argv[]) {
                     printf_message("No support for printing stacktrack for current architecture");
 #endif
                     DebugActiveProcessStop(event.dwProcessId);
+                    process_alive = FALSE;
                 }
                 continue_status = DBG_EXCEPTION_NOT_HANDLED;
                 break;
@@ -586,12 +646,11 @@ int main(int argc, char *argv[]) {
                 }
                 /* Don't invade process on CI: downloading symbols will cause test timeouts */
                 if (!dyn_dbghelp.pSymInitialize(process_information.hProcess, NULL, FALSE)) {
-                    printf_windows_message("pSymInitialize failed: no stacktrace");
+                    printf_windows_message("SymInitialize failed: no stacktrace");
                     break;
                 }
                 break;
             case EXIT_PROCESS_DEBUG_EVENT:
-                exit_code = event.u.ExitProcess.dwExitCode;
                 if (event.dwProcessId == process_information.dwProcessId) {
                     process_alive = 0;
                     DebugActiveProcessStop(event.dwProcessId);
