@@ -23,6 +23,9 @@
 #ifdef HAVE_LIBUNWIND_H
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
+#ifndef unw_get_proc_name_by_ip
+#define SDLTEST_EARLY_PROCNAME
+#endif
 #endif
 
 #ifdef SDL_PLATFORM_WIN32
@@ -57,6 +60,9 @@ typedef struct SDL_tracked_allocation
     size_t size;
     Uint64 stack[MAXIMUM_TRACKED_STACK_DEPTH];
     struct SDL_tracked_allocation *next;
+#ifdef SDLTEST_EARLY_PROCNAME
+    char stack_names[MAXIMUM_TRACKED_STACK_DEPTH][256];
+#endif
 } SDL_tracked_allocation;
 
 static SDLTest_Crc32Context s_crc32_context;
@@ -144,10 +150,19 @@ static void SDL_TrackAllocation(void *mem, size_t size)
         stack_index = 0;
         while (unw_step(&cursor) > 0) {
             unw_word_t pc;
+#ifdef SDLTEST_EARLY_PROCNAME
+            unw_word_t offset;
+            char sym[236];
+#endif
 
             unw_get_reg(&cursor, UNW_REG_IP, &pc);
             entry->stack[stack_index] = pc;
 
+#ifdef SDLTEST_EARLY_PROCNAME
+            if (unw_get_proc_name(&cursor, sym, sizeof(sym), &offset) == 0) {
+                SDL_snprintf(entry->stack_names[stack_index], sizeof(entry->stack_names[stack_index]), "%s+0x%llx", sym, (unsigned long long)offset);
+            }
+#endif
             ++stack_index;
 
             if (stack_index == SDL_arraysize(entry->stack)) {
@@ -368,9 +383,11 @@ void SDLTest_LogAllocations(void)
                 }
 #ifdef HAVE_LIBUNWIND_H
                 {
-#ifdef unw_get_proc_name_by_ip
-                    unw_word_t offset = 0;
+#ifdef SDLTEST_EARLY_PROCNAME
+                    (void)SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s", entry->stack_names[stack_index]);
+#else
                     char name[256] = "???";
+                    unw_word_t offset = 0;
                     unw_get_proc_name_by_ip(unw_local_addr_space, entry->stack[stack_index], name, sizeof(name), &offset, NULL);
                     (void)SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%llx", name, (long long unsigned int)offset);
 #endif
