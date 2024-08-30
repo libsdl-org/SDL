@@ -1247,25 +1247,8 @@ static void D3D12_INTERNAL_DestroyFence(D3D12Fence *fence)
     SDL_free(fence);
 }
 
-// FIXME: just move this into DestroyDevice
 static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
 {
-    if (!renderer) {
-        return;
-    }
-
-    // Release blit pipeline structures
-    D3D12_INTERNAL_ReleaseBlitPipelines((SDL_GPURenderer *)renderer);
-
-    // Flush any remaining GPU work...
-    D3D12_Wait((SDL_GPURenderer *)renderer);
-
-    // Release window data
-    for (Sint32 i = renderer->claimedWindowCount - 1; i >= 0; i -= 1) {
-        D3D12_UnclaimWindow((SDL_GPURenderer *)renderer, renderer->claimedWindows[i]->window);
-    }
-    SDL_free(renderer->claimedWindows);
-
     // Release uniform buffers
     for (Uint32 i = 0; i < renderer->uniformBufferPoolCount; i += 1) {
         D3D12_INTERNAL_DestroyBuffer(
@@ -1317,8 +1300,14 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
     // Clean up allocations
     SDL_free(renderer->availableCommandBuffers);
     SDL_free(renderer->submittedCommandBuffers);
-    SDL_free(renderer->availableFences);
     SDL_free(renderer->uniformBufferPool);
+    SDL_free(renderer->claimedWindows);
+    SDL_free(renderer->availableFences);
+    SDL_free(renderer->buffersToDestroy);
+    SDL_free(renderer->texturesToDestroy);
+    SDL_free(renderer->samplersToDestroy);
+    SDL_free(renderer->graphicsPipelinesToDestroy);
+    SDL_free(renderer->computePipelinesToDestroy);
 
     // Tear down D3D12 objects
     if (renderer->indirectDrawCommandSignature) {
@@ -1392,6 +1381,18 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
 static void D3D12_DestroyDevice(SDL_GPUDevice *device)
 {
     D3D12Renderer *renderer = (D3D12Renderer *)device->driverData;
+
+    // Release blit pipeline structures
+    D3D12_INTERNAL_ReleaseBlitPipelines((SDL_GPURenderer *)renderer);
+
+    // Flush any remaining GPU work...
+    D3D12_Wait((SDL_GPURenderer *)renderer);
+
+    // Release window data
+    for (Sint32 i = renderer->claimedWindowCount - 1; i >= 0; i -= 1) {
+        D3D12_UnclaimWindow((SDL_GPURenderer *)renderer, renderer->claimedWindows[i]->window);
+    }
+
     D3D12_INTERNAL_DestroyRenderer(renderer);
     SDL_free(device);
 }
