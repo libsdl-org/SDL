@@ -24,7 +24,8 @@
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #ifndef unw_get_proc_name_by_ip
-#define SDLTEST_EARLY_PROCNAME
+#define SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
+static SDL_bool s_unwind_symbol_names = SDL_TRUE;
 #endif
 #endif
 
@@ -60,7 +61,7 @@ typedef struct SDL_tracked_allocation
     size_t size;
     Uint64 stack[MAXIMUM_TRACKED_STACK_DEPTH];
     struct SDL_tracked_allocation *next;
-#ifdef SDLTEST_EARLY_PROCNAME
+#ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
     char stack_names[MAXIMUM_TRACKED_STACK_DEPTH][256];
 #endif
 } SDL_tracked_allocation;
@@ -150,7 +151,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
         stack_index = 0;
         while (unw_step(&cursor) > 0) {
             unw_word_t pc;
-#ifdef SDLTEST_EARLY_PROCNAME
+#ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
             unw_word_t offset;
             char sym[236];
 #endif
@@ -158,8 +159,8 @@ static void SDL_TrackAllocation(void *mem, size_t size)
             unw_get_reg(&cursor, UNW_REG_IP, &pc);
             entry->stack[stack_index] = pc;
 
-#ifdef SDLTEST_EARLY_PROCNAME
-            if (unw_get_proc_name(&cursor, sym, sizeof(sym), &offset) == 0) {
+#ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
+            if (s_unwind_symbol_names && unw_get_proc_name(&cursor, sym, sizeof(sym), &offset) == 0) {
                 SDL_snprintf(entry->stack_names[stack_index], sizeof(entry->stack_names[stack_index]), "%s+0x%llx", sym, (unsigned long long)offset);
             }
 #endif
@@ -295,7 +296,20 @@ void SDLTest_TrackAllocations(void)
     if (s_previous_allocations != 0) {
         SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
     }
-#ifdef SDL_PLATFORM_WIN32
+#ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
+    do {
+        /* Don't use SDL_GetHint: SDL_malloc is off limits. */
+        const char *env_trackmem = SDL_getenv("SDL_TRACKMEM_SYMBOL_NAMES");
+        if (env_trackmem) {
+            if (SDL_strcasecmp(env_trackmem, "1") == 0 || SDL_strcasecmp(env_trackmem, "yes") == 0 || SDL_strcasecmp(env_trackmem, "true") == 0) {
+                s_unwind_symbol_names = SDL_TRUE;
+            } else if (SDL_strcasecmp(env_trackmem, "0") == 0 || SDL_strcasecmp(env_trackmem, "no") == 0 || SDL_strcasecmp(env_trackmem, "false") == 0) {
+                s_unwind_symbol_names = SDL_FALSE;
+            }
+        }
+    } while (0);
+
+#elif defined(SDL_PLATFORM_WIN32)
     do {
         dyn_dbghelp.module = SDL_LoadObject("dbghelp.dll");
         if (!dyn_dbghelp.module) {
@@ -383,8 +397,10 @@ void SDLTest_LogAllocations(void)
                 }
 #ifdef HAVE_LIBUNWIND_H
                 {
-#ifdef SDLTEST_EARLY_PROCNAME
-                    (void)SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s", entry->stack_names[stack_index]);
+#ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
+                    if (s_unwind_symbol_names) {
+                        (void)SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s", entry->stack_names[stack_index]);
+                    }
 #else
                     char name[256] = "???";
                     unw_word_t offset = 0;
