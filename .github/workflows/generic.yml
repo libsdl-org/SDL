@@ -34,6 +34,13 @@ jobs:
             ${{ (!matrix.platform.msys2-no-perl && format('{0}-perl', matrix.platform.msys2-env)) || '' }}
             ${{ matrix.platform.msys2-env }}-pkg-config
             ${{ matrix.platform.msys2-env }}-clang-tools-extra
+      - name: 'About this job'
+        run: |
+          echo "key=${{ matrix.platform.key }}"
+          echo "name=${{ matrix.platform.name }}"
+          echo "os=${{ matrix.platform.os }}"
+          echo ""
+          echo "Add [sdl-ci-filter ${{ matrix.platform.key }}] to your commit message to reduce the number of jobs."
       - uses: actions/checkout@v4
       - name: 'Set up ninja'
         if: ${{ matrix.platform.setup-ninja }}
