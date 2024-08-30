@@ -83,11 +83,15 @@ static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
     MTLPixelFormatBC1_RGBA,      // BC1_UNORM
     MTLPixelFormatBC2_RGBA,      // BC2_UNORM
     MTLPixelFormatBC3_RGBA,      // BC3_UNORM
+    MTLPixelFormatBC4_RUnorm,    // BC4_UNORM
+    MTLPixelFormatBC5_RGUnorm,   // BC5_UNORM
     MTLPixelFormatBC7_RGBAUnorm, // BC7_UNORM
 #else
     MTLPixelFormatInvalid, // BC1_UNORM
     MTLPixelFormatInvalid, // BC2_UNORM
     MTLPixelFormatInvalid, // BC3_UNORM
+    MTLPixelFormatInvalid, // BC4_UNORM
+    MTLPixelFormatInvalid, // BC5_UNORM
     MTLPixelFormatInvalid, // BC7_UNORM
 #endif
     MTLPixelFormatRG8Snorm,        // R8G8_SNORM
@@ -3701,6 +3705,8 @@ static bool METAL_SupportsTextureFormat(
         case SDL_GPU_TEXTUREFORMAT_BC1_UNORM:
         case SDL_GPU_TEXTUREFORMAT_BC2_UNORM:
         case SDL_GPU_TEXTUREFORMAT_BC3_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC4_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC5_UNORM:
         case SDL_GPU_TEXTUREFORMAT_BC7_UNORM:
         case SDL_GPU_TEXTUREFORMAT_BC3_UNORM_SRGB:
         case SDL_GPU_TEXTUREFORMAT_BC7_UNORM_SRGB:
