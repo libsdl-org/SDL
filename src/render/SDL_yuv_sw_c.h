@@ -29,6 +29,7 @@
 struct SDL_SW_YUVTexture
 {
     SDL_PixelFormat format;
+    SDL_Colorspace colorspace;
     SDL_PixelFormat target_format;
     int w, h;
     Uint8 *pixels;
@@ -44,7 +45,7 @@ struct SDL_SW_YUVTexture
 
 typedef struct SDL_SW_YUVTexture SDL_SW_YUVTexture;
 
-extern SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, int w, int h);
+extern SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspace colorspace, int w, int h);
 extern bool SDL_SW_QueryYUVTexturePixels(SDL_SW_YUVTexture *swdata, void **pixels, int *pitch);
 extern bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect, const void *pixels, int pitch);
 extern bool SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
