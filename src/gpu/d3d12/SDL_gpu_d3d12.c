@@ -1230,6 +1230,7 @@ static void D3D12_INTERNAL_DestroyCommandBuffer(D3D12CommandBuffer *commandBuffe
     SDL_free(commandBuffer->usedGraphicsPipelines);
     SDL_free(commandBuffer->usedComputePipelines);
     SDL_free(commandBuffer->usedUniformBuffers);
+    SDL_free(commandBuffer->textureDownloads);
     SDL_free(commandBuffer);
 }
 
