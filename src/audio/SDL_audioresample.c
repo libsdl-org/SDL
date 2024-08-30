@@ -662,7 +662,7 @@ Sint64 SDL_GetResamplerOutputFrames(Sint64 input_frames, Sint64 resample_rate, S
     }
 
     // output_frames = div_ceil(input_offset, resample_rate)
-    Sint64 output_frames = (input_offset > 0) ? (((input_offset - 1) / resample_rate) + 1) : 0;
+    Sint64 output_frames = (input_offset > 0) ? ((input_offset + resample_rate * 3 / 4) / resample_rate) : 0;
 
     *inout_resample_offset = (output_frames * resample_rate) - input_offset;
 
