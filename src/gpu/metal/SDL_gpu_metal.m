@@ -103,6 +103,7 @@ static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
     MTLPixelFormatR32Float,        // R32_FLOAT
     MTLPixelFormatRG32Float,       // R32G32_FLOAT
     MTLPixelFormatRGBA32Float,     // R32G32B32A32_FLOAT
+    MTLPixelFormatRG11B10Float,    // R11G11B10_UFLOAT
     MTLPixelFormatR8Uint,          // R8_UINT
     MTLPixelFormatRG8Uint,         // R8G8_UINT
     MTLPixelFormatRGBA8Uint,       // R8G8B8A8_UINT
