@@ -30,6 +30,10 @@
 #ifndef SDL_test_font_h_
 #define SDL_test_font_h_
 
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_render.h>
+
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
