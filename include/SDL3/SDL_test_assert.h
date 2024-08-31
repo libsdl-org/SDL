@@ -34,6 +34,8 @@
 #ifndef SDL_test_assert_h_
 #define SDL_test_assert_h_
 
+#include <SDL3/SDL_stdinc.h>
+
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
