@@ -9779,7 +9779,7 @@ static void VULKAN_ReleaseWindow(
     SDL_free(windowData);
 
     SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
-    SDL_DelEventWatch(VULKAN_INTERNAL_OnWindowResize, window);
+    SDL_RemoveEventWatch(VULKAN_INTERNAL_OnWindowResize, window);
 }
 
 static bool VULKAN_INTERNAL_RecreateSwapchain(

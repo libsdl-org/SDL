@@ -56,7 +56,7 @@ static void HIDAPI_DriverGameCube_RegisterHints(SDL_HintCallback callback, void 
 
 static void HIDAPI_DriverGameCube_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE, callback, userdata);
 }
 
 static bool HIDAPI_DriverGameCube_IsEnabled(void)
@@ -503,7 +503,7 @@ static void HIDAPI_DriverGameCube_FreeDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
 
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE,
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE,
                         SDL_JoystickGameCubeRumbleBrakeHintChanged, ctx);
 }
 

@@ -338,8 +338,8 @@ static void HIDAPI_DriverXboxOne_RegisterHints(SDL_HintCallback callback, void *
 
 static void HIDAPI_DriverXboxOne_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX, callback, userdata);
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE, callback, userdata);
 }
 
 static bool HIDAPI_DriverXboxOne_IsEnabled(void)
@@ -1634,7 +1634,7 @@ static void HIDAPI_DriverXboxOne_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
 
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED,
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED,
                         SDL_HomeLEDHintChanged, ctx);
 }
 

@@ -1379,7 +1379,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_DelEventWatch
+ * \sa SDL_RemoveEventWatch
  * \sa SDL_SetEventFilter
  */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AddEventWatch(SDL_EventFilter filter, void *userdata);
@@ -1397,7 +1397,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AddEventWatch(SDL_EventFilter filter, v
  *
  * \sa SDL_AddEventWatch
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DelEventWatch(SDL_EventFilter filter, void *userdata);
+extern SDL_DECLSPEC void SDLCALL SDL_RemoveEventWatch(SDL_EventFilter filter, void *userdata);
 
 /**
  * Run a specific filter function on the current event queue, removing any

@@ -389,7 +389,7 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         !boolResult,
         "Verify has test text data, expected SDL_FALSE, got SDL_TRUE");
 
-    SDL_DelEventWatch(ClipboardEventWatch, NULL);
+    SDL_RemoveEventWatch(ClipboardEventWatch, NULL);
 
     return TEST_COMPLETED;
 }
@@ -473,7 +473,7 @@ static int clipboard_testClipboardTextFunctions(void *arg)
     SDL_free(textRef);
     SDL_free(text);
 
-    SDL_DelEventWatch(ClipboardEventWatch, NULL);
+    SDL_RemoveEventWatch(ClipboardEventWatch, NULL);
 
     return TEST_COMPLETED;
 }
@@ -556,7 +556,7 @@ static int clipboard_testPrimarySelectionTextFunctions(void *arg)
     SDL_free(textRef);
     SDL_free(text);
 
-    SDL_DelEventWatch(ClipboardEventWatch, NULL);
+    SDL_RemoveEventWatch(ClipboardEventWatch, NULL);
 
     return TEST_COMPLETED;
 }

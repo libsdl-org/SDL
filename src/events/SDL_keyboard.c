@@ -867,7 +867,7 @@ void SDL_QuitKeyboard(void)
         SDL_keyboard.keymap = NULL;
     }
 
-    SDL_DelHintCallback(SDL_HINT_KEYCODE_OPTIONS,
+    SDL_RemoveHintCallback(SDL_HINT_KEYCODE_OPTIONS,
                         SDL_KeycodeOptionsChanged, &SDL_keyboard);
 }
 

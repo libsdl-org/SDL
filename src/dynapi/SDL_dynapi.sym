@@ -117,8 +117,8 @@ SDL3_0.0.0 {
     SDL_CreateWindowWithProperties;
     SDL_CursorVisible;
     SDL_DateTimeToTime;
-    SDL_DelEventWatch;
-    SDL_DelHintCallback;
+    SDL_RemoveEventWatch;
+    SDL_RemoveHintCallback;
     SDL_Delay;
     SDL_DelayNS;
     SDL_DestroyAudioStream;

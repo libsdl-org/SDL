@@ -142,8 +142,8 @@
 #define SDL_CreateWindowWithProperties SDL_CreateWindowWithProperties_REAL
 #define SDL_CursorVisible SDL_CursorVisible_REAL
 #define SDL_DateTimeToTime SDL_DateTimeToTime_REAL
-#define SDL_DelEventWatch SDL_DelEventWatch_REAL
-#define SDL_DelHintCallback SDL_DelHintCallback_REAL
+#define SDL_RemoveEventWatch SDL_RemoveEventWatch_REAL
+#define SDL_RemoveHintCallback SDL_RemoveHintCallback_REAL
 #define SDL_Delay SDL_Delay_REAL
 #define SDL_DelayNS SDL_DelayNS_REAL
 #define SDL_DestroyAudioStream SDL_DestroyAudioStream_REAL

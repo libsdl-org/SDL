@@ -98,7 +98,7 @@ static SDL_bool SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event
 
 - (void)dealloc
 {
-    SDL_DelEventWatch(SDL_MetalViewEventWatch, (__bridge void *)(self));
+    SDL_RemoveEventWatch(SDL_MetalViewEventWatch, (__bridge void *)(self));
 }
 
 - (NSInteger)tag

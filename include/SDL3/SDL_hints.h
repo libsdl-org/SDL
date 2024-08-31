@@ -4307,7 +4307,7 @@ typedef void(SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_DelHintCallback
+ * \sa SDL_RemoveHintCallback
  */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata);
 
@@ -4325,7 +4325,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AddHintCallback(const char *name, SDL_H
  *
  * \sa SDL_AddHintCallback
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
+extern SDL_DECLSPEC void SDLCALL SDL_RemoveHintCallback(const char *name,
                                                      SDL_HintCallback callback,
                                                      void *userdata);
 

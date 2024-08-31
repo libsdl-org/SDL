@@ -5126,7 +5126,7 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 
     renderer->destroyed = true;
 
-    SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
+    SDL_RemoveEventWatch(SDL_RendererEventWatch, renderer);
 
     if (renderer->window) {
         SDL_PropertiesID props = SDL_GetWindowProperties(renderer->window);

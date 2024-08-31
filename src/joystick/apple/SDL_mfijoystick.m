@@ -1708,7 +1708,7 @@ static void IOS_JoystickQuit(void)
         }
 
 #ifdef SDL_PLATFORM_TVOS
-        SDL_DelHintCallback(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION,
+        SDL_RemoveHintCallback(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION,
                             SDL_AppleTVRemoteRotationHintChanged, NULL);
 #endif // SDL_PLATFORM_TVOS
 #endif // SDL_JOYSTICK_MFI

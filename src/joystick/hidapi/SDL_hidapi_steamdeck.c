@@ -244,7 +244,7 @@ static void HIDAPI_DriverSteamDeck_RegisterHints(SDL_HintCallback callback, void
 
 static void HIDAPI_DriverSteamDeck_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK, callback, userdata);
 }
 
 static bool HIDAPI_DriverSteamDeck_IsEnabled(void)

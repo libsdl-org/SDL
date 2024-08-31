@@ -1134,7 +1134,7 @@ static void HIDAPI_DriverNintendoClassic_RegisterHints(SDL_HintCallback callback
 
 static void HIDAPI_DriverNintendoClassic_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC, callback, userdata);
 }
 
 static bool HIDAPI_DriverNintendoClassic_IsEnabled(void)
@@ -1175,7 +1175,7 @@ static void HIDAPI_DriverJoyCons_RegisterHints(SDL_HintCallback callback, void *
 
 static void HIDAPI_DriverJoyCons_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, callback, userdata);
 }
 
 static bool HIDAPI_DriverJoyCons_IsEnabled(void)
@@ -1211,7 +1211,7 @@ static void HIDAPI_DriverSwitch_RegisterHints(SDL_HintCallback callback, void *u
 
 static void HIDAPI_DriverSwitch_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH, callback, userdata);
 }
 
 static bool HIDAPI_DriverSwitch_IsEnabled(void)
@@ -2660,14 +2660,14 @@ static void HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
         ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-        SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED,
+        SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED,
                             SDL_HomeLEDHintChanged, ctx);
     } else {
-        SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
+        SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
                             SDL_HomeLEDHintChanged, ctx);
     }
 
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED,
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED,
                         SDL_PlayerLEDHintChanged, ctx);
 
     ctx->joystick = NULL;

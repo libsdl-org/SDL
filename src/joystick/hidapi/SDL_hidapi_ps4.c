@@ -191,7 +191,7 @@ static void HIDAPI_DriverPS4_RegisterHints(SDL_HintCallback callback, void *user
 
 static void HIDAPI_DriverPS4_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4, callback, userdata);
 }
 
 static bool HIDAPI_DriverPS4_IsEnabled(void)
@@ -1350,9 +1350,9 @@ static void HIDAPI_DriverPS4_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
 
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL,
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL,
                         SDL_PS4ReportIntervalHintChanged, ctx);
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
                         SDL_PS4RumbleHintChanged, ctx);
 
     ctx->joystick = NULL;

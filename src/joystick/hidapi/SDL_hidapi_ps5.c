@@ -281,7 +281,7 @@ static void HIDAPI_DriverPS5_RegisterHints(SDL_HintCallback callback, void *user
 
 static void HIDAPI_DriverPS5_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5, callback, userdata);
 }
 
 static bool HIDAPI_DriverPS5_IsEnabled(void)
@@ -1589,10 +1589,10 @@ static void HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
                         SDL_PS5RumbleHintChanged, ctx);
 
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
                         SDL_PS5PlayerLEDHintChanged, ctx);
 
     ctx->joystick = NULL;

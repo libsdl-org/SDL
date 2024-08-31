@@ -1682,9 +1682,9 @@ static void HIDAPI_JoystickQuit(void)
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
         driver->UnregisterHints(SDL_HIDAPIDriverHintChanged, driver);
     }
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS,
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS,
                         SDL_HIDAPIDriverHintChanged, NULL);
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI,
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI,
                         SDL_HIDAPIDriverHintChanged, NULL);
 
     SDL_hid_exit();

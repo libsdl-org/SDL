@@ -132,7 +132,7 @@ SDL_AppResult SDL_IterateMainCallbacks(bool pump_events)
 
 void SDL_QuitMainCallbacks(void)
 {
-    SDL_DelEventWatch(SDL_MainCallbackEventWatcher, NULL);
+    SDL_RemoveEventWatch(SDL_MainCallbackEventWatcher, NULL);
     SDL_main_quit_callback(SDL_main_appstate);
     SDL_main_appstate = NULL;  // just in case.
 

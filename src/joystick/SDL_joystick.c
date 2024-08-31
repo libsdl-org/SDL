@@ -1956,7 +1956,7 @@ void SDL_QuitJoysticks(void)
 
     SDL_QuitSteamVirtualGamepadInfo();
 
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
     SDL_FreeVIDPIDList(&arcadestick_devices);
@@ -3795,11 +3795,11 @@ bool SDL_VIDPIDInList(Uint16 vendor_id, Uint16 product_id, const SDL_vidpid_list
 void SDL_FreeVIDPIDList(SDL_vidpid_list *list)
 {
     if (list->included_hint_name) {
-        SDL_DelHintCallback(list->included_hint_name, SDL_VIDPIDIncludedHintChanged, list);
+        SDL_RemoveHintCallback(list->included_hint_name, SDL_VIDPIDIncludedHintChanged, list);
     }
 
     if (list->excluded_hint_name) {
-        SDL_DelHintCallback(list->excluded_hint_name, SDL_VIDPIDExcludedHintChanged, list);
+        SDL_RemoveHintCallback(list->excluded_hint_name, SDL_VIDPIDExcludedHintChanged, list);
     }
 
     if (list->included_entries) {

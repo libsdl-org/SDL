@@ -54,7 +54,7 @@ static void HIDAPI_DriverLuna_RegisterHints(SDL_HintCallback callback, void *use
 
 static void HIDAPI_DriverLuna_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_LUNA, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_LUNA, callback, userdata);
 }
 
 static bool HIDAPI_DriverLuna_IsEnabled(void)

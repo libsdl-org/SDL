@@ -488,6 +488,9 @@ The following functions have been removed:
 The following enums have been renamed:
 * SDL_eventaction => SDL_EventAction
 
+The following functions have been renamed:
+* SDL_DelEventWatch() => SDL_RemoveEventWatch()
+
 ## SDL_gamecontroller.h
 
 SDL_gamecontroller.h has been renamed SDL_gamepad.h, and all APIs have been renamed to match.
@@ -861,6 +864,9 @@ The following environment variables have been removed:
 
 The following functions have been removed:
 * SDL_ClearHints() - replaced with SDL_ResetHints()
+
+The following functions have been renamed:
+* SDL_DelHintCallback() => SDL_RemoveHintCallback()
 
 ## SDL_init.h
 

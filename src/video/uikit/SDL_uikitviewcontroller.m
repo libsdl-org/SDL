@@ -126,13 +126,13 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #endif
 
 #ifdef SDL_PLATFORM_TVOS
-    SDL_DelHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
+    SDL_RemoveHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
                         SDL_AppleTVControllerUIHintChanged,
                         (__bridge void *)self);
 #endif
 
 #ifndef SDL_PLATFORM_TVOS
-    SDL_DelHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
+    SDL_RemoveHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
                         SDL_HideHomeIndicatorHintChanged,
                         (__bridge void *)self);
 #endif
