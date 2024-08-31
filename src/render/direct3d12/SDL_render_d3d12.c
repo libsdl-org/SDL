@@ -544,7 +544,7 @@ static void D3D12_ResetCommandList(D3D12_RenderData *data)
     ID3D12GraphicsCommandList2_SetDescriptorHeaps(data->commandList, 2, rootDescriptorHeaps);
 }
 
-static bool D3D12_IssueBatch(D3D12_RenderData *data)
+static HRESULT D3D12_IssueBatch(D3D12_RenderData *data)
 {
     HRESULT result = S_OK;
 
@@ -1158,7 +1158,7 @@ static BOOL D3D12_IsDisplayRotated90Degrees(DXGI_MODE_ROTATION rotation)
     }
 }
 
-static bool D3D12_GetRotationForCurrentRenderTarget(SDL_Renderer *renderer)
+static int D3D12_GetRotationForCurrentRenderTarget(SDL_Renderer *renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     if (data->textureRenderTarget) {
@@ -2396,8 +2396,7 @@ static bool D3D12_UpdateVertexBuffer(SDL_Renderer *renderer,
 
     if (rendererData->issueBatch) {
         if (FAILED(D3D12_IssueBatch(rendererData))) {
-            SDL_SetError("Failed to issue intermediate batch");
-            return E_FAIL;
+            return SDL_SetError("Failed to issue intermediate batch");
         }
     }
 
@@ -2424,7 +2423,7 @@ static bool D3D12_UpdateVertexBuffer(SDL_Renderer *renderer,
         rendererData->issueBatch = true;
     }
 
-    return S_OK;
+    return true;
 }
 
 static bool D3D12_UpdateViewport(SDL_Renderer *renderer)
