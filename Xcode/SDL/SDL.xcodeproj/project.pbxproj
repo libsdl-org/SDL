@@ -377,6 +377,15 @@
 		E479118E2BA9555500CE3B7F /* SDL_sysstorage.h in Headers */ = {isa = PBXBuildFile; fileRef = E47911882BA9555500CE3B7F /* SDL_sysstorage.h */; };
 		E479118F2BA9555500CE3B7F /* SDL_genericstorage.c in Sources */ = {isa = PBXBuildFile; fileRef = E479118A2BA9555500CE3B7F /* SDL_genericstorage.c */; };
 		E4A568B62AF763940062EEC4 /* SDL_sysmain_callbacks.c in Sources */ = {isa = PBXBuildFile; fileRef = E4A568B52AF763940062EEC4 /* SDL_sysmain_callbacks.c */; };
+		E4F257712C818FE200FCEAFC /* SDL_gpu.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F257702C818FE200FCEAFC /* SDL_gpu.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E4F257902C81903800FCEAFC /* compile_shaders.sh in Resources */ = {isa = PBXBuildFile; fileRef = E4F2577D2C81903800FCEAFC /* compile_shaders.sh */; };
+		E4F257912C81903800FCEAFC /* Metal_Blit.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F2577E2C81903800FCEAFC /* Metal_Blit.h */; };
+		E4F257922C81903800FCEAFC /* Metal_Blit.metal in Sources */ = {isa = PBXBuildFile; fileRef = E4F2577F2C81903800FCEAFC /* Metal_Blit.metal */; };
+		E4F257932C81903800FCEAFC /* SDL_gpu_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = E4F257802C81903800FCEAFC /* SDL_gpu_metal.m */; };
+		E4F257942C81903800FCEAFC /* SDL_gpu_vulkan_vkfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F257822C81903800FCEAFC /* SDL_gpu_vulkan_vkfuncs.h */; };
+		E4F257952C81903800FCEAFC /* SDL_gpu_vulkan.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F257832C81903800FCEAFC /* SDL_gpu_vulkan.c */; };
+		E4F257962C81903800FCEAFC /* SDL_gpu.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F257852C81903800FCEAFC /* SDL_gpu.c */; };
+		E4F257972C81903800FCEAFC /* SDL_sysgpu.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F257862C81903800FCEAFC /* SDL_sysgpu.h */; };
 		E4F7981A2AD8D84800669F54 /* SDL_core_unsupported.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F798192AD8D84800669F54 /* SDL_core_unsupported.c */; };
 		E4F7981C2AD8D85500669F54 /* SDL_dynapi_unsupported.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F7981B2AD8D85500669F54 /* SDL_dynapi_unsupported.h */; };
 		E4F7981E2AD8D86A00669F54 /* SDL_render_unsupported.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F7981D2AD8D86A00669F54 /* SDL_render_unsupported.c */; };
@@ -915,6 +924,15 @@
 		E47911882BA9555500CE3B7F /* SDL_sysstorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysstorage.h; sourceTree = "<group>"; };
 		E479118A2BA9555500CE3B7F /* SDL_genericstorage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_genericstorage.c; sourceTree = "<group>"; };
 		E4A568B52AF763940062EEC4 /* SDL_sysmain_callbacks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysmain_callbacks.c; sourceTree = "<group>"; };
+		E4F257702C818FE200FCEAFC /* SDL_gpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_gpu.h; path = SDL3/SDL_gpu.h; sourceTree = "<group>"; };
+		E4F2577D2C81903800FCEAFC /* compile_shaders.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = compile_shaders.sh; sourceTree = "<group>"; };
+		E4F2577E2C81903800FCEAFC /* Metal_Blit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Metal_Blit.h; sourceTree = "<group>"; };
+		E4F2577F2C81903800FCEAFC /* Metal_Blit.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Metal_Blit.metal; sourceTree = "<group>"; };
+		E4F257802C81903800FCEAFC /* SDL_gpu_metal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_gpu_metal.m; sourceTree = "<group>"; };
+		E4F257822C81903800FCEAFC /* SDL_gpu_vulkan_vkfuncs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gpu_vulkan_vkfuncs.h; sourceTree = "<group>"; };
+		E4F257832C81903800FCEAFC /* SDL_gpu_vulkan.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_gpu_vulkan.c; sourceTree = "<group>"; };
+		E4F257852C81903800FCEAFC /* SDL_gpu.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_gpu.c; sourceTree = "<group>"; };
+		E4F257862C81903800FCEAFC /* SDL_sysgpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysgpu.h; sourceTree = "<group>"; };
 		E4F798192AD8D84800669F54 /* SDL_core_unsupported.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_core_unsupported.c; sourceTree = "<group>"; };
 		E4F7981B2AD8D85500669F54 /* SDL_dynapi_unsupported.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dynapi_unsupported.h; sourceTree = "<group>"; };
 		E4F7981D2AD8D86A00669F54 /* SDL_render_unsupported.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render_unsupported.c; sourceTree = "<group>"; };
@@ -1201,6 +1219,7 @@
 				F3F7D8CB2933074B00816151 /* SDL_events.h */,
 				F3F7D8D62933074C00816151 /* SDL_filesystem.h */,
 				F3F7D8D02933074C00816151 /* SDL_gamepad.h */,
+				E4F257702C818FE200FCEAFC /* SDL_gpu.h */,
 				F3F7D8D12933074C00816151 /* SDL_guid.h */,
 				F3F7D8AD2933074900816151 /* SDL_haptic.h */,
 				F3F7D8CA2933074B00816151 /* SDL_hidapi.h */,
@@ -1298,6 +1317,7 @@
 				A7D8A92923E2514000DCD162 /* events */,
 				A7D8A7DA23E2513E00DCD162 /* file */,
 				A7D8A7F623E2513F00DCD162 /* filesystem */,
+				E4F257872C81903800FCEAFC /* gpu */,
 				A7D8A5C223E2513D00DCD162 /* haptic */,
 				A7D8A80923E2513F00DCD162 /* hidapi */,
 				A7D8A79D23E2513E00DCD162 /* joystick */,
@@ -2250,6 +2270,37 @@
 			path = generic;
 			sourceTree = "<group>";
 		};
+		E4F257812C81903800FCEAFC /* metal */ = {
+			isa = PBXGroup;
+			children = (
+				E4F2577D2C81903800FCEAFC /* compile_shaders.sh */,
+				E4F2577E2C81903800FCEAFC /* Metal_Blit.h */,
+				E4F2577F2C81903800FCEAFC /* Metal_Blit.metal */,
+				E4F257802C81903800FCEAFC /* SDL_gpu_metal.m */,
+			);
+			path = metal;
+			sourceTree = "<group>";
+		};
+		E4F257842C81903800FCEAFC /* vulkan */ = {
+			isa = PBXGroup;
+			children = (
+				E4F257822C81903800FCEAFC /* SDL_gpu_vulkan_vkfuncs.h */,
+				E4F257832C81903800FCEAFC /* SDL_gpu_vulkan.c */,
+			);
+			path = vulkan;
+			sourceTree = "<group>";
+		};
+		E4F257872C81903800FCEAFC /* gpu */ = {
+			isa = PBXGroup;
+			children = (
+				E4F257812C81903800FCEAFC /* metal */,
+				E4F257842C81903800FCEAFC /* vulkan */,
+				E4F257852C81903800FCEAFC /* SDL_gpu.c */,
+				E4F257862C81903800FCEAFC /* SDL_sysgpu.h */,
+			);
+			path = gpu;
+			sourceTree = "<group>";
+		};
 		F36C7ACF294B9F5E004D61C3 /* core */ = {
 			isa = PBXGroup;
 			children = (
@@ -2319,6 +2370,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3F7D9812933074E00816151 /* SDL.h in Headers */,
+				E4F257942C81903800FCEAFC /* SDL_gpu_vulkan_vkfuncs.h in Headers */,
 				F310138D2C1F2CB700FBE946 /* SDL_getenv_c.h in Headers */,
 				A7D8B39E23E2514200DCD162 /* SDL_RLEaccel_c.h in Headers */,
 				F3F7D9C52933074E00816151 /* SDL_assert.h in Headers */,
@@ -2384,6 +2436,7 @@
 				A7D8A95D23E2514000DCD162 /* SDL_error_c.h in Headers */,
 				F3F7D9712933074E00816151 /* SDL_events.h in Headers */,
 				A7D8BBA523E2514500DCD162 /* SDL_events_c.h in Headers */,
+				E4F257712C818FE200FCEAFC /* SDL_gpu.h in Headers */,
 				F3F7D99D2933074E00816151 /* SDL_filesystem.h in Headers */,
 				F3F7D9852933074E00816151 /* SDL_gamepad.h in Headers */,
 				F362B91A2B3349E200D30B94 /* SDL_gamepad_c.h in Headers */,
@@ -2458,6 +2511,7 @@
 				F3DDCC5D2AFD42B600B0842B /* SDL_rect_impl.h in Headers */,
 				F3F7D9BD2933074E00816151 /* SDL_render.h in Headers */,
 				A7D8B9FB23E2514400DCD162 /* SDL_render_sw_c.h in Headers */,
+				E4F257972C81903800FCEAFC /* SDL_sysgpu.h in Headers */,
 				F3F7D9152933074E00816151 /* SDL_revision.h in Headers */,
 				A7D8BA3123E2514400DCD162 /* SDL_rotate.h in Headers */,
 				F3F7D9652933074E00816151 /* SDL_iostream.h in Headers */,
@@ -2491,6 +2545,7 @@
 				A7D8AC3F23E2514100DCD162 /* SDL_sysvideo.h in Headers */,
 				F3F7D9792933074E00816151 /* SDL_thread.h in Headers */,
 				A7D8B3EC23E2514300DCD162 /* SDL_thread_c.h in Headers */,
+				E4F257912C81903800FCEAFC /* Metal_Blit.h in Headers */,
 				F3F7D90D2933074E00816151 /* SDL_timer.h in Headers */,
 				A7D8AB3123E2514100DCD162 /* SDL_timer_c.h in Headers */,
 				F3F7D9012933074E00816151 /* SDL_touch.h in Headers */,
@@ -2639,6 +2694,7 @@
 			files = (
 				F37A8E1A28405AA100C38E95 /* CMake in Resources */,
 				A75FDBB823E4CBC700529352 /* ReadMe.txt in Resources */,
+				E4F257902C81903800FCEAFC /* compile_shaders.sh in Resources */,
 				A75FDBB723E4CBC700529352 /* License.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2726,6 +2782,7 @@
 				F3F528CB2C29E1C300E6CC26 /* s_isnanf.c in Sources */,
 				A7D8A95723E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A75FDBCE23EA380300529352 /* SDL_hidapi_rumble.c in Sources */,
+				E4F257952C81903800FCEAFC /* SDL_gpu_vulkan.c in Sources */,
 				A7D8BB2723E2514500DCD162 /* SDL_displayevents.c in Sources */,
 				A7D8AB2523E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8823E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
@@ -2736,6 +2793,7 @@
 				A7D8BABB23E2514400DCD162 /* s_scalbn.c in Sources */,
 				F3973FAB28A59BDD00B84553 /* SDL_crc16.c in Sources */,
 				A7D8AB2B23E2514100DCD162 /* SDL_timer.c in Sources */,
+				E4F257962C81903800FCEAFC /* SDL_gpu.c in Sources */,
 				F3D60A8328C16A1900788A3A /* SDL_hidapi_wii.c in Sources */,
 				A7D8B9DD23E2514400DCD162 /* SDL_blendpoint.c in Sources */,
 				A7D8B4EE23E2514300DCD162 /* SDL_gamepad.c in Sources */,
@@ -2764,6 +2822,7 @@
 				A7D8BA9723E2514400DCD162 /* s_copysign.c in Sources */,
 				F3984CD025BCC92900374F43 /* SDL_hidapi_stadia.c in Sources */,
 				A7D8AAB623E2514100DCD162 /* SDL_haptic.c in Sources */,
+				E4F257922C81903800FCEAFC /* Metal_Blit.metal in Sources */,
 				A7D8AF2423E2514100DCD162 /* SDL_cocoametalview.m in Sources */,
 				A7D8B86023E2514400DCD162 /* SDL_audiotypecvt.c in Sources */,
 				A7D8BBC523E2561500DCD162 /* SDL_steamcontroller.c in Sources */,
@@ -2863,6 +2922,7 @@
 				A7D8B97423E2514400DCD162 /* SDL_malloc.c in Sources */,
 				A7D8B8C623E2514400DCD162 /* SDL_audio.c in Sources */,
 				A7D8B61D23E2514300DCD162 /* SDL_sysfilesystem.c in Sources */,
+				E4F257932C81903800FCEAFC /* SDL_gpu_metal.m in Sources */,
 				F3820713284F3609004DD584 /* controller_type.c in Sources */,
 				A7D8AB8B23E2514100DCD162 /* SDL_offscreenvideo.c in Sources */,
 				A7D8B42E23E2514300DCD162 /* SDL_syscond.c in Sources */,
