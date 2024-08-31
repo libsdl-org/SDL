@@ -3164,8 +3164,7 @@ static bool VULKAN_UpdateVertexBuffer(SDL_Renderer *renderer,
 
     if (rendererData->issueBatch) {
         if (VULKAN_IssueBatch(rendererData) != VK_SUCCESS) {
-            SDL_SetError("Failed to issue intermediate batch");
-            return false;
+            return SDL_SetError("Failed to issue intermediate batch");
         }
     }
     // If the existing vertex buffer isn't big enough, we need to recreate a big enough one
