@@ -1944,6 +1944,11 @@ SDL_bool SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
 
     CHECK_TEXTURE_MAGIC(texture, false);
 
+    if (scaleMode != SDL_SCALEMODE_NEAREST &&
+        scaleMode != SDL_SCALEMODE_LINEAR) {
+        return SDL_InvalidParamError("scaleMode");
+    }
+
     renderer = texture->renderer;
     texture->scaleMode = scaleMode;
     if (texture->native) {
