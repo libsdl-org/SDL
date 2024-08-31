@@ -285,8 +285,8 @@ static int SetupWindowData(_THIS, SDL_Window *window, Window w, BOOL created)
                                             1) *
                                                sizeof(*windowlist));
         if (!windowlist) {
-            SDL_free(data);
-            return SDL_OutOfMemory();
+            SDL_OutOfMemory();
+            goto error_cleanup;
         }
         windowlist[numwindows] = data;
         videodata->numwindows++;
@@ -331,9 +331,45 @@ static int SetupWindowData(_THIS, SDL_Window *window, Window w, BOOL created)
         }
     }
 
+#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2) || defined(SDL_VIDEO_OPENGL_EGL)
+    if ((window->flags & SDL_WINDOW_OPENGL) &&
+        ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
+         SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
+#ifdef SDL_VIDEO_OPENGL_GLX
+        && (!_this->gl_data || X11_GL_UseEGL(_this) )
+#endif
+    ) {
+#ifdef SDL_VIDEO_OPENGL_EGL
+        if (!_this->egl_data) {
+            goto error_cleanup;
+        }
+
+        /* Create the GLES window surface */
+        data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)w);
+
+        if (data->egl_surface == EGL_NO_SURFACE) {
+            SDL_SetError("Could not create GLES window surface");
+            goto error_cleanup;
+        }
+#else
+        SDL_SetError("Could not create GLES window surface (EGL support not configured)");
+        goto error_cleanup;
+#endif /* SDL_VIDEO_OPENGL_EGL */
+    }
+#endif
+
     /* All done! */
     window->driverdata = data;
     return 0;
+
+error_cleanup:
+#ifdef X_HAVE_UTF8_STRING
+    if (data->ic) {
+        X11_XDestroyIC(data->ic);
+    }
+#endif
+    SDL_free(data);
+    return -1;
 }
 
 static void SetWindowBordered(Display *display, int screen, Window window, SDL_bool border)
@@ -633,31 +669,6 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         return -1;
     }
     windowdata = (SDL_WindowData *)window->driverdata;
-
-#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2) || defined(SDL_VIDEO_OPENGL_EGL)
-    if ((window->flags & SDL_WINDOW_OPENGL) &&
-        ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
-         SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
-#ifdef SDL_VIDEO_OPENGL_GLX
-        && (!_this->gl_data || X11_GL_UseEGL(_this) )
-#endif
-    ) {
-#ifdef SDL_VIDEO_OPENGL_EGL
-        if (!_this->egl_data) {
-            return -1;
-        }
-
-        /* Create the GLES window surface */
-        windowdata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)w);
-
-        if (windowdata->egl_surface == EGL_NO_SURFACE) {
-            return SDL_SetError("Could not create GLES window surface");
-        }
-#else
-        return SDL_SetError("Could not create GLES window surface (EGL support not configured)");
-#endif /* SDL_VIDEO_OPENGL_EGL */
-    }
-#endif
 
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8 && windowdata->ic) {
