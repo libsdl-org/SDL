@@ -13,6 +13,7 @@
 /* Program to test querying of display info */
 
 #include "SDL.h"
+#include "SDL_test.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,12 +34,22 @@ int main(int argc, char *argv[])
 {
     SDL_DisplayMode mode;
     int num_displays, dpy;
+    SDLTest_CommonState *state;
+
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    if (!state) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDLTest_CommonCreateState failed: %s\n", SDL_GetError());
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    /* Load the SDL library */
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    if (!SDLTest_CommonInit(state)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
@@ -88,7 +99,7 @@ int main(int argc, char *argv[])
         SDL_Log("\n");
     }
 
-    SDL_Quit();
+    SDLTest_CommonQuit(state);
     return 0;
 }
 

@@ -17,15 +17,18 @@
 #include <signal.h>
 
 #include "SDL.h"
+#include "SDL_test.h"
 
 static SDL_TLSID tls;
 static int alive = 0;
 static int testprio = 0;
+static SDLTest_CommonState *state;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
 {
+    SDLTest_CommonQuit(state);
     SDL_Quit();
     exit(rc);
 }
@@ -82,14 +85,39 @@ killed(int sig)
 
 int main(int argc, char *argv[])
 {
-    int arg = 1;
+    int i = 1;
     SDL_Thread *thread;
+
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (!state) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDLTest_CommonCreateState failed: %s\n", SDL_GetError());
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    /* Load the SDL library */
-    if (SDL_Init(0) < 0) {
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcmp("--prio", argv[i]) == 0) {
+                testprio = 1;
+                consumed = 1;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = { "[--prio]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            exit(1);
+        }
+
+        i += consumed;
+    }
+
+    if (!SDLTest_CommonInit(state)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
@@ -98,13 +126,6 @@ int main(int argc, char *argv[])
         SDL_Log("Not running slower tests");
         SDL_Quit();
         return 0;
-    }
-
-    while (argv[arg] && *argv[arg] == '-') {
-        if (SDL_strcmp(argv[arg], "--prio") == 0) {
-            testprio = 1;
-        }
-        ++arg;
     }
 
     tls = SDL_TLSCreate();
@@ -134,6 +155,6 @@ int main(int argc, char *argv[])
     }
     (void)raise(SIGTERM);
 
-    SDL_Quit(); /* Never reached */
+    SDLTest_CommonQuit(state); /* Never reached */
     return 0;   /* Never reached */
 }

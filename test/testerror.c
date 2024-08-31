@@ -16,6 +16,7 @@
 #include <stdlib.h>
 
 #include "SDL.h"
+#include "SDL_test.h"
 
 static int alive = 0;
 
@@ -44,12 +45,22 @@ ThreadFunc(void *data)
 int main(int argc, char *argv[])
 {
     SDL_Thread *thread;
+    SDLTest_CommonState *state;
+
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (!state) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDLTest_CommonCreateState failed: %s\n", SDL_GetError());
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    /* Load the SDL library */
-    if (SDL_Init(0) < 0) {
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    if (!SDLTest_CommonInit(state)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
@@ -76,6 +87,6 @@ int main(int argc, char *argv[])
 
     SDL_Log("Main thread error string: %s\n", SDL_GetError());
 
-    SDL_Quit();
+    SDLTest_CommonQuit(state);
     return 0;
 }

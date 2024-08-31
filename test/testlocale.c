@@ -11,6 +11,7 @@
 */
 #include <stdio.h>
 #include "SDL.h"
+#include "SDL_test.h"
 
 /* !!! FIXME: move this to the test framework */
 
@@ -35,31 +36,63 @@ static void log_locales(void)
 
 int main(int argc, char **argv)
 {
+    SDLTest_CommonState *state;
+    SDL_bool listen = SDL_FALSE;
+    int i = 1;
+
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    if (!state) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDLTest_CommonCreateState failed: %s\n", SDL_GetError());
+        return 1;
+    }
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    /* Print locales and languages */
-    if (SDL_Init(SDL_INIT_VIDEO) != -1) {
-        log_locales();
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
 
-        if ((argc == 2) && (SDL_strcmp(argv[1], "--listen") == 0)) {
-            SDL_bool keep_going = SDL_TRUE;
-            while (keep_going) {
-                SDL_Event e;
-                while (SDL_PollEvent(&e)) {
-                    if (e.type == SDL_QUIT) {
-                        keep_going = SDL_FALSE;
-                    } else if (e.type == SDL_LOCALECHANGED) {
-                        SDL_Log("Saw SDL_LOCALECHANGED event!");
-                        log_locales();
-                    }
-                }
-                SDL_Delay(10);
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcmp("--listen", argv[i]) == 0) {
+                listen = SDL_TRUE;
+                consumed = 1;
             }
         }
+        if (consumed <= 0) {
+            static const char *options[] = { "[--listen]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            exit(1);
+        }
 
-        SDL_Quit();
+        i += consumed;
     }
+
+    if (!SDLTest_CommonInit(state)) {
+        return 1;
+    }
+
+    /* Print locales and languages */
+    log_locales();
+
+    if (listen) {
+        SDL_bool keep_going = SDL_TRUE;
+        while (keep_going) {
+            SDL_Event e;
+            while (SDL_PollEvent(&e)) {
+                if (e.type == SDL_QUIT) {
+                    keep_going = SDL_FALSE;
+                } else if (e.type == SDL_LOCALECHANGED) {
+                    SDL_Log("Saw SDL_LOCALECHANGED event!");
+                    log_locales();
+                }
+            }
+            SDL_Delay(10);
+        }
+    }
+
+    SDLTest_CommonQuit(state);
 
     return 0;
 }

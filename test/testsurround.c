@@ -14,6 +14,7 @@
 #include "SDL_config.h"
 
 #include "SDL.h"
+#include "SDL_test.h"
 
 static int total_channels;
 static int active_channel;
@@ -141,11 +142,22 @@ fill_buffer(void *unused, Uint8 *stream, int len)
 int main(int argc, char *argv[])
 {
     int i;
+    SDLTest_CommonState *state;
+
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_AUDIO);
+    if (!state) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDLTest_CommonCreateState failed: %s\n", SDL_GetError());
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    if (!SDLTest_CommonInit(state)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
@@ -204,7 +216,7 @@ int main(int argc, char *argv[])
         SDL_CloseAudioDevice(dev);
     }
 
-    SDL_Quit();
+    SDLTest_CommonQuit(state);
     return 0;
 }
 

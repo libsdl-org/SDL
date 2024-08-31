@@ -13,17 +13,29 @@
 
 #include <stdio.h>
 #include "SDL.h"
+#include "SDL_test.h"
 
 int main(int argc, char *argv[])
 {
     char *base_path;
     char *pref_path;
+    SDLTest_CommonState *state;
+
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (!state) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDLTest_CommonCreateState failed: %s\n", SDL_GetError());
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (SDL_Init(0) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    if (!SDLTest_CommonInit(state)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
 
@@ -54,6 +66,6 @@ int main(int argc, char *argv[])
         SDL_free(pref_path);
     }
 
-    SDL_Quit();
+    SDLTest_CommonQuit(state);
     return 0;
 }
