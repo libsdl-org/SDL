@@ -21,7 +21,7 @@ jobs:
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \
             -DSDL_VENDOR_INFO="Github Workflow" \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_INSTALL_PREFIX=prefix
       - name: Build
         run: cmake --build build --verbose
@@ -36,13 +36,13 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
             -DTEST_SHARED=FALSE \
             -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
-            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build cmake_config_build --verbose
       - name: Extract CC/CXX/CFLAGS/CXXFLAGS from CMake toolchain
         run: |
           cmake -S .github/cmake -B /tmp/cmake_extract \
             -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DVAR_PATH=/tmp/n3ds_env.txt
           cat /tmp/n3ds_env.txt >> $GITHUB_ENV
       - name: Verify sdl2-config

@@ -29,13 +29,13 @@ jobs:
           -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
-          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
     - name: Build
-      run: cmake --build build --config Release --verbose --parallel
+      run: cmake --build build --config RelWithDebInfo --verbose --parallel
     - name: Install (CMake)
       run: |
         set -eu
-        cmake --install build/ --config Release
+        cmake --install build/ --config RelWithDebInfo
         echo "SDL2_DIR=$(pwd)/cmake_prefix" >> $GITHUB_ENV
         ( cd cmake_prefix; find ) | LC_ALL=C sort -u
 
@@ -45,7 +45,7 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake \
           -DTEST_SHARED=FALSE \
           -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
-          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
         cmake --build cmake_config_build --verbose
     - name: Verify sdl2-config
       run: |
