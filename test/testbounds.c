@@ -11,12 +11,27 @@
 */
 
 #include "SDL.h"
+#include "SDL_test.h"
 
 int main(int argc, char **argv)
 {
     int total, i;
+    SDLTest_CommonState *state;
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    if (!state) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDLTest_CommonCreateState failed: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    if (!SDLTest_CommonInit(state)) {
         SDL_Log("SDL_Init(SDL_INIT_VIDEO) failed: %s", SDL_GetError());
         return 1;
     }
@@ -32,7 +47,7 @@ int main(int argc, char **argv)
                 usable.x, usable.y, usable.w, usable.h);
     }
 
-    SDL_Quit();
+    SDLTest_CommonQuit(state);
     return 0;
 }
 

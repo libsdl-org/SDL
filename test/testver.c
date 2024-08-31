@@ -19,14 +19,31 @@
 
 #include "SDL.h"
 #include "SDL_revision.h"
+#include "SDL_test.h"
 
 int main(int argc, char *argv[])
 {
     SDL_version compiled;
     SDL_version linked;
+    SDLTest_CommonState *state;
+
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (!state) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDLTest_CommonCreateState failed: %s\n", SDL_GetError());
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    if (!SDLTest_CommonInit(state)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        return 1;
+    }
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
     SDL_Log("Compiled with SDL 2.0 or newer\n");
@@ -41,6 +58,7 @@ int main(int argc, char *argv[])
     SDL_Log("Linked version: %d.%d.%d (%s)\n",
             linked.major, linked.minor, linked.patch,
             SDL_GetRevision());
-    SDL_Quit();
+
+    SDLTest_CommonQuit(state);
     return 0;
 }

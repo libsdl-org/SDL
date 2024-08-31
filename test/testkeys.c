@@ -18,13 +18,30 @@
 #include <string.h>
 
 #include "SDL.h"
+#include "SDL_test.h"
 
 int main(int argc, char *argv[])
 {
+    SDLTest_CommonState *state;
     SDL_Scancode scancode;
+
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (!state) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDLTest_CommonCreateState failed: %s\n", SDL_GetError());
+        return 1;
+    }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
+
+    if (!SDLTest_CommonInit(state)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        return 1;
+    }
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -34,6 +51,6 @@ int main(int argc, char *argv[])
         SDL_Log("Scancode #%d, \"%s\"\n", scancode,
                 SDL_GetScancodeName(scancode));
     }
-    SDL_Quit();
+    SDLTest_CommonQuit(state);
     return 0;
 }
