@@ -99,7 +99,7 @@ static void HIDAPI_DriverShield_RegisterHints(SDL_HintCallback callback, void *u
 
 static void HIDAPI_DriverShield_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SHIELD, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SHIELD, callback, userdata);
 }
 
 static bool HIDAPI_DriverShield_IsEnabled(void)

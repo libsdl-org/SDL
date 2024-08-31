@@ -595,7 +595,7 @@ void SDL_InitTicks(void)
 
 void SDL_QuitTicks(void)
 {
-    SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
+    SDL_RemoveHintCallback(SDL_HINT_TIMER_RESOLUTION,
                         SDL_TimerResolutionChanged, NULL);
 
     SDL_SetSystemTimerResolutionMS(0); // always release our timer resolution request.

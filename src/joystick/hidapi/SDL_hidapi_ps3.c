@@ -98,7 +98,7 @@ static void HIDAPI_DriverPS3_RegisterHints(SDL_HintCallback callback, void *user
 
 static void HIDAPI_DriverPS3_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS3, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS3, callback, userdata);
 }
 
 static bool HIDAPI_DriverPS3_IsEnabled(void)
@@ -1059,7 +1059,7 @@ static void HIDAPI_DriverPS3SonySixaxis_RegisterHints(SDL_HintCallback callback,
 
 static void HIDAPI_DriverPS3SonySixaxis_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER, callback, userdata);
 }
 
 static bool HIDAPI_DriverPS3SonySixaxis_IsEnabled(void)

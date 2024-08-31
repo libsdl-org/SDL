@@ -51,7 +51,7 @@ static void HIDAPI_DriverStadia_RegisterHints(SDL_HintCallback callback, void *u
 
 static void HIDAPI_DriverStadia_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STADIA, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STADIA, callback, userdata);
 }
 
 static bool HIDAPI_DriverStadia_IsEnabled(void)

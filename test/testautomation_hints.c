@@ -215,7 +215,7 @@ static int hints_setHint(void *arg)
 
     SDLTest_AssertPass("Call to SDL_ResetHint(), after clearing callback");
     callbackValue = NULL;
-    SDL_DelHintCallback(testHint, hints_testHintChanged, &callbackValue);
+    SDL_RemoveHintCallback(testHint, hints_testHintChanged, &callbackValue);
     SDL_ResetHint(testHint);
     SDLTest_AssertCheck(
         callbackValue == NULL,

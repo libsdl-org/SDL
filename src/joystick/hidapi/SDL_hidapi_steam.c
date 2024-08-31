@@ -953,7 +953,7 @@ static void HIDAPI_DriverSteam_RegisterHints(SDL_HintCallback callback, void *us
 
 static void HIDAPI_DriverSteam_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM, callback, userdata);
 }
 
 static bool HIDAPI_DriverSteam_IsEnabled(void)

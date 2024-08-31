@@ -1589,7 +1589,7 @@ SDL_bool SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
     return result;
 }
 
-void SDL_DelEventWatch(SDL_EventFilter filter, void *userdata)
+void SDL_RemoveEventWatch(SDL_EventFilter filter, void *userdata)
 {
     SDL_LockMutex(SDL_event_watchers_lock);
     {
@@ -1768,7 +1768,7 @@ bool SDL_InitEvents(void)
     SDL_AddHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
     SDL_AddHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
     if (!SDL_StartEventLoop()) {
-        SDL_DelHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
+        SDL_RemoveHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
         return false;
     }
 
@@ -1781,13 +1781,13 @@ void SDL_QuitEvents(void)
 {
     SDL_QuitQuit();
     SDL_StopEventLoop();
-    SDL_DelHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
-    SDL_DelHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
+    SDL_RemoveHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
+    SDL_RemoveHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
 #ifndef SDL_JOYSTICK_DISABLED
-    SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
+    SDL_RemoveHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
 #endif
 #ifndef SDL_SENSOR_DISABLED
-    SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
+    SDL_RemoveHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
 #endif
 #ifdef SDL_PLATFORM_ANDROID
     Android_QuitEvents();

@@ -1287,8 +1287,8 @@ int SDL_hid_exit(void)
     }
 #endif // HAVE_LIBUSB
 
-    SDL_DelHintCallback(SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS, OnlyControllersChanged, NULL);
-    SDL_DelHintCallback(SDL_HINT_HIDAPI_IGNORE_DEVICES, IgnoredDevicesChanged, NULL);
+    SDL_RemoveHintCallback(SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS, OnlyControllersChanged, NULL);
+    SDL_RemoveHintCallback(SDL_HINT_HIDAPI_IGNORE_DEVICES, IgnoredDevicesChanged, NULL);
 
     if (SDL_hidapi_ignored_devices) {
         SDL_free(SDL_hidapi_ignored_devices);

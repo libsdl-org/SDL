@@ -1121,40 +1121,40 @@ void SDL_QuitMouse(void)
     }
     mouse->num_system_scale_values = 0;
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME,
                         SDL_MouseDoubleClickTimeChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS,
                         SDL_MouseDoubleClickRadiusChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
                         SDL_MouseNormalSpeedScaleChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
                         SDL_MouseRelativeSpeedScaleChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
                         SDL_MouseRelativeSystemScaleChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE,
                         SDL_MouseWarpEmulationChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
+    SDL_RemoveHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
                         SDL_TouchMouseEventsChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
                         SDL_MouseTouchEventsChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
                         SDL_MouseAutoCaptureChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
                         SDL_MouseRelativeWarpMotionChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
                         SDL_MouseRelativeCursorVisibleChanged, mouse);
 
-    SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_CLIP_INTERVAL,
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_CLIP_INTERVAL,
                         SDL_MouseRelativeClipIntervalChanged, mouse);
 
     for (int i = SDL_mouse_count; i--; ) {

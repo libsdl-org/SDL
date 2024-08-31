@@ -635,7 +635,7 @@ void SDL_IBus_Quit(void)
 
     // !!! FIXME: should we close(inotify_fd) here?
 
-    SDL_DelHintCallback(SDL_HINT_IME_IMPLEMENTED_UI, IBus_SetCapabilities, NULL);
+    SDL_RemoveHintCallback(SDL_HINT_IME_IMPLEMENTED_UI, IBus_SetCapabilities, NULL);
 
     SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
 }

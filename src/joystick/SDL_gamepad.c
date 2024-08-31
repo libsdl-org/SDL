@@ -3680,7 +3680,7 @@ void SDL_QuitGamepads(void)
 
     SDL_gamepads_initialized = false;
 
-    SDL_DelEventWatch(SDL_GamepadEventWatcher, NULL);
+    SDL_RemoveEventWatch(SDL_GamepadEventWatcher, NULL);
 
     while (SDL_gamepads) {
         SDL_gamepads->ref_count = 1;

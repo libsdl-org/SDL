@@ -273,7 +273,7 @@ SDL_bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *
 
     SDL_LockProperties(hints);
 
-    SDL_DelHintCallback(name, callback, userdata);
+    SDL_RemoveHintCallback(name, callback, userdata);
 
     SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
     if (hint) {
@@ -305,7 +305,7 @@ SDL_bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *
     return result;
 }
 
-void SDL_DelHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
+void SDL_RemoveHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
     if (!name || !*name) {
         return;
