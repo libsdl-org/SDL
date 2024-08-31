@@ -27,8 +27,8 @@
  * Include file for SDL GPU API functions
  */
 
-#ifndef SDL_GPU_H
-#define SDL_GPU_H
+#ifndef SDL_gpu_h_
+#define SDL_gpu_h_
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_pixels.h>
@@ -37,6 +37,7 @@
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
+#include <SDL3/SDL_begin_code.h>
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -2614,5 +2615,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(SDL_GPUDevice *device);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+#include <SDL3/SDL_close_code.h>
 
-#endif /* SDL_GPU_H */
+#endif /* SDL_gpu_h_ */
