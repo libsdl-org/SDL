@@ -3407,7 +3407,7 @@ static bool METAL_ClaimWindow(
         MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
 
         if (windowData == NULL) {
-            windowData = (MetalWindowData *)SDL_malloc(sizeof(MetalWindowData));
+            windowData = (MetalWindowData *)SDL_calloc(1, sizeof(MetalWindowData));
             windowData->window = window;
 
             if (METAL_INTERNAL_CreateSwapchain(renderer, windowData, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
