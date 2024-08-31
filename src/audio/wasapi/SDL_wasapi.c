@@ -74,11 +74,11 @@ static void ManagementThreadMainloop(void)
 {
     SDL_LockMutex(ManagementThreadLock);
     ManagementThreadPendingTask *task;
-    while (((task = (ManagementThreadPendingTask *)SDL_AtomicGetPtr((void **)&ManagementThreadPendingTasks)) != NULL) || !SDL_AtomicGet(&ManagementThreadShutdown)) {
+    while (((task = (ManagementThreadPendingTask *)SDL_AtomicGetPointer((void **)&ManagementThreadPendingTasks)) != NULL) || !SDL_AtomicGet(&ManagementThreadShutdown)) {
         if (!task) {
             SDL_WaitCondition(ManagementThreadCondition, ManagementThreadLock); // block until there's something to do.
         } else {
-            SDL_AtomicSetPtr((void **) &ManagementThreadPendingTasks, task->next); // take task off the pending list.
+            SDL_AtomicSetPointer((void **) &ManagementThreadPendingTasks, task->next); // take task off the pending list.
             SDL_UnlockMutex(ManagementThreadLock);                       // let other things add to the list while we chew on this task.
             task->result = task->fn(task->userdata);                     // run this task.
             if (task->task_complete_sem) {                               // something waiting on result?
@@ -127,14 +127,14 @@ bool WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, b
 
     // add to end of task list.
     ManagementThreadPendingTask *prev = NULL;
-    for (ManagementThreadPendingTask *i = (ManagementThreadPendingTask *)SDL_AtomicGetPtr((void **)&ManagementThreadPendingTasks); i; i = i->next) {
+    for (ManagementThreadPendingTask *i = (ManagementThreadPendingTask *)SDL_AtomicGetPointer((void **)&ManagementThreadPendingTasks); i; i = i->next) {
         prev = i;
     }
 
     if (prev) {
         prev->next = pending;
     } else {
-        SDL_AtomicSetPtr((void **) &ManagementThreadPendingTasks, pending);
+        SDL_AtomicSetPointer((void **) &ManagementThreadPendingTasks, pending);
     }
 
     // task is added to the end of the pending list, let management thread rip!
@@ -210,7 +210,7 @@ static bool InitManagementThread(void)
         return false;
     }
 
-    SDL_AtomicSetPtr((void **) &ManagementThreadPendingTasks, NULL);
+    SDL_AtomicSetPointer((void **) &ManagementThreadPendingTasks, NULL);
     SDL_AtomicSet(&ManagementThreadShutdown, 0);
     ManagementThread = SDL_CreateThreadWithStackSize(ManagementThreadEntry, "SDLWASAPIMgmt", 256 * 1024, &mgmtdata); // !!! FIXME: maybe even smaller stack size?
     if (!ManagementThread) {
@@ -242,7 +242,7 @@ static void DeinitManagementThread(void)
         ManagementThread = NULL;
     }
 
-    SDL_assert(SDL_AtomicGetPtr((void **) &ManagementThreadPendingTasks) == NULL);
+    SDL_assert(SDL_AtomicGetPointer((void **) &ManagementThreadPendingTasks) == NULL);
 
     SDL_DestroyCondition(ManagementThreadCondition);
     SDL_DestroyMutex(ManagementThreadLock);

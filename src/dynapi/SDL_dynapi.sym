@@ -18,9 +18,9 @@ SDL3_0.0.0 {
     SDL_AtomicCompareAndSwap;
     SDL_AtomicCompareAndSwapPointer;
     SDL_AtomicGet;
-    SDL_AtomicGetPtr;
+    SDL_AtomicGetPointer;
     SDL_AtomicSet;
-    SDL_AtomicSetPtr;
+    SDL_AtomicSetPointer;
     SDL_AttachVirtualJoystick;
     SDL_AudioDevicePaused;
     SDL_BeginGPUComputePass;

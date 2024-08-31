@@ -3623,3 +3623,13 @@ identifier func =~ "^(SDL_AddEventWatch|SDL_AddHintCallback|SDL_AddSurfaceAltern
   )
 - == -1
 )
+@@
+@@
+- SDL_AtomicSetPtr
++ SDL_AtomicSetPointer
+  (...)
+@@
+@@
+- SDL_AtomicGetPtr
++ SDL_AtomicGetPointer
+  (...)

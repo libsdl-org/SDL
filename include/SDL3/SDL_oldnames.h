@@ -40,7 +40,9 @@
 /* ##SDL_atomic.h */
 #define SDL_AtomicCAS SDL_AtomicCompareAndSwap
 #define SDL_AtomicCASPtr SDL_AtomicCompareAndSwapPointer
+#define SDL_AtomicGetPtr SDL_AtomicGetPointer
 #define SDL_AtomicLock SDL_LockSpinlock
+#define SDL_AtomicSetPtr SDL_AtomicSetPointer
 #define SDL_AtomicTryLock SDL_TryLockSpinlock
 #define SDL_AtomicUnlock SDL_UnlockSpinlock
 #define SDL_atomic_t SDL_AtomicInt
@@ -659,7 +661,9 @@
 /* ##SDL_atomic.h */
 #define SDL_AtomicCAS SDL_AtomicCAS_renamed_SDL_AtomicCompareAndSwap
 #define SDL_AtomicCASPtr SDL_AtomicCASPtr_renamed_SDL_AtomicCompareAndSwapPointer
+#define SDL_AtomicGetPtr SDL_AtomicGetPtr_renamed_SDL_AtomicGetPointer
 #define SDL_AtomicLock SDL_AtomicLock_renamed_SDL_LockSpinlock
+#define SDL_AtomicSetPtr SDL_AtomicSetPtr_renamed_SDL_AtomicSetPointer
 #define SDL_AtomicTryLock SDL_AtomicTryLock_renamed_SDL_TryLockSpinlock
 #define SDL_AtomicUnlock SDL_AtomicUnlock_renamed_SDL_UnlockSpinlock
 #define SDL_atomic_t SDL_atomic_t_renamed_SDL_AtomicInt
