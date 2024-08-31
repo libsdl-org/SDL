@@ -4413,6 +4413,7 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
     VkSemaphoreCreateInfo semaphoreCreateInfo;
     SwapchainSupportDetails swapchainSupportDetails;
     bool hasValidSwapchainComposition, hasValidPresentMode;
+    VkCompositeAlphaFlagsKHR compositeAlphaFlag = 0;
     Sint32 drawableWidth, drawableHeight;
     Uint32 i;
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -4584,6 +4585,25 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         swapchainData->imageCount = SDL_max(swapchainData->imageCount, 3);
     }
 
+    // Default to opaque, if available, followed by inherit, and overwrite with a value that supports transparency, if necessary.
+    if (swapchainSupportDetails.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) {
+        compositeAlphaFlag = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    } else if (swapchainSupportDetails.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
+        compositeAlphaFlag = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+    }
+
+    if ((windowData->window->flags & SDL_WINDOW_TRANSPARENT) || !compositeAlphaFlag) {
+        if (swapchainSupportDetails.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR) {
+            compositeAlphaFlag = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+        } else if (swapchainSupportDetails.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR) {
+            compositeAlphaFlag = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+        } else if (swapchainSupportDetails.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
+            compositeAlphaFlag = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "SDL_WINDOW_TRANSPARENT flag set, but no suitable swapchain composite alpha value supported!");
+        }
+    }
+
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchainCreateInfo.pNext = NULL;
     swapchainCreateInfo.flags = 0;
@@ -4601,7 +4621,7 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
     swapchainCreateInfo.queueFamilyIndexCount = 0;
     swapchainCreateInfo.pQueueFamilyIndices = NULL;
     swapchainCreateInfo.preTransform = swapchainSupportDetails.capabilities.currentTransform;
-    swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swapchainCreateInfo.compositeAlpha = compositeAlphaFlag;
     swapchainCreateInfo.presentMode = swapchainData->presentMode;
     swapchainCreateInfo.clipped = VK_TRUE;
     swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
