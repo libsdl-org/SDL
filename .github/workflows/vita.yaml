@@ -66,7 +66,7 @@ jobs:
           -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
-          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build
       run: cmake --build build --verbose
@@ -81,7 +81,7 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake \
           -DTEST_SHARED=FALSE \
           -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
-          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
         cmake --build cmake_config_build --verbose
     - name: Verify sdl2-config
       run: |

@@ -62,7 +62,7 @@ jobs:
       id: cmake-configure
       if: ${{ !matrix.platform.no-cmake }}
       run: cmake -S build -B build -GNinja `
-        -DCMAKE_BUILD_TYPE=Release `
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo `
         -DSDL_WERROR=ON `
         -DSDL_TESTS=ON `
         -DCMAKE_C_FLAGS="${{ matrix.platform.cppflags }}" `
@@ -80,13 +80,13 @@ jobs:
       id: cmake-build
       if: ${{ steps.cmake-configure.outcome == 'success' }}
       run: |
-        cmake --build build/ --config Release --verbose --parallel -- -k0
+        cmake --build build/ --config RelWithDebInfo --verbose --parallel -- -k0
     - name: Run build-time tests
       id: cmake-test
       if: ${{ steps.cmake-build.outcome == 'success' && !contains(matrix.platform.name, 'ARM') && !contains(matrix.platform.name, 'UWP') }}
       run: |
         $env:SDL_TESTS_QUICK=1
-        ctest -VV --test-dir build/ -C Release -j2
+        ctest -VV --test-dir build/ -C RelWithDebInfo -j2
     - name: Install (CMake)
       id: cmake-install
       if: ${{ steps.cmake-build.outcome == 'success' }}
@@ -97,7 +97,7 @@ jobs:
       if: ${{ steps.cmake-install.outcome == 'success' && !contains(matrix.platform.name, 'UWP') }}
       run: |
         cmake -S cmake/test -B cmake_config_build -GNinja `
-          -DCMAKE_BUILD_TYPE=Release `
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo `
           -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} `
           -DCMAKE_C_FLAGS="${{ matrix.platform.cppflags }}" `
           -DCMAKE_CXX_FLAGS="${{ matrix.platform.cppflags }}" `
@@ -105,7 +105,7 @@ jobs:
           -DCMAKE_SHARED_LINKER_FLAGS="${{ matrix.platform.ldflags }}" `
           -DCMAKE_STATIC_LINKER_FLAGS="${{ matrix.platform.ldflags }}" `
           ${{ matrix.platform.cmake-args }}
-        cmake --build cmake_config_build --config Release
+        cmake --build cmake_config_build --config RelWithDebInfo
     - name: Add msbuild to PATH
       if: ${{ matrix.platform.project != '' }}
       uses: microsoft/setup-msbuild@v2

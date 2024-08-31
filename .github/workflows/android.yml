@@ -40,16 +40,16 @@ jobs:
             -DSDL_STATIC_PIC=ON \
             -DSDL_VENDOR_INFO="Github Workflow" \
             -DCMAKE_INSTALL_PREFIX=prefix \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -GNinja
       - name: Build (CMake)
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
-          cmake --build build --config Release --parallel --verbose
+          cmake --build build --config RelWithDebInfo --parallel --verbose
       - name: Install (CMake)
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
-          cmake --install build --config Release
+          cmake --install build --config RelWithDebInfo
           echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
           ( cd prefix; find ) | LC_ALL=C sort -u
       - name: Verify CMake configuration files
@@ -59,7 +59,7 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }}
           cmake --build cmake_config_build --verbose
       - name: Verify sdl2-config

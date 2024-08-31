@@ -101,13 +101,13 @@ jobs:
         -DSDL_INSTALL_TESTS=ON \
         -DSDL_VENDOR_INFO="Github Workflow" \
         -DCMAKE_INSTALL_PREFIX=cmake_prefix \
-        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
         ${{ matrix.platform.cmake }}
     - name: Build (CMake)
       if: "! matrix.platform.autotools"
       run: |
         ${{ matrix.platform.source_cmd }}
-        cmake --build build/ --config Release --verbose --parallel
+        cmake --build build/ --config RelWithDebInfo --verbose --parallel
     - name: Run build-time tests (CMake)
       if: ${{ ! matrix.platform.autotools && !matrix.platform.cross }}
       run: |
@@ -123,7 +123,7 @@ jobs:
       if: "! matrix.platform.autotools"
       run: |
         set -eu
-        cmake --install build/ --config Release
+        cmake --install build/ --config RelWithDebInfo
         echo "SDL2_DIR=$(pwd)/cmake_prefix" >> $GITHUB_ENV
         ( cd cmake_prefix; find ) | LC_ALL=C sort -u
     - name: Configure (Autotools)
@@ -198,7 +198,7 @@ jobs:
       run: |
         ${{ matrix.platform.source_cmd }}
         cmake -S cmake/test -B cmake_config_build -G Ninja \
-          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           ${{ matrix.platform.cmake }} \
           -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }}
         cmake --build cmake_config_build --verbose

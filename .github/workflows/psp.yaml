@@ -19,14 +19,14 @@ jobs:
           -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
-          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build
-      run: cmake --build build --config Release
+      run: cmake --build build --config RelWithDebInfo
     - name: Install
       run: |
         echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
-        cmake --install build --config Release
+        cmake --install build --config RelWithDebInfo
         ( cd prefix; find ) | LC_ALL=C sort -u
     - name: Verify CMake configuration files
       run: |
@@ -34,7 +34,7 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=$PSPDEV/psp/share/pspdev.cmake \
           -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
           -DTEST_SHARED=FALSE \
-          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
         cmake --build cmake_config_build --verbose
     - name: Verify sdl2-config
       run: |

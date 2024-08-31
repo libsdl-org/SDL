@@ -47,7 +47,7 @@ jobs:
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
           -DSDL_VENDOR_INFO="Github Workflow" \
-          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/prefix_cmake
     - name: Build (CMake)
       if: ${{ contains(matrix.platform.name, 'CMake') }}
@@ -63,6 +63,6 @@ jobs:
         cmake -S cmake/test -B cmake_config_build -G Ninja \
           -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake \
           -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
-          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           ${{ matrix.platform.test_args }}
         cmake --build cmake_config_build --verbose
