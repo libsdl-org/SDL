@@ -455,8 +455,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AtomicCompareAndSwap
- * \sa SDL_AtomicGetPtr
- * \sa SDL_AtomicSetPtr
+ * \sa SDL_AtomicGetPointer
+ * \sa SDL_AtomicSetPointer
  */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval);
 
@@ -475,9 +475,9 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, v
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AtomicCompareAndSwapPointer
- * \sa SDL_AtomicGetPtr
+ * \sa SDL_AtomicGetPointer
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_AtomicSetPtr(void **a, void *v);
+extern SDL_DECLSPEC void * SDLCALL SDL_AtomicSetPointer(void **a, void *v);
 
 /**
  * Get the value of a pointer atomically.
@@ -493,9 +493,9 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AtomicSetPtr(void **a, void *v);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AtomicCompareAndSwapPointer
- * \sa SDL_AtomicSetPtr
+ * \sa SDL_AtomicSetPointer
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_AtomicGetPtr(void **a);
+extern SDL_DECLSPEC void * SDLCALL SDL_AtomicGetPointer(void **a);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

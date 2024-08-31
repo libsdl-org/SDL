@@ -88,7 +88,9 @@ The following structures have been renamed:
 The following functions have been renamed:
 * SDL_AtomicCAS() => SDL_AtomicCompareAndSwap()
 * SDL_AtomicCASPtr() => SDL_AtomicCompareAndSwapPointer()
+* SDL_AtomicGetPtr() => SDL_AtomicGetPointer()
 * SDL_AtomicLock() => SDL_LockSpinlock()
+* SDL_AtomicSetPtr() => SDL_AtomicSetPointer()
 * SDL_AtomicTryLock() => SDL_TryLockSpinlock()
 * SDL_AtomicUnlock() => SDL_UnlockSpinlock()
 

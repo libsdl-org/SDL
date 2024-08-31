@@ -43,9 +43,9 @@
 #define SDL_AtomicCompareAndSwap SDL_AtomicCompareAndSwap_REAL
 #define SDL_AtomicCompareAndSwapPointer SDL_AtomicCompareAndSwapPointer_REAL
 #define SDL_AtomicGet SDL_AtomicGet_REAL
-#define SDL_AtomicGetPtr SDL_AtomicGetPtr_REAL
+#define SDL_AtomicGetPointer SDL_AtomicGetPointer_REAL
 #define SDL_AtomicSet SDL_AtomicSet_REAL
-#define SDL_AtomicSetPtr SDL_AtomicSetPtr_REAL
+#define SDL_AtomicSetPointer SDL_AtomicSetPointer_REAL
 #define SDL_AttachVirtualJoystick SDL_AttachVirtualJoystick_REAL
 #define SDL_AudioDevicePaused SDL_AudioDevicePaused_REAL
 #define SDL_BeginGPUComputePass SDL_BeginGPUComputePass_REAL

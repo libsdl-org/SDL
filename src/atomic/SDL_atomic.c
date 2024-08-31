@@ -201,7 +201,7 @@ int SDL_AtomicSet(SDL_AtomicInt *a, int v)
 #endif
 }
 
-void *SDL_AtomicSetPtr(void **a, void *v)
+void *SDL_AtomicSetPointer(void **a, void *v)
 {
 #ifdef HAVE_MSC_ATOMICS
     return _InterlockedExchangePointer(a, v);
@@ -267,7 +267,7 @@ int SDL_AtomicGet(SDL_AtomicInt *a)
 #endif
 }
 
-void *SDL_AtomicGetPtr(void **a)
+void *SDL_AtomicGetPointer(void **a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(a, __ATOMIC_SEQ_CST);

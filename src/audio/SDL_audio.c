@@ -390,7 +390,7 @@ static SDL_LogicalAudioDevice *ObtainLogicalAudioDevice(SDL_AudioDeviceID devid,
             //  to make sure the correct physical device gets locked, in case we're in a race with the default changing.
             while (true) {
                 SDL_LockMutex(device->lock);
-                SDL_AudioDevice *recheck_device = (SDL_AudioDevice *) SDL_AtomicGetPtr((void **) &logdev->physical_device);
+                SDL_AudioDevice *recheck_device = (SDL_AudioDevice *) SDL_AtomicGetPointer((void **) &logdev->physical_device);
                 if (device == recheck_device) {
                     break;
                 }
