@@ -142,7 +142,7 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
         SHADER_SPIRV(texture_rgba_frag_spv)
         SHADER_DXBC50(texture_rgba_frag_sm50_dxbc)
         SHADER_DXIL60(texture_rgba_frag_sm60_dxil)
-        SHADER_METAL(texture_rgb_frag_metal)
+        SHADER_METAL(texture_rgba_frag_metal)
     },
 };
 // clang-format on
