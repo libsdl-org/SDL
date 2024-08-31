@@ -11023,7 +11023,7 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
     instanceExtensionNames = SDL_stack_alloc(
         const char *,
         instanceExtensionCount + 4);
-    SDL_memcpy(instanceExtensionNames, originalInstanceExtensionNames, instanceExtensionCount * sizeof(const char *));
+    SDL_memcpy((void *)instanceExtensionNames, originalInstanceExtensionNames, instanceExtensionCount * sizeof(const char *));
 
     // Core since 1.1
     instanceExtensionNames[instanceExtensionCount++] =
@@ -11431,7 +11431,7 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
         &deviceCreateInfo,
         NULL,
         &renderer->logicalDevice);
-    SDL_stack_free(deviceExtensions);
+    SDL_stack_free((void *)deviceExtensions);
     VULKAN_ERROR_CHECK(vulkanResult, vkCreateDevice, 0)
 
     // Load vkDevice entry points
