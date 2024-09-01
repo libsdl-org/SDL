@@ -173,14 +173,9 @@ static inline Uint32 BytesPerRow(
     SDL_GPUTextureFormat format)
 {
     Uint32 blocksPerRow = width;
+    Uint32 pixelRowsPerBlock = Texture_GetBlockSize(format);
 
-    if (format == SDL_GPU_TEXTUREFORMAT_BC1_UNORM ||
-        format == SDL_GPU_TEXTUREFORMAT_BC2_UNORM ||
-        format == SDL_GPU_TEXTUREFORMAT_BC3_UNORM ||
-        format == SDL_GPU_TEXTUREFORMAT_BC7_UNORM) {
-        blocksPerRow = (width + 3) / 4;
-    }
-
+    blocksPerRow = (width + pixelRowsPerBlock - 1) / pixelRowsPerBlock;
     return blocksPerRow * SDL_GPUTextureFormatTexelBlockSize(format);
 }
 
@@ -191,15 +186,11 @@ static inline Sint32 BytesPerImage(
 {
     Uint32 blocksPerRow = width;
     Uint32 blocksPerColumn = height;
+    Uint32 pixelRowsPerBlock = Texture_GetBlockSize(format);
+    Uint32 pixelColumnsPerBlock = pixelRowsPerBlock;
 
-    if (format == SDL_GPU_TEXTUREFORMAT_BC1_UNORM ||
-        format == SDL_GPU_TEXTUREFORMAT_BC2_UNORM ||
-        format == SDL_GPU_TEXTUREFORMAT_BC3_UNORM ||
-        format == SDL_GPU_TEXTUREFORMAT_BC7_UNORM) {
-        blocksPerRow = (width + 3) / 4;
-        blocksPerColumn = (height + 3) / 4;
-    }
-
+    blocksPerRow = (width + pixelRowsPerBlock - 1) / pixelRowsPerBlock;
+    blocksPerColumn = (height + pixelColumnsPerBlock - 1) / pixelColumnsPerBlock;
     return blocksPerRow * blocksPerColumn * SDL_GPUTextureFormatTexelBlockSize(format);
 }
 
