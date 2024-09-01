@@ -44,7 +44,7 @@ static SDL_bool hasDrawColor(void);
 /**
  * Create software renderer for tests
  */
-static void InitCreateRenderer(void *arg)
+static void InitCreateRenderer(void **arg)
 {
     int width = 320, height = 240;
     const char *renderer_name = NULL;

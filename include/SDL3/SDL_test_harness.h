@@ -63,7 +63,7 @@ extern "C" {
 #define TEST_RESULT_SETUP_FAILURE       4
 
 /* !< Function pointer to a test case setup function (run before every test) */
-typedef void (*SDLTest_TestCaseSetUpFp)(void *arg);
+typedef void (*SDLTest_TestCaseSetUpFp)(void **arg);
 
 /* !< Function pointer to a test case function */
 typedef int (*SDLTest_TestCaseFp)(void *arg);

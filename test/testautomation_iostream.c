@@ -32,7 +32,7 @@ static const char IOStreamAlphabetString[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /* Fixture */
 
-static void IOStreamSetUp(void *arg)
+static void IOStreamSetUp(void **arg)
 {
     size_t fileLen;
     FILE *handle;

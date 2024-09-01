@@ -41,7 +41,7 @@ static SDL_Surface *testSurface = NULL;
 /* Fixture */
 
 /* Create a 32-bit writable surface for blitting tests */
-static void surfaceSetUp(void *arg)
+static void surfaceSetUp(void **arg)
 {
     int result;
     SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;

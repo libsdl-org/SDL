@@ -19,7 +19,7 @@
 
 /* Fixture */
 
-static void audioSetUp(void *arg)
+static void audioSetUp(void **arg)
 {
     /* Start SDL audio subsystem */
     SDL_bool ret = SDL_InitSubSystem(SDL_INIT_AUDIO);

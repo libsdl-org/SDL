@@ -20,7 +20,7 @@ static int g_timerCallbackCalled = 0;
 
 /* Fixture */
 
-static void timerSetUp(void *arg)
+static void timerSetUp(void **arg)
 {
     /* Start SDL timer subsystem */
     SDL_bool ret = SDL_InitSubSystem(SDL_INIT_TIMER);
