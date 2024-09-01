@@ -112,18 +112,37 @@ typedef struct SDLTest_TestSuiteReference {
 char *SDLTest_GenerateRunSeed(char *buffer, int length);
 
 /*
- * Execute a test suite using the given run seed and execution key.
+ * Holds information about the execution of test suites.
+ * */
+typedef struct SDLTest_TestSuiteRunner SDLTest_TestSuiteRunner;
+
+/*
+ * Create a new test suite runner, that will execute the given test suites.
+ * It will register the harness cli arguments to the common SDL state.
  *
- * \param testSuites Suites containing the test case.
- * \param userRunSeed Custom run seed provided by user, or NULL to autogenerate one.
- * \param userExecKey Custom execution key provided by user, or 0 to autogenerate one.
- * \param filter Filter specification. NULL disables. Case sensitive.
- * \param testIterations Number of iterations to run each test case.
- * \param randomOrder allow to run suites and tests in random order when there is no filter
+ * \param state Common SDL state on which to register CLI arguments.
+ * \param testSuites NULL-terminated test suites containing test cases.
  *
  * \returns the test run result: 0 when all tests passed, 1 if any tests failed.
  */
-int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *userRunSeed, Uint64 userExecKey, const char *filter, int testIterations, SDL_bool randomOrder);
+SDLTest_TestSuiteRunner * SDLTest_CreateTestSuiteRunner(SDLTest_CommonState *state, SDLTest_TestSuiteReference *testSuites[]);
+
+/*
+ * Destroy a test suite runner.
+ * It will unregister the harness cli arguments to the common SDL state.
+ *
+ * \param runner The runner that should be destroyed.
+ */
+void SDLTest_DestroyTestSuiteRunner(SDLTest_TestSuiteRunner *runner);
+
+/*
+ * Execute a test suite, using the configured run seed, execution key, filter, etc.
+ *
+ * \param runner The runner that should be executed.
+ *
+ * \returns the test run result: 0 when all tests passed, 1 if any tests failed.
+ */
+int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner);
 
 
 /* Ends C function definitions when using C++ */
