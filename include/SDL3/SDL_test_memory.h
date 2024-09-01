@@ -49,7 +49,7 @@ void SDLTest_TrackAllocations(void);
  *
  * \note This implicitly calls SDLTest_TrackAllocations()
  */
-void SDLTest_RandFillAllocations();
+void SDLTest_RandFillAllocations(void);
 
 /**
  * Print a log of any outstanding allocations
