@@ -355,7 +355,7 @@ void SDLTest_LogAllocations(void)
 {
     char *message = NULL;
     size_t message_size = 0;
-    char line[128], *tmp;
+    char line[256], *tmp;
     SDL_tracked_allocation *entry;
     int index, count, stack_index;
     Uint64 total_allocated;
