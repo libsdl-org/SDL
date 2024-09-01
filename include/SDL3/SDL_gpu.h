@@ -268,7 +268,7 @@ typedef enum SDL_GPUShaderFormatFlagBits
     SDL_GPU_SHADERFORMAT_DXBC = 0x00000004,     /* D3D11 (Shader Model 5_0) */
     SDL_GPU_SHADERFORMAT_DXIL = 0x00000008,     /* D3D12 */
     SDL_GPU_SHADERFORMAT_MSL = 0x00000010,      /* Metal */
-    SDL_GPU_SHADERFORMAT_METALLIB = 0x00000020, /* Metal */
+    SDL_GPU_SHADERFORMAT_METALLIB = 0x00000020  /* Metal */
 } SDL_GPUShaderFormatFlagBits;
 
 typedef Uint32 SDL_GPUShaderFormat;
