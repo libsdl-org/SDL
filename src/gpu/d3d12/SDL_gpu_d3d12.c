@@ -6109,8 +6109,8 @@ static bool D3D12_INTERNAL_ResizeSwapchainIfNeeded(
         HRESULT res = IDXGISwapChain_ResizeBuffers(
             windowData->swapchain,
             0, // Keep buffer count the same
-            swapchainDesc.BufferDesc.Width,
-            swapchainDesc.BufferDesc.Height,
+            w,
+            h,
             DXGI_FORMAT_UNKNOWN, // Keep the old format
             renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
         ERROR_CHECK_RETURN("Could not resize swapchain buffers", 0)
