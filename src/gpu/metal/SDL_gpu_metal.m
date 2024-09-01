@@ -122,10 +122,12 @@ static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
     MTLPixelFormatBGRA8Unorm_sRGB, // B8G8R8A8_UNORM_SRGB
 #ifdef SDL_PLATFORM_MACOS
     MTLPixelFormatBC1_RGBA_sRGB,      // BC1_UNORM_SRGB
+    MTLPixelFormatBC2_RGBA_sRGB,      // BC2_UNORM_SRGB
     MTLPixelFormatBC3_RGBA_sRGB,      // BC3_UNORM_SRGB
     MTLPixelFormatBC7_RGBAUnorm_sRGB, // BC7_UNORM_SRGB
 #else
     MTLPixelFormatInvalid, // BC1_UNORM_SRGB
+    MTLPixelFormatInvalid, // BC2_UNORM_SRGB
     MTLPixelFormatInvalid, // BC3_UNORM_SRGB
     MTLPixelFormatInvalid, // BC7_UNORM_SRGB
 #endif
@@ -3723,6 +3725,7 @@ static bool METAL_SupportsTextureFormat(
         case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT:
         case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT:
         case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
         case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
         case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
 #ifdef SDL_PLATFORM_MACOS
