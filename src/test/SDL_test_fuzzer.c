@@ -144,7 +144,7 @@ Sint32 SDLTest_RandomIntegerInRange(Sint32 min, Sint32 max)
 
     Sint32 range = (max - min);
     SDL_assert(range < SDL_MAX_SINT32);
-    return min + SDL_rand(range + 1);
+    return min + SDL_rand_r(&rndContext, range + 1);
 }
 
 /**
@@ -404,7 +404,7 @@ Sint64 SDLTest_RandomSint64BoundaryValue(Sint64 boundary1, Sint64 boundary2, SDL
 
 float SDLTest_RandomUnitFloat(void)
 {
-    return SDL_randf();
+    return SDL_randf_r(&rndContext);
 }
 
 float SDLTest_RandomFloat(void)
