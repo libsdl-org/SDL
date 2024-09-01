@@ -963,7 +963,9 @@ static int convert_audio_chunks(SDL_AudioStream* stream, const void* src, int sr
     dst_frame_size = SDL_AUDIO_FRAMESIZE(dst_spec);
 
     while ((total_in < srclen) || (total_out < dstlen)) {
-        int to_put = SDLTest_RandomIntegerInRange(1, 40000) * src_frame_size;
+        /* Make sure we put in more than the padding frames so we get non-zero output */
+        const int RESAMPLER_MAX_PADDING_FRAMES = 7; /* Should match RESAMPLER_MAX_PADDING_FRAMES in SDL */
+        int to_put = SDLTest_RandomIntegerInRange(RESAMPLER_MAX_PADDING_FRAMES + 1, 40000) * src_frame_size;
         int to_get = SDLTest_RandomIntegerInRange(1, (int)((40000.0f * dst_spec.freq) / src_spec.freq)) * dst_frame_size;
         to_put = SDL_min(to_put, srclen - total_in);
         to_get = SDL_min(to_get, dstlen - total_out);
@@ -972,7 +974,7 @@ static int convert_audio_chunks(SDL_AudioStream* stream, const void* src, int sr
         {
             ret = put_audio_data_split(stream, (const Uint8*)(src) + total_in, to_put);
 
-            if (ret) {
+            if (ret < 0) {
                 return total_out ? total_out : ret;
             }
 
