@@ -9,7 +9,7 @@
 
 /* Fixture */
 
-static void subsystemsSetUp(void *arg)
+static void subsystemsSetUp(void **arg)
 {
     /* Reset each one of the SDL subsystems */
     /* CHECKME: can we use SDL_Quit here, or this will break the flow of tests? */

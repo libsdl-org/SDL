@@ -40,7 +40,7 @@ Uint32 getRandomUint32() {
 /*
  * Resets PRNG state to initialize tests using PRNG
  */
-void blitSetUp(void *arg) {
+void blitSetUp(void **arg) {
     rngState[0] = 1;
     rngState[1] = 2;
 }

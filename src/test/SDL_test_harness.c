@@ -237,6 +237,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
     int testCaseResult = 0;
     int testResult = 0;
     int fuzzerCount;
+    void *data = NULL;
 
     if (!testSuite || !testCase || !testSuite->name || !testCase->name) {
         SDLTest_LogError("Setup failure: testSuite or testCase references NULL");
@@ -259,7 +260,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
 
     /* Maybe run suite initializer function */
     if (testSuite->testSetUp) {
-        testSuite->testSetUp(0x0);
+        testSuite->testSetUp(&data);
         if (SDLTest_AssertSummaryToTestResult() == TEST_RESULT_FAILED) {
             SDLTest_LogError(SDLTEST_FINAL_RESULT_FORMAT, "Suite Setup", testSuite->name, COLOR_RED "Failed" COLOR_END);
             return TEST_RESULT_SETUP_FAILURE;
@@ -267,7 +268,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
     }
 
     /* Run test case function */
-    testCaseResult = testCase->testCase(0x0);
+    testCaseResult = testCase->testCase(data);
 
     /* Convert test execution result into harness result */
     if (testCaseResult == TEST_SKIPPED) {
@@ -286,7 +287,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
 
     /* Maybe run suite cleanup function (ignore failed asserts) */
     if (testSuite->testTearDown) {
-        testSuite->testTearDown(0x0);
+        testSuite->testTearDown(data);
     }
 
     /* Cancel timeout timer */
