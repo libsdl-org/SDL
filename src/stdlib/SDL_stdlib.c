@@ -539,9 +539,9 @@ void *SDL_aligned_alloc(size_t alignment, size_t size)
     }
     padding = (alignment - (size % alignment));
 
-    if (SDL_size_add_overflow(size, alignment, &size) == 0 &&
-        SDL_size_add_overflow(size, sizeof(void *), &size) == 0 &&
-        SDL_size_add_overflow(size, padding, &size) == 0) {
+    if (SDL_size_add_check_overflow(size, alignment, &size) &&
+        SDL_size_add_check_overflow(size, sizeof(void *), &size) &&
+        SDL_size_add_check_overflow(size, padding, &size)) {
         void *original = SDL_malloc(size);
         if (original) {
             // Make sure we have enough space to store the original pointer

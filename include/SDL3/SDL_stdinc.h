@@ -3082,29 +3082,27 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
 /**
  * Multiply two integers, checking for overflow.
  *
- * If `a * b` would overflow, return -1.
+ * If `a * b` would overflow, return SDL_FALSE.
  *
- * Otherwise store `a * b` via ret and return 0.
+ * Otherwise store `a * b` via ret and return SDL_TRUE.
  *
  * \param a the multiplicand.
  * \param b the multiplier.
  * \param ret on non-overflow output, stores the multiplication result. May
  *            not be NULL.
- * \returns -1 on overflow, 0 if result doesn't overflow.
+ * \returns SDL_FALSE on overflow, SDL_TRUE if result is multiplied without overflow.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE int SDL_size_mul_overflow (size_t a,
-                                            size_t b,
-                                            size_t *ret)
+SDL_FORCE_INLINE SDL_bool SDL_size_mul_check_overflow(size_t a, size_t b, size_t *ret)
 {
     if (a != 0 && b > SDL_SIZE_MAX / a) {
-        return -1;
+        return SDL_FALSE;
     }
     *ret = a * b;
-    return 0;
+    return SDL_TRUE;
 }
 
 #ifndef SDL_WIKI_DOCUMENTATION_SECTION
@@ -3112,13 +3110,11 @@ SDL_FORCE_INLINE int SDL_size_mul_overflow (size_t a,
 /* This needs to be wrapped in an inline rather than being a direct #define,
  * because __builtin_mul_overflow() is type-generic, but we want to be
  * consistent about interpreting a and b as size_t. */
-SDL_FORCE_INLINE int SDL_size_mul_overflow_builtin (size_t a,
-                                                     size_t b,
-                                                     size_t *ret)
+SDL_FORCE_INLINE SDL_bool SDL_size_mul_check_overflow_builtin(size_t a, size_t b, size_t *ret)
 {
-    return __builtin_mul_overflow(a, b, ret) == 0 ? 0 : -1;
+    return (__builtin_mul_overflow(a, b, ret) == 0);
 }
-#define SDL_size_mul_overflow(a, b, ret) (SDL_size_mul_overflow_builtin(a, b, ret))
+#define SDL_size_mul_check_overflow(a, b, ret) SDL_size_mul_check_overflow_builtin(a, b, ret)
 #endif
 #endif
 
@@ -3133,34 +3129,30 @@ SDL_FORCE_INLINE int SDL_size_mul_overflow_builtin (size_t a,
  * \param b the second addend.
  * \param ret on non-overflow output, stores the addition result. May not be
  *            NULL.
- * \returns -1 on overflow, 0 if result doesn't overflow.
+ * \returns SDL_FALSE on overflow, SDL_TRUE if result is added without overflow.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE int SDL_size_add_overflow (size_t a,
-                                            size_t b,
-                                            size_t *ret)
+SDL_FORCE_INLINE SDL_bool SDL_size_add_check_overflow(size_t a, size_t b, size_t *ret)
 {
     if (b > SDL_SIZE_MAX - a) {
-        return -1;
+        return SDL_FALSE;
     }
     *ret = a + b;
-    return 0;
+    return SDL_TRUE;
 }
 
 #ifndef SDL_WIKI_DOCUMENTATION_SECTION
 #if SDL_HAS_BUILTIN(__builtin_add_overflow)
 /* This needs to be wrapped in an inline rather than being a direct #define,
  * the same as the call to __builtin_mul_overflow() above. */
-SDL_FORCE_INLINE int SDL_size_add_overflow_builtin (size_t a,
-                                                     size_t b,
-                                                     size_t *ret)
+SDL_FORCE_INLINE SDL_bool SDL_size_add_check_overflow_builtin(size_t a, size_t b, size_t *ret)
 {
-    return __builtin_add_overflow(a, b, ret) == 0 ? 0 : -1;
+    return (__builtin_add_overflow(a, b, ret) == 0);
 }
-#define SDL_size_add_overflow(a, b, ret) (SDL_size_add_overflow_builtin(a, b, ret))
+#define SDL_size_add_check_overflow(a, b, ret) SDL_size_add_check_overflow_builtin(a, b, ret)
 #endif
 #endif
 

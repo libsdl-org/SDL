@@ -1456,7 +1456,7 @@ static bool UnRLEAlpha(SDL_Surface *surface)
         uncopy_opaque = uncopy_transl = uncopy_32;
     }
 
-    if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
+    if (!SDL_size_mul_check_overflow(surface->h, surface->pitch, &size)) {
         return false;
     }
 
@@ -1527,7 +1527,7 @@ void SDL_UnRLESurface(SDL_Surface *surface, bool recode)
                 size_t size;
 
                 // re-create the original surface
-                if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
+                if (!SDL_size_mul_check_overflow(surface->h, surface->pitch, &size)) {
                     // Memory corruption?
                     surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
                     return;
