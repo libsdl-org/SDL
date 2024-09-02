@@ -1723,6 +1723,8 @@ The following macros have been removed:
 * SDL_TABLESIZE() - use SDL_arraysize() instead
 
 The following functions have been renamed:
+* SDL_size_add_overflow() => SDL_size_add_check_overflow()
+* SDL_size_mul_overflow() => SDL_size_mul_check_overflow()
 * SDL_strtokr() => SDL_strtok_r()
 
 The following functions have been removed:

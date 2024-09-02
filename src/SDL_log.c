@@ -480,7 +480,7 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
     }
 
     // If message truncated, allocate and re-render
-    if (len >= sizeof(stack_buf) && SDL_size_add_overflow(len, 1, &len_plus_term) == 0) {
+    if (len >= sizeof(stack_buf) && SDL_size_add_check_overflow(len, 1, &len_plus_term)) {
         // Allocate exactly what we need, including the zero-terminator
         message = (char *)SDL_malloc(len_plus_term);
         if (!message) {

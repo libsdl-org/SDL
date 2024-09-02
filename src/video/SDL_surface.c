@@ -61,27 +61,27 @@ void SDL_UpdateSurfaceLockFlag(SDL_Surface *surface)
 static bool SDL_CalculateRGBSize(Uint32 format, size_t width, size_t height, size_t *size, size_t *pitch, bool minimal)
 {
     if (SDL_BITSPERPIXEL(format) >= 8) {
-        if (SDL_size_mul_overflow(width, SDL_BYTESPERPIXEL(format), pitch)) {
+        if (!SDL_size_mul_check_overflow(width, SDL_BYTESPERPIXEL(format), pitch)) {
             return SDL_SetError("width * bpp would overflow");
         }
     } else {
-        if (SDL_size_mul_overflow(width, SDL_BITSPERPIXEL(format), pitch)) {
+        if (!SDL_size_mul_check_overflow(width, SDL_BITSPERPIXEL(format), pitch)) {
             return SDL_SetError("width * bpp would overflow");
         }
-        if (SDL_size_add_overflow(*pitch, 7, pitch)) {
+        if (!SDL_size_add_check_overflow(*pitch, 7, pitch)) {
             return SDL_SetError("aligning pitch would overflow");
         }
         *pitch /= 8;
     }
     if (!minimal) {
         // 4-byte aligning for speed
-        if (SDL_size_add_overflow(*pitch, 3, pitch)) {
+        if (!SDL_size_add_check_overflow(*pitch, 3, pitch)) {
             return SDL_SetError("aligning pitch would overflow");
         }
         *pitch &= ~3;
     }
 
-    if (SDL_size_mul_overflow(height, *pitch, size)) {
+    if (!SDL_size_mul_check_overflow(height, *pitch, size)) {
         return SDL_SetError("height * pitch would overflow");
     }
 

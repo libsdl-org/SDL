@@ -581,6 +581,8 @@
 
 /* ##SDL_stdinc.h */
 #define SDL_TABLESIZE SDL_arraysize
+#define SDL_size_add_overflow SDL_size_add_check_overflow
+#define SDL_size_mul_overflow SDL_size_mul_check_overflow
 #define SDL_strtokr SDL_strtok_r
 
 /* ##SDL_surface.h */
@@ -1205,6 +1207,8 @@
 
 /* ##SDL_stdinc.h */
 #define SDL_TABLESIZE SDL_TABLESIZE_renamed_SDL_arraysize
+#define SDL_size_add_overflow SDL_size_add_overflow_renamed_SDL_size_add_check_overflow
+#define SDL_size_mul_overflow SDL_size_mul_overflow_renamed_SDL_size_mul_check_overflow
 #define SDL_strtokr SDL_strtokr_renamed_SDL_strtok_r
 
 /* ##SDL_surface.h */

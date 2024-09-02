@@ -43,7 +43,7 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
         {
             /* sz_plane == w * h; */
             size_t s1;
-            if (SDL_size_mul_overflow(w, h, &s1) < 0) {
+            if (!SDL_size_mul_check_overflow(w, h, &s1)) {
                 return SDL_SetError("width * height would overflow");
             }
             sz_plane = (int) s1;
@@ -52,15 +52,15 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
         {
             /* sz_plane_chroma == ((w + 1) / 2) * ((h + 1) / 2); */
             size_t s1, s2, s3;
-            if (SDL_size_add_overflow(w, 1, &s1) < 0) {
+            if (!SDL_size_add_check_overflow(w, 1, &s1)) {
                 return SDL_SetError("width + 1 would overflow");
             }
             s1 = s1 / 2;
-            if (SDL_size_add_overflow(h, 1, &s2) < 0) {
+            if (!SDL_size_add_check_overflow(h, 1, &s2)) {
                 return SDL_SetError("height + 1 would overflow");
             }
             s2 = s2 / 2;
-            if (SDL_size_mul_overflow(s1, s2, &s3) < 0) {
+            if (!SDL_size_mul_check_overflow(s1, s2, &s3)) {
                 return SDL_SetError("width * height would overflow");
             }
             sz_plane_chroma = (int) s3;
@@ -68,11 +68,11 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
     } else {
         /* sz_plane_packed == ((w + 1) / 2) * h; */
         size_t s1, s2;
-        if (SDL_size_add_overflow(w, 1, &s1) < 0) {
+        if (!SDL_size_add_check_overflow(w, 1, &s1)) {
             return SDL_SetError("width + 1 would overflow");
         }
         s1 = s1 / 2;
-        if (SDL_size_mul_overflow(s1, h, &s2) < 0) {
+        if (!SDL_size_mul_check_overflow(s1, h, &s2)) {
             return SDL_SetError("width * height would overflow");
         }
         sz_plane_packed = (int) s2;
@@ -89,10 +89,10 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
         if (size) {
             // dst_size == sz_plane + sz_plane_chroma + sz_plane_chroma;
             size_t s1, s2;
-            if (SDL_size_add_overflow(sz_plane, sz_plane_chroma, &s1) < 0) {
+            if (!SDL_size_add_check_overflow(sz_plane, sz_plane_chroma, &s1)) {
                 return SDL_SetError("Y + U would overflow");
             }
-            if (SDL_size_add_overflow(s1, sz_plane_chroma, &s2) < 0) {
+            if (!SDL_size_add_check_overflow(s1, sz_plane_chroma, &s2)) {
                 return SDL_SetError("Y + U + V would overflow");
             }
             *size = (int)s2;
@@ -106,11 +106,11 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
         if (pitch) {
             /* pitch == ((w + 1) / 2) * 4; */
            size_t p1, p2;
-           if (SDL_size_add_overflow(w, 1, &p1) < 0) {
+           if (!SDL_size_add_check_overflow(w, 1, &p1)) {
                return SDL_SetError("width + 1 would overflow");
            }
            p1 = p1 / 2;
-           if (SDL_size_mul_overflow(p1, 4, &p2) < 0) {
+           if (!SDL_size_mul_check_overflow(p1, 4, &p2)) {
                return SDL_SetError("width * 4 would overflow");
            }
            *pitch = p2;
@@ -119,7 +119,7 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
         if (size) {
             /* dst_size == 4 * sz_plane_packed; */
             size_t s1;
-            if (SDL_size_mul_overflow(sz_plane_packed, 4, &s1) < 0) {
+            if (!SDL_size_mul_check_overflow(sz_plane_packed, 4, &s1)) {
                 return SDL_SetError("plane * 4 would overflow");
             }
             *size = (int) s1;
@@ -135,10 +135,10 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
         if (size) {
             // dst_size == sz_plane + sz_plane_chroma + sz_plane_chroma;
             size_t s1, s2;
-            if (SDL_size_add_overflow(sz_plane, sz_plane_chroma, &s1) < 0) {
+            if (!SDL_size_add_check_overflow(sz_plane, sz_plane_chroma, &s1)) {
                 return SDL_SetError("Y + U would overflow");
             }
-            if (SDL_size_add_overflow(s1, sz_plane_chroma, &s2) < 0) {
+            if (!SDL_size_add_check_overflow(s1, sz_plane_chroma, &s2)) {
                 return SDL_SetError("Y + U + V would overflow");
             }
             *size = (int) s2;
