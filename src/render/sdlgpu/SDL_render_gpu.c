@@ -248,12 +248,16 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     GPU_TextureData *data = (GPU_TextureData *)texture->internal;
     const Uint32 texturebpp = SDL_BYTESPERPIXEL(texture->format);
 
-    Uint32 row_size = texturebpp * rect->w;
-    Uint32 data_size = row_size * rect->h;
+    size_t row_size, data_size;
+
+    if (!SDL_size_mul_check_overflow(rect->w, texturebpp, &row_size) ||
+        !SDL_size_mul_check_overflow(rect->h, row_size, &data_size)) {
+        return SDL_SetError("update size overflow"); 
+    }
 
     SDL_GPUTransferBufferCreateInfo tbci;
     SDL_zero(tbci);
-    tbci.sizeInBytes = data_size;
+    tbci.sizeInBytes = (Uint32)data_size;
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 
     SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(renderdata->device, &tbci);
@@ -264,7 +268,7 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     Uint8 *output = SDL_MapGPUTransferBuffer(renderdata->device, tbuf, false);
 
-    if (pitch == row_size) {
+    if ((size_t)pitch == row_size) {
         memcpy(output, pixels, data_size);
     } else {
         // FIXME is negative pitch supposed to work?

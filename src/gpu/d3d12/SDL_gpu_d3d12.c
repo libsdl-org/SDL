@@ -767,11 +767,11 @@ typedef struct D3D12ComputeRootSignature
 {
     ID3D12RootSignature *handle;
 
-    Uint32 readOnlyStorageTextureRootIndex;
-    Uint32 readOnlyStorageBufferRootIndex;
-    Uint32 writeOnlyStorageTextureRootIndex;
-    Uint32 writeOnlyStorageBufferRootIndex;
-    Uint32 uniformBufferRootIndex[MAX_UNIFORM_BUFFERS_PER_STAGE];
+    Sint32 readOnlyStorageTextureRootIndex;
+    Sint32 readOnlyStorageBufferRootIndex;
+    Sint32 writeOnlyStorageTextureRootIndex;
+    Sint32 writeOnlyStorageBufferRootIndex;
+    Sint32 uniformBufferRootIndex[MAX_UNIFORM_BUFFERS_PER_STAGE];
 } D3D12ComputeRootSignature;
 
 struct D3D12ComputePipeline
@@ -2726,8 +2726,8 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         desc.Alignment = isSwapchainTexture ? 0 : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
         desc.Width = textureCreateInfo->width;
         desc.Height = textureCreateInfo->height;
-        desc.DepthOrArraySize = textureCreateInfo->layerCountOrDepth;
-        desc.MipLevels = textureCreateInfo->levelCount;
+        desc.DepthOrArraySize = (UINT16)textureCreateInfo->layerCountOrDepth;
+        desc.MipLevels = (UINT16)textureCreateInfo->levelCount;
         desc.Format = SDLToD3D12_TextureFormat[textureCreateInfo->format];
         desc.SampleDesc.Count = 1;
         desc.SampleDesc.Quality = 0;
@@ -2738,8 +2738,8 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
         desc.Width = textureCreateInfo->width;
         desc.Height = textureCreateInfo->height;
-        desc.DepthOrArraySize = textureCreateInfo->layerCountOrDepth;
-        desc.MipLevels = textureCreateInfo->levelCount;
+        desc.DepthOrArraySize = (UINT16)textureCreateInfo->layerCountOrDepth;
+        desc.MipLevels = (UINT16)textureCreateInfo->levelCount;
         desc.Format = SDLToD3D12_TextureFormat[textureCreateInfo->format];
         desc.SampleDesc.Count = 1;
         desc.SampleDesc.Quality = 0;
@@ -6086,7 +6086,7 @@ static bool D3D12_INTERNAL_ResizeSwapchainIfNeeded(
     IDXGISwapChain_GetDesc(windowData->swapchain, &swapchainDesc);
     SDL_GetWindowSize(windowData->window, &w, &h);
 
-    if (w != swapchainDesc.BufferDesc.Width || h != swapchainDesc.BufferDesc.Height) {
+    if ((UINT)w != swapchainDesc.BufferDesc.Width || (UINT)h != swapchainDesc.BufferDesc.Height) {
         // Wait so we don't release in-flight views
         D3D12_Wait((SDL_GPURenderer *)renderer);
 

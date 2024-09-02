@@ -1470,7 +1470,7 @@ static void VULKAN_INTERNAL_NewMemoryFreeRegion(
         }
 
         // perform insertion sort
-        if (allocation->allocator->sortedFreeRegionCount > 0 && insertionIndex != allocation->allocator->sortedFreeRegionCount) {
+        if (allocation->allocator->sortedFreeRegionCount > 0 && (Uint32)insertionIndex != allocation->allocator->sortedFreeRegionCount) {
             for (Sint32 i = allocation->allocator->sortedFreeRegionCount; i > insertionIndex && i > 0; i -= 1) {
                 allocation->allocator->sortedFreeRegions[i] = allocation->allocator->sortedFreeRegions[i - 1];
                 allocation->allocator->sortedFreeRegions[i]->sortedIndex = i;
@@ -1911,7 +1911,7 @@ static Uint8 VULKAN_INTERNAL_BindResourceMemory(
     VulkanMemoryUsedRegion *usedRegion;
 
     VkDeviceSize requiredSize, allocationSize;
-    VkDeviceSize alignedOffset;
+    VkDeviceSize alignedOffset = 0;
     VkDeviceSize newRegionSize, newRegionOffset;
     Uint8 isHostVisible, smallAllocation, allocationResult;
     Sint32 i;
@@ -11228,7 +11228,8 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
     VkResult vulkanResult;
     VkPhysicalDevice *physicalDevices;
     VulkanExtensions *physicalDeviceExtensions;
-    Uint32 physicalDeviceCount, i, suitableIndex;
+    Uint32 i, physicalDeviceCount;
+    Sint32 suitableIndex;
     Uint32 queueFamilyIndex, suitableQueueFamilyIndex;
     Uint8 deviceRank, highestRank;
 

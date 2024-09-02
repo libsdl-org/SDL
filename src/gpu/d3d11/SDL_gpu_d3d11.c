@@ -2042,7 +2042,7 @@ static D3D11Texture *D3D11_INTERNAL_CreateTexture(
                 desc2D.MipLevels = 1;
                 desc2D.MiscFlags = 0;
                 desc2D.SampleDesc.Count = SDLToD3D11_SampleCount[createInfo->sampleCount];
-                desc2D.SampleDesc.Quality = D3D11_STANDARD_MULTISAMPLE_PATTERN;
+                desc2D.SampleDesc.Quality = (UINT)D3D11_STANDARD_MULTISAMPLE_PATTERN;
                 desc2D.Usage = D3D11_USAGE_DEFAULT;
 
                 res = ID3D11Device_CreateTexture2D(
@@ -5213,7 +5213,7 @@ static SDL_GPUTexture *D3D11_AcquireSwapchainTexture(
     IDXGISwapChain_GetDesc(windowData->swapchain, &swapchainDesc);
     SDL_GetWindowSize(window, &w, &h);
 
-    if (w != swapchainDesc.BufferDesc.Width || h != swapchainDesc.BufferDesc.Height) {
+    if ((UINT)w != swapchainDesc.BufferDesc.Width || (UINT)h != swapchainDesc.BufferDesc.Height) {
         res = D3D11_INTERNAL_ResizeSwapchain(
             renderer,
             windowData,
