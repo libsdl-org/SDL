@@ -33,6 +33,10 @@
 #define SDL_KMSDRM_SYM_CONST(type, name)
 #endif
 
+#ifndef SDL_KMSDRM_SYM_OPT
+#define SDL_KMSDRM_SYM_OPT(rc,fn,params)
+#endif
+
 
 SDL_KMSDRM_MODULE(LIBDRM)
 SDL_KMSDRM_SYM(void,drmModeFreeResources,(drmModeResPtr ptr))
@@ -49,12 +53,12 @@ SDL_KMSDRM_SYM(int,drmModeAddFB,(int fd, uint32_t width, uint32_t height, uint8_
                          uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
                          uint32_t *buf_id))
 
-SDL_KMSDRM_SYM(int,drmModeAddFB2,(int fd, uint32_t width, uint32_t height,
+SDL_KMSDRM_SYM_OPT(int,drmModeAddFB2,(int fd, uint32_t width, uint32_t height,
                          uint32_t pixel_format, const uint32_t bo_handles[4],
                          const uint32_t pitches[4], const uint32_t offsets[4],
                          uint32_t *buf_id, uint32_t flags))
 
-SDL_KMSDRM_SYM(int,drmModeAddFB2WithModifiers,(int fd, uint32_t width,
+SDL_KMSDRM_SYM_OPT(int,drmModeAddFB2WithModifiers,(int fd, uint32_t width,
                          uint32_t height, uint32_t pixel_format, const uint32_t bo_handles[4],
                          const uint32_t pitches[4], const uint32_t offsets[4],
                          const uint64_t modifier[4], uint32_t *buf_id, uint32_t flags))
@@ -129,15 +133,16 @@ SDL_KMSDRM_SYM(void,gbm_surface_destroy,(struct gbm_surface *surf))
 SDL_KMSDRM_SYM(struct gbm_bo *,gbm_surface_lock_front_buffer,(struct gbm_surface *surf))
 SDL_KMSDRM_SYM(void,gbm_surface_release_buffer,(struct gbm_surface *surf, struct gbm_bo *bo))
 
-SDL_KMSDRM_SYM(uint64_t,gbm_bo_get_modifier,(struct gbm_bo *bo))
-SDL_KMSDRM_SYM(int,gbm_bo_get_plane_count,(struct gbm_bo *bo))
-SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_offset,(struct gbm_bo *bo, int plane))
-SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_stride_for_plane,(struct gbm_bo *bo, int plane))
-SDL_KMSDRM_SYM(union gbm_bo_handle,gbm_bo_get_handle_for_plane,(struct gbm_bo *bo, int plane);)
+SDL_KMSDRM_SYM_OPT(uint64_t,gbm_bo_get_modifier,(struct gbm_bo *bo))
+SDL_KMSDRM_SYM_OPT(int,gbm_bo_get_plane_count,(struct gbm_bo *bo))
+SDL_KMSDRM_SYM_OPT(uint32_t,gbm_bo_get_offset,(struct gbm_bo *bo, int plane))
+SDL_KMSDRM_SYM_OPT(uint32_t,gbm_bo_get_stride_for_plane,(struct gbm_bo *bo, int plane))
+SDL_KMSDRM_SYM_OPT(union gbm_bo_handle,gbm_bo_get_handle_for_plane,(struct gbm_bo *bo, int plane))
 
 #undef SDL_KMSDRM_MODULE
 #undef SDL_KMSDRM_SYM
 #undef SDL_KMSDRM_SYM_CONST
+#undef SDL_KMSDRM_SYM_OPT
 
 /* *INDENT-ON* */ /* clang-format on */
 
