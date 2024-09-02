@@ -348,8 +348,9 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo)
 {
     SDL_VideoData *viddata = _this->internal;
     unsigned w, h;
-    int ret, num_planes = 0;
-    Uint32 format, strides[4] = { 0 }, handles[4] = { 0 }, offsets[4] = { 0 }, flags = 0;
+    int rc = -1;
+    int num_planes = 0;
+    uint32_t format, strides[4] = { 0 }, handles[4] = { 0 }, offsets[4] = { 0 }, flags = 0;
     uint64_t modifiers[4] = { 0 };
 
     // Check for an existing framebuffer
@@ -375,28 +376,36 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo)
     h = KMSDRM_gbm_bo_get_height(bo);
     format = KMSDRM_gbm_bo_get_format(bo);
 
-    modifiers[0] = KMSDRM_gbm_bo_get_modifier(bo);
-    num_planes = KMSDRM_gbm_bo_get_plane_count(bo);
-    for (int i = 0; i < num_planes; i++) {
-        strides[i] = KMSDRM_gbm_bo_get_stride_for_plane(bo, i);
-        handles[i] = KMSDRM_gbm_bo_get_handle_for_plane(bo, i).u32;
-        offsets[i] = KMSDRM_gbm_bo_get_offset(bo, i);
-        modifiers[i] = modifiers[0];
+    if (KMSDRM_drmModeAddFB2WithModifiers &&
+        KMSDRM_gbm_bo_get_modifier &&
+        KMSDRM_gbm_bo_get_plane_count &&
+        KMSDRM_gbm_bo_get_offset &&
+        KMSDRM_gbm_bo_get_stride_for_plane &&
+        KMSDRM_gbm_bo_get_handle_for_plane) {
+
+        modifiers[0] = KMSDRM_gbm_bo_get_modifier(bo);
+        num_planes = KMSDRM_gbm_bo_get_plane_count(bo);
+        for (int i = 0; i < num_planes; i++) {
+            strides[i] = KMSDRM_gbm_bo_get_stride_for_plane(bo, i);
+            handles[i] = KMSDRM_gbm_bo_get_handle_for_plane(bo, i).u32;
+            offsets[i] = KMSDRM_gbm_bo_get_offset(bo, i);
+            modifiers[i] = modifiers[0];
+        }
+
+        if (modifiers[0] && modifiers[0] != DRM_FORMAT_MOD_INVALID) {
+            flags = DRM_MODE_FB_MODIFIERS;
+        }
+
+        rc = KMSDRM_drmModeAddFB2WithModifiers(viddata->drm_fd, w, h, format, handles, strides, offsets, modifiers, &fb_info->fb_id, flags);
     }
 
-    if (modifiers[0] && modifiers[0] != DRM_FORMAT_MOD_INVALID) {
-        flags = DRM_MODE_FB_MODIFIERS;
-    }
-
-    ret = KMSDRM_drmModeAddFB2WithModifiers(viddata->drm_fd, w, h, format, handles, strides, offsets, modifiers, &fb_info->fb_id, flags);
-
-    if (ret) {
+    if (rc < 0) {
         strides[0] = KMSDRM_gbm_bo_get_stride(bo);
         handles[0] = KMSDRM_gbm_bo_get_handle(bo).u32;
-        ret = KMSDRM_drmModeAddFB(viddata->drm_fd, w, h, 24, 32, strides[0], handles[0], &fb_info->fb_id);
+        rc = KMSDRM_drmModeAddFB(viddata->drm_fd, w, h, 24, 32, strides[0], handles[0], &fb_info->fb_id);
     }
 
-    if (ret) {
+    if (rc < 0) {
         SDL_free(fb_info);
         return NULL;
     }
