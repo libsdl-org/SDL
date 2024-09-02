@@ -25,11 +25,21 @@
 
 #ifndef SDL_PLATFORM_IOS
 
+static bool callback_rate_set;
 static int callback_rate_increment = 0;
 
 static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
-    const int callback_rate = newValue ? SDL_atoi(newValue) : 60;
+    int callback_rate = 0;
+
+    if (newValue && *newValue) {
+        callback_rate = SDL_atoi(newValue);
+        callback_rate_set = true;
+    } else {
+        callback_rate = 60;
+        callback_rate_set = false;
+    }
+
     if (callback_rate > 0) {
         callback_rate_increment = ((Uint64) 1000000000) / ((Uint64) callback_rate);
     } else {
@@ -53,14 +63,13 @@ int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, 
             // !!! FIXME: off to them here if/when the video subsystem becomes
             // !!! FIXME: initialized).
 
-            // !!! FIXME: maybe respect this hint even if there _is_ a window.
             // if there's no window, try to run at about 60fps (or whatever rate
             //  the hint requested). This makes this not eat all the CPU in
             //  simple things like loopwave. If there's a window, we run as fast
             //  as possible, which means we'll clamp to vsync in common cases,
             //  and won't be restrained to vsync if the app is doing a benchmark
             //  or doesn't want to be, based on how they've set up that window.
-            if ((callback_rate_increment == 0) || SDL_HasWindows()) {
+            if ((callback_rate_increment == 0) || (!callback_rate_set && SDL_HasWindows())) {
                 next_iteration = 0; // just clear the timer and run at the pace the video subsystem allows.
             } else {
                 const Uint64 now = SDL_GetTicksNS();
