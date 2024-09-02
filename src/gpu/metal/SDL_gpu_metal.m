@@ -68,18 +68,18 @@ static void METAL_INTERNAL_DestroyBlitResources(SDL_GPURenderer *driverData);
 // Conversions
 
 static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
+    MTLPixelFormatA8Unorm,      // A8_UNORM
+    MTLPixelFormatR8Unorm,      // R8_UNORM
+    MTLPixelFormatRG8Unorm,     // R8G8_UNORM
     MTLPixelFormatRGBA8Unorm,   // R8G8B8A8_UNORM
-    MTLPixelFormatBGRA8Unorm,   // B8G8R8A8_UNORM
+    MTLPixelFormatR16Unorm,     // R16_UNORM
+    MTLPixelFormatRG16Unorm,    // R16G16_UNORM
+    MTLPixelFormatRGBA16Unorm,  // R16G16B16A16_UNORM
+    MTLPixelFormatRGB10A2Unorm, // A2R10G10B10_UNORM
     MTLPixelFormatB5G6R5Unorm,  // B5G6R5_UNORM
     MTLPixelFormatBGR5A1Unorm,  // B5G5R5A1_UNORM
     MTLPixelFormatABGR4Unorm,   // B4G4R4A4_UNORM
-    MTLPixelFormatRGB10A2Unorm, // A2R10G10B10_UNORM
-    MTLPixelFormatRG8Unorm,     // R8G8_UNORM
-    MTLPixelFormatRG16Unorm,    // R16G16_UNORM
-    MTLPixelFormatRGBA16Unorm,  // R16G16B16A16_UNORM
-    MTLPixelFormatR8Unorm,      // R8_UNORM
-    MTLPixelFormatR16Unorm,     // R16_UNORM
-    MTLPixelFormatA8Unorm,      // A8_UNORM
+    MTLPixelFormatBGRA8Unorm,   // B8G8R8A8_UNORM
 #ifdef SDL_PLATFORM_MACOS
     MTLPixelFormatBC1_RGBA,      // BC1_UNORM
     MTLPixelFormatBC2_RGBA,      // BC2_UNORM
