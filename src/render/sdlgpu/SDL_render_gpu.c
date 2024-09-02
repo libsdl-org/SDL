@@ -173,7 +173,7 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
     GPU_TextureData *data;
     SDL_GPUTextureFormat format;
-    SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT;
+    SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
     format = PixFormatToTexFormat(texture->format);
 
@@ -211,7 +211,7 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     }
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-        usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+        usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     }
 
     texture->internal = data;
@@ -603,7 +603,7 @@ static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
     SDL_GPUBufferCreateInfo bci;
     SDL_zero(bci);
     bci.sizeInBytes = size;
-    bci.usageFlags = SDL_GPU_BUFFERUSAGE_VERTEX_BIT;
+    bci.usageFlags = SDL_GPU_BUFFERUSAGE_VERTEX;
 
     data->vertices.buffer = SDL_CreateGPUBuffer(data->device, &bci);
 
@@ -923,7 +923,7 @@ static bool CreateBackbuffer(GPU_RenderData *data, Uint32 w, Uint32 h, SDL_GPUTe
     tci.layerCountOrDepth = 1;
     tci.levelCount = 1;
     tci.sampleCount = SDL_GPU_SAMPLECOUNT_1;
-    tci.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT | SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT;
+    tci.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
     data->backbuffer.texture = SDL_CreateGPUTexture(data->device, &tci);
     data->backbuffer.width = w;

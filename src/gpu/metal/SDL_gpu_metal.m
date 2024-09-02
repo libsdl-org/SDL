@@ -306,19 +306,19 @@ static MTLStoreAction SDLToMetal_StoreOp(
 };
 
 static MTLColorWriteMask SDLToMetal_ColorWriteMask(
-    SDL_GPUColorComponentFlagBits mask)
+    SDL_GPUColorComponentFlags mask)
 {
     MTLColorWriteMask result = 0;
-    if (mask & SDL_GPU_COLORCOMPONENT_R_BIT) {
+    if (mask & SDL_GPU_COLORCOMPONENT_R) {
         result |= MTLColorWriteMaskRed;
     }
-    if (mask & SDL_GPU_COLORCOMPONENT_G_BIT) {
+    if (mask & SDL_GPU_COLORCOMPONENT_G) {
         result |= MTLColorWriteMaskGreen;
     }
-    if (mask & SDL_GPU_COLORCOMPONENT_B_BIT) {
+    if (mask & SDL_GPU_COLORCOMPONENT_B) {
         result |= MTLColorWriteMaskBlue;
     }
-    if (mask & SDL_GPU_COLORCOMPONENT_A_BIT) {
+    if (mask & SDL_GPU_COLORCOMPONENT_A) {
         result |= MTLColorWriteMaskAlpha;
     }
     return result;
@@ -1311,16 +1311,16 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
     textureDescriptor.storageMode = MTLStorageModePrivate;
 
     textureDescriptor.usage = 0;
-    if (textureCreateInfo->usageFlags & (SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT |
-                                         SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT)) {
+    if (textureCreateInfo->usageFlags & (SDL_GPU_TEXTUREUSAGE_COLOR_TARGET |
+                                         SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
         textureDescriptor.usage |= MTLTextureUsageRenderTarget;
     }
-    if (textureCreateInfo->usageFlags & (SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT |
-                                         SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT |
-                                         SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT)) {
+    if (textureCreateInfo->usageFlags & (SDL_GPU_TEXTUREUSAGE_SAMPLER |
+                                         SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ |
+                                         SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
         textureDescriptor.usage |= MTLTextureUsageShaderRead;
     }
-    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT) {
+    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
         textureDescriptor.usage |= MTLTextureUsageShaderWrite;
     }
 
@@ -3377,7 +3377,7 @@ static Uint8 METAL_INTERNAL_CreateSwapchain(
     windowData->textureContainer.header.info.levelCount = 1;
     windowData->textureContainer.header.info.layerCountOrDepth = 1;
     windowData->textureContainer.header.info.type = SDL_GPU_TEXTURETYPE_2D;
-    windowData->textureContainer.header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+    windowData->textureContainer.header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
 
     drawableSize = windowData->layer.drawableSize;
     windowData->textureContainer.header.info.width = (Uint32)drawableSize.width;
@@ -3683,7 +3683,7 @@ static bool METAL_SupportsTextureFormat(
         MetalRenderer *renderer = (MetalRenderer *)driverData;
 
         // Only depth textures can be used as... depth textures
-        if ((usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT)) {
+        if ((usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
             if (!IsDepthFormat(format)) {
                 return false;
             }
@@ -3707,7 +3707,7 @@ static bool METAL_SupportsTextureFormat(
             if (@available(macOS 11.0, *)) {
                 return (
                     [renderer->device supportsBCTextureCompression] &&
-                    !(usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT));
+                    !(usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET));
             } else {
                 return false;
             }

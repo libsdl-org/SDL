@@ -1848,20 +1848,20 @@ static D3D11Texture *D3D11_INTERNAL_CreateTexture(
     D3D11Texture *d3d11Texture;
     HRESULT res;
 
-    isColorTarget = createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
-    isDepthStencil = createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT;
+    isColorTarget = createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    isDepthStencil = createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
     needsSRV =
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) ||
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT) ||
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT);
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ);
     needSubresourceUAV =
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT);
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE);
     isMultisample = createInfo->sampleCount > SDL_GPU_SAMPLECOUNT_1;
     isStaging = createInfo->usageFlags == 0;
     isMippable =
         createInfo->levelCount > 1 &&
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) &&
-        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT);
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) &&
+        (createInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET);
     format = SDLToD3D11_TextureFormat[createInfo->format];
     if (isDepthStencil) {
         format = D3D11_INTERNAL_GetTypelessFormat(format);
@@ -2370,19 +2370,19 @@ static SDL_GPUBuffer *D3D11_CreateBuffer(
     D3D11_BUFFER_DESC bufferDesc;
 
     bufferDesc.BindFlags = 0;
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) {
         bufferDesc.BindFlags |= D3D11_BIND_VERTEX_BUFFER;
     }
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) {
         bufferDesc.BindFlags |= D3D11_BIND_INDEX_BUFFER;
     }
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         bufferDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
     }
 
-    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ |
+                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ |
+                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
         bufferDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
     }
 
@@ -2392,12 +2392,12 @@ static SDL_GPUBuffer *D3D11_CreateBuffer(
     bufferDesc.StructureByteStride = 0;
     bufferDesc.MiscFlags = 0;
 
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT_BIT) {
+    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         bufferDesc.MiscFlags |= D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
     }
-    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ |
+                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ |
+                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
         bufferDesc.MiscFlags |= D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
     }
 
@@ -4151,7 +4151,7 @@ static void D3D11_BeginComputePass(
 
     for (i = 0; i < storageTextureBindingCount; i += 1) {
         textureContainer = (D3D11TextureContainer *)storageTextureBindings[i].texture;
-        if (!(textureContainer->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT)) {
+        if (!(textureContainer->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempted to bind read-only texture as compute write texture");
         }
 
@@ -4977,7 +4977,7 @@ static bool D3D11_INTERNAL_CreateSwapchain(
     windowData->textureContainer.header.info.type = SDL_GPU_TEXTURETYPE_2D;
     windowData->textureContainer.header.info.levelCount = 1;
     windowData->textureContainer.header.info.sampleCount = SDL_GPU_SAMPLECOUNT_1;
-    windowData->textureContainer.header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+    windowData->textureContainer.header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
 
     windowData->texture.container = &windowData->textureContainer;
     windowData->texture.containerIndex = 0;
@@ -5547,20 +5547,20 @@ static bool D3D11_SupportsTextureFormat(
     }
 
     // Are the usage flags supported?
-    if ((usage & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) && !(formatSupport & D3D11_FORMAT_SUPPORT_SHADER_SAMPLE)) {
+    if ((usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) && !(formatSupport & D3D11_FORMAT_SUPPORT_SHADER_SAMPLE)) {
         return false;
     }
-    if ((usage & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT)) && !(formatSupport & D3D11_FORMAT_SUPPORT_SHADER_LOAD)) {
+    if ((usage & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) && !(formatSupport & D3D11_FORMAT_SUPPORT_SHADER_LOAD)) {
         return false;
     }
-    if ((usage & (SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT) && !(formatSupport & D3D11_FORMAT_SUPPORT_TYPED_UNORDERED_ACCESS_VIEW))) {
+    if ((usage & (SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) && !(formatSupport & D3D11_FORMAT_SUPPORT_TYPED_UNORDERED_ACCESS_VIEW))) {
         // TYPED_UNORDERED_ACCESS_VIEW implies support for typed UAV stores
         return false;
     }
-    if ((usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) && !(formatSupport & D3D11_FORMAT_SUPPORT_RENDER_TARGET)) {
+    if ((usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) && !(formatSupport & D3D11_FORMAT_SUPPORT_RENDER_TARGET)) {
         return false;
     }
-    if ((usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) && !(formatSupport & D3D11_FORMAT_SUPPORT_DEPTH_STENCIL)) {
+    if ((usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) && !(formatSupport & D3D11_FORMAT_SUPPORT_DEPTH_STENCIL)) {
         return false;
     }
 
