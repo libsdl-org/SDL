@@ -740,8 +740,12 @@ static MetalLibraryFunction METAL_INTERNAL_CompileShader(
     id<MTLFunction> function;
 
     if (format == SDL_GPU_SHADERFORMAT_MSL) {
+        NSString *codeString = [[NSString alloc]
+            initWithBytes:code
+                   length:codeSize
+                 encoding:NSUTF8StringEncoding];
         library = [renderer->device
-            newLibraryWithSource:@((const char *)code)
+            newLibraryWithSource:codeString
                          options:nil
                            error:&error];
     } else if (format == SDL_GPU_SHADERFORMAT_METALLIB) {
