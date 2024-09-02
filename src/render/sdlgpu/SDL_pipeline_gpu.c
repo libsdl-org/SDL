@@ -84,8 +84,10 @@ bool GPU_InitPipelineCache(GPU_PipelineCache *cache, SDL_GPUDevice *device)
 {
     // FIXME how many buckets do we need?
     cache->table = SDL_CreateHashTable(device, 32, HashPassthrough, MatchPipelineCacheKey, NukePipelineCacheEntry, true);
-
-    return (bool)cache->table;
+    if (!cache->table) {
+        return false;
+    }
+    return true;
 }
 
 void GPU_DestroyPipelineCache(GPU_PipelineCache *cache)
