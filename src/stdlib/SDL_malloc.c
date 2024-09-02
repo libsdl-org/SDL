@@ -28,6 +28,7 @@
 #define LACKS_STRINGS_H
 #define LACKS_STRING_H
 #define LACKS_STDLIB_H
+#define FORCEINLINE
 #define ABORT
 #define USE_LOCKS 1
 #define USE_DL_PREFIX
