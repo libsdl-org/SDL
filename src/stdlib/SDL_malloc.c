@@ -1907,9 +1907,9 @@ static FORCEINLINE void x86_clear_lock(int* sl) {
 
 #if !defined(USE_RECURSIVE_LOCKS) || USE_RECURSIVE_LOCKS == 0
 /* Plain spin locks use single word (embedded in malloc_states) */
-static int spin_acquire_lock(int *sl) {
+static int spin_acquire_lock(volatile long *sl) {
   int spins = 0;
-  while (*(volatile int *)sl != 0 || CAS_LOCK(sl)) {
+  while (*sl != 0 || CAS_LOCK(sl)) {
     if ((++spins & SPINS_PER_YIELD) == 0) {
       SPIN_LOCK_YIELD;
     }
@@ -1917,7 +1917,7 @@ static int spin_acquire_lock(int *sl) {
   return 0;
 }
 
-#define MLOCK_T               int
+#define MLOCK_T               volatile long
 #define TRY_LOCK(sl)          !CAS_LOCK(sl)
 #define RELEASE_LOCK(sl)      CLEAR_LOCK(sl)
 #define ACQUIRE_LOCK(sl)      (CAS_LOCK(sl)? spin_acquire_lock(sl) : 0)
