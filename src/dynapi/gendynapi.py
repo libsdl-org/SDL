@@ -180,6 +180,7 @@ def main():
             func = re.sub(r" SDL_RELEASE\(.*\)", "", func);
             func = re.sub(r" SDL_RELEASE_SHARED\(.*\)", "", func);
             func = re.sub(r" SDL_RELEASE_GENERIC\(.*\)", "", func);
+            func = func.replace(" SDL_RESTRICT", "");
 
             # Should be a valid function here
             match = reg_parsing_function.match(func)
