@@ -4046,6 +4046,7 @@ static void add_segment(mstate m, char* tbase, size_t tsize, flag_t mmapped) {
     else
       break;
   }
+  (void)nfences;
   assert(nfences >= 2);
 
   /* Insert the rest of old top into a bin as an ordinary free chunk */
