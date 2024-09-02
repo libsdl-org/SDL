@@ -1298,6 +1298,22 @@ extern SDL_DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str
 extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen);
 
 /**
+ * Searches a string for the first occurence of any character contained in a
+ * breakset, and returns a pointer from the string to that character.
+ *
+ * \param str The null-terminated string to be searched.
+ * \param breakset A null-terminated string containing the list of characters
+ *        to look for.
+ * \returns A pointer to the location, in str, of the first occurence of a
+ *          character present in the breakset, or NULL if none is found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC char * SDLCALL SDL_strpbrk(const char * SDL_RESTRICT str, const char * SDL_RESTRICT breakset);
+
+/**
  * The Unicode REPLACEMENT CHARACTER codepoint.
  *
  * SDL_StepUTF8() reports this codepoint when it encounters a UTF-8 string
@@ -3079,6 +3095,7 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
 #define SDL_wcsncmp wcsncmp
 #define SDL_strcasecmp strcasecmp
 #define SDL_strncasecmp strncasecmp
+#define SDL_strpbrk strpbrk
 #define SDL_sscanf sscanf
 #define SDL_vsscanf vsscanf
 #define SDL_snprintf snprintf

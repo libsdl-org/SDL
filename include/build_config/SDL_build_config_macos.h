@@ -68,6 +68,7 @@
 #define HAVE_STRLEN 1
 #define HAVE_STRLCPY    1
 #define HAVE_STRLCAT    1
+#define HAVE_STRPBRK    1
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR    1
 #define HAVE_STRSTR 1

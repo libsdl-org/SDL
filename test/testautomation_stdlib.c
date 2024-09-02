@@ -1188,6 +1188,46 @@ stdlib_iconv(void *arg)
     return TEST_COMPLETED;
 }
 
+
+static int
+stdlib_strpbrk(void *arg)
+{
+    struct {
+        const char *input;
+        const char *accept;
+        int expected[3]; /* negative if NULL */
+    } test_cases[] = {
+        { "",               "",             { -1, -1, -1  } },
+        { "abc",            "",             { -1, -1, -1  } },
+        { "Abc",            "a",            { -1, -1, -1  } },
+        { "abc",            "a",            {  0, -1, -1  } },
+        { "abcbd",          "bbbb",         {  1,  3, -1  } },
+        { "a;b;c",          ";",            {  1,  3, -1  } },
+        { "a;b;c",          ",",            { -1, -1, -1  } },
+        { "a:bbbb;c",       ";:",           {  1,  6, -1  } },
+        { "Hello\tS DL\n",   " \t\r\n",     {  5,  7,  10 } },
+    };
+    int i;
+
+    for (i = 0; i < SDL_arraysize(test_cases); i++) {
+        int j;
+        const char *input = test_cases[i].input;
+
+        for (j = 0; j < SDL_arraysize(test_cases[i].expected); j++) {
+            char *result;
+
+            SDLTest_AssertPass("About to call SDL_strpbrk(\"%s\", \"%s\")", input, test_cases[i].accept);
+            result = SDL_strpbrk(input, test_cases[i].accept);
+            if (test_cases[i].expected[j] < 0) {
+                SDLTest_AssertCheck(result == NULL, "Expected NULL, got %p", result);
+            } else {
+                SDLTest_AssertCheck(result == test_cases[i].input + test_cases[i].expected[j], "Expected %p, got %p", test_cases[i].input + test_cases[i].expected[j], result);
+                input = test_cases[i].input + test_cases[i].expected[j] + 1;
+            }
+        }
+    }
+    return TEST_COMPLETED;
+}
 /* ================= Test References ================== */
 
 /* Standard C routine test cases */
@@ -1227,8 +1267,12 @@ static const SDLTest_TestCaseReference stdlibTestOverflow = {
     stdlib_overflow, "stdlib_overflow", "Overflow detection", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference stdlibIconv = {
-    stdlib_iconv, "stdlib_iconv", "Calls to iconv", TEST_ENABLED
+static const SDLTest_TestCaseReference stdlibTest_iconv = {
+    stdlib_iconv, "stdlib_iconv", "Calls to SDL_iconv", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference stdlibTest_strpbrk = {
+    stdlib_strpbrk, "stdlib_strpbrk", "Calls to SDL_strpbrk", TEST_ENABLED
 };
 
 /* Sequence of Standard C routine test cases */
@@ -1242,7 +1286,8 @@ static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest_sscanf,
     &stdlibTest_aligned_alloc,
     &stdlibTestOverflow,
-    &stdlibIconv,
+    &stdlibTest_iconv,
+    &stdlibTest_strpbrk,
     NULL
 };
 
