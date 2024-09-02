@@ -718,16 +718,16 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
             SDL_assert_release(!"For any texture: levelCount must be >= 1");
             failed = true;
         }
-        if ((textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT) && (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT)) {
-            SDL_assert_release(!"For any texture: usageFlags cannot contain both GRAPHICS_STORAGE_READ_BIT and SAMPLER_BIT");
+        if ((textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) && (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
+            SDL_assert_release(!"For any texture: usageFlags cannot contain both GRAPHICS_STORAGE_READ and SAMPLER");
             failed = true;
         }
-        if (IsDepthFormat(textureCreateInfo->format) && (textureCreateInfo->usageFlags & ~(SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT | SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT))) {
-            SDL_assert_release(!"For depth textures: usageFlags cannot contain any flags except for DEPTH_STENCIL_TARGET_BIT and SAMPLER_BIT");
+        if (IsDepthFormat(textureCreateInfo->format) && (textureCreateInfo->usageFlags & ~(SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER))) {
+            SDL_assert_release(!"For depth textures: usageFlags cannot contain any flags except for DEPTH_STENCIL_TARGET and SAMPLER");
             failed = true;
         }
-        if (IsIntegerFormat(textureCreateInfo->format) && (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT)) {
-            SDL_assert_release(!"For any texture: usageFlags cannot contain SAMPLER_BIT for textures with an integer format");
+        if (IsIntegerFormat(textureCreateInfo->format) && (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
+            SDL_assert_release(!"For any texture: usageFlags cannot contain SAMPLER for textures with an integer format");
             failed = true;
         }
 
@@ -759,8 +759,8 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                 SDL_assert_release(!"For 3D textures: width, height, and layerCountOrDepth must be <= 2048");
                 failed = true;
             }
-            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) {
-                SDL_assert_release(!"For 3D textures: usageFlags must not contain DEPTH_STENCIL_TARGET_BIT");
+            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+                SDL_assert_release(!"For 3D textures: usageFlags must not contain DEPTH_STENCIL_TARGET");
                 failed = true;
             }
             if (textureCreateInfo->sampleCount > SDL_GPU_SAMPLECOUNT_1) {
@@ -774,8 +774,8 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
         } else {
             if (textureCreateInfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
                 // Array Texture Validation
-                if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT) {
-                    SDL_assert_release(!"For array textures: usageFlags must not contain DEPTH_STENCIL_TARGET_BIT");
+                if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+                    SDL_assert_release(!"For array textures: usageFlags must not contain DEPTH_STENCIL_TARGET");
                     failed = true;
                 }
                 if (textureCreateInfo->sampleCount > SDL_GPU_SAMPLECOUNT_1) {
@@ -2063,8 +2063,8 @@ void SDL_GenerateMipmapsForGPUTexture(
             return;
         }
 
-        if (!(header->info.usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) || !(header->info.usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT)) {
-            SDL_assert_release(!"GenerateMipmaps texture must be created with SAMPLER_BIT and COLOR_TARGET_BIT usage flags!");
+        if (!(header->info.usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) || !(header->info.usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
+            SDL_assert_release(!"GenerateMipmaps texture must be created with SAMPLER and COLOR_TARGET usage flags!");
             return;
         }
     }
@@ -2108,12 +2108,12 @@ void SDL_BlitGPUTexture(
             SDL_assert_release(!"Blit source and destination textures must be non-NULL");
             return; // attempting to proceed will crash
         }
-        if ((srcHeader->info.usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) == 0) {
-            SDL_assert_release(!"Blit source texture must be created with the SAMPLER_BIT usage flag");
+        if ((srcHeader->info.usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) == 0) {
+            SDL_assert_release(!"Blit source texture must be created with the SAMPLER usage flag");
             failed = true;
         }
-        if ((dstHeader->info.usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT) == 0) {
-            SDL_assert_release(!"Blit destination texture must be created with the COLOR_TARGET_BIT usage flag");
+        if ((dstHeader->info.usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) == 0) {
+            SDL_assert_release(!"Blit destination texture must be created with the COLOR_TARGET usage flag");
             failed = true;
         }
         if (IsDepthFormat(srcHeader->info.format)) {

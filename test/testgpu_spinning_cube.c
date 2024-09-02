@@ -259,7 +259,7 @@ CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
     depthtex_createinfo.layerCountOrDepth = 1;
     depthtex_createinfo.levelCount = 1;
     depthtex_createinfo.sampleCount = render_state.sample_count;
-    depthtex_createinfo.usageFlags = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT;
+    depthtex_createinfo.usageFlags = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
     depthtex_createinfo.props = 0;
 
     result = SDL_CreateGPUTexture(gpu_device, &depthtex_createinfo);
@@ -285,7 +285,7 @@ CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
     msaatex_createinfo.layerCountOrDepth = 1;
     msaatex_createinfo.levelCount = 1;
     msaatex_createinfo.sampleCount = render_state.sample_count;
-    msaatex_createinfo.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT | SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT;
+    msaatex_createinfo.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
     msaatex_createinfo.props = 0;
 
     result = SDL_CreateGPUTexture(gpu_device, &msaatex_createinfo);
@@ -492,7 +492,7 @@ init_render_state(int msaa)
 
     /* Create buffers */
 
-    buffer_desc.usageFlags = SDL_GPU_BUFFERUSAGE_VERTEX_BIT;
+    buffer_desc.usageFlags = SDL_GPU_BUFFERUSAGE_VERTEX;
     buffer_desc.sizeInBytes = sizeof(vertex_data);
     buffer_desc.props = 0;
     render_state.buf_vertex = SDL_CreateGPUBuffer(

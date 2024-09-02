@@ -198,17 +198,13 @@ typedef enum SDL_GPUTextureFormat
     SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT
 } SDL_GPUTextureFormat;
 
-typedef enum SDL_GPUTextureUsageFlagBits
-{
-    SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT = 0x00000001,
-    SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT = 0x00000002,
-    SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT = 0x00000004,
-    SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT = 0x00000008,
-    SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT = 0x00000020,
-    SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE_BIT = 0x00000040
-} SDL_GPUTextureUsageFlagBits;
-
 typedef Uint32 SDL_GPUTextureUsageFlags;
+#define SDL_GPU_TEXTUREUSAGE_SAMPLER                (1u << 0)
+#define SDL_GPU_TEXTUREUSAGE_COLOR_TARGET           (1u << 1)
+#define SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET   (1u << 2)
+#define SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ  (1u << 3)
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ   (1u << 4)
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE  (1u << 5)
 
 typedef enum SDL_GPUTextureType
 {
@@ -236,17 +232,13 @@ typedef enum SDL_GPUCubeMapFace
     SDL_GPU_CUBEMAPFACE_NEGATIVEZ
 } SDL_GPUCubeMapFace;
 
-typedef enum SDL_GPUBufferUsageFlagBits
-{
-    SDL_GPU_BUFFERUSAGE_VERTEX_BIT = 0x00000001,
-    SDL_GPU_BUFFERUSAGE_INDEX_BIT = 0x00000002,
-    SDL_GPU_BUFFERUSAGE_INDIRECT_BIT = 0x00000004,
-    SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT = 0x00000008,
-    SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT = 0x00000020,
-    SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE_BIT = 0x00000040
-} SDL_GPUBufferUsageFlagBits;
-
 typedef Uint32 SDL_GPUBufferUsageFlags;
+#define SDL_GPU_BUFFERUSAGE_VERTEX                (1u << 0)
+#define SDL_GPU_BUFFERUSAGE_INDEX                 (1u << 1)
+#define SDL_GPU_BUFFERUSAGE_INDIRECT              (1u << 2)
+#define SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ (1u << 3)
+#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ  (1u << 4)
+#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE (1u << 5)
 
 typedef enum SDL_GPUTransferBufferUsage
 {
@@ -260,18 +252,14 @@ typedef enum SDL_GPUShaderStage
     SDL_GPU_SHADERSTAGE_FRAGMENT
 } SDL_GPUShaderStage;
 
-typedef enum SDL_GPUShaderFormatFlagBits
-{
-    SDL_GPU_SHADERFORMAT_INVALID = 0x00000000,
-    SDL_GPU_SHADERFORMAT_SECRET = 0x00000001,   /* NDA'd platforms */
-    SDL_GPU_SHADERFORMAT_SPIRV = 0x00000002,    /* Vulkan */
-    SDL_GPU_SHADERFORMAT_DXBC = 0x00000004,     /* D3D11 (Shader Model 5_0) */
-    SDL_GPU_SHADERFORMAT_DXIL = 0x00000008,     /* D3D12 */
-    SDL_GPU_SHADERFORMAT_MSL = 0x00000010,      /* Metal */
-    SDL_GPU_SHADERFORMAT_METALLIB = 0x00000020  /* Metal */
-} SDL_GPUShaderFormatFlagBits;
-
 typedef Uint32 SDL_GPUShaderFormat;
+#define SDL_GPU_SHADERFORMAT_INVALID  (0u)
+#define SDL_GPU_SHADERFORMAT_SECRET   (1u << 0)     /* NDA'd platforms */
+#define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1)     /* Vulkan */
+#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2)     /* D3D11 (Shader Model 5_0) */
+#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3)     /* D3D12 */
+#define SDL_GPU_SHADERFORMAT_MSL      (1u << 4)     /* Metal */
+#define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5)     /* Metal */
 
 typedef enum SDL_GPUVertexElementFormat
 {
@@ -405,15 +393,11 @@ typedef enum SDL_GPUBlendFactor
     SDL_GPU_BLENDFACTOR_SRC_ALPHA_SATURATE
 } SDL_GPUBlendFactor;
 
-typedef enum SDL_GPUColorComponentFlagBits
-{
-    SDL_GPU_COLORCOMPONENT_R_BIT = 0x00000001,
-    SDL_GPU_COLORCOMPONENT_G_BIT = 0x00000002,
-    SDL_GPU_COLORCOMPONENT_B_BIT = 0x00000004,
-    SDL_GPU_COLORCOMPONENT_A_BIT = 0x00000008
-} SDL_GPUColorComponentFlagBits;
-
 typedef Uint8 SDL_GPUColorComponentFlags;
+#define SDL_GPU_COLORCOMPONENT_R    (1u << 0)
+#define SDL_GPU_COLORCOMPONENT_G    (1u << 1)
+#define SDL_GPU_COLORCOMPONENT_B    (1u << 2)
+#define SDL_GPU_COLORCOMPONENT_A    (1u << 3)
 
 typedef enum SDL_GPUFilter
 {
@@ -1670,7 +1654,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUIndexBuffer(
 /**
  * Binds texture-sampler pairs for use on the vertex shader.
  *
- * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT.
+ * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the vertex sampler slot to begin binding from.
@@ -1690,7 +1674,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexSamplers(
  * Binds storage textures for use on the vertex shader.
  *
  * These textures must have been created with
- * SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT.
+ * SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the vertex storage texture slot to begin binding from.
@@ -1709,7 +1693,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageTextures(
  * Binds storage buffers for use on the vertex shader.
  *
  * These buffers must have been created with
- * SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT.
+ * SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the vertex storage buffer slot to begin binding from.
@@ -1727,7 +1711,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageBuffers(
 /**
  * Binds texture-sampler pairs for use on the fragment shader.
  *
- * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT.
+ * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the fragment sampler slot to begin binding from.
@@ -1747,7 +1731,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentSamplers(
  * Binds storage textures for use on the fragment shader.
  *
  * These textures must have been created with
- * SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ_BIT.
+ * SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the fragment storage texture slot to begin binding from.
@@ -1766,7 +1750,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageTextures(
  * Binds storage buffers for use on the fragment shader.
  *
  * These buffers must have been created with
- * SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ_BIT.
+ * SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ.
  *
  * \param renderPass a render pass handle.
  * \param firstSlot the fragment storage buffer slot to begin binding from.
@@ -1953,7 +1937,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputePipeline(
  * Binds storage textures as readonly for use on the compute pipeline.
  *
  * These textures must have been created with
- * SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ_BIT.
+ * SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ.
  *
  * \param computePass a compute pass handle.
  * \param firstSlot the compute storage texture slot to begin binding from.
@@ -1972,7 +1956,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
  * Binds storage buffers as readonly for use on the compute pipeline.
  *
  * These buffers must have been created with
- * SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ_BIT.
+ * SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ.
  *
  * \param computePass a compute pass handle.
  * \param firstSlot the compute storage buffer slot to begin binding from.
