@@ -979,7 +979,7 @@ if(SDL_LIBC)
     pow powf putenv
     realloc rindex round roundf
     scalbn scalbnf setenv sin sinf sqr sqrt sqrtf sscanf strchr
-    strcmp strlcat strlcpy strlen strncmp strnlen
+    strcmp strlcat strlcpy strlen strncmp strnlen strpbrk
     strrchr strstr strnstr strtod strtok_r strtol strtoll strtoul strtoull
     tan tanf trunc truncf
     unsetenv

@@ -2401,3 +2401,22 @@ int SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list
         }
     }
 }
+
+char * SDL_strpbrk(const char *str, const char *breakset)
+{
+#ifdef HAVE_STRPBRK
+    return strpbrk(str, breakset);
+#else
+
+    for (; *str; str++) {
+        const char *b;
+
+        for (b = breakset; *b; b++) {
+            if (*str == *b) {
+                return (char *) str;
+            }
+        }
+    }
+    return NULL;
+#endif
+}

@@ -85,6 +85,7 @@
 #define HAVE__STRREV 1
 #define HAVE__STRUPR 1
 #define HAVE_STRCHR 1
+#define HAVE_STRPBRK 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
 #define HAVE_STRTOL 1

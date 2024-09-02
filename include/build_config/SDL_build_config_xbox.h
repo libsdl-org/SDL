@@ -82,6 +82,7 @@
 #define HAVE_MEMMOVE 1
 #define HAVE_MEMCMP 1
 #define HAVE_STRLEN 1
+#define HAVE_STRPBRK 1
 #define HAVE__STRREV 1
 /* These functions have security warnings, so we won't use them */
 /* #undef HAVE__STRUPR */

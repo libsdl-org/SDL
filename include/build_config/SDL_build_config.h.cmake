@@ -100,6 +100,7 @@
 #cmakedefine HAVE_STRNLEN 1
 #cmakedefine HAVE_STRLCPY 1
 #cmakedefine HAVE_STRLCAT 1
+#cmakedefine HAVE_STRPBRK 1
 #cmakedefine HAVE__STRREV 1
 #cmakedefine HAVE__STRUPR 1
 #cmakedefine HAVE__STRLWR 1
