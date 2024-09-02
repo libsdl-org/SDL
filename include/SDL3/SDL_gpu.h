@@ -94,6 +94,8 @@ typedef enum SDL_GPUIndexElementSize
  *  - R8G8B8A8_UNORM
  *  - B8G8R8A8_UNORM
  *  - R8_UNORM
+ *  - R8_SNORM
+ *  - R8G8_UNORM
  *  - R8G8_SNORM
  *  - R8G8B8A8_SNORM
  *  - R16_FLOAT
@@ -102,6 +104,7 @@ typedef enum SDL_GPUIndexElementSize
  *  - R32_FLOAT
  *  - R32G32_FLOAT
  *  - R32G32B32A32_FLOAT
+ *  - R11G11B10_UFLOAT
  *  - R8G8B8A8_UNORM_SRGB
  *  - B8G8R8A8_UNORM_SRGB
  *  - D16_UNORM
@@ -122,6 +125,12 @@ typedef enum SDL_GPUIndexElementSize
  *  - R16_UINT
  *  - R16G16_UINT
  *  - R16G16B16A16_UINT
+ *  - R8_INT
+ *  - R8G8_INT
+ *  - R8G8B8A8_INT
+ *  - R16_INT
+ *  - R16G16_INT
+ *  - R16G16B16A16_INT
  *  - R8G8B8A8_UNORM_SRGB
  *  - B8G8R8A8_UNORM_SRGB
  *
@@ -132,12 +141,10 @@ typedef enum SDL_GPUIndexElementSize
  *  - R32_FLOAT
  *  - R32G32_FLOAT
  *  - R32G32B32A32_FLOAT
- *  - R8_UINT
- *  - R8G8_UINT
  *  - R8G8B8A8_UINT
- *  - R16_UINT
- *  - R16G16_UINT
  *  - R16G16B16A16_UINT
+ *  - R8G8B8A8_INT
+ *  - R16G16B16A16_IINT
  *
  * For DEPTH_STENCIL_TARGET usage, the following formats are universally supported:
  *  - D16_UNORM
