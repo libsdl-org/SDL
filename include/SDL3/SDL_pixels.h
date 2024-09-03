@@ -48,6 +48,15 @@ extern "C" {
 #define SDL_ALPHA_OPAQUE 255
 
 /**
+ * A fully opaque floating point alpha value.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_ALPHA_TRANSPARENT_FLOAT
+ */
+#define SDL_ALPHA_OPAQUE_FLOAT 1.0f
+
+/**
  * A fully transparent 8-bit alpha value.
  *
  * \since This macro is available since SDL 3.0.0.
@@ -55,6 +64,15 @@ extern "C" {
  * \sa SDL_ALPHA_OPAQUE
  */
 #define SDL_ALPHA_TRANSPARENT 0
+
+/**
+ * A fully transparent floating point alpha value.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_ALPHA_OPAQUE_FLOAT
+ */
+#define SDL_ALPHA_TRANSPARENT_FLOAT 0.0f
 
 /** Pixel type. */
 typedef enum SDL_PixelType
