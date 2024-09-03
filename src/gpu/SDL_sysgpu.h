@@ -263,8 +263,8 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
 
 void SDL_GPU_BlitCommon(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBlitRegion *source,
-    SDL_GPUBlitRegion *destination,
+    const SDL_GPUBlitRegion *source,
+    const SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filterMode,
     bool cycle,

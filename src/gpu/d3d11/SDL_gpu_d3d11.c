@@ -5247,7 +5247,7 @@ static SDL_GPUTexture *D3D11_AcquireSwapchainTexture(
             D3D11_WaitForFences(
                 (SDL_GPURenderer *)renderer,
                 true,
-                (const SDL_GPUFence **)&windowData->inFlightFences[windowData->frameCounter],
+                (SDL_GPUFence *const *)&windowData->inFlightFences[windowData->frameCounter],
                 1);
         } else {
             if (!D3D11_QueryFence(
