@@ -107,7 +107,7 @@ static Pen *FindPen(SDL_PenID which)
     return NULL;
 }
 
-SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     Pen *pen = NULL;
 

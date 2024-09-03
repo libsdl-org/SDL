@@ -70,7 +70,7 @@ onerror:
     return SDL_APP_FAILURE;
 }
 
-SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     dropfile_dialog *dialog = appstate;
     if (event->type == SDL_EVENT_DROP_BEGIN) {
