@@ -1265,7 +1265,7 @@ static bool PIPEWIRE_PREFERRED_Init(SDL_AudioDriverImpl *impl)
         PIPEWIRE_pw_thread_loop_wait(hotplug_loop);
     }
 
-    const int no_devices = spa_list_is_empty(&hotplug_io_list);
+    const bool no_devices = spa_list_is_empty(&hotplug_io_list);
 
     PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
 
