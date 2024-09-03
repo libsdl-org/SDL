@@ -398,8 +398,8 @@ SDL_GPUDevice *SDL_CreateGPUDevice(
 {
     SDL_GPUDevice *result;
     SDL_PropertiesID props = SDL_CreateProperties();
-    if (formatFlags & SDL_GPU_SHADERFORMAT_SECRET) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL, true);
+    if (formatFlags & SDL_GPU_SHADERFORMAT_PRIVATE) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, true);
     }
     if (formatFlags & SDL_GPU_SHADERFORMAT_SPIRV) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, true);
@@ -440,8 +440,8 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
         return NULL;
     }
 
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL, false)) {
-        formatFlags |= SDL_GPU_SHADERFORMAT_SECRET;
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, false)) {
+        formatFlags |= SDL_GPU_SHADERFORMAT_PRIVATE;
     }
     if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, false)) {
         formatFlags |= SDL_GPU_SHADERFORMAT_SPIRV;
