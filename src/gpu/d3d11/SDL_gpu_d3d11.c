@@ -1,4 +1,4 @@
-/*
+﻿/*
   Simple DirectMedia Layer
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
@@ -360,7 +360,7 @@ static D3D11_TEXTURE_ADDRESS_MODE SDLToD3D11_SamplerAddressMode[] = {
     D3D11_TEXTURE_ADDRESS_CLAMP   // CLAMP_TO_EDGE
 };
 
-static D3D11_FILTER SDLToD3D11_Filter(SDL_GPUSamplerCreateInfo *createInfo)
+static D3D11_FILTER SDLToD3D11_Filter(const SDL_GPUSamplerCreateInfo *createInfo)
 {
     if (createInfo->minFilter == SDL_GPU_FILTER_LINEAR) {
         if (createInfo->magFilter == SDL_GPU_FILTER_LINEAR) {
@@ -1490,7 +1490,7 @@ static ID3D11DeviceChild *D3D11_INTERNAL_CreateID3D11Shader(
 
 static SDL_GPUComputePipeline *D3D11_CreateComputePipeline(
     SDL_GPURenderer *driverData,
-    SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo)
+    const SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     ID3D11ComputeShader *shader;
@@ -1523,7 +1523,7 @@ static SDL_GPUComputePipeline *D3D11_CreateComputePipeline(
 
 static SDL_GPUGraphicsPipeline *D3D11_CreateGraphicsPipeline(
     SDL_GPURenderer *driverData,
-    SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo)
+    const SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     D3D11Shader *vertShader = (D3D11Shader *)pipelineCreateInfo->vertexShader;
@@ -1787,7 +1787,7 @@ static void D3D11_PopDebugGroup(
 
 static SDL_GPUSampler *D3D11_CreateSampler(
     SDL_GPURenderer *driverData,
-    SDL_GPUSamplerCreateInfo *samplerCreateInfo)
+    const SDL_GPUSamplerCreateInfo *samplerCreateInfo)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     D3D11_SAMPLER_DESC samplerDesc;
@@ -1820,7 +1820,7 @@ static SDL_GPUSampler *D3D11_CreateSampler(
 
 SDL_GPUShader *D3D11_CreateShader(
     SDL_GPURenderer *driverData,
-    SDL_GPUShaderCreateInfo *shaderCreateInfo)
+    const SDL_GPUShaderCreateInfo *shaderCreateInfo)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     ID3D11DeviceChild *handle;
@@ -1857,7 +1857,7 @@ SDL_GPUShader *D3D11_CreateShader(
 
 static D3D11Texture *D3D11_INTERNAL_CreateTexture(
     D3D11Renderer *renderer,
-    SDL_GPUTextureCreateInfo *createInfo,
+    const SDL_GPUTextureCreateInfo *createInfo,
     D3D11_SUBRESOURCE_DATA *initialData)
 {
     Uint8 needsSRV, isColorTarget, isDepthStencil, isMultisample, isStaging, needSubresourceUAV, isMippable;
@@ -2188,7 +2188,7 @@ static bool D3D11_SupportsSampleCount(
 
 static SDL_GPUTexture *D3D11_CreateTexture(
     SDL_GPURenderer *driverData,
-    SDL_GPUTextureCreateInfo *textureCreateInfo)
+    const SDL_GPUTextureCreateInfo *textureCreateInfo)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     D3D11TextureContainer *container;
@@ -3387,9 +3387,9 @@ static void D3D11_INTERNAL_PushUniformData(
 
 static void D3D11_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
+    const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
+    const SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
@@ -3615,7 +3615,7 @@ static void D3D11_BindGraphicsPipeline(
 
 static void D3D11_SetViewport(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUViewport *viewport)
+    const SDL_GPUViewport *viewport)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11_VIEWPORT vp = {
@@ -3635,7 +3635,7 @@ static void D3D11_SetViewport(
 
 static void D3D11_SetScissor(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_Rect *scissor)
+    const SDL_Rect *scissor)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11_RECT rect = {
@@ -3654,7 +3654,7 @@ static void D3D11_SetScissor(
 static void D3D11_BindVertexBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstBinding,
-    SDL_GPUBufferBinding *pBindings,
+    const SDL_GPUBufferBinding *pBindings,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3674,7 +3674,7 @@ static void D3D11_BindVertexBuffers(
 
 static void D3D11_BindIndexBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBufferBinding *pBinding,
+    const SDL_GPUBufferBinding *pBinding,
     SDL_GPUIndexElementSize indexElementSize)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3692,7 +3692,7 @@ static void D3D11_BindIndexBuffer(
 static void D3D11_BindVertexSamplers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+    const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;

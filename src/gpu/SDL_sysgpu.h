@@ -1,4 +1,4 @@
-/*
+﻿/*
   Simple DirectMedia Layer
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 #include "../video/SDL_sysvideo.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_GPU_DRIVER_H
 #define SDL_GPU_DRIVER_H
@@ -297,23 +297,23 @@ struct SDL_GPUDevice
 
     SDL_GPUComputePipeline *(*CreateComputePipeline)(
         SDL_GPURenderer *driverData,
-        SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo);
+        const SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo);
 
     SDL_GPUGraphicsPipeline *(*CreateGraphicsPipeline)(
         SDL_GPURenderer *driverData,
-        SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo);
+        const SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo);
 
     SDL_GPUSampler *(*CreateSampler)(
         SDL_GPURenderer *driverData,
-        SDL_GPUSamplerCreateInfo *samplerCreateInfo);
+        const SDL_GPUSamplerCreateInfo *samplerCreateInfo);
 
     SDL_GPUShader *(*CreateShader)(
         SDL_GPURenderer *driverData,
-        SDL_GPUShaderCreateInfo *shaderCreateInfo);
+        const SDL_GPUShaderCreateInfo *shaderCreateInfo);
 
     SDL_GPUTexture *(*CreateTexture)(
         SDL_GPURenderer *driverData,
-        SDL_GPUTextureCreateInfo *textureCreateInfo);
+        const SDL_GPUTextureCreateInfo *textureCreateInfo);
 
     SDL_GPUBuffer *(*CreateBuffer)(
         SDL_GPURenderer *driverData,
@@ -382,9 +382,9 @@ struct SDL_GPUDevice
 
     void (*BeginRenderPass)(
         SDL_GPUCommandBuffer *commandBuffer,
-        SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
+        const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
         Uint32 colorAttachmentCount,
-        SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo);
+        const SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo);
 
     void (*BindGraphicsPipeline)(
         SDL_GPUCommandBuffer *commandBuffer,
@@ -392,27 +392,27 @@ struct SDL_GPUDevice
 
     void (*SetViewport)(
         SDL_GPUCommandBuffer *commandBuffer,
-        SDL_GPUViewport *viewport);
+        const SDL_GPUViewport *viewport);
 
     void (*SetScissor)(
         SDL_GPUCommandBuffer *commandBuffer,
-        SDL_Rect *scissor);
+        const SDL_Rect *scissor);
 
     void (*BindVertexBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
         Uint32 firstBinding,
-        SDL_GPUBufferBinding *pBindings,
+        const SDL_GPUBufferBinding *pBindings,
         Uint32 bindingCount);
 
     void (*BindIndexBuffer)(
         SDL_GPUCommandBuffer *commandBuffer,
-        SDL_GPUBufferBinding *pBinding,
+        const SDL_GPUBufferBinding *pBinding,
         SDL_GPUIndexElementSize indexElementSize);
 
     void (*BindVertexSamplers)(
         SDL_GPUCommandBuffer *commandBuffer,
         Uint32 firstSlot,
-        SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+        const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
         Uint32 bindingCount);
 
     void (*BindVertexStorageTextures)(

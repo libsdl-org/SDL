@@ -1,4 +1,4 @@
-/*
+﻿/*
   Simple DirectMedia Layer
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
@@ -30,10 +30,10 @@
 #ifndef SDL_gpu_h_
 #define SDL_gpu_h_
 
-#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
@@ -1075,7 +1075,7 @@ extern SDL_DECLSPEC SDL_GPUDriver SDLCALL SDL_GetGPUDriver(SDL_GPUDevice *device
  */
 extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline(
     SDL_GPUDevice *device,
-    SDL_GPUComputePipelineCreateInfo *computePipelineCreateInfo);
+    const SDL_GPUComputePipelineCreateInfo *computePipelineCreateInfo);
 
 /**
  * Creates a pipeline object to be used in a graphics workflow.
@@ -1093,7 +1093,7 @@ extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline
  */
 extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeline(
     SDL_GPUDevice *device,
-    SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo);
+    const SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo);
 
 /**
  * Creates a sampler object to be used when binding textures in a graphics
@@ -1112,7 +1112,7 @@ extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeli
  */
 extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
     SDL_GPUDevice *device,
-    SDL_GPUSamplerCreateInfo *samplerCreateInfo);
+    const SDL_GPUSamplerCreateInfo *samplerCreateInfo);
 
 /**
  * Creates a shader to be used when creating a graphics pipeline.
@@ -1159,7 +1159,7 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
  */
 extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
     SDL_GPUDevice *device,
-    SDL_GPUShaderCreateInfo *shaderCreateInfo);
+    const SDL_GPUShaderCreateInfo *shaderCreateInfo);
 
 /**
  * Creates a texture object to be used in graphics or compute workflows.
@@ -1194,7 +1194,7 @@ extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
  */
 extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
     SDL_GPUDevice *device,
-    SDL_GPUTextureCreateInfo *textureCreateInfo);
+    const SDL_GPUTextureCreateInfo *textureCreateInfo);
 
 /**
  * Creates a buffer object to be used in graphics or compute workflows.
@@ -1222,7 +1222,7 @@ extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
  */
 extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
     SDL_GPUDevice *device,
-    SDL_GPUBufferCreateInfo *bufferCreateInfo);
+    const SDL_GPUBufferCreateInfo *bufferCreateInfo);
 
 /**
  * Creates a transfer buffer to be used when uploading to or downloading from
@@ -1243,7 +1243,7 @@ extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
  */
 extern SDL_DECLSPEC SDL_GPUTransferBuffer *SDLCALL SDL_CreateGPUTransferBuffer(
     SDL_GPUDevice *device,
-    SDL_GPUTransferBufferCreateInfo *transferBufferCreateInfo);
+    const SDL_GPUTransferBufferCreateInfo *transferBufferCreateInfo);
 
 /* Debug Naming */
 
@@ -1607,9 +1607,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUComputeUniformData(
  */
 extern SDL_DECLSPEC SDL_GPURenderPass *SDLCALL SDL_BeginGPURenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
+    const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo);
+    const SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo);
 
 /**
  * Binds a graphics pipeline on a render pass to be used in rendering.
@@ -1635,7 +1635,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUGraphicsPipeline(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetGPUViewport(
     SDL_GPURenderPass *renderPass,
-    SDL_GPUViewport *viewport);
+    const SDL_GPUViewport *viewport);
 
 /**
  * Sets the current scissor state on a command buffer.
@@ -1647,7 +1647,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUViewport(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetGPUScissor(
     SDL_GPURenderPass *renderPass,
-    SDL_Rect *scissor);
+    const SDL_Rect *scissor);
 
 /**
  * Binds vertex buffers on a command buffer for use with subsequent draw
@@ -1664,7 +1664,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUScissor(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstBinding,
-    SDL_GPUBufferBinding *pBindings,
+    const SDL_GPUBufferBinding *pBindings,
     Uint32 bindingCount);
 
 /**
@@ -1681,7 +1681,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexBuffers(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUIndexBuffer(
     SDL_GPURenderPass *renderPass,
-    SDL_GPUBufferBinding *pBinding,
+    const SDL_GPUBufferBinding *pBinding,
     SDL_GPUIndexElementSize indexElementSize);
 
 /**
@@ -1700,7 +1700,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUIndexBuffer(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexSamplers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+    const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount);
 
 /**

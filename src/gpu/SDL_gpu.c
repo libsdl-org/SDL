@@ -600,7 +600,7 @@ SDL_bool SDL_GPUTextureSupportsSampleCount(
 
 SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
     SDL_GPUDevice *device,
-    SDL_GPUComputePipelineCreateInfo *computePipelineCreateInfo)
+    const SDL_GPUComputePipelineCreateInfo *computePipelineCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (computePipelineCreateInfo == NULL) {
@@ -637,7 +637,7 @@ SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
 
 SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
     SDL_GPUDevice *device,
-    SDL_GPUGraphicsPipelineCreateInfo *graphicsPipelineCreateInfo)
+    const SDL_GPUGraphicsPipelineCreateInfo *graphicsPipelineCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (graphicsPipelineCreateInfo == NULL) {
@@ -669,7 +669,7 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
 
 SDL_GPUSampler *SDL_CreateGPUSampler(
     SDL_GPUDevice *device,
-    SDL_GPUSamplerCreateInfo *samplerCreateInfo)
+    const SDL_GPUSamplerCreateInfo *samplerCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (samplerCreateInfo == NULL) {
@@ -684,7 +684,7 @@ SDL_GPUSampler *SDL_CreateGPUSampler(
 
 SDL_GPUShader *SDL_CreateGPUShader(
     SDL_GPUDevice *device,
-    SDL_GPUShaderCreateInfo *shaderCreateInfo)
+    const SDL_GPUShaderCreateInfo *shaderCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (shaderCreateInfo == NULL) {
@@ -706,7 +706,7 @@ SDL_GPUShader *SDL_CreateGPUShader(
 
 SDL_GPUTexture *SDL_CreateGPUTexture(
     SDL_GPUDevice *device,
-    SDL_GPUTextureCreateInfo *textureCreateInfo)
+    const SDL_GPUTextureCreateInfo *textureCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (textureCreateInfo == NULL) {
@@ -820,7 +820,7 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
 
 SDL_GPUBuffer *SDL_CreateGPUBuffer(
     SDL_GPUDevice *device,
-    SDL_GPUBufferCreateInfo *bufferCreateInfo)
+    const SDL_GPUBufferCreateInfo *bufferCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (bufferCreateInfo == NULL) {
@@ -836,7 +836,7 @@ SDL_GPUBuffer *SDL_CreateGPUBuffer(
 
 SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
     SDL_GPUDevice *device,
-    SDL_GPUTransferBufferCreateInfo *transferBufferCreateInfo)
+    const SDL_GPUTransferBufferCreateInfo *transferBufferCreateInfo)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (transferBufferCreateInfo == NULL) {
@@ -1168,9 +1168,9 @@ void SDL_PushGPUComputeUniformData(
 
 SDL_GPURenderPass *SDL_BeginGPURenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
+    const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
+    const SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
@@ -1239,7 +1239,7 @@ void SDL_BindGPUGraphicsPipeline(
 
 void SDL_SetGPUViewport(
     SDL_GPURenderPass *renderPass,
-    SDL_GPUViewport *viewport)
+    const SDL_GPUViewport *viewport)
 {
     if (renderPass == NULL) {
         SDL_InvalidParamError("renderPass");
@@ -1261,7 +1261,7 @@ void SDL_SetGPUViewport(
 
 void SDL_SetGPUScissor(
     SDL_GPURenderPass *renderPass,
-    SDL_Rect *scissor)
+    const SDL_Rect *scissor)
 {
     if (renderPass == NULL) {
         SDL_InvalidParamError("renderPass");
@@ -1284,7 +1284,7 @@ void SDL_SetGPUScissor(
 void SDL_BindGPUVertexBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstBinding,
-    SDL_GPUBufferBinding *pBindings,
+    const SDL_GPUBufferBinding *pBindings,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1309,7 +1309,7 @@ void SDL_BindGPUVertexBuffers(
 
 void SDL_BindGPUIndexBuffer(
     SDL_GPURenderPass *renderPass,
-    SDL_GPUBufferBinding *pBinding,
+    const SDL_GPUBufferBinding *pBinding,
     SDL_GPUIndexElementSize indexElementSize)
 {
     if (renderPass == NULL) {
@@ -1334,7 +1334,7 @@ void SDL_BindGPUIndexBuffer(
 void SDL_BindGPUVertexSamplers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+    const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
