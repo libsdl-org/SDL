@@ -144,7 +144,7 @@ typedef enum SDL_GPUIndexElementSize
  *  - R8G8B8A8_UINT
  *  - R16G16B16A16_UINT
  *  - R8G8B8A8_INT
- *  - R16G16B16A16_IINT
+ *  - R16G16B16A16_INT
  *
  * For DEPTH_STENCIL_TARGET usage, the following formats are universally supported:
  *  - D16_UNORM
@@ -230,12 +230,12 @@ typedef enum SDL_GPUTextureFormat
 
 typedef Uint32 SDL_GPUTextureUsageFlags;
 
-#define SDL_GPU_TEXTUREUSAGE_SAMPLER               (1u << 0) /**< & if the texture supports sampling */
-#define SDL_GPU_TEXTUREUSAGE_COLOR_TARGET          (1u << 1) /**< & if the texture is a color render target */
-#define SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET  (1u << 2) /**< & if the texture is a depth stencil target */
-#define SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< & if the texture supports storage reads in graphics stages */
-#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< & if the texture supports storage reads in the compute stage */
-#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< & if the texture supports storage writes in the compute stage */
+#define SDL_GPU_TEXTUREUSAGE_SAMPLER               (1u << 0) /**< texture supports sampling */
+#define SDL_GPU_TEXTUREUSAGE_COLOR_TARGET          (1u << 1) /**< texture is a color render target */
+#define SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET  (1u << 2) /**< texture is a depth stencil target */
+#define SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< texture supports storage reads in graphics stages */
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< texture supports storage reads in the compute stage */
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< texture supports storage writes in the compute stage */
 
 typedef enum SDL_GPUTextureType
 {
@@ -265,12 +265,12 @@ typedef enum SDL_GPUCubeMapFace
 
 typedef Uint32 SDL_GPUBufferUsageFlags;
 
-#define SDL_GPU_BUFFERUSAGE_VERTEX                (1u << 0) /**< & if the buffer is a vertex buffer */
-#define SDL_GPU_BUFFERUSAGE_INDEX                 (1u << 1) /**< & if the buffer is an index buffer */
-#define SDL_GPU_BUFFERUSAGE_INDIRECT              (1u << 2) /**< & if the buffer is an indirect buffer */
-#define SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< & if the buffer supports storage reads in graphics stages */
-#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< & if the buffer supports storage reads in the compute stage */
-#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< & if the buffer supports storage writes in the compute stage */
+#define SDL_GPU_BUFFERUSAGE_VERTEX                (1u << 0) /**< buffer is a vertex buffer */
+#define SDL_GPU_BUFFERUSAGE_INDEX                 (1u << 1) /**< buffer is an index buffer */
+#define SDL_GPU_BUFFERUSAGE_INDIRECT              (1u << 2) /**< buffer is an indirect buffer */
+#define SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< buffer supports storage reads in graphics stages */
+#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< buffer supports storage reads in the compute stage */
+#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< buffer supports storage writes in the compute stage */
 
 typedef enum SDL_GPUTransferBufferUsage
 {
@@ -286,12 +286,12 @@ typedef enum SDL_GPUShaderStage
 
 typedef Uint32 SDL_GPUShaderFormat;
 
-#define SDL_GPU_SHADERFORMAT_SECRET   (1u << 0) /**< & if you are providing shaders for NDA'd platforms */
-#define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1) /**< & if you are providing SPIR-V shaders for Vulkan */
-#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< & if you are providing DXBC SM5_0 shaders for D3D11 */
-#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< & if you are providing DXIL shaders for D3D12 */
-#define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< & if you are providing MSL shaders for Metal */
-#define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< & if you are providing precompiled metallib shaders for Metal */
+#define SDL_GPU_SHADERFORMAT_SECRET   (1u << 0) /**< shaders for NDA'd platforms */
+#define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1) /**< SPIR-V shaders for Vulkan */
+#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_0 shaders for D3D11 */
+#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL shaders for D3D12 */
+#define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal */
+#define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< precompiled metallib shaders for Metal */
 
 typedef enum SDL_GPUVertexElementFormat
 {
@@ -427,10 +427,10 @@ typedef enum SDL_GPUBlendFactor
 
 typedef Uint8 SDL_GPUColorComponentFlags;
 
-#define SDL_GPU_COLORCOMPONENT_R (1u << 0) /**< & for the Red component */
-#define SDL_GPU_COLORCOMPONENT_G (1u << 1) /**< & for the Green component */
-#define SDL_GPU_COLORCOMPONENT_B (1u << 2) /**< & for the Blue component */
-#define SDL_GPU_COLORCOMPONENT_A (1u << 3) /**< & for the Alpha component */
+#define SDL_GPU_COLORCOMPONENT_R (1u << 0) /**< the red component */
+#define SDL_GPU_COLORCOMPONENT_G (1u << 1) /**< the green component */
+#define SDL_GPU_COLORCOMPONENT_B (1u << 2) /**< the blue component */
+#define SDL_GPU_COLORCOMPONENT_A (1u << 3) /**< the alpha component */
 
 typedef enum SDL_GPUFilter
 {
