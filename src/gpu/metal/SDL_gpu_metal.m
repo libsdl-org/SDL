@@ -68,47 +68,72 @@ static void METAL_INTERNAL_DestroyBlitResources(SDL_GPURenderer *driverData);
 // Conversions
 
 static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
+    MTLPixelFormatA8Unorm,      // A8_UNORM
+    MTLPixelFormatR8Unorm,      // R8_UNORM
+    MTLPixelFormatRG8Unorm,     // R8G8_UNORM
     MTLPixelFormatRGBA8Unorm,   // R8G8B8A8_UNORM
-    MTLPixelFormatBGRA8Unorm,   // B8G8R8A8_UNORM
+    MTLPixelFormatR16Unorm,     // R16_UNORM
+    MTLPixelFormatRG16Unorm,    // R16G16_UNORM
+    MTLPixelFormatRGBA16Unorm,  // R16G16B16A16_UNORM
+    MTLPixelFormatRGB10A2Unorm, // A2R10G10B10_UNORM
     MTLPixelFormatB5G6R5Unorm,  // B5G6R5_UNORM
     MTLPixelFormatBGR5A1Unorm,  // B5G5R5A1_UNORM
     MTLPixelFormatABGR4Unorm,   // B4G4R4A4_UNORM
-    MTLPixelFormatRGB10A2Unorm, // A2R10G10B10_UNORM
-    MTLPixelFormatRG16Unorm,    // R16G16_UNORM
-    MTLPixelFormatRGBA16Unorm,  // R16G16B16A16_UNORM
-    MTLPixelFormatR8Unorm,      // R8_UNORM
-    MTLPixelFormatA8Unorm,      // A8_UNORM
+    MTLPixelFormatBGRA8Unorm,   // B8G8R8A8_UNORM
 #ifdef SDL_PLATFORM_MACOS
     MTLPixelFormatBC1_RGBA,      // BC1_UNORM
     MTLPixelFormatBC2_RGBA,      // BC2_UNORM
     MTLPixelFormatBC3_RGBA,      // BC3_UNORM
+    MTLPixelFormatBC4_RUnorm,    // BC4_UNORM
+    MTLPixelFormatBC5_RGUnorm,   // BC5_UNORM
     MTLPixelFormatBC7_RGBAUnorm, // BC7_UNORM
+    MTLPixelFormatBC6H_RGBFloat, // BC6H_FLOAT
+    MTLPixelFormatBC6H_RGBUfloat,// BC6H_UFLOAT
 #else
     MTLPixelFormatInvalid, // BC1_UNORM
     MTLPixelFormatInvalid, // BC2_UNORM
     MTLPixelFormatInvalid, // BC3_UNORM
+    MTLPixelFormatInvalid, // BC4_UNORM
+    MTLPixelFormatInvalid, // BC5_UNORM
     MTLPixelFormatInvalid, // BC7_UNORM
+    MTLPixelFormatInvalid, // BC6H_FLOAT
+    MTLPixelFormatInvalid, // BC6H_UFLOAT
 #endif
+    MTLPixelFormatR8Snorm,         // R8_SNORM
     MTLPixelFormatRG8Snorm,        // R8G8_SNORM
     MTLPixelFormatRGBA8Snorm,      // R8G8B8A8_SNORM
+    MTLPixelFormatR16Snorm,        // R16_SNORM
+    MTLPixelFormatRG16Snorm,       // R16G16_SNORM
+    MTLPixelFormatRGBA16Snorm,     // R16G16B16A16_SNORM
     MTLPixelFormatR16Float,        // R16_FLOAT
     MTLPixelFormatRG16Float,       // R16G16_FLOAT
     MTLPixelFormatRGBA16Float,     // R16G16B16A16_FLOAT
     MTLPixelFormatR32Float,        // R32_FLOAT
     MTLPixelFormatRG32Float,       // R32G32_FLOAT
     MTLPixelFormatRGBA32Float,     // R32G32B32A32_FLOAT
+    MTLPixelFormatRG11B10Float,    // R11G11B10_UFLOAT
     MTLPixelFormatR8Uint,          // R8_UINT
     MTLPixelFormatRG8Uint,         // R8G8_UINT
     MTLPixelFormatRGBA8Uint,       // R8G8B8A8_UINT
     MTLPixelFormatR16Uint,         // R16_UINT
     MTLPixelFormatRG16Uint,        // R16G16_UINT
     MTLPixelFormatRGBA16Uint,      // R16G16B16A16_UINT
+    MTLPixelFormatR8Sint,          // R8_UINT
+    MTLPixelFormatRG8Sint,         // R8G8_UINT
+    MTLPixelFormatRGBA8Sint,       // R8G8B8A8_UINT
+    MTLPixelFormatR16Sint,         // R16_UINT
+    MTLPixelFormatRG16Sint,        // R16G16_UINT
+    MTLPixelFormatRGBA16Sint,      // R16G16B16A16_UINT
     MTLPixelFormatRGBA8Unorm_sRGB, // R8G8B8A8_UNORM_SRGB
     MTLPixelFormatBGRA8Unorm_sRGB, // B8G8R8A8_UNORM_SRGB
 #ifdef SDL_PLATFORM_MACOS
+    MTLPixelFormatBC1_RGBA_sRGB,      // BC1_UNORM_SRGB
+    MTLPixelFormatBC2_RGBA_sRGB,      // BC2_UNORM_SRGB
     MTLPixelFormatBC3_RGBA_sRGB,      // BC3_UNORM_SRGB
     MTLPixelFormatBC7_RGBAUnorm_sRGB, // BC7_UNORM_SRGB
 #else
+    MTLPixelFormatInvalid, // BC1_UNORM_SRGB
+    MTLPixelFormatInvalid, // BC2_UNORM_SRGB
     MTLPixelFormatInvalid, // BC3_UNORM_SRGB
     MTLPixelFormatInvalid, // BC7_UNORM_SRGB
 #endif
@@ -3697,12 +3722,18 @@ static bool METAL_SupportsTextureFormat(
             return [renderer->device supportsFamily:MTLGPUFamilyApple1];
 
         // Requires BC compression support
-        case SDL_GPU_TEXTUREFORMAT_BC1_UNORM:
-        case SDL_GPU_TEXTUREFORMAT_BC2_UNORM:
-        case SDL_GPU_TEXTUREFORMAT_BC3_UNORM:
-        case SDL_GPU_TEXTUREFORMAT_BC7_UNORM:
-        case SDL_GPU_TEXTUREFORMAT_BC3_UNORM_SRGB:
-        case SDL_GPU_TEXTUREFORMAT_BC7_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC4_R_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC5_RG_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT:
+        case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
 #ifdef SDL_PLATFORM_MACOS
             if (@available(macOS 11.0, *)) {
                 return (
