@@ -216,7 +216,7 @@ static int FlipCamera(void)
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     switch (event->type) {
         case SDL_EVENT_KEY_DOWN: {

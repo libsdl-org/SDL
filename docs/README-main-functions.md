@@ -178,7 +178,7 @@ not check the  event queue in this function (SDL_AppEvent exists for that).
 Next:
 
 ```c
-SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event);
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event);
 ```
 
 This will be called whenever an SDL event arrives. Your app should not call
