@@ -150,7 +150,7 @@ static bool load_pulseaudio_sym(const char *fn, void **addr)
 // cast funcs to char* first, to please GCC's strict aliasing rules.
 #define SDL_PULSEAUDIO_SYM(x)                                       \
     if (!load_pulseaudio_sym(#x, (void **)(char *)&PULSEAUDIO_##x)) \
-        return -1
+        return false
 
 static void UnloadPulseAudioLibrary(void)
 {
