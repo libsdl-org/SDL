@@ -2139,7 +2139,7 @@ extern "C" {
  * - "latin_letters": For keyboards using non-Latin letters, such as Russian
  *   or Thai, the letter keys generate keycodes as though it had an en_US
  *   layout. e.g. pressing the key associated with SDL_SCANCODE_A on a Russian
- *   keyboard would yield 'a' instead of 'ф'.
+ *   keyboard would yield 'a' instead of a Cyrillic letter.
  *
  * The default value for this hint is "french_numbers,latin_letters"
  *

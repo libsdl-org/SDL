@@ -136,9 +136,9 @@ static Uint32 initial_arcadestick_devices[] = {
     MAKE_VIDPID(0x0f0d, 0x008c), // Hori Real Arcade Pro 4
     MAKE_VIDPID(0x0f0d, 0x00aa), // HORI Real Arcade Pro V Hayabusa in Switch Mode
     MAKE_VIDPID(0x0f0d, 0x00ed), // Hori Fighting Stick mini 4 kai
-    MAKE_VIDPID(0x0f0d, 0x011c), // Hori Fighting Stick α in PS4 Mode
-    MAKE_VIDPID(0x0f0d, 0x011e), // Hori Fighting Stick α in PC Mode
-    MAKE_VIDPID(0x0f0d, 0x0184), // Hori Fighting Stick α in PS5 Mode
+    MAKE_VIDPID(0x0f0d, 0x011c), // Hori Fighting Stick Alpha in PS4 Mode
+    MAKE_VIDPID(0x0f0d, 0x011e), // Hori Fighting Stick Alpha in PC Mode
+    MAKE_VIDPID(0x0f0d, 0x0184), // Hori Fighting Stick Alpha in PS5 Mode
     MAKE_VIDPID(0x146b, 0x0604), // NACON Daija Arcade Stick
     MAKE_VIDPID(0x1532, 0x0a00), // Razer Atrox Arcade Stick
     MAKE_VIDPID(0x1bad, 0xf03d), // Street Fighter IV Arcade Stick TE - Chun Li
@@ -287,8 +287,8 @@ static Uint32 initial_flightstick_devices[] = {
     MAKE_VIDPID(0x0738, 0x2221), // Saitek Pro Flight X-56 Rhino Stick
     MAKE_VIDPID(0x044f, 0xb10a), // ThrustMaster, Inc. T.16000M Joystick
     MAKE_VIDPID(0x046d, 0xc215), // Logitech Extreme 3D
-    MAKE_VIDPID(0x231d, 0x0126), // Gunfighter Mk.III ‘Space Combat Edition’ (right)
-    MAKE_VIDPID(0x231d, 0x0127), // Gunfighter Mk.III ‘Space Combat Edition’ (left)
+    MAKE_VIDPID(0x231d, 0x0126), // Gunfighter Mk.III 'Space Combat Edition' (right)
+    MAKE_VIDPID(0x231d, 0x0127), // Gunfighter Mk.III 'Space Combat Edition' (left)
     MAKE_VIDPID(0x362c, 0x0001), // Yawman Arrow
 };
 static SDL_vidpid_list flightstick_devices = {
