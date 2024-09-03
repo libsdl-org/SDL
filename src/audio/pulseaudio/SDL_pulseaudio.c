@@ -327,7 +327,8 @@ static bool ConnectToPulseServer(void)
     SDL_assert(pulseaudio_context == NULL);
 
     // Set up a new main loop
-    if (!(pulseaudio_threaded_mainloop = PULSEAUDIO_pa_threaded_mainloop_new())) {
+    pulseaudio_threaded_mainloop = PULSEAUDIO_pa_threaded_mainloop_new();
+    if (!pulseaudio_threaded_mainloop) {
         return SDL_SetError("pa_threaded_mainloop_new() failed");
     }
 
@@ -346,8 +347,10 @@ static bool ConnectToPulseServer(void)
     mainloop_api = PULSEAUDIO_pa_threaded_mainloop_get_api(pulseaudio_threaded_mainloop);
     SDL_assert(mainloop_api != NULL); // this never fails, right?
 
-    if (!(proplist = PULSEAUDIO_pa_proplist_new())) {
-        return SDL_SetError("pa_proplist_new() failed");
+    proplist = PULSEAUDIO_pa_proplist_new();
+    if (!proplist) {
+        SDL_SetError("pa_proplist_new() failed");
+        goto failed;
     }
 
     icon_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_ICON_NAME);
@@ -378,7 +381,7 @@ static bool ConnectToPulseServer(void)
     }
 
     if (state != PA_CONTEXT_READY) {
-        return SDL_SetError("Could not connect to PulseAudio");
+        SDL_SetError("Could not connect to PulseAudio");
         goto failed;
     }
 
