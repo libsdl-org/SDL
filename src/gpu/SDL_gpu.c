@@ -1360,7 +1360,7 @@ void SDL_BindGPUVertexSamplers(
 void SDL_BindGPUVertexStorageTextures(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    const SDL_GPUTexture **storageTextures,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1386,7 +1386,7 @@ void SDL_BindGPUVertexStorageTextures(
 void SDL_BindGPUVertexStorageBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    const SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1412,7 +1412,7 @@ void SDL_BindGPUVertexStorageBuffers(
 void SDL_BindGPUFragmentSamplers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+    const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1438,7 +1438,7 @@ void SDL_BindGPUFragmentSamplers(
 void SDL_BindGPUFragmentStorageTextures(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    const SDL_GPUTexture **storageTextures,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1464,7 +1464,7 @@ void SDL_BindGPUFragmentStorageTextures(
 void SDL_BindGPUFragmentStorageBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    const SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1623,9 +1623,9 @@ void SDL_EndGPURenderPass(
 
 SDL_GPUComputePass *SDL_BeginGPUComputePass(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
+    const SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
     Uint32 storageTextureBindingCount,
-    SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
+    const SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
     Uint32 storageBufferBindingCount)
 {
     CommandBufferCommonHeader *commandBufferHeader;
@@ -1697,7 +1697,7 @@ void SDL_BindGPUComputePipeline(
 void SDL_BindGPUComputeStorageTextures(
     SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    const SDL_GPUTexture **storageTextures,
     Uint32 bindingCount)
 {
     if (computePass == NULL) {
@@ -1723,7 +1723,7 @@ void SDL_BindGPUComputeStorageTextures(
 void SDL_BindGPUComputeStorageBuffers(
     SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    const SDL_GPUBuffer **storageBuffers,
     Uint32 bindingCount)
 {
     if (computePass == NULL) {
@@ -1873,8 +1873,8 @@ SDL_GPUCopyPass *SDL_BeginGPUCopyPass(
 
 void SDL_UploadToGPUTexture(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUTextureTransferInfo *source,
-    SDL_GPUTextureRegion *destination,
+    const SDL_GPUTextureTransferInfo *source,
+    const SDL_GPUTextureRegion *destination,
     SDL_bool cycle)
 {
     if (copyPass == NULL) {
@@ -1903,8 +1903,8 @@ void SDL_UploadToGPUTexture(
 
 void SDL_UploadToGPUBuffer(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUTransferBufferLocation *source,
-    SDL_GPUBufferRegion *destination,
+    const SDL_GPUTransferBufferLocation *source,
+    const SDL_GPUBufferRegion *destination,
     SDL_bool cycle)
 {
     if (copyPass == NULL) {
@@ -1929,8 +1929,8 @@ void SDL_UploadToGPUBuffer(
 
 void SDL_CopyGPUTextureToTexture(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUTextureLocation *source,
-    SDL_GPUTextureLocation *destination,
+    const SDL_GPUTextureLocation *source,
+    const SDL_GPUTextureLocation *destination,
     Uint32 w,
     Uint32 h,
     Uint32 d,
@@ -1961,8 +1961,8 @@ void SDL_CopyGPUTextureToTexture(
 
 void SDL_CopyGPUBufferToBuffer(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUBufferLocation *source,
-    SDL_GPUBufferLocation *destination,
+    const SDL_GPUBufferLocation *source,
+    const SDL_GPUBufferLocation *destination,
     Uint32 size,
     SDL_bool cycle)
 {
@@ -1989,8 +1989,8 @@ void SDL_CopyGPUBufferToBuffer(
 
 void SDL_DownloadFromGPUTexture(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUTextureRegion *source,
-    SDL_GPUTextureTransferInfo *destination)
+    const SDL_GPUTextureRegion *source,
+    const SDL_GPUTextureTransferInfo *destination)
 {
     if (copyPass == NULL) {
         SDL_InvalidParamError("copyPass");
@@ -2013,8 +2013,8 @@ void SDL_DownloadFromGPUTexture(
 
 void SDL_DownloadFromGPUBuffer(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUBufferRegion *source,
-    SDL_GPUTransferBufferLocation *destination)
+    const SDL_GPUBufferRegion *source,
+    const SDL_GPUTransferBufferLocation *destination)
 {
     if (copyPass == NULL) {
         SDL_InvalidParamError("copyPass");
@@ -2089,8 +2089,8 @@ void SDL_GenerateMipmapsForGPUTexture(
 
 void SDL_BlitGPUTexture(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBlitRegion *source,
-    SDL_GPUBlitRegion *destination,
+    const SDL_GPUBlitRegion *source,
+    const SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filterMode,
     SDL_bool cycle)
@@ -2366,7 +2366,7 @@ void SDL_WaitForGPUIdle(
 void SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     SDL_bool waitAll,
-    SDL_GPUFence **pFences,
+    const SDL_GPUFence **pFences,
     Uint32 fenceCount)
 {
     CHECK_DEVICE_MAGIC(device, );
