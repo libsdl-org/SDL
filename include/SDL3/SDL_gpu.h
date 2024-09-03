@@ -286,7 +286,7 @@ typedef enum SDL_GPUShaderStage
 
 typedef Uint32 SDL_GPUShaderFormat;
 
-#define SDL_GPU_SHADERFORMAT_SECRET   (1u << 0) /**< shaders for NDA'd platforms */
+#define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 0) /**< shaders for NDA'd platforms */
 #define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1) /**< SPIR-V shaders for Vulkan */
 #define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_0 shaders for D3D11 */
 #define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL shaders for D3D12 */
@@ -495,7 +495,7 @@ typedef enum SDL_GPUSwapchainComposition
 typedef enum SDL_GPUDriver
 {
     SDL_GPU_DRIVER_INVALID = -1,
-    SDL_GPU_DRIVER_SECRET, /* NDA'd platforms */
+    SDL_GPU_DRIVER_PRIVATE, /* NDA'd platforms */
     SDL_GPU_DRIVER_VULKAN,
     SDL_GPU_DRIVER_D3D11,
     SDL_GPU_DRIVER_D3D12,
@@ -977,7 +977,7 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  *
  * These are the current shader format properties:
  *
- * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL`: The app is able to
+ * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL`: The app is able to
  *   provide shaders for an NDA platform.
  * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL`: The app is able to
  *   provide SPIR-V shaders if applicable.
@@ -1009,7 +1009,7 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL             "SDL.gpu.device.create.debugmode"
 #define SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL        "SDL.gpu.device.create.preferlowpower"
 #define SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING                "SDL.gpu.device.create.name"
-#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SECRET_BOOL        "SDL.gpu.device.create.shaders.secret"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL       "SDL.gpu.device.create.shaders.private"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL         "SDL.gpu.device.create.shaders.spirv"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL          "SDL.gpu.device.create.shaders.dxbc"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL          "SDL.gpu.device.create.shaders.dxil"
