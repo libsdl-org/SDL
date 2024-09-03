@@ -1719,7 +1719,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexSamplers(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageTextures(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount);
 
 /**
@@ -1738,7 +1738,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageTextures(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount);
 
 /**
@@ -1776,7 +1776,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentSamplers(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageTextures(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount);
 
 /**
@@ -1795,7 +1795,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageTextures(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount);
 
 /* Drawing */
@@ -1982,7 +1982,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputePipeline(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
     SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount);
 
 /**
@@ -2001,7 +2001,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageBuffers(
     SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount);
 
 /**
@@ -2515,7 +2515,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitForGPUIdle(
 extern SDL_DECLSPEC void SDLCALL SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     SDL_bool waitAll,
-    const SDL_GPUFence **pFences,
+    SDL_GPUFence *const *pFences,
     Uint32 fenceCount);
 
 /**

@@ -1206,7 +1206,7 @@ static Uint8 VULKAN_INTERNAL_DefragmentMemory(VulkanRenderer *renderer);
 static void VULKAN_INTERNAL_BeginCommandBuffer(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
 static void VULKAN_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window);
 static void VULKAN_Wait(SDL_GPURenderer *driverData);
-static void VULKAN_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, const SDL_GPUFence **pFences, Uint32 fenceCount);
+static void VULKAN_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, SDL_GPUFence *const *pFences, Uint32 fenceCount);
 static void VULKAN_Submit(SDL_GPUCommandBuffer *commandBuffer);
 static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     VulkanRenderer *renderer,
@@ -7554,7 +7554,7 @@ static void VULKAN_BindVertexSamplers(
 static void VULKAN_BindVertexStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7575,7 +7575,7 @@ static void VULKAN_BindVertexStorageTextures(
 static void VULKAN_BindVertexStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7623,7 +7623,7 @@ static void VULKAN_BindFragmentSamplers(
 static void VULKAN_BindFragmentStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7645,7 +7645,7 @@ static void VULKAN_BindFragmentStorageTextures(
 static void VULKAN_BindFragmentStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8278,7 +8278,7 @@ static void VULKAN_BindComputePipeline(
 static void VULKAN_BindComputeStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8315,7 +8315,7 @@ static void VULKAN_BindComputeStorageTextures(
 static void VULKAN_BindComputeStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -9893,7 +9893,7 @@ static SDL_GPUTexture *VULKAN_AcquireSwapchainTexture(
             VULKAN_WaitForFences(
                 (SDL_GPURenderer *)renderer,
                 true,
-                (const SDL_GPUFence **)&swapchainData->inFlightFences[swapchainData->frameCounter],
+                (SDL_GPUFence *const *)&swapchainData->inFlightFences[swapchainData->frameCounter],
                 1);
         } else {
             if (!VULKAN_QueryFence(
@@ -10346,7 +10346,7 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
 static void VULKAN_WaitForFences(
     SDL_GPURenderer *driverData,
     bool waitAll,
-    const SDL_GPUFence **pFences,
+    SDL_GPUFence *const *pFences,
     Uint32 fenceCount)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;

@@ -1360,7 +1360,7 @@ void SDL_BindGPUVertexSamplers(
 void SDL_BindGPUVertexStorageTextures(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1386,7 +1386,7 @@ void SDL_BindGPUVertexStorageTextures(
 void SDL_BindGPUVertexStorageBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1438,7 +1438,7 @@ void SDL_BindGPUFragmentSamplers(
 void SDL_BindGPUFragmentStorageTextures(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1464,7 +1464,7 @@ void SDL_BindGPUFragmentStorageTextures(
 void SDL_BindGPUFragmentStorageBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     if (renderPass == NULL) {
@@ -1697,7 +1697,7 @@ void SDL_BindGPUComputePipeline(
 void SDL_BindGPUComputeStorageTextures(
     SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     if (computePass == NULL) {
@@ -1723,7 +1723,7 @@ void SDL_BindGPUComputeStorageTextures(
 void SDL_BindGPUComputeStorageBuffers(
     SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     if (computePass == NULL) {
@@ -2366,7 +2366,7 @@ void SDL_WaitForGPUIdle(
 void SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     SDL_bool waitAll,
-    const SDL_GPUFence **pFences,
+    SDL_GPUFence *const *pFences,
     Uint32 fenceCount)
 {
     CHECK_DEVICE_MAGIC(device, );

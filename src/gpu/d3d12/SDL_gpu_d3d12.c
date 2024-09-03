@@ -864,7 +864,7 @@ struct D3D12UniformBuffer
 
 static void D3D12_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window);
 static void D3D12_Wait(SDL_GPURenderer *driverData);
-static void D3D12_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, const SDL_GPUFence **pFences, Uint32 fenceCount);
+static void D3D12_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, SDL_GPUFence *const *pFences, Uint32 fenceCount);
 static void D3D12_INTERNAL_ReleaseBlitPipelines(SDL_GPURenderer *driverData);
 
 // Helpers
@@ -4228,7 +4228,7 @@ static void D3D12_BindVertexSamplers(
 static void D3D12_BindVertexStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
@@ -4248,7 +4248,7 @@ static void D3D12_BindVertexStorageTextures(
 static void D3D12_BindVertexStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
@@ -4296,7 +4296,7 @@ static void D3D12_BindFragmentSamplers(
 static void D3D12_BindFragmentStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
@@ -4316,7 +4316,7 @@ static void D3D12_BindFragmentStorageTextures(
 static void D3D12_BindFragmentStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
@@ -4908,7 +4908,7 @@ static void D3D12_BindComputePipeline(
 static void D3D12_BindComputeStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
@@ -4940,7 +4940,7 @@ static void D3D12_BindComputeStorageTextures(
 static void D3D12_BindComputeStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    const SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
@@ -6762,7 +6762,7 @@ static SDL_GPUTexture *D3D12_AcquireSwapchainTexture(
             D3D12_WaitForFences(
                 (SDL_GPURenderer *)renderer,
                 true,
-                (const SDL_GPUFence **)&windowData->inFlightFences[windowData->frameCounter],
+                (SDL_GPUFence *const *)&windowData->inFlightFences[windowData->frameCounter],
                 1);
         } else {
             if (!D3D12_QueryFence(
@@ -7265,7 +7265,7 @@ static void D3D12_Wait(
 static void D3D12_WaitForFences(
     SDL_GPURenderer *driverData,
     bool waitAll,
-    const SDL_GPUFence **pFences,
+    SDL_GPUFence *const *pFences,
     Uint32 fenceCount)
 {
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;

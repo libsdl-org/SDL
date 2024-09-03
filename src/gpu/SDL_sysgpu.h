@@ -418,13 +418,13 @@ struct SDL_GPUDevice
     void (*BindVertexStorageTextures)(
         SDL_GPUCommandBuffer *commandBuffer,
         Uint32 firstSlot,
-        const SDL_GPUTexture **storageTextures,
+        SDL_GPUTexture *const *storageTextures,
         Uint32 bindingCount);
 
     void (*BindVertexStorageBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
         Uint32 firstSlot,
-        const SDL_GPUBuffer **storageBuffers,
+        SDL_GPUBuffer *const *storageBuffers,
         Uint32 bindingCount);
 
     void (*BindFragmentSamplers)(
@@ -436,13 +436,13 @@ struct SDL_GPUDevice
     void (*BindFragmentStorageTextures)(
         SDL_GPUCommandBuffer *commandBuffer,
         Uint32 firstSlot,
-        const SDL_GPUTexture **storageTextures,
+        SDL_GPUTexture *const *storageTextures,
         Uint32 bindingCount);
 
     void (*BindFragmentStorageBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
         Uint32 firstSlot,
-        const SDL_GPUBuffer **storageBuffers,
+        SDL_GPUBuffer *const *storageBuffers,
         Uint32 bindingCount);
 
     void (*PushVertexUniformData)(
@@ -505,13 +505,13 @@ struct SDL_GPUDevice
     void (*BindComputeStorageTextures)(
         SDL_GPUCommandBuffer *commandBuffer,
         Uint32 firstSlot,
-        const SDL_GPUTexture **storageTextures,
+        SDL_GPUTexture *const *storageTextures,
         Uint32 bindingCount);
 
     void (*BindComputeStorageBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
         Uint32 firstSlot,
-        const SDL_GPUBuffer **storageBuffers,
+        SDL_GPUBuffer *const *storageBuffers,
         Uint32 bindingCount);
 
     void (*PushComputeUniformData)(
@@ -654,7 +654,7 @@ struct SDL_GPUDevice
     void (*WaitForFences)(
         SDL_GPURenderer *driverData,
         bool waitAll,
-        const SDL_GPUFence **pFences,
+        SDL_GPUFence *const *pFences,
         Uint32 fenceCount);
 
     bool (*QueryFence)(
