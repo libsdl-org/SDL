@@ -308,8 +308,8 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     }
     ctx.AAudioStreamBuilder_setFormat(builder, format);
     ctx.AAudioStreamBuilder_setSampleRate(builder, device->spec.freq);
-    ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
 #endif
+    ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
 
     const aaudio_direction_t direction = (recording ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
     ctx.AAudioStreamBuilder_setDirection(builder, direction);
