@@ -123,11 +123,11 @@ TestGUIDToString(void *arg)
 
 /* GUID routine test cases */
 static const SDLTest_TestCaseReference guidTest1 = {
-    (SDLTest_TestCaseFp)TestStringToGUID, "TestStringToGUID", "Call to SDL_StringToGUID", TEST_ENABLED
+    TestStringToGUID, "TestStringToGUID", "Call to SDL_StringToGUID", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference guidTest2 = {
-    (SDLTest_TestCaseFp)TestGUIDToString, "TestGUIDToString", "Call to SDL_GUIDToString", TEST_ENABLED
+    TestGUIDToString, "TestGUIDToString", "Call to SDL_GUIDToString", TEST_ENABLED
 };
 
 /* Sequence of GUID routine test cases */

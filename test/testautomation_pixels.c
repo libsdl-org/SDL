@@ -500,15 +500,15 @@ static int pixels_allocFreePalette(void *arg)
 
 /* Pixels test cases */
 static const SDLTest_TestCaseReference pixelsTest1 = {
-    (SDLTest_TestCaseFp)pixels_getPixelFormatDetails, "pixels_allocFreeFormat", "Call to SDL_GetPixelFormatDetails", TEST_ENABLED
+    pixels_getPixelFormatDetails, "pixels_allocFreeFormat", "Call to SDL_GetPixelFormatDetails", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference pixelsTest2 = {
-    (SDLTest_TestCaseFp)pixels_allocFreePalette, "pixels_allocFreePalette", "Call to SDL_CreatePalette and SDL_DestroyPalette", TEST_ENABLED
+    pixels_allocFreePalette, "pixels_allocFreePalette", "Call to SDL_CreatePalette and SDL_DestroyPalette", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference pixelsTest3 = {
-    (SDLTest_TestCaseFp)pixels_getPixelFormatName, "pixels_getPixelFormatName", "Call to SDL_GetPixelFormatName", TEST_ENABLED
+    pixels_getPixelFormatName, "pixels_getPixelFormatName", "Call to SDL_GetPixelFormatName", TEST_ENABLED
 };
 
 /* Sequence of Pixels test cases */

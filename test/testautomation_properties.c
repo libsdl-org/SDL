@@ -386,19 +386,19 @@ static int properties_testLocking(void *arg)
 
 /* Properties test cases */
 static const SDLTest_TestCaseReference propertiesTestBasic = {
-    (SDLTest_TestCaseFp)properties_testBasic, "properties_testBasic", "Test basic property functionality", TEST_ENABLED
+    properties_testBasic, "properties_testBasic", "Test basic property functionality", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference propertiesTestCopy = {
-    (SDLTest_TestCaseFp)properties_testCopy, "properties_testCopy", "Test property copy functionality", TEST_ENABLED
+    properties_testCopy, "properties_testCopy", "Test property copy functionality", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference propertiesTestCleanup = {
-    (SDLTest_TestCaseFp)properties_testCleanup, "properties_testCleanup", "Test property cleanup functionality", TEST_ENABLED
+    properties_testCleanup, "properties_testCleanup", "Test property cleanup functionality", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference propertiesTestLocking = {
-    (SDLTest_TestCaseFp)properties_testLocking, "properties_testLocking", "Test property locking functionality", TEST_ENABLED
+    properties_testLocking, "properties_testLocking", "Test property locking functionality", TEST_ENABLED
 };
 
 /* Sequence of Properties test cases */

@@ -2805,527 +2805,527 @@ atan2_bottomLeftQuadrantTest(void *args)
 /* SDL_floor test cases */
 
 static const SDLTest_TestCaseReference floorTestInf = {
-    (SDLTest_TestCaseFp)floor_infCases, "floor_infCases",
+    floor_infCases, "floor_infCases",
     "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference floorTestZero = {
-    (SDLTest_TestCaseFp)floor_zeroCases, "floor_zeroCases",
+    floor_zeroCases, "floor_zeroCases",
     "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference floorTestNan = {
-    (SDLTest_TestCaseFp)floor_nanCase, "floor_nanCase",
+    floor_nanCase, "floor_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference floorTestRound = {
-    (SDLTest_TestCaseFp)floor_roundNumbersCases, "floor_roundNumberCases",
+    floor_roundNumbersCases, "floor_roundNumberCases",
     "Checks a set of integral values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference floorTestFraction = {
-    (SDLTest_TestCaseFp)floor_fractionCases, "floor_fractionCases",
+    floor_fractionCases, "floor_fractionCases",
     "Checks a set of fractions", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference floorTestRange = {
-    (SDLTest_TestCaseFp)floor_rangeTest, "floor_rangeTest",
+    floor_rangeTest, "floor_rangeTest",
     "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_ceil test cases */
 
 static const SDLTest_TestCaseReference ceilTestInf = {
-    (SDLTest_TestCaseFp)ceil_infCases, "ceil_infCases",
+    ceil_infCases, "ceil_infCases",
     "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference ceilTestZero = {
-    (SDLTest_TestCaseFp)ceil_zeroCases, "ceil_zeroCases",
+    ceil_zeroCases, "ceil_zeroCases",
     "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference ceilTestNan = {
-    (SDLTest_TestCaseFp)ceil_nanCase, "ceil_nanCase",
+    ceil_nanCase, "ceil_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference ceilTestRound = {
-    (SDLTest_TestCaseFp)ceil_roundNumbersCases, "ceil_roundNumberCases",
+    ceil_roundNumbersCases, "ceil_roundNumberCases",
     "Checks a set of integral values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference ceilTestFraction = {
-    (SDLTest_TestCaseFp)ceil_fractionCases, "ceil_fractionCases",
+    ceil_fractionCases, "ceil_fractionCases",
     "Checks a set of fractions", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference ceilTestRange = {
-    (SDLTest_TestCaseFp)ceil_rangeTest, "ceil_rangeTest",
+    ceil_rangeTest, "ceil_rangeTest",
     "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_trunc test cases */
 
 static const SDLTest_TestCaseReference truncTestInf = {
-    (SDLTest_TestCaseFp)trunc_infCases, "trunc_infCases",
+    trunc_infCases, "trunc_infCases",
     "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference truncTestZero = {
-    (SDLTest_TestCaseFp)trunc_zeroCases, "trunc_zeroCases",
+    trunc_zeroCases, "trunc_zeroCases",
     "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference truncTestNan = {
-    (SDLTest_TestCaseFp)trunc_nanCase, "trunc_nanCase",
+    trunc_nanCase, "trunc_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference truncTestRound = {
-    (SDLTest_TestCaseFp)trunc_roundNumbersCases, "trunc_roundNumberCases",
+    trunc_roundNumbersCases, "trunc_roundNumberCases",
     "Checks a set of integral values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference truncTestFraction = {
-    (SDLTest_TestCaseFp)trunc_fractionCases, "trunc_fractionCases",
+    trunc_fractionCases, "trunc_fractionCases",
     "Checks a set of fractions", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference truncTestRange = {
-    (SDLTest_TestCaseFp)trunc_rangeTest, "trunc_rangeTest",
+    trunc_rangeTest, "trunc_rangeTest",
     "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_round test cases */
 
 static const SDLTest_TestCaseReference roundTestInf = {
-    (SDLTest_TestCaseFp)round_infCases, "round_infCases",
+    round_infCases, "round_infCases",
     "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference roundTestZero = {
-    (SDLTest_TestCaseFp)round_zeroCases, "round_zeroCases",
+    round_zeroCases, "round_zeroCases",
     "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference roundTestNan = {
-    (SDLTest_TestCaseFp)round_nanCase, "round_nanCase",
+    round_nanCase, "round_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference roundTestRound = {
-    (SDLTest_TestCaseFp)round_roundNumbersCases, "round_roundNumberCases",
+    round_roundNumbersCases, "round_roundNumberCases",
     "Checks a set of integral values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference roundTestFraction = {
-    (SDLTest_TestCaseFp)round_fractionCases, "round_fractionCases",
+    round_fractionCases, "round_fractionCases",
     "Checks a set of fractions", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference roundTestRange = {
-    (SDLTest_TestCaseFp)round_rangeTest, "round_rangeTest",
+    round_rangeTest, "round_rangeTest",
     "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_fabs test cases */
 
 static const SDLTest_TestCaseReference fabsTestInf = {
-    (SDLTest_TestCaseFp)fabs_infCases, "fabs_infCases",
+    fabs_infCases, "fabs_infCases",
     "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fabsTestZero = {
-    (SDLTest_TestCaseFp)fabs_zeroCases, "fabs_zeroCases",
+    fabs_zeroCases, "fabs_zeroCases",
     "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fabsTestNan = {
-    (SDLTest_TestCaseFp)fabs_nanCase, "fabs_nanCase",
+    fabs_nanCase, "fabs_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fabsTestRange = {
-    (SDLTest_TestCaseFp)fabs_rangeTest, "fabs_rangeTest",
+    fabs_rangeTest, "fabs_rangeTest",
     "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_copysign test cases */
 
 static const SDLTest_TestCaseReference copysignTestInf = {
-    (SDLTest_TestCaseFp)copysign_infCases, "copysign_infCases",
+    copysign_infCases, "copysign_infCases",
     "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference copysignTestZero = {
-    (SDLTest_TestCaseFp)copysign_zeroCases, "copysign_zeroCases",
+    copysign_zeroCases, "copysign_zeroCases",
     "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference copysignTestNan = {
-    (SDLTest_TestCaseFp)copysign_nanCases, "copysign_nanCases",
+    copysign_nanCases, "copysign_nanCases",
     "Checks NANs", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference copysignTestRange = {
-    (SDLTest_TestCaseFp)copysign_rangeTest, "copysign_rangeTest",
+    copysign_rangeTest, "copysign_rangeTest",
     "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_fmod test cases */
 
 static const SDLTest_TestCaseReference fmodTestDivOfInf = {
-    (SDLTest_TestCaseFp)fmod_divOfInfCases, "fmod_divOfInfCases",
+    fmod_divOfInfCases, "fmod_divOfInfCases",
     "Checks division of positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestDivByInf = {
-    (SDLTest_TestCaseFp)fmod_divByInfCases, "fmod_divByInfCases",
+    fmod_divByInfCases, "fmod_divByInfCases",
     "Checks division by positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestDivOfZero = {
-    (SDLTest_TestCaseFp)fmod_divOfZeroCases, "fmod_divOfZeroCases",
+    fmod_divOfZeroCases, "fmod_divOfZeroCases",
     "Checks division of positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestDivByZero = {
-    (SDLTest_TestCaseFp)fmod_divByZeroCases, "fmod_divByZeroCases",
+    fmod_divByZeroCases, "fmod_divByZeroCases",
     "Checks division by positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestNan = {
-    (SDLTest_TestCaseFp)fmod_nanCases, "fmod_nanCases",
+    fmod_nanCases, "fmod_nanCases",
     "Checks NANs", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestRegular = {
-    (SDLTest_TestCaseFp)fmod_regularCases, "fmod_regularCases",
+    fmod_regularCases, "fmod_regularCases",
     "Checks a set of regular values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestRange = {
-    (SDLTest_TestCaseFp)fmod_rangeTest, "fmod_rangeTest",
+    fmod_rangeTest, "fmod_rangeTest",
     "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_exp test cases */
 
 static const SDLTest_TestCaseReference expTestInf = {
-    (SDLTest_TestCaseFp)exp_infCases, "exp_infCases",
+    exp_infCases, "exp_infCases",
     "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference expTestZero = {
-    (SDLTest_TestCaseFp)exp_zeroCases, "exp_zeroCases",
+    exp_zeroCases, "exp_zeroCases",
     "Checks for positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference expTestOverflow = {
-    (SDLTest_TestCaseFp)exp_overflowCase, "exp_overflowCase",
+    exp_overflowCase, "exp_overflowCase",
     "Checks for overflow", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference expTestBase = {
-    (SDLTest_TestCaseFp)exp_baseCase, "exp_baseCase",
+    exp_baseCase, "exp_baseCase",
     "Checks the base case", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference expTestRegular = {
-    (SDLTest_TestCaseFp)exp_regularCases, "exp_regularCases",
+    exp_regularCases, "exp_regularCases",
     "Checks a set of regular values", TEST_ENABLED
 };
 
 /* SDL_log test cases */
 
 static const SDLTest_TestCaseReference logTestLimit = {
-    (SDLTest_TestCaseFp)log_limitCases, "log_limitCases",
+    log_limitCases, "log_limitCases",
     "Checks the domain limits", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference logTestNan = {
-    (SDLTest_TestCaseFp)log_nanCases, "log_nanCases",
+    log_nanCases, "log_nanCases",
     "Checks NAN and negative values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference logTestBase = {
-    (SDLTest_TestCaseFp)log_baseCases, "log_baseCases",
+    log_baseCases, "log_baseCases",
     "Checks the base cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference logTestRegular = {
-    (SDLTest_TestCaseFp)log_regularCases, "log_regularCases",
+    log_regularCases, "log_regularCases",
     "Checks a set of regular values", TEST_ENABLED
 };
 
 /* SDL_log10 test cases */
 
 static const SDLTest_TestCaseReference log10TestLimit = {
-    (SDLTest_TestCaseFp)log10_limitCases, "log10_limitCases",
+    log10_limitCases, "log10_limitCases",
     "Checks the domain limits", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference log10TestNan = {
-    (SDLTest_TestCaseFp)log10_nanCases, "log10_nanCases",
+    log10_nanCases, "log10_nanCases",
     "Checks NAN and negative values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference log10TestBase = {
-    (SDLTest_TestCaseFp)log10_baseCases, "log10_baseCases",
+    log10_baseCases, "log10_baseCases",
     "Checks the base cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference log10TestRegular = {
-    (SDLTest_TestCaseFp)log10_regularCases, "log10_regularCases",
+    log10_regularCases, "log10_regularCases",
     "Checks a set of regular values", TEST_ENABLED
 };
 
 /* SDL_modf test cases */
 
 static const SDLTest_TestCaseReference modfTestBase = {
-    (SDLTest_TestCaseFp)modf_baseCases, "modf_baseCases",
+    modf_baseCases, "modf_baseCases",
     "Checks the base cases", TEST_ENABLED
 };
 
 /* SDL_pow test cases */
 
 static const SDLTest_TestCaseReference powTestExpInf1 = {
-    (SDLTest_TestCaseFp)pow_baseNOneExpInfCases, "pow_baseNOneExpInfCases",
+    pow_baseNOneExpInfCases, "pow_baseNOneExpInfCases",
     "Checks for pow(-1, +/-inf)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestExpInf2 = {
-    (SDLTest_TestCaseFp)pow_baseZeroExpNInfCases, "pow_baseZeroExpNInfCases",
+    pow_baseZeroExpNInfCases, "pow_baseZeroExpNInfCases",
     "Checks for pow(+/-0, -inf)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestExpInf3 = {
-    (SDLTest_TestCaseFp)pow_expInfCases, "pow_expInfCases",
+    pow_expInfCases, "pow_expInfCases",
     "Checks for pow(x, +/-inf)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestBaseInf1 = {
-    (SDLTest_TestCaseFp)pow_basePInfCases, "pow_basePInfCases",
+    pow_basePInfCases, "pow_basePInfCases",
     "Checks for pow(inf, x)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestBaseInf2 = {
-    (SDLTest_TestCaseFp)pow_baseNInfCases, "pow_baseNInfCases",
+    pow_baseNInfCases, "pow_baseNInfCases",
     "Checks for pow(-inf, x)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan1 = {
-    (SDLTest_TestCaseFp)pow_badOperationCase, "pow_badOperationCase",
+    pow_badOperationCase, "pow_badOperationCase",
     "Checks for negative finite base and non-integer finite exponent", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan2 = {
-    (SDLTest_TestCaseFp)pow_base1ExpNanCase, "pow_base1ExpNanCase",
+    pow_base1ExpNanCase, "pow_base1ExpNanCase",
     "Checks for pow(1.0, NAN)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan3 = {
-    (SDLTest_TestCaseFp)pow_baseNanExp0Cases, "pow_baseNanExp0Cases",
+    pow_baseNanExp0Cases, "pow_baseNanExp0Cases",
     "Checks for pow(NAN, +/-0)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan4 = {
-    (SDLTest_TestCaseFp)pow_nanArgsCases, "pow_nanArgsCases",
+    pow_nanArgsCases, "pow_nanArgsCases",
     "Checks for pow(x, y) with either x or y being NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero1 = {
-    (SDLTest_TestCaseFp)pow_baseNZeroExpOddCases, "pow_baseNZeroExpOddCases",
+    pow_baseNZeroExpOddCases, "pow_baseNZeroExpOddCases",
     "Checks for pow(-0.0, y), with y an odd integer.", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero2 = {
-    (SDLTest_TestCaseFp)pow_basePZeroExpOddCases, "pow_basePZeroExpOddCases",
+    pow_basePZeroExpOddCases, "pow_basePZeroExpOddCases",
     "Checks for pow(0.0, y), with y an odd integer.", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero3 = {
-    (SDLTest_TestCaseFp)pow_baseNZeroCases, "pow_baseNZeroCases",
+    pow_baseNZeroCases, "pow_baseNZeroCases",
     "Checks for pow(-0.0, y), with y finite and even or non-integer number", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero4 = {
-    (SDLTest_TestCaseFp)pow_basePZeroCases, "pow_basePZeroCases",
+    pow_basePZeroCases, "pow_basePZeroCases",
     "Checks for pow(0.0, y), with y finite and even or non-integer number", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestRegular = {
-    (SDLTest_TestCaseFp)pow_regularCases, "pow_regularCases",
+    pow_regularCases, "pow_regularCases",
     "Checks a set of regular values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestPowOf2 = {
-    (SDLTest_TestCaseFp)pow_powerOfTwo, "pow_powerOfTwo",
+    pow_powerOfTwo, "pow_powerOfTwo",
     "Checks the powers of two from 1 to 8", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestRange = {
-    (SDLTest_TestCaseFp)pow_rangeTest, "pow_rangeTest",
+    pow_rangeTest, "pow_rangeTest",
     "Checks a range of positive integer to the power of 0", TEST_ENABLED
 };
 
 /* SDL_sqrt test cases */
 
 static const SDLTest_TestCaseReference sqrtTestInf = {
-    (SDLTest_TestCaseFp)sqrt_infCase, "sqrt_infCase",
+    sqrt_infCase, "sqrt_infCase",
     "Checks positive infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sqrtTestNan = {
-    (SDLTest_TestCaseFp)sqrt_nanCase, "sqrt_nanCase",
+    sqrt_nanCase, "sqrt_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sqrtTestDomain = {
-    (SDLTest_TestCaseFp)sqrt_outOfDomainCases, "sqrt_outOfDomainCases",
+    sqrt_outOfDomainCases, "sqrt_outOfDomainCases",
     "Checks for values out of the domain", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sqrtTestBase = {
-    (SDLTest_TestCaseFp)sqrt_baseCases, "sqrt_baseCases",
+    sqrt_baseCases, "sqrt_baseCases",
     "Checks the base cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sqrtTestRegular = {
-    (SDLTest_TestCaseFp)sqrt_regularCases, "sqrt_regularCases",
+    sqrt_regularCases, "sqrt_regularCases",
     "Checks a set of regular values", TEST_ENABLED
 };
 
 /* SDL_scalbn test cases */
 
 static const SDLTest_TestCaseReference scalbnTestInf = {
-    (SDLTest_TestCaseFp)scalbn_infCases, "scalbn_infCases",
+    scalbn_infCases, "scalbn_infCases",
     "Checks positive and negative infinity arg", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference scalbnTestBaseZero = {
-    (SDLTest_TestCaseFp)scalbn_baseZeroCases, "scalbn_baseZeroCases",
+    scalbn_baseZeroCases, "scalbn_baseZeroCases",
     "Checks for positive and negative zero arg", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference scalbnTestExpZero = {
-    (SDLTest_TestCaseFp)scalbn_expZeroCase, "scalbn_expZeroCase",
+    scalbn_expZeroCase, "scalbn_expZeroCase",
     "Checks for zero exp", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference scalbnTestNan = {
-    (SDLTest_TestCaseFp)scalbn_nanCase, "scalbn_nanCase",
+    scalbn_nanCase, "scalbn_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference scalbnTestRegular = {
-    (SDLTest_TestCaseFp)scalbn_regularCases, "scalbn_regularCases",
+    scalbn_regularCases, "scalbn_regularCases",
     "Checks a set of regular cases", TEST_ENABLED
 };
 
 /* SDL_cos test cases */
 
 static const SDLTest_TestCaseReference cosTestInf = {
-    (SDLTest_TestCaseFp)cos_infCases, "cos_infCases",
+    cos_infCases, "cos_infCases",
     "Checks for positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference cosTestNan = {
-    (SDLTest_TestCaseFp)cos_nanCase, "cos_nanCase",
+    cos_nanCase, "cos_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference cosTestRegular = {
-    (SDLTest_TestCaseFp)cos_regularCases, "cos_regularCases",
+    cos_regularCases, "cos_regularCases",
     "Checks a set of regular cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference cosTestPrecision = {
-    (SDLTest_TestCaseFp)cos_precisionTest, "cos_precisionTest",
+    cos_precisionTest, "cos_precisionTest",
     "Checks cosine precision", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference cosTestRange = {
-    (SDLTest_TestCaseFp)cos_rangeTest, "cos_rangeTest",
+    cos_rangeTest, "cos_rangeTest",
     "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_sin test cases */
 
 static const SDLTest_TestCaseReference sinTestInf = {
-    (SDLTest_TestCaseFp)sin_infCases, "sin_infCases",
+    sin_infCases, "sin_infCases",
     "Checks for positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sinTestNan = {
-    (SDLTest_TestCaseFp)sin_nanCase, "sin_nanCase",
+    sin_nanCase, "sin_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sinTestRegular = {
-    (SDLTest_TestCaseFp)sin_regularCases, "sin_regularCases",
+    sin_regularCases, "sin_regularCases",
     "Checks a set of regular cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sinTestPrecision = {
-    (SDLTest_TestCaseFp)sin_precisionTest, "sin_precisionTest",
+    sin_precisionTest, "sin_precisionTest",
     "Checks sine precision", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sinTestRange = {
-    (SDLTest_TestCaseFp)sin_rangeTest, "sin_rangeTest",
+    sin_rangeTest, "sin_rangeTest",
     "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_tan test cases */
 
 static const SDLTest_TestCaseReference tanTestInf = {
-    (SDLTest_TestCaseFp)tan_infCases, "tan_infCases",
+    tan_infCases, "tan_infCases",
     "Checks for positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference tanTestNan = {
-    (SDLTest_TestCaseFp)tan_nanCase, "tan_nanCase",
+    tan_nanCase, "tan_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference tanTestZero = {
-    (SDLTest_TestCaseFp)tan_zeroCases, "tan_zeroCases",
+    tan_zeroCases, "tan_zeroCases",
     "Checks a set of regular cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference tanTestPrecision = {
-    (SDLTest_TestCaseFp)tan_precisionTest, "tan_precisionTest",
+    tan_precisionTest, "tan_precisionTest",
     "Checks tangent precision", TEST_ENABLED
 };
 
 /* SDL_acos test cases */
 
 static const SDLTest_TestCaseReference acosTestLimit = {
-    (SDLTest_TestCaseFp)acos_limitCases, "acos_limitCases",
+    acos_limitCases, "acos_limitCases",
     "Checks the edge of the domain (+/-1)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference acosTestOutOfDomain = {
-    (SDLTest_TestCaseFp)acos_outOfDomainCases, "acos_outOfDomainCases",
+    acos_outOfDomainCases, "acos_outOfDomainCases",
     "Checks values outside the domain", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference acosTestNan = {
-    (SDLTest_TestCaseFp)acos_nanCase, "acos_nanCase",
+    acos_nanCase, "acos_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference acosTestPrecision = {
-    (SDLTest_TestCaseFp)acos_precisionTest, "acos_precisionTest",
+    acos_precisionTest, "acos_precisionTest",
     "Checks acos precision", TEST_ENABLED
 };
 
 /* SDL_asin test cases */
 
 static const SDLTest_TestCaseReference asinTestLimit = {
-    (SDLTest_TestCaseFp)asin_limitCases, "asin_limitCases",
+    asin_limitCases, "asin_limitCases",
     "Checks the edge of the domain (+/-1)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference asinTestOutOfDomain = {
-    (SDLTest_TestCaseFp)asin_outOfDomainCases, "asin_outOfDomainCases",
+    asin_outOfDomainCases, "asin_outOfDomainCases",
     "Checks values outside the domain", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference asinTestNan = {
-    (SDLTest_TestCaseFp)asin_nanCase, "asin_nanCase",
+    asin_nanCase, "asin_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference asinTestPrecision = {
-    (SDLTest_TestCaseFp)asin_precisionTest, "asin_precisionTest",
+    asin_precisionTest, "asin_precisionTest",
     "Checks asin precision", TEST_ENABLED
 };
 
 /* SDL_atan test cases */
 
 static const SDLTest_TestCaseReference atanTestLimit = {
-    (SDLTest_TestCaseFp)atan_limitCases, "atan_limitCases",
+    atan_limitCases, "atan_limitCases",
     "Checks the edge of the domain (+/-Infinity)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atanTestZero = {
-    (SDLTest_TestCaseFp)atan_zeroCases, "atan_zeroCases",
+    atan_zeroCases, "atan_zeroCases",
     "Checks for positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atanTestNan = {
-    (SDLTest_TestCaseFp)atan_nanCase, "atan_nanCase",
+    atan_nanCase, "atan_nanCase",
     "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atanTestPrecision = {
-    (SDLTest_TestCaseFp)atan_precisionTest, "atan_precisionTest",
+    atan_precisionTest, "atan_precisionTest",
     "Checks atan precision", TEST_ENABLED
 };
 
 /* SDL_atan2 test cases */
 
 static const SDLTest_TestCaseReference atan2TestZero1 = {
-    (SDLTest_TestCaseFp)atan2_bothZeroCases, "atan2_bothZeroCases",
+    atan2_bothZeroCases, "atan2_bothZeroCases",
     "Checks for both arguments being zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestZero2 = {
-    (SDLTest_TestCaseFp)atan2_yZeroCases, "atan2_yZeroCases",
+    atan2_yZeroCases, "atan2_yZeroCases",
     "Checks for y=0", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestZero3 = {
-    (SDLTest_TestCaseFp)atan2_xZeroCases, "atan2_xZeroCases",
+    atan2_xZeroCases, "atan2_xZeroCases",
     "Checks for x=0", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestInf1 = {
-    (SDLTest_TestCaseFp)atan2_bothInfCases, "atan2_bothInfCases",
+    atan2_bothInfCases, "atan2_bothInfCases",
     "Checks for both arguments being infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestInf2 = {
-    (SDLTest_TestCaseFp)atan2_yInfCases, "atan2_yInfCases",
+    atan2_yInfCases, "atan2_yInfCases",
     "Checks for y=0", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestInf3 = {
-    (SDLTest_TestCaseFp)atan2_xInfCases, "atan2_xInfCases",
+    atan2_xInfCases, "atan2_xInfCases",
     "Checks for x=0", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestNan = {
-    (SDLTest_TestCaseFp)atan2_nanCases, "atan2_nanCases",
+    atan2_nanCases, "atan2_nanCases",
     "Checks NANs", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestQuadrantTopRight = {
-    (SDLTest_TestCaseFp)atan2_topRightQuadrantTest, "atan2_topRightQuadrantTest",
+    atan2_topRightQuadrantTest, "atan2_topRightQuadrantTest",
     "Checks values in the top right quadrant", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestQuadrantTopLeft = {
-    (SDLTest_TestCaseFp)atan2_topLeftQuadrantTest, "atan2_topLeftQuadrantTest",
+    atan2_topLeftQuadrantTest, "atan2_topLeftQuadrantTest",
     "Checks values in the top left quadrant", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestQuadrantBottomRight = {
-    (SDLTest_TestCaseFp)atan2_bottomRightQuadrantTest, "atan2_bottomRightQuadrantTest",
+    atan2_bottomRightQuadrantTest, "atan2_bottomRightQuadrantTest",
     "Checks values in the bottom right quadrant", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestQuadrantBottomLeft = {
-    (SDLTest_TestCaseFp)atan2_bottomLeftQuadrantTest, "atan2_bottomLeftQuadrantTest",
+    atan2_bottomLeftQuadrantTest, "atan2_bottomLeftQuadrantTest",
     "Checks values in the bottom left quadrant", TEST_ENABLED
 };
 

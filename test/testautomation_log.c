@@ -192,7 +192,7 @@ static int log_testHint(void *arg)
 
 /* Log test cases */
 static const SDLTest_TestCaseReference logTestHint = {
-    (SDLTest_TestCaseFp)log_testHint, "log_testHint", "Check SDL_HINT_LOGGING functionality", TEST_ENABLED
+    log_testHint, "log_testHint", "Check SDL_HINT_LOGGING functionality", TEST_ENABLED
 };
 
 /* Sequence of Log test cases */

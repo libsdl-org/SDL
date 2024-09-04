@@ -1462,67 +1462,67 @@ static int surface_testPremultiplyAlpha(void *arg)
 
 /* Surface test cases */
 static const SDLTest_TestCaseReference surfaceTestSaveLoadBitmap = {
-    (SDLTest_TestCaseFp)surface_testSaveLoadBitmap, "surface_testSaveLoadBitmap", "Tests sprite saving and loading.", TEST_ENABLED
+    surface_testSaveLoadBitmap, "surface_testSaveLoadBitmap", "Tests sprite saving and loading.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlit = {
-    (SDLTest_TestCaseFp)surface_testBlit, "surface_testBlit", "Tests basic blitting.", TEST_ENABLED
+    surface_testBlit, "surface_testBlit", "Tests basic blitting.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitTiled = {
-    (SDLTest_TestCaseFp)surface_testBlitTiled, "surface_testBlitTiled", "Tests tiled blitting.", TEST_ENABLED
+    surface_testBlitTiled, "surface_testBlitTiled", "Tests tiled blitting.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlit9Grid = {
-    (SDLTest_TestCaseFp)surface_testBlit9Grid, "surface_testBlit9Grid", "Tests 9-grid blitting.", TEST_ENABLED
+    surface_testBlit9Grid, "surface_testBlit9Grid", "Tests 9-grid blitting.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitMultiple = {
-    (SDLTest_TestCaseFp)surface_testBlitMultiple, "surface_testBlitMultiple", "Tests blitting between multiple surfaces of the same format.", TEST_ENABLED
+    surface_testBlitMultiple, "surface_testBlitMultiple", "Tests blitting between multiple surfaces of the same format.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestLoadFailure = {
-    (SDLTest_TestCaseFp)surface_testLoadFailure, "surface_testLoadFailure", "Tests sprite loading. A failure case.", TEST_ENABLED
+    surface_testLoadFailure, "surface_testLoadFailure", "Tests sprite loading. A failure case.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestSurfaceConversion = {
-    (SDLTest_TestCaseFp)surface_testSurfaceConversion, "surface_testSurfaceConversion", "Tests surface conversion.", TEST_ENABLED
+    surface_testSurfaceConversion, "surface_testSurfaceConversion", "Tests surface conversion.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestCompleteSurfaceConversion = {
-    (SDLTest_TestCaseFp)surface_testCompleteSurfaceConversion, "surface_testCompleteSurfaceConversion", "Tests surface conversion across all pixel formats", TEST_ENABLED
+    surface_testCompleteSurfaceConversion, "surface_testCompleteSurfaceConversion", "Tests surface conversion across all pixel formats", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitColorMod = {
-    (SDLTest_TestCaseFp)surface_testBlitColorMod, "surface_testBlitColorMod", "Tests some blitting routines with color mod.", TEST_ENABLED
+    surface_testBlitColorMod, "surface_testBlitColorMod", "Tests some blitting routines with color mod.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitAlphaMod = {
-    (SDLTest_TestCaseFp)surface_testBlitAlphaMod, "surface_testBlitAlphaMod", "Tests some blitting routines with alpha mod.", TEST_ENABLED
+    surface_testBlitAlphaMod, "surface_testBlitAlphaMod", "Tests some blitting routines with alpha mod.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitBlendBlend = {
-    (SDLTest_TestCaseFp)surface_testBlitBlendBlend, "surface_testBlitBlendBlend", "Tests blitting routines with blend blending mode.", TEST_ENABLED
+    surface_testBlitBlendBlend, "surface_testBlitBlendBlend", "Tests blitting routines with blend blending mode.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitBlendPremultiplied = {
-    (SDLTest_TestCaseFp)surface_testBlitBlendPremultiplied, "surface_testBlitBlendPremultiplied", "Tests blitting routines with premultiplied blending mode.", TEST_ENABLED
+    surface_testBlitBlendPremultiplied, "surface_testBlitBlendPremultiplied", "Tests blitting routines with premultiplied blending mode.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitBlendAdd = {
-    (SDLTest_TestCaseFp)surface_testBlitBlendAdd, "surface_testBlitBlendAdd", "Tests blitting routines with add blending mode.", TEST_ENABLED
+    surface_testBlitBlendAdd, "surface_testBlitBlendAdd", "Tests blitting routines with add blending mode.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitBlendAddPremultiplied = {
-    (SDLTest_TestCaseFp)surface_testBlitBlendAddPremultiplied, "surface_testBlitBlendAddPremultiplied", "Tests blitting routines with premultiplied add blending mode.", TEST_ENABLED
+    surface_testBlitBlendAddPremultiplied, "surface_testBlitBlendAddPremultiplied", "Tests blitting routines with premultiplied add blending mode.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitBlendMod = {
-    (SDLTest_TestCaseFp)surface_testBlitBlendMod, "surface_testBlitBlendMod", "Tests blitting routines with mod blending mode.", TEST_ENABLED
+    surface_testBlitBlendMod, "surface_testBlitBlendMod", "Tests blitting routines with mod blending mode.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitBlendMul = {
-    (SDLTest_TestCaseFp)surface_testBlitBlendMul, "surface_testBlitBlendMul", "Tests blitting routines with mul blending mode.", TEST_ENABLED
+    surface_testBlitBlendMul, "surface_testBlitBlendMul", "Tests blitting routines with mul blending mode.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestOverflow = {

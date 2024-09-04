@@ -1538,51 +1538,51 @@ static int render_testUVWrapping(void *arg)
 
 /* Render test cases */
 static const SDLTest_TestCaseReference renderTestGetNumRenderDrivers = {
-    (SDLTest_TestCaseFp)render_testGetNumRenderDrivers, "render_testGetNumRenderDrivers", "Tests call to SDL_GetNumRenderDrivers", TEST_ENABLED
+    render_testGetNumRenderDrivers, "render_testGetNumRenderDrivers", "Tests call to SDL_GetNumRenderDrivers", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestPrimitives = {
-    (SDLTest_TestCaseFp)render_testPrimitives, "render_testPrimitives", "Tests rendering primitives", TEST_ENABLED
+    render_testPrimitives, "render_testPrimitives", "Tests rendering primitives", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestPrimitivesWithViewport = {
-    (SDLTest_TestCaseFp)render_testPrimitivesWithViewport, "render_testPrimitivesWithViewport", "Tests rendering primitives within a viewport", TEST_ENABLED
+    render_testPrimitivesWithViewport, "render_testPrimitivesWithViewport", "Tests rendering primitives within a viewport", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestBlit = {
-    (SDLTest_TestCaseFp)render_testBlit, "render_testBlit", "Tests blitting", TEST_ENABLED
+    render_testBlit, "render_testBlit", "Tests blitting", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestBlitTiled = {
-    (SDLTest_TestCaseFp)render_testBlitTiled, "render_testBlitTiled", "Tests tiled blitting", TEST_ENABLED
+    render_testBlitTiled, "render_testBlitTiled", "Tests tiled blitting", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestBlit9Grid = {
-    (SDLTest_TestCaseFp)render_testBlit9Grid, "render_testBlit9Grid", "Tests 9-grid blitting", TEST_ENABLED
+    render_testBlit9Grid, "render_testBlit9Grid", "Tests 9-grid blitting", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestBlitColor = {
-    (SDLTest_TestCaseFp)render_testBlitColor, "render_testBlitColor", "Tests blitting with color", TEST_ENABLED
+    render_testBlitColor, "render_testBlitColor", "Tests blitting with color", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestBlendModes = {
-    (SDLTest_TestCaseFp)render_testBlendModes, "render_testBlendModes", "Tests rendering blend modes", TEST_ENABLED
+    render_testBlendModes, "render_testBlendModes", "Tests rendering blend modes", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestViewport = {
-    (SDLTest_TestCaseFp)render_testViewport, "render_testViewport", "Tests viewport", TEST_ENABLED
+    render_testViewport, "render_testViewport", "Tests viewport", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestClipRect = {
-    (SDLTest_TestCaseFp)render_testClipRect, "render_testClipRect", "Tests clip rect", TEST_ENABLED
+    render_testClipRect, "render_testClipRect", "Tests clip rect", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestLogicalSize = {
-    (SDLTest_TestCaseFp)render_testLogicalSize, "render_testLogicalSize", "Tests logical size", TEST_ENABLED
+    render_testLogicalSize, "render_testLogicalSize", "Tests logical size", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTestUVWrapping = {
-    (SDLTest_TestCaseFp)render_testUVWrapping, "render_testUVWrapping", "Tests geometry UV wrapping", TEST_ENABLED
+    render_testUVWrapping, "render_testUVWrapping", "Tests geometry UV wrapping", TEST_ENABLED
 };
 
 /* Sequence of Render test cases */

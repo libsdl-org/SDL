@@ -1226,63 +1226,63 @@ static int sdltest_randomAsciiStringOfSize(void *arg)
 
 /* SDL_test test cases */
 static const SDLTest_TestCaseReference sdltestTest1 = {
-    (SDLTest_TestCaseFp)sdltest_getFuzzerInvocationCount, "sdltest_getFuzzerInvocationCount", "Call to sdltest_GetFuzzerInvocationCount", TEST_ENABLED
+    sdltest_getFuzzerInvocationCount, "sdltest_getFuzzerInvocationCount", "Call to sdltest_GetFuzzerInvocationCount", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest2 = {
-    (SDLTest_TestCaseFp)sdltest_randomNumber, "sdltest_randomNumber", "Calls to random number generators", TEST_ENABLED
+    sdltest_randomNumber, "sdltest_randomNumber", "Calls to random number generators", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest3 = {
-    (SDLTest_TestCaseFp)sdltest_randomBoundaryNumberUint8, "sdltest_randomBoundaryNumberUint8", "Calls to random boundary number generators for Uint8", TEST_ENABLED
+    sdltest_randomBoundaryNumberUint8, "sdltest_randomBoundaryNumberUint8", "Calls to random boundary number generators for Uint8", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest4 = {
-    (SDLTest_TestCaseFp)sdltest_randomBoundaryNumberUint16, "sdltest_randomBoundaryNumberUint16", "Calls to random boundary number generators for Uint16", TEST_ENABLED
+    sdltest_randomBoundaryNumberUint16, "sdltest_randomBoundaryNumberUint16", "Calls to random boundary number generators for Uint16", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest5 = {
-    (SDLTest_TestCaseFp)sdltest_randomBoundaryNumberUint32, "sdltest_randomBoundaryNumberUint32", "Calls to random boundary number generators for Uint32", TEST_ENABLED
+    sdltest_randomBoundaryNumberUint32, "sdltest_randomBoundaryNumberUint32", "Calls to random boundary number generators for Uint32", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest6 = {
-    (SDLTest_TestCaseFp)sdltest_randomBoundaryNumberUint64, "sdltest_randomBoundaryNumberUint64", "Calls to random boundary number generators for Uint64", TEST_ENABLED
+    sdltest_randomBoundaryNumberUint64, "sdltest_randomBoundaryNumberUint64", "Calls to random boundary number generators for Uint64", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest7 = {
-    (SDLTest_TestCaseFp)sdltest_randomBoundaryNumberSint8, "sdltest_randomBoundaryNumberSint8", "Calls to random boundary number generators for Sint8", TEST_ENABLED
+    sdltest_randomBoundaryNumberSint8, "sdltest_randomBoundaryNumberSint8", "Calls to random boundary number generators for Sint8", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest8 = {
-    (SDLTest_TestCaseFp)sdltest_randomBoundaryNumberSint16, "sdltest_randomBoundaryNumberSint16", "Calls to random boundary number generators for Sint16", TEST_ENABLED
+    sdltest_randomBoundaryNumberSint16, "sdltest_randomBoundaryNumberSint16", "Calls to random boundary number generators for Sint16", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest9 = {
-    (SDLTest_TestCaseFp)sdltest_randomBoundaryNumberSint32, "sdltest_randomBoundaryNumberSint32", "Calls to random boundary number generators for Sint32", TEST_ENABLED
+    sdltest_randomBoundaryNumberSint32, "sdltest_randomBoundaryNumberSint32", "Calls to random boundary number generators for Sint32", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest10 = {
-    (SDLTest_TestCaseFp)sdltest_randomBoundaryNumberSint64, "sdltest_randomBoundaryNumberSint64", "Calls to random boundary number generators for Sint64", TEST_ENABLED
+    sdltest_randomBoundaryNumberSint64, "sdltest_randomBoundaryNumberSint64", "Calls to random boundary number generators for Sint64", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest11 = {
-    (SDLTest_TestCaseFp)sdltest_randomIntegerInRange, "sdltest_randomIntegerInRange", "Calls to ranged random number generator", TEST_ENABLED
+    sdltest_randomIntegerInRange, "sdltest_randomIntegerInRange", "Calls to ranged random number generator", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest12 = {
-    (SDLTest_TestCaseFp)sdltest_randomAsciiString, "sdltest_randomAsciiString", "Calls to default ASCII string generator", TEST_ENABLED
+    sdltest_randomAsciiString, "sdltest_randomAsciiString", "Calls to default ASCII string generator", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest13 = {
-    (SDLTest_TestCaseFp)sdltest_randomAsciiStringWithMaximumLength, "sdltest_randomAsciiStringWithMaximumLength", "Calls to random maximum length ASCII string generator", TEST_ENABLED
+    sdltest_randomAsciiStringWithMaximumLength, "sdltest_randomAsciiStringWithMaximumLength", "Calls to random maximum length ASCII string generator", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest14 = {
-    (SDLTest_TestCaseFp)sdltest_randomAsciiStringOfSize, "sdltest_randomAsciiStringOfSize", "Calls to fixed size ASCII string generator", TEST_ENABLED
+    sdltest_randomAsciiStringOfSize, "sdltest_randomAsciiStringOfSize", "Calls to fixed size ASCII string generator", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest15 = {
-    (SDLTest_TestCaseFp)sdltest_generateRunSeed, "sdltest_generateRunSeed", "Checks internal harness function SDLTest_GenerateRunSeed", TEST_ENABLED
+    sdltest_generateRunSeed, "sdltest_generateRunSeed", "Checks internal harness function SDLTest_GenerateRunSeed", TEST_ENABLED
 };
 
 /* Sequence of SDL_test test cases */

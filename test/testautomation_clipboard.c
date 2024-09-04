@@ -564,15 +564,15 @@ static int clipboard_testPrimarySelectionTextFunctions(void *arg)
 /* ================= Test References ================== */
 
 static const SDLTest_TestCaseReference clipboardTest1 = {
-    (SDLTest_TestCaseFp)clipboard_testClipboardDataFunctions, "clipboard_testClipboardDataFunctions", "End-to-end test of SDL_xyzClipboardData functions", TEST_ENABLED
+    clipboard_testClipboardDataFunctions, "clipboard_testClipboardDataFunctions", "End-to-end test of SDL_xyzClipboardData functions", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference clipboardTest2 = {
-    (SDLTest_TestCaseFp)clipboard_testClipboardTextFunctions, "clipboard_testClipboardTextFunctions", "End-to-end test of SDL_xyzClipboardText functions", TEST_ENABLED
+    clipboard_testClipboardTextFunctions, "clipboard_testClipboardTextFunctions", "End-to-end test of SDL_xyzClipboardText functions", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference clipboardTest3 = {
-    (SDLTest_TestCaseFp)clipboard_testPrimarySelectionTextFunctions, "clipboard_testPrimarySelectionTextFunctions", "End-to-end test of SDL_xyzPrimarySelectionText functions", TEST_ENABLED
+    clipboard_testPrimarySelectionTextFunctions, "clipboard_testPrimarySelectionTextFunctions", "End-to-end test of SDL_xyzPrimarySelectionText functions", TEST_ENABLED
 };
 
 /* Sequence of Clipboard test cases */

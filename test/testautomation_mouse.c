@@ -612,51 +612,51 @@ static int mouse_getGlobalMouseState(void *arg)
 
 /* Mouse test cases */
 static const SDLTest_TestCaseReference mouseTestGetMouseState = {
-    (SDLTest_TestCaseFp)mouse_getMouseState, "mouse_getMouseState", "Check call to SDL_GetMouseState", TEST_ENABLED
+    mouse_getMouseState, "mouse_getMouseState", "Check call to SDL_GetMouseState", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestGetRelativeMouseState = {
-    (SDLTest_TestCaseFp)mouse_getRelativeMouseState, "mouse_getRelativeMouseState", "Check call to SDL_GetRelativeMouseState", TEST_ENABLED
+    mouse_getRelativeMouseState, "mouse_getRelativeMouseState", "Check call to SDL_GetRelativeMouseState", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestCreateFreeCursor = {
-    (SDLTest_TestCaseFp)mouse_createFreeCursor, "mouse_createFreeCursor", "Check call to SDL_CreateCursor and SDL_DestroyCursor", TEST_ENABLED
+    mouse_createFreeCursor, "mouse_createFreeCursor", "Check call to SDL_CreateCursor and SDL_DestroyCursor", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestShowCursor = {
-    (SDLTest_TestCaseFp)mouse_showCursor, "mouse_showCursor", "Check call to SDL_ShowCursor", TEST_ENABLED
+    mouse_showCursor, "mouse_showCursor", "Check call to SDL_ShowCursor", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestSetCursor = {
-    (SDLTest_TestCaseFp)mouse_setCursor, "mouse_setCursor", "Check call to SDL_SetCursor", TEST_ENABLED
+    mouse_setCursor, "mouse_setCursor", "Check call to SDL_SetCursor", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestGetCursor = {
-    (SDLTest_TestCaseFp)mouse_getCursor, "mouse_getCursor", "Check call to SDL_GetCursor", TEST_ENABLED
+    mouse_getCursor, "mouse_getCursor", "Check call to SDL_GetCursor", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestWarpMouseInWindow = {
-    (SDLTest_TestCaseFp)mouse_warpMouseInWindow, "mouse_warpMouseInWindow", "Check call to SDL_WarpMouseInWindow", TEST_ENABLED
+    mouse_warpMouseInWindow, "mouse_warpMouseInWindow", "Check call to SDL_WarpMouseInWindow", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestGetMouseFocus = {
-    (SDLTest_TestCaseFp)mouse_getMouseFocus, "mouse_getMouseFocus", "Check call to SDL_GetMouseFocus", TEST_ENABLED
+    mouse_getMouseFocus, "mouse_getMouseFocus", "Check call to SDL_GetMouseFocus", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestCreateFreeColorCursor = {
-    (SDLTest_TestCaseFp)mouse_createFreeColorCursor, "mouse_createFreeColorCursor", "Check call to SDL_CreateColorCursor and SDL_DestroyCursor", TEST_ENABLED
+    mouse_createFreeColorCursor, "mouse_createFreeColorCursor", "Check call to SDL_CreateColorCursor and SDL_DestroyCursor", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestGetSetRelativeMouseMode = {
-    (SDLTest_TestCaseFp)mouse_getSetRelativeMouseMode, "mouse_getSetRelativeMouseMode", "Check call to SDL_GetWindowRelativeMouseMode and SDL_SetWindowRelativeMouseMode", TEST_ENABLED
+    mouse_getSetRelativeMouseMode, "mouse_getSetRelativeMouseMode", "Check call to SDL_GetWindowRelativeMouseMode and SDL_SetWindowRelativeMouseMode", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestGetDefaultCursor = {
-    (SDLTest_TestCaseFp)mouse_getDefaultCursor, "mouse_getDefaultCursor", "Check call to SDL_GetDefaultCursor", TEST_ENABLED
+    mouse_getDefaultCursor, "mouse_getDefaultCursor", "Check call to SDL_GetDefaultCursor", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference mouseTestGetGlobalMouseState = {
-    (SDLTest_TestCaseFp)mouse_getGlobalMouseState, "mouse_getGlobalMouseState", "Check call to SDL_GetGlobalMouseState", TEST_ENABLED
+    mouse_getGlobalMouseState, "mouse_getGlobalMouseState", "Check call to SDL_GetGlobalMouseState", TEST_ENABLED
 };
 
 /* Sequence of Mouse test cases */

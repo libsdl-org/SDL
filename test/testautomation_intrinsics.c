@@ -627,43 +627,43 @@ static int intrinsics_testAVX512F(void *arg)
 /* Intrinsics test cases */
 
 static const SDLTest_TestCaseReference intrinsicsTest1 = {
-    (SDLTest_TestCaseFp)intrinsics_selftest, "intrinsics_selftest", "Intrinsics testautomation selftest", TEST_ENABLED
+    intrinsics_selftest, "intrinsics_selftest", "Intrinsics testautomation selftest", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest2 = {
-    (SDLTest_TestCaseFp)intrinsics_testMMX, "intrinsics_testMMX", "Tests MMX intrinsics", TEST_ENABLED
+    intrinsics_testMMX, "intrinsics_testMMX", "Tests MMX intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest3 = {
-    (SDLTest_TestCaseFp)intrinsics_testSSE, "intrinsics_testSSE", "Tests SSE intrinsics", TEST_ENABLED
+    intrinsics_testSSE, "intrinsics_testSSE", "Tests SSE intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest4 = {
-    (SDLTest_TestCaseFp)intrinsics_testSSE2, "intrinsics_testSSE2", "Tests SSE2 intrinsics", TEST_ENABLED
+    intrinsics_testSSE2, "intrinsics_testSSE2", "Tests SSE2 intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest5 = {
-    (SDLTest_TestCaseFp)intrinsics_testSSE3, "intrinsics_testSSE3", "Tests SSE3 intrinsics", TEST_ENABLED
+    intrinsics_testSSE3, "intrinsics_testSSE3", "Tests SSE3 intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest6 = {
-    (SDLTest_TestCaseFp)intrinsics_testSSE4_1, "intrinsics_testSSE4.1", "Tests SSE4.1 intrinsics", TEST_ENABLED
+    intrinsics_testSSE4_1, "intrinsics_testSSE4.1", "Tests SSE4.1 intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest7 = {
-    (SDLTest_TestCaseFp)intrinsics_testSSE4_2, "intrinsics_testSSE4.2", "Tests SSE4.2 intrinsics", TEST_ENABLED
+    intrinsics_testSSE4_2, "intrinsics_testSSE4.2", "Tests SSE4.2 intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest8 = {
-    (SDLTest_TestCaseFp)intrinsics_testAVX, "intrinsics_testAVX", "Tests AVX intrinsics", TEST_ENABLED
+    intrinsics_testAVX, "intrinsics_testAVX", "Tests AVX intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest9 = {
-    (SDLTest_TestCaseFp)intrinsics_testAVX2, "intrinsics_testAVX2", "Tests AVX2 intrinsics", TEST_ENABLED
+    intrinsics_testAVX2, "intrinsics_testAVX2", "Tests AVX2 intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest10 = {
-    (SDLTest_TestCaseFp)intrinsics_testAVX512F, "intrinsics_testAVX512F", "Tests AVX512F intrinsics", TEST_ENABLED
+    intrinsics_testAVX512F, "intrinsics_testAVX512F", "Tests AVX512F intrinsics", TEST_ENABLED
 };
 
 /* Sequence of Platform test cases */

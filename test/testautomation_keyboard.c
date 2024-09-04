@@ -612,55 +612,55 @@ static int keyboard_getScancodeFromNameNegative(void *arg)
 
 /* Keyboard test cases */
 static const SDLTest_TestCaseReference keyboardTestGetKeyboardState = {
-    (SDLTest_TestCaseFp)keyboard_getKeyboardState, "keyboard_getKeyboardState", "Check call to SDL_GetKeyboardState with and without numkeys reference", TEST_ENABLED
+    keyboard_getKeyboardState, "keyboard_getKeyboardState", "Check call to SDL_GetKeyboardState with and without numkeys reference", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestGetKeyboardFocus = {
-    (SDLTest_TestCaseFp)keyboard_getKeyboardFocus, "keyboard_getKeyboardFocus", "Check call to SDL_GetKeyboardFocus", TEST_ENABLED
+    keyboard_getKeyboardFocus, "keyboard_getKeyboardFocus", "Check call to SDL_GetKeyboardFocus", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestGetKeyFromName = {
-    (SDLTest_TestCaseFp)keyboard_getKeyFromName, "keyboard_getKeyFromName", "Check call to SDL_GetKeyFromName for known, unknown and invalid name", TEST_ENABLED
+    keyboard_getKeyFromName, "keyboard_getKeyFromName", "Check call to SDL_GetKeyFromName for known, unknown and invalid name", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestGetKeyFromScancode = {
-    (SDLTest_TestCaseFp)keyboard_getKeyFromScancode, "keyboard_getKeyFromScancode", "Check call to SDL_GetKeyFromScancode", TEST_ENABLED
+    keyboard_getKeyFromScancode, "keyboard_getKeyFromScancode", "Check call to SDL_GetKeyFromScancode", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestGetKeyName = {
-    (SDLTest_TestCaseFp)keyboard_getKeyName, "keyboard_getKeyName", "Check call to SDL_GetKeyName", TEST_ENABLED
+    keyboard_getKeyName, "keyboard_getKeyName", "Check call to SDL_GetKeyName", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestGetSetModState = {
-    (SDLTest_TestCaseFp)keyboard_getSetModState, "keyboard_getSetModState", "Check call to SDL_GetModState and SDL_SetModState", TEST_ENABLED
+    keyboard_getSetModState, "keyboard_getSetModState", "Check call to SDL_GetModState and SDL_SetModState", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestStartStopTextInput = {
-    (SDLTest_TestCaseFp)keyboard_startStopTextInput, "keyboard_startStopTextInput", "Check call to SDL_StartTextInput and SDL_StopTextInput", TEST_ENABLED
+    keyboard_startStopTextInput, "keyboard_startStopTextInput", "Check call to SDL_StartTextInput and SDL_StopTextInput", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestSetTextInputArea = {
-    (SDLTest_TestCaseFp)keyboard_setTextInputArea, "keyboard_setTextInputArea", "Check call to SDL_SetTextInputArea", TEST_ENABLED
+    keyboard_setTextInputArea, "keyboard_setTextInputArea", "Check call to SDL_SetTextInputArea", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestSetTextInputAreaNegative = {
-    (SDLTest_TestCaseFp)keyboard_setTextInputAreaNegative, "keyboard_setTextInputAreaNegative", "Check call to SDL_SetTextInputArea with invalid data", TEST_ENABLED
+    keyboard_setTextInputAreaNegative, "keyboard_setTextInputAreaNegative", "Check call to SDL_SetTextInputArea with invalid data", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestGetScancodeFromName = {
-    (SDLTest_TestCaseFp)keyboard_getScancodeFromName, "keyboard_getScancodeFromName", "Check call to SDL_GetScancodeFromName", TEST_ENABLED
+    keyboard_getScancodeFromName, "keyboard_getScancodeFromName", "Check call to SDL_GetScancodeFromName", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestGetScancodeFromNameNegative = {
-    (SDLTest_TestCaseFp)keyboard_getScancodeFromNameNegative, "keyboard_getScancodeFromNameNegative", "Check call to SDL_GetScancodeFromName with invalid data", TEST_ENABLED
+    keyboard_getScancodeFromNameNegative, "keyboard_getScancodeFromNameNegative", "Check call to SDL_GetScancodeFromName with invalid data", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestGetKeyNameNegative = {
-    (SDLTest_TestCaseFp)keyboard_getKeyNameNegative, "keyboard_getKeyNameNegative", "Check call to SDL_GetKeyName with invalid data", TEST_ENABLED
+    keyboard_getKeyNameNegative, "keyboard_getKeyNameNegative", "Check call to SDL_GetKeyName with invalid data", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTestGetScancodeNameNegative = {
-    (SDLTest_TestCaseFp)keyboard_getScancodeNameNegative, "keyboard_getScancodeNameNegative", "Check call to SDL_GetScancodeName with invalid data", TEST_ENABLED
+    keyboard_getScancodeNameNegative, "keyboard_getScancodeNameNegative", "Check call to SDL_GetScancodeName with invalid data", TEST_ENABLED
 };
 
 /* Sequence of Keyboard test cases */

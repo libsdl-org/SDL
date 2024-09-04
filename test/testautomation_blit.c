@@ -192,15 +192,15 @@ int blit_testRandomToRandomSVGAMultipleIterations(void *arg) {
 }
 
 static const SDLTest_TestCaseReference blitTest1 = {
-        (SDLTest_TestCaseFp)blit_testExampleApplicationRender, "blit_testExampleApplicationRender",
+        blit_testExampleApplicationRender, "blit_testExampleApplicationRender",
         "Test example application render.", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference blitTest2 = {
-        (SDLTest_TestCaseFp)blit_testRandomToRandomSVGA, "blit_testRandomToRandomSVGA",
+        blit_testRandomToRandomSVGA, "blit_testRandomToRandomSVGA",
         "Test SVGA noise render.", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference blitTest3 = {
-        (SDLTest_TestCaseFp)blit_testRandomToRandomSVGAMultipleIterations, "blit_testRandomToRandomSVGAMultipleIterations",
+        blit_testRandomToRandomSVGAMultipleIterations, "blit_testRandomToRandomSVGAMultipleIterations",
         "Test SVGA noise render (250k iterations).", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference *blitTests[] = {

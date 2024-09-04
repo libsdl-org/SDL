@@ -651,39 +651,39 @@ static int iostrm_testFileWriteReadEndian(void *arg)
 
 /* IOStream test cases */
 static const SDLTest_TestCaseReference iostrmTest1 = {
-    (SDLTest_TestCaseFp)iostrm_testParamNegative, "iostrm_testParamNegative", "Negative test for SDL_IOFromFile parameters", TEST_ENABLED
+    iostrm_testParamNegative, "iostrm_testParamNegative", "Negative test for SDL_IOFromFile parameters", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest2 = {
-    (SDLTest_TestCaseFp)iostrm_testMem, "iostrm_testMem", "Tests opening from memory", TEST_ENABLED
+    iostrm_testMem, "iostrm_testMem", "Tests opening from memory", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest3 = {
-    (SDLTest_TestCaseFp)iostrm_testConstMem, "iostrm_testConstMem", "Tests opening from (const) memory", TEST_ENABLED
+    iostrm_testConstMem, "iostrm_testConstMem", "Tests opening from (const) memory", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest4 = {
-    (SDLTest_TestCaseFp)iostrm_testDynamicMem, "iostrm_testDynamicMem", "Tests opening dynamic memory", TEST_ENABLED
+    iostrm_testDynamicMem, "iostrm_testDynamicMem", "Tests opening dynamic memory", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest5 = {
-    (SDLTest_TestCaseFp)iostrm_testFileRead, "iostrm_testFileRead", "Tests reading from a file", TEST_ENABLED
+    iostrm_testFileRead, "iostrm_testFileRead", "Tests reading from a file", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest6 = {
-    (SDLTest_TestCaseFp)iostrm_testFileWrite, "iostrm_testFileWrite", "Test writing to a file", TEST_ENABLED
+    iostrm_testFileWrite, "iostrm_testFileWrite", "Test writing to a file", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest7 = {
-    (SDLTest_TestCaseFp)iostrm_testAllocFree, "iostrm_testAllocFree", "Test alloc and free of RW context", TEST_ENABLED
+    iostrm_testAllocFree, "iostrm_testAllocFree", "Test alloc and free of RW context", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest8 = {
-    (SDLTest_TestCaseFp)iostrm_testFileWriteReadEndian, "iostrm_testFileWriteReadEndian", "Test writing and reading via the Endian aware functions", TEST_ENABLED
+    iostrm_testFileWriteReadEndian, "iostrm_testFileWriteReadEndian", "Test writing and reading via the Endian aware functions", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest9 = {
-    (SDLTest_TestCaseFp)iostrm_testCompareRWFromMemWithRWFromFile, "iostrm_testCompareRWFromMemWithRWFromFile", "Compare RWFromMem and RWFromFile IOStream for read and seek", TEST_ENABLED
+    iostrm_testCompareRWFromMemWithRWFromFile, "iostrm_testCompareRWFromMemWithRWFromFile", "Compare RWFromMem and RWFromFile IOStream for read and seek", TEST_ENABLED
 };
 
 /* Sequence of IOStream test cases */
