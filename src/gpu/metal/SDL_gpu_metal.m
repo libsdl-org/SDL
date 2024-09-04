@@ -1389,7 +1389,7 @@ static bool METAL_SupportsSampleCount(
 
 static SDL_GPUTexture *METAL_CreateTexture(
     SDL_GPURenderer *driverData,
-    SDL_GPUTextureCreateInfo *textureCreateInfo)
+    const SDL_GPUTextureCreateInfo *textureCreateInfo)
 {
     @autoreleasepool {
         MetalRenderer *renderer = (MetalRenderer *)driverData;
@@ -2354,7 +2354,7 @@ static void METAL_BindIndexBuffer(
 static void METAL_BindVertexSamplers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+    const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
