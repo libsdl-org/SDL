@@ -775,7 +775,7 @@ typedef struct VulkanSwapchainData
     // Synchronization primitives
     VkSemaphore imageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore renderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
-    VulkanFenceHandle *inFlightFences[MAX_FRAMES_IN_FLIGHT];
+    SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
 
     Uint32 frameCounter;
 } VulkanSwapchainData;
@@ -9803,7 +9803,7 @@ static void VULKAN_ReleaseWindow(
             if (windowData->swapchainData->inFlightFences[i] != NULL) {
                 VULKAN_ReleaseFence(
                     driverData,
-                    (SDL_GPUFence *)windowData->swapchainData->inFlightFences[i]);
+                    windowData->swapchainData->inFlightFences[i]);
             }
         }
 
@@ -9839,7 +9839,7 @@ static bool VULKAN_INTERNAL_RecreateSwapchain(
             if (windowData->swapchainData->inFlightFences[i] != NULL) {
                 VULKAN_ReleaseFence(
                     (SDL_GPURenderer *)renderer,
-                    (SDL_GPUFence *)windowData->swapchainData->inFlightFences[i]);
+                    windowData->swapchainData->inFlightFences[i]);
             }
         }
     }
@@ -9893,12 +9893,12 @@ static SDL_GPUTexture *VULKAN_AcquireSwapchainTexture(
             VULKAN_WaitForFences(
                 (SDL_GPURenderer *)renderer,
                 true,
-                (SDL_GPUFence *const *)&swapchainData->inFlightFences[swapchainData->frameCounter],
+                &swapchainData->inFlightFences[swapchainData->frameCounter],
                 1);
         } else {
             if (!VULKAN_QueryFence(
                     (SDL_GPURenderer *)renderer,
-                    (SDL_GPUFence *)swapchainData->inFlightFences[swapchainData->frameCounter])) {
+                    swapchainData->inFlightFences[swapchainData->frameCounter])) {
                 /*
                  * In MAILBOX or IMMEDIATE mode, if the least recent fence is not signaled,
                  * return NULL to indicate that rendering should be skipped
@@ -9909,7 +9909,7 @@ static SDL_GPUTexture *VULKAN_AcquireSwapchainTexture(
 
         VULKAN_ReleaseFence(
             (SDL_GPURenderer *)renderer,
-            (SDL_GPUFence *)swapchainData->inFlightFences[swapchainData->frameCounter]);
+            swapchainData->inFlightFences[swapchainData->frameCounter]);
 
         swapchainData->inFlightFences[swapchainData->frameCounter] = NULL;
     }
@@ -10537,7 +10537,7 @@ static void VULKAN_Submit(
                 presentData->windowData);
         } else {
             // If presenting, the swapchain is using the in-flight fence
-            presentData->windowData->swapchainData->inFlightFences[presentData->windowData->swapchainData->frameCounter] = vulkanCommandBuffer->inFlightFence;
+            presentData->windowData->swapchainData->inFlightFences[presentData->windowData->swapchainData->frameCounter] = (SDL_GPUFence*)vulkanCommandBuffer->inFlightFence;
 
             (void)SDL_AtomicIncRef(&vulkanCommandBuffer->inFlightFence->referenceCount);
         }

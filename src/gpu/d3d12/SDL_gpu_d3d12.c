@@ -1,4 +1,4 @@
-/*
+﻿/*
   Simple DirectMedia Layer
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
@@ -516,7 +516,7 @@ typedef struct D3D12WindowData
     Uint32 frameCounter;
 
     D3D12TextureContainer textureContainers[MAX_FRAMES_IN_FLIGHT];
-    D3D12Fence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
+    SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
 } D3D12WindowData;
 
 typedef struct D3D12PresentData
@@ -6401,7 +6401,7 @@ static void D3D12_ReleaseWindow(
         if (windowData->inFlightFences[i] != NULL) {
             D3D12_ReleaseFence(
                 driverData,
-                (SDL_GPUFence *)windowData->inFlightFences[i]);
+                windowData->inFlightFences[i]);
             windowData->inFlightFences[i] = NULL;
         }
     }
@@ -6762,12 +6762,12 @@ static SDL_GPUTexture *D3D12_AcquireSwapchainTexture(
             D3D12_WaitForFences(
                 (SDL_GPURenderer *)renderer,
                 true,
-                (SDL_GPUFence *const *)&windowData->inFlightFences[windowData->frameCounter],
+                &windowData->inFlightFences[windowData->frameCounter],
                 1);
         } else {
             if (!D3D12_QueryFence(
                     (SDL_GPURenderer *)renderer,
-                    (SDL_GPUFence *)windowData->inFlightFences[windowData->frameCounter])) {
+                    windowData->inFlightFences[windowData->frameCounter])) {
                 /*
                  * In MAILBOX or IMMEDIATE mode, if the least recent fence is not signaled,
                  * return NULL to indicate that rendering should be skipped
@@ -6778,7 +6778,7 @@ static SDL_GPUTexture *D3D12_AcquireSwapchainTexture(
 
         D3D12_ReleaseFence(
             (SDL_GPURenderer *)renderer,
-            (SDL_GPUFence *)windowData->inFlightFences[windowData->frameCounter]);
+            windowData->inFlightFences[windowData->frameCounter]);
 
         windowData->inFlightFences[windowData->frameCounter] = NULL;
     }
@@ -7185,7 +7185,7 @@ static void D3D12_Submit(
         ID3D12Resource_Release(windowData->textureContainers[presentData->swapchainImageIndex].activeTexture->resource);
 #endif
 
-        windowData->inFlightFences[windowData->frameCounter] = d3d12CommandBuffer->inFlightFence;
+        windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence*)d3d12CommandBuffer->inFlightFence;
         (void)SDL_AtomicIncRef(&d3d12CommandBuffer->inFlightFence->referenceCount);
         windowData->frameCounter = (windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
     }

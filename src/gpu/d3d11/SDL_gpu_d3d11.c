@@ -1,4 +1,4 @@
-/*
+﻿/*
   Simple DirectMedia Layer
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
@@ -459,7 +459,7 @@ typedef struct D3D11WindowData
     SDL_GPUSwapchainComposition swapchainComposition;
     DXGI_FORMAT swapchainFormat;
     DXGI_COLOR_SPACE_TYPE swapchainColorSpace;
-    D3D11Fence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
+    SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
     Uint32 frameCounter;
 } D3D11WindowData;
 
@@ -5175,7 +5175,7 @@ static void D3D11_INTERNAL_DestroySwapchain(
         if (windowData->inFlightFences[i] != NULL) {
             D3D11_ReleaseFence(
                 (SDL_GPURenderer *)renderer,
-                (SDL_GPUFence *)windowData->inFlightFences[i]);
+                windowData->inFlightFences[i]);
         }
     }
 }
@@ -5247,12 +5247,12 @@ static SDL_GPUTexture *D3D11_AcquireSwapchainTexture(
             D3D11_WaitForFences(
                 (SDL_GPURenderer *)renderer,
                 true,
-                (SDL_GPUFence *const *)&windowData->inFlightFences[windowData->frameCounter],
+                &windowData->inFlightFences[windowData->frameCounter],
                 1);
         } else {
             if (!D3D11_QueryFence(
                     (SDL_GPURenderer *)d3d11CommandBuffer->renderer,
-                    (SDL_GPUFence *)windowData->inFlightFences[windowData->frameCounter])) {
+                    windowData->inFlightFences[windowData->frameCounter])) {
                 /*
                  * In MAILBOX or IMMEDIATE mode, if the least recent fence is not signaled,
                  * return NULL to indicate that rendering should be skipped
@@ -5263,7 +5263,7 @@ static SDL_GPUTexture *D3D11_AcquireSwapchainTexture(
 
         D3D11_ReleaseFence(
             (SDL_GPURenderer *)d3d11CommandBuffer->renderer,
-            (SDL_GPUFence *)windowData->inFlightFences[windowData->frameCounter]);
+            windowData->inFlightFences[windowData->frameCounter]);
 
         windowData->inFlightFences[windowData->frameCounter] = NULL;
     }
@@ -5447,7 +5447,7 @@ static void D3D11_Submit(
 
         ID3D11Texture2D_Release(windowData->texture.handle);
 
-        windowData->inFlightFences[windowData->frameCounter] = d3d11CommandBuffer->fence;
+        windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence*)d3d11CommandBuffer->fence;
 
         (void)SDL_AtomicIncRef(&d3d11CommandBuffer->fence->referenceCount);
 
