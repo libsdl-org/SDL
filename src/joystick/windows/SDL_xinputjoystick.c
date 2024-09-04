@@ -218,7 +218,7 @@ void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
     int iuserid;
 
-    if (!s_bXInputEnabled) {
+    if (!s_bXInputEnabled || !XINPUTGETCAPABILITIES) {
         return;
     }
 
