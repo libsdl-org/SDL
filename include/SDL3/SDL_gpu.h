@@ -44,49 +44,174 @@ extern "C" {
 
 /* Type Declarations */
 
+/**
+ * An opaque handle representing the SDL_GPU context.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUDevice SDL_GPUDevice;
+
+/**
+ * An opaque handle representing a buffer.
+ * Used for vertices, indices, indirect draw commands, and general compute data.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUBuffer SDL_GPUBuffer;
+
+/**
+ * An opaque handle representing a transfer buffer.
+ * Used for transferring data to and from the device.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUTransferBuffer SDL_GPUTransferBuffer;
+
+/**
+ * An opaque handle representing a texture.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUTexture SDL_GPUTexture;
+
+/**
+ * An opaque handle representing a sampler.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUSampler SDL_GPUSampler;
+
+/**
+ * An opaque handle representing a compiled shader object.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUShader SDL_GPUShader;
+
+/**
+ * An opaque handle representing a compute pipeline.
+ * Used during compute passes.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUComputePipeline SDL_GPUComputePipeline;
+
+/**
+ * An opaque handle representing a graphics pipeline.
+ * Used during render passes.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUGraphicsPipeline SDL_GPUGraphicsPipeline;
+
+/**
+ * An opaque handle representing a command buffer.
+ *
+ * Most state is managed via command buffers.
+ * When setting state using a command buffer,
+ * that state is local to the command buffer.
+ *
+ * Commands only begin execution on the GPU once SDL_SubmitGPUCommandBuffer is called.
+ * Once the command buffer is submitted, it is no longer valid to use it.
+ *
+ * Command buffers are executed in submission order. If you submit command buffer A and then command buffer B
+ * all commands in A will begin executing before any command in B begins executing.
+ *
+ * In multi-threading scenarios, you should acquire and submit a command buffer on the same thread.
+ * As long as you satisfy this requirement, all functionality related to command buffers is thread-safe.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUCommandBuffer SDL_GPUCommandBuffer;
+
+/**
+ * An opaque handle representing a render pass.
+ * This handle is transient and should not be held or referenced
+ * after SDL_EndGPURenderPass is called.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPURenderPass SDL_GPURenderPass;
+
+/**
+ * An opaque handle representing a compute pass.
+ * This handle is transient and should not be held or referenced
+ * after SDL_EndGPUComputePass is called.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUComputePass SDL_GPUComputePass;
+
+/**
+ * An opaque handle representing a copy pass.
+ * This handle is transient and should not be held or referenced
+ * after SDL_EndGPUCopyPass is called.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUCopyPass SDL_GPUCopyPass;
+
+/**
+ * An opaque handle representing a fence.
+ *
+ * \since This struct is available since SDL 3.0.0
+ */
 typedef struct SDL_GPUFence SDL_GPUFence;
 
+/**
+ * Specifies the primitive topology of a graphics pipeline.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUPrimitiveType
 {
-    SDL_GPU_PRIMITIVETYPE_POINTLIST,
-    SDL_GPU_PRIMITIVETYPE_LINELIST,
-    SDL_GPU_PRIMITIVETYPE_LINESTRIP,
-    SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
-    SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP
+    SDL_GPU_PRIMITIVETYPE_POINTLIST,     /**< A series of separate points. */
+    SDL_GPU_PRIMITIVETYPE_LINELIST,      /**< A series of separate lines. */
+    SDL_GPU_PRIMITIVETYPE_LINESTRIP,     /**< A series of connected lines. */
+    SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,  /**< A series of separate triangles. */
+    SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP  /**< A series of connected triangles. */
 } SDL_GPUPrimitiveType;
 
+/**
+ * Specifies how the contents of a texture attached to a render pass
+ * are treated at the beginning of the render pass.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPULoadOp
 {
-    SDL_GPU_LOADOP_LOAD,
-    SDL_GPU_LOADOP_CLEAR,
-    SDL_GPU_LOADOP_DONT_CARE
+    SDL_GPU_LOADOP_LOAD,      /**< The previous contents of the texture will be preserved. */
+    SDL_GPU_LOADOP_CLEAR,     /**< The contents of the texture will be cleared to a color. */
+    SDL_GPU_LOADOP_DONT_CARE  /**< The previous contents of the texture need not be preserved. The contents will be undefined. */
 } SDL_GPULoadOp;
 
+/**
+ * Specifies how the contents of a texture attached to a render pass
+ * are treated at the end of the render pass.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUStoreOp
 {
-    SDL_GPU_STOREOP_STORE,
-    SDL_GPU_STOREOP_DONT_CARE
+    SDL_GPU_STOREOP_STORE,     /**< The contents generated during the render pass will be written to memory. */
+    SDL_GPU_STOREOP_DONT_CARE  /**< The contents generated during the render area are not needed and may be discarded. The contents will be undefined. */
 } SDL_GPUStoreOp;
 
+/**
+ * Specifies the size of elements in an index buffer.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUIndexElementSize
 {
-    SDL_GPU_INDEXELEMENTSIZE_16BIT,
-    SDL_GPU_INDEXELEMENTSIZE_32BIT
+    SDL_GPU_INDEXELEMENTSIZE_16BIT, /**< The index elements are 16-bit. */
+    SDL_GPU_INDEXELEMENTSIZE_32BIT  /**< The index elements are 32-bit. */
 } SDL_GPUIndexElementSize;
 
-/* Texture format support varies depending on driver, hardware, and usage flags.
+/**
+ * Specifies the pixel format of a texture.
+ *
+ * Texture format support varies depending on driver, hardware, and usage flags.
  * In general, you should use SDL_GPUTextureSupportsFormat to query if a format
  * is supported before using it. However, there are a few guaranteed formats.
  *
@@ -153,6 +278,8 @@ typedef enum SDL_GPUIndexElementSize
  *
  * Unless D16_UNORM is sufficient for your purposes, always check which
  * of D24/D32 is supported before creating a depth-stencil texture!
+ *
+ * \since This enum is available since SDL 3.0.0
  */
 typedef enum SDL_GPUTextureFormat
 {
@@ -228,31 +355,59 @@ typedef enum SDL_GPUTextureFormat
     SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT
 } SDL_GPUTextureFormat;
 
+/**
+ * Specifies how a texture is intended to be used by the client.
+ * A texture must have at least one usage flag.
+ *
+ * Note that some usage flag combinations are invalid.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef Uint32 SDL_GPUTextureUsageFlags;
 
-#define SDL_GPU_TEXTUREUSAGE_SAMPLER               (1u << 0) /**< texture supports sampling */
-#define SDL_GPU_TEXTUREUSAGE_COLOR_TARGET          (1u << 1) /**< texture is a color render target */
-#define SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET  (1u << 2) /**< texture is a depth stencil target */
-#define SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< texture supports storage reads in graphics stages */
-#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< texture supports storage reads in the compute stage */
-#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< texture supports storage writes in the compute stage */
+#define SDL_GPU_TEXTUREUSAGE_SAMPLER               (1u << 0) /**< Texture supports sampling. */
+#define SDL_GPU_TEXTUREUSAGE_COLOR_TARGET          (1u << 1) /**< Texture is a color render target. */
+#define SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET  (1u << 2) /**< Texture is a depth stencil target. */
+#define SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< Texture supports storage reads in graphics stages. */
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< Texture supports storage reads in the compute stage. */
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< Texture supports storage writes in the compute stage. */
 
+/**
+ * Specifies the type of a texture.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUTextureType
 {
-    SDL_GPU_TEXTURETYPE_2D,
-    SDL_GPU_TEXTURETYPE_2D_ARRAY,
-    SDL_GPU_TEXTURETYPE_3D,
-    SDL_GPU_TEXTURETYPE_CUBE
+    SDL_GPU_TEXTURETYPE_2D,        /**< The texture is a 2-dimensional image. */
+    SDL_GPU_TEXTURETYPE_2D_ARRAY,  /**< The texture is a 2-dimensional array image. */
+    SDL_GPU_TEXTURETYPE_3D,        /**< The texture is a 3-dimensional array image. */
+    SDL_GPU_TEXTURETYPE_CUBE       /**< The texture is a cube image. */
 } SDL_GPUTextureType;
 
+/**
+ * Specifies the sample count of a texture.
+ * Used in multisampling.
+ *
+ * Note that this value only applies when the texture is used
+ * as a render pass attachment.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUSampleCount
 {
-    SDL_GPU_SAMPLECOUNT_1,
-    SDL_GPU_SAMPLECOUNT_2,
-    SDL_GPU_SAMPLECOUNT_4,
-    SDL_GPU_SAMPLECOUNT_8
+    SDL_GPU_SAMPLECOUNT_1,  /**< No multisampling. */
+    SDL_GPU_SAMPLECOUNT_2,  /**< MSAA 2x */
+    SDL_GPU_SAMPLECOUNT_4,  /**< MSAA 4x */
+    SDL_GPU_SAMPLECOUNT_8   /**< MSAA 8x */
 } SDL_GPUSampleCount;
 
+
+/**
+ * Specifies the face of a cube map.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUCubeMapFace
 {
     SDL_GPU_CUBEMAPFACE_POSITIVEX,
@@ -263,36 +418,68 @@ typedef enum SDL_GPUCubeMapFace
     SDL_GPU_CUBEMAPFACE_NEGATIVEZ
 } SDL_GPUCubeMapFace;
 
+/**
+ * Specifies how a buffer is intended to be used by the client.
+ * A buffer must have at least one usage flag.
+ *
+ * Note that some usage flag combinations are invalid.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef Uint32 SDL_GPUBufferUsageFlags;
 
-#define SDL_GPU_BUFFERUSAGE_VERTEX                (1u << 0) /**< buffer is a vertex buffer */
-#define SDL_GPU_BUFFERUSAGE_INDEX                 (1u << 1) /**< buffer is an index buffer */
-#define SDL_GPU_BUFFERUSAGE_INDIRECT              (1u << 2) /**< buffer is an indirect buffer */
-#define SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< buffer supports storage reads in graphics stages */
-#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< buffer supports storage reads in the compute stage */
-#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< buffer supports storage writes in the compute stage */
+#define SDL_GPU_BUFFERUSAGE_VERTEX                (1u << 0) /**< Buffer is a vertex buffer. */
+#define SDL_GPU_BUFFERUSAGE_INDEX                 (1u << 1) /**< Buffer is an index buffer. */
+#define SDL_GPU_BUFFERUSAGE_INDIRECT              (1u << 2) /**< Buffer is an indirect buffer. */
+#define SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< Buffer supports storage reads in graphics stages. */
+#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< Buffer supports storage reads in the compute stage. */
+#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< Buffer supports storage writes in the compute stage. */
 
+/**
+ * Specifies how a transfer buffer is intended to be used by the client.
+ *
+ * Note that mapping and copying FROM an upload transfer buffer
+ * or TO a download transfer buffer is undefined behavior.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUTransferBufferUsage
 {
     SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
     SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD
 } SDL_GPUTransferBufferUsage;
 
+/**
+ * Specifies which stage a shader program corresponds to.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUShaderStage
 {
     SDL_GPU_SHADERSTAGE_VERTEX,
     SDL_GPU_SHADERSTAGE_FRAGMENT
 } SDL_GPUShaderStage;
 
+/**
+ * Specifies the format of shader code.
+ * Each format corresponds to a specific backend that accepts it.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef Uint32 SDL_GPUShaderFormat;
 
-#define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 0) /**< shaders for NDA'd platforms */
-#define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1) /**< SPIR-V shaders for Vulkan */
-#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_0 shaders for D3D11 */
-#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL shaders for D3D12 */
-#define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal */
-#define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< precompiled metallib shaders for Metal */
+#define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 0) /**< Shaders for NDA'd platforms. */
+#define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1) /**< SPIR-V shaders for Vulkan. */
+#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_0 shaders for D3D11. */
+#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL shaders for D3D12. */
+#define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal. */
+#define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< Precompiled metallib shaders for Metal. */
 
+/**
+ * Specifies the format of a vertex attribute.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUVertexElementFormat
 {
     /* 32-bit Signed Integers */
@@ -350,81 +537,139 @@ typedef enum SDL_GPUVertexElementFormat
     SDL_GPU_VERTEXELEMENTFORMAT_HALF4
 } SDL_GPUVertexElementFormat;
 
+/**
+ * Specifies the rate at which vertex attributes are pulled from buffers.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUVertexInputRate
 {
-    SDL_GPU_VERTEXINPUTRATE_VERTEX = 0,
-    SDL_GPU_VERTEXINPUTRATE_INSTANCE = 1
+    SDL_GPU_VERTEXINPUTRATE_VERTEX = 0,   /**< Attribute addressing is a function of the vertex index. */
+    SDL_GPU_VERTEXINPUTRATE_INSTANCE = 1  /**< Attribute addressing is a function of the instance index. */
 } SDL_GPUVertexInputRate;
 
+/**
+ * Specifies the fill mode of the graphics pipeline.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUFillMode
 {
-    SDL_GPU_FILLMODE_FILL,
-    SDL_GPU_FILLMODE_LINE
+    SDL_GPU_FILLMODE_FILL,  /**< Polygons will be rendered via rasterization. */
+    SDL_GPU_FILLMODE_LINE   /**< Polygon edges will be drawn as line segments. */
 } SDL_GPUFillMode;
 
+/**
+ * Specifies the facing direction in which triangle faces will be culled.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUCullMode
 {
-    SDL_GPU_CULLMODE_NONE,
-    SDL_GPU_CULLMODE_FRONT,
-    SDL_GPU_CULLMODE_BACK
+    SDL_GPU_CULLMODE_NONE,   /**< No triangles are culled. */
+    SDL_GPU_CULLMODE_FRONT,  /**< Front-facing triangles are culled. */
+    SDL_GPU_CULLMODE_BACK    /**< Back-facing triangles are culled. */
 } SDL_GPUCullMode;
 
+/**
+ * Specifies the vertex winding that will cause a triangle to be determined
+ * to be front-facing.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUFrontFace
 {
-    SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE,
-    SDL_GPU_FRONTFACE_CLOCKWISE
+    SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE,  /**< A triangle with counter-clockwise vertex winding will be considered front-facing. */
+    SDL_GPU_FRONTFACE_CLOCKWISE           /**< A triangle with clockwise winding vertex winding will be considered front-facing. */
 } SDL_GPUFrontFace;
 
+/**
+ * Specifies a comparison operator for depth, stencil and sampler operations.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUCompareOp
 {
-    SDL_GPU_COMPAREOP_NEVER,
-    SDL_GPU_COMPAREOP_LESS,
-    SDL_GPU_COMPAREOP_EQUAL,
-    SDL_GPU_COMPAREOP_LESS_OR_EQUAL,
-    SDL_GPU_COMPAREOP_GREATER,
-    SDL_GPU_COMPAREOP_NOT_EQUAL,
-    SDL_GPU_COMPAREOP_GREATER_OR_EQUAL,
-    SDL_GPU_COMPAREOP_ALWAYS
+    SDL_GPU_COMPAREOP_NEVER,             /**< The comparison always evaluates false. */
+    SDL_GPU_COMPAREOP_LESS,              /**< The comparison evaluates reference < test. */
+    SDL_GPU_COMPAREOP_EQUAL,             /**< The comparison evaluates reference == test. */
+    SDL_GPU_COMPAREOP_LESS_OR_EQUAL,     /**< The comparison evaluates reference <= test. */
+    SDL_GPU_COMPAREOP_GREATER,           /**< The comparison evaluates reference > test. */
+    SDL_GPU_COMPAREOP_NOT_EQUAL,         /**< The comparison evaluates reference != test. */
+    SDL_GPU_COMPAREOP_GREATER_OR_EQUAL,  /**< The comparison evalutes reference >= test. */
+    SDL_GPU_COMPAREOP_ALWAYS             /**< The comparison always evaluates true. */
 } SDL_GPUCompareOp;
 
+/**
+ * Specifies what happens to a stored stencil value if stencil tests fail or pass.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUStencilOp
 {
-    SDL_GPU_STENCILOP_KEEP,
-    SDL_GPU_STENCILOP_ZERO,
-    SDL_GPU_STENCILOP_REPLACE,
-    SDL_GPU_STENCILOP_INCREMENT_AND_CLAMP,
-    SDL_GPU_STENCILOP_DECREMENT_AND_CLAMP,
-    SDL_GPU_STENCILOP_INVERT,
-    SDL_GPU_STENCILOP_INCREMENT_AND_WRAP,
-    SDL_GPU_STENCILOP_DECREMENT_AND_WRAP
+    SDL_GPU_STENCILOP_KEEP,                 /**< Keeps the current value. */
+    SDL_GPU_STENCILOP_ZERO,                 /**< Sets the value to 0. */
+    SDL_GPU_STENCILOP_REPLACE,              /**< Sets the value to reference. */
+    SDL_GPU_STENCILOP_INCREMENT_AND_CLAMP,  /**< Increments the current value and clamps to the maximum value. */
+    SDL_GPU_STENCILOP_DECREMENT_AND_CLAMP,  /**< Decrements the current value and clamps to 0. */
+    SDL_GPU_STENCILOP_INVERT,               /**< Bitwise-inverts the current value. */
+    SDL_GPU_STENCILOP_INCREMENT_AND_WRAP,   /**< Increments the current value and wraps back to 0. */
+    SDL_GPU_STENCILOP_DECREMENT_AND_WRAP    /**< Decrements the current value and wraps to the maximum value. */
 } SDL_GPUStencilOp;
 
+/**
+ * Specifies the operator to be used when pixels in a render pass texture attachment
+ * are blended with existing pixels in the texture.
+ *
+ * Used alongside SDL_GPUBlendFactor.
+ *
+ * The source color is the value written by the fragment shader.
+ * The destination color is the value currently existing in the texture.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUBlendOp
 {
-    SDL_GPU_BLENDOP_ADD,
-    SDL_GPU_BLENDOP_SUBTRACT,
-    SDL_GPU_BLENDOP_REVERSE_SUBTRACT,
-    SDL_GPU_BLENDOP_MIN,
-    SDL_GPU_BLENDOP_MAX
+    SDL_GPU_BLENDOP_ADD,               /**< (source * source_factor) + (destination * destination_factor) */
+    SDL_GPU_BLENDOP_SUBTRACT,          /**< (source * source_factor) - (destination * destination_factor) */
+    SDL_GPU_BLENDOP_REVERSE_SUBTRACT,  /**< (destination * destination_factor) - (source * source_factor) */
+    SDL_GPU_BLENDOP_MIN,               /**< min(source, destination) */
+    SDL_GPU_BLENDOP_MAX                /**< max(source, destination) */
 } SDL_GPUBlendOp;
 
+/**
+ * Specifies a blending factor to be used when pixels in a render pass texture attachment
+ * are blended with existing pixels in the texture.
+ *
+ * Used alongside SDL_GPUBlendOp, which specifies how the blending factor will be combined.
+ *
+ * The source color is the value written by the fragment shader.
+ * The destination color is the value currently existing in the texture.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUBlendFactor
 {
-    SDL_GPU_BLENDFACTOR_ZERO,
-    SDL_GPU_BLENDFACTOR_ONE,
-    SDL_GPU_BLENDFACTOR_SRC_COLOR,
-    SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_COLOR,
-    SDL_GPU_BLENDFACTOR_DST_COLOR,
-    SDL_GPU_BLENDFACTOR_ONE_MINUS_DST_COLOR,
-    SDL_GPU_BLENDFACTOR_SRC_ALPHA,
-    SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
-    SDL_GPU_BLENDFACTOR_DST_ALPHA,
-    SDL_GPU_BLENDFACTOR_ONE_MINUS_DST_ALPHA,
-    SDL_GPU_BLENDFACTOR_CONSTANT_COLOR,
-    SDL_GPU_BLENDFACTOR_ONE_MINUS_CONSTANT_COLOR,
-    SDL_GPU_BLENDFACTOR_SRC_ALPHA_SATURATE
+    SDL_GPU_BLENDFACTOR_ZERO,                      /**< 0 */
+    SDL_GPU_BLENDFACTOR_ONE,                       /**< 1 */
+    SDL_GPU_BLENDFACTOR_SRC_COLOR,                 /**< source color */
+    SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_COLOR,       /**< 1 - source color */
+    SDL_GPU_BLENDFACTOR_DST_COLOR,                 /**< destination color */
+    SDL_GPU_BLENDFACTOR_ONE_MINUS_DST_COLOR,       /**< 1 - destination color */
+    SDL_GPU_BLENDFACTOR_SRC_ALPHA,                 /**< source alpha */
+    SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,       /**< 1 - source alpha */
+    SDL_GPU_BLENDFACTOR_DST_ALPHA,                 /**< destination alpha */
+    SDL_GPU_BLENDFACTOR_ONE_MINUS_DST_ALPHA,       /**< 1 - destination alpha */
+    SDL_GPU_BLENDFACTOR_CONSTANT_COLOR,            /**< blend constant */
+    SDL_GPU_BLENDFACTOR_ONE_MINUS_CONSTANT_COLOR,  /**< 1 - blend constant */
+    SDL_GPU_BLENDFACTOR_SRC_ALPHA_SATURATE         /**< min(source alpha, 1 - destination alpha) */
 } SDL_GPUBlendFactor;
 
+/**
+ * Specifies which color components are written in a render pass.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef Uint8 SDL_GPUColorComponentFlags;
 
 #define SDL_GPU_COLORCOMPONENT_R (1u << 0) /**< the red component */
@@ -432,28 +677,52 @@ typedef Uint8 SDL_GPUColorComponentFlags;
 #define SDL_GPU_COLORCOMPONENT_B (1u << 2) /**< the blue component */
 #define SDL_GPU_COLORCOMPONENT_A (1u << 3) /**< the alpha component */
 
+/**
+ * Specifies a filter operation used by a sampler.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUFilter
 {
-    SDL_GPU_FILTER_NEAREST,
-    SDL_GPU_FILTER_LINEAR
+    SDL_GPU_FILTER_NEAREST,  /**< Point filtering. */
+    SDL_GPU_FILTER_LINEAR    /**< Linear filtering. */
 } SDL_GPUFilter;
 
+/**
+ * Specifies a mipmap mode used by a sampler.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUSamplerMipmapMode
 {
-    SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
-    SDL_GPU_SAMPLERMIPMAPMODE_LINEAR
+    SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,  /**< Point filtering. */
+    SDL_GPU_SAMPLERMIPMAPMODE_LINEAR    /**< Linear filtering. */
 } SDL_GPUSamplerMipmapMode;
 
+/**
+ * Specifies behavior of texture sampling when the coordinates exceed the 0-1 range.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUSamplerAddressMode
 {
-    SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
-    SDL_GPU_SAMPLERADDRESSMODE_MIRRORED_REPEAT,
-    SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
+    SDL_GPU_SAMPLERADDRESSMODE_REPEAT,           /**< Specifies that the coordinates will wrap around. */
+    SDL_GPU_SAMPLERADDRESSMODE_MIRRORED_REPEAT,  /**< Specifies that the coordinates will wrap around mirrored. */
+    SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE     /**< Specifies that the coordinates will clamp to the 0-1 range. */
 } SDL_GPUSamplerAddressMode;
 
-/*
+/**
+ * Specifies the timing that will be used to present swapchain textures to the OS.
+ * Note that this value affects the behavior of SDL_AcquireGPUSwapchainTexture.
+ *
+ * VSYNC mode will always be supported.
+ * IMMEDIATE and MAILBOX modes may not be supported on certain systems.
+ *
+ * It is recommended to query SDL_WindowSupportsGPUPresentMode after claiming the window
+ * if you wish to change the present mode to IMMEDIATE or MAILBOX.
+ *
  * VSYNC:
- *   Waits for vblank before presenting.
+ *   Waits for vblank before presenting. No tearing is possible.
  *   If there is a pending image to present, the new image is enqueued for presentation.
  *   Disallows tearing at the cost of visual latency.
  *   When using this present mode, AcquireSwapchainTexture will block if too many frames are in flight.
@@ -466,6 +735,8 @@ typedef enum SDL_GPUSamplerAddressMode
  *   If there is a pending image to present, the pending image is replaced by the new image.
  *   Similar to VSYNC, but with reduced visual latency.
  *   When using this mode, AcquireSwapchainTexture will return NULL if too many frames are in flight.
+ *
+ * \since This enum is available since SDL 3.0.0
  */
 typedef enum SDL_GPUPresentMode
 {
@@ -474,15 +745,25 @@ typedef enum SDL_GPUPresentMode
     SDL_GPU_PRESENTMODE_MAILBOX
 } SDL_GPUPresentMode;
 
-/*
+/**
+ * Specifies the texture format and colorspace of the swapchain textures.
+ *
+ * SDR will always be supported.
+ * Other compositions may not be supported on certain systems.
+ *
+ * It is recommended to query SDL_WindowSupportsGPUSwapchainComposition after claiming the window
+ * if you wish to change the swapchain composition from SDR.
+ *
  * SDR:
- *   B8G8R8A8 or R8G8B8A8 swapchain. Pixel values are in nonlinear sRGB encoding. Blends raw pixel values.
+ *   B8G8R8A8 or R8G8B8A8 swapchain. Pixel values are in nonlinear sRGB encoding.
  * SDR_LINEAR:
- *   B8G8R8A8_SRGB or R8G8B8A8_SRGB swapchain. Pixel values are in nonlinear sRGB encoding. Blends in linear space.
+ *   B8G8R8A8_SRGB or R8G8B8A8_SRGB swapchain. Pixel values are in nonlinear sRGB encoding.
  * HDR_EXTENDED_LINEAR:
- *   R16G16B16A16_SFLOAT swapchain. Pixel values are in extended linear encoding. Blends in linear space.
+ *   R16G16B16A16_SFLOAT swapchain. Pixel values are in extended linear encoding.
  * HDR10_ST2048:
- *   A2R10G10B10 or A2B10G10R10 swapchain. Pixel values are in PQ ST2048 encoding. Blends raw pixel values. (TODO: verify this)
+ *   A2R10G10B10 or A2B10G10R10 swapchain. Pixel values are in PQ ST2048 encoding.
+ *
+ * \since This enum is available since SDL 3.0.0
  */
 typedef enum SDL_GPUSwapchainComposition
 {
@@ -492,6 +773,12 @@ typedef enum SDL_GPUSwapchainComposition
     SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048
 } SDL_GPUSwapchainComposition;
 
+/**
+ * Specifies a backend API supported by SDL_GPU.
+ * Only one of these will be in use at a time.
+ *
+ * \since This enum is available since SDL 3.0.0
+ */
 typedef enum SDL_GPUDriver
 {
     SDL_GPU_DRIVER_INVALID = -1,
@@ -1429,22 +1716,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUShader(
 extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUGraphicsPipeline(
     SDL_GPUDevice *device,
     SDL_GPUGraphicsPipeline *graphicsPipeline);
-
-/*
- * COMMAND BUFFERS
- *
- * Render state is managed via command buffers.
- * When setting render state, that state is always local to the command buffer.
- *
- * Commands only begin execution on the GPU once Submit is called.
- * Once the command buffer is submitted, it is no longer valid to use it.
- *
- * Command buffers are executed in submission order. If you submit command buffer A and then command buffer B
- * all commands in A will begin executing before any command in B begins executing.
- *
- * In multi-threading scenarios, you should acquire and submit a command buffer on the same thread.
- * As long as you satisfy this requirement, all functionality related to command buffers is thread-safe.
- */
 
 /**
  * Acquire a command buffer.
