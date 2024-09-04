@@ -945,7 +945,7 @@ static void METAL_ReleaseGraphicsPipeline(
 
 static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
     SDL_GPURenderer *driverData,
-    SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo)
+    const SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo)
 {
     @autoreleasepool {
         MetalRenderer *renderer = (MetalRenderer *)driverData;
@@ -990,7 +990,7 @@ static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
 
 static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
     SDL_GPURenderer *driverData,
-    SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo)
+    const SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo)
 {
     @autoreleasepool {
         MetalRenderer *renderer = (MetalRenderer *)driverData;
@@ -1244,7 +1244,7 @@ static void METAL_PopDebugGroup(
 
 static SDL_GPUSampler *METAL_CreateSampler(
     SDL_GPURenderer *driverData,
-    SDL_GPUSamplerCreateInfo *samplerCreateInfo)
+    const SDL_GPUSamplerCreateInfo *samplerCreateInfo)
 {
     @autoreleasepool {
         MetalRenderer *renderer = (MetalRenderer *)driverData;
@@ -1278,7 +1278,7 @@ static SDL_GPUSampler *METAL_CreateSampler(
 
 static SDL_GPUShader *METAL_CreateShader(
     SDL_GPURenderer *driverData,
-    SDL_GPUShaderCreateInfo *shaderCreateInfo)
+    const SDL_GPUShaderCreateInfo *shaderCreateInfo)
 {
     @autoreleasepool {
         MetalLibraryFunction libraryFunction;
@@ -1309,7 +1309,7 @@ static SDL_GPUShader *METAL_CreateShader(
 // This function assumes that it's called from within an autorelease pool
 static MetalTexture *METAL_INTERNAL_CreateTexture(
     MetalRenderer *renderer,
-    SDL_GPUTextureCreateInfo *textureCreateInfo)
+    const SDL_GPUTextureCreateInfo *textureCreateInfo)
 {
     MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor new];
     id<MTLTexture> texture;
@@ -1667,8 +1667,8 @@ static void METAL_BeginCopyPass(
 
 static void METAL_UploadToTexture(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUTextureTransferInfo *source,
-    SDL_GPUTextureRegion *destination,
+    const SDL_GPUTextureTransferInfo *source,
+    const SDL_GPUTextureRegion *destination,
     bool cycle)
 {
     @autoreleasepool {
@@ -1697,8 +1697,8 @@ static void METAL_UploadToTexture(
 
 static void METAL_UploadToBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUTransferBufferLocation *source,
-    SDL_GPUBufferRegion *destination,
+    const SDL_GPUTransferBufferLocation *source,
+    const SDL_GPUBufferRegion *destination,
     bool cycle)
 {
     @autoreleasepool {
@@ -1726,8 +1726,8 @@ static void METAL_UploadToBuffer(
 
 static void METAL_CopyTextureToTexture(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUTextureLocation *source,
-    SDL_GPUTextureLocation *destination,
+    const SDL_GPUTextureLocation *source,
+    const SDL_GPUTextureLocation *destination,
     Uint32 w,
     Uint32 h,
     Uint32 d,
@@ -1763,8 +1763,8 @@ static void METAL_CopyTextureToTexture(
 
 static void METAL_CopyBufferToBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBufferLocation *source,
-    SDL_GPUBufferLocation *destination,
+    const SDL_GPUBufferLocation *source,
+    const SDL_GPUBufferLocation *destination,
     Uint32 size,
     bool cycle)
 {
@@ -1794,8 +1794,8 @@ static void METAL_CopyBufferToBuffer(
 
 static void METAL_DownloadFromTexture(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUTextureRegion *source,
-    SDL_GPUTextureTransferInfo *destination)
+    const SDL_GPUTextureRegion *source,
+    const SDL_GPUTextureTransferInfo *destination)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -1848,8 +1848,8 @@ static void METAL_DownloadFromTexture(
 
 static void METAL_DownloadFromBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBufferRegion *source,
-    SDL_GPUTransferBufferLocation *destination)
+    const SDL_GPUBufferRegion *source,
+    const SDL_GPUTransferBufferLocation *destination)
 {
     SDL_GPUBufferLocation sourceLocation;
     sourceLocation.buffer = source->buffer;
@@ -2089,9 +2089,9 @@ static void METAL_INTERNAL_ReturnUniformBufferToPool(
 
 static void METAL_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
+    const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
+    const SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2276,7 +2276,7 @@ static void METAL_BindGraphicsPipeline(
 
 static void METAL_SetViewport(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUViewport *viewport)
+    const SDL_GPUViewport *viewport)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2295,7 +2295,7 @@ static void METAL_SetViewport(
 
 static void METAL_SetScissor(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_Rect *scissor)
+    const SDL_Rect *scissor)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2313,7 +2313,7 @@ static void METAL_SetScissor(
 static void METAL_BindVertexBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstBinding,
-    SDL_GPUBufferBinding *pBindings,
+    const SDL_GPUBufferBinding *pBindings,
     Uint32 bindingCount)
 {
     @autoreleasepool {
@@ -2340,7 +2340,7 @@ static void METAL_BindVertexBuffers(
 
 static void METAL_BindIndexBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBufferBinding *pBinding,
+    const SDL_GPUBufferBinding *pBinding,
     SDL_GPUIndexElementSize indexElementSize)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2380,7 +2380,7 @@ static void METAL_BindVertexSamplers(
 static void METAL_BindVertexStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2403,7 +2403,7 @@ static void METAL_BindVertexStorageTextures(
 static void METAL_BindVertexStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2426,7 +2426,7 @@ static void METAL_BindVertexStorageBuffers(
 static void METAL_BindFragmentSamplers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+    const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2452,7 +2452,7 @@ static void METAL_BindFragmentSamplers(
 static void METAL_BindFragmentStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2475,7 +2475,7 @@ static void METAL_BindFragmentStorageTextures(
 static void METAL_BindFragmentStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2883,8 +2883,8 @@ static void METAL_PushFragmentUniformData(
 
 static void METAL_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBlitRegion *source,
-    SDL_GPUBlitRegion *destination,
+    const SDL_GPUBlitRegion *source,
+    const SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filterMode,
     bool cycle)
@@ -2915,9 +2915,9 @@ static void METAL_Blit(
 
 static void METAL_BeginComputePass(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
+    const SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
     Uint32 storageTextureBindingCount,
-    SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
+    const SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
     Uint32 storageBufferBindingCount)
 {
     @autoreleasepool {
@@ -2993,7 +2993,7 @@ static void METAL_BindComputePipeline(
 static void METAL_BindComputeStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -3016,7 +3016,7 @@ static void METAL_BindComputeStorageTextures(
 static void METAL_BindComputeStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -3284,7 +3284,7 @@ static void METAL_INTERNAL_PerformPendingDestroys(
 static void METAL_WaitForFences(
     SDL_GPURenderer *driverData,
     bool waitAll,
-    SDL_GPUFence **pFences,
+    SDL_GPUFence *const *pFences,
     Uint32 fenceCount)
 {
     @autoreleasepool {
