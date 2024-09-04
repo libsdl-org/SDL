@@ -1075,7 +1075,7 @@ extern SDL_DECLSPEC SDL_GPUDriver SDLCALL SDL_GetGPUDriver(SDL_GPUDevice *device
  */
 extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline(
     SDL_GPUDevice *device,
-    SDL_GPUComputePipelineCreateInfo *computePipelineCreateInfo);
+    const SDL_GPUComputePipelineCreateInfo *computePipelineCreateInfo);
 
 /**
  * Creates a pipeline object to be used in a graphics workflow.
@@ -1093,7 +1093,7 @@ extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline
  */
 extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeline(
     SDL_GPUDevice *device,
-    SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo);
+    const SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo);
 
 /**
  * Creates a sampler object to be used when binding textures in a graphics
@@ -1112,7 +1112,7 @@ extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeli
  */
 extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
     SDL_GPUDevice *device,
-    SDL_GPUSamplerCreateInfo *samplerCreateInfo);
+    const SDL_GPUSamplerCreateInfo *samplerCreateInfo);
 
 /**
  * Creates a shader to be used when creating a graphics pipeline.
@@ -1159,7 +1159,7 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
  */
 extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
     SDL_GPUDevice *device,
-    SDL_GPUShaderCreateInfo *shaderCreateInfo);
+    const SDL_GPUShaderCreateInfo *shaderCreateInfo);
 
 /**
  * Creates a texture object to be used in graphics or compute workflows.
@@ -1194,7 +1194,7 @@ extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
  */
 extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
     SDL_GPUDevice *device,
-    SDL_GPUTextureCreateInfo *textureCreateInfo);
+    const SDL_GPUTextureCreateInfo *textureCreateInfo);
 
 /**
  * Creates a buffer object to be used in graphics or compute workflows.
@@ -1222,7 +1222,7 @@ extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
  */
 extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
     SDL_GPUDevice *device,
-    SDL_GPUBufferCreateInfo *bufferCreateInfo);
+    const SDL_GPUBufferCreateInfo *bufferCreateInfo);
 
 /**
  * Creates a transfer buffer to be used when uploading to or downloading from
@@ -1243,7 +1243,7 @@ extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
  */
 extern SDL_DECLSPEC SDL_GPUTransferBuffer *SDLCALL SDL_CreateGPUTransferBuffer(
     SDL_GPUDevice *device,
-    SDL_GPUTransferBufferCreateInfo *transferBufferCreateInfo);
+    const SDL_GPUTransferBufferCreateInfo *transferBufferCreateInfo);
 
 /* Debug Naming */
 
@@ -1607,9 +1607,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUComputeUniformData(
  */
 extern SDL_DECLSPEC SDL_GPURenderPass *SDLCALL SDL_BeginGPURenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
+    const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo);
+    const SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo);
 
 /**
  * Binds a graphics pipeline on a render pass to be used in rendering.
@@ -1635,7 +1635,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUGraphicsPipeline(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetGPUViewport(
     SDL_GPURenderPass *renderPass,
-    SDL_GPUViewport *viewport);
+    const SDL_GPUViewport *viewport);
 
 /**
  * Sets the current scissor state on a command buffer.
@@ -1647,7 +1647,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUViewport(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetGPUScissor(
     SDL_GPURenderPass *renderPass,
-    SDL_Rect *scissor);
+    const SDL_Rect *scissor);
 
 /**
  * Binds vertex buffers on a command buffer for use with subsequent draw
@@ -1664,7 +1664,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUScissor(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstBinding,
-    SDL_GPUBufferBinding *pBindings,
+    const SDL_GPUBufferBinding *pBindings,
     Uint32 bindingCount);
 
 /**
@@ -1681,7 +1681,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexBuffers(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUIndexBuffer(
     SDL_GPURenderPass *renderPass,
-    SDL_GPUBufferBinding *pBinding,
+    const SDL_GPUBufferBinding *pBinding,
     SDL_GPUIndexElementSize indexElementSize);
 
 /**
@@ -1700,7 +1700,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUIndexBuffer(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexSamplers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+    const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount);
 
 /**
@@ -1719,7 +1719,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexSamplers(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageTextures(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount);
 
 /**
@@ -1738,7 +1738,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageTextures(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount);
 
 /**
@@ -1757,7 +1757,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageBuffers(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentSamplers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+    const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount);
 
 /**
@@ -1776,7 +1776,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentSamplers(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageTextures(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount);
 
 /**
@@ -1795,7 +1795,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageTextures(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageBuffers(
     SDL_GPURenderPass *renderPass,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount);
 
 /* Drawing */
@@ -1949,9 +1949,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPURenderPass(
  */
 extern SDL_DECLSPEC SDL_GPUComputePass *SDLCALL SDL_BeginGPUComputePass(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
+    const SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
     Uint32 storageTextureBindingCount,
-    SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
+    const SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
     Uint32 storageBufferBindingCount);
 
 /**
@@ -1982,7 +1982,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputePipeline(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
     SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount);
 
 /**
@@ -2001,7 +2001,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageBuffers(
     SDL_GPUComputePass *computePass,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount);
 
 /**
@@ -2133,8 +2133,8 @@ extern SDL_DECLSPEC SDL_GPUCopyPass *SDLCALL SDL_BeginGPUCopyPass(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUTexture(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUTextureTransferInfo *source,
-    SDL_GPUTextureRegion *destination,
+    const SDL_GPUTextureTransferInfo *source,
+    const SDL_GPUTextureRegion *destination,
     SDL_bool cycle);
 
 /* Uploads data from a TransferBuffer to a Buffer. */
@@ -2155,8 +2155,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUTexture(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUBuffer(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUTransferBufferLocation *source,
-    SDL_GPUBufferRegion *destination,
+    const SDL_GPUTransferBufferLocation *source,
+    const SDL_GPUBufferRegion *destination,
     SDL_bool cycle);
 
 /**
@@ -2178,8 +2178,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUBuffer(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUTextureToTexture(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUTextureLocation *source,
-    SDL_GPUTextureLocation *destination,
+    const SDL_GPUTextureLocation *source,
+    const SDL_GPUTextureLocation *destination,
     Uint32 w,
     Uint32 h,
     Uint32 d,
@@ -2204,8 +2204,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUTextureToTexture(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUBufferToBuffer(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUBufferLocation *source,
-    SDL_GPUBufferLocation *destination,
+    const SDL_GPUBufferLocation *source,
+    const SDL_GPUBufferLocation *destination,
     Uint32 size,
     SDL_bool cycle);
 
@@ -2224,8 +2224,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUBufferToBuffer(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DownloadFromGPUTexture(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUTextureRegion *source,
-    SDL_GPUTextureTransferInfo *destination);
+    const SDL_GPUTextureRegion *source,
+    const SDL_GPUTextureTransferInfo *destination);
 
 /**
  * Copies data from a buffer to a transfer buffer on the GPU timeline.
@@ -2241,8 +2241,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DownloadFromGPUTexture(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DownloadFromGPUBuffer(
     SDL_GPUCopyPass *copyPass,
-    SDL_GPUBufferRegion *source,
-    SDL_GPUTransferBufferLocation *destination);
+    const SDL_GPUBufferRegion *source,
+    const SDL_GPUTransferBufferLocation *destination);
 
 /**
  * Ends the current copy pass.
@@ -2285,8 +2285,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GenerateMipmapsForGPUTexture(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_BlitGPUTexture(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBlitRegion *source,
-    SDL_GPUBlitRegion *destination,
+    const SDL_GPUBlitRegion *source,
+    const SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filterMode,
     SDL_bool cycle);
@@ -2515,7 +2515,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitForGPUIdle(
 extern SDL_DECLSPEC void SDLCALL SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     SDL_bool waitAll,
-    SDL_GPUFence **pFences,
+    SDL_GPUFence *const *pFences,
     Uint32 fenceCount);
 
 /**

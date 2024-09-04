@@ -360,7 +360,7 @@ static D3D11_TEXTURE_ADDRESS_MODE SDLToD3D11_SamplerAddressMode[] = {
     D3D11_TEXTURE_ADDRESS_CLAMP   // CLAMP_TO_EDGE
 };
 
-static D3D11_FILTER SDLToD3D11_Filter(SDL_GPUSamplerCreateInfo *createInfo)
+static D3D11_FILTER SDLToD3D11_Filter(const SDL_GPUSamplerCreateInfo *createInfo)
 {
     if (createInfo->minFilter == SDL_GPU_FILTER_LINEAR) {
         if (createInfo->magFilter == SDL_GPU_FILTER_LINEAR) {
@@ -459,7 +459,7 @@ typedef struct D3D11WindowData
     SDL_GPUSwapchainComposition swapchainComposition;
     DXGI_FORMAT swapchainFormat;
     DXGI_COLOR_SPACE_TYPE swapchainColorSpace;
-    D3D11Fence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
+    SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
     Uint32 frameCounter;
 } D3D11WindowData;
 
@@ -1490,7 +1490,7 @@ static ID3D11DeviceChild *D3D11_INTERNAL_CreateID3D11Shader(
 
 static SDL_GPUComputePipeline *D3D11_CreateComputePipeline(
     SDL_GPURenderer *driverData,
-    SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo)
+    const SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     ID3D11ComputeShader *shader;
@@ -1523,7 +1523,7 @@ static SDL_GPUComputePipeline *D3D11_CreateComputePipeline(
 
 static SDL_GPUGraphicsPipeline *D3D11_CreateGraphicsPipeline(
     SDL_GPURenderer *driverData,
-    SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo)
+    const SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     D3D11Shader *vertShader = (D3D11Shader *)pipelineCreateInfo->vertexShader;
@@ -1787,7 +1787,7 @@ static void D3D11_PopDebugGroup(
 
 static SDL_GPUSampler *D3D11_CreateSampler(
     SDL_GPURenderer *driverData,
-    SDL_GPUSamplerCreateInfo *samplerCreateInfo)
+    const SDL_GPUSamplerCreateInfo *samplerCreateInfo)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     D3D11_SAMPLER_DESC samplerDesc;
@@ -1820,7 +1820,7 @@ static SDL_GPUSampler *D3D11_CreateSampler(
 
 SDL_GPUShader *D3D11_CreateShader(
     SDL_GPURenderer *driverData,
-    SDL_GPUShaderCreateInfo *shaderCreateInfo)
+    const SDL_GPUShaderCreateInfo *shaderCreateInfo)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     ID3D11DeviceChild *handle;
@@ -1857,7 +1857,7 @@ SDL_GPUShader *D3D11_CreateShader(
 
 static D3D11Texture *D3D11_INTERNAL_CreateTexture(
     D3D11Renderer *renderer,
-    SDL_GPUTextureCreateInfo *createInfo,
+    const SDL_GPUTextureCreateInfo *createInfo,
     D3D11_SUBRESOURCE_DATA *initialData)
 {
     Uint8 needsSRV, isColorTarget, isDepthStencil, isMultisample, isStaging, needSubresourceUAV, isMippable;
@@ -2188,7 +2188,7 @@ static bool D3D11_SupportsSampleCount(
 
 static SDL_GPUTexture *D3D11_CreateTexture(
     SDL_GPURenderer *driverData,
-    SDL_GPUTextureCreateInfo *textureCreateInfo)
+    const SDL_GPUTextureCreateInfo *textureCreateInfo)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     D3D11TextureContainer *container;
@@ -2642,8 +2642,8 @@ static void D3D11_BeginCopyPass(
 
 static void D3D11_UploadToTexture(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUTextureTransferInfo *source,
-    SDL_GPUTextureRegion *destination,
+    const SDL_GPUTextureTransferInfo *source,
+    const SDL_GPUTextureRegion *destination,
     bool cycle)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -2732,8 +2732,8 @@ static void D3D11_UploadToTexture(
 
 static void D3D11_UploadToBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUTransferBufferLocation *source,
-    SDL_GPUBufferRegion *destination,
+    const SDL_GPUTransferBufferLocation *source,
+    const SDL_GPUBufferRegion *destination,
     bool cycle)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -2789,8 +2789,8 @@ static void D3D11_UploadToBuffer(
 
 static void D3D11_DownloadFromTexture(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUTextureRegion *source,
-    SDL_GPUTextureTransferInfo *destination)
+    const SDL_GPUTextureRegion *source,
+    const SDL_GPUTextureTransferInfo *destination)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = d3d11CommandBuffer->renderer;
@@ -2894,8 +2894,8 @@ static void D3D11_DownloadFromTexture(
 
 static void D3D11_DownloadFromBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBufferRegion *source,
-    SDL_GPUTransferBufferLocation *destination)
+    const SDL_GPUBufferRegion *source,
+    const SDL_GPUTransferBufferLocation *destination)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = d3d11CommandBuffer->renderer;
@@ -2952,8 +2952,8 @@ static void D3D11_DownloadFromBuffer(
 
 static void D3D11_CopyTextureToTexture(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUTextureLocation *source,
-    SDL_GPUTextureLocation *destination,
+    const SDL_GPUTextureLocation *source,
+    const SDL_GPUTextureLocation *destination,
     Uint32 w,
     Uint32 h,
     Uint32 d,
@@ -2995,8 +2995,8 @@ static void D3D11_CopyTextureToTexture(
 
 static void D3D11_CopyBufferToBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBufferLocation *source,
-    SDL_GPUBufferLocation *destination,
+    const SDL_GPUBufferLocation *source,
+    const SDL_GPUBufferLocation *destination,
     Uint32 size,
     bool cycle)
 {
@@ -3387,9 +3387,9 @@ static void D3D11_INTERNAL_PushUniformData(
 
 static void D3D11_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
+    const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
     Uint32 colorAttachmentCount,
-    SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
+    const SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
@@ -3615,7 +3615,7 @@ static void D3D11_BindGraphicsPipeline(
 
 static void D3D11_SetViewport(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUViewport *viewport)
+    const SDL_GPUViewport *viewport)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11_VIEWPORT vp = {
@@ -3635,7 +3635,7 @@ static void D3D11_SetViewport(
 
 static void D3D11_SetScissor(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_Rect *scissor)
+    const SDL_Rect *scissor)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11_RECT rect = {
@@ -3654,7 +3654,7 @@ static void D3D11_SetScissor(
 static void D3D11_BindVertexBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstBinding,
-    SDL_GPUBufferBinding *pBindings,
+    const SDL_GPUBufferBinding *pBindings,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3674,7 +3674,7 @@ static void D3D11_BindVertexBuffers(
 
 static void D3D11_BindIndexBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBufferBinding *pBinding,
+    const SDL_GPUBufferBinding *pBinding,
     SDL_GPUIndexElementSize indexElementSize)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3692,7 +3692,7 @@ static void D3D11_BindIndexBuffer(
 static void D3D11_BindVertexSamplers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+    const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3718,7 +3718,7 @@ static void D3D11_BindVertexSamplers(
 static void D3D11_BindVertexStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3740,7 +3740,7 @@ static void D3D11_BindVertexStorageTextures(
 static void D3D11_BindVertexStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3765,7 +3765,7 @@ static void D3D11_BindVertexStorageBuffers(
 static void D3D11_BindFragmentSamplers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+    const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3791,7 +3791,7 @@ static void D3D11_BindFragmentSamplers(
 static void D3D11_BindFragmentStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3813,7 +3813,7 @@ static void D3D11_BindFragmentStorageTextures(
 static void D3D11_BindFragmentStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -4123,8 +4123,8 @@ static void D3D11_PushFragmentUniformData(
 
 static void D3D11_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBlitRegion *source,
-    SDL_GPUBlitRegion *destination,
+    const SDL_GPUBlitRegion *source,
+    const SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filterMode,
     bool cycle)
@@ -4156,9 +4156,9 @@ static void D3D11_Blit(
 
 static void D3D11_BeginComputePass(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
+    const SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
     Uint32 storageTextureBindingCount,
-    SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
+    const SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
     Uint32 storageBufferBindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -4235,7 +4235,7 @@ static void D3D11_BindComputePipeline(
 static void D3D11_BindComputeStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUTexture **storageTextures,
+    SDL_GPUTexture *const *storageTextures,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -4257,7 +4257,7 @@ static void D3D11_BindComputeStorageTextures(
 static void D3D11_BindComputeStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
-    SDL_GPUBuffer **storageBuffers,
+    SDL_GPUBuffer *const *storageBuffers,
     Uint32 bindingCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -4695,7 +4695,7 @@ static void D3D11_INTERNAL_WaitForFence(
 static void D3D11_WaitForFences(
     SDL_GPURenderer *driverData,
     bool waitAll,
-    SDL_GPUFence **pFences,
+    SDL_GPUFence *const *pFences,
     Uint32 fenceCount)
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
@@ -5175,7 +5175,7 @@ static void D3D11_INTERNAL_DestroySwapchain(
         if (windowData->inFlightFences[i] != NULL) {
             D3D11_ReleaseFence(
                 (SDL_GPURenderer *)renderer,
-                (SDL_GPUFence *)windowData->inFlightFences[i]);
+                windowData->inFlightFences[i]);
         }
     }
 }
@@ -5247,12 +5247,12 @@ static SDL_GPUTexture *D3D11_AcquireSwapchainTexture(
             D3D11_WaitForFences(
                 (SDL_GPURenderer *)renderer,
                 true,
-                (SDL_GPUFence **)&windowData->inFlightFences[windowData->frameCounter],
+                &windowData->inFlightFences[windowData->frameCounter],
                 1);
         } else {
             if (!D3D11_QueryFence(
                     (SDL_GPURenderer *)d3d11CommandBuffer->renderer,
-                    (SDL_GPUFence *)windowData->inFlightFences[windowData->frameCounter])) {
+                    windowData->inFlightFences[windowData->frameCounter])) {
                 /*
                  * In MAILBOX or IMMEDIATE mode, if the least recent fence is not signaled,
                  * return NULL to indicate that rendering should be skipped
@@ -5263,7 +5263,7 @@ static SDL_GPUTexture *D3D11_AcquireSwapchainTexture(
 
         D3D11_ReleaseFence(
             (SDL_GPURenderer *)d3d11CommandBuffer->renderer,
-            (SDL_GPUFence *)windowData->inFlightFences[windowData->frameCounter]);
+            windowData->inFlightFences[windowData->frameCounter]);
 
         windowData->inFlightFences[windowData->frameCounter] = NULL;
     }
@@ -5447,7 +5447,7 @@ static void D3D11_Submit(
 
         ID3D11Texture2D_Release(windowData->texture.handle);
 
-        windowData->inFlightFences[windowData->frameCounter] = d3d11CommandBuffer->fence;
+        windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence*)d3d11CommandBuffer->fence;
 
         (void)SDL_AtomicIncRef(&d3d11CommandBuffer->fence->referenceCount);
 
