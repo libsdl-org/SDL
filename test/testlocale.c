@@ -63,7 +63,7 @@ int main(int argc, char **argv)
         if (consumed <= 0) {
             static const char *options[] = { "[--listen]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
-            exit(1);
+            return 1;
         }
 
         i += consumed;
