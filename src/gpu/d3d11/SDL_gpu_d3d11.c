@@ -4123,8 +4123,8 @@ static void D3D11_PushFragmentUniformData(
 
 static void D3D11_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
-    SDL_GPUBlitRegion *source,
-    SDL_GPUBlitRegion *destination,
+    const SDL_GPUBlitRegion *source,
+    const SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filterMode,
     bool cycle)
