@@ -273,7 +273,7 @@ static bool OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
     // Update the fragment size as size in bytes
     SDL_UpdatedAudioDeviceFormat(device);
 
-    LOGI("Try to open %u hz %u bit chan %u %s samples %u",
+    LOGI("Try to open %u hz %u bit %u channels %s samples %u",
          device->spec.freq, SDL_AUDIO_BITSIZE(device->spec.format),
          device->spec.channels, (device->spec.format & 0x1000) ? "BE" : "LE", device->sample_frames);
 
@@ -453,7 +453,7 @@ static bool OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
     // Update the fragment size as size in bytes
     SDL_UpdatedAudioDeviceFormat(device);
 
-    LOGI("Try to open %u hz %s %u bit chan %u %s samples %u",
+    LOGI("Try to open %u hz %s %u bit %u channels %s samples %u",
          device->spec.freq, SDL_AUDIO_ISFLOAT(device->spec.format) ? "float" : "pcm", SDL_AUDIO_BITSIZE(device->spec.format),
          device->spec.channels, (device->spec.format & 0x1000) ? "BE" : "LE", device->sample_frames);
 
