@@ -1172,9 +1172,8 @@ extern DECLSPEC void SDLCALL SDL_MixAudio(Uint8 * dst, const Uint8 * src,
  * \param format the SDL_AudioFormat structure representing the desired audio
  *               format.
  * \param len the length of the audio buffer in bytes.
- * \param volume ranges from -128 - ∞ (at -128, the volume is at 0%, at 0 -
- *               100% and the higher the number, the bigger the %), and should
- *               be set to SDL_MIX_MAXVOLUME for full audio volume.
+ * \param volume ranges from 0 - 128, and should be set to SDL_MIX_MAXVOLUME
+ *               for full audio volume.
  *
  * \since This function is available since SDL 2.0.0.
  */
