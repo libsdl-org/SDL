@@ -54,7 +54,8 @@ typedef struct SDL_GPUDevice SDL_GPUDevice;
 /**
  * An opaque handle representing a buffer.
  *
- * Used for vertices, indices, indirect draw commands, and general compute data.
+ * Used for vertices, indices, indirect draw commands, and general compute
+ * data.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -166,17 +167,20 @@ typedef struct SDL_GPUGraphicsPipeline SDL_GPUGraphicsPipeline;
 /**
  * An opaque handle representing a command buffer.
  *
- * Most state is managed via command buffers.
- * When setting state using a command buffer, that state is local to the command buffer.
+ * Most state is managed via command buffers. When setting state using a
+ * command buffer, that state is local to the command buffer.
  *
- * Commands only begin execution on the GPU once SDL_SubmitGPUCommandBuffer is called.
- * Once the command buffer is submitted, it is no longer valid to use it.
+ * Commands only begin execution on the GPU once SDL_SubmitGPUCommandBuffer is
+ * called. Once the command buffer is submitted, it is no longer valid to use
+ * it.
  *
- * Command buffers are executed in submission order. If you submit command buffer A and then command buffer B
- * all commands in A will begin executing before any command in B begins executing.
+ * Command buffers are executed in submission order. If you submit command
+ * buffer A and then command buffer B all commands in A will begin executing
+ * before any command in B begins executing.
  *
- * In multi-threading scenarios, you should acquire and submit a command buffer on the same thread.
- * As long as you satisfy this requirement, all functionality related to command buffers is thread-safe.
+ * In multi-threading scenarios, you should acquire and submit a command
+ * buffer on the same thread. As long as you satisfy this requirement, all
+ * functionality related to command buffers is thread-safe.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -189,7 +193,8 @@ typedef struct SDL_GPUCommandBuffer SDL_GPUCommandBuffer;
 /**
  * An opaque handle representing a render pass.
  *
- * This handle is transient and should not be held or referenced after SDL_EndGPURenderPass is called.
+ * This handle is transient and should not be held or referenced after
+ * SDL_EndGPURenderPass is called.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -201,7 +206,8 @@ typedef struct SDL_GPURenderPass SDL_GPURenderPass;
 /**
  * An opaque handle representing a compute pass.
  *
- * This handle is transient and should not be held or referenced after SDL_EndGPUComputePass is called.
+ * This handle is transient and should not be held or referenced after
+ * SDL_EndGPUComputePass is called.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -213,7 +219,8 @@ typedef struct SDL_GPUComputePass SDL_GPUComputePass;
 /**
  * An opaque handle representing a copy pass.
  *
- * This handle is transient and should not be held or referenced after SDL_EndGPUCopyPass is called.
+ * This handle is transient and should not be held or referenced after
+ * SDL_EndGPUCopyPass is called.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -251,7 +258,8 @@ typedef enum SDL_GPUPrimitiveType
 } SDL_GPUPrimitiveType;
 
 /**
- * Specifies how the contents of a texture attached to a render pass are treated at the beginning of the render pass.
+ * Specifies how the contents of a texture attached to a render pass are
+ * treated at the beginning of the render pass.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -265,7 +273,8 @@ typedef enum SDL_GPULoadOp
 } SDL_GPULoadOp;
 
 /**
- * Specifies how the contents of a texture attached to a render pass are treated at the end of the render pass.
+ * Specifies how the contents of a texture attached to a render pass are
+ * treated at the end of the render pass.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -293,73 +302,36 @@ typedef enum SDL_GPUIndexElementSize
 /**
  * Specifies the pixel format of a texture.
  *
- * Texture format support varies depending on driver, hardware, and usage flags.
- * In general, you should use SDL_GPUTextureSupportsFormat to query if a format
- * is supported before using it. However, there are a few guaranteed formats.
+ * Texture format support varies depending on driver, hardware, and usage
+ * flags. In general, you should use SDL_GPUTextureSupportsFormat to query if
+ * a format is supported before using it. However, there are a few guaranteed
+ * formats.
  *
- * For SAMPLER usage, the following formats are universally supported:
- *  - R8G8B8A8_UNORM
- *  - B8G8R8A8_UNORM
- *  - R8_UNORM
- *  - R8_SNORM
- *  - R8G8_UNORM
- *  - R8G8_SNORM
- *  - R8G8B8A8_SNORM
- *  - R16_FLOAT
- *  - R16G16_FLOAT
- *  - R16G16B16A16_FLOAT
- *  - R32_FLOAT
- *  - R32G32_FLOAT
- *  - R32G32B32A32_FLOAT
- *  - R11G11B10_UFLOAT
- *  - R8G8B8A8_UNORM_SRGB
- *  - B8G8R8A8_UNORM_SRGB
- *  - D16_UNORM
+ * For SAMPLER usage, the following formats are universally supported: -
+ * R8G8B8A8_UNORM - B8G8R8A8_UNORM - R8_UNORM - R8_SNORM - R8G8_UNORM -
+ * R8G8_SNORM - R8G8B8A8_SNORM - R16_FLOAT - R16G16_FLOAT - R16G16B16A16_FLOAT
+ * - R32_FLOAT - R32G32_FLOAT - R32G32B32A32_FLOAT - R11G11B10_UFLOAT -
+ * R8G8B8A8_UNORM_SRGB - B8G8R8A8_UNORM_SRGB - D16_UNORM
  *
- * For COLOR_TARGET usage, the following formats are universally supported:
- *  - R8G8B8A8_UNORM
- *  - B8G8R8A8_UNORM
- *  - R8_UNORM
- *  - R16_FLOAT
- *  - R16G16_FLOAT
- *  - R16G16B16A16_FLOAT
- *  - R32_FLOAT
- *  - R32G32_FLOAT
- *  - R32G32B32A32_FLOAT
- *  - R8_UINT
- *  - R8G8_UINT
- *  - R8G8B8A8_UINT
- *  - R16_UINT
- *  - R16G16_UINT
- *  - R16G16B16A16_UINT
- *  - R8_INT
- *  - R8G8_INT
- *  - R8G8B8A8_INT
- *  - R16_INT
- *  - R16G16_INT
- *  - R16G16B16A16_INT
- *  - R8G8B8A8_UNORM_SRGB
- *  - B8G8R8A8_UNORM_SRGB
+ * For COLOR_TARGET usage, the following formats are universally supported: -
+ * R8G8B8A8_UNORM - B8G8R8A8_UNORM - R8_UNORM - R16_FLOAT - R16G16_FLOAT -
+ * R16G16B16A16_FLOAT - R32_FLOAT - R32G32_FLOAT - R32G32B32A32_FLOAT -
+ * R8_UINT - R8G8_UINT - R8G8B8A8_UINT - R16_UINT - R16G16_UINT -
+ * R16G16B16A16_UINT - R8_INT - R8G8_INT - R8G8B8A8_INT - R16_INT - R16G16_INT
+ * - R16G16B16A16_INT - R8G8B8A8_UNORM_SRGB - B8G8R8A8_UNORM_SRGB
  *
- * For STORAGE usages, the following formats are universally supported:
- *  - R8G8B8A8_UNORM
- *  - R8G8B8A8_SNORM
- *  - R16G16B16A16_FLOAT
- *  - R32_FLOAT
- *  - R32G32_FLOAT
- *  - R32G32B32A32_FLOAT
- *  - R8G8B8A8_UINT
- *  - R16G16B16A16_UINT
- *  - R8G8B8A8_INT
- *  - R16G16B16A16_INT
+ * For STORAGE usages, the following formats are universally supported: -
+ * R8G8B8A8_UNORM - R8G8B8A8_SNORM - R16G16B16A16_FLOAT - R32_FLOAT -
+ * R32G32_FLOAT - R32G32B32A32_FLOAT - R8G8B8A8_UINT - R16G16B16A16_UINT -
+ * R8G8B8A8_INT - R16G16B16A16_INT
  *
- * For DEPTH_STENCIL_TARGET usage, the following formats are universally supported:
- *  - D16_UNORM
- *  - Either (but not necessarily both!) D24_UNORM or D32_SFLOAT
- *  - Either (but not necessarily both!) D24_UNORM_S8_UINT or D32_SFLOAT_S8_UINT
+ * For DEPTH_STENCIL_TARGET usage, the following formats are universally
+ * supported: - D16_UNORM - Either (but not necessarily both!) D24_UNORM or
+ * D32_SFLOAT - Either (but not necessarily both!) D24_UNORM_S8_UINT or
+ * D32_SFLOAT_S8_UINT
  *
- * Unless D16_UNORM is sufficient for your purposes, always check which
- * of D24/D32 is supported before creating a depth-stencil texture!
+ * Unless D16_UNORM is sufficient for your purposes, always check which of
+ * D24/D32 is supported before creating a depth-stencil texture!
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -443,8 +415,8 @@ typedef enum SDL_GPUTextureFormat
 /**
  * Specifies how a texture is intended to be used by the client.
  *
- * A texture must have at least one usage flag.
- * Note that some usage flag combinations are invalid.
+ * A texture must have at least one usage flag. Note that some usage flag
+ * combinations are invalid.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -477,8 +449,8 @@ typedef enum SDL_GPUTextureType
 /**
  * Specifies the sample count of a texture.
  *
- * Used in multisampling.
- * Note that this value only applies when the texture is used as a render pass attachment.
+ * Used in multisampling. Note that this value only applies when the texture
+ * is used as a render pass attachment.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -514,8 +486,8 @@ typedef enum SDL_GPUCubeMapFace
 /**
  * Specifies how a buffer is intended to be used by the client.
  *
- * A buffer must have at least one usage flag.
- * Note that some usage flag combinations are invalid.
+ * A buffer must have at least one usage flag. Note that some usage flag
+ * combinations are invalid.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -533,7 +505,8 @@ typedef Uint32 SDL_GPUBufferUsageFlags;
 /**
  * Specifies how a transfer buffer is intended to be used by the client.
  *
- * Note that mapping and copying FROM an upload transfer buffer or TO a download transfer buffer is undefined behavior.
+ * Note that mapping and copying FROM an upload transfer buffer or TO a
+ * download transfer buffer is undefined behavior.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -681,7 +654,8 @@ typedef enum SDL_GPUCullMode
 } SDL_GPUCullMode;
 
 /**
- * Specifies the vertex winding that will cause a triangle to be determined to be front-facing.
+ * Specifies the vertex winding that will cause a triangle to be determined to
+ * be front-facing.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -713,7 +687,8 @@ typedef enum SDL_GPUCompareOp
 } SDL_GPUCompareOp;
 
 /**
- * Specifies what happens to a stored stencil value if stencil tests fail or pass.
+ * Specifies what happens to a stored stencil value if stencil tests fail or
+ * pass.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -732,10 +707,11 @@ typedef enum SDL_GPUStencilOp
 } SDL_GPUStencilOp;
 
 /**
- * Specifies the operator to be used when pixels in a render pass texture attachment are blended with existing pixels in the texture.
+ * Specifies the operator to be used when pixels in a render pass texture
+ * attachment are blended with existing pixels in the texture.
  *
- * The source color is the value written by the fragment shader.
- * The destination color is the value currently existing in the texture.
+ * The source color is the value written by the fragment shader. The
+ * destination color is the value currently existing in the texture.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -751,11 +727,11 @@ typedef enum SDL_GPUBlendOp
 } SDL_GPUBlendOp;
 
 /**
- * Specifies a blending factor to be used when pixels in a render pass texture attachment
- * are blended with existing pixels in the texture.
+ * Specifies a blending factor to be used when pixels in a render pass texture
+ * attachment are blended with existing pixels in the texture.
  *
- * The source color is the value written by the fragment shader.
- * The destination color is the value currently existing in the texture.
+ * The source color is the value written by the fragment shader. The
+ * destination color is the value currently existing in the texture.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -819,7 +795,8 @@ typedef enum SDL_GPUSamplerMipmapMode
 } SDL_GPUSamplerMipmapMode;
 
 /**
- * Specifies behavior of texture sampling when the coordinates exceed the 0-1 range.
+ * Specifies behavior of texture sampling when the coordinates exceed the 0-1
+ * range.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -833,29 +810,27 @@ typedef enum SDL_GPUSamplerAddressMode
 } SDL_GPUSamplerAddressMode;
 
 /**
- * Specifies the timing that will be used to present swapchain textures to the OS.
+ * Specifies the timing that will be used to present swapchain textures to the
+ * OS.
  *
- * Note that this value affects the behavior of SDL_AcquireGPUSwapchainTexture.
- * VSYNC mode will always be supported.
+ * Note that this value affects the behavior of
+ * SDL_AcquireGPUSwapchainTexture. VSYNC mode will always be supported.
  * IMMEDIATE and MAILBOX modes may not be supported on certain systems.
  *
- * It is recommended to query SDL_WindowSupportsGPUPresentMode after claiming the window
- * if you wish to change the present mode to IMMEDIATE or MAILBOX.
+ * It is recommended to query SDL_WindowSupportsGPUPresentMode after claiming
+ * the window if you wish to change the present mode to IMMEDIATE or MAILBOX.
  *
- * VSYNC:
- *   Waits for vblank before presenting. No tearing is possible.
- *   If there is a pending image to present, the new image is enqueued for presentation.
- *   Disallows tearing at the cost of visual latency.
- *   When using this present mode, AcquireSwapchainTexture will block if too many frames are in flight.
- * IMMEDIATE:
- *   Immediately presents.
- *   Lowest latency option, but tearing may occur.
- *   When using this mode, AcquireSwapchainTexture will return NULL if too many frames are in flight.
- * MAILBOX:
- *   Waits for vblank before presenting. No tearing is possible.
- *   If there is a pending image to present, the pending image is replaced by the new image.
- *   Similar to VSYNC, but with reduced visual latency.
- *   When using this mode, AcquireSwapchainTexture will return NULL if too many frames are in flight.
+ * VSYNC: Waits for vblank before presenting. No tearing is possible. If there
+ * is a pending image to present, the new image is enqueued for presentation.
+ * Disallows tearing at the cost of visual latency. When using this present
+ * mode, AcquireSwapchainTexture will block if too many frames are in flight.
+ * IMMEDIATE: Immediately presents. Lowest latency option, but tearing may
+ * occur. When using this mode, AcquireSwapchainTexture will return NULL if
+ * too many frames are in flight. MAILBOX: Waits for vblank before presenting.
+ * No tearing is possible. If there is a pending image to present, the pending
+ * image is replaced by the new image. Similar to VSYNC, but with reduced
+ * visual latency. When using this mode, AcquireSwapchainTexture will return
+ * NULL if too many frames are in flight.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -873,20 +848,19 @@ typedef enum SDL_GPUPresentMode
 /**
  * Specifies the texture format and colorspace of the swapchain textures.
  *
- * SDR will always be supported.
- * Other compositions may not be supported on certain systems.
+ * SDR will always be supported. Other compositions may not be supported on
+ * certain systems.
  *
- * It is recommended to query SDL_WindowSupportsGPUSwapchainComposition after claiming the window
- * if you wish to change the swapchain composition from SDR.
+ * It is recommended to query SDL_WindowSupportsGPUSwapchainComposition after
+ * claiming the window if you wish to change the swapchain composition from
+ * SDR.
  *
- * SDR:
- *   B8G8R8A8 or R8G8B8A8 swapchain. Pixel values are in nonlinear sRGB encoding.
- * SDR_LINEAR:
- *   B8G8R8A8_SRGB or R8G8B8A8_SRGB swapchain. Pixel values are in nonlinear sRGB encoding.
- * HDR_EXTENDED_LINEAR:
- *   R16G16B16A16_SFLOAT swapchain. Pixel values are in extended linear encoding.
- * HDR10_ST2048:
- *   A2R10G10B10 or A2B10G10R10 swapchain. Pixel values are in PQ ST2048 encoding.
+ * SDR: B8G8R8A8 or R8G8B8A8 swapchain. Pixel values are in nonlinear sRGB
+ * encoding. SDR_LINEAR: B8G8R8A8_SRGB or R8G8B8A8_SRGB swapchain. Pixel
+ * values are in nonlinear sRGB encoding. HDR_EXTENDED_LINEAR:
+ * R16G16B16A16_SFLOAT swapchain. Pixel values are in extended linear
+ * encoding. HDR10_ST2048: A2R10G10B10 or A2B10G10R10 swapchain. Pixel values
+ * are in PQ ST2048 encoding.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -2746,7 +2720,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WindowSupportsGPUPresentMode(
  *
  * The swapchain will be created with SDL_GPU_SWAPCHAINCOMPOSITION_SDR and
  * SDL_GPU_PRESENTMODE_VSYNC. If you want to have different swapchain
- * parameters, you must call SDL_SetGPUSwapchainParameters after claiming the window.
+ * parameters, you must call SDL_SetGPUSwapchainParameters after claiming the
+ * window.
  *
  * \param device a GPU context.
  * \param window an SDL_Window.
