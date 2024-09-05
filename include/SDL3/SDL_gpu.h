@@ -371,7 +371,8 @@ typedef enum SDL_GPUIndexElementSize
  *
  * - D16_UNORM
  * - Either (but not necessarily both!) D24_UNORM or D32_SFLOAT
- * - Either (but not necessarily both!) D24_UNORM_S8_UINT or D32_SFLOAT_S8_UINT
+ * - Either (but not necessarily both!) D24_UNORM_S8_UINT or
+ *   D32_SFLOAT_S8_UINT
  *
  * Unless D16_UNORM is sufficient for your purposes, always check which of
  * D24/D32 is supported before creating a depth-stencil texture!
@@ -863,18 +864,19 @@ typedef enum SDL_GPUSamplerAddressMode
  * It is recommended to query SDL_WindowSupportsGPUPresentMode after claiming
  * the window if you wish to change the present mode to IMMEDIATE or MAILBOX.
  *
- * - VSYNC: Waits for vblank before presenting. No tearing is possible. If there
- * is a pending image to present, the new image is enqueued for presentation.
- * Disallows tearing at the cost of visual latency. When using this present
- * mode, AcquireSwapchainTexture will block if too many frames are in flight.
+ * - VSYNC: Waits for vblank before presenting. No tearing is possible. If
+ *   there is a pending image to present, the new image is enqueued for
+ *   presentation. Disallows tearing at the cost of visual latency. When using
+ *   this present mode, AcquireSwapchainTexture will block if too many frames
+ *   are in flight.
  * - IMMEDIATE: Immediately presents. Lowest latency option, but tearing may
- * occur. When using this mode, AcquireSwapchainTexture will return NULL if
- * too many frames are in flight.
- * - MAILBOX: Waits for vblank before presenting.
- * No tearing is possible. If there is a pending image to present, the pending
- * image is replaced by the new image. Similar to VSYNC, but with reduced
- * visual latency. When using this mode, AcquireSwapchainTexture will return
- * NULL if too many frames are in flight.
+ *   occur. When using this mode, AcquireSwapchainTexture will return NULL if
+ *   too many frames are in flight.
+ * - MAILBOX: Waits for vblank before presenting. No tearing is possible. If
+ *   there is a pending image to present, the pending image is replaced by the
+ *   new image. Similar to VSYNC, but with reduced visual latency. When using
+ *   this mode, AcquireSwapchainTexture will return NULL if too many frames
+ *   are in flight.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -900,14 +902,13 @@ typedef enum SDL_GPUPresentMode
  * SDR.
  *
  * - SDR: B8G8R8A8 or R8G8B8A8 swapchain. Pixel values are in nonlinear sRGB
- * encoding.
- * - SDR_LINEAR: B8G8R8A8_SRGB or R8G8B8A8_SRGB swapchain. Pixel
- * values are in nonlinear sRGB encoding.
- * - HDR_EXTENDED_LINEAR:
- * R16G16B16A16_SFLOAT swapchain. Pixel values are in extended linear
- * encoding.
- * - HDR10_ST2048: A2R10G10B10 or A2B10G10R10 swapchain. Pixel values
- * are in PQ ST2048 encoding.
+ *   encoding.
+ * - SDR_LINEAR: B8G8R8A8_SRGB or R8G8B8A8_SRGB swapchain. Pixel values are in
+ *   nonlinear sRGB encoding.
+ * - HDR_EXTENDED_LINEAR: R16G16B16A16_SFLOAT swapchain. Pixel values are in
+ *   extended linear encoding.
+ * - HDR10_ST2048: A2R10G10B10 or A2B10G10R10 swapchain. Pixel values are in
+ *   PQ ST2048 encoding.
  *
  * \since This enum is available since SDL 3.0.0
  *
@@ -1509,7 +1510,8 @@ extern SDL_DECLSPEC SDL_GPUDriver SDLCALL SDL_GetGPUDriver(SDL_GPUDevice *device
 /**
  * Creates a pipeline object to be used in a compute workflow.
  *
- * Shader resource bindings must be authored to follow a particular order depending on the shader format.
+ * Shader resource bindings must be authored to follow a particular order
+ * depending on the shader format.
  *
  * For SPIR-V shaders, use the following resource sets:
  *
@@ -1519,20 +1521,26 @@ extern SDL_DECLSPEC SDL_GPUDriver SDLCALL SDL_GetGPUDriver(SDL_GPUDevice *device
  *
  * For DXBC Shader Model 5_0 shaders, use the following register order:
  *
- * - t registers: Read-only storage textures, followed by read-only storage buffers
- * - u registers: Write-only storage textures, followed by write-only storage buffers
+ * - t registers: Read-only storage textures, followed by read-only storage
+ *   buffers
+ * - u registers: Write-only storage textures, followed by write-only storage
+ *   buffers
  * - b registers: Uniform buffers
  *
  * For DXIL shaders, use the following register order:
  *
- * - (t[n], space0): Read-only storage textures, followed by read-only storage buffers
- * - (u[n], space1): Write-only storage textures, followed by write-only storage buffers
+ * - (t[n], space0): Read-only storage textures, followed by read-only storage
+ *   buffers
+ * - (u[n], space1): Write-only storage textures, followed by write-only
+ *   storage buffers
  * - (b[n], space2): Uniform buffers
  *
  * For MSL/metallib, use the following order:
  *
- * - [[buffer]]: Uniform buffers, followed by write-only storage buffers, followed by write-only storage buffers
- * - [[texture]]: Read-only storage textures, followed by write-only storage textures
+ * - [[buffer]]: Uniform buffers, followed by write-only storage buffers,
+ *   followed by write-only storage buffers
+ * - [[texture]]: Read-only storage textures, followed by write-only storage
+ *   textures
  *
  * \param device a GPU Context.
  * \param computePipelineCreateInfo a struct describing the state of the
@@ -1588,23 +1596,27 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
 /**
  * Creates a shader to be used when creating a graphics pipeline.
  *
- * Shader resource bindings must be authored to follow a particular order depending on the shader format.
+ * Shader resource bindings must be authored to follow a particular order
+ * depending on the shader format.
  *
  * For SPIR-V shaders, use the following resource sets:
  *
  * For vertex shaders:
  *
- * - 0: Sampled textures, followed by storage textures, followed by storage buffers
+ * - 0: Sampled textures, followed by storage textures, followed by storage
+ *   buffers
  * - 1: Uniform buffers
  *
  * For fragment shaders:
  *
- * - 2: Sampled textures, followed by storage textures, followed by storage buffers
+ * - 2: Sampled textures, followed by storage textures, followed by storage
+ *   buffers
  * - 3: Uniform buffers
  *
  * For DXBC Shader Model 5_0 shaders, use the following register order:
  *
- * - t registers: Sampled textures, followed by storage textures, followed by storage buffers
+ * - t registers: Sampled textures, followed by storage textures, followed by
+ *   storage buffers
  * - s registers: Samplers with indices corresponding to the sampled textures
  * - b registers: Uniform buffers
  *
@@ -1612,29 +1624,29 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
  *
  * For vertex shaders:
  *
- * - (t[n], space0): Sampled textures, followed by storage textures, followed by
- * storage buffers
- * - (s[n], space0): Samplers with indices corresponding to the
- * sampled textures
+ * - (t[n], space0): Sampled textures, followed by storage textures, followed
+ *   by storage buffers
+ * - (s[n], space0): Samplers with indices corresponding to the sampled
+ *   textures
  * - (b[n], space1): Uniform buffers
  *
  * For pixel shaders:
  *
- * - (t[n], space2): Sampled textures, followed by storage textures, followed by
- * storage buffers
- * - (s[n], space2): Samplers with indices corresponding to the
- * sampled textures
+ * - (t[n], space2): Sampled textures, followed by storage textures, followed
+ *   by storage buffers
+ * - (s[n], space2): Samplers with indices corresponding to the sampled
+ *   textures
  * - (b[n], space3): Uniform buffers
  *
  * For MSL/metallib, use the following order:
  *
  * - [[texture]]: Sampled textures, followed by storage textures
  * - [[sampler]]: Samplers with indices corresponding to the sampled textures
- * - [[buffer]]: Uniform buffers, followed by storage buffers. Vertex buffer 0 is bound at
- * [[buffer(30)]], vertex buffer 1 at [[buffer(29)]], and so on. Rather than
- * manually authoring vertex buffer indices, use the [[stage_in]] attribute
- * which will automatically use the vertex input information from the
- * SDL_GPUPipeline.
+ * - [[buffer]]: Uniform buffers, followed by storage buffers. Vertex buffer 0
+ *   is bound at [[buffer(30)]], vertex buffer 1 at [[buffer(29)]], and so on.
+ *   Rather than manually authoring vertex buffer indices, use the
+ *   [[stage_in]] attribute which will automatically use the vertex input
+ *   information from the SDL_GPUPipeline.
  *
  * \param device a GPU Context.
  * \param shaderCreateInfo a struct describing the state of the desired
