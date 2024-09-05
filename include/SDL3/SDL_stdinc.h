@@ -1303,7 +1303,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *st
  *
  * \param str The null-terminated string to be searched.
  * \param breakset A null-terminated string containing the list of characters
- *        to look for.
+ *                 to look for.
  * \returns A pointer to the location, in str, of the first occurence of a
  *          character present in the breakset, or NULL if none is found.
  *
