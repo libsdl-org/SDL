@@ -899,6 +899,9 @@ typedef struct SDL_GPUDepthStencilValue
 {
     float depth;
     Uint8 stencil;
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
 } SDL_GPUDepthStencilValue;
 
 typedef struct SDL_GPUViewport
@@ -1012,9 +1015,11 @@ typedef struct SDL_GPUSamplerCreateInfo
     SDL_GPUSamplerAddressMode addressModeV;
     SDL_GPUSamplerAddressMode addressModeW;
     float mipLodBias;
-    SDL_bool anisotropyEnable;
     float maxAnisotropy;
+    SDL_bool anisotropyEnable;
     SDL_bool compareEnable;
+    Uint8 padding1;
+    Uint8 padding2;
     SDL_GPUCompareOp compareOp;
     float minLod;
     float maxLod;
@@ -1057,6 +1062,9 @@ typedef struct SDL_GPUStencilOpState
 typedef struct SDL_GPUColorAttachmentBlendState
 {
     SDL_bool blendEnable;
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
     SDL_GPUBlendFactor srcColorBlendFactor;
     SDL_GPUBlendFactor dstColorBlendFactor;
     SDL_GPUBlendOp colorBlendOp;
@@ -1126,6 +1134,9 @@ typedef struct SDL_GPURasterizerState
     SDL_GPUCullMode cullMode;
     SDL_GPUFrontFace frontFace;
     SDL_bool depthBiasEnable;
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
     float depthBiasConstantFactor;
     float depthBiasClamp;
     float depthBiasSlopeFactor;
@@ -1141,13 +1152,15 @@ typedef struct SDL_GPUDepthStencilState
 {
     SDL_bool depthTestEnable;
     SDL_bool depthWriteEnable;
-    SDL_GPUCompareOp compareOp;
     SDL_bool stencilTestEnable;
+    Uint8 padding1;
+    SDL_GPUCompareOp compareOp;
     SDL_GPUStencilOpState backStencilState;
     SDL_GPUStencilOpState frontStencilState;
     Uint8 compareMask;
     Uint8 writeMask;
     Uint8 reference;
+    Uint8 padding2;
 } SDL_GPUDepthStencilState;
 
 typedef struct SDL_GPUColorAttachmentDescription
@@ -1161,6 +1174,9 @@ typedef struct SDL_GPUGraphicsPipelineAttachmentInfo
     const SDL_GPUColorAttachmentDescription *colorAttachmentDescriptions;
     Uint32 colorAttachmentCount;
     SDL_bool hasDepthStencilAttachment;
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
     SDL_GPUTextureFormat depthStencilFormat;
 } SDL_GPUGraphicsPipelineAttachmentInfo;
 
@@ -1234,6 +1250,9 @@ typedef struct SDL_GPUColorAttachmentInfo
 
     /* if SDL_TRUE, cycles the texture if the texture is bound and loadOp is not LOAD */
     SDL_bool cycle;
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
 } SDL_GPUColorAttachmentInfo;
 
 typedef struct SDL_GPUDepthStencilAttachmentInfo
@@ -1296,6 +1315,9 @@ typedef struct SDL_GPUDepthStencilAttachmentInfo
 
     /* if SDL_TRUE, cycles the texture if the texture is bound and any load ops are not LOAD */
     SDL_bool cycle;
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
 } SDL_GPUDepthStencilAttachmentInfo;
 
 /* Binding structs */
@@ -1318,6 +1340,9 @@ typedef struct SDL_GPUStorageBufferWriteOnlyBinding
 
     /* if SDL_TRUE, cycles the buffer if it is bound. */
     SDL_bool cycle;
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
 } SDL_GPUStorageBufferWriteOnlyBinding;
 
 typedef struct SDL_GPUStorageTextureWriteOnlyBinding
@@ -1328,6 +1353,9 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
 
     /* if SDL_TRUE, cycles the texture if the texture is bound. */
     SDL_bool cycle;
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
 } SDL_GPUStorageTextureWriteOnlyBinding;
 
 /* Functions */
