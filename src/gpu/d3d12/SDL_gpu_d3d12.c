@@ -23,9 +23,14 @@
 
 #ifdef SDL_GPU_D3D12
 
+#include "../../core/windows/SDL_windows.h"
 #include "../../video/directx/SDL_d3d12.h"
 #include "../SDL_sysgpu.h"
 #include "SDL_hashtable.h"
+
+#ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
+#define HAVE_IDXGIINFOQUEUE
+#endif
 
 // Built-in shaders, compiled with compile_shaders.bat
 
@@ -132,8 +137,10 @@ static const IID D3D_IID_IDXGIAdapter1 = { 0x29038f61, 0x3839, 0x4626, { 0x91, 0
 static const IID D3D_IID_IDXGIDevice1 = { 0x77db970f, 0x6276, 0x48ba, { 0xba, 0x28, 0x07, 0x01, 0x43, 0xb4, 0x39, 0x2c } };
 #endif
 static const IID D3D_IID_IDXGISwapChain3 = { 0x94d99bdb, 0xf1f8, 0x4ab0, { 0xb2, 0x36, 0x7d, 0xa0, 0x17, 0x0e, 0xda, 0xb1 } };
+#ifdef HAVE_IDXGIINFOQUEUE
 static const IID D3D_IID_IDXGIDebug = { 0x119e7452, 0xde9e, 0x40fe, { 0x88, 0x06, 0x88, 0xf9, 0x0c, 0x12, 0xb4, 0x41 } };
 static const IID D3D_IID_IDXGIInfoQueue = { 0xd67441c7, 0x672a, 0x476f, { 0x9e, 0x82, 0xcd, 0x55, 0xb4, 0x49, 0x49, 0xce } };
+#endif
 static const GUID D3D_IID_DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, { 0x87, 0xe6, 0x43, 0xe9, 0xa9, 0xcf, 0xda, 0x08 } };
 static const GUID D3D_IID_D3DDebugObjectName = { 0x429b8c22, 0x9188, 0x4b0c, { 0x87, 0x42, 0xac, 0xb0, 0xbf, 0x85, 0xc2, 0x00 } };
 
@@ -533,7 +540,9 @@ struct D3D12Renderer
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     IDXGIDebug *dxgiDebug;
     IDXGIFactory4 *factory;
+#ifdef HAVE_IDXGIINFOQUEUE
     IDXGIInfoQueue *dxgiInfoQueue;
+#endif
     IDXGIAdapter1 *adapter;
     void *dxgi_dll;
     void *dxgidebug_dll;
@@ -7635,7 +7644,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
 #endif
 }
 
-#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) && defined(HAVE_IDXGIINFOQUEUE)
 static void D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
 {
     PFN_DXGI_GET_DEBUG_INTERFACE DXGIGetDebugInterfaceFunc;
@@ -7757,10 +7766,12 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         return NULL;
     }
 
+#ifdef HAVE_IDXGIINFOQUEUE
     // Initialize the DXGI debug layer, if applicable
     if (debugMode) {
         D3D12_INTERNAL_TryInitializeDXGIDebug(renderer);
     }
+#endif
 
     // Load the CreateDXGIFactory1 function
     CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY1)SDL_LoadFunction(

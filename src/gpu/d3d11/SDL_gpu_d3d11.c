@@ -35,8 +35,7 @@
 
 #include "../SDL_sysgpu.h"
 
-// MinGW doesn't implement this yet
-#ifdef _WIN32
+#ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
 #define HAVE_IDXGIINFOQUEUE
 #endif
 
