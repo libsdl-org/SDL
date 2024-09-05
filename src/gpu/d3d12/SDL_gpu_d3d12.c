@@ -775,9 +775,6 @@ struct D3D12GraphicsPipeline
 
     Uint32 vertexStrides[MAX_BUFFER_BINDINGS];
 
-    float blendConstants[4];
-    Uint8 stencilRef;
-
     Uint32 vertexSamplerCount;
     Uint32 vertexUniformBufferCount;
     Uint32 vertexStorageBufferCount;
@@ -2603,11 +2600,6 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     }
 
     pipeline->primitiveType = pipelineCreateInfo->primitiveType;
-    pipeline->blendConstants[0] = pipelineCreateInfo->blendConstants[0];
-    pipeline->blendConstants[1] = pipelineCreateInfo->blendConstants[1];
-    pipeline->blendConstants[2] = pipelineCreateInfo->blendConstants[2];
-    pipeline->blendConstants[3] = pipelineCreateInfo->blendConstants[3];
-    pipeline->stencilRef = pipelineCreateInfo->depthStencilState.reference;
 
     pipeline->vertexSamplerCount = vertShader->samplerCount;
     pipeline->vertexStorageTextureCount = vertShader->storageTextureCount;
@@ -3611,6 +3603,23 @@ static void D3D12_SetScissor(
     ID3D12GraphicsCommandList_RSSetScissorRects(d3d12CommandBuffer->graphicsCommandList, 1, &scissorRect);
 }
 
+static void D3D12_SetBlendConstants(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_FColor blendConstants)
+{
+    D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    FLOAT blendFactor[4] = { blendConstants.r, blendConstants.g, blendConstants.b, blendConstants.a };
+    ID3D12GraphicsCommandList_OMSetBlendFactor(d3d12CommandBuffer->graphicsCommandList, blendFactor);
+}
+
+static void D3D12_SetStencilReference(
+    SDL_GPUCommandBuffer *commandBuffer,
+    Uint8 reference
+) {
+    D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    ID3D12GraphicsCommandList_OMSetStencilRef(d3d12CommandBuffer->graphicsCommandList, reference);
+}
+
 static D3D12TextureSubresource *D3D12_INTERNAL_FetchTextureSubresource(
     D3D12TextureContainer *container,
     Uint32 layer,
@@ -3783,7 +3792,6 @@ static void D3D12_BeginRenderPass(
     const SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
-    /* D3D12Renderer *renderer = d3d12CommandBuffer->renderer; */
 
     Uint32 framebufferWidth = SDL_MAX_UINT32;
     Uint32 framebufferHeight = SDL_MAX_UINT32;
@@ -3915,7 +3923,7 @@ static void D3D12_BeginRenderPass(
         false,
         (depthStencilAttachmentInfo == NULL) ? NULL : &dsv);
 
-    // Set sensible default viewport state
+    // Set sensible default states
     SDL_GPUViewport defaultViewport;
     defaultViewport.x = 0;
     defaultViewport.y = 0;
@@ -3937,6 +3945,14 @@ static void D3D12_BeginRenderPass(
     D3D12_SetScissor(
         commandBuffer,
         &defaultScissor);
+
+    D3D12_SetStencilReference(
+        commandBuffer,
+        0);
+
+    D3D12_SetBlendConstants(
+        commandBuffer,
+        (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f });
 }
 
 static void D3D12_INTERNAL_TrackUniformBuffer(
@@ -4120,20 +4136,8 @@ static void D3D12_BindGraphicsPipeline(
 
     // Set the pipeline state
     ID3D12GraphicsCommandList_SetPipelineState(d3d12CommandBuffer->graphicsCommandList, pipeline->pipelineState);
-
     ID3D12GraphicsCommandList_SetGraphicsRootSignature(d3d12CommandBuffer->graphicsCommandList, pipeline->rootSignature->handle);
-
     ID3D12GraphicsCommandList_IASetPrimitiveTopology(d3d12CommandBuffer->graphicsCommandList, SDLToD3D12_PrimitiveType[pipeline->primitiveType]);
-
-    float blendFactor[4] = {
-        pipeline->blendConstants[0],
-        pipeline->blendConstants[1],
-        pipeline->blendConstants[2],
-        pipeline->blendConstants[3]
-    };
-    ID3D12GraphicsCommandList_OMSetBlendFactor(d3d12CommandBuffer->graphicsCommandList, blendFactor);
-
-    ID3D12GraphicsCommandList_OMSetStencilRef(d3d12CommandBuffer->graphicsCommandList, pipeline->stencilRef);
 
     // Mark that bindings are needed
     d3d12CommandBuffer->needVertexSamplerBind = true;

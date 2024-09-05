@@ -996,10 +996,12 @@ typedef struct VulkanCommandBuffer
 
     VulkanTextureSubresource *depthStencilAttachmentSubresource; // may be NULL
 
-    // Viewport/scissor state
+    // Dynamic state
 
     VkViewport currentViewport;
     VkRect2D currentScissor;
+    float blendConstants[4];
+    Uint8 stencilRef;
 
     // Resource bind state
 
@@ -6425,7 +6427,9 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     static const VkDynamicState dynamicStates[] = {
         VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
+        VK_DYNAMIC_STATE_SCISSOR,
+        VK_DYNAMIC_STATE_BLEND_CONSTANTS,
+        VK_DYNAMIC_STATE_STENCIL_REFERENCE
     };
     VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo;
 
@@ -6590,8 +6594,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
         pipelineCreateInfo->depthStencilState.compareMask;
     frontStencilState.writeMask =
         pipelineCreateInfo->depthStencilState.writeMask;
-    frontStencilState.reference =
-        pipelineCreateInfo->depthStencilState.reference;
+    frontStencilState.reference = 0;
 
     backStencilState.failOp = SDLToVK_StencilOp[pipelineCreateInfo->depthStencilState.backStencilState.failOp];
     backStencilState.passOp = SDLToVK_StencilOp[pipelineCreateInfo->depthStencilState.backStencilState.passOp];
@@ -6601,8 +6604,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
         pipelineCreateInfo->depthStencilState.compareMask;
     backStencilState.writeMask =
         pipelineCreateInfo->depthStencilState.writeMask;
-    backStencilState.reference =
-        pipelineCreateInfo->depthStencilState.reference;
+    backStencilState.reference = 0;
 
     depthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencilStateCreateInfo.pNext = NULL;
@@ -6644,14 +6646,10 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
         pipelineCreateInfo->attachmentInfo.colorAttachmentCount;
     colorBlendStateCreateInfo.pAttachments =
         colorBlendAttachmentStates;
-    colorBlendStateCreateInfo.blendConstants[0] =
-        pipelineCreateInfo->blendConstants[0];
-    colorBlendStateCreateInfo.blendConstants[1] =
-        pipelineCreateInfo->blendConstants[1];
-    colorBlendStateCreateInfo.blendConstants[2] =
-        pipelineCreateInfo->blendConstants[2];
-    colorBlendStateCreateInfo.blendConstants[3] =
-        pipelineCreateInfo->blendConstants[3];
+    colorBlendStateCreateInfo.blendConstants[0] = 1.0f;
+    colorBlendStateCreateInfo.blendConstants[1] = 1.0f;
+    colorBlendStateCreateInfo.blendConstants[2] = 1.0f;
+    colorBlendStateCreateInfo.blendConstants[3] = 1.0f;
 
     // We don't support LogicOp, so this is easy.
     colorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
@@ -7530,6 +7528,56 @@ static void VULKAN_SetScissor(
         &vulkanCommandBuffer->currentScissor);
 }
 
+static void VULKAN_INTERNAL_SetCurrentBlendConstants(
+    VulkanCommandBuffer *vulkanCommandBuffer,
+    SDL_FColor blendConstants)
+{
+    vulkanCommandBuffer->blendConstants[0] = blendConstants.r;
+    vulkanCommandBuffer->blendConstants[1] = blendConstants.g;
+    vulkanCommandBuffer->blendConstants[2] = blendConstants.b;
+    vulkanCommandBuffer->blendConstants[3] = blendConstants.a;
+}
+
+static void VULKAN_SetBlendConstants(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_FColor blendConstants)
+{
+    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+
+    VULKAN_INTERNAL_SetCurrentBlendConstants(
+        vulkanCommandBuffer,
+        blendConstants);
+
+    renderer->vkCmdSetBlendConstants(
+        vulkanCommandBuffer->commandBuffer,
+        vulkanCommandBuffer->blendConstants);
+}
+
+static void VULKAN_INTERNAL_SetCurrentStencilReference(
+    VulkanCommandBuffer *vulkanCommandBuffer,
+    Uint8 reference)
+{
+    vulkanCommandBuffer->stencilRef = reference;
+}
+
+static void VULKAN_SetStencilReference(
+    SDL_GPUCommandBuffer *commandBuffer,
+    Uint8 reference)
+{
+    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+
+    VULKAN_INTERNAL_SetCurrentStencilReference(
+        vulkanCommandBuffer,
+        reference);
+
+    renderer->vkCmdSetStencilReference(
+        vulkanCommandBuffer->commandBuffer,
+        VK_STENCIL_FACE_FRONT_AND_BACK,
+        reference);
+}
+
 static void VULKAN_BindVertexSamplers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
@@ -7986,7 +8034,7 @@ static void VULKAN_BeginRenderPass(
 
     SDL_stack_free(clearValues);
 
-    // Set sensible default viewport state
+    // Set sensible default states
 
     defaultViewport.x = 0;
     defaultViewport.y = 0;
@@ -8007,6 +8055,14 @@ static void VULKAN_BeginRenderPass(
     VULKAN_INTERNAL_SetCurrentScissor(
         vulkanCommandBuffer,
         &defaultScissor);
+
+    VULKAN_INTERNAL_SetCurrentBlendConstants(
+        vulkanCommandBuffer,
+        (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f });
+
+    VULKAN_INTERNAL_SetCurrentStencilReference(
+        vulkanCommandBuffer,
+        0);
 }
 
 static void VULKAN_BindGraphicsPipeline(
@@ -8037,6 +8093,15 @@ static void VULKAN_BindGraphicsPipeline(
         0,
         1,
         &vulkanCommandBuffer->currentScissor);
+
+    renderer->vkCmdSetBlendConstants(
+        vulkanCommandBuffer->commandBuffer,
+        vulkanCommandBuffer->blendConstants);
+
+    renderer->vkCmdSetStencilReference(
+        vulkanCommandBuffer->commandBuffer,
+        VK_STENCIL_FACE_FRONT_AND_BACK,
+        vulkanCommandBuffer->stencilRef);
 
     // Acquire uniform buffers if necessary
     for (Uint32 i = 0; i < pipeline->resourceLayout.vertexUniformBufferCount; i += 1) {

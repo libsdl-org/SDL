@@ -778,8 +778,10 @@ SDL3_0.0.0 {
     SDL_SetEventEnabled;
     SDL_SetEventFilter;
     SDL_SetFloatProperty;
+    SDL_SetGPUBlendConstants;
     SDL_SetGPUBufferName;
     SDL_SetGPUScissor;
+    SDL_SetGPUStencilReference;
     SDL_SetGPUSwapchainParameters;
     SDL_SetGPUTextureName;
     SDL_SetGPUViewport;
