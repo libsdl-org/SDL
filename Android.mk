@@ -65,6 +65,8 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/render/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/render/*/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/stdlib/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/storage/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/storage/generic/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/thread/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/thread/pthread/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/time/*.c) \
