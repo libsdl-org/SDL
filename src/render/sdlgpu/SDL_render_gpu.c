@@ -20,7 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_GPU
+#ifdef SDL_VIDEO_RENDER_GPU
+
 #include "../../video/SDL_pixels_c.h"
 #include "../SDL_d3dmath.h"
 #include "../SDL_sysrender.h"
@@ -252,7 +253,7 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     if (!SDL_size_mul_check_overflow(rect->w, texturebpp, &row_size) ||
         !SDL_size_mul_check_overflow(rect->h, row_size, &data_size)) {
-        return SDL_SetError("update size overflow"); 
+        return SDL_SetError("update size overflow");
     }
 
     SDL_GPUTransferBufferCreateInfo tbci;

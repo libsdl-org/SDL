@@ -95,5 +95,3 @@ extern bool SDL_InitPen(void);
 extern void SDL_QuitPen(void);
 
 #endif // SDL_pen_c_h_
-
-// vi: set ts=4 sw=4 expandtab:

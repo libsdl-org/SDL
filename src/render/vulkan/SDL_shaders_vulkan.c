@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_VULKAN
+#ifdef SDL_VIDEO_RENDER_VULKAN
 
 #include "SDL_shaders_vulkan.h"
 

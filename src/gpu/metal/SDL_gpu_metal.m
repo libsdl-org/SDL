@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_GPU_METAL
+#ifdef SDL_GPU_METAL
 
 #include <Metal/Metal.h>
 #include <QuartzCore/CoreAnimation.h>

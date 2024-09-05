@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_OGL
+#ifdef SDL_VIDEO_RENDER_OGL
 #include "../../video/SDL_sysvideo.h" // For SDL_RecreateWindow
 #include <SDL3/SDL_opengl.h>
 #include "../SDL_sysrender.h"

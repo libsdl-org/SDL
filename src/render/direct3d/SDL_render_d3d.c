@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_D3D
+#ifdef SDL_VIDEO_RENDER_D3D
 
 #include "../../core/windows/SDL_windows.h"
 
@@ -29,10 +29,8 @@
 #include "../../video/windows/SDL_windowsvideo.h"
 #include "../../video/SDL_pixels_c.h"
 
-#if SDL_VIDEO_RENDER_D3D
 #define D3D_DEBUG_INFO
 #include <d3d9.h>
-#endif
 
 #include "SDL_shaders_d3d.h"
 
@@ -1776,4 +1774,4 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 SDL_RenderDriver D3D_RenderDriver = {
     D3D_CreateRenderer, "direct3d"
 };
-#endif // SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED
+#endif // SDL_VIDEO_RENDER_D3D

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_VULKAN
+#ifdef SDL_VIDEO_RENDER_VULKAN
 
 #define SDL_VULKAN_FRAME_QUEUE_DEPTH            2
 #define SDL_VULKAN_NUM_VERTEX_BUFFERS           256

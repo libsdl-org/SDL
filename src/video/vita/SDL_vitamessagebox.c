@@ -26,13 +26,13 @@
 #include "SDL_vitamessagebox.h"
 #include <psp2/message_dialog.h>
 
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
 #include "../../render/vitagxm/SDL_render_vita_gxm_tools.h"
 #endif // SDL_VIDEO_RENDER_VITA_GXM
 
 bool VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
     SceMsgDialogParam param;
     SceMsgDialogUserMessageParam msgParam;
     SceMsgDialogButtonsParam buttonParam;
@@ -119,7 +119,7 @@ bool VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID
     (void)messageboxdata;
     (void)buttonID;
     return SDL_Unsupported();
-#endif
+#endif // SDL_VIDEO_RENDER_VITA_GXM
 }
 
 #endif // SDL_VIDEO_DRIVER_VITA

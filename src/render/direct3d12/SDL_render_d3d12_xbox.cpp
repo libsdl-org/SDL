@@ -20,7 +20,7 @@
 */
 
 #include "../../SDL_internal.h"
-#if SDL_VIDEO_RENDER_D3D12 && (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#if defined(SDL_VIDEO_RENDER_D3D12) && (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 #include "SDL_render_d3d12_xbox.h"
 #include "../../core/windows/SDL_windows.h"
 #include <XGameRuntime.h>
@@ -171,4 +171,4 @@ void D3D12_XBOX_GetResolution(Uint32 *width, Uint32 *height)
     }
 }
 
-#endif
+#endif // SDL_VIDEO_RENDER_D3D12 && (SDL_PLATFORM_XBOXONE || SDL_PLATFORM_XBOXSERIES)

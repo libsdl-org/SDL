@@ -20,7 +20,11 @@
 */
 #include "SDL_internal.h"
 
-#if (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12 || SDL_VIDEO_RENDER_VULKAN || SDL_VIDEO_RENDER_GPU)
+#if defined(SDL_VIDEO_RENDER_D3D) || \
+    defined(SDL_VIDEO_RENDER_D3D11) || \
+    defined(SDL_VIDEO_RENDER_D3D12) || \
+    defined(SDL_VIDEO_RENDER_GPU) || \
+    defined(SDL_VIDEO_RENDER_VULKAN)
 
 // Set up for C function definitions, even when using C++
 #ifdef __cplusplus
@@ -78,4 +82,4 @@ extern Float4X4 MatrixRotationZ(float r);
 }
 #endif
 
-#endif // (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12 || SDL_VIDEO_RENDER_VULKAN)
+#endif // SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12 || SDL_VIDEO_RENDER_VULKAN

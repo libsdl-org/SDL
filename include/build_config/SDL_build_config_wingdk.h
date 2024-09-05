@@ -139,7 +139,7 @@
 #define HAVE_SINF   1
 #define HAVE_SQRTF  1
 #define HAVE_TANF   1
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 /* These functions were added with the VC++ 2013 C runtime library */
 #define HAVE_STRTOLL 1
 #define HAVE_STRTOULL 1
@@ -196,52 +196,33 @@
 #define SDL_TIMER_WINDOWS   1
 
 /* Enable various video drivers */
-#define SDL_VIDEO_DRIVER_DUMMY  1
-#define SDL_VIDEO_DRIVER_WINDOWS    1
-
-#ifndef SDL_VIDEO_RENDER_D3D
-#define SDL_VIDEO_RENDER_D3D    1
+#define SDL_VIDEO_DRIVER_DUMMY 1
+#define SDL_VIDEO_DRIVER_WINDOWS 1
+#define SDL_VIDEO_RENDER_D3D 1
+#ifdef HAVE_D3D11_H
+#define SDL_VIDEO_RENDER_D3D11 1
 #endif
-#if !defined(SDL_VIDEO_RENDER_D3D11) && defined(HAVE_D3D11_H)
-#define SDL_VIDEO_RENDER_D3D11  1
-#endif
-#if !defined(SDL_VIDEO_RENDER_D3D12)
-#define SDL_VIDEO_RENDER_D3D12  1
-#endif
+#define SDL_VIDEO_RENDER_D3D12 1
 
 /* Enable OpenGL support */
-#ifndef SDL_VIDEO_OPENGL
-#define SDL_VIDEO_OPENGL    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_WGL
-#define SDL_VIDEO_OPENGL_WGL    1
-#endif
-#ifndef SDL_VIDEO_RENDER_OGL
-#define SDL_VIDEO_RENDER_OGL    1
-#endif
-#ifndef SDL_VIDEO_RENDER_OGL_ES2
-#define SDL_VIDEO_RENDER_OGL_ES2    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_ES2
-#define SDL_VIDEO_OPENGL_ES2    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_EGL
-#define SDL_VIDEO_OPENGL_EGL    1
-#endif
+#define SDL_VIDEO_OPENGL 1
+#define SDL_VIDEO_OPENGL_WGL 1
+#define SDL_VIDEO_RENDER_OGL 1
+#define SDL_VIDEO_RENDER_OGL_ES2 1
+#define SDL_VIDEO_OPENGL_ES2 1
+#define SDL_VIDEO_OPENGL_EGL 1
 
 /* Enable Vulkan support */
 #define SDL_VIDEO_VULKAN 1
+#define SDL_VIDEO_RENDER_VULKAN 1
 
-
-#if !defined(SDL_GPU_D3D11) && defined(HAVE_D3D11_H)
+/* Enable GPU support */
+#ifdef HAVE_D3D11_H
 #define SDL_GPU_D3D11 1
 #endif
-#if !defined(SDL_GPU_D3D12)
 #define SDL_GPU_D3D12 1
-#endif
-#if !defined(SDL_GPU_VULKAN) && defined(SDL_VIDEO_VULKAN)
 #define SDL_GPU_VULKAN 1
-#endif
+#define SDL_VIDEO_RENDER_GPU 1
 
 /* Enable system power support */
 #define SDL_POWER_WINDOWS 1

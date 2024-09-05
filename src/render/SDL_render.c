@@ -104,47 +104,46 @@ this should probably be removed at some point in the future.  --ryan. */
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_DST_COLOR, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD, \
                           SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD)
 
-#ifndef SDL_RENDER_DISABLED
 static const SDL_RenderDriver *render_drivers[] = {
 // Temporarily list the GPU renderer first so we get testing feedback
-#if SDL_VIDEO_RENDER_GPU
+#ifdef SDL_VIDEO_RENDER_GPU
     &GPU_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_D3D11
+#ifdef SDL_VIDEO_RENDER_D3D11
     &D3D11_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_D3D12
+#ifdef SDL_VIDEO_RENDER_D3D12
     &D3D12_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_D3D
+#ifdef SDL_VIDEO_RENDER_D3D
     &D3D_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_METAL
+#ifdef SDL_VIDEO_RENDER_METAL
     &METAL_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_OGL
+#ifdef SDL_VIDEO_RENDER_OGL
     &GL_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_OGL_ES2
+#ifdef SDL_VIDEO_RENDER_OGL_ES2
     &GLES2_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_PS2
+#ifdef SDL_VIDEO_RENDER_PS2
     &PS2_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_PSP
+#ifdef SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
     &VITA_GXM_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_VULKAN
+#ifdef SDL_VIDEO_RENDER_VULKAN
     &VULKAN_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
     &SW_RenderDriver,
 #endif
+    NULL
 };
-#endif // !SDL_RENDER_DISABLED
 
 static SDL_Renderer *SDL_renderers;
 
@@ -800,11 +799,7 @@ static bool UpdateLogicalPresentation(SDL_Renderer *renderer);
 
 int SDL_GetNumRenderDrivers(void)
 {
-#ifndef SDL_RENDER_DISABLED
-    return SDL_arraysize(render_drivers);
-#else
-    return 0;
-#endif
+    return SDL_arraysize(render_drivers) - 1;
 }
 
 const char *SDL_GetRenderDriver(int index)
@@ -1000,7 +995,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     }
 
     if (surface) {
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
         const bool rc = SW_CreateRendererForSurface(renderer, surface, props);
 #else
         const bool rc = SDL_SetError("SDL not built with software renderer");
@@ -1172,7 +1167,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name)
 
 SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 {
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
 
     if (!surface) {
@@ -4423,7 +4418,7 @@ SDL_bool SDL_RenderGeometry(SDL_Renderer *renderer,
     }
 }
 
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
 static bool remap_one_indice(
     int prev,
     int k,
@@ -4894,7 +4889,7 @@ SDL_bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     }
 
     // For the software renderer, try to reinterpret triangles as SDL_Rect
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
     if (renderer->software && texture_address_mode == SDL_TEXTURE_ADDRESS_CLAMP) {
         return SDL_SW_RenderGeometryRaw(renderer, texture,
                                         xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices,
@@ -5340,7 +5335,7 @@ SDL_bool SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
     renderer->wanted_vsync = vsync ? true : false;
 
     // for the software renderer, forward the call to the WindowTexture renderer
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
     if (renderer->software) {
         if (!renderer->window) {
             if (!vsync) {

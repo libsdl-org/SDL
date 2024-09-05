@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_GPU_D3D12
+#ifdef SDL_GPU_D3D12
 
 #include "../../video/directx/SDL_d3d12.h"
 #include "../SDL_sysgpu.h"

@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_GPU_D3D11
+#ifdef SDL_GPU_D3D11
 
 #define D3D11_NO_HELPERS
 #define CINTERFACE
