@@ -627,7 +627,8 @@ typedef struct SDL_GPUSamplerCreateInfo
     float maxAnisotropy;
     SDL_bool anisotropyEnable;
     SDL_bool compareEnable;
-    Uint16 padding;
+    Uint8 padding1;
+    Uint8 padding2;
     SDL_GPUCompareOp compareOp;
     float minLod;
     float maxLod;
