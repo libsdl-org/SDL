@@ -1158,7 +1158,7 @@ typedef struct SDL_GPUColorAttachmentDescription
 
 typedef struct SDL_GPUGraphicsPipelineAttachmentInfo
 {
-    SDL_GPUColorAttachmentDescription *colorAttachmentDescriptions;
+    const SDL_GPUColorAttachmentDescription *colorAttachmentDescriptions;
     Uint32 colorAttachmentCount;
     SDL_bool hasDepthStencilAttachment;
     SDL_GPUTextureFormat depthStencilFormat;
