@@ -81,14 +81,14 @@ static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
     MTLPixelFormatABGR4Unorm,   // B4G4R4A4_UNORM
     MTLPixelFormatBGRA8Unorm,   // B8G8R8A8_UNORM
 #ifdef SDL_PLATFORM_MACOS
-    MTLPixelFormatBC1_RGBA,      // BC1_UNORM
-    MTLPixelFormatBC2_RGBA,      // BC2_UNORM
-    MTLPixelFormatBC3_RGBA,      // BC3_UNORM
-    MTLPixelFormatBC4_RUnorm,    // BC4_UNORM
-    MTLPixelFormatBC5_RGUnorm,   // BC5_UNORM
-    MTLPixelFormatBC7_RGBAUnorm, // BC7_UNORM
-    MTLPixelFormatBC6H_RGBFloat, // BC6H_FLOAT
-    MTLPixelFormatBC6H_RGBUfloat,// BC6H_UFLOAT
+    MTLPixelFormatBC1_RGBA,       // BC1_UNORM
+    MTLPixelFormatBC2_RGBA,       // BC2_UNORM
+    MTLPixelFormatBC3_RGBA,       // BC3_UNORM
+    MTLPixelFormatBC4_RUnorm,     // BC4_UNORM
+    MTLPixelFormatBC5_RGUnorm,    // BC5_UNORM
+    MTLPixelFormatBC7_RGBAUnorm,  // BC7_UNORM
+    MTLPixelFormatBC6H_RGBFloat,  // BC6H_FLOAT
+    MTLPixelFormatBC6H_RGBUfloat, // BC6H_UFLOAT
 #else
     MTLPixelFormatInvalid, // BC1_UNORM
     MTLPixelFormatInvalid, // BC2_UNORM
@@ -402,14 +402,12 @@ typedef struct MetalGraphicsPipeline
 {
     id<MTLRenderPipelineState> handle;
 
-    float blendConstants[4];
     Uint32 sampleMask;
 
     SDL_GPURasterizerState rasterizerState;
     SDL_GPUPrimitiveType primitiveType;
 
     id<MTLDepthStencilState> depthStencilState;
-    Uint8 stencilReference;
 
     Uint32 vertexSamplerCount;
     Uint32 vertexUniformBufferCount;
@@ -1103,13 +1101,8 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
 
         result = SDL_malloc(sizeof(MetalGraphicsPipeline));
         result->handle = pipelineState;
-        result->blendConstants[0] = pipelineCreateInfo->blendConstants[0];
-        result->blendConstants[1] = pipelineCreateInfo->blendConstants[1];
-        result->blendConstants[2] = pipelineCreateInfo->blendConstants[2];
-        result->blendConstants[3] = pipelineCreateInfo->blendConstants[3];
         result->sampleMask = pipelineCreateInfo->multisampleState.sampleMask;
         result->depthStencilState = depthStencilState;
-        result->stencilReference = pipelineCreateInfo->depthStencilState.reference;
         result->rasterizerState = pipelineCreateInfo->rasterizerState;
         result->primitiveType = pipelineCreateInfo->primitiveType;
         result->vertexSamplerCount = vertexShader->samplerCount;
@@ -2087,6 +2080,65 @@ static void METAL_INTERNAL_ReturnUniformBufferToPool(
     uniformBuffer->drawOffset = 0;
 }
 
+static void METAL_SetViewport(
+    SDL_GPUCommandBuffer *commandBuffer,
+    const SDL_GPUViewport *viewport)
+{
+    @autoreleasepool {
+        MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+        MTLViewport metalViewport;
+
+        metalViewport.originX = viewport->x;
+        metalViewport.originY = viewport->y;
+        metalViewport.width = viewport->w;
+        metalViewport.height = viewport->h;
+        metalViewport.znear = viewport->minDepth;
+        metalViewport.zfar = viewport->maxDepth;
+
+        [metalCommandBuffer->renderEncoder setViewport:metalViewport];
+    }
+}
+
+static void METAL_SetScissor(
+    SDL_GPUCommandBuffer *commandBuffer,
+    const SDL_Rect *scissor)
+{
+    @autoreleasepool {
+        MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+        MTLScissorRect metalScissor;
+
+        metalScissor.x = scissor->x;
+        metalScissor.y = scissor->y;
+        metalScissor.width = scissor->w;
+        metalScissor.height = scissor->h;
+
+        [metalCommandBuffer->renderEncoder setScissorRect:metalScissor];
+    }
+}
+
+static void METAL_SetBlendConstants(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_FColor blendConstants)
+{
+    @autoreleasepool {
+        MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+        [metalCommandBuffer->renderEncoder setBlendColorRed:blendConstants.r
+                                                      green:blendConstants.g
+                                                       blue:blendConstants.b
+                                                      alpha:blendConstants.a];
+    }
+}
+
+static void METAL_SetStencilReference(
+    SDL_GPUCommandBuffer *commandBuffer,
+    Uint8 reference
+) {
+    @autoreleasepool {
+        MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+        [metalCommandBuffer->renderEncoder setStencilReferenceValue:reference];
+    }
+}
+
 static void METAL_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
@@ -2099,8 +2151,8 @@ static void METAL_BeginRenderPass(
         MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
         Uint32 vpWidth = UINT_MAX;
         Uint32 vpHeight = UINT_MAX;
-        MTLViewport viewport;
-        MTLScissorRect scissorRect;
+        SDL_GPUViewport viewport;
+        SDL_Rect scissorRect;
 
         for (Uint32 i = 0; i < colorAttachmentCount; i += 1) {
             MetalTextureContainer *container = (MetalTextureContainer *)colorAttachmentInfos[i].texture;
@@ -2201,20 +2253,28 @@ static void METAL_BeginRenderPass(
             }
         }
 
-        // Set default viewport and scissor state
-        viewport.originX = 0;
-        viewport.originY = 0;
-        viewport.width = vpWidth;
-        viewport.height = vpHeight;
-        viewport.znear = 0;
-        viewport.zfar = 1;
-        [metalCommandBuffer->renderEncoder setViewport:viewport];
+        // Set sensible default states
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.w = vpWidth;
+        viewport.h = vpHeight;
+        viewport.minDepth = 0;
+        viewport.maxDepth = 1;
+        METAL_SetViewport(commandBuffer, &viewport);
 
         scissorRect.x = 0;
         scissorRect.y = 0;
-        scissorRect.width = vpWidth;
-        scissorRect.height = vpHeight;
-        [metalCommandBuffer->renderEncoder setScissorRect:scissorRect];
+        scissorRect.w = vpWidth;
+        scissorRect.h = vpHeight;
+        METAL_SetScissor(commandBuffer, &scissorRect);
+
+        METAL_SetBlendConstants(
+            commandBuffer,
+            (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f });
+
+        METAL_SetStencilReference(
+            commandBuffer,
+            0);
     }
 }
 
@@ -2240,19 +2300,10 @@ static void METAL_BindGraphicsPipeline(
               slopeScale:((rast->depthBiasEnable) ? rast->depthBiasSlopeFactor : 0)
               clamp:((rast->depthBiasEnable) ? rast->depthBiasClamp : 0)];
 
-        // Apply blend constants
-        [metalCommandBuffer->renderEncoder
-            setBlendColorRed:metalGraphicsPipeline->blendConstants[0]
-                       green:metalGraphicsPipeline->blendConstants[1]
-                        blue:metalGraphicsPipeline->blendConstants[2]
-                       alpha:metalGraphicsPipeline->blendConstants[3]];
-
         // Apply depth-stencil state
         if (metalGraphicsPipeline->depthStencilState != NULL) {
             [metalCommandBuffer->renderEncoder
                 setDepthStencilState:metalGraphicsPipeline->depthStencilState];
-            [metalCommandBuffer->renderEncoder
-                setStencilReferenceValue:metalGraphicsPipeline->stencilReference];
         }
 
         for (Uint32 i = 0; i < metalGraphicsPipeline->vertexUniformBufferCount; i += 1) {
@@ -2271,42 +2322,6 @@ static void METAL_BindGraphicsPipeline(
 
         metalCommandBuffer->needVertexUniformBind = true;
         metalCommandBuffer->needFragmentUniformBind = true;
-    }
-}
-
-static void METAL_SetViewport(
-    SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUViewport *viewport)
-{
-    @autoreleasepool {
-        MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-        MTLViewport metalViewport;
-
-        metalViewport.originX = viewport->x;
-        metalViewport.originY = viewport->y;
-        metalViewport.width = viewport->w;
-        metalViewport.height = viewport->h;
-        metalViewport.znear = viewport->minDepth;
-        metalViewport.zfar = viewport->maxDepth;
-
-        [metalCommandBuffer->renderEncoder setViewport:metalViewport];
-    }
-}
-
-static void METAL_SetScissor(
-    SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_Rect *scissor)
-{
-    @autoreleasepool {
-        MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-        MTLScissorRect metalScissor;
-
-        metalScissor.x = scissor->x;
-        metalScissor.y = scissor->y;
-        metalScissor.width = scissor->w;
-        metalScissor.height = scissor->h;
-
-        [metalCommandBuffer->renderEncoder setScissorRect:metalScissor];
     }
 }
 

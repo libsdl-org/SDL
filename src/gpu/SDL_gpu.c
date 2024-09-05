@@ -194,11 +194,6 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
 
     blitPipelineCreateInfo.primitiveType = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 
-    blitPipelineCreateInfo.blendConstants[0] = 1.0f;
-    blitPipelineCreateInfo.blendConstants[1] = 1.0f;
-    blitPipelineCreateInfo.blendConstants[2] = 1.0f;
-    blitPipelineCreateInfo.blendConstants[3] = 1.0f;
-
     pipeline = SDL_CreateGPUGraphicsPipeline(
         device,
         &blitPipelineCreateInfo);
@@ -1279,6 +1274,42 @@ void SDL_SetGPUScissor(
     RENDERPASS_DEVICE->SetScissor(
         RENDERPASS_COMMAND_BUFFER,
         scissor);
+}
+
+void SDL_SetGPUBlendConstants(
+    SDL_GPURenderPass *renderPass,
+    SDL_FColor blendConstants)
+{
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+
+    if (RENDERPASS_DEVICE->debugMode) {
+        CHECK_RENDERPASS
+    }
+
+    RENDERPASS_DEVICE->SetBlendConstants(
+        RENDERPASS_COMMAND_BUFFER,
+        blendConstants);
+}
+
+void SDL_SetGPUStencilReference(
+    SDL_GPURenderPass *renderPass,
+    Uint8 reference)
+{
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+
+    if (RENDERPASS_DEVICE->debugMode) {
+        CHECK_RENDERPASS
+    }
+
+    RENDERPASS_DEVICE->SetStencilReference(
+        RENDERPASS_COMMAND_BUFFER,
+        reference);
 }
 
 void SDL_BindGPUVertexBuffers(

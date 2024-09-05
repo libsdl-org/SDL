@@ -1207,8 +1207,8 @@ typedef struct SDL_GPUDepthStencilState
     SDL_GPUStencilOpState frontStencilState;
     Uint8 compareMask;
     Uint8 writeMask;
-    Uint8 reference;
     Uint8 padding2;
+    Uint8 padding3;
 } SDL_GPUDepthStencilState;
 
 typedef struct SDL_GPUColorAttachmentDescription
@@ -1238,7 +1238,6 @@ typedef struct SDL_GPUGraphicsPipelineCreateInfo
     SDL_GPUMultisampleState multisampleState;
     SDL_GPUDepthStencilState depthStencilState;
     SDL_GPUGraphicsPipelineAttachmentInfo attachmentInfo;
-    float blendConstants[4];
 
     SDL_PropertiesID props;
 } SDL_GPUGraphicsPipelineCreateInfo;
@@ -2139,6 +2138,33 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUViewport(
 extern SDL_DECLSPEC void SDLCALL SDL_SetGPUScissor(
     SDL_GPURenderPass *renderPass,
     const SDL_Rect *scissor);
+
+/**
+ * Sets the current blend constants on a command buffer.
+ *
+ * \param renderPass a render pass handle.
+ * \param blendConstants the blend constant color.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GPU_BLENDFACTOR_CONSTANT_COLOR
+ * \sa SDL_GPU_BLENDFACTOR_ONE_MINUS_CONSTANT_COLOR
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_SetGPUBlendConstants(
+    SDL_GPURenderPass *renderPass,
+    SDL_FColor blendConstants);
+
+/**
+ * Sets the current stencil reference value on a command buffer.
+ *
+ * \param renderPass a render pass handle.
+ * \param reference the stencil reference value to set.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_SetGPUStencilReference(
+    SDL_GPURenderPass *renderPass,
+    Uint8 reference);
 
 /**
  * Binds vertex buffers on a command buffer for use with subsequent draw

@@ -476,7 +476,6 @@ typedef struct D3D11Shader
 
 typedef struct D3D11GraphicsPipeline
 {
-    float blendConstants[4];
     Sint32 numColorAttachments;
     DXGI_FORMAT colorAttachmentFormats[MAX_COLOR_TARGET_BINDINGS];
     ID3D11BlendState *colorAttachmentBlendState;
@@ -486,7 +485,6 @@ typedef struct D3D11GraphicsPipeline
     Uint8 hasDepthStencilAttachment;
     DXGI_FORMAT depthStencilAttachmentFormat;
     ID3D11DepthStencilState *depthStencilState;
-    Uint8 stencilRef;
 
     SDL_GPUPrimitiveType primitiveType;
     ID3D11RasterizerState *rasterizerState;
@@ -615,6 +613,8 @@ typedef struct D3D11CommandBuffer
 
     // Render Pass
     D3D11GraphicsPipeline *graphicsPipeline;
+    Uint8 stencilRef;
+    SDL_FColor blendConstants;
 
     // Render Pass MSAA resolve
     D3D11Texture *colorTargetResolveTexture[MAX_COLOR_TARGET_BINDINGS];
@@ -1541,11 +1541,6 @@ static SDL_GPUGraphicsPipeline *D3D11_CreateGraphicsPipeline(
         pipeline->colorAttachmentFormats[i] = SDLToD3D11_TextureFormat[pipelineCreateInfo->attachmentInfo.colorAttachmentDescriptions[i].format];
     }
 
-    pipeline->blendConstants[0] = pipelineCreateInfo->blendConstants[0];
-    pipeline->blendConstants[1] = pipelineCreateInfo->blendConstants[1];
-    pipeline->blendConstants[2] = pipelineCreateInfo->blendConstants[2];
-    pipeline->blendConstants[3] = pipelineCreateInfo->blendConstants[3];
-
     // Multisample
 
     pipeline->multisampleState = pipelineCreateInfo->multisampleState;
@@ -1558,7 +1553,6 @@ static SDL_GPUGraphicsPipeline *D3D11_CreateGraphicsPipeline(
 
     pipeline->hasDepthStencilAttachment = pipelineCreateInfo->attachmentInfo.hasDepthStencilAttachment;
     pipeline->depthStencilAttachmentFormat = SDLToD3D11_TextureFormat[pipelineCreateInfo->attachmentInfo.depthStencilFormat];
-    pipeline->stencilRef = pipelineCreateInfo->depthStencilState.reference;
 
     // Rasterizer
 
@@ -3204,6 +3198,8 @@ static SDL_GPUCommandBuffer *D3D11_AcquireCommandBuffer(
 
     commandBuffer = D3D11_INTERNAL_GetInactiveCommandBufferFromPool(renderer);
     commandBuffer->graphicsPipeline = NULL;
+    commandBuffer->stencilRef = 0;
+    commandBuffer->blendConstants = (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f };
     commandBuffer->computePipeline = NULL;
     for (i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1) {
         commandBuffer->colorTargetResolveTexture[i] = NULL;
@@ -3384,6 +3380,78 @@ static void D3D11_INTERNAL_PushUniformData(
     }
 }
 
+static void D3D11_SetViewport(
+    SDL_GPUCommandBuffer *commandBuffer,
+    const SDL_GPUViewport *viewport)
+{
+    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
+    D3D11_VIEWPORT vp = {
+        viewport->x,
+        viewport->y,
+        viewport->w,
+        viewport->h,
+        viewport->minDepth,
+        viewport->maxDepth
+    };
+
+    ID3D11DeviceContext_RSSetViewports(
+        d3d11CommandBuffer->context,
+        1,
+        &vp);
+}
+
+static void D3D11_SetScissor(
+    SDL_GPUCommandBuffer *commandBuffer,
+    const SDL_Rect *scissor)
+{
+    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
+    D3D11_RECT rect = {
+        scissor->x,
+        scissor->y,
+        scissor->x + scissor->w,
+        scissor->y + scissor->h
+    };
+
+    ID3D11DeviceContext_RSSetScissorRects(
+        d3d11CommandBuffer->context,
+        1,
+        &rect);
+}
+
+static void D3D11_SetBlendConstants(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_FColor blendConstants)
+{
+    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
+    FLOAT blendFactor[4] = { blendConstants.r, blendConstants.g, blendConstants.b, blendConstants.a };
+
+    d3d11CommandBuffer->blendConstants = blendConstants;
+
+    if (d3d11CommandBuffer->graphicsPipeline != NULL) {
+        ID3D11DeviceContext_OMSetBlendState(
+            d3d11CommandBuffer->context,
+            d3d11CommandBuffer->graphicsPipeline->colorAttachmentBlendState,
+            blendFactor,
+            d3d11CommandBuffer->graphicsPipeline->multisampleState.sampleMask);
+    }
+}
+
+static void D3D11_SetStencilReference(
+    SDL_GPUCommandBuffer *commandBuffer,
+    Uint8 reference)
+{
+    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
+
+    d3d11CommandBuffer->stencilRef = reference;
+
+    if (d3d11CommandBuffer->graphicsPipeline != NULL) {
+        ID3D11DeviceContext_OMSetDepthStencilState(
+            d3d11CommandBuffer->context,
+            d3d11CommandBuffer->graphicsPipeline->depthStencilState,
+            reference);
+    }
+}
+
 static void D3D11_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
@@ -3396,8 +3464,8 @@ static void D3D11_BeginRenderPass(
     ID3D11DepthStencilView *dsv = NULL;
     Uint32 vpWidth = SDL_MAX_UINT32;
     Uint32 vpHeight = SDL_MAX_UINT32;
-    D3D11_VIEWPORT viewport;
-    D3D11_RECT scissorRect;
+    SDL_GPUViewport viewport;
+    SDL_Rect scissorRect;
 
     d3d11CommandBuffer->needVertexSamplerBind = true;
     d3d11CommandBuffer->needVertexResourceBind = true;
@@ -3524,28 +3592,34 @@ static void D3D11_BeginRenderPass(
         }
     }
 
-    // Set default viewport and scissor state
-    viewport.TopLeftX = 0;
-    viewport.TopLeftY = 0;
-    viewport.Width = (FLOAT)vpWidth;
-    viewport.Height = (FLOAT)vpHeight;
-    viewport.MinDepth = 0;
-    viewport.MaxDepth = 1;
+    // Set sensible default states
+    viewport.x = 0;
+    viewport.y = 0;
+    viewport.w = (float)vpWidth;
+    viewport.h = (float)vpHeight;
+    viewport.minDepth = 0;
+    viewport.maxDepth = 1;
 
-    ID3D11DeviceContext_RSSetViewports(
-        d3d11CommandBuffer->context,
-        1,
+    D3D11_SetViewport(
+        commandBuffer,
         &viewport);
 
-    scissorRect.left = 0;
-    scissorRect.right = (LONG)viewport.Width;
-    scissorRect.top = 0;
-    scissorRect.bottom = (LONG)viewport.Height;
+    scissorRect.x = 0;
+    scissorRect.y = 0;
+    scissorRect.w = (int)vpWidth;
+    scissorRect.h = (int)vpHeight;
 
-    ID3D11DeviceContext_RSSetScissorRects(
-        d3d11CommandBuffer->context,
-        1,
+    D3D11_SetScissor(
+        commandBuffer,
         &scissorRect);
+
+    D3D11_SetStencilReference(
+        commandBuffer,
+        0);
+
+    D3D11_SetBlendConstants(
+        commandBuffer,
+        (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f });
 }
 
 static void D3D11_BindGraphicsPipeline(
@@ -3554,19 +3628,25 @@ static void D3D11_BindGraphicsPipeline(
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11GraphicsPipeline *pipeline = (D3D11GraphicsPipeline *)graphicsPipeline;
+    FLOAT blendFactor[4] = {
+        d3d11CommandBuffer->blendConstants.r,
+        d3d11CommandBuffer->blendConstants.g,
+        d3d11CommandBuffer->blendConstants.b,
+        d3d11CommandBuffer->blendConstants.a
+    };
 
     d3d11CommandBuffer->graphicsPipeline = pipeline;
 
     ID3D11DeviceContext_OMSetBlendState(
         d3d11CommandBuffer->context,
         pipeline->colorAttachmentBlendState,
-        pipeline->blendConstants,
+        blendFactor,
         pipeline->multisampleState.sampleMask);
 
     ID3D11DeviceContext_OMSetDepthStencilState(
         d3d11CommandBuffer->context,
         pipeline->depthStencilState,
-        pipeline->stencilRef);
+        d3d11CommandBuffer->stencilRef);
 
     ID3D11DeviceContext_IASetPrimitiveTopology(
         d3d11CommandBuffer->context,
@@ -3610,44 +3690,6 @@ static void D3D11_BindGraphicsPipeline(
     // Mark that uniform bindings are needed
     d3d11CommandBuffer->needVertexUniformBufferBind = true;
     d3d11CommandBuffer->needFragmentUniformBufferBind = true;
-}
-
-static void D3D11_SetViewport(
-    SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUViewport *viewport)
-{
-    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
-    D3D11_VIEWPORT vp = {
-        viewport->x,
-        viewport->y,
-        viewport->w,
-        viewport->h,
-        viewport->minDepth,
-        viewport->maxDepth
-    };
-
-    ID3D11DeviceContext_RSSetViewports(
-        d3d11CommandBuffer->context,
-        1,
-        &vp);
-}
-
-static void D3D11_SetScissor(
-    SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_Rect *scissor)
-{
-    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
-    D3D11_RECT rect = {
-        scissor->x,
-        scissor->y,
-        scissor->x + scissor->w,
-        scissor->y + scissor->h
-    };
-
-    ID3D11DeviceContext_RSSetScissorRects(
-        d3d11CommandBuffer->context,
-        1,
-        &rect);
 }
 
 static void D3D11_BindVertexBuffers(
@@ -5785,11 +5827,6 @@ static void D3D11_INTERNAL_InitBlitPipelines(
     blitPipelineCreateInfo.multisampleState.sampleMask = 0xFFFFFFFF;
 
     blitPipelineCreateInfo.primitiveType = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
-
-    blitPipelineCreateInfo.blendConstants[0] = 1.0f;
-    blitPipelineCreateInfo.blendConstants[1] = 1.0f;
-    blitPipelineCreateInfo.blendConstants[2] = 1.0f;
-    blitPipelineCreateInfo.blendConstants[3] = 1.0f;
 
     blitPipeline = D3D11_CreateGraphicsPipeline(
         (SDL_GPURenderer *)renderer,

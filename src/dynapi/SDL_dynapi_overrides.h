@@ -803,8 +803,10 @@
 #define SDL_SetEventEnabled SDL_SetEventEnabled_REAL
 #define SDL_SetEventFilter SDL_SetEventFilter_REAL
 #define SDL_SetFloatProperty SDL_SetFloatProperty_REAL
+#define SDL_SetGPUBlendConstants SDL_SetGPUBlendConstants_REAL
 #define SDL_SetGPUBufferName SDL_SetGPUBufferName_REAL
 #define SDL_SetGPUScissor SDL_SetGPUScissor_REAL
+#define SDL_SetGPUStencilReference SDL_SetGPUStencilReference_REAL
 #define SDL_SetGPUSwapchainParameters SDL_SetGPUSwapchainParameters_REAL
 #define SDL_SetGPUTextureName SDL_SetGPUTextureName_REAL
 #define SDL_SetGPUViewport SDL_SetGPUViewport_REAL

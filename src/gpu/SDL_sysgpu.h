@@ -398,6 +398,14 @@ struct SDL_GPUDevice
         SDL_GPUCommandBuffer *commandBuffer,
         const SDL_Rect *scissor);
 
+    void (*SetBlendConstants)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_FColor blendConstants);
+
+    void (*SetStencilReference)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        Uint8 reference);
+
     void (*BindVertexBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
         Uint32 firstBinding,
@@ -716,6 +724,8 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(BindGraphicsPipeline, name)          \
     ASSIGN_DRIVER_FUNC(SetViewport, name)                   \
     ASSIGN_DRIVER_FUNC(SetScissor, name)                    \
+    ASSIGN_DRIVER_FUNC(SetBlendConstants, name)             \
+    ASSIGN_DRIVER_FUNC(SetStencilReference, name)           \
     ASSIGN_DRIVER_FUNC(BindVertexBuffers, name)             \
     ASSIGN_DRIVER_FUNC(BindIndexBuffer, name)               \
     ASSIGN_DRIVER_FUNC(BindVertexSamplers, name)            \
