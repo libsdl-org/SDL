@@ -4618,6 +4618,10 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         swapchainData->imageCount = swapchainSupportDetails.capabilities.maxImageCount;
     }
 
+    if (swapchainData->imageCount < swapchainSupportDetails.capabilities.minImageCount) {
+        swapchainData->imageCount = swapchainSupportDetails.capabilities.minImageCount;
+    }
+
     if (swapchainData->presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
         /* Required for proper triple-buffering.
          * Note that this is below the above maxImageCount check!
