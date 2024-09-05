@@ -113,25 +113,26 @@ typedef struct SDL_hid_device_info
 {
     /** Platform-specific device path */
     char *path;
-    /** Device Vendor ID */
-    unsigned short vendor_id;
-    /** Device Product ID */
-    unsigned short product_id;
     /** Serial Number */
     wchar_t *serial_number;
-    /** Device Release Number in binary-coded decimal,
-        also known as Device Version Number */
-    unsigned short release_number;
     /** Manufacturer String */
     wchar_t *manufacturer_string;
     /** Product string */
     wchar_t *product_string;
+    /** Device Vendor ID */
+    Uint16 vendor_id;
+    /** Device Product ID */
+    Uint16 product_id;
+    /** Device Release Number in binary-coded decimal,
+        also known as Device Version Number */
+    Uint16 release_number;
     /** Usage Page for this Device/Interface
         (Windows/Mac/hidraw only) */
-    unsigned short usage_page;
+    Uint16 usage_page;
     /** Usage for this Device/Interface
         (Windows/Mac/hidraw only) */
-    unsigned short usage;
+    Uint16 usage;
+    Uint16 padding16;
     /** The USB interface which this logical device
         represents.
 

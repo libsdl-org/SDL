@@ -287,6 +287,7 @@ typedef struct SDL_DisplayEvent
     SDL_DisplayID displayID;/**< The associated display */
     Sint32 data1;       /**< event dependent data */
     Sint32 data2;       /**< event dependent data */
+    Uint32 padding_end;
 } SDL_DisplayEvent;
 
 /**
@@ -302,6 +303,7 @@ typedef struct SDL_WindowEvent
     SDL_WindowID windowID; /**< The associated window */
     Sint32 data1;       /**< event dependent data */
     Sint32 data2;       /**< event dependent data */
+    Uint32 padding_end;
 } SDL_WindowEvent;
 
 /**
@@ -315,6 +317,7 @@ typedef struct SDL_KeyboardDeviceEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_KeyboardID which;   /**< The keyboard instance id */
+    Uint32 padding_end;
 } SDL_KeyboardDeviceEvent;
 
 /**
@@ -342,6 +345,7 @@ typedef struct SDL_KeyboardEvent
     SDL_Keycode key;        /**< SDL virtual key code */
     SDL_Keymod mod;         /**< current key modifiers */
     Uint16 raw;             /**< The platform dependent scancode for this event */
+    Uint16 padding16;
     Uint8 state;            /**< SDL_PRESSED or SDL_RELEASED */
     Uint8 repeat;           /**< Non-zero if this is a key repeat */
 } SDL_KeyboardEvent;
@@ -361,6 +365,7 @@ typedef struct SDL_TextEditingEvent
     Uint32 reserved;
     Uint64 timestamp;           /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;      /**< The window with keyboard focus, if any */
+    Uint32 padding32;
     const char *text;           /**< The editing text */
     Sint32 start;               /**< The start cursor of selected editing text, or -1 if not set */
     Sint32 length;              /**< The length of selected editing text, or -1 if not set */
@@ -377,13 +382,13 @@ typedef struct SDL_TextEditingCandidatesEvent
     Uint32 reserved;
     Uint64 timestamp;           /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;      /**< The window with keyboard focus, if any */
+    Uint32 padding32;
     const char * const *candidates;    /**< The list of candidates, or NULL if there are no candidates available */
     Sint32 num_candidates;      /**< The number of strings in `candidates` */
     Sint32 selected_candidate;  /**< The index of the selected candidate, or -1 if no candidate is selected */
     SDL_bool horizontal;          /**< SDL_TRUE if the list is horizontal, SDL_FALSE if it's vertical */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
+    Uint32 padding_end;
 } SDL_TextEditingCandidatesEvent;
 
 /**
@@ -403,6 +408,7 @@ typedef struct SDL_TextInputEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with keyboard focus, if any */
+    Uint32 padding32;
     const char *text;   /**< The input text, UTF-8 encoded */
 } SDL_TextInputEvent;
 
@@ -417,6 +423,7 @@ typedef struct SDL_MouseDeviceEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_MouseID which;  /**< The mouse instance id */
+    Uint32 padding_end;
 } SDL_MouseDeviceEvent;
 
 /**
@@ -436,6 +443,7 @@ typedef struct SDL_MouseMotionEvent
     float y;            /**< Y coordinate, relative to window */
     float xrel;         /**< The relative motion in the X direction */
     float yrel;         /**< The relative motion in the Y direction */
+    Uint32 padding_end;
 } SDL_MouseMotionEvent;
 
 /**
@@ -453,9 +461,10 @@ typedef struct SDL_MouseButtonEvent
     Uint8 button;       /**< The mouse button index */
     Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
     Uint8 clicks;       /**< 1 for single-click, 2 for double-click, etc. */
-    Uint8 padding;
+    Uint8 padding8;
     float x;            /**< X coordinate, relative to window */
     float y;            /**< Y coordinate, relative to window */
+    Uint32 padding_end;
 } SDL_MouseButtonEvent;
 
 /**
@@ -475,6 +484,7 @@ typedef struct SDL_MouseWheelEvent
     SDL_MouseWheelDirection direction; /**< Set to one of the SDL_MOUSEWHEEL_* defines. When FLIPPED the values in X and Y will be opposite. Multiply by -1 to change them back */
     float mouse_x;      /**< X coordinate, relative to window */
     float mouse_y;      /**< Y coordinate, relative to window */
+    Uint32 padding_end;
 } SDL_MouseWheelEvent;
 
 /**
@@ -489,11 +499,10 @@ typedef struct SDL_JoyAxisEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 axis;         /**< The joystick axis index */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
     Sint16 value;       /**< The axis value (range: -32768 to 32767) */
-    Uint16 padding4;
+    Uint16 padding16;
+    Uint32 padding_end;
 } SDL_JoyAxisEvent;
 
 /**
@@ -508,11 +517,10 @@ typedef struct SDL_JoyBallEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 ball;         /**< The joystick trackball index */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
     Sint16 xrel;        /**< The relative motion in the X direction */
     Sint16 yrel;        /**< The relative motion in the Y direction */
+    Uint32 padding_end;
 } SDL_JoyBallEvent;
 
 /**
@@ -534,8 +542,7 @@ typedef struct SDL_JoyHatEvent
                          *
                          *   Note that zero means the POV is centered.
                          */
-    Uint8 padding1;
-    Uint8 padding2;
+    Uint8 padding8[2];
 } SDL_JoyHatEvent;
 
 /**
@@ -551,8 +558,7 @@ typedef struct SDL_JoyButtonEvent
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 button;       /**< The joystick button index */
     Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
-    Uint8 padding1;
-    Uint8 padding2;
+    Uint8 padding8[2];
 } SDL_JoyButtonEvent;
 
 /**
@@ -566,6 +572,7 @@ typedef struct SDL_JoyDeviceEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which;       /**< The joystick instance id */
+    Uint32 padding_end;
 } SDL_JoyDeviceEvent;
 
 /**
@@ -580,7 +587,8 @@ typedef struct SDL_JoyBatteryEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
     SDL_PowerState state; /**< The joystick battery state */
-    int percent;          /**< The joystick battery percent charge remaining */
+    Sint32 percent;       /**< The joystick battery percent charge remaining */
+    Uint32 padding_end;
 } SDL_JoyBatteryEvent;
 
 /**
@@ -595,11 +603,10 @@ typedef struct SDL_GamepadAxisEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 axis;         /**< The gamepad axis (SDL_GamepadAxis) */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
     Sint16 value;       /**< The axis value (range: -32768 to 32767) */
-    Uint16 padding4;
+    Uint16 padding16;
+    Uint32 padding_end;
 } SDL_GamepadAxisEvent;
 
 
@@ -616,8 +623,7 @@ typedef struct SDL_GamepadButtonEvent
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 button;       /**< The gamepad button (SDL_GamepadButton) */
     Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
-    Uint8 padding1;
-    Uint8 padding2;
+    Uint8 padding8[2];
 } SDL_GamepadButtonEvent;
 
 
@@ -632,6 +638,7 @@ typedef struct SDL_GamepadDeviceEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which;       /**< The joystick instance id */
+    Uint32 padding_end;
 } SDL_GamepadDeviceEvent;
 
 /**
@@ -665,6 +672,7 @@ typedef struct SDL_GamepadSensorEvent
     SDL_JoystickID which; /**< The joystick instance id */
     Sint32 sensor;      /**< The type of the sensor, one of the values of SDL_SensorType */
     float data[3];      /**< Up to 3 values from the sensor, as defined in SDL_sensor.h */
+    Uint32 padding32;
     Uint64 sensor_timestamp; /**< The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock */
 } SDL_GamepadSensorEvent;
 
@@ -680,9 +688,7 @@ typedef struct SDL_AudioDeviceEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_AudioDeviceID which;       /**< SDL_AudioDeviceID for the device being added or removed or changing */
     Uint8 recording;    /**< zero if a playback device, non-zero if a recording device. */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
 } SDL_AudioDeviceEvent;
 
 /**
@@ -696,6 +702,7 @@ typedef struct SDL_CameraDeviceEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_CameraID which;       /**< SDL_CameraID for the device being added or removed or changing */
+    Uint32 padding_end;
 } SDL_CameraDeviceEvent;
 
 /**
@@ -763,6 +770,7 @@ typedef struct SDL_PenMotionEvent
     SDL_PenInputFlags pen_state;   /**< Complete pen input state at time of event */
     float x;                /**< X position of pen on tablet */
     float y;                /**< Y position of pen on tablet */
+    Uint32 padding_end;
 } SDL_PenMotionEvent;
 
 /**
@@ -785,6 +793,7 @@ typedef struct SDL_PenTouchEvent
     float y;                /**< Y position of pen on tablet */
     Uint8 eraser;           /**< Non-zero if eraser end is used (not all pens support this). */
     Uint8 state;            /**< SDL_PRESSED (pen is touching) or SDL_RELEASED (pen is lifted off) */
+    Uint8 padding8[2];
 } SDL_PenTouchEvent;
 
 /**
@@ -807,6 +816,7 @@ typedef struct SDL_PenButtonEvent
     float y;                /**< Y position of pen on tablet */
     Uint8 button;       /**< The pen button index (first button is 1). */
     Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
+    Uint8 padding8[2];
 } SDL_PenButtonEvent;
 
 /**
@@ -829,6 +839,7 @@ typedef struct SDL_PenAxisEvent
     float y;                /**< Y position of pen on tablet */
     SDL_PenAxis axis;       /**< Axis that has changed */
     float value;            /**< New value of axis */
+    Uint32 padding_end;
 } SDL_PenAxisEvent;
 
 /**
@@ -845,6 +856,7 @@ typedef struct SDL_DropEvent
     SDL_WindowID windowID;    /**< The window that was dropped on, if any */
     float x;            /**< X coordinate, relative to window (not on begin) */
     float y;            /**< Y coordinate, relative to window (not on begin) */
+    Uint32 padding32;
     const char *source; /**< The source app that sent this drop event, or NULL if that isn't available */
     const char *data;   /**< The text for SDL_EVENT_DROP_TEXT and the file name for SDL_EVENT_DROP_FILE, NULL for other events */
 } SDL_DropEvent;
@@ -874,6 +886,7 @@ typedef struct SDL_SensorEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_SensorID which; /**< The instance ID of the sensor */
     float data[6];      /**< Up to 6 values from the sensor - additional values can be queried using SDL_GetSensorData() */
+    Uint32 padding32;
     Uint64 sensor_timestamp; /**< The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock */
 } SDL_SensorEvent;
 

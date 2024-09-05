@@ -112,9 +112,8 @@ typedef struct SDL_Surface
     SDL_PixelFormat format;     /**< Read-only */
     int w, h;                   /**< Read-only */
     int pitch;                  /**< Read-only */
-    void *pixels;               /**< Read-only pointer, writable pixels if non-NULL */
-
     int refcount;               /**< Application reference count, used when freeing surface */
+    void *pixels;               /**< Read-only pointer, writable pixels if non-NULL */
 
     SDL_SurfaceData *internal;  /**< Private */
 

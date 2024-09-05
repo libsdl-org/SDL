@@ -244,6 +244,7 @@ typedef enum SDL_PathType
 typedef struct SDL_PathInfo
 {
     SDL_PathType type;          /* the path type */
+    Uint32 padding32;
     Uint64 size;                /* the file size in bytes */
     SDL_Time create_time;   /* the time when the path was created */
     SDL_Time modify_time;   /* the last time the path was modified */

@@ -13,6 +13,7 @@ typedef struct SDL_DisplayEvent_pack1 {
     SDL_DisplayID displayID;
     Sint32 data1;       
     Sint32 data2;       
+    Uint32 padding_end;
 } SDL_DisplayEvent_pack1;
 
 typedef struct SDL_WindowEvent_pack1 {
@@ -22,6 +23,7 @@ typedef struct SDL_WindowEvent_pack1 {
     SDL_WindowID windowID; 
     Sint32 data1;       
     Sint32 data2;       
+    Uint32 padding_end;
 } SDL_WindowEvent_pack1;
 
 typedef struct SDL_KeyboardDeviceEvent_pack1 {
@@ -29,6 +31,7 @@ typedef struct SDL_KeyboardDeviceEvent_pack1 {
     Uint32 reserved;
     Uint64 timestamp;   
     SDL_KeyboardID which;   
+    Uint32 padding_end;
 } SDL_KeyboardDeviceEvent_pack1;
 
 typedef struct SDL_KeyboardEvent_pack1 {
@@ -41,6 +44,7 @@ typedef struct SDL_KeyboardEvent_pack1 {
     SDL_Keycode key;        
     SDL_Keymod mod;         
     Uint16 raw;             
+    Uint16 padding16;
     Uint8 state;            
     Uint8 repeat;           
 } SDL_KeyboardEvent_pack1;
@@ -50,6 +54,7 @@ typedef struct SDL_TextEditingEvent_pack1 {
     Uint32 reserved;
     Uint64 timestamp;           
     SDL_WindowID windowID;      
+    Uint32 padding32;
     const char *text;           
     Sint32 start;               
     Sint32 length;              
@@ -60,13 +65,13 @@ typedef struct SDL_TextEditingCandidatesEvent_pack1 {
     Uint32 reserved;
     Uint64 timestamp;           
     SDL_WindowID windowID;      
+    Uint32 padding32;
     const char * const *candidates;    
     Sint32 num_candidates;      
     Sint32 selected_candidate;  
     SDL_bool horizontal;          
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
+    Uint32 padding_end;
 } SDL_TextEditingCandidatesEvent_pack1;
 
 typedef struct SDL_TextInputEvent_pack1 {
@@ -74,6 +79,7 @@ typedef struct SDL_TextInputEvent_pack1 {
     Uint32 reserved;
     Uint64 timestamp;   
     SDL_WindowID windowID; 
+    Uint32 padding32;
     const char *text;   
 } SDL_TextInputEvent_pack1;
 
@@ -82,6 +88,7 @@ typedef struct SDL_MouseDeviceEvent_pack1 {
     Uint32 reserved;
     Uint64 timestamp;   
     SDL_MouseID which;  
+    Uint32 padding_end;
 } SDL_MouseDeviceEvent_pack1;
 
 typedef struct SDL_MouseMotionEvent_pack1 {
@@ -95,6 +102,7 @@ typedef struct SDL_MouseMotionEvent_pack1 {
     float y;            
     float xrel;         
     float yrel;         
+    Uint32 padding_end;
 } SDL_MouseMotionEvent_pack1;
 
 typedef struct SDL_MouseButtonEvent_pack1 {
@@ -106,9 +114,10 @@ typedef struct SDL_MouseButtonEvent_pack1 {
     Uint8 button;       
     Uint8 state;        
     Uint8 clicks;       
-    Uint8 padding;
+    Uint8 padding8;
     float x;            
     float y;            
+    Uint32 padding_end;
 } SDL_MouseButtonEvent_pack1;
 
 typedef struct SDL_MouseWheelEvent_pack1 {
@@ -122,6 +131,7 @@ typedef struct SDL_MouseWheelEvent_pack1 {
     SDL_MouseWheelDirection direction; 
     float mouse_x;      
     float mouse_y;      
+    Uint32 padding_end;
 } SDL_MouseWheelEvent_pack1;
 
 typedef struct SDL_JoyAxisEvent_pack1 {
@@ -130,11 +140,10 @@ typedef struct SDL_JoyAxisEvent_pack1 {
     Uint64 timestamp;   
     SDL_JoystickID which; 
     Uint8 axis;         
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
     Sint16 value;       
-    Uint16 padding4;
+    Uint16 padding16;
+    Uint32 padding_end;
 } SDL_JoyAxisEvent_pack1;
 
 typedef struct SDL_JoyBallEvent_pack1 {
@@ -143,11 +152,10 @@ typedef struct SDL_JoyBallEvent_pack1 {
     Uint64 timestamp;   
     SDL_JoystickID which; 
     Uint8 ball;         
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
     Sint16 xrel;        
     Sint16 yrel;        
+    Uint32 padding_end;
 } SDL_JoyBallEvent_pack1;
 
 typedef struct SDL_JoyHatEvent_pack1 {
@@ -163,8 +171,7 @@ typedef struct SDL_JoyHatEvent_pack1 {
                          *
                          *   Note that zero means the POV is centered.
                          */
-    Uint8 padding1;
-    Uint8 padding2;
+    Uint8 padding8[2];
 } SDL_JoyHatEvent_pack1;
 
 typedef struct SDL_JoyButtonEvent_pack1 {
@@ -174,8 +181,7 @@ typedef struct SDL_JoyButtonEvent_pack1 {
     SDL_JoystickID which; 
     Uint8 button;       
     Uint8 state;        
-    Uint8 padding1;
-    Uint8 padding2;
+    Uint8 padding8[2];
 } SDL_JoyButtonEvent_pack1;
 
 typedef struct SDL_JoyDeviceEvent_pack1 {
@@ -183,6 +189,7 @@ typedef struct SDL_JoyDeviceEvent_pack1 {
     Uint32 reserved;
     Uint64 timestamp;   
     SDL_JoystickID which;       
+    Uint32 padding_end;
 } SDL_JoyDeviceEvent_pack1;
 
 typedef struct SDL_JoyBatteryEvent_pack1 {
@@ -191,7 +198,8 @@ typedef struct SDL_JoyBatteryEvent_pack1 {
     Uint64 timestamp;   
     SDL_JoystickID which; 
     SDL_PowerState state; 
-    int percent;          
+    Sint32 percent;       
+    Uint32 padding_end;
 } SDL_JoyBatteryEvent_pack1;
 
 typedef struct SDL_GamepadAxisEvent_pack1 {
@@ -200,11 +208,10 @@ typedef struct SDL_GamepadAxisEvent_pack1 {
     Uint64 timestamp;   
     SDL_JoystickID which; 
     Uint8 axis;         
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
     Sint16 value;       
-    Uint16 padding4;
+    Uint16 padding16;
+    Uint32 padding_end;
 } SDL_GamepadAxisEvent_pack1;
 
 typedef struct SDL_GamepadButtonEvent_pack1 {
@@ -214,8 +221,7 @@ typedef struct SDL_GamepadButtonEvent_pack1 {
     SDL_JoystickID which; 
     Uint8 button;       
     Uint8 state;        
-    Uint8 padding1;
-    Uint8 padding2;
+    Uint8 padding8[2];
 } SDL_GamepadButtonEvent_pack1;
 
 typedef struct SDL_GamepadDeviceEvent_pack1 {
@@ -223,6 +229,7 @@ typedef struct SDL_GamepadDeviceEvent_pack1 {
     Uint32 reserved;
     Uint64 timestamp;   
     SDL_JoystickID which;       
+    Uint32 padding_end;
 } SDL_GamepadDeviceEvent_pack1;
 
 typedef struct SDL_GamepadTouchpadEvent_pack1 {
@@ -244,6 +251,7 @@ typedef struct SDL_GamepadSensorEvent_pack1 {
     SDL_JoystickID which; 
     Sint32 sensor;      
     float data[3];      
+    Uint32 padding32;
     Uint64 sensor_timestamp; 
 } SDL_GamepadSensorEvent_pack1;
 
@@ -253,9 +261,7 @@ typedef struct SDL_AudioDeviceEvent_pack1 {
     Uint64 timestamp;   
     SDL_AudioDeviceID which;       
     Uint8 recording;    
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
 } SDL_AudioDeviceEvent_pack1;
 
 typedef struct SDL_CameraDeviceEvent_pack1 {
@@ -263,6 +269,7 @@ typedef struct SDL_CameraDeviceEvent_pack1 {
     Uint32 reserved;
     Uint64 timestamp;   
     SDL_CameraID which;       
+    Uint32 padding_end;
 } SDL_CameraDeviceEvent_pack1;
 
 typedef struct SDL_TouchFingerEvent_pack1 {
@@ -296,6 +303,7 @@ typedef struct SDL_PenMotionEvent_pack1 {
     SDL_PenInputFlags pen_state;   
     float x;                
     float y;                
+    Uint32 padding_end;
 } SDL_PenMotionEvent_pack1;
 
 typedef struct SDL_PenTouchEvent_pack1 {
@@ -309,6 +317,7 @@ typedef struct SDL_PenTouchEvent_pack1 {
     float y;                
     Uint8 eraser;           
     Uint8 state;            
+    Uint8 padding8[2];
 } SDL_PenTouchEvent_pack1;
 
 typedef struct SDL_PenButtonEvent_pack1 {
@@ -322,6 +331,7 @@ typedef struct SDL_PenButtonEvent_pack1 {
     float y;                
     Uint8 button;       
     Uint8 state;        
+    Uint8 padding8[2];
 } SDL_PenButtonEvent_pack1;
 
 typedef struct SDL_PenAxisEvent_pack1 {
@@ -335,6 +345,7 @@ typedef struct SDL_PenAxisEvent_pack1 {
     float y;                
     SDL_PenAxis axis;       
     float value;            
+    Uint32 padding_end;
 } SDL_PenAxisEvent_pack1;
 
 typedef struct SDL_DropEvent_pack1 {
@@ -344,6 +355,7 @@ typedef struct SDL_DropEvent_pack1 {
     SDL_WindowID windowID;    
     float x;            
     float y;            
+    Uint32 padding32;
     const char *source; 
     const char *data;   
 } SDL_DropEvent_pack1;
@@ -360,6 +372,7 @@ typedef struct SDL_SensorEvent_pack1 {
     Uint64 timestamp;   
     SDL_SensorID which; 
     float data[6];      
+    Uint32 padding32;
     Uint64 sensor_timestamp; 
 } SDL_SensorEvent_pack1;
 
@@ -445,12 +458,14 @@ typedef struct SDL_CameraSpec_pack1 {
 
 typedef struct SDL_HapticDirection_pack1 {
     Uint8 type;         
+    Uint8 padding8[3];
     Sint32 dir[3];      
 } SDL_HapticDirection_pack1;
 
 typedef struct SDL_HapticConstant_pack1 {
     
     Uint16 type;            
+    Uint16 padding16;
     SDL_HapticDirection direction;  
 
     
@@ -473,7 +488,7 @@ typedef struct SDL_HapticConstant_pack1 {
 
 typedef struct SDL_HapticPeriodic_pack1 {
     
-    Uint16 type;        /**< SDL_HAPTIC_SINE, SDL_HAPTIC_SQUARE
+    Uint32 type;        /**< SDL_HAPTIC_SINE, SDL_HAPTIC_SQUARE
                              SDL_HAPTIC_TRIANGLE, SDL_HAPTIC_SAWTOOTHUP or
                              SDL_HAPTIC_SAWTOOTHDOWN */
     SDL_HapticDirection direction;  
@@ -497,11 +512,13 @@ typedef struct SDL_HapticPeriodic_pack1 {
     Uint16 attack_level;    
     Uint16 fade_length; 
     Uint16 fade_level;  
+
+    Uint16 padding_end;
 } SDL_HapticPeriodic_pack1;
 
 typedef struct SDL_HapticCondition_pack1 {
     
-    Uint16 type;            /**< SDL_HAPTIC_SPRING, SDL_HAPTIC_DAMPER,
+    Uint32 type;            /**< SDL_HAPTIC_SPRING, SDL_HAPTIC_DAMPER,
                                  SDL_HAPTIC_INERTIA or SDL_HAPTIC_FRICTION */
     SDL_HapticDirection direction;  
 
@@ -520,11 +537,13 @@ typedef struct SDL_HapticCondition_pack1 {
     Sint16 left_coeff[3];   
     Uint16 deadband[3];     
     Sint16 center[3];       
+
+    Uint16 padding_end;
 } SDL_HapticCondition_pack1;
 
 typedef struct SDL_HapticRamp_pack1 {
     
-    Uint16 type;            
+    Uint32 type;            
     SDL_HapticDirection direction;  
 
     
@@ -544,11 +563,13 @@ typedef struct SDL_HapticRamp_pack1 {
     Uint16 attack_level;    
     Uint16 fade_length;     
     Uint16 fade_level;      
+
+    Uint16 padding_end;
 } SDL_HapticRamp_pack1;
 
 typedef struct SDL_HapticLeftRight_pack1 {
     
-    Uint16 type;            
+    Uint32 type;            
 
     
     Uint32 length;          
@@ -560,7 +581,7 @@ typedef struct SDL_HapticLeftRight_pack1 {
 
 typedef struct SDL_HapticCustom_pack1 {
     
-    Uint16 type;            
+    Uint32 type;            
     SDL_HapticDirection direction;  
 
     
@@ -573,8 +594,10 @@ typedef struct SDL_HapticCustom_pack1 {
 
     
     Uint8 channels;         
+    Uint8 padding8[3];
     Uint16 period;          
     Uint16 samples;         
+    Uint16 padding16;
     Uint16 *data;           
 
     
@@ -586,13 +609,14 @@ typedef struct SDL_HapticCustom_pack1 {
 
 typedef union SDL_HapticEffect_pack1 {
     
-    Uint16 type;                    
+    Uint32 type;                    
     SDL_HapticConstant constant;    
     SDL_HapticPeriodic periodic;    
     SDL_HapticCondition condition;  
     SDL_HapticRamp ramp;            
     SDL_HapticLeftRight leftright;  
     SDL_HapticCustom custom;        
+    Uint8 padding[72];
 } SDL_HapticEffect_pack1;
 
 typedef struct SDL_StorageInterface_pack1 {
@@ -647,6 +671,7 @@ typedef struct SDL_Finger_pack1 {
     float x;  
     float y;  
     float pressure; 
+    Uint32 padding_end;
 } SDL_Finger_pack1;
 
 typedef struct SDL_GamepadBinding_pack1 {
@@ -756,9 +781,7 @@ typedef struct SDL_IOStreamInterface_pack1 {
 typedef struct SDL_GPUDepthStencilValue_pack1 {
     float depth;
     Uint8 stencil;
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
 } SDL_GPUDepthStencilValue_pack1;
 
 typedef struct SDL_GPUViewport_pack1 {
@@ -775,11 +798,13 @@ typedef struct SDL_GPUTextureTransferInfo_pack1 {
     Uint32 offset;      
     Uint32 imagePitch;  
     Uint32 imageHeight; 
+    Uint32 padding_end;
 } SDL_GPUTextureTransferInfo_pack1;
 
 typedef struct SDL_GPUTransferBufferLocation_pack1 {
     SDL_GPUTransferBuffer *transferBuffer;
     Uint32 offset;
+    Uint32 padding_end;
 } SDL_GPUTransferBufferLocation_pack1;
 
 typedef struct SDL_GPUTextureLocation_pack1 {
@@ -789,6 +814,7 @@ typedef struct SDL_GPUTextureLocation_pack1 {
     Uint32 x;
     Uint32 y;
     Uint32 z;
+    Uint32 padding_end;
 } SDL_GPUTextureLocation_pack1;
 
 typedef struct SDL_GPUTextureRegion_pack1 {
@@ -816,6 +842,7 @@ typedef struct SDL_GPUBlitRegion_pack1 {
 typedef struct SDL_GPUBufferLocation_pack1 {
     SDL_GPUBuffer *buffer;
     Uint32 offset;
+    Uint32 padding_end;
 } SDL_GPUBufferLocation_pack1;
 
 typedef struct SDL_GPUBufferRegion_pack1 {
@@ -856,8 +883,7 @@ typedef struct SDL_GPUSamplerCreateInfo_pack1 {
     float maxAnisotropy;
     SDL_bool anisotropyEnable;
     SDL_bool compareEnable;
-    Uint8 padding1;
-    Uint8 padding2;
+    Uint8 padding8[2];
     SDL_GPUCompareOp compareOp;
     float minLod;
     float maxLod;
@@ -881,8 +907,8 @@ typedef struct SDL_GPUVertexAttribute_pack1 {
 
 typedef struct SDL_GPUVertexInputState_pack1 {
     const SDL_GPUVertexBinding *vertexBindings;
-    Uint32 vertexBindingCount;
     const SDL_GPUVertexAttribute *vertexAttributes;
+    Uint32 vertexBindingCount;
     Uint32 vertexAttributeCount;
 } SDL_GPUVertexInputState_pack1;
 
@@ -895,9 +921,7 @@ typedef struct SDL_GPUStencilOpState_pack1 {
 
 typedef struct SDL_GPUColorAttachmentBlendState_pack1 {
     SDL_bool blendEnable;
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
     SDL_GPUBlendFactor srcColorBlendFactor;
     SDL_GPUBlendFactor dstColorBlendFactor;
     SDL_GPUBlendOp colorBlendOp;
@@ -905,10 +929,12 @@ typedef struct SDL_GPUColorAttachmentBlendState_pack1 {
     SDL_GPUBlendFactor dstAlphaBlendFactor;
     SDL_GPUBlendOp alphaBlendOp;
     SDL_GPUColorComponentFlags colorWriteMask;
+    Uint8 padding_end[3];
 } SDL_GPUColorAttachmentBlendState_pack1;
 
 typedef struct SDL_GPUShaderCreateInfo_pack1 {
-    size_t codeSize;
+    Uint32 codeSize;
+    Uint32 padding32;
     const Uint8 *code;
     const char *entryPointName;
     SDL_GPUShaderFormat format;
@@ -919,6 +945,7 @@ typedef struct SDL_GPUShaderCreateInfo_pack1 {
     Uint32 uniformBufferCount;
 
     SDL_PropertiesID props;
+    Uint32 padding_end;
 } SDL_GPUShaderCreateInfo_pack1;
 
 typedef struct SDL_GPUTextureCreateInfo_pack1 {
@@ -953,9 +980,7 @@ typedef struct SDL_GPURasterizerState_pack1 {
     SDL_GPUCullMode cullMode;
     SDL_GPUFrontFace frontFace;
     SDL_bool depthBiasEnable;
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
     float depthBiasConstantFactor;
     float depthBiasClamp;
     float depthBiasSlopeFactor;
@@ -970,14 +995,14 @@ typedef struct SDL_GPUDepthStencilState_pack1 {
     SDL_bool depthTestEnable;
     SDL_bool depthWriteEnable;
     SDL_bool stencilTestEnable;
-    Uint8 padding1;
+    Uint8 padding8[1];
     SDL_GPUCompareOp compareOp;
     SDL_GPUStencilOpState backStencilState;
     SDL_GPUStencilOpState frontStencilState;
     Uint8 compareMask;
     Uint8 writeMask;
     Uint8 reference;
-    Uint8 padding2;
+    Uint8 padding_end;
 } SDL_GPUDepthStencilState_pack1;
 
 typedef struct SDL_GPUColorAttachmentDescription_pack1 {
@@ -989,10 +1014,9 @@ typedef struct SDL_GPUGraphicsPipelineAttachmentInfo_pack1 {
     const SDL_GPUColorAttachmentDescription *colorAttachmentDescriptions;
     Uint32 colorAttachmentCount;
     SDL_bool hasDepthStencilAttachment;
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
     SDL_GPUTextureFormat depthStencilFormat;
+    Uint32 padding_end;
 } SDL_GPUGraphicsPipelineAttachmentInfo_pack1;
 
 typedef struct SDL_GPUGraphicsPipelineCreateInfo_pack1 {
@@ -1003,10 +1027,12 @@ typedef struct SDL_GPUGraphicsPipelineCreateInfo_pack1 {
     SDL_GPURasterizerState rasterizerState;
     SDL_GPUMultisampleState multisampleState;
     SDL_GPUDepthStencilState depthStencilState;
+    Uint32 padding32;
     SDL_GPUGraphicsPipelineAttachmentInfo attachmentInfo;
     float blendConstants[4];
 
     SDL_PropertiesID props;
+    Uint32 padding_end;
 } SDL_GPUGraphicsPipelineCreateInfo_pack1;
 
 typedef struct SDL_GPUComputePipelineCreateInfo_pack1 {
@@ -1062,9 +1088,8 @@ typedef struct SDL_GPUColorAttachmentInfo_pack1 {
 
     
     SDL_bool cycle;
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
+    Uint32 padding_end;
 } SDL_GPUColorAttachmentInfo_pack1;
 
 typedef struct SDL_GPUDepthStencilAttachmentInfo_pack1 {
@@ -1126,14 +1151,14 @@ typedef struct SDL_GPUDepthStencilAttachmentInfo_pack1 {
 
     
     SDL_bool cycle;
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
+    Uint32 padding_end;
 } SDL_GPUDepthStencilAttachmentInfo_pack1;
 
 typedef struct SDL_GPUBufferBinding_pack1 {
     SDL_GPUBuffer *buffer;
     Uint32 offset;
+    Uint32 padding_end;
 } SDL_GPUBufferBinding_pack1;
 
 typedef struct SDL_GPUTextureSamplerBinding_pack1 {
@@ -1146,9 +1171,8 @@ typedef struct SDL_GPUStorageBufferWriteOnlyBinding_pack1 {
 
     
     SDL_bool cycle;
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
+    Uint32 padding_end;
 } SDL_GPUStorageBufferWriteOnlyBinding_pack1;
 
 typedef struct SDL_GPUStorageTextureWriteOnlyBinding_pack1 {
@@ -1158,9 +1182,8 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding_pack1 {
 
     
     SDL_bool cycle;
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
+    Uint8 padding8[3];
+    Uint32 padding_end;
 } SDL_GPUStorageTextureWriteOnlyBinding_pack1;
 
 typedef struct SDL_Surface_pack1 {
@@ -1168,9 +1191,8 @@ typedef struct SDL_Surface_pack1 {
     SDL_PixelFormat format;     
     int w, h;                   
     int pitch;                  
-    void *pixels;               
-
     int refcount;               
+    void *pixels;               
 
     SDL_SurfaceData *internal;  
 
@@ -1196,38 +1218,29 @@ typedef struct SDL_DisplayMode_pack1 {
 
 } SDL_DisplayMode_pack1;
 
-typedef struct SDL_AssertData_pack1 {
-    SDL_bool always_ignore;  
-    unsigned int trigger_count; 
-    const char *condition;  
-    const char *filename;  
-    int linenum;  
-    const char *function;  
-    const struct SDL_AssertData *next;  
-} SDL_AssertData_pack1;
-
 typedef struct SDL_hid_device_info_pack1 {
     
     char *path;
     
-    unsigned short vendor_id;
-    
-    unsigned short product_id;
-    
     wchar_t *serial_number;
-    /** Device Release Number in binary-coded decimal,
-        also known as Device Version Number */
-    unsigned short release_number;
     
     wchar_t *manufacturer_string;
     
     wchar_t *product_string;
+    
+    Uint16 vendor_id;
+    
+    Uint16 product_id;
+    /** Device Release Number in binary-coded decimal,
+        also known as Device Version Number */
+    Uint16 release_number;
     /** Usage Page for this Device/Interface
         (Windows/Mac/hidraw only) */
-    unsigned short usage_page;
+    Uint16 usage_page;
     /** Usage for this Device/Interface
         (Windows/Mac/hidraw only) */
-    unsigned short usage;
+    Uint16 usage;
+    Uint16 padding16;
     /** The USB interface which this logical device
         represents.
 
@@ -1315,6 +1328,7 @@ typedef struct SDL_VirtualJoystickDesc_pack1 {
 
 typedef struct SDL_PathInfo_pack1 {
     SDL_PathType type;          
+    Uint32 padding32;
     Uint64 size;                
     SDL_Time create_time;   
     SDL_Time modify_time;   
@@ -1335,18 +1349,6 @@ typedef struct SDL_MessageBoxColorScheme_pack1 {
     SDL_MessageBoxColor colors[SDL_MESSAGEBOX_COLOR_MAX];
 } SDL_MessageBoxColorScheme_pack1;
 
-typedef struct SDL_MessageBoxData_pack1 {
-    SDL_MessageBoxFlags flags;
-    SDL_Window *window;                 
-    const char *title;                  
-    const char *message;                
-
-    int numbuttons;
-    const SDL_MessageBoxButtonData *buttons;
-
-    const SDL_MessageBoxColorScheme *colorScheme;   
-} SDL_MessageBoxData_pack1;
-
 typedef struct SDL_Color_pack1 {
     Uint8 r;
     Uint8 g;
@@ -1362,10 +1364,11 @@ typedef struct SDL_FColor_pack1 {
 } SDL_FColor_pack1;
 
 typedef struct SDL_Palette_pack1 {
+    int refcount;       
     int ncolors;        
     SDL_Color *colors;  
     Uint32 version;     
-    int refcount;       
+    Uint32 padding_end;
 } SDL_Palette_pack1;
 
 typedef struct SDL_PixelFormatDetails_pack1 {

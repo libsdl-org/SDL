@@ -67,6 +67,7 @@ typedef struct SDL_Finger
     float x;  /**< the x-axis location of the touch event, normalized (0...1) */
     float y;  /**< the y-axis location of the touch event, normalized (0...1) */
     float pressure; /**< the quantity of pressure applied, normalized (0...1) */
+    Uint32 padding_end;
 } SDL_Finger;
 
 /* Used as the device ID for mouse events simulated with touch input */

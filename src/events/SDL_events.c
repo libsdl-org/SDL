@@ -612,7 +612,7 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_BATTERY_UPDATED)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d state=%u percent=%d)",
                            (uint)event->jbattery.timestamp, (int)event->jbattery.which,
-                           event->jbattery.state, event->jbattery.percent);
+                           event->jbattery.state, (int)event->jbattery.percent);
         break;
 
 #define PRINT_JOYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d)", (uint)event->jdevice.timestamp, (int)event->jdevice.which)

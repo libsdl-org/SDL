@@ -84,6 +84,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_DisplayEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_DisplayEvent_pack1, padding_end)) {
+        SDL_Log("SDL_DisplayEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_DisplayEvent_pack1, padding_end), SDL_OFFSETOF(SDL_DisplayEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_DisplayEvent_pack4) != sizeof(SDL_DisplayEvent_pack1)) {
         SDL_Log("SDL_DisplayEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_DisplayEvent_pack1), (int)sizeof(SDL_DisplayEvent_pack4));
         result = SDL_FALSE;
@@ -116,6 +121,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_DisplayEvent_pack4, data2) != SDL_OFFSETOF(SDL_DisplayEvent_pack1, data2)) {
         SDL_Log("SDL_DisplayEvent.data2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_DisplayEvent_pack1, data2), SDL_OFFSETOF(SDL_DisplayEvent_pack4, data2));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_DisplayEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_DisplayEvent_pack1, padding_end)) {
+        SDL_Log("SDL_DisplayEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_DisplayEvent_pack1, padding_end), SDL_OFFSETOF(SDL_DisplayEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -156,6 +166,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_WindowEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_WindowEvent_pack1, padding_end)) {
+        SDL_Log("SDL_WindowEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_WindowEvent_pack1, padding_end), SDL_OFFSETOF(SDL_WindowEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_WindowEvent_pack4) != sizeof(SDL_WindowEvent_pack1)) {
         SDL_Log("SDL_WindowEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_WindowEvent_pack1), (int)sizeof(SDL_WindowEvent_pack4));
         result = SDL_FALSE;
@@ -191,6 +206,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_WindowEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_WindowEvent_pack1, padding_end)) {
+        SDL_Log("SDL_WindowEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_WindowEvent_pack1, padding_end), SDL_OFFSETOF(SDL_WindowEvent_pack4, padding_end));
+        result = SDL_FALSE;
+    }
+
     /* SDL_KeyboardDeviceEvent */
 
     if (sizeof(SDL_KeyboardDeviceEvent_pack8) != sizeof(SDL_KeyboardDeviceEvent_pack1)) {
@@ -218,6 +238,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack1, padding_end)) {
+        SDL_Log("SDL_KeyboardDeviceEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack1, padding_end), SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_KeyboardDeviceEvent_pack4) != sizeof(SDL_KeyboardDeviceEvent_pack1)) {
         SDL_Log("SDL_KeyboardDeviceEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_KeyboardDeviceEvent_pack1), (int)sizeof(SDL_KeyboardDeviceEvent_pack4));
         result = SDL_FALSE;
@@ -240,6 +265,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack4, which) != SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack1, which)) {
         SDL_Log("SDL_KeyboardDeviceEvent.which has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack1, which), SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack4, which));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack1, padding_end)) {
+        SDL_Log("SDL_KeyboardDeviceEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack1, padding_end), SDL_OFFSETOF(SDL_KeyboardDeviceEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -292,6 +322,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_KeyboardEvent_pack8, raw) != SDL_OFFSETOF(SDL_KeyboardEvent_pack1, raw)) {
         SDL_Log("SDL_KeyboardEvent.raw has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_KeyboardEvent_pack1, raw), SDL_OFFSETOF(SDL_KeyboardEvent_pack8, raw));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_KeyboardEvent_pack8, padding16) != SDL_OFFSETOF(SDL_KeyboardEvent_pack1, padding16)) {
+        SDL_Log("SDL_KeyboardEvent.padding16 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_KeyboardEvent_pack1, padding16), SDL_OFFSETOF(SDL_KeyboardEvent_pack8, padding16));
         result = SDL_FALSE;
     }
 
@@ -355,6 +390,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_KeyboardEvent_pack4, padding16) != SDL_OFFSETOF(SDL_KeyboardEvent_pack1, padding16)) {
+        SDL_Log("SDL_KeyboardEvent.padding16 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_KeyboardEvent_pack1, padding16), SDL_OFFSETOF(SDL_KeyboardEvent_pack4, padding16));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_KeyboardEvent_pack4, state) != SDL_OFFSETOF(SDL_KeyboardEvent_pack1, state)) {
         SDL_Log("SDL_KeyboardEvent.state has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_KeyboardEvent_pack1, state), SDL_OFFSETOF(SDL_KeyboardEvent_pack4, state));
         result = SDL_FALSE;
@@ -389,6 +429,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_TextEditingEvent_pack8, windowID) != SDL_OFFSETOF(SDL_TextEditingEvent_pack1, windowID)) {
         SDL_Log("SDL_TextEditingEvent.windowID has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingEvent_pack1, windowID), SDL_OFFSETOF(SDL_TextEditingEvent_pack8, windowID));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_TextEditingEvent_pack8, padding32) != SDL_OFFSETOF(SDL_TextEditingEvent_pack1, padding32)) {
+        SDL_Log("SDL_TextEditingEvent.padding32 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingEvent_pack1, padding32), SDL_OFFSETOF(SDL_TextEditingEvent_pack8, padding32));
         result = SDL_FALSE;
     }
 
@@ -429,6 +474,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_TextEditingEvent_pack4, windowID) != SDL_OFFSETOF(SDL_TextEditingEvent_pack1, windowID)) {
         SDL_Log("SDL_TextEditingEvent.windowID has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingEvent_pack1, windowID), SDL_OFFSETOF(SDL_TextEditingEvent_pack4, windowID));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_TextEditingEvent_pack4, padding32) != SDL_OFFSETOF(SDL_TextEditingEvent_pack1, padding32)) {
+        SDL_Log("SDL_TextEditingEvent.padding32 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingEvent_pack1, padding32), SDL_OFFSETOF(SDL_TextEditingEvent_pack4, padding32));
         result = SDL_FALSE;
     }
 
@@ -474,6 +524,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding32) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding32)) {
+        SDL_Log("SDL_TextEditingCandidatesEvent.padding32 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding32), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding32));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, candidates) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, candidates)) {
         SDL_Log("SDL_TextEditingCandidatesEvent.candidates has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, candidates), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, candidates));
         result = SDL_FALSE;
@@ -494,18 +549,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding1) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding1)) {
-        SDL_Log("SDL_TextEditingCandidatesEvent.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding1), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding1));
+    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding8[0]) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_TextEditingCandidatesEvent.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding2) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding2)) {
-        SDL_Log("SDL_TextEditingCandidatesEvent.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding2), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding3) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding3)) {
-        SDL_Log("SDL_TextEditingCandidatesEvent.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding3), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding_end)) {
+        SDL_Log("SDL_TextEditingCandidatesEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding_end), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -534,6 +584,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding32) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding32)) {
+        SDL_Log("SDL_TextEditingCandidatesEvent.padding32 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding32), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding32));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, candidates) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, candidates)) {
         SDL_Log("SDL_TextEditingCandidatesEvent.candidates has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, candidates), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, candidates));
         result = SDL_FALSE;
@@ -554,18 +609,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding1) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding1)) {
-        SDL_Log("SDL_TextEditingCandidatesEvent.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding1), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding1));
+    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding8[0]) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_TextEditingCandidatesEvent.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding2) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding2)) {
-        SDL_Log("SDL_TextEditingCandidatesEvent.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding2), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding3) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding3)) {
-        SDL_Log("SDL_TextEditingCandidatesEvent.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding3), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding_end)) {
+        SDL_Log("SDL_TextEditingCandidatesEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack1, padding_end), SDL_OFFSETOF(SDL_TextEditingCandidatesEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -596,6 +646,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_TextInputEvent_pack8, padding32) != SDL_OFFSETOF(SDL_TextInputEvent_pack1, padding32)) {
+        SDL_Log("SDL_TextInputEvent.padding32 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextInputEvent_pack1, padding32), SDL_OFFSETOF(SDL_TextInputEvent_pack8, padding32));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_TextInputEvent_pack8, text) != SDL_OFFSETOF(SDL_TextInputEvent_pack1, text)) {
         SDL_Log("SDL_TextInputEvent.text has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextInputEvent_pack1, text), SDL_OFFSETOF(SDL_TextInputEvent_pack8, text));
         result = SDL_FALSE;
@@ -623,6 +678,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_TextInputEvent_pack4, windowID) != SDL_OFFSETOF(SDL_TextInputEvent_pack1, windowID)) {
         SDL_Log("SDL_TextInputEvent.windowID has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextInputEvent_pack1, windowID), SDL_OFFSETOF(SDL_TextInputEvent_pack4, windowID));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_TextInputEvent_pack4, padding32) != SDL_OFFSETOF(SDL_TextInputEvent_pack1, padding32)) {
+        SDL_Log("SDL_TextInputEvent.padding32 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_TextInputEvent_pack1, padding32), SDL_OFFSETOF(SDL_TextInputEvent_pack4, padding32));
         result = SDL_FALSE;
     }
 
@@ -658,6 +718,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_MouseDeviceEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_MouseDeviceEvent_pack1, padding_end)) {
+        SDL_Log("SDL_MouseDeviceEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseDeviceEvent_pack1, padding_end), SDL_OFFSETOF(SDL_MouseDeviceEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_MouseDeviceEvent_pack4) != sizeof(SDL_MouseDeviceEvent_pack1)) {
         SDL_Log("SDL_MouseDeviceEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_MouseDeviceEvent_pack1), (int)sizeof(SDL_MouseDeviceEvent_pack4));
         result = SDL_FALSE;
@@ -680,6 +745,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_MouseDeviceEvent_pack4, which) != SDL_OFFSETOF(SDL_MouseDeviceEvent_pack1, which)) {
         SDL_Log("SDL_MouseDeviceEvent.which has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseDeviceEvent_pack1, which), SDL_OFFSETOF(SDL_MouseDeviceEvent_pack4, which));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_MouseDeviceEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_MouseDeviceEvent_pack1, padding_end)) {
+        SDL_Log("SDL_MouseDeviceEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseDeviceEvent_pack1, padding_end), SDL_OFFSETOF(SDL_MouseDeviceEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -740,6 +810,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_MouseMotionEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_MouseMotionEvent_pack1, padding_end)) {
+        SDL_Log("SDL_MouseMotionEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseMotionEvent_pack1, padding_end), SDL_OFFSETOF(SDL_MouseMotionEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_MouseMotionEvent_pack4) != sizeof(SDL_MouseMotionEvent_pack1)) {
         SDL_Log("SDL_MouseMotionEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_MouseMotionEvent_pack1), (int)sizeof(SDL_MouseMotionEvent_pack4));
         result = SDL_FALSE;
@@ -795,6 +870,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_MouseMotionEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_MouseMotionEvent_pack1, padding_end)) {
+        SDL_Log("SDL_MouseMotionEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseMotionEvent_pack1, padding_end), SDL_OFFSETOF(SDL_MouseMotionEvent_pack4, padding_end));
+        result = SDL_FALSE;
+    }
+
     /* SDL_MouseButtonEvent */
 
     if (sizeof(SDL_MouseButtonEvent_pack8) != sizeof(SDL_MouseButtonEvent_pack1)) {
@@ -842,8 +922,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_MouseButtonEvent_pack8, padding) != SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding)) {
-        SDL_Log("SDL_MouseButtonEvent.padding has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding), SDL_OFFSETOF(SDL_MouseButtonEvent_pack8, padding));
+    if (SDL_OFFSETOF(SDL_MouseButtonEvent_pack8, padding8) != SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding8)) {
+        SDL_Log("SDL_MouseButtonEvent.padding8 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding8), SDL_OFFSETOF(SDL_MouseButtonEvent_pack8, padding8));
         result = SDL_FALSE;
     }
 
@@ -854,6 +934,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_MouseButtonEvent_pack8, y) != SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, y)) {
         SDL_Log("SDL_MouseButtonEvent.y has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, y), SDL_OFFSETOF(SDL_MouseButtonEvent_pack8, y));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_MouseButtonEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding_end)) {
+        SDL_Log("SDL_MouseButtonEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding_end), SDL_OFFSETOF(SDL_MouseButtonEvent_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -902,8 +987,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_MouseButtonEvent_pack4, padding) != SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding)) {
-        SDL_Log("SDL_MouseButtonEvent.padding has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding), SDL_OFFSETOF(SDL_MouseButtonEvent_pack4, padding));
+    if (SDL_OFFSETOF(SDL_MouseButtonEvent_pack4, padding8) != SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding8)) {
+        SDL_Log("SDL_MouseButtonEvent.padding8 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding8), SDL_OFFSETOF(SDL_MouseButtonEvent_pack4, padding8));
         result = SDL_FALSE;
     }
 
@@ -914,6 +999,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_MouseButtonEvent_pack4, y) != SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, y)) {
         SDL_Log("SDL_MouseButtonEvent.y has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, y), SDL_OFFSETOF(SDL_MouseButtonEvent_pack4, y));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_MouseButtonEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding_end)) {
+        SDL_Log("SDL_MouseButtonEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseButtonEvent_pack1, padding_end), SDL_OFFSETOF(SDL_MouseButtonEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -974,6 +1064,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_MouseWheelEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_MouseWheelEvent_pack1, padding_end)) {
+        SDL_Log("SDL_MouseWheelEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseWheelEvent_pack1, padding_end), SDL_OFFSETOF(SDL_MouseWheelEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_MouseWheelEvent_pack4) != sizeof(SDL_MouseWheelEvent_pack1)) {
         SDL_Log("SDL_MouseWheelEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_MouseWheelEvent_pack1), (int)sizeof(SDL_MouseWheelEvent_pack4));
         result = SDL_FALSE;
@@ -1029,6 +1124,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_MouseWheelEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_MouseWheelEvent_pack1, padding_end)) {
+        SDL_Log("SDL_MouseWheelEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MouseWheelEvent_pack1, padding_end), SDL_OFFSETOF(SDL_MouseWheelEvent_pack4, padding_end));
+        result = SDL_FALSE;
+    }
+
     /* SDL_JoyAxisEvent */
 
     if (sizeof(SDL_JoyAxisEvent_pack8) != sizeof(SDL_JoyAxisEvent_pack1)) {
@@ -1061,18 +1161,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding1) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding1)) {
-        SDL_Log("SDL_JoyAxisEvent.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding1), SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding2) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding2)) {
-        SDL_Log("SDL_JoyAxisEvent.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding2), SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding3) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding3)) {
-        SDL_Log("SDL_JoyAxisEvent.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding3), SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding8[0]) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_JoyAxisEvent.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1081,8 +1171,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding4) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding4)) {
-        SDL_Log("SDL_JoyAxisEvent.padding4 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding4), SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding4));
+    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding16) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding16)) {
+        SDL_Log("SDL_JoyAxisEvent.padding16 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding16), SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding16));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding_end)) {
+        SDL_Log("SDL_JoyAxisEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding_end), SDL_OFFSETOF(SDL_JoyAxisEvent_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -1116,18 +1211,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding1) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding1)) {
-        SDL_Log("SDL_JoyAxisEvent.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding1), SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding2) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding2)) {
-        SDL_Log("SDL_JoyAxisEvent.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding2), SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding3) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding3)) {
-        SDL_Log("SDL_JoyAxisEvent.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding3), SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding8[0]) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_JoyAxisEvent.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1136,8 +1221,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding4) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding4)) {
-        SDL_Log("SDL_JoyAxisEvent.padding4 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding4), SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding4));
+    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding16) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding16)) {
+        SDL_Log("SDL_JoyAxisEvent.padding16 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding16), SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding16));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding_end)) {
+        SDL_Log("SDL_JoyAxisEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyAxisEvent_pack1, padding_end), SDL_OFFSETOF(SDL_JoyAxisEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -1173,18 +1263,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_JoyBallEvent_pack8, padding1) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding1)) {
-        SDL_Log("SDL_JoyBallEvent.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding1), SDL_OFFSETOF(SDL_JoyBallEvent_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyBallEvent_pack8, padding2) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding2)) {
-        SDL_Log("SDL_JoyBallEvent.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding2), SDL_OFFSETOF(SDL_JoyBallEvent_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyBallEvent_pack8, padding3) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding3)) {
-        SDL_Log("SDL_JoyBallEvent.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding3), SDL_OFFSETOF(SDL_JoyBallEvent_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_JoyBallEvent_pack8, padding8[0]) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_JoyBallEvent.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_JoyBallEvent_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1195,6 +1275,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_JoyBallEvent_pack8, yrel) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, yrel)) {
         SDL_Log("SDL_JoyBallEvent.yrel has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, yrel), SDL_OFFSETOF(SDL_JoyBallEvent_pack8, yrel));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_JoyBallEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding_end)) {
+        SDL_Log("SDL_JoyBallEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding_end), SDL_OFFSETOF(SDL_JoyBallEvent_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -1228,18 +1313,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_JoyBallEvent_pack4, padding1) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding1)) {
-        SDL_Log("SDL_JoyBallEvent.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding1), SDL_OFFSETOF(SDL_JoyBallEvent_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyBallEvent_pack4, padding2) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding2)) {
-        SDL_Log("SDL_JoyBallEvent.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding2), SDL_OFFSETOF(SDL_JoyBallEvent_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyBallEvent_pack4, padding3) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding3)) {
-        SDL_Log("SDL_JoyBallEvent.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding3), SDL_OFFSETOF(SDL_JoyBallEvent_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_JoyBallEvent_pack4, padding8[0]) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_JoyBallEvent.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_JoyBallEvent_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1250,6 +1325,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_JoyBallEvent_pack4, yrel) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, yrel)) {
         SDL_Log("SDL_JoyBallEvent.yrel has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, yrel), SDL_OFFSETOF(SDL_JoyBallEvent_pack4, yrel));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_JoyBallEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding_end)) {
+        SDL_Log("SDL_JoyBallEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBallEvent_pack1, padding_end), SDL_OFFSETOF(SDL_JoyBallEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -1290,13 +1370,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_JoyHatEvent_pack8, padding1) != SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding1)) {
-        SDL_Log("SDL_JoyHatEvent.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding1), SDL_OFFSETOF(SDL_JoyHatEvent_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyHatEvent_pack8, padding2) != SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding2)) {
-        SDL_Log("SDL_JoyHatEvent.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding2), SDL_OFFSETOF(SDL_JoyHatEvent_pack8, padding2));
+    if (SDL_OFFSETOF(SDL_JoyHatEvent_pack8, padding8[0]) != SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_JoyHatEvent.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_JoyHatEvent_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1335,13 +1410,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_JoyHatEvent_pack4, padding1) != SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding1)) {
-        SDL_Log("SDL_JoyHatEvent.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding1), SDL_OFFSETOF(SDL_JoyHatEvent_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyHatEvent_pack4, padding2) != SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding2)) {
-        SDL_Log("SDL_JoyHatEvent.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding2), SDL_OFFSETOF(SDL_JoyHatEvent_pack4, padding2));
+    if (SDL_OFFSETOF(SDL_JoyHatEvent_pack4, padding8[0]) != SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_JoyHatEvent.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyHatEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_JoyHatEvent_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1382,13 +1452,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_JoyButtonEvent_pack8, padding1) != SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding1)) {
-        SDL_Log("SDL_JoyButtonEvent.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding1), SDL_OFFSETOF(SDL_JoyButtonEvent_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyButtonEvent_pack8, padding2) != SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding2)) {
-        SDL_Log("SDL_JoyButtonEvent.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding2), SDL_OFFSETOF(SDL_JoyButtonEvent_pack8, padding2));
+    if (SDL_OFFSETOF(SDL_JoyButtonEvent_pack8, padding8[0]) != SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_JoyButtonEvent.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_JoyButtonEvent_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1427,13 +1492,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_JoyButtonEvent_pack4, padding1) != SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding1)) {
-        SDL_Log("SDL_JoyButtonEvent.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding1), SDL_OFFSETOF(SDL_JoyButtonEvent_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_JoyButtonEvent_pack4, padding2) != SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding2)) {
-        SDL_Log("SDL_JoyButtonEvent.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding2), SDL_OFFSETOF(SDL_JoyButtonEvent_pack4, padding2));
+    if (SDL_OFFSETOF(SDL_JoyButtonEvent_pack4, padding8[0]) != SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_JoyButtonEvent.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyButtonEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_JoyButtonEvent_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1464,6 +1524,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_JoyDeviceEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_JoyDeviceEvent_pack1, padding_end)) {
+        SDL_Log("SDL_JoyDeviceEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyDeviceEvent_pack1, padding_end), SDL_OFFSETOF(SDL_JoyDeviceEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_JoyDeviceEvent_pack4) != sizeof(SDL_JoyDeviceEvent_pack1)) {
         SDL_Log("SDL_JoyDeviceEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_JoyDeviceEvent_pack1), (int)sizeof(SDL_JoyDeviceEvent_pack4));
         result = SDL_FALSE;
@@ -1486,6 +1551,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_JoyDeviceEvent_pack4, which) != SDL_OFFSETOF(SDL_JoyDeviceEvent_pack1, which)) {
         SDL_Log("SDL_JoyDeviceEvent.which has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyDeviceEvent_pack1, which), SDL_OFFSETOF(SDL_JoyDeviceEvent_pack4, which));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_JoyDeviceEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_JoyDeviceEvent_pack1, padding_end)) {
+        SDL_Log("SDL_JoyDeviceEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyDeviceEvent_pack1, padding_end), SDL_OFFSETOF(SDL_JoyDeviceEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -1526,6 +1596,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_JoyBatteryEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_JoyBatteryEvent_pack1, padding_end)) {
+        SDL_Log("SDL_JoyBatteryEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBatteryEvent_pack1, padding_end), SDL_OFFSETOF(SDL_JoyBatteryEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_JoyBatteryEvent_pack4) != sizeof(SDL_JoyBatteryEvent_pack1)) {
         SDL_Log("SDL_JoyBatteryEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_JoyBatteryEvent_pack1), (int)sizeof(SDL_JoyBatteryEvent_pack4));
         result = SDL_FALSE;
@@ -1561,6 +1636,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_JoyBatteryEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_JoyBatteryEvent_pack1, padding_end)) {
+        SDL_Log("SDL_JoyBatteryEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_JoyBatteryEvent_pack1, padding_end), SDL_OFFSETOF(SDL_JoyBatteryEvent_pack4, padding_end));
+        result = SDL_FALSE;
+    }
+
     /* SDL_GamepadAxisEvent */
 
     if (sizeof(SDL_GamepadAxisEvent_pack8) != sizeof(SDL_GamepadAxisEvent_pack1)) {
@@ -1593,18 +1673,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding1) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding1)) {
-        SDL_Log("SDL_GamepadAxisEvent.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding1), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding2) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding2)) {
-        SDL_Log("SDL_GamepadAxisEvent.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding2), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding3) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding3)) {
-        SDL_Log("SDL_GamepadAxisEvent.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding3), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_GamepadAxisEvent.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1613,8 +1683,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding4) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding4)) {
-        SDL_Log("SDL_GamepadAxisEvent.padding4 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding4), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding4));
+    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding16) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding16)) {
+        SDL_Log("SDL_GamepadAxisEvent.padding16 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding16), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding16));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding_end)) {
+        SDL_Log("SDL_GamepadAxisEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding_end), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -1648,18 +1723,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding1) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding1)) {
-        SDL_Log("SDL_GamepadAxisEvent.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding1), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding2) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding2)) {
-        SDL_Log("SDL_GamepadAxisEvent.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding2), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding3) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding3)) {
-        SDL_Log("SDL_GamepadAxisEvent.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding3), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_GamepadAxisEvent.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1668,8 +1733,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding4) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding4)) {
-        SDL_Log("SDL_GamepadAxisEvent.padding4 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding4), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding4));
+    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding16) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding16)) {
+        SDL_Log("SDL_GamepadAxisEvent.padding16 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding16), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding16));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding_end)) {
+        SDL_Log("SDL_GamepadAxisEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadAxisEvent_pack1, padding_end), SDL_OFFSETOF(SDL_GamepadAxisEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -1710,13 +1780,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GamepadButtonEvent_pack8, padding1) != SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding1)) {
-        SDL_Log("SDL_GamepadButtonEvent.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding1), SDL_OFFSETOF(SDL_GamepadButtonEvent_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GamepadButtonEvent_pack8, padding2) != SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding2)) {
-        SDL_Log("SDL_GamepadButtonEvent.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding2), SDL_OFFSETOF(SDL_GamepadButtonEvent_pack8, padding2));
+    if (SDL_OFFSETOF(SDL_GamepadButtonEvent_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_GamepadButtonEvent.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_GamepadButtonEvent_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1755,13 +1820,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GamepadButtonEvent_pack4, padding1) != SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding1)) {
-        SDL_Log("SDL_GamepadButtonEvent.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding1), SDL_OFFSETOF(SDL_GamepadButtonEvent_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GamepadButtonEvent_pack4, padding2) != SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding2)) {
-        SDL_Log("SDL_GamepadButtonEvent.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding2), SDL_OFFSETOF(SDL_GamepadButtonEvent_pack4, padding2));
+    if (SDL_OFFSETOF(SDL_GamepadButtonEvent_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_GamepadButtonEvent.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadButtonEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_GamepadButtonEvent_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -1792,6 +1852,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack1, padding_end)) {
+        SDL_Log("SDL_GamepadDeviceEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack1, padding_end), SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_GamepadDeviceEvent_pack4) != sizeof(SDL_GamepadDeviceEvent_pack1)) {
         SDL_Log("SDL_GamepadDeviceEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_GamepadDeviceEvent_pack1), (int)sizeof(SDL_GamepadDeviceEvent_pack4));
         result = SDL_FALSE;
@@ -1814,6 +1879,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack4, which) != SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack1, which)) {
         SDL_Log("SDL_GamepadDeviceEvent.which has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack1, which), SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack4, which));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack1, padding_end)) {
+        SDL_Log("SDL_GamepadDeviceEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack1, padding_end), SDL_OFFSETOF(SDL_GamepadDeviceEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -1956,6 +2026,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GamepadSensorEvent_pack8, padding32) != SDL_OFFSETOF(SDL_GamepadSensorEvent_pack1, padding32)) {
+        SDL_Log("SDL_GamepadSensorEvent.padding32 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadSensorEvent_pack1, padding32), SDL_OFFSETOF(SDL_GamepadSensorEvent_pack8, padding32));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_GamepadSensorEvent_pack8, sensor_timestamp) != SDL_OFFSETOF(SDL_GamepadSensorEvent_pack1, sensor_timestamp)) {
         SDL_Log("SDL_GamepadSensorEvent.sensor_timestamp has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadSensorEvent_pack1, sensor_timestamp), SDL_OFFSETOF(SDL_GamepadSensorEvent_pack8, sensor_timestamp));
         result = SDL_FALSE;
@@ -1996,6 +2071,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GamepadSensorEvent_pack4, padding32) != SDL_OFFSETOF(SDL_GamepadSensorEvent_pack1, padding32)) {
+        SDL_Log("SDL_GamepadSensorEvent.padding32 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadSensorEvent_pack1, padding32), SDL_OFFSETOF(SDL_GamepadSensorEvent_pack4, padding32));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_GamepadSensorEvent_pack4, sensor_timestamp) != SDL_OFFSETOF(SDL_GamepadSensorEvent_pack1, sensor_timestamp)) {
         SDL_Log("SDL_GamepadSensorEvent.sensor_timestamp has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GamepadSensorEvent_pack1, sensor_timestamp), SDL_OFFSETOF(SDL_GamepadSensorEvent_pack4, sensor_timestamp));
         result = SDL_FALSE;
@@ -2033,18 +2113,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_AudioDeviceEvent_pack8, padding1) != SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding1)) {
-        SDL_Log("SDL_AudioDeviceEvent.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding1), SDL_OFFSETOF(SDL_AudioDeviceEvent_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AudioDeviceEvent_pack8, padding2) != SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding2)) {
-        SDL_Log("SDL_AudioDeviceEvent.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding2), SDL_OFFSETOF(SDL_AudioDeviceEvent_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AudioDeviceEvent_pack8, padding3) != SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding3)) {
-        SDL_Log("SDL_AudioDeviceEvent.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding3), SDL_OFFSETOF(SDL_AudioDeviceEvent_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_AudioDeviceEvent_pack8, padding8[0]) != SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_AudioDeviceEvent.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_AudioDeviceEvent_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -2078,18 +2148,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_AudioDeviceEvent_pack4, padding1) != SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding1)) {
-        SDL_Log("SDL_AudioDeviceEvent.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding1), SDL_OFFSETOF(SDL_AudioDeviceEvent_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AudioDeviceEvent_pack4, padding2) != SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding2)) {
-        SDL_Log("SDL_AudioDeviceEvent.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding2), SDL_OFFSETOF(SDL_AudioDeviceEvent_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AudioDeviceEvent_pack4, padding3) != SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding3)) {
-        SDL_Log("SDL_AudioDeviceEvent.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding3), SDL_OFFSETOF(SDL_AudioDeviceEvent_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_AudioDeviceEvent_pack4, padding8[0]) != SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_AudioDeviceEvent.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AudioDeviceEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_AudioDeviceEvent_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -2120,6 +2180,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_CameraDeviceEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_CameraDeviceEvent_pack1, padding_end)) {
+        SDL_Log("SDL_CameraDeviceEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_CameraDeviceEvent_pack1, padding_end), SDL_OFFSETOF(SDL_CameraDeviceEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_CameraDeviceEvent_pack4) != sizeof(SDL_CameraDeviceEvent_pack1)) {
         SDL_Log("SDL_CameraDeviceEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_CameraDeviceEvent_pack1), (int)sizeof(SDL_CameraDeviceEvent_pack4));
         result = SDL_FALSE;
@@ -2142,6 +2207,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_CameraDeviceEvent_pack4, which) != SDL_OFFSETOF(SDL_CameraDeviceEvent_pack1, which)) {
         SDL_Log("SDL_CameraDeviceEvent.which has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_CameraDeviceEvent_pack1, which), SDL_OFFSETOF(SDL_CameraDeviceEvent_pack4, which));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_CameraDeviceEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_CameraDeviceEvent_pack1, padding_end)) {
+        SDL_Log("SDL_CameraDeviceEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_CameraDeviceEvent_pack1, padding_end), SDL_OFFSETOF(SDL_CameraDeviceEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -2376,6 +2446,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_PenMotionEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_PenMotionEvent_pack1, padding_end)) {
+        SDL_Log("SDL_PenMotionEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenMotionEvent_pack1, padding_end), SDL_OFFSETOF(SDL_PenMotionEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_PenMotionEvent_pack4) != sizeof(SDL_PenMotionEvent_pack1)) {
         SDL_Log("SDL_PenMotionEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_PenMotionEvent_pack1), (int)sizeof(SDL_PenMotionEvent_pack4));
         result = SDL_FALSE;
@@ -2418,6 +2493,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_PenMotionEvent_pack4, y) != SDL_OFFSETOF(SDL_PenMotionEvent_pack1, y)) {
         SDL_Log("SDL_PenMotionEvent.y has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenMotionEvent_pack1, y), SDL_OFFSETOF(SDL_PenMotionEvent_pack4, y));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_PenMotionEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_PenMotionEvent_pack1, padding_end)) {
+        SDL_Log("SDL_PenMotionEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenMotionEvent_pack1, padding_end), SDL_OFFSETOF(SDL_PenMotionEvent_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -2478,6 +2558,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_PenTouchEvent_pack8, padding8[0]) != SDL_OFFSETOF(SDL_PenTouchEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_PenTouchEvent.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenTouchEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_PenTouchEvent_pack8, padding8[0]));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_PenTouchEvent_pack4) != sizeof(SDL_PenTouchEvent_pack1)) {
         SDL_Log("SDL_PenTouchEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_PenTouchEvent_pack1), (int)sizeof(SDL_PenTouchEvent_pack4));
         result = SDL_FALSE;
@@ -2530,6 +2615,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_PenTouchEvent_pack4, state) != SDL_OFFSETOF(SDL_PenTouchEvent_pack1, state)) {
         SDL_Log("SDL_PenTouchEvent.state has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenTouchEvent_pack1, state), SDL_OFFSETOF(SDL_PenTouchEvent_pack4, state));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_PenTouchEvent_pack4, padding8[0]) != SDL_OFFSETOF(SDL_PenTouchEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_PenTouchEvent.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenTouchEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_PenTouchEvent_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -2590,6 +2680,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_PenButtonEvent_pack8, padding8[0]) != SDL_OFFSETOF(SDL_PenButtonEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_PenButtonEvent.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenButtonEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_PenButtonEvent_pack8, padding8[0]));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_PenButtonEvent_pack4) != sizeof(SDL_PenButtonEvent_pack1)) {
         SDL_Log("SDL_PenButtonEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_PenButtonEvent_pack1), (int)sizeof(SDL_PenButtonEvent_pack4));
         result = SDL_FALSE;
@@ -2642,6 +2737,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_PenButtonEvent_pack4, state) != SDL_OFFSETOF(SDL_PenButtonEvent_pack1, state)) {
         SDL_Log("SDL_PenButtonEvent.state has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenButtonEvent_pack1, state), SDL_OFFSETOF(SDL_PenButtonEvent_pack4, state));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_PenButtonEvent_pack4, padding8[0]) != SDL_OFFSETOF(SDL_PenButtonEvent_pack1, padding8[0])) {
+        SDL_Log("SDL_PenButtonEvent.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenButtonEvent_pack1, padding8[0]), SDL_OFFSETOF(SDL_PenButtonEvent_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -2702,6 +2802,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_PenAxisEvent_pack8, padding_end) != SDL_OFFSETOF(SDL_PenAxisEvent_pack1, padding_end)) {
+        SDL_Log("SDL_PenAxisEvent.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenAxisEvent_pack1, padding_end), SDL_OFFSETOF(SDL_PenAxisEvent_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_PenAxisEvent_pack4) != sizeof(SDL_PenAxisEvent_pack1)) {
         SDL_Log("SDL_PenAxisEvent has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_PenAxisEvent_pack1), (int)sizeof(SDL_PenAxisEvent_pack4));
         result = SDL_FALSE;
@@ -2757,6 +2862,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_PenAxisEvent_pack4, padding_end) != SDL_OFFSETOF(SDL_PenAxisEvent_pack1, padding_end)) {
+        SDL_Log("SDL_PenAxisEvent.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PenAxisEvent_pack1, padding_end), SDL_OFFSETOF(SDL_PenAxisEvent_pack4, padding_end));
+        result = SDL_FALSE;
+    }
+
     /* SDL_DropEvent */
 
     if (sizeof(SDL_DropEvent_pack8) != sizeof(SDL_DropEvent_pack1)) {
@@ -2791,6 +2901,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_DropEvent_pack8, y) != SDL_OFFSETOF(SDL_DropEvent_pack1, y)) {
         SDL_Log("SDL_DropEvent.y has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_DropEvent_pack1, y), SDL_OFFSETOF(SDL_DropEvent_pack8, y));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_DropEvent_pack8, padding32) != SDL_OFFSETOF(SDL_DropEvent_pack1, padding32)) {
+        SDL_Log("SDL_DropEvent.padding32 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_DropEvent_pack1, padding32), SDL_OFFSETOF(SDL_DropEvent_pack8, padding32));
         result = SDL_FALSE;
     }
 
@@ -2836,6 +2951,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_DropEvent_pack4, y) != SDL_OFFSETOF(SDL_DropEvent_pack1, y)) {
         SDL_Log("SDL_DropEvent.y has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_DropEvent_pack1, y), SDL_OFFSETOF(SDL_DropEvent_pack4, y));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_DropEvent_pack4, padding32) != SDL_OFFSETOF(SDL_DropEvent_pack1, padding32)) {
+        SDL_Log("SDL_DropEvent.padding32 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_DropEvent_pack1, padding32), SDL_OFFSETOF(SDL_DropEvent_pack4, padding32));
         result = SDL_FALSE;
     }
 
@@ -2923,6 +3043,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_SensorEvent_pack8, padding32) != SDL_OFFSETOF(SDL_SensorEvent_pack1, padding32)) {
+        SDL_Log("SDL_SensorEvent.padding32 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_SensorEvent_pack1, padding32), SDL_OFFSETOF(SDL_SensorEvent_pack8, padding32));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_SensorEvent_pack8, sensor_timestamp) != SDL_OFFSETOF(SDL_SensorEvent_pack1, sensor_timestamp)) {
         SDL_Log("SDL_SensorEvent.sensor_timestamp has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_SensorEvent_pack1, sensor_timestamp), SDL_OFFSETOF(SDL_SensorEvent_pack8, sensor_timestamp));
         result = SDL_FALSE;
@@ -2955,6 +3080,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_SensorEvent_pack4, data[0]) != SDL_OFFSETOF(SDL_SensorEvent_pack1, data[0])) {
         SDL_Log("SDL_SensorEvent.data[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_SensorEvent_pack1, data[0]), SDL_OFFSETOF(SDL_SensorEvent_pack4, data[0]));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_SensorEvent_pack4, padding32) != SDL_OFFSETOF(SDL_SensorEvent_pack1, padding32)) {
+        SDL_Log("SDL_SensorEvent.padding32 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_SensorEvent_pack1, padding32), SDL_OFFSETOF(SDL_SensorEvent_pack4, padding32));
         result = SDL_FALSE;
     }
 
@@ -3183,6 +3313,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_HapticDirection_pack8, padding8[0]) != SDL_OFFSETOF(SDL_HapticDirection_pack1, padding8[0])) {
+        SDL_Log("SDL_HapticDirection.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticDirection_pack1, padding8[0]), SDL_OFFSETOF(SDL_HapticDirection_pack8, padding8[0]));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_HapticDirection_pack8, dir[0]) != SDL_OFFSETOF(SDL_HapticDirection_pack1, dir[0])) {
         SDL_Log("SDL_HapticDirection.dir[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticDirection_pack1, dir[0]), SDL_OFFSETOF(SDL_HapticDirection_pack8, dir[0]));
         result = SDL_FALSE;
@@ -3195,6 +3330,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_HapticDirection_pack4, type) != SDL_OFFSETOF(SDL_HapticDirection_pack1, type)) {
         SDL_Log("SDL_HapticDirection.type has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticDirection_pack1, type), SDL_OFFSETOF(SDL_HapticDirection_pack4, type));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_HapticDirection_pack4, padding8[0]) != SDL_OFFSETOF(SDL_HapticDirection_pack1, padding8[0])) {
+        SDL_Log("SDL_HapticDirection.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticDirection_pack1, padding8[0]), SDL_OFFSETOF(SDL_HapticDirection_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -3212,6 +3352,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_HapticConstant_pack8, type) != SDL_OFFSETOF(SDL_HapticConstant_pack1, type)) {
         SDL_Log("SDL_HapticConstant.type has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticConstant_pack1, type), SDL_OFFSETOF(SDL_HapticConstant_pack8, type));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_HapticConstant_pack8, padding16) != SDL_OFFSETOF(SDL_HapticConstant_pack1, padding16)) {
+        SDL_Log("SDL_HapticConstant.padding16 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticConstant_pack1, padding16), SDL_OFFSETOF(SDL_HapticConstant_pack8, padding16));
         result = SDL_FALSE;
     }
 
@@ -3272,6 +3417,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_HapticConstant_pack4, type) != SDL_OFFSETOF(SDL_HapticConstant_pack1, type)) {
         SDL_Log("SDL_HapticConstant.type has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticConstant_pack1, type), SDL_OFFSETOF(SDL_HapticConstant_pack4, type));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_HapticConstant_pack4, padding16) != SDL_OFFSETOF(SDL_HapticConstant_pack1, padding16)) {
+        SDL_Log("SDL_HapticConstant.padding16 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticConstant_pack1, padding16), SDL_OFFSETOF(SDL_HapticConstant_pack4, padding16));
         result = SDL_FALSE;
     }
 
@@ -3402,6 +3552,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_HapticPeriodic_pack8, padding_end) != SDL_OFFSETOF(SDL_HapticPeriodic_pack1, padding_end)) {
+        SDL_Log("SDL_HapticPeriodic.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticPeriodic_pack1, padding_end), SDL_OFFSETOF(SDL_HapticPeriodic_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_HapticPeriodic_pack4) != sizeof(SDL_HapticPeriodic_pack1)) {
         SDL_Log("SDL_HapticPeriodic has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_HapticPeriodic_pack1), (int)sizeof(SDL_HapticPeriodic_pack4));
         result = SDL_FALSE;
@@ -3477,6 +3632,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_HapticPeriodic_pack4, padding_end) != SDL_OFFSETOF(SDL_HapticPeriodic_pack1, padding_end)) {
+        SDL_Log("SDL_HapticPeriodic.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticPeriodic_pack1, padding_end), SDL_OFFSETOF(SDL_HapticPeriodic_pack4, padding_end));
+        result = SDL_FALSE;
+    }
+
     /* SDL_HapticCondition */
 
     if (sizeof(SDL_HapticCondition_pack8) != sizeof(SDL_HapticCondition_pack1)) {
@@ -3544,6 +3704,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_HapticCondition_pack8, padding_end) != SDL_OFFSETOF(SDL_HapticCondition_pack1, padding_end)) {
+        SDL_Log("SDL_HapticCondition.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCondition_pack1, padding_end), SDL_OFFSETOF(SDL_HapticCondition_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_HapticCondition_pack4) != sizeof(SDL_HapticCondition_pack1)) {
         SDL_Log("SDL_HapticCondition has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_HapticCondition_pack1), (int)sizeof(SDL_HapticCondition_pack4));
         result = SDL_FALSE;
@@ -3606,6 +3771,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_HapticCondition_pack4, center[0]) != SDL_OFFSETOF(SDL_HapticCondition_pack1, center[0])) {
         SDL_Log("SDL_HapticCondition.center[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCondition_pack1, center[0]), SDL_OFFSETOF(SDL_HapticCondition_pack4, center[0]));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_HapticCondition_pack4, padding_end) != SDL_OFFSETOF(SDL_HapticCondition_pack1, padding_end)) {
+        SDL_Log("SDL_HapticCondition.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCondition_pack1, padding_end), SDL_OFFSETOF(SDL_HapticCondition_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -3676,6 +3846,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_HapticRamp_pack8, padding_end) != SDL_OFFSETOF(SDL_HapticRamp_pack1, padding_end)) {
+        SDL_Log("SDL_HapticRamp.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticRamp_pack1, padding_end), SDL_OFFSETOF(SDL_HapticRamp_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_HapticRamp_pack4) != sizeof(SDL_HapticRamp_pack1)) {
         SDL_Log("SDL_HapticRamp has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_HapticRamp_pack1), (int)sizeof(SDL_HapticRamp_pack4));
         result = SDL_FALSE;
@@ -3738,6 +3913,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_HapticRamp_pack4, fade_level) != SDL_OFFSETOF(SDL_HapticRamp_pack1, fade_level)) {
         SDL_Log("SDL_HapticRamp.fade_level has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticRamp_pack1, fade_level), SDL_OFFSETOF(SDL_HapticRamp_pack4, fade_level));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_HapticRamp_pack4, padding_end) != SDL_OFFSETOF(SDL_HapticRamp_pack1, padding_end)) {
+        SDL_Log("SDL_HapticRamp.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticRamp_pack1, padding_end), SDL_OFFSETOF(SDL_HapticRamp_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -3835,6 +4015,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_HapticCustom_pack8, padding8[0]) != SDL_OFFSETOF(SDL_HapticCustom_pack1, padding8[0])) {
+        SDL_Log("SDL_HapticCustom.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCustom_pack1, padding8[0]), SDL_OFFSETOF(SDL_HapticCustom_pack8, padding8[0]));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_HapticCustom_pack8, period) != SDL_OFFSETOF(SDL_HapticCustom_pack1, period)) {
         SDL_Log("SDL_HapticCustom.period has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCustom_pack1, period), SDL_OFFSETOF(SDL_HapticCustom_pack8, period));
         result = SDL_FALSE;
@@ -3842,6 +4027,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_HapticCustom_pack8, samples) != SDL_OFFSETOF(SDL_HapticCustom_pack1, samples)) {
         SDL_Log("SDL_HapticCustom.samples has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCustom_pack1, samples), SDL_OFFSETOF(SDL_HapticCustom_pack8, samples));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_HapticCustom_pack8, padding16) != SDL_OFFSETOF(SDL_HapticCustom_pack1, padding16)) {
+        SDL_Log("SDL_HapticCustom.padding16 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCustom_pack1, padding16), SDL_OFFSETOF(SDL_HapticCustom_pack8, padding16));
         result = SDL_FALSE;
     }
 
@@ -3910,6 +4100,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_HapticCustom_pack4, padding8[0]) != SDL_OFFSETOF(SDL_HapticCustom_pack1, padding8[0])) {
+        SDL_Log("SDL_HapticCustom.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCustom_pack1, padding8[0]), SDL_OFFSETOF(SDL_HapticCustom_pack4, padding8[0]));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_HapticCustom_pack4, period) != SDL_OFFSETOF(SDL_HapticCustom_pack1, period)) {
         SDL_Log("SDL_HapticCustom.period has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCustom_pack1, period), SDL_OFFSETOF(SDL_HapticCustom_pack4, period));
         result = SDL_FALSE;
@@ -3917,6 +4112,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_HapticCustom_pack4, samples) != SDL_OFFSETOF(SDL_HapticCustom_pack1, samples)) {
         SDL_Log("SDL_HapticCustom.samples has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCustom_pack1, samples), SDL_OFFSETOF(SDL_HapticCustom_pack4, samples));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_HapticCustom_pack4, padding16) != SDL_OFFSETOF(SDL_HapticCustom_pack1, padding16)) {
+        SDL_Log("SDL_HapticCustom.padding16 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_HapticCustom_pack1, padding16), SDL_OFFSETOF(SDL_HapticCustom_pack4, padding16));
         result = SDL_FALSE;
     }
 
@@ -4098,6 +4298,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_Finger_pack8, padding_end) != SDL_OFFSETOF(SDL_Finger_pack1, padding_end)) {
+        SDL_Log("SDL_Finger.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Finger_pack1, padding_end), SDL_OFFSETOF(SDL_Finger_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_Finger_pack4) != sizeof(SDL_Finger_pack1)) {
         SDL_Log("SDL_Finger has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_Finger_pack1), (int)sizeof(SDL_Finger_pack4));
         result = SDL_FALSE;
@@ -4120,6 +4325,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_Finger_pack4, pressure) != SDL_OFFSETOF(SDL_Finger_pack1, pressure)) {
         SDL_Log("SDL_Finger.pressure has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Finger_pack1, pressure), SDL_OFFSETOF(SDL_Finger_pack4, pressure));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_Finger_pack4, padding_end) != SDL_OFFSETOF(SDL_Finger_pack1, padding_end)) {
+        SDL_Log("SDL_Finger.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Finger_pack1, padding_end), SDL_OFFSETOF(SDL_Finger_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -4270,18 +4480,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack8, padding1) != SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding1)) {
-        SDL_Log("SDL_GPUDepthStencilValue.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding1), SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack8, padding2) != SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding2)) {
-        SDL_Log("SDL_GPUDepthStencilValue.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding2), SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack8, padding3) != SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding3)) {
-        SDL_Log("SDL_GPUDepthStencilValue.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding3), SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUDepthStencilValue.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -4300,18 +4500,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack4, padding1) != SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding1)) {
-        SDL_Log("SDL_GPUDepthStencilValue.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding1), SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack4, padding2) != SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding2)) {
-        SDL_Log("SDL_GPUDepthStencilValue.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding2), SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack4, padding3) != SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding3)) {
-        SDL_Log("SDL_GPUDepthStencilValue.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding3), SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUDepthStencilValue.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUDepthStencilValue_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -4414,6 +4604,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUTextureTransferInfo_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUTextureTransferInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUTextureTransferInfo.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUTextureTransferInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUTextureTransferInfo_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_GPUTextureTransferInfo_pack4) != sizeof(SDL_GPUTextureTransferInfo_pack1)) {
         SDL_Log("SDL_GPUTextureTransferInfo has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_GPUTextureTransferInfo_pack1), (int)sizeof(SDL_GPUTextureTransferInfo_pack4));
         result = SDL_FALSE;
@@ -4439,6 +4634,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUTextureTransferInfo_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUTextureTransferInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUTextureTransferInfo.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUTextureTransferInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUTextureTransferInfo_pack4, padding_end));
+        result = SDL_FALSE;
+    }
+
     /* SDL_GPUTransferBufferLocation */
 
     if (sizeof(SDL_GPUTransferBufferLocation_pack8) != sizeof(SDL_GPUTransferBufferLocation_pack1)) {
@@ -4456,6 +4656,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack1, padding_end)) {
+        SDL_Log("SDL_GPUTransferBufferLocation.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack1, padding_end), SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_GPUTransferBufferLocation_pack4) != sizeof(SDL_GPUTransferBufferLocation_pack1)) {
         SDL_Log("SDL_GPUTransferBufferLocation has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_GPUTransferBufferLocation_pack1), (int)sizeof(SDL_GPUTransferBufferLocation_pack4));
         result = SDL_FALSE;
@@ -4468,6 +4673,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack4, offset) != SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack1, offset)) {
         SDL_Log("SDL_GPUTransferBufferLocation.offset has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack1, offset), SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack4, offset));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack1, padding_end)) {
+        SDL_Log("SDL_GPUTransferBufferLocation.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack1, padding_end), SDL_OFFSETOF(SDL_GPUTransferBufferLocation_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -4508,6 +4718,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUTextureLocation_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUTextureLocation_pack1, padding_end)) {
+        SDL_Log("SDL_GPUTextureLocation.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUTextureLocation_pack1, padding_end), SDL_OFFSETOF(SDL_GPUTextureLocation_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_GPUTextureLocation_pack4) != sizeof(SDL_GPUTextureLocation_pack1)) {
         SDL_Log("SDL_GPUTextureLocation has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_GPUTextureLocation_pack1), (int)sizeof(SDL_GPUTextureLocation_pack4));
         result = SDL_FALSE;
@@ -4540,6 +4755,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_GPUTextureLocation_pack4, z) != SDL_OFFSETOF(SDL_GPUTextureLocation_pack1, z)) {
         SDL_Log("SDL_GPUTextureLocation.z has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUTextureLocation_pack1, z), SDL_OFFSETOF(SDL_GPUTextureLocation_pack4, z));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUTextureLocation_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUTextureLocation_pack1, padding_end)) {
+        SDL_Log("SDL_GPUTextureLocation.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUTextureLocation_pack1, padding_end), SDL_OFFSETOF(SDL_GPUTextureLocation_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -4744,6 +4964,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUBufferLocation_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUBufferLocation_pack1, padding_end)) {
+        SDL_Log("SDL_GPUBufferLocation.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUBufferLocation_pack1, padding_end), SDL_OFFSETOF(SDL_GPUBufferLocation_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_GPUBufferLocation_pack4) != sizeof(SDL_GPUBufferLocation_pack1)) {
         SDL_Log("SDL_GPUBufferLocation has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_GPUBufferLocation_pack1), (int)sizeof(SDL_GPUBufferLocation_pack4));
         result = SDL_FALSE;
@@ -4756,6 +4981,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_GPUBufferLocation_pack4, offset) != SDL_OFFSETOF(SDL_GPUBufferLocation_pack1, offset)) {
         SDL_Log("SDL_GPUBufferLocation.offset has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUBufferLocation_pack1, offset), SDL_OFFSETOF(SDL_GPUBufferLocation_pack4, offset));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUBufferLocation_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUBufferLocation_pack1, padding_end)) {
+        SDL_Log("SDL_GPUBufferLocation.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUBufferLocation_pack1, padding_end), SDL_OFFSETOF(SDL_GPUBufferLocation_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -5014,13 +5244,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack8, padding1) != SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding1)) {
-        SDL_Log("SDL_GPUSamplerCreateInfo.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding1), SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack8, padding2) != SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding2)) {
-        SDL_Log("SDL_GPUSamplerCreateInfo.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding2), SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack8, padding2));
+    if (SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUSamplerCreateInfo.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -5099,13 +5324,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack4, padding1) != SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding1)) {
-        SDL_Log("SDL_GPUSamplerCreateInfo.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding1), SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack4, padding2) != SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding2)) {
-        SDL_Log("SDL_GPUSamplerCreateInfo.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding2), SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack4, padding2));
+    if (SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUSamplerCreateInfo.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUSamplerCreateInfo_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -5245,13 +5465,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUVertexInputState_pack8, vertexBindingCount) != SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexBindingCount)) {
-        SDL_Log("SDL_GPUVertexInputState.vertexBindingCount has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexBindingCount), SDL_OFFSETOF(SDL_GPUVertexInputState_pack8, vertexBindingCount));
+    if (SDL_OFFSETOF(SDL_GPUVertexInputState_pack8, vertexAttributes) != SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexAttributes)) {
+        SDL_Log("SDL_GPUVertexInputState.vertexAttributes has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexAttributes), SDL_OFFSETOF(SDL_GPUVertexInputState_pack8, vertexAttributes));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUVertexInputState_pack8, vertexAttributes) != SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexAttributes)) {
-        SDL_Log("SDL_GPUVertexInputState.vertexAttributes has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexAttributes), SDL_OFFSETOF(SDL_GPUVertexInputState_pack8, vertexAttributes));
+    if (SDL_OFFSETOF(SDL_GPUVertexInputState_pack8, vertexBindingCount) != SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexBindingCount)) {
+        SDL_Log("SDL_GPUVertexInputState.vertexBindingCount has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexBindingCount), SDL_OFFSETOF(SDL_GPUVertexInputState_pack8, vertexBindingCount));
         result = SDL_FALSE;
     }
 
@@ -5270,13 +5490,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUVertexInputState_pack4, vertexBindingCount) != SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexBindingCount)) {
-        SDL_Log("SDL_GPUVertexInputState.vertexBindingCount has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexBindingCount), SDL_OFFSETOF(SDL_GPUVertexInputState_pack4, vertexBindingCount));
+    if (SDL_OFFSETOF(SDL_GPUVertexInputState_pack4, vertexAttributes) != SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexAttributes)) {
+        SDL_Log("SDL_GPUVertexInputState.vertexAttributes has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexAttributes), SDL_OFFSETOF(SDL_GPUVertexInputState_pack4, vertexAttributes));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUVertexInputState_pack4, vertexAttributes) != SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexAttributes)) {
-        SDL_Log("SDL_GPUVertexInputState.vertexAttributes has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexAttributes), SDL_OFFSETOF(SDL_GPUVertexInputState_pack4, vertexAttributes));
+    if (SDL_OFFSETOF(SDL_GPUVertexInputState_pack4, vertexBindingCount) != SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexBindingCount)) {
+        SDL_Log("SDL_GPUVertexInputState.vertexBindingCount has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUVertexInputState_pack1, vertexBindingCount), SDL_OFFSETOF(SDL_GPUVertexInputState_pack4, vertexBindingCount));
         result = SDL_FALSE;
     }
 
@@ -5349,18 +5569,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack8, padding1) != SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding1)) {
-        SDL_Log("SDL_GPUColorAttachmentBlendState.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding1), SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack8, padding2) != SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding2)) {
-        SDL_Log("SDL_GPUColorAttachmentBlendState.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding2), SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack8, padding3) != SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding3)) {
-        SDL_Log("SDL_GPUColorAttachmentBlendState.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding3), SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUColorAttachmentBlendState.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -5399,6 +5609,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack8, padding_end[0]) != SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding_end[0])) {
+        SDL_Log("SDL_GPUColorAttachmentBlendState.padding_end[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding_end[0]), SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack8, padding_end[0]));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_GPUColorAttachmentBlendState_pack4) != sizeof(SDL_GPUColorAttachmentBlendState_pack1)) {
         SDL_Log("SDL_GPUColorAttachmentBlendState has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_GPUColorAttachmentBlendState_pack1), (int)sizeof(SDL_GPUColorAttachmentBlendState_pack4));
         result = SDL_FALSE;
@@ -5409,18 +5624,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack4, padding1) != SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding1)) {
-        SDL_Log("SDL_GPUColorAttachmentBlendState.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding1), SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack4, padding2) != SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding2)) {
-        SDL_Log("SDL_GPUColorAttachmentBlendState.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding2), SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack4, padding3) != SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding3)) {
-        SDL_Log("SDL_GPUColorAttachmentBlendState.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding3), SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUColorAttachmentBlendState.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -5459,6 +5664,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack4, padding_end[0]) != SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding_end[0])) {
+        SDL_Log("SDL_GPUColorAttachmentBlendState.padding_end[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack1, padding_end[0]), SDL_OFFSETOF(SDL_GPUColorAttachmentBlendState_pack4, padding_end[0]));
+        result = SDL_FALSE;
+    }
+
     /* SDL_GPUShaderCreateInfo */
 
     if (sizeof(SDL_GPUShaderCreateInfo_pack8) != sizeof(SDL_GPUShaderCreateInfo_pack1)) {
@@ -5468,6 +5678,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack8, codeSize) != SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, codeSize)) {
         SDL_Log("SDL_GPUShaderCreateInfo.codeSize has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, codeSize), SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack8, codeSize));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack8, padding32) != SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, padding32)) {
+        SDL_Log("SDL_GPUShaderCreateInfo.padding32 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, padding32), SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack8, padding32));
         result = SDL_FALSE;
     }
 
@@ -5516,6 +5731,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUShaderCreateInfo.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_GPUShaderCreateInfo_pack4) != sizeof(SDL_GPUShaderCreateInfo_pack1)) {
         SDL_Log("SDL_GPUShaderCreateInfo has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_GPUShaderCreateInfo_pack1), (int)sizeof(SDL_GPUShaderCreateInfo_pack4));
         result = SDL_FALSE;
@@ -5523,6 +5743,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack4, codeSize) != SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, codeSize)) {
         SDL_Log("SDL_GPUShaderCreateInfo.codeSize has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, codeSize), SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack4, codeSize));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack4, padding32) != SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, padding32)) {
+        SDL_Log("SDL_GPUShaderCreateInfo.padding32 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, padding32), SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack4, padding32));
         result = SDL_FALSE;
     }
 
@@ -5568,6 +5793,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack4, props) != SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, props)) {
         SDL_Log("SDL_GPUShaderCreateInfo.props has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, props), SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack4, props));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUShaderCreateInfo.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUShaderCreateInfo_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -5784,18 +6014,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPURasterizerState_pack8, padding1) != SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding1)) {
-        SDL_Log("SDL_GPURasterizerState.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding1), SDL_OFFSETOF(SDL_GPURasterizerState_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPURasterizerState_pack8, padding2) != SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding2)) {
-        SDL_Log("SDL_GPURasterizerState.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding2), SDL_OFFSETOF(SDL_GPURasterizerState_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPURasterizerState_pack8, padding3) != SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding3)) {
-        SDL_Log("SDL_GPURasterizerState.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding3), SDL_OFFSETOF(SDL_GPURasterizerState_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_GPURasterizerState_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding8[0])) {
+        SDL_Log("SDL_GPURasterizerState.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPURasterizerState_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -5839,18 +6059,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPURasterizerState_pack4, padding1) != SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding1)) {
-        SDL_Log("SDL_GPURasterizerState.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding1), SDL_OFFSETOF(SDL_GPURasterizerState_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPURasterizerState_pack4, padding2) != SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding2)) {
-        SDL_Log("SDL_GPURasterizerState.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding2), SDL_OFFSETOF(SDL_GPURasterizerState_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPURasterizerState_pack4, padding3) != SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding3)) {
-        SDL_Log("SDL_GPURasterizerState.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding3), SDL_OFFSETOF(SDL_GPURasterizerState_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_GPURasterizerState_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding8[0])) {
+        SDL_Log("SDL_GPURasterizerState.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPURasterizerState_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPURasterizerState_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -5923,8 +6133,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilState_pack8, padding1) != SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding1)) {
-        SDL_Log("SDL_GPUDepthStencilState.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding1), SDL_OFFSETOF(SDL_GPUDepthStencilState_pack8, padding1));
+    if (SDL_OFFSETOF(SDL_GPUDepthStencilState_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUDepthStencilState.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUDepthStencilState_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -5958,8 +6168,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilState_pack8, padding2) != SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding2)) {
-        SDL_Log("SDL_GPUDepthStencilState.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding2), SDL_OFFSETOF(SDL_GPUDepthStencilState_pack8, padding2));
+    if (SDL_OFFSETOF(SDL_GPUDepthStencilState_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding_end)) {
+        SDL_Log("SDL_GPUDepthStencilState.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding_end), SDL_OFFSETOF(SDL_GPUDepthStencilState_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -5983,8 +6193,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilState_pack4, padding1) != SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding1)) {
-        SDL_Log("SDL_GPUDepthStencilState.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding1), SDL_OFFSETOF(SDL_GPUDepthStencilState_pack4, padding1));
+    if (SDL_OFFSETOF(SDL_GPUDepthStencilState_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUDepthStencilState.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUDepthStencilState_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
@@ -6018,8 +6228,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilState_pack4, padding2) != SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding2)) {
-        SDL_Log("SDL_GPUDepthStencilState.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding2), SDL_OFFSETOF(SDL_GPUDepthStencilState_pack4, padding2));
+    if (SDL_OFFSETOF(SDL_GPUDepthStencilState_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding_end)) {
+        SDL_Log("SDL_GPUDepthStencilState.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilState_pack1, padding_end), SDL_OFFSETOF(SDL_GPUDepthStencilState_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6077,23 +6287,18 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, padding1) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding1)) {
-        SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding1), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, padding2) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding2)) {
-        SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding2), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, padding3) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding3)) {
-        SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding3), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
     if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, depthStencilFormat) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, depthStencilFormat)) {
         SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.depthStencilFormat has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, depthStencilFormat), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, depthStencilFormat));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6117,23 +6322,18 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, padding1) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding1)) {
-        SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding1), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, padding1));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, padding2) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding2)) {
-        SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding2), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, padding3) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding3)) {
-        SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding3), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
     if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, depthStencilFormat) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, depthStencilFormat)) {
         SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.depthStencilFormat has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, depthStencilFormat), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, depthStencilFormat));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUGraphicsPipelineAttachmentInfo.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUGraphicsPipelineAttachmentInfo_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6179,6 +6379,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack8, padding32) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, padding32)) {
+        SDL_Log("SDL_GPUGraphicsPipelineCreateInfo.padding32 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, padding32), SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack8, padding32));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack8, attachmentInfo) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, attachmentInfo)) {
         SDL_Log("SDL_GPUGraphicsPipelineCreateInfo.attachmentInfo has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, attachmentInfo), SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack8, attachmentInfo));
         result = SDL_FALSE;
@@ -6191,6 +6396,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack8, props) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, props)) {
         SDL_Log("SDL_GPUGraphicsPipelineCreateInfo.props has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, props), SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack8, props));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUGraphicsPipelineCreateInfo.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6234,6 +6444,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack4, padding32) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, padding32)) {
+        SDL_Log("SDL_GPUGraphicsPipelineCreateInfo.padding32 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, padding32), SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack4, padding32));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack4, attachmentInfo) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, attachmentInfo)) {
         SDL_Log("SDL_GPUGraphicsPipelineCreateInfo.attachmentInfo has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, attachmentInfo), SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack4, attachmentInfo));
         result = SDL_FALSE;
@@ -6246,6 +6461,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack4, props) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, props)) {
         SDL_Log("SDL_GPUGraphicsPipelineCreateInfo.props has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, props), SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack4, props));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUGraphicsPipelineCreateInfo.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUGraphicsPipelineCreateInfo_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6433,18 +6653,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack8, padding1) != SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding1)) {
-        SDL_Log("SDL_GPUColorAttachmentInfo.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding1), SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack8, padding1));
+    if (SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUColorAttachmentInfo.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack8, padding2) != SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding2)) {
-        SDL_Log("SDL_GPUColorAttachmentInfo.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding2), SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack8, padding3) != SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding3)) {
-        SDL_Log("SDL_GPUColorAttachmentInfo.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding3), SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUColorAttachmentInfo.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6488,18 +6703,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack4, padding1) != SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding1)) {
-        SDL_Log("SDL_GPUColorAttachmentInfo.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding1), SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack4, padding1));
+    if (SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUColorAttachmentInfo.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack4, padding2) != SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding2)) {
-        SDL_Log("SDL_GPUColorAttachmentInfo.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding2), SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack4, padding3) != SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding3)) {
-        SDL_Log("SDL_GPUColorAttachmentInfo.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding3), SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUColorAttachmentInfo.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUColorAttachmentInfo_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6545,18 +6755,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack8, padding1) != SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding1)) {
-        SDL_Log("SDL_GPUDepthStencilAttachmentInfo.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding1), SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack8, padding1));
+    if (SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUDepthStencilAttachmentInfo.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack8, padding2) != SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding2)) {
-        SDL_Log("SDL_GPUDepthStencilAttachmentInfo.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding2), SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack8, padding3) != SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding3)) {
-        SDL_Log("SDL_GPUDepthStencilAttachmentInfo.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding3), SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUDepthStencilAttachmentInfo.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6600,18 +6805,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack4, padding1) != SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding1)) {
-        SDL_Log("SDL_GPUDepthStencilAttachmentInfo.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding1), SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack4, padding1));
+    if (SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUDepthStencilAttachmentInfo.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack4, padding2) != SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding2)) {
-        SDL_Log("SDL_GPUDepthStencilAttachmentInfo.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding2), SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack4, padding3) != SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding3)) {
-        SDL_Log("SDL_GPUDepthStencilAttachmentInfo.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding3), SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding_end)) {
+        SDL_Log("SDL_GPUDepthStencilAttachmentInfo.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack1, padding_end), SDL_OFFSETOF(SDL_GPUDepthStencilAttachmentInfo_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6632,6 +6832,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_GPUBufferBinding_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUBufferBinding_pack1, padding_end)) {
+        SDL_Log("SDL_GPUBufferBinding.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUBufferBinding_pack1, padding_end), SDL_OFFSETOF(SDL_GPUBufferBinding_pack8, padding_end));
+        result = SDL_FALSE;
+    }
+
     if (sizeof(SDL_GPUBufferBinding_pack4) != sizeof(SDL_GPUBufferBinding_pack1)) {
         SDL_Log("SDL_GPUBufferBinding has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_GPUBufferBinding_pack1), (int)sizeof(SDL_GPUBufferBinding_pack4));
         result = SDL_FALSE;
@@ -6644,6 +6849,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_GPUBufferBinding_pack4, offset) != SDL_OFFSETOF(SDL_GPUBufferBinding_pack1, offset)) {
         SDL_Log("SDL_GPUBufferBinding.offset has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUBufferBinding_pack1, offset), SDL_OFFSETOF(SDL_GPUBufferBinding_pack4, offset));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_GPUBufferBinding_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUBufferBinding_pack1, padding_end)) {
+        SDL_Log("SDL_GPUBufferBinding.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUBufferBinding_pack1, padding_end), SDL_OFFSETOF(SDL_GPUBufferBinding_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6696,18 +6906,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack8, padding1) != SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding1)) {
-        SDL_Log("SDL_GPUStorageBufferWriteOnlyBinding.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding1), SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack8, padding1));
+    if (SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUStorageBufferWriteOnlyBinding.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack8, padding2) != SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding2)) {
-        SDL_Log("SDL_GPUStorageBufferWriteOnlyBinding.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding2), SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack8, padding3) != SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding3)) {
-        SDL_Log("SDL_GPUStorageBufferWriteOnlyBinding.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding3), SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding_end)) {
+        SDL_Log("SDL_GPUStorageBufferWriteOnlyBinding.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding_end), SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6726,18 +6931,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack4, padding1) != SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding1)) {
-        SDL_Log("SDL_GPUStorageBufferWriteOnlyBinding.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding1), SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack4, padding1));
+    if (SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUStorageBufferWriteOnlyBinding.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack4, padding2) != SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding2)) {
-        SDL_Log("SDL_GPUStorageBufferWriteOnlyBinding.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding2), SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack4, padding3) != SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding3)) {
-        SDL_Log("SDL_GPUStorageBufferWriteOnlyBinding.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding3), SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding_end)) {
+        SDL_Log("SDL_GPUStorageBufferWriteOnlyBinding.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack1, padding_end), SDL_OFFSETOF(SDL_GPUStorageBufferWriteOnlyBinding_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6768,18 +6968,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack8, padding1) != SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding1)) {
-        SDL_Log("SDL_GPUStorageTextureWriteOnlyBinding.padding1 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding1), SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack8, padding1));
+    if (SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack8, padding8[0]) != SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUStorageTextureWriteOnlyBinding.padding8[0] has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack8, padding8[0]));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack8, padding2) != SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding2)) {
-        SDL_Log("SDL_GPUStorageTextureWriteOnlyBinding.padding2 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding2), SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack8, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack8, padding3) != SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding3)) {
-        SDL_Log("SDL_GPUStorageTextureWriteOnlyBinding.padding3 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding3), SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack8, padding3));
+    if (SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack8, padding_end) != SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding_end)) {
+        SDL_Log("SDL_GPUStorageTextureWriteOnlyBinding.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding_end), SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack8, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6808,18 +7003,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack4, padding1) != SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding1)) {
-        SDL_Log("SDL_GPUStorageTextureWriteOnlyBinding.padding1 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding1), SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack4, padding1));
+    if (SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack4, padding8[0]) != SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding8[0])) {
+        SDL_Log("SDL_GPUStorageTextureWriteOnlyBinding.padding8[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding8[0]), SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack4, padding8[0]));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack4, padding2) != SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding2)) {
-        SDL_Log("SDL_GPUStorageTextureWriteOnlyBinding.padding2 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding2), SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack4, padding2));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack4, padding3) != SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding3)) {
-        SDL_Log("SDL_GPUStorageTextureWriteOnlyBinding.padding3 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding3), SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack4, padding3));
+    if (SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack4, padding_end) != SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding_end)) {
+        SDL_Log("SDL_GPUStorageTextureWriteOnlyBinding.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack1, padding_end), SDL_OFFSETOF(SDL_GPUStorageTextureWriteOnlyBinding_pack4, padding_end));
         result = SDL_FALSE;
     }
 
@@ -6850,13 +7040,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_Surface_pack8, pixels) != SDL_OFFSETOF(SDL_Surface_pack1, pixels)) {
-        SDL_Log("SDL_Surface.pixels has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Surface_pack1, pixels), SDL_OFFSETOF(SDL_Surface_pack8, pixels));
+    if (SDL_OFFSETOF(SDL_Surface_pack8, refcount) != SDL_OFFSETOF(SDL_Surface_pack1, refcount)) {
+        SDL_Log("SDL_Surface.refcount has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Surface_pack1, refcount), SDL_OFFSETOF(SDL_Surface_pack8, refcount));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_Surface_pack8, refcount) != SDL_OFFSETOF(SDL_Surface_pack1, refcount)) {
-        SDL_Log("SDL_Surface.refcount has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Surface_pack1, refcount), SDL_OFFSETOF(SDL_Surface_pack8, refcount));
+    if (SDL_OFFSETOF(SDL_Surface_pack8, pixels) != SDL_OFFSETOF(SDL_Surface_pack1, pixels)) {
+        SDL_Log("SDL_Surface.pixels has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Surface_pack1, pixels), SDL_OFFSETOF(SDL_Surface_pack8, pixels));
         result = SDL_FALSE;
     }
 
@@ -6890,13 +7080,13 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_Surface_pack4, pixels) != SDL_OFFSETOF(SDL_Surface_pack1, pixels)) {
-        SDL_Log("SDL_Surface.pixels has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Surface_pack1, pixels), SDL_OFFSETOF(SDL_Surface_pack4, pixels));
+    if (SDL_OFFSETOF(SDL_Surface_pack4, refcount) != SDL_OFFSETOF(SDL_Surface_pack1, refcount)) {
+        SDL_Log("SDL_Surface.refcount has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Surface_pack1, refcount), SDL_OFFSETOF(SDL_Surface_pack4, refcount));
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_Surface_pack4, refcount) != SDL_OFFSETOF(SDL_Surface_pack1, refcount)) {
-        SDL_Log("SDL_Surface.refcount has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Surface_pack1, refcount), SDL_OFFSETOF(SDL_Surface_pack4, refcount));
+    if (SDL_OFFSETOF(SDL_Surface_pack4, pixels) != SDL_OFFSETOF(SDL_Surface_pack1, pixels)) {
+        SDL_Log("SDL_Surface.pixels has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Surface_pack1, pixels), SDL_OFFSETOF(SDL_Surface_pack4, pixels));
         result = SDL_FALSE;
     }
 
@@ -7049,88 +7239,6 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    /* SDL_AssertData */
-
-    if (sizeof(SDL_AssertData_pack8) != sizeof(SDL_AssertData_pack1)) {
-        SDL_Log("SDL_AssertData has incorrect size with 8-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_AssertData_pack1), (int)sizeof(SDL_AssertData_pack8));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack8, always_ignore) != SDL_OFFSETOF(SDL_AssertData_pack1, always_ignore)) {
-        SDL_Log("SDL_AssertData.always_ignore has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, always_ignore), SDL_OFFSETOF(SDL_AssertData_pack8, always_ignore));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack8, trigger_count) != SDL_OFFSETOF(SDL_AssertData_pack1, trigger_count)) {
-        SDL_Log("SDL_AssertData.trigger_count has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, trigger_count), SDL_OFFSETOF(SDL_AssertData_pack8, trigger_count));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack8, condition) != SDL_OFFSETOF(SDL_AssertData_pack1, condition)) {
-        SDL_Log("SDL_AssertData.condition has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, condition), SDL_OFFSETOF(SDL_AssertData_pack8, condition));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack8, filename) != SDL_OFFSETOF(SDL_AssertData_pack1, filename)) {
-        SDL_Log("SDL_AssertData.filename has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, filename), SDL_OFFSETOF(SDL_AssertData_pack8, filename));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack8, linenum) != SDL_OFFSETOF(SDL_AssertData_pack1, linenum)) {
-        SDL_Log("SDL_AssertData.linenum has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, linenum), SDL_OFFSETOF(SDL_AssertData_pack8, linenum));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack8, function) != SDL_OFFSETOF(SDL_AssertData_pack1, function)) {
-        SDL_Log("SDL_AssertData.function has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, function), SDL_OFFSETOF(SDL_AssertData_pack8, function));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack8, next) != SDL_OFFSETOF(SDL_AssertData_pack1, next)) {
-        SDL_Log("SDL_AssertData.next has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, next), SDL_OFFSETOF(SDL_AssertData_pack8, next));
-        result = SDL_FALSE;
-    }
-
-    if (sizeof(SDL_AssertData_pack4) != sizeof(SDL_AssertData_pack1)) {
-        SDL_Log("SDL_AssertData has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_AssertData_pack1), (int)sizeof(SDL_AssertData_pack4));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack4, always_ignore) != SDL_OFFSETOF(SDL_AssertData_pack1, always_ignore)) {
-        SDL_Log("SDL_AssertData.always_ignore has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, always_ignore), SDL_OFFSETOF(SDL_AssertData_pack4, always_ignore));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack4, trigger_count) != SDL_OFFSETOF(SDL_AssertData_pack1, trigger_count)) {
-        SDL_Log("SDL_AssertData.trigger_count has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, trigger_count), SDL_OFFSETOF(SDL_AssertData_pack4, trigger_count));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack4, condition) != SDL_OFFSETOF(SDL_AssertData_pack1, condition)) {
-        SDL_Log("SDL_AssertData.condition has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, condition), SDL_OFFSETOF(SDL_AssertData_pack4, condition));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack4, filename) != SDL_OFFSETOF(SDL_AssertData_pack1, filename)) {
-        SDL_Log("SDL_AssertData.filename has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, filename), SDL_OFFSETOF(SDL_AssertData_pack4, filename));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack4, linenum) != SDL_OFFSETOF(SDL_AssertData_pack1, linenum)) {
-        SDL_Log("SDL_AssertData.linenum has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, linenum), SDL_OFFSETOF(SDL_AssertData_pack4, linenum));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack4, function) != SDL_OFFSETOF(SDL_AssertData_pack1, function)) {
-        SDL_Log("SDL_AssertData.function has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, function), SDL_OFFSETOF(SDL_AssertData_pack4, function));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_AssertData_pack4, next) != SDL_OFFSETOF(SDL_AssertData_pack1, next)) {
-        SDL_Log("SDL_AssertData.next has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_AssertData_pack1, next), SDL_OFFSETOF(SDL_AssertData_pack4, next));
-        result = SDL_FALSE;
-    }
-
     /* SDL_hid_device_info */
 
     if (sizeof(SDL_hid_device_info_pack8) != sizeof(SDL_hid_device_info_pack1)) {
@@ -7143,23 +7251,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_hid_device_info_pack8, vendor_id) != SDL_OFFSETOF(SDL_hid_device_info_pack1, vendor_id)) {
-        SDL_Log("SDL_hid_device_info.vendor_id has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, vendor_id), SDL_OFFSETOF(SDL_hid_device_info_pack8, vendor_id));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_hid_device_info_pack8, product_id) != SDL_OFFSETOF(SDL_hid_device_info_pack1, product_id)) {
-        SDL_Log("SDL_hid_device_info.product_id has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, product_id), SDL_OFFSETOF(SDL_hid_device_info_pack8, product_id));
-        result = SDL_FALSE;
-    }
-
     if (SDL_OFFSETOF(SDL_hid_device_info_pack8, serial_number) != SDL_OFFSETOF(SDL_hid_device_info_pack1, serial_number)) {
         SDL_Log("SDL_hid_device_info.serial_number has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, serial_number), SDL_OFFSETOF(SDL_hid_device_info_pack8, serial_number));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_hid_device_info_pack8, release_number) != SDL_OFFSETOF(SDL_hid_device_info_pack1, release_number)) {
-        SDL_Log("SDL_hid_device_info.release_number has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, release_number), SDL_OFFSETOF(SDL_hid_device_info_pack8, release_number));
         result = SDL_FALSE;
     }
 
@@ -7173,6 +7266,21 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_hid_device_info_pack8, vendor_id) != SDL_OFFSETOF(SDL_hid_device_info_pack1, vendor_id)) {
+        SDL_Log("SDL_hid_device_info.vendor_id has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, vendor_id), SDL_OFFSETOF(SDL_hid_device_info_pack8, vendor_id));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_hid_device_info_pack8, product_id) != SDL_OFFSETOF(SDL_hid_device_info_pack1, product_id)) {
+        SDL_Log("SDL_hid_device_info.product_id has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, product_id), SDL_OFFSETOF(SDL_hid_device_info_pack8, product_id));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_hid_device_info_pack8, release_number) != SDL_OFFSETOF(SDL_hid_device_info_pack1, release_number)) {
+        SDL_Log("SDL_hid_device_info.release_number has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, release_number), SDL_OFFSETOF(SDL_hid_device_info_pack8, release_number));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_hid_device_info_pack8, usage_page) != SDL_OFFSETOF(SDL_hid_device_info_pack1, usage_page)) {
         SDL_Log("SDL_hid_device_info.usage_page has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, usage_page), SDL_OFFSETOF(SDL_hid_device_info_pack8, usage_page));
         result = SDL_FALSE;
@@ -7180,6 +7288,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_hid_device_info_pack8, usage) != SDL_OFFSETOF(SDL_hid_device_info_pack1, usage)) {
         SDL_Log("SDL_hid_device_info.usage has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, usage), SDL_OFFSETOF(SDL_hid_device_info_pack8, usage));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_hid_device_info_pack8, padding16) != SDL_OFFSETOF(SDL_hid_device_info_pack1, padding16)) {
+        SDL_Log("SDL_hid_device_info.padding16 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, padding16), SDL_OFFSETOF(SDL_hid_device_info_pack8, padding16));
         result = SDL_FALSE;
     }
 
@@ -7223,23 +7336,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_hid_device_info_pack4, vendor_id) != SDL_OFFSETOF(SDL_hid_device_info_pack1, vendor_id)) {
-        SDL_Log("SDL_hid_device_info.vendor_id has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, vendor_id), SDL_OFFSETOF(SDL_hid_device_info_pack4, vendor_id));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_hid_device_info_pack4, product_id) != SDL_OFFSETOF(SDL_hid_device_info_pack1, product_id)) {
-        SDL_Log("SDL_hid_device_info.product_id has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, product_id), SDL_OFFSETOF(SDL_hid_device_info_pack4, product_id));
-        result = SDL_FALSE;
-    }
-
     if (SDL_OFFSETOF(SDL_hid_device_info_pack4, serial_number) != SDL_OFFSETOF(SDL_hid_device_info_pack1, serial_number)) {
         SDL_Log("SDL_hid_device_info.serial_number has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, serial_number), SDL_OFFSETOF(SDL_hid_device_info_pack4, serial_number));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_hid_device_info_pack4, release_number) != SDL_OFFSETOF(SDL_hid_device_info_pack1, release_number)) {
-        SDL_Log("SDL_hid_device_info.release_number has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, release_number), SDL_OFFSETOF(SDL_hid_device_info_pack4, release_number));
         result = SDL_FALSE;
     }
 
@@ -7253,6 +7351,21 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_hid_device_info_pack4, vendor_id) != SDL_OFFSETOF(SDL_hid_device_info_pack1, vendor_id)) {
+        SDL_Log("SDL_hid_device_info.vendor_id has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, vendor_id), SDL_OFFSETOF(SDL_hid_device_info_pack4, vendor_id));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_hid_device_info_pack4, product_id) != SDL_OFFSETOF(SDL_hid_device_info_pack1, product_id)) {
+        SDL_Log("SDL_hid_device_info.product_id has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, product_id), SDL_OFFSETOF(SDL_hid_device_info_pack4, product_id));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_hid_device_info_pack4, release_number) != SDL_OFFSETOF(SDL_hid_device_info_pack1, release_number)) {
+        SDL_Log("SDL_hid_device_info.release_number has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, release_number), SDL_OFFSETOF(SDL_hid_device_info_pack4, release_number));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_hid_device_info_pack4, usage_page) != SDL_OFFSETOF(SDL_hid_device_info_pack1, usage_page)) {
         SDL_Log("SDL_hid_device_info.usage_page has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, usage_page), SDL_OFFSETOF(SDL_hid_device_info_pack4, usage_page));
         result = SDL_FALSE;
@@ -7260,6 +7373,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_hid_device_info_pack4, usage) != SDL_OFFSETOF(SDL_hid_device_info_pack1, usage)) {
         SDL_Log("SDL_hid_device_info.usage has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, usage), SDL_OFFSETOF(SDL_hid_device_info_pack4, usage));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_hid_device_info_pack4, padding16) != SDL_OFFSETOF(SDL_hid_device_info_pack1, padding16)) {
+        SDL_Log("SDL_hid_device_info.padding16 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_hid_device_info_pack1, padding16), SDL_OFFSETOF(SDL_hid_device_info_pack4, padding16));
         result = SDL_FALSE;
     }
 
@@ -7699,6 +7817,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_PathInfo_pack8, padding32) != SDL_OFFSETOF(SDL_PathInfo_pack1, padding32)) {
+        SDL_Log("SDL_PathInfo.padding32 has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PathInfo_pack1, padding32), SDL_OFFSETOF(SDL_PathInfo_pack8, padding32));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_PathInfo_pack8, size) != SDL_OFFSETOF(SDL_PathInfo_pack1, size)) {
         SDL_Log("SDL_PathInfo.size has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PathInfo_pack1, size), SDL_OFFSETOF(SDL_PathInfo_pack8, size));
         result = SDL_FALSE;
@@ -7726,6 +7849,11 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_PathInfo_pack4, type) != SDL_OFFSETOF(SDL_PathInfo_pack1, type)) {
         SDL_Log("SDL_PathInfo.type has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PathInfo_pack1, type), SDL_OFFSETOF(SDL_PathInfo_pack4, type));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_PathInfo_pack4, padding32) != SDL_OFFSETOF(SDL_PathInfo_pack1, padding32)) {
+        SDL_Log("SDL_PathInfo.padding32 has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_PathInfo_pack1, padding32), SDL_OFFSETOF(SDL_PathInfo_pack4, padding32));
         result = SDL_FALSE;
     }
 
@@ -7832,88 +7960,6 @@ static SDL_bool ValidatePadding(void)
 
     if (SDL_OFFSETOF(SDL_MessageBoxColorScheme_pack4, colors[0]) != SDL_OFFSETOF(SDL_MessageBoxColorScheme_pack1, colors[0])) {
         SDL_Log("SDL_MessageBoxColorScheme.colors[0] has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxColorScheme_pack1, colors[0]), SDL_OFFSETOF(SDL_MessageBoxColorScheme_pack4, colors[0]));
-        result = SDL_FALSE;
-    }
-
-    /* SDL_MessageBoxData */
-
-    if (sizeof(SDL_MessageBoxData_pack8) != sizeof(SDL_MessageBoxData_pack1)) {
-        SDL_Log("SDL_MessageBoxData has incorrect size with 8-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_MessageBoxData_pack1), (int)sizeof(SDL_MessageBoxData_pack8));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack8, flags) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, flags)) {
-        SDL_Log("SDL_MessageBoxData.flags has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, flags), SDL_OFFSETOF(SDL_MessageBoxData_pack8, flags));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack8, window) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, window)) {
-        SDL_Log("SDL_MessageBoxData.window has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, window), SDL_OFFSETOF(SDL_MessageBoxData_pack8, window));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack8, title) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, title)) {
-        SDL_Log("SDL_MessageBoxData.title has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, title), SDL_OFFSETOF(SDL_MessageBoxData_pack8, title));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack8, message) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, message)) {
-        SDL_Log("SDL_MessageBoxData.message has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, message), SDL_OFFSETOF(SDL_MessageBoxData_pack8, message));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack8, numbuttons) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, numbuttons)) {
-        SDL_Log("SDL_MessageBoxData.numbuttons has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, numbuttons), SDL_OFFSETOF(SDL_MessageBoxData_pack8, numbuttons));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack8, buttons) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, buttons)) {
-        SDL_Log("SDL_MessageBoxData.buttons has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, buttons), SDL_OFFSETOF(SDL_MessageBoxData_pack8, buttons));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack8, colorScheme) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, colorScheme)) {
-        SDL_Log("SDL_MessageBoxData.colorScheme has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, colorScheme), SDL_OFFSETOF(SDL_MessageBoxData_pack8, colorScheme));
-        result = SDL_FALSE;
-    }
-
-    if (sizeof(SDL_MessageBoxData_pack4) != sizeof(SDL_MessageBoxData_pack1)) {
-        SDL_Log("SDL_MessageBoxData has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_MessageBoxData_pack1), (int)sizeof(SDL_MessageBoxData_pack4));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack4, flags) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, flags)) {
-        SDL_Log("SDL_MessageBoxData.flags has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, flags), SDL_OFFSETOF(SDL_MessageBoxData_pack4, flags));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack4, window) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, window)) {
-        SDL_Log("SDL_MessageBoxData.window has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, window), SDL_OFFSETOF(SDL_MessageBoxData_pack4, window));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack4, title) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, title)) {
-        SDL_Log("SDL_MessageBoxData.title has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, title), SDL_OFFSETOF(SDL_MessageBoxData_pack4, title));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack4, message) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, message)) {
-        SDL_Log("SDL_MessageBoxData.message has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, message), SDL_OFFSETOF(SDL_MessageBoxData_pack4, message));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack4, numbuttons) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, numbuttons)) {
-        SDL_Log("SDL_MessageBoxData.numbuttons has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, numbuttons), SDL_OFFSETOF(SDL_MessageBoxData_pack4, numbuttons));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack4, buttons) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, buttons)) {
-        SDL_Log("SDL_MessageBoxData.buttons has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, buttons), SDL_OFFSETOF(SDL_MessageBoxData_pack4, buttons));
-        result = SDL_FALSE;
-    }
-
-    if (SDL_OFFSETOF(SDL_MessageBoxData_pack4, colorScheme) != SDL_OFFSETOF(SDL_MessageBoxData_pack1, colorScheme)) {
-        SDL_Log("SDL_MessageBoxData.colorScheme has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_MessageBoxData_pack1, colorScheme), SDL_OFFSETOF(SDL_MessageBoxData_pack4, colorScheme));
         result = SDL_FALSE;
     }
 
@@ -8028,6 +8074,11 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
+    if (SDL_OFFSETOF(SDL_Palette_pack8, refcount) != SDL_OFFSETOF(SDL_Palette_pack1, refcount)) {
+        SDL_Log("SDL_Palette.refcount has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Palette_pack1, refcount), SDL_OFFSETOF(SDL_Palette_pack8, refcount));
+        result = SDL_FALSE;
+    }
+
     if (SDL_OFFSETOF(SDL_Palette_pack8, ncolors) != SDL_OFFSETOF(SDL_Palette_pack1, ncolors)) {
         SDL_Log("SDL_Palette.ncolors has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Palette_pack1, ncolors), SDL_OFFSETOF(SDL_Palette_pack8, ncolors));
         result = SDL_FALSE;
@@ -8043,13 +8094,18 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_Palette_pack8, refcount) != SDL_OFFSETOF(SDL_Palette_pack1, refcount)) {
-        SDL_Log("SDL_Palette.refcount has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Palette_pack1, refcount), SDL_OFFSETOF(SDL_Palette_pack8, refcount));
+    if (SDL_OFFSETOF(SDL_Palette_pack8, padding_end) != SDL_OFFSETOF(SDL_Palette_pack1, padding_end)) {
+        SDL_Log("SDL_Palette.padding_end has incorrect offset with 8-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Palette_pack1, padding_end), SDL_OFFSETOF(SDL_Palette_pack8, padding_end));
         result = SDL_FALSE;
     }
 
     if (sizeof(SDL_Palette_pack4) != sizeof(SDL_Palette_pack1)) {
         SDL_Log("SDL_Palette has incorrect size with 4-byte alignment, expected %d, got %d\n", (int)sizeof(SDL_Palette_pack1), (int)sizeof(SDL_Palette_pack4));
+        result = SDL_FALSE;
+    }
+
+    if (SDL_OFFSETOF(SDL_Palette_pack4, refcount) != SDL_OFFSETOF(SDL_Palette_pack1, refcount)) {
+        SDL_Log("SDL_Palette.refcount has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Palette_pack1, refcount), SDL_OFFSETOF(SDL_Palette_pack4, refcount));
         result = SDL_FALSE;
     }
 
@@ -8068,8 +8124,8 @@ static SDL_bool ValidatePadding(void)
         result = SDL_FALSE;
     }
 
-    if (SDL_OFFSETOF(SDL_Palette_pack4, refcount) != SDL_OFFSETOF(SDL_Palette_pack1, refcount)) {
-        SDL_Log("SDL_Palette.refcount has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Palette_pack1, refcount), SDL_OFFSETOF(SDL_Palette_pack4, refcount));
+    if (SDL_OFFSETOF(SDL_Palette_pack4, padding_end) != SDL_OFFSETOF(SDL_Palette_pack1, padding_end)) {
+        SDL_Log("SDL_Palette.padding_end has incorrect offset with 4-byte alignment, expected %d, got %d\n", SDL_OFFSETOF(SDL_Palette_pack1, padding_end), SDL_OFFSETOF(SDL_Palette_pack4, padding_end));
         result = SDL_FALSE;
     }
 

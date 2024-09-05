@@ -535,6 +535,7 @@ typedef struct SDL_Haptic SDL_Haptic;
 typedef struct SDL_HapticDirection
 {
     Uint8 type;         /**< The type of encoding. */
+    Uint8 padding8[3];
     Sint32 dir[3];      /**< The encoded direction. */
 } SDL_HapticDirection;
 
@@ -556,6 +557,7 @@ typedef struct SDL_HapticConstant
 {
     /* Header */
     Uint16 type;            /**< SDL_HAPTIC_CONSTANT */
+    Uint16 padding16;
     SDL_HapticDirection direction;  /**< Direction of the effect. */
 
     /* Replay */
@@ -641,7 +643,7 @@ typedef struct SDL_HapticConstant
 typedef struct SDL_HapticPeriodic
 {
     /* Header */
-    Uint16 type;        /**< SDL_HAPTIC_SINE, SDL_HAPTIC_SQUARE
+    Uint32 type;        /**< SDL_HAPTIC_SINE, SDL_HAPTIC_SQUARE
                              SDL_HAPTIC_TRIANGLE, SDL_HAPTIC_SAWTOOTHUP or
                              SDL_HAPTIC_SAWTOOTHDOWN */
     SDL_HapticDirection direction;  /**< Direction of the effect. */
@@ -665,6 +667,8 @@ typedef struct SDL_HapticPeriodic
     Uint16 attack_level;    /**< Level at the start of the attack. */
     Uint16 fade_length; /**< Duration of the fade. */
     Uint16 fade_level;  /**< Level at the end of the fade. */
+
+    Uint16 padding_end;
 } SDL_HapticPeriodic;
 
 /**
@@ -697,7 +701,7 @@ typedef struct SDL_HapticPeriodic
 typedef struct SDL_HapticCondition
 {
     /* Header */
-    Uint16 type;            /**< SDL_HAPTIC_SPRING, SDL_HAPTIC_DAMPER,
+    Uint32 type;            /**< SDL_HAPTIC_SPRING, SDL_HAPTIC_DAMPER,
                                  SDL_HAPTIC_INERTIA or SDL_HAPTIC_FRICTION */
     SDL_HapticDirection direction;  /**< Direction of the effect - Not used ATM. */
 
@@ -716,6 +720,8 @@ typedef struct SDL_HapticCondition
     Sint16 left_coeff[3];   /**< How fast to increase the force towards the negative side. */
     Uint16 deadband[3];     /**< Size of the dead zone; max 0xFFFF: whole axis-range when 0-centered. */
     Sint16 center[3];       /**< Position of the dead zone. */
+
+    Uint16 padding_end;
 } SDL_HapticCondition;
 
 /**
@@ -736,7 +742,7 @@ typedef struct SDL_HapticCondition
 typedef struct SDL_HapticRamp
 {
     /* Header */
-    Uint16 type;            /**< SDL_HAPTIC_RAMP */
+    Uint32 type;            /**< SDL_HAPTIC_RAMP */
     SDL_HapticDirection direction;  /**< Direction of the effect. */
 
     /* Replay */
@@ -756,6 +762,8 @@ typedef struct SDL_HapticRamp
     Uint16 attack_level;    /**< Level at the start of the attack. */
     Uint16 fade_length;     /**< Duration of the fade. */
     Uint16 fade_level;      /**< Level at the end of the fade. */
+
+    Uint16 padding_end;
 } SDL_HapticRamp;
 
 /**
@@ -775,7 +783,7 @@ typedef struct SDL_HapticRamp
 typedef struct SDL_HapticLeftRight
 {
     /* Header */
-    Uint16 type;            /**< SDL_HAPTIC_LEFTRIGHT */
+    Uint32 type;            /**< SDL_HAPTIC_LEFTRIGHT */
 
     /* Replay */
     Uint32 length;          /**< Duration of the effect in milliseconds. */
@@ -805,7 +813,7 @@ typedef struct SDL_HapticLeftRight
 typedef struct SDL_HapticCustom
 {
     /* Header */
-    Uint16 type;            /**< SDL_HAPTIC_CUSTOM */
+    Uint32 type;            /**< SDL_HAPTIC_CUSTOM */
     SDL_HapticDirection direction;  /**< Direction of the effect. */
 
     /* Replay */
@@ -818,8 +826,10 @@ typedef struct SDL_HapticCustom
 
     /* Custom */
     Uint8 channels;         /**< Axes to use, minimum of one. */
+    Uint8 padding8[3];
     Uint16 period;          /**< Sample periods. */
     Uint16 samples;         /**< Amount of samples. */
+    Uint16 padding16;
     Uint16 *data;           /**< Should contain channels*samples items. */
 
     /* Envelope */
@@ -904,13 +914,14 @@ typedef struct SDL_HapticCustom
 typedef union SDL_HapticEffect
 {
     /* Common for all force feedback effects */
-    Uint16 type;                    /**< Effect type. */
+    Uint32 type;                    /**< Effect type. */
     SDL_HapticConstant constant;    /**< Constant effect. */
     SDL_HapticPeriodic periodic;    /**< Periodic effect. */
     SDL_HapticCondition condition;  /**< Condition effect. */
     SDL_HapticRamp ramp;            /**< Ramp effect. */
     SDL_HapticLeftRight leftright;  /**< Left/Right effect. */
     SDL_HapticCustom custom;        /**< Custom effect. */
+    Uint8 padding[72];
 } SDL_HapticEffect;
 
 /**
