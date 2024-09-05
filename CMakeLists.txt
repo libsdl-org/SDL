@@ -2943,7 +2943,7 @@ if(SDL_VIDEO)
   endif()
 endif()
 
-if(SDL_GPU)
+if(SDL_GPU AND NOT WINDOWS_STORE)
   if(HAVE_D3D11_H)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/d3d11/*.c")
     set(SDL_GPU_D3D11 1)
