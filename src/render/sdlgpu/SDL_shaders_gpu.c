@@ -33,7 +33,7 @@ typedef struct GPU_ShaderModuleSource
     SDL_GPUShaderFormat format;
 } GPU_ShaderModuleSource;
 
-#ifdef SDL_GPU_VULKAN
+#if defined(SDL_GPU_VULKAN) && SDL_GPU_VULKAN
 #define IF_VULKAN(...)     __VA_ARGS__
 #define HAVE_SPIRV_SHADERS 1
 #include "shaders/spir-v.h"
