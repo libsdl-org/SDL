@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_D3D11
+#ifdef SDL_VIDEO_RENDER_D3D11
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
@@ -2893,4 +2893,4 @@ SDL_RenderDriver D3D11_RenderDriver = {
     D3D11_CreateRenderer, "direct3d11"
 };
 
-#endif // SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
+#endif // SDL_VIDEO_RENDER_D3D11

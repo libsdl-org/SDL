@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_SW
+#ifdef SDL_VIDEO_RENDER_SW
 
 #include "SDL_draw.h"
 #include "SDL_blendline.h"

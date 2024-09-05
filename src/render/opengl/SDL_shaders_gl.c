@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_OGL
+#ifdef SDL_VIDEO_RENDER_OGL
 
 #include <SDL3/SDL_opengl.h>
 #include "SDL_shaders_gl.h"

@@ -20,7 +20,10 @@
 */
 #include "SDL_internal.h"
 
-#if (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12 || SDL_VIDEO_RENDER_VULKAN)
+#if defined(SDL_VIDEO_RENDER_D3D) || \
+    defined(SDL_VIDEO_RENDER_D3D11) || \
+    defined(SDL_VIDEO_RENDER_D3D12) || \
+    defined(SDL_VIDEO_RENDER_VULKAN)
 
 #include "SDL_d3dmath.h"
 
@@ -129,4 +132,4 @@ Float4X4 MatrixRotationZ(float r)
     return m;
 }
 
-#endif // (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12)
+#endif // SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12 || SDL_VIDEO_RENDER_VULKAN

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_GPU
+#ifdef SDL_VIDEO_RENDER_GPU
 
 #include "SDL_gpu_util.h"
 #include "SDL_pipeline_gpu.h"
@@ -222,4 +222,4 @@ SDL_GPUGraphicsPipeline *GPU_GetPipeline(GPU_PipelineCache *cache, GPU_Shaders *
     return pipeline;
 }
 
-#endif
+#endif // SDL_VIDEO_RENDER_GPU

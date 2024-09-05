@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_GPU_VULKAN
+#ifdef SDL_GPU_VULKAN
 
 // Needed for VK_KHR_portability_subset
 #define VK_ENABLE_BETA_EXTENSIONS

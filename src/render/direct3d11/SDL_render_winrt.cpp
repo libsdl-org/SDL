@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_D3D11
+#ifdef SDL_VIDEO_RENDER_D3D11
 
 #include "../../video/winrt/SDL_winrtvideo_cpp.h"
 extern "C" {

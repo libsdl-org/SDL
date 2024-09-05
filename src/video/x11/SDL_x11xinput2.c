@@ -440,7 +440,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     case XI_Motion:
     {
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
-#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
         bool pointer_emulated = ((xev->flags & XIPointerEmulated) != 0);
 #else
         bool pointer_emulated = false;
@@ -478,7 +478,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         }
     } break;
 
-#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     case XI_TouchBegin:
     {
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;

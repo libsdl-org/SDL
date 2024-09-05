@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_D3D12
+#ifdef SDL_VIDEO_RENDER_D3D12
 
 #define SDL_D3D12_NUM_BUFFERS        2
 #define SDL_D3D12_NUM_VERTEX_BUFFERS 256
@@ -3286,4 +3286,4 @@ SDL_RenderDriver D3D12_RenderDriver = {
 }
 #endif
 
-#endif // SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED
+#endif // SDL_VIDEO_RENDER_D3D12

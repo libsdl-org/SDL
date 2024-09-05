@@ -141,5 +141,3 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     SDL_Unsupported();
     return NULL;
 }
-
-// vi: set ts=4 sw=4 expandtab:

@@ -1488,6 +1488,15 @@
     <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c">
       <Filter>render\direct3d11</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\render\sdlgpu\SDL_pipeline_gpu.c">
+      <Filter>render\sdlgpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\sdlgpu\SDL_render_gpu.c">
+      <Filter>render\sdlgpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\sdlgpu\SDL_shaders_gpu.c">
+      <Filter>render\sdlgpu</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\render\opengl\SDL_render_gl.c">
       <Filter>render\opengl</Filter>
     </ClCompile>
