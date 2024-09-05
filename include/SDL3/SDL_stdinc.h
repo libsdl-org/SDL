@@ -494,6 +494,12 @@ SDL_COMPILE_TIME_ASSERT(uint32, sizeof(Uint32) == 4);
 SDL_COMPILE_TIME_ASSERT(sint32, sizeof(Sint32) == 4);
 SDL_COMPILE_TIME_ASSERT(uint64, sizeof(Uint64) == 8);
 SDL_COMPILE_TIME_ASSERT(sint64, sizeof(Sint64) == 8);
+typedef struct SDL_alignment_test
+{
+    Uint8 a;
+    void *b;
+} SDL_alignment_test;
+SDL_COMPILE_TIME_ASSERT(struct_alignment, sizeof(SDL_alignment_test) == (2 * sizeof(void *)));
 #endif /* DOXYGEN_SHOULD_IGNORE_THIS */
 /** \endcond */
 
