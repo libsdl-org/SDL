@@ -20,7 +20,7 @@
 #include "SDL_test.h"
 
 static SDL_TLSID tls;
-static int alive = 0;
+static SDL_atomic_t alive;
 static int testprio = 0;
 static SDLTest_CommonState *state;
 
@@ -58,7 +58,7 @@ ThreadFunc(void *data)
     SDL_TLSSet(tls, "baby thread", NULL);
     SDL_Log("Started thread %s: My thread id is %lu, thread data = %s\n",
             (char *)data, SDL_ThreadID(), (const char *)SDL_TLSGet(tls));
-    while (alive) {
+    while (SDL_AtomicGet(&alive)) {
         SDL_Log("Thread '%s' is alive!\n", (char *)data);
 
         if (testprio) {
@@ -79,7 +79,7 @@ killed(int sig)
 {
     SDL_Log("Killed with SIGTERM, waiting 5 seconds to exit\n");
     SDL_Delay(5 * 1000);
-    alive = 0;
+    SDL_AtomicSet(&alive, 0);
     quit(0);
 }
 
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
     SDL_TLSSet(tls, "main thread", NULL);
     SDL_Log("Main thread data initially: %s\n", (const char *)SDL_TLSGet(tls));
 
-    alive = 1;
+    SDL_AtomicSet(&alive, 1);
     thread = SDL_CreateThread(ThreadFunc, "One", "#1");
     if (!thread) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
@@ -141,12 +141,12 @@ int main(int argc, char *argv[])
     }
     SDL_Delay(5 * 1000);
     SDL_Log("Waiting for thread #1\n");
-    alive = 0;
+    SDL_AtomicSet(&alive, 0);
     SDL_WaitThread(thread, NULL);
 
     SDL_Log("Main thread data finally: %s\n", (const char *)SDL_TLSGet(tls));
 
-    alive = 1;
+    SDL_AtomicSet(&alive, 1);
     (void)signal(SIGTERM, killed);
     thread = SDL_CreateThread(ThreadFunc, "Two", "#2");
     if (!thread) {
