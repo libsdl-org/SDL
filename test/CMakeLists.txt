@@ -301,6 +301,7 @@ else()
 endif()
 
 add_sdl_test_executable(checkkeys SOURCES checkkeys.c)
+add_sdl_test_executable(checkstruct NONINTERACTIVE SOURCES checkstruct.c)
 add_sdl_test_executable(loopwave NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES loopwave.c)
 add_sdl_test_executable(testsurround SOURCES testsurround.c)
 add_sdl_test_executable(testresample NEEDS_RESOURCES SOURCES testresample.c)
