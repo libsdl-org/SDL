@@ -2173,6 +2173,7 @@ The following functions have been removed:
 * SDL_SetWindowData() - use SDL_GetWindowProperties() instead
 * SDL_CreateWindowFrom() - use SDL_CreateWindowWithProperties() with the properties that allow you to wrap an existing window
 * SDL_SetWindowInputFocus() - use SDL_RaiseWindow() instead
+* SDL_SetWindowModalFor() - use SDL_SetWindowParent() with SDL_SetWindowModal() instead
 
 The SDL_Window id type is named SDL_WindowID
 
