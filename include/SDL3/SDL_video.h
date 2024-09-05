@@ -2251,11 +2251,12 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
 /**
  * Toggle the state of the window as modal.
  *
- * To enable modal status on a window, the window must currently be the child window of a parent,
- * or toggling modal status on will fail.
+ * To enable modal status on a window, the window must currently be the child
+ * window of a parent, or toggling modal status on will fail.
  *
  * \param window the window on which to set the modal state.
- * \param modal SDL_TRUE to toggle modal status on, SDL_FALSE to toggle it off.
+ * \param modal SDL_TRUE to toggle modal status on, SDL_FALSE to toggle it
+ *              off.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.
  *
