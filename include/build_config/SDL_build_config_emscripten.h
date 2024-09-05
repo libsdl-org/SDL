@@ -187,17 +187,20 @@
 /* Enable various video drivers */
 #define SDL_VIDEO_DRIVER_EMSCRIPTEN 1
 
-#define SDL_VIDEO_RENDER_OGL_ES2 1
+/*#define SDL_VIDEO_RENDER_OGL_ES2 1*/
+
+/* Enable SDL_gpu support for emscripten using the existing emscripten WebGPU implementation */
+#define SDL_GPU_WEBGPU 1
 
 /* Enable OpenGL support */
 /* #undef SDL_VIDEO_OPENGL */
 /* #undef SDL_VIDEO_OPENGL_ES */
-#define SDL_VIDEO_OPENGL_ES2 1
+/*#define SDL_VIDEO_OPENGL_ES2 1*/
 /* #undef SDL_VIDEO_OPENGL_BGL */
 /* #undef SDL_VIDEO_OPENGL_CGL */
 /* #undef SDL_VIDEO_OPENGL_GLX */
 /* #undef SDL_VIDEO_OPENGL_WGL */
-#define SDL_VIDEO_OPENGL_EGL 1
+/*#define SDL_VIDEO_OPENGL_EGL 1*/
 /* #undef SDL_VIDEO_OPENGL_OSMESA */
 /* #undef SDL_VIDEO_OPENGL_OSMESA_DYNAMIC */
 

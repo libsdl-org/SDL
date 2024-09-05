@@ -30,6 +30,7 @@
 #ifndef SDL_gpu_h_
 #define SDL_gpu_h_
 
+#include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_properties.h>
@@ -956,6 +957,17 @@ typedef enum SDL_GPUSwapchainComposition
     SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR,
     SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048
 } SDL_GPUSwapchainComposition;
+
+typedef enum SDL_GPUDriver
+{
+    SDL_GPU_DRIVER_INVALID = -1,
+    SDL_GPU_DRIVER_PRIVATE, /* NDA'd platforms */
+    SDL_GPU_DRIVER_VULKAN,
+    SDL_GPU_DRIVER_D3D11,
+    SDL_GPU_DRIVER_D3D12,
+    SDL_GPU_DRIVER_METAL,
+    SDL_GPU_DRIVER_WEBGPU,
+} SDL_GPUDriver;
 
 /* Structures */
 
