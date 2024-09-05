@@ -30,8 +30,8 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/core/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/core/android/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/cpuinfo/*.c) \
-    $(LOCAL_PATH)/src/dialog/SDL_dialog_utils.c \
-    $(LOCAL_PATH)/src/dialog/android/SDL_androiddialog.c \
+	$(LOCAL_PATH)/src/dialog/SDL_dialog_utils.c \
+	$(LOCAL_PATH)/src/dialog/android/SDL_androiddialog.c \
 	$(wildcard $(LOCAL_PATH)/src/dynapi/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/events/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/file/*.c) \
@@ -98,7 +98,7 @@ LOCAL_CXXFLAGS += -std=gnu++11
 
 LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
 
-LOCAL_LDFLAGS := -Wl,--no-undefined -Wl,--version-script=$(LOCAL_PATH)/src/dynapi/SDL_dynapi.sym
+LOCAL_LDFLAGS := -Wl,--no-undefined -Wl,--no-undefined-version -Wl,--version-script=$(LOCAL_PATH)/src/dynapi/SDL_dynapi.sym
 
 ifeq ($(NDK_DEBUG),1)
     cmd-strip :=
