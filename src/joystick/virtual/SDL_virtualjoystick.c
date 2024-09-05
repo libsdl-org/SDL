@@ -142,6 +142,11 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         SDL_InvalidParamError("desc");
         return 0;
     }
+    if (desc->version < sizeof(*desc)) {
+        // Update this to handle older versions of this interface
+        SDL_SetError("Invalid desc, should be initialized with SDL_INIT_INTERFACE()");
+        return 0;
+    }
 
     hwdata = (joystick_hwdata *)SDL_calloc(1, sizeof(joystick_hwdata));
     if (!hwdata) {

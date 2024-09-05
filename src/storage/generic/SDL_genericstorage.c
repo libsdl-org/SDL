@@ -182,6 +182,7 @@ static Uint64 GENERIC_GetStorageSpaceRemaining(void *userdata)
 }
 
 static const SDL_StorageInterface GENERIC_title_iface = {
+    sizeof(SDL_StorageInterface),
     GENERIC_CloseStorage,
     NULL,   // ready
     GENERIC_EnumerateStorageDirectory,
@@ -224,6 +225,7 @@ TitleStorageBootStrap GENERIC_titlebootstrap = {
 };
 
 static const SDL_StorageInterface GENERIC_user_iface = {
+    sizeof(SDL_StorageInterface),
     GENERIC_CloseStorage,
     NULL,   // ready
     GENERIC_EnumerateStorageDirectory,
@@ -259,6 +261,7 @@ UserStorageBootStrap GENERIC_userbootstrap = {
 };
 
 static const SDL_StorageInterface GENERIC_file_iface = {
+    sizeof(SDL_StorageInterface),
     GENERIC_CloseStorage,
     NULL,   // ready
     GENERIC_EnumerateStorageDirectory,

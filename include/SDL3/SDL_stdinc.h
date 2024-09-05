@@ -523,6 +523,49 @@ SDL_COMPILE_TIME_ASSERT(enum, sizeof(SDL_DUMMY_ENUM) == sizeof(int));
 extern "C" {
 #endif
 
+/**
+ * A macro to initialize an SDL interface.
+ *
+ * This macro will initialize an SDL interface structure and should be called before you fill out the fields with your implementation.
+ *
+ * You can use it like this:
+ *
+ * ```c
+ * SDL_IOStreamInterface iface;
+ *
+ * SDL_INIT_INTERFACE(&iface);
+ *
+ * // Fill in the interface function pointers with your implementation
+ * iface.seek = ...
+ *
+ * stream = SDL_OpenIO(&iface, NULL);
+ * ```
+ *
+ * If you are using designated initializers, you can use the size of the interface as the version, e.g.
+ *
+ * ```c
+ * SDL_IOStreamInterface iface = {
+ *     .version = sizeof(iface),
+ *     .seek = ...
+ * };
+ * stream = SDL_OpenIO(&iface, NULL);
+ * ```
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_IOStreamInterface
+ * \sa SDL_StorageInterface
+ * \sa SDL_VirtualJoystickDesc
+ */
+#define SDL_INIT_INTERFACE(iface)               \
+    do {                                        \
+        SDL_zerop(iface);                       \
+        (iface)->version = sizeof(*(iface));    \
+    } while (0)
+
+
 #ifndef SDL_DISABLE_ALLOCA
 #define SDL_stack_alloc(type, count)    (type*)alloca(sizeof(type)*(count))
 #define SDL_stack_free(data)

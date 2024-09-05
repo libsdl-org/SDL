@@ -52,10 +52,17 @@ extern "C" {
  * It is not usually necessary to do this; SDL provides standard
  * implementations for many things you might expect to do with an SDL_Storage.
  *
+ * This structure should be initialized using SDL_INIT_INTERFACE()
+ *
  * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_INIT_INTERFACE
  */
 typedef struct SDL_StorageInterface
 {
+    /* The version of this interface */
+    Uint32 version;
+
     /* Called when the storage is closed */
     SDL_bool (SDLCALL *close)(void *userdata);
 
@@ -90,6 +97,15 @@ typedef struct SDL_StorageInterface
     Uint64 (SDLCALL *space_remaining)(void *userdata);
 } SDL_StorageInterface;
 
+/* Check the size of SDL_StorageInterface
+ *
+ * If this assert fails, either the compiler is padding to an unexpected size,
+ * or the interface has been updated and this should be updated to match and
+ * the code using this interface should be updated to handle the old version.
+ */
+SDL_COMPILE_TIME_ASSERT(SDL_StorageInterface_SIZE,
+    (sizeof(void *) == 4 && sizeof(SDL_StorageInterface) == 48) ||
+    (sizeof(void *) == 8 && sizeof(SDL_StorageInterface) == 96));
 /**
  * An abstract interface for filesystem access.
  *
@@ -176,8 +192,11 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenFileStorage(const char *path);
  * should use the built-in implementations in SDL, like SDL_OpenTitleStorage()
  * or SDL_OpenUserStorage().
  *
- * \param iface the function table to be used by this container.
- * \param userdata the pointer that will be passed to the store interface.
+ * This function makes a copy of `iface` and the caller does not need to keep
+ * it around after this call.
+ *
+ * \param iface the interface that implements this storage, initialized using SDL_INIT_INTERFACE().
+ * \param userdata the pointer that will be passed to the interface functions.
  * \returns a storage container on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -186,6 +205,7 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenFileStorage(const char *path);
  * \sa SDL_CloseStorage
  * \sa SDL_GetStorageFileSize
  * \sa SDL_GetStorageSpaceRemaining
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_ReadStorageFile
  * \sa SDL_StorageReady
  * \sa SDL_WriteStorageFile

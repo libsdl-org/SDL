@@ -419,7 +419,7 @@ static SDL_IOStream *SDL_IOFromFP(FILE *fp, bool autoclose)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     // There's no stdio_size because SDL_GetIOSize emulates it the same way we'd do it for stdio anyhow.
     iface.seek = stdio_seek;
     iface.read = stdio_read;
@@ -607,7 +607,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     iface.size = Android_JNI_FileSize;
     iface.seek = Android_JNI_FileSeek;
     iface.read = Android_JNI_FileRead;
@@ -636,7 +636,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     iface.size = windows_file_size;
     iface.seek = windows_file_seek;
     iface.read = windows_file_read;
@@ -698,7 +698,7 @@ SDL_IOStream *SDL_IOFromMem(void *mem, size_t size)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     iface.size = mem_size;
     iface.seek = mem_seek;
     iface.read = mem_read;
@@ -732,7 +732,7 @@ SDL_IOStream *SDL_IOFromConstMem(const void *mem, size_t size)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     iface.size = mem_size;
     iface.seek = mem_seek;
     iface.read = mem_read;
@@ -832,7 +832,7 @@ SDL_IOStream *SDL_IOFromDynamicMem(void)
     }
 
     SDL_IOStreamInterface iface;
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     iface.size = dynamic_mem_size;
     iface.seek = dynamic_mem_seek;
     iface.read = dynamic_mem_read;
@@ -866,6 +866,11 @@ SDL_IOStream *SDL_OpenIO(const SDL_IOStreamInterface *iface, void *userdata)
 {
     if (!iface) {
         SDL_InvalidParamError("iface");
+        return NULL;
+    }
+    if (iface->version < sizeof(*iface)) {
+        // Update this to handle older versions of this interface
+        SDL_SetError("Invalid interface, should be initialized with SDL_INIT_INTERFACE()");
         return NULL;
     }
 

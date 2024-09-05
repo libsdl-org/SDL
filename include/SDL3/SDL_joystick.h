@@ -414,16 +414,18 @@ typedef struct SDL_VirtualJoystickSensorDesc
 /**
  * The structure that describes a virtual joystick.
  *
- * All elements of this structure are optional and can be left 0.
+ * This structure should be initialized using SDL_INIT_INTERFACE(). All elements of this structure are optional.
  *
  * \since This struct is available since SDL 3.0.0.
  *
  * \sa SDL_AttachVirtualJoystick
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_VirtualJoystickSensorDesc
  * \sa SDL_VirtualJoystickTouchpadDesc
  */
 typedef struct SDL_VirtualJoystickDesc
 {
+    Uint32 version;     /**< the version of this interface */
     Uint16 type;        /**< `SDL_JoystickType` */
     Uint16 padding;     /**< unused */
     Uint16 vendor_id;   /**< the USB vendor ID of this joystick */
@@ -454,10 +456,20 @@ typedef struct SDL_VirtualJoystickDesc
     void (SDLCALL *Cleanup)(void *userdata); /**< Cleans up the userdata when the joystick is detached */
 } SDL_VirtualJoystickDesc;
 
+/* Check the size of SDL_VirtualJoystickDesc
+ *
+ * If this assert fails, either the compiler is padding to an unexpected size,
+ * or the interface has been updated and this should be updated to match and
+ * the code using this interface should be updated to handle the old version.
+ */
+SDL_COMPILE_TIME_ASSERT(SDL_VirtualJoystickDesc_SIZE,
+    (sizeof(void *) == 4 && sizeof(SDL_VirtualJoystickDesc) == 84) ||
+    (sizeof(void *) == 8 && sizeof(SDL_VirtualJoystickDesc) == 136));
+
 /**
  * Attach a new virtual joystick.
  *
- * \param desc joystick description.
+ * \param desc joystick description, initialized using SDL_INIT_INTERFACE().
  * \returns the joystick instance ID, or 0 on failure; call SDL_GetError() for
  *          more information.
  *

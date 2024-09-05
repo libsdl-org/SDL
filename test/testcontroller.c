@@ -1159,7 +1159,7 @@ static void OpenVirtualGamepad(void)
         return;
     }
 
-    SDL_zero(desc);
+    SDL_INIT_INTERFACE(&desc);
     desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
     desc.naxes = SDL_GAMEPAD_AXIS_MAX;
     desc.nbuttons = SDL_GAMEPAD_BUTTON_MAX;
