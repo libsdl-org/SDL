@@ -1250,7 +1250,7 @@ static void D3D11_ReleaseGraphicsPipeline(
 static ID3D11BlendState *D3D11_INTERNAL_FetchBlendState(
     D3D11Renderer *renderer,
     Uint32 numColorAttachments,
-    SDL_GPUColorAttachmentDescription *colorAttachments)
+    const SDL_GPUColorAttachmentDescription *colorAttachments)
 {
     ID3D11BlendState *result;
     D3D11_BLEND_DESC blendDesc;

@@ -997,7 +997,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
         MetalShader *vertexShader = (MetalShader *)pipelineCreateInfo->vertexShader;
         MetalShader *fragmentShader = (MetalShader *)pipelineCreateInfo->fragmentShader;
         MTLRenderPipelineDescriptor *pipelineDescriptor;
-        SDL_GPUColorAttachmentBlendState *blendState;
+        const SDL_GPUColorAttachmentBlendState *blendState;
         MTLVertexDescriptor *vertexDescriptor;
         Uint32 binding;
         MTLDepthStencilDescriptor *depthStencilDescriptor;
