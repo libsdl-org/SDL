@@ -129,6 +129,7 @@ static Uint64 STEAM_GetStorageSpaceRemaining(void *userdata)
 }
 
 static const SDL_StorageInterface STEAM_user_iface = {
+    sizeof(SDL_StorageInterface),
     STEAM_CloseStorage,
     STEAM_StorageReady,
     NULL,   // enumerate

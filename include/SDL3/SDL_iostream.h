@@ -83,10 +83,17 @@ typedef enum SDL_IOWhence
  * already offers several common types of I/O streams, via functions like
  * SDL_IOFromFile() and SDL_IOFromMem().
  *
+ * This structure should be initialized using SDL_INIT_INTERFACE()
+ *
  * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_INIT_INTERFACE
  */
 typedef struct SDL_IOStreamInterface
 {
+    /* The version of this interface */
+    Uint32 version;
+
     /**
      *  Return the number of bytes in this SDL_IOStream
      *
@@ -138,6 +145,15 @@ typedef struct SDL_IOStreamInterface
 
 } SDL_IOStreamInterface;
 
+/* Check the size of SDL_IOStreamInterface
+ *
+ * If this assert fails, either the compiler is padding to an unexpected size,
+ * or the interface has been updated and this should be updated to match and
+ * the code using this interface should be updated to handle the old version.
+ */
+SDL_COMPILE_TIME_ASSERT(SDL_IOStreamInterface_SIZE,
+    (sizeof(void *) == 4 && sizeof(SDL_IOStreamInterface) == 24) ||
+    (sizeof(void *) == 8 && sizeof(SDL_IOStreamInterface) == 48));
 
 /**
  * The read/write operation structure.
@@ -347,20 +363,18 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromDynamicMem(void);
  * read/write a common data source, you should use the built-in
  * implementations in SDL, like SDL_IOFromFile() or SDL_IOFromMem(), etc.
  *
- * You must free the returned pointer with SDL_CloseIO().
- *
  * This function makes a copy of `iface` and the caller does not need to keep
- * this data around after this call.
+ * it around after this call.
  *
- * \param iface the function pointers that implement this SDL_IOStream.
- * \param userdata the app-controlled pointer that is passed to iface's
- *                 functions when called.
+ * \param iface the interface that implements this SDL_IOStream, initialized using SDL_INIT_INTERFACE().
+ * \param userdata the pointer that will be passed to the interface functions.
  * \returns a pointer to the allocated memory on success or NULL on failure;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CloseIO
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_IOFromConstMem
  * \sa SDL_IOFromFile
  * \sa SDL_IOFromMem

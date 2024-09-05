@@ -920,7 +920,7 @@ The functions SDL_GetJoysticks(), SDL_GetJoystickNameForID(), SDL_GetJoystickPat
 
 SDL_AttachVirtualJoystick() now returns the joystick instance ID instead of a device index, and returns 0 if there was an error.
 
-SDL_VirtualJoystickDesc no longer takes a struct version; if we need to extend this in the future, we'll make a second struct and a second SDL_AttachVirtualJoystickEx-style function that uses it. Just zero the struct and don't set a version.
+SDL_VirtualJoystickDesc version should not be set to SDL_VIRTUAL_JOYSTICK_DESC_VERSION, instead the structure should be initialized using SDL_INIT_INTERFACE().
 
 The following functions have been renamed:
 * SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystick()
@@ -983,7 +983,7 @@ The following functions have been removed:
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickNameForID()
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickPathForID()
 * SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
-* SDL_VIRTUAL_JOYSTICK_DESC_VERSION - no longer needed, version info has been removed from SDL_VirtualJoystickDesc.
+* SDL_VIRTUAL_JOYSTICK_DESC_VERSION - no longer needed
 
 The following symbols have been removed:
 * SDL_JOYBALLMOTION
@@ -1568,7 +1568,7 @@ SDL_IOStream *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
         return NULL;
     }
 
-    SDL_zero(iface);
+    SDL_INIT_INTERFACE(&iface);
     /* There's no stdio_size because SDL_GetIOSize emulates it the same way we'd do it for stdio anyhow. */
     iface.seek = stdio_seek;
     iface.read = stdio_read;
