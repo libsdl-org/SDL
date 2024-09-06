@@ -16,7 +16,7 @@
  *
  * \sa SDL_AttachVirtualJoystick
  */
-static int TestVirtualJoystick(void *arg)
+static int SDLCALL TestVirtualJoystick(void *arg)
 {
     SDL_VirtualJoystickDesc desc;
     SDL_Joystick *joystick = NULL;

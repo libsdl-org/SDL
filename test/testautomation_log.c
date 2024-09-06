@@ -33,7 +33,7 @@ static void DisableTestLog(void)
 /**
  * Check SDL_HINT_LOGGING functionality
  */
-static int log_testHint(void *arg)
+static int SDLCALL log_testHint(void *arg)
 {
     int count;
 

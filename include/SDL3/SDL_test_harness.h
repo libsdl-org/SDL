@@ -63,13 +63,13 @@ extern "C" {
 #define TEST_RESULT_SETUP_FAILURE       4
 
 /* !< Function pointer to a test case setup function (run before every test) */
-typedef void (*SDLTest_TestCaseSetUpFp)(void **arg);
+typedef void (SDLCALL *SDLTest_TestCaseSetUpFp)(void **arg);
 
 /* !< Function pointer to a test case function */
-typedef int (*SDLTest_TestCaseFp)(void *arg);
+typedef int (SDLCALL *SDLTest_TestCaseFp)(void *arg);
 
 /* !< Function pointer to a test case teardown function (run after every test) */
-typedef void  (*SDLTest_TestCaseTearDownFp)(void *arg);
+typedef void  (SDLCALL *SDLTest_TestCaseTearDownFp)(void *arg);
 
 /*
  * Holds information about a single test case.
@@ -109,7 +109,7 @@ typedef struct SDLTest_TestSuiteReference {
  *
  * \returns A null-terminated seed string and equal to the in put buffer on success, NULL on failure
  */
-char *SDLTest_GenerateRunSeed(char *buffer, int length);
+char * SDLCALL SDLTest_GenerateRunSeed(char *buffer, int length);
 
 /*
  * Holds information about the execution of test suites.
@@ -125,7 +125,7 @@ typedef struct SDLTest_TestSuiteRunner SDLTest_TestSuiteRunner;
  *
  * \returns the test run result: 0 when all tests passed, 1 if any tests failed.
  */
-SDLTest_TestSuiteRunner * SDLTest_CreateTestSuiteRunner(SDLTest_CommonState *state, SDLTest_TestSuiteReference *testSuites[]);
+SDLTest_TestSuiteRunner * SDLCALL SDLTest_CreateTestSuiteRunner(SDLTest_CommonState *state, SDLTest_TestSuiteReference *testSuites[]);
 
 /*
  * Destroy a test suite runner.
@@ -133,7 +133,7 @@ SDLTest_TestSuiteRunner * SDLTest_CreateTestSuiteRunner(SDLTest_CommonState *sta
  *
  * \param runner The runner that should be destroyed.
  */
-void SDLTest_DestroyTestSuiteRunner(SDLTest_TestSuiteRunner *runner);
+void SDLCALL SDLTest_DestroyTestSuiteRunner(SDLTest_TestSuiteRunner *runner);
 
 /*
  * Execute a test suite, using the configured run seed, execution key, filter, etc.
@@ -142,8 +142,7 @@ void SDLTest_DestroyTestSuiteRunner(SDLTest_TestSuiteRunner *runner);
  *
  * \returns the test run result: 0 when all tests passed, 1 if any tests failed.
  */
-int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner);
-
+int SDLCALL SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -792,7 +792,7 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
     return runResult;
 }
 
-static int SDLTest_TestSuiteCommonArg(void *data, char **argv, int index)
+static int SDLCALL SDLTest_TestSuiteCommonArg(void *data, char **argv, int index)
 {
     SDLTest_TestSuiteRunner *runner = data;
 

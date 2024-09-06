@@ -16,7 +16,7 @@
  * \sa SDL_Init
  * \sa SDL_Quit
  */
-static int main_testInitQuitSubSystem(void *arg)
+static int SDLCALL main_testInitQuitSubSystem(void *arg)
 {
     int i;
     int subsystems[] = { SDL_INIT_JOYSTICK, SDL_INIT_HAPTIC, SDL_INIT_GAMEPAD };
@@ -40,7 +40,7 @@ static int main_testInitQuitSubSystem(void *arg)
 }
 
 static const int joy_and_controller = SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD;
-static int main_testImpliedJoystickInit(void *arg)
+static int SDLCALL main_testImpliedJoystickInit(void *arg)
 {
     int initialized_system;
 
@@ -61,7 +61,7 @@ static int main_testImpliedJoystickInit(void *arg)
     return TEST_COMPLETED;
 }
 
-static int main_testImpliedJoystickQuit(void *arg)
+static int SDLCALL main_testImpliedJoystickQuit(void *arg)
 {
     int initialized_system;
 
@@ -90,7 +90,7 @@ static int main_testImpliedJoystickQuit(void *arg)
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #endif
 
-static int
+static int SDLCALL
 main_testSetError(void *arg)
 {
     size_t i;

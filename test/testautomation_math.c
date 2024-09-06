@@ -232,7 +232,7 @@ helper_range(const char *func_name, d_to_d_func func)
  * Inputs: +/-Infinity.
  * Expected: Infinity is returned as-is.
  */
-static int
+static int SDLCALL
 floor_infCases(void *args)
 {
     double result;
@@ -254,7 +254,7 @@ floor_infCases(void *args)
  * Inputs: +/-0.0.
  * Expected: Zero is returned as-is.
  */
-static int
+static int SDLCALL
 floor_zeroCases(void *args)
 {
     const d_to_d zero_cases[] = {
@@ -268,7 +268,7 @@ floor_zeroCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 floor_nanCase(void *args)
 {
     const double result = SDL_floor(NAN);
@@ -282,7 +282,7 @@ floor_nanCase(void *args)
  * Inputs: integral values.
  * Expected: the input value is returned as-is.
  */
-static int
+static int SDLCALL
 floor_roundNumbersCases(void *args)
 {
     const d_to_d round_cases[] = {
@@ -302,7 +302,7 @@ floor_roundNumbersCases(void *args)
  * Inputs: fractional values.
  * Expected: the lower integral value is returned.
  */
-static int
+static int SDLCALL
 floor_fractionCases(void *args)
 {
     const d_to_d frac_cases[] = {
@@ -324,7 +324,7 @@ floor_fractionCases(void *args)
  * Inputs: values in the range [0, UINT32_MAX].
  * Expected: the input value is returned as-is.
  */
-static int
+static int SDLCALL
 floor_rangeTest(void *args)
 {
     return helper_range("Floor", SDL_floor);
@@ -336,7 +336,7 @@ floor_rangeTest(void *args)
  * Inputs: +/-Infinity.
  * Expected: Infinity is returned as-is.
  */
-static int
+static int SDLCALL
 ceil_infCases(void *args)
 {
     double result;
@@ -358,7 +358,7 @@ ceil_infCases(void *args)
  * Inputs: +/-0.0.
  * Expected: Zero is returned as-is.
  */
-static int
+static int SDLCALL
 ceil_zeroCases(void *args)
 {
     const d_to_d zero_cases[] = {
@@ -372,7 +372,7 @@ ceil_zeroCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 ceil_nanCase(void *args)
 {
     const double result = SDL_ceil(NAN);
@@ -386,7 +386,7 @@ ceil_nanCase(void *args)
  * Inputs: integral values.
  * Expected: the input value is returned as-is.
  */
-static int
+static int SDLCALL
 ceil_roundNumbersCases(void *args)
 {
     const d_to_d round_cases[] = {
@@ -406,7 +406,7 @@ ceil_roundNumbersCases(void *args)
  * Inputs: fractional values.
  * Expected: the higher integral value is returned.
  */
-static int
+static int SDLCALL
 ceil_fractionCases(void *args)
 {
     const d_to_d frac_cases[] = {
@@ -428,7 +428,7 @@ ceil_fractionCases(void *args)
  * Inputs: values in the range [0, UINT32_MAX].
  * Expected: the input value is returned as-is.
  */
-static int
+static int SDLCALL
 ceil_rangeTest(void *args)
 {
     return helper_range("Ceil", SDL_ceil);
@@ -440,7 +440,7 @@ ceil_rangeTest(void *args)
  * Inputs: +/-Infinity.
  * Expected: Infinity is returned as-is.
  */
-static int
+static int SDLCALL
 trunc_infCases(void *args)
 {
     double result;
@@ -462,7 +462,7 @@ trunc_infCases(void *args)
  * Inputs: +/-0.0.
  * Expected: Zero is returned as-is.
  */
-static int
+static int SDLCALL
 trunc_zeroCases(void *args)
 {
     const d_to_d zero_cases[] = {
@@ -476,7 +476,7 @@ trunc_zeroCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 trunc_nanCase(void *args)
 {
     const double result = SDL_trunc(NAN);
@@ -490,7 +490,7 @@ trunc_nanCase(void *args)
  * Inputs: integral values.
  * Expected: the input value is returned as-is.
  */
-static int
+static int SDLCALL
 trunc_roundNumbersCases(void *args)
 {
     const d_to_d round_cases[] = {
@@ -510,7 +510,7 @@ trunc_roundNumbersCases(void *args)
  * Inputs: fractional values.
  * Expected: the integral part is returned.
  */
-static int
+static int SDLCALL
 trunc_fractionCases(void *args)
 {
     const d_to_d frac_cases[] = {
@@ -532,7 +532,7 @@ trunc_fractionCases(void *args)
  * Inputs: values in the range [0, UINT32_MAX].
  * Expected: the input value is returned as-is.
  */
-static int
+static int SDLCALL
 trunc_rangeTest(void *args)
 {
     return helper_range("Trunc", SDL_trunc);
@@ -544,7 +544,7 @@ trunc_rangeTest(void *args)
  * Inputs: +/-Infinity.
  * Expected: Infinity is returned as-is.
  */
-static int
+static int SDLCALL
 round_infCases(void *args)
 {
     double result;
@@ -566,7 +566,7 @@ round_infCases(void *args)
  * Inputs: +/-0.0.
  * Expected: Zero is returned as-is.
  */
-static int
+static int SDLCALL
 round_zeroCases(void *args)
 {
     const d_to_d zero_cases[] = {
@@ -580,7 +580,7 @@ round_zeroCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 round_nanCase(void *args)
 {
     const double result = SDL_round(NAN);
@@ -594,7 +594,7 @@ round_nanCase(void *args)
  * Inputs: integral values.
  * Expected: the input value is returned as-is.
  */
-static int
+static int SDLCALL
 round_roundNumbersCases(void *args)
 {
     const d_to_d round_cases[] = {
@@ -614,7 +614,7 @@ round_roundNumbersCases(void *args)
  * Inputs: fractional values.
  * Expected: the nearest integral value is returned.
  */
-static int
+static int SDLCALL
 round_fractionCases(void *args)
 {
     const d_to_d frac_cases[] = {
@@ -636,7 +636,7 @@ round_fractionCases(void *args)
  * Inputs: values in the range [0, UINT32_MAX].
  * Expected: the input value is returned as-is.
  */
-static int
+static int SDLCALL
 round_rangeTest(void *args)
 {
     return helper_range("Round", SDL_round);
@@ -648,7 +648,7 @@ round_rangeTest(void *args)
  * Inputs: +/-Infinity.
  * Expected: Positive Infinity is returned.
  */
-static int
+static int SDLCALL
 fabs_infCases(void *args)
 {
     double result;
@@ -670,7 +670,7 @@ fabs_infCases(void *args)
  * Inputs: +/-0.0.
  * Expected: Positive zero is returned.
  */
-static int
+static int SDLCALL
 fabs_zeroCases(void *args)
 {
     const d_to_d zero_cases[] = {
@@ -684,7 +684,7 @@ fabs_zeroCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 fabs_nanCase(void *args)
 {
     const double result = SDL_fabs(NAN);
@@ -698,7 +698,7 @@ fabs_nanCase(void *args)
  * Inputs: values in the range [0, UINT32_MAX].
  * Expected: the input value is returned as-is.
  */
-static int
+static int SDLCALL
 fabs_rangeTest(void *args)
 {
     return helper_range("Fabs", SDL_fabs);
@@ -710,7 +710,7 @@ fabs_rangeTest(void *args)
  * Inputs: (+/-Infinity, +/-1.0).
  * Expected: Infinity with the sign of 1.0 is returned.
  */
-static int
+static int SDLCALL
 copysign_infCases(void *args)
 {
     double result;
@@ -742,7 +742,7 @@ copysign_infCases(void *args)
  * Inputs: (+/-0.0, +/-1.0).
  * Expected: 0.0 with the sign of 1.0 is returned.
  */
-static int
+static int SDLCALL
 copysign_zeroCases(void *args)
 {
     const dd_to_d zero_cases[] = {
@@ -759,7 +759,7 @@ copysign_zeroCases(void *args)
  * Expected: NAN with the sign of 1.0 is returned.
  * NOTE: On some platforms signed NAN is not supported, so we only check if the result is still NAN.
  */
-static int
+static int SDLCALL
 copysign_nanCases(void *args)
 {
     double result;
@@ -780,7 +780,7 @@ copysign_nanCases(void *args)
  * Inputs: values in the range [0, UINT32_MAX], +/-1.0.
  * Expected: the input value with the sign of 1.0 is returned.
  */
-static int
+static int SDLCALL
 copysign_rangeTest(void *args)
 {
     Uint32 i;
@@ -823,7 +823,7 @@ copysign_rangeTest(void *args)
  * Inputs: (+/-Infinity, +/-1.0).
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 fmod_divOfInfCases(void *args)
 {
     double result;
@@ -855,7 +855,7 @@ fmod_divOfInfCases(void *args)
  * Inputs: (+/-1.0, +/-Infinity).
  * Expected: 1.0 is returned as-is.
  */
-static int
+static int SDLCALL
 fmod_divByInfCases(void *args)
 {
     double result;
@@ -887,7 +887,7 @@ fmod_divByInfCases(void *args)
  * Inputs: (+/-0.0, +/-1.0).
  * Expected: Zero is returned as-is.
  */
-static int
+static int SDLCALL
 fmod_divOfZeroCases(void *args)
 {
     const dd_to_d zero_cases[] = {
@@ -903,7 +903,7 @@ fmod_divOfZeroCases(void *args)
  * Inputs: (+/-1.0, +/-0.0).
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 fmod_divByZeroCases(void *args)
 {
     double result;
@@ -935,7 +935,7 @@ fmod_divByZeroCases(void *args)
  * Inputs: all permutation of NAN and +/-1.0.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 fmod_nanCases(void *args)
 {
     double result;
@@ -967,7 +967,7 @@ fmod_nanCases(void *args)
  * Inputs: values within the domain of the function.
  * Expected: the correct result is returned.
  */
-static int
+static int SDLCALL
 fmod_regularCases(void *args)
 {
     const dd_to_d regular_cases[] = {
@@ -983,7 +983,7 @@ fmod_regularCases(void *args)
  * Inputs: values in the range [0, UINT32_MAX] divided by 1.0.
  * Expected: Positive zero is always returned.
  */
-static int
+static int SDLCALL
 fmod_rangeTest(void *args)
 {
     Uint32 i;
@@ -1018,7 +1018,7 @@ fmod_rangeTest(void *args)
  * Inputs: +/-Infinity.
  * Expected: Infinity is returned as-is.
  */
-static int
+static int SDLCALL
 exp_infCases(void *args)
 {
     double result;
@@ -1040,7 +1040,7 @@ exp_infCases(void *args)
  * Inputs: +/-0.0.
  * Expected: 1.0 is returned.
  */
-static int
+static int SDLCALL
 exp_zeroCases(void *args)
 {
     const d_to_d zero_cases[] = {
@@ -1055,7 +1055,7 @@ exp_zeroCases(void *args)
  * Expected: Infinity is returned.
  * NOTE: This test is skipped for double types larger than 64 bits.
  */
-static int
+static int SDLCALL
 exp_overflowCase(void *args)
 {
     double result;
@@ -1075,7 +1075,7 @@ exp_overflowCase(void *args)
  * Input: 1.0
  * Expected: The euler constant.
  */
-static int
+static int SDLCALL
 exp_baseCase(void *args)
 {
     const double result = SDL_exp(1.0);
@@ -1090,7 +1090,7 @@ exp_baseCase(void *args)
  * Inputs: values within the domain of the function.
  * Expected: the correct result is returned.
  */
-static int
+static int SDLCALL
 exp_regularCases(void *args)
 {
     /* Hexadecimal floating constants are not supported on C89 compilers */
@@ -1114,7 +1114,7 @@ exp_regularCases(void *args)
  * Inputs: Positive Infinity and +/-0.0.
  * Expected: Positive and negative Infinity respectively.
  */
-static int
+static int SDLCALL
 log_limitCases(void *args)
 {
     double result;
@@ -1141,7 +1141,7 @@ log_limitCases(void *args)
  * Inputs: 1.0 and the Euler constant.
  * Expected: 0.0 and 1.0 respectively.
  */
-static int
+static int SDLCALL
 log_baseCases(void *args)
 {
     double result;
@@ -1163,7 +1163,7 @@ log_baseCases(void *args)
  * Inputs: NAN and a negative value.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 log_nanCases(void *args)
 {
     double result;
@@ -1185,7 +1185,7 @@ log_nanCases(void *args)
  * Inputs: values within the domain of the function.
  * Expected: the correct result is returned.
  */
-static int
+static int SDLCALL
 log_regularCases(void *args)
 {
     const d_to_d regular_cases[] = {
@@ -1204,7 +1204,7 @@ log_regularCases(void *args)
  * Inputs: Positive Infinity and +/-0.0.
  * Expected: Positive and negative Infinity respectively.
  */
-static int
+static int SDLCALL
 log10_limitCases(void *args)
 {
     double result;
@@ -1231,7 +1231,7 @@ log10_limitCases(void *args)
  * Inputs: Powers of ten from 0 to 9.
  * Expected: the exact power of ten is returned.
  */
-static int
+static int SDLCALL
 log10_baseCases(void *args)
 {
     const d_to_d base_cases[] = {
@@ -1253,7 +1253,7 @@ log10_baseCases(void *args)
  * Inputs: NAN and a negative value.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 log10_nanCases(void *args)
 {
     double result;
@@ -1275,7 +1275,7 @@ log10_nanCases(void *args)
  * Inputs: values within the domain of the function.
  * Expected: the correct result is returned.
  */
-static int
+static int SDLCALL
 log10_regularCases(void *args)
 {
     const d_to_d regular_cases[] = {
@@ -1290,7 +1290,7 @@ log10_regularCases(void *args)
 
 /* SDL_modf tests functions */
 
-static int
+static int SDLCALL
 modf_baseCases(void *args)
 {
     double fractional, integral;
@@ -1314,7 +1314,7 @@ modf_baseCases(void *args)
  * Inputs: (-1.0, +/-Infinity).
  * Expected: 1.0 is returned.
  */
-static int
+static int SDLCALL
 pow_baseNOneExpInfCases(void *args)
 {
     double result;
@@ -1335,7 +1335,7 @@ pow_baseNOneExpInfCases(void *args)
  * Inputs: (+/-0.0, -Infinity).
  * Expected: Infinity is returned.
  */
-static int
+static int SDLCALL
 pow_baseZeroExpNInfCases(void *args)
 {
     double result;
@@ -1357,7 +1357,7 @@ pow_baseZeroExpNInfCases(void *args)
  * Inputs: (x, +/-Infinity) where x is not +/-0.0.
  * Expected: 0.0 when x < 1, Infinity when x > 1.
  */
-static int
+static int SDLCALL
 pow_expInfCases(void *args)
 {
     double result;
@@ -1391,7 +1391,7 @@ pow_expInfCases(void *args)
  * Inputs: (Positive Infinity, x) where x is not +/-0.0.
  * Expected: 0.0 when x is < 0, positive Infinity when x > 0.
  */
-static int
+static int SDLCALL
 pow_basePInfCases(void *args)
 {
     double result;
@@ -1427,7 +1427,7 @@ pow_basePInfCases(void *args)
  * - Negative Infinity when x is a positive odd integer,
  * - Positive Infinity when x is a positive even integer or positive non-integer.
  */
-static int
+static int SDLCALL
 pow_baseNInfCases(void *args)
 {
     double result;
@@ -1473,7 +1473,7 @@ pow_baseNInfCases(void *args)
  * - finite and non-integer exponent.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 pow_badOperationCase(void *args)
 {
     const double result = SDL_pow(-2.0, 4.2);
@@ -1487,7 +1487,7 @@ pow_badOperationCase(void *args)
  * Inputs: (1.0, NAN)
  * Expected: 1.0 is returned.
  */
-static int
+static int SDLCALL
 pow_base1ExpNanCase(void *args)
 {
     const double result = SDL_pow(1.0, NAN);
@@ -1501,7 +1501,7 @@ pow_base1ExpNanCase(void *args)
  * Inputs: (NAN, +/-0.0)
  * Expected: 1.0 is returned.
  */
-static int
+static int SDLCALL
 pow_baseNanExp0Cases(void *args)
 {
     double result;
@@ -1523,7 +1523,7 @@ pow_baseNanExp0Cases(void *args)
  * Inputs: NAN as base, exponent or both.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 pow_nanArgsCases(void *args)
 {
     double result;
@@ -1554,7 +1554,7 @@ pow_nanArgsCases(void *args)
  * - Negative Infinity with a negative exponent,
  * - -0.0 with a positive exponent.
  */
-static int
+static int SDLCALL
 pow_baseNZeroExpOddCases(void *args)
 {
     double result;
@@ -1578,7 +1578,7 @@ pow_baseNZeroExpOddCases(void *args)
  * - 0.0 with a positive exponent,
  * - Positive Infinity with a negative exponent.
  */
-static int
+static int SDLCALL
 pow_basePZeroExpOddCases(void *args)
 {
     double result;
@@ -1604,7 +1604,7 @@ pow_basePZeroExpOddCases(void *args)
  * - Positive Infinity if the exponent is negative,
  * - 0.0 if the exponent is positive.
  */
-static int
+static int SDLCALL
 pow_baseNZeroCases(void *args)
 {
     double result;
@@ -1640,7 +1640,7 @@ pow_baseNZeroCases(void *args)
  * - Positive Infinity if the exponent is negative,
  * - 0.0 if the exponent is positive.
  */
-static int
+static int SDLCALL
 pow_basePZeroCases(void *args)
 {
     double result;
@@ -1674,7 +1674,7 @@ pow_basePZeroCases(void *args)
  * Inputs: values within the domain of the function.
  * Expected: the correct result is returned.
  */
-static int
+static int SDLCALL
 pow_regularCases(void *args)
 {
     const dd_to_d regular_cases[] = {
@@ -1694,7 +1694,7 @@ pow_regularCases(void *args)
  * Inputs: (2.0, x), with x in range [0, 8].
  * Expected: the correct result is returned.
  */
-static int
+static int SDLCALL
 pow_powerOfTwo(void *args)
 {
     const dd_to_d power_of_two_cases[] = {
@@ -1714,7 +1714,7 @@ pow_powerOfTwo(void *args)
  * Inputs: values in the range [0, UINT32_MAX] to the power of +/-0.0.
  * Expected: 1.0 is always returned.
  */
-static int
+static int SDLCALL
 pow_rangeTest(void *args)
 {
     Uint32 i;
@@ -1757,7 +1757,7 @@ pow_rangeTest(void *args)
  * Input: Positive Infinity.
  * Expected: Positive Infinity is returned.
  */
-static int
+static int SDLCALL
 sqrt_infCase(void *args)
 {
     const double result = SDL_sqrt(INFINITY);
@@ -1771,7 +1771,7 @@ sqrt_infCase(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 sqrt_nanCase(void *args)
 {
     const double result = SDL_sqrt(NAN);
@@ -1785,7 +1785,7 @@ sqrt_nanCase(void *args)
  * Inputs: values outside the domain of the function.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 sqrt_outOfDomainCases(void *args)
 {
     double result;
@@ -1812,7 +1812,7 @@ sqrt_outOfDomainCases(void *args)
  * Inputs: +/-0.0 and 1.0.
  * Expected: the input value is returned as-is.
  */
-static int
+static int SDLCALL
 sqrt_baseCases(void *args)
 {
     const d_to_d base_cases[] = {
@@ -1827,7 +1827,7 @@ sqrt_baseCases(void *args)
  * Inputs: values within the domain of the function.
  * Expected: the correct result is returned.
  */
-static int
+static int SDLCALL
 sqrt_regularCases(void *args)
 {
     const d_to_d regular_cases[] = {
@@ -1848,7 +1848,7 @@ sqrt_regularCases(void *args)
  * Input: (+/-Infinity, 1).
  * Expected: Infinity is returned as-is.
  */
-static int
+static int SDLCALL
 scalbn_infCases(void *args)
 {
     double result;
@@ -1870,7 +1870,7 @@ scalbn_infCases(void *args)
  * Inputs: (+/-0.0, 1).
  * Expected: Zero is returned as-is.
  */
-static int
+static int SDLCALL
 scalbn_baseZeroCases(void *args)
 {
     double result;
@@ -1892,7 +1892,7 @@ scalbn_baseZeroCases(void *args)
  * Input: (x, 0)
  * Expected: x is returned as-is.
  */
-static int
+static int SDLCALL
 scalbn_expZeroCase(void *args)
 {
     const double result = SDL_scalbn(42.0, 0);
@@ -1906,7 +1906,7 @@ scalbn_expZeroCase(void *args)
  * Input: (NAN, x).
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 scalbn_nanCase(void *args)
 {
     const double result = SDL_scalbn(NAN, 2);
@@ -1921,7 +1921,7 @@ scalbn_nanCase(void *args)
  * Expected: the correct result is returned.
  * NOTE: This test depends on SDL_pow and FLT_RADIX.
  */
-static int
+static int SDLCALL
 scalbn_regularCases(void *args)
 {
     double result, expected;
@@ -1959,7 +1959,7 @@ scalbn_regularCases(void *args)
  * Inputs: +/-Infinity.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 cos_infCases(void *args)
 {
     double result;
@@ -1981,7 +1981,7 @@ cos_infCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 cos_nanCase(void *args)
 {
     const double result = SDL_cos(NAN);
@@ -1995,7 +1995,7 @@ cos_nanCase(void *args)
  * Inputs: +/-0.0 and +/-Pi.
  * Expected: +1.0 and -1.0 respectively.
  */
-static int
+static int SDLCALL
 cos_regularCases(void *args)
 {
     const d_to_d regular_cases[] = {
@@ -2011,7 +2011,7 @@ cos_regularCases(void *args)
  * Inputs: Angles between 1/10 and 9/10 of Pi (positive and negative).
  * Expected: The correct result is returned (+/-EPSILON).
  */
-static int
+static int SDLCALL
 cos_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
@@ -2041,7 +2041,7 @@ cos_precisionTest(void *args)
  * Inputs: Values in the range [0, UINT32_MAX].
  * Expected: A value between 0 and 1 is returned.
  */
-static int
+static int SDLCALL
 cos_rangeTest(void *args)
 {
     Uint32 i;
@@ -2076,7 +2076,7 @@ cos_rangeTest(void *args)
  * Inputs: +/-Infinity.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 sin_infCases(void *args)
 {
     double result;
@@ -2098,7 +2098,7 @@ sin_infCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 sin_nanCase(void *args)
 {
     const double result = SDL_sin(NAN);
@@ -2112,7 +2112,7 @@ sin_nanCase(void *args)
  * Inputs: +/-0.0 and +/-Pi/2.
  * Expected: +/-0.0 and +/-1.0 respectively.
  */
-static int
+static int SDLCALL
 sin_regularCases(void *args)
 {
     const d_to_d regular_cases[] = {
@@ -2129,7 +2129,7 @@ sin_regularCases(void *args)
  * Expected: The correct result is returned (+/-EPSILON).
  * NOTE: +/-Pi/2 is tested in the regular cases.
  */
-static int
+static int SDLCALL
 sin_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
@@ -2159,7 +2159,7 @@ sin_precisionTest(void *args)
  * Inputs: Values in the range [0, UINT32_MAX].
  * Expected: A value between 0 and 1 is returned.
  */
-static int
+static int SDLCALL
 sin_rangeTest(void *args)
 {
     Uint32 i;
@@ -2194,7 +2194,7 @@ sin_rangeTest(void *args)
  * Inputs: +/-Infinity.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 tan_infCases(void *args)
 {
     double result;
@@ -2216,7 +2216,7 @@ tan_infCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 tan_nanCase(void *args)
 {
     const double result = SDL_tan(NAN);
@@ -2230,7 +2230,7 @@ tan_nanCase(void *args)
  * Inputs: +/-0.0.
  * Expected: Zero is returned as-is.
  */
-static int
+static int SDLCALL
 tan_zeroCases(void *args)
 {
     const d_to_d regular_cases[] = {
@@ -2245,7 +2245,7 @@ tan_zeroCases(void *args)
  * Expected: The correct result is returned (+/-EPSILON).
  * NOTE: +/-Pi/2 is intentionally avoided as it returns garbage values.
  */
-static int
+static int SDLCALL
 tan_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
@@ -2279,7 +2279,7 @@ tan_precisionTest(void *args)
  * Inputs: +/-1.0.
  * Expected: 0.0 and Pi respectively.
  */
-static int
+static int SDLCALL
 acos_limitCases(void *args)
 {
     double result;
@@ -2301,7 +2301,7 @@ acos_limitCases(void *args)
  * Inputs: Values outside the domain of [-1, 1].
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 acos_outOfDomainCases(void *args)
 {
     double result;
@@ -2323,7 +2323,7 @@ acos_outOfDomainCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 acos_nanCase(void *args)
 {
     const double result = SDL_acos(NAN);
@@ -2337,7 +2337,7 @@ acos_nanCase(void *args)
  * Inputs: Values between -0.9 and 0.9 with steps of 0.1.
  * Expected: The correct result is returned (+/-EPSILON).
  */
-static int
+static int SDLCALL
 acos_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
@@ -2371,7 +2371,7 @@ acos_precisionTest(void *args)
  * Inputs: +/-1.0.
  * Expected: +/-Pi/2 is returned.
  */
-static int
+static int SDLCALL
 asin_limitCases(void *args)
 {
     double result;
@@ -2393,7 +2393,7 @@ asin_limitCases(void *args)
  * Inputs: Values outside the domain of [-1, 1].
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 asin_outOfDomainCases(void *args)
 {
     double result;
@@ -2415,7 +2415,7 @@ asin_outOfDomainCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 asin_nanCase(void *args)
 {
     const double result = SDL_asin(NAN);
@@ -2429,7 +2429,7 @@ asin_nanCase(void *args)
  * Inputs: Values between -0.9 and 0.9 with steps of 0.1.
  * Expected: The correct result is returned (+/-EPSILON).
  */
-static int
+static int SDLCALL
 asin_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
@@ -2463,7 +2463,7 @@ asin_precisionTest(void *args)
  * Inputs: +/-Infinity.
  * Expected: +/-Pi/2 is returned.
  */
-static int
+static int SDLCALL
 atan_limitCases(void *args)
 {
     double result;
@@ -2487,7 +2487,7 @@ atan_limitCases(void *args)
  * Inputs: +/-0.0.
  * Expected: Zero is returned as-is.
  */
-static int
+static int SDLCALL
 atan_zeroCases(void *args)
 {
     double result;
@@ -2509,7 +2509,7 @@ atan_zeroCases(void *args)
  * Input: NAN.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 atan_nanCase(void *args)
 {
     const double result = SDL_atan(NAN);
@@ -2523,7 +2523,7 @@ atan_nanCase(void *args)
  * Inputs: Values corresponding to angles between 9Pi/20 and -9Pi/20 with steps of Pi/20.
  * Expected: The correct result is returned (+/-EPSILON).
  */
-static int
+static int SDLCALL
 atan_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
@@ -2560,7 +2560,7 @@ atan_precisionTest(void *args)
  * - Pi if the second argument is negative zero.
  * - The sign is inherited from the first argument.
  */
-static int
+static int SDLCALL
 atan2_bothZeroCases(void *args)
 {
     const dd_to_d cases[] = {
@@ -2579,7 +2579,7 @@ atan2_bothZeroCases(void *args)
  * - Pi if the second argument is negative.
  * - The sign is inherited from the first argument.
  */
-static int
+static int SDLCALL
 atan2_yZeroCases(void *args)
 {
     const dd_to_d cases[] = {
@@ -2595,7 +2595,7 @@ atan2_yZeroCases(void *args)
  * Inputs: (+/-1.0, +/-0.0).
  * Expected: Pi/2 with the sign of the first argument.
  */
-static int
+static int SDLCALL
 atan2_xZeroCases(void *args)
 {
     const dd_to_d cases[] = {
@@ -2617,7 +2617,7 @@ atan2_xZeroCases(void *args)
  * - (-int, +inf) -> -Pi/4,
  * - (-int, -inf) -> Pi.
  */
-static int
+static int SDLCALL
 atan2_bothInfCases(void *args)
 {
     double result;
@@ -2649,7 +2649,7 @@ atan2_bothInfCases(void *args)
  * Inputs: (+/-Infinity, +/-1.0).
  * Expected: Pi/2 with the sign of the first argument.
  */
-static int
+static int SDLCALL
 atan2_yInfCases(void *args)
 {
     double result;
@@ -2683,7 +2683,7 @@ atan2_yInfCases(void *args)
  * - (+/-1.0, +inf) -> +/-0.0
  * - (+/-1.0, -inf) -> +/-Pi.
  */
-static int
+static int SDLCALL
 atan2_xInfCases(void *args)
 {
     double result;
@@ -2717,7 +2717,7 @@ atan2_xInfCases(void *args)
  * Inputs: NAN as either or both of the arguments.
  * Expected: NAN is returned.
  */
-static int
+static int SDLCALL
 atan2_nanCases(void *args)
 {
     double result;
@@ -2744,7 +2744,7 @@ atan2_nanCases(void *args)
  * Inputs: (y, x) with x and y positive.
  * Expected: Angle in the top right quadrant.
  */
-static int
+static int SDLCALL
 atan2_topRightQuadrantTest(void *args)
 {
     const dd_to_d top_right_cases[] = {
@@ -2759,7 +2759,7 @@ atan2_topRightQuadrantTest(void *args)
  * Inputs: (y, x) with x negative and y positive.
  * Expected: Angle in the top left quadrant.
  */
-static int
+static int SDLCALL
 atan2_topLeftQuadrantTest(void *args)
 {
     const dd_to_d top_left_cases[] = {
@@ -2774,7 +2774,7 @@ atan2_topLeftQuadrantTest(void *args)
  * Inputs: (y, x) with x positive and y negative.
  * Expected: Angle in the bottom right quadrant.
  */
-static int
+static int SDLCALL
 atan2_bottomRightQuadrantTest(void *args)
 {
     const dd_to_d bottom_right_cases[] = {
@@ -2789,7 +2789,7 @@ atan2_bottomRightQuadrantTest(void *args)
  * Inputs: (y, x) with x and y negative.
  * Expected: Angle in the bottom left quadrant.
  */
-static int
+static int SDLCALL
 atan2_bottomLeftQuadrantTest(void *args)
 {
     const dd_to_d bottom_left_cases[] = {

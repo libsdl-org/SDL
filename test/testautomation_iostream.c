@@ -32,7 +32,7 @@ static const char IOStreamAlphabetString[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /* Fixture */
 
-static void IOStreamSetUp(void **arg)
+static void SDLCALL IOStreamSetUp(void **arg)
 {
     size_t fileLen;
     FILE *handle;
@@ -75,7 +75,7 @@ static void IOStreamSetUp(void **arg)
     SDLTest_AssertPass("Creation of test file completed");
 }
 
-static void IOStreamTearDown(void *arg)
+static void SDLCALL IOStreamTearDown(void *arg)
 {
     int result;
 
@@ -204,7 +204,7 @@ static void testGenericIOStreamValidations(SDL_IOStream *rw, SDL_bool write)
  * \sa SDL_IOFromFile
  *
  */
-static int iostrm_testParamNegative(void *arg)
+static int SDLCALL iostrm_testParamNegative(void *arg)
 {
     SDL_IOStream *iostrm;
 
@@ -250,7 +250,7 @@ static int iostrm_testParamNegative(void *arg)
  * \sa SDL_IOFromMem
  * \sa SDL_CloseIO
  */
-static int iostrm_testMem(void *arg)
+static int SDLCALL iostrm_testMem(void *arg)
 {
     char mem[sizeof(IOStreamHelloWorldTestString)];
     SDL_IOStream *rw;
@@ -286,7 +286,7 @@ static int iostrm_testMem(void *arg)
  * \sa SDL_IOFromConstMem
  * \sa SDL_CloseIO
  */
-static int iostrm_testConstMem(void *arg)
+static int SDLCALL iostrm_testConstMem(void *arg)
 {
     SDL_IOStream *rw;
     int result;
@@ -318,7 +318,7 @@ static int iostrm_testConstMem(void *arg)
  * \sa SDL_IOFromDynamicMem
  * \sa SDL_CloseIO
  */
-static int iostrm_testDynamicMem(void *arg)
+static int SDLCALL iostrm_testDynamicMem(void *arg)
 {
     SDL_IOStream *rw;
     SDL_PropertiesID props;
@@ -367,7 +367,7 @@ static int iostrm_testDynamicMem(void *arg)
  * \sa SDL_IOFromFile
  * \sa SDL_CloseIO
  */
-static int iostrm_testFileRead(void *arg)
+static int SDLCALL iostrm_testFileRead(void *arg)
 {
     SDL_IOStream *rw;
     int result;
@@ -399,7 +399,7 @@ static int iostrm_testFileRead(void *arg)
  * \sa SDL_IOFromFile
  * \sa SDL_CloseIO
  */
-static int iostrm_testFileWrite(void *arg)
+static int SDLCALL iostrm_testFileWrite(void *arg)
 {
     SDL_IOStream *rw;
     int result;
@@ -431,7 +431,7 @@ static int iostrm_testFileWrite(void *arg)
  * \sa SDL_OpenIO
  * \sa SDL_CloseIO
  */
-static int iostrm_testAllocFree(void *arg)
+static int SDLCALL iostrm_testAllocFree(void *arg)
 {
     /* Allocate context */
     SDL_IOStreamInterface iface;
@@ -458,7 +458,7 @@ static int iostrm_testAllocFree(void *arg)
  * \sa SDL_IOFromMem
  * \sa SDL_IOFromFile
  */
-static int iostrm_testCompareRWFromMemWithRWFromFile(void *arg)
+static int SDLCALL iostrm_testCompareRWFromMemWithRWFromFile(void *arg)
 {
     int slen = 26;
     char buffer_file[27];
@@ -523,7 +523,7 @@ static int iostrm_testCompareRWFromMemWithRWFromFile(void *arg)
  * \sa SDL_ReadU16BE
  * \sa SDL_WriteU16BE
  */
-static int iostrm_testFileWriteReadEndian(void *arg)
+static int SDLCALL iostrm_testFileWriteReadEndian(void *arg)
 {
     SDL_IOStream *rw;
     Sint64 result;

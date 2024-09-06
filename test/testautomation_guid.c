@@ -74,7 +74,7 @@ upper_lower_to_bytestring(Uint8 *out, Uint64 upper, Uint64 lower)
  *
  * \sa SDL_StringToGUID
  */
-static int
+static int SDLCALL
 TestStringToGUID(void *arg)
 {
     int i;
@@ -99,7 +99,7 @@ TestStringToGUID(void *arg)
  *
  * \sa SDL_GUIDToString
  */
-static int
+static int SDLCALL
 TestGUIDToString(void *arg)
 {
     int i;

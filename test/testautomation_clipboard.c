@@ -9,7 +9,7 @@
 
 static int clipboard_update_count;
 
-static SDL_bool ClipboardEventWatch(void *userdata, SDL_Event *event)
+static SDL_bool SDLCALL ClipboardEventWatch(void *userdata, SDL_Event *event)
 {
     if (event->type == SDL_EVENT_CLIPBOARD_UPDATE) {
         ++clipboard_update_count;
@@ -39,7 +39,7 @@ typedef struct
 
 static int clipboard_callback_count;
 
-static const void *ClipboardDataCallback(void *userdata, const char *mime_type, size_t *length)
+static const void * SDLCALL ClipboardDataCallback(void *userdata, const char *mime_type, size_t *length)
 {
     TestClipboardData *test_data = (TestClipboardData *)userdata;
 
@@ -66,7 +66,7 @@ static const void *ClipboardDataCallback(void *userdata, const char *mime_type, 
 
 static int clipboard_cleanup_count;
 
-static void ClipboardCleanupCallback(void *userdata)
+static void SDLCALL ClipboardCleanupCallback(void *userdata)
 {
     ++clipboard_cleanup_count;
 }
@@ -79,7 +79,7 @@ static void ClipboardCleanupCallback(void *userdata)
  * \sa SDL_GetClipboardData
  * \sa SDL_SetClipboardData
  */
-static int clipboard_testClipboardDataFunctions(void *arg)
+static int SDLCALL clipboard_testClipboardDataFunctions(void *arg)
 {
     int result = -1;
     SDL_bool boolResult;
@@ -400,7 +400,7 @@ static int clipboard_testClipboardDataFunctions(void *arg)
  * \sa SDL_GetClipboardText
  * \sa SDL_SetClipboardText
  */
-static int clipboard_testClipboardTextFunctions(void *arg)
+static int SDLCALL clipboard_testClipboardTextFunctions(void *arg)
 {
     char *textRef = SDLTest_RandomAsciiString();
     char *text = SDL_strdup(textRef);
@@ -484,7 +484,7 @@ static int clipboard_testClipboardTextFunctions(void *arg)
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
  */
-static int clipboard_testPrimarySelectionTextFunctions(void *arg)
+static int SDLCALL clipboard_testPrimarySelectionTextFunctions(void *arg)
 {
     char *textRef = SDLTest_RandomAsciiString();
     char *text = SDL_strdup(textRef);

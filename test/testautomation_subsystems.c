@@ -9,7 +9,7 @@
 
 /* Fixture */
 
-static void subsystemsSetUp(void **arg)
+static void SDLCALL subsystemsSetUp(void **arg)
 {
     /* Reset each one of the SDL subsystems */
     /* CHECKME: can we use SDL_Quit here, or this will break the flow of tests? */
@@ -23,7 +23,7 @@ static void subsystemsSetUp(void **arg)
     SDLTest_AssertCheck(SDL_WasInit(0) == 0, "Check result from SDL_WasInit(0)");
 }
 
-static void subsystemsTearDown(void *arg)
+static void SDLCALL subsystemsTearDown(void *arg)
 {
     /* Reset each one of the SDL subsystems */
     SDL_Quit();
@@ -40,7 +40,7 @@ static void subsystemsTearDown(void *arg)
  * \sa SDL_QuitSubSystem
  *
  */
-static int subsystems_referenceCount(void *arg)
+static int SDLCALL subsystems_referenceCount(void *arg)
 {
     const int system = SDL_INIT_VIDEO;
     int result;
@@ -90,7 +90,7 @@ static int subsystems_referenceCount(void *arg)
  * \sa SDL_QuitSubSystem
  *
  */
-static int subsystems_dependRefCountInitAllQuitByOne(void *arg)
+static int SDLCALL subsystems_dependRefCountInitAllQuitByOne(void *arg)
 {
     int result;
     /* Ensure that we start with reset subsystems. */
@@ -128,7 +128,7 @@ static int subsystems_dependRefCountInitAllQuitByOne(void *arg)
  * \sa SDL_QuitSubSystem
  *
  */
-static int subsystems_dependRefCountInitByOneQuitAll(void *arg)
+static int SDLCALL subsystems_dependRefCountInitByOneQuitAll(void *arg)
 {
     int result;
     /* Ensure that we start with reset subsystems. */
@@ -163,7 +163,7 @@ static int subsystems_dependRefCountInitByOneQuitAll(void *arg)
  * \sa SDL_QuitSubSystem
  *
  */
-static int subsystems_dependRefCountWithExtraInit(void *arg)
+static int SDLCALL subsystems_dependRefCountWithExtraInit(void *arg)
 {
     int result;
     /* Ensure that we start with reset subsystems. */
