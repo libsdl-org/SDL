@@ -106,6 +106,7 @@ typedef struct SDL_StorageInterface
 SDL_COMPILE_TIME_ASSERT(SDL_StorageInterface_SIZE,
     (sizeof(void *) == 4 && sizeof(SDL_StorageInterface) == 48) ||
     (sizeof(void *) == 8 && sizeof(SDL_StorageInterface) == 96));
+
 /**
  * An abstract interface for filesystem access.
  *
@@ -195,7 +196,8 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenFileStorage(const char *path);
  * This function makes a copy of `iface` and the caller does not need to keep
  * it around after this call.
  *
- * \param iface the interface that implements this storage, initialized using SDL_INIT_INTERFACE().
+ * \param iface the interface that implements this storage, initialized using
+ *              SDL_INIT_INTERFACE().
  * \param userdata the pointer that will be passed to the interface functions.
  * \returns a storage container on success or NULL on failure; call
  *          SDL_GetError() for more information.

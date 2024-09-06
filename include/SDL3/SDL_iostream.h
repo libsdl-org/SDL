@@ -366,7 +366,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromDynamicMem(void);
  * This function makes a copy of `iface` and the caller does not need to keep
  * it around after this call.
  *
- * \param iface the interface that implements this SDL_IOStream, initialized using SDL_INIT_INTERFACE().
+ * \param iface the interface that implements this SDL_IOStream, initialized
+ *              using SDL_INIT_INTERFACE().
  * \param userdata the pointer that will be passed to the interface functions.
  * \returns a pointer to the allocated memory on success or NULL on failure;
  *          call SDL_GetError() for more information.

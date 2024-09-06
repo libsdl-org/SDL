@@ -414,7 +414,8 @@ typedef struct SDL_VirtualJoystickSensorDesc
 /**
  * The structure that describes a virtual joystick.
  *
- * This structure should be initialized using SDL_INIT_INTERFACE(). All elements of this structure are optional.
+ * This structure should be initialized using SDL_INIT_INTERFACE(). All
+ * elements of this structure are optional.
  *
  * \since This struct is available since SDL 3.0.0.
  *

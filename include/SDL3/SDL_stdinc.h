@@ -532,7 +532,8 @@ extern "C" {
 /**
  * A macro to initialize an SDL interface.
  *
- * This macro will initialize an SDL interface structure and should be called before you fill out the fields with your implementation.
+ * This macro will initialize an SDL interface structure and should be called
+ * before you fill out the fields with your implementation.
  *
  * You can use it like this:
  *
@@ -547,7 +548,8 @@ extern "C" {
  * stream = SDL_OpenIO(&iface, NULL);
  * ```
  *
- * If you are using designated initializers, you can use the size of the interface as the version, e.g.
+ * If you are using designated initializers, you can use the size of the
+ * interface as the version, e.g.
  *
  * ```c
  * SDL_IOStreamInterface iface = {
