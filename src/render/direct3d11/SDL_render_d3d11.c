@@ -787,15 +787,11 @@ done:
     return result;
 }
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-
 static DXGI_MODE_ROTATION D3D11_GetCurrentRotation(void)
 {
     // FIXME
     return DXGI_MODE_ROTATION_IDENTITY;
 }
-
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 static BOOL D3D11_IsDisplayRotated90Degrees(DXGI_MODE_ROTATION rotation)
 {

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 #include "../core/windows/SDL_windows.h"
 #endif
 

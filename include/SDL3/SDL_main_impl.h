@@ -67,7 +67,7 @@
     /* set up the usual SDL_main stuff if we're not using callbacks or if we are but need the normal entry point. */
     #if !defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD)
 
-        #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+        #if defined(SDL_PLATFORM_WINDOWS)
 
             /* these defines/typedefs are needed for the WinMain() definition */
             #ifndef WINAPI
@@ -124,7 +124,7 @@
             } /* extern "C" */
             #endif
 
-            /* end of SDL_PLATFORM_WIN32 and SDL_PLATFORM_GDK impls */
+            /* end of SDL_PLATFORM_WINDOWS impls */
 
         #elif defined(SDL_PLATFORM_NGAGE)
             /* same typedef as in ngage SDKs e32def.h */

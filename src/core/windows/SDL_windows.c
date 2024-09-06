@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 
 #include "SDL_windows.h"
 
@@ -372,4 +372,4 @@ int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, 
     return WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 }
 
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#endif // defined(SDL_PLATFORM_WINDOWS)

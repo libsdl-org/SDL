@@ -2411,7 +2411,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     /* Clear minimized if not on windows, only windows handles it at create rather than FinishWindowCreation,
      * but it's important or window focus will get broken on windows!
      */
-#if !defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)
+#if !defined(SDL_PLATFORM_WINDOWS)
     if (window->flags & SDL_WINDOW_MINIMIZED) {
         window->flags &= ~SDL_WINDOW_MINIMIZED;
     }

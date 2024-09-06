@@ -20,14 +20,14 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 #include "core/windows/SDL_windows.h"
 #endif
 
 #include "SDL_assert_c.h"
 #include "video/SDL_sysvideo.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 #ifndef WS_OVERLAPPEDWINDOW
 #define WS_OVERLAPPEDWINDOW 0
 #endif
@@ -86,7 +86,7 @@ static void SDL_AddAssertionToReport(SDL_AssertData *data)
     }
 }
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 #define ENDLINE "\r\n"
 #else
 #define ENDLINE "\n"

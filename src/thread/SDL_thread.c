@@ -340,7 +340,7 @@ SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
                               SDL_FunctionPointer pfnEndThread)
 {
     // rather than check this in every backend, just make sure it's correct upfront. Only allow non-NULL if Windows, or Microsoft GDK.
-    #if (!defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK))
+    #if !defined(SDL_PLATFORM_WINDOWS)
     if (pfnBeginThread || pfnEndThread) {
         SDL_SetError("_beginthreadex/_endthreadex not supported on this platform");
         return NULL;
