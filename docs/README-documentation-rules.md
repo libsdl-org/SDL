@@ -64,6 +64,10 @@ Note the `/**` at the start of the comment. That's a "Doxygen-style" comment,
 and wikiheaders will treat this differently than a comment with one `*`, as
 this signifies that this is not just a comment, but _documentation_.
 
+These comments _must_ start in the first column of the line, or wikiheaders
+will ignore them, even with the "/**" start (we should improve the script
+someday to handle this, but currently this is a requirement).
+
 We do _not_ parse every magic Doxygen tag, and we don't parse them in `@param`
 format. The goal here was to mostly coexist with people that might want
 to run Doxygen on the SDL headers, not to build Doxygen from scratch. That
