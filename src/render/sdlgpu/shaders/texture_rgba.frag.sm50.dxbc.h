@@ -1,4 +1,4 @@
-const signed char texture_rgba_frag_sm50_dxbc[] =
+static const signed char texture_rgba_frag_sm50_dxbc[] =
 {
   68,  88,  66,  67, -83, 124,
   -3, -84,-102, 126,  29, -62,

@@ -83,3 +83,4 @@ for i in *.vert *.frag; do
     make-header "$metal"
     echo "#include \"$metal.h\"" >> "$metal_bundle"
 done
+./fix-shaders.sh

@@ -1,4 +1,4 @@
-const signed char linepoint_vert_sm50_dxbc[] =
+static const signed char linepoint_vert_sm50_dxbc[] =
 {
   68,  88,  66,  67,   0, 119,
  101, -18, 103, 113,  34,  52,
