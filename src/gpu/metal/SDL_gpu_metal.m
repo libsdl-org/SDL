@@ -2153,6 +2153,7 @@ static void METAL_BeginRenderPass(
         Uint32 vpHeight = UINT_MAX;
         SDL_GPUViewport viewport;
         SDL_Rect scissorRect;
+        SDL_FColor blendConstants;
 
         for (Uint32 i = 0; i < numColorTargets; i += 1) {
             MetalTextureContainer *container = (MetalTextureContainer *)colorTargetInfos[i].texture;
@@ -2268,9 +2269,13 @@ static void METAL_BeginRenderPass(
         scissorRect.h = vpHeight;
         METAL_SetScissor(commandBuffer, &scissorRect);
 
+        blendConstants.r = 1.0f;
+        blendConstants.g = 1.0f;
+        blendConstants.b = 1.0f;
+        blendConstants.a = 1.0f;
         METAL_SetBlendConstants(
             commandBuffer,
-            (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f });
+            blendConstants);
 
         METAL_SetStencilReference(
             commandBuffer,

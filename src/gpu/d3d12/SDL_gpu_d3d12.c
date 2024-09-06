@@ -3950,9 +3950,15 @@ static void D3D12_BeginRenderPass(
         commandBuffer,
         0);
 
+    SDL_FColor blendConstants;
+    blendConstants.r = 1.0f;
+    blendConstants.g = 1.0f;
+    blendConstants.b = 1.0f;
+    blendConstants.a = 1.0f;
+
     D3D12_SetBlendConstants(
         commandBuffer,
-        (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f });
+        blendConstants);
 }
 
 static void D3D12_INTERNAL_TrackUniformBuffer(

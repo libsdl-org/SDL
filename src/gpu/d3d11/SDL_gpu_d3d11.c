@@ -3199,7 +3199,10 @@ static SDL_GPUCommandBuffer *D3D11_AcquireCommandBuffer(
     commandBuffer = D3D11_INTERNAL_GetInactiveCommandBufferFromPool(renderer);
     commandBuffer->graphicsPipeline = NULL;
     commandBuffer->stencilRef = 0;
-    commandBuffer->blendConstants = (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f };
+    commandBuffer->blendConstants.r = 1.0f;
+    commandBuffer->blendConstants.g = 1.0f;
+    commandBuffer->blendConstants.b = 1.0f;
+    commandBuffer->blendConstants.a = 1.0f;
     commandBuffer->computePipeline = NULL;
     for (i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1) {
         commandBuffer->colorTargetResolveTexture[i] = NULL;
@@ -3617,9 +3620,15 @@ static void D3D11_BeginRenderPass(
         commandBuffer,
         0);
 
+    SDL_FColor blendConstants;
+    blendConstants.r = 1.0f;
+    blendConstants.g = 1.0f;
+    blendConstants.b = 1.0f;
+    blendConstants.a = 1.0f;
+
     D3D11_SetBlendConstants(
         commandBuffer,
-        (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f });
+        blendConstants);
 }
 
 static void D3D11_BindGraphicsPipeline(
