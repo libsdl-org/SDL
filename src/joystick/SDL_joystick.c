@@ -58,10 +58,10 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_RAWINPUT
     &SDL_RAWINPUT_JoystickDriver,
 #endif
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT) // Before WGI driver, as WGI wants to check if this driver is handling things
     &SDL_WINDOWS_JoystickDriver,
 #endif
-#ifdef SDL_JOYSTICK_WGI // Lower priority than other Windows drivers
+#ifdef SDL_JOYSTICK_WGI
     &SDL_WGI_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_WINMM
