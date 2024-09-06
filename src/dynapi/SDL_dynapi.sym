@@ -117,8 +117,6 @@ SDL3_0.0.0 {
     SDL_CreateWindowWithProperties;
     SDL_CursorVisible;
     SDL_DateTimeToTime;
-    SDL_RemoveEventWatch;
-    SDL_RemoveHintCallback;
     SDL_Delay;
     SDL_DelayNS;
     SDL_DestroyAudioStream;
@@ -703,6 +701,8 @@ SDL3_0.0.0 {
     SDL_ReleaseGPUTransferBuffer;
     SDL_ReleaseWindowFromGPUDevice;
     SDL_ReloadGamepadMappings;
+    SDL_RemoveEventWatch;
+    SDL_RemoveHintCallback;
     SDL_RemovePath;
     SDL_RemoveStoragePath;
     SDL_RemoveSurfaceAlternateImages;
@@ -1104,6 +1104,7 @@ SDL3_0.0.0 {
     SDL_strndup;
     SDL_strnlen;
     SDL_strnstr;
+    SDL_strpbrk;
     SDL_strrchr;
     SDL_strrev;
     SDL_strstr;
@@ -1144,7 +1145,6 @@ SDL3_0.0.0 {
     SDL_wcsnstr;
     SDL_wcsstr;
     SDL_wcstol;
-    SDL_strpbrk;
     # extra symbols go here (don't modify this line)
   local: *;
 };

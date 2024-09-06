@@ -142,8 +142,6 @@
 #define SDL_CreateWindowWithProperties SDL_CreateWindowWithProperties_REAL
 #define SDL_CursorVisible SDL_CursorVisible_REAL
 #define SDL_DateTimeToTime SDL_DateTimeToTime_REAL
-#define SDL_RemoveEventWatch SDL_RemoveEventWatch_REAL
-#define SDL_RemoveHintCallback SDL_RemoveHintCallback_REAL
 #define SDL_Delay SDL_Delay_REAL
 #define SDL_DelayNS SDL_DelayNS_REAL
 #define SDL_DestroyAudioStream SDL_DestroyAudioStream_REAL
@@ -728,6 +726,8 @@
 #define SDL_ReleaseGPUTransferBuffer SDL_ReleaseGPUTransferBuffer_REAL
 #define SDL_ReleaseWindowFromGPUDevice SDL_ReleaseWindowFromGPUDevice_REAL
 #define SDL_ReloadGamepadMappings SDL_ReloadGamepadMappings_REAL
+#define SDL_RemoveEventWatch SDL_RemoveEventWatch_REAL
+#define SDL_RemoveHintCallback SDL_RemoveHintCallback_REAL
 #define SDL_RemovePath SDL_RemovePath_REAL
 #define SDL_RemoveStoragePath SDL_RemoveStoragePath_REAL
 #define SDL_RemoveSurfaceAlternateImages SDL_RemoveSurfaceAlternateImages_REAL
@@ -1129,6 +1129,7 @@
 #define SDL_strndup SDL_strndup_REAL
 #define SDL_strnlen SDL_strnlen_REAL
 #define SDL_strnstr SDL_strnstr_REAL
+#define SDL_strpbrk SDL_strpbrk_REAL
 #define SDL_strrchr SDL_strrchr_REAL
 #define SDL_strrev SDL_strrev_REAL
 #define SDL_strstr SDL_strstr_REAL
@@ -1169,4 +1170,3 @@
 #define SDL_wcsnstr SDL_wcsnstr_REAL
 #define SDL_wcsstr SDL_wcsstr_REAL
 #define SDL_wcstol SDL_wcstol_REAL
-#define SDL_strpbrk SDL_strpbrk_REAL
