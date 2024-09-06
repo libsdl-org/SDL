@@ -751,7 +751,8 @@ typedef enum SDL_GPUStencilOp
 } SDL_GPUStencilOp;
 
 /**
- * Specifies the operator to be used when pixels in a render target are blended with existing pixels in the texture.
+ * Specifies the operator to be used when pixels in a render target are
+ * blended with existing pixels in the texture.
  *
  * The source color is the value written by the fragment shader. The
  * destination color is the value currently existing in the texture.
@@ -770,7 +771,8 @@ typedef enum SDL_GPUBlendOp
 } SDL_GPUBlendOp;
 
 /**
- * Specifies a blending factor to be used when pixels in a render target are blended with existing pixels in the texture.
+ * Specifies a blending factor to be used when pixels in a render target are
+ * blended with existing pixels in the texture.
  *
  * The source color is the value written by the fragment shader. The
  * destination color is the value currently existing in the texture.
@@ -1411,7 +1413,7 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
  * Creates a GPU context.
  *
  * \param format_flags a bitflag indicating which shader formats the app is
- *                    able to provide.
+ *                     able to provide.
  * \param debug_mode enable debug mode properties and validations.
  * \param name the preferred GPU driver, or NULL to let SDL pick the optimal
  *             driver.
@@ -1540,7 +1542,8 @@ extern SDL_DECLSPEC SDL_GPUDriver SDLCALL SDL_GetGPUDriver(SDL_GPUDevice *device
  *   textures
  *
  * \param device a GPU Context.
- * \param createinfo a struct describing the state of the compute pipeline to create.
+ * \param createinfo a struct describing the state of the compute pipeline to
+ *                   create.
  * \returns a compute pipeline object on success, or NULL on failure.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1556,7 +1559,8 @@ extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline
  * Creates a pipeline object to be used in a graphics workflow.
  *
  * \param device a GPU Context.
- * \param createinfo a struct describing the state of the graphics pipeline to create.
+ * \param createinfo a struct describing the state of the graphics pipeline to
+ *                   create.
  * \returns a graphics pipeline object on success, or NULL on failure.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1727,7 +1731,8 @@ extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
  * graphics resources.
  *
  * \param device a GPU Context.
- * \param createinfo a struct describing the state of the transfer buffer to create.
+ * \param createinfo a struct describing the state of the transfer buffer to
+ *                   create.
  * \returns a transfer buffer on success, or NULL on failure.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2074,12 +2079,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUComputeUniformData(
  *
  * \param command_buffer a command buffer.
  * \param color_target_infos an array of texture subresources with
- *                             corresponding clear values and load/store ops.
+ *                           corresponding clear values and load/store ops.
  * \param num_color_targets the number of color targets in the
- *                             color_target_infos array.
+ *                          color_target_infos array.
  * \param depth_stencil_target_info a texture subresource with corresponding
- *                                   clear value and load/store ops, may be
- *                                   NULL.
+ *                                  clear value and load/store ops, may be
+ *                                  NULL.
  * \returns a render pass handle.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2164,7 +2169,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUStencilReference(
  * \param render_pass a render pass handle.
  * \param first_binding the starting bind point for the vertex buffers.
  * \param bindings an array of SDL_GPUBufferBinding structs containing vertex
- *                  buffers and offset values.
+ *                 buffers and offset values.
  * \param num_bindings the number of bindings in the bindings array.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2180,10 +2185,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexBuffers(
  * calls.
  *
  * \param render_pass a render pass handle.
- * \param binding a pointer to a struct containing an index buffer and
- *                 offset.
+ * \param binding a pointer to a struct containing an index buffer and offset.
  * \param index_element_size whether the index values in the buffer are 16- or
- *                         32-bit.
+ *                           32-bit.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -2199,7 +2203,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUIndexBuffer(
  *
  * \param render_pass a render pass handle.
  * \param first_slot the vertex sampler slot to begin binding from.
- * \param texture_sampler_bindings an array of texture-sampler binding structs.
+ * \param texture_sampler_bindings an array of texture-sampler binding
+ *                                 structs.
  * \param num_bindings the number of texture-sampler pairs to bind from the
  *                     array.
  *
@@ -2256,7 +2261,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageBuffers(
  *
  * \param render_pass a render pass handle.
  * \param first_slot the fragment sampler slot to begin binding from.
- * \param texture_sampler_bindings an array of texture-sampler binding structs.
+ * \param texture_sampler_bindings an array of texture-sampler binding
+ *                                 structs.
  * \param num_bindings the number of texture-sampler pairs to bind from the
  *                     array.
  *
@@ -2324,7 +2330,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageBuffers(
  * \param num_instances the number of instances to draw.
  * \param first_index the starting index within the index buffer.
  * \param vertex_offset value added to vertex index before indexing into the
- *                     vertex buffer.
+ *                      vertex buffer.
  * \param first_instance the ID of the first instance to draw.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2372,8 +2378,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUPrimitives(
  * \param render_pass a render pass handle.
  * \param buffer a buffer containing draw parameters.
  * \param offset the offset to start reading from the draw buffer.
- * \param draw_count the number of draw parameter sets that should be read from
- *                  the draw buffer.
+ * \param draw_count the number of draw parameter sets that should be read
+ *                   from the draw buffer.
  * \param pitch the byte pitch between sets of draw parameters.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2396,8 +2402,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUPrimitivesIndirect(
  * \param render_pass a render pass handle.
  * \param buffer a buffer containing draw parameters.
  * \param offset the offset to start reading from the draw buffer.
- * \param draw_count the number of draw parameter sets that should be read from
- *                  the draw buffer.
+ * \param draw_count the number of draw parameter sets that should be read
+ *                   from the draw buffer.
  * \param pitch the byte pitch between sets of draw parameters.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2441,14 +2447,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPURenderPass(
  * you can safely access the data.
  *
  * \param command_buffer a command buffer.
- * \param storage_texture_bindings an array of writeable storage texture binding
- *                               structs.
+ * \param storage_texture_bindings an array of writeable storage texture
+ *                                 binding structs.
  * \param num_storage_texture_bindings the number of storage textures to bind
- *                                   from the array.
+ *                                     from the array.
  * \param storage_buffer_bindings an array of writeable storage buffer binding
- *                              structs.
- * \param num_storage_buffer_bindings the number of storage buffers to bind from
- *                                  the array.
+ *                                structs.
+ * \param num_storage_buffer_bindings the number of storage buffers to bind
+ *                                    from the array.
  * \returns a compute pass handle.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2524,11 +2530,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageBuffers(
  *
  * \param compute_pass a compute pass handle.
  * \param groupcount_x number of local workgroups to dispatch in the X
- *                    dimension.
+ *                     dimension.
  * \param groupcount_y number of local workgroups to dispatch in the Y
- *                    dimension.
+ *                     dimension.
  * \param groupcount_z number of local workgroups to dispatch in the Z
- *                    dimension.
+ *                     dimension.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -3012,7 +3018,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitForGPUIdle(
  *
  * \param device a GPU context.
  * \param wait_all if 0, wait for any fence to be signaled, if 1, wait for all
- *                fences to be signaled.
+ *                 fences to be signaled.
  * \param fences an array of fences to wait on.
  * \param num_fences the number of fences in the fences array.
  *
