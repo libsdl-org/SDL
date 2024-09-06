@@ -7863,6 +7863,7 @@ static void VULKAN_BeginRenderPass(
     Uint32 i;
     SDL_GPUViewport defaultViewport;
     SDL_Rect defaultScissor;
+    SDL_FColor defaultBlendConstants;
     Uint32 framebufferWidth = UINT32_MAX;
     Uint32 framebufferHeight = UINT32_MAX;
 
@@ -8056,9 +8057,14 @@ static void VULKAN_BeginRenderPass(
         vulkanCommandBuffer,
         &defaultScissor);
 
+    defaultBlendConstants.r = 1.0f;
+    defaultBlendConstants.g = 1.0f;
+    defaultBlendConstants.b = 1.0f;
+    defaultBlendConstants.a = 1.0f;
+
     VULKAN_INTERNAL_SetCurrentBlendConstants(
         vulkanCommandBuffer,
-        (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f });
+        defaultBlendConstants);
 
     VULKAN_INTERNAL_SetCurrentStencilReference(
         vulkanCommandBuffer,
