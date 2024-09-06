@@ -170,7 +170,7 @@ static SDL_GPUShader *CompileShader(const GPU_ShaderSources *sources, SDL_GPUDev
     sci.code_size = sms->code_len;
     sci.format = sms->format;
     // FIXME not sure if this is correct
-    sci.entrypoint_name = driver == SDL_GPU_DRIVER_METAL ? "main0" : "main";
+    sci.entrypoint = driver == SDL_GPU_DRIVER_METAL ? "main0" : "main";
     sci.num_samplers = sources->num_samplers;
     sci.num_uniform_buffers = sources->num_uniform_buffers;
     sci.stage = stage;

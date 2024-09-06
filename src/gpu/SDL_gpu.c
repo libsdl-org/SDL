@@ -42,39 +42,39 @@
 
 #define CHECK_ANY_PASS_IN_PROGRESS(msg, retval)                                 \
     if (                                                                        \
-        ((CommandBufferCommonHeader *)command_buffer)->render_pass.inProgress ||  \
-        ((CommandBufferCommonHeader *)command_buffer)->compute_pass.inProgress || \
-        ((CommandBufferCommonHeader *)command_buffer)->copy_pass.inProgress) {    \
+        ((CommandBufferCommonHeader *)command_buffer)->render_pass.in_progress ||  \
+        ((CommandBufferCommonHeader *)command_buffer)->compute_pass.in_progress || \
+        ((CommandBufferCommonHeader *)command_buffer)->copy_pass.in_progress) {    \
         SDL_assert_release(!msg);                                               \
         return retval;                                                          \
     }
 
 #define CHECK_RENDERPASS                                     \
-    if (!((Pass *)render_pass)->inProgress) {                 \
+    if (!((Pass *)render_pass)->in_progress) {                 \
         SDL_assert_release(!"Render pass not in progress!"); \
         return;                                              \
     }
 
 #define CHECK_GRAPHICS_PIPELINE_BOUND                                                       \
-    if (!((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->graphicsPipelineBound) { \
+    if (!((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->graphics_pipeline_bound) { \
         SDL_assert_release(!"Graphics pipeline not bound!");                                \
         return;                                                                             \
     }
 
 #define CHECK_COMPUTEPASS                                     \
-    if (!((Pass *)compute_pass)->inProgress) {                 \
+    if (!((Pass *)compute_pass)->in_progress) {                 \
         SDL_assert_release(!"Compute pass not in progress!"); \
         return;                                               \
     }
 
 #define CHECK_COMPUTE_PIPELINE_BOUND                                                        \
-    if (!((CommandBufferCommonHeader *)COMPUTEPASS_COMMAND_BUFFER)->computePipelineBound) { \
+    if (!((CommandBufferCommonHeader *)COMPUTEPASS_COMMAND_BUFFER)->compute_pipeline_bound) { \
         SDL_assert_release(!"Compute pipeline not bound!");                                 \
         return;                                                                             \
     }
 
 #define CHECK_COPYPASS                                     \
-    if (!((Pass *)copy_pass)->inProgress) {                 \
+    if (!((Pass *)copy_pass)->in_progress) {                 \
         SDL_assert_release(!"Copy pass not in progress!"); \
         return;                                            \
     }
@@ -140,63 +140,63 @@ static const SDL_GPUBootstrap *backends[] = {
 
 SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     SDL_GPUDevice *device,
-    SDL_GPUTextureType sourceTextureType,
-    SDL_GPUTextureFormat destinationFormat,
-    SDL_GPUShader *blitVertexShader,
-    SDL_GPUShader *blitFrom2DShader,
-    SDL_GPUShader *blitFrom2DArrayShader,
-    SDL_GPUShader *blitFrom3DShader,
-    SDL_GPUShader *blitFromCubeShader,
-    BlitPipelineCacheEntry **blitPipelines,
-    Uint32 *blitPipelineCount,
-    Uint32 *blitPipelineCapacity)
+    SDL_GPUTextureType source_texture_type,
+    SDL_GPUTextureFormat destination_format,
+    SDL_GPUShader *blit_vertex_shader,
+    SDL_GPUShader *blit_from_2d_shader,
+    SDL_GPUShader *blit_from_2d_array_shader,
+    SDL_GPUShader *blit_from_3d_shader,
+    SDL_GPUShader *blit_from_cube_shader,
+    BlitPipelineCacheEntry **blit_pipelines,
+    Uint32 *blit_pipeline_count,
+    Uint32 *blit_pipeline_capacity)
 {
-    SDL_GPUGraphicsPipelineCreateInfo blitPipelineCreateInfo;
-    SDL_GPUColorAttachmentDescription colorAttachmentDesc;
+    SDL_GPUGraphicsPipelineCreateInfo blit_pipeline_create_info;
+    SDL_GPUColorTargetDescription color_target_desc;
     SDL_GPUGraphicsPipeline *pipeline;
 
-    if (blitPipelineCount == NULL) {
+    if (blit_pipeline_count == NULL) {
         // use pre-created, format-agnostic pipelines
-        return (*blitPipelines)[sourceTextureType].pipeline;
+        return (*blit_pipelines)[source_texture_type].pipeline;
     }
 
-    for (Uint32 i = 0; i < *blitPipelineCount; i += 1) {
-        if ((*blitPipelines)[i].type == sourceTextureType && (*blitPipelines)[i].format == destinationFormat) {
-            return (*blitPipelines)[i].pipeline;
+    for (Uint32 i = 0; i < *blit_pipeline_count; i += 1) {
+        if ((*blit_pipelines)[i].type == source_texture_type && (*blit_pipelines)[i].format == destination_format) {
+            return (*blit_pipelines)[i].pipeline;
         }
     }
 
     // No pipeline found, we'll need to make one!
-    SDL_zero(blitPipelineCreateInfo);
+    SDL_zero(blit_pipeline_create_info);
 
-    SDL_zero(colorAttachmentDesc);
-    colorAttachmentDesc.blend_state.color_write_mask = 0xF;
-    colorAttachmentDesc.format = destinationFormat;
+    SDL_zero(color_target_desc);
+    color_target_desc.blend_state.color_write_mask = 0xF;
+    color_target_desc.format = destination_format;
 
-    blitPipelineCreateInfo.attachment_info.color_attachment_descriptions = &colorAttachmentDesc;
-    blitPipelineCreateInfo.attachment_info.num_color_attachments = 1;
-    blitPipelineCreateInfo.attachment_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM; // arbitrary
-    blitPipelineCreateInfo.attachment_info.has_depth_stencil_attachment = false;
+    blit_pipeline_create_info.target_info.color_target_descriptions = &color_target_desc;
+    blit_pipeline_create_info.target_info.num_color_targets = 1;
+    blit_pipeline_create_info.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM; // arbitrary
+    blit_pipeline_create_info.target_info.has_depth_stencil_target = false;
 
-    blitPipelineCreateInfo.vertex_shader = blitVertexShader;
-    if (sourceTextureType == SDL_GPU_TEXTURETYPE_CUBE) {
-        blitPipelineCreateInfo.fragment_shader = blitFromCubeShader;
-    } else if (sourceTextureType == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
-        blitPipelineCreateInfo.fragment_shader = blitFrom2DArrayShader;
-    } else if (sourceTextureType == SDL_GPU_TEXTURETYPE_3D) {
-        blitPipelineCreateInfo.fragment_shader = blitFrom3DShader;
+    blit_pipeline_create_info.vertex_shader = blit_vertex_shader;
+    if (source_texture_type == SDL_GPU_TEXTURETYPE_CUBE) {
+        blit_pipeline_create_info.fragment_shader = blit_from_cube_shader;
+    } else if (source_texture_type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
+        blit_pipeline_create_info.fragment_shader = blit_from_2d_array_shader;
+    } else if (source_texture_type == SDL_GPU_TEXTURETYPE_3D) {
+        blit_pipeline_create_info.fragment_shader = blit_from_3d_shader;
     } else {
-        blitPipelineCreateInfo.fragment_shader = blitFrom2DShader;
+        blit_pipeline_create_info.fragment_shader = blit_from_2d_shader;
     }
 
-    blitPipelineCreateInfo.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    blitPipelineCreateInfo.multisample_state.sample_mask = 0xFFFFFFFF;
+    blit_pipeline_create_info.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    blit_pipeline_create_info.multisample_state.sample_mask = 0xFFFFFFFF;
 
-    blitPipelineCreateInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+    blit_pipeline_create_info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 
     pipeline = SDL_CreateGPUGraphicsPipeline(
         device,
-        &blitPipelineCreateInfo);
+        &blit_pipeline_create_info);
 
     if (pipeline == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create graphics pipeline for blit");
@@ -205,16 +205,16 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
 
     // Cache the new pipeline
     EXPAND_ARRAY_IF_NEEDED(
-        (*blitPipelines),
+        (*blit_pipelines),
         BlitPipelineCacheEntry,
-        *blitPipelineCount + 1,
-        *blitPipelineCapacity,
-        *blitPipelineCapacity * 2)
+        *blit_pipeline_count + 1,
+        *blit_pipeline_capacity,
+        *blit_pipeline_capacity * 2)
 
-    (*blitPipelines)[*blitPipelineCount].pipeline = pipeline;
-    (*blitPipelines)[*blitPipelineCount].type = sourceTextureType;
-    (*blitPipelines)[*blitPipelineCount].format = destinationFormat;
-    *blitPipelineCount += 1;
+    (*blit_pipelines)[*blit_pipeline_count].pipeline = pipeline;
+    (*blit_pipelines)[*blit_pipeline_count].type = source_texture_type;
+    (*blit_pipelines)[*blit_pipeline_count].format = destination_format;
+    *blit_pipeline_count += 1;
 
     return pipeline;
 }
@@ -226,68 +226,68 @@ void SDL_GPU_BlitCommon(
     SDL_FlipMode flip_mode,
     SDL_GPUFilter filter,
     bool cycle,
-    SDL_GPUSampler *blitLinearSampler,
-    SDL_GPUSampler *blitNearestSampler,
-    SDL_GPUShader *blitVertexShader,
-    SDL_GPUShader *blitFrom2DShader,
-    SDL_GPUShader *blitFrom2DArrayShader,
-    SDL_GPUShader *blitFrom3DShader,
-    SDL_GPUShader *blitFromCubeShader,
-    BlitPipelineCacheEntry **blitPipelines,
-    Uint32 *blitPipelineCount,
-    Uint32 *blitPipelineCapacity)
+    SDL_GPUSampler *blit_linear_sampler,
+    SDL_GPUSampler *blit_nearest_sampler,
+    SDL_GPUShader *blit_vertex_shader,
+    SDL_GPUShader *blit_from_2d_shader,
+    SDL_GPUShader *blit_from_2d_array_shader,
+    SDL_GPUShader *blit_from_3d_shader,
+    SDL_GPUShader *blit_from_cube_shader,
+    BlitPipelineCacheEntry **blit_pipelines,
+    Uint32 *blit_pipeline_count,
+    Uint32 *blit_pipeline_capacity)
 {
     CommandBufferCommonHeader *cmdbufHeader = (CommandBufferCommonHeader *)command_buffer;
     SDL_GPURenderPass *render_pass;
-    TextureCommonHeader *srcHeader = (TextureCommonHeader *)source->texture;
-    TextureCommonHeader *dstHeader = (TextureCommonHeader *)destination->texture;
-    SDL_GPUGraphicsPipeline *blitPipeline;
-    SDL_GPUColorAttachmentInfo colorAttachmentInfo;
+    TextureCommonHeader *src_header = (TextureCommonHeader *)source->texture;
+    TextureCommonHeader *dst_header = (TextureCommonHeader *)destination->texture;
+    SDL_GPUGraphicsPipeline *blit_pipeline;
+    SDL_GPUColorTargetInfo color_target_info;
     SDL_GPUViewport viewport;
-    SDL_GPUTextureSamplerBinding textureSamplerBinding;
-    BlitFragmentUniforms blitFragmentUniforms;
-    Uint32 layerDivisor;
+    SDL_GPUTextureSamplerBinding texture_sampler_binding;
+    BlitFragmentUniforms blit_fragment_uniforms;
+    Uint32 layer_divisor;
 
-    blitPipeline = SDL_GPU_FetchBlitPipeline(
+    blit_pipeline = SDL_GPU_FetchBlitPipeline(
         cmdbufHeader->device,
-        srcHeader->info.type,
-        dstHeader->info.format,
-        blitVertexShader,
-        blitFrom2DShader,
-        blitFrom2DArrayShader,
-        blitFrom3DShader,
-        blitFromCubeShader,
-        blitPipelines,
-        blitPipelineCount,
-        blitPipelineCapacity);
+        src_header->info.type,
+        dst_header->info.format,
+        blit_vertex_shader,
+        blit_from_2d_shader,
+        blit_from_2d_array_shader,
+        blit_from_3d_shader,
+        blit_from_cube_shader,
+        blit_pipelines,
+        blit_pipeline_count,
+        blit_pipeline_capacity);
 
-    if (blitPipeline == NULL) {
+    if (blit_pipeline == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not fetch blit pipeline");
         return;
     }
 
     // If the entire destination is blitted, we don't have to load
     if (
-        dstHeader->info.layer_count_or_depth == 1 &&
-        dstHeader->info.num_levels == 1 &&
-        dstHeader->info.type != SDL_GPU_TEXTURETYPE_3D &&
-        destination->w == dstHeader->info.width &&
-        destination->h == dstHeader->info.height) {
-        colorAttachmentInfo.load_op = SDL_GPU_LOADOP_DONT_CARE;
+        dst_header->info.layer_count_or_depth == 1 &&
+        dst_header->info.num_levels == 1 &&
+        dst_header->info.type != SDL_GPU_TEXTURETYPE_3D &&
+        destination->w == dst_header->info.width &&
+        destination->h == dst_header->info.height) {
+        color_target_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
     } else {
-        colorAttachmentInfo.load_op = SDL_GPU_LOADOP_LOAD;
+        color_target_info.load_op = SDL_GPU_LOADOP_LOAD;
     }
 
-    colorAttachmentInfo.store_op = SDL_GPU_STOREOP_STORE;
+    color_target_info.store_op = SDL_GPU_STOREOP_STORE;
 
-    colorAttachmentInfo.texture = destination->texture;
-    colorAttachmentInfo.mip_level = destination->mip_level;
-    colorAttachmentInfo.layer_or_depth_plane = destination->layer_or_depth_plane;
-    colorAttachmentInfo.cycle = cycle;
+    color_target_info.texture = destination->texture;
+    color_target_info.mip_level = destination->mip_level;
+    color_target_info.layer_or_depth_plane = destination->layer_or_depth_plane;
+    color_target_info.cycle = cycle;
 
     render_pass = SDL_BeginGPURenderPass(
         command_buffer,
-        &colorAttachmentInfo,
+        &color_target_info,
         1,
         NULL);
 
@@ -295,8 +295,8 @@ void SDL_GPU_BlitCommon(
     viewport.y = (float)destination->y;
     viewport.w = (float)destination->w;
     viewport.h = (float)destination->h;
-    viewport.minDepth = 0;
-    viewport.maxDepth = 1;
+    viewport.min_depth = 0;
+    viewport.max_depth = 1;
 
     SDL_SetGPUViewport(
         render_pass,
@@ -304,42 +304,42 @@ void SDL_GPU_BlitCommon(
 
     SDL_BindGPUGraphicsPipeline(
         render_pass,
-        blitPipeline);
+        blit_pipeline);
 
-    textureSamplerBinding.texture = source->texture;
-    textureSamplerBinding.sampler =
-        filter == SDL_GPU_FILTER_NEAREST ? blitNearestSampler : blitLinearSampler;
+    texture_sampler_binding.texture = source->texture;
+    texture_sampler_binding.sampler =
+        filter == SDL_GPU_FILTER_NEAREST ? blit_nearest_sampler : blit_linear_sampler;
 
     SDL_BindGPUFragmentSamplers(
         render_pass,
         0,
-        &textureSamplerBinding,
+        &texture_sampler_binding,
         1);
 
-    blitFragmentUniforms.left = (float)source->x / (srcHeader->info.width >> source->mip_level);
-    blitFragmentUniforms.top = (float)source->y / (srcHeader->info.height >> source->mip_level);
-    blitFragmentUniforms.width = (float)source->w / (srcHeader->info.width >> source->mip_level);
-    blitFragmentUniforms.height = (float)source->h / (srcHeader->info.height >> source->mip_level);
-    blitFragmentUniforms.mip_level = source->mip_level;
+    blit_fragment_uniforms.left = (float)source->x / (src_header->info.width >> source->mip_level);
+    blit_fragment_uniforms.top = (float)source->y / (src_header->info.height >> source->mip_level);
+    blit_fragment_uniforms.width = (float)source->w / (src_header->info.width >> source->mip_level);
+    blit_fragment_uniforms.height = (float)source->h / (src_header->info.height >> source->mip_level);
+    blit_fragment_uniforms.mip_level = source->mip_level;
 
-    layerDivisor = (srcHeader->info.type == SDL_GPU_TEXTURETYPE_3D) ? srcHeader->info.layer_count_or_depth : 1;
-    blitFragmentUniforms.layerOrDepth = (float)source->layer_or_depth_plane / layerDivisor;
+    layer_divisor = (src_header->info.type == SDL_GPU_TEXTURETYPE_3D) ? src_header->info.layer_count_or_depth : 1;
+    blit_fragment_uniforms.layer_or_depth = (float)source->layer_or_depth_plane / layer_divisor;
 
     if (flip_mode & SDL_FLIP_HORIZONTAL) {
-        blitFragmentUniforms.left += blitFragmentUniforms.width;
-        blitFragmentUniforms.width *= -1;
+        blit_fragment_uniforms.left += blit_fragment_uniforms.width;
+        blit_fragment_uniforms.width *= -1;
     }
 
     if (flip_mode & SDL_FLIP_VERTICAL) {
-        blitFragmentUniforms.top += blitFragmentUniforms.height;
-        blitFragmentUniforms.height *= -1;
+        blit_fragment_uniforms.top += blit_fragment_uniforms.height;
+        blit_fragment_uniforms.height *= -1;
     }
 
     SDL_PushGPUFragmentUniformData(
         command_buffer,
         0,
-        &blitFragmentUniforms,
-        sizeof(blitFragmentUniforms));
+        &blit_fragment_uniforms,
+        sizeof(blit_fragment_uniforms));
 
     SDL_DrawGPUPrimitives(render_pass, 3, 1, 0, 0);
     SDL_EndGPURenderPass(render_pass);
@@ -357,8 +357,8 @@ static SDL_GPUDriver SDL_GPUSelectBackend(
     // Environment/Properties override...
     if (gpudriver != NULL) {
         for (i = 0; backends[i]; i += 1) {
-            if (SDL_strcasecmp(gpudriver, backends[i]->Name) == 0) {
-                if (!(backends[i]->shaderFormats & format_flags)) {
+            if (SDL_strcasecmp(gpudriver, backends[i]->name) == 0) {
+                if (!(backends[i]->shader_formats & format_flags)) {
                     SDL_LogError(SDL_LOG_CATEGORY_GPU, "Required shader format for backend %s not provided!", gpudriver);
                     return SDL_GPU_DRIVER_INVALID;
                 }
@@ -373,7 +373,7 @@ static SDL_GPUDriver SDL_GPUSelectBackend(
     }
 
     for (i = 0; backends[i]; i += 1) {
-        if ((backends[i]->shaderFormats & format_flags) == 0) {
+        if ((backends[i]->shader_formats & format_flags) == 0) {
             // Don't select a backend which doesn't support the app's shaders.
             continue;
         }
@@ -469,7 +469,7 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
                 result = backends[i]->CreateDevice(debug_mode, preferLowPower, props);
                 if (result != NULL) {
                     result->backend = backends[i]->backendflag;
-                    result->shaderFormats = backends[i]->shaderFormats;
+                    result->shader_formats = backends[i]->shader_formats;
                     result->debug_mode = debug_mode;
                     break;
                 }
@@ -604,7 +604,7 @@ SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
     }
 
     if (device->debug_mode) {
-        if (!(createinfo->format & device->shaderFormats)) {
+        if (!(createinfo->format & device->shader_formats)) {
             SDL_assert_release(!"Incompatible shader format for GPU backend");
             return NULL;
         }
@@ -641,17 +641,17 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
     }
 
     if (device->debug_mode) {
-        for (Uint32 i = 0; i < graphicsPipelineCreateInfo->attachment_info.num_color_attachments; i += 1) {
-            CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->attachment_info.color_attachment_descriptions[i].format, NULL);
-            if (IsDepthFormat(graphicsPipelineCreateInfo->attachment_info.color_attachment_descriptions[i].format)) {
-                SDL_assert_release(!"Color attachment formats cannot be a depth format!");
+        for (Uint32 i = 0; i < graphicsPipelineCreateInfo->target_info.num_color_targets; i += 1) {
+            CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format, NULL);
+            if (IsDepthFormat(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format)) {
+                SDL_assert_release(!"Color target formats cannot be a depth format!");
                 return NULL;
             }
         }
-        if (graphicsPipelineCreateInfo->attachment_info.has_depth_stencil_attachment) {
-            CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->attachment_info.depth_stencil_format, NULL);
-            if (!IsDepthFormat(graphicsPipelineCreateInfo->attachment_info.depth_stencil_format)) {
-                SDL_assert_release(!"Depth-stencil attachment format must be a depth format!");
+        if (graphicsPipelineCreateInfo->target_info.has_depth_stencil_target) {
+            CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->target_info.depth_stencil_format, NULL);
+            if (!IsDepthFormat(graphicsPipelineCreateInfo->target_info.depth_stencil_format)) {
+                SDL_assert_release(!"Depth-stencil target format must be a depth format!");
                 return NULL;
             }
         }
@@ -688,7 +688,7 @@ SDL_GPUShader *SDL_CreateGPUShader(
     }
 
     if (device->debug_mode) {
-        if (!(createinfo->format & device->shaderFormats)) {
+        if (!(createinfo->format & device->shader_formats)) {
             SDL_assert_release(!"Incompatible shader format for GPU backend");
             return NULL;
         }
@@ -726,16 +726,16 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
             SDL_assert_release(!"For any texture: num_levels must be >= 1");
             failed = true;
         }
-        if ((createinfo->usage_flags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) && (createinfo->usage_flags & SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
-            SDL_assert_release(!"For any texture: usage_flags cannot contain both GRAPHICS_STORAGE_READ and SAMPLER");
+        if ((createinfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) && (createinfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
+            SDL_assert_release(!"For any texture: usage cannot contain both GRAPHICS_STORAGE_READ and SAMPLER");
             failed = true;
         }
-        if (IsDepthFormat(createinfo->format) && (createinfo->usage_flags & ~(SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER))) {
-            SDL_assert_release(!"For depth textures: usage_flags cannot contain any flags except for DEPTH_STENCIL_TARGET and SAMPLER");
+        if (IsDepthFormat(createinfo->format) && (createinfo->usage & ~(SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER))) {
+            SDL_assert_release(!"For depth textures: usage cannot contain any flags except for DEPTH_STENCIL_TARGET and SAMPLER");
             failed = true;
         }
-        if (IsIntegerFormat(createinfo->format) && (createinfo->usage_flags & SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
-            SDL_assert_release(!"For any texture: usage_flags cannot contain SAMPLER for textures with an integer format");
+        if (IsIntegerFormat(createinfo->format) && (createinfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
+            SDL_assert_release(!"For any texture: usage cannot contain SAMPLER for textures with an integer format");
             failed = true;
         }
 
@@ -757,8 +757,8 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                 SDL_assert_release(!"For cube textures: sample_count must be SDL_GPU_SAMPLECOUNT_1");
                 failed = true;
             }
-            if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_CUBE, createinfo->usage_flags)) {
-                SDL_assert_release(!"For cube textures: the format is unsupported for the given usage_flags");
+            if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_CUBE, createinfo->usage)) {
+                SDL_assert_release(!"For cube textures: the format is unsupported for the given usage");
                 failed = true;
             }
         } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
@@ -767,23 +767,23 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                 SDL_assert_release(!"For 3D textures: width, height, and layer_count_or_depth must be <= 2048");
                 failed = true;
             }
-            if (createinfo->usage_flags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
-                SDL_assert_release(!"For 3D textures: usage_flags must not contain DEPTH_STENCIL_TARGET");
+            if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+                SDL_assert_release(!"For 3D textures: usage must not contain DEPTH_STENCIL_TARGET");
                 failed = true;
             }
             if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
                 SDL_assert_release(!"For 3D textures: sample_count must be SDL_GPU_SAMPLECOUNT_1");
                 failed = true;
             }
-            if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_3D, createinfo->usage_flags)) {
-                SDL_assert_release(!"For 3D textures: the format is unsupported for the given usage_flags");
+            if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_3D, createinfo->usage)) {
+                SDL_assert_release(!"For 3D textures: the format is unsupported for the given usage");
                 failed = true;
             }
         } else {
             if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
                 // Array Texture Validation
-                if (createinfo->usage_flags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
-                    SDL_assert_release(!"For array textures: usage_flags must not contain DEPTH_STENCIL_TARGET");
+                if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+                    SDL_assert_release(!"For array textures: usage must not contain DEPTH_STENCIL_TARGET");
                     failed = true;
                 }
                 if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
@@ -797,8 +797,8 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                     failed = true;
                 }
             }
-            if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_2D, createinfo->usage_flags)) {
-                SDL_assert_release(!"For 2D textures: the format is unsupported for the given usage_flags");
+            if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_2D, createinfo->usage)) {
+                SDL_assert_release(!"For 2D textures: the format is unsupported for the given usage");
                 failed = true;
             }
         }
@@ -825,7 +825,7 @@ SDL_GPUBuffer *SDL_CreateGPUBuffer(
 
     return device->CreateBuffer(
         device->driverData,
-        createinfo->usage_flags,
+        createinfo->usage,
         createinfo->size);
 }
 
@@ -1067,13 +1067,13 @@ SDL_GPUCommandBuffer *SDL_AcquireGPUCommandBuffer(
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
     commandBufferHeader->device = device;
     commandBufferHeader->render_pass.command_buffer = command_buffer;
-    commandBufferHeader->render_pass.inProgress = false;
-    commandBufferHeader->graphicsPipelineBound = false;
+    commandBufferHeader->render_pass.in_progress = false;
+    commandBufferHeader->graphics_pipeline_bound = false;
     commandBufferHeader->compute_pass.command_buffer = command_buffer;
-    commandBufferHeader->compute_pass.inProgress = false;
-    commandBufferHeader->computePipelineBound = false;
+    commandBufferHeader->compute_pass.in_progress = false;
+    commandBufferHeader->compute_pipeline_bound = false;
     commandBufferHeader->copy_pass.command_buffer = command_buffer;
-    commandBufferHeader->copy_pass.inProgress = false;
+    commandBufferHeader->copy_pass.in_progress = false;
     commandBufferHeader->submitted = false;
 
     return command_buffer;
@@ -1163,9 +1163,9 @@ void SDL_PushGPUComputeUniformData(
 
 SDL_GPURenderPass *SDL_BeginGPURenderPass(
     SDL_GPUCommandBuffer *command_buffer,
-    const SDL_GPUColorAttachmentInfo *color_attachment_infos,
-    Uint32 num_color_attachments,
-    const SDL_GPUDepthStencilAttachmentInfo *depth_stencil_attachment_info)
+    const SDL_GPUColorTargetInfo *color_target_infos,
+    Uint32 num_color_targets,
+    const SDL_GPUDepthStencilTargetInfo *depth_stencil_target_info)
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
@@ -1173,13 +1173,13 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         SDL_InvalidParamError("command_buffer");
         return NULL;
     }
-    if (color_attachment_infos == NULL && num_color_attachments > 0) {
-        SDL_InvalidParamError("color_attachment_infos");
+    if (color_target_infos == NULL && num_color_targets > 0) {
+        SDL_InvalidParamError("color_target_infos");
         return NULL;
     }
 
-    if (num_color_attachments > MAX_COLOR_TARGET_BINDINGS) {
-        SDL_SetError("num_color_attachments exceeds MAX_COLOR_TARGET_BINDINGS");
+    if (num_color_targets > MAX_COLOR_TARGET_BINDINGS) {
+        SDL_SetError("num_color_targets exceeds MAX_COLOR_TARGET_BINDINGS");
         return NULL;
     }
 
@@ -1187,25 +1187,25 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         CHECK_COMMAND_BUFFER_RETURN_NULL
         CHECK_ANY_PASS_IN_PROGRESS("Cannot begin render pass during another pass!", NULL)
 
-        for (Uint32 i = 0; i < num_color_attachments; i += 1) {
-            if (color_attachment_infos[i].cycle && color_attachment_infos[i].load_op == SDL_GPU_LOADOP_LOAD) {
-                SDL_assert_release(!"Cannot cycle color attachment when load op is LOAD!");
+        for (Uint32 i = 0; i < num_color_targets; i += 1) {
+            if (color_target_infos[i].cycle && color_target_infos[i].load_op == SDL_GPU_LOADOP_LOAD) {
+                SDL_assert_release(!"Cannot cycle color target when load op is LOAD!");
             }
         }
 
-        if (depth_stencil_attachment_info != NULL && depth_stencil_attachment_info->cycle && (depth_stencil_attachment_info->load_op == SDL_GPU_LOADOP_LOAD || depth_stencil_attachment_info->load_op == SDL_GPU_LOADOP_LOAD)) {
-            SDL_assert_release(!"Cannot cycle depth attachment when load op or stencil load op is LOAD!");
+        if (depth_stencil_target_info != NULL && depth_stencil_target_info->cycle && (depth_stencil_target_info->load_op == SDL_GPU_LOADOP_LOAD || depth_stencil_target_info->load_op == SDL_GPU_LOADOP_LOAD)) {
+            SDL_assert_release(!"Cannot cycle depth target when load op or stencil load op is LOAD!");
         }
     }
 
     COMMAND_BUFFER_DEVICE->BeginRenderPass(
         command_buffer,
-        color_attachment_infos,
-        num_color_attachments,
-        depth_stencil_attachment_info);
+        color_target_infos,
+        num_color_targets,
+        depth_stencil_target_info);
 
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
-    commandBufferHeader->render_pass.inProgress = true;
+    commandBufferHeader->render_pass.in_progress = true;
     return (SDL_GPURenderPass *)&(commandBufferHeader->render_pass);
 }
 
@@ -1229,7 +1229,7 @@ void SDL_BindGPUGraphicsPipeline(
         graphics_pipeline);
 
     commandBufferHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
-    commandBufferHeader->graphicsPipelineBound = true;
+    commandBufferHeader->graphics_pipeline_bound = true;
 }
 
 void SDL_SetGPUViewport(
@@ -1340,15 +1340,15 @@ void SDL_BindGPUVertexBuffers(
 
 void SDL_BindGPUIndexBuffer(
     SDL_GPURenderPass *render_pass,
-    const SDL_GPUBufferBinding *pBinding,
+    const SDL_GPUBufferBinding *binding,
     SDL_GPUIndexElementSize index_element_size)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    if (pBinding == NULL) {
-        SDL_InvalidParamError("pBinding");
+    if (binding == NULL) {
+        SDL_InvalidParamError("binding");
         return;
     }
 
@@ -1358,7 +1358,7 @@ void SDL_BindGPUIndexBuffer(
 
     RENDERPASS_DEVICE->BindIndexBuffer(
         RENDERPASS_COMMAND_BUFFER,
-        pBinding,
+        binding,
         index_element_size);
 }
 
@@ -1646,8 +1646,8 @@ void SDL_EndGPURenderPass(
         RENDERPASS_COMMAND_BUFFER);
 
     commandBufferCommonHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
-    commandBufferCommonHeader->render_pass.inProgress = false;
-    commandBufferCommonHeader->graphicsPipelineBound = false;
+    commandBufferCommonHeader->render_pass.in_progress = false;
+    commandBufferCommonHeader->graphics_pipeline_bound = false;
 }
 
 // Compute Pass
@@ -1694,7 +1694,7 @@ SDL_GPUComputePass *SDL_BeginGPUComputePass(
         num_storage_buffer_bindings);
 
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
-    commandBufferHeader->compute_pass.inProgress = true;
+    commandBufferHeader->compute_pass.in_progress = true;
     return (SDL_GPUComputePass *)&(commandBufferHeader->compute_pass);
 }
 
@@ -1722,7 +1722,7 @@ void SDL_BindGPUComputePipeline(
         compute_pipeline);
 
     commandBufferHeader = (CommandBufferCommonHeader *)COMPUTEPASS_COMMAND_BUFFER;
-    commandBufferHeader->computePipelineBound = true;
+    commandBufferHeader->compute_pipeline_bound = true;
 }
 
 void SDL_BindGPUComputeStorageTextures(
@@ -1839,8 +1839,8 @@ void SDL_EndGPUComputePass(
         COMPUTEPASS_COMMAND_BUFFER);
 
     commandBufferCommonHeader = (CommandBufferCommonHeader *)COMPUTEPASS_COMMAND_BUFFER;
-    commandBufferCommonHeader->compute_pass.inProgress = false;
-    commandBufferCommonHeader->computePipelineBound = false;
+    commandBufferCommonHeader->compute_pass.in_progress = false;
+    commandBufferCommonHeader->compute_pipeline_bound = false;
 }
 
 // TransferBuffer Data
@@ -1898,7 +1898,7 @@ SDL_GPUCopyPass *SDL_BeginGPUCopyPass(
         command_buffer);
 
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
-    commandBufferHeader->copy_pass.inProgress = true;
+    commandBufferHeader->copy_pass.in_progress = true;
     return (SDL_GPUCopyPass *)&(commandBufferHeader->copy_pass);
 }
 
@@ -2081,7 +2081,7 @@ void SDL_EndGPUCopyPass(
     COPYPASS_DEVICE->EndCopyPass(
         COPYPASS_COMMAND_BUFFER);
 
-    ((CommandBufferCommonHeader *)COPYPASS_COMMAND_BUFFER)->copy_pass.inProgress = false;
+    ((CommandBufferCommonHeader *)COPYPASS_COMMAND_BUFFER)->copy_pass.in_progress = false;
 }
 
 void SDL_GenerateMipmapsForGPUTexture(
@@ -2107,7 +2107,7 @@ void SDL_GenerateMipmapsForGPUTexture(
             return;
         }
 
-        if (!(header->info.usage_flags & SDL_GPU_TEXTUREUSAGE_SAMPLER) || !(header->info.usage_flags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
+        if (!(header->info.usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) || !(header->info.usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
             SDL_assert_release(!"GenerateMipmaps texture must be created with SAMPLER and COLOR_TARGET usage flags!");
             return;
         }
@@ -2152,11 +2152,11 @@ void SDL_BlitGPUTexture(
             SDL_assert_release(!"Blit source and destination textures must be non-NULL");
             return; // attempting to proceed will crash
         }
-        if ((srcHeader->info.usage_flags & SDL_GPU_TEXTUREUSAGE_SAMPLER) == 0) {
+        if ((srcHeader->info.usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) == 0) {
             SDL_assert_release(!"Blit source texture must be created with the SAMPLER usage flag");
             failed = true;
         }
-        if ((dstHeader->info.usage_flags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) == 0) {
+        if ((dstHeader->info.usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) == 0) {
             SDL_assert_release(!"Blit destination texture must be created with the COLOR_TARGET usage flag");
             failed = true;
         }
@@ -2344,9 +2344,9 @@ void SDL_SubmitGPUCommandBuffer(
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
         CHECK_COMMAND_BUFFER
         if (
-            commandBufferHeader->render_pass.inProgress ||
-            commandBufferHeader->compute_pass.inProgress ||
-            commandBufferHeader->copy_pass.inProgress) {
+            commandBufferHeader->render_pass.in_progress ||
+            commandBufferHeader->compute_pass.in_progress ||
+            commandBufferHeader->copy_pass.in_progress) {
             SDL_assert_release(!"Cannot submit command buffer while a pass is in progress!");
             return;
         }
@@ -2371,9 +2371,9 @@ SDL_GPUFence *SDL_SubmitGPUCommandBufferAndAcquireFence(
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
         CHECK_COMMAND_BUFFER_RETURN_NULL
         if (
-            commandBufferHeader->render_pass.inProgress ||
-            commandBufferHeader->compute_pass.inProgress ||
-            commandBufferHeader->copy_pass.inProgress) {
+            commandBufferHeader->render_pass.in_progress ||
+            commandBufferHeader->compute_pass.in_progress ||
+            commandBufferHeader->copy_pass.in_progress) {
             SDL_assert_release(!"Cannot submit command buffer while a pass is in progress!");
             return NULL;
         }

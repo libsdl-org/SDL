@@ -69,7 +69,7 @@ typedef struct GPU_RenderData
         SDL_GPURenderPass *render_pass;
         SDL_Texture *render_target;
         SDL_GPUCommandBuffer *command_buffer;
-        SDL_GPUColorAttachmentInfo color_attachment;
+        SDL_GPUColorTargetInfo color_attachment;
         SDL_GPUViewport viewport;
         SDL_Rect scissor;
         SDL_FColor draw_color;
@@ -221,7 +221,7 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     tci.format = format;
     tci.layer_count_or_depth = 1;
     tci.num_levels = 1;
-    tci.usage_flags = usage;
+    tci.usage = usage;
     tci.width = texture->w;
     tci.height = texture->h;
     tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
@@ -608,7 +608,7 @@ static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
     SDL_GPUBufferCreateInfo bci;
     SDL_zero(bci);
     bci.size = size;
-    bci.usage_flags = SDL_GPU_BUFFERUSAGE_VERTEX;
+    bci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
 
     data->vertices.buffer = SDL_CreateGPUBuffer(data->device, &bci);
 
@@ -938,7 +938,7 @@ static bool CreateBackbuffer(GPU_RenderData *data, Uint32 w, Uint32 h, SDL_GPUTe
     tci.layer_count_or_depth = 1;
     tci.num_levels = 1;
     tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    tci.usage_flags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
+    tci.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
     data->backbuffer.texture = SDL_CreateGPUTexture(data->device, &tci);
     data->backbuffer.width = w;
@@ -1286,8 +1286,8 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     data->state.draw_color.g = 1.0f;
     data->state.draw_color.b = 1.0f;
     data->state.draw_color.a = 1.0f;
-    data->state.viewport.minDepth = 0;
-    data->state.viewport.maxDepth = 1;
+    data->state.viewport.min_depth = 0;
+    data->state.viewport.max_depth = 1;
     data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
 
     int w, h;

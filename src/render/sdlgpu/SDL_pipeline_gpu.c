@@ -97,7 +97,7 @@ void GPU_DestroyPipelineCache(GPU_PipelineCache *cache)
 
 static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders *shaders, const GPU_PipelineParameters *params)
 {
-    SDL_GPUColorAttachmentDescription ad;
+    SDL_GPUColorTargetDescription ad;
     SDL_zero(ad);
     ad.format = params->attachment_format;
 
@@ -113,9 +113,9 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
 
     SDL_GPUGraphicsPipelineCreateInfo pci;
     SDL_zero(pci);
-    pci.attachment_info.has_depth_stencil_attachment = false;
-    pci.attachment_info.num_color_attachments = 1;
-    pci.attachment_info.color_attachment_descriptions = &ad;
+    pci.target_info.has_depth_stencil_target = false;
+    pci.target_info.num_color_targets = 1;
+    pci.target_info.color_target_descriptions = &ad;
     pci.vertex_shader = GPU_GetVertexShader(shaders, params->vert_shader);
     pci.fragment_shader = GPU_GetFragmentShader(shaders, params->frag_shader);
     pci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
@@ -124,7 +124,7 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
 
     pci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
     pci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
-    pci.rasterizer_state.frontFace = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+    pci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
 
     SDL_GPUVertexBinding bind;
     SDL_zero(bind);
