@@ -971,7 +971,7 @@ static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
             return NULL;
         }
 
-        pipeline = SDL_malloc(sizeof(MetalComputePipeline));
+        pipeline = SDL_calloc(1, sizeof(MetalComputePipeline));
         pipeline->handle = handle;
         pipeline->readOnlyStorageTextureCount = pipelineCreateInfo->readOnlyStorageTextureCount;
         pipeline->writeOnlyStorageTextureCount = pipelineCreateInfo->writeOnlyStorageTextureCount;
@@ -1099,7 +1099,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
             return NULL;
         }
 
-        result = SDL_malloc(sizeof(MetalGraphicsPipeline));
+        result = SDL_calloc(1, sizeof(MetalGraphicsPipeline));
         result->handle = pipelineState;
         result->sampleMask = pipelineCreateInfo->multisampleState.sampleMask;
         result->depthStencilState = depthStencilState;
@@ -1263,7 +1263,7 @@ static SDL_GPUSampler *METAL_CreateSampler(
             return NULL;
         }
 
-        metalSampler = (MetalSampler *)SDL_malloc(sizeof(MetalSampler));
+        metalSampler = (MetalSampler *)SDL_calloc(1, sizeof(MetalSampler));
         metalSampler->handle = sampler;
         return (SDL_GPUSampler *)metalSampler;
     }
@@ -1288,7 +1288,7 @@ static SDL_GPUShader *METAL_CreateShader(
             return NULL;
         }
 
-        result = SDL_malloc(sizeof(MetalShader));
+        result = SDL_calloc(1, sizeof(MetalShader));
         result->library = libraryFunction.library;
         result->function = libraryFunction.function;
         result->samplerCount = shaderCreateInfo->samplerCount;
@@ -1361,7 +1361,7 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
         }
     }
 
-    metalTexture = (MetalTexture *)SDL_malloc(sizeof(MetalTexture));
+    metalTexture = (MetalTexture *)SDL_calloc(1, sizeof(MetalTexture));
     metalTexture->handle = texture;
     metalTexture->msaaHandle = msaaTexture;
     SDL_AtomicSet(&metalTexture->referenceCount, 0);
@@ -1398,14 +1398,14 @@ static SDL_GPUTexture *METAL_CreateTexture(
             return NULL;
         }
 
-        container = SDL_malloc(sizeof(MetalTextureContainer));
+        container = SDL_calloc(1, sizeof(MetalTextureContainer));
         container->canBeCycled = 1;
         container->header.info = *textureCreateInfo;
         container->activeTexture = texture;
         container->textureCapacity = 1;
         container->textureCount = 1;
-        container->textures = SDL_malloc(
-            container->textureCapacity * sizeof(MetalTexture *));
+        container->textures = SDL_calloc(
+            container->textureCapacity, sizeof(MetalTexture *));
         container->textures[0] = texture;
         container->debugName = NULL;
 
@@ -1470,7 +1470,7 @@ static MetalBuffer *METAL_INTERNAL_CreateBuffer(
         return NULL;
     }
 
-    metalBuffer = SDL_malloc(sizeof(MetalBuffer));
+    metalBuffer = SDL_calloc(1, sizeof(MetalBuffer));
     metalBuffer->handle = bufferHandle;
     SDL_AtomicSet(&metalBuffer->referenceCount, 0);
 
@@ -1484,14 +1484,14 @@ static MetalBufferContainer *METAL_INTERNAL_CreateBufferContainer(
     bool isPrivate,
     bool isWriteOnly)
 {
-    MetalBufferContainer *container = SDL_malloc(sizeof(MetalBufferContainer));
+    MetalBufferContainer *container = SDL_calloc(1, sizeof(MetalBufferContainer));
     MTLResourceOptions resourceOptions;
 
     container->size = sizeInBytes;
     container->bufferCapacity = 1;
     container->bufferCount = 1;
-    container->buffers = SDL_malloc(
-        container->bufferCapacity * sizeof(MetalBuffer *));
+    container->buffers = SDL_calloc(
+        container->bufferCapacity, sizeof(MetalBuffer *));
     container->isPrivate = isPrivate;
     container->isWriteOnly = isWriteOnly;
     container->debugName = NULL;
@@ -1557,7 +1557,7 @@ static MetalUniformBuffer *METAL_INTERNAL_CreateUniformBuffer(
         return NULL;
     }
 
-    uniformBuffer = SDL_malloc(sizeof(MetalUniformBuffer));
+    uniformBuffer = SDL_calloc(1, sizeof(MetalUniformBuffer));
     uniformBuffer->handle = bufferHandle;
     uniformBuffer->writeOffset = 0;
     uniformBuffer->drawOffset = 0;
@@ -1906,19 +1906,19 @@ static void METAL_INTERNAL_AllocateCommandBuffers(
 
         commandBuffer->windowDataCapacity = 1;
         commandBuffer->windowDataCount = 0;
-        commandBuffer->windowDatas = SDL_malloc(
-            commandBuffer->windowDataCapacity * sizeof(MetalWindowData *));
+        commandBuffer->windowDatas = SDL_calloc(
+            commandBuffer->windowDataCapacity, sizeof(MetalWindowData *));
 
         // Reference Counting
         commandBuffer->usedBufferCapacity = 4;
         commandBuffer->usedBufferCount = 0;
-        commandBuffer->usedBuffers = SDL_malloc(
-            commandBuffer->usedBufferCapacity * sizeof(MetalBuffer *));
+        commandBuffer->usedBuffers = SDL_calloc(
+            commandBuffer->usedBufferCapacity, sizeof(MetalBuffer *));
 
         commandBuffer->usedTextureCapacity = 4;
         commandBuffer->usedTextureCount = 0;
-        commandBuffer->usedTextures = SDL_malloc(
-            commandBuffer->usedTextureCapacity * sizeof(MetalTexture *));
+        commandBuffer->usedTextures = SDL_calloc(
+            commandBuffer->usedTextureCapacity, sizeof(MetalTexture *));
 
         renderer->availableCommandBuffers[renderer->availableCommandBufferCount] = commandBuffer;
         renderer->availableCommandBufferCount += 1;
@@ -1947,7 +1947,7 @@ static Uint8 METAL_INTERNAL_CreateFence(
 {
     MetalFence *fence;
 
-    fence = SDL_malloc(sizeof(MetalFence));
+    fence = SDL_calloc(1, sizeof(MetalFence));
     SDL_AtomicSet(&fence->complete, 0);
 
     // Add it to the available pool
@@ -3794,8 +3794,8 @@ static void METAL_INTERNAL_InitBlitResources(
     // Allocate the dynamic blit pipeline list
     renderer->blitPipelineCapacity = 2;
     renderer->blitPipelineCount = 0;
-    renderer->blitPipelines = SDL_malloc(
-        renderer->blitPipelineCapacity * sizeof(BlitPipelineCacheEntry));
+    renderer->blitPipelines = SDL_calloc(
+        renderer->blitPipelineCapacity, sizeof(BlitPipelineCacheEntry));
 
     // Fullscreen vertex shader
     SDL_zero(shaderModuleCreateInfo);
@@ -3980,14 +3980,14 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
 
         // Create fence pool
         renderer->availableFenceCapacity = 2;
-        renderer->availableFences = SDL_malloc(
-            sizeof(MetalFence *) * renderer->availableFenceCapacity);
+        renderer->availableFences = SDL_calloc(
+            renderer->availableFenceCapacity, sizeof(MetalFence *));
 
         // Create uniform buffer pool
         renderer->uniformBufferPoolCapacity = 32;
         renderer->uniformBufferPoolCount = 32;
-        renderer->uniformBufferPool = SDL_malloc(
-            renderer->uniformBufferPoolCapacity * sizeof(MetalUniformBuffer *));
+        renderer->uniformBufferPool = SDL_calloc(
+            renderer->uniformBufferPoolCapacity, sizeof(MetalUniformBuffer *));
 
         for (Uint32 i = 0; i < renderer->uniformBufferPoolCount; i += 1) {
             renderer->uniformBufferPool[i] = METAL_INTERNAL_CreateUniformBuffer(
@@ -3998,23 +3998,23 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         // Create deferred destroy arrays
         renderer->bufferContainersToDestroyCapacity = 2;
         renderer->bufferContainersToDestroyCount = 0;
-        renderer->bufferContainersToDestroy = SDL_malloc(
-            renderer->bufferContainersToDestroyCapacity * sizeof(MetalBufferContainer *));
+        renderer->bufferContainersToDestroy = SDL_calloc(
+            renderer->bufferContainersToDestroyCapacity, sizeof(MetalBufferContainer *));
 
         renderer->textureContainersToDestroyCapacity = 2;
         renderer->textureContainersToDestroyCount = 0;
-        renderer->textureContainersToDestroy = SDL_malloc(
-            renderer->textureContainersToDestroyCapacity * sizeof(MetalTextureContainer *));
+        renderer->textureContainersToDestroy = SDL_calloc(
+            renderer->textureContainersToDestroyCapacity, sizeof(MetalTextureContainer *));
 
         // Create claimed window list
         renderer->claimedWindowCapacity = 1;
-        renderer->claimedWindows = SDL_malloc(
-            sizeof(MetalWindowData *) * renderer->claimedWindowCapacity);
+        renderer->claimedWindows = SDL_calloc(
+            renderer->claimedWindowCapacity, sizeof(MetalWindowData *));
 
         // Initialize blit resources
         METAL_INTERNAL_InitBlitResources(renderer);
 
-        SDL_GPUDevice *result = SDL_malloc(sizeof(SDL_GPUDevice));
+        SDL_GPUDevice *result = SDL_calloc(1, sizeof(SDL_GPUDevice));
         ASSIGN_DRIVER(METAL)
         result->driverData = (SDL_GPURenderer *)renderer;
         renderer->sdlGPUDevice = result;
