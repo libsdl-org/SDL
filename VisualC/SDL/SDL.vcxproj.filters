@@ -198,6 +198,7 @@
     </Filter>
     <Filter Include="time\windows">
       <UniqueIdentifier>{0000d7fda065b13b0ca4ab262c380000}</UniqueIdentifier>
+    </Filter>
     <Filter Include="gpu">
       <UniqueIdentifier>{098fbef9-d8a0-4b3b-b57b-d157d395335d}</UniqueIdentifier>
     </Filter>
@@ -909,6 +910,7 @@
     </ClInclude>
     <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenwindow.h">
       <Filter>video\offscreen</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_gpu.h">
       <Filter>API Headers</Filter>
     </ClInclude>
