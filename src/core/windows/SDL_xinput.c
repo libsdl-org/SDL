@@ -37,21 +37,17 @@ DWORD SDL_XInputVersion = 0;
 static HMODULE s_pXInputDLL = NULL;
 static int s_XInputDLLRefCount = 0;
 
-#if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 
 bool WIN_LoadXInputDLL(void)
 {
     /* Getting handles to system dlls (via LoadLibrary and its variants) is not
-     * supported on WinRT, thus, pointers to XInput's functions can't be
+     * supported on Xbox, thus, pointers to XInput's functions can't be
      * retrieved via GetProcAddress.
      *
-     * When on WinRT, assume that XInput is already loaded, and directly map
+     * When on Xbox, assume that XInput is already loaded, and directly map
      * its XInput.h-declared functions to the SDL_XInput* set of function
      * pointers.
-     *
-     * Side-note: XInputGetStateEx is not available for use in WinRT.
-     * This seems to mean that support for the guide button is not available
-     * in WinRT, unfortunately.
      */
     SDL_XInputGetState = (XInputGetState_t)XInputGetState;
     SDL_XInputSetState = (XInputSetState_t)XInputSetState;
@@ -68,7 +64,7 @@ void WIN_UnloadXInputDLL(void)
 {
 }
 
-#else // !(defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#else // !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 
 bool WIN_LoadXInputDLL(void)
 {
@@ -136,7 +132,7 @@ void WIN_UnloadXInputDLL(void)
     }
 }
 
-#endif // SDL_PLATFORM_WINRT
+#endif
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

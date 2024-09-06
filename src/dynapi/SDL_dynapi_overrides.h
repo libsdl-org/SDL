@@ -529,8 +529,6 @@
 #define SDL_GetUserFolder SDL_GetUserFolder_REAL
 #define SDL_GetVersion SDL_GetVersion_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
-#define SDL_GetWinRTDeviceFamily SDL_GetWinRTDeviceFamily_REAL
-#define SDL_GetWinRTFSPath SDL_GetWinRTFSPath_REAL
 #define SDL_GetWindowAspectRatio SDL_GetWindowAspectRatio_REAL
 #define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL
 #define SDL_GetWindowDisplayScale SDL_GetWindowDisplayScale_REAL

@@ -1,5 +1,11 @@
 # Windows
 
+## Old systems
+
+WinRT, Windows Phone, and UWP are no longer supported.
+
+All desktop Windows versions, back to Windows XP, are still supported.
+
 ## LLVM and Intel C++ compiler support
 
 SDL will build with the Visual Studio project files with LLVM-based compilers, such as the Intel oneAPI C++

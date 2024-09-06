@@ -95,7 +95,6 @@ class JobSpec:
     msvc_project: Optional[str] = None
     msvc_arch: Optional[MsvcArch] = None
     clang_cl: bool = False
-    uwp: bool = False
     gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
 
@@ -112,7 +111,6 @@ JOB_SPECS = {
     "msvc-clang-x86": JobSpec(name="Windows (MSVC, clang-cl x86)",          os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-clang-cl-x86",       msvc_arch=MsvcArch.X86,   clang_cl=True, ),
     "msvc-arm32": JobSpec(name="Windows (MSVC, ARM)",                       os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-arm32",           msvc_arch=MsvcArch.Arm32, ),
     "msvc-arm64": JobSpec(name="Windows (MSVC, ARM64)",                     os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-arm64",           msvc_arch=MsvcArch.Arm64, ),
-    "msvc-uwp-x64": JobSpec(name="UWP (MSVC, x64)",                         os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-UWP",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC-WinRT/SDL-UWP.sln", uwp=True, ),
     "msvc-gdk-x64": JobSpec(name="GDK (MSVC, x64)",                         os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-GDK",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC-GDK/SDL.sln", gdk=True, no_cmake=True, ),
     "ubuntu-20.04": JobSpec(name="Ubuntu 20.04",                            os=JobOs.Ubuntu20_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu20.04", ),
     "ubuntu-22.04": JobSpec(name="Ubuntu 22.04",                            os=JobOs.Ubuntu22_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04", ),
@@ -358,10 +356,9 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 "-DCMAKE_EXE_LINKER_FLAGS=-DEBUG",
                 "-DCMAKE_SHARED_LINKER_FLAGS=-DEBUG",
             ))
-            if spec.uwp:
-                job.cmake_arguments.append("'-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>DLL'")
-            else:
-                job.cmake_arguments.append("'-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>'")
+
+            job.cmake_arguments.append("'-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>'")
+
             if spec.clang_cl:
                 job.cmake_arguments.extend((
                     "-DCMAKE_C_COMPILER=clang-cl",
@@ -398,14 +395,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 case MsvcArch.Arm64:
                     job.msvc_vcvars = "x64_arm64"
                     job.run_tests = False
-            if spec.uwp:
-                job.build_tests = False
-                job.cmake_arguments.extend((
-                    "-DCMAKE_SYSTEM_NAME=WindowsStore",
-                    "-DCMAKE_SYSTEM_VERSION=10.0",
-                ))
-                job.msvc_project_flags.append("-p:WindowsTargetPlatformVersion=10.0.17763.0")
-            elif spec.gdk:
+            if spec.gdk:
                 job.setup_gdk_folder = "VisualC-GDK"
             else:
                 match spec.msvc_arch:

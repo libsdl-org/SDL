@@ -396,14 +396,10 @@ static bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
     void *hDXGIMod = NULL;
     bool found = false;
 
-#ifdef SDL_PLATFORM_WINRT
-    CreateDXGIFactoryFunc = CreateDXGIFactory1;
-#else
     hDXGIMod = SDL_LoadObject("dxgi.dll");
     if (hDXGIMod) {
         CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(hDXGIMod, "CreateDXGIFactory1");
     }
-#endif
     if (CreateDXGIFactoryFunc) {
         static const GUID SDL_IID_IDXGIFactory1 = { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } };
         static const GUID SDL_IID_IDXGIOutput6 = { 0x068346e8, 0xaaec, 0x4b84, { 0xad, 0xd7, 0x13, 0x7f, 0x51, 0x3f, 0x77, 0xa1 } };

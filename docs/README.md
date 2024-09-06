@@ -48,7 +48,6 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [Raspberry Pi](README-raspberrypi.md)
 - [RISC OS](README-riscos.md)
 - [Windows GDK](README-gdk.md)
-- [Windows UWP](README-winrt.md)
 - [Windows](README-windows.md)
 
 If you need help with the library, or just want to discuss SDL related

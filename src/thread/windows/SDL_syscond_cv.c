@@ -56,12 +56,6 @@ typedef struct CONDITION_VARIABLE
 } CONDITION_VARIABLE, *PCONDITION_VARIABLE;
 #endif
 
-#ifdef SDL_PLATFORM_WINRT
-#define pWakeConditionVariable     WakeConditionVariable
-#define pWakeAllConditionVariable  WakeAllConditionVariable
-#define pSleepConditionVariableSRW SleepConditionVariableSRW
-#define pSleepConditionVariableCS  SleepConditionVariableCS
-#else
 typedef VOID(WINAPI *pfnWakeConditionVariable)(PCONDITION_VARIABLE);
 typedef VOID(WINAPI *pfnWakeAllConditionVariable)(PCONDITION_VARIABLE);
 typedef BOOL(WINAPI *pfnSleepConditionVariableSRW)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG);
@@ -71,7 +65,6 @@ static pfnWakeConditionVariable pWakeConditionVariable = NULL;
 static pfnWakeAllConditionVariable pWakeAllConditionVariable = NULL;
 static pfnSleepConditionVariableSRW pSleepConditionVariableSRW = NULL;
 static pfnSleepConditionVariableCS pSleepConditionVariableCS = NULL;
-#endif
 
 typedef struct SDL_cond_cv
 {
@@ -152,7 +145,6 @@ static const SDL_cond_impl_t SDL_cond_impl_cv = {
 };
 
 
-#ifndef SDL_PLATFORM_WINRT
 // Generic Condition Variable implementation using SDL_Mutex and SDL_Semaphore
 static const SDL_cond_impl_t SDL_cond_impl_generic = {
     &SDL_CreateCondition_generic,
@@ -161,7 +153,6 @@ static const SDL_cond_impl_t SDL_cond_impl_generic = {
     &SDL_BroadcastCondition_generic,
     &SDL_WaitConditionTimeoutNS_generic,
 };
-#endif
 
 SDL_Condition *SDL_CreateCondition(void)
 {
@@ -179,10 +170,6 @@ SDL_Condition *SDL_CreateCondition(void)
             SDL_assert(SDL_mutex_impl_active.Type != SDL_MUTEX_INVALID);
         }
 
-#ifdef SDL_PLATFORM_WINRT
-        // Link statically on this platform
-        impl = &SDL_cond_impl_cv;
-#else
         // Default to generic implementation, works with all mutex implementations
         impl = &SDL_cond_impl_generic;
         {
@@ -198,7 +185,6 @@ SDL_Condition *SDL_CreateCondition(void)
                 }
             }
         }
-#endif
 
         SDL_copyp(&SDL_cond_impl_active, impl);
     }

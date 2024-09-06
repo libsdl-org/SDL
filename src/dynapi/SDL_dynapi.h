@@ -49,8 +49,6 @@
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_EMSCRIPTEN) // probably not useful on Emscripten.
 #define SDL_DYNAMIC_API 0
-#elif defined(SDL_BUILDING_WINRT) && SDL_BUILDING_WINRT // probably not useful on WinRT, given current .dll loading restrictions
-#define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_PS2) && SDL_PLATFORM_PS2
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_PSP) && SDL_PLATFORM_PSP

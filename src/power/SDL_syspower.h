@@ -38,7 +38,6 @@ bool SDL_GetPowerInfo_Android(SDL_PowerState *, int *, int *);
 bool SDL_GetPowerInfo_PSP(SDL_PowerState *, int *, int *);
 bool SDL_GetPowerInfo_VITA(SDL_PowerState *, int *, int *);
 bool SDL_GetPowerInfo_N3DS(SDL_PowerState *, int *, int *);
-bool SDL_GetPowerInfo_WinRT(SDL_PowerState *, int *, int *);
 bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *, int *, int *);
 
 // this one is static in SDL_power.c

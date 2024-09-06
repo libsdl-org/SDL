@@ -22,7 +22,7 @@
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT)
+#if defined(SDL_VIDEO_DRIVER_WINDOWS)
 #include "../core/windows/SDL_windows.h"
 #endif
 #ifdef SDL_VIDEO_DRIVER_ANDROID
@@ -74,7 +74,7 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so"
 
-#elif defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT)
+#elif defined(SDL_VIDEO_DRIVER_WINDOWS)
 // EGL AND OpenGL ES support via ANGLE
 #define DEFAULT_EGL        "libEGL.dll"
 #define DEFAULT_OGL        "opengl32.dll"
@@ -301,14 +301,14 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
 {
     void *egl_dll_handle = NULL, *opengl_dll_handle = NULL;
     const char *path = NULL;
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT)
+#if defined(SDL_VIDEO_DRIVER_WINDOWS)
     const char *d3dcompiler;
 #endif
 #ifdef SDL_VIDEO_DRIVER_RPI
     bool vc4 = (0 == access("/sys/module/vc4/", F_OK));
 #endif
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT)
+#if defined(SDL_VIDEO_DRIVER_WINDOWS)
     d3dcompiler = SDL_GetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER);
     if (d3dcompiler) {
         if (SDL_strcasecmp(d3dcompiler, "none") != 0) {
@@ -511,7 +511,6 @@ bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDis
 
     _this->egl_data->egl_display = EGL_NO_DISPLAY;
 
-#ifndef SDL_PLATFORM_WINRT
 #ifndef SDL_VIDEO_DRIVER_VITA
     if (platform) {
         /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY
@@ -564,7 +563,6 @@ bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDis
         *_this->gl_config.driver_path = '\0';
         return SDL_SetError("Could not initialize EGL");
     }
-#endif
 
     // Get the EGL version with a valid egl_display, for EGL <= 1.4
     SDL_EGL_GetVersion(_this);

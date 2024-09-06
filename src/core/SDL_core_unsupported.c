@@ -76,7 +76,7 @@ void SDL_GDKResumeGPU(SDL_GPUDevice *device)
 
 #endif
 
-#if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK))
+#if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK))
 
 SDL_DECLSPEC SDL_bool SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
 SDL_bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
@@ -101,25 +101,6 @@ void SDL_UnregisterApp(void)
     SDL_Unsupported();
 }
 
-#endif
-
-#ifndef SDL_PLATFORM_WINRT
-
-// Returns SDL_WinRT_DeviceFamily enum
-SDL_DECLSPEC int SDLCALL SDL_GetWinRTDeviceFamily(void);
-int SDL_GetWinRTDeviceFamily(void)
-{
-    SDL_Unsupported();
-    return 0; // SDL_WINRT_DEVICEFAMILY_UNKNOWN
-}
-
-SDL_DECLSPEC const char *SDLCALL SDL_GetWinRTFSPath(int pathType); // SDL_WinRT_Path pathType
-const char *SDL_GetWinRTFSPath(int pathType)
-{
-    (void)pathType;
-    SDL_Unsupported();
-    return NULL;
-}
 #endif
 
 #ifndef SDL_PLATFORM_ANDROID

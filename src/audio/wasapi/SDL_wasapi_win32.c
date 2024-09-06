@@ -20,13 +20,14 @@
 */
 #include "SDL_internal.h"
 
-/* This is code that Windows uses to talk to WASAPI-related system APIs.
+/* !!! FIXME: merge this all into SDL_wasapi.c, now that WinRT is gone.
+   This is code that Windows uses to talk to WASAPI-related system APIs.
    This is for non-WinRT desktop apps. The C++/CX implementation of these
    functions, exclusive to WinRT, are in SDL_wasapi_winrt.cpp.
    The code in SDL_wasapi.c is used by both standard Windows and WinRT builds
    to deal with audio and calls into these functions. */
 
-#if defined(SDL_AUDIO_DRIVER_WASAPI) && !defined(SDL_PLATFORM_WINRT)
+#if defined(SDL_AUDIO_DRIVER_WASAPI)
 
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_immdevice.h"
@@ -191,15 +192,9 @@ void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_playback, SDL_AudioDevi
     SDL_IMMDevice_EnumerateEndpoints(default_playback, default_recording);
 }
 
-void WASAPI_PlatformDeleteActivationHandler(void *handler)
-{
-    // not asynchronous.
-    SDL_assert(!"This function should have only been called on WinRT.");
-}
-
 void WASAPI_PlatformFreeDeviceHandle(SDL_AudioDevice *device)
 {
     SDL_IMMDevice_FreeDeviceHandle(device);
 }
 
-#endif // SDL_AUDIO_DRIVER_WASAPI && !defined(SDL_PLATFORM_WINRT)
+#endif // SDL_AUDIO_DRIVER_WASAPI
