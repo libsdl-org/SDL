@@ -1,4 +1,4 @@
-const unsigned char tri_texture_vert_sm50_dxbc[] =
+const signed char tri_texture_vert_sm50_dxbc[] =
 {
   68,  88,  66,  67, 108, 113,
 -108,  81,  -2,  27,  41,  94,

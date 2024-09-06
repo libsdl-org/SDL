@@ -613,7 +613,7 @@ static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
     data->vertices.buffer = SDL_CreateGPUBuffer(data->device, &bci);
 
     if (!data->vertices.buffer) {
-        return -1;
+        return false;
     }
 
     SDL_GPUTransferBufferCreateInfo tbci;
@@ -622,7 +622,12 @@ static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 
     data->vertices.transfer_buf = SDL_CreateGPUTransferBuffer(data->device, &tbci);
-    return (bool)data->vertices.transfer_buf;
+
+    if (!data->vertices.transfer_buf) {
+        return false;
+    }
+
+    return true;
 }
 
 static bool UploadVertices(GPU_RenderData *data, void *vertices, size_t vertsize)
@@ -852,8 +857,13 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     }
 
     Uint32 bpp = SDL_BYTESPERPIXEL(pixfmt);
-    Uint32 row_size = rect->w * bpp;
-    Uint32 image_size = row_size * rect->h;
+    size_t row_size, image_size;
+
+    if (!SDL_size_mul_check_overflow(rect->w, bpp, &row_size) ||
+        !SDL_size_mul_check_overflow(rect->h, row_size, &image_size)) {
+        SDL_SetError("read size overflow");
+        return NULL;
+    }
 
     SDL_Surface *surface = SDL_CreateSurface(rect->w, rect->h, pixfmt);
 
@@ -863,7 +873,7 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
 
     SDL_GPUTransferBufferCreateInfo tbci;
     SDL_zero(tbci);
-    tbci.sizeInBytes = image_size;
+    tbci.sizeInBytes = (Uint32)image_size;
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD;
 
     SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(data->device, &tbci);
@@ -899,7 +909,7 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
 
     void *mapped_tbuf = SDL_MapGPUTransferBuffer(data->device, tbuf, false);
 
-    if (surface->pitch == row_size) {
+    if ((size_t)surface->pitch == row_size) {
         memcpy(surface->pixels, mapped_tbuf, image_size);
     } else {
         Uint8 *input = mapped_tbuf;
@@ -935,7 +945,11 @@ static bool CreateBackbuffer(GPU_RenderData *data, Uint32 w, Uint32 h, SDL_GPUTe
     data->backbuffer.height = h;
     data->backbuffer.format = fmt;
 
-    return (bool)data->backbuffer.texture;
+    if (!data->backbuffer.texture) {
+        return false;
+    }
+
+    return true;
 }
 
 static bool GPU_RenderPresent(SDL_Renderer *renderer)
