@@ -37,6 +37,7 @@
 #define SDL_test_h_arness_h
 
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_test_common.h> /* SDLTest_CommonState */
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
