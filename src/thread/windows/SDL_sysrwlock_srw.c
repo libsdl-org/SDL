@@ -35,17 +35,6 @@ typedef VOID(WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
 typedef VOID(WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
 typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
 
-#ifdef SDL_PLATFORM_WINRT
-// Functions are guaranteed to be available
-#define pTryAcquireSRWLockExclusive TryAcquireSRWLockExclusive
-#define pInitializeSRWLock InitializeSRWLock
-#define pReleaseSRWLockShared ReleaseSRWLockShared
-#define pAcquireSRWLockShared AcquireSRWLockShared
-#define pTryAcquireSRWLockShared TryAcquireSRWLockShared
-#define pReleaseSRWLockExclusive ReleaseSRWLockExclusive
-#define pAcquireSRWLockExclusive AcquireSRWLockExclusive
-#define pTryAcquireSRWLockExclusive TryAcquireSRWLockExclusive
-#else
 static pfnInitializeSRWLock pInitializeSRWLock = NULL;
 static pfnReleaseSRWLockShared pReleaseSRWLockShared = NULL;
 static pfnAcquireSRWLockShared pAcquireSRWLockShared = NULL;
@@ -53,7 +42,6 @@ static pfnTryAcquireSRWLockShared  pTryAcquireSRWLockShared = NULL;
 static pfnReleaseSRWLockExclusive pReleaseSRWLockExclusive = NULL;
 static pfnAcquireSRWLockExclusive pAcquireSRWLockExclusive = NULL;
 static pfnTryAcquireSRWLockExclusive pTryAcquireSRWLockExclusive = NULL;
-#endif
 
 typedef SDL_RWLock *(*pfnSDL_CreateRWLock)(void);
 typedef void (*pfnSDL_DestroyRWLock)(SDL_RWLock *);
@@ -152,7 +140,6 @@ static const SDL_rwlock_impl_t SDL_rwlock_impl_srw = {
     &SDL_UnlockRWLock_srw
 };
 
-#ifndef SDL_PLATFORM_WINRT
 
 #include "../generic/SDL_sysrwlock_c.h"
 
@@ -166,19 +153,12 @@ static const SDL_rwlock_impl_t SDL_rwlock_impl_generic = {
     &SDL_TryLockRWLockForWriting_generic,
     &SDL_UnlockRWLock_generic
 };
-#endif
 
 SDL_RWLock *SDL_CreateRWLock(void)
 {
     if (!SDL_rwlock_impl_active.Create) {
-        const SDL_rwlock_impl_t *impl;
-
-#ifdef SDL_PLATFORM_WINRT
-        // Link statically on this platform
-        impl = &SDL_rwlock_impl_srw;
-#else
         // Default to generic implementation, works with all mutex implementations
-        impl = &SDL_rwlock_impl_generic;
+        const SDL_rwlock_impl_t *impl = &SDL_rwlock_impl_generic;
         {
             HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
             if (kernel32) {
@@ -197,7 +177,6 @@ SDL_RWLock *SDL_CreateRWLock(void)
                 }
             }
         }
-#endif
 
         SDL_copyp(&SDL_rwlock_impl_active, impl);
     }

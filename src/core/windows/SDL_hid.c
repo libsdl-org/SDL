@@ -20,8 +20,6 @@
 */
 #include "SDL_internal.h"
 
-#ifndef SDL_PLATFORM_WINRT
-
 #include "SDL_hid.h"
 
 HidD_GetString_t SDL_HidD_GetManufacturerString;
@@ -82,9 +80,7 @@ void WIN_UnloadHIDDLL(void)
     }
 }
 
-#endif // !SDL_PLATFORM_WINRT
-
-#if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 // CM_Register_Notification definitions
 
@@ -253,4 +249,4 @@ void WIN_QuitDeviceNotification(void)
 {
 }
 
-#endif // !SDL_PLATFORM_WINRT && !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES
+#endif // !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES

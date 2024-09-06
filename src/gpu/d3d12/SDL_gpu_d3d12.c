@@ -6248,11 +6248,9 @@ static bool D3D12_INTERNAL_CreateSwapchain(
         swapchainDesc.Flags = 0;
     }
 
-#ifndef SDL_PLATFORM_WINRT
     if (!IsWindow(dxgiHandle)) {
         return false;
     }
-#endif
 
     // Create the swapchain!
     res = IDXGIFactory4_CreateSwapChainForHwnd(

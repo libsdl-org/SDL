@@ -32,12 +32,6 @@ if(NOT (MSVC AND SDL_CPU_ARM64))
     find_package(OpenGL)
 endif()
 
-if(WINDOWS_STORE)
-    cmake_minimum_required(VERSION 3.19)
-    # CMP0112: Target file component generator expressions do not add target dependencies.
-    cmake_policy(SET CMP0112 NEW)
-endif()
-
 set(SDL_TEST_EXECUTABLES)
 
 add_library(sdltests_utils OBJECT
@@ -49,7 +43,7 @@ file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
 
 option(SDLTEST_TRACKMEM "Run tests with --trackmem" OFF)
 
-if(WIN32 AND NOT WINDOWS_STORE)
+if(WIN32)
     option(SDLTEST_PROCDUMP "Run tests using sdlprocdump for minidump generation" OFF)
     add_executable(sdlprocdump win32/sdlprocdump.c)
     set_property(TARGET sdlprocdump PROPERTY C_STANDARD "90")
@@ -107,19 +101,6 @@ define_property(TARGET PROPERTY SDL_NONINTERACTIVE BRIEF_DOCS "If true, target i
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_ARGUMENTS BRIEF_DOCS "Argument(s) to run executable in non-interactive mode." FULL_DOCS "Argument(s) to run executable in non-interactive mode.")
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_TIMEOUT BRIEF_DOCS "Timeout for noninteractive executable." FULL_DOCS "Timeout for noninteractive executable.")
 
-if(WINDOWS_STORE)
-    add_library(sdl_test_main_uwp OBJECT main.cpp)
-    target_link_libraries(sdl_test_main_uwp PRIVATE SDL3::Headers)
-    target_compile_options(sdl_test_main_uwp PRIVATE "/ZW")
-
-    add_library(sdl_test_main_callbacks_uwp OBJECT main.cpp)
-    target_link_libraries(sdl_test_main_callbacks_uwp PRIVATE SDL3::Headers)
-    target_compile_options(sdl_test_main_callbacks_uwp PRIVATE "/ZW")
-    target_compile_definitions(sdl_test_main_callbacks_uwp PRIVATE "SDL_MAIN_USE_CALLBACKS")
-
-    set_source_files_properties(${RESOURCE_FILES} PROPERTIES VS_DEPLOYENT_LOCATION "Assets")
-endif()
-
 macro(add_sdl_test_executable TARGET)
     cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;THREADS;NO_C90;MAIN_CALLBACKS;NOTRACKMEM" "" "DISABLE_THREADS_ARGS;NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;SOURCES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
@@ -132,32 +113,6 @@ macro(add_sdl_test_executable TARGET)
         list(APPEND AST_SOURCES $<TARGET_OBJECTS:sdltests_utils>)
     endif()
     set(EXTRA_SOURCES "")
-    if(WINDOWS_STORE)
-        set(uwp_bindir "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.dir")
-        if(NOT IS_DIRECTORY "${uwp_bindir}")
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${uwp_bindir}")
-        endif()
-        string(REGEX REPLACE "[_]" "" SAFE_TARGET "${TARGET}")
-        file(GENERATE OUTPUT "${uwp_bindir}/${TARGET}.appxmanifest"
-            INPUT "${CMAKE_CURRENT_SOURCE_DIR}/uwp/Package.appxmanifest.in"
-            TARGET "${TARGET}"
-        )
-        set_property(SOURCE "${uwp_bindir}/${TARGET}.appxmanifest" PROPERTY VS_DEPLOYMENT_CONTENT 1)
-
-        if(AST_MAIN_CALLBACKS)
-            list(APPEND EXTRA_SOURCES "$<TARGET_OBJECTS:sdl_test_main_callbacks_uwp>")
-        else()
-            list(APPEND EXTRA_SOURCES "$<TARGET_OBJECTS:sdl_test_main_uwp>")
-        endif()
-
-        list(APPEND EXTRA_SOURCES
-            "${uwp_bindir}/${TARGET}.appxmanifest"
-            "uwp/logo-50x50.png"
-            "uwp/square-44x44.png"
-            "uwp/square-150x150.png"
-            "uwp/splash-620x300.png"
-        )
-    endif()
     if(AST_NEEDS_RESOURCES)
         list(APPEND EXTRA_SOURCES ${RESOURCE_FILES})
     endif()
@@ -192,16 +147,6 @@ macro(add_sdl_test_executable TARGET)
             add_custom_command(TARGET ${TARGET} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} ARGS -E make_directory $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET}
                 COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILES} $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET})
-        elseif(WINDOWS_STORE)
-            # MSVC does build the dependent targets (or POST_BUILD commands) when building an application
-            # after starting to debug. By copying the resources in a custom target, the files can be copied afterwards.
-            # FIXME: find out proper way to add assets to UWP package
-            cmake_minimum_required(VERSION 3.19)
-            add_custom_target(zzz-resources-copy-${TARGET}
-                COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${TARGET}>/AppX"
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${RESOURCE_FILES} "$<TARGET_FILE_DIR:${TARGET}>/AppX"
-            )
-            add_dependencies(${TARGET} zzz-resources-copy-${TARGET})
         else()
             add_dependencies(${TARGET} copy-sdl-test-resources)
         endif()
@@ -233,20 +178,7 @@ macro(add_sdl_test_executable TARGET)
         endif()
     elseif(PSP)
         target_link_libraries(${TARGET} PRIVATE GL)
-    endif()
-    if(WINDOWS_STORE)
-        target_compile_definitions(${TARGET} PRIVATE "SDL_MAIN_NOIMPL")
-        set_property(TARGET ${TARGET} PROPERTY WIN32_EXECUTABLE TRUE)
-        set_property(TARGET ${TARGET} PROPERTY RUNTIME_OUTPUT_DIRECTORY "${uwp_bindir}")
-        target_link_options(${TARGET} PRIVATE
-            -nodefaultlib:vccorlib$<$<CONFIG:Debug>:d>
-            -nodefaultlib:msvcrt$<$<CONFIG:Debug>:d>
-            vccorlib$<$<CONFIG:Debug>:d>.lib
-            msvcrt$<$<CONFIG:Debug>:d>.lib
-        )
-    endif()
-
-    if(EMSCRIPTEN)
+    elseif(EMSCRIPTEN)
         set_property(TARGET ${TARGET} PROPERTY SUFFIX ".html")
         target_link_options(${TARGET} PRIVATE "SHELL:--pre-js ${CMAKE_CURRENT_SOURCE_DIR}/emscripten/pre.js")
         target_link_options(${TARGET} PRIVATE "-sEXIT_RUNTIME=1")

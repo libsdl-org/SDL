@@ -88,9 +88,8 @@ static struct
     WindowsGamingInputControllerState *controllers;
 } wgi;
 
-/* WinRT headers in official Windows SDK contain only declarations, and we have to define these GUIDs ourselves.
- * https://stackoverflow.com/a/55605485/1795050
- */
+// WinRT headers in official Windows SDK contain only declarations, and we have to define these GUIDs ourselves.
+// https://stackoverflow.com/a/55605485/1795050
 DEFINE_GUID(IID___FIEventHandler_1_Windows__CGaming__CInput__CRawGameController, 0x00621c22, 0x42e8, 0x529f, 0x92, 0x70, 0x83, 0x6b, 0x32, 0x93, 0x1d, 0x72);
 DEFINE_GUID(IID___x_ABI_CWindows_CGaming_CInput_CIArcadeStickStatics, 0x5c37b8c8, 0x37b1, 0x4ad8, 0x94, 0x58, 0x20, 0x0f, 0x1a, 0x30, 0x01, 0x8e);
 DEFINE_GUID(IID___x_ABI_CWindows_CGaming_CInput_CIArcadeStickStatics2, 0x52b5d744, 0xbb86, 0x445a, 0xb5, 0x9c, 0x59, 0x6f, 0x0e, 0x2a, 0x49, 0xdf);
@@ -592,13 +591,6 @@ static bool WGI_JoystickInit(void)
         return SDL_SetError("RoInitialize() failed");
     }
 
-#ifdef SDL_PLATFORM_WINRT
-    wgi.CoIncrementMTAUsage = CoIncrementMTAUsage;
-    wgi.RoGetActivationFactory = RoGetActivationFactory;
-    wgi.WindowsCreateStringReference = WindowsCreateStringReference;
-    wgi.WindowsDeleteString = WindowsDeleteString;
-    wgi.WindowsGetStringRawBuffer = WindowsGetStringRawBuffer;
-#else
 #define RESOLVE(x) wgi.x = (x##_t)WIN_LoadComBaseFunction(#x); if (!wgi.x) return WIN_SetError("GetProcAddress failed for " #x);
     RESOLVE(CoIncrementMTAUsage);
     RESOLVE(RoGetActivationFactory);
@@ -606,9 +598,7 @@ static bool WGI_JoystickInit(void)
     RESOLVE(WindowsDeleteString);
     RESOLVE(WindowsGetStringRawBuffer);
 #undef RESOLVE
-#endif // SDL_PLATFORM_WINRT
 
-#ifndef SDL_PLATFORM_WINRT
     {
         /* There seems to be a bug in Windows where a dependency of WGI can be unloaded from memory prior to WGI itself.
          * This results in Windows_Gaming_Input!GameController::~GameController() invoking an unloaded DLL and crashing.
@@ -623,7 +613,6 @@ static bool WGI_JoystickInit(void)
             }
         }
     }
-#endif
 
     WGI_LoadRawGameControllerStatics();
 

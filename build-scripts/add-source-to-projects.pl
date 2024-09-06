@@ -591,7 +591,6 @@ foreach (@ARGV) {
     process_xcode($arg, 'Xcode/SDL/SDL.xcodeproj/project.pbxproj');
     process_visualstudio($arg, 'VisualC/SDL/SDL.vcxproj');
     process_visualstudio($arg, 'VisualC-GDK/SDL/SDL.vcxproj');
-    process_visualstudio($arg, 'VisualC-WinRT/SDL-UWP.vcxproj');
 }
 
 print("Done. Please run `git diff` and make sure this looks okay!\n");

@@ -686,13 +686,8 @@ static void RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
             typedef HRESULT(WINAPI * WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER * hstringHeader, HSTRING * string);
             typedef HRESULT(WINAPI * RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void **factory);
 
-#ifdef SDL_PLATFORM_WINRT
-            WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = WindowsCreateStringReference;
-            RoGetActivationFactory_t RoGetActivationFactoryFunc = RoGetActivationFactory;
-#else
             WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)WIN_LoadComBaseFunction("WindowsCreateStringReference");
             RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)WIN_LoadComBaseFunction("RoGetActivationFactory");
-#endif
             if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
                 PCWSTR pNamespace = L"Windows.Gaming.Input.Gamepad";
                 HSTRING_HEADER hNamespaceStringHeader;

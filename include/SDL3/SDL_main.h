@@ -48,20 +48,6 @@
          */
         #define SDL_MAIN_AVAILABLE
 
-    #elif defined(SDL_PLATFORM_WINRT)
-        /* On WinRT, SDL provides a main function that initializes CoreApplication,
-           creating an instance of IFrameworkView in the process.
-
-           Ideally, #include'ing SDL_main.h is enough to get a main() function working.
-           However, that requires the source file your main() is in to be compiled
-           as C++ *and* with the /ZW compiler flag. If that's not feasible, add an
-           otherwise empty .cpp file that only contains `#include <SDL3/SDL_main.h>`
-           and build that with /ZW (still include SDL_main.h in your other file with main()!).
-           In XAML apps, instead the function SDL_RunApp() must be called with a pointer
-           to the Direct3D-hosted XAML control passed in as the "reserved" argument.
-        */
-        #define SDL_MAIN_NEEDED
-
     #elif defined(SDL_PLATFORM_GDK)
         /* On GDK, SDL provides a main function that initializes the game runtime.
 
@@ -591,7 +577,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
         /* platforms which main (-equivalent) can be implemented in plain C */
         #include <SDL3/SDL_main_impl.h>
 
-    #elif defined(SDL_PLATFORM_WINRT) /* C++ platforms */
+    #elif 0  /* C++ platforms (currently none, this used to be here for WinRT, but is left for future platforms that might arrive. */
         #ifdef __cplusplus
         #include <SDL3/SDL_main_impl.h>
         #else
@@ -605,7 +591,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
             #endif /* __GNUC__ */
         #endif /* __cplusplus */
 
-    #endif /* C++ platforms like SDL_PLATFORM_WINRT etc */
+    #endif /* C++ platforms */
 #endif
 
 #endif /* SDL_main_h_ */

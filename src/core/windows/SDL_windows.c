@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 
 #include "SDL_windows.h"
 
@@ -90,14 +90,7 @@ WIN_CoInitialize(void)
 
        If you need multi-threaded mode, call CoInitializeEx() before SDL_Init()
     */
-#ifdef SDL_PLATFORM_WINRT
-    /* DLudwig: On WinRT, it is assumed that COM was initialized in main().
-       CoInitializeEx is available (not CoInitialize though), however
-       on WinRT, main() is typically declared with the [MTAThread]
-       attribute, which, AFAIK, should initialize COM.
-    */
-    return S_OK;
-#elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     // On Xbox, there's no need to call CoInitializeEx (and it's not implemented)
     return S_OK;
 #else
@@ -118,12 +111,9 @@ WIN_CoInitialize(void)
 
 void WIN_CoUninitialize(void)
 {
-#ifndef SDL_PLATFORM_WINRT
     CoUninitialize();
-#endif
 }
 
-#ifndef SDL_PLATFORM_WINRT
 FARPROC WIN_LoadComBaseFunction(const char *name)
 {
     static bool s_bLoaded;
@@ -139,14 +129,10 @@ FARPROC WIN_LoadComBaseFunction(const char *name)
         return NULL;
     }
 }
-#endif
 
 HRESULT
 WIN_RoInitialize(void)
 {
-#ifdef SDL_PLATFORM_WINRT
-    return S_OK;
-#else
     typedef HRESULT(WINAPI * RoInitialize_t)(RO_INIT_TYPE initType);
     RoInitialize_t RoInitializeFunc = (RoInitialize_t)WIN_LoadComBaseFunction("RoInitialize");
     if (RoInitializeFunc) {
@@ -166,21 +152,18 @@ WIN_RoInitialize(void)
     } else {
         return E_NOINTERFACE;
     }
-#endif
 }
 
 void WIN_RoUninitialize(void)
 {
-#ifndef SDL_PLATFORM_WINRT
     typedef void(WINAPI * RoUninitialize_t)(void);
     RoUninitialize_t RoUninitializeFunc = (RoUninitialize_t)WIN_LoadComBaseFunction("RoUninitialize");
     if (RoUninitializeFunc) {
         RoUninitializeFunc();
     }
-#endif
 }
 
-#if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
 {
     OSVERSIONINFOEXW osvi;
@@ -202,7 +185,7 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 #endif
 
 // apply some static variables so we only call into the Win32 API once per process for each check.
-#if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     #define CHECKWINVER(notdesktop_platform_result, test) return (notdesktop_platform_result);
 #else
     #define CHECKWINVER(notdesktop_platform_result, test) \
@@ -265,8 +248,8 @@ WASAPI doesn't need this. This is just for DirectSound/WinMM.
 */
 char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
-#if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    return WIN_StringToUTF8W(name); // No registry access on WinRT/UWP and Xbox, go with what we've got.
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+    return WIN_StringToUTF8W(name); // No registry access on Xbox, go with what we've got.
 #else
     static const GUID nullguid = { 0 };
     const unsigned char *ptr;
@@ -318,7 +301,7 @@ char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     result = WIN_StringToUTF8(strw);
     SDL_free(strw);
     return result ? result : WIN_StringToUTF8(name);
-#endif // if SDL_PLATFORM_WINRT / else
+#endif
 }
 
 BOOL WIN_IsEqualGUID(const GUID *a, const GUID *b)
@@ -349,7 +332,7 @@ void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
 
 BOOL WIN_IsRectEmpty(const RECT *rect)
 {
-    // Calculating this manually because UWP and Xbox do not support Win32 IsRectEmpty.
+    // Calculating this manually because Xbox does not support Win32 IsRectEmpty.
     return (rect->right <= rect->left) || (rect->bottom <= rect->top);
 }
 
@@ -389,4 +372,4 @@ int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, 
     return WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 }
 
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)
+#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)

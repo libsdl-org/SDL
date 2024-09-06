@@ -85,9 +85,6 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
     &WINDOWS_bootstrap,
 #endif
-#ifdef SDL_VIDEO_DRIVER_WINRT
-    &WINRT_bootstrap,
-#endif
 #ifdef SDL_VIDEO_DRIVER_HAIKU
     &HAIKU_bootstrap,
 #endif
@@ -1750,10 +1747,6 @@ static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
     }
 }
 
-#ifdef SDL_PLATFORM_WINRT
-extern SDL_WindowFlags WINRT_DetectWindowFlags(SDL_Window *window);
-#endif
-
 static void SDL_RestoreMousePosition(SDL_Window *window)
 {
     float x, y;
@@ -1850,35 +1843,6 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
                 goto done;
             }
         }
-    }
-#elif defined(SDL_PLATFORM_WINRT) && (NTDDI_VERSION < NTDDI_WIN10)
-    /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
-       or not.  The user can choose this, via OS-provided UI, but this can't
-       be set programmatically.
-
-       Just look at what SDL's WinRT video backend code detected with regards
-       to fullscreen (being active, or not), and figure out a return/error code
-       from that.
-    */
-    if (!!fullscreen == !(WINRT_DetectWindowFlags(window) & SDL_WINDOW_FULLSCREEN)) {
-        /* Uh oh, either:
-            1. fullscreen was requested, and we're already windowed
-            2. windowed-mode was requested, and we're already fullscreen
-
-            WinRT 8.x can't resolve either programmatically, so we're
-            giving up.
-        */
-        goto error;
-    } else {
-        /* Whatever was requested, fullscreen or windowed mode, is already
-            in-place.
-        */
-        if (fullscreen) {
-            display->fullscreen_window = window;
-        } else {
-            display->fullscreen_window = NULL;
-        }
-        goto done;
     }
 #endif
 
@@ -2453,17 +2417,6 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     }
 #endif
 
-#if defined(SDL_PLATFORM_WINRT) && (NTDDI_VERSION < NTDDI_WIN10)
-    /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
-       or not.  The user can choose this, via OS-provided UI, but this can't
-       be set programmatically.
-
-       Just look at what SDL's WinRT video backend code detected with regards
-       to fullscreen (being active, or not), and figure out a return/error code
-       from that.
-    */
-    flags = window->flags;
-#endif
     if (title) {
         SDL_SetWindowTitle(window, title);
     }
@@ -5425,9 +5378,6 @@ int SDL_GetMessageBoxCount(void)
 #endif
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 #include "windows/SDL_windowsmessagebox.h"
-#endif
-#ifdef SDL_VIDEO_DRIVER_WINRT
-#include "winrt/SDL_winrtmessagebox.h"
 #endif
 #ifdef SDL_VIDEO_DRIVER_COCOA
 #include "cocoa/SDL_cocoamessagebox.h"

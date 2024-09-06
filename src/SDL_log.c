@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #include "core/windows/SDL_windows.h"
 #endif
 
@@ -511,7 +511,7 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
     }
 }
 
-#if defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)
 enum {
     CONSOLE_UNATTACHED = 0,
     CONSOLE_ATTACHED_CONSOLE = 1,
@@ -526,7 +526,7 @@ static HANDLE stderrHandle = NULL;
 static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
                                   const char *message)
 {
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
     // Way too many allocations here, urgh
     // Note: One can't call SDL_SetError here, since that function itself logs.
     {
@@ -535,7 +535,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         LPTSTR tstr;
         bool isstack;
 
-#if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
+#if !defined(SDL_PLATFORM_GDK)
         BOOL attachResult;
         DWORD attachError;
         DWORD consoleMode;
@@ -574,7 +574,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
                 }
             }
         }
-#endif // !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
+#endif // !defined(SDL_PLATFORM_GDK)
         length = SDL_strlen(SDL_GetLogPriorityPrefix(priority)) + SDL_strlen(message) + 1 + 1 + 1;
         output = SDL_small_alloc(char, length, &isstack);
         (void)SDL_snprintf(output, length, "%s%s\r\n", SDL_GetLogPriorityPrefix(priority), message);
@@ -583,7 +583,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         // Output to debugger
         OutputDebugString(tstr);
 
-#if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
+#if !defined(SDL_PLATFORM_GDK)
         // Screen output to stderr, if console was attached.
         if (consoleAttached == CONSOLE_ATTACHED_CONSOLE) {
             if (!WriteConsole(stderrHandle, tstr, (DWORD)SDL_tcslen(tstr), &charsWritten, NULL)) {
@@ -598,7 +598,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
                 OutputDebugString(TEXT("Error calling WriteFile\r\n"));
             }
         }
-#endif // !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
+#endif // !defined(SDL_PLATFORM_GDK)
 
         SDL_free(tstr);
         SDL_small_free(output, isstack);

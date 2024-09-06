@@ -143,19 +143,19 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetPrefPath(const char *org, const char *
  *
  * The folders supported per platform are:
  *
- * |             | Windows | WinRT/UWP |macOS/iOS | tvOS | Unix (XDG) | Haiku | Emscripten |
- * | ----------- | ------- | --------- |--------- | ---- | ---------- | ----- | ---------- |
- * | HOME        | X       | X         | X        |      | X          | X     | X          |
- * | DESKTOP     | X       | X         | X        |      | X          | X     |            |
- * | DOCUMENTS   | X       | X         | X        |      | X          |       |            |
- * | DOWNLOADS   | Vista+  | X         | X        |      | X          |       |            |
- * | MUSIC       | X       | X         | X        |      | X          |       |            |
- * | PICTURES    | X       | X         | X        |      | X          |       |            |
- * | PUBLICSHARE |         |           | X        |      | X          |       |            |
- * | SAVEDGAMES  | Vista+  |           |          |      |            |       |            |
- * | SCREENSHOTS | Vista+  | X         |          |      |            |       |            |
- * | TEMPLATES   | X       | X         | X        |      | X          |       |            |
- * | VIDEOS      | X       | X         | X*       |      | X          |       |            |
+ * |             | Windows | macOS/iOS | tvOS | Unix (XDG) | Haiku | Emscripten |
+ * | ----------- | ------- | --------- | ---- | ---------- | ----- | ---------- |
+ * | HOME        | X       | X         |      | X          | X     | X          |
+ * | DESKTOP     | X       | X         |      | X          | X     |            |
+ * | DOCUMENTS   | X       | X         |      | X          |       |            |
+ * | DOWNLOADS   | Vista+  | X         |      | X          |       |            |
+ * | MUSIC       | X       | X         |      | X          |       |            |
+ * | PICTURES    | X       | X         |      | X          |       |            |
+ * | PUBLICSHARE |         | X         |      | X          |       |            |
+ * | SAVEDGAMES  | Vista+  |           |      |            |       |            |
+ * | SCREENSHOTS | Vista+  |           |      |            |       |            |
+ * | TEMPLATES   | X       | X         |      | X          |       |            |
+ * | VIDEOS      | X       | X*        |      | X          |       |            |
  *
  * Note that on macOS/iOS, the Videos folder is called "Movies".
  *

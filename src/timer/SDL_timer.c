@@ -522,8 +522,7 @@ static Uint32 tick_denominator_ns;
 static Uint32 tick_numerator_ms;
 static Uint32 tick_denominator_ms;
 
-#if defined(SDL_TIMER_WINDOWS) && \
-    !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if defined(SDL_TIMER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 #include <mmsystem.h>
 #define HAVE_TIME_BEGIN_PERIOD
 #endif

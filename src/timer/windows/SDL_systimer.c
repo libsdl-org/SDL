@@ -67,17 +67,7 @@ void SDL_SYS_DelayNS(Uint64 ns)
 {
     /* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag was added in Windows 10 version 1803.
      *
-     * Sleep() is not publicly available to apps in early versions of WinRT.
-     *
-     * Visual C++ 2013 Update 4 re-introduced Sleep() for Windows 8.1 and
-     * Windows Phone 8.1.
-     *
      * Use the compiler version to determine availability.
-     *
-     * NOTE #1: _MSC_FULL_VER == 180030723 for Visual C++ 2013 Update 3.
-     * NOTE #2: Visual C++ 2013, when compiling for Windows 8.0 and
-     *    Windows Phone 8.0, uses the Visual C++ 2012 compiler to build
-     *    apps and libraries.
      */
 #ifdef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
     HANDLE timer = SDL_GetWaitableTimer();
@@ -97,7 +87,7 @@ void SDL_SYS_DelayNS(Uint64 ns)
             ns = max_delay;
         }
 
-#if defined(SDL_PLATFORM_WINRT) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER <= 180030723)
+#if defined(_MSC_FULL_VER) && (_MSC_FULL_VER <= 180030723)
         static HANDLE mutex = 0;
         if (!mutex) {
             mutex = CreateEventEx(0, 0, 0, EVENT_ALL_ACCESS);

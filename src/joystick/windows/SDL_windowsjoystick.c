@@ -36,7 +36,7 @@
 #include "../../thread/SDL_systhread.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_hid.h"
-#if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 #include <dbt.h>
 #endif
 
@@ -79,7 +79,7 @@ void WINDOWS_RAWINPUTEnabledChanged(void)
     SetWindowsDeviceChanged();
 }
 
-#if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 typedef struct
 {
@@ -211,9 +211,7 @@ static bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_
     return (lastret != -1);
 }
 
-#endif // !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-
-#ifndef SDL_PLATFORM_WINRT
+#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 static SDL_DeviceNotificationData s_notification_data;
@@ -320,8 +318,6 @@ static void SDL_StopJoystickThread(void)
     s_joystickThread = NULL;
 }
 
-#endif // !defined(SDL_PLATFORM_WINRT)
-
 void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
 {
     device->send_add_event = true;
@@ -348,7 +344,7 @@ static bool WINDOWS_JoystickInit(void)
 
     WIN_InitDeviceNotification();
 
-#if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, false);
     if (s_bJoystickThread) {
         if (!SDL_StartJoystickThread()) {
@@ -639,7 +635,7 @@ void WINDOWS_JoystickQuit(void)
     }
     SYS_Joystick = NULL;
 
-#if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     if (s_bJoystickThread) {
         SDL_StopJoystickThread();
     } else {

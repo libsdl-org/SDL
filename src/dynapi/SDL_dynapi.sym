@@ -504,8 +504,6 @@ SDL3_0.0.0 {
     SDL_GetUserFolder;
     SDL_GetVersion;
     SDL_GetVideoDriver;
-    SDL_GetWinRTDeviceFamily;
-    SDL_GetWinRTFSPath;
     SDL_GetWindowAspectRatio;
     SDL_GetWindowBordersSize;
     SDL_GetWindowDisplayScale;

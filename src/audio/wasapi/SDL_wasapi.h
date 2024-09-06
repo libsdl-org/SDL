@@ -42,10 +42,9 @@ struct SDL_PrivateAudioData
     int framesize;
     bool device_lost;
     bool device_dead;
-    void *activation_handler;
 };
 
-// win32 and winrt implementations call into these.
+// win32 implementation calls into these.
 bool WASAPI_PrepDevice(SDL_AudioDevice *device);
 void WASAPI_DisconnectDevice(SDL_AudioDevice *device);  // don't hold the device lock when calling this!
 
@@ -54,7 +53,7 @@ void WASAPI_DisconnectDevice(SDL_AudioDevice *device);  // don't hold the device
 typedef bool (*ManagementThreadTask)(void *userdata);
 bool WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, bool *wait_until_complete);
 
-// These are functions that are implemented differently for Windows vs WinRT.
+// These are functions that are (were...?) implemented differently for various Windows versions.
 // UNLESS OTHERWISE NOTED THESE ALL HAPPEN ON THE MANAGEMENT THREAD.
 bool WASAPI_PlatformInit(void);
 void WASAPI_PlatformDeinit(void);
@@ -63,7 +62,6 @@ void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_playback, SDL_AudioDevi
 bool WASAPI_ActivateDevice(SDL_AudioDevice *device);
 void WASAPI_PlatformThreadInit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
 void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
-void WASAPI_PlatformDeleteActivationHandler(void *handler);
 void WASAPI_PlatformFreeDeviceHandle(SDL_AudioDevice *device);
 
 #ifdef __cplusplus

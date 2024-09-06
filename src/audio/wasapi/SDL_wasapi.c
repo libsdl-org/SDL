@@ -325,12 +325,6 @@ static bool mgmtthrtask_CoTaskMemFree(void *userdata)
     return true;
 }
 
-static bool mgmtthrtask_PlatformDeleteActivationHandler(void *userdata)
-{
-    WASAPI_PlatformDeleteActivationHandler(userdata);
-    return true;
-}
-
 static bool mgmtthrtask_CloseHandle(void *userdata)
 {
     CloseHandle((HANDLE) userdata);
@@ -368,12 +362,6 @@ static void ResetWasapiDevice(SDL_AudioDevice *device)
         void *ptr = device->hidden->waveformat;
         device->hidden->waveformat = NULL;
         WASAPI_ProxyToManagementThread(mgmtthrtask_CoTaskMemFree, ptr, NULL);
-    }
-
-    if (device->hidden->activation_handler) {
-        void *activation_handler = device->hidden->activation_handler;
-        device->hidden->activation_handler = NULL;
-        WASAPI_ProxyToManagementThread(mgmtthrtask_PlatformDeleteActivationHandler, activation_handler, NULL);
     }
 
     if (device->hidden->event) {
@@ -592,7 +580,7 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
     IAudioClient *client = device->hidden->client;
     SDL_assert(client != NULL);
 
-#if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK) // CreateEventEx() arrived in Vista, so we need an #ifdef for XP.
+#if defined(SDL_PLATFORM_GDK) // CreateEventEx() arrived in Vista, so we need an #ifdef for XP.
     device->hidden->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
 #else
     device->hidden->event = CreateEventW(NULL, 0, 0, NULL);
