@@ -39,7 +39,7 @@ extern "C" {
 /*
  * Internal stuff.
  */
-static SDL_bool s_bXInputEnabled = SDL_TRUE;
+static SDL_bool s_bXInputEnabled = SDL_FALSE;
 
 static SDL_bool SDL_XInputUseOldJoystickMapping(void)
 {
