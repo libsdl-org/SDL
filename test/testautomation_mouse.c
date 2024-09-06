@@ -28,7 +28,7 @@ static int mouseStateCheck(Uint32 state)
  * Check call to SDL_GetMouseState
  *
  */
-static int mouse_getMouseState(void *arg)
+static int SDLCALL mouse_getMouseState(void *arg)
 {
     float x;
     float y;
@@ -73,7 +73,7 @@ static int mouse_getMouseState(void *arg)
  * Check call to SDL_GetRelativeMouseState
  *
  */
-static int mouse_getRelativeMouseState(void *arg)
+static int SDLCALL mouse_getRelativeMouseState(void *arg)
 {
     float x;
     float y;
@@ -193,7 +193,7 @@ static SDL_Cursor *initArrowCursor(const char *image[])
  * \sa SDL_CreateCursor
  * \sa SDL_DestroyCursor
  */
-static int mouse_createFreeCursor(void *arg)
+static int SDLCALL mouse_createFreeCursor(void *arg)
 {
     SDL_Cursor *cursor;
 
@@ -219,7 +219,7 @@ static int mouse_createFreeCursor(void *arg)
  * \sa SDL_CreateColorCursor
  * \sa SDL_DestroyCursor
  */
-static int mouse_createFreeColorCursor(void *arg)
+static int SDLCALL mouse_createFreeColorCursor(void *arg)
 {
     SDL_Surface *face;
     SDL_Cursor *cursor;
@@ -275,7 +275,7 @@ static void changeCursorVisibility(SDL_bool state)
  *
  * \sa SDL_ShowCursor
  */
-static int mouse_showCursor(void *arg)
+static int SDLCALL mouse_showCursor(void *arg)
 {
     SDL_bool currentState;
 
@@ -300,7 +300,7 @@ static int mouse_showCursor(void *arg)
  *
  * \sa SDL_SetCursor
  */
-static int mouse_setCursor(void *arg)
+static int SDLCALL mouse_setCursor(void *arg)
 {
     SDL_Cursor *cursor;
 
@@ -333,7 +333,7 @@ static int mouse_setCursor(void *arg)
  *
  * \sa SDL_GetCursor
  */
-static int mouse_getCursor(void *arg)
+static int SDLCALL mouse_getCursor(void *arg)
 {
     SDL_Cursor *cursor;
 
@@ -379,7 +379,7 @@ static void destroyMouseSuiteTestWindow(SDL_Window *window)
  * \sa SDL_GetWindowRelativeMouseMode
  * \sa SDL_SetWindowRelativeMouseMode
  */
-static int mouse_getSetRelativeMouseMode(void *arg)
+static int SDLCALL mouse_getSetRelativeMouseMode(void *arg)
 {
     SDL_Window *window;
     int result;
@@ -443,7 +443,7 @@ static int mouse_getSetRelativeMouseMode(void *arg)
  *
  * \sa SDL_WarpMouseInWindow
  */
-static int mouse_warpMouseInWindow(void *arg)
+static int SDLCALL mouse_warpMouseInWindow(void *arg)
 {
     const int w = MOUSE_TESTWINDOW_WIDTH, h = MOUSE_TESTWINDOW_HEIGHT;
     int numPositions = 6;
@@ -506,7 +506,7 @@ static int mouse_warpMouseInWindow(void *arg)
  *
  * \sa SDL_GetMouseFocus
  */
-static int mouse_getMouseFocus(void *arg)
+static int SDLCALL mouse_getMouseFocus(void *arg)
 {
     const int w = MOUSE_TESTWINDOW_WIDTH, h = MOUSE_TESTWINDOW_HEIGHT;
     float x, y;
@@ -572,7 +572,7 @@ static int mouse_getMouseFocus(void *arg)
  *
  * \sa SDL_GetDefaultCursor
  */
-static int mouse_getDefaultCursor(void *arg)
+static int SDLCALL mouse_getDefaultCursor(void *arg)
 {
     SDL_Cursor *cursor;
 
@@ -589,7 +589,7 @@ static int mouse_getDefaultCursor(void *arg)
  *
  * \sa SDL_GetGlobalMouseState
  */
-static int mouse_getGlobalMouseState(void *arg)
+static int SDLCALL mouse_getGlobalMouseState(void *arg)
 {
     float x;
     float y;

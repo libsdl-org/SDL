@@ -99,7 +99,7 @@ static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL
     va_end(ap);
 }
 
-static void SDLTest_CommonArgParserFinalize(void *data)
+static void SDLCALL SDLTest_CommonArgParserFinalize(void *data)
 {
     SDLTest_CommonState *state = data;
 
@@ -120,7 +120,7 @@ static void SDLTest_CommonArgParserFinalize(void *data)
     }                                   \
     *(dim)++ = '\0';
 
-static int SDLTest_CommonStateParseCommonArguments(void *data, char **argv, int index)
+static int SDLCALL SDLTest_CommonStateParseCommonArguments(void *data, char **argv, int index)
 {
     SDLTest_CommonState *state = data;
 
@@ -212,7 +212,7 @@ static int SDLTest_CommonStateParseCommonArguments(void *data, char **argv, int 
     return 0;
 }
 
-static int SDLTest_CommonStateParseVideoArguments(void *data, char **argv, int index)
+static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **argv, int index)
 {
     SDLTest_CommonState *state = data;
 
@@ -593,7 +593,7 @@ static int SDLTest_CommonStateParseVideoArguments(void *data, char **argv, int i
     return 0;
 }
 
-static int SDLTest_CommonStateParseAudioArguments(void *data, char **argv, int index)
+static int SDLCALL SDLTest_CommonStateParseAudioArguments(void *data, char **argv, int index)
 {
     SDLTest_CommonState *state = data;
 
@@ -1971,7 +1971,7 @@ typedef struct
     size_t size;
 } SDLTest_ClipboardData;
 
-static void SDLTest_ScreenShotClipboardCleanup(void *context)
+static void SDLCALL SDLTest_ScreenShotClipboardCleanup(void *context)
 {
     SDLTest_ClipboardData *data = (SDLTest_ClipboardData *)context;
 
@@ -1983,7 +1983,7 @@ static void SDLTest_ScreenShotClipboardCleanup(void *context)
     SDL_free(data);
 }
 
-static const void *SDLTest_ScreenShotClipboardProvider(void *context, const char *mime_type, size_t *size)
+static const void * SDLCALL SDLTest_ScreenShotClipboardProvider(void *context, const char *mime_type, size_t *size)
 {
     SDLTest_ClipboardData *data = (SDLTest_ClipboardData *)context;
 

@@ -317,7 +317,7 @@ SDL_TARGETING("avx512f") static void kernel_floats_add_avx512f(float *dest, cons
 
 /* Test case functions */
 
-static int intrinsics_selftest(void *arg)
+static int SDLCALL intrinsics_selftest(void *arg)
 {
     {
         size_t size;
@@ -362,7 +362,7 @@ static int intrinsics_selftest(void *arg)
     return TEST_COMPLETED;
 }
 
-static int intrinsics_testMMX(void *arg)
+static int SDLCALL intrinsics_testMMX(void *arg)
 {
     if (SDL_HasMMX()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has MMX support.");
@@ -390,7 +390,7 @@ static int intrinsics_testMMX(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testSSE(void *arg)
+static int SDLCALL intrinsics_testSSE(void *arg)
 {
     if (SDL_HasSSE()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE support.");
@@ -418,7 +418,7 @@ static int intrinsics_testSSE(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testSSE2(void *arg)
+static int SDLCALL intrinsics_testSSE2(void *arg)
 {
     if (SDL_HasSSE2()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE2 support.");
@@ -446,7 +446,7 @@ static int intrinsics_testSSE2(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testSSE3(void *arg)
+static int SDLCALL intrinsics_testSSE3(void *arg)
 {
     if (SDL_HasSSE3()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE3 support.");
@@ -474,7 +474,7 @@ static int intrinsics_testSSE3(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testSSE4_1(void *arg)
+static int SDLCALL intrinsics_testSSE4_1(void *arg)
 {
     if (SDL_HasSSE41()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.1 support.");
@@ -502,7 +502,7 @@ static int intrinsics_testSSE4_1(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testSSE4_2(void *arg)
+static int SDLCALL intrinsics_testSSE4_2(void *arg)
 {
     if (SDL_HasSSE42()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.2 support.");
@@ -537,7 +537,7 @@ static int intrinsics_testSSE4_2(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testAVX(void *arg)
+static int SDLCALL intrinsics_testAVX(void *arg)
 {
     if (SDL_HasAVX()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX support.");
@@ -565,7 +565,7 @@ static int intrinsics_testAVX(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testAVX2(void *arg)
+static int SDLCALL intrinsics_testAVX2(void *arg)
 {
     if (SDL_HasAVX2()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX2 support.");
@@ -593,7 +593,7 @@ static int intrinsics_testAVX2(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testAVX512F(void *arg)
+static int SDLCALL intrinsics_testAVX512F(void *arg)
 {
     if (SDL_HasAVX512F()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX512F support.");

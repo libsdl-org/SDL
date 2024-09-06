@@ -27,7 +27,7 @@ static int compareSizeOfType(size_t sizeoftype, size_t hardcodetype)
 /**
  * Tests type sizes.
  */
-static int platform_testTypes(void *arg)
+static int SDLCALL platform_testTypes(void *arg)
 {
     int ret;
 
@@ -49,7 +49,7 @@ static int platform_testTypes(void *arg)
 /**
  * Tests platform endianness and SDL_SwapXY functions.
  */
-static int platform_testEndianessAndSwap(void *arg)
+static int SDLCALL platform_testEndianessAndSwap(void *arg)
 {
     int real_byteorder;
     int real_floatwordorder = 0;
@@ -124,7 +124,7 @@ static int platform_testEndianessAndSwap(void *arg)
  * \sa SDL_GetRevision
  * \sa SDL_GetCPUCacheLineSize
  */
-static int platform_testGetFunctions(void *arg)
+static int SDLCALL platform_testGetFunctions(void *arg)
 {
     const char *platform;
     const char *revision;
@@ -172,7 +172,7 @@ static int platform_testGetFunctions(void *arg)
  * \sa SDL_HasSSE42
  * \sa SDL_HasAVX
  */
-static int platform_testHasFunctions(void *arg)
+static int SDLCALL platform_testHasFunctions(void *arg)
 {
     /* TODO: independently determine and compare values as well */
 
@@ -207,7 +207,7 @@ static int platform_testHasFunctions(void *arg)
  * Tests SDL_GetVersion
  * \sa SDL_GetVersion
  */
-static int platform_testGetVersion(void *arg)
+static int SDLCALL platform_testGetVersion(void *arg)
 {
     int linked = SDL_GetVersion();
     SDLTest_AssertCheck(linked >= SDL_VERSION,
@@ -221,7 +221,7 @@ static int platform_testGetVersion(void *arg)
 /**
  * Tests default SDL_Init
  */
-static int platform_testDefaultInit(void *arg)
+static int SDLCALL platform_testDefaultInit(void *arg)
 {
     SDL_bool ret;
     int subsystem;
@@ -246,7 +246,7 @@ static int platform_testDefaultInit(void *arg)
  * \sa SDL_SetError
  * \sa SDL_ClearError
  */
-static int platform_testGetSetClearError(void *arg)
+static int SDLCALL platform_testGetSetClearError(void *arg)
 {
     int result;
     const char *testError = "Testing";
@@ -295,7 +295,7 @@ static int platform_testGetSetClearError(void *arg)
  * Tests SDL_SetError with empty input
  * \sa SDL_SetError
  */
-static int platform_testSetErrorEmptyInput(void *arg)
+static int SDLCALL platform_testSetErrorEmptyInput(void *arg)
 {
     int result;
     const char *testError = "";
@@ -336,7 +336,7 @@ static int platform_testSetErrorEmptyInput(void *arg)
  * Tests SDL_SetError with invalid input
  * \sa SDL_SetError
  */
-static int platform_testSetErrorInvalidInput(void *arg)
+static int SDLCALL platform_testSetErrorInvalidInput(void *arg)
 {
     int result;
     const char *invalidError = "";
@@ -419,7 +419,7 @@ static int platform_testSetErrorInvalidInput(void *arg)
  * Tests SDL_GetPowerInfo
  * \sa SDL_GetPowerInfo
  */
-static int platform_testGetPowerInfo(void *arg)
+static int SDLCALL platform_testGetPowerInfo(void *arg)
 {
     SDL_PowerState state;
     SDL_PowerState stateAgain;

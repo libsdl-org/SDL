@@ -44,7 +44,7 @@ static SDL_bool hasDrawColor(void);
 /**
  * Create software renderer for tests
  */
-static void InitCreateRenderer(void **arg)
+static void SDLCALL InitCreateRenderer(void **arg)
 {
     int width = 320, height = 240;
     const char *renderer_name = NULL;
@@ -68,7 +68,7 @@ static void InitCreateRenderer(void **arg)
 /**
  * Destroy renderer for tests
  */
-static void CleanupDestroyRenderer(void *arg)
+static void SDLCALL CleanupDestroyRenderer(void *arg)
 {
     if (renderer) {
         SDL_DestroyRenderer(renderer);
@@ -88,7 +88,7 @@ static void CleanupDestroyRenderer(void *arg)
  *
  * \sa SDL_GetNumRenderDrivers
  */
-static int render_testGetNumRenderDrivers(void *arg)
+static int SDLCALL render_testGetNumRenderDrivers(void *arg)
 {
     int n;
     n = SDL_GetNumRenderDrivers();
@@ -104,7 +104,7 @@ static int render_testGetNumRenderDrivers(void *arg)
  * \sa SDL_RenderLine
  *
  */
-static int render_testPrimitives(void *arg)
+static int SDLCALL render_testPrimitives(void *arg)
 {
     int ret;
     int x, y;
@@ -191,7 +191,7 @@ static int render_testPrimitives(void *arg)
  * \sa SDL_RenderLine
  *
  */
-static int render_testPrimitivesWithViewport(void *arg)
+static int SDLCALL render_testPrimitivesWithViewport(void *arg)
 {
     SDL_Rect viewport;
     SDL_Surface *surface;
@@ -233,7 +233,7 @@ static int render_testPrimitivesWithViewport(void *arg)
  * \sa SDL_RenderTexture
  * \sa SDL_DestroyTexture
  */
-static int render_testBlit(void *arg)
+static int SDLCALL render_testBlit(void *arg)
 {
     int ret;
     SDL_FRect rect;
@@ -296,7 +296,7 @@ static int render_testBlit(void *arg)
 /**
  * Tests tiled blitting routines.
  */
-static int render_testBlitTiled(void *arg)
+static int SDLCALL render_testBlitTiled(void *arg)
 {
     int ret;
     SDL_FRect rect;
@@ -438,7 +438,7 @@ static void Fill9GridReferenceSurface(SDL_Surface *surface, int left_width, int 
 /**
  *  Tests 9-grid blitting.
  */
-static int render_testBlit9Grid(void *arg)
+static int SDLCALL render_testBlit9Grid(void *arg)
 {
     SDL_Surface *referenceSurface = NULL;
     SDL_Surface *source = NULL;
@@ -625,7 +625,7 @@ static int render_testBlit9Grid(void *arg)
  * \sa SDL_RenderTexture
  * \sa SDL_DestroyTexture
  */
-static int render_testBlitColor(void *arg)
+static int SDLCALL render_testBlitColor(void *arg)
 {
     int ret;
     SDL_FRect rect;
@@ -949,7 +949,7 @@ static void testBlendMode(int mode)
 /**
  * Tests render operations with blend modes
  */
-static int render_testBlendModes(void *arg)
+static int SDLCALL render_testBlendModes(void *arg)
 {
     testBlendMode(-1);
     testBlendMode(-2);
@@ -967,7 +967,7 @@ static int render_testBlendModes(void *arg)
 /**
  * Test viewport
  */
-static int render_testViewport(void *arg)
+static int SDLCALL render_testViewport(void *arg)
 {
     SDL_Surface *referenceSurface;
     SDL_Rect viewport;
@@ -1024,7 +1024,7 @@ static int render_testViewport(void *arg)
 /**
  * Test clip rect
  */
-static int render_testClipRect(void *arg)
+static int SDLCALL render_testClipRect(void *arg)
 {
     SDL_Surface *referenceSurface;
     SDL_Rect cliprect;
@@ -1081,7 +1081,7 @@ static int render_testClipRect(void *arg)
 /**
  * Test logical size
  */
-static int render_testLogicalSize(void *arg)
+static int SDLCALL render_testLogicalSize(void *arg)
 {
     SDL_Surface *referenceSurface;
     SDL_Rect viewport;
@@ -1434,7 +1434,7 @@ clearScreen(void)
 /**
  * Tests geometry UV wrapping
  */
-static int render_testUVWrapping(void *arg)
+static int SDLCALL render_testUVWrapping(void *arg)
 {
     SDL_Vertex vertices[6];
     SDL_Vertex *verts = vertices;

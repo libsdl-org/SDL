@@ -64,7 +64,7 @@ static void validateIntersectRectAndLineResults(
  *
  * \sa SDL_GetRectAndLineIntersectionFloat
  */
-static int rect_testIntersectRectAndLineFloat(void *arg)
+static int SDLCALL rect_testIntersectRectAndLineFloat(void *arg)
 {
     SDL_FRect rect;
     float x1, y1;
@@ -101,7 +101,7 @@ static int rect_testIntersectRectAndLineFloat(void *arg)
  *
  * \sa SDL_GetRectAndLineIntersection
  */
-static int rect_testIntersectRectAndLine(void *arg)
+static int SDLCALL rect_testIntersectRectAndLine(void *arg)
 {
     SDL_Rect refRect = { 0, 0, 32, 32 };
     SDL_Rect rect;
@@ -181,7 +181,7 @@ static int rect_testIntersectRectAndLine(void *arg)
  *
  * \sa SDL_GetRectAndLineIntersection
  */
-static int rect_testIntersectRectAndLineInside(void *arg)
+static int SDLCALL rect_testIntersectRectAndLineInside(void *arg)
 {
     SDL_Rect refRect = { 0, 0, 32, 32 };
     SDL_Rect rect;
@@ -246,7 +246,7 @@ static int rect_testIntersectRectAndLineInside(void *arg)
  *
  * \sa SDL_GetRectAndLineIntersection
  */
-static int rect_testIntersectRectAndLineOutside(void *arg)
+static int SDLCALL rect_testIntersectRectAndLineOutside(void *arg)
 {
     SDL_Rect refRect = { 0, 0, 32, 32 };
     SDL_Rect rect;
@@ -299,7 +299,7 @@ static int rect_testIntersectRectAndLineOutside(void *arg)
  *
  * \sa SDL_GetRectAndLineIntersection
  */
-static int rect_testIntersectRectAndLineEmpty(void *arg)
+static int SDLCALL rect_testIntersectRectAndLineEmpty(void *arg)
 {
     SDL_Rect refRect;
     SDL_Rect rect;
@@ -332,7 +332,7 @@ static int rect_testIntersectRectAndLineEmpty(void *arg)
  *
  * \sa SDL_GetRectAndLineIntersection
  */
-static int rect_testIntersectRectAndLineParam(void *arg)
+static int SDLCALL rect_testIntersectRectAndLineParam(void *arg)
 {
     SDL_Rect rect = { 0, 0, 32, 32 };
     int x1 = rect.w / 2;
@@ -549,7 +549,7 @@ static void validateFRectEqualsResults(
  *
  * \sa SDL_GetRectIntersectionFloat
  */
-static int rect_testIntersectRectFloat(void *arg)
+static int SDLCALL rect_testIntersectRectFloat(void *arg)
 {
     SDL_FRect rectA;
     SDL_FRect rectB;
@@ -617,7 +617,7 @@ static int rect_testIntersectRectFloat(void *arg)
  *
  * \sa SDL_GetRectIntersection
  */
-static int rect_testIntersectRectInside(void *arg)
+static int SDLCALL rect_testIntersectRectInside(void *arg)
 {
     SDL_Rect refRectA = { 0, 0, 32, 32 };
     SDL_Rect refRectB;
@@ -644,7 +644,7 @@ static int rect_testIntersectRectInside(void *arg)
  *
  * \sa SDL_GetRectIntersection
  */
-static int rect_testIntersectRectOutside(void *arg)
+static int SDLCALL rect_testIntersectRectOutside(void *arg)
 {
     SDL_Rect refRectA = { 0, 0, 32, 32 };
     SDL_Rect refRectB;
@@ -671,7 +671,7 @@ static int rect_testIntersectRectOutside(void *arg)
  *
  * \sa SDL_GetRectIntersection
  */
-static int rect_testIntersectRectPartial(void *arg)
+static int SDLCALL rect_testIntersectRectPartial(void *arg)
 {
     SDL_Rect refRectA = { 0, 0, 32, 32 };
     SDL_Rect refRectB;
@@ -759,7 +759,7 @@ static int rect_testIntersectRectPartial(void *arg)
  *
  * \sa SDL_GetRectIntersection
  */
-static int rect_testIntersectRectPoint(void *arg)
+static int SDLCALL rect_testIntersectRectPoint(void *arg)
 {
     SDL_Rect refRectA = { 0, 0, 1, 1 };
     SDL_Rect refRectB = { 0, 0, 1, 1 };
@@ -805,7 +805,7 @@ static int rect_testIntersectRectPoint(void *arg)
  *
  * \sa SDL_GetRectIntersection
  */
-static int rect_testIntersectRectEmpty(void *arg)
+static int SDLCALL rect_testIntersectRectEmpty(void *arg)
 {
     SDL_Rect refRectA;
     SDL_Rect refRectB;
@@ -876,7 +876,7 @@ static int rect_testIntersectRectEmpty(void *arg)
  *
  * \sa SDL_GetRectIntersection
  */
-static int rect_testIntersectRectParam(void *arg)
+static int SDLCALL rect_testIntersectRectParam(void *arg)
 {
     SDL_Rect rectA;
     SDL_Rect rectB = { 0 };
@@ -905,7 +905,7 @@ static int rect_testIntersectRectParam(void *arg)
  *
  * \sa SDL_HasRectIntersection
  */
-static int rect_testHasIntersectionInside(void *arg)
+static int SDLCALL rect_testHasIntersectionInside(void *arg)
 {
     SDL_Rect refRectA = { 0, 0, 32, 32 };
     SDL_Rect refRectB;
@@ -931,7 +931,7 @@ static int rect_testHasIntersectionInside(void *arg)
  *
  * \sa SDL_HasRectIntersection
  */
-static int rect_testHasIntersectionOutside(void *arg)
+static int SDLCALL rect_testHasIntersectionOutside(void *arg)
 {
     SDL_Rect refRectA = { 0, 0, 32, 32 };
     SDL_Rect refRectB;
@@ -957,7 +957,7 @@ static int rect_testHasIntersectionOutside(void *arg)
  *
  * \sa SDL_HasRectIntersection
  */
-static int rect_testHasIntersectionPartial(void *arg)
+static int SDLCALL rect_testHasIntersectionPartial(void *arg)
 {
     SDL_Rect refRectA = { 0, 0, 32, 32 };
     SDL_Rect refRectB;
@@ -1023,7 +1023,7 @@ static int rect_testHasIntersectionPartial(void *arg)
  *
  * \sa SDL_HasRectIntersection
  */
-static int rect_testHasIntersectionPoint(void *arg)
+static int SDLCALL rect_testHasIntersectionPoint(void *arg)
 {
     SDL_Rect refRectA = { 0, 0, 1, 1 };
     SDL_Rect refRectB = { 0, 0, 1, 1 };
@@ -1068,7 +1068,7 @@ static int rect_testHasIntersectionPoint(void *arg)
  *
  * \sa SDL_HasRectIntersection
  */
-static int rect_testHasIntersectionEmpty(void *arg)
+static int SDLCALL rect_testHasIntersectionEmpty(void *arg)
 {
     SDL_Rect refRectA;
     SDL_Rect refRectB;
@@ -1125,7 +1125,7 @@ static int rect_testHasIntersectionEmpty(void *arg)
  *
  * \sa SDL_HasRectIntersection
  */
-static int rect_testHasIntersectionParam(void *arg)
+static int SDLCALL rect_testHasIntersectionParam(void *arg)
 {
     SDL_Rect rectA;
     SDL_Rect rectB = { 0 };
@@ -1147,7 +1147,7 @@ static int rect_testHasIntersectionParam(void *arg)
  *
  * \sa SDL_GetRectEnclosingPointsFloat
  */
-static int rect_testEnclosePointsFloat(void *arg)
+static int SDLCALL rect_testEnclosePointsFloat(void *arg)
 {
     SDL_FPoint fpts[3] = { { 1.25f, 2.5f }, { 1.75f, 3.75f }, { 3.5f, 3.0f } };
     int i, count = 3;
@@ -1180,7 +1180,7 @@ static int rect_testEnclosePointsFloat(void *arg)
  *
  * \sa SDL_GetRectEnclosingPoints
  */
-static int rect_testEnclosePoints(void *arg)
+static int SDLCALL rect_testEnclosePoints(void *arg)
 {
     const int numPoints = 16;
     SDL_Point refPoints[16];
@@ -1257,7 +1257,7 @@ static int rect_testEnclosePoints(void *arg)
  *
  * \sa SDL_GetRectEnclosingPoints
  */
-static int rect_testEnclosePointsRepeatedInput(void *arg)
+static int SDLCALL rect_testEnclosePointsRepeatedInput(void *arg)
 {
     const int numPoints = 8;
     const int halfPoints = 4;
@@ -1340,7 +1340,7 @@ static int rect_testEnclosePointsRepeatedInput(void *arg)
  *
  * \sa SDL_GetRectEnclosingPoints
  */
-static int rect_testEnclosePointsWithClipping(void *arg)
+static int SDLCALL rect_testEnclosePointsWithClipping(void *arg)
 {
     const int numPoints = 16;
     SDL_Point refPoints[16];
@@ -1446,7 +1446,7 @@ static int rect_testEnclosePointsWithClipping(void *arg)
  *
  * \sa SDL_GetRectEnclosingPoints
  */
-static int rect_testEnclosePointsParam(void *arg)
+static int SDLCALL rect_testEnclosePointsParam(void *arg)
 {
     SDL_Point points[1];
     int count;
@@ -1473,7 +1473,7 @@ static int rect_testEnclosePointsParam(void *arg)
  *
  * \sa SDL_GetRectUnion
  */
-static int rect_testUnionRectOutside(void *arg)
+static int SDLCALL rect_testUnionRectOutside(void *arg)
 {
     SDL_Rect refRectA, refRectB;
     SDL_Rect rectA, rectB;
@@ -1551,7 +1551,7 @@ static int rect_testUnionRectOutside(void *arg)
  *
  * \sa SDL_GetRectUnion
  */
-static int rect_testUnionRectEmpty(void *arg)
+static int SDLCALL rect_testUnionRectEmpty(void *arg)
 {
     SDL_Rect refRectA, refRectB;
     SDL_Rect rectA, rectB;
@@ -1615,7 +1615,7 @@ static int rect_testUnionRectEmpty(void *arg)
  *
  * \sa SDL_GetRectUnion
  */
-static int rect_testUnionRectInside(void *arg)
+static int SDLCALL rect_testUnionRectInside(void *arg)
 {
     SDL_Rect refRectA, refRectB;
     SDL_Rect rectA, rectB;
@@ -1686,7 +1686,7 @@ static int rect_testUnionRectInside(void *arg)
  *
  * \sa SDL_GetRectUnion
  */
-static int rect_testUnionRectParam(void *arg)
+static int SDLCALL rect_testUnionRectParam(void *arg)
 {
     SDL_Rect rectA, rectB = { 0 };
     SDL_Rect result;
@@ -1713,7 +1713,7 @@ static int rect_testUnionRectParam(void *arg)
  *
  * \sa SDL_RectEmptyFloat
  */
-static int rect_testRectEmptyFloat(void *arg)
+static int SDLCALL rect_testRectEmptyFloat(void *arg)
 {
     SDL_FRect rect;
     SDL_bool result;
@@ -1755,7 +1755,7 @@ static int rect_testRectEmptyFloat(void *arg)
  *
  * \sa SDL_RectEmpty
  */
-static int rect_testRectEmpty(void *arg)
+static int SDLCALL rect_testRectEmpty(void *arg)
 {
     SDL_Rect refRect;
     SDL_Rect rect;
@@ -1797,7 +1797,7 @@ static int rect_testRectEmpty(void *arg)
  *
  * \sa SDL_RectEmpty
  */
-static int rect_testRectEmptyParam(void *arg)
+static int SDLCALL rect_testRectEmptyParam(void *arg)
 {
     SDL_bool result;
 
@@ -1813,7 +1813,7 @@ static int rect_testRectEmptyParam(void *arg)
  *
  * \sa SDL_RectsEqual
  */
-static int rect_testRectEquals(void *arg)
+static int SDLCALL rect_testRectEquals(void *arg)
 {
     SDL_Rect refRectA;
     SDL_Rect refRectB;
@@ -1842,7 +1842,7 @@ static int rect_testRectEquals(void *arg)
  *
  * \sa SDL_RectsEqual
  */
-static int rect_testRectEqualsParam(void *arg)
+static int SDLCALL rect_testRectEqualsParam(void *arg)
 {
     SDL_Rect rectA;
     SDL_Rect rectB;
@@ -1874,7 +1874,7 @@ static int rect_testRectEqualsParam(void *arg)
  *
  * \sa SDL_RectsEqualFloat
  */
-static int rect_testFRectEquals(void *arg)
+static int SDLCALL rect_testFRectEquals(void *arg)
 {
     SDL_FRect refRectA;
     SDL_FRect refRectB;
@@ -1903,7 +1903,7 @@ static int rect_testFRectEquals(void *arg)
  *
  * \sa SDL_RectsEqualFloat
  */
-static int rect_testFRectEqualsParam(void *arg)
+static int SDLCALL rect_testFRectEqualsParam(void *arg)
 {
     SDL_FRect rectA;
     SDL_FRect rectB;

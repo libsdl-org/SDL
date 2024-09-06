@@ -19,7 +19,7 @@
 
 /* Fixture */
 
-static void audioSetUp(void **arg)
+static void SDLCALL audioSetUp(void **arg)
 {
     /* Start SDL audio subsystem */
     SDL_bool ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
@@ -30,7 +30,7 @@ static void audioSetUp(void **arg)
     }
 }
 
-static void audioTearDown(void *arg)
+static void SDLCALL audioTearDown(void *arg)
 {
     /* Remove a possibly created file from SDL disk writer audio driver; ignore errors */
     (void)remove("sdlaudio.raw");
@@ -64,7 +64,7 @@ static SDL_AudioDeviceID g_audio_id = 0;
  * \sa SDL_QuitSubSystem
  * \sa SDL_InitSubSystem
  */
-static int audio_quitInitAudioSubSystem(void *arg)
+static int SDLCALL audio_quitInitAudioSubSystem(void *arg)
 {
     /* Stop SDL audio subsystem */
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -82,7 +82,7 @@ static int audio_quitInitAudioSubSystem(void *arg)
  * \sa SDL_InitAudio
  * \sa SDL_QuitAudio
  */
-static int audio_initQuitAudio(void *arg)
+static int SDLCALL audio_initQuitAudio(void *arg)
 {
     int result;
     int i, iMax;
@@ -145,7 +145,7 @@ static int audio_initQuitAudio(void *arg)
  * \sa SDL_CloseAudioDevice
  * \sa SDL_QuitAudio
  */
-static int audio_initOpenCloseQuitAudio(void *arg)
+static int SDLCALL audio_initOpenCloseQuitAudio(void *arg)
 {
     int result;
     int i, iMax, j, k;
@@ -235,7 +235,7 @@ static int audio_initOpenCloseQuitAudio(void *arg)
  * \sa SDL_PauseAudioDevice
  * \sa SDL_PlayAudioDevice
  */
-static int audio_pauseUnpauseAudio(void *arg)
+static int SDLCALL audio_pauseUnpauseAudio(void *arg)
 {
     int iMax;
     int i, j /*, k, l*/;
@@ -361,7 +361,7 @@ static int audio_pauseUnpauseAudio(void *arg)
  * \sa SDL_GetNumAudioDevices
  * \sa SDL_GetAudioDeviceName
  */
-static int audio_enumerateAndNameAudioDevices(void *arg)
+static int SDLCALL audio_enumerateAndNameAudioDevices(void *arg)
 {
     int t;
     int i, n;
@@ -400,7 +400,7 @@ static int audio_enumerateAndNameAudioDevices(void *arg)
  * \sa SDL_GetNumAudioDevices
  * \sa SDL_GetAudioDeviceName
  */
-static int audio_enumerateAndNameAudioDevicesNegativeTests(void *arg)
+static int SDLCALL audio_enumerateAndNameAudioDevicesNegativeTests(void *arg)
 {
     return TEST_COMPLETED;  /* nothing in here atm since these interfaces changed in SDL3. */
 }
@@ -411,7 +411,7 @@ static int audio_enumerateAndNameAudioDevicesNegativeTests(void *arg)
  * \sa SDL_GetNumAudioDrivers
  * \sa SDL_GetAudioDriver
  */
-static int audio_printAudioDrivers(void *arg)
+static int SDLCALL audio_printAudioDrivers(void *arg)
 {
     int i, n;
     const char *name;
@@ -441,7 +441,7 @@ static int audio_printAudioDrivers(void *arg)
  *
  * \sa SDL_GetCurrentAudioDriver
  */
-static int audio_printCurrentAudioDriver(void *arg)
+static int SDLCALL audio_printCurrentAudioDriver(void *arg)
 {
     /* Check current audio driver */
     const char *name = SDL_GetCurrentAudioDriver();
@@ -495,7 +495,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_F32BE_FORMAT, SDL_AUDIO_F32BE == (SDL_AUDIO_F3
  *
  * \sa SDL_GetAudioFormatName
  */
-static int audio_getAudioFormatName(void *arg)
+static int SDLCALL audio_getAudioFormatName(void *arg)
 {
     const char *error;
     int i;
@@ -547,7 +547,7 @@ static int audio_getAudioFormatName(void *arg)
  *
  * \sa SDL_CreateAudioStream
  */
-static int audio_buildAudioStream(void *arg)
+static int SDLCALL audio_buildAudioStream(void *arg)
 {
     SDL_AudioStream *stream;
     SDL_AudioSpec spec1;
@@ -619,7 +619,7 @@ static int audio_buildAudioStream(void *arg)
  *
  * \sa SDL_CreateAudioStream
  */
-static int audio_buildAudioStreamNegative(void *arg)
+static int SDLCALL audio_buildAudioStreamNegative(void *arg)
 {
     const char *error;
     SDL_AudioStream *stream;
@@ -702,7 +702,7 @@ static int audio_buildAudioStreamNegative(void *arg)
  *
  * \sa SDL_GetAudioDeviceStatus
  */
-static int audio_getAudioStatus(void *arg)
+static int SDLCALL audio_getAudioStatus(void *arg)
 {
     return TEST_COMPLETED;  /* no longer a thing in SDL3. */
 }
@@ -712,7 +712,7 @@ static int audio_getAudioStatus(void *arg)
  *
  * \sa SDL_GetAudioStatus
  */
-static int audio_openCloseAndGetAudioStatus(void *arg)
+static int SDLCALL audio_openCloseAndGetAudioStatus(void *arg)
 {
     return TEST_COMPLETED;  /* not a thing in SDL3. */
 }
@@ -723,7 +723,7 @@ static int audio_openCloseAndGetAudioStatus(void *arg)
  * \sa SDL_LockAudioDevice
  * \sa SDL_UnlockAudioDevice
  */
-static int audio_lockUnlockOpenAudioDevice(void *arg)
+static int SDLCALL audio_lockUnlockOpenAudioDevice(void *arg)
 {
     return TEST_COMPLETED;  /* not a thing in SDL3 */
 }
@@ -733,7 +733,7 @@ static int audio_lockUnlockOpenAudioDevice(void *arg)
  *
  * \sa SDL_CreateAudioStream
  */
-static int audio_convertAudio(void *arg)
+static int SDLCALL audio_convertAudio(void *arg)
 {
     SDL_AudioStream *stream;
     SDL_AudioSpec spec1;
@@ -870,7 +870,7 @@ static int audio_convertAudio(void *arg)
  *
  * \sa SDL_AudioDeviceConnected
  */
-static int audio_openCloseAudioDeviceConnected(void *arg)
+static int SDLCALL audio_openCloseAudioDeviceConnected(void *arg)
 {
     return TEST_COMPLETED;  /* not a thing in SDL3. */
 }
@@ -1017,7 +1017,7 @@ static int convert_audio_chunks(SDL_AudioStream* stream, const void* src, int sr
  * \sa https://wiki.libsdl.org/SDL_FlushAudioStream
  * \sa https://wiki.libsdl.org/SDL_GetAudioStreamData
  */
-static int audio_resampleLoss(void *arg)
+static int SDLCALL audio_resampleLoss(void *arg)
 {
   /* Note: always test long input time (>= 5s from experience) in some test
    * cases because an improper implementation may suffer from low resampling
@@ -1156,7 +1156,7 @@ static int audio_resampleLoss(void *arg)
  *
  * \sa SDL_ConvertAudioSamples
  */
-static int audio_convertAccuracy(void *arg)
+static int SDLCALL audio_convertAccuracy(void *arg)
 {
     static SDL_AudioFormat formats[] = { SDL_AUDIO_S8, SDL_AUDIO_U8, SDL_AUDIO_S16, SDL_AUDIO_S32 };
     static const char* format_names[] = { "S8", "U8", "S16", "S32" };
@@ -1294,7 +1294,7 @@ static int audio_convertAccuracy(void *arg)
  *
  * \sa SDL_SetAudioStreamFormat
  */
-static int audio_formatChange(void *arg)
+static int SDLCALL audio_formatChange(void *arg)
 {
     int i;
     SDL_AudioSpec spec1, spec2, spec3;

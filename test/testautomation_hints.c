@@ -50,7 +50,7 @@ static const int numHintsEnum = SDL_arraysize(HintsEnum);
 /**
  * Call to SDL_GetHint
  */
-static int hints_getHint(void *arg)
+static int SDLCALL hints_getHint(void *arg)
 {
     const char *result1;
     const char *result2;
@@ -79,7 +79,7 @@ static void SDLCALL hints_testHintChanged(void *userdata, const char *name, cons
 /**
  * Call to SDL_SetHint
  */
-static int hints_setHint(void *arg)
+static int SDLCALL hints_setHint(void *arg)
 {
     const char *testHint = "SDL_AUTOMATED_TEST_HINT";
     const char *originalValue;

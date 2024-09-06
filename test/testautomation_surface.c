@@ -41,7 +41,7 @@ static SDL_Surface *testSurface = NULL;
 /* Fixture */
 
 /* Create a 32-bit writable surface for blitting tests */
-static void surfaceSetUp(void **arg)
+static void SDLCALL surfaceSetUp(void **arg)
 {
     int result;
     SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
@@ -64,7 +64,7 @@ static void surfaceSetUp(void **arg)
     }
 }
 
-static void surfaceTearDown(void *arg)
+static void SDLCALL surfaceTearDown(void *arg)
 {
     SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
@@ -316,7 +316,7 @@ static void AssertFileExist(const char *filename)
 /**
  * Tests sprite saving and loading
  */
-static int surface_testSaveLoadBitmap(void *arg)
+static int SDLCALL surface_testSaveLoadBitmap(void *arg)
 {
     int ret;
     const char *sampleFilename = "testSaveLoadBitmap.bmp";
@@ -363,7 +363,7 @@ static int surface_testSaveLoadBitmap(void *arg)
 /**
  *  Tests tiled blitting.
  */
-static int surface_testBlitTiled(void *arg)
+static int SDLCALL surface_testBlitTiled(void *arg)
 {
     SDL_Surface *face = NULL;
     SDL_Surface *testSurface2x = NULL;
@@ -488,7 +488,7 @@ static void Fill9GridReferenceSurface(SDL_Surface *surface, int left_width, int 
 /**
  *  Tests 9-grid blitting.
  */
-static int surface_testBlit9Grid(void *arg)
+static int SDLCALL surface_testBlit9Grid(void *arg)
 {
     SDL_Surface *source = NULL;
     int x, y;
@@ -610,7 +610,7 @@ static int surface_testBlit9Grid(void *arg)
 /**
  *  Tests blitting between multiple surfaces of the same format
  */
-static int surface_testBlitMultiple(void *arg)
+static int SDLCALL surface_testBlitMultiple(void *arg)
 {
     SDL_Surface *source, *surface;
     SDL_Palette *palette;
@@ -675,7 +675,7 @@ static int surface_testBlitMultiple(void *arg)
 /**
  *  Tests surface conversion.
  */
-static int surface_testSurfaceConversion(void *arg)
+static int SDLCALL surface_testSurfaceConversion(void *arg)
 {
     SDL_Surface *rface = NULL, *face = NULL;
     int ret = 0;
@@ -715,7 +715,7 @@ static int surface_testSurfaceConversion(void *arg)
 /**
  *  Tests surface conversion across all pixel formats.
  */
-static int surface_testCompleteSurfaceConversion(void *arg)
+static int SDLCALL surface_testCompleteSurfaceConversion(void *arg)
 {
     Uint32 pixel_formats[] = {
         SDL_PIXELFORMAT_INDEX8,
@@ -813,7 +813,7 @@ static int surface_testCompleteSurfaceConversion(void *arg)
 /**
  * Tests sprite loading. A failure case.
  */
-static int surface_testLoadFailure(void *arg)
+static int SDLCALL surface_testLoadFailure(void *arg)
 {
     SDL_Surface *face = SDL_LoadBMP("nonexistant.bmp");
     SDLTest_AssertCheck(face == NULL, "SDL_CreateLoadBmp");
@@ -824,7 +824,7 @@ static int surface_testLoadFailure(void *arg)
 /**
  * Tests some blitting routines.
  */
-static int surface_testBlit(void *arg)
+static int SDLCALL surface_testBlit(void *arg)
 {
     /* Basic blitting */
     testBlitBlendMode(SDL_BLENDMODE_NONE);
@@ -835,7 +835,7 @@ static int surface_testBlit(void *arg)
 /**
  * Tests some blitting routines with color mod
  */
-static int surface_testBlitColorMod(void *arg)
+static int SDLCALL surface_testBlitColorMod(void *arg)
 {
     /* Basic blitting with color mod */
     testBlitBlendMode(-1);
@@ -846,7 +846,7 @@ static int surface_testBlitColorMod(void *arg)
 /**
  * Tests some blitting routines with alpha mod
  */
-static int surface_testBlitAlphaMod(void *arg)
+static int SDLCALL surface_testBlitAlphaMod(void *arg)
 {
     /* Basic blitting with alpha mod */
     testBlitBlendMode(-2);
@@ -857,7 +857,7 @@ static int surface_testBlitAlphaMod(void *arg)
 /**
  * Tests some more blitting routines.
  */
-static int surface_testBlitBlendBlend(void *arg)
+static int SDLCALL surface_testBlitBlendBlend(void *arg)
 {
     /* Blend blitting */
     testBlitBlendMode(SDL_BLENDMODE_BLEND);
@@ -868,7 +868,7 @@ static int surface_testBlitBlendBlend(void *arg)
 /**
  * @brief Tests some more blitting routines.
  */
-static int surface_testBlitBlendPremultiplied(void *arg)
+static int SDLCALL surface_testBlitBlendPremultiplied(void *arg)
 {
    /* Blend premultiplied blitting */
    testBlitBlendMode(SDL_BLENDMODE_BLEND_PREMULTIPLIED);
@@ -879,7 +879,7 @@ static int surface_testBlitBlendPremultiplied(void *arg)
 /**
  * Tests some more blitting routines.
  */
-static int surface_testBlitBlendAdd(void *arg)
+static int SDLCALL surface_testBlitBlendAdd(void *arg)
 {
     /* Add blitting */
     testBlitBlendMode(SDL_BLENDMODE_ADD);
@@ -890,7 +890,7 @@ static int surface_testBlitBlendAdd(void *arg)
 /**
  * Tests some more blitting routines.
  */
-static int surface_testBlitBlendAddPremultiplied(void *arg)
+static int SDLCALL surface_testBlitBlendAddPremultiplied(void *arg)
 {
     /* Add premultiplied blitting */
     testBlitBlendMode(SDL_BLENDMODE_ADD_PREMULTIPLIED);
@@ -901,7 +901,7 @@ static int surface_testBlitBlendAddPremultiplied(void *arg)
 /**
  * Tests some more blitting routines.
  */
-static int surface_testBlitBlendMod(void *arg)
+static int SDLCALL surface_testBlitBlendMod(void *arg)
 {
     /* Mod blitting */
     testBlitBlendMode(SDL_BLENDMODE_MOD);
@@ -912,7 +912,7 @@ static int surface_testBlitBlendMod(void *arg)
 /**
  * Tests some more blitting routines.
  */
-static int surface_testBlitBlendMul(void *arg)
+static int SDLCALL surface_testBlitBlendMul(void *arg)
 {
     /* Mod blitting */
     testBlitBlendMode(SDL_BLENDMODE_MUL);
@@ -920,7 +920,7 @@ static int surface_testBlitBlendMul(void *arg)
     return TEST_COMPLETED;
 }
 
-static int surface_testOverflow(void *arg)
+static int SDLCALL surface_testOverflow(void *arg)
 {
     char buf[1024];
     const char *expectedError;
@@ -1135,7 +1135,7 @@ static int surface_testOverflow(void *arg)
     return TEST_COMPLETED;
 }
 
-static int surface_testFlip(void *arg)
+static int SDLCALL surface_testFlip(void *arg)
 {
     SDL_Surface *surface;
     Uint8 *pixels;
@@ -1182,7 +1182,7 @@ static int surface_testFlip(void *arg)
     return TEST_COMPLETED;
 }
 
-static int surface_testPalette(void *arg)
+static int SDLCALL surface_testPalette(void *arg)
 {
     SDL_Surface *source, *surface, *output;
     SDL_Palette *palette;
@@ -1266,7 +1266,7 @@ static int surface_testPalette(void *arg)
     return TEST_COMPLETED;
 }
 
-static int surface_testPalettization(void *arg)
+static int SDLCALL surface_testPalettization(void *arg)
 {
     const SDL_Color palette_colors[] = {
         { 0x80, 0x00, 0x00, 0xff },
@@ -1357,7 +1357,7 @@ static int surface_testPalettization(void *arg)
     return TEST_COMPLETED;
 }
 
-static int surface_testClearSurface(void *arg)
+static int SDLCALL surface_testClearSurface(void *arg)
 {
     SDL_PixelFormat formats[] = {
         SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGBA8888,
@@ -1405,7 +1405,7 @@ static int surface_testClearSurface(void *arg)
     return TEST_COMPLETED;
 }
 
-static int surface_testPremultiplyAlpha(void *arg)
+static int SDLCALL surface_testPremultiplyAlpha(void *arg)
 {
     SDL_PixelFormat formats[] = {
         SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGBA8888,

@@ -261,7 +261,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_COLORSPACE_BT2020_FULL_FORMAT, SDL_COLORSPACE_BT2020
 /**
  * Call to SDL_GetPixelFormatDetails
  */
-static int pixels_getPixelFormatDetails(void *arg)
+static int SDLCALL pixels_getPixelFormatDetails(void *arg)
 {
     const char *unknownFormat = "SDL_PIXELFORMAT_UNKNOWN";
     const char *expectedError = "Unknown pixel format";
@@ -349,7 +349,7 @@ static int pixels_getPixelFormatDetails(void *arg)
  *
  * \sa SDL_GetPixelFormatName
  */
-static int pixels_getPixelFormatName(void *arg)
+static int SDLCALL pixels_getPixelFormatName(void *arg)
 {
     const char *unknownFormat = "SDL_PIXELFORMAT_UNKNOWN";
     const char *error;
@@ -417,7 +417,7 @@ static int pixels_getPixelFormatName(void *arg)
  * \sa SDL_CreatePalette
  * \sa SDL_DestroyPalette
  */
-static int pixels_allocFreePalette(void *arg)
+static int SDLCALL pixels_allocFreePalette(void *arg)
 {
     const char *expectedError = "Parameter 'ncolors' is invalid";
     const char *error;

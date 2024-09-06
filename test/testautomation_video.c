@@ -98,7 +98,7 @@ static void destroyVideoSuiteTestWindow(SDL_Window *window)
 /**
  * Enable and disable screensaver while checking state
  */
-static int video_enableDisableScreensaver(void *arg)
+static int SDLCALL video_enableDisableScreensaver(void *arg)
 {
     SDL_bool initialResult;
     SDL_bool result;
@@ -149,7 +149,7 @@ static int video_enableDisableScreensaver(void *arg)
 /**
  * Tests the functionality of the SDL_CreateWindow function using different sizes
  */
-static int video_createWindowVariousSizes(void *arg)
+static int SDLCALL video_createWindowVariousSizes(void *arg)
 {
     SDL_Window *window;
     const char *title = "video_createWindowVariousSizes Test Window";
@@ -203,7 +203,7 @@ static int video_createWindowVariousSizes(void *arg)
 /**
  * Tests the functionality of the SDL_CreateWindow function using different flags
  */
-static int video_createWindowVariousFlags(void *arg)
+static int SDLCALL video_createWindowVariousFlags(void *arg)
 {
     SDL_Window *window;
     const char *title = "video_createWindowVariousFlags Test Window";
@@ -277,7 +277,7 @@ static int video_createWindowVariousFlags(void *arg)
 /**
  * Tests the functionality of the SDL_GetWindowFlags function
  */
-static int video_getWindowFlags(void *arg)
+static int SDLCALL video_getWindowFlags(void *arg)
 {
     SDL_Window *window;
     const char *title = "video_getWindowFlags Test Window";
@@ -304,7 +304,7 @@ static int video_getWindowFlags(void *arg)
 /**
  * Tests the functionality of the SDL_GetFullscreenDisplayModes function
  */
-static int video_getFullscreenDisplayModes(void *arg)
+static int SDLCALL video_getFullscreenDisplayModes(void *arg)
 {
     SDL_DisplayID *displays;
     SDL_DisplayMode **modes;
@@ -333,7 +333,7 @@ static int video_getFullscreenDisplayModes(void *arg)
 /**
  * Tests the functionality of the SDL_GetClosestFullscreenDisplayMode function against current resolution
  */
-static int video_getClosestDisplayModeCurrentResolution(void *arg)
+static int SDLCALL video_getClosestDisplayModeCurrentResolution(void *arg)
 {
     SDL_DisplayID *displays;
     SDL_DisplayMode **modes;
@@ -383,7 +383,7 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
 /**
  * Tests the functionality of the SDL_GetClosestFullscreenDisplayMode function against random resolution
  */
-static int video_getClosestDisplayModeRandomResolution(void *arg)
+static int SDLCALL video_getClosestDisplayModeRandomResolution(void *arg)
 {
     SDL_DisplayID *displays;
     SDL_DisplayMode target;
@@ -424,7 +424,7 @@ static int video_getClosestDisplayModeRandomResolution(void *arg)
  *
  * \sa SDL_GetWindowFullscreenMode
  */
-static int video_getWindowDisplayMode(void *arg)
+static int SDLCALL video_getWindowDisplayMode(void *arg)
 {
     SDL_Window *window;
     const char *title = "video_getWindowDisplayMode Test Window";
@@ -468,7 +468,7 @@ static void checkInvalidWindowError(void)
  *
  * \sa SDL_GetWindowFullscreenMode
  */
-static int video_getWindowDisplayModeNegative(void *arg)
+static int SDLCALL video_getWindowDisplayModeNegative(void *arg)
 {
     const SDL_DisplayMode *mode;
 
@@ -553,7 +553,7 @@ static void setAndCheckWindowKeyboardGrabState(SDL_Window *window, SDL_bool desi
  * \sa SDL_SetWindowMouseGrab
  * \sa SDL_SetWindowKeyboardGrab
  */
-static int video_getSetWindowGrab(void *arg)
+static int SDLCALL video_getSetWindowGrab(void *arg)
 {
     const char *title = "video_getSetWindowGrab Test Window";
     SDL_Window *window;
@@ -672,7 +672,7 @@ static int video_getSetWindowGrab(void *arg)
  * \sa SDL_GetWindowID
  * \sa SDL_SetWindowFromID
  */
-static int video_getWindowId(void *arg)
+static int SDLCALL video_getWindowId(void *arg)
 {
     const char *title = "video_getWindowId Test Window";
     SDL_Window *window;
@@ -728,7 +728,7 @@ static int video_getWindowId(void *arg)
  *
  * \sa SDL_GetWindowPixelFormat
  */
-static int video_getWindowPixelFormat(void *arg)
+static int SDLCALL video_getWindowPixelFormat(void *arg)
 {
     const char *title = "video_getWindowPixelFormat Test Window";
     SDL_Window *window;
@@ -795,7 +795,7 @@ static SDL_bool getSizeFromEvent(int *w, int *h)
  * \sa SDL_GetWindowPosition
  * \sa SDL_SetWindowPosition
  */
-static int video_getSetWindowPosition(void *arg)
+static int SDLCALL video_getSetWindowPosition(void *arg)
 {
     const char *title = "video_getSetWindowPosition Test Window";
     SDL_Window *window;
@@ -995,7 +995,7 @@ static void checkInvalidParameterError(void)
  * \sa SDL_GetWindowSize
  * \sa SDL_SetWindowSize
  */
-static int video_getSetWindowSize(void *arg)
+static int SDLCALL video_getSetWindowSize(void *arg)
 {
     const char *title = "video_getSetWindowSize Test Window";
     SDL_Window *window;
@@ -1198,7 +1198,7 @@ null_tests:
  * Tests call to SDL_GetWindowMinimumSize and SDL_SetWindowMinimumSize
  *
  */
-static int video_getSetWindowMinimumSize(void *arg)
+static int SDLCALL video_getSetWindowMinimumSize(void *arg)
 {
     const char *title = "video_getSetWindowMinimumSize Test Window";
     SDL_Window *window;
@@ -1341,7 +1341,7 @@ static int video_getSetWindowMinimumSize(void *arg)
  * Tests call to SDL_GetWindowMaximumSize and SDL_SetWindowMaximumSize
  *
  */
-static int video_getSetWindowMaximumSize(void *arg)
+static int SDLCALL video_getSetWindowMaximumSize(void *arg)
 {
     const char *title = "video_getSetWindowMaximumSize Test Window";
     SDL_Window *window;
@@ -1481,7 +1481,7 @@ static int video_getSetWindowMaximumSize(void *arg)
  * \sa SDL_SetWindowData
  * \sa SDL_GetWindowData
  */
-static int video_getSetWindowData(void *arg)
+static int SDLCALL video_getSetWindowData(void *arg)
 {
     int returnValue = TEST_COMPLETED;
     const char *title = "video_setGetWindowData Test Window";
@@ -1673,7 +1673,7 @@ cleanup:
  * tests don't work in windowed mode and are unreliable in fullscreen mode, thus are disabled when using
  * the Wayland video driver. All that can be done is check that the windows are the expected size.
  */
-static int video_setWindowCenteredOnDisplay(void *arg)
+static int SDLCALL video_setWindowCenteredOnDisplay(void *arg)
 {
     SDL_DisplayID *displays;
     SDL_Window *window;
@@ -1905,7 +1905,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
  *       desktops, particularly tiling desktops, may not support the expected behavior,
  *       so don't be surprised if this fails.
  */
-static int video_getSetWindowState(void *arg)
+static int SDLCALL video_getSetWindowState(void *arg)
 {
     const char *title = "video_getSetWindowState Test Window";
     SDL_Window *window;
@@ -2256,7 +2256,7 @@ minimize_test:
     return skipFlags != (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)  ? TEST_COMPLETED : TEST_SKIPPED;
 }
 
-static int video_createMinimized(void *arg)
+static int SDLCALL video_createMinimized(void *arg)
 {
     const char *title = "video_createMinimized Test Window";
     int result;
@@ -2295,7 +2295,7 @@ static int video_createMinimized(void *arg)
     return TEST_COMPLETED;
 }
 
-static int video_createMaximized(void *arg)
+static int SDLCALL video_createMaximized(void *arg)
 {
     const char *title = "video_createMaximized Test Window";
     int result;
@@ -2337,7 +2337,7 @@ static int video_createMaximized(void *arg)
 /**
  * Tests window surface functionality
  */
-static int video_getWindowSurface(void *arg)
+static int SDLCALL video_getWindowSurface(void *arg)
 {
     const char *title = "video_getWindowSurface Test Window";
     SDL_Window *window;

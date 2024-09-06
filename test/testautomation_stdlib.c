@@ -11,7 +11,7 @@
  * Call to SDL_strnlen
  */
 #undef SDL_strnlen
-static int stdlib_strnlen(void *arg)
+static int SDLCALL stdlib_strnlen(void *arg)
 {
     size_t result;
     char *text_result;
@@ -39,7 +39,7 @@ static int stdlib_strnlen(void *arg)
  * Call to SDL_strlcpy
  */
 #undef SDL_strlcpy
-static int stdlib_strlcpy(void *arg)
+static int SDLCALL stdlib_strlcpy(void *arg)
 {
     size_t result;
     char text[1024];
@@ -63,7 +63,7 @@ static int stdlib_strlcpy(void *arg)
 /**
  * Call to SDL_strstr
  */
-static int stdlib_strstr(void *arg)
+static int SDLCALL stdlib_strstr(void *arg)
 {
     char *result;
     const char *text = "abcdef";
@@ -136,7 +136,7 @@ static int stdlib_strstr(void *arg)
  * Call to SDL_snprintf
  */
 #undef SDL_snprintf
-static int stdlib_snprintf(void *arg)
+static int SDLCALL stdlib_snprintf(void *arg)
 {
     int result;
     int predicted;
@@ -382,7 +382,7 @@ static int stdlib_snprintf(void *arg)
  * Call to SDL_swprintf
  */
 #undef SDL_swprintf
-static int stdlib_swprintf(void *arg)
+static int SDLCALL stdlib_swprintf(void *arg)
 {
     int result;
     int predicted;
@@ -548,7 +548,7 @@ static int stdlib_swprintf(void *arg)
 /**
  * Call to SDL_getenv and SDL_setenv
  */
-static int stdlib_getsetenv(void *arg)
+static int SDLCALL stdlib_getsetenv(void *arg)
 {
     const int nameLen = 16;
     char name[17];
@@ -721,7 +721,7 @@ static int stdlib_getsetenv(void *arg)
  * Call to SDL_sscanf
  */
 #undef SDL_sscanf
-static int stdlib_sscanf(void *arg)
+static int SDLCALL stdlib_sscanf(void *arg)
 {
     int output;
     int result;
@@ -889,7 +889,7 @@ static int stdlib_sscanf(void *arg)
 /**
  * Call to SDL_aligned_alloc
  */
-static int stdlib_aligned_alloc(void *arg)
+static int SDLCALL stdlib_aligned_alloc(void *arg)
 {
     size_t i, alignment;
     void *ptr;
@@ -945,7 +945,7 @@ static const overflow_test additions[] = {
     { SDL_SIZE_MAX, SDL_SIZE_MAX, 0, SDL_FALSE },
 };
 
-static int
+static int SDLCALL
 stdlib_overflow(void *arg)
 {
     size_t i;
@@ -1072,7 +1072,7 @@ static void format_for_description(char *buffer, size_t buflen, const char *text
     }
 }
 
-static int
+static int SDLCALL
 stdlib_iconv(void *arg)
 {
     struct {
@@ -1189,7 +1189,7 @@ stdlib_iconv(void *arg)
 }
 
 
-static int
+static int SDLCALL
 stdlib_strpbrk(void *arg)
 {
     struct {

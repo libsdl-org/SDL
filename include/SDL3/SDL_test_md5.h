@@ -88,8 +88,7 @@ extern "C" {
  *       mdContext. Call before each new use of the context -
  *       all fields are set to zero.
  */
- void SDLTest_Md5Init(SDLTest_Md5Context *mdContext);
-
+void SDLCALL SDLTest_Md5Init(SDLTest_Md5Context *mdContext);
 
 /**
  * update digest from variable length data
@@ -101,9 +100,8 @@ extern "C" {
  * Note: The function updates the message-digest context to account
  *       for the presence of each of the characters inBuf[0..inLen-1]
  *       in the message whose digest is being computed.
-*/
-
- void SDLTest_Md5Update(SDLTest_Md5Context *mdContext, unsigned char *inBuf,
+ */
+void SDLCALL SDLTest_Md5Update(SDLTest_Md5Context *mdContext, unsigned char *inBuf,
                  unsigned int inLen);
 
 
@@ -115,10 +113,8 @@ extern "C" {
  * Note: The function terminates the message-digest computation and
  *       ends with the desired message digest in mdContext.digest[0..15].
  *       Always call before using the digest[] variable.
-*/
-
- void SDLTest_Md5Final(SDLTest_Md5Context *mdContext);
-
+ */
+void SDLCALL SDLTest_Md5Final(SDLTest_Md5Context *mdContext);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
