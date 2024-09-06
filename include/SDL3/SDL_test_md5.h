@@ -67,15 +67,15 @@ extern "C" {
 /* ------------ Definitions --------- */
 
 /* typedef a 32-bit type */
-  typedef Uint32 MD5UINT4;
+typedef Uint32 MD5UINT4;
 
 /* Data structure for MD5 (Message-Digest) computation */
-  typedef struct SDLTest_Md5Context {
-    MD5UINT4  i[2];     /* number of _bits_ handled mod 2^64 */
-    MD5UINT4  buf[4];       /* scratch buffer */
-    unsigned char in[64];   /* input buffer */
+typedef struct SDLTest_Md5Context {
+    MD5UINT4 i[2];              /* number of _bits_ handled mod 2^64 */
+    MD5UINT4 buf[4];            /* scratch buffer */
+    unsigned char in[64];       /* input buffer */
     unsigned char digest[16];   /* actual digest after Md5Final call */
-  } SDLTest_Md5Context;
+} SDLTest_Md5Context;
 
 /* ---------- Function Prototypes ------------- */
 
@@ -103,7 +103,6 @@ void SDLCALL SDLTest_Md5Init(SDLTest_Md5Context *mdContext);
  */
 void SDLCALL SDLTest_Md5Update(SDLTest_Md5Context *mdContext, unsigned char *inBuf,
                  unsigned int inLen);
-
 
 /**
  * complete digest computation
