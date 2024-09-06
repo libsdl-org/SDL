@@ -377,7 +377,7 @@ static int SDLCALL SDL_JoystickThread(void *_data)
 #ifdef SDL_JOYSTICK_XINPUT
             /* WM_DEVICECHANGE not working, poll for new XINPUT controllers */
             SDL_CondWaitTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
-            if (SDL_XINPUT_Enabled() && XINPUTGETCAPABILITIES) {
+            if (SDL_XINPUT_Enabled()) {
                 /* scan for any change in XInput devices */
                 Uint8 userId;
                 for (userId = 0; userId < XUSER_MAX_COUNT; userId++) {
@@ -473,12 +473,12 @@ void WINDOWS_JoystickQuit(void);
  */
 static int WINDOWS_JoystickInit(void)
 {
-    if (SDL_DINPUT_JoystickInit() < 0) {
+    if (SDL_XINPUT_JoystickInit() < 0) {
         WINDOWS_JoystickQuit();
         return -1;
     }
 
-    if (SDL_XINPUT_JoystickInit() < 0) {
+    if (SDL_DINPUT_JoystickInit() < 0) {
         WINDOWS_JoystickQuit();
         return -1;
     }
