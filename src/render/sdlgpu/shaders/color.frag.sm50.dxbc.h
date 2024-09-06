@@ -1,4 +1,4 @@
-const unsigned char color_frag_sm50_dxbc[] =
+const signed char color_frag_sm50_dxbc[] =
 {
   68,  88,  66,  67, 114,-117,
 -124,  82, -97,  76, -66, -74,

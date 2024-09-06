@@ -1,4 +1,4 @@
-const unsigned char tri_color_vert_sm50_dxbc[] =
+const signed char tri_color_vert_sm50_dxbc[] =
 {
   68,  88,  66,  67, -99,  -1,
  -83, -50,  75, -96,  -1,  28,

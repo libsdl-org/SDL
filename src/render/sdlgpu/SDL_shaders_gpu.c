@@ -83,7 +83,7 @@ typedef struct GPU_ShaderSources
     IF_VULKAN(.spirv = { code, sizeof(code), SDL_GPU_SHADERFORMAT_SPIRV }, )
 
 #define SHADER_DXBC50(code) \
-    IF_D3D11(.dxbc50 = { code, sizeof(code), SDL_GPU_SHADERFORMAT_DXBC }, )
+    IF_D3D11(.dxbc50 = { (const unsigned char *)code, sizeof(code), SDL_GPU_SHADERFORMAT_DXBC }, )
 
 #define SHADER_DXIL60(code) \
     IF_D3D12(.dxil60 = { code, sizeof(code), SDL_GPU_SHADERFORMAT_DXIL }, )
