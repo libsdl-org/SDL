@@ -221,7 +221,19 @@ typedef bool SDL_bool;
  * \since This macro is available since SDL 3.0.0.
  */
 typedef int8_t Sint8;
+
+/**
+ * The largest value that can be held in a signed 8-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MAX_SINT8   ((Sint8)0x7F)           /* 127 */
+
+/**
+ * The smallest value that can be held in a signed 8-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MIN_SINT8   ((Sint8)(~0x7F))        /* -128 */
 
 /**
@@ -230,7 +242,19 @@ typedef int8_t Sint8;
  * \since This macro is available since SDL 3.0.0.
  */
 typedef uint8_t Uint8;
+
+/**
+ * The largest value that can be held in an unsigned 8-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MAX_UINT8   ((Uint8)0xFF)           /* 255 */
+
+/**
+ * The smallest value that can be held in an unsigned 8-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MIN_UINT8   ((Uint8)0x00)           /* 0 */
 
 /**
@@ -239,7 +263,19 @@ typedef uint8_t Uint8;
  * \since This macro is available since SDL 3.0.0.
  */
 typedef int16_t Sint16;
+
+/**
+ * The largest value that can be held in a signed 16-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MAX_SINT16  ((Sint16)0x7FFF)        /* 32767 */
+
+/**
+ * The smallest value that can be held in a signed 16-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MIN_SINT16  ((Sint16)(~0x7FFF))     /* -32768 */
 
 /**
@@ -248,7 +284,19 @@ typedef int16_t Sint16;
  * \since This macro is available since SDL 3.0.0.
  */
 typedef uint16_t Uint16;
+
+/**
+ * The largest value that can be held in an unsigned 16-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MAX_UINT16  ((Uint16)0xFFFF)        /* 65535 */
+
+/**
+ * The smallest value that can be held in an unsigned 16-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MIN_UINT16  ((Uint16)0x0000)        /* 0 */
 
 /**
@@ -257,7 +305,19 @@ typedef uint16_t Uint16;
  * \since This macro is available since SDL 3.0.0.
  */
 typedef int32_t Sint32;
+
+/**
+ * The largest value that can be held in a signed 32-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MAX_SINT32  ((Sint32)0x7FFFFFFF)    /* 2147483647 */
+
+/**
+ * The smallest value that can be held in a signed 32-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MIN_SINT32  ((Sint32)(~0x7FFFFFFF)) /* -2147483648 */
 
 /**
@@ -266,7 +326,19 @@ typedef int32_t Sint32;
  * \since This macro is available since SDL 3.0.0.
  */
 typedef uint32_t Uint32;
+
+/**
+ * The largest value that can be held in an unsigned 32-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MAX_UINT32  ((Uint32)0xFFFFFFFFu)   /* 4294967295 */
+
+/**
+ * The smallest value that can be held in an unsigned 32-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MIN_UINT32  ((Uint32)0x00000000)    /* 0 */
 
 /**
@@ -277,7 +349,19 @@ typedef uint32_t Uint32;
  * \sa SDL_SINT64_C
  */
 typedef int64_t Sint64;
+
+/**
+ * The largest value that can be held in a signed 64-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MAX_SINT64  SDL_SINT64_C(0x7FFFFFFFFFFFFFFF)   /* 9223372036854775807 */
+
+/**
+ * The smallest value that can be held in a signed 64-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MIN_SINT64  ~SDL_SINT64_C(0x7FFFFFFFFFFFFFFF)  /* -9223372036854775808 */
 
 /**
@@ -288,7 +372,19 @@ typedef int64_t Sint64;
  * \sa SDL_UINT64_C
  */
 typedef uint64_t Uint64;
+
+/**
+ * The largest value that can be held in an unsigned 64-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MAX_UINT64  SDL_UINT64_C(0xFFFFFFFFFFFFFFFF)   /* 18446744073709551615 */
+
+/**
+ * The smallest value that can be held in an unsigned 64-bit integer.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MIN_UINT64  SDL_UINT64_C(0x0000000000000000)   /* 0 */
 
 /**
