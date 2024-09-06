@@ -26,7 +26,7 @@
 #include "../video/SDL_sysvideo.h"
 #include "SDL_events_c.h"
 #include "SDL_mouse_c.h"
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 #include "../core/windows/SDL_windows.h" // For GetDoubleClickTime()
 #endif
 

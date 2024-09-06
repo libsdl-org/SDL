@@ -503,7 +503,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RunApp(int argc, char *argv[], SDL_main_func
 extern SDL_DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit);
 
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 
 /**
  * Register a win32 window class for SDL's use.
@@ -548,7 +548,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RegisterApp(const char *name, Uint32 st
  */
 extern SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
+#endif /* defined(SDL_PLATFORM_WINDOWS) */
 
 #ifdef SDL_PLATFORM_GDK
 
@@ -570,7 +570,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
     /* include header-only SDL_main implementations */
     #if defined(SDL_MAIN_USE_CALLBACKS) \
-        || defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
+        || defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
         || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP) \
         || defined(SDL_PLATFORM_EMSCRIPTEN)
 

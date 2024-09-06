@@ -53,7 +53,7 @@
 
 /* Some compilers use a special export keyword */
 #ifndef SDL_DECLSPEC
-# if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN) || defined(SDL_PLATFORM_GDK)
+# if defined(SDL_PLATFORM_WINDOWS)
 #  ifdef DLL_EXPORT
 #   define SDL_DECLSPEC __declspec(dllexport)
 #  else
@@ -70,7 +70,7 @@
 
 /* By default SDL uses the C calling convention */
 #ifndef SDLCALL
-#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(__GNUC__)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(__GNUC__)
 #define SDLCALL __cdecl
 #else
 #define SDLCALL

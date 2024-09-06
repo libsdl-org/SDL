@@ -76,7 +76,7 @@ void SDL_GDKResumeGPU(SDL_GPUDevice *device)
 
 #endif
 
-#if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK))
+#if !defined(SDL_PLATFORM_WINDOWS)
 
 SDL_DECLSPEC SDL_bool SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
 SDL_bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)

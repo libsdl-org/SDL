@@ -36,7 +36,7 @@
 #include <SDL3/SDL_atomic.h>
 #include <SDL3/SDL_mutex.h>
 
-#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK))
+#if defined(SDL_PLATFORM_WINDOWS)
 #include <process.h> /* _beginthreadex() and _endthreadex() */
 #endif
 
@@ -263,7 +263,7 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_Prop
 
 /* The real implementation, hidden from the wiki, so it can show this as real functions that don't have macro magic. */
 #ifndef SDL_WIKI_DOCUMENTATION_SECTION
-#  if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK))
+#  if defined(SDL_PLATFORM_WINDOWS)
 #    ifndef SDL_BeginThreadFunction
 #      define SDL_BeginThreadFunction _beginthreadex
 #    endif

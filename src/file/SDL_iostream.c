@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -54,7 +54,7 @@ struct SDL_IOStream
 #include "../core/android/SDL_android.h"
 #endif
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 
 typedef struct IOStreamWindowsData
 {
@@ -276,9 +276,9 @@ static SDL_bool SDLCALL windows_file_close(void *userdata)
     SDL_free(iodata);
     return true;
 }
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#endif // defined(SDL_PLATFORM_WINDOWS)
 
-#if defined(HAVE_STDIO_H) && !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK))
+#if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINDOWS)
 
 // Functions to read/write stdio file pointers. Not used for windows.
 
@@ -429,7 +429,7 @@ static SDL_IOStream *SDL_IOFromFP(FILE *fp, bool autoclose)
 
     return iostr;
 }
-#endif // !HAVE_STDIO_H && !(SDL_PLATFORM_WIN32 || SDL_PLATFORM_GDK)
+#endif // !HAVE_STDIO_H && !defined(SDL_PLATFORM_WINDOWS)
 
 // Functions to read/write memory pointers
 
@@ -604,7 +604,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
         }
     }
 
-#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#elif defined(SDL_PLATFORM_WINDOWS)
     IOStreamWindowsData *iodata = (IOStreamWindowsData *) SDL_malloc(sizeof (*iodata));
     if (!iodata) {
         return NULL;
