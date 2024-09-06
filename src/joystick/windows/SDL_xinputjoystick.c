@@ -37,7 +37,7 @@ extern "C" {
 /*
  * Internal stuff.
  */
-static bool s_bXInputEnabled = true;
+static bool s_bXInputEnabled = false;
 
 bool SDL_XINPUT_Enabled(void)
 {

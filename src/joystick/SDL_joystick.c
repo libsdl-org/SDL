@@ -61,7 +61,7 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     &SDL_WINDOWS_JoystickDriver,
 #endif
-#ifdef SDL_JOYSTICK_WGI
+#ifdef SDL_JOYSTICK_WGI // Lower priority than other Windows drivers
     &SDL_WGI_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_WINMM

@@ -241,7 +241,7 @@ static int SDLCALL SDL_JoystickThread(void *_data)
 #ifdef SDL_JOYSTICK_XINPUT
             // WM_DEVICECHANGE not working, poll for new XINPUT controllers
             SDL_WaitConditionTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
-            if (SDL_XINPUT_Enabled() && XINPUTGETCAPABILITIES) {
+            if (SDL_XINPUT_Enabled()) {
                 // scan for any change in XInput devices
                 Uint8 userId;
                 for (userId = 0; userId < XUSER_MAX_COUNT; userId++) {
@@ -329,15 +329,14 @@ void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
 void WINDOWS_JoystickDetect(void);
 void WINDOWS_JoystickQuit(void);
 
-// Function to scan the system for joysticks.
 static bool WINDOWS_JoystickInit(void)
 {
-    if (!SDL_DINPUT_JoystickInit()) {
+    if (!SDL_XINPUT_JoystickInit()) {
         WINDOWS_JoystickQuit();
         return false;
     }
 
-    if (!SDL_XINPUT_JoystickInit()) {
+    if (!SDL_DINPUT_JoystickInit()) {
         WINDOWS_JoystickQuit();
         return false;
     }
