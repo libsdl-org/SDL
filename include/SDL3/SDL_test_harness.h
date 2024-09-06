@@ -44,7 +44,6 @@
 extern "C" {
 #endif
 
-
 /* ! Definitions for test case structures */
 #define TEST_ENABLED  1
 #define TEST_DISABLED 0

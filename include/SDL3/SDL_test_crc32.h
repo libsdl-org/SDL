@@ -40,7 +40,6 @@
 extern "C" {
 #endif
 
-
 /* ------------ Definitions --------- */
 
 /* Definition shared by all CRC routines */
@@ -79,7 +78,6 @@ extern "C" {
  */
 int SDLCALL SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext);
 
-
 /*
  * calculate a crc32 from a data block
  *
@@ -98,7 +96,6 @@ int SDLCALL SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *
 int SDLCALL SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32);
 int SDLCALL SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32);
 
-
 /*
  * clean up CRC context
  *
@@ -109,7 +106,6 @@ int SDLCALL SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *
 */
 
 int SDLCALL SDLTest_Crc32Done(SDLTest_Crc32Context *crcContext);
-
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
