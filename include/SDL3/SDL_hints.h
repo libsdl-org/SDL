@@ -2289,6 +2289,21 @@ extern "C" {
 #define SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH "SDL_MAC_OPENGL_ASYNC_DISPATCH"
 
 /**
+ * A variable controlling whether SDL_EVENT_MOUSE_WHEEL event values will have
+ * momentum on macOS.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": The mouse wheel events will have no momentum. (default)
+ * - "1": The mouse wheel events will have momentum.
+ *
+ * This hint should be set before applicationDidFinishLaunching() is called.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_MAC_SCROLL_MOMENTUM "SDL_HINT_MAC_SCROLL_MOMENTUM"
+
+/**
  * Request SDL_AppIterate() be called at a specific rate.
  *
  * This number is in Hz, so "60" means try to iterate 60 times per second.
