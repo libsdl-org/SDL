@@ -46,11 +46,13 @@ bool SDL_XINPUT_Enabled(void)
 
 bool SDL_XINPUT_JoystickInit(void)
 {
-    s_bXInputEnabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, true);
+    bool enabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, true);
 
-    if (s_bXInputEnabled && !WIN_LoadXInputDLL()) {
-        s_bXInputEnabled = false; // oh well.
+    if (enabled && !WIN_LoadXInputDLL()) {
+        enabled = false; // oh well.
     }
+    s_bXInputEnabled = enabled;
+
     return true;
 }
 
@@ -218,7 +220,7 @@ void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
     int iuserid;
 
-    if (!s_bXInputEnabled || !XINPUTGETCAPABILITIES) {
+    if (!s_bXInputEnabled) {
         return;
     }
 
