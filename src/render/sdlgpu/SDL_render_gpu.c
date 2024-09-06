@@ -219,12 +219,12 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     SDL_GPUTextureCreateInfo tci;
     SDL_zero(tci);
     tci.format = format;
-    tci.layerCountOrDepth = 1;
-    tci.levelCount = 1;
-    tci.usageFlags = usage;
+    tci.layer_count_or_depth = 1;
+    tci.num_levels = 1;
+    tci.usage_flags = usage;
     tci.width = texture->w;
     tci.height = texture->h;
-    tci.sampleCount = SDL_GPU_SAMPLECOUNT_1;
+    tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
 
     data->format = format;
     data->texture = SDL_CreateGPUTexture(renderdata->device, &tci);
@@ -258,7 +258,7 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     SDL_GPUTransferBufferCreateInfo tbci;
     SDL_zero(tbci);
-    tbci.sizeInBytes = (Uint32)data_size;
+    tbci.size = (Uint32)data_size;
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 
     SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(renderdata->device, &tbci);
@@ -273,7 +273,7 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         memcpy(output, pixels, data_size);
     } else {
         // FIXME is negative pitch supposed to work?
-        // If not, maybe use SDL_GPUTextureTransferInfo::imagePitch instead of this
+        // If not, maybe use SDL_GPUTextureTransferInfo::pixels_per_row instead of this
         const Uint8 *input = pixels;
 
         for (int i = 0; i < rect->h; ++i) {
@@ -290,9 +290,9 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     SDL_GPUTextureTransferInfo tex_src;
     SDL_zero(tex_src);
-    tex_src.transferBuffer = tbuf;
-    tex_src.imageHeight = rect->h;
-    tex_src.imagePitch = rect->w;
+    tex_src.transfer_buffer = tbuf;
+    tex_src.rows_per_layer = rect->h;
+    tex_src.pixels_per_row = rect->w;
 
     SDL_GPUTextureRegion tex_dst;
     SDL_zero(tex_dst);
@@ -467,7 +467,7 @@ static SDL_GPURenderPass *RestartRenderPass(GPU_RenderData *data)
     // This is busted. We should be able to know which load op to use.
     // LOAD is incorrect behavior most of the time, unless we had to break a render pass.
     // -cosmonaut
-    data->state.color_attachment.loadOp = SDL_GPU_LOADOP_LOAD;
+    data->state.color_attachment.load_op = SDL_GPU_LOADOP_LOAD;
     data->state.scissor_was_enabled = false;
 
     return data->state.render_pass;
@@ -524,7 +524,7 @@ static void Draw(
     Uint32 offset,
     SDL_GPUPrimitiveType prim)
 {
-    if (!data->state.render_pass || data->state.color_attachment.loadOp == SDL_GPU_LOADOP_CLEAR) {
+    if (!data->state.render_pass || data->state.color_attachment.load_op == SDL_GPU_LOADOP_CLEAR) {
         RestartRenderPass(data);
     }
 
@@ -607,8 +607,8 @@ static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
 {
     SDL_GPUBufferCreateInfo bci;
     SDL_zero(bci);
-    bci.sizeInBytes = size;
-    bci.usageFlags = SDL_GPU_BUFFERUSAGE_VERTEX;
+    bci.size = size;
+    bci.usage_flags = SDL_GPU_BUFFERUSAGE_VERTEX;
 
     data->vertices.buffer = SDL_CreateGPUBuffer(data->device, &bci);
 
@@ -618,7 +618,7 @@ static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
 
     SDL_GPUTransferBufferCreateInfo tbci;
     SDL_zero(tbci);
-    tbci.sizeInBytes = size;
+    tbci.size = size;
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 
     data->vertices.transfer_buf = SDL_CreateGPUTransferBuffer(data->device, &tbci);
@@ -655,7 +655,7 @@ static bool UploadVertices(GPU_RenderData *data, void *vertices, size_t vertsize
 
     SDL_GPUTransferBufferLocation src;
     SDL_zero(src);
-    src.transferBuffer = data->vertices.transfer_buf;
+    src.transfer_buffer = data->vertices.transfer_buf;
 
     SDL_GPUBufferRegion dst;
     SDL_zero(dst);
@@ -685,7 +685,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         return false;
     }
 
-    data->state.color_attachment.loadOp = SDL_GPU_LOADOP_LOAD;
+    data->state.color_attachment.load_op = SDL_GPU_LOADOP_LOAD;
 
     if (renderer->target) {
         GPU_TextureData *tdata = renderer->target->internal;
@@ -729,8 +729,8 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
         case SDL_RENDERCMD_CLEAR:
         {
-            data->state.color_attachment.clearColor = GetDrawCmdColor(renderer, cmd);
-            data->state.color_attachment.loadOp = SDL_GPU_LOADOP_CLEAR;
+            data->state.color_attachment.clear_color = GetDrawCmdColor(renderer, cmd);
+            data->state.color_attachment.load_op = SDL_GPU_LOADOP_CLEAR;
             break;
         }
 
@@ -823,7 +823,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         cmd = cmd->next;
     }
 
-    if (data->state.color_attachment.loadOp == SDL_GPU_LOADOP_CLEAR) {
+    if (data->state.color_attachment.load_op == SDL_GPU_LOADOP_CLEAR) {
         RestartRenderPass(data);
     }
 
@@ -873,7 +873,7 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
 
     SDL_GPUTransferBufferCreateInfo tbci;
     SDL_zero(tbci);
-    tbci.sizeInBytes = (Uint32)image_size;
+    tbci.size = (Uint32)image_size;
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD;
 
     SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(data->device, &tbci);
@@ -895,9 +895,9 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
 
     SDL_GPUTextureTransferInfo dst;
     SDL_zero(dst);
-    dst.transferBuffer = tbuf;
-    dst.imageHeight = rect->h;
-    dst.imagePitch = rect->w;
+    dst.transfer_buffer = tbuf;
+    dst.rows_per_layer = rect->h;
+    dst.pixels_per_row = rect->w;
 
     SDL_DownloadFromGPUTexture(pass, &src, &dst);
     SDL_EndGPUCopyPass(pass);
@@ -935,10 +935,10 @@ static bool CreateBackbuffer(GPU_RenderData *data, Uint32 w, Uint32 h, SDL_GPUTe
     tci.width = w;
     tci.height = h;
     tci.format = fmt;
-    tci.layerCountOrDepth = 1;
-    tci.levelCount = 1;
-    tci.sampleCount = SDL_GPU_SAMPLECOUNT_1;
-    tci.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
+    tci.layer_count_or_depth = 1;
+    tci.num_levels = 1;
+    tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    tci.usage_flags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
     data->backbuffer.texture = SDL_CreateGPUTexture(data->device, &tci);
     data->backbuffer.width = w;
@@ -1167,11 +1167,11 @@ static bool InitSamplers(GPU_RenderData *data)
     for (Uint32 i = 0; i < SDL_arraysize(configs); ++i) {
         SDL_GPUSamplerCreateInfo sci;
         SDL_zero(sci);
-        sci.maxAnisotropy = configs[i].gpu.anisotropy;
-        sci.anisotropyEnable = configs[i].gpu.anisotropy > 0;
-        sci.addressModeU = sci.addressModeV = sci.addressModeW = configs[i].gpu.address_mode;
-        sci.minFilter = sci.magFilter = configs[i].gpu.filter;
-        sci.mipmapMode = configs[i].gpu.mipmap_mode;
+        sci.max_anisotropy = configs[i].gpu.anisotropy;
+        sci.enable_anisotropy = configs[i].gpu.anisotropy > 0;
+        sci.address_mode_u = sci.address_mode_v = sci.address_mode_w = configs[i].gpu.address_mode;
+        sci.min_filter = sci.mag_filter = configs[i].gpu.filter;
+        sci.mipmap_mode = configs[i].gpu.mipmap_mode;
 
         SDL_GPUSampler *sampler = SDL_CreateGPUSampler(data->device, &sci);
 

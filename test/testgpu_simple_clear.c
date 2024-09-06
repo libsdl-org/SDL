@@ -92,12 +92,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 		SDL_GPUColorAttachmentInfo colorAttachmentInfo;
         SDL_zero(colorAttachmentInfo);
 		colorAttachmentInfo.texture = swapchainTexture;
-		colorAttachmentInfo.clearColor.r = (float)(0.5 + 0.5 * SDL_sin(currentTime));
-		colorAttachmentInfo.clearColor.g = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 2 / 3));
-		colorAttachmentInfo.clearColor.b = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 4 / 3));;
-		colorAttachmentInfo.clearColor.a = 1.0f;
-		colorAttachmentInfo.loadOp = SDL_GPU_LOADOP_CLEAR;
-		colorAttachmentInfo.storeOp = SDL_GPU_STOREOP_STORE;
+		colorAttachmentInfo.clear_color.r = (float)(0.5 + 0.5 * SDL_sin(currentTime));
+		colorAttachmentInfo.clear_color.g = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 2 / 3));
+		colorAttachmentInfo.clear_color.b = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 4 / 3));;
+		colorAttachmentInfo.clear_color.a = 1.0f;
+		colorAttachmentInfo.load_op = SDL_GPU_LOADOP_CLEAR;
+		colorAttachmentInfo.store_op = SDL_GPU_STOREOP_STORE;
 
 		renderPass = SDL_BeginGPURenderPass(cmdbuf, &colorAttachmentInfo, 1, NULL);
 		SDL_EndGPURenderPass(renderPass);

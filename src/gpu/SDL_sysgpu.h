@@ -28,18 +28,18 @@
 
 typedef struct Pass
 {
-    SDL_GPUCommandBuffer *commandBuffer;
+    SDL_GPUCommandBuffer *command_buffer;
     bool inProgress;
 } Pass;
 
 typedef struct CommandBufferCommonHeader
 {
     SDL_GPUDevice *device;
-    Pass renderPass;
+    Pass render_pass;
     bool graphicsPipelineBound;
-    Pass computePass;
+    Pass compute_pass;
     bool computePipelineBound;
-    Pass copyPass;
+    Pass copy_pass;
     bool submitted;
 } CommandBufferCommonHeader;
 
@@ -56,7 +56,7 @@ typedef struct BlitFragmentUniforms
     float width;
     float height;
 
-    Uint32 mipLevel;
+    Uint32 mip_level;
     float layerOrDepth;
 } BlitFragmentUniforms;
 
@@ -262,11 +262,11 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     Uint32 *blitPipelineCapacity);
 
 void SDL_GPU_BlitCommon(
-    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUCommandBuffer *command_buffer,
     const SDL_GPUBlitRegion *source,
     const SDL_GPUBlitRegion *destination,
-    SDL_FlipMode flipMode,
-    SDL_GPUFilter filterMode,
+    SDL_FlipMode flip_mode,
+    SDL_GPUFilter filter,
     bool cycle,
     SDL_GPUSampler *blitLinearSampler,
     SDL_GPUSampler *blitNearestSampler,
@@ -297,33 +297,33 @@ struct SDL_GPUDevice
 
     SDL_GPUComputePipeline *(*CreateComputePipeline)(
         SDL_GPURenderer *driverData,
-        const SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo);
+        const SDL_GPUComputePipelineCreateInfo *createinfo);
 
     SDL_GPUGraphicsPipeline *(*CreateGraphicsPipeline)(
         SDL_GPURenderer *driverData,
-        const SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo);
+        const SDL_GPUGraphicsPipelineCreateInfo *createinfo);
 
     SDL_GPUSampler *(*CreateSampler)(
         SDL_GPURenderer *driverData,
-        const SDL_GPUSamplerCreateInfo *samplerCreateInfo);
+        const SDL_GPUSamplerCreateInfo *createinfo);
 
     SDL_GPUShader *(*CreateShader)(
         SDL_GPURenderer *driverData,
-        const SDL_GPUShaderCreateInfo *shaderCreateInfo);
+        const SDL_GPUShaderCreateInfo *createinfo);
 
     SDL_GPUTexture *(*CreateTexture)(
         SDL_GPURenderer *driverData,
-        const SDL_GPUTextureCreateInfo *textureCreateInfo);
+        const SDL_GPUTextureCreateInfo *createinfo);
 
     SDL_GPUBuffer *(*CreateBuffer)(
         SDL_GPURenderer *driverData,
-        SDL_GPUBufferUsageFlags usageFlags,
-        Uint32 sizeInBytes);
+        SDL_GPUBufferUsageFlags usage_flags,
+        Uint32 size);
 
     SDL_GPUTransferBuffer *(*CreateTransferBuffer)(
         SDL_GPURenderer *driverData,
         SDL_GPUTransferBufferUsage usage,
-        Uint32 sizeInBytes);
+        Uint32 size);
 
     // Debug Naming
 
@@ -338,15 +338,15 @@ struct SDL_GPUDevice
         const char *text);
 
     void (*InsertDebugLabel)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const char *text);
 
     void (*PushDebugGroup)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const char *name);
 
     void (*PopDebugGroup)(
-        SDL_GPUCommandBuffer *commandBuffer);
+        SDL_GPUCommandBuffer *command_buffer);
 
     // Disposal
 
@@ -364,7 +364,7 @@ struct SDL_GPUDevice
 
     void (*ReleaseTransferBuffer)(
         SDL_GPURenderer *driverData,
-        SDL_GPUTransferBuffer *transferBuffer);
+        SDL_GPUTransferBuffer *transfer_buffer);
 
     void (*ReleaseShader)(
         SDL_GPURenderer *driverData,
@@ -372,206 +372,206 @@ struct SDL_GPUDevice
 
     void (*ReleaseComputePipeline)(
         SDL_GPURenderer *driverData,
-        SDL_GPUComputePipeline *computePipeline);
+        SDL_GPUComputePipeline *compute_pipeline);
 
     void (*ReleaseGraphicsPipeline)(
         SDL_GPURenderer *driverData,
-        SDL_GPUGraphicsPipeline *graphicsPipeline);
+        SDL_GPUGraphicsPipeline *graphics_pipeline);
 
     // Render Pass
 
     void (*BeginRenderPass)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
-        Uint32 colorAttachmentCount,
-        const SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo);
+        SDL_GPUCommandBuffer *command_buffer,
+        const SDL_GPUColorAttachmentInfo *color_attachment_infos,
+        Uint32 num_color_attachments,
+        const SDL_GPUDepthStencilAttachmentInfo *depth_stencil_attachment_info);
 
     void (*BindGraphicsPipeline)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        SDL_GPUGraphicsPipeline *graphicsPipeline);
+        SDL_GPUCommandBuffer *command_buffer,
+        SDL_GPUGraphicsPipeline *graphics_pipeline);
 
     void (*SetViewport)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const SDL_GPUViewport *viewport);
 
     void (*SetScissor)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const SDL_Rect *scissor);
 
     void (*SetBlendConstants)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        SDL_FColor blendConstants);
+        SDL_GPUCommandBuffer *command_buffer,
+        SDL_FColor blend_constants);
 
     void (*SetStencilReference)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         Uint8 reference);
 
     void (*BindVertexBuffers)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstBinding,
-        const SDL_GPUBufferBinding *pBindings,
-        Uint32 bindingCount);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 first_binding,
+        const SDL_GPUBufferBinding *bindings,
+        Uint32 num_bindings);
 
     void (*BindIndexBuffer)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const SDL_GPUBufferBinding *pBinding,
-        SDL_GPUIndexElementSize indexElementSize);
+        SDL_GPUIndexElementSize index_element_size);
 
     void (*BindVertexSamplers)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
-        const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
-        Uint32 bindingCount);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 first_slot,
+        const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
+        Uint32 num_bindings);
 
     void (*BindVertexStorageTextures)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
-        SDL_GPUTexture *const *storageTextures,
-        Uint32 bindingCount);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 first_slot,
+        SDL_GPUTexture *const *storage_textures,
+        Uint32 num_bindings);
 
     void (*BindVertexStorageBuffers)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
-        SDL_GPUBuffer *const *storageBuffers,
-        Uint32 bindingCount);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 first_slot,
+        SDL_GPUBuffer *const *storage_buffers,
+        Uint32 num_bindings);
 
     void (*BindFragmentSamplers)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
-        const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
-        Uint32 bindingCount);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 first_slot,
+        const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
+        Uint32 num_bindings);
 
     void (*BindFragmentStorageTextures)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
-        SDL_GPUTexture *const *storageTextures,
-        Uint32 bindingCount);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 first_slot,
+        SDL_GPUTexture *const *storage_textures,
+        Uint32 num_bindings);
 
     void (*BindFragmentStorageBuffers)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
-        SDL_GPUBuffer *const *storageBuffers,
-        Uint32 bindingCount);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 first_slot,
+        SDL_GPUBuffer *const *storage_buffers,
+        Uint32 num_bindings);
 
     void (*PushVertexUniformData)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 slotIndex,
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 slot_index,
         const void *data,
-        Uint32 dataLengthInBytes);
+        Uint32 length);
 
     void (*PushFragmentUniformData)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 slotIndex,
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 slot_index,
         const void *data,
-        Uint32 dataLengthInBytes);
+        Uint32 length);
 
     void (*DrawIndexedPrimitives)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 indexCount,
-        Uint32 instanceCount,
-        Uint32 firstIndex,
-        Sint32 vertexOffset,
-        Uint32 firstInstance);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 num_indices,
+        Uint32 num_instances,
+        Uint32 first_index,
+        Sint32 vertex_offset,
+        Uint32 first_instance);
 
     void (*DrawPrimitives)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 vertexCount,
-        Uint32 instanceCount,
-        Uint32 firstVertex,
-        Uint32 firstInstance);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 num_vertices,
+        Uint32 num_instances,
+        Uint32 first_vertex,
+        Uint32 first_instance);
 
     void (*DrawPrimitivesIndirect)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         SDL_GPUBuffer *buffer,
-        Uint32 offsetInBytes,
-        Uint32 drawCount,
-        Uint32 stride);
+        Uint32 offset,
+        Uint32 draw_count,
+        Uint32 pitch);
 
     void (*DrawIndexedPrimitivesIndirect)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         SDL_GPUBuffer *buffer,
-        Uint32 offsetInBytes,
-        Uint32 drawCount,
-        Uint32 stride);
+        Uint32 offset,
+        Uint32 draw_count,
+        Uint32 pitch);
 
     void (*EndRenderPass)(
-        SDL_GPUCommandBuffer *commandBuffer);
+        SDL_GPUCommandBuffer *command_buffer);
 
     // Compute Pass
 
     void (*BeginComputePass)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        const SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
-        Uint32 storageTextureBindingCount,
-        const SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
-        Uint32 storageBufferBindingCount);
+        SDL_GPUCommandBuffer *command_buffer,
+        const SDL_GPUStorageTextureWriteOnlyBinding *storage_texture_bindings,
+        Uint32 num_storage_texture_bindings,
+        const SDL_GPUStorageBufferWriteOnlyBinding *storage_buffer_bindings,
+        Uint32 num_storage_buffer_bindings);
 
     void (*BindComputePipeline)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        SDL_GPUComputePipeline *computePipeline);
+        SDL_GPUCommandBuffer *command_buffer,
+        SDL_GPUComputePipeline *compute_pipeline);
 
     void (*BindComputeStorageTextures)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
-        SDL_GPUTexture *const *storageTextures,
-        Uint32 bindingCount);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 first_slot,
+        SDL_GPUTexture *const *storage_textures,
+        Uint32 num_bindings);
 
     void (*BindComputeStorageBuffers)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
-        SDL_GPUBuffer *const *storageBuffers,
-        Uint32 bindingCount);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 first_slot,
+        SDL_GPUBuffer *const *storage_buffers,
+        Uint32 num_bindings);
 
     void (*PushComputeUniformData)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 slotIndex,
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 slot_index,
         const void *data,
-        Uint32 dataLengthInBytes);
+        Uint32 length);
 
     void (*DispatchCompute)(
-        SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 groupCountX,
-        Uint32 groupCountY,
-        Uint32 groupCountZ);
+        SDL_GPUCommandBuffer *command_buffer,
+        Uint32 groupcount_x,
+        Uint32 groupcount_y,
+        Uint32 groupcount_z);
 
     void (*DispatchComputeIndirect)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         SDL_GPUBuffer *buffer,
-        Uint32 offsetInBytes);
+        Uint32 offset);
 
     void (*EndComputePass)(
-        SDL_GPUCommandBuffer *commandBuffer);
+        SDL_GPUCommandBuffer *command_buffer);
 
     // TransferBuffer Data
 
     void *(*MapTransferBuffer)(
         SDL_GPURenderer *device,
-        SDL_GPUTransferBuffer *transferBuffer,
+        SDL_GPUTransferBuffer *transfer_buffer,
         bool cycle);
 
     void (*UnmapTransferBuffer)(
         SDL_GPURenderer *device,
-        SDL_GPUTransferBuffer *transferBuffer);
+        SDL_GPUTransferBuffer *transfer_buffer);
 
     // Copy Pass
 
     void (*BeginCopyPass)(
-        SDL_GPUCommandBuffer *commandBuffer);
+        SDL_GPUCommandBuffer *command_buffer);
 
     void (*UploadToTexture)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const SDL_GPUTextureTransferInfo *source,
         const SDL_GPUTextureRegion *destination,
         bool cycle);
 
     void (*UploadToBuffer)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const SDL_GPUTransferBufferLocation *source,
         const SDL_GPUBufferRegion *destination,
         bool cycle);
 
     void (*CopyTextureToTexture)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const SDL_GPUTextureLocation *source,
         const SDL_GPUTextureLocation *destination,
         Uint32 w,
@@ -580,35 +580,35 @@ struct SDL_GPUDevice
         bool cycle);
 
     void (*CopyBufferToBuffer)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const SDL_GPUBufferLocation *source,
         const SDL_GPUBufferLocation *destination,
         Uint32 size,
         bool cycle);
 
     void (*GenerateMipmaps)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         SDL_GPUTexture *texture);
 
     void (*DownloadFromTexture)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const SDL_GPUTextureRegion *source,
         const SDL_GPUTextureTransferInfo *destination);
 
     void (*DownloadFromBuffer)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const SDL_GPUBufferRegion *source,
         const SDL_GPUTransferBufferLocation *destination);
 
     void (*EndCopyPass)(
-        SDL_GPUCommandBuffer *commandBuffer);
+        SDL_GPUCommandBuffer *command_buffer);
 
     void (*Blit)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         const SDL_GPUBlitRegion *source,
         const SDL_GPUBlitRegion *destination,
-        SDL_FlipMode flipMode,
-        SDL_GPUFilter filterMode,
+        SDL_FlipMode flip_mode,
+        SDL_GPUFilter filter,
         bool cycle);
 
     // Submission/Presentation
@@ -616,12 +616,12 @@ struct SDL_GPUDevice
     bool (*SupportsSwapchainComposition)(
         SDL_GPURenderer *driverData,
         SDL_Window *window,
-        SDL_GPUSwapchainComposition swapchainComposition);
+        SDL_GPUSwapchainComposition swapchain_composition);
 
     bool (*SupportsPresentMode)(
         SDL_GPURenderer *driverData,
         SDL_Window *window,
-        SDL_GPUPresentMode presentMode);
+        SDL_GPUPresentMode present_mode);
 
     bool (*ClaimWindow)(
         SDL_GPURenderer *driverData,
@@ -634,8 +634,8 @@ struct SDL_GPUDevice
     bool (*SetSwapchainParameters)(
         SDL_GPURenderer *driverData,
         SDL_Window *window,
-        SDL_GPUSwapchainComposition swapchainComposition,
-        SDL_GPUPresentMode presentMode);
+        SDL_GPUSwapchainComposition swapchain_composition,
+        SDL_GPUPresentMode present_mode);
 
     SDL_GPUTextureFormat (*GetSwapchainTextureFormat)(
         SDL_GPURenderer *driverData,
@@ -645,25 +645,25 @@ struct SDL_GPUDevice
         SDL_GPURenderer *driverData);
 
     SDL_GPUTexture *(*AcquireSwapchainTexture)(
-        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUCommandBuffer *command_buffer,
         SDL_Window *window,
-        Uint32 *pWidth,
-        Uint32 *pHeight);
+        Uint32 *w,
+        Uint32 *h);
 
     void (*Submit)(
-        SDL_GPUCommandBuffer *commandBuffer);
+        SDL_GPUCommandBuffer *command_buffer);
 
     SDL_GPUFence *(*SubmitAndAcquireFence)(
-        SDL_GPUCommandBuffer *commandBuffer);
+        SDL_GPUCommandBuffer *command_buffer);
 
     void (*Wait)(
         SDL_GPURenderer *driverData);
 
     void (*WaitForFences)(
         SDL_GPURenderer *driverData,
-        bool waitAll,
-        SDL_GPUFence *const *pFences,
-        Uint32 fenceCount);
+        bool wait_all,
+        SDL_GPUFence *const *fences,
+        Uint32 num_fences);
 
     bool (*QueryFence)(
         SDL_GPURenderer *driverData,
@@ -693,7 +693,7 @@ struct SDL_GPUDevice
     SDL_GPUDriver backend;
 
     // Store this for SDL_gpu.c's debug layer
-    bool debugMode;
+    bool debug_mode;
     SDL_GPUShaderFormat shaderFormats;
 };
 
@@ -784,7 +784,7 @@ typedef struct SDL_GPUBootstrap
     const SDL_GPUDriver backendflag;
     const SDL_GPUShaderFormat shaderFormats;
     bool (*PrepareDriver)(SDL_VideoDevice *_this);
-    SDL_GPUDevice *(*CreateDevice)(bool debugMode, bool preferLowPower, SDL_PropertiesID props);
+    SDL_GPUDevice *(*CreateDevice)(bool debug_mode, bool preferLowPower, SDL_PropertiesID props);
 } SDL_GPUBootstrap;
 
 #ifdef __cplusplus
