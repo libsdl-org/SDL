@@ -167,12 +167,12 @@ static SDL_GPUShader *CompileShader(const GPU_ShaderSources *sources, SDL_GPUDev
 
     SDL_GPUShaderCreateInfo sci = { 0 };
     sci.code = sms->code;
-    sci.codeSize = sms->code_len;
+    sci.code_size = sms->code_len;
     sci.format = sms->format;
     // FIXME not sure if this is correct
-    sci.entryPointName = driver == SDL_GPU_DRIVER_METAL ? "main0" : "main";
-    sci.samplerCount = sources->num_samplers;
-    sci.uniformBufferCount = sources->num_uniform_buffers;
+    sci.entrypoint = driver == SDL_GPU_DRIVER_METAL ? "main0" : "main";
+    sci.num_samplers = sources->num_samplers;
+    sci.num_uniform_buffers = sources->num_uniform_buffers;
     sci.stage = stage;
 
     return SDL_CreateGPUShader(device, &sci);

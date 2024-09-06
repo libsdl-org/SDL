@@ -70,7 +70,7 @@ SDL_DYNAPI_PROC(SDL_JoystickID,SDL_AttachVirtualJoystick,(const SDL_VirtualJoyst
 SDL_DYNAPI_PROC(SDL_bool,SDL_AudioDevicePaused,(SDL_AudioDeviceID a),(a),return)
 SDL_DYNAPI_PROC(SDL_GPUComputePass*,SDL_BeginGPUComputePass,(SDL_GPUCommandBuffer *a, const SDL_GPUStorageTextureWriteOnlyBinding *b, Uint32 c, const SDL_GPUStorageBufferWriteOnlyBinding *d, Uint32 e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(SDL_GPUCopyPass*,SDL_BeginGPUCopyPass,(SDL_GPUCommandBuffer *a),(a),return)
-SDL_DYNAPI_PROC(SDL_GPURenderPass*,SDL_BeginGPURenderPass,(SDL_GPUCommandBuffer *a, const SDL_GPUColorAttachmentInfo *b, Uint32 c, const SDL_GPUDepthStencilAttachmentInfo *d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(SDL_GPURenderPass*,SDL_BeginGPURenderPass,(SDL_GPUCommandBuffer *a, const SDL_GPUColorTargetInfo *b, Uint32 c, const SDL_GPUDepthStencilTargetInfo *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_BindAudioStream,(SDL_AudioDeviceID a, SDL_AudioStream *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_BindAudioStreams,(SDL_AudioDeviceID a, SDL_AudioStream **b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(void,SDL_BindGPUComputePipeline,(SDL_GPUComputePass *a, SDL_GPUComputePipeline *b),(a,b),)

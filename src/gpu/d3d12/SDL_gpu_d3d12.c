@@ -493,7 +493,7 @@ struct D3D12Texture
     Uint32 containerIndex;
 
     D3D12TextureSubresource *subresources;
-    Uint32 subresourceCount; /* layerCount * levelCount */
+    Uint32 subresourceCount; /* layerCount * num_levels */
 
     ID3D12Resource *resource;
     D3D12CPUDescriptor srvHandle;
@@ -517,7 +517,7 @@ typedef struct D3D12WindowData
 #else
     IDXGISwapChain3 *swapchain;
 #endif
-    SDL_GPUPresentMode presentMode;
+    SDL_GPUPresentMode present_mode;
     SDL_GPUSwapchainComposition swapchainComposition;
     DXGI_COLOR_SPACE_TYPE swapchainColorSpace;
     Uint32 frameCounter;
@@ -557,7 +557,7 @@ struct D3D12Renderer
 
     ID3D12CommandQueue *commandQueue;
 
-    bool debugMode;
+    bool debug_mode;
     bool GPUUploadHeapSupported;
     // FIXME: these might not be necessary since we're not using custom heaps
     bool UMA;
@@ -657,8 +657,8 @@ struct D3D12CommandBuffer
     Uint32 presentDataCount;
     Uint32 presentDataCapacity;
 
-    Uint32 colorAttachmentTextureSubresourceCount;
-    D3D12TextureSubresource *colorAttachmentTextureSubresources[MAX_COLOR_TARGET_BINDINGS];
+    Uint32 colorTargetTextureSubresourceCount;
+    D3D12TextureSubresource *colorTargetTextureSubresources[MAX_COLOR_TARGET_BINDINGS];
     D3D12TextureSubresource *depthStencilTextureSubresource;
     D3D12GraphicsPipeline *currentGraphicsPipeline;
     D3D12ComputePipeline *currentComputePipeline;
@@ -742,10 +742,10 @@ struct D3D12Shader
     void *bytecode;
     size_t bytecodeSize;
 
-    Uint32 samplerCount;
-    Uint32 uniformBufferCount;
-    Uint32 storageBufferCount;
-    Uint32 storageTextureCount;
+    Uint32 num_samplers;
+    Uint32 numUniformBuffers;
+    Uint32 numStorageBuffers;
+    Uint32 numStorageTextures;
 };
 
 typedef struct D3D12GraphicsRootSignature
@@ -804,11 +804,11 @@ struct D3D12ComputePipeline
     ID3D12PipelineState *pipelineState;
     D3D12ComputeRootSignature *rootSignature;
 
-    Uint32 readOnlyStorageTextureCount;
-    Uint32 readOnlyStorageBufferCount;
-    Uint32 writeOnlyStorageTextureCount;
-    Uint32 writeOnlyStorageBufferCount;
-    Uint32 uniformBufferCount;
+    Uint32 num_readonly_storage_textures;
+    Uint32 num_readonly_storage_buffers;
+    Uint32 num_writeonly_storage_textures;
+    Uint32 num_writeonly_storage_buffers;
+    Uint32 numUniformBuffers;
 
     SDL_AtomicInt referenceCount;
 };
@@ -843,7 +843,7 @@ struct D3D12Buffer
 
 struct D3D12BufferContainer
 {
-    SDL_GPUBufferUsageFlags usageFlags;
+    SDL_GPUBufferUsageFlags usage;
     Uint32 size;
     D3D12BufferType type;
 
@@ -870,7 +870,7 @@ struct D3D12UniformBuffer
 
 static void D3D12_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window);
 static void D3D12_Wait(SDL_GPURenderer *driverData);
-static void D3D12_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, SDL_GPUFence *const *pFences, Uint32 fenceCount);
+static void D3D12_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, SDL_GPUFence *const *fences, Uint32 numFences);
 static void D3D12_INTERNAL_ReleaseBlitPipelines(SDL_GPURenderer *driverData);
 
 // Helpers
@@ -954,7 +954,7 @@ static void D3D12_INTERNAL_SetResourceName(
     ID3D12Resource *resource,
     const char *text)
 {
-    if (renderer->debugMode) {
+    if (renderer->debug_mode) {
         ID3D12DeviceChild_SetPrivateData(
             resource,
             D3D_GUID(D3D_IID_D3DDebugObjectName),
@@ -1489,7 +1489,7 @@ static void D3D12_INTERNAL_TextureSubresourceBarrier(
         destinationState,
         textureSubresource->parent->resource,
         textureSubresource->index,
-        textureSubresource->parent->container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE);
+        textureSubresource->parent->container->header.info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE);
 }
 
 static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultTextureResourceState(
@@ -1522,7 +1522,7 @@ static void D3D12_INTERNAL_TextureSubresourceTransitionFromDefaultUsage(
 {
     D3D12_INTERNAL_TextureSubresourceBarrier(
         commandBuffer,
-        D3D12_INTERNAL_DefaultTextureResourceState(textureSubresource->parent->container->header.info.usageFlags),
+        D3D12_INTERNAL_DefaultTextureResourceState(textureSubresource->parent->container->header.info.usage),
         destinationUsageMode,
         textureSubresource);
 }
@@ -1548,7 +1548,7 @@ static void D3D12_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
     D3D12_INTERNAL_TextureSubresourceBarrier(
         commandBuffer,
         sourceUsageMode,
-        D3D12_INTERNAL_DefaultTextureResourceState(textureSubresource->parent->container->header.info.usageFlags),
+        D3D12_INTERNAL_DefaultTextureResourceState(textureSubresource->parent->container->header.info.usage),
         textureSubresource);
 }
 
@@ -1568,17 +1568,17 @@ static void D3D12_INTERNAL_TextureTransitionToDefaultUsage(
 static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultBufferResourceState(
     D3D12Buffer *buffer)
 {
-    if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) {
+    if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_VERTEX) {
         return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) {
+    } else if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_INDEX) {
         return D3D12_RESOURCE_STATE_INDEX_BUFFER;
-    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
+    } else if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
+    } else if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
         return D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ) {
+    } else if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ) {
         return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    } else if (buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
+    } else if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Buffer has no default usage mode!");
@@ -1598,7 +1598,7 @@ static void D3D12_INTERNAL_BufferBarrier(
         destinationState,
         buffer->handle,
         0,
-        buffer->container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE);
+        buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE);
 
     buffer->transitioned = true;
 }
@@ -1870,10 +1870,10 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
         d3d12GraphicsRootSignature->fragmentUniformBufferRootIndex[i] = -1;
     }
 
-    if (vertexShader->samplerCount > 0) {
+    if (vertexShader->num_samplers > 0) {
         // Vertex Samplers
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-        descriptorRange.NumDescriptors = vertexShader->samplerCount;
+        descriptorRange.NumDescriptors = vertexShader->num_samplers;
         descriptorRange.BaseShaderRegister = 0;
         descriptorRange.RegisterSpace = 0;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -1889,7 +1889,7 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
         parameterCount += 1;
 
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        descriptorRange.NumDescriptors = vertexShader->samplerCount;
+        descriptorRange.NumDescriptors = vertexShader->num_samplers;
         descriptorRange.BaseShaderRegister = 0;
         descriptorRange.RegisterSpace = 0;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -1905,11 +1905,11 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
         parameterCount += 1;
     }
 
-    if (vertexShader->storageTextureCount) {
+    if (vertexShader->numStorageTextures) {
         // Vertex storage textures
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        descriptorRange.NumDescriptors = vertexShader->storageTextureCount;
-        descriptorRange.BaseShaderRegister = vertexShader->samplerCount;
+        descriptorRange.NumDescriptors = vertexShader->numStorageTextures;
+        descriptorRange.BaseShaderRegister = vertexShader->num_samplers;
         descriptorRange.RegisterSpace = 0;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
         descriptorRanges[rangeCount] = descriptorRange;
@@ -1924,12 +1924,12 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
         parameterCount += 1;
     }
 
-    if (vertexShader->storageBufferCount) {
+    if (vertexShader->numStorageBuffers) {
 
         // Vertex storage buffers
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        descriptorRange.NumDescriptors = vertexShader->storageBufferCount;
-        descriptorRange.BaseShaderRegister = vertexShader->samplerCount + vertexShader->storageTextureCount;
+        descriptorRange.NumDescriptors = vertexShader->numStorageBuffers;
+        descriptorRange.BaseShaderRegister = vertexShader->num_samplers + vertexShader->numStorageTextures;
         descriptorRange.RegisterSpace = 0;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
         descriptorRanges[rangeCount] = descriptorRange;
@@ -1945,7 +1945,7 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
     }
 
     // Vertex Uniforms
-    for (Uint32 i = 0; i < vertexShader->uniformBufferCount; i += 1) {
+    for (Uint32 i = 0; i < vertexShader->numUniformBuffers; i += 1) {
         rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
         rootParameter.Descriptor.ShaderRegister = i;
         rootParameter.Descriptor.RegisterSpace = 1;
@@ -1955,10 +1955,10 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
         parameterCount += 1;
     }
 
-    if (fragmentShader->samplerCount) {
+    if (fragmentShader->num_samplers) {
         // Fragment Samplers
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-        descriptorRange.NumDescriptors = fragmentShader->samplerCount;
+        descriptorRange.NumDescriptors = fragmentShader->num_samplers;
         descriptorRange.BaseShaderRegister = 0;
         descriptorRange.RegisterSpace = 2;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -1974,7 +1974,7 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
         parameterCount += 1;
 
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        descriptorRange.NumDescriptors = fragmentShader->samplerCount;
+        descriptorRange.NumDescriptors = fragmentShader->num_samplers;
         descriptorRange.BaseShaderRegister = 0;
         descriptorRange.RegisterSpace = 2;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -1990,11 +1990,11 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
         parameterCount += 1;
     }
 
-    if (fragmentShader->storageTextureCount) {
+    if (fragmentShader->numStorageTextures) {
         // Fragment Storage Textures
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        descriptorRange.NumDescriptors = fragmentShader->storageTextureCount;
-        descriptorRange.BaseShaderRegister = fragmentShader->samplerCount;
+        descriptorRange.NumDescriptors = fragmentShader->numStorageTextures;
+        descriptorRange.BaseShaderRegister = fragmentShader->num_samplers;
         descriptorRange.RegisterSpace = 2;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
         descriptorRanges[rangeCount] = descriptorRange;
@@ -2009,11 +2009,11 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
         parameterCount += 1;
     }
 
-    if (fragmentShader->storageBufferCount) {
+    if (fragmentShader->numStorageBuffers) {
         // Fragment Storage Buffers
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        descriptorRange.NumDescriptors = fragmentShader->storageBufferCount;
-        descriptorRange.BaseShaderRegister = fragmentShader->samplerCount + fragmentShader->storageTextureCount;
+        descriptorRange.NumDescriptors = fragmentShader->numStorageBuffers;
+        descriptorRange.BaseShaderRegister = fragmentShader->num_samplers + fragmentShader->numStorageTextures;
         descriptorRange.RegisterSpace = 2;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
         descriptorRanges[rangeCount] = descriptorRange;
@@ -2029,7 +2029,7 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
     }
 
     // Fragment Uniforms
-    for (Uint32 i = 0; i < fragmentShader->uniformBufferCount; i += 1) {
+    for (Uint32 i = 0; i < fragmentShader->numUniformBuffers; i += 1) {
         rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
         rootParameter.Descriptor.ShaderRegister = i;
         rootParameter.Descriptor.RegisterSpace = 3;
@@ -2095,7 +2095,7 @@ static bool D3D12_INTERNAL_CreateShaderBytecode(
     SDL_GPUShaderFormat format,
     const Uint8 *code,
     size_t codeSize,
-    const char *entryPointName,
+    const char *entrypointName,
     void **pBytecode,
     size_t *pBytecodeSize)
 {
@@ -2141,9 +2141,9 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
         d3d12ComputeRootSignature->uniformBufferRootIndex[i] = -1;
     }
 
-    if (createInfo->readOnlyStorageTextureCount) {
+    if (createInfo->num_readonly_storage_textures) {
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        descriptorRange.NumDescriptors = createInfo->readOnlyStorageTextureCount;
+        descriptorRange.NumDescriptors = createInfo->num_readonly_storage_textures;
         descriptorRange.BaseShaderRegister = 0;
         descriptorRange.RegisterSpace = 0;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -2159,10 +2159,10 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
         parameterCount += 1;
     }
 
-    if (createInfo->readOnlyStorageBufferCount) {
+    if (createInfo->num_readonly_storage_buffers) {
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        descriptorRange.NumDescriptors = createInfo->readOnlyStorageBufferCount;
-        descriptorRange.BaseShaderRegister = createInfo->readOnlyStorageTextureCount;
+        descriptorRange.NumDescriptors = createInfo->num_readonly_storage_buffers;
+        descriptorRange.BaseShaderRegister = createInfo->num_readonly_storage_textures;
         descriptorRange.RegisterSpace = 0;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
         descriptorRanges[rangeCount] = descriptorRange;
@@ -2177,9 +2177,9 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
         parameterCount += 1;
     }
 
-    if (createInfo->writeOnlyStorageTextureCount) {
+    if (createInfo->num_writeonly_storage_textures) {
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-        descriptorRange.NumDescriptors = createInfo->writeOnlyStorageTextureCount;
+        descriptorRange.NumDescriptors = createInfo->num_writeonly_storage_textures;
         descriptorRange.BaseShaderRegister = 0;
         descriptorRange.RegisterSpace = 1;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -2195,10 +2195,10 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
         parameterCount += 1;
     }
 
-    if (createInfo->writeOnlyStorageBufferCount) {
+    if (createInfo->num_writeonly_storage_buffers) {
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-        descriptorRange.NumDescriptors = createInfo->writeOnlyStorageBufferCount;
-        descriptorRange.BaseShaderRegister = createInfo->writeOnlyStorageTextureCount;
+        descriptorRange.NumDescriptors = createInfo->num_writeonly_storage_buffers;
+        descriptorRange.BaseShaderRegister = createInfo->num_writeonly_storage_textures;
         descriptorRange.RegisterSpace = 1;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
         descriptorRanges[rangeCount] = descriptorRange;
@@ -2213,7 +2213,7 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
         parameterCount += 1;
     }
 
-    for (Uint32 i = 0; i < createInfo->uniformBufferCount; i += 1) {
+    for (Uint32 i = 0; i < createInfo->num_uniform_buffers; i += 1) {
         rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
         rootParameter.Descriptor.ShaderRegister = i;
         rootParameter.Descriptor.RegisterSpace = 2;
@@ -2272,7 +2272,7 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
 
 static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     SDL_GPURenderer *driverData,
-    const SDL_GPUComputePipelineCreateInfo *pipelineCreateInfo)
+    const SDL_GPUComputePipelineCreateInfo *createinfo)
 {
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
     void *bytecode;
@@ -2282,10 +2282,10 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     if (!D3D12_INTERNAL_CreateShaderBytecode(
             renderer,
             SDL_GPU_SHADERSTAGE_COMPUTE,
-            pipelineCreateInfo->format,
-            pipelineCreateInfo->code,
-            pipelineCreateInfo->codeSize,
-            pipelineCreateInfo->entryPointName,
+            createinfo->format,
+            createinfo->code,
+            createinfo->code_size,
+            createinfo->entrypoint,
             &bytecode,
             &bytecodeSize)) {
         return NULL;
@@ -2293,7 +2293,7 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
 
     D3D12ComputeRootSignature *rootSignature = D3D12_INTERNAL_CreateComputeRootSignature(
         renderer,
-        pipelineCreateInfo);
+        createinfo);
 
     if (rootSignature == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not create root signature!");
@@ -2333,11 +2333,11 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
 
     computePipeline->pipelineState = pipelineState;
     computePipeline->rootSignature = rootSignature;
-    computePipeline->readOnlyStorageTextureCount = pipelineCreateInfo->readOnlyStorageTextureCount;
-    computePipeline->readOnlyStorageBufferCount = pipelineCreateInfo->readOnlyStorageBufferCount;
-    computePipeline->writeOnlyStorageTextureCount = pipelineCreateInfo->writeOnlyStorageTextureCount;
-    computePipeline->writeOnlyStorageBufferCount = pipelineCreateInfo->writeOnlyStorageBufferCount;
-    computePipeline->uniformBufferCount = pipelineCreateInfo->uniformBufferCount;
+    computePipeline->num_readonly_storage_textures = createinfo->num_readonly_storage_textures;
+    computePipeline->num_readonly_storage_buffers = createinfo->num_readonly_storage_buffers;
+    computePipeline->num_writeonly_storage_textures = createinfo->num_writeonly_storage_textures;
+    computePipeline->num_writeonly_storage_buffers = createinfo->num_writeonly_storage_buffers;
+    computePipeline->numUniformBuffers = createinfo->num_uniform_buffers;
     SDL_AtomicSet(&computePipeline->referenceCount, 0);
 
     return (SDL_GPUComputePipeline *)computePipeline;
@@ -2349,10 +2349,10 @@ static bool D3D12_INTERNAL_ConvertRasterizerState(SDL_GPURasterizerState rasteri
         return false;
     }
 
-    desc->FillMode = SDLToD3D12_FillMode[rasterizerState.fillMode];
-    desc->CullMode = SDLToD3D12_CullMode[rasterizerState.cullMode];
+    desc->FillMode = SDLToD3D12_FillMode[rasterizerState.fill_mode];
+    desc->CullMode = SDLToD3D12_CullMode[rasterizerState.cull_mode];
 
-    switch (rasterizerState.frontFace) {
+    switch (rasterizerState.front_face) {
     case SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE:
         desc->FrontCounterClockwise = TRUE;
         break;
@@ -2363,10 +2363,10 @@ static bool D3D12_INTERNAL_ConvertRasterizerState(SDL_GPURasterizerState rasteri
         return false;
     }
 
-    if (rasterizerState.depthBiasEnable) {
-        desc->DepthBias = SDL_lroundf(rasterizerState.depthBiasConstantFactor);
-        desc->DepthBiasClamp = rasterizerState.depthBiasClamp;
-        desc->SlopeScaledDepthBias = rasterizerState.depthBiasSlopeFactor;
+    if (rasterizerState.enable_depth_bias) {
+        desc->DepthBias = SDL_lroundf(rasterizerState.depth_bias_constant_factor);
+        desc->DepthBiasClamp = rasterizerState.depth_bias_clamp;
+        desc->SlopeScaledDepthBias = rasterizerState.depth_bias_slope_factor;
     } else {
         desc->DepthBias = 0;
         desc->DepthBiasClamp = 0.0f;
@@ -2407,19 +2407,19 @@ static bool D3D12_INTERNAL_ConvertBlendState(
         rtBlendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
         rtBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
-        // If attachmentInfo has more blend states, you can set IndependentBlendEnable to TRUE and assign different blend states to each render target slot
-        if (i < pipelineInfo->attachmentInfo.colorAttachmentCount) {
+        // If target_info has more blend states, you can set IndependentBlendEnable to TRUE and assign different blend states to each render target slot
+        if (i < pipelineInfo->target_info.num_color_targets) {
 
-            SDL_GPUColorAttachmentBlendState sdlBlendState = pipelineInfo->attachmentInfo.colorAttachmentDescriptions[i].blendState;
+            SDL_GPUColorTargetBlendState sdlBlendState = pipelineInfo->target_info.color_target_descriptions[i].blend_state;
 
-            rtBlendDesc.BlendEnable = sdlBlendState.blendEnable;
-            rtBlendDesc.SrcBlend = SDLToD3D12_BlendFactor[sdlBlendState.srcColorBlendFactor];
-            rtBlendDesc.DestBlend = SDLToD3D12_BlendFactor[sdlBlendState.dstColorBlendFactor];
-            rtBlendDesc.BlendOp = SDLToD3D12_BlendOp[sdlBlendState.colorBlendOp];
-            rtBlendDesc.SrcBlendAlpha = SDLToD3D12_BlendFactorAlpha[sdlBlendState.srcAlphaBlendFactor];
-            rtBlendDesc.DestBlendAlpha = SDLToD3D12_BlendFactorAlpha[sdlBlendState.dstAlphaBlendFactor];
-            rtBlendDesc.BlendOpAlpha = SDLToD3D12_BlendOp[sdlBlendState.alphaBlendOp];
-            rtBlendDesc.RenderTargetWriteMask = sdlBlendState.colorWriteMask;
+            rtBlendDesc.BlendEnable = sdlBlendState.enable_blend;
+            rtBlendDesc.SrcBlend = SDLToD3D12_BlendFactor[sdlBlendState.src_color_blendfactor];
+            rtBlendDesc.DestBlend = SDLToD3D12_BlendFactor[sdlBlendState.dst_color_blendfactor];
+            rtBlendDesc.BlendOp = SDLToD3D12_BlendOp[sdlBlendState.color_blend_op];
+            rtBlendDesc.SrcBlendAlpha = SDLToD3D12_BlendFactorAlpha[sdlBlendState.src_alpha_blendfactor];
+            rtBlendDesc.DestBlendAlpha = SDLToD3D12_BlendFactorAlpha[sdlBlendState.dst_alpha_blendfactor];
+            rtBlendDesc.BlendOpAlpha = SDLToD3D12_BlendOp[sdlBlendState.alpha_blend_op];
+            rtBlendDesc.RenderTargetWriteMask = sdlBlendState.color_write_mask;
 
             if (i > 0) {
                 blendDesc->IndependentBlendEnable = TRUE;
@@ -2438,42 +2438,42 @@ static bool D3D12_INTERNAL_ConvertDepthStencilState(SDL_GPUDepthStencilState dep
         return false;
     }
 
-    desc->DepthEnable = depthStencilState.depthTestEnable == true ? TRUE : FALSE;
-    desc->DepthWriteMask = depthStencilState.depthWriteEnable == true ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-    desc->DepthFunc = SDLToD3D12_CompareOp[depthStencilState.compareOp];
-    desc->StencilEnable = depthStencilState.stencilTestEnable == true ? TRUE : FALSE;
-    desc->StencilReadMask = depthStencilState.compareMask;
-    desc->StencilWriteMask = depthStencilState.writeMask;
+    desc->DepthEnable = depthStencilState.enable_depth_test == true ? TRUE : FALSE;
+    desc->DepthWriteMask = depthStencilState.enable_depth_write == true ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+    desc->DepthFunc = SDLToD3D12_CompareOp[depthStencilState.compare_op];
+    desc->StencilEnable = depthStencilState.enable_stencil_test == true ? TRUE : FALSE;
+    desc->StencilReadMask = depthStencilState.compare_mask;
+    desc->StencilWriteMask = depthStencilState.write_mask;
 
-    desc->FrontFace.StencilFailOp = SDLToD3D12_StencilOp[depthStencilState.frontStencilState.failOp];
-    desc->FrontFace.StencilDepthFailOp = SDLToD3D12_StencilOp[depthStencilState.frontStencilState.depthFailOp];
-    desc->FrontFace.StencilPassOp = SDLToD3D12_StencilOp[depthStencilState.frontStencilState.passOp];
-    desc->FrontFace.StencilFunc = SDLToD3D12_CompareOp[depthStencilState.frontStencilState.compareOp];
+    desc->FrontFace.StencilFailOp = SDLToD3D12_StencilOp[depthStencilState.front_stencil_state.fail_op];
+    desc->FrontFace.StencilDepthFailOp = SDLToD3D12_StencilOp[depthStencilState.front_stencil_state.depth_fail_op];
+    desc->FrontFace.StencilPassOp = SDLToD3D12_StencilOp[depthStencilState.front_stencil_state.pass_op];
+    desc->FrontFace.StencilFunc = SDLToD3D12_CompareOp[depthStencilState.front_stencil_state.compare_op];
 
-    desc->BackFace.StencilFailOp = SDLToD3D12_StencilOp[depthStencilState.backStencilState.failOp];
-    desc->BackFace.StencilDepthFailOp = SDLToD3D12_StencilOp[depthStencilState.backStencilState.depthFailOp];
-    desc->BackFace.StencilPassOp = SDLToD3D12_StencilOp[depthStencilState.backStencilState.passOp];
-    desc->BackFace.StencilFunc = SDLToD3D12_CompareOp[depthStencilState.backStencilState.compareOp];
+    desc->BackFace.StencilFailOp = SDLToD3D12_StencilOp[depthStencilState.back_stencil_state.fail_op];
+    desc->BackFace.StencilDepthFailOp = SDLToD3D12_StencilOp[depthStencilState.back_stencil_state.depth_fail_op];
+    desc->BackFace.StencilPassOp = SDLToD3D12_StencilOp[depthStencilState.back_stencil_state.pass_op];
+    desc->BackFace.StencilFunc = SDLToD3D12_CompareOp[depthStencilState.back_stencil_state.compare_op];
 
     return true;
 }
 
 static bool D3D12_INTERNAL_ConvertVertexInputState(SDL_GPUVertexInputState vertexInputState, D3D12_INPUT_ELEMENT_DESC *desc, const char *semantic)
 {
-    if (desc == NULL || vertexInputState.vertexAttributeCount == 0) {
+    if (desc == NULL || vertexInputState.num_vertex_attributes == 0) {
         return false;
     }
 
-    for (Uint32 i = 0; i < vertexInputState.vertexAttributeCount; i += 1) {
-        SDL_GPUVertexAttribute attribute = vertexInputState.vertexAttributes[i];
+    for (Uint32 i = 0; i < vertexInputState.num_vertex_attributes; i += 1) {
+        SDL_GPUVertexAttribute attribute = vertexInputState.vertex_attributes[i];
 
         desc[i].SemanticName = semantic;
         desc[i].SemanticIndex = attribute.location;
         desc[i].Format = SDLToD3D12_VertexFormat[attribute.format];
         desc[i].InputSlot = attribute.binding;
         desc[i].AlignedByteOffset = attribute.offset;
-        desc[i].InputSlotClass = SDLToD3D12_InputRate[vertexInputState.vertexBindings[attribute.binding].inputRate];
-        desc[i].InstanceDataStepRate = (vertexInputState.vertexBindings[attribute.binding].inputRate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) ? vertexInputState.vertexBindings[attribute.binding].instanceStepRate : 0;
+        desc[i].InputSlotClass = SDLToD3D12_InputRate[vertexInputState.vertex_bindings[attribute.binding].input_rate];
+        desc[i].InstanceDataStepRate = (vertexInputState.vertex_bindings[attribute.binding].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) ? vertexInputState.vertex_bindings[attribute.binding].instance_step_rate : 0;
     }
 
     return true;
@@ -2513,11 +2513,11 @@ static void D3D12_INTERNAL_AssignCpuDescriptorHandle(
 
 static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     SDL_GPURenderer *driverData,
-    const SDL_GPUGraphicsPipelineCreateInfo *pipelineCreateInfo)
+    const SDL_GPUGraphicsPipelineCreateInfo *createinfo)
 {
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
-    D3D12Shader *vertShader = (D3D12Shader *)pipelineCreateInfo->vertexShader;
-    D3D12Shader *fragShader = (D3D12Shader *)pipelineCreateInfo->fragmentShader;
+    D3D12Shader *vertShader = (D3D12Shader *)createinfo->vertex_shader;
+    D3D12Shader *fragShader = (D3D12Shader *)createinfo->fragment_shader;
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
     SDL_zero(psoDesc);
@@ -2527,21 +2527,21 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     psoDesc.PS.BytecodeLength = fragShader->bytecodeSize;
 
     D3D12_INPUT_ELEMENT_DESC inputElementDescs[D3D12_IA_VERTEX_INPUT_STRUCTURE_ELEMENT_COUNT];
-    if (pipelineCreateInfo->vertexInputState.vertexAttributeCount > 0) {
+    if (createinfo->vertex_input_state.num_vertex_attributes > 0) {
         psoDesc.InputLayout.pInputElementDescs = inputElementDescs;
-        psoDesc.InputLayout.NumElements = pipelineCreateInfo->vertexInputState.vertexAttributeCount;
-        D3D12_INTERNAL_ConvertVertexInputState(pipelineCreateInfo->vertexInputState, inputElementDescs, renderer->semantic);
+        psoDesc.InputLayout.NumElements = createinfo->vertex_input_state.num_vertex_attributes;
+        D3D12_INTERNAL_ConvertVertexInputState(createinfo->vertex_input_state, inputElementDescs, renderer->semantic);
     }
 
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
-    if (!D3D12_INTERNAL_ConvertRasterizerState(pipelineCreateInfo->rasterizerState, &psoDesc.RasterizerState)) {
+    if (!D3D12_INTERNAL_ConvertRasterizerState(createinfo->rasterizer_state, &psoDesc.RasterizerState)) {
         return NULL;
     }
-    if (!D3D12_INTERNAL_ConvertBlendState(pipelineCreateInfo, &psoDesc.BlendState)) {
+    if (!D3D12_INTERNAL_ConvertBlendState(createinfo, &psoDesc.BlendState)) {
         return NULL;
     }
-    if (!D3D12_INTERNAL_ConvertDepthStencilState(pipelineCreateInfo->depthStencilState, &psoDesc.DepthStencilState)) {
+    if (!D3D12_INTERNAL_ConvertDepthStencilState(createinfo->depth_stencil_state, &psoDesc.DepthStencilState)) {
         return NULL;
     }
 
@@ -2551,13 +2551,13 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     }
 
     psoDesc.SampleMask = UINT_MAX;
-    psoDesc.SampleDesc.Count = SDLToD3D12_SampleCount[pipelineCreateInfo->multisampleState.sampleCount];
+    psoDesc.SampleDesc.Count = SDLToD3D12_SampleCount[createinfo->multisample_state.sample_count];
     psoDesc.SampleDesc.Quality = 0;
 
-    psoDesc.DSVFormat = SDLToD3D12_TextureFormat[pipelineCreateInfo->attachmentInfo.depthStencilFormat];
-    psoDesc.NumRenderTargets = pipelineCreateInfo->attachmentInfo.colorAttachmentCount;
-    for (uint32_t i = 0; i < pipelineCreateInfo->attachmentInfo.colorAttachmentCount; i += 1) {
-        psoDesc.RTVFormats[i] = SDLToD3D12_TextureFormat[pipelineCreateInfo->attachmentInfo.colorAttachmentDescriptions[i].format];
+    psoDesc.DSVFormat = SDLToD3D12_TextureFormat[createinfo->target_info.depth_stencil_format];
+    psoDesc.NumRenderTargets = createinfo->target_info.num_color_targets;
+    for (uint32_t i = 0; i < createinfo->target_info.num_color_targets; i += 1) {
+        psoDesc.RTVFormats[i] = SDLToD3D12_TextureFormat[createinfo->target_info.color_target_descriptions[i].format];
     }
 
     // Assuming some default values or further initialization
@@ -2595,21 +2595,21 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
 
     pipeline->pipelineState = pipelineState;
 
-    for (Uint32 i = 0; i < pipelineCreateInfo->vertexInputState.vertexBindingCount; i += 1) {
-        pipeline->vertexStrides[i] = pipelineCreateInfo->vertexInputState.vertexBindings[i].stride;
+    for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_bindings; i += 1) {
+        pipeline->vertexStrides[i] = createinfo->vertex_input_state.vertex_bindings[i].pitch;
     }
 
-    pipeline->primitiveType = pipelineCreateInfo->primitiveType;
+    pipeline->primitiveType = createinfo->primitive_type;
 
-    pipeline->vertexSamplerCount = vertShader->samplerCount;
-    pipeline->vertexStorageTextureCount = vertShader->storageTextureCount;
-    pipeline->vertexStorageBufferCount = vertShader->storageBufferCount;
-    pipeline->vertexUniformBufferCount = vertShader->uniformBufferCount;
+    pipeline->vertexSamplerCount = vertShader->num_samplers;
+    pipeline->vertexStorageTextureCount = vertShader->numStorageTextures;
+    pipeline->vertexStorageBufferCount = vertShader->numStorageBuffers;
+    pipeline->vertexUniformBufferCount = vertShader->numUniformBuffers;
 
-    pipeline->fragmentSamplerCount = fragShader->samplerCount;
-    pipeline->fragmentStorageTextureCount = fragShader->storageTextureCount;
-    pipeline->fragmentStorageBufferCount = fragShader->storageBufferCount;
-    pipeline->fragmentUniformBufferCount = fragShader->uniformBufferCount;
+    pipeline->fragmentSamplerCount = fragShader->num_samplers;
+    pipeline->fragmentStorageTextureCount = fragShader->numStorageTextures;
+    pipeline->fragmentStorageBufferCount = fragShader->numStorageBuffers;
+    pipeline->fragmentUniformBufferCount = fragShader->numUniformBuffers;
 
     SDL_AtomicSet(&pipeline->referenceCount, 0);
     return (SDL_GPUGraphicsPipeline *)pipeline;
@@ -2617,7 +2617,7 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
 
 static SDL_GPUSampler *D3D12_CreateSampler(
     SDL_GPURenderer *driverData,
-    const SDL_GPUSamplerCreateInfo *samplerCreateInfo)
+    const SDL_GPUSamplerCreateInfo *createinfo)
 {
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
     D3D12Sampler *sampler = (D3D12Sampler *)SDL_calloc(1, sizeof(D3D12Sampler));
@@ -2627,19 +2627,19 @@ static SDL_GPUSampler *D3D12_CreateSampler(
     D3D12_SAMPLER_DESC samplerDesc;
 
     samplerDesc.Filter = SDLToD3D12_Filter(
-        samplerCreateInfo->minFilter,
-        samplerCreateInfo->magFilter,
-        samplerCreateInfo->mipmapMode,
-        samplerCreateInfo->compareEnable,
-        samplerCreateInfo->anisotropyEnable);
-    samplerDesc.AddressU = SDLToD3D12_SamplerAddressMode[samplerCreateInfo->addressModeU];
-    samplerDesc.AddressV = SDLToD3D12_SamplerAddressMode[samplerCreateInfo->addressModeV];
-    samplerDesc.AddressW = SDLToD3D12_SamplerAddressMode[samplerCreateInfo->addressModeW];
-    samplerDesc.MaxAnisotropy = (Uint32)samplerCreateInfo->maxAnisotropy;
-    samplerDesc.ComparisonFunc = SDLToD3D12_CompareOp[samplerCreateInfo->compareOp];
-    samplerDesc.MinLOD = samplerCreateInfo->minLod;
-    samplerDesc.MaxLOD = samplerCreateInfo->maxLod;
-    samplerDesc.MipLODBias = samplerCreateInfo->mipLodBias;
+        createinfo->min_filter,
+        createinfo->mag_filter,
+        createinfo->mipmap_mode,
+        createinfo->enable_compare,
+        createinfo->enable_anisotropy);
+    samplerDesc.AddressU = SDLToD3D12_SamplerAddressMode[createinfo->address_mode_u];
+    samplerDesc.AddressV = SDLToD3D12_SamplerAddressMode[createinfo->address_mode_v];
+    samplerDesc.AddressW = SDLToD3D12_SamplerAddressMode[createinfo->address_mode_w];
+    samplerDesc.MaxAnisotropy = (Uint32)createinfo->max_anisotropy;
+    samplerDesc.ComparisonFunc = SDLToD3D12_CompareOp[createinfo->compare_op];
+    samplerDesc.MinLOD = createinfo->min_lod;
+    samplerDesc.MaxLOD = createinfo->max_lod;
+    samplerDesc.MipLODBias = createinfo->mip_lod_bias;
     samplerDesc.BorderColor[0] = 0;
     samplerDesc.BorderColor[1] = 0;
     samplerDesc.BorderColor[2] = 0;
@@ -2655,14 +2655,14 @@ static SDL_GPUSampler *D3D12_CreateSampler(
         &samplerDesc,
         sampler->handle.cpuHandle);
 
-    sampler->createInfo = *samplerCreateInfo;
+    sampler->createInfo = *createinfo;
     SDL_AtomicSet(&sampler->referenceCount, 0);
     return (SDL_GPUSampler *)sampler;
 }
 
 static SDL_GPUShader *D3D12_CreateShader(
     SDL_GPURenderer *driverData,
-    const SDL_GPUShaderCreateInfo *shaderCreateInfo)
+    const SDL_GPUShaderCreateInfo *createinfo)
 {
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
     void *bytecode;
@@ -2671,11 +2671,11 @@ static SDL_GPUShader *D3D12_CreateShader(
 
     if (!D3D12_INTERNAL_CreateShaderBytecode(
             renderer,
-            shaderCreateInfo->stage,
-            shaderCreateInfo->format,
-            shaderCreateInfo->code,
-            shaderCreateInfo->codeSize,
-            shaderCreateInfo->entryPointName,
+            createinfo->stage,
+            createinfo->format,
+            createinfo->code,
+            createinfo->code_size,
+            createinfo->entrypoint,
             &bytecode,
             &bytecodeSize)) {
         return NULL;
@@ -2685,10 +2685,10 @@ static SDL_GPUShader *D3D12_CreateShader(
         SDL_free(bytecode);
         return NULL;
     }
-    shader->samplerCount = shaderCreateInfo->samplerCount;
-    shader->storageBufferCount = shaderCreateInfo->storageBufferCount;
-    shader->storageTextureCount = shaderCreateInfo->storageTextureCount;
-    shader->uniformBufferCount = shaderCreateInfo->uniformBufferCount;
+    shader->num_samplers = createinfo->num_samplers;
+    shader->numStorageBuffers = createinfo->num_storage_buffers;
+    shader->numStorageTextures = createinfo->num_storage_textures;
+    shader->numUniformBuffers = createinfo->num_uniform_buffers;
 
     shader->bytecode = bytecode;
     shader->bytecodeSize = bytecodeSize;
@@ -2698,7 +2698,7 @@ static SDL_GPUShader *D3D12_CreateShader(
 
 static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     D3D12Renderer *renderer,
-    const SDL_GPUTextureCreateInfo *textureCreateInfo,
+    const SDL_GPUTextureCreateInfo *createinfo,
     bool isSwapchainTexture)
 {
     D3D12Texture *texture;
@@ -2717,26 +2717,26 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         return NULL;
     }
 
-    Uint32 layerCount = textureCreateInfo->type == SDL_GPU_TEXTURETYPE_3D ? 1 : textureCreateInfo->layerCountOrDepth;
-    Uint32 depth = textureCreateInfo->type == SDL_GPU_TEXTURETYPE_3D ? textureCreateInfo->layerCountOrDepth : 1;
+    Uint32 layerCount = createinfo->type == SDL_GPU_TEXTURETYPE_3D ? 1 : createinfo->layer_count_or_depth;
+    Uint32 depth = createinfo->type == SDL_GPU_TEXTURETYPE_3D ? createinfo->layer_count_or_depth : 1;
 
-    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
+    if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         useClearValue = true;
-        clearValue.Color[0] = SDL_GetFloatProperty(textureCreateInfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_R_FLOAT, 0);
-        clearValue.Color[1] = SDL_GetFloatProperty(textureCreateInfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_G_FLOAT, 0);
-        clearValue.Color[2] = SDL_GetFloatProperty(textureCreateInfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_B_FLOAT, 0);
-        clearValue.Color[3] = SDL_GetFloatProperty(textureCreateInfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_A_FLOAT, 0);
+        clearValue.Color[0] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_R_FLOAT, 0);
+        clearValue.Color[1] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_G_FLOAT, 0);
+        clearValue.Color[2] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_B_FLOAT, 0);
+        clearValue.Color[3] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_A_FLOAT, 0);
     }
 
-    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+    if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         useClearValue = true;
-        clearValue.DepthStencil.Depth = SDL_GetFloatProperty(textureCreateInfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_DEPTH_FLOAT, 0);
-        clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(textureCreateInfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8, 0);
+        clearValue.DepthStencil.Depth = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_DEPTH_FLOAT, 0);
+        clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8, 0);
     }
 
-    if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
+    if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     }
 
@@ -2748,14 +2748,14 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
     heapFlags = isSwapchainTexture ? D3D12_HEAP_FLAG_ALLOW_DISPLAY : D3D12_HEAP_FLAG_NONE;
 
-    if (textureCreateInfo->type != SDL_GPU_TEXTURETYPE_3D) {
+    if (createinfo->type != SDL_GPU_TEXTURETYPE_3D) {
         desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
         desc.Alignment = isSwapchainTexture ? 0 : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-        desc.Width = textureCreateInfo->width;
-        desc.Height = textureCreateInfo->height;
-        desc.DepthOrArraySize = (UINT16)textureCreateInfo->layerCountOrDepth;
-        desc.MipLevels = (UINT16)textureCreateInfo->levelCount;
-        desc.Format = SDLToD3D12_TextureFormat[textureCreateInfo->format];
+        desc.Width = createinfo->width;
+        desc.Height = createinfo->height;
+        desc.DepthOrArraySize = (UINT16)createinfo->layer_count_or_depth;
+        desc.MipLevels = (UINT16)createinfo->num_levels;
+        desc.Format = SDLToD3D12_TextureFormat[createinfo->format];
         desc.SampleDesc.Count = 1;
         desc.SampleDesc.Quality = 0;
         desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // Apparently this is the most efficient choice
@@ -2763,18 +2763,18 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     } else {
         desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
         desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-        desc.Width = textureCreateInfo->width;
-        desc.Height = textureCreateInfo->height;
-        desc.DepthOrArraySize = (UINT16)textureCreateInfo->layerCountOrDepth;
-        desc.MipLevels = (UINT16)textureCreateInfo->levelCount;
-        desc.Format = SDLToD3D12_TextureFormat[textureCreateInfo->format];
+        desc.Width = createinfo->width;
+        desc.Height = createinfo->height;
+        desc.DepthOrArraySize = (UINT16)createinfo->layer_count_or_depth;
+        desc.MipLevels = (UINT16)createinfo->num_levels;
+        desc.Format = SDLToD3D12_TextureFormat[createinfo->format];
         desc.SampleDesc.Count = 1;
         desc.SampleDesc.Quality = 0;
         desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
         desc.Flags = resourceFlags;
     }
 
-    initialState = isSwapchainTexture ? D3D12_RESOURCE_STATE_PRESENT : D3D12_INTERNAL_DefaultTextureResourceState(textureCreateInfo->usageFlags);
+    initialState = isSwapchainTexture ? D3D12_RESOURCE_STATE_PRESENT : D3D12_INTERNAL_DefaultTextureResourceState(createinfo->usage);
     clearValue.Format = desc.Format;
 
     res = ID3D12Device_CreateCommittedResource(
@@ -2795,9 +2795,9 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     texture->resource = handle;
 
     // Create the SRV if applicable
-    if ((textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
-        (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
-        (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
+    if ((createinfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
+        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
+        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
 
         D3D12_INTERNAL_AssignCpuDescriptorHandle(
@@ -2805,30 +2805,30 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             &texture->srvHandle);
 
-        srvDesc.Format = SDLToD3D12_TextureFormat[textureCreateInfo->format];
+        srvDesc.Format = SDLToD3D12_TextureFormat[createinfo->format];
         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-        if (textureCreateInfo->type == SDL_GPU_TEXTURETYPE_CUBE) {
+        if (createinfo->type == SDL_GPU_TEXTURETYPE_CUBE) {
             srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-            srvDesc.TextureCube.MipLevels = textureCreateInfo->levelCount;
+            srvDesc.TextureCube.MipLevels = createinfo->num_levels;
             srvDesc.TextureCube.MostDetailedMip = 0;
             srvDesc.TextureCube.ResourceMinLODClamp = 0;
-        } else if (textureCreateInfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
+        } else if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
             srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-            srvDesc.Texture2DArray.MipLevels = textureCreateInfo->levelCount;
+            srvDesc.Texture2DArray.MipLevels = createinfo->num_levels;
             srvDesc.Texture2DArray.MostDetailedMip = 0;
             srvDesc.Texture2DArray.FirstArraySlice = 0;
             srvDesc.Texture2DArray.ArraySize = layerCount;
             srvDesc.Texture2DArray.ResourceMinLODClamp = 0;
             srvDesc.Texture2DArray.PlaneSlice = 0;
-        } else if (textureCreateInfo->type == SDL_GPU_TEXTURETYPE_3D) {
+        } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
             srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
-            srvDesc.Texture3D.MipLevels = textureCreateInfo->levelCount;
+            srvDesc.Texture3D.MipLevels = createinfo->num_levels;
             srvDesc.Texture3D.MostDetailedMip = 0;
             srvDesc.Texture3D.ResourceMinLODClamp = 0; // default behavior
         } else {
             srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-            srvDesc.Texture2D.MipLevels = textureCreateInfo->levelCount;
+            srvDesc.Texture2D.MipLevels = createinfo->num_levels;
             srvDesc.Texture2D.MostDetailedMip = 0;
             srvDesc.Texture2D.PlaneSlice = 0;
             srvDesc.Texture2D.ResourceMinLODClamp = 0; // default behavior
@@ -2843,7 +2843,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
     SDL_AtomicSet(&texture->referenceCount, 0);
 
-    texture->subresourceCount = textureCreateInfo->levelCount * layerCount;
+    texture->subresourceCount = createinfo->num_levels * layerCount;
     texture->subresources = (D3D12TextureSubresource *)SDL_calloc(
         texture->subresourceCount, sizeof(D3D12TextureSubresource));
     if (!texture->subresources) {
@@ -2851,11 +2851,11 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         return NULL;
     }
     for (Uint32 layerIndex = 0; layerIndex < layerCount; layerIndex += 1) {
-        for (Uint32 levelIndex = 0; levelIndex < textureCreateInfo->levelCount; levelIndex += 1) {
+        for (Uint32 levelIndex = 0; levelIndex < createinfo->num_levels; levelIndex += 1) {
             Uint32 subresourceIndex = D3D12_INTERNAL_CalcSubresource(
                 levelIndex,
                 layerIndex,
-                textureCreateInfo->levelCount);
+                createinfo->num_levels);
 
             texture->subresources[subresourceIndex].parent = texture;
             texture->subresources[subresourceIndex].layer = layerIndex;
@@ -2868,7 +2868,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             texture->subresources[subresourceIndex].dsvHandle.heap = NULL;
 
             // Create RTV if needed
-            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
+            if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
                 texture->subresources[subresourceIndex].rtvHandles = (D3D12CPUDescriptor *)SDL_calloc(depth, sizeof(D3D12CPUDescriptor));
 
                 for (Uint32 depthIndex = 0; depthIndex < depth; depthIndex += 1) {
@@ -2879,15 +2879,15 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
                         D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
                         &texture->subresources[subresourceIndex].rtvHandles[depthIndex]);
 
-                    rtvDesc.Format = SDLToD3D12_TextureFormat[textureCreateInfo->format];
+                    rtvDesc.Format = SDLToD3D12_TextureFormat[createinfo->format];
 
-                    if (textureCreateInfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || textureCreateInfo->type == SDL_GPU_TEXTURETYPE_CUBE) {
+                    if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE) {
                         rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
                         rtvDesc.Texture2DArray.MipSlice = levelIndex;
                         rtvDesc.Texture2DArray.FirstArraySlice = layerIndex;
                         rtvDesc.Texture2DArray.ArraySize = 1;
                         rtvDesc.Texture2DArray.PlaneSlice = 0;
-                    } else if (textureCreateInfo->type == SDL_GPU_TEXTURETYPE_3D) {
+                    } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
                         rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
                         rtvDesc.Texture3D.MipSlice = levelIndex;
                         rtvDesc.Texture3D.FirstWSlice = depthIndex;
@@ -2907,7 +2907,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             }
 
             // Create DSV if needed
-            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+            if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
                 D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 
                 D3D12_INTERNAL_AssignCpuDescriptorHandle(
@@ -2915,7 +2915,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
                     D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
                     &texture->subresources[subresourceIndex].dsvHandle);
 
-                dsvDesc.Format = SDLToD3D12_TextureFormat[textureCreateInfo->format];
+                dsvDesc.Format = SDLToD3D12_TextureFormat[createinfo->format];
                 dsvDesc.Flags = (D3D12_DSV_FLAGS)0;
                 dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
                 dsvDesc.Texture2D.MipSlice = levelIndex;
@@ -2928,7 +2928,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             }
 
             // Create subresource UAV if necessary
-            if (textureCreateInfo->usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
+            if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
                 D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 
                 D3D12_INTERNAL_AssignCpuDescriptorHandle(
@@ -2936,14 +2936,14 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
                     D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                     &texture->subresources[subresourceIndex].uavHandle);
 
-                uavDesc.Format = SDLToD3D12_TextureFormat[textureCreateInfo->format];
+                uavDesc.Format = SDLToD3D12_TextureFormat[createinfo->format];
 
-                if (textureCreateInfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || textureCreateInfo->type == SDL_GPU_TEXTURETYPE_CUBE) {
+                if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE) {
                     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
                     uavDesc.Texture2DArray.MipSlice = levelIndex;
                     uavDesc.Texture2DArray.FirstArraySlice = layerIndex;
                     uavDesc.Texture2DArray.ArraySize = 1;
-                } else if (textureCreateInfo->type == SDL_GPU_TEXTURETYPE_3D) {
+                } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
                     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
                     uavDesc.Texture3D.MipSlice = levelIndex;
                     uavDesc.Texture3D.FirstWSlice = 0;
@@ -2969,14 +2969,14 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
 static SDL_GPUTexture *D3D12_CreateTexture(
     SDL_GPURenderer *driverData,
-    const SDL_GPUTextureCreateInfo *textureCreateInfo)
+    const SDL_GPUTextureCreateInfo *createinfo)
 {
     D3D12TextureContainer *container = (D3D12TextureContainer *)SDL_calloc(1, sizeof(D3D12TextureContainer));
     if (!container) {
         return NULL;
     }
 
-    container->header.info = *textureCreateInfo;
+    container->header.info = *createinfo;
     container->textureCapacity = 1;
     container->textureCount = 1;
     container->textures = (D3D12Texture **)SDL_calloc(
@@ -2992,7 +2992,7 @@ static SDL_GPUTexture *D3D12_CreateTexture(
 
     D3D12Texture *texture = D3D12_INTERNAL_CreateTexture(
         (D3D12Renderer *)driverData,
-        textureCreateInfo,
+        createinfo,
         false);
 
     if (!texture) {
@@ -3013,7 +3013,7 @@ static SDL_GPUTexture *D3D12_CreateTexture(
 static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
     D3D12Renderer *renderer,
     SDL_GPUBufferUsageFlags usageFlags,
-    Uint32 sizeInBytes,
+    Uint32 size,
     D3D12BufferType type)
 {
     D3D12Buffer *buffer;
@@ -3038,7 +3038,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     }
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
+    if (usage & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         resourceFlags |= D3D12XBOX_RESOURCE_FLAG_ALLOW_INDIRECT_BUFFER;
     }
 #endif
@@ -3083,7 +3083,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
 
     desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
     desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-    desc.Width = sizeInBytes;
+    desc.Width = size;
     desc.Height = 1;
     desc.DepthOrArraySize = 1;
     desc.MipLevels = 1;
@@ -3124,7 +3124,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
         uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
         uavDesc.Format = DXGI_FORMAT_R32_TYPELESS;
         uavDesc.Buffer.FirstElement = 0;
-        uavDesc.Buffer.NumElements = sizeInBytes / sizeof(Uint32);
+        uavDesc.Buffer.NumElements = size / sizeof(Uint32);
         uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
         uavDesc.Buffer.CounterOffsetInBytes = 0; // TODO: support counters?
         uavDesc.Buffer.StructureByteStride = 0;
@@ -3150,7 +3150,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
         srvDesc.Buffer.FirstElement = 0;
-        srvDesc.Buffer.NumElements = sizeInBytes / sizeof(Uint32);
+        srvDesc.Buffer.NumElements = size / sizeof(Uint32);
         srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
         srvDesc.Buffer.StructureByteStride = 0;
 
@@ -3170,7 +3170,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
             &buffer->cbvDescriptor);
 
         cbvDesc.BufferLocation = ID3D12Resource_GetGPUVirtualAddress(handle);
-        cbvDesc.SizeInBytes = sizeInBytes;
+        cbvDesc.SizeInBytes = size;
 
         // Create CBV
         ID3D12Device_CreateConstantBufferView(
@@ -3210,7 +3210,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
 static D3D12BufferContainer *D3D12_INTERNAL_CreateBufferContainer(
     D3D12Renderer *renderer,
     SDL_GPUBufferUsageFlags usageFlags,
-    Uint32 sizeInBytes,
+    Uint32 size,
     D3D12BufferType type)
 {
     D3D12BufferContainer *container;
@@ -3221,8 +3221,8 @@ static D3D12BufferContainer *D3D12_INTERNAL_CreateBufferContainer(
         return NULL;
     }
 
-    container->usageFlags = usageFlags;
-    container->size = sizeInBytes;
+    container->usage = usageFlags;
+    container->size = size;
     container->type = type;
 
     container->bufferCapacity = 1;
@@ -3238,7 +3238,7 @@ static D3D12BufferContainer *D3D12_INTERNAL_CreateBufferContainer(
     buffer = D3D12_INTERNAL_CreateBuffer(
         renderer,
         usageFlags,
-        sizeInBytes,
+        size,
         type);
 
     if (buffer == NULL) {
@@ -3259,24 +3259,24 @@ static D3D12BufferContainer *D3D12_INTERNAL_CreateBufferContainer(
 static SDL_GPUBuffer *D3D12_CreateBuffer(
     SDL_GPURenderer *driverData,
     SDL_GPUBufferUsageFlags usageFlags,
-    Uint32 sizeInBytes)
+    Uint32 size)
 {
     return (SDL_GPUBuffer *)D3D12_INTERNAL_CreateBufferContainer(
         (D3D12Renderer *)driverData,
         usageFlags,
-        sizeInBytes,
+        size,
         D3D12_BUFFER_TYPE_GPU);
 }
 
 static SDL_GPUTransferBuffer *D3D12_CreateTransferBuffer(
     SDL_GPURenderer *driverData,
     SDL_GPUTransferBufferUsage usage,
-    Uint32 sizeInBytes)
+    Uint32 size)
 {
     return (SDL_GPUTransferBuffer *)D3D12_INTERNAL_CreateBufferContainer(
         (D3D12Renderer *)driverData,
         0,
-        sizeInBytes,
+        size,
         usage == SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD ? D3D12_BUFFER_TYPE_UPLOAD : D3D12_BUFFER_TYPE_DOWNLOAD);
 }
 
@@ -3291,7 +3291,7 @@ static void D3D12_SetBufferName(
     D3D12BufferContainer *container = (D3D12BufferContainer *)buffer;
     size_t textLength = SDL_strlen(text) + 1;
 
-    if (renderer->debugMode) {
+    if (renderer->debug_mode) {
         container->debugName = (char *)SDL_realloc(
             container->debugName,
             textLength);
@@ -3319,7 +3319,7 @@ static void D3D12_SetTextureName(
     D3D12TextureContainer *container = (D3D12TextureContainer *)texture;
     size_t textLength = SDL_strlen(text) + 1;
 
-    if (renderer->debugMode) {
+    if (renderer->debug_mode) {
         container->debugName = (char *)SDL_realloc(
             container->debugName,
             textLength);
@@ -3346,11 +3346,11 @@ static bool D3D12_INTERNAL_StrToWStr(
     D3D12Renderer *renderer,
     const char *str,
     wchar_t *wstr,
-    size_t wstr_size,
+    size_t wstrSize,
     Uint32 *outSize)
 {
     size_t inlen, result;
-    size_t outlen = wstr_size;
+    size_t outlen = wstrSize;
 
     if (renderer->iconv == NULL) {
         renderer->iconv = SDL_iconv_open("WCHAR_T", "UTF-8");
@@ -3585,8 +3585,8 @@ static void D3D12_SetViewport(
     d3d12Viewport.TopLeftY = viewport->y;
     d3d12Viewport.Width = viewport->w;
     d3d12Viewport.Height = viewport->h;
-    d3d12Viewport.MinDepth = viewport->minDepth;
-    d3d12Viewport.MaxDepth = viewport->maxDepth;
+    d3d12Viewport.MinDepth = viewport->min_depth;
+    d3d12Viewport.MaxDepth = viewport->max_depth;
     ID3D12GraphicsCommandList_RSSetViewports(d3d12CommandBuffer->graphicsCommandList, 1, &d3d12Viewport);
 }
 
@@ -3628,7 +3628,7 @@ static D3D12TextureSubresource *D3D12_INTERNAL_FetchTextureSubresource(
     Uint32 index = D3D12_INTERNAL_CalcSubresource(
         level,
         layer,
-        container->header.info.levelCount);
+        container->header.info.num_levels);
     return &container->activeTexture->subresources[index];
 }
 
@@ -3673,7 +3673,7 @@ static void D3D12_INTERNAL_CycleActiveTexture(
 
     container->activeTexture = texture;
 
-    if (renderer->debugMode && container->debugName != NULL) {
+    if (renderer->debug_mode && container->debugName != NULL) {
         D3D12_INTERNAL_SetResourceName(
             renderer,
             container->activeTexture->resource,
@@ -3732,7 +3732,7 @@ static void D3D12_INTERNAL_CycleActiveBuffer(
     // No buffer handle is available, create a new one.
     D3D12Buffer *buffer = D3D12_INTERNAL_CreateBuffer(
         renderer,
-        container->usageFlags,
+        container->usage,
         container->size,
         container->type);
 
@@ -3755,7 +3755,7 @@ static void D3D12_INTERNAL_CycleActiveBuffer(
 
     container->activeBuffer = buffer;
 
-    if (renderer->debugMode && container->debugName != NULL) {
+    if (renderer->debug_mode && container->debugName != NULL) {
         D3D12_INTERNAL_SetResourceName(
             renderer,
             container->activeBuffer->handle,
@@ -3787,21 +3787,21 @@ static D3D12Buffer *D3D12_INTERNAL_PrepareBufferForWrite(
 
 static void D3D12_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUColorAttachmentInfo *colorAttachmentInfos,
-    Uint32 colorAttachmentCount,
-    const SDL_GPUDepthStencilAttachmentInfo *depthStencilAttachmentInfo)
+    const SDL_GPUColorTargetInfo *colorTargetInfos,
+    Uint32 numColorTargets,
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
     Uint32 framebufferWidth = SDL_MAX_UINT32;
     Uint32 framebufferHeight = SDL_MAX_UINT32;
 
-    for (Uint32 i = 0; i < colorAttachmentCount; i += 1) {
-        D3D12TextureContainer *container = (D3D12TextureContainer *)colorAttachmentInfos[i].texture;
-        Uint32 h = container->header.info.height >> colorAttachmentInfos[i].mipLevel;
-        Uint32 w = container->header.info.width >> colorAttachmentInfos[i].mipLevel;
+    for (Uint32 i = 0; i < numColorTargets; i += 1) {
+        D3D12TextureContainer *container = (D3D12TextureContainer *)colorTargetInfos[i].texture;
+        Uint32 h = container->header.info.height >> colorTargetInfos[i].mip_level;
+        Uint32 w = container->header.info.width >> colorTargetInfos[i].mip_level;
 
-        // The framebuffer cannot be larger than the smallest attachment.
+        // The framebuffer cannot be larger than the smallest target.
 
         if (w < framebufferWidth) {
             framebufferWidth = w;
@@ -3811,19 +3811,19 @@ static void D3D12_BeginRenderPass(
             framebufferHeight = h;
         }
 
-        if (!(container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Color attachment texture was not designated as a color target!");
+        if (!(container->header.info.usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Color target texture was not designated as a color target!");
             return;
         }
     }
 
-    if (depthStencilAttachmentInfo != NULL) {
-        D3D12TextureContainer *container = (D3D12TextureContainer *)depthStencilAttachmentInfo->texture;
+    if (depthStencilTargetInfo != NULL) {
+        D3D12TextureContainer *container = (D3D12TextureContainer *)depthStencilTargetInfo->texture;
 
         Uint32 h = container->header.info.height;
         Uint32 w = container->header.info.width;
 
-        // The framebuffer cannot be larger than the smallest attachment.
+        // The framebuffer cannot be larger than the smallest target.
 
         if (w < framebufferWidth) {
             framebufferWidth = w;
@@ -3834,34 +3834,34 @@ static void D3D12_BeginRenderPass(
         }
 
         // Fixme:
-        if (!(container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Depth stencil attachment texture was not designated as a depth target!");
+        if (!(container->header.info.usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Depth stencil target texture was not designated as a depth target!");
             return;
         }
     }
 
     D3D12_CPU_DESCRIPTOR_HANDLE rtvs[MAX_COLOR_TARGET_BINDINGS];
 
-    for (Uint32 i = 0; i < colorAttachmentCount; i += 1) {
-        D3D12TextureContainer *container = (D3D12TextureContainer *)colorAttachmentInfos[i].texture;
+    for (Uint32 i = 0; i < numColorTargets; i += 1) {
+        D3D12TextureContainer *container = (D3D12TextureContainer *)colorTargetInfos[i].texture;
         D3D12TextureSubresource *subresource = D3D12_INTERNAL_PrepareTextureSubresourceForWrite(
             d3d12CommandBuffer,
             container,
-            container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : colorAttachmentInfos[i].layerOrDepthPlane,
-            colorAttachmentInfos[i].mipLevel,
-            colorAttachmentInfos[i].cycle,
+            container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : colorTargetInfos[i].layer_or_depth_plane,
+            colorTargetInfos[i].mip_level,
+            colorTargetInfos[i].cycle,
             D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-        Uint32 rtvIndex = container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorAttachmentInfos[i].layerOrDepthPlane : 0;
+        Uint32 rtvIndex = container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
         D3D12_CPU_DESCRIPTOR_HANDLE rtv =
             subresource->rtvHandles[rtvIndex].cpuHandle;
 
-        if (colorAttachmentInfos[i].loadOp == SDL_GPU_LOADOP_CLEAR) {
+        if (colorTargetInfos[i].load_op == SDL_GPU_LOADOP_CLEAR) {
             float clearColor[4];
-            clearColor[0] = colorAttachmentInfos[i].clearColor.r;
-            clearColor[1] = colorAttachmentInfos[i].clearColor.g;
-            clearColor[2] = colorAttachmentInfos[i].clearColor.b;
-            clearColor[3] = colorAttachmentInfos[i].clearColor.a;
+            clearColor[0] = colorTargetInfos[i].clear_color.r;
+            clearColor[1] = colorTargetInfos[i].clear_color.g;
+            clearColor[2] = colorTargetInfos[i].clear_color.b;
+            clearColor[3] = colorTargetInfos[i].clear_color.a;
 
             ID3D12GraphicsCommandList_ClearRenderTargetView(
                 d3d12CommandBuffer->graphicsCommandList,
@@ -3872,32 +3872,32 @@ static void D3D12_BeginRenderPass(
         }
 
         rtvs[i] = rtv;
-        d3d12CommandBuffer->colorAttachmentTextureSubresources[i] = subresource;
+        d3d12CommandBuffer->colorTargetTextureSubresources[i] = subresource;
 
         D3D12_INTERNAL_TrackTexture(d3d12CommandBuffer, subresource->parent);
     }
 
-    d3d12CommandBuffer->colorAttachmentTextureSubresourceCount = colorAttachmentCount;
+    d3d12CommandBuffer->colorTargetTextureSubresourceCount = numColorTargets;
 
     D3D12_CPU_DESCRIPTOR_HANDLE dsv;
-    if (depthStencilAttachmentInfo != NULL) {
-        D3D12TextureContainer *container = (D3D12TextureContainer *)depthStencilAttachmentInfo->texture;
+    if (depthStencilTargetInfo != NULL) {
+        D3D12TextureContainer *container = (D3D12TextureContainer *)depthStencilTargetInfo->texture;
         D3D12TextureSubresource *subresource = D3D12_INTERNAL_PrepareTextureSubresourceForWrite(
             d3d12CommandBuffer,
             container,
             0,
             0,
-            depthStencilAttachmentInfo->cycle,
+            depthStencilTargetInfo->cycle,
             D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
         if (
-            depthStencilAttachmentInfo->loadOp == SDL_GPU_LOADOP_CLEAR ||
-            depthStencilAttachmentInfo->stencilLoadOp == SDL_GPU_LOADOP_CLEAR) {
+            depthStencilTargetInfo->load_op == SDL_GPU_LOADOP_CLEAR ||
+            depthStencilTargetInfo->stencil_load_op == SDL_GPU_LOADOP_CLEAR) {
             D3D12_CLEAR_FLAGS clearFlags = (D3D12_CLEAR_FLAGS)0;
-            if (depthStencilAttachmentInfo->loadOp == SDL_GPU_LOADOP_CLEAR) {
+            if (depthStencilTargetInfo->load_op == SDL_GPU_LOADOP_CLEAR) {
                 clearFlags |= D3D12_CLEAR_FLAG_DEPTH;
             }
-            if (depthStencilAttachmentInfo->stencilLoadOp == SDL_GPU_LOADOP_CLEAR) {
+            if (depthStencilTargetInfo->stencil_load_op == SDL_GPU_LOADOP_CLEAR) {
                 clearFlags |= D3D12_CLEAR_FLAG_STENCIL;
             }
 
@@ -3905,8 +3905,8 @@ static void D3D12_BeginRenderPass(
                 d3d12CommandBuffer->graphicsCommandList,
                 subresource->dsvHandle.cpuHandle,
                 clearFlags,
-                depthStencilAttachmentInfo->depthStencilClearValue.depth,
-                depthStencilAttachmentInfo->depthStencilClearValue.stencil,
+                depthStencilTargetInfo->clear_value.depth,
+                depthStencilTargetInfo->clear_value.stencil,
                 0,
                 NULL);
         }
@@ -3918,10 +3918,10 @@ static void D3D12_BeginRenderPass(
 
     ID3D12GraphicsCommandList_OMSetRenderTargets(
         d3d12CommandBuffer->graphicsCommandList,
-        colorAttachmentCount,
+        numColorTargets,
         rtvs,
         false,
-        (depthStencilAttachmentInfo == NULL) ? NULL : &dsv);
+        (depthStencilTargetInfo == NULL) ? NULL : &dsv);
 
     // Set sensible default states
     SDL_GPUViewport defaultViewport;
@@ -3929,8 +3929,8 @@ static void D3D12_BeginRenderPass(
     defaultViewport.y = 0;
     defaultViewport.w = (float)framebufferWidth;
     defaultViewport.h = (float)framebufferHeight;
-    defaultViewport.minDepth = 0;
-    defaultViewport.maxDepth = 1;
+    defaultViewport.min_depth = 0;
+    defaultViewport.max_depth = 1;
 
     D3D12_SetViewport(
         commandBuffer,
@@ -4048,7 +4048,7 @@ static void D3D12_INTERNAL_PushUniformData(
     SDL_GPUShaderStage shaderStage,
     Uint32 slotIndex,
     const void *data,
-    Uint32 dataLengthInBytes)
+    Uint32 length)
 {
     D3D12UniformBuffer *uniformBuffer;
 
@@ -4077,7 +4077,7 @@ static void D3D12_INTERNAL_PushUniformData(
 
     uniformBuffer->currentBlockSize =
         D3D12_INTERNAL_Align(
-            dataLengthInBytes,
+            length,
             256);
 
     // If there is no more room, acquire a new uniform buffer
@@ -4109,7 +4109,7 @@ static void D3D12_INTERNAL_PushUniformData(
     SDL_memcpy(
         (Uint8 *)uniformBuffer->buffer->mapPointer + uniformBuffer->writeOffset,
         data,
-        dataLengthInBytes);
+        length);
 
     uniformBuffer->writeOffset += uniformBuffer->currentBlockSize;
 
@@ -4172,37 +4172,37 @@ static void D3D12_BindGraphicsPipeline(
 static void D3D12_BindVertexBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstBinding,
-    const SDL_GPUBufferBinding *pBindings,
-    Uint32 bindingCount)
+    const SDL_GPUBufferBinding *bindings,
+    Uint32 numBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    for (Uint32 i = 0; i < bindingCount; i += 1) {
-        D3D12Buffer *currentBuffer = ((D3D12BufferContainer *)pBindings[i].buffer)->activeBuffer;
+    for (Uint32 i = 0; i < numBindings; i += 1) {
+        D3D12Buffer *currentBuffer = ((D3D12BufferContainer *)bindings[i].buffer)->activeBuffer;
         d3d12CommandBuffer->vertexBuffers[firstBinding + i] = currentBuffer;
-        d3d12CommandBuffer->vertexBufferOffsets[firstBinding + i] = pBindings[i].offset;
+        d3d12CommandBuffer->vertexBufferOffsets[firstBinding + i] = bindings[i].offset;
         D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, currentBuffer);
     }
 
     d3d12CommandBuffer->vertexBufferCount =
-        SDL_max(d3d12CommandBuffer->vertexBufferCount, firstBinding + bindingCount);
+        SDL_max(d3d12CommandBuffer->vertexBufferCount, firstBinding + numBindings);
 
     d3d12CommandBuffer->needVertexBufferBind = true;
 }
 
 static void D3D12_BindIndexBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUBufferBinding *pBinding,
+    const SDL_GPUBufferBinding *binding,
     SDL_GPUIndexElementSize indexElementSize)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
-    D3D12Buffer *buffer = ((D3D12BufferContainer *)pBinding->buffer)->activeBuffer;
+    D3D12Buffer *buffer = ((D3D12BufferContainer *)binding->buffer)->activeBuffer;
     D3D12_INDEX_BUFFER_VIEW view;
 
     D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, buffer);
 
-    view.BufferLocation = buffer->virtualAddress + pBinding->offset;
-    view.SizeInBytes = buffer->container->size - pBinding->offset;
+    view.BufferLocation = buffer->virtualAddress + binding->offset;
+    view.SizeInBytes = buffer->container->size - binding->offset;
     view.Format =
         indexElementSize == SDL_GPU_INDEXELEMENTSIZE_16BIT ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 
@@ -4215,11 +4215,11 @@ static void D3D12_BindVertexSamplers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
     const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
-    Uint32 bindingCount)
+    Uint32 numBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    for (Uint32 i = 0; i < bindingCount; i += 1) {
+    for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12TextureContainer *container = (D3D12TextureContainer *)textureSamplerBindings[i].texture;
         D3D12Sampler *sampler = (D3D12Sampler *)textureSamplerBindings[i].sampler;
 
@@ -4242,11 +4242,11 @@ static void D3D12_BindVertexStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
     SDL_GPUTexture *const *storageTextures,
-    Uint32 bindingCount)
+    Uint32 numBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    for (Uint32 i = 0; i < bindingCount; i += 1) {
+    for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12TextureContainer *container = (D3D12TextureContainer *)storageTextures[i];
         D3D12Texture *texture = container->activeTexture;
 
@@ -4262,11 +4262,11 @@ static void D3D12_BindVertexStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
     SDL_GPUBuffer *const *storageBuffers,
-    Uint32 bindingCount)
+    Uint32 numBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    for (Uint32 i = 0; i < bindingCount; i += 1) {
+    for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12BufferContainer *container = (D3D12BufferContainer *)storageBuffers[i];
 
         D3D12_INTERNAL_TrackBuffer(
@@ -4283,11 +4283,11 @@ static void D3D12_BindFragmentSamplers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
     const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
-    Uint32 bindingCount)
+    Uint32 numBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    for (Uint32 i = 0; i < bindingCount; i += 1) {
+    for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12TextureContainer *container = (D3D12TextureContainer *)textureSamplerBindings[i].texture;
         D3D12Sampler *sampler = (D3D12Sampler *)textureSamplerBindings[i].sampler;
 
@@ -4310,11 +4310,11 @@ static void D3D12_BindFragmentStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
     SDL_GPUTexture *const *storageTextures,
-    Uint32 bindingCount)
+    Uint32 numBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    for (Uint32 i = 0; i < bindingCount; i += 1) {
+    for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12TextureContainer *container = (D3D12TextureContainer *)storageTextures[i];
         D3D12Texture *texture = container->activeTexture;
 
@@ -4330,11 +4330,11 @@ static void D3D12_BindFragmentStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
     SDL_GPUBuffer *const *storageBuffers,
-    Uint32 bindingCount)
+    Uint32 numBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    for (Uint32 i = 0; i < bindingCount; i += 1) {
+    for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12BufferContainer *container = (D3D12BufferContainer *)storageBuffers[i];
 
         D3D12_INTERNAL_TrackBuffer(
@@ -4351,7 +4351,7 @@ static void D3D12_PushVertexUniformData(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
-    Uint32 dataLengthInBytes)
+    Uint32 length)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
@@ -4360,14 +4360,14 @@ static void D3D12_PushVertexUniformData(
         SDL_GPU_SHADERSTAGE_VERTEX,
         slotIndex,
         data,
-        dataLengthInBytes);
+        length);
 }
 
 static void D3D12_PushFragmentUniformData(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
-    Uint32 dataLengthInBytes)
+    Uint32 length)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
@@ -4376,7 +4376,7 @@ static void D3D12_PushFragmentUniformData(
         SDL_GPU_SHADERSTAGE_FRAGMENT,
         slotIndex,
         data,
-        dataLengthInBytes);
+        length);
 }
 
 static void D3D12_INTERNAL_WriteGPUDescriptors(
@@ -4614,8 +4614,8 @@ static void D3D12_INTERNAL_BindGraphicsResources(
 
 static void D3D12_DrawIndexedPrimitives(
     SDL_GPUCommandBuffer *commandBuffer,
-    Uint32 indexCount,
-    Uint32 instanceCount,
+    Uint32 numIndices,
+    Uint32 numInstances,
     Uint32 firstIndex,
     Sint32 vertexOffset,
     Uint32 firstInstance)
@@ -4625,8 +4625,8 @@ static void D3D12_DrawIndexedPrimitives(
 
     ID3D12GraphicsCommandList_DrawIndexedInstanced(
         d3d12CommandBuffer->graphicsCommandList,
-        indexCount,
-        instanceCount,
+        numIndices,
+        numInstances,
         firstIndex,
         vertexOffset,
         firstInstance);
@@ -4634,8 +4634,8 @@ static void D3D12_DrawIndexedPrimitives(
 
 static void D3D12_DrawPrimitives(
     SDL_GPUCommandBuffer *commandBuffer,
-    Uint32 vertexCount,
-    Uint32 instanceCount,
+    Uint32 numVertices,
+    Uint32 numInstances,
     Uint32 firstVertex,
     Uint32 firstInstance)
 {
@@ -4644,8 +4644,8 @@ static void D3D12_DrawPrimitives(
 
     ID3D12GraphicsCommandList_DrawInstanced(
         d3d12CommandBuffer->graphicsCommandList,
-        vertexCount,
-        instanceCount,
+        numVertices,
+        numInstances,
         firstVertex,
         firstInstance);
 }
@@ -4653,29 +4653,29 @@ static void D3D12_DrawPrimitives(
 static void D3D12_DrawPrimitivesIndirect(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBuffer *buffer,
-    Uint32 offsetInBytes,
+    Uint32 offset,
     Uint32 drawCount,
-    Uint32 stride)
+    Uint32 pitch)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12Buffer *d3d12Buffer = ((D3D12BufferContainer *)buffer)->activeBuffer;
 
     D3D12_INTERNAL_BindGraphicsResources(d3d12CommandBuffer);
 
-    if (stride == sizeof(SDL_GPUIndirectDrawCommand)) {
+    if (pitch == sizeof(SDL_GPUIndirectDrawCommand)) {
         // Real multi-draw!
         ID3D12GraphicsCommandList_ExecuteIndirect(
             d3d12CommandBuffer->graphicsCommandList,
             d3d12CommandBuffer->renderer->indirectDrawCommandSignature,
             drawCount,
             d3d12Buffer->handle,
-            offsetInBytes,
+            offset,
             NULL,
             0);
     } else {
         /* Fake multi-draw...
          * FIXME: we could make this real multi-draw
-         * if we have a lookup to get command signature per stride value
+         * if we have a lookup to get command signature per pitch value
          */
         for (Uint32 i = 0; i < drawCount; i += 1) {
             ID3D12GraphicsCommandList_ExecuteIndirect(
@@ -4683,7 +4683,7 @@ static void D3D12_DrawPrimitivesIndirect(
                 d3d12CommandBuffer->renderer->indirectDrawCommandSignature,
                 1,
                 d3d12Buffer->handle,
-                offsetInBytes + (stride * i),
+                offset + (pitch * i),
                 NULL,
                 0);
         }
@@ -4693,29 +4693,29 @@ static void D3D12_DrawPrimitivesIndirect(
 static void D3D12_DrawIndexedPrimitivesIndirect(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBuffer *buffer,
-    Uint32 offsetInBytes,
+    Uint32 offset,
     Uint32 drawCount,
-    Uint32 stride)
+    Uint32 pitch)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12Buffer *d3d12Buffer = ((D3D12BufferContainer *)buffer)->activeBuffer;
 
     D3D12_INTERNAL_BindGraphicsResources(d3d12CommandBuffer);
 
-    if (stride == sizeof(SDL_GPUIndexedIndirectDrawCommand)) {
+    if (pitch == sizeof(SDL_GPUIndexedIndirectDrawCommand)) {
         // Real multi-draw!
         ID3D12GraphicsCommandList_ExecuteIndirect(
             d3d12CommandBuffer->graphicsCommandList,
             d3d12CommandBuffer->renderer->indirectIndexedDrawCommandSignature,
             drawCount,
             d3d12Buffer->handle,
-            offsetInBytes,
+            offset,
             NULL,
             0);
     } else {
         /* Fake multi-draw...
          * FIXME: we could make this real multi-draw
-         * if we have a lookup to get command signature per stride value
+         * if we have a lookup to get command signature per pitch value
          */
         for (Uint32 i = 0; i < drawCount; i += 1) {
             ID3D12GraphicsCommandList_ExecuteIndirect(
@@ -4723,7 +4723,7 @@ static void D3D12_DrawIndexedPrimitivesIndirect(
                 d3d12CommandBuffer->renderer->indirectIndexedDrawCommandSignature,
                 1,
                 d3d12Buffer->handle,
-                offsetInBytes + (stride * i),
+                offset + (pitch * i),
                 NULL,
                 0);
         }
@@ -4736,15 +4736,15 @@ static void D3D12_EndRenderPass(
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     Uint32 i;
 
-    for (i = 0; i < d3d12CommandBuffer->colorAttachmentTextureSubresourceCount; i += 1) {
+    for (i = 0; i < d3d12CommandBuffer->colorTargetTextureSubresourceCount; i += 1) {
         D3D12_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
             d3d12CommandBuffer,
             D3D12_RESOURCE_STATE_RENDER_TARGET,
-            d3d12CommandBuffer->colorAttachmentTextureSubresources[i]);
+            d3d12CommandBuffer->colorTargetTextureSubresources[i]);
 
-        d3d12CommandBuffer->colorAttachmentTextureSubresources[i] = NULL;
+        d3d12CommandBuffer->colorTargetTextureSubresources[i] = NULL;
     }
-    d3d12CommandBuffer->colorAttachmentTextureSubresourceCount = 0;
+    d3d12CommandBuffer->colorTargetTextureSubresourceCount = 0;
 
     if (d3d12CommandBuffer->depthStencilTextureSubresource != NULL) {
         D3D12_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
@@ -4765,7 +4765,7 @@ static void D3D12_EndRenderPass(
         NULL);
 
     // Reset bind state
-    SDL_zeroa(d3d12CommandBuffer->colorAttachmentTextureSubresources);
+    SDL_zeroa(d3d12CommandBuffer->colorTargetTextureSubresources);
     d3d12CommandBuffer->depthStencilTextureSubresource = NULL;
 
     SDL_zeroa(d3d12CommandBuffer->vertexBuffers);
@@ -4788,23 +4788,23 @@ static void D3D12_EndRenderPass(
 static void D3D12_BeginComputePass(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
-    Uint32 storageTextureBindingCount,
+    Uint32 numStorageTextureBindings,
     const SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
-    Uint32 storageBufferBindingCount)
+    Uint32 numStorageBufferBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresourceCount = storageTextureBindingCount;
-    d3d12CommandBuffer->computeWriteOnlyStorageBufferCount = storageBufferBindingCount;
+    d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresourceCount = numStorageTextureBindings;
+    d3d12CommandBuffer->computeWriteOnlyStorageBufferCount = numStorageBufferBindings;
 
     /* Write-only resources will be actually bound in BindComputePipeline
      * after the root signature is set.
      * We also have to scan to see which barriers we actually need because depth slices aren't separate subresources
      */
-    if (storageTextureBindingCount > 0) {
-        for (Uint32 i = 0; i < storageTextureBindingCount; i += 1) {
+    if (numStorageTextureBindings > 0) {
+        for (Uint32 i = 0; i < numStorageTextureBindings; i += 1) {
             D3D12TextureContainer *container = (D3D12TextureContainer *)storageTextureBindings[i].texture;
-            if (!(container->header.info.usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
+            if (!(container->header.info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempted to bind read-only texture as compute write texture");
             }
 
@@ -4812,7 +4812,7 @@ static void D3D12_BeginComputePass(
                 d3d12CommandBuffer,
                 container,
                 storageTextureBindings[i].layer,
-                storageTextureBindings[i].mipLevel,
+                storageTextureBindings[i].mip_level,
                 storageTextureBindings[i].cycle,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
@@ -4824,10 +4824,10 @@ static void D3D12_BeginComputePass(
         }
     }
 
-    if (storageBufferBindingCount > 0) {
-        for (Uint32 i = 0; i < storageBufferBindingCount; i += 1) {
+    if (numStorageBufferBindings > 0) {
+        for (Uint32 i = 0; i < numStorageBufferBindings; i += 1) {
             D3D12BufferContainer *container = (D3D12BufferContainer *)storageBufferBindings[i].buffer;
-            if (!(container->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
+            if (!(container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempted to bind read-only texture as compute write texture");
             }
             D3D12Buffer *buffer = D3D12_INTERNAL_PrepareBufferForWrite(
@@ -4871,7 +4871,7 @@ static void D3D12_BindComputePipeline(
         d3d12CommandBuffer->needComputeUniformBufferBind[i] = true;
     }
 
-    for (Uint32 i = 0; i < pipeline->uniformBufferCount; i += 1) {
+    for (Uint32 i = 0; i < pipeline->numUniformBuffers; i += 1) {
         if (d3d12CommandBuffer->computeUniformBuffers[i] == NULL) {
             d3d12CommandBuffer->computeUniformBuffers[i] = D3D12_INTERNAL_AcquireUniformBufferFromPool(
                 d3d12CommandBuffer);
@@ -4881,8 +4881,8 @@ static void D3D12_BindComputePipeline(
     D3D12_INTERNAL_TrackComputePipeline(d3d12CommandBuffer, pipeline);
 
     // Bind write-only resources after setting root signature
-    if (pipeline->writeOnlyStorageTextureCount > 0) {
-        for (Uint32 i = 0; i < pipeline->writeOnlyStorageTextureCount; i += 1) {
+    if (pipeline->num_writeonly_storage_textures > 0) {
+        for (Uint32 i = 0; i < pipeline->num_writeonly_storage_textures; i += 1) {
             cpuHandles[i] = d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresources[i]->uavHandle.cpuHandle;
         }
 
@@ -4899,8 +4899,8 @@ static void D3D12_BindComputePipeline(
             gpuDescriptorHandle);
     }
 
-    if (pipeline->writeOnlyStorageBufferCount > 0) {
-        for (Uint32 i = 0; i < pipeline->writeOnlyStorageBufferCount; i += 1) {
+    if (pipeline->num_writeonly_storage_buffers > 0) {
+        for (Uint32 i = 0; i < pipeline->num_writeonly_storage_buffers; i += 1) {
             cpuHandles[i] = d3d12CommandBuffer->computeWriteOnlyStorageBuffers[i]->uavDescriptor.cpuHandle;
         }
 
@@ -4922,11 +4922,11 @@ static void D3D12_BindComputeStorageTextures(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
     SDL_GPUTexture *const *storageTextures,
-    Uint32 bindingCount)
+    Uint32 numBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    for (Uint32 i = 0; i < bindingCount; i += 1) {
+    for (Uint32 i = 0; i < numBindings; i += 1) {
         if (d3d12CommandBuffer->computeReadOnlyStorageTextures[firstSlot + i] != NULL) {
             D3D12_INTERNAL_TextureTransitionToDefaultUsage(
                 d3d12CommandBuffer,
@@ -4954,11 +4954,11 @@ static void D3D12_BindComputeStorageBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 firstSlot,
     SDL_GPUBuffer *const *storageBuffers,
-    Uint32 bindingCount)
+    Uint32 numBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    for (Uint32 i = 0; i < bindingCount; i += 1) {
+    for (Uint32 i = 0; i < numBindings; i += 1) {
         if (d3d12CommandBuffer->computeReadOnlyStorageBuffers[firstSlot + i] != NULL) {
             D3D12_INTERNAL_BufferTransitionToDefaultUsage(
                 d3d12CommandBuffer,
@@ -4988,7 +4988,7 @@ static void D3D12_PushComputeUniformData(
     SDL_GPUCommandBuffer *commandBuffer,
     Uint32 slotIndex,
     const void *data,
-    Uint32 dataLengthInBytes)
+    Uint32 length)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
@@ -4997,7 +4997,7 @@ static void D3D12_PushComputeUniformData(
         SDL_GPU_SHADERSTAGE_COMPUTE,
         slotIndex,
         data,
-        dataLengthInBytes);
+        length);
 }
 
 static void D3D12_INTERNAL_BindComputeResources(
@@ -5009,8 +5009,8 @@ static void D3D12_INTERNAL_BindComputeResources(
     D3D12_GPU_DESCRIPTOR_HANDLE gpuDescriptorHandle;
 
     if (commandBuffer->needComputeReadOnlyStorageTextureBind) {
-        if (computePipeline->readOnlyStorageTextureCount > 0) {
-            for (Uint32 i = 0; i < computePipeline->readOnlyStorageTextureCount; i += 1) {
+        if (computePipeline->num_readonly_storage_textures > 0) {
+            for (Uint32 i = 0; i < computePipeline->num_readonly_storage_textures; i += 1) {
                 cpuHandles[i] = commandBuffer->computeReadOnlyStorageTextures[i]->srvHandle.cpuHandle;
             }
 
@@ -5018,7 +5018,7 @@ static void D3D12_INTERNAL_BindComputeResources(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
-                computePipeline->readOnlyStorageTextureCount,
+                computePipeline->num_readonly_storage_textures,
                 &gpuDescriptorHandle);
 
             ID3D12GraphicsCommandList_SetComputeRootDescriptorTable(
@@ -5030,8 +5030,8 @@ static void D3D12_INTERNAL_BindComputeResources(
     }
 
     if (commandBuffer->needComputeReadOnlyStorageBufferBind) {
-        if (computePipeline->readOnlyStorageBufferCount > 0) {
-            for (Uint32 i = 0; i < computePipeline->readOnlyStorageBufferCount; i += 1) {
+        if (computePipeline->num_readonly_storage_buffers > 0) {
+            for (Uint32 i = 0; i < computePipeline->num_readonly_storage_buffers; i += 1) {
                 cpuHandles[i] = commandBuffer->computeReadOnlyStorageBuffers[i]->srvDescriptor.cpuHandle;
             }
 
@@ -5039,7 +5039,7 @@ static void D3D12_INTERNAL_BindComputeResources(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
-                computePipeline->readOnlyStorageBufferCount,
+                computePipeline->num_readonly_storage_buffers,
                 &gpuDescriptorHandle);
 
             ID3D12GraphicsCommandList_SetComputeRootDescriptorTable(
@@ -5052,7 +5052,7 @@ static void D3D12_INTERNAL_BindComputeResources(
 
     for (Uint32 i = 0; i < MAX_UNIFORM_BUFFERS_PER_STAGE; i += 1) {
         if (commandBuffer->needComputeUniformBufferBind[i]) {
-            if (computePipeline->uniformBufferCount > i) {
+            if (computePipeline->numUniformBuffers > i) {
                 ID3D12GraphicsCommandList_SetComputeRootConstantBufferView(
                     commandBuffer->graphicsCommandList,
                     computePipeline->rootSignature->uniformBufferRootIndex[i],
@@ -5065,24 +5065,24 @@ static void D3D12_INTERNAL_BindComputeResources(
 
 static void D3D12_DispatchCompute(
     SDL_GPUCommandBuffer *commandBuffer,
-    Uint32 groupCountX,
-    Uint32 groupCountY,
-    Uint32 groupCountZ)
+    Uint32 groupcountX,
+    Uint32 groupcountY,
+    Uint32 groupcountZ)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
     D3D12_INTERNAL_BindComputeResources(d3d12CommandBuffer);
     ID3D12GraphicsCommandList_Dispatch(
         d3d12CommandBuffer->graphicsCommandList,
-        groupCountX,
-        groupCountY,
-        groupCountZ);
+        groupcountX,
+        groupcountY,
+        groupcountZ);
 }
 
 static void D3D12_DispatchComputeIndirect(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBuffer *buffer,
-    Uint32 offsetInBytes)
+    Uint32 offset)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12Buffer *d3d12Buffer = ((D3D12BufferContainer *)buffer)->activeBuffer;
@@ -5093,7 +5093,7 @@ static void D3D12_DispatchComputeIndirect(
         d3d12CommandBuffer->renderer->indirectDispatchCommandSignature,
         1,
         d3d12Buffer->handle,
-        offsetInBytes,
+        offset,
         NULL,
         0);
 }
@@ -5217,14 +5217,14 @@ static void D3D12_UploadToTexture(
     bool cycle)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
-    D3D12BufferContainer *transferBufferContainer = (D3D12BufferContainer *)source->transferBuffer;
+    D3D12BufferContainer *transferBufferContainer = (D3D12BufferContainer *)source->transfer_buffer;
     D3D12Buffer *temporaryBuffer = NULL;
     D3D12_TEXTURE_COPY_LOCATION sourceLocation;
     D3D12_TEXTURE_COPY_LOCATION destinationLocation;
-    Uint32 pixelsPerRow = source->imagePitch;
+    Uint32 pixelsPerRow = source->pixels_per_row;
     Uint32 rowPitch;
     Uint32 alignedRowPitch;
-    Uint32 rowsPerSlice = source->imageHeight;
+    Uint32 rowsPerSlice = source->rows_per_layer;
     Uint32 bytesPerSlice;
     bool needsRealignment;
     bool needsPlacementCopy;
@@ -5236,7 +5236,7 @@ static void D3D12_UploadToTexture(
         d3d12CommandBuffer,
         textureContainer,
         destination->layer,
-        destination->mipLevel,
+        destination->mip_level,
         cycle,
         D3D12_RESOURCE_STATE_COPY_DEST);
 
@@ -5393,7 +5393,7 @@ static void D3D12_UploadToBuffer(
     bool cycle)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
-    D3D12BufferContainer *transferBufferContainer = (D3D12BufferContainer *)source->transferBuffer;
+    D3D12BufferContainer *transferBufferContainer = (D3D12BufferContainer *)source->transfer_buffer;
     D3D12BufferContainer *bufferContainer = (D3D12BufferContainer *)destination->buffer;
 
     // The transfer buffer does not need a barrier, it is synced by the client.
@@ -5437,13 +5437,13 @@ static void D3D12_CopyTextureToTexture(
     D3D12TextureSubresource *sourceSubresource = D3D12_INTERNAL_FetchTextureSubresource(
         (D3D12TextureContainer *)source->texture,
         source->layer,
-        source->mipLevel);
+        source->mip_level);
 
     D3D12TextureSubresource *destinationSubresource = D3D12_INTERNAL_PrepareTextureSubresourceForWrite(
         d3d12CommandBuffer,
         (D3D12TextureContainer *)destination->texture,
         destination->layer,
-        destination->mipLevel,
+        destination->mip_level,
         cycle,
         D3D12_RESOURCE_STATE_COPY_DEST);
 
@@ -5543,10 +5543,10 @@ static void D3D12_DownloadFromTexture(
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12_TEXTURE_COPY_LOCATION sourceLocation;
     D3D12_TEXTURE_COPY_LOCATION destinationLocation;
-    Uint32 pixelsPerRow = destination->imagePitch;
+    Uint32 pixelsPerRow = destination->pixels_per_row;
     Uint32 rowPitch;
     Uint32 alignedRowPitch;
-    Uint32 rowsPerSlice = destination->imageHeight;
+    Uint32 rowsPerSlice = destination->rows_per_layer;
     bool needsRealignment;
     bool needsPlacementCopy;
     D3D12TextureDownload *textureDownload = NULL;
@@ -5554,8 +5554,8 @@ static void D3D12_DownloadFromTexture(
     D3D12TextureSubresource *sourceSubresource = D3D12_INTERNAL_FetchTextureSubresource(
         sourceContainer,
         source->layer,
-        source->mipLevel);
-    D3D12BufferContainer *destinationContainer = (D3D12BufferContainer *)destination->transferBuffer;
+        source->mip_level);
+    D3D12BufferContainer *destinationContainer = (D3D12BufferContainer *)destination->transfer_buffer;
     D3D12Buffer *destinationBuffer = destinationContainer->activeBuffer;
 
     /* D3D12 requires texture data row pitch to be 256 byte aligned, which is obviously insane.
@@ -5681,7 +5681,7 @@ static void D3D12_DownloadFromBuffer(
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12BufferContainer *sourceContainer = (D3D12BufferContainer *)source->buffer;
-    D3D12BufferContainer *destinationContainer = (D3D12BufferContainer *)destination->transferBuffer;
+    D3D12BufferContainer *destinationContainer = (D3D12BufferContainer *)destination->transfer_buffer;
 
     D3D12Buffer *sourceBuffer = sourceContainer->activeBuffer;
     D3D12_INTERNAL_BufferTransitionFromDefaultUsage(
@@ -5744,20 +5744,20 @@ static void D3D12_GenerateMipmaps(
     }
 
     // We have to do this one subresource at a time
-    for (Uint32 layerOrDepthIndex = 0; layerOrDepthIndex < container->header.info.layerCountOrDepth; layerOrDepthIndex += 1) {
-        for (Uint32 levelIndex = 1; levelIndex < container->header.info.levelCount; levelIndex += 1) {
+    for (Uint32 layerOrDepthIndex = 0; layerOrDepthIndex < container->header.info.layer_count_or_depth; layerOrDepthIndex += 1) {
+        for (Uint32 levelIndex = 1; levelIndex < container->header.info.num_levels; levelIndex += 1) {
 
             srcRegion.texture = texture;
-            srcRegion.mipLevel = levelIndex - 1;
-            srcRegion.layerOrDepthPlane = layerOrDepthIndex;
+            srcRegion.mip_level = levelIndex - 1;
+            srcRegion.layer_or_depth_plane = layerOrDepthIndex;
             srcRegion.x = 0;
             srcRegion.y = 0;
             srcRegion.w = container->header.info.width >> (levelIndex - 1);
             srcRegion.h = container->header.info.height >> (levelIndex - 1);
 
             dstRegion.texture = texture;
-            dstRegion.mipLevel = levelIndex;
-            dstRegion.layerOrDepthPlane = layerOrDepthIndex;
+            dstRegion.mip_level = levelIndex;
+            dstRegion.layer_or_depth_plane = layerOrDepthIndex;
             dstRegion.x = 0;
             dstRegion.y = 0;
             dstRegion.w = container->header.info.width >> levelIndex;
@@ -5781,7 +5781,7 @@ static void D3D12_Blit(
     const SDL_GPUBlitRegion *source,
     const SDL_GPUBlitRegion *destination,
     SDL_FlipMode flipMode,
-    SDL_GPUFilter filterMode,
+    SDL_GPUFilter filter,
     bool cycle)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
@@ -5792,7 +5792,7 @@ static void D3D12_Blit(
         source,
         destination,
         flipMode,
-        filterMode,
+        filter,
         cycle,
         renderer->blitLinearSampler,
         renderer->blitNearestSampler,
@@ -5822,8 +5822,8 @@ static bool D3D12_SupportsSwapchainComposition(
 {
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     // FIXME: HDR support would be nice to add, but it seems complicated...
-    return swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_SDR ||
-           swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR;
+    return swapchain_composition == SDL_GPU_SWAPCHAINCOMPOSITION_SDR ||
+           swapchain_composition == SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR;
 #else
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
     DXGI_FORMAT format;
@@ -5898,8 +5898,8 @@ static bool D3D12_SupportsPresentMode(
 static bool D3D12_INTERNAL_CreateSwapchain(
     D3D12Renderer *renderer,
     D3D12WindowData *windowData,
-    SDL_GPUSwapchainComposition swapchainComposition,
-    SDL_GPUPresentMode presentMode)
+    SDL_GPUSwapchainComposition swapchain_composition,
+    SDL_GPUPresentMode present_mode)
 {
     int width, height;
     SDL_GPUTextureCreateInfo createInfo;
@@ -5913,10 +5913,10 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     createInfo.type = SDL_GPU_TEXTURETYPE_2D;
     createInfo.width = width;
     createInfo.height = height;
-    createInfo.format = SwapchainCompositionToSDLTextureFormat[swapchainComposition];
-    createInfo.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
-    createInfo.layerCountOrDepth = 1;
-    createInfo.levelCount = 1;
+    createInfo.format = SwapchainCompositionToSDLTextureFormat[swapchain_composition];
+    createInfo.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    createInfo.layer_count_or_depth = 1;
+    createInfo.num_levels = 1;
 
     for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
         texture = D3D12_INTERNAL_CreateTexture(renderer, &createInfo, true);
@@ -5930,8 +5930,8 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     }
 
     // Initialize the swapchain data
-    windowData->presentMode = presentMode;
-    windowData->swapchainComposition = swapchainComposition;
+    windowData->present_mode = present_mode;
+    windowData->swapchain_composition = swapchain_composition;
     windowData->swapchainColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
     windowData->frameCounter = 0;
     windowData->swapchainWidth = width;
@@ -5993,8 +5993,8 @@ static bool D3D12_INTERNAL_ResizeSwapchainIfNeeded(
         D3D12_INTERNAL_CreateSwapchain(
             renderer,
             windowData,
-            windowData->swapchainComposition,
-            windowData->presentMode);
+            windowData->swapchain_composition,
+            windowData->present_mode);
     }
 
     return true;
@@ -6048,11 +6048,11 @@ static bool D3D12_INTERNAL_InitializeSwapchainTexture(
     ID3D12Resource_GetDesc(swapchainTexture, &textureDesc);
     pTextureContainer->header.info.width = (Uint32)textureDesc.Width;
     pTextureContainer->header.info.height = (Uint32)textureDesc.Height;
-    pTextureContainer->header.info.layerCountOrDepth = 1;
-    pTextureContainer->header.info.levelCount = 1;
+    pTextureContainer->header.info.layer_count_or_depth = 1;
+    pTextureContainer->header.info.num_levels = 1;
     pTextureContainer->header.info.type = SDL_GPU_TEXTURETYPE_2D;
-    pTextureContainer->header.info.usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
-    pTextureContainer->header.info.sampleCount = SDL_GPU_SAMPLECOUNT_1;
+    pTextureContainer->header.info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    pTextureContainer->header.info.sample_count = SDL_GPU_SAMPLECOUNT_1;
     pTextureContainer->header.info.format = SwapchainCompositionToSDLTextureFormat[composition];
 
     pTextureContainer->debugName = NULL;
@@ -6312,7 +6312,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
 
     // Initialize the swapchain data
     windowData->swapchain = swapchain3;
-    windowData->presentMode = presentMode;
+    windowData->present_mode = presentMode;
     windowData->swapchainComposition = swapchainComposition;
     windowData->swapchainColorSpace = SwapchainCompositionToColorSpace[swapchainComposition];
     windowData->frameCounter = 0;
@@ -6459,7 +6459,7 @@ static bool D3D12_SetSwapchainParameters(
 
     if (
         swapchainComposition != windowData->swapchainComposition ||
-        presentMode != windowData->presentMode) {
+        presentMode != windowData->present_mode) {
         D3D12_Wait(driverData);
 
         // Recreate the swapchain
@@ -6714,8 +6714,8 @@ static SDL_GPUCommandBuffer *D3D12_AcquireCommandBuffer(
     // Set the bind state
     commandBuffer->currentGraphicsPipeline = NULL;
 
-    SDL_zeroa(commandBuffer->colorAttachmentTextureSubresources);
-    commandBuffer->colorAttachmentTextureSubresourceCount = 0;
+    SDL_zeroa(commandBuffer->colorTargetTextureSubresources);
+    commandBuffer->colorTargetTextureSubresourceCount = 0;
     commandBuffer->depthStencilTextureSubresource = NULL;
 
     SDL_zeroa(commandBuffer->vertexBuffers);
@@ -6748,8 +6748,8 @@ static SDL_GPUCommandBuffer *D3D12_AcquireCommandBuffer(
 static SDL_GPUTexture *D3D12_AcquireSwapchainTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
-    Uint32 *pWidth,
-    Uint32 *pHeight)
+    Uint32 *w,
+    Uint32 *h)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12Renderer *renderer = d3d12CommandBuffer->renderer;
@@ -6768,7 +6768,7 @@ static SDL_GPUTexture *D3D12_AcquireSwapchainTexture(
     ERROR_CHECK_RETURN("Could not resize swapchain", NULL);
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
-        if (windowData->presentMode == SDL_GPU_PRESENTMODE_VSYNC) {
+        if (windowData->present_mode == SDL_GPU_PRESENTMODE_VSYNC) {
             // In VSYNC mode, block until the least recent presented frame is done
             D3D12_WaitForFences(
                 (SDL_GPURenderer *)renderer,
@@ -6812,8 +6812,8 @@ static SDL_GPUTexture *D3D12_AcquireSwapchainTexture(
 #endif
 
     // Send the dimensions to the out parameters.
-    *pWidth = windowData->textureContainers[swapchainIndex].header.info.width;
-    *pHeight = windowData->textureContainers[swapchainIndex].header.info.height;
+    *w = windowData->textureContainers[swapchainIndex].header.info.width;
+    *h = windowData->textureContainers[swapchainIndex].header.info.height;
 
     // Set up presentation
     if (d3d12CommandBuffer->presentDataCount == d3d12CommandBuffer->presentDataCapacity) {
@@ -7171,20 +7171,20 @@ static void D3D12_Submit(
 
         D3D12XBOX_PRESENT_PARAMETERS presentParams;
         SDL_zero(presentParams);
-        presentParams.Flags = (windowData->presentMode == SDL_GPU_PRESENTMODE_IMMEDIATE) ? D3D12XBOX_PRESENT_FLAG_IMMEDIATE : D3D12XBOX_PRESENT_FLAG_NONE;
+        presentParams.Flags = (windowData->present_mode == SDL_GPU_PRESENTMODE_IMMEDIATE) ? D3D12XBOX_PRESENT_FLAG_IMMEDIATE : D3D12XBOX_PRESENT_FLAG_NONE;
 
         renderer->commandQueue->PresentX(1, &planeParams, &presentParams);
 #else
         // NOTE: flip discard always supported since DXGI 1.4 is required
         Uint32 syncInterval = 1;
-        if (windowData->presentMode == SDL_GPU_PRESENTMODE_IMMEDIATE ||
-            windowData->presentMode == SDL_GPU_PRESENTMODE_MAILBOX) {
+        if (windowData->present_mode == SDL_GPU_PRESENTMODE_IMMEDIATE ||
+            windowData->present_mode == SDL_GPU_PRESENTMODE_MAILBOX) {
             syncInterval = 0;
         }
 
         Uint32 presentFlags = 0;
         if (renderer->supportsTearing &&
-            windowData->presentMode == SDL_GPU_PRESENTMODE_IMMEDIATE) {
+            windowData->present_mode == SDL_GPU_PRESENTMODE_IMMEDIATE) {
             presentFlags = DXGI_PRESENT_ALLOW_TEARING;
         }
 
@@ -7276,18 +7276,18 @@ static void D3D12_Wait(
 static void D3D12_WaitForFences(
     SDL_GPURenderer *driverData,
     bool waitAll,
-    SDL_GPUFence *const *pFences,
-    Uint32 fenceCount)
+    SDL_GPUFence *const *fences,
+    Uint32 numFences)
 {
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
     D3D12Fence *fence;
-    HANDLE *events = SDL_stack_alloc(HANDLE, fenceCount);
+    HANDLE *events = SDL_stack_alloc(HANDLE, numFences);
     HRESULT res;
 
     SDL_LockMutex(renderer->submitLock);
 
-    for (Uint32 i = 0; i < fenceCount; i += 1) {
-        fence = (D3D12Fence *)pFences[i];
+    for (Uint32 i = 0; i < numFences; i += 1) {
+        fence = (D3D12Fence *)fences[i];
 
         res = ID3D12Fence_SetEventOnCompletion(
             fence->handle,
@@ -7299,7 +7299,7 @@ static void D3D12_WaitForFences(
     }
 
     WaitForMultipleObjects(
-        fenceCount,
+        numFences,
         events,
         waitAll,
         INFINITE);
@@ -7419,10 +7419,10 @@ static void D3D12_INTERNAL_InitBlitResources(
     // Fullscreen vertex shader
     SDL_zero(shaderCreateInfo);
     shaderCreateInfo.code = (Uint8 *)D3D12_FullscreenVert;
-    shaderCreateInfo.codeSize = sizeof(D3D12_FullscreenVert);
+    shaderCreateInfo.code_size = sizeof(D3D12_FullscreenVert);
     shaderCreateInfo.stage = SDL_GPU_SHADERSTAGE_VERTEX;
     shaderCreateInfo.format = SDL_GPU_SHADERFORMAT_DXBC;
-    shaderCreateInfo.entryPointName = "main";
+    shaderCreateInfo.entrypoint = "main";
 
     renderer->blitVertexShader = D3D12_CreateShader(
         (SDL_GPURenderer *)renderer,
@@ -7434,10 +7434,10 @@ static void D3D12_INTERNAL_InitBlitResources(
 
     // BlitFrom2D pixel shader
     shaderCreateInfo.code = (Uint8 *)D3D12_BlitFrom2D;
-    shaderCreateInfo.codeSize = sizeof(D3D12_BlitFrom2D);
+    shaderCreateInfo.code_size = sizeof(D3D12_BlitFrom2D);
     shaderCreateInfo.stage = SDL_GPU_SHADERSTAGE_FRAGMENT;
-    shaderCreateInfo.samplerCount = 1;
-    shaderCreateInfo.uniformBufferCount = 1;
+    shaderCreateInfo.num_samplers = 1;
+    shaderCreateInfo.num_uniform_buffers = 1;
 
     renderer->blitFrom2DShader = D3D12_CreateShader(
         (SDL_GPURenderer *)renderer,
@@ -7449,7 +7449,7 @@ static void D3D12_INTERNAL_InitBlitResources(
 
     // BlitFrom2DArray pixel shader
     shaderCreateInfo.code = (Uint8 *)D3D12_BlitFrom2DArray;
-    shaderCreateInfo.codeSize = sizeof(D3D12_BlitFrom2DArray);
+    shaderCreateInfo.code_size = sizeof(D3D12_BlitFrom2DArray);
 
     renderer->blitFrom2DArrayShader = D3D12_CreateShader(
         (SDL_GPURenderer *)renderer,
@@ -7461,7 +7461,7 @@ static void D3D12_INTERNAL_InitBlitResources(
 
     // BlitFrom3D pixel shader
     shaderCreateInfo.code = (Uint8 *)D3D12_BlitFrom3D;
-    shaderCreateInfo.codeSize = sizeof(D3D12_BlitFrom3D);
+    shaderCreateInfo.code_size = sizeof(D3D12_BlitFrom3D);
 
     renderer->blitFrom3DShader = D3D12_CreateShader(
         (SDL_GPURenderer *)renderer,
@@ -7473,7 +7473,7 @@ static void D3D12_INTERNAL_InitBlitResources(
 
     // BlitFromCube pixel shader
     shaderCreateInfo.code = (Uint8 *)D3D12_BlitFromCube;
-    shaderCreateInfo.codeSize = sizeof(D3D12_BlitFromCube);
+    shaderCreateInfo.code_size = sizeof(D3D12_BlitFromCube);
 
     renderer->blitFromCubeShader = D3D12_CreateShader(
         (SDL_GPURenderer *)renderer,
@@ -7484,19 +7484,19 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 
     // Create samplers
-    samplerCreateInfo.addressModeU = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    samplerCreateInfo.addressModeV = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    samplerCreateInfo.addressModeW = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    samplerCreateInfo.anisotropyEnable = 0;
-    samplerCreateInfo.compareEnable = 0;
-    samplerCreateInfo.magFilter = SDL_GPU_FILTER_NEAREST;
-    samplerCreateInfo.minFilter = SDL_GPU_FILTER_NEAREST;
-    samplerCreateInfo.mipmapMode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
-    samplerCreateInfo.mipLodBias = 0.0f;
-    samplerCreateInfo.minLod = 0;
-    samplerCreateInfo.maxLod = 1000;
-    samplerCreateInfo.maxAnisotropy = 1.0f;
-    samplerCreateInfo.compareOp = SDL_GPU_COMPAREOP_ALWAYS;
+    samplerCreateInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+    samplerCreateInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+    samplerCreateInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+    samplerCreateInfo.enable_anisotropy = 0;
+    samplerCreateInfo.enable_compare = 0;
+    samplerCreateInfo.mag_filter = SDL_GPU_FILTER_NEAREST;
+    samplerCreateInfo.min_filter = SDL_GPU_FILTER_NEAREST;
+    samplerCreateInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
+    samplerCreateInfo.mip_lod_bias = 0.0f;
+    samplerCreateInfo.min_lod = 0;
+    samplerCreateInfo.max_lod = 1000;
+    samplerCreateInfo.max_anisotropy = 1.0f;
+    samplerCreateInfo.compare_op = SDL_GPU_COMPAREOP_ALWAYS;
 
     renderer->blitNearestSampler = D3D12_CreateSampler(
         (SDL_GPURenderer *)renderer,
@@ -7506,9 +7506,9 @@ static void D3D12_INTERNAL_InitBlitResources(
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create blit nearest sampler!");
     }
 
-    samplerCreateInfo.magFilter = SDL_GPU_FILTER_LINEAR;
-    samplerCreateInfo.minFilter = SDL_GPU_FILTER_LINEAR;
-    samplerCreateInfo.mipmapMode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
+    samplerCreateInfo.mag_filter = SDL_GPU_FILTER_LINEAR;
+    samplerCreateInfo.min_filter = SDL_GPU_FILTER_LINEAR;
+    samplerCreateInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
 
     renderer->blitLinearSampler = D3D12_CreateSampler(
         (SDL_GPURenderer *)renderer,
@@ -7519,13 +7519,13 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 }
 
-static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
+static bool D3D12_PrepareDriver(SDL_VideoDevice *this)
 {
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     return true;
 #else
-    void *d3d12_dll;
-    void *dxgi_dll;
+    void *d3d12Dll;
+    void *dxgiDll;
     PFN_D3D12_CREATE_DEVICE D3D12CreateDeviceFunc;
     PFN_CREATE_DXGI_FACTORY1 CreateDXGIFactoryFunc;
     HRESULT res;
@@ -7537,35 +7537,35 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
 
     // Can we load D3D12?
 
-    d3d12_dll = SDL_LoadObject(D3D12_DLL);
-    if (d3d12_dll == NULL) {
+    d3d12Dll = SDL_LoadObject(D3D12_DLL);
+    if (d3d12Dll == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not find " D3D12_DLL);
         return false;
     }
 
     D3D12CreateDeviceFunc = (PFN_D3D12_CREATE_DEVICE)SDL_LoadFunction(
-        d3d12_dll,
+        d3d12Dll,
         D3D12_CREATE_DEVICE_FUNC);
     if (D3D12CreateDeviceFunc == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not find function " D3D12_CREATE_DEVICE_FUNC " in " D3D12_DLL);
-        SDL_UnloadObject(d3d12_dll);
+        SDL_UnloadObject(d3d12Dll);
         return false;
     }
 
     // Can we load DXGI?
 
-    dxgi_dll = SDL_LoadObject(DXGI_DLL);
-    if (dxgi_dll == NULL) {
+    dxgiDll = SDL_LoadObject(DXGI_DLL);
+    if (dxgiDll == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not find " DXGI_DLL);
         return false;
     }
 
     CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY1)SDL_LoadFunction(
-        dxgi_dll,
+        dxgiDll,
         CREATE_DXGI_FACTORY1_FUNC);
     if (CreateDXGIFactoryFunc == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not find function " CREATE_DXGI_FACTORY1_FUNC " in " DXGI_DLL);
-        SDL_UnloadObject(dxgi_dll);
+        SDL_UnloadObject(dxgiDll);
         return false;
     }
 
@@ -7577,8 +7577,8 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
         (void **)&factory);
     if (FAILED(res)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not create DXGIFactory");
-        SDL_UnloadObject(d3d12_dll);
-        SDL_UnloadObject(dxgi_dll);
+        SDL_UnloadObject(d3d12Dll);
+        SDL_UnloadObject(dxgiDll);
         return false;
     }
 
@@ -7590,8 +7590,8 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
     if (FAILED(res)) {
         IDXGIFactory1_Release(factory);
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Failed to find DXGI1.4 support, required for DX12");
-        SDL_UnloadObject(d3d12_dll);
-        SDL_UnloadObject(dxgi_dll);
+        SDL_UnloadObject(d3d12Dll);
+        SDL_UnloadObject(dxgiDll);
         return false;
     }
     IDXGIFactory4_Release(factory4);
@@ -7617,8 +7617,8 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
     if (FAILED(res)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Failed to find adapter for D3D12Device");
         IDXGIFactory1_Release(factory);
-        SDL_UnloadObject(d3d12_dll);
-        SDL_UnloadObject(dxgi_dll);
+        SDL_UnloadObject(d3d12Dll);
+        SDL_UnloadObject(dxgiDll);
         return false;
     }
 
@@ -7634,8 +7634,8 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
     IDXGIAdapter1_Release(adapter);
     IDXGIFactory1_Release(factory);
 
-    SDL_UnloadObject(d3d12_dll);
-    SDL_UnloadObject(dxgi_dll);
+    SDL_UnloadObject(d3d12Dll);
+    SDL_UnloadObject(dxgiDll);
 
     if (FAILED(res)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not create D3D12Device with feature level " D3D_FEATURE_LEVEL_CHOICE_STR);
@@ -7916,7 +7916,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 #if defined(SDL_PLATFORM_XBOXSERIES)
         createDeviceParams.DisableDXR = TRUE;
 #endif
-        if (debugMode) {
+        if (debug_mode) {
             createDeviceParams.ProcessDebugFlags = D3D12XBOX_PROCESS_DEBUG_FLAG_DEBUG;
         }
 
@@ -8200,7 +8200,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     renderer->fenceLock = SDL_CreateMutex();
     renderer->disposeLock = SDL_CreateMutex();
 
-    renderer->debugMode = debugMode;
+    renderer->debug_mode = debugMode;
 
     renderer->semantic = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING, "TEXCOORD");
 
@@ -8217,7 +8217,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     ASSIGN_DRIVER(D3D12)
     result->driverData = (SDL_GPURenderer *)renderer;
-    result->debugMode = debugMode;
+    result->debug_mode = debugMode;
     renderer->sdlGPUDevice = result;
 
     return result;

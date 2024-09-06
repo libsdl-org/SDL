@@ -97,34 +97,34 @@ void GPU_DestroyPipelineCache(GPU_PipelineCache *cache)
 
 static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders *shaders, const GPU_PipelineParameters *params)
 {
-    SDL_GPUColorAttachmentDescription ad;
+    SDL_GPUColorTargetDescription ad;
     SDL_zero(ad);
     ad.format = params->attachment_format;
 
     SDL_BlendMode blend = params->blend_mode;
-    ad.blendState.blendEnable = blend != 0;
-    ad.blendState.colorWriteMask = 0xF;
-    ad.blendState.alphaBlendOp = GPU_ConvertBlendOperation(SDL_GetBlendModeAlphaOperation(blend));
-    ad.blendState.dstAlphaBlendFactor = GPU_ConvertBlendFactor(SDL_GetBlendModeDstAlphaFactor(blend));
-    ad.blendState.srcAlphaBlendFactor = GPU_ConvertBlendFactor(SDL_GetBlendModeSrcAlphaFactor(blend));
-    ad.blendState.colorBlendOp = GPU_ConvertBlendOperation(SDL_GetBlendModeColorOperation(blend));
-    ad.blendState.dstColorBlendFactor = GPU_ConvertBlendFactor(SDL_GetBlendModeDstColorFactor(blend));
-    ad.blendState.srcColorBlendFactor = GPU_ConvertBlendFactor(SDL_GetBlendModeSrcColorFactor(blend));
+    ad.blend_state.enable_blend = blend != 0;
+    ad.blend_state.color_write_mask = 0xF;
+    ad.blend_state.alpha_blend_op = GPU_ConvertBlendOperation(SDL_GetBlendModeAlphaOperation(blend));
+    ad.blend_state.dst_alpha_blendfactor = GPU_ConvertBlendFactor(SDL_GetBlendModeDstAlphaFactor(blend));
+    ad.blend_state.src_alpha_blendfactor = GPU_ConvertBlendFactor(SDL_GetBlendModeSrcAlphaFactor(blend));
+    ad.blend_state.color_blend_op = GPU_ConvertBlendOperation(SDL_GetBlendModeColorOperation(blend));
+    ad.blend_state.dst_color_blendfactor = GPU_ConvertBlendFactor(SDL_GetBlendModeDstColorFactor(blend));
+    ad.blend_state.src_color_blendfactor = GPU_ConvertBlendFactor(SDL_GetBlendModeSrcColorFactor(blend));
 
     SDL_GPUGraphicsPipelineCreateInfo pci;
     SDL_zero(pci);
-    pci.attachmentInfo.hasDepthStencilAttachment = false;
-    pci.attachmentInfo.colorAttachmentCount = 1;
-    pci.attachmentInfo.colorAttachmentDescriptions = &ad;
-    pci.vertexShader = GPU_GetVertexShader(shaders, params->vert_shader);
-    pci.fragmentShader = GPU_GetFragmentShader(shaders, params->frag_shader);
-    pci.multisampleState.sampleCount = SDL_GPU_SAMPLECOUNT_1;
-    pci.multisampleState.sampleMask = 0xFFFF;
-    pci.primitiveType = params->primitive_type;
+    pci.target_info.has_depth_stencil_target = false;
+    pci.target_info.num_color_targets = 1;
+    pci.target_info.color_target_descriptions = &ad;
+    pci.vertex_shader = GPU_GetVertexShader(shaders, params->vert_shader);
+    pci.fragment_shader = GPU_GetFragmentShader(shaders, params->frag_shader);
+    pci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    pci.multisample_state.sample_mask = 0xFFFF;
+    pci.primitive_type = params->primitive_type;
 
-    pci.rasterizerState.cullMode = SDL_GPU_CULLMODE_NONE;
-    pci.rasterizerState.fillMode = SDL_GPU_FILLMODE_FILL;
-    pci.rasterizerState.frontFace = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+    pci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+    pci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+    pci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
 
     SDL_GPUVertexBinding bind;
     SDL_zero(bind);
@@ -150,16 +150,16 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     // Position
     attribs[num_attribs].location = num_attribs;
     attribs[num_attribs].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
-    attribs[num_attribs].offset = bind.stride;
-    bind.stride += 2 * sizeof(float);
+    attribs[num_attribs].offset = bind.pitch;
+    bind.pitch += 2 * sizeof(float);
     num_attribs++;
 
     if (have_attr_color) {
         // Color
         attribs[num_attribs].location = num_attribs;
         attribs[num_attribs].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;
-        attribs[num_attribs].offset = bind.stride;
-        bind.stride += 4 * sizeof(float);
+        attribs[num_attribs].offset = bind.pitch;
+        bind.pitch += 4 * sizeof(float);
         num_attribs++;
     }
 
@@ -167,15 +167,15 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
         // UVs
         attribs[num_attribs].location = num_attribs;
         attribs[num_attribs].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
-        attribs[num_attribs].offset = bind.stride;
-        bind.stride += 2 * sizeof(float);
+        attribs[num_attribs].offset = bind.pitch;
+        bind.pitch += 2 * sizeof(float);
         num_attribs++;
     }
 
-    pci.vertexInputState.vertexAttributeCount = num_attribs;
-    pci.vertexInputState.vertexAttributes = attribs;
-    pci.vertexInputState.vertexBindingCount = 1;
-    pci.vertexInputState.vertexBindings = &bind;
+    pci.vertex_input_state.num_vertex_attributes = num_attribs;
+    pci.vertex_input_state.vertex_attributes = attribs;
+    pci.vertex_input_state.num_vertex_bindings = 1;
+    pci.vertex_input_state.vertex_bindings = &bind;
 
     return SDL_CreateGPUGraphicsPipeline(device, &pci);
 }
