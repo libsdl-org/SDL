@@ -108,8 +108,7 @@ static bool RPI_ShowCursor(SDL_Cursor *cursor)
     SDL_DisplayData *data;
     VC_DISPMANX_ALPHA_T alpha = { DISPMANX_FLAGS_ALPHA_FROM_SOURCE /* flags */, 255 /*opacity 0->255*/, 0 /* mask */ };
     uint32_t layer = SDL_RPI_MOUSELAYER;
-    const char *int;
-    bool result;
+    const char *hint;
 
     if (cursor != global_cursor) {
         if (global_cursor) {
