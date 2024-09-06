@@ -1632,24 +1632,24 @@ static void D3D12_INTERNAL_BufferTransitionToDefaultUsage(
 #define TRACK_RESOURCE(resource, type, array, count, capacity) \
     Uint32 i;                                                  \
                                                                \
-    for (i = 0; i < command_buffer->count; i += 1) {            \
-        if (command_buffer->array[i] == resource) {             \
+    for (i = 0; i < commandBuffer->count; i += 1) {            \
+        if (commandBuffer->array[i] == resource) {             \
             return;                                            \
         }                                                      \
     }                                                          \
                                                                \
-    if (command_buffer->count == command_buffer->capacity) {     \
-        command_buffer->capacity += 1;                          \
-        command_buffer->array = (type *)SDL_realloc(            \
-            command_buffer->array,                              \
-            command_buffer->capacity * sizeof(type));           \
+    if (commandBuffer->count == commandBuffer->capacity) {     \
+        commandBuffer->capacity += 1;                          \
+        commandBuffer->array = (type *)SDL_realloc(            \
+            commandBuffer->array,                              \
+            commandBuffer->capacity * sizeof(type));           \
     }                                                          \
-    command_buffer->array[command_buffer->count] = resource;     \
-    command_buffer->count += 1;                                 \
+    commandBuffer->array[commandBuffer->count] = resource;     \
+    commandBuffer->count += 1;                                 \
     SDL_AtomicIncRef(&resource->referenceCount);
 
 static void D3D12_INTERNAL_TrackTexture(
-    D3D12CommandBuffer *command_buffer,
+    D3D12CommandBuffer *commandBuffer,
     D3D12Texture *texture)
 {
     TRACK_RESOURCE(
@@ -1661,7 +1661,7 @@ static void D3D12_INTERNAL_TrackTexture(
 }
 
 static void D3D12_INTERNAL_TrackBuffer(
-    D3D12CommandBuffer *command_buffer,
+    D3D12CommandBuffer *commandBuffer,
     D3D12Buffer *buffer)
 {
     TRACK_RESOURCE(
@@ -1673,7 +1673,7 @@ static void D3D12_INTERNAL_TrackBuffer(
 }
 
 static void D3D12_INTERNAL_TrackSampler(
-    D3D12CommandBuffer *command_buffer,
+    D3D12CommandBuffer *commandBuffer,
     D3D12Sampler *sampler)
 {
     TRACK_RESOURCE(
@@ -1685,7 +1685,7 @@ static void D3D12_INTERNAL_TrackSampler(
 }
 
 static void D3D12_INTERNAL_TrackGraphicsPipeline(
-    D3D12CommandBuffer *command_buffer,
+    D3D12CommandBuffer *commandBuffer,
     D3D12GraphicsPipeline *graphicsPipeline)
 {
     TRACK_RESOURCE(
@@ -1697,7 +1697,7 @@ static void D3D12_INTERNAL_TrackGraphicsPipeline(
 }
 
 static void D3D12_INTERNAL_TrackComputePipeline(
-    D3D12CommandBuffer *command_buffer,
+    D3D12CommandBuffer *commandBuffer,
     D3D12ComputePipeline *computePipeline)
 {
     TRACK_RESOURCE(

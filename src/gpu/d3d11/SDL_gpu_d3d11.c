@@ -120,20 +120,20 @@ static const GUID D3D_IID_DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, { 0x87,
 #define TRACK_RESOURCE(resource, type, array, count, capacity) \
     Uint32 i;                                                  \
                                                                \
-    for (i = 0; i < command_buffer->count; i += 1) {            \
-        if (command_buffer->array[i] == resource) {             \
+    for (i = 0; i < commandBuffer->count; i += 1) {            \
+        if (commandBuffer->array[i] == resource) {             \
             return;                                            \
         }                                                      \
     }                                                          \
                                                                \
-    if (command_buffer->count == command_buffer->capacity) {     \
-        command_buffer->capacity += 1;                          \
-        command_buffer->array = SDL_realloc(                    \
-            command_buffer->array,                              \
-            command_buffer->capacity * sizeof(type));           \
+    if (commandBuffer->count == commandBuffer->capacity) {     \
+        commandBuffer->capacity += 1;                          \
+        commandBuffer->array = SDL_realloc(                    \
+            commandBuffer->array,                              \
+            commandBuffer->capacity * sizeof(type));           \
     }                                                          \
-    command_buffer->array[command_buffer->count] = resource;     \
-    command_buffer->count += 1;                                 \
+    commandBuffer->array[commandBuffer->count] = resource;     \
+    commandBuffer->count += 1;                                 \
     SDL_AtomicIncRef(&resource->referenceCount);
 
 // Forward Declarations
@@ -1000,7 +1000,7 @@ static void D3D11_DestroyDevice(
 // Resource tracking
 
 static void D3D11_INTERNAL_TrackBuffer(
-    D3D11CommandBuffer *command_buffer,
+    D3D11CommandBuffer *commandBuffer,
     D3D11Buffer *buffer)
 {
     TRACK_RESOURCE(
@@ -1012,7 +1012,7 @@ static void D3D11_INTERNAL_TrackBuffer(
 }
 
 static void D3D11_INTERNAL_TrackTransferBuffer(
-    D3D11CommandBuffer *command_buffer,
+    D3D11CommandBuffer *commandBuffer,
     D3D11TransferBuffer *buffer)
 {
     TRACK_RESOURCE(
@@ -1024,7 +1024,7 @@ static void D3D11_INTERNAL_TrackTransferBuffer(
 }
 
 static void D3D11_INTERNAL_TrackTexture(
-    D3D11CommandBuffer *command_buffer,
+    D3D11CommandBuffer *commandBuffer,
     D3D11Texture *texture)
 {
     TRACK_RESOURCE(

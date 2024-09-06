@@ -37,20 +37,20 @@
 #define TRACK_RESOURCE(resource, type, array, count, capacity) \
     Uint32 i;                                                  \
                                                                \
-    for (i = 0; i < command_buffer->count; i += 1) {           \
-        if (command_buffer->array[i] == resource) {            \
+    for (i = 0; i < commandBuffer->count; i += 1) {            \
+        if (commandBuffer->array[i] == resource) {             \
             return;                                            \
         }                                                      \
     }                                                          \
                                                                \
-    if (command_buffer->count == command_buffer->capacity) {   \
-        command_buffer->capacity += 1;                         \
-        command_buffer->array = SDL_realloc(                   \
-            command_buffer->array,                             \
-            command_buffer->capacity * sizeof(type));          \
+    if (commandBuffer->count == commandBuffer->capacity) {     \
+        commandBuffer->capacity += 1;                          \
+        commandBuffer->array = SDL_realloc(                    \
+            commandBuffer->array,                              \
+            commandBuffer->capacity * sizeof(type));           \
     }                                                          \
-    command_buffer->array[command_buffer->count] = resource;   \
-    command_buffer->count += 1;                                \
+    commandBuffer->array[commandBuffer->count] = resource;     \
+    commandBuffer->count += 1;                                 \
     SDL_AtomicIncRef(&resource->referenceCount);
 
 // Blit Shaders
@@ -695,7 +695,7 @@ static void METAL_DestroyDevice(SDL_GPUDevice *device)
 // Resource tracking
 
 static void METAL_INTERNAL_TrackBuffer(
-    MetalCommandBuffer *command_buffer,
+    MetalCommandBuffer *commandBuffer,
     MetalBuffer *buffer)
 {
     TRACK_RESOURCE(
@@ -707,7 +707,7 @@ static void METAL_INTERNAL_TrackBuffer(
 }
 
 static void METAL_INTERNAL_TrackTexture(
-    MetalCommandBuffer *command_buffer,
+    MetalCommandBuffer *commandBuffer,
     MetalTexture *texture)
 {
     TRACK_RESOURCE(
