@@ -95,7 +95,7 @@ static const char * const SDL_category_names[] = {
     "TEST",
     "GPU"
 };
-SDL_COMPILE_TIME_ASSERT(category_names, SDL_arraysize(SDL_category_names) == SDL_LOG_CATEGORY_RESERVED1);
+SDL_COMPILE_TIME_ASSERT(category_names, SDL_arraysize(SDL_category_names) == SDL_LOG_CATEGORY_RESERVED2);
 
 #ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic pop
@@ -432,7 +432,7 @@ void SDL_LogMessage(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_ST
 #ifdef SDL_PLATFORM_ANDROID
 static const char *GetCategoryPrefix(int category)
 {
-    if (category < SDL_LOG_CATEGORY_RESERVED1) {
+    if (category < SDL_LOG_CATEGORY_RESERVED2) {
         return SDL_category_names[category];
     }
     if (category < SDL_LOG_CATEGORY_CUSTOM) {
