@@ -978,7 +978,8 @@ typedef struct SDL_GPUViewport
 } SDL_GPUViewport;
 
 /**
- * A structure specifying parameters related to transferring data to or from a texture.
+ * A structure specifying parameters related to transferring data to or from a
+ * texture.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1104,10 +1105,10 @@ typedef struct SDL_GPUBufferRegion
 /**
  * A structure specifying the parameters of an indirect draw command.
  *
- * Note that the `first_vertex` and `first_instance` parameters are NOT compatible with
- * built-in vertex/instance ID variables in shaders (for example, SV_VertexID). If
- * your shader depends on these variables, the correlating draw call parameter MUST
- * be 0.
+ * Note that the `first_vertex` and `first_instance` parameters are NOT
+ * compatible with built-in vertex/instance ID variables in shaders (for
+ * example, SV_VertexID). If your shader depends on these variables, the
+ * correlating draw call parameter MUST be 0.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1124,10 +1125,10 @@ typedef struct SDL_GPUIndirectDrawCommand
 /**
  * A structure specifying the parameters of an indexed indirect draw command.
  *
- * Note that the `first_vertex` and `first_instance` parameters are NOT compatible with
- * built-in vertex/instance ID variables in shaders (for example, SV_VertexID). If
- * your shader depends on these variables, the correlating draw call parameter MUST
- * be 0.
+ * Note that the `first_vertex` and `first_instance` parameters are NOT
+ * compatible with built-in vertex/instance ID variables in shaders (for
+ * example, SV_VertexID). If your shader depends on these variables, the
+ * correlating draw call parameter MUST be 0.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1189,10 +1190,14 @@ typedef struct SDL_GPUSamplerCreateInfo
 /**
  * A structure specifying a vertex binding.
  *
- * When you call SDL_BindGPUVertexBuffers, you specify the binding indices of the vertex buffers.
- * For example if you called SDL_BindGPUVertexBuffers with a first_binding of 2 and num_bindings of 3, the binding indices 2, 3, 4 would be used by the vertex buffers you pass in.
+ * When you call SDL_BindGPUVertexBuffers, you specify the binding indices of
+ * the vertex buffers. For example if you called SDL_BindGPUVertexBuffers with
+ * a first_binding of 2 and num_bindings of 3, the binding indices 2, 3, 4
+ * would be used by the vertex buffers you pass in.
  *
- * Vertex attributes are linked to bindings via the index. The binding_index field of SDL_GPUVertexAttribute specifies the vertex buffer binding index that the attribute will be read from.
+ * Vertex attributes are linked to bindings via the index. The binding_index
+ * field of SDL_GPUVertexAttribute specifies the vertex buffer binding index
+ * that the attribute will be read from.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1224,7 +1229,8 @@ typedef struct SDL_GPUVertexAttribute
 } SDL_GPUVertexAttribute;
 
 /**
- * A structure specifying the parameters of a graphics pipeline vertex input state.
+ * A structure specifying the parameters of a graphics pipeline vertex input
+ * state.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1301,7 +1307,9 @@ typedef struct SDL_GPUShaderCreateInfo
 /**
  * A structure specifying the parameters of a texture.
  *
- * Usage flags can be bitwise OR'd together for combinations of usages. Note that certain usage combinations are invalid, for example SAMPLER and GRAPHICS_STORAGE.
+ * Usage flags can be bitwise OR'd together for combinations of usages. Note
+ * that certain usage combinations are invalid, for example SAMPLER and
+ * GRAPHICS_STORAGE.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1331,7 +1339,8 @@ typedef struct SDL_GPUTextureCreateInfo
 /**
  * A structure specifying the parameters of a buffer.
  *
- * Usage flags can be bitwise OR'd together for combinations of usages. Note that certain combinations are invalid, for example VERTEX and INDEX.
+ * Usage flags can be bitwise OR'd together for combinations of usages. Note
+ * that certain combinations are invalid, for example VERTEX and INDEX.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1363,7 +1372,8 @@ typedef struct SDL_GPUTransferBufferCreateInfo
 /* Pipeline state structures */
 
 /**
- * A structure specifying the parameters of the graphics pipeline rasterizer state.
+ * A structure specifying the parameters of the graphics pipeline rasterizer
+ * state.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1384,7 +1394,8 @@ typedef struct SDL_GPURasterizerState
 } SDL_GPURasterizerState;
 
 /**
- * A structure specifying the parameters of the graphics pipeline multisample state.
+ * A structure specifying the parameters of the graphics pipeline multisample
+ * state.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1397,7 +1408,8 @@ typedef struct SDL_GPUMultisampleState
 } SDL_GPUMultisampleState;
 
 /**
- * A structure specifying the parameters of the graphics pipeline depth stencil state.
+ * A structure specifying the parameters of the graphics pipeline depth
+ * stencil state.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1419,7 +1431,8 @@ typedef struct SDL_GPUDepthStencilState
 } SDL_GPUDepthStencilState;
 
 /**
- * A structure specifying the parameters of color targets used in a graphics pipeline.
+ * A structure specifying the parameters of color targets used in a graphics
+ * pipeline.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1432,7 +1445,8 @@ typedef struct SDL_GPUColorTargetDescription
 } SDL_GPUColorTargetDescription;
 
 /**
- * A structure specifying the descriptions of render targets used in a graphics pipeline.
+ * A structure specifying the descriptions of render targets used in a
+ * graphics pipeline.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1496,18 +1510,24 @@ typedef struct SDL_GPUComputePipelineCreateInfo
 } SDL_GPUComputePipelineCreateInfo;
 
 /**
- * A structure specifying the parameters of a color target used by a render pass.
+ * A structure specifying the parameters of a color target used by a render
+ * pass.
  *
- * The load_op field determines what is done with the texture at the beginning of the render pass.
+ * The load_op field determines what is done with the texture at the beginning
+ * of the render pass.
  *
  * - LOAD: Loads the data currently in the texture.
  * - CLEAR: Clears the texture to a single color.
- * - DONT_CARE: The driver will do whatever it wants with the texture memory. This is a good option if you know that every single pixel will be touched in the render pass.
+ * - DONT_CARE: The driver will do whatever it wants with the texture memory.
+ *   This is a good option if you know that every single pixel will be touched
+ *   in the render pass.
  *
- * The store_op field determines what is done with the color results of the render pass.
+ * The store_op field determines what is done with the color results of the
+ * render pass.
  *
  * - STORE: Stores the results of the render pass in the texture.
- * - DONT_CARE: The driver will do whatever it wants with the texture memory. This is often a good option for depth/stencil textures.
+ * - DONT_CARE: The driver will do whatever it wants with the texture memory.
+ *   This is often a good option for depth/stencil textures.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1528,29 +1548,42 @@ typedef struct SDL_GPUColorTargetInfo
 } SDL_GPUColorTargetInfo;
 
 /**
- * A structure specifying the parameters of a depth-stencil target used by a render pass.
+ * A structure specifying the parameters of a depth-stencil target used by a
+ * render pass.
  *
- * The load_op field determines what is done with the depth contents of the texture at the beginning of the render pass.
+ * The load_op field determines what is done with the depth contents of the
+ * texture at the beginning of the render pass.
  *
  * - LOAD: Loads the depth values currently in the texture.
  * - CLEAR: Clears the texture to a single depth.
- * - DONT_CARE: The driver will do whatever it wants with the memory. This is a good option if you know that every single pixel will be touched in the render pass.
+ * - DONT_CARE: The driver will do whatever it wants with the memory. This is
+ *   a good option if you know that every single pixel will be touched in the
+ *   render pass.
  *
- * The store_op field determines what is done with the depth results of the render pass.
+ * The store_op field determines what is done with the depth results of the
+ * render pass.
  *
  * - STORE: Stores the depth results in the texture.
- * - DONT_CARE: The driver will do whatever it wants with the depth results. This is often a good option for depth/stencil textures that don't need to be reused again.
+ * - DONT_CARE: The driver will do whatever it wants with the depth results.
+ *   This is often a good option for depth/stencil textures that don't need to
+ *   be reused again.
  *
- * The stencil_load_op field determines what is done with the stencil contents of the texture at the beginning of the render pass.
+ * The stencil_load_op field determines what is done with the stencil contents
+ * of the texture at the beginning of the render pass.
  *
  * - LOAD: Loads the stencil values currently in the texture.
  * - CLEAR: Clears the stencil values to a single value.
- * - DONT_CARE: The driver will do whatever it wants with the memory. This is a good option if you know that every single pixel will be touched in the render pass.
+ * - DONT_CARE: The driver will do whatever it wants with the memory. This is
+ *   a good option if you know that every single pixel will be touched in the
+ *   render pass.
  *
- * The stencil_store_op field determines what is done with the stencil results of the render pass.
+ * The stencil_store_op field determines what is done with the stencil results
+ * of the render pass.
  *
  * - STORE: Stores the stencil results in the texture.
- * - DONT_CARE: The driver will do whatever it wants with the stencil results. This is often a good option for depth/stencil textures that don't need to be reused again.
+ * - DONT_CARE: The driver will do whatever it wants with the stencil results.
+ *   This is often a good option for depth/stencil textures that don't need to
+ *   be reused again.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1601,7 +1634,8 @@ typedef struct SDL_GPUTextureSamplerBinding
 } SDL_GPUTextureSamplerBinding;
 
 /**
- * A structure specifying parameters related to binding buffers in a compute pass.
+ * A structure specifying parameters related to binding buffers in a compute
+ * pass.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1617,7 +1651,8 @@ typedef struct SDL_GPUStorageBufferWriteOnlyBinding
 } SDL_GPUStorageBufferWriteOnlyBinding;
 
 /**
- * A structure specifying parameters related to binding textures in a compute pass.
+ * A structure specifying parameters related to binding textures in a compute
+ * pass.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -2818,7 +2853,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPUComputePass(
  *
  * \param device a GPU context.
  * \param transfer_buffer a transfer buffer.
- * \param cycle if SDL_TRUE, cycles the transfer buffer if it is already bound.
+ * \param cycle if SDL_TRUE, cycles the transfer buffer if it is already
+ *              bound.
  * \returns the address of the mapped transfer buffer memory.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2891,8 +2927,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUTexture(
  * \param copy_pass a copy pass handle.
  * \param source the source transfer buffer with offset.
  * \param destination the destination buffer with offset and size.
- * \param cycle if SDL_TRUE, cycles the buffer if it is already bound, otherwise
- *              overwrites the data.
+ * \param cycle if SDL_TRUE, cycles the buffer if it is already bound,
+ *              otherwise overwrites the data.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -2940,8 +2976,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUTextureToTexture(
  * \param source the buffer and offset to copy from.
  * \param destination the buffer and offset to copy to.
  * \param size the length of the buffer to copy.
- * \param cycle if SDL_TRUE, cycles the destination buffer if it is already bound,
- *              otherwise overwrites the data.
+ * \param cycle if SDL_TRUE, cycles the destination buffer if it is already
+ *              bound, otherwise overwrites the data.
  *
  * \since This function is available since SDL 3.0.0.
  */
