@@ -1190,7 +1190,7 @@ typedef struct SDL_GPUSamplerCreateInfo
  * When you call SDL_BindGPUVertexBuffers, you specify the binding indices of the vertex buffers.
  * For example if you called SDL_BindGPUVertexBuffers with a first_binding of 2 and num_bindings of 3, the binding indices 2, 3, 4 would be used by the vertex buffers you pass in.
  *
- * Vertex attributes are linked to bindings via the index. The bindingIndex field of SDL_GPUVertexAttribute specifies the vertex buffer binding index that the attribute will be read from.
+ * Vertex attributes are linked to bindings via the index. The binding_index field of SDL_GPUVertexAttribute specifies the vertex buffer binding index that the attribute will be read from.
  *
  * \since This struct is available since SDL 3.0.0
  *
