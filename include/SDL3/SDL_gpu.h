@@ -2115,7 +2115,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUTexture(
 /**
  * Frees the given sampler as soon as it is safe to do so.
  *
- * You must not reference the texture after calling this function.
+ * You must not reference the sampler after calling this function.
  *
  * \param device a GPU context.
  * \param sampler a sampler to be destroyed.
