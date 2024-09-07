@@ -965,35 +965,23 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
     }
 
     SDL_GPUTextureFormat swapchain_fmt = SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window);
+    SDL_GPUBlitRegion src;
+    SDL_zero(src);
+    src.texture = data->backbuffer.texture;
+    src.w = data->backbuffer.width;
+    src.h = data->backbuffer.height;
+
+    SDL_GPUBlitRegion dst;
+    SDL_zero(dst);
+    dst.texture = swapchain;
+    dst.w = swapchain_w;
+    dst.h = swapchain_h;
+
+    SDL_BlitGPUTexture(data->state.command_buffer, &src, &dst, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, true);
 
     if (swapchain_w != data->backbuffer.width || swapchain_h != data->backbuffer.height || swapchain_fmt != data->backbuffer.format) {
-        SDL_GPUBlitRegion src;
-        SDL_zero(src);
-        src.texture = data->backbuffer.texture;
-        src.w = data->backbuffer.width;
-        src.h = data->backbuffer.height;
-
-        SDL_GPUBlitRegion dst;
-        SDL_zero(dst);
-        dst.texture = swapchain;
-        dst.w = swapchain_w;
-        dst.h = swapchain_h;
-
-        SDL_BlitGPUTexture(data->state.command_buffer, &src, &dst, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, true);
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
         CreateBackbuffer(data, swapchain_w, swapchain_h, swapchain_fmt);
-    } else {
-        SDL_GPUTextureLocation src;
-        SDL_zero(src);
-        src.texture = data->backbuffer.texture;
-
-        SDL_GPUTextureLocation dst;
-        SDL_zero(dst);
-        dst.texture = swapchain;
-
-        SDL_GPUCopyPass *pass = SDL_BeginGPUCopyPass(data->state.command_buffer);
-        SDL_CopyGPUTextureToTexture(pass, &src, &dst, swapchain_w, swapchain_h, 1, true);
-        SDL_EndGPUCopyPass(pass);
     }
 
 // *** FIXME ***
