@@ -9252,34 +9252,28 @@ static void VULKAN_EndCopyPass(
 
 static void VULKAN_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUBlitRegion *source,
-    const SDL_GPUBlitRegion *destination,
-    SDL_GPULoadOp loadOp,
-    SDL_FColor clearColor,
-    SDL_FlipMode flipMode,
-    SDL_GPUFilter filter,
-    bool cycle)
+    const SDL_GPUBlitInfo *info)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-    TextureCommonHeader *srcHeader = (TextureCommonHeader *)source->texture;
-    TextureCommonHeader *dstHeader = (TextureCommonHeader *)destination->texture;
+    TextureCommonHeader *srcHeader = (TextureCommonHeader *)info->source.texture;
+    TextureCommonHeader *dstHeader = (TextureCommonHeader *)info->destination.texture;
     VkImageBlit region;
-    Uint32 srcLayer = srcHeader->info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : source->layer_or_depth_plane;
-    Uint32 srcDepth = srcHeader->info.type == SDL_GPU_TEXTURETYPE_3D ? source->layer_or_depth_plane : 0;
-    Uint32 dstLayer = dstHeader->info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : destination->layer_or_depth_plane;
-    Uint32 dstDepth = dstHeader->info.type == SDL_GPU_TEXTURETYPE_3D ? destination->layer_or_depth_plane : 0;
+    Uint32 srcLayer = srcHeader->info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : info->source.layer_or_depth_plane;
+    Uint32 srcDepth = srcHeader->info.type == SDL_GPU_TEXTURETYPE_3D ? info->source.layer_or_depth_plane : 0;
+    Uint32 dstLayer = dstHeader->info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : info->destination.layer_or_depth_plane;
+    Uint32 dstDepth = dstHeader->info.type == SDL_GPU_TEXTURETYPE_3D ? info->destination.layer_or_depth_plane : 0;
     int32_t swap;
 
-    if (loadOp == SDL_GPU_LOADOP_CLEAR) {
+    if (info->load_op == SDL_GPU_LOADOP_CLEAR) {
         SDL_GPUColorTargetInfo targetInfo;
-        targetInfo.texture = destination->texture;
-        targetInfo.mip_level = destination->mip_level;
-        targetInfo.layer_or_depth_plane = destination->layer_or_depth_plane;
-        targetInfo.load_op = loadOp;
+        targetInfo.texture = info->destination.texture;
+        targetInfo.mip_level = info->destination.mip_level;
+        targetInfo.layer_or_depth_plane = info->destination.layer_or_depth_plane;
+        targetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
         targetInfo.store_op = SDL_GPU_STOREOP_STORE;
-        targetInfo.clear_color = clearColor;
-        targetInfo.cycle = cycle;
+        targetInfo.clear_color = info->clear_color;
+        targetInfo.cycle = info->cycle;
         VULKAN_BeginRenderPass(
             commandBuffer,
             &targetInfo,
@@ -9289,17 +9283,17 @@ static void VULKAN_Blit(
     }
 
     VulkanTextureSubresource *srcSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
-        (VulkanTextureContainer *)source->texture,
+        (VulkanTextureContainer *)info->source.texture,
         srcLayer,
-        source->mip_level);
+        info->source.mip_level);
 
     VulkanTextureSubresource *dstSubresource = VULKAN_INTERNAL_PrepareTextureSubresourceForWrite(
         renderer,
         vulkanCommandBuffer,
-        (VulkanTextureContainer *)destination->texture,
+        (VulkanTextureContainer *)info->destination.texture,
         dstLayer,
-        destination->mip_level,
-        cycle,
+        info->destination.mip_level,
+        info->cycle,
         VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION);
 
     VULKAN_INTERNAL_TextureSubresourceTransitionFromDefaultUsage(
@@ -9312,21 +9306,21 @@ static void VULKAN_Blit(
     region.srcSubresource.baseArrayLayer = srcSubresource->layer;
     region.srcSubresource.layerCount = 1;
     region.srcSubresource.mipLevel = srcSubresource->level;
-    region.srcOffsets[0].x = source->x;
-    region.srcOffsets[0].y = source->y;
+    region.srcOffsets[0].x = info->source.x;
+    region.srcOffsets[0].y = info->source.y;
     region.srcOffsets[0].z = srcDepth;
-    region.srcOffsets[1].x = source->x + source->w;
-    region.srcOffsets[1].y = source->y + source->h;
+    region.srcOffsets[1].x = info->source.x + info->source.w;
+    region.srcOffsets[1].y = info->source.y + info->source.h;
     region.srcOffsets[1].z = srcDepth + 1;
 
-    if (flipMode & SDL_FLIP_HORIZONTAL) {
+    if (info->flip_mode & SDL_FLIP_HORIZONTAL) {
         // flip the x positions
         swap = region.srcOffsets[0].x;
         region.srcOffsets[0].x = region.srcOffsets[1].x;
         region.srcOffsets[1].x = swap;
     }
 
-    if (flipMode & SDL_FLIP_VERTICAL) {
+    if (info->flip_mode & SDL_FLIP_VERTICAL) {
         // flip the y positions
         swap = region.srcOffsets[0].y;
         region.srcOffsets[0].y = region.srcOffsets[1].y;
@@ -9337,11 +9331,11 @@ static void VULKAN_Blit(
     region.dstSubresource.baseArrayLayer = dstSubresource->layer;
     region.dstSubresource.layerCount = 1;
     region.dstSubresource.mipLevel = dstSubresource->level;
-    region.dstOffsets[0].x = destination->x;
-    region.dstOffsets[0].y = destination->y;
+    region.dstOffsets[0].x = info->destination.x;
+    region.dstOffsets[0].y = info->destination.y;
     region.dstOffsets[0].z = dstDepth;
-    region.dstOffsets[1].x = destination->x + destination->w;
-    region.dstOffsets[1].y = destination->y + destination->h;
+    region.dstOffsets[1].x = info->destination.x + info->destination.w;
+    region.dstOffsets[1].y = info->destination.y + info->destination.h;
     region.dstOffsets[1].z = dstDepth + 1;
 
     renderer->vkCmdBlitImage(
@@ -9352,7 +9346,7 @@ static void VULKAN_Blit(
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         1,
         &region,
-        SDLToVK_Filter[filter]);
+        SDLToVK_Filter[info->filter]);
 
     VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
         renderer,

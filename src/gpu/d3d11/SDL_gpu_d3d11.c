@@ -4173,13 +4173,7 @@ static void D3D11_PushFragmentUniformData(
 
 static void D3D11_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUBlitRegion *source,
-    const SDL_GPUBlitRegion *destination,
-    SDL_GPULoadOp loadOp,
-    SDL_FColor clearColor,
-    SDL_FlipMode flipMode,
-    SDL_GPUFilter filter,
-    bool cycle)
+    const SDL_GPUBlitInfo *info)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
@@ -4187,13 +4181,7 @@ static void D3D11_Blit(
 
     SDL_GPU_BlitCommon(
         commandBuffer,
-        source,
-        destination,
-        loadOp,
-        clearColor,
-        flipMode,
-        filter,
-        cycle,
+        info,
         renderer->blitLinearSampler,
         renderer->blitNearestSampler,
         NULL,

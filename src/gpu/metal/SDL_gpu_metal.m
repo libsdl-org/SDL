@@ -2903,26 +2903,14 @@ static void METAL_PushFragmentUniformData(
 
 static void METAL_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUBlitRegion *source,
-    const SDL_GPUBlitRegion *destination,
-    SDL_GPULoadOp loadOp,
-    SDL_FColor clearColor,
-    SDL_FlipMode flipMode,
-    SDL_GPUFilter filter,
-    bool cycle)
+    const SDL_GPUBlitInfo *info)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
     MetalRenderer *renderer = (MetalRenderer *)metalCommandBuffer->renderer;
 
     SDL_GPU_BlitCommon(
         commandBuffer,
-        source,
-        destination,
-        loadOp,
-        clearColor,
-        flipMode,
-        filter,
-        cycle,
+        info,
         renderer->blitLinearSampler,
         renderer->blitNearestSampler,
         renderer->blitVertexShader,

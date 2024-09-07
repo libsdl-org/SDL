@@ -306,8 +306,7 @@ Render(SDL_Window *window, const int windownum)
     SDL_GPUCommandBuffer *cmd;
     SDL_GPURenderPass *pass;
     SDL_GPUBufferBinding vertex_binding;
-    SDL_GPUBlitRegion src_region;
-    SDL_GPUBlitRegion dst_region;
+    SDL_GPUBlitInfo blit_info;
 
     /* Acquire the swapchain texture */
 
@@ -393,18 +392,19 @@ Render(SDL_Window *window, const int windownum)
 
     /* Blit MSAA to swapchain, if needed */
     if (render_state.sample_count > SDL_GPU_SAMPLECOUNT_1) {
-        SDL_zero(src_region);
-        src_region.texture = winstate->tex_msaa;
-        src_region.w = drawablew;
-        src_region.h = drawableh;
+        SDL_zero(blit_info);
+        blit_info.source.texture = winstate->tex_msaa;
+        blit_info.source.w = drawablew;
+        blit_info.source.h = drawableh;
 
-        dst_region = src_region;
-        dst_region.texture = swapchain;
+        blit_info.destination.texture = swapchain;
+        blit_info.destination.w = drawablew;
+        blit_info.destination.h = drawableh;
 
-        SDL_FColor clearColor;
-        SDL_zero(clearColor);
+        blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
+        blit_info.filter = SDL_GPU_FILTER_LINEAR;
 
-        SDL_BlitGPUTexture(cmd, &src_region, &dst_region, SDL_GPU_LOADOP_DONT_CARE, clearColor, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, SDL_FALSE);
+        SDL_BlitGPUTexture(cmd, &blit_info);
     }
 
     /* Submit the command buffer! */

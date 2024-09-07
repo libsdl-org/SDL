@@ -221,13 +221,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
 
 void SDL_GPU_BlitCommon(
     SDL_GPUCommandBuffer *command_buffer,
-    const SDL_GPUBlitRegion *source,
-    const SDL_GPUBlitRegion *destination,
-    SDL_GPULoadOp load_op,
-    SDL_FColor clear_color,
-    SDL_FlipMode flip_mode,
-    SDL_GPUFilter filter,
-    bool cycle,
+    const SDL_GPUBlitInfo *info,
     SDL_GPUSampler *blit_linear_sampler,
     SDL_GPUSampler *blit_nearest_sampler,
     SDL_GPUShader *blit_vertex_shader,
@@ -241,8 +235,8 @@ void SDL_GPU_BlitCommon(
 {
     CommandBufferCommonHeader *cmdbufHeader = (CommandBufferCommonHeader *)command_buffer;
     SDL_GPURenderPass *render_pass;
-    TextureCommonHeader *src_header = (TextureCommonHeader *)source->texture;
-    TextureCommonHeader *dst_header = (TextureCommonHeader *)destination->texture;
+    TextureCommonHeader *src_header = (TextureCommonHeader *)info->source.texture;
+    TextureCommonHeader *dst_header = (TextureCommonHeader *)info->destination.texture;
     SDL_GPUGraphicsPipeline *blit_pipeline;
     SDL_GPUColorTargetInfo color_target_info;
     SDL_GPUViewport viewport;
@@ -268,14 +262,14 @@ void SDL_GPU_BlitCommon(
         return;
     }
 
-    color_target_info.load_op = load_op;
-    color_target_info.clear_color = clear_color;
+    color_target_info.load_op = info->load_op;
+    color_target_info.clear_color = info->clear_color;
     color_target_info.store_op = SDL_GPU_STOREOP_STORE;
 
-    color_target_info.texture = destination->texture;
-    color_target_info.mip_level = destination->mip_level;
-    color_target_info.layer_or_depth_plane = destination->layer_or_depth_plane;
-    color_target_info.cycle = cycle;
+    color_target_info.texture = info->destination.texture;
+    color_target_info.mip_level = info->destination.mip_level;
+    color_target_info.layer_or_depth_plane = info->destination.layer_or_depth_plane;
+    color_target_info.cycle = info->cycle;
 
     render_pass = SDL_BeginGPURenderPass(
         command_buffer,
@@ -283,10 +277,10 @@ void SDL_GPU_BlitCommon(
         1,
         NULL);
 
-    viewport.x = (float)destination->x;
-    viewport.y = (float)destination->y;
-    viewport.w = (float)destination->w;
-    viewport.h = (float)destination->h;
+    viewport.x = (float)info->destination.x;
+    viewport.y = (float)info->destination.y;
+    viewport.w = (float)info->destination.w;
+    viewport.h = (float)info->destination.h;
     viewport.min_depth = 0;
     viewport.max_depth = 1;
 
@@ -298,9 +292,9 @@ void SDL_GPU_BlitCommon(
         render_pass,
         blit_pipeline);
 
-    texture_sampler_binding.texture = source->texture;
+    texture_sampler_binding.texture = info->source.texture;
     texture_sampler_binding.sampler =
-        filter == SDL_GPU_FILTER_NEAREST ? blit_nearest_sampler : blit_linear_sampler;
+        info->filter == SDL_GPU_FILTER_NEAREST ? blit_nearest_sampler : blit_linear_sampler;
 
     SDL_BindGPUFragmentSamplers(
         render_pass,
@@ -308,21 +302,21 @@ void SDL_GPU_BlitCommon(
         &texture_sampler_binding,
         1);
 
-    blit_fragment_uniforms.left = (float)source->x / (src_header->info.width >> source->mip_level);
-    blit_fragment_uniforms.top = (float)source->y / (src_header->info.height >> source->mip_level);
-    blit_fragment_uniforms.width = (float)source->w / (src_header->info.width >> source->mip_level);
-    blit_fragment_uniforms.height = (float)source->h / (src_header->info.height >> source->mip_level);
-    blit_fragment_uniforms.mip_level = source->mip_level;
+    blit_fragment_uniforms.left = (float)info->source.x / (src_header->info.width >> info->source.mip_level);
+    blit_fragment_uniforms.top = (float)info->source.y / (src_header->info.height >> info->source.mip_level);
+    blit_fragment_uniforms.width = (float)info->source.w / (src_header->info.width >> info->source.mip_level);
+    blit_fragment_uniforms.height = (float)info->source.h / (src_header->info.height >> info->source.mip_level);
+    blit_fragment_uniforms.mip_level = info->source.mip_level;
 
     layer_divisor = (src_header->info.type == SDL_GPU_TEXTURETYPE_3D) ? src_header->info.layer_count_or_depth : 1;
-    blit_fragment_uniforms.layer_or_depth = (float)source->layer_or_depth_plane / layer_divisor;
+    blit_fragment_uniforms.layer_or_depth = (float)info->source.layer_or_depth_plane / layer_divisor;
 
-    if (flip_mode & SDL_FLIP_HORIZONTAL) {
+    if (info->flip_mode & SDL_FLIP_HORIZONTAL) {
         blit_fragment_uniforms.left += blit_fragment_uniforms.width;
         blit_fragment_uniforms.width *= -1;
     }
 
-    if (flip_mode & SDL_FLIP_VERTICAL) {
+    if (info->flip_mode & SDL_FLIP_VERTICAL) {
         blit_fragment_uniforms.top += blit_fragment_uniforms.height;
         blit_fragment_uniforms.height *= -1;
     }
@@ -2112,24 +2106,14 @@ void SDL_GenerateMipmapsForGPUTexture(
 
 void SDL_BlitGPUTexture(
     SDL_GPUCommandBuffer *command_buffer,
-    const SDL_GPUBlitRegion *source,
-    const SDL_GPUBlitRegion *destination,
-    SDL_GPULoadOp load_op,
-    SDL_FColor clear_color,
-    SDL_FlipMode flip_mode,
-    SDL_GPUFilter filter,
-    SDL_bool cycle)
+    const SDL_GPUBlitInfo *info)
 {
     if (command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return;
     }
-    if (source == NULL) {
-        SDL_InvalidParamError("source");
-        return;
-    }
-    if (destination == NULL) {
-        SDL_InvalidParamError("destination");
+    if (info == NULL) {
+        SDL_InvalidParamError("info");
         return;
     }
 
@@ -2139,11 +2123,15 @@ void SDL_BlitGPUTexture(
 
         // Validation
         bool failed = false;
-        TextureCommonHeader *srcHeader = (TextureCommonHeader *)source->texture;
-        TextureCommonHeader *dstHeader = (TextureCommonHeader *)destination->texture;
+        TextureCommonHeader *srcHeader = (TextureCommonHeader *)info->source.texture;
+        TextureCommonHeader *dstHeader = (TextureCommonHeader *)info->destination.texture;
 
-        if (srcHeader == NULL || dstHeader == NULL) {
-            SDL_assert_release(!"Blit source and destination textures must be non-NULL");
+        if (srcHeader == NULL) {
+            SDL_assert_release(!"Blit source texture must be non-NULL");
+            return; // attempting to proceed will crash
+        }
+        if (dstHeader == NULL) {
+            SDL_assert_release(!"Blit destination texture must be non-NULL");
             return; // attempting to proceed will crash
         }
         if ((srcHeader->info.usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) == 0) {
@@ -2158,7 +2146,7 @@ void SDL_BlitGPUTexture(
             SDL_assert_release(!"Blit source texture cannot have a depth format");
             failed = true;
         }
-        if (source->w == 0 || source->h == 0 || destination->w == 0 || destination->h == 0) {
+        if (info->source.w == 0 || info->source.h == 0 || info->destination.w == 0 || info->destination.h == 0) {
             SDL_assert_release(!"Blit source/destination regions must have non-zero width, height, and depth");
             failed = true;
         }
@@ -2170,13 +2158,7 @@ void SDL_BlitGPUTexture(
 
     COMMAND_BUFFER_DEVICE->Blit(
         command_buffer,
-        source,
-        destination,
-        load_op,
-        clear_color,
-        flip_mode,
-        filter,
-        cycle);
+        info);
 }
 
 // Submission/Presentation
