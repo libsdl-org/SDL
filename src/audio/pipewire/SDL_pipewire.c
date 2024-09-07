@@ -1242,12 +1242,12 @@ static bool PipewireInitialize(SDL_AudioDriverImpl *impl)
         pipewire_initialized = true;
 
         if (SDL_sscanf(PIPEWIRE_pw_get_library_version(), "%d.%d.%d", &pipewire_client_version_major, &pipewire_client_version_minor, &pipewire_client_version_patch) < 3) {
-            unload_pipewire_library();
+            PIPEWIRE_Deinitialize();
             return false;
         }
 
         if (!pipewire_client_version_at_least(1, 0, 0)) {
-            unload_pipewire_library();
+            PIPEWIRE_Deinitialize();
             return false;
         }
 
