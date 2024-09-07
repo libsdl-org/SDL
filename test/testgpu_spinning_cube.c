@@ -571,17 +571,17 @@ init_render_state(int msaa)
     pipelinedesc.vertex_shader = vertex_shader;
     pipelinedesc.fragment_shader = fragment_shader;
 
-    vertex_binding.binding = 0;
+    vertex_binding.index = 0;
     vertex_binding.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
     vertex_binding.instance_step_rate = 0;
     vertex_binding.pitch = sizeof(VertexData);
 
-    vertex_attributes[0].binding = 0;
+    vertex_attributes[0].bindingIndex = 0;
     vertex_attributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
     vertex_attributes[0].location = 0;
     vertex_attributes[0].offset = 0;
 
-    vertex_attributes[1].binding = 0;
+    vertex_attributes[1].bindingIndex = 0;
     vertex_attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
     vertex_attributes[1].location = 1;
     vertex_attributes[1].offset = sizeof(float) * 3;

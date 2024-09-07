@@ -1,4 +1,4 @@
-/*
+﻿/*
   Simple DirectMedia Layer
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
@@ -968,7 +968,7 @@ typedef struct SDL_GPUDepthStencilValue
 typedef struct SDL_GPUViewport
 {
     float x;          /**< The left offset of the viewport. */
-    float y;          /**< The right offset of the viewport. */
+    float y;          /**< The top offset of the viewport. */
     float w;          /**< The width of the viewport. */
     float h;          /**< The height of the viewport. */
     float min_depth;  /**< The minimum depth of the viewport. */
@@ -1133,7 +1133,7 @@ typedef struct SDL_GPUIndirectDrawCommand
  */
 typedef struct SDL_GPUIndexedIndirectDrawCommand
 {
-    Uint32 num_indices;    /**< The number of vertices to draw per instance. */
+    Uint32 num_indices;    /**< The number of indices to draw per instance. */
     Uint32 num_instances;  /**< The number of instances to draw. */
     Uint32 first_index;    /**< The base index within the index buffer. */
     Sint32 vertex_offset;  /**< The value added to the vertex index before indexing into the vertex buffer. */
@@ -1187,13 +1187,19 @@ typedef struct SDL_GPUSamplerCreateInfo
 /**
  * A structure specifying a vertex binding.
  *
+ * When you call SDL_BindGPUVertexBuffers, you specify the binding indices of the vertex buffers.
+ * For example if you called SDL_BindGPUVertexBuffers with a first_binding of 2 and num_bindings of 3, the binding indices 2, 3, 4 would be used by the vertex buffers you pass in.
+ *
+ * Vertex attributes are linked to bindings via the index. The bindingIndex field of SDL_GPUVertexAttribute specifies the vertex buffer binding index that the attribute will be read from.
+ *
  * \since This struct is available since SDL 3.0.0
  *
+ * \sa SDL_GPUVertexAttribute
  * \sa SDL_GPUVertexInputState
  */
 typedef struct SDL_GPUVertexBinding
 {
-    Uint32 binding;                     /**< The binding index. */
+    Uint32 index;                     /**< The binding index. */
     Uint32 pitch;                       /**< The byte pitch between consecutive elements of the vertex buffer. */
     SDL_GPUVertexInputRate input_rate;  /**< Whether attribute addressing is a function of the vertex index or instance index. */
     Uint32 instance_step_rate;          /**< The number of instances to draw using the same per-instance data before advancing in the instance buffer by one element. Ignored unless input_rate is SDL_GPU_VERTEXINPUTRATE_INSTANCE */
@@ -1204,12 +1210,13 @@ typedef struct SDL_GPUVertexBinding
  *
  * \since This struct is available since SDL 3.0.0
  *
+ * \sa SDL_GPUVertexBinding
  * \sa SDL_GPUVertexInputState
  */
 typedef struct SDL_GPUVertexAttribute
 {
     Uint32 location;                    /**< The shader input location index. */
-    Uint32 binding;                     /**< The binding index. */
+    Uint32 bindingIndex;                /**< The binding index. */
     SDL_GPUVertexElementFormat format;  /**< The size and type of the attribute data. */
     Uint32 offset;                      /**< The byte offset of this attribute relative to the start of the vertex element. */
 } SDL_GPUVertexAttribute;
@@ -1292,6 +1299,8 @@ typedef struct SDL_GPUShaderCreateInfo
 /**
  * A structure specifying the parameters of a texture.
  *
+ * Usage flags can be bitwise OR'd together for combinations of usages. Note that certain usage combinations are invalid, for example SAMPLER and GRAPHICS_STORAGE.
+ *
  * \since This struct is available since SDL 3.0.0
  *
  * \sa SDL_CreateGPUTexture
@@ -1319,6 +1328,8 @@ typedef struct SDL_GPUTextureCreateInfo
 
 /**
  * A structure specifying the parameters of a buffer.
+ *
+ * Usage flags can be bitwise OR'd together for combinations of usages. Note that certain combinations are invalid, for example VERTEX and INDEX.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1475,9 +1486,9 @@ typedef struct SDL_GPUComputePipelineCreateInfo
     Uint32 num_writeonly_storage_textures;  /**< The number of writeonly storage textures defined in the shader. */
     Uint32 num_writeonly_storage_buffers;   /**< The number of writeonly storage buffers defined in the shader. */
     Uint32 num_uniform_buffers;             /** The number of uniform buffers defined in the shader. */
-    Uint32 threadcount_x;                   /** The number of threads in the X dimension. Only used by Metal. */
-    Uint32 threadcount_y;                   /** The number of threads in the Y dimension. Only used by Metal. */
-    Uint32 threadcount_z;                   /** The number of threads in the Z dimension. Only used by Metal. */
+    Uint32 threadcount_x;                   /** The number of threads in the X dimension. This should match the value in the shader. */
+    Uint32 threadcount_y;                   /** The number of threads in the Y dimension. This should match the value in the shader. */
+    Uint32 threadcount_z;                   /** The number of threads in the Z dimension. This should match the value in the shader. */
 
     SDL_PropertiesID props;                 /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUComputePipelineCreateInfo;
@@ -2512,7 +2523,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageBuffers(
  * correlating draw call parameter MUST be 0.
  *
  * \param render_pass a render pass handle.
- * \param num_indices the number of vertices to draw per instance.
+ * \param num_indices the number of indices to draw per instance.
  * \param num_instances the number of instances to draw.
  * \param first_index the starting index within the index buffer.
  * \param vertex_offset value added to vertex index before indexing into the

@@ -6483,7 +6483,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     // Vertex input
 
     for (i = 0; i < createinfo->vertex_input_state.num_vertex_bindings; i += 1) {
-        vertexInputBindingDescriptions[i].binding = createinfo->vertex_input_state.vertex_bindings[i].binding;
+        vertexInputBindingDescriptions[i].binding = createinfo->vertex_input_state.vertex_bindings[i].index;
         vertexInputBindingDescriptions[i].inputRate = SDLToVK_VertexInputRate[createinfo->vertex_input_state.vertex_bindings[i].input_rate];
         vertexInputBindingDescriptions[i].stride = createinfo->vertex_input_state.vertex_bindings[i].pitch;
 
@@ -6493,7 +6493,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     }
 
     for (i = 0; i < createinfo->vertex_input_state.num_vertex_attributes; i += 1) {
-        vertexInputAttributeDescriptions[i].binding = createinfo->vertex_input_state.vertex_attributes[i].binding;
+        vertexInputAttributeDescriptions[i].binding = createinfo->vertex_input_state.vertex_attributes[i].bindingIndex;
         vertexInputAttributeDescriptions[i].format = SDLToVK_VertexFormat[createinfo->vertex_input_state.vertex_attributes[i].format];
         vertexInputAttributeDescriptions[i].location = createinfo->vertex_input_state.vertex_attributes[i].location;
         vertexInputAttributeDescriptions[i].offset = createinfo->vertex_input_state.vertex_attributes[i].offset;
@@ -6512,7 +6512,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
         for (i = 0; i < createinfo->vertex_input_state.num_vertex_bindings; i += 1) {
             if (createinfo->vertex_input_state.vertex_bindings[i].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) {
-                divisorDescriptions[divisorDescriptionCount].binding = createinfo->vertex_input_state.vertex_bindings[i].binding;
+                divisorDescriptions[divisorDescriptionCount].binding = createinfo->vertex_input_state.vertex_bindings[i].index;
                 divisorDescriptions[divisorDescriptionCount].divisor = createinfo->vertex_input_state.vertex_bindings[i].instance_step_rate;
 
                 divisorDescriptionCount += 1;
