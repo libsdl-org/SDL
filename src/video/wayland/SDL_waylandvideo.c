@@ -55,6 +55,7 @@
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
 #include "tablet-v2-client-protocol.h"
+#include "tearing-control-v1-client-protocol.h"
 #include "text-input-unstable-v3-client-protocol.h"
 #include "viewporter-client-protocol.h"
 #include "xdg-activation-v1-client-protocol.h"
@@ -1200,6 +1201,8 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         kde_output_order_v1_add_listener(d->kde_output_order, &kde_output_order_listener, d);
     } else if (SDL_strcmp(interface, "frog_color_management_factory_v1") == 0) {
         d->frog_color_management_factory_v1 = wl_registry_bind(d->registry, id, &frog_color_management_factory_v1_interface, 1);
+    } else if (SDL_strcmp(interface, "wp_tearing_control_manager_v1") == 0) {
+        d->wp_tearing_control_manager_v1 = wl_registry_bind(d->registry, id, &wp_tearing_control_manager_v1_interface, 1);
     }
 }
 
@@ -1478,6 +1481,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->frog_color_management_factory_v1) {
         frog_color_management_factory_v1_destroy(data->frog_color_management_factory_v1);
         data->frog_color_management_factory_v1 = NULL;
+    }
+
+    if (data->wp_tearing_control_manager_v1) {
+        wp_tearing_control_manager_v1_destroy(data->wp_tearing_control_manager_v1);
+        data->wp_tearing_control_manager_v1 = NULL;
     }
 
     if (data->compositor) {

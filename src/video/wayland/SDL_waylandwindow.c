@@ -43,6 +43,7 @@
 #include "xdg-dialog-v1-client-protocol.h"
 #include "frog-color-management-v1-client-protocol.h"
 #include "xdg-toplevel-icon-v1-client-protocol.h"
+#include "tearing-control-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -2451,6 +2452,11 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
         }
     }
 
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_ALLOW_TEARING, false) && c->wp_tearing_control_manager_v1) {
+        data->wp_tearing_control_v1 = wp_tearing_control_manager_v1_get_tearing_control(c->wp_tearing_control_manager_v1, data->surface);
+        wp_tearing_control_v1_set_presentation_hint(data->wp_tearing_control_v1, WP_TEARING_CONTROL_V1_PRESENTATION_HINT_ASYNC);
+    }
+
     // Must be called before EGL configuration to set the drawable backbuffer size.
     ConfigureWindowGeometry(window);
 
@@ -2840,6 +2846,10 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         if (wind->frog_color_managed_surface) {
             frog_color_managed_surface_destroy(wind->frog_color_managed_surface);
+        }
+
+        if (wind->wp_tearing_control_v1) {
+            wp_tearing_control_v1_destroy(wind->wp_tearing_control_v1);
         }
 
         SDL_free(wind->outputs);

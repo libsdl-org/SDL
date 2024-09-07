@@ -3281,6 +3281,25 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR "SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR"
 
 /**
+ * A variable controlling whether tearing is allowed for low-latency on Wayland.
+ *
+ * Wayland compositors may disregard this variable in some conditions, or may not
+ * support tearing entirely.
+ * Read their documentation about tearing to properly use this variable.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Tearing is disabled initially, but may get enabled on some conditions,
+ *   like user preferences. (default)
+ * - "1": Tearing is allowed, if available.
+ *
+ * This hint should be set before creating a window.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_ALLOW_TEARING "SDL_VIDEO_WAYLAND_ALLOW_TEARING"
+
+/**
  * A variable controlling whether video mode emulation is enabled under
  * Wayland.
  *

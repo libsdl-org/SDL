@@ -101,6 +101,7 @@ struct SDL_WindowData
     struct wp_alpha_modifier_surface_v1 *wp_alpha_modifier_surface_v1;
     struct xdg_toplevel_icon_v1 *xdg_toplevel_icon_v1;
     struct frog_color_managed_surface *frog_color_managed_surface;
+    struct wp_tearing_control_v1 *wp_tearing_control_v1;
 
     SDL_AtomicInt swap_interval_ready;
 
