@@ -1076,11 +1076,11 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
                 Uint32 loc = createinfo->vertex_input_state.vertex_attributes[i].location;
                 vertexDescriptor.attributes[loc].format = SDLToMetal_VertexFormat[createinfo->vertex_input_state.vertex_attributes[i].format];
                 vertexDescriptor.attributes[loc].offset = createinfo->vertex_input_state.vertex_attributes[i].offset;
-                vertexDescriptor.attributes[loc].bufferIndex = METAL_INTERNAL_GetVertexBufferIndex(createinfo->vertex_input_state.vertex_attributes[i].binding);
+                vertexDescriptor.attributes[loc].bufferIndex = METAL_INTERNAL_GetVertexBufferIndex(createinfo->vertex_input_state.vertex_attributes[i].binding_index);
             }
 
             for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_bindings; i += 1) {
-                binding = METAL_INTERNAL_GetVertexBufferIndex(createinfo->vertex_input_state.vertex_bindings[i].binding);
+                binding = METAL_INTERNAL_GetVertexBufferIndex(createinfo->vertex_input_state.vertex_bindings[i].index);
                 vertexDescriptor.layouts[binding].stepFunction = SDLToMetal_StepFunction[createinfo->vertex_input_state.vertex_bindings[i].input_rate];
                 vertexDescriptor.layouts[binding].stepRate = (createinfo->vertex_input_state.vertex_bindings[i].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) ? createinfo->vertex_input_state.vertex_bindings[i].instance_step_rate : 1;
                 vertexDescriptor.layouts[binding].stride = createinfo->vertex_input_state.vertex_bindings[i].pitch;

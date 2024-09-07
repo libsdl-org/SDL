@@ -2470,10 +2470,10 @@ static bool D3D12_INTERNAL_ConvertVertexInputState(SDL_GPUVertexInputState verte
         desc[i].SemanticName = semantic;
         desc[i].SemanticIndex = attribute.location;
         desc[i].Format = SDLToD3D12_VertexFormat[attribute.format];
-        desc[i].InputSlot = attribute.binding;
+        desc[i].InputSlot = attribute.binding_index;
         desc[i].AlignedByteOffset = attribute.offset;
-        desc[i].InputSlotClass = SDLToD3D12_InputRate[vertexInputState.vertex_bindings[attribute.binding].input_rate];
-        desc[i].InstanceDataStepRate = (vertexInputState.vertex_bindings[attribute.binding].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) ? vertexInputState.vertex_bindings[attribute.binding].instance_step_rate : 0;
+        desc[i].InputSlotClass = SDLToD3D12_InputRate[vertexInputState.vertex_bindings[attribute.binding_index].input_rate];
+        desc[i].InstanceDataStepRate = (vertexInputState.vertex_bindings[attribute.binding_index].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) ? vertexInputState.vertex_bindings[attribute.binding_index].instance_step_rate : 0;
     }
 
     return true;
