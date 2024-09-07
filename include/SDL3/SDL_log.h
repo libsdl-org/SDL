@@ -92,7 +92,6 @@ typedef enum SDL_LogCategory
     SDL_LOG_CATEGORY_GPU,
 
     /* Reserved for future SDL library use */
-    SDL_LOG_CATEGORY_RESERVED1,
     SDL_LOG_CATEGORY_RESERVED2,
     SDL_LOG_CATEGORY_RESERVED3,
     SDL_LOG_CATEGORY_RESERVED4,
