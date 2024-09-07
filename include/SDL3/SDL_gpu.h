@@ -1044,12 +1044,12 @@ typedef struct SDL_GPUTextureRegion
     SDL_GPUTexture *texture;  /**< The texture used in the copy operation. */
     Uint32 mip_level;         /**< The mip level index to transfer. */
     Uint32 layer;             /**< The layer index to transfer. */
-    Uint32 x;                 /** The left offset of the region. */
-    Uint32 y;                 /** The top offset of the region. */
-    Uint32 z;                 /** The front offset of the region. */
-    Uint32 w;                 /** The width of the region. */
-    Uint32 h;                 /** The height of the region. */
-    Uint32 d;                 /** The depth of the region. */
+    Uint32 x;                 /**< The left offset of the region. */
+    Uint32 y;                 /**< The top offset of the region. */
+    Uint32 z;                 /**< The front offset of the region. */
+    Uint32 w;                 /**< The width of the region. */
+    Uint32 h;                 /**< The height of the region. */
+    Uint32 d;                 /**< The depth of the region. */
 } SDL_GPUTextureRegion;
 
 /**
@@ -1348,8 +1348,8 @@ typedef struct SDL_GPUTextureCreateInfo
  */
 typedef struct SDL_GPUBufferCreateInfo
 {
-    SDL_GPUBufferUsageFlags usage;  /** How the buffer is intended to be used by the client. */
-    Uint32 size;                    /** The size in bytes of the buffer. */
+    SDL_GPUBufferUsageFlags usage;  /**< How the buffer is intended to be used by the client. */
+    Uint32 size;                    /**< The size in bytes of the buffer. */
 
     SDL_PropertiesID props;         /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUBufferCreateInfo;
@@ -1363,8 +1363,8 @@ typedef struct SDL_GPUBufferCreateInfo
  */
 typedef struct SDL_GPUTransferBufferCreateInfo
 {
-    SDL_GPUTransferBufferUsage usage;  /** How the transfer buffer is intended to be used by the client. */
-    Uint32 size;                       /** The size in bytes of the transfer buffer. */
+    SDL_GPUTransferBufferUsage usage;  /**< How the transfer buffer is intended to be used by the client. */
+    Uint32 size;                       /**< The size in bytes of the transfer buffer. */
 
     SDL_PropertiesID props;            /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUTransferBufferCreateInfo;
@@ -1501,10 +1501,10 @@ typedef struct SDL_GPUComputePipelineCreateInfo
     Uint32 num_readonly_storage_buffers;    /**< The number of readonly storage buffers defined in the shader. */
     Uint32 num_writeonly_storage_textures;  /**< The number of writeonly storage textures defined in the shader. */
     Uint32 num_writeonly_storage_buffers;   /**< The number of writeonly storage buffers defined in the shader. */
-    Uint32 num_uniform_buffers;             /** The number of uniform buffers defined in the shader. */
-    Uint32 threadcount_x;                   /** The number of threads in the X dimension. This should match the value in the shader. */
-    Uint32 threadcount_y;                   /** The number of threads in the Y dimension. This should match the value in the shader. */
-    Uint32 threadcount_z;                   /** The number of threads in the Z dimension. This should match the value in the shader. */
+    Uint32 num_uniform_buffers;             /**< The number of uniform buffers defined in the shader. */
+    Uint32 threadcount_x;                   /**< The number of threads in the X dimension. This should match the value in the shader. */
+    Uint32 threadcount_y;                   /**< The number of threads in the Y dimension. This should match the value in the shader. */
+    Uint32 threadcount_z;                   /**< The number of threads in the Z dimension. This should match the value in the shader. */
 
     SDL_PropertiesID props;                 /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUComputePipelineCreateInfo;
