@@ -6493,7 +6493,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     }
 
     for (i = 0; i < createinfo->vertex_input_state.num_vertex_attributes; i += 1) {
-        vertexInputAttributeDescriptions[i].binding = createinfo->vertex_input_state.vertex_attributes[i].bindingIndex;
+        vertexInputAttributeDescriptions[i].binding = createinfo->vertex_input_state.vertex_attributes[i].binding_index;
         vertexInputAttributeDescriptions[i].format = SDLToVK_VertexFormat[createinfo->vertex_input_state.vertex_attributes[i].format];
         vertexInputAttributeDescriptions[i].location = createinfo->vertex_input_state.vertex_attributes[i].location;
         vertexInputAttributeDescriptions[i].offset = createinfo->vertex_input_state.vertex_attributes[i].offset;

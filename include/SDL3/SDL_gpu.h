@@ -1216,7 +1216,7 @@ typedef struct SDL_GPUVertexBinding
 typedef struct SDL_GPUVertexAttribute
 {
     Uint32 location;                    /**< The shader input location index. */
-    Uint32 bindingIndex;                /**< The binding index. */
+    Uint32 binding_index;               /**< The binding index. */
     SDL_GPUVertexElementFormat format;  /**< The size and type of the attribute data. */
     Uint32 offset;                      /**< The byte offset of this attribute relative to the start of the vertex element. */
 } SDL_GPUVertexAttribute;

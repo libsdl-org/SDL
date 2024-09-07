@@ -1392,7 +1392,7 @@ static ID3D11InputLayout *D3D11_INTERNAL_FetchInputLayout(
     for (Uint32 i = 0; i < inputState.num_vertex_attributes; i += 1) {
         elementDescs[i].AlignedByteOffset = inputState.vertex_attributes[i].offset;
         elementDescs[i].Format = SDLToD3D11_VertexFormat[inputState.vertex_attributes[i].format];
-        elementDescs[i].InputSlot = inputState.vertex_attributes[i].bindingIndex;
+        elementDescs[i].InputSlot = inputState.vertex_attributes[i].binding_index;
 
         bindingIndex = D3D11_INTERNAL_FindIndexOfVertexBinding(
             elementDescs[i].InputSlot,

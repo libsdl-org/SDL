@@ -1076,7 +1076,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
                 Uint32 loc = createinfo->vertex_input_state.vertex_attributes[i].location;
                 vertexDescriptor.attributes[loc].format = SDLToMetal_VertexFormat[createinfo->vertex_input_state.vertex_attributes[i].format];
                 vertexDescriptor.attributes[loc].offset = createinfo->vertex_input_state.vertex_attributes[i].offset;
-                vertexDescriptor.attributes[loc].bufferIndex = METAL_INTERNAL_GetVertexBufferIndex(createinfo->vertex_input_state.vertex_attributes[i].bindingIndex);
+                vertexDescriptor.attributes[loc].bufferIndex = METAL_INTERNAL_GetVertexBufferIndex(createinfo->vertex_input_state.vertex_attributes[i].binding_index);
             }
 
             for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_bindings; i += 1) {
