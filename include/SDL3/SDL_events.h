@@ -28,17 +28,21 @@
 #ifndef SDL_events_h_
 #define SDL_events_h_
 
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_audio.h>
+#include <SDL3/SDL_camera.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_pen.h>
-#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_power.h>
+#include <SDL3/SDL_sensor.h>
+#include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
-#include <SDL3/SDL_camera.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
