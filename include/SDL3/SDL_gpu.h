@@ -1570,37 +1570,63 @@ typedef struct SDL_GPUDepthStencilTargetInfo
 
 /* Binding structs */
 
+/**
+ * A structure specifying parameters in a buffer binding call.
+ *
+ * \since This struct is available since SDL 3.0.0
+ *
+ * \sa SDL_BindGPUVertexBuffers
+ * \sa SDL_BindGPUIndexBuffers
+ */
 typedef struct SDL_GPUBufferBinding
 {
-    SDL_GPUBuffer *buffer;
-    Uint32 offset;
+    SDL_GPUBuffer *buffer;  /**< The buffer to bind. Must have been created with SDL_GPU_BUFFERUSAGE_VERTEX for SDL_BindGPUVertexBuffers, or SDL_GPU_BUFFERUSAGE_INDEX for SDL_BindGPUIndexBuffers. */
+    Uint32 offset;          /**< The starting byte of the data to bind in the buffer. */
 } SDL_GPUBufferBinding;
 
+/**
+ * A structure specifying parameters in a sampler binding call.
+ *
+ * \since This struct is available since SDL 3.0.0
+ *
+ * \sa SDL_BindGPUVertexSamplers
+ * \sa SDL_BindGPUFragmentSamplers
+ */
 typedef struct SDL_GPUTextureSamplerBinding
 {
-    SDL_GPUTexture *texture;
-    SDL_GPUSampler *sampler;
+    SDL_GPUTexture *texture;  /**< The texture to bind. Must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER. */
+    SDL_GPUSampler *sampler;  /**< The sampler to bind. */
 } SDL_GPUTextureSamplerBinding;
 
+/**
+ * A structure specifying parameters related to binding buffers in a compute pass.
+ *
+ * \since This struct is available since SDL 3.0.0
+ *
+ * \sa SDL_BeginGPUComputePass
+ */
 typedef struct SDL_GPUStorageBufferWriteOnlyBinding
 {
-    SDL_GPUBuffer *buffer;
-
-    /* if SDL_TRUE, cycles the buffer if it is bound. */
-    SDL_bool cycle;
+    SDL_GPUBuffer *buffer;  /**< The buffer to bind. Must have been created with SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE. */
+    SDL_bool cycle;         /**< SDL_TRUE cycles the buffer if it is already bound. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
 } SDL_GPUStorageBufferWriteOnlyBinding;
 
+/**
+ * A structure specifying parameters related to binding textures in a compute pass.
+ *
+ * \since This struct is available since SDL 3.0.0
+ *
+ * \sa SDL_BeginGPUComputePass
+ */
 typedef struct SDL_GPUStorageTextureWriteOnlyBinding
 {
-    SDL_GPUTexture *texture;
-    Uint32 mip_level;
-    Uint32 layer;
-
-    /* if SDL_TRUE, cycles the texture if the texture is bound. */
-    SDL_bool cycle;
+    SDL_GPUTexture *texture;  /**< The texture to bind. Must have been created with SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE. */
+    Uint32 mip_level;         /**< The mip level index to bind. */
+    Uint32 layer;             /**< The layer index to bind. */
+    SDL_bool cycle;           /**< SDL_TRUE cycles the texture if it is already bound. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
@@ -2786,7 +2812,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPUComputePass(
  *
  * \param device a GPU context.
  * \param transfer_buffer a transfer buffer.
- * \param cycle if SDL_TRUE, cycles the transfer buffer if it is bound.
+ * \param cycle if SDL_TRUE, cycles the transfer buffer if it is already bound.
  * \returns the address of the mapped transfer buffer memory.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2859,7 +2885,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUTexture(
  * \param copy_pass a copy pass handle.
  * \param source the source transfer buffer with offset.
  * \param destination the destination buffer with offset and size.
- * \param cycle if SDL_TRUE, cycles the buffer if it is bound, otherwise
+ * \param cycle if SDL_TRUE, cycles the buffer if it is already bound, otherwise
  *              overwrites the data.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2908,7 +2934,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUTextureToTexture(
  * \param source the buffer and offset to copy from.
  * \param destination the buffer and offset to copy to.
  * \param size the length of the buffer to copy.
- * \param cycle if SDL_TRUE, cycles the destination buffer if it is bound,
+ * \param cycle if SDL_TRUE, cycles the destination buffer if it is already bound,
  *              otherwise overwrites the data.
  *
  * \since This function is available since SDL 3.0.0.
