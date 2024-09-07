@@ -32,7 +32,7 @@
 
 void OFFSCREEN_PumpEvents(SDL_VideoDevice *_this)
 {
-    /* do nothing. */
+    // do nothing.
 }
 
-#endif /* SDL_VIDEO_DRIVER_OFFSCREEN */
+#endif // SDL_VIDEO_DRIVER_OFFSCREEN

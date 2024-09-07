@@ -22,11 +22,9 @@
 
 #ifdef SDL_THREAD_N3DS
 
-/* An implementation of semaphores using libctru's LightSemaphore */
+// An implementation of semaphores using libctru's LightSemaphore
 
 #include <3ds.h>
-
-int WaitOnSemaphoreFor(SDL_Semaphore *sem, Sint64 timeout);
 
 struct SDL_Semaphore
 {
@@ -60,58 +58,55 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     SDL_free(sem);
 }
 
-int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+static bool WaitOnSemaphoreFor(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-    if (!sem) {
-        return SDL_InvalidParamError("sem");
+    Uint64 stop_time = SDL_GetTicksNS() + timeoutNS;
+    while (SDL_GetTicksNS() < stop_time) {
+        if (LightSemaphore_TryAcquire(&sem->semaphore, 1) == 0) {
+            return true;
+        }
+        // 100 microseconds seems to be the sweet spot
+        SDL_DelayNS(SDL_US_TO_NS(100));
     }
 
-    if (timeoutNS == -1) {  // -1 == wait indefinitely.
-        LightSemaphore_Acquire(&sem->semaphore, 1);
-        return 0;
-    }
-
-    if (LightSemaphore_TryAcquire(&sem->semaphore, 1) != 0) {
-        return WaitOnSemaphoreFor(sem, timeoutNS);
-    }
-
-    return 0;
+    // If we failed, yield to avoid starvation on busy waits
+    SDL_DelayNS(1);
+    return false;
 }
 
-int WaitOnSemaphoreFor(SDL_Semaphore *sem, Sint64 timeout)
+SDL_bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-    Uint64 stop_time = SDL_GetTicksNS() + timeout;
-    Uint64 current_time = SDL_GetTicksNS();
-    while (current_time < stop_time) {
-        if (LightSemaphore_TryAcquire(&sem->semaphore, 1) == 0) {
-            return 0;
-        }
-        /* 100 microseconds seems to be the sweet spot */
-        SDL_DelayNS(SDL_US_TO_NS(100));
-        current_time = SDL_GetTicksNS();
+    if (!sem) {
+        return true;
     }
 
-    /* If we failed, yield to avoid starvation on busy waits */
-    SDL_DelayNS(1);
-    return SDL_MUTEX_TIMEDOUT;
+    if (timeoutNS < 0) { // -1 == wait indefinitely.
+        LightSemaphore_Acquire(&sem->semaphore, 1);
+        return true;
+    }
+
+    if (LightSemaphore_TryAcquire(&sem->semaphore, 1) == 0) {
+        return true;
+    }
+
+    return WaitOnSemaphoreFor(sem, timeoutNS);
 }
 
 Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     if (!sem) {
-        SDL_InvalidParamError("sem");
         return 0;
     }
     return sem->semaphore.current_count;
 }
 
-int SDL_PostSemaphore(SDL_Semaphore *sem)
+void SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
-    if (!sem) {
-        return SDL_InvalidParamError("sem");
+    if (sem) {
+        return;
     }
+
     LightSemaphore_Release(&sem->semaphore, 1);
-    return 0;
 }
 
-#endif /* SDL_THREAD_N3DS */
+#endif // SDL_THREAD_N3DS

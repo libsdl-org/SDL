@@ -26,11 +26,11 @@
 #include "../../core/android/SDL_android.h"
 #include "../SDL_egl_c.h"
 
-extern int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
+extern bool Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+extern SDL_FullscreenResult Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 extern void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable);
+extern void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable);
 
 extern void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_Window *Android_Window;
@@ -39,13 +39,13 @@ struct SDL_WindowData
 {
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
-    EGLContext egl_context; /* We use this to preserve the context when losing focus */
-    int has_swap_interval;  /* Save/Restore the swap interval / vsync */
+    EGLContext egl_context; // We use this to preserve the context when losing focus
+    int has_swap_interval;  // Save/Restore the swap interval / vsync
     int swap_interval;
 #endif
-    SDL_bool backup_done;
+    bool backup_done;
     ANativeWindow *native_window;
 
 };
 
-#endif /* SDL_androidwindow_h_ */
+#endif // SDL_androidwindow_h_

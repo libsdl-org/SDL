@@ -35,7 +35,7 @@
    updated SDL can transparently take advantage of them, but your program will
    not without this feature. Think hard before turning it off.
 */
-#ifdef SDL_DYNAMIC_API /* Tried to force it on the command line? */
+#ifdef SDL_DYNAMIC_API // Tried to force it on the command line?
 #error Nope, you have to edit this file to force this off.
 #endif
 
@@ -43,33 +43,31 @@
 #include "TargetConditionals.h"
 #endif
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE /* probably not useful on iOS. */
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE // probably not useful on iOS.
 #define SDL_DYNAMIC_API 0
-#elif defined(SDL_PLATFORM_ANDROID) /* probably not useful on Android. */
+#elif defined(SDL_PLATFORM_ANDROID) // probably not useful on Android.
 #define SDL_DYNAMIC_API 0
-#elif defined(SDL_PLATFORM_EMSCRIPTEN) /* probably not useful on Emscripten. */
-#define SDL_DYNAMIC_API 0
-#elif defined(SDL_BUILDING_WINRT) && SDL_BUILDING_WINRT /* probably not useful on WinRT, given current .dll loading restrictions */
+#elif defined(SDL_PLATFORM_EMSCRIPTEN) // probably not useful on Emscripten.
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_PS2) && SDL_PLATFORM_PS2
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_PSP) && SDL_PLATFORM_PSP
 #define SDL_DYNAMIC_API 0
-#elif defined(SDL_PLATFORM_RISCOS) /* probably not useful on RISC OS, since dlopen() can't be used when using static linking. */
+#elif defined(SDL_PLATFORM_RISCOS) // probably not useful on RISC OS, since dlopen() can't be used when using static linking.
 #define SDL_DYNAMIC_API 0
 #elif defined(__clang_analyzer__) || defined(__INTELLISENSE__) || defined(SDL_THREAD_SAFETY_ANALYSIS)
-#define SDL_DYNAMIC_API 0 /* Turn off for static analysis, so reports are more clear. */
+#define SDL_DYNAMIC_API 0 // Turn off for static analysis, so reports are more clear.
 #elif defined(SDL_PLATFORM_VITA)
-#define SDL_DYNAMIC_API 0 /* vitasdk doesn't support dynamic linking */
+#define SDL_DYNAMIC_API 0 // vitasdk doesn't support dynamic linking
 #elif defined(SDL_PLATFORM_NGAGE)
-#define SDL_DYNAMIC_API 0 /* The N-Gage doesn't support dynamic linking either */
+#define SDL_DYNAMIC_API 0 // The N-Gage doesn't support dynamic linking either
 #elif defined(SDL_PLATFORM_3DS)
-#define SDL_DYNAMIC_API 0 /* devkitARM doesn't support dynamic linking */
+#define SDL_DYNAMIC_API 0 // devkitARM doesn't support dynamic linking
 #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
-#define SDL_DYNAMIC_API 0 /* we need dlopen(), but don't have it.... */
+#define SDL_DYNAMIC_API 0 // we need dlopen(), but don't have it....
 #endif
 
-/* everyone else. This is where we turn on the API if nothing forced it off. */
+// everyone else. This is where we turn on the API if nothing forced it off.
 #ifndef SDL_DYNAMIC_API
 #define SDL_DYNAMIC_API 1
 #endif

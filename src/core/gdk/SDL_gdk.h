@@ -20,5 +20,8 @@
 */
 #include "SDL_internal.h"
 
-/* This is called from WIN_PumpEvents on GDK */
+// This is called from WIN_PumpEvents on GDK
 extern void GDK_DispatchTaskQueue(void);
+
+extern bool GDK_RegisterChangeNotifications(void);
+extern void GDK_UnregisterChangeNotifications(void);

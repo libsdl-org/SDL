@@ -78,7 +78,7 @@ DrawComposite(DrawState *s)
         surface = SDL_RenderReadPixels(s->renderer, NULL);
         if (surface) {
             Uint8 r, g, b, a;
-            if (SDL_ReadSurfacePixel(surface, 0, 0, &r, &g, &b, &a) == 0) {
+            if (SDL_ReadSurfacePixel(surface, 0, 0, &r, &g, &b, &a)) {
                 SDL_Log("Blended pixel: 0x%.2x%.2x%.2x%.2x\n", r, g, b, a);
             }
             SDL_DestroySurface(surface);
@@ -218,14 +218,15 @@ int main(int argc, char *argv[])
     int frames;
     Uint64 then, now;
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
         return 1;
     }
+
+    /* Enable standard application logging */
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     for (i = 1; i < argc;) {
         int consumed;
 
@@ -251,7 +252,6 @@ int main(int argc, char *argv[])
     drawstates = SDL_stack_alloc(DrawState, state->num_windows);
     for (i = 0; i < state->num_windows; ++i) {
         DrawState *drawstate = &drawstates[i];
-        int w, h;
 
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
@@ -264,9 +264,7 @@ int main(int argc, char *argv[])
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }
-        SDL_QueryTexture(drawstate->sprite, NULL, NULL, &w, &h);
-        drawstate->sprite_rect.w = (float)w;
-        drawstate->sprite_rect.h = (float)h;
+        SDL_GetTextureSize(drawstate->sprite, &drawstate->sprite_rect.w, &drawstate->sprite_rect.h);
         drawstate->scale_direction = 1;
     }
 

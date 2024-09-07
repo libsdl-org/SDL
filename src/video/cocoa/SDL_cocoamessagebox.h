@@ -22,6 +22,6 @@
 
 #ifdef SDL_VIDEO_DRIVER_COCOA
 
-extern int Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
+extern bool Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

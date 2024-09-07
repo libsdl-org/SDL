@@ -38,36 +38,36 @@
  */
 static TUint32 NGAGE_HWPalette_256_to_Screen[256];
 
-int GetBpp(TDisplayMode displaymode);
+bool GetBpp(TDisplayMode displaymode);
 void DirectUpdate(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects);
 void DrawBackground(SDL_VideoDevice *_this);
 void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *screenBuffer);
 void RedrawWindowL(SDL_VideoDevice *_this);
 
-int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
+bool SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
     SDL_Surface *surface;
-    const SDL_PixelFormatEnum surface_format = SDL_PIXELFORMAT_RGB444;
+    const SDL_PixelFormat surface_format = SDL_PIXELFORMAT_XRGB4444;
     int w, h;
 
-    /* Free the old framebuffer surface */
+    // Free the old framebuffer surface
     SDL_NGAGE_DestroyWindowFramebuffer(_this, window);
 
-    /* Create a new one */
+    // Create a new one
     SDL_GetWindowSizeInPixels(window, &w, &h);
     surface = SDL_CreateSurface(w, h, surface_format);
     if (!surface) {
-        return -1;
+        return false;
     }
 
-    /* Save the info and return! */
+    // Save the info and return!
     SDL_SetWindowData(window, NGAGE_SURFACE, surface);
     *format = surface_format;
     *pixels = surface->pixels;
     *pitch = surface->pitch;
 
-    /* Initialise Epoc frame buffer */
+    // Initialise Epoc frame buffer
 
     TDisplayMode displayMode = phdata->NGAGE_WsScreen->DisplayMode();
 
@@ -120,7 +120,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     TRAPD(status, phdata->NGAGE_DrawDevice = CFbsDrawDevice::NewScreenDeviceL(screenInfo2, displayMode));
     User::LeaveIfError(status);
 
-    /* Activate events for me */
+    // Activate events for me
     phdata->NGAGE_WsEventStatus = KRequestPending;
     phdata->NGAGE_WsSession.EventReady(&phdata->NGAGE_WsEventStatus);
 
@@ -140,30 +140,13 @@ int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     SDL_Log("SDL:DrawBackground");
     DrawBackground(_this); // Clear screen
 
-    return 0;
+    return true;
 }
 
-int SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+bool SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    static int frame_number;
-    SDL_Surface *surface;
-
-    surface = (SDL_Surface *)SDL_GetWindowData(window, NGAGE_SURFACE);
-    if (!surface) {
-        return SDL_SetError("Couldn't find ngage surface for window");
-    }
-
-    /* Send the data to the display */
-    if (SDL_getenv("SDL_VIDEO_NGAGE_SAVE_FRAMES")) {
-        char file[128];
-        SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
-                     (int)SDL_GetWindowID(window), ++frame_number);
-        SDL_SaveBMP(surface, file);
-    }
-
     DirectUpdate(_this, numrects, (SDL_Rect *)rects);
-
-    return 0;
+    return true;
 }
 
 void SDL_NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
@@ -175,7 +158,7 @@ void SDL_NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
 }
 
 /*****************************************************************************/
-/* Runtime                                                                   */
+// Runtime
 /*****************************************************************************/
 
 #include <e32svr.h>
@@ -189,26 +172,26 @@ EXPORT_C void NGAGE_Runtime::GetScreenInfo(TScreenInfoV01 &screenInfo2)
 }
 
 /*****************************************************************************/
-/* Internal                                                                  */
+// Internal
 /*****************************************************************************/
 
-int GetBpp(TDisplayMode displaymode)
+bool GetBpp(TDisplayMode displaymode)
 {
     return TDisplayModeUtils::NumDisplayModeBitsPerPixel(displaymode);
 }
 
 void DrawBackground(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *phdata = _this->driverdata;
-    /* Draw background */
+    SDL_VideoData *phdata = _this->internal;
+    // Draw background
     TUint16 *screenBuffer = (TUint16 *)phdata->NGAGE_FrameBuffer;
-    /* Draw black background */
+    // Draw black background
     Mem::FillZ(screenBuffer, phdata->NGAGE_BytesPerScreen);
 }
 
 void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
     SDL_Surface *screen = (SDL_Surface *)SDL_GetWindowData(_this->windows, NGAGE_SURFACE);
 
     TInt i;
@@ -222,7 +205,7 @@ void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *
     const TInt sourceScanlineLength = screenW;
     const TInt targetScanlineLength = phdata->NGAGE_ScreenSize.iWidth;
 
-    /* Render the rectangles in the list */
+    // Render the rectangles in the list
 
     for (i = 0; i < numrects; ++i) {
         const SDL_Rect &currentRect = rects[i];
@@ -236,24 +219,24 @@ void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *
             continue;
         }
 
-        /* All variables are measured in pixels */
+        // All variables are measured in pixels
 
-        /* Check rects validity, i.e. upper and lower bounds */
+        // Check rects validity, i.e. upper and lower bounds
         TInt maxX = Min(screenW - 1, rect2.x + rect2.w - 1);
         TInt maxY = Min(screenH - 1, rect2.y + rect2.h - 1);
         if (maxX < 0 || maxY < 0) /* sanity check */ {
             continue;
         }
-        /* Clip from bottom */
+        // Clip from bottom
 
         maxY = Min(maxY, phdata->NGAGE_ScreenSize.iHeight - 1);
-        /* TODO: Clip from the right side */
+        // TODO: Clip from the right side
 
         const TInt sourceRectWidth = maxX - rect2.x + 1;
         const TInt sourceRectWidthInBytes = sourceRectWidth * sourceNumBytesPerPixel;
         const TInt sourceRectHeight = maxY - rect2.y + 1;
         const TInt sourceStartOffset = rect2.x + rect2.y * sourceScanlineLength;
-        const TUint skipValue = 1; /* 1 = No skip */
+        const TUint skipValue = 1; // 1 = No skip
 
         TInt targetStartOffset = fixedOffset.iX + rect2.x + (fixedOffset.iY + rect2.y) * targetScanlineLength;
 
@@ -271,8 +254,8 @@ void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *
                 }
             } else {
                 for (TInt y = 0; y < sourceRectHeight; y++) {
-                    TUint16 *bitmapPos = bitmapLine;             /* 2 bytes per pixel */
-                    TUint16 *screenMemoryLinePos = screenMemory; /* 2 bytes per pixel */
+                    TUint16 *bitmapPos = bitmapLine;             // 2 bytes per pixel
+                    TUint16 *screenMemoryLinePos = screenMemory; // 2 bytes per pixel
                     for (TInt x = 0; x < sourceRectWidth; x++) {
                         __ASSERT_DEBUG(screenMemory < (screenBuffer + phdata->NGAGE_ScreenSize.iWidth * phdata->NGAGE_ScreenSize.iHeight), User::Panic(_L("SDL"), KErrCorrupt));
                         __ASSERT_DEBUG(screenMemory >= screenBuffer, User::Panic(_L("SDL"), KErrCorrupt));
@@ -295,9 +278,9 @@ void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *
                 TUint16 *screenMemory = screenBuffer + targetStartOffset;
 
                 for (TInt y = 0; y < sourceRectHeight; y++) {
-                    TUint8 *bitmapPos = bitmapLine;              /* 1 byte per pixel */
-                    TUint16 *screenMemoryLinePos = screenMemory; /* 2 bytes per pixel */
-                    /* Convert each pixel from 256 palette to 4k color values */
+                    TUint8 *bitmapPos = bitmapLine;              // 1 byte per pixel
+                    TUint16 *screenMemoryLinePos = screenMemory; // 2 bytes per pixel
+                    // Convert each pixel from 256 palette to 4k color values
                     for (TInt x = 0; x < sourceRectWidth; x++) {
                         __ASSERT_DEBUG(screenMemoryLinePos < (screenBuffer + (phdata->NGAGE_ScreenSize.iWidth * phdata->NGAGE_ScreenSize.iHeight)), User::Panic(_L("SDL"), KErrCorrupt));
                         __ASSERT_DEBUG(screenMemoryLinePos >= screenBuffer, User::Panic(_L("SDL"), KErrCorrupt));
@@ -312,9 +295,9 @@ void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *
                 TUint8 *bitmapLine = (TUint8 *)screen->pixels + sourceStartOffset;
                 TUint32 *screenMemory = reinterpret_cast<TUint32 *>(screenBuffer + targetStartOffset);
                 for (TInt y = 0; y < sourceRectHeight; y++) {
-                    TUint8 *bitmapPos = bitmapLine;              /* 1 byte per pixel */
-                    TUint32 *screenMemoryLinePos = screenMemory; /* 2 bytes per pixel */
-                    /* Convert each pixel from 256 palette to 4k color values */
+                    TUint8 *bitmapPos = bitmapLine;              // 1 byte per pixel
+                    TUint32 *screenMemoryLinePos = screenMemory; // 2 bytes per pixel
+                    // Convert each pixel from 256 palette to 4k color values
                     for (TInt x = 0; x < sourceRectWidth; x++) {
                         __ASSERT_DEBUG(screenMemoryLinePos < (reinterpret_cast<TUint32 *>(screenBuffer) + (phdata->NGAGE_ScreenSize.iWidth * phdata->NGAGE_ScreenSize.iHeight)), User::Panic(_L("SDL"), KErrCorrupt));
                         __ASSERT_DEBUG(screenMemoryLinePos >= reinterpret_cast<TUint32 *>(screenBuffer), User::Panic(_L("SDL"), KErrCorrupt));
@@ -333,7 +316,7 @@ void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *
 
 void DirectUpdate(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
 
     if (!phdata->NGAGE_IsWindowFocused) {
         SDL_PauseAudio(1);
@@ -361,14 +344,14 @@ void DirectUpdate(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects)
         TInt aBy = rects[i].h;
         TRect rect2 = TRect(aAx, aAy, aBx, aBy);
 
-        phdata->NGAGE_DrawDevice->UpdateRegion(rect2); /* Should we update rects parameter area only? */
+        phdata->NGAGE_DrawDevice->UpdateRegion(rect2); // Should we update rects parameter area only?
         phdata->NGAGE_DrawDevice->Update();
     }
 }
 
 void RedrawWindowL(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
     SDL_Surface *screen = (SDL_Surface *)SDL_GetWindowData(_this->windows, NGAGE_SURFACE);
 
     int w = screen->w;
@@ -381,11 +364,11 @@ void RedrawWindowL(SDL_VideoDevice *_this)
         DrawBackground(_this);
     }
 
-    /* Tell the system that something has been drawn */
+    // Tell the system that something has been drawn
     TRect rect = TRect(phdata->NGAGE_WsWindow.Size());
     phdata->NGAGE_WsWindow.Invalidate(rect);
 
-    /* Draw current buffer */
+    // Draw current buffer
     SDL_Rect fullScreen;
     fullScreen.x = 0;
     fullScreen.y = 0;
@@ -394,4 +377,4 @@ void RedrawWindowL(SDL_VideoDevice *_this)
     DirectUpdate(_this, 1, &fullScreen);
 }
 
-#endif /* SDL_VIDEO_DRIVER_NGAGE */
+#endif // SDL_VIDEO_DRIVER_NGAGE

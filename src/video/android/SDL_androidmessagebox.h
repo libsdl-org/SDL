@@ -22,6 +22,6 @@
 
 #ifdef SDL_VIDEO_DRIVER_ANDROID
 
-extern int Android_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
+extern bool Android_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-#endif /* SDL_VIDEO_DRIVER_ANDROID */
+#endif // SDL_VIDEO_DRIVER_ANDROID

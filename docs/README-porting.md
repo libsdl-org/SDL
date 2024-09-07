@@ -5,7 +5,7 @@ Porting
 
   The first thing you have to do when porting to a new platform, is look at
 include/SDL_platform.h and create an entry there for your operating system.
-The standard format is "__PLATFORM__", where PLATFORM is the name of the OS.
+The standard format is "SDL_PLATFORM_X", where X is the name of the OS.
 Ideally SDL_platform_defines.h will be able to auto-detect the system it's building
 on based on C preprocessor symbols.
 

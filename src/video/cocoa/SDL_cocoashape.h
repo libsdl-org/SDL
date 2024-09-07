@@ -23,6 +23,6 @@
 #ifndef SDL_cocoashape_h_
 #define SDL_cocoashape_h_
 
-extern int Cocoa_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
+extern bool Cocoa_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
 
-#endif /* SDL_cocoashape_h_ */
+#endif // SDL_cocoashape_h_

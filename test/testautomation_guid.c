@@ -72,14 +72,14 @@ upper_lower_to_bytestring(Uint8 *out, Uint64 upper, Uint64 lower)
 /**
  * Check String-to-GUID conversion
  *
- * \sa SDL_GUIDFromString
+ * \sa SDL_StringToGUID
  */
-static int
-TestGuidFromString(void *arg)
+static int SDLCALL
+TestStringToGUID(void *arg)
 {
     int i;
 
-    SDLTest_AssertPass("Call to SDL_GUIDFromString");
+    SDLTest_AssertPass("Call to SDL_StringToGUID");
     for (i = 0; i < NUM_TEST_GUIDS; ++i) {
         Uint8 expected[16];
         SDL_GUID guid;
@@ -87,7 +87,7 @@ TestGuidFromString(void *arg)
         upper_lower_to_bytestring(expected,
                                   test_guids[i].upper, test_guids[i].lower);
 
-        guid = SDL_GUIDFromString(test_guids[i].str);
+        guid = SDL_StringToGUID(test_guids[i].str);
         SDLTest_AssertCheck(SDL_memcmp(expected, guid.data, 16) == 0, "GUID from string, GUID was: '%s'", test_guids[i].str);
     }
 
@@ -99,47 +99,21 @@ TestGuidFromString(void *arg)
  *
  * \sa SDL_GUIDToString
  */
-static int
-TestGuidToString(void *arg)
+static int SDLCALL
+TestGUIDToString(void *arg)
 {
     int i;
 
     SDLTest_AssertPass("Call to SDL_GUIDToString");
     for (i = 0; i < NUM_TEST_GUIDS; ++i) {
-        const int guid_str_offset = 4;
-        char guid_str_buf[64];
-        char *guid_str = guid_str_buf + guid_str_offset;
+        char guid_str[33];
         SDL_GUID guid;
-        int size;
 
         upper_lower_to_bytestring(guid.data,
                                   test_guids[i].upper, test_guids[i].lower);
 
-        /* Serialise to limited-length buffers */
-        for (size = 0; size <= 36; ++size) {
-            const Uint8 fill_char = (Uint8)(size + 0xa0);
-            Uint32 expected_prefix;
-            Uint32 actual_prefix;
-            int written_size;
-
-            SDL_memset(guid_str_buf, fill_char, sizeof(guid_str_buf));
-            SDL_GUIDToString(guid, guid_str, size);
-
-            /* Check bytes before guid_str_buf */
-            expected_prefix = fill_char | (fill_char << 8) | (fill_char << 16) | (((Uint32)fill_char) << 24);
-            SDL_memcpy(&actual_prefix, guid_str_buf, 4);
-            SDLTest_AssertCheck(expected_prefix == actual_prefix, "String buffer memory before output untouched, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32 ", at size=%d", expected_prefix, actual_prefix, size);
-
-            /* Check that we did not overwrite too much */
-            written_size = 0;
-            while ((guid_str[written_size] & 0xff) != fill_char && written_size < 256) {
-                ++written_size;
-            }
-            SDLTest_AssertCheck(written_size <= size, "Output length is within expected bounds, with length %d: wrote %d of %d permitted bytes", size, written_size, size);
-            if (size >= 33) {
-                SDLTest_AssertCheck(SDL_strcmp(guid_str, test_guids[i].str) == 0, "GUID string equality, from string: %s", test_guids[i].str);
-            }
-        }
+        SDL_GUIDToString(guid, guid_str, sizeof(guid_str));
+        SDLTest_AssertCheck(SDL_strcmp(guid_str, test_guids[i].str) == 0, "Checking whether strings match, expected %s, got %s\n", test_guids[i].str, guid_str);
     }
 
     return TEST_COMPLETED;
@@ -149,11 +123,11 @@ TestGuidToString(void *arg)
 
 /* GUID routine test cases */
 static const SDLTest_TestCaseReference guidTest1 = {
-    (SDLTest_TestCaseFp)TestGuidFromString, "TestGuidFromString", "Call to SDL_GUIDFromString", TEST_ENABLED
+    TestStringToGUID, "TestStringToGUID", "Call to SDL_StringToGUID", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference guidTest2 = {
-    (SDLTest_TestCaseFp)TestGuidToString, "TestGuidToString", "Call to SDL_GUIDToString", TEST_ENABLED
+    TestGUIDToString, "TestGUIDToString", "Call to SDL_GUIDToString", TEST_ENABLED
 };
 
 /* Sequence of GUID routine test cases */

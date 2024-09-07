@@ -27,14 +27,14 @@
 #include "SDL_windowsopengl.h"
 #include "SDL_windowswindow.h"
 
-/* EGL implementation of SDL OpenGL support */
+// EGL implementation of SDL OpenGL support
 
-int WIN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool WIN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
 
-    /* If the profile requested is not GL ES, switch over to WIN_GL functions  */
+    // If the profile requested is not GL ES, switch over to WIN_GL functions
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES &&
-        !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
+        !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, false)) {
 #ifdef SDL_VIDEO_OPENGL_WGL
         WIN_GLES_UnloadLibrary(_this);
         _this->GL_LoadLibrary = WIN_GL_LoadLibrary;
@@ -45,7 +45,7 @@ int WIN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         _this->GL_SetSwapInterval = WIN_GL_SetSwapInterval;
         _this->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
         _this->GL_SwapWindow = WIN_GL_SwapWindow;
-        _this->GL_DeleteContext = WIN_GL_DeleteContext;
+        _this->GL_DestroyContext = WIN_GL_DestroyContext;
         _this->GL_GetEGLSurface = NULL;
         return WIN_GL_LoadLibrary(_this, path);
 #else
@@ -57,18 +57,18 @@ int WIN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform);
     }
 
-    return 0;
+    return true;
 }
 
 SDL_GLContext WIN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_GLContext context;
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
 #ifdef SDL_VIDEO_OPENGL_WGL
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES &&
-        !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
-        /* Switch to WGL based functions */
+        !SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, false)) {
+        // Switch to WGL based functions
         WIN_GLES_UnloadLibrary(_this);
         _this->GL_LoadLibrary = WIN_GL_LoadLibrary;
         _this->GL_GetProcAddress = WIN_GL_GetProcAddress;
@@ -78,10 +78,10 @@ SDL_GLContext WIN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         _this->GL_SetSwapInterval = WIN_GL_SetSwapInterval;
         _this->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
         _this->GL_SwapWindow = WIN_GL_SwapWindow;
-        _this->GL_DeleteContext = WIN_GL_DeleteContext;
+        _this->GL_DestroyContext = WIN_GL_DestroyContext;
         _this->GL_GetEGLSurface = NULL;
 
-        if (WIN_GL_LoadLibrary(_this, NULL) != 0) {
+        if (!WIN_GL_LoadLibrary(_this, NULL)) {
             return NULL;
         }
 
@@ -93,37 +93,36 @@ SDL_GLContext WIN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     return context;
 }
 
-int WIN_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
+bool WIN_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
-    SDL_EGL_DeleteContext(_this, context);
-    return 0;
+    return SDL_EGL_DestroyContext(_this, context);
 }
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 SDL_EGL_SwapWindow_impl(WIN)
 SDL_EGL_MakeCurrent_impl(WIN)
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on
 
-int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    /* The current context is lost in here; save it and reset it. */
-    SDL_WindowData *windowdata = window->driverdata;
+    // The current context is lost in here; save it and reset it.
+    SDL_WindowData *windowdata = window->internal;
     SDL_Window *current_win = SDL_GL_GetCurrentWindow();
     SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
 
     if (!_this->egl_data) {
-/* !!! FIXME: commenting out this assertion is (I think) incorrect; figure out why driver_loaded is wrong for ANGLE instead. --ryan. */
-#if 0 /* When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 1, while the below lines function. */
+// !!! FIXME: commenting out this assertion is (I think) incorrect; figure out why driver_loaded is wrong for ANGLE instead. --ryan.
+#if 0 // When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 1, while the below lines function.
         SDL_assert(!_this->gl_config.driver_loaded);
 #endif
-        if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform) < 0) {
+        if (!SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform)) {
             SDL_EGL_UnloadLibrary(_this);
-            return -1;
+            return false;
         }
         _this->gl_config.driver_loaded = 1;
     }
 
-    /* Create the GLES window surface */
+    // Create the GLES window surface
     windowdata->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)windowdata->hwnd);
 
     if (windowdata->egl_surface == EGL_NO_SURFACE) {
@@ -133,12 +132,11 @@ int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return WIN_GLES_MakeCurrent(_this, current_win, current_ctx);
 }
 
-EGLSurface
-WIN_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
+EGLSurface WIN_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *windowdata = window->driverdata;
+    SDL_WindowData *windowdata = window->internal;
 
     return windowdata->egl_surface;
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINDOWS && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_WINDOWS && SDL_VIDEO_OPENGL_EGL

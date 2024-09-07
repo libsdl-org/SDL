@@ -14,14 +14,11 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test_common.h>
+#include <SDL3/SDL_test.h>
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
-
-#include <stdlib.h>
-#include <time.h>
 
 #define NUM_OBJECTS 100
 
@@ -75,8 +72,8 @@ static void DrawPoints(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
                                (Uint8)current_color, (Uint8)current_alpha);
 
-        x = (float)(rand() % viewport.w);
-        y = (float)(rand() % viewport.h);
+        x = (float)SDL_rand(viewport.w);
+        y = (float)SDL_rand(viewport.h);
         SDL_RenderPoint(renderer, x, y);
     }
 }
@@ -123,10 +120,10 @@ static void DrawLines(SDL_Renderer *renderer)
             SDL_RenderLine(renderer, 0.0f, (float)(viewport.h / 2), (float)(viewport.w - 1), (float)(viewport.h / 2));
             SDL_RenderLine(renderer, (float)(viewport.w / 2), 0.0f, (float)(viewport.w / 2), (float)(viewport.h - 1));
         } else {
-            x1 = (float)((rand() % (viewport.w * 2)) - viewport.w);
-            x2 = (float)((rand() % (viewport.w * 2)) - viewport.w);
-            y1 = (float)((rand() % (viewport.h * 2)) - viewport.h);
-            y2 = (float)((rand() % (viewport.h * 2)) - viewport.h);
+            x1 = (float)(SDL_rand(viewport.w * 2) - viewport.w);
+            x2 = (float)(SDL_rand(viewport.w * 2) - viewport.w);
+            y1 = (float)(SDL_rand(viewport.h * 2) - viewport.h);
+            y2 = (float)(SDL_rand(viewport.h * 2) - viewport.h);
             SDL_RenderLine(renderer, x1, y1, x2, y2);
         }
     }
@@ -168,10 +165,10 @@ static void DrawRects(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
                                (Uint8)current_color, (Uint8)current_alpha);
 
-        rect.w = (float)(rand() % (viewport.h / 2));
-        rect.h = (float)(rand() % (viewport.h / 2));
-        rect.x = (float)((rand() % (viewport.w * 2) - viewport.w) - (rect.w / 2));
-        rect.y = (float)((rand() % (viewport.h * 2) - viewport.h) - (rect.h / 2));
+        rect.w = (float)SDL_rand(viewport.h / 2);
+        rect.h = (float)SDL_rand(viewport.h / 2);
+        rect.x = (float)((SDL_rand(viewport.w * 2) - viewport.w) - (rect.w / 2));
+        rect.y = (float)((SDL_rand(viewport.h * 2) - viewport.h) - (rect.h / 2));
         SDL_RenderFillRect(renderer, &rect);
     }
 }
@@ -220,10 +217,6 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     int i;
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Initialize parameters */
     num_objects = NUM_OBJECTS;
 
@@ -232,6 +225,10 @@ int main(int argc, char *argv[])
     if (!state) {
         return 1;
     }
+
+    /* Enable standard application logging */
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     for (i = 1; i < argc;) {
         int consumed;
 
@@ -246,8 +243,14 @@ int main(int argc, char *argv[])
                     } else if (SDL_strcasecmp(argv[i + 1], "blend") == 0) {
                         blendMode = SDL_BLENDMODE_BLEND;
                         consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "blend_premultiplied") == 0) {
+                        blendMode = SDL_BLENDMODE_BLEND_PREMULTIPLIED;
+                        consumed = 2;
                     } else if (SDL_strcasecmp(argv[i + 1], "add") == 0) {
                         blendMode = SDL_BLENDMODE_ADD;
+                        consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "add_premultiplied") == 0) {
+                        blendMode = SDL_BLENDMODE_ADD_PREMULTIPLIED;
                         consumed = 2;
                     } else if (SDL_strcasecmp(argv[i + 1], "mod") == 0) {
                         blendMode = SDL_BLENDMODE_MOD;
@@ -270,7 +273,7 @@ int main(int argc, char *argv[])
         }
         if (consumed < 0) {
             static const char *options[] = {
-                "[--blend none|blend|add|mod|mul]",
+                "[--blend none|blend|blend_premultiplied|add|add_premultiplied|mod|mul]",
                 "[--cyclecolor]",
                 "[--cyclealpha]",
                 "[num_objects]",
@@ -293,8 +296,6 @@ int main(int argc, char *argv[])
         SDL_RenderClear(renderer);
     }
 
-    srand((unsigned int)time(NULL));
-
     /* Main render loop */
     frames = 0;
     next_fps_check = SDL_GetTicks() + fps_check_delay;
@@ -308,6 +309,7 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    SDLTest_CleanupTextDrawing();
     SDLTest_CommonQuit(state);
 
     return 0;

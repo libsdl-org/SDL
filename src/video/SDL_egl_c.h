@@ -31,7 +31,7 @@
 
 #define SDL_EGL_MAX_DEVICES 8
 
-/* For systems that don't define these */
+// For systems that don't define these
 typedef intptr_t EGLAttrib;
 typedef void *EGLDeviceEXT;
 typedef EGLDisplay (EGLAPIENTRYP PFNEGLGETDISPLAYPROC) (EGLNativeDisplayType display_id);
@@ -71,8 +71,8 @@ typedef struct SDL_EGL_VideoData
     int egl_surfacetype;
     int egl_version_major, egl_version_minor;
     EGLint egl_required_visual_id;
-    SDL_bool is_offscreen; /* whether EGL display was offscreen */
-    EGLenum apitype;       /* EGL_OPENGL_ES_API, EGL_OPENGL_API, etc */
+    bool is_offscreen; // whether EGL display was offscreen
+    EGLenum apitype;       // EGL_OPENGL_ES_API, EGL_OPENGL_API, etc
 
     PFNEGLGETDISPLAYPROC eglGetDisplay;
     PFNEGLINITIALIZEPROC eglInitialize;
@@ -97,74 +97,74 @@ typedef struct SDL_EGL_VideoData
     PFNEGLGETPLATFORMDISPLAYPROC eglGetPlatformDisplay;
     PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT;
 
-    /* Atomic functions */
+    // Atomic functions
     PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR;
     PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR;
     PFNEGLDUPNATIVEFENCEFDANDROIDPROC eglDupNativeFenceFDANDROID;
     PFNEGLWAITSYNCKHRPROC eglWaitSyncKHR;
     PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR;
 
-    /* Atomic functions end */
+    // Atomic functions end
 } SDL_EGL_VideoData;
 
-/* OpenGLES functions */
+// OpenGLES functions
 typedef enum SDL_EGL_ExtensionType
 {
     SDL_EGL_DISPLAY_EXTENSION,
     SDL_EGL_CLIENT_EXTENSION
 } SDL_EGL_ExtensionType;
 
-extern SDL_bool SDL_EGL_HasExtension(SDL_VideoDevice *_this, SDL_EGL_ExtensionType type, const char *ext);
+extern bool SDL_EGL_HasExtension(SDL_VideoDevice *_this, SDL_EGL_ExtensionType type, const char *ext);
 
-extern int SDL_EGL_GetAttribute(SDL_VideoDevice *_this, SDL_GLattr attrib, int *value);
+extern bool SDL_EGL_GetAttribute(SDL_VideoDevice *_this, SDL_GLattr attrib, int *value);
 /* SDL_EGL_LoadLibrary can get a display for a specific platform (EGL_PLATFORM_*)
  * or, if 0 is passed, let the implementation decide.
  */
-extern int SDL_EGL_LoadLibraryOnly(SDL_VideoDevice *_this, const char *path);
-extern int SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *path, NativeDisplayType native_display, EGLenum platform);
+extern bool SDL_EGL_LoadLibraryOnly(SDL_VideoDevice *_this, const char *path);
+extern bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *path, NativeDisplayType native_display, EGLenum platform);
 extern SDL_FunctionPointer SDL_EGL_GetProcAddressInternal(SDL_VideoDevice *_this, const char *proc);
 extern void SDL_EGL_UnloadLibrary(SDL_VideoDevice *_this);
 extern void SDL_EGL_SetRequiredVisualId(SDL_VideoDevice *_this, int visual_id);
-extern int SDL_EGL_ChooseConfig(SDL_VideoDevice *_this);
-extern int SDL_EGL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern int SDL_EGL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
-extern int SDL_EGL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern bool SDL_EGL_ChooseConfig(SDL_VideoDevice *_this);
+extern bool SDL_EGL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
+extern bool SDL_EGL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
+extern bool SDL_EGL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);
 extern EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw);
 extern void SDL_EGL_DestroySurface(SDL_VideoDevice *_this, EGLSurface egl_surface);
 
 extern EGLSurface SDL_EGL_CreateOffscreenSurface(SDL_VideoDevice *_this, int width, int height);
-/* Assumes that LoadLibraryOnly() has succeeded */
-extern int SDL_EGL_InitializeOffscreen(SDL_VideoDevice *_this, int device);
+// Assumes that LoadLibraryOnly() has succeeded
+extern bool SDL_EGL_InitializeOffscreen(SDL_VideoDevice *_this, int device);
 
-/* These need to be wrapped to get the surface for the window by the platform GLES implementation */
+// These need to be wrapped to get the surface for the window by the platform GLES implementation
 extern SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surface);
-extern int SDL_EGL_MakeCurrent(SDL_VideoDevice *_this, EGLSurface egl_surface, SDL_GLContext context);
-extern int SDL_EGL_SwapBuffers(SDL_VideoDevice *_this, EGLSurface egl_surface);
+extern bool SDL_EGL_MakeCurrent(SDL_VideoDevice *_this, EGLSurface egl_surface, SDL_GLContext context);
+extern bool SDL_EGL_SwapBuffers(SDL_VideoDevice *_this, EGLSurface egl_surface);
 
-/* SDL Error-reporting */
-extern int SDL_EGL_SetErrorEx(const char *message, const char *eglFunctionName, EGLint eglErrorCode);
+// SDL Error-reporting
+extern bool SDL_EGL_SetErrorEx(const char *message, const char *eglFunctionName, EGLint eglErrorCode);
 #define SDL_EGL_SetError(message, eglFunctionName) SDL_EGL_SetErrorEx(message, eglFunctionName, _this->egl_data->eglGetError())
 
-/* A few of useful macros */
+// A few of useful macros
 
 #define SDL_EGL_SwapWindow_impl(BACKEND)                                                        \
-    int BACKEND##_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)                                    \
+    bool BACKEND##_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)                  \
     {                                                                                           \
-        return SDL_EGL_SwapBuffers(_this, window->driverdata->egl_surface);                     \
+        return SDL_EGL_SwapBuffers(_this, window->internal->egl_surface);                       \
     }
 
-#define SDL_EGL_MakeCurrent_impl(BACKEND)                                                                                          \
-    int BACKEND##_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)                                               \
-    {                                                                                                                              \
-        return SDL_EGL_MakeCurrent(_this, window ? window->driverdata->egl_surface : EGL_NO_SURFACE, context); \
+#define SDL_EGL_MakeCurrent_impl(BACKEND)                                                                    \
+    bool BACKEND##_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)       \
+    {                                                                                                        \
+        return SDL_EGL_MakeCurrent(_this, window ? window->internal->egl_surface : EGL_NO_SURFACE, context); \
     }
 
 #define SDL_EGL_CreateContext_impl(BACKEND)                                                     \
-    SDL_GLContext BACKEND##_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)                       \
+    SDL_GLContext BACKEND##_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)      \
     {                                                                                           \
-        return SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);                   \
+        return SDL_EGL_CreateContext(_this, window->internal->egl_surface);                     \
     }
 
-#endif /* SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_OPENGL_EGL
 
-#endif /* SDL_egl_h_ */
+#endif // SDL_egl_h_

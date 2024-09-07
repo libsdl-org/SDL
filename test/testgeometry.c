@@ -12,6 +12,8 @@
 
 /* Simple program:  draw a RGB triangle, with texture  */
 
+#include <stdlib.h>
+
 #include "testutils.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -20,9 +22,6 @@
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
-
-#include <stdlib.h>
-#include <time.h>
 
 static SDLTest_CommonState *state;
 static SDL_bool use_texture = SDL_FALSE;
@@ -57,7 +56,7 @@ static int LoadSprite(const char *file)
         if (!sprites[i]) {
             return -1;
         }
-        if (SDL_SetTextureBlendMode(sprites[i], blendMode) < 0) {
+        if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
             return -1;
@@ -96,13 +95,13 @@ static void loop(void)
                 }
             }
         } else if (event.type == SDL_EVENT_KEY_DOWN) {
-            if (event.key.keysym.sym == SDLK_LEFT) {
+            if (event.key.key == SDLK_LEFT) {
                 translate_cx -= 1;
-            } else if (event.key.keysym.sym == SDLK_RIGHT) {
+            } else if (event.key.key == SDLK_RIGHT) {
                 translate_cx += 1;
-            } else if (event.key.keysym.sym == SDLK_UP) {
+            } else if (event.key.key == SDLK_UP) {
                 translate_cy -= 1;
-            } else if (event.key.keysym.sym == SDLK_DOWN) {
+            } else if (event.key.key == SDLK_DOWN) {
                 translate_cy += 1;
             } else {
                 SDLTest_CommonEvent(state, &event, &done);
@@ -196,7 +195,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     for (i = 1; i < argc;) {
         int consumed;
@@ -259,8 +258,6 @@ int main(int argc, char *argv[])
             quit(2);
         }
     }
-
-    srand((unsigned int)time(NULL));
 
     /* Main render loop */
     frames = 0;

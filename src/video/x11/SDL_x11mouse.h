@@ -26,7 +26,7 @@
 typedef struct SDL_XInput2DeviceInfo
 {
     int device_id;
-    SDL_bool relative[2];
+    bool relative[2];
     double minval[2];
     double maxval[2];
     double prev_coords[2];
@@ -37,4 +37,4 @@ extern void X11_InitMouse(SDL_VideoDevice *_this);
 extern void X11_QuitMouse(SDL_VideoDevice *_this);
 extern void X11_SetHitTestCursor(SDL_HitTestResult rc);
 
-#endif /* SDL_x11mouse_h_ */
+#endif // SDL_x11mouse_h_

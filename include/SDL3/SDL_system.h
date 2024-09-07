@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_system.h
+ * # CategorySystem
  *
- *  Include file for platform specific SDL API functions
+ * Platform-specific SDL API functions.
  */
 
 #ifndef SDL_system_h_
@@ -44,7 +44,7 @@ extern "C" {
 /*
  * Platform specific functions for Windows
  */
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WINDOWS)
 
 typedef struct tagMSG MSG;
 
@@ -80,17 +80,17 @@ typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
  * message should continue to be processed, or SDL_FALSE to prevent further
  * processing.
  *
- * \param callback The SDL_WindowsMessageHook function to call.
- * \param userdata a pointer to pass to every iteration of `callback`
+ * \param callback the SDL_WindowsMessageHook function to call.
+ * \param userdata a pointer to pass to every iteration of `callback`.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_WindowsMessageHook
  * \sa SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
+extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
 
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
+#endif /* defined(SDL_PLATFORM_WINDOWS) */
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
@@ -100,17 +100,13 @@ extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook ca
  * The returned adapter index can be passed to `IDirect3D9::CreateDevice` and
  * controls on which monitor a full screen application will appear.
  *
- * \param displayID the instance of the display to query
- * \returns the D3D9 adapter index on success or a negative error code on
- *          failure; call SDL_GetError() for more information.
+ * \param displayID the instance of the display to query.
+ * \returns the D3D9 adapter index on success or -1 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
-
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
-
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+extern SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID);
 
 /**
  * Get the DXGI Adapter and Output indices for the specified display.
@@ -119,17 +115,18 @@ extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID
  * `EnumOutputs` respectively to get the objects required to create a DX10 or
  * DX11 device and swap chain.
  *
- * \param displayID the instance of the display to query
- * \param adapterIndex a pointer to be filled in with the adapter index
- * \param outputIndex a pointer to be filled in with the output index
+ * \param displayID the instance of the display to query.
+ * \param adapterIndex a pointer to be filled in with the adapter index.
+ * \param outputIndex a pointer to be filled in with the output index.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 
 #endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
+
 
 /*
  * Platform specific functions for UNIX
@@ -145,12 +142,12 @@ typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
  * should continue to be processed, or SDL_FALSE to prevent further
  * processing.
  *
- * \param callback The SDL_X11EventHook function to call.
- * \param userdata a pointer to pass to every iteration of `callback`
+ * \param callback the SDL_X11EventHook function to call.
+ * \param userdata a pointer to pass to every iteration of `callback`.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);
+extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);
 
 /* Platform specific functions for Linux*/
 #ifdef SDL_PLATFORM_LINUX
@@ -161,28 +158,29 @@ extern DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void
  * This uses setpriority() if possible, and RealtimeKit if available.
  *
  * \param threadID the Unix thread ID to change priority of.
- * \param priority The new, Unix-specific, priority value.
- * \returns 0 on success, or -1 on error.
+ * \param priority the new, Unix-specific, priority value.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int priority);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
 
 /**
  * Sets the priority (not nice level) and scheduling policy for a thread.
  *
  * This uses setpriority() if possible, and RealtimeKit if available.
  *
- * \param threadID The Unix thread ID to change priority of.
- * \param sdlPriority The new SDL_ThreadPriority value.
- * \param schedPolicy The new scheduling policy (SCHED_FIFO, SCHED_RR,
- *                    SCHED_OTHER, etc...)
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \param threadID the Unix thread ID to change priority of.
+ * \param sdlPriority the new SDL_ThreadPriority value.
+ * \param schedPolicy the new scheduling policy (SCHED_FIFO, SCHED_RR,
+ *                    SCHED_OTHER, etc...).
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
 
 #endif /* SDL_PLATFORM_LINUX */
 
@@ -192,16 +190,34 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
 #ifdef SDL_PLATFORM_IOS
 
 /**
+ * The prototype for an Apple iOS animation callback.
+ *
+ * This datatype is only useful on Apple iOS.
+ *
+ * After passing a function pointer of this type to
+ * SDL_SetiOSAnimationCallback, the system will call that function pointer at
+ * a regular interval.
+ *
+ * \param userdata what was passed as `callbackParam` to
+ *                 SDL_SetiOSAnimationCallback as `callbackParam`.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetiOSAnimationCallback
+ */
+typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
+
+/**
  * Use this function to set the animation callback on Apple iOS.
  *
  * The function prototype for `callback` is:
  *
  * ```c
- * void callback(void* callbackParam);
+ * void callback(void *callbackParam);
  * ```
  *
  * Where its parameter, `callbackParam`, is what was passed as `callbackParam`
- * to SDL_iOSSetAnimationCallback().
+ * to SDL_SetiOSAnimationCallback().
  *
  * This function is only available on Apple iOS.
  *
@@ -216,32 +232,32 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  *
  * https://wiki.libsdl.org/SDL3/README/main-functions
  *
- * \param window the window for which the animation callback should be set
+ * \param window the window for which the animation callback should be set.
  * \param interval the number of frames after which **callback** will be
- *                 called
+ *                 called.
  * \param callback the function to call for every frame.
  * \param callbackParam a pointer that is passed to `callback`.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_iOSSetEventPump
+ * \sa SDL_SetiOSEventPump
  */
-extern DECLSPEC int SDLCALL SDL_iOSSetAnimationCallback(SDL_Window * window, int interval, void (SDLCALL *callback)(void*), void *callbackParam);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
 
 /**
  * Use this function to enable or disable the SDL event pump on Apple iOS.
  *
  * This function is only available on Apple iOS.
  *
- * \param enabled SDL_TRUE to enable the event pump, SDL_FALSE to disable it
+ * \param enabled SDL_TRUE to enable the event pump, SDL_FALSE to disable it.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_iOSSetAnimationCallback
+ * \sa SDL_SetiOSAnimationCallback
  */
-extern DECLSPEC void SDLCALL SDL_iOSSetEventPump(SDL_bool enabled);
+extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(SDL_bool enabled);
 
 #endif /* SDL_PLATFORM_IOS */
 
@@ -262,13 +278,16 @@ extern DECLSPEC void SDLCALL SDL_iOSSetEventPump(SDL_bool enabled);
  * rationale being that the SDL headers can avoid including jni.h.
  *
  * \returns a pointer to Java native interface object (JNIEnv) to which the
- *          current thread is attached, or 0 on error.
+ *          current thread is attached, or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AndroidGetActivity
+ * \sa SDL_GetAndroidActivity
  */
-extern DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
+extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);
 
 /**
  * Retrieve the Java instance of the Android activity class.
@@ -284,17 +303,21 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
  * https://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/functions.html
  *
  * \returns the jobject representing the instance of the Activity class of the
- *          Android application, or NULL on error.
+ *          Android application, or NULL on failure; call SDL_GetError() for
+ *          more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AndroidGetJNIEnv
+ * \sa SDL_GetAndroidJNIEnv
  */
-extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
+extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);
 
 /**
  * Query Android API level of the current device.
  *
+ * - API level 35: Android 15 (VANILLA_ICE_CREAM)
  * - API level 34: Android 14 (UPSIDE_DOWN_CAKE)
  * - API level 33: Android 13 (TIRAMISU)
  * - API level 32: Android 12L (S_V2)
@@ -325,7 +348,7 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
 
 /**
  * Query if the application is running on Android TV.
@@ -334,7 +357,7 @@ extern DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
 
 /**
  * Query if the application is running on a Chromebook.
@@ -343,7 +366,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
 
 /**
  * Query if the application is running on a Samsung DeX docking station.
@@ -352,14 +375,16 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
 
 /**
  * Trigger the Android system back button behavior.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
+extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
 
 /**
  * See the official Android developer guide for more information:
@@ -371,7 +396,7 @@ extern DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
 #define SDL_ANDROID_EXTERNAL_STORAGE_WRITE  0x02
 
 /**
- * Get the path used for internal storage for this application.
+ * Get the path used for internal storage for this Android application.
  *
  * This path is unique to your application and cannot be written to by other
  * applications.
@@ -379,36 +404,38 @@ extern DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
  * Your internal storage path is typically:
  * `/data/data/your.app.package/files`.
  *
+ * This is a C wrapper over `android.content.Context.getFilesDir()`:
+ *
+ * https://developer.android.com/reference/android/content/Context#getFilesDir()
+ *
  * \returns the path used for internal storage or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AndroidGetExternalStorageState
+ * \sa SDL_GetAndroidExternalStorageState
  */
-extern DECLSPEC const char * SDLCALL SDL_AndroidGetInternalStoragePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidInternalStoragePath(void);
 
 /**
- * Get the current state of external storage.
+ * Get the current state of external storage for this Android application.
  *
  * The current state of external storage, a bitmask of these values:
  * `SDL_ANDROID_EXTERNAL_STORAGE_READ`, `SDL_ANDROID_EXTERNAL_STORAGE_WRITE`.
  *
  * If external storage is currently unavailable, this will return 0.
  *
- * \param state filled with the current state of external storage. 0 if
- *              external storage is currently unavailable.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \returns the current state of external storage, or 0 if external storage is
+ *          currently unavailable.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AndroidGetExternalStoragePath
+ * \sa SDL_GetAndroidExternalStoragePath
  */
-extern DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(Uint32 *state);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
 
 /**
- * Get the path used for external storage for this application.
+ * Get the path used for external storage for this Android application.
  *
  * This path is unique to your application, but is public and can be written
  * to by other applications.
@@ -416,17 +443,40 @@ extern DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(Uint32 *state);
  * Your external storage path is typically:
  * `/storage/sdcard0/Android/data/your.app.package/files`.
  *
+ * This is a C wrapper over `android.content.Context.getExternalFilesDir()`:
+ *
+ * https://developer.android.com/reference/android/content/Context#getExternalFilesDir()
+ *
  * \returns the path used for external storage for this application on success
  *          or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AndroidGetExternalStorageState
+ * \sa SDL_GetAndroidExternalStorageState
  */
-extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void);
+
+/**
+ * Get the path used for caching data for this Android application.
+ *
+ * This path is unique to your application, but is public and can be written
+ * to by other applications.
+ *
+ * Your cache path is typically: `/data/data/your.app.package/cache/`.
+ *
+ * This is a C wrapper over `android.content.Context.getCacheDir()`:
+ *
+ * https://developer.android.com/reference/android/content/Context#getCacheDir()
+ *
+ * \returns the path used for caches for this application on success or NULL
+ *          on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
 
 
-typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
+typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
 
 /**
  * Request permissions at runtime, asynchronously.
@@ -447,16 +497,18 @@ typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, con
  * like memory running out. Normally there will be a yes or no to the request
  * through the callback.
  *
- * \param permission The permission to request.
- * \param cb The callback to trigger when the request has a response.
- * \param userdata An app-controlled pointer that is passed to the callback.
- * \returns zero if the request was submitted, -1 if there was an error
- *          submitting. The result of the request is only ever reported
+ * \param permission the permission to request.
+ * \param cb the callback to trigger when the request has a response.
+ * \param userdata an app-controlled pointer that is passed to the callback.
+ * \returns SDL_TRUE if the request was submitted, SDL_FALSE if there was an
+ *          error submitting. The result of the request is only ever reported
  *          through the callback, not this return value.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata);
 
 /**
  * Shows an Android toast notification.
@@ -472,117 +524,37 @@ extern DECLSPEC int SDLCALL SDL_AndroidRequestPermission(const char *permission,
  *
  * https://developer.android.com/reference/android/view/Gravity
  *
- * \param message text message to be shown
- * \param duration 0=short, 1=long
+ * \param message text message to be shown.
+ * \param duration 0=short, 1=long.
  * \param gravity where the notification should appear on the screen.
- * \param xoffset set this parameter only when gravity >=0
- * \param yoffset set this parameter only when gravity >=0
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \param xoffset set this parameter only when gravity >=0.
+ * \param yoffset set this parameter only when gravity >=0.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xoffset, int yoffset);
 
 /**
  * Send a user command to SDLActivity.
  *
  * Override "boolean onUnhandledMessage(Message msg)" to handle the message.
  *
- * \param command user command that must be greater or equal to 0x8000
- * \param param user parameter
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \param command user command that must be greater or equal to 0x8000.
+ * \param param user parameter.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
 
 #endif /* SDL_PLATFORM_ANDROID */
-
-/*
- * Platform specific functions for WinRT
- */
-#ifdef SDL_PLATFORM_WINRT
-
-/**
- * WinRT / Windows Phone path types
- *
- * \since This enum is available since SDL 3.0.0.
- */
-typedef enum SDL_WinRT_Path
-{
-    /** The installed app's root directory.
-        Files here are likely to be read-only. */
-    SDL_WINRT_PATH_INSTALLED_LOCATION,
-
-    /** The app's local data store.  Files may be written here */
-    SDL_WINRT_PATH_LOCAL_FOLDER,
-
-    /** The app's roaming data store.  Unsupported on Windows Phone.
-        Files written here may be copied to other machines via a network
-        connection.
-    */
-    SDL_WINRT_PATH_ROAMING_FOLDER,
-
-    /** The app's temporary data store.  Unsupported on Windows Phone.
-        Files written here may be deleted at any time. */
-    SDL_WINRT_PATH_TEMP_FOLDER
-} SDL_WinRT_Path;
-
-
-/**
- * WinRT Device Family
- *
- * \since This enum is available since SDL 3.0.0.
- */
-typedef enum SDL_WinRT_DeviceFamily
-{
-    /** Unknown family  */
-    SDL_WINRT_DEVICEFAMILY_UNKNOWN,
-
-    /** Desktop family*/
-    SDL_WINRT_DEVICEFAMILY_DESKTOP,
-
-    /** Mobile family (for example smartphone) */
-    SDL_WINRT_DEVICEFAMILY_MOBILE,
-
-    /** XBox family */
-    SDL_WINRT_DEVICEFAMILY_XBOX,
-} SDL_WinRT_DeviceFamily;
-
-
-/**
- * Retrieve a WinRT defined path on the local file system.
- *
- * Not all paths are available on all versions of Windows. This is especially
- * true on Windows Phone. Check the documentation for the given SDL_WinRT_Path
- * for more information on which path types are supported where.
- *
- * Documentation on most app-specific path types on WinRT can be found on
- * MSDN, at the URL:
- *
- * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
- *
- * \param pathType the type of path to retrieve, one of SDL_WinRT_Path
- * \returns a UTF-8 string (8-bit, multi-byte) containing the path, or NULL if
- *          the path is not available for any reason; call SDL_GetError() for
- *          more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPath(SDL_WinRT_Path pathType);
-
-/**
- * Detects the device family of WinRT platform at runtime.
- *
- * \returns a value from the SDL_WinRT_DeviceFamily enum.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
-
-#endif /* SDL_PLATFORM_WINRT */
 
 /**
  * Query if the current device is a tablet.
@@ -593,7 +565,7 @@ extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
 
 /* Functions used by iOS app delegates to notify SDL about state changes. */
 
@@ -612,7 +584,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_OnApplicationWillTerminate(void);
+extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationWillTerminate(void);
 
 /**
  * Let iOS apps with external event handling report
@@ -629,7 +601,7 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationWillTerminate(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_OnApplicationDidReceiveMemoryWarning(void);
+extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationDidReceiveMemoryWarning(void);
 
 /**
  * Let iOS apps with external event handling report
@@ -646,7 +618,7 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationDidReceiveMemoryWarning(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_OnApplicationWillResignActive(void);
+extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationWillEnterBackground(void);
 
 /**
  * Let iOS apps with external event handling report
@@ -663,7 +635,7 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationWillResignActive(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_OnApplicationDidEnterBackground(void);
+extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationDidEnterBackground(void);
 
 /**
  * Let iOS apps with external event handling report
@@ -680,7 +652,7 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationDidEnterBackground(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_OnApplicationWillEnterForeground(void);
+extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationWillEnterForeground(void);
 
 /**
  * Let iOS apps with external event handling report
@@ -697,7 +669,7 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationWillEnterForeground(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_OnApplicationDidBecomeActive(void);
+extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationDidEnterForeground(void);
 
 #ifdef SDL_PLATFORM_IOS
 
@@ -716,7 +688,7 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationDidBecomeActive(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void);
+extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void);
 #endif
 
 /*
@@ -735,12 +707,12 @@ typedef struct XUser *XUserHandle;
  * leak.
  *
  * \param outTaskQueue a pointer to be filled in with task queue handle.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue);
 
 /**
  * Gets a reference to the default user handle for GDK.
@@ -750,11 +722,12 @@ extern DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue)
  *
  * \param outUserHandle a pointer to be filled in with the default user
  *                      handle.
- * \returns 0 if success, -1 if any error occurs.
+ * \returns SDL_TRUE if success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GDKGetDefaultUser(XUserHandle * outUserHandle);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetGDKDefaultUser(XUserHandle *outUserHandle);
 
 #endif
 

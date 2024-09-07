@@ -23,7 +23,7 @@
 #ifndef SDL_shaders_gles2_h_
 #define SDL_shaders_gles2_h_
 
-#if SDL_VIDEO_RENDER_OGL_ES2
+#ifdef SDL_VIDEO_RENDER_OGL_ES2
 
 typedef enum
 {
@@ -50,7 +50,7 @@ typedef enum
     GLES2_SHADER_FRAGMENT_TEXTURE_NV21_RA,
     GLES2_SHADER_FRAGMENT_TEXTURE_NV21_RG,
 #endif
-    /* Shaders beyond this point are optional and not cached at render creation */
+    // Shaders beyond this point are optional and not cached at render creation
     GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES,
     GLES2_SHADER_COUNT
 } GLES2_ShaderType;
@@ -60,6 +60,6 @@ extern const char *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type);
 extern const char *GLES2_GetShader(GLES2_ShaderType type);
 extern GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint(void);
 
-#endif /* SDL_VIDEO_RENDER_OGL_ES2 */
+#endif // SDL_VIDEO_RENDER_OGL_ES2
 
-#endif /* SDL_shaders_gles2_h_ */
+#endif // SDL_shaders_gles2_h_

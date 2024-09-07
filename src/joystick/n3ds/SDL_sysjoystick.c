@@ -22,7 +22,7 @@
 
 #ifdef SDL_JOYSTICK_N3DS
 
-/* This is the N3DS implementation of the SDL joystick API */
+// This is the N3DS implementation of the SDL joystick API
 
 #include <3ds.h>
 
@@ -59,11 +59,11 @@ static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick);
 static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick);
 static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick);
 
-static int N3DS_JoystickInit(void)
+static bool N3DS_JoystickInit(void)
 {
     hidInit();
     SDL_PrivateJoystickAdded(1);
-    return 0;
+    return true;
 }
 
 static const char *N3DS_JoystickGetDeviceName(int device_index)
@@ -76,9 +76,9 @@ static int N3DS_JoystickGetCount(void)
     return 1;
 }
 
-static SDL_JoystickGUID N3DS_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID N3DS_JoystickGetDeviceGUID(int device_index)
 {
-    SDL_JoystickGUID guid = SDL_CreateJoystickGUIDForName("Nintendo 3DS");
+    SDL_GUID guid = SDL_CreateJoystickGUIDForName("Nintendo 3DS");
     return guid;
 }
 
@@ -87,16 +87,16 @@ static SDL_JoystickID N3DS_JoystickGetDeviceInstanceID(int device_index)
     return device_index + 1;
 }
 
-static int N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     joystick->nbuttons = NB_BUTTONS;
     joystick->naxes = 4;
     joystick->nhats = 0;
 
-    return 0;
+    return true;
 }
 
-static int N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static bool N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -188,9 +188,9 @@ static void N3DS_JoystickQuit(void)
     hidExit();
 }
 
-static SDL_bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    /* There is only one possible mapping. */
+    // There is only one possible mapping.
     *out = (SDL_GamepadMapping){
         .a = { EMappingKind_Button, 0 },
         .b = { EMappingKind_Button, 1 },
@@ -219,17 +219,17 @@ static SDL_bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapp
         .lefttrigger = { EMappingKind_Button, 14 },
         .righttrigger = { EMappingKind_Button, 15 },
     };
-    return SDL_TRUE;
+    return true;
 }
 
 static void N3DS_JoystickDetect(void)
 {
 }
 
-static SDL_bool N3DS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool N3DS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    /* We don't override any other drivers */
-    return SDL_FALSE;
+    // We don't override any other drivers
+    return false;
 }
 
 static const char *N3DS_JoystickGetDevicePath(int device_index)
@@ -251,22 +251,22 @@ static void N3DS_JoystickSetDevicePlayerIndex(int device_index, int player_index
 {
 }
 
-static int N3DS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool N3DS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int N3DS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool N3DS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int N3DS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool N3DS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int N3DS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool N3DS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
@@ -295,4 +295,4 @@ SDL_JoystickDriver SDL_N3DS_JoystickDriver = {
     N3DS_JoystickGetGamepadMapping
 };
 
-#endif /* SDL_JOYSTICK_N3DS */
+#endif // SDL_JOYSTICK_N3DS

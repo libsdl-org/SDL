@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
 
 #include "SDL_render_vita_gxm_memory.h"
 
@@ -174,4 +174,4 @@ void vita_mem_fragment_usse_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-#endif /* SDL_VIDEO_RENDER_VITA_GXM */
+#endif // SDL_VIDEO_RENDER_VITA_GXM

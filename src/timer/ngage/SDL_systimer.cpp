@@ -34,7 +34,7 @@ extern "C" {
 
 Uint64 SDL_GetPerformanceCounter(void)
 {
-    /* FIXME: Need to account for 32-bit wrapping */
+    // FIXME: Need to account for 32-bit wrapping
     return (Uint64)User::TickCount();
 }
 
@@ -43,7 +43,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return SDL_US_PER_SECOND;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     const Uint64 max_delay = 0x7fffffffLL * SDL_NS_PER_US;
     if (ns > max_delay) {
@@ -56,4 +56,4 @@ void SDL_DelayNS(Uint64 ns)
 }
 #endif
 
-#endif /* SDL_TIMER_NGAGE */
+#endif // SDL_TIMER_NGAGE

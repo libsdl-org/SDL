@@ -28,7 +28,7 @@
 #include "SDL_vitagles_c.h"
 
 /*****************************************************************************/
-/* SDL OpenGL/OpenGL ES functions                                            */
+// SDL OpenGL/OpenGL ES functions
 /*****************************************************************************/
 #define EGLCHK(stmt)                           \
     do {                                       \
@@ -38,7 +38,7 @@
         err = eglGetError();                   \
         if (err != EGL_SUCCESS) {              \
             SDL_SetError("EGL error %d", err); \
-            return 0;                          \
+            return NULL;                          \
         }                                      \
     } while (0)
 
@@ -58,10 +58,10 @@ void VITA_GLES_KeyboardCallback(ScePigletPreSwapData *data)
     sceCommonDialogUpdate(&commonDialogParam);
 }
 
-int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     pibInit(PIB_SHACCCG | PIB_GET_PROC_ADDR_CORE);
-    return 0;
+    return true;
 }
 
 SDL_FunctionPointer VITA_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
@@ -80,7 +80,7 @@ static EGLint height = 544;
 SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
 
-    SDL_WindowData *wdata = window->driverdata;
+    SDL_WindowData *wdata = window->internal;
 
     EGLint attribs[32];
     EGLDisplay display;
@@ -99,7 +99,7 @@ SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window
     EGLCHK(display = eglGetDisplay(0));
 
     EGLCHK(eglInitialize(display, NULL, NULL));
-    wdata->uses_gles = SDL_TRUE;
+    wdata->uses_gles = true;
     window->flags |= SDL_WINDOW_FULLSCREEN;
 
     EGLCHK(eglBindAPI(EGL_OPENGL_ES_API));
@@ -133,7 +133,7 @@ SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window
 
     if (num_configs == 0) {
         SDL_SetError("No valid EGL configs for requested mode");
-        return 0;
+        return NULL;
     }
 
     EGLCHK(surface = eglCreateWindowSurface(display, config, VITA_WINDOW_960X544, NULL));
@@ -155,63 +155,63 @@ SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window
     return context;
 }
 
-int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+bool VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     if (!eglMakeCurrent(_this->gl_data->display, _this->gl_data->surface,
                         _this->gl_data->surface, _this->gl_data->context)) {
         return SDL_SetError("Unable to make EGL context current");
     }
-    return 0;
+    return true;
 }
 
-int VITA_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
+bool VITA_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     EGLBoolean status;
     status = eglSwapInterval(_this->gl_data->display, interval);
     if (status == EGL_TRUE) {
-        /* Return success to upper level */
+        // Return success to upper level
         _this->gl_data->swapinterval = interval;
-        return 0;
+        return true;
     }
-    /* Failed to set swap interval */
+    // Failed to set swap interval
     return SDL_SetError("Unable to set the EGL swap interval");
 }
 
-int VITA_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
+bool VITA_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     *interval = _this->gl_data->swapinterval;
-    return 0;
+    return true;
 }
 
-int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (!eglSwapBuffers(_this->gl_data->display, _this->gl_data->surface)) {
         return SDL_SetError("eglSwapBuffers() failed");
     }
-    return 0;
+    return true;
 }
 
-int VITA_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
+bool VITA_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
     EGLBoolean status;
 
-    if (phdata->egl_initialized != SDL_TRUE) {
+    if (phdata->egl_initialized != true) {
         return SDL_SetError("VITA: GLES initialization failed, no OpenGL ES support");
     }
 
-    /* Check if OpenGL ES connection has been initialized */
+    // Check if OpenGL ES connection has been initialized
     if (_this->gl_data->display != EGL_NO_DISPLAY) {
         if (context != EGL_NO_CONTEXT) {
             status = eglDestroyContext(_this->gl_data->display, context);
             if (status != EGL_TRUE) {
-                /* Error during OpenGL ES context destroying */
+                // Error during OpenGL ES context destroying
                 return SDL_SetError("VITA: OpenGL ES context destroy error");
             }
         }
     }
 
-    return 0;
+    return true;
 }
 
-#endif /* SDL_VIDEO_DRIVER_VITA */
+#endif // SDL_VIDEO_DRIVER_VITA

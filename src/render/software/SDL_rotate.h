@@ -27,4 +27,4 @@ extern SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smo
 extern void SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle, const SDL_FPoint *center,
                                            SDL_Rect *rect_dest, double *cangle, double *sangle);
 
-#endif /* SDL_rotate_h_ */
+#endif // SDL_rotate_h_

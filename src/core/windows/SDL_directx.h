@@ -23,7 +23,7 @@
 #ifndef SDL_directx_h_
 #define SDL_directx_h_
 
-/* Include all of the DirectX 8.0 headers and adds any necessary tweaks */
+// Include all of the DirectX 8.0 headers and adds any necessary tweaks
 
 #include "SDL_windows.h"
 #include <mmsystem.h>
@@ -32,12 +32,12 @@
 #endif
 #undef WINNT
 
-/* Far pointers don't exist in 32-bit code */
+// Far pointers don't exist in 32-bit code
 #ifndef FAR
 #define FAR
 #endif
 
-/* Error codes not yet included in Win32 API header files */
+// Error codes not yet included in Win32 API header files
 #ifndef MAKE_HRESULT
 #define MAKE_HRESULT(sev, fac, code) \
     ((HRESULT)(((unsigned long)(sev) << 31) | ((unsigned long)(fac) << 16) | ((unsigned long)(code))))
@@ -73,12 +73,12 @@
 #define REGDB_E_CLASSNOTREG (HRESULT)0x80040154L
 #endif
 
-/* Severity codes */
+// Severity codes
 #ifndef SEVERITY_ERROR
 #define SEVERITY_ERROR 1
 #endif
 
-/* Error facility codes */
+// Error facility codes
 #ifndef FACILITY_WIN32
 #define FACILITY_WIN32 7
 #endif
@@ -89,10 +89,10 @@
 
 /* DirectX headers (if it isn't included, I haven't tested it yet)
  */
-/* We need these defines to mark what version of DirectX API we use */
+// We need these defines to mark what version of DirectX API we use
 #define DIRECTDRAW_VERSION  0x0700
 #define DIRECTSOUND_VERSION 0x0800
-#define DIRECTINPUT_VERSION 0x0800 /* Need version 7 for force feedback. Need version 8 so IDirectInput8_EnumDevices doesn't leak like a sieve... */
+#define DIRECTINPUT_VERSION 0x0800 // Need version 7 for force feedback. Need version 8 so IDirectInput8_EnumDevices doesn't leak like a sieve...
 
 #ifdef HAVE_DDRAW_H
 #include <ddraw.h>
@@ -109,4 +109,4 @@ typedef struct
 } DIDEVICEINSTANCE;
 #endif
 
-#endif /* SDL_directx_h_ */
+#endif // SDL_directx_h_

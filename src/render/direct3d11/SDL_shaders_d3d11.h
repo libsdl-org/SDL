@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* D3D11 shader implementation */
+// D3D11 shader implementation
 
 typedef enum
 {
@@ -31,5 +31,5 @@ typedef enum
     NUM_SHADERS
 } D3D11_Shader;
 
-extern int D3D11_CreateVertexShader(ID3D11Device1 *d3dDevice, ID3D11VertexShader **vertexShader, ID3D11InputLayout **inputLayout);
-extern int D3D11_CreatePixelShader(ID3D11Device1 *d3dDevice, D3D11_Shader shader, ID3D11PixelShader **pixelShader);
+extern bool D3D11_CreateVertexShader(ID3D11Device1 *d3dDevice, ID3D11VertexShader **vertexShader, ID3D11InputLayout **inputLayout);
+extern bool D3D11_CreatePixelShader(ID3D11Device1 *d3dDevice, D3D11_Shader shader, ID3D11PixelShader **pixelShader);

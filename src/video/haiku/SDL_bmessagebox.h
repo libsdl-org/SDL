@@ -31,13 +31,12 @@
 extern "C" {
 #endif
 
-extern int
-HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
+extern bool HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif // SDL_VIDEO_DRIVER_HAIKU
 
 #endif

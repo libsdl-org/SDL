@@ -38,15 +38,15 @@ static char *GENERIC_INTERNAL_CreateFullPath(const char *base, const char *relat
     return result;
 }
 
-static int GENERIC_CloseStorage(void *userdata)
+static SDL_bool GENERIC_CloseStorage(void *userdata)
 {
     SDL_free(userdata);
-    return 0;
+    return true;
 }
 
-static int GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata)
+static SDL_bool GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata)
 {
-    int result = -1;
+    bool result = false;
 
     char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
     if (fullpath) {
@@ -57,9 +57,9 @@ static int GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, S
     return result;
 }
 
-static int GENERIC_GetStoragePathInfo(void *userdata, const char *path, SDL_PathInfo *info)
+static SDL_bool GENERIC_GetStoragePathInfo(void *userdata, const char *path, SDL_PathInfo *info)
 {
-    int result = -1;
+    bool result = false;
 
     char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
     if (fullpath) {
@@ -70,9 +70,9 @@ static int GENERIC_GetStoragePathInfo(void *userdata, const char *path, SDL_Path
     return result;
 }
 
-static int GENERIC_ReadStorageFile(void *userdata, const char *path, void *destination, Uint64 length)
+static SDL_bool GENERIC_ReadStorageFile(void *userdata, const char *path, void *destination, Uint64 length)
 {
-    int result = -1;
+    bool result = false;
 
     if (length > SDL_SIZE_MAX) {
         return SDL_SetError("Read size exceeds SDL_SIZE_MAX");
@@ -82,9 +82,9 @@ static int GENERIC_ReadStorageFile(void *userdata, const char *path, void *desti
     if (fullpath) {
         SDL_IOStream *stream = SDL_IOFromFile(fullpath, "rb");
         if (stream) {
-            /* FIXME: Should SDL_ReadIO use u64 now...? */
+            // FIXME: Should SDL_ReadIO use u64 now...?
             if (SDL_ReadIO(stream, destination, (size_t)length) == length) {
-                result = 0;
+                result = true;
             }
             SDL_CloseIO(stream);
         }
@@ -93,10 +93,10 @@ static int GENERIC_ReadStorageFile(void *userdata, const char *path, void *desti
     return result;
 }
 
-static int GENERIC_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
+static SDL_bool GENERIC_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
 {
-    /* TODO: Recursively create subdirectories with SDL_CreateDirectory */
-    int result = -1;
+    // TODO: Recursively create subdirectories with SDL_CreateDirectory
+    bool result = false;
 
     if (length > SDL_SIZE_MAX) {
         return SDL_SetError("Write size exceeds SDL_SIZE_MAX");
@@ -107,9 +107,9 @@ static int GENERIC_WriteStorageFile(void *userdata, const char *path, const void
         SDL_IOStream *stream = SDL_IOFromFile(fullpath, "wb");
 
         if (stream) {
-            /* FIXME: Should SDL_WriteIO use u64 now...? */
+            // FIXME: Should SDL_WriteIO use u64 now...?
             if (SDL_WriteIO(stream, source, (size_t)length) == length) {
-                result = 0;
+                result = true;
             }
             SDL_CloseIO(stream);
         }
@@ -118,10 +118,10 @@ static int GENERIC_WriteStorageFile(void *userdata, const char *path, const void
     return result;
 }
 
-static int GENERIC_CreateStorageDirectory(void *userdata, const char *path)
+static SDL_bool GENERIC_CreateStorageDirectory(void *userdata, const char *path)
 {
-    /* TODO: Recursively create subdirectories with SDL_CreateDirectory */
-    int result = -1;
+    // TODO: Recursively create subdirectories with SDL_CreateDirectory
+    bool result = false;
 
     char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
     if (fullpath) {
@@ -132,9 +132,9 @@ static int GENERIC_CreateStorageDirectory(void *userdata, const char *path)
     return result;
 }
 
-static int GENERIC_RemoveStoragePath(void *userdata, const char *path)
+static SDL_bool GENERIC_RemoveStoragePath(void *userdata, const char *path)
 {
-    int result = -1;
+    bool result = false;
 
     char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
     if (fullpath) {
@@ -145,9 +145,9 @@ static int GENERIC_RemoveStoragePath(void *userdata, const char *path)
     return result;
 }
 
-static int GENERIC_RenameStoragePath(void *userdata, const char *oldpath, const char *newpath)
+static SDL_bool GENERIC_RenameStoragePath(void *userdata, const char *oldpath, const char *newpath)
 {
-    int result = -1;
+    bool result = false;
 
     char *fulloldpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, oldpath);
     char *fullnewpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, newpath);
@@ -160,43 +160,61 @@ static int GENERIC_RenameStoragePath(void *userdata, const char *oldpath, const 
     return result;
 }
 
+static SDL_bool GENERIC_CopyStorageFile(void *userdata, const char *oldpath, const char *newpath)
+{
+    bool result = false;
+
+    char *fulloldpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, oldpath);
+    char *fullnewpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, newpath);
+    if (fulloldpath && fullnewpath) {
+        result = SDL_CopyFile(fulloldpath, fullnewpath);
+    }
+    SDL_free(fulloldpath);
+    SDL_free(fullnewpath);
+
+    return result;
+}
+
 static Uint64 GENERIC_GetStorageSpaceRemaining(void *userdata)
 {
-    /* TODO: There's totally a way to query a folder root's quota... */
+    // TODO: There's totally a way to query a folder root's quota...
     return SDL_MAX_UINT64;
 }
 
 static const SDL_StorageInterface GENERIC_title_iface = {
+    sizeof(SDL_StorageInterface),
     GENERIC_CloseStorage,
-    NULL,   /* ready */
+    NULL,   // ready
     GENERIC_EnumerateStorageDirectory,
     GENERIC_GetStoragePathInfo,
     GENERIC_ReadStorageFile,
-    NULL,   /* write_file */
-    NULL,   /* mkdir */
-    NULL,   /* remove */
-    NULL,   /* rename */
-    NULL    /* space_remaining */
+    NULL,   // write_file
+    NULL,   // mkdir
+    NULL,   // remove
+    NULL,   // rename
+    NULL,   // copy
+    NULL    // space_remaining
 };
 
 static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID props)
 {
-    SDL_Storage *result;
+    SDL_Storage *result = NULL;
 
-    char *basepath;
+    char *basepath = NULL;
     if (override != NULL) {
         basepath = SDL_strdup(override);
     } else {
-        basepath = SDL_GetBasePath();
-    }
-    if (basepath == NULL) {
-        return NULL;
+        const char *base = SDL_GetBasePath();
+        basepath = base ? SDL_strdup(base) : NULL;
     }
 
-    result = SDL_OpenStorage(&GENERIC_title_iface, basepath);
-    if (result == NULL) {
-        SDL_free(basepath);
+    if (basepath != NULL) {
+        result = SDL_OpenStorage(&GENERIC_title_iface, basepath);
+        if (result == NULL) {
+            SDL_free(basepath);  // otherwise CloseStorage will free it.
+        }
     }
+
     return result;
 }
 
@@ -207,8 +225,9 @@ TitleStorageBootStrap GENERIC_titlebootstrap = {
 };
 
 static const SDL_StorageInterface GENERIC_user_iface = {
+    sizeof(SDL_StorageInterface),
     GENERIC_CloseStorage,
-    NULL,   /* ready */
+    NULL,   // ready
     GENERIC_EnumerateStorageDirectory,
     GENERIC_GetStoragePathInfo,
     GENERIC_ReadStorageFile,
@@ -216,13 +235,13 @@ static const SDL_StorageInterface GENERIC_user_iface = {
     GENERIC_CreateStorageDirectory,
     GENERIC_RemoveStoragePath,
     GENERIC_RenameStoragePath,
+    GENERIC_CopyStorageFile,
     GENERIC_GetStorageSpaceRemaining
 };
 
 static SDL_Storage *GENERIC_User_Create(const char *org, const char *app, SDL_PropertiesID props)
 {
     SDL_Storage *result;
-
     char *prefpath = SDL_GetPrefPath(org, app);
     if (prefpath == NULL) {
         return NULL;
@@ -230,7 +249,7 @@ static SDL_Storage *GENERIC_User_Create(const char *org, const char *app, SDL_Pr
 
     result = SDL_OpenStorage(&GENERIC_user_iface, prefpath);
     if (result == NULL) {
-        SDL_free(prefpath);
+        SDL_free(prefpath);  // otherwise CloseStorage will free it.
     }
     return result;
 }
@@ -242,8 +261,9 @@ UserStorageBootStrap GENERIC_userbootstrap = {
 };
 
 static const SDL_StorageInterface GENERIC_file_iface = {
+    sizeof(SDL_StorageInterface),
     GENERIC_CloseStorage,
-    NULL,   /* ready */
+    NULL,   // ready
     GENERIC_EnumerateStorageDirectory,
     GENERIC_GetStoragePathInfo,
     GENERIC_ReadStorageFile,
@@ -251,6 +271,7 @@ static const SDL_StorageInterface GENERIC_file_iface = {
     GENERIC_CreateStorageDirectory,
     GENERIC_RemoveStoragePath,
     GENERIC_RenameStoragePath,
+    GENERIC_CopyStorageFile,
     GENERIC_GetStorageSpaceRemaining
 };
 

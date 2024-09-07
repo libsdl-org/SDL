@@ -43,11 +43,11 @@
 
 #include "SDL_ps2video.h"
 
-/* PS2 driver bootstrap functions */
+// PS2 driver bootstrap functions
 
-static int PS2_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static bool PS2_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    return 0;
+    return true;
 }
 
 static void PS2_DeleteDevice(SDL_VideoDevice *device)
@@ -55,15 +55,15 @@ static void PS2_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static int PS2_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+static bool PS2_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_SetKeyboardFocus(window);
 
-    /* Window has been successfully created */
-    return 0;
+    // Window has been successfully created
+    return true;
 }
 
-static int PS2_VideoInit(SDL_VideoDevice *_this)
+static bool PS2_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
@@ -72,12 +72,12 @@ static int PS2_VideoInit(SDL_VideoDevice *_this)
     mode.h = 480;
     mode.refresh_rate = 60.0f;
 
-    /* 32 bpp for default */
+    // 32 bpp for default
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
     SDL_AddBasicVideoDisplay(&mode);
 
-    return 1;
+    return true;
 }
 
 static void PS2_VideoQuit(SDL_VideoDevice *_this)
@@ -86,20 +86,20 @@ static void PS2_VideoQuit(SDL_VideoDevice *_this)
 
 static void PS2_PumpEvents(SDL_VideoDevice *_this)
 {
-    /* do nothing. */
+    // do nothing.
 }
 
 static SDL_VideoDevice *PS2_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
-    /* Initialize all variables that we clean on shutdown */
+    // Initialize all variables that we clean on shutdown
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
-        return 0;
+        return NULL;
     }
 
-    /* Set the function pointers */
+    // Set the function pointers
     device->VideoInit = PS2_VideoInit;
     device->VideoQuit = PS2_VideoQuit;
     device->SetDisplayMode = PS2_SetDisplayMode;
@@ -114,7 +114,7 @@ VideoBootStrap PS2_bootstrap = {
     "ps2",
     "PS2 Video Driver",
     PS2_CreateDevice,
-    NULL /* no ShowMessageBox implementation */
+    NULL // no ShowMessageBox implementation
 };
 
-#endif /* SDL_VIDEO_DRIVER_PS2 */
+#endif // SDL_VIDEO_DRIVER_PS2

@@ -92,22 +92,22 @@ typedef struct SDL_UDEV_PrivateData
     int ref_count;
     SDL_UDEV_CallbackList *first, *last;
 
-    /* Function pointers */
+    // Function pointers
     SDL_UDEV_Symbols syms;
 } SDL_UDEV_PrivateData;
 
-extern int SDL_UDEV_Init(void);
+extern bool SDL_UDEV_Init(void);
 extern void SDL_UDEV_Quit(void);
 extern void SDL_UDEV_UnloadLibrary(void);
-extern int SDL_UDEV_LoadLibrary(void);
+extern bool SDL_UDEV_LoadLibrary(void);
 extern void SDL_UDEV_Poll(void);
-extern int SDL_UDEV_Scan(void);
-extern SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class);
-extern int SDL_UDEV_AddCallback(SDL_UDEV_Callback cb);
+extern bool SDL_UDEV_Scan(void);
+extern bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class);
+extern bool SDL_UDEV_AddCallback(SDL_UDEV_Callback cb);
 extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);
 extern const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void);
 extern void SDL_UDEV_ReleaseUdevSyms(void);
 
-#endif /* HAVE_LIBUDEV_H && HAVE_LINUX_INPUT_H */
+#endif // HAVE_LIBUDEV_H && HAVE_LINUX_INPUT_H
 
-#endif /* SDL_udev_h_ */
+#endif // SDL_udev_h_

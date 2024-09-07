@@ -40,11 +40,11 @@ extern "C" {
 #include "SDL_ngagevideo.h"
 #include "SDL_ngageevents_c.h"
 
-int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent);
+static void HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent);
 
 void NGAGE_PumpEvents(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     while (data->NGAGE_WsEventStatus != KRequestPending) {
         data->NGAGE_WsSession.GetEvent(data->NGAGE_WsEvent);
@@ -57,7 +57,7 @@ void NGAGE_PumpEvents(SDL_VideoDevice *_this)
 }
 
 /*****************************************************************************/
-/* Internal                                                                  */
+// Internal
 /*****************************************************************************/
 
 #include <bautils.h>
@@ -70,102 +70,101 @@ TBool isCursorVisible = EFalse;
 
 static SDL_Scancode ConvertScancode(SDL_VideoDevice *_this, int key)
 {
-    SDL_Keycode keycode;
+    SDL_Keycode scancode;
 
     switch (key) {
     case EStdKeyBackspace: // Clear key
-        keycode = SDLK_BACKSPACE;
+        scancode = SDL_SCANCODE_BACKSPACE;
         break;
     case 0x31: // 1
-        keycode = SDLK_1;
+        scancode = SDL_SCANCODE_1;
         break;
     case 0x32: // 2
-        keycode = SDLK_2;
+        scancode = SDL_SCANCODE_2;
         break;
     case 0x33: // 3
-        keycode = SDLK_3;
+        scancode = SDL_SCANCODE_3;
         break;
     case 0x34: // 4
-        keycode = SDLK_4;
+        scancode = SDL_SCANCODE_4;
         break;
     case 0x35: // 5
-        keycode = SDLK_5;
+        scancode = SDL_SCANCODE_5;
         break;
     case 0x36: // 6
-        keycode = SDLK_6;
+        scancode = SDL_SCANCODE_6;
         break;
     case 0x37: // 7
-        keycode = SDLK_7;
+        scancode = SDL_SCANCODE_7;
         break;
     case 0x38: // 8
-        keycode = SDLK_8;
+        scancode = SDL_SCANCODE_8;
         break;
     case 0x39: // 9
-        keycode = SDLK_9;
+        scancode = SDL_SCANCODE_9;
         break;
     case 0x30: // 0
-        keycode = SDLK_0;
+        scancode = SDL_SCANCODE_0;
         break;
     case 0x2a: // Asterisk
-        keycode = SDLK_ASTERISK;
+        scancode = SDL_SCANCODE_ASTERISK;
         break;
     case EStdKeyHash: // Hash
-        keycode = SDLK_HASH;
+        scancode = SDL_SCANCODE_HASH;
         break;
     case EStdKeyDevice0: // Left softkey
-        keycode = SDLK_SOFTLEFT;
+        scancode = SDL_SCANCODE_SOFTLEFT;
         break;
     case EStdKeyDevice1: // Right softkey
-        keycode = SDLK_SOFTRIGHT;
+        scancode = SDL_SCANCODE_SOFTRIGHT;
         break;
     case EStdKeyApplication0: // Call softkey
-        keycode = SDLK_CALL;
+        scancode = SDL_SCANCODE_CALL;
         break;
     case EStdKeyApplication1: // End call softkey
-        keycode = SDLK_ENDCALL;
+        scancode = SDL_SCANCODE_ENDCALL;
         break;
     case EStdKeyDevice3: // Middle softkey
-        keycode = SDLK_SELECT;
+        scancode = SDL_SCANCODE_SELECT;
         break;
     case EStdKeyUpArrow: // Up arrow
-        keycode = SDLK_UP;
+        scancode = SDL_SCANCODE_UP;
         break;
     case EStdKeyDownArrow: // Down arrow
-        keycode = SDLK_DOWN;
+        scancode = SDL_SCANCODE_DOWN;
         break;
     case EStdKeyLeftArrow: // Left arrow
-        keycode = SDLK_LEFT;
+        scancode = SDL_SCANCODE_LEFT;
         break;
     case EStdKeyRightArrow: // Right arrow
-        keycode = SDLK_RIGHT;
+        scancode = SDL_SCANCODE_RIGHT;
         break;
     default:
-        keycode = SDLK_UNKNOWN;
+        scancode = SDL_SCANCODE_UNKNOWN;
         break;
     }
 
-    return SDL_GetScancodeFromKey(keycode);
+    return scancode;
 }
 
-int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
+static void HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
 {
-    SDL_VideoData *data = _this->driverdata;
-    int posted = 0;
+    SDL_VideoData *data = _this->internal;
 
     switch (aWsEvent.Type()) {
-    case EEventKeyDown: /* Key events */
-        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, ConvertScancode(_this, aWsEvent.Key()->iScanCode));
+    case EEventKeyDown: // Key events
+        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, aWsEvent.Key()->iScanCode, ConvertScancode(_this, aWsEvent.Key()->iScanCode), SDL_PRESSED);
         break;
-    case EEventKeyUp: /* Key events */
-        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, ConvertScancode(_this, aWsEvent.Key()->iScanCode));
+    case EEventKeyUp: // Key events
+        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, aWsEvent.Key()->iScanCode, ConvertScancode(_this, aWsEvent.Key()->iScanCode), SDL_RELEASED);
         break;
-    case EEventFocusGained: /* SDL window got focus */
+    case EEventFocusGained: // SDL window got focus
         data->NGAGE_IsWindowFocused = ETrue;
-        /* Draw window background and screen buffer */
+        // Draw window background and screen buffer
         DisableKeyBlocking(_this);
         RedrawWindowL(_this);
         break;
-    case EEventFocusLost: /* SDL window lost focus */
+    case EEventFocusLost: // SDL window lost focus
     {
         data->NGAGE_IsWindowFocused = EFalse;
         RWsSession s;
@@ -188,7 +187,6 @@ int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
     default:
         break;
     }
-    return posted;
 }
 
-#endif /* SDL_VIDEO_DRIVER_NGAGE */
+#endif // SDL_VIDEO_DRIVER_NGAGE

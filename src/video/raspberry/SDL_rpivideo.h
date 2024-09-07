@@ -30,7 +30,7 @@
 
 struct SDL_VideoData
 {
-    uint32_t egl_refcount; /* OpenGL ES reference count              */
+    uint32_t egl_refcount; // OpenGL ES reference count
 };
 
 struct SDL_DisplayData
@@ -45,45 +45,45 @@ struct SDL_WindowData
     EGLSurface egl_surface;
 #endif
 
-    /* Vsync callback cond and mutex */
+    // Vsync callback cond and mutex
     SDL_Condition *vsync_cond;
     SDL_Mutex *vsync_cond_mutex;
-    SDL_bool double_buffer;
+    bool double_buffer;
 };
 
-#define SDL_RPI_VIDEOLAYER 10000 /* High enough so to occlude everything */
+#define SDL_RPI_VIDEOLAYER 10000 // High enough so to occlude everything
 #define SDL_RPI_MOUSELAYER SDL_RPI_VIDEOLAYER + 1
 
 /****************************************************************************/
-/* SDL_VideoDevice functions declaration                                    */
+// SDL_VideoDevice functions declaration
 /****************************************************************************/
 
-/* Display and window functions */
-int RPI_VideoInit(SDL_VideoDevice *_this);
-void RPI_VideoQuit(SDL_VideoDevice *_this);
-int RPI_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-int RPI_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
-void RPI_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
-int RPI_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
-void RPI_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
-void RPI_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void RPI_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void RPI_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void RPI_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void RPI_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void RPI_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
-void RPI_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+// Display and window functions
+extern bool RPI_VideoInit(SDL_VideoDevice *_this);
+extern void RPI_VideoQuit(SDL_VideoDevice *_this);
+extern bool RPI_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern bool RPI_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+extern bool RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
+extern void RPI_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool RPI_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
+extern void RPI_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
+extern void RPI_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void RPI_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void RPI_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void RPI_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void RPI_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void RPI_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void RPI_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-/* OpenGL/OpenGL ES functions */
-int RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-SDL_FunctionPointer RPI_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
-void RPI_GLES_UnloadLibrary(SDL_VideoDevice *_this);
-SDL_GLContext RPI_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-int RPI_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
-int RPI_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-int RPI_GLES_GetSwapInterval(SDL_VideoDevice *_this);
-int RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-int RPI_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+// OpenGL/OpenGL ES functions
+extern bool RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern SDL_FunctionPointer RPI_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
+extern void RPI_GLES_UnloadLibrary(SDL_VideoDevice *_this);
+extern SDL_GLContext RPI_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool RPI_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern bool RPI_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
+extern bool RPI_GLES_GetSwapInterval(SDL_VideoDevice *_this);
+extern bool RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool RPI_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);
 
-#endif /* SDL_rpivideo_h */
+#endif // SDL_rpivideo_h

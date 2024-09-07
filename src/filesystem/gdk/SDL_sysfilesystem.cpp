@@ -20,9 +20,12 @@
 */
 #include "SDL_internal.h"
 
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
+
+extern "C" {
+#include "../SDL_sysfilesystem.h"
+}
 
 #include "../../core/windows/SDL_windows.h"
 #include <SDL3/SDL_hints.h>
@@ -31,7 +34,7 @@
 #include <XGameSaveFiles.h>
 
 char *
-SDL_GetBasePath(void)
+SDL_SYS_GetBasePath(void)
 {
     /* NOTE: This function is a UTF8 version of the Win32 SDL_GetBasePath()!
      * The GDK actually _recommends_ the 'A' functions over the 'W' functions :o
@@ -41,7 +44,7 @@ SDL_GetBasePath(void)
     DWORD len = 0;
     int i;
 
-    while (SDL_TRUE) {
+    while (true) {
         void *ptr = SDL_realloc(path, buflen * sizeof(CHAR));
         if (!ptr) {
             SDL_free(path);
@@ -51,13 +54,13 @@ SDL_GetBasePath(void)
         path = (CHAR *)ptr;
 
         len = GetModuleFileNameA(NULL, path, buflen);
-        /* if it truncated, then len >= buflen - 1 */
-        /* if there was enough room (or failure), len < buflen - 1 */
+        // if it truncated, then len >= buflen - 1
+        // if there was enough room (or failure), len < buflen - 1
         if (len < buflen - 1) {
             break;
         }
 
-        /* buffer too small? Try again. */
+        // buffer too small? Try again.
         buflen *= 2;
     }
 
@@ -73,34 +76,33 @@ SDL_GetBasePath(void)
         }
     }
 
-    SDL_assert(i > 0);  /* Should have been an absolute path. */
-    path[i + 1] = '\0'; /* chop off filename. */
+    SDL_assert(i > 0);  // Should have been an absolute path.
+    path[i + 1] = '\0'; // chop off filename.
 
     return path;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     XUserHandle user = NULL;
     XAsyncBlock block = { 0 };
     char *folderPath;
     HRESULT result;
     const char *csid = SDL_GetHint("SDL_GDK_SERVICE_CONFIGURATION_ID");
-    
+
     if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
 
-    /* This should be set before calling SDL_GetPrefPath! */
+    // This should be set before calling SDL_GetPrefPath!
     if (!csid) {
         SDL_LogWarn(SDL_LOG_CATEGORY_SYSTEM, "Set SDL_GDK_SERVICE_CONFIGURATION_ID before calling SDL_GetPrefPath!");
         return SDL_strdup("T:\\");
     }
 
-    if (SDL_GDKGetDefaultUser(&user) < 0) {
-        /* Error already set, just return */
+    if (!SDL_GetGDKDefaultUser(&user)) {
+        // Error already set, just return
         return NULL;
     }
 
@@ -133,5 +135,9 @@ SDL_GetPrefPath(const char *org, const char *app)
     return folderPath;
 }
 
-
-/* vi: set ts=4 sw=4 expandtab: */
+// TODO
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
+}

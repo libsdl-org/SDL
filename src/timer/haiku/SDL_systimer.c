@@ -35,9 +35,9 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return SDL_US_PER_SECOND;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     snooze((bigtime_t)SDL_NS_TO_US(ns));
 }
 
-#endif /* SDL_TIMER_HAIKU */
+#endif // SDL_TIMER_HAIKU

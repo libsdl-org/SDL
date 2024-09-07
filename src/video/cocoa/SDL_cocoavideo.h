@@ -38,6 +38,7 @@
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoawindow.h"
+#include "SDL_cocoapen.h"
 
 #ifndef MAC_OS_X_VERSION_10_12
 #define DECLARE_EVENT(name) static const NSEventType NSEventType##name = NS##name
@@ -79,7 +80,7 @@ DECLARE_WINDOW_MASK(Resizable);
 DECLARE_WINDOW_MASK(TexturedBackground);
 DECLARE_WINDOW_MASK(UnifiedTitleAndToolbar);
 DECLARE_WINDOW_MASK(FullScreen);
-/*DECLARE_WINDOW_MASK(FullSizeContentView);*/ /* Not used, fails compile on older SDKs */
+/*DECLARE_WINDOW_MASK(FullSizeContentView);*/ // Not used, fails compile on older SDKs
 static const unsigned int NSWindowStyleMaskUtilityWindow = NSUtilityWindowMask;
 static const unsigned int NSWindowStyleMaskDocModalWindow = NSDocModalWindowMask;
 static const unsigned int NSWindowStyleMaskHUDWindow = NSHUDWindowMask;
@@ -92,28 +93,28 @@ DECLARE_ALERT_STYLE(Critical);
 #undef DECLARE_ALERT_STYLE
 #endif
 
-/* Private display data */
+// Private display data
 
-@class SDLTranslatorResponder;
+@class SDL3TranslatorResponder;
 
 @interface SDL_CocoaVideoData : NSObject
 @property(nonatomic) int allow_spaces;
 @property(nonatomic) int trackpad_is_touch_only;
 @property(nonatomic) unsigned int modifierFlags;
 @property(nonatomic) void *key_layout;
-@property(nonatomic) SDLTranslatorResponder *fieldEdit;
+@property(nonatomic) SDL3TranslatorResponder *fieldEdit;
 @property(nonatomic) NSInteger clipboard_count;
 @property(nonatomic) IOPMAssertionID screensaver_assertion;
 @property(nonatomic) SDL_Mutex *swaplock;
 @end
 
-/* Utility functions */
+// Utility functions
 extern SDL_SystemTheme Cocoa_GetSystemTheme(void);
 extern NSImage *Cocoa_CreateImage(SDL_Surface *surface);
 
-/* Fix build with the 10.11 SDK */
+// Fix build with the 10.11 SDK
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 101200
 #define NSEventSubtypeMouseEvent NSMouseEventSubtype
 #endif
 
-#endif /* SDL_cocoavideo_h_ */
+#endif // SDL_cocoavideo_h_

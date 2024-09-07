@@ -19,10 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_revision.h
- *
- *  Header file containing the SDL revision
+/* WIKI CATEGORY: Version */
+
+/*
+ * SDL_revision.h contains the SDL revision, which might be defined on the
+ * compiler command line, or generated right into the header itself by the
+ * build system.
  */
 
 #ifndef SDL_revision_h_

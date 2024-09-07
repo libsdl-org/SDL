@@ -22,7 +22,7 @@
 
 #include "../SDL_sysurl.h"
 
-int SDL_SYS_OpenURL(const char *url)
+bool SDL_SYS_OpenURL(const char *url)
 {
     return SDL_Unsupported();
 }

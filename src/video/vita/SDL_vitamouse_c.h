@@ -24,8 +24,8 @@
 
 #include "SDL_internal.h"
 
-/* mouse functions */
+// mouse functions
 extern void VITA_InitMouse(void);
 extern void VITA_PollMouse(void);
 
-#endif /* SDL_vitamouse_h */
+#endif // SDL_vitamouse_h

@@ -26,9 +26,6 @@
 
 #define SDL_SECONDS_PER_DAY 86400
 
-extern void SDL_InitTime(void);
-extern void SDL_QuitTime(void);
-
 /* Given a calendar date, returns days since Jan 1 1970, and optionally
  * the day of the week (0-6, 0 is Sunday) and day of the year (0-365).
  */
@@ -36,4 +33,4 @@ extern Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, in
 
 extern void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf);
 
-#endif /* SDL_time_c_h_ */
+#endif // SDL_time_c_h_

@@ -21,4 +21,4 @@
 
 #include "SDL_pspvideo.h"
 
-/* Functions to be exported */
+// Functions to be exported

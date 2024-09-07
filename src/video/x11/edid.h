@@ -84,9 +84,9 @@ struct MonitorInfo
     int product_code;
     unsigned int serial_number;
 
-    int production_week; /* -1 if not specified */
-    int production_year; /* -1 if not specified */
-    int model_year;      /* -1 if not specified */
+    int production_week; // -1 if not specified
+    int production_year; // -1 if not specified
+    int model_year;      // -1 if not specified
 
     int major_version;
     int minor_version;
@@ -120,11 +120,11 @@ struct MonitorInfo
         } analog;
     } ad;
 
-    int width_mm;        /* -1 if not specified */
-    int height_mm;       /* -1 if not specified */
-    double aspect_ratio; /* -1.0 if not specififed */
+    int width_mm;        // -1 if not specified
+    int height_mm;       // -1 if not specified
+    double aspect_ratio; // -1.0 if not specififed
 
-    double gamma; /* -1.0 if not specified */
+    double gamma; // -1.0 if not specified
 
     int standby;
     int suspend;
@@ -143,7 +143,7 @@ struct MonitorInfo
     double white_x;
     double white_y;
 
-    Timing established[24]; /* Terminated by 0x0x0 */
+    Timing established[24]; // Terminated by 0x0x0
     Timing standard[8];
 
     int n_detailed_timings;
@@ -155,10 +155,10 @@ struct MonitorInfo
                                          * bit.
                                          */
 
-    /* Optional product description */
+    // Optional product description
     char dsc_serial_number[14];
     char dsc_product_name[14];
-    char dsc_string[14]; /* Unspecified ASCII data */
+    char dsc_string[14]; // Unspecified ASCII data
 };
 
 MonitorInfo *decode_edid(const uchar *data);

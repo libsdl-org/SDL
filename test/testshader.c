@@ -459,7 +459,7 @@ int main(int argc, char **argv)
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -482,7 +482,7 @@ int main(int argc, char **argv)
     }
 
     /* Initialize SDL for video output */
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }
@@ -532,10 +532,10 @@ int main(int argc, char **argv)
                     done = 1;
                 }
                 if (event.type == SDL_EVENT_KEY_DOWN) {
-                    if (event.key.keysym.sym == SDLK_SPACE) {
+                    if (event.key.key == SDLK_SPACE) {
                         current_shader = (current_shader + 1) % NUM_SHADERS;
                     }
-                    if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    if (event.key.key == SDLK_ESCAPE) {
                         done = 1;
                     }
                 }

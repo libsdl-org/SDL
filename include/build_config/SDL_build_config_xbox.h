@@ -41,12 +41,12 @@
 /*#define HAVE_WINDOWS_GAMING_INPUT_H 1*/
 /*#define HAVE_D3D11_H 1*/
 /*#define HAVE_ROAPI_H 1*/
-#define HAVE_D3D12_H 1
 /*#define HAVE_SHELLSCALINGAPI_H 1*/
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
 /*#define HAVE_TPCSHRD_H  1*/
 /*#define HAVE_SENSORSAPI_H 1*/
+#define HAVE_GAMEINPUT_H 1
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64)) && (defined(_MSC_VER) && _MSC_VER >= 1600)
 #elif defined(__has_include) && (defined(__i386__) || defined(__x86_64))
 # if !__has_include(<immintrin.h>)
@@ -62,6 +62,7 @@
 #define HAVE_MATH_H 1
 #define HAVE_SIGNAL_H 1
 #define HAVE_STDARG_H 1
+#define HAVE_STDBOOL_H 1
 #define HAVE_STDDEF_H 1
 #define HAVE_STDINT_H 1
 #define HAVE_STDIO_H 1
@@ -81,6 +82,7 @@
 #define HAVE_MEMMOVE 1
 #define HAVE_MEMCMP 1
 #define HAVE_STRLEN 1
+#define HAVE_STRPBRK 1
 #define HAVE__STRREV 1
 /* These functions have security warnings, so we won't use them */
 /* #undef HAVE__STRUPR */
@@ -110,6 +112,10 @@
 #define HAVE_FABS   1
 #define HAVE_FLOOR  1
 #define HAVE_FMOD   1
+#define HAVE_ISINF  1
+#define HAVE_ISINF_FLOAT_MACRO 1
+#define HAVE_ISNAN  1
+#define HAVE_ISNAN_FLOAT_MACRO 1
 #define HAVE_LOG    1
 #define HAVE_LOG10  1
 #define HAVE_POW    1
@@ -133,7 +139,7 @@
 #define HAVE_SINF   1
 #define HAVE_SQRTF  1
 #define HAVE_TANF   1
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 /* These functions were added with the VC++ 2013 C runtime library */
 #define HAVE_STRTOLL 1
 #define HAVE_STRTOULL 1
@@ -159,25 +165,12 @@
 #define SDL_AUDIO_DRIVER_DUMMY  1
 
 /* Enable various input drivers */
-/*#define SDL_JOYSTICK_DINPUT 1*/
-/*#define SDL_JOYSTICK_HIDAPI 1*/
-/*#define SDL_JOYSTICK_RAWINPUT   1*/
 #define SDL_JOYSTICK_VIRTUAL    1
-#ifdef HAVE_WINDOWS_GAMING_INPUT_H
-#define SDL_JOYSTICK_WGI    1
-#endif
 /* This is XInputOnGameInput for GDK platforms: */
 /*#define SDL_JOYSTICK_XINPUT 1*/
 /* Native GameInput: */
 #define SDL_JOYSTICK_GAMEINPUT 1
-#if defined(SDL_JOYSTICK_GAMEINPUT) && (defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_DINPUT))
-#error "GameInput cannot co-exist, choose one."
-#endif /* defined(SDL_JOYSTICK_GAMEINPUT) && (defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_DINPUT)) */
-#if defined(SDL_JOYSTICK_GAMEINPUT) && SDL_JOYSTICK_GAMEINPUT
-/* TODO: Implement proper haptics for GameInput! */
 #define SDL_HAPTIC_DUMMY 1
-#endif /* defined(SDL_JOYSTICK_GAMEINPUT) && SDL_JOYSTICK_GAMEINPUT */
-/*#define SDL_HAPTIC_DINPUT   1*/
 
 /* Enable the sensor driver */
 #ifdef HAVE_SENSORSAPI_H
@@ -201,23 +194,18 @@
 #define SDL_TIMER_WINDOWS   1
 
 /* Enable various video drivers */
-#define SDL_VIDEO_DRIVER_DUMMY  1
-#define SDL_VIDEO_DRIVER_WINDOWS    1
-
-#if !defined(SDL_VIDEO_RENDER_D3D12) && defined(HAVE_D3D12_H)
-#define SDL_VIDEO_RENDER_D3D12  1
-#endif
+#define SDL_VIDEO_DRIVER_DUMMY 1
+#define SDL_VIDEO_DRIVER_WINDOWS 1
+#define SDL_VIDEO_RENDER_D3D12 1
 
 /* Enable OpenGL support */
-#ifndef SDL_VIDEO_OPENGL
-#define SDL_VIDEO_OPENGL    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_WGL
-#define SDL_VIDEO_OPENGL_WGL    1
-#endif
-#ifndef SDL_VIDEO_RENDER_OGL
-#define SDL_VIDEO_RENDER_OGL    1
-#endif
+#define SDL_VIDEO_OPENGL 1
+#define SDL_VIDEO_OPENGL_WGL 1
+#define SDL_VIDEO_RENDER_OGL 1
+
+/* Enable GPU support */
+#define SDL_GPU_D3D12 1
+#define SDL_VIDEO_RENDER_GPU 1
 
 /* Enable system power support */
 /*#define SDL_POWER_WINDOWS 1*/

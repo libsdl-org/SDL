@@ -23,29 +23,38 @@
 
 #if defined(SDL_FSOPS_DUMMY)
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+// System dependent filesystem routines
+
 #include "../SDL_sysfilesystem.h"
 
 int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-    return SDL_Unsupported();
+    SDL_Unsupported();
+    return -1;
 }
 
-int SDL_SYS_RemovePath(const char *path)
+bool SDL_SYS_RemovePath(const char *path)
 {
     return SDL_Unsupported();
 }
 
-int SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
+bool SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
 {
     return SDL_Unsupported();
 }
 
-int SDL_SYS_CreateDirectory(const char *path)
+bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
 {
     return SDL_Unsupported();
 }
 
-int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
+bool SDL_SYS_CreateDirectory(const char *path)
+{
+    return SDL_Unsupported();
+}
+
+bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
     return SDL_Unsupported();
 }

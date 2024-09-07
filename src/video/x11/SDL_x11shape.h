@@ -23,6 +23,6 @@
 #ifndef SDL_x11shape_h_
 #define SDL_x11shape_h_
 
-extern int X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
+extern bool X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
 
-#endif /* SDL_x11shape_h_ */
+#endif // SDL_x11shape_h_

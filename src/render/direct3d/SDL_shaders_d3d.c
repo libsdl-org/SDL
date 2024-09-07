@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_D3D
+#ifdef SDL_VIDEO_RENDER_D3D
 
 #include "../../core/windows/SDL_windows.h"
 
@@ -28,7 +28,7 @@
 
 #include "SDL_shaders_d3d.h"
 
-/* The shaders here were compiled with compile_shaders.bat */
+// The shaders here were compiled with compile_shaders.bat
 
 #define g_ps20_main D3D9_PixelShader_YUV
 #include "D3D9_PixelShader_YUV.h"
@@ -45,4 +45,4 @@ HRESULT D3D9_CreatePixelShader(IDirect3DDevice9 *d3dDevice, D3D9_Shader shader, 
     return IDirect3DDevice9_CreatePixelShader(d3dDevice, (const DWORD *)D3D9_shaders[shader], pixelShader);
 }
 
-#endif /* SDL_VIDEO_RENDER_D3D */
+#endif // SDL_VIDEO_RENDER_D3D

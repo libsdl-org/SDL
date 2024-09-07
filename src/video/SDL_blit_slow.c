@@ -26,19 +26,22 @@
 
 typedef enum
 {
+    SlowBlitPixelAccess_Index8,
     SlowBlitPixelAccess_RGB,
     SlowBlitPixelAccess_RGBA,
     SlowBlitPixelAccess_10Bit,
     SlowBlitPixelAccess_Large,
 } SlowBlitPixelAccess;
 
-static SlowBlitPixelAccess GetPixelAccessMethod(SDL_PixelFormat *pf)
+static SlowBlitPixelAccess GetPixelAccessMethod(SDL_PixelFormat format)
 {
-    if (pf->bytes_per_pixel > 4) {
+    if (SDL_BYTESPERPIXEL(format) > 4) {
         return SlowBlitPixelAccess_Large;
-    } else if (SDL_ISPIXELFORMAT_10BIT(pf->format)) {
+    } else if (SDL_ISPIXELFORMAT_10BIT(format)) {
         return SlowBlitPixelAccess_10Bit;
-    } else if (pf->Amask) {
+    } else if (format == SDL_PIXELFORMAT_INDEX8) {
+        return SlowBlitPixelAccess_Index8;
+    } else if (SDL_ISPIXELFORMAT_ALPHA(format)) {
         return SlowBlitPixelAccess_RGBA;
     } else {
         return SlowBlitPixelAccess_RGB;
@@ -62,33 +65,48 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
     Uint64 srcy, srcx;
     Uint64 posy, posx;
     Uint64 incy, incx;
-    SDL_PixelFormat *src_fmt = info->src_fmt;
-    SDL_PixelFormat *dst_fmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *src_fmt = info->src_fmt;
+    const SDL_Palette *src_pal = info->src_pal;
+    const SDL_PixelFormatDetails *dst_fmt = info->dst_fmt;
+    const SDL_Palette *dst_pal = info->dst_pal;
+    SDL_HashTable *palette_map = info->palette_map;
     int srcbpp = src_fmt->bytes_per_pixel;
     int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;
     SlowBlitPixelAccess dst_access;
     Uint32 rgbmask = ~src_fmt->Amask;
     Uint32 ckey = info->colorkey & rgbmask;
+    Uint32 last_pixel = 0;
+    Uint8 last_index = 0;
 
-    src_access = GetPixelAccessMethod(src_fmt);
-    dst_access = GetPixelAccessMethod(dst_fmt);
+    src_access = GetPixelAccessMethod(src_fmt->format);
+    dst_access = GetPixelAccessMethod(dst_fmt->format);
+    if (dst_access == SlowBlitPixelAccess_Index8) {
+        last_index = SDL_LookupRGBAColor(palette_map, last_pixel, dst_pal);
+    }
 
     incy = ((Uint64)info->src_h << 16) / info->dst_h;
     incx = ((Uint64)info->src_w << 16) / info->dst_w;
-    posy = incy / 2; /* start at the middle of pixel */
+    posy = incy / 2; // start at the middle of pixel
 
     while (info->dst_h--) {
         Uint8 *src = 0;
         Uint8 *dst = info->dst;
         int n = info->dst_w;
-        posx = incx / 2; /* start at the middle of pixel */
+        posx = incx / 2; // start at the middle of pixel
         srcy = posy >> 16;
         while (n--) {
             srcx = posx >> 16;
             src = (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
 
             switch (src_access) {
+            case SlowBlitPixelAccess_Index8:
+                srcpixel = *src;
+                srcR = src_pal->colors[srcpixel].r;
+                srcG = src_pal->colors[srcpixel].g;
+                srcB = src_pal->colors[srcpixel].b;
+                srcA = src_pal->colors[srcpixel].a;
+                break;
             case SlowBlitPixelAccess_RGB:
                 DISEMBLE_RGB(src, srcbpp, src_fmt, srcpixel, srcR, srcG, srcB);
                 srcA = 0xFF;
@@ -118,12 +136,12 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                 }
                 break;
             case SlowBlitPixelAccess_Large:
-                /* Handled in SDL_Blit_Slow_Float() */
+                // Handled in SDL_Blit_Slow_Float()
                 break;
             }
 
             if (flags & SDL_COPY_COLORKEY) {
-                /* srcpixel isn't set for 24 bpp */
+                // srcpixel isn't set for 24 bpp
                 if (srcbpp == 3) {
                     srcpixel = (srcR << src_fmt->Rshift) |
                                (srcG << src_fmt->Gshift) | (srcB << src_fmt->Bshift);
@@ -134,8 +152,15 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                     continue;
                 }
             }
-            if ((flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL))) {
+            if (flags & SDL_COPY_BLEND_MASK) {
                 switch (dst_access) {
+                case SlowBlitPixelAccess_Index8:
+                    dstpixel = *dst;
+                    dstR = dst_pal->colors[dstpixel].r;
+                    dstG = dst_pal->colors[dstpixel].g;
+                    dstB = dst_pal->colors[dstpixel].b;
+                    dstA = dst_pal->colors[dstpixel].a;
+                    break;
                 case SlowBlitPixelAccess_RGB:
                     DISEMBLE_RGB(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB);
                     dstA = 0xFF;
@@ -165,11 +190,11 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                     }
                     break;
                 case SlowBlitPixelAccess_Large:
-                    /* Handled in SDL_Blit_Slow_Float() */
+                    // Handled in SDL_Blit_Slow_Float()
                     break;
                 }
             } else {
-                /* don't care */
+                // don't care
             }
 
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -181,14 +206,13 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                 srcA = (srcA * modulateA) / 255;
             }
             if (flags & (SDL_COPY_BLEND | SDL_COPY_ADD)) {
-                /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
                     srcR = (srcR * srcA) / 255;
                     srcG = (srcG * srcA) / 255;
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL)) {
+            switch (flags & SDL_COPY_BLEND_MASK) {
             case 0:
                 dstR = srcR;
                 dstG = srcG;
@@ -201,7 +225,26 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                 dstB = srcB + ((255 - srcA) * dstB) / 255;
                 dstA = srcA + ((255 - srcA) * dstA) / 255;
                 break;
+            case SDL_COPY_BLEND_PREMULTIPLIED:
+                dstR = srcR + ((255 - srcA) * dstR) / 255;
+                if (dstR > 255) {
+                    dstR = 255;
+                }
+                dstG = srcG + ((255 - srcA) * dstG) / 255;
+                if (dstG > 255) {
+                    dstG = 255;
+                }
+                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                if (dstB > 255) {
+                    dstB = 255;
+                }
+                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                if (dstA > 255) {
+                    dstA = 255;
+                }
+                break;
             case SDL_COPY_ADD:
+            case SDL_COPY_ADD_PREMULTIPLIED:
                 dstR = srcR + dstR;
                 if (dstR > 255) {
                     dstR = 255;
@@ -237,6 +280,14 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
             }
 
             switch (dst_access) {
+            case SlowBlitPixelAccess_Index8:
+                dstpixel = ((dstR << 24) | (dstG << 16) | (dstB << 8) | dstA);
+                if (dstpixel != last_pixel) {
+                    last_pixel = dstpixel;
+                    last_index = SDL_LookupRGBAColor(palette_map, dstpixel, dst_pal);
+                }
+                *dst = last_index;
+                break;
             case SlowBlitPixelAccess_RGB:
                 ASSEMBLE_RGB(dst, dstbpp, dst_fmt, dstR, dstG, dstB);
                 break;
@@ -267,7 +318,7 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                 break;
             }
             case SlowBlitPixelAccess_Large:
-                /* Handled in SDL_Blit_Slow_Float() */
+                // Handled in SDL_Blit_Slow_Float()
                 break;
             }
 
@@ -343,25 +394,25 @@ static Uint16 float_to_half(float a)
     ir = (ia >> 16) & 0x8000;
     if ((ia & 0x7f800000) == 0x7f800000) {
         if ((ia & 0x7fffffff) == 0x7f800000) {
-            ir |= 0x7c00; /* infinity */
+            ir |= 0x7c00; // infinity
         } else {
-            ir |= 0x7e00 | ((ia >> (24 - 11)) & 0x1ff); /* NaN, quietened */
+            ir |= 0x7e00 | ((ia >> (24 - 11)) & 0x1ff); // NaN, quietened
         }
     } else if ((ia & 0x7f800000) >= 0x33000000) {
         int shift = (int)((ia >> 23) & 0xff) - 127;
         if (shift > 15) {
-            ir |= 0x7c00; /* infinity */
+            ir |= 0x7c00; // infinity
         } else {
-            ia = (ia & 0x007fffff) | 0x00800000; /* extract mantissa */
-            if (shift < -14) { /* denormal */
+            ia = (ia & 0x007fffff) | 0x00800000; // extract mantissa
+            if (shift < -14) { // denormal
                 ir |= ia >> (-1 - shift);
                 ia = ia << (32 - (-1 - shift));
-            } else { /* normal */
+            } else { // normal
                 ir |= ia >> (24 - 11);
                 ia = ia << (32 - (24 - 11));
                 ir = ir + ((14 + shift) << 10);
             }
-            /* IEEE-754 round to nearest of even */
+            // IEEE-754 round to nearest of even
             if ((ia > 0x80000000) || ((ia == 0x80000000) && (ir & 1))) {
                 ir++;
             }
@@ -370,7 +421,7 @@ static Uint16 float_to_half(float a)
     return ir;
 }
 
-static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelFormat *fmt, SDL_Colorspace colorspace, float SDR_white_point,
+static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_PixelFormatDetails *fmt, const SDL_Palette *pal, SDL_Colorspace colorspace, float SDR_white_point,
                            float *outR, float *outG, float *outB, float *outA)
 {
     Uint32 pixel;
@@ -379,6 +430,13 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
     float v[4];
 
     switch (access) {
+    case SlowBlitPixelAccess_Index8:
+        pixel = *pixels;
+        fR = (float)pal->colors[pixel].r / 255.0f;
+        fG = (float)pal->colors[pixel].g / 255.0f;
+        fB = (float)pal->colors[pixel].b / 255.0f;
+        fA = (float)pal->colors[pixel].a / 255.0f;
+        break;
     case SlowBlitPixelAccess_RGB:
         DISEMBLE_RGB(pixels, fmt->bytes_per_pixel, fmt, pixel, R, G, B);
         fR = (float)R / 255.0f;
@@ -448,7 +506,7 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
             }
             break;
         default:
-            /* Unknown array type */
+            // Unknown array type
             v[0] = v[1] = v[2] = v[3] = 0.0f;
             break;
         }
@@ -490,14 +548,14 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
             fR = v[3];
             break;
         default:
-            /* Unknown array order */
+            // Unknown array order
             fA = fR = fG = fB = 0.0f;
             break;
         }
         break;
     }
 
-    /* Convert to nits so src and dst are guaranteed to be linear and in the same units */
+    // Convert to nits so src and dst are guaranteed to be linear and in the same units
     switch (SDL_COLORSPACETRANSFER(colorspace)) {
     case SDL_TRANSFER_CHARACTERISTICS_SRGB:
         fR = SDL_sRGBtoLinear(fR);
@@ -515,7 +573,7 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
         fB /= SDR_white_point;
         break;
     default:
-        /* Unknown, leave it alone */
+        // Unknown, leave it alone
         break;
     }
 
@@ -525,13 +583,14 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
     *outA = fA;
 }
 
-static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelFormat *fmt, SDL_Colorspace colorspace, float SDR_white_point,
+static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_PixelFormatDetails *fmt, SDL_Colorspace colorspace, float SDR_white_point,
                             float fR, float fG, float fB, float fA)
 {
     Uint32 R, G, B, A;
+    Uint32 pixel;
     float v[4];
 
-    /* We converted to nits so src and dst are guaranteed to be linear and in the same units */
+    // We converted to nits so src and dst are guaranteed to be linear and in the same units
     switch (SDL_COLORSPACETRANSFER(colorspace)) {
     case SDL_TRANSFER_CHARACTERISTICS_SRGB:
         fR = SDL_sRGBfromLinear(fR);
@@ -549,11 +608,15 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
         fB *= SDR_white_point;
         break;
     default:
-        /* Unknown, leave it alone */
+        // Unknown, leave it alone
         break;
     }
 
     switch (access) {
+    case SlowBlitPixelAccess_Index8:
+        // This should never happen, checked before this call
+        SDL_assert(0);
+        break;
     case SlowBlitPixelAccess_RGB:
         R = (Uint8)SDL_roundf(SDL_clamp(fR, 0.0f, 1.0f) * 255.0f);
         G = (Uint8)SDL_roundf(SDL_clamp(fG, 0.0f, 1.0f) * 255.0f);
@@ -569,7 +632,6 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
         break;
     case SlowBlitPixelAccess_10Bit:
     {
-        Uint32 pixel;
         switch (fmt->format) {
         case SDL_PIXELFORMAT_XRGB2101010:
             fA = 1.0f;
@@ -629,7 +691,7 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
             v[3] = fR;
             break;
         default:
-            /* Unknown array order */
+            // Unknown array order
             v[0] = v[1] = v[2] = v[3] = 0.0f;
             break;
         }
@@ -659,7 +721,7 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
             }
             break;
         default:
-            /* Unknown array type */
+            // Unknown array type
             break;
         }
         break;
@@ -755,8 +817,11 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     Uint64 srcy, srcx;
     Uint64 posy, posx;
     Uint64 incy, incx;
-    SDL_PixelFormat *src_fmt = info->src_fmt;
-    SDL_PixelFormat *dst_fmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *src_fmt = info->src_fmt;
+    const SDL_Palette *src_pal = info->src_pal;
+    const SDL_PixelFormatDetails *dst_fmt = info->dst_fmt;
+    const SDL_Palette *dst_pal = info->dst_pal;
+    SDL_HashTable *palette_map = info->palette_map;
     int srcbpp = src_fmt->bytes_per_pixel;
     int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;
@@ -771,11 +836,11 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     float dst_headroom;
     float src_headroom;
     SDL_TonemapContext tonemap;
+    Uint32 last_pixel = 0;
+    Uint8 last_index = 0;
 
-    if (SDL_GetSurfaceColorspace(info->src_surface, &src_colorspace) < 0 ||
-        SDL_GetSurfaceColorspace(info->dst_surface, &dst_colorspace) < 0) {
-        return;
-    }
+    src_colorspace = info->src_surface->internal->colorspace;
+    dst_colorspace = info->dst_surface->internal->colorspace;
     src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
     dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
 
@@ -784,7 +849,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     src_headroom = SDL_GetSurfaceHDRHeadroom(info->src_surface, src_colorspace);
     dst_headroom = SDL_GetSurfaceHDRHeadroom(info->dst_surface, dst_colorspace);
     if (dst_headroom == 0.0f) {
-        /* The destination will have the same headroom as the source */
+        // The destination will have the same headroom as the source
         dst_headroom = src_headroom;
         SDL_SetFloatProperty(SDL_GetSurfaceProperties(info->dst_surface), SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, dst_headroom);
     }
@@ -796,7 +861,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
         if (tonemap_operator) {
             if (SDL_strncmp(tonemap_operator, "*=", 2) == 0) {
                 tonemap.op = SDL_TONEMAP_LINEAR;
-                tonemap.data.linear.scale = SDL_atof(tonemap_operator + 2);
+                tonemap.data.linear.scale = (float)SDL_atof(tonemap_operator + 2);
             } else if (SDL_strcasecmp(tonemap_operator, "chrome") == 0) {
                 tonemap.op = SDL_TONEMAP_CHROME;
             } else if (SDL_strcasecmp(tonemap_operator, "none") == 0) {
@@ -809,7 +874,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
             tonemap.data.chrome.a = (dst_headroom / (src_headroom * src_headroom));
             tonemap.data.chrome.b = (1.0f / dst_headroom);
 
-            /* We'll convert to BT.2020 primaries for the tonemap operation */
+            // We'll convert to BT.2020 primaries for the tonemap operation
             tonemap.data.chrome.color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, SDL_COLOR_PRIMARIES_BT2020);
             if (tonemap.data.chrome.color_primaries_matrix) {
                 src_primaries = SDL_COLOR_PRIMARIES_BT2020;
@@ -821,24 +886,27 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
         color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, dst_primaries);
     }
 
-    src_access = GetPixelAccessMethod(src_fmt);
-    dst_access = GetPixelAccessMethod(dst_fmt);
+    src_access = GetPixelAccessMethod(src_fmt->format);
+    dst_access = GetPixelAccessMethod(dst_fmt->format);
+    if (dst_access == SlowBlitPixelAccess_Index8) {
+        last_index = SDL_LookupRGBAColor(palette_map, last_pixel, dst_pal);
+    }
 
     incy = ((Uint64)info->src_h << 16) / info->dst_h;
     incx = ((Uint64)info->src_w << 16) / info->dst_w;
-    posy = incy / 2; /* start at the middle of pixel */
+    posy = incy / 2; // start at the middle of pixel
 
     while (info->dst_h--) {
         Uint8 *src = 0;
         Uint8 *dst = info->dst;
         int n = info->dst_w;
-        posx = incx / 2; /* start at the middle of pixel */
+        posx = incx / 2; // start at the middle of pixel
         srcy = posy >> 16;
         while (n--) {
             srcx = posx >> 16;
             src = (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
 
-            ReadFloatPixel(src, src_access, src_fmt, src_colorspace, src_white_point, &srcR, &srcG, &srcB, &srcA);
+            ReadFloatPixel(src, src_access, src_fmt, src_pal, src_colorspace, src_white_point, &srcR, &srcG, &srcB, &srcA);
 
             if (tonemap.op) {
                 ApplyTonemap(&tonemap, &srcR, &srcG, &srcB);
@@ -849,12 +917,12 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
             }
 
             if (flags & SDL_COPY_COLORKEY) {
-                /* colorkey isn't supported */
+                // colorkey isn't supported
             }
             if ((flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL))) {
-                ReadFloatPixel(dst, dst_access, dst_fmt, dst_colorspace, dst_white_point, &dstR, &dstG, &dstB, &dstA);
+                ReadFloatPixel(dst, dst_access, dst_fmt, dst_pal, dst_colorspace, dst_white_point, &dstR, &dstG, &dstB, &dstA);
             } else {
-                /* don't care */
+                // don't care
                 dstR = dstG = dstB = dstA = 0.0f;
             }
 
@@ -867,7 +935,6 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
                 srcA = (srcA * modulateA) / 255;
             }
             if (flags & (SDL_COPY_BLEND | SDL_COPY_ADD)) {
-                /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 1.0f) {
                     srcR = (srcR * srcA);
                     srcG = (srcG * srcA);
@@ -904,7 +971,20 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
                 break;
             }
 
-            WriteFloatPixel(dst, dst_access, dst_fmt, dst_colorspace, dst_white_point, dstR, dstG, dstB, dstA);
+            if (dst_access == SlowBlitPixelAccess_Index8) {
+                Uint32 R = (Uint8)SDL_roundf(SDL_clamp(SDL_sRGBfromLinear(dstR), 0.0f, 1.0f) * 255.0f);
+                Uint32 G = (Uint8)SDL_roundf(SDL_clamp(SDL_sRGBfromLinear(dstG), 0.0f, 1.0f) * 255.0f);
+                Uint32 B = (Uint8)SDL_roundf(SDL_clamp(SDL_sRGBfromLinear(dstB), 0.0f, 1.0f) * 255.0f);
+                Uint32 A = (Uint8)SDL_roundf(SDL_clamp(dstA, 0.0f, 1.0f) * 255.0f);
+                Uint32 dstpixel = ((R << 24) | (G << 16) | (B << 8) | A);
+                if (dstpixel != last_pixel) {
+                    last_pixel = dstpixel;
+                    last_index = SDL_LookupRGBAColor(palette_map, dstpixel, dst_pal);
+                }
+                *dst = last_index;
+            } else {
+                WriteFloatPixel(dst, dst_access, dst_fmt, dst_colorspace, dst_white_point, dstR, dstG, dstB, dstA);
+            }
 
             posx += incx;
             dst += dstbpp;

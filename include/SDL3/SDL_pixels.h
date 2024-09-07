@@ -20,45 +20,9 @@
 */
 
 /**
- *  \file SDL_pixels.h
+ * # CategoryPixels
  *
- *  Header for the enumerated pixel format definitions.
- *
- *  SDL's pixel formats have the following naming convention:
- *
- *      * Names with a list of components and a single bit count, such as
- *        RGB24 and ABGR32, define a platform-independent encoding into
- *        bytes in the order specified. For example, in RGB24 data, each
- *        pixel is encoded in 3 bytes (red, green, blue) in that order,
- *        and in ABGR32 data, each pixel is encoded in 4 bytes
- *        (alpha, blue, green, red) in that order. Use these names if the
- *        property of a format that is important to you is the order of
- *        the bytes in memory or on disk.
- *
- *      * Names with a bit count per component, such as ARGB8888 and
- *        XRGB1555, are "packed" into an appropriately-sized integer in
- *        the platform's native endianness. For example, ARGB8888 is
- *        a sequence of 32-bit integers; in each integer, the most
- *        significant bits are alpha, and the least significant bits are
- *        blue. On a little-endian CPU such as x86, the least significant
- *        bits of each integer are arranged first in memory, but on a
- *        big-endian CPU such as s390x, the most significant bits are
- *        arranged first. Use these names if the property of a format that
- *        is important to you is the meaning of each bit position within a
- *        native-endianness integer.
- *
- *      * In indexed formats such as INDEX4LSB, each pixel is represented
- *        by encoding an index into the palette into the indicated number
- *        of bits, with multiple pixels packed into each byte if appropriate.
- *        In LSB formats, the first (leftmost) pixel is stored in the
- *        least-significant bits of the byte; in MSB formats, it's stored
- *        in the most-significant bits. INDEX8 does not need LSB/MSB
- *        variants, because each pixel exactly fills one byte.
- *
- *  The 32-bit byte-array encodings such as RGBA32 are aliases for the
- *  appropriate 8888 encoding for the current platform. For example,
- *  RGBA32 is an alias for ABGR8888 on little-endian CPUs like x86,
- *  or an alias for RGBA8888 on big-endian CPUs.
+ * Pixel management.
  */
 
 #ifndef SDL_pixels_h_
@@ -75,14 +39,40 @@ extern "C" {
 #endif
 
 /**
- *  \name Transparency definitions
+ * A fully opaque 8-bit alpha value.
  *
- *  These define alpha as the opacity of a surface.
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_ALPHA_TRANSPARENT
  */
-/* @{ */
 #define SDL_ALPHA_OPAQUE 255
+
+/**
+ * A fully opaque floating point alpha value.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_ALPHA_TRANSPARENT_FLOAT
+ */
+#define SDL_ALPHA_OPAQUE_FLOAT 1.0f
+
+/**
+ * A fully transparent 8-bit alpha value.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_ALPHA_OPAQUE
+ */
 #define SDL_ALPHA_TRANSPARENT 0
-/* @} */
+
+/**
+ * A fully transparent floating point alpha value.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_ALPHA_OPAQUE_FLOAT
+ */
+#define SDL_ALPHA_TRANSPARENT_FLOAT 0.0f
 
 /** Pixel type. */
 typedef enum SDL_PixelType
@@ -161,7 +151,8 @@ typedef enum SDL_PackedLayout
 #define SDL_PIXELTYPE(X)    (((X) >> 24) & 0x0F)
 #define SDL_PIXELORDER(X)   (((X) >> 20) & 0x0F)
 #define SDL_PIXELLAYOUT(X)  (((X) >> 16) & 0x0F)
-#define SDL_BITSPERPIXEL(X) (((X) >> 8) & 0xFF)
+#define SDL_BITSPERPIXEL(X) \
+    (SDL_ISPIXELFORMAT_FOURCC(X) ? 0 : (((X) >> 8) & 0xFF))
 #define SDL_BYTESPERPIXEL(X) \
     (SDL_ISPIXELFORMAT_FOURCC(X) ? \
         ((((X) == SDL_PIXELFORMAT_YUY2) || \
@@ -211,216 +202,197 @@ typedef enum SDL_PackedLayout
 #define SDL_ISPIXELFORMAT_FOURCC(format)    \
     ((format) && (SDL_PIXELFLAG(format) != 1))
 
-/* Note: If you modify this list, update SDL_GetPixelFormatName() */
-typedef enum SDL_PixelFormatEnum
+/* Note: If you modify this enum, update SDL_GetPixelFormatName() */
+
+/**
+ * Pixel format.
+ *
+ * SDL's pixel formats have the following naming convention:
+ *
+ * - Names with a list of components and a single bit count, such as RGB24 and
+ *   ABGR32, define a platform-independent encoding into bytes in the order
+ *   specified. For example, in RGB24 data, each pixel is encoded in 3 bytes
+ *   (red, green, blue) in that order, and in ABGR32 data, each pixel is
+ *   encoded in 4 bytes alpha, blue, green, red) in that order. Use these
+ *   names if the property of a format that is important to you is the order
+ *   of the bytes in memory or on disk.
+ * - Names with a bit count per component, such as ARGB8888 and XRGB1555, are
+ *   "packed" into an appropriately-sized integer in the platform's native
+ *   endianness. For example, ARGB8888 is a sequence of 32-bit integers; in
+ *   each integer, the most significant bits are alpha, and the least
+ *   significant bits are blue. On a little-endian CPU such as x86, the least
+ *   significant bits of each integer are arranged first in memory, but on a
+ *   big-endian CPU such as s390x, the most significant bits are arranged
+ *   first. Use these names if the property of a format that is important to
+ *   you is the meaning of each bit position within a native-endianness
+ *   integer.
+ * - In indexed formats such as INDEX4LSB, each pixel is represented by
+ *   encoding an index into the palette into the indicated number of bits,
+ *   with multiple pixels packed into each byte if appropriate. In LSB
+ *   formats, the first (leftmost) pixel is stored in the least-significant
+ *   bits of the byte; in MSB formats, it's stored in the most-significant
+ *   bits. INDEX8 does not need LSB/MSB variants, because each pixel exactly
+ *   fills one byte.
+ *
+ * The 32-bit byte-array encodings such as RGBA32 are aliases for the
+ * appropriate 8888 encoding for the current platform. For example, RGBA32 is
+ * an alias for ABGR8888 on little-endian CPUs like x86, or an alias for
+ * RGBA8888 on big-endian CPUs.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
+typedef enum SDL_PixelFormat
 {
-    SDL_PIXELFORMAT_UNKNOWN,
-    SDL_PIXELFORMAT_INDEX1LSB =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX1, SDL_BITMAPORDER_4321, 0,
-                               1, 0),
-    SDL_PIXELFORMAT_INDEX1MSB =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX1, SDL_BITMAPORDER_1234, 0,
-                               1, 0),
-    SDL_PIXELFORMAT_INDEX2LSB =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX2, SDL_BITMAPORDER_4321, 0,
-                               2, 0),
-    SDL_PIXELFORMAT_INDEX2MSB =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX2, SDL_BITMAPORDER_1234, 0,
-                               2, 0),
-    SDL_PIXELFORMAT_INDEX4LSB =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX4, SDL_BITMAPORDER_4321, 0,
-                               4, 0),
-    SDL_PIXELFORMAT_INDEX4MSB =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX4, SDL_BITMAPORDER_1234, 0,
-                               4, 0),
-    SDL_PIXELFORMAT_INDEX8 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX8, 0, 0, 8, 1),
-    SDL_PIXELFORMAT_RGB332 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED8, SDL_PACKEDORDER_XRGB,
-                               SDL_PACKEDLAYOUT_332, 8, 1),
-    SDL_PIXELFORMAT_XRGB4444 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XRGB,
-                               SDL_PACKEDLAYOUT_4444, 12, 2),
-    SDL_PIXELFORMAT_RGB444 = SDL_PIXELFORMAT_XRGB4444,
-    SDL_PIXELFORMAT_XBGR4444 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XBGR,
-                               SDL_PACKEDLAYOUT_4444, 12, 2),
-    SDL_PIXELFORMAT_BGR444 = SDL_PIXELFORMAT_XBGR4444,
-    SDL_PIXELFORMAT_XRGB1555 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XRGB,
-                               SDL_PACKEDLAYOUT_1555, 15, 2),
-    SDL_PIXELFORMAT_RGB555 = SDL_PIXELFORMAT_XRGB1555,
-    SDL_PIXELFORMAT_XBGR1555 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XBGR,
-                               SDL_PACKEDLAYOUT_1555, 15, 2),
-    SDL_PIXELFORMAT_BGR555 = SDL_PIXELFORMAT_XBGR1555,
-    SDL_PIXELFORMAT_ARGB4444 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ARGB,
-                               SDL_PACKEDLAYOUT_4444, 16, 2),
-    SDL_PIXELFORMAT_RGBA4444 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_RGBA,
-                               SDL_PACKEDLAYOUT_4444, 16, 2),
-    SDL_PIXELFORMAT_ABGR4444 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ABGR,
-                               SDL_PACKEDLAYOUT_4444, 16, 2),
-    SDL_PIXELFORMAT_BGRA4444 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_BGRA,
-                               SDL_PACKEDLAYOUT_4444, 16, 2),
-    SDL_PIXELFORMAT_ARGB1555 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ARGB,
-                               SDL_PACKEDLAYOUT_1555, 16, 2),
-    SDL_PIXELFORMAT_RGBA5551 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_RGBA,
-                               SDL_PACKEDLAYOUT_5551, 16, 2),
-    SDL_PIXELFORMAT_ABGR1555 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ABGR,
-                               SDL_PACKEDLAYOUT_1555, 16, 2),
-    SDL_PIXELFORMAT_BGRA5551 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_BGRA,
-                               SDL_PACKEDLAYOUT_5551, 16, 2),
-    SDL_PIXELFORMAT_RGB565 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XRGB,
-                               SDL_PACKEDLAYOUT_565, 16, 2),
-    SDL_PIXELFORMAT_BGR565 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XBGR,
-                               SDL_PACKEDLAYOUT_565, 16, 2),
-    SDL_PIXELFORMAT_RGB24 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU8, SDL_ARRAYORDER_RGB, 0,
-                               24, 3),
-    SDL_PIXELFORMAT_BGR24 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU8, SDL_ARRAYORDER_BGR, 0,
-                               24, 3),
-    SDL_PIXELFORMAT_XRGB8888 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XRGB,
-                               SDL_PACKEDLAYOUT_8888, 24, 4),
-    SDL_PIXELFORMAT_RGBX8888 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_RGBX,
-                               SDL_PACKEDLAYOUT_8888, 24, 4),
-    SDL_PIXELFORMAT_XBGR8888 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XBGR,
-                               SDL_PACKEDLAYOUT_8888, 24, 4),
-    SDL_PIXELFORMAT_BGRX8888 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_BGRX,
-                               SDL_PACKEDLAYOUT_8888, 24, 4),
-    SDL_PIXELFORMAT_ARGB8888 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ARGB,
-                               SDL_PACKEDLAYOUT_8888, 32, 4),
-    SDL_PIXELFORMAT_RGBA8888 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_RGBA,
-                               SDL_PACKEDLAYOUT_8888, 32, 4),
-    SDL_PIXELFORMAT_ABGR8888 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ABGR,
-                               SDL_PACKEDLAYOUT_8888, 32, 4),
-    SDL_PIXELFORMAT_BGRA8888 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_BGRA,
-                               SDL_PACKEDLAYOUT_8888, 32, 4),
-    SDL_PIXELFORMAT_XRGB2101010 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XRGB,
-                               SDL_PACKEDLAYOUT_2101010, 32, 4),
-    SDL_PIXELFORMAT_XBGR2101010 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XBGR,
-                               SDL_PACKEDLAYOUT_2101010, 32, 4),
-    SDL_PIXELFORMAT_ARGB2101010 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ARGB,
-                               SDL_PACKEDLAYOUT_2101010, 32, 4),
-    SDL_PIXELFORMAT_ABGR2101010 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ABGR,
-                               SDL_PACKEDLAYOUT_2101010, 32, 4),
-    SDL_PIXELFORMAT_RGB48 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_RGB, 0,
-                               48, 6),
-    SDL_PIXELFORMAT_BGR48 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_BGR, 0,
-                               48, 6),
-    SDL_PIXELFORMAT_RGBA64 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_RGBA, 0,
-                               64, 8),
-    SDL_PIXELFORMAT_ARGB64 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_ARGB, 0,
-                               64, 8),
-    SDL_PIXELFORMAT_BGRA64 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_BGRA, 0,
-                               64, 8),
-    SDL_PIXELFORMAT_ABGR64 =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_ABGR, 0,
-                               64, 8),
-    SDL_PIXELFORMAT_RGB48_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_RGB, 0,
-                               48, 6),
-    SDL_PIXELFORMAT_BGR48_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_BGR, 0,
-                               48, 6),
-    SDL_PIXELFORMAT_RGBA64_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_RGBA, 0,
-                               64, 8),
-    SDL_PIXELFORMAT_ARGB64_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ARGB, 0,
-                               64, 8),
-    SDL_PIXELFORMAT_BGRA64_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_BGRA, 0,
-                               64, 8),
-    SDL_PIXELFORMAT_ABGR64_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ABGR, 0,
-                               64, 8),
-    SDL_PIXELFORMAT_RGB96_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGB, 0,
-                               96, 12),
-    SDL_PIXELFORMAT_BGR96_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGR, 0,
-                               96, 12),
-    SDL_PIXELFORMAT_RGBA128_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGBA, 0,
-                               128, 16),
-    SDL_PIXELFORMAT_ARGB128_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ARGB, 0,
-                               128, 16),
-    SDL_PIXELFORMAT_BGRA128_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGRA, 0,
-                               128, 16),
-    SDL_PIXELFORMAT_ABGR128_FLOAT =
-        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ABGR, 0,
-                               128, 16),
+    SDL_PIXELFORMAT_UNKNOWN = 0,
+    SDL_PIXELFORMAT_INDEX1LSB = 0x11100100u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX1, SDL_BITMAPORDER_4321, 0, 1, 0), */
+    SDL_PIXELFORMAT_INDEX1MSB = 0x11200100u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX1, SDL_BITMAPORDER_1234, 0, 1, 0), */
+    SDL_PIXELFORMAT_INDEX2LSB = 0x1c100200u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX2, SDL_BITMAPORDER_4321, 0, 2, 0), */
+    SDL_PIXELFORMAT_INDEX2MSB = 0x1c200200u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX2, SDL_BITMAPORDER_1234, 0, 2, 0), */
+    SDL_PIXELFORMAT_INDEX4LSB = 0x12100400u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX4, SDL_BITMAPORDER_4321, 0, 4, 0), */
+    SDL_PIXELFORMAT_INDEX4MSB = 0x12200400u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX4, SDL_BITMAPORDER_1234, 0, 4, 0), */
+    SDL_PIXELFORMAT_INDEX8 = 0x13000801u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX8, 0, 0, 8, 1), */
+    SDL_PIXELFORMAT_RGB332 = 0x14110801u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED8, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_332, 8, 1), */
+    SDL_PIXELFORMAT_XRGB4444 = 0x15120c02u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_4444, 12, 2), */
+    SDL_PIXELFORMAT_XBGR4444 = 0x15520c02u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XBGR, SDL_PACKEDLAYOUT_4444, 12, 2), */
+    SDL_PIXELFORMAT_XRGB1555 = 0x15130f02u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_1555, 15, 2), */
+    SDL_PIXELFORMAT_XBGR1555 = 0x15530f02u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XBGR, SDL_PACKEDLAYOUT_1555, 15, 2), */
+    SDL_PIXELFORMAT_ARGB4444 = 0x15321002u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ARGB, SDL_PACKEDLAYOUT_4444, 16, 2), */
+    SDL_PIXELFORMAT_RGBA4444 = 0x15421002u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_RGBA, SDL_PACKEDLAYOUT_4444, 16, 2), */
+    SDL_PIXELFORMAT_ABGR4444 = 0x15721002u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_4444, 16, 2), */
+    SDL_PIXELFORMAT_BGRA4444 = 0x15821002u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_BGRA, SDL_PACKEDLAYOUT_4444, 16, 2), */
+    SDL_PIXELFORMAT_ARGB1555 = 0x15331002u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ARGB, SDL_PACKEDLAYOUT_1555, 16, 2), */
+    SDL_PIXELFORMAT_RGBA5551 = 0x15441002u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_RGBA, SDL_PACKEDLAYOUT_5551, 16, 2), */
+    SDL_PIXELFORMAT_ABGR1555 = 0x15731002u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_1555, 16, 2), */
+    SDL_PIXELFORMAT_BGRA5551 = 0x15841002u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_BGRA, SDL_PACKEDLAYOUT_5551, 16, 2), */
+    SDL_PIXELFORMAT_RGB565 = 0x15151002u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_565, 16, 2), */
+    SDL_PIXELFORMAT_BGR565 = 0x15551002u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XBGR, SDL_PACKEDLAYOUT_565, 16, 2), */
+    SDL_PIXELFORMAT_RGB24 = 0x17101803u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU8, SDL_ARRAYORDER_RGB, 0, 24, 3), */
+    SDL_PIXELFORMAT_BGR24 = 0x17401803u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU8, SDL_ARRAYORDER_BGR, 0, 24, 3), */
+    SDL_PIXELFORMAT_XRGB8888 = 0x16161804u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_8888, 24, 4), */
+    SDL_PIXELFORMAT_RGBX8888 = 0x16261804u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_RGBX, SDL_PACKEDLAYOUT_8888, 24, 4), */
+    SDL_PIXELFORMAT_XBGR8888 = 0x16561804u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XBGR, SDL_PACKEDLAYOUT_8888, 24, 4), */
+    SDL_PIXELFORMAT_BGRX8888 = 0x16661804u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_BGRX, SDL_PACKEDLAYOUT_8888, 24, 4), */
+    SDL_PIXELFORMAT_ARGB8888 = 0x16362004u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ARGB, SDL_PACKEDLAYOUT_8888, 32, 4), */
+    SDL_PIXELFORMAT_RGBA8888 = 0x16462004u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_RGBA, SDL_PACKEDLAYOUT_8888, 32, 4), */
+    SDL_PIXELFORMAT_ABGR8888 = 0x16762004u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_8888, 32, 4), */
+    SDL_PIXELFORMAT_BGRA8888 = 0x16862004u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_BGRA, SDL_PACKEDLAYOUT_8888, 32, 4), */
+    SDL_PIXELFORMAT_XRGB2101010 = 0x16172004u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_2101010, 32, 4), */
+    SDL_PIXELFORMAT_XBGR2101010 = 0x16572004u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XBGR, SDL_PACKEDLAYOUT_2101010, 32, 4), */
+    SDL_PIXELFORMAT_ARGB2101010 = 0x16372004u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ARGB, SDL_PACKEDLAYOUT_2101010, 32, 4), */
+    SDL_PIXELFORMAT_ABGR2101010 = 0x16772004u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_2101010, 32, 4), */
+    SDL_PIXELFORMAT_RGB48 = 0x18103006u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_RGB, 0, 48, 6), */
+    SDL_PIXELFORMAT_BGR48 = 0x18403006u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_BGR, 0, 48, 6), */
+    SDL_PIXELFORMAT_RGBA64 = 0x18204008u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_RGBA, 0, 64, 8), */
+    SDL_PIXELFORMAT_ARGB64 = 0x18304008u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_ARGB, 0, 64, 8), */
+    SDL_PIXELFORMAT_BGRA64 = 0x18504008u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_BGRA, 0, 64, 8), */
+    SDL_PIXELFORMAT_ABGR64 = 0x18604008u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_ABGR, 0, 64, 8), */
+    SDL_PIXELFORMAT_RGB48_FLOAT = 0x1a103006u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_RGB, 0, 48, 6), */
+    SDL_PIXELFORMAT_BGR48_FLOAT = 0x1a403006u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_BGR, 0, 48, 6), */
+    SDL_PIXELFORMAT_RGBA64_FLOAT = 0x1a204008u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_RGBA, 0, 64, 8), */
+    SDL_PIXELFORMAT_ARGB64_FLOAT = 0x1a304008u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ARGB, 0, 64, 8), */
+    SDL_PIXELFORMAT_BGRA64_FLOAT = 0x1a504008u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_BGRA, 0, 64, 8), */
+    SDL_PIXELFORMAT_ABGR64_FLOAT = 0x1a604008u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ABGR, 0, 64, 8), */
+    SDL_PIXELFORMAT_RGB96_FLOAT = 0x1b10600cu,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGB, 0, 96, 12), */
+    SDL_PIXELFORMAT_BGR96_FLOAT = 0x1b40600cu,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGR, 0, 96, 12), */
+    SDL_PIXELFORMAT_RGBA128_FLOAT = 0x1b208010u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGBA, 0, 128, 16), */
+    SDL_PIXELFORMAT_ARGB128_FLOAT = 0x1b308010u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ARGB, 0, 128, 16), */
+    SDL_PIXELFORMAT_BGRA128_FLOAT = 0x1b508010u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGRA, 0, 128, 16), */
+    SDL_PIXELFORMAT_ABGR128_FLOAT = 0x1b608010u,
+        /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ABGR, 0, 128, 16), */
 
-    /* Aliases for RGBA byte arrays of color data, for the current platform */
+    SDL_PIXELFORMAT_YV12 = 0x32315659u,      /**< Planar mode: Y + V + U  (3 planes) */
+        /* SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2'), */
+    SDL_PIXELFORMAT_IYUV = 0x56555949u,      /**< Planar mode: Y + U + V  (3 planes) */
+        /* SDL_DEFINE_PIXELFOURCC('I', 'Y', 'U', 'V'), */
+    SDL_PIXELFORMAT_YUY2 = 0x32595559u,      /**< Packed mode: Y0+U0+Y1+V0 (1 plane) */
+        /* SDL_DEFINE_PIXELFOURCC('Y', 'U', 'Y', '2'), */
+    SDL_PIXELFORMAT_UYVY = 0x59565955u,      /**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
+        /* SDL_DEFINE_PIXELFOURCC('U', 'Y', 'V', 'Y'), */
+    SDL_PIXELFORMAT_YVYU = 0x55595659u,      /**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
+        /* SDL_DEFINE_PIXELFOURCC('Y', 'V', 'Y', 'U'), */
+    SDL_PIXELFORMAT_NV12 = 0x3231564eu,      /**< Planar mode: Y + U/V interleaved  (2 planes) */
+        /* SDL_DEFINE_PIXELFOURCC('N', 'V', '1', '2'), */
+    SDL_PIXELFORMAT_NV21 = 0x3132564eu,      /**< Planar mode: Y + V/U interleaved  (2 planes) */
+        /* SDL_DEFINE_PIXELFOURCC('N', 'V', '2', '1'), */
+    SDL_PIXELFORMAT_P010 = 0x30313050u,      /**< Planar mode: Y + U/V interleaved  (2 planes) */
+        /* SDL_DEFINE_PIXELFOURCC('P', '0', '1', '0'), */
+    SDL_PIXELFORMAT_EXTERNAL_OES = 0x2053454fu      /**< Android video texture format */
+        /* SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' ') */
+} SDL_PixelFormat;
+
+/* Aliases for RGBA byte arrays of color data, for the current platform */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    SDL_PIXELFORMAT_RGBA32 = SDL_PIXELFORMAT_RGBA8888,
-    SDL_PIXELFORMAT_ARGB32 = SDL_PIXELFORMAT_ARGB8888,
-    SDL_PIXELFORMAT_BGRA32 = SDL_PIXELFORMAT_BGRA8888,
-    SDL_PIXELFORMAT_ABGR32 = SDL_PIXELFORMAT_ABGR8888,
-    SDL_PIXELFORMAT_RGBX32 = SDL_PIXELFORMAT_RGBX8888,
-    SDL_PIXELFORMAT_XRGB32 = SDL_PIXELFORMAT_XRGB8888,
-    SDL_PIXELFORMAT_BGRX32 = SDL_PIXELFORMAT_BGRX8888,
-    SDL_PIXELFORMAT_XBGR32 = SDL_PIXELFORMAT_XBGR8888,
+#define SDL_PIXELFORMAT_RGBA32 SDL_PIXELFORMAT_RGBA8888
+#define SDL_PIXELFORMAT_ARGB32 SDL_PIXELFORMAT_ARGB8888
+#define SDL_PIXELFORMAT_BGRA32 SDL_PIXELFORMAT_BGRA8888
+#define SDL_PIXELFORMAT_ABGR32 SDL_PIXELFORMAT_ABGR8888
+#define SDL_PIXELFORMAT_RGBX32 SDL_PIXELFORMAT_RGBX8888
+#define SDL_PIXELFORMAT_XRGB32 SDL_PIXELFORMAT_XRGB8888
+#define SDL_PIXELFORMAT_BGRX32 SDL_PIXELFORMAT_BGRX8888
+#define SDL_PIXELFORMAT_XBGR32 SDL_PIXELFORMAT_XBGR8888
 #else
-    SDL_PIXELFORMAT_RGBA32 = SDL_PIXELFORMAT_ABGR8888,
-    SDL_PIXELFORMAT_ARGB32 = SDL_PIXELFORMAT_BGRA8888,
-    SDL_PIXELFORMAT_BGRA32 = SDL_PIXELFORMAT_ARGB8888,
-    SDL_PIXELFORMAT_ABGR32 = SDL_PIXELFORMAT_RGBA8888,
-    SDL_PIXELFORMAT_RGBX32 = SDL_PIXELFORMAT_XBGR8888,
-    SDL_PIXELFORMAT_XRGB32 = SDL_PIXELFORMAT_BGRX8888,
-    SDL_PIXELFORMAT_BGRX32 = SDL_PIXELFORMAT_XRGB8888,
-    SDL_PIXELFORMAT_XBGR32 = SDL_PIXELFORMAT_RGBX8888,
+#define SDL_PIXELFORMAT_RGBA32 SDL_PIXELFORMAT_ABGR8888
+#define SDL_PIXELFORMAT_ARGB32 SDL_PIXELFORMAT_BGRA8888
+#define SDL_PIXELFORMAT_BGRA32 SDL_PIXELFORMAT_ARGB8888
+#define SDL_PIXELFORMAT_ABGR32 SDL_PIXELFORMAT_RGBA8888
+#define SDL_PIXELFORMAT_RGBX32 SDL_PIXELFORMAT_XBGR8888
+#define SDL_PIXELFORMAT_XRGB32 SDL_PIXELFORMAT_BGRX8888
+#define SDL_PIXELFORMAT_BGRX32 SDL_PIXELFORMAT_XRGB8888
+#define SDL_PIXELFORMAT_XBGR32 SDL_PIXELFORMAT_RGBX8888
 #endif
-
-    SDL_PIXELFORMAT_YV12 =      /**< Planar mode: Y + V + U  (3 planes) */
-        SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2'),
-    SDL_PIXELFORMAT_IYUV =      /**< Planar mode: Y + U + V  (3 planes) */
-        SDL_DEFINE_PIXELFOURCC('I', 'Y', 'U', 'V'),
-    SDL_PIXELFORMAT_YUY2 =      /**< Packed mode: Y0+U0+Y1+V0 (1 plane) */
-        SDL_DEFINE_PIXELFOURCC('Y', 'U', 'Y', '2'),
-    SDL_PIXELFORMAT_UYVY =      /**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
-        SDL_DEFINE_PIXELFOURCC('U', 'Y', 'V', 'Y'),
-    SDL_PIXELFORMAT_YVYU =      /**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
-        SDL_DEFINE_PIXELFOURCC('Y', 'V', 'Y', 'U'),
-    SDL_PIXELFORMAT_NV12 =      /**< Planar mode: Y + U/V interleaved  (2 planes) */
-        SDL_DEFINE_PIXELFOURCC('N', 'V', '1', '2'),
-    SDL_PIXELFORMAT_NV21 =      /**< Planar mode: Y + V/U interleaved  (2 planes) */
-        SDL_DEFINE_PIXELFOURCC('N', 'V', '2', '1'),
-    SDL_PIXELFORMAT_P010 =      /**< Planar mode: Y + U/V interleaved  (2 planes) */
-        SDL_DEFINE_PIXELFOURCC('P', '0', '1', '0'),
-    SDL_PIXELFORMAT_EXTERNAL_OES =      /**< Android video texture format */
-        SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' ')
-} SDL_PixelFormatEnum;
 
 /**
  * Pixels are a representation of a color in a particular color space.
@@ -447,7 +419,7 @@ typedef enum SDL_PixelFormatEnum
  */
 
 /**
- * The color type
+ * Colorspace color type.
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -459,7 +431,7 @@ typedef enum SDL_ColorType
 } SDL_ColorType;
 
 /**
- * The color range, as described by
+ * Colorspace color range, as described by
  * https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en
  *
  * \since This enum is available since SDL 3.0.0.
@@ -472,7 +444,7 @@ typedef enum SDL_ColorRange
 } SDL_ColorRange;
 
 /**
- * The color primaries, as described by
+ * Colorspace color primaries, as described by
  * https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
  * \since This enum is available since SDL 3.0.0.
@@ -484,7 +456,7 @@ typedef enum SDL_ColorPrimaries
     SDL_COLOR_PRIMARIES_UNSPECIFIED = 2,
     SDL_COLOR_PRIMARIES_BT470M = 4,                 /**< ITU-R BT.470-6 System M */
     SDL_COLOR_PRIMARIES_BT470BG = 5,                /**< ITU-R BT.470-6 System B, G / ITU-R BT.601-7 625 */
-    SDL_COLOR_PRIMARIES_BT601 = 6,                  /**< ITU-R BT.601-7 525 */
+    SDL_COLOR_PRIMARIES_BT601 = 6,                  /**< ITU-R BT.601-7 525, SMPTE 170M */
     SDL_COLOR_PRIMARIES_SMPTE240 = 7,               /**< SMPTE 240M, functionally the same as SDL_COLOR_PRIMARIES_BT601 */
     SDL_COLOR_PRIMARIES_GENERIC_FILM = 8,           /**< Generic film (color filters using Illuminant C) */
     SDL_COLOR_PRIMARIES_BT2020 = 9,                 /**< ITU-R BT.2020-2 / ITU-R BT.2100-0 */
@@ -496,7 +468,7 @@ typedef enum SDL_ColorPrimaries
 } SDL_ColorPrimaries;
 
 /**
- * The color transfer characteristics.
+ * Colorspace transfer characteristics.
  *
  * These are as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
@@ -526,7 +498,7 @@ typedef enum SDL_TransferCharacteristics
 } SDL_TransferCharacteristics;
 
 /**
- * The matrix coefficients.
+ * Colorspace matrix coefficients.
  *
  * These are as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
@@ -537,7 +509,7 @@ typedef enum SDL_MatrixCoefficients
     SDL_MATRIX_COEFFICIENTS_IDENTITY = 0,
     SDL_MATRIX_COEFFICIENTS_BT709 = 1,              /**< ITU-R BT.709-6 */
     SDL_MATRIX_COEFFICIENTS_UNSPECIFIED = 2,
-    SDL_MATRIX_COEFFICIENTS_FCC = 4,                /**< US FCC */
+    SDL_MATRIX_COEFFICIENTS_FCC = 4,                /**< US FCC Title 47 */
     SDL_MATRIX_COEFFICIENTS_BT470BG = 5,            /**< ITU-R BT.470-6 System B, G / ITU-R BT.601-7 625, functionally the same as SDL_MATRIX_COEFFICIENTS_BT601 */
     SDL_MATRIX_COEFFICIENTS_BT601 = 6,              /**< ITU-R BT.601-7 525 */
     SDL_MATRIX_COEFFICIENTS_SMPTE240 = 7,           /**< SMPTE 240M */
@@ -552,7 +524,7 @@ typedef enum SDL_MatrixCoefficients
 } SDL_MatrixCoefficients;
 
 /**
- * The chroma sample location.
+ * Colorspace chroma sample location.
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -583,100 +555,116 @@ typedef enum SDL_ChromaLocation
 #define SDL_ISCOLORSPACE_LIMITED_RANGE(X)       (SDL_COLORSPACERANGE(X) != SDL_COLOR_RANGE_FULL)
 #define SDL_ISCOLORSPACE_FULL_RANGE(X)          (SDL_COLORSPACERANGE(X) == SDL_COLOR_RANGE_FULL)
 
+/**
+ * Colorspace definitions.
+ *
+ * Since similar colorspaces may vary in their details (matrix, transfer
+ * function, etc.), this is not an exhaustive list, but rather a
+ * representative sample of the kinds of colorspaces supported in SDL.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ *
+ * \sa SDL_ColorPrimaries
+ * \sa SDL_ColorRange
+ * \sa SDL_ColorType
+ * \sa SDL_MatrixCoefficients
+ * \sa SDL_TransferCharacteristics
+ */
 typedef enum SDL_Colorspace
 {
-    SDL_COLORSPACE_UNKNOWN,
+    SDL_COLORSPACE_UNKNOWN = 0,
 
     /* sRGB is a gamma corrected colorspace, and the default colorspace for SDL rendering and 8-bit RGB surfaces */
-    SDL_COLORSPACE_SRGB =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709 */
-        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
-                              SDL_COLOR_RANGE_FULL,
-                              SDL_COLOR_PRIMARIES_BT709,
-                              SDL_TRANSFER_CHARACTERISTICS_SRGB,
-                              SDL_MATRIX_COEFFICIENTS_IDENTITY,
-                              SDL_CHROMA_LOCATION_NONE),
+    SDL_COLORSPACE_SRGB = 0x120005a0u, /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709 */
+        /* SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
+                                 SDL_COLOR_RANGE_FULL,
+                                 SDL_COLOR_PRIMARIES_BT709,
+                                 SDL_TRANSFER_CHARACTERISTICS_SRGB,
+                                 SDL_MATRIX_COEFFICIENTS_IDENTITY,
+                                 SDL_CHROMA_LOCATION_NONE), */
 
     /* This is a linear colorspace and the default colorspace for floating point surfaces. On Windows this is the scRGB colorspace, and on Apple platforms this is kCGColorSpaceExtendedLinearSRGB for EDR content */
-    SDL_COLORSPACE_SRGB_LINEAR =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709  */
-        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
-                              SDL_COLOR_RANGE_FULL,
-                              SDL_COLOR_PRIMARIES_BT709,
-                              SDL_TRANSFER_CHARACTERISTICS_LINEAR,
-                              SDL_MATRIX_COEFFICIENTS_IDENTITY,
-                              SDL_CHROMA_LOCATION_NONE),
+    SDL_COLORSPACE_SRGB_LINEAR = 0x12000500u, /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709  */
+        /* SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
+                                 SDL_COLOR_RANGE_FULL,
+                                 SDL_COLOR_PRIMARIES_BT709,
+                                 SDL_TRANSFER_CHARACTERISTICS_LINEAR,
+                                 SDL_MATRIX_COEFFICIENTS_IDENTITY,
+                                 SDL_CHROMA_LOCATION_NONE), */
 
     /* HDR10 is a non-linear HDR colorspace and the default colorspace for 10-bit surfaces */
-    SDL_COLORSPACE_HDR10 =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020  */
-        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
-                              SDL_COLOR_RANGE_FULL,
-                              SDL_COLOR_PRIMARIES_BT2020,
-                              SDL_TRANSFER_CHARACTERISTICS_PQ,
-                              SDL_MATRIX_COEFFICIENTS_IDENTITY,
-                              SDL_CHROMA_LOCATION_NONE),
+    SDL_COLORSPACE_HDR10 = 0x12002600u, /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020  */
+        /* SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
+                                 SDL_COLOR_RANGE_FULL,
+                                 SDL_COLOR_PRIMARIES_BT2020,
+                                 SDL_TRANSFER_CHARACTERISTICS_PQ,
+                                 SDL_MATRIX_COEFFICIENTS_IDENTITY,
+                                 SDL_CHROMA_LOCATION_NONE), */
 
-    SDL_COLORSPACE_JPEG =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_FULL_G22_NONE_P709_X601 */
-        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_FULL,
-                              SDL_COLOR_PRIMARIES_BT709,
-                              SDL_TRANSFER_CHARACTERISTICS_BT601,
-                              SDL_MATRIX_COEFFICIENTS_BT601,
-                              SDL_CHROMA_LOCATION_NONE),
+    SDL_COLORSPACE_JPEG = 0x220004c6u, /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_FULL_G22_NONE_P709_X601 */
+        /* SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                 SDL_COLOR_RANGE_FULL,
+                                 SDL_COLOR_PRIMARIES_BT709,
+                                 SDL_TRANSFER_CHARACTERISTICS_BT601,
+                                 SDL_MATRIX_COEFFICIENTS_BT601,
+                                 SDL_CHROMA_LOCATION_NONE), */
 
-    SDL_COLORSPACE_BT601_LIMITED =  /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
-        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_LIMITED,
-                              SDL_COLOR_PRIMARIES_BT601,
-                              SDL_TRANSFER_CHARACTERISTICS_BT601,
-                              SDL_MATRIX_COEFFICIENTS_BT601,
-                              SDL_CHROMA_LOCATION_LEFT),
+    SDL_COLORSPACE_BT601_LIMITED = 0x211018c6u, /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
+        /* SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                 SDL_COLOR_RANGE_LIMITED,
+                                 SDL_COLOR_PRIMARIES_BT601,
+                                 SDL_TRANSFER_CHARACTERISTICS_BT601,
+                                 SDL_MATRIX_COEFFICIENTS_BT601,
+                                 SDL_CHROMA_LOCATION_LEFT), */
 
-    SDL_COLORSPACE_BT601_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
-        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_FULL,
-                              SDL_COLOR_PRIMARIES_BT601,
-                              SDL_TRANSFER_CHARACTERISTICS_BT601,
-                              SDL_MATRIX_COEFFICIENTS_BT601,
-                              SDL_CHROMA_LOCATION_LEFT),
+    SDL_COLORSPACE_BT601_FULL = 0x221018c6u, /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
+        /* SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                 SDL_COLOR_RANGE_FULL,
+                                 SDL_COLOR_PRIMARIES_BT601,
+                                 SDL_TRANSFER_CHARACTERISTICS_BT601,
+                                 SDL_MATRIX_COEFFICIENTS_BT601,
+                                 SDL_CHROMA_LOCATION_LEFT), */
 
-    SDL_COLORSPACE_BT709_LIMITED =  /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 */
-        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_LIMITED,
-                              SDL_COLOR_PRIMARIES_BT709,
-                              SDL_TRANSFER_CHARACTERISTICS_BT709,
-                              SDL_MATRIX_COEFFICIENTS_BT709,
-                              SDL_CHROMA_LOCATION_LEFT),
+    SDL_COLORSPACE_BT709_LIMITED = 0x21100421u, /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 */
+        /* SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                 SDL_COLOR_RANGE_LIMITED,
+                                 SDL_COLOR_PRIMARIES_BT709,
+                                 SDL_TRANSFER_CHARACTERISTICS_BT709,
+                                 SDL_MATRIX_COEFFICIENTS_BT709,
+                                 SDL_CHROMA_LOCATION_LEFT), */
 
-    SDL_COLORSPACE_BT709_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 */
-        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_FULL,
-                              SDL_COLOR_PRIMARIES_BT709,
-                              SDL_TRANSFER_CHARACTERISTICS_BT709,
-                              SDL_MATRIX_COEFFICIENTS_BT709,
-                              SDL_CHROMA_LOCATION_LEFT),
+    SDL_COLORSPACE_BT709_FULL = 0x22100421u, /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 */
+        /* SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                 SDL_COLOR_RANGE_FULL,
+                                 SDL_COLOR_PRIMARIES_BT709,
+                                 SDL_TRANSFER_CHARACTERISTICS_BT709,
+                                 SDL_MATRIX_COEFFICIENTS_BT709,
+                                 SDL_CHROMA_LOCATION_LEFT), */
 
-    SDL_COLORSPACE_BT2020_LIMITED =  /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020 */
-        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_LIMITED,
-                              SDL_COLOR_PRIMARIES_BT2020,
-                              SDL_TRANSFER_CHARACTERISTICS_PQ,
-                              SDL_MATRIX_COEFFICIENTS_BT2020_NCL,
-                              SDL_CHROMA_LOCATION_LEFT),
+    SDL_COLORSPACE_BT2020_LIMITED = 0x21102609u, /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020 */
+        /* SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                 SDL_COLOR_RANGE_LIMITED,
+                                 SDL_COLOR_PRIMARIES_BT2020,
+                                 SDL_TRANSFER_CHARACTERISTICS_PQ,
+                                 SDL_MATRIX_COEFFICIENTS_BT2020_NCL,
+                                 SDL_CHROMA_LOCATION_LEFT), */
 
-    SDL_COLORSPACE_BT2020_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020 */
-        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_FULL,
-                              SDL_COLOR_PRIMARIES_BT2020,
-                              SDL_TRANSFER_CHARACTERISTICS_PQ,
-                              SDL_MATRIX_COEFFICIENTS_BT2020_NCL,
-                              SDL_CHROMA_LOCATION_LEFT),
-
-    /* The default colorspace for RGB surfaces if no colorspace is specified */
-    SDL_COLORSPACE_RGB_DEFAULT = SDL_COLORSPACE_SRGB,
-
-    /* The default colorspace for YUV surfaces if no colorspace is specified */
-    SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_JPEG
+    SDL_COLORSPACE_BT2020_FULL = 0x22102609u /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020 */
+        /* SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                 SDL_COLOR_RANGE_FULL,
+                                 SDL_COLOR_PRIMARIES_BT2020,
+                                 SDL_TRANSFER_CHARACTERISTICS_PQ,
+                                 SDL_MATRIX_COEFFICIENTS_BT2020_NCL,
+                                 SDL_CHROMA_LOCATION_LEFT), */
 
 } SDL_Colorspace;
+
+
+/* The default colorspace for RGB surfaces if no colorspace is specified */
+#define SDL_COLORSPACE_RGB_DEFAULT  SDL_COLORSPACE_SRGB
+
+/* The default colorspace for YUV surfaces if no colorspace is specified */
+#define SDL_COLORSPACE_YUV_DEFAULT  SDL_COLORSPACE_JPEG
 
 /**
  * A structure that represents a color as RGBA components.
@@ -715,7 +703,6 @@ typedef struct SDL_FColor
  *
  * \since This struct is available since SDL 3.0.0.
  *
- * \sa SDL_PixelFormat
  * \sa SDL_SetPaletteColors
  */
 typedef struct SDL_Palette
@@ -729,15 +716,11 @@ typedef struct SDL_Palette
 /**
  * Details about the format of a pixel.
  *
- * Generally this is used with SDL_Surface, and covers many possible
- * configurations, including paletted data and various bit patterns.
- *
  * \since This struct is available since SDL 3.0.0.
  */
-typedef struct SDL_PixelFormat
+typedef struct SDL_PixelFormatDetails
 {
-    SDL_PixelFormatEnum format;
-    SDL_Palette *palette;
+    SDL_PixelFormat format;
     Uint8 bits_per_pixel;
     Uint8 bytes_per_pixel;
     Uint8 padding[2];
@@ -745,51 +728,48 @@ typedef struct SDL_PixelFormat
     Uint32 Gmask;
     Uint32 Bmask;
     Uint32 Amask;
-    Uint8 Rloss;
-    Uint8 Gloss;
-    Uint8 Bloss;
-    Uint8 Aloss;
+    Uint8 Rbits;
+    Uint8 Gbits;
+    Uint8 Bbits;
+    Uint8 Abits;
     Uint8 Rshift;
     Uint8 Gshift;
     Uint8 Bshift;
     Uint8 Ashift;
-    int refcount;
-    struct SDL_PixelFormat *next;
-} SDL_PixelFormat;
+} SDL_PixelFormatDetails;
 
 /**
  * Get the human readable name of a pixel format.
  *
- * \param format the pixel format to query
+ * \param format the pixel format to query.
  * \returns the human readable name of the specified pixel format or
- *          `SDL_PIXELFORMAT_UNKNOWN` if the format isn't recognized.
+ *          "SDL_PIXELFORMAT_UNKNOWN" if the format isn't recognized.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC const char* SDLCALL SDL_GetPixelFormatName(SDL_PixelFormatEnum format);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat format);
 
 /**
  * Convert one of the enumerated pixel formats to a bpp value and RGBA masks.
  *
- * \param format one of the SDL_PixelFormatEnum values
- * \param bpp a bits per pixel value; usually 15, 16, or 32
- * \param Rmask a pointer filled in with the red mask for the format
- * \param Gmask a pointer filled in with the green mask for the format
- * \param Bmask a pointer filled in with the blue mask for the format
- * \param Amask a pointer filled in with the alpha mask for the format
- * \returns SDL_TRUE on success or SDL_FALSE if the conversion wasn't
- *          possible; call SDL_GetError() for more information.
+ * \param format one of the SDL_PixelFormat values.
+ * \param bpp a bits per pixel value; usually 15, 16, or 32.
+ * \param Rmask a pointer filled in with the red mask for the format.
+ * \param Gmask a pointer filled in with the green mask for the format.
+ * \param Bmask a pointer filled in with the blue mask for the format.
+ * \param Amask a pointer filled in with the alpha mask for the format.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetPixelFormatEnumForMasks
+ * \sa SDL_GetPixelFormatForMasks
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormatEnum(SDL_PixelFormatEnum format,
-                                                            int *bpp,
-                                                            Uint32 * Rmask,
-                                                            Uint32 * Gmask,
-                                                            Uint32 * Bmask,
-                                                            Uint32 * Amask);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask);
 
 /**
  * Convert a bpp value and RGBA masks to an enumerated pixel format.
@@ -797,110 +777,89 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormatEnum(SDL_PixelFormatE
  * This will return `SDL_PIXELFORMAT_UNKNOWN` if the conversion wasn't
  * possible.
  *
- * \param bpp a bits per pixel value; usually 15, 16, or 32
- * \param Rmask the red mask for the format
- * \param Gmask the green mask for the format
- * \param Bmask the blue mask for the format
- * \param Amask the alpha mask for the format
- * \returns the SDL_PixelFormatEnum value corresponding to the format masks,
- *          or SDL_PIXELFORMAT_UNKNOWN if there isn't a match.
+ * \param bpp a bits per pixel value; usually 15, 16, or 32.
+ * \param Rmask the red mask for the format.
+ * \param Gmask the green mask for the format.
+ * \param Bmask the blue mask for the format.
+ * \param Amask the alpha mask for the format.
+ * \returns the SDL_PixelFormat value corresponding to the format masks, or
+ *          SDL_PIXELFORMAT_UNKNOWN if there isn't a match.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetMasksForPixelFormatEnum
+ * \sa SDL_GetMasksForPixelFormat
  */
-extern DECLSPEC SDL_PixelFormatEnum SDLCALL SDL_GetPixelFormatEnumForMasks(int bpp,
-                                                          Uint32 Rmask,
-                                                          Uint32 Gmask,
-                                                          Uint32 Bmask,
-                                                          Uint32 Amask);
+extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetPixelFormatForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
 
 /**
- * Create an SDL_PixelFormat structure corresponding to a pixel format.
+ * Create an SDL_PixelFormatDetails structure corresponding to a pixel format.
  *
  * Returned structure may come from a shared global cache (i.e. not newly
  * allocated), and hence should not be modified, especially the palette. Weird
  * errors such as `Blit combination not supported` may occur.
  *
- * \param pixel_format one of the SDL_PixelFormatEnum values
- * \returns the new SDL_PixelFormat structure or NULL on failure; call
- *          SDL_GetError() for more information.
+ * \param format one of the SDL_PixelFormat values.
+ * \returns a pointer to a SDL_PixelFormatDetails structure or NULL on
+ *          failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_DestroyPixelFormat
- * \sa SDL_SetPixelFormatPalette
  */
-extern DECLSPEC SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format);
-
-/**
- * Free an SDL_PixelFormat structure allocated by SDL_CreatePixelFormat().
- *
- * \param format the SDL_PixelFormat structure to free
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreatePixelFormat
- */
-extern DECLSPEC void SDLCALL SDL_DestroyPixelFormat(SDL_PixelFormat *format);
+extern SDL_DECLSPEC const SDL_PixelFormatDetails * SDLCALL SDL_GetPixelFormatDetails(SDL_PixelFormat format);
 
 /**
  * Create a palette structure with the specified number of color entries.
  *
  * The palette entries are initialized to white.
  *
- * \param ncolors represents the number of color entries in the color palette
+ * \param ncolors represents the number of color entries in the color palette.
  * \returns a new SDL_Palette structure on success or NULL on failure (e.g. if
  *          there wasn't enough memory); call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroyPalette
  * \sa SDL_SetPaletteColors
- * \sa SDL_SetPixelFormatPalette
+ * \sa SDL_SetSurfacePalette
  */
-extern DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
-
-/**
- * Set the palette for a pixel format structure.
- *
- * \param format the SDL_PixelFormat structure that will use the palette
- * \param palette the SDL_Palette structure that will be used
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC int SDLCALL SDL_SetPixelFormatPalette(SDL_PixelFormat * format,
-                                                      SDL_Palette *palette);
+extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreatePalette(int ncolors);
 
 /**
  * Set a range of colors in a palette.
  *
- * \param palette the SDL_Palette structure to modify
- * \param colors an array of SDL_Color structures to copy into the palette
- * \param firstcolor the index of the first palette entry to modify
- * \param ncolors the number of entries to modify
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \param palette the SDL_Palette structure to modify.
+ * \param colors an array of SDL_Color structures to copy into the palette.
+ * \param firstcolor the index of the first palette entry to modify.
+ * \param ncolors the number of entries to modify.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified or destroyed in another thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetPaletteColors(SDL_Palette * palette,
-                                                 const SDL_Color * colors,
-                                                 int firstcolor, int ncolors);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int firstcolor, int ncolors);
 
 /**
  * Free a palette created with SDL_CreatePalette().
  *
- * \param palette the SDL_Palette structure to be freed
+ * \param palette the SDL_Palette structure to be freed.
+ *
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified or destroyed in another thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreatePalette
  */
-extern DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette * palette);
+extern SDL_DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette *palette);
 
 /**
  * Map an RGB triple to an opaque pixel value for a given pixel format.
@@ -920,20 +879,25 @@ extern DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette * palette);
  * format the return value can be assigned to a Uint16, and similarly a Uint8
  * for an 8-bpp format).
  *
- * \param format an SDL_PixelFormat structure describing the pixel format
- * \param r the red component of the pixel in the range 0-255
- * \param g the green component of the pixel in the range 0-255
- * \param b the blue component of the pixel in the range 0-255
- * \returns a pixel value
+ * \param format a pointer to SDL_PixelFormatDetails describing the pixel
+ *               format.
+ * \param palette an optional palette for indexed formats, may be NULL.
+ * \param r the red component of the pixel in the range 0-255.
+ * \param g the green component of the pixel in the range 0-255.
+ * \param b the blue component of the pixel in the range 0-255.
+ * \returns a pixel value.
+ *
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified.
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGB
- * \sa SDL_GetRGBA
  * \sa SDL_MapRGBA
+ * \sa SDL_MapSurfaceRGB
  */
-extern DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormat * format,
-                                          Uint8 r, Uint8 g, Uint8 b);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 r, Uint8 g, Uint8 b);
 
 /**
  * Map an RGBA quadruple to a pixel value for a given pixel format.
@@ -953,23 +917,26 @@ extern DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormat * format,
  * format the return value can be assigned to a Uint16, and similarly a Uint8
  * for an 8-bpp format).
  *
- * \param format an SDL_PixelFormat structure describing the format of the
- *               pixel
- * \param r the red component of the pixel in the range 0-255
- * \param g the green component of the pixel in the range 0-255
- * \param b the blue component of the pixel in the range 0-255
- * \param a the alpha component of the pixel in the range 0-255
- * \returns a pixel value
+ * \param format a pointer to SDL_PixelFormatDetails describing the pixel
+ *               format.
+ * \param palette an optional palette for indexed formats, may be NULL.
+ * \param r the red component of the pixel in the range 0-255.
+ * \param g the green component of the pixel in the range 0-255.
+ * \param b the blue component of the pixel in the range 0-255.
+ * \param a the alpha component of the pixel in the range 0-255.
+ * \returns a pixel value.
+ *
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetRGB
+ * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGBA
  * \sa SDL_MapRGB
+ * \sa SDL_MapSurfaceRGBA
  */
-extern DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormat * format,
-                                           Uint8 r, Uint8 g, Uint8 b,
-                                           Uint8 a);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 /**
  * Get RGB values from a pixel in the specified format.
@@ -979,22 +946,25 @@ extern DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormat * format,
  * (e.g., a completely white pixel in 16-bit RGB565 format would return [0xff,
  * 0xff, 0xff] not [0xf8, 0xfc, 0xf8]).
  *
- * \param pixel a pixel value
- * \param format an SDL_PixelFormat structure describing the format of the
- *               pixel
- * \param r a pointer filled in with the red component
- * \param g a pointer filled in with the green component
- * \param b a pointer filled in with the blue component
+ * \param pixel a pixel value.
+ * \param format a pointer to SDL_PixelFormatDetails describing the pixel
+ *               format.
+ * \param palette an optional palette for indexed formats, may be NULL.
+ * \param r a pointer filled in with the red component, may be NULL.
+ * \param g a pointer filled in with the green component, may be NULL.
+ * \param b a pointer filled in with the blue component, may be NULL.
+ *
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified.
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGBA
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
  */
-extern DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel,
-                                        const SDL_PixelFormat * format,
-                                        Uint8 * r, Uint8 * g, Uint8 * b);
+extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
 
 /**
  * Get RGBA values from a pixel in the specified format.
@@ -1007,24 +977,26 @@ extern DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel,
  * If the surface has no alpha component, the alpha will be returned as 0xff
  * (100% opaque).
  *
- * \param pixel a pixel value
- * \param format an SDL_PixelFormat structure describing the format of the
- *               pixel
- * \param r a pointer filled in with the red component
- * \param g a pointer filled in with the green component
- * \param b a pointer filled in with the blue component
- * \param a a pointer filled in with the alpha component
+ * \param pixel a pixel value.
+ * \param format a pointer to SDL_PixelFormatDetails describing the pixel
+ *               format.
+ * \param palette an optional palette for indexed formats, may be NULL.
+ * \param r a pointer filled in with the red component, may be NULL.
+ * \param g a pointer filled in with the green component, may be NULL.
+ * \param b a pointer filled in with the blue component, may be NULL.
+ * \param a a pointer filled in with the alpha component, may be NULL.
+ *
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified.
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGB
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
  */
-extern DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel,
-                                         const SDL_PixelFormat * format,
-                                         Uint8 * r, Uint8 * g, Uint8 * b,
-                                         Uint8 * a);
+extern SDL_DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
 
 
 /* Ends C function definitions when using C++ */

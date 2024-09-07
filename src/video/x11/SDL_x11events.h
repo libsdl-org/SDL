@@ -26,14 +26,14 @@
 extern void X11_PumpEvents(SDL_VideoDevice *_this);
 extern int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 extern void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
-extern int X11_SuspendScreenSaver(SDL_VideoDevice *_this);
+extern bool X11_SuspendScreenSaver(SDL_VideoDevice *_this);
 extern void X11_ReconcileKeyboardState(SDL_VideoDevice *_this);
 extern void X11_GetBorderValues(SDL_WindowData *data);
 extern void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_KeyboardID keyboardID, XEvent *xevent);
 extern void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button, const float x, const float y, const unsigned long time);
 extern void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button);
 extern SDL_WindowData *X11_FindWindow(SDL_VideoDevice *_this, Window window);
-extern SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y, SDL_bool force_new_result);
-extern SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y);
+extern bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y, bool force_new_result);
+extern bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y);
 
-#endif /* SDL_x11events_h_ */
+#endif // SDL_x11events_h_

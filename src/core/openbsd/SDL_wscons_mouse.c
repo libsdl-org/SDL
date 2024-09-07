@@ -35,7 +35,7 @@ typedef struct SDL_WSCONS_mouse_input_data
     SDL_MouseID mouseID;
 } SDL_WSCONS_mouse_input_data;
 
-SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse()
+SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse(void)
 {
 #ifdef WSMOUSEIO_SETVERSION
     int version = WSMOUSE_EVENT_VERSION;
@@ -52,7 +52,7 @@ SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse()
     }
 
     input->mouseID = SDL_GetNextObjectID();
-    SDL_AddMouse(input->mouseID, NULL, SDL_FALSE);
+    SDL_AddMouse(input->mouseID, NULL, false);
 
 #ifdef WSMOUSEIO_SETMODE
     ioctl(input->fd, WSMOUSEIO_SETMODE, WSMOUSE_COMPAT);
@@ -78,13 +78,13 @@ void updateMouse(SDL_WSCONS_mouse_input_data *input)
             case WSCONS_EVENT_MOUSE_DOWN:
             {
                 switch (events[i].value) {
-                case 0: /* Left Mouse Button. */
+                case 0: // Left Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_PRESSED, SDL_BUTTON_LEFT);
                     break;
-                case 1: /* Middle Mouse Button. */
+                case 1: // Middle Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_PRESSED, SDL_BUTTON_MIDDLE);
                     break;
-                case 2: /* Right Mouse Button. */
+                case 2: // Right Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_PRESSED, SDL_BUTTON_RIGHT);
                     break;
                 }
@@ -92,13 +92,13 @@ void updateMouse(SDL_WSCONS_mouse_input_data *input)
             case WSCONS_EVENT_MOUSE_UP:
             {
                 switch (events[i].value) {
-                case 0: /* Left Mouse Button. */
+                case 0: // Left Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_RELEASED, SDL_BUTTON_LEFT);
                     break;
-                case 1: /* Middle Mouse Button. */
+                case 1: // Middle Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_RELEASED, SDL_BUTTON_MIDDLE);
                     break;
-                case 2: /* Right Mouse Button. */
+                case 2: // Right Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_RELEASED, SDL_BUTTON_RIGHT);
                     break;
                 }

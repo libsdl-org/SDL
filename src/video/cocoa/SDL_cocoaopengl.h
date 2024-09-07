@@ -28,7 +28,7 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CVDisplayLink.h>
 
-/* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
+// We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it.
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -39,7 +39,7 @@ struct SDL_GLDriverData
     int initialized;
 };
 
-@interface SDLOpenGLContext : NSOpenGLContext
+@interface SDL3OpenGLContext : NSOpenGLContext
 {
     SDL_AtomicInt dirty;
     SDL_Window *window;
@@ -68,22 +68,21 @@ struct SDL_GLDriverData
 
 @end
 
-/* OpenGL functions */
-extern int Cocoa_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+// OpenGL functions
+extern bool Cocoa_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_FunctionPointer Cocoa_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 extern void Cocoa_GL_UnloadLibrary(SDL_VideoDevice *_this);
 extern SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Cocoa_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
-                                SDL_GLContext context);
-extern int Cocoa_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern int Cocoa_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
-extern int Cocoa_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Cocoa_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern bool Cocoa_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern bool Cocoa_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
+extern bool Cocoa_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
+extern bool Cocoa_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool Cocoa_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);
 
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-#endif /* SDL_VIDEO_OPENGL_CGL */
+#endif // SDL_VIDEO_OPENGL_CGL
 
-#endif /* SDL_cocoaopengl_h_ */
+#endif // SDL_cocoaopengl_h_

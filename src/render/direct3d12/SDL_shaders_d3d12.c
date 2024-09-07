@@ -20,16 +20,16 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_D3D12 && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #include "../../core/windows/SDL_windows.h"
-#include <d3d12.h>
+#include "../../video/directx/SDL_d3d12.h"
 
 #include "SDL_shaders_d3d12.h"
 
 #define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
 
-/* The shaders here were compiled with compile_shaders.bat */
+// The shaders here were compiled with compile_shaders.bat
 
 #define g_main D3D12_PixelShader_Colors
 #include "D3D12_PixelShader_Colors.h"
@@ -122,4 +122,4 @@ void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECO
     outBytecode->BytecodeLength = D3D12_rootsigs[rootSig].rs_shader_size;
 }
 
-#endif /* SDL_VIDEO_RENDER_D3D12 && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */
+#endif // SDL_VIDEO_RENDER_D3D12 && !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES

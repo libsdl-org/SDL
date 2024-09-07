@@ -87,7 +87,7 @@ class SDL_BView : public BView
 class SDL_BWin : public BWindow
 {
   public:
-    /* Constructor/Destructor */
+    // Constructor/Destructor
     SDL_BWin(BRect bounds, window_look look, uint32 flags)
         : BWindow(bounds, "Untitled", look, B_NORMAL_WINDOW_FEEL, flags)
     {
@@ -106,7 +106,7 @@ class SDL_BWin : public BWindow
         _prev_frame = NULL;
         _fullscreen = NULL;
 
-        /* Handle framebuffer stuff */
+        // Handle framebuffer stuff
         _buffer_locker = new BLocker();
         _bitmap = NULL;
     }
@@ -127,7 +127,7 @@ class SDL_BWin : public BWindow
             if (_SDL_GLView == _cur_view)
                 RemoveChild(_SDL_GLView);
             _SDL_GLView = NULL;
-            // _SDL_GLView deleted by HAIKU_GL_DeleteContext
+            // _SDL_GLView deleted by HAIKU_GL_DestroyContext
         }
 
 #endif
@@ -135,7 +135,7 @@ class SDL_BWin : public BWindow
 
         delete _prev_frame;
 
-        /* Clean up framebuffer stuff */
+        // Clean up framebuffer stuff
         _buffer_locker->Lock();
         delete _buffer_locker;
     }
@@ -213,7 +213,7 @@ class SDL_BWin : public BWindow
                 SDL_Looper->SetCurrentContext(NULL);
             _SDL_GLView = NULL;
             UpdateCurrentView();
-            // _SDL_GLView deleted by HAIKU_GL_DeleteContext
+            // _SDL_GLView deleted by HAIKU_GL_DestroyContext
         }
         Unlock();
     }
@@ -225,29 +225,29 @@ class SDL_BWin : public BWindow
 #endif
 
     /* * * * * Event sending * * * * */
-    /* Hook functions */
+    // Hook functions
     virtual void FrameMoved(BPoint origin)
     {
-        /* Post a message to the BApp so that it can handle the window event */
+        // Post a message to the BApp so that it can handle the window event
         BMessage msg(BAPP_WINDOW_MOVED);
         msg.AddInt32("window-x", (int)origin.x);
         msg.AddInt32("window-y", (int)origin.y);
         _PostWindowEvent(msg);
 
-        /* Perform normal hook operations */
+        // Perform normal hook operations
         BWindow::FrameMoved(origin);
     }
 
     void FrameResized(float width, float height)
     {
-        /* Post a message to the BApp so that it can handle the window event */
+        // Post a message to the BApp so that it can handle the window event
         BMessage msg(BAPP_WINDOW_RESIZED);
 
         msg.AddInt32("window-w", (int)width + 1);
         msg.AddInt32("window-h", (int)height + 1);
         _PostWindowEvent(msg);
 
-        /* Perform normal hook operations */
+        // Perform normal hook operations
         BWindow::FrameResized(width, height);
     }
 
@@ -256,13 +256,13 @@ class SDL_BWin : public BWindow
         BMessage msg(BAPP_WINDOW_CLOSE_REQUESTED);
         _PostWindowEvent(msg);
 
-        /* We won't allow a quit unless asked by DestroyWindow() */
+        // We won't allow a quit unless asked by DestroyWindow()
         return false;
     }
 
     void WindowActivated(bool active)
     {
-        BMessage msg(BAPP_KEYBOARD_FOCUS); /* Mouse focus sold separately */
+        BMessage msg(BAPP_KEYBOARD_FOCUS); // Mouse focus sold separately
         msg.AddBool("focusGained", active);
         _PostWindowEvent(msg);
     }
@@ -271,18 +271,18 @@ class SDL_BWin : public BWindow
               float width,
               float height)
     {
-        BMessage msg(BAPP_MAXIMIZE); /* Closest thing to maximization Haiku has */
+        BMessage msg(BAPP_MAXIMIZE); // Closest thing to maximization Haiku has
         _PostWindowEvent(msg);
 
-        /* Before the window zooms, record its size */
+        // Before the window zooms, record its size
         if (!_prev_frame)
             _prev_frame = new BRect(Frame());
 
-        /* Perform normal hook operations */
+        // Perform normal hook operations
         BWindow::Zoom(origin, width, height);
     }
 
-    /* Member functions */
+    // Member functions
     void Show()
     {
         while (IsHidden()) {
@@ -320,12 +320,12 @@ class SDL_BWin : public BWindow
         }
     }
 
-    /* BView message interruption */
+    // BView message interruption
     void DispatchMessage(BMessage *msg, BHandler *target)
     {
-        BPoint where;  /* Used by mouse moved */
-        int32 buttons; /* Used for mouse button events */
-        int32 key;     /* Used for key events */
+        BPoint where;  // Used by mouse moved
+        int32 buttons; // Used for mouse button events
+        int32 key;     // Used for key events
 
         switch (msg->what) {
         case B_MOUSE_MOVED:
@@ -368,14 +368,14 @@ class SDL_BWin : public BWindow
             }
         } break;
 
-        case B_UNMAPPED_KEY_DOWN: /* modifier keys are unmapped */
+        case B_UNMAPPED_KEY_DOWN: // modifier keys are unmapped
             if (msg->FindInt32("key", &key) == B_OK) {
                 _KeyEvent((SDL_Scancode)key, NULL, 0, SDL_PRESSED);
             }
             break;
 
         case B_KEY_UP:
-        case B_UNMAPPED_KEY_UP: /* modifier keys are unmapped */
+        case B_UNMAPPED_KEY_UP: // modifier keys are unmapped
             if (msg->FindInt32("key", &key) == B_OK) {
                 _KeyEvent(key, NULL, 0, SDL_RELEASED);
             }
@@ -387,18 +387,18 @@ class SDL_BWin : public BWindow
                - CTRL+Q to close window (and other shortcuts)
                - PrintScreen to make screenshot into /boot/home
                - etc.. */
-            /* BWindow::DispatchMessage(msg, target); */
+            // BWindow::DispatchMessage(msg, target);
             break;
         }
 
         BWindow::DispatchMessage(msg, target);
     }
 
-    /* Handle command messages */
+    // Handle command messages
     void MessageReceived(BMessage *message)
     {
         switch (message->what) {
-        /* Handle commands from SDL */
+        // Handle commands from SDL
         case BWIN_SET_TITLE:
             _SetTitle(message);
             break;
@@ -467,13 +467,13 @@ class SDL_BWin : public BWindow
             break;
         }
         default:
-            /* Perform normal message handling */
+            // Perform normal message handling
             BWindow::MessageReceived(message);
             break;
         }
     }
 
-    /* Accessor methods */
+    // Accessor methods
     bool IsShown() { return _shown; }
     int32 GetID() { return _id; }
     BBitmap *GetBitmap() { return _bitmap; }
@@ -487,7 +487,7 @@ class SDL_BWin : public BWindow
     Uint32 GetGLType() { return _gl_type; }
 #endif
 
-    /* Setter methods */
+    // Setter methods
     void SetID(int32 id) { _id = id; }
     void LockBuffer() { _buffer_locker->Lock(); }
     void UnlockBuffer() { _buffer_locker->Unlock(); }
@@ -499,16 +499,16 @@ class SDL_BWin : public BWindow
     }
 
   private:
-    /* Event redirection */
+    // Event redirection
     void _MouseMotionEvent(BPoint &where, int32 transit)
     {
         if (transit == B_EXITED_VIEW) {
-            /* Change mouse focus */
+            // Change mouse focus
             if (_mouse_focused) {
                 _MouseFocusEvent(false);
             }
         } else {
-            /* Change mouse focus */
+            // Change mouse focus
             if (!_mouse_focused) {
                 _MouseFocusEvent(true);
             }
@@ -559,7 +559,7 @@ class SDL_BWin : public BWindow
 
     void _MouseWheelEvent(int32 x, int32 y)
     {
-        /* Create a message to pass along to the BeApp thread */
+        // Create a message to pass along to the BeApp thread
         BMessage msg(BAPP_MOUSE_WHEEL);
         msg.AddInt32("xticks", x);
         msg.AddInt32("yticks", y);
@@ -568,7 +568,7 @@ class SDL_BWin : public BWindow
 
     void _KeyEvent(int32 keyCode, const int8 *keyUtf8, const ssize_t &len, int32 keyState)
     {
-        /* Create a message to pass along to the BeApp thread */
+        // Create a message to pass along to the BeApp thread
         BMessage msg(BAPP_KEY);
         msg.AddInt32("key-state", keyState);
         msg.AddInt32("key-scancode", keyCode);
@@ -580,7 +580,7 @@ class SDL_BWin : public BWindow
 
     void _RepaintEvent()
     {
-        /* Force a repaint: Call the SDL exposed event */
+        // Force a repaint: Call the SDL exposed event
         BMessage msg(BAPP_REPAINT);
         _PostWindowEvent(msg);
     }
@@ -590,7 +590,7 @@ class SDL_BWin : public BWindow
         SDL_Looper->PostMessage(&msg);
     }
 
-    /* Command methods (functions called upon by SDL) */
+    // Command methods (functions called upon by SDL)
     void _SetTitle(BMessage *msg)
     {
         const char *title;
@@ -678,7 +678,7 @@ class SDL_BWin : public BWindow
             Show();
         } else if (_fullscreen) {
 
-        } else if (_prev_frame != NULL) { /* Zoomed */
+        } else if (_prev_frame != NULL) { // Zoomed
             MoveTo(_prev_frame->left, _prev_frame->top);
             ResizeTo(_prev_frame->Width(), _prev_frame->Height());
         }
@@ -711,7 +711,7 @@ class SDL_BWin : public BWindow
         }
     }
 
-    /* Members */
+    // Members
 
     BView *_cur_view;
     SDL_BView *_SDL_View;
@@ -721,19 +721,19 @@ class SDL_BWin : public BWindow
 #endif
 
     int32 _last_buttons;
-    int32 _id;           /* Window id used by SDL_BApp */
-    bool _mouse_focused; /* Does this window have mouse focus? */
+    int32 _id;           // Window id used by SDL_BApp
+    bool _mouse_focused; // Does this window have mouse focus?
     bool _shown;
     bool _inhibit_resize;
 
-    BRect *_prev_frame; /* Previous position and size of the window */
+    BRect *_prev_frame; // Previous position and size of the window
     bool _fullscreen;
     // valid only if fullscreen
     BRect _non_fullscreen_frame;
     bool _bordered;
     bool _resizable;
 
-    /* Framebuffer members */
+    // Framebuffer members
     BLocker *_buffer_locker;
     BBitmap *_bitmap;
 };
@@ -752,4 +752,4 @@ class SDL_BWin : public BWindow
  *                         through a draw cycle.  Occurs when the previous
  *                         buffer provided by DirectConnected() is invalidated.
  */
-#endif /* SDL_BWin_h_ */
+#endif // SDL_BWin_h_

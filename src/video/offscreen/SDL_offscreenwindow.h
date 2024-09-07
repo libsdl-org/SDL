@@ -33,8 +33,8 @@ struct SDL_WindowData
 #endif
 };
 
-extern int OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
+extern bool OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void OFFSCREEN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void OFFSCREEN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_offscreenwindow_h */
+#endif // SDL_offscreenwindow_h

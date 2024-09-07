@@ -23,7 +23,7 @@
 
 extern void PSP_InitOSKeymap(SDL_VideoDevice *_this);
 extern void PSP_PumpEvents(SDL_VideoDevice *_this);
-extern int PSP_EventInit(SDL_VideoDevice *_this);
+extern bool PSP_EventInit(SDL_VideoDevice *_this);
 extern void PSP_EventQuit(SDL_VideoDevice *_this);
 
-/* end of SDL_pspevents_c.h ... */
+// end of SDL_pspevents_c.h ...

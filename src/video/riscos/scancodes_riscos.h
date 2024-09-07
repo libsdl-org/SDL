@@ -23,20 +23,20 @@
    Sources:
    - https://www.riscosopen.org/wiki/documentation/show/Keyboard Scan Codes
 */
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 static SDL_Scancode const riscos_scancode_table[] = {
-     /*   0 */   SDL_SCANCODE_UNKNOWN,   /* Shift */
-     /*   1 */   SDL_SCANCODE_UNKNOWN,   /* Ctrl */
-     /*   2 */   SDL_SCANCODE_UNKNOWN,   /* Alt */
+     /*   0 */   SDL_SCANCODE_UNKNOWN,   // Shift
+     /*   1 */   SDL_SCANCODE_UNKNOWN,   // Ctrl
+     /*   2 */   SDL_SCANCODE_UNKNOWN,   // Alt
      /*   3 */   SDL_SCANCODE_LSHIFT,
      /*   4 */   SDL_SCANCODE_LCTRL,
      /*   5 */   SDL_SCANCODE_LALT,
      /*   6 */   SDL_SCANCODE_RSHIFT,
      /*   7 */   SDL_SCANCODE_RCTRL,
      /*   8 */   SDL_SCANCODE_RALT,
-     /*   9 */   SDL_SCANCODE_UNKNOWN,   /* Left mouse */
-     /*  10 */   SDL_SCANCODE_UNKNOWN,   /* Center mouse */
-     /*  11 */   SDL_SCANCODE_UNKNOWN,   /* Right mouse */
+     /*   9 */   SDL_SCANCODE_UNKNOWN,   // Left mouse
+     /*  10 */   SDL_SCANCODE_UNKNOWN,   // Center mouse
+     /*  11 */   SDL_SCANCODE_UNKNOWN,   // Right mouse
      /*  12 */   SDL_SCANCODE_UNKNOWN,
      /*  13 */   SDL_SCANCODE_UNKNOWN,
      /*  14 */   SDL_SCANCODE_UNKNOWN,
@@ -49,7 +49,7 @@ static SDL_Scancode const riscos_scancode_table[] = {
      /*  21 */   SDL_SCANCODE_8,
      /*  22 */   SDL_SCANCODE_F7,
      /*  23 */   SDL_SCANCODE_MINUS,
-     /*  24 */   SDL_SCANCODE_6,         /* Duplicate of 52 */
+     /*  24 */   SDL_SCANCODE_6,         // Duplicate of 52
      /*  25 */   SDL_SCANCODE_LEFT,
      /*  26 */   SDL_SCANCODE_KP_6,
      /*  27 */   SDL_SCANCODE_KP_7,
@@ -65,7 +65,7 @@ static SDL_Scancode const riscos_scancode_table[] = {
      /*  37 */   SDL_SCANCODE_I,
      /*  38 */   SDL_SCANCODE_9,
      /*  39 */   SDL_SCANCODE_0,
-     /*  40 */   SDL_SCANCODE_MINUS,     /* Duplicate of 23 */
+     /*  40 */   SDL_SCANCODE_MINUS,     // Duplicate of 23
      /*  41 */   SDL_SCANCODE_DOWN,
      /*  42 */   SDL_SCANCODE_KP_8,
      /*  43 */   SDL_SCANCODE_KP_9,
@@ -96,8 +96,8 @@ static SDL_Scancode const riscos_scancode_table[] = {
      /*  68 */   SDL_SCANCODE_Y,
      /*  69 */   SDL_SCANCODE_J,
      /*  70 */   SDL_SCANCODE_K,
-     /*  71 */   SDL_SCANCODE_2,         /* Duplicate of 49 */
-     /*  72 */   SDL_SCANCODE_SEMICOLON, /* Duplicate of 87 */
+     /*  71 */   SDL_SCANCODE_2,         // Duplicate of 49
+     /*  72 */   SDL_SCANCODE_SEMICOLON, // Duplicate of 87
      /*  73 */   SDL_SCANCODE_RETURN,
      /*  74 */   SDL_SCANCODE_KP_DIVIDE,
      /*  75 */   SDL_SCANCODE_UNKNOWN,
@@ -154,4 +154,4 @@ static SDL_Scancode const riscos_scancode_table[] = {
      /* 126 */   SDL_SCANCODE_RGUI,
      /* 127 */   SDL_SCANCODE_MENU
 };
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on

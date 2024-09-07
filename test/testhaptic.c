@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
     /* Parse commandline */
     for (i = 1; i < argc;) {
         int consumed;
@@ -81,55 +81,52 @@ int main(int argc, char **argv)
     }
 
     /* Initialize the force feedbackness */
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK |
-             SDL_INIT_HAPTIC);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC);
     haptics = SDL_GetHaptics(&num_haptics);
     SDL_Log("%d Haptic devices detected.\n", num_haptics);
     for (i = 0; i < num_haptics; ++i) {
-        SDL_Log("    %s\n", SDL_GetHapticInstanceName(haptics[i]));
+        SDL_Log("    %s\n", SDL_GetHapticNameForID(haptics[i]));
     }
-    if (haptics) {
-        if (num_haptics == 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No Haptic devices found!\n");
-            SDL_free(haptics);
-            return 1;
-        }
-
-        /* We'll just use index or the first force feedback device found */
-        if (!name) {
-            i = (index != -1) ? index : 0;
-
-            if (i >= num_haptics) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Index out of range, aborting.\n");
-                SDL_free(haptics);
-                return 1;
-            }
-        }
-        /* Try to find matching device */
-        else {
-            for (i = 0; i < num_haptics; i++) {
-                if (SDL_strstr(SDL_GetHapticInstanceName(haptics[i]), name) != NULL) {
-                    break;
-                }
-            }
-
-            if (i >= num_haptics) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to find device matching '%s', aborting.\n", name);
-                SDL_free(haptics);
-                return 1;
-            }
-        }
-
-        haptic = SDL_OpenHaptic(haptics[i]);
-        if (!haptic) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create the haptic device: %s\n", SDL_GetError());
-            SDL_free(haptics);
-            return 1;
-        }
-        SDL_Log("Device: %s\n", SDL_GetHapticName(haptic));
-        HapticPrintSupported(haptic);
+    if (num_haptics == 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No Haptic devices found!\n");
         SDL_free(haptics);
+        return 1;
     }
+
+    /* We'll just use index or the first force feedback device found */
+    if (!name) {
+        i = (index != -1) ? index : 0;
+
+        if (i >= num_haptics) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Index out of range, aborting.\n");
+            SDL_free(haptics);
+            return 1;
+        }
+    }
+    /* Try to find matching device */
+    else {
+        for (i = 0; i < num_haptics; i++) {
+            if (SDL_strstr(SDL_GetHapticNameForID(haptics[i]), name) != NULL) {
+                break;
+            }
+        }
+
+        if (i >= num_haptics) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to find device matching '%s', aborting.\n", name);
+            SDL_free(haptics);
+            return 1;
+        }
+    }
+
+    haptic = SDL_OpenHaptic(haptics[i]);
+    if (!haptic) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create the haptic device: %s\n", SDL_GetError());
+        SDL_free(haptics);
+        return 1;
+    }
+    SDL_Log("Device: %s\n", SDL_GetHapticName(haptic));
+    HapticPrintSupported(haptic);
+    SDL_free(haptics);
 
     /* We only want force feedback errors. */
     SDL_ClearError();

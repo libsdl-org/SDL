@@ -22,7 +22,7 @@
 
 #ifdef SDL_PLATFORM_HAIKU
 
-/* Handle the BeApp specific portions of the application */
+// Handle the BeApp specific portions of the application
 
 #include <AppKit.h>
 #include <storage/AppFileInfo.h>
@@ -32,7 +32,7 @@
 #include <unistd.h>
 #include <memory>
 
-#include "SDL_BApp.h"   /* SDL_BLooper class definition */
+#include "SDL_BApp.h"   // SDL_BLooper class definition
 #include "SDL_BeApp.h"
 
 #include "../../video/haiku/SDL_BWin.h"
@@ -43,17 +43,17 @@ extern "C" {
 
 #include "../../thread/SDL_systhread.h"
 
-/* Flag to tell whether or not the Be application and looper are active or not */
+// Flag to tell whether or not the Be application and looper are active or not
 static int SDL_BeAppActive = 0;
 static SDL_Thread *SDL_AppThread = NULL;
 SDL_BLooper *SDL_Looper = NULL;
 
 
-/* Default application signature */
+// Default application signature
 const char *SDL_signature = "application/x-SDL-executable";
 
 
-/* Create a descendant of BApplication */
+// Create a descendant of BApplication
 class SDL_BApp : public BApplication {
 public:
     SDL_BApp(const char* signature) :
@@ -104,10 +104,10 @@ static int StartBeApp(void *unused)
 }
 
 
-static int StartBeLooper()
+static bool StartBeLooper()
 {
     if (!be_app) {
-        SDL_AppThread = SDL_CreateThreadInternal(StartBeApp, "SDLApplication", 0, NULL);
+        SDL_AppThread = SDL_CreateThread(StartBeApp, "SDLApplication", NULL);
         if (!SDL_AppThread) {
             return SDL_SetError("Couldn't create BApplication thread");
         }
@@ -117,64 +117,51 @@ static int StartBeLooper()
         } while ((!be_app) || be_app->IsLaunching());
     }
 
-     /* Change working directory to that of executable */
-    app_info info;
-    if (B_OK == be_app->GetAppInfo(&info)) {
-        entry_ref ref = info.ref;
-        BEntry entry;
-        if (B_OK == entry.SetTo(&ref)) {
-            BPath path;
-            if (B_OK == path.SetTo(&entry)) {
-                if (B_OK == path.GetParent(&path)) {
-                    chdir(path.Path());
-                }
-            }
-        }
-    }
-
     SDL_Looper = new SDL_BLooper("SDLLooper");
     SDL_Looper->Run();
-    return (0);
+    return true;
 }
 
 
-/* Initialize the Be Application, if it's not already started */
-int SDL_InitBeApp(void)
+// Initialize the Be Application, if it's not already started
+bool SDL_InitBeApp(void)
 {
-    /* Create the BApplication that handles appserver interaction */
+    // Create the BApplication that handles appserver interaction
     if (SDL_BeAppActive <= 0) {
-        StartBeLooper();
+        if (!StartBeLooper()) {
+            return false;
+        }
 
-        /* Mark the application active */
+        // Mark the application active
         SDL_BeAppActive = 0;
     }
 
-    /* Increment the application reference count */
+    // Increment the application reference count
     ++SDL_BeAppActive;
 
-    /* The app is running, and we're ready to go */
-    return 0;
+    // The app is running, and we're ready to go
+    return true;
 }
 
-/* Quit the Be Application, if there's nothing left to do */
+// Quit the Be Application, if there's nothing left to do
 void SDL_QuitBeApp(void)
 {
-    /* Decrement the application reference count */
+    // Decrement the application reference count
     --SDL_BeAppActive;
 
-    /* If the reference count reached zero, clean up the app */
+    // If the reference count reached zero, clean up the app
     if (SDL_BeAppActive == 0) {
         SDL_Looper->Lock();
         SDL_Looper->Quit();
         SDL_Looper = NULL;
         if (SDL_AppThread) {
-            if (be_app != NULL) {       /* Not tested */
+            if (be_app != NULL) {       // Not tested
                 be_app->PostMessage(B_QUIT_REQUESTED);
             }
             SDL_WaitThread(SDL_AppThread, NULL);
             SDL_AppThread = NULL;
         }
-        /* be_app should now be NULL since be_app has quit */
+        // be_app should now be NULL since be_app has quit
     }
 }
 
@@ -182,7 +169,7 @@ void SDL_QuitBeApp(void)
 }
 #endif
 
-/* SDL_BApp functions */
+// SDL_BApp functions
 void SDL_BLooper::ClearID(SDL_BWin *bwin) {
     _SetSDLWindow(NULL, bwin->GetID());
     int32 i = _GetNumWindowSlots() - 1;
@@ -192,4 +179,4 @@ void SDL_BLooper::ClearID(SDL_BWin *bwin) {
     }
 }
 
-#endif /* SDL_PLATFORM_HAIKU */
+#endif // SDL_PLATFORM_HAIKU

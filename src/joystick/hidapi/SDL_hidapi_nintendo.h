@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* These are values used in the controller type byte of the controller GUID */
+// These are values used in the controller type byte of the controller GUID
 
-/* These values come directly out of the hardware, so don't change them */
+// These values come directly out of the hardware, so don't change them
 typedef enum
 {
     k_eSwitchDeviceInfoControllerType_Unknown = 0,
@@ -38,7 +38,7 @@ typedef enum
     k_eSwitchDeviceInfoControllerType_SEGA_Genesis = 13,
 } ESwitchDeviceInfoControllerType;
 
-/* These values are used internally but can be updated as needed */
+// These values are used internally but can be updated as needed
 typedef enum
 {
     k_eWiiExtensionControllerType_Unknown = 0,

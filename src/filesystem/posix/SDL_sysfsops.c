@@ -23,60 +23,131 @@
 
 #if defined(SDL_FSOPS_POSIX)
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+// System dependent filesystem routines
+
+#include "../SDL_sysfilesystem.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <dirent.h>
 #include <sys/stat.h>
 
-#include "../SDL_sysfilesystem.h"
-
 int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-    int retval = 1;
+    int result = 1;
 
     DIR *dir = opendir(path);
     if (!dir) {
-        return SDL_SetError("Can't open directory: %s", strerror(errno));
+        SDL_SetError("Can't open directory: %s", strerror(errno));
+        return -1;
     }
 
     struct dirent *ent;
-    while ((retval == 1) && ((ent = readdir(dir)) != NULL))
+    while ((result == 1) && ((ent = readdir(dir)) != NULL))
     {
         const char *name = ent->d_name;
         if ((SDL_strcmp(name, ".") == 0) || (SDL_strcmp(name, "..") == 0)) {
             continue;
         }
-        retval = cb(userdata, dirname, name);
+        result = cb(userdata, dirname, name);
     }
 
     closedir(dir);
 
-    return retval;
+    return result;
 }
 
-int SDL_SYS_RemovePath(const char *path)
+bool SDL_SYS_RemovePath(const char *path)
 {
     int rc = remove(path);
     if (rc < 0) {
         if (errno == ENOENT) {
             // It's already gone, this is a success
-            return 0;
+            return true;
         }
         return SDL_SetError("Can't remove path: %s", strerror(errno));
     }
-    return 0;
+    return true;
 }
 
-int SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
+bool SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
 {
     if (rename(oldpath, newpath) < 0) {
         return SDL_SetError("Can't remove path: %s", strerror(errno));
     }
-    return 0;
+    return true;
 }
 
-int SDL_SYS_CreateDirectory(const char *path)
+bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
+{
+    char *buffer = NULL;
+    char *tmppath = NULL;
+    SDL_IOStream *input = NULL;
+    SDL_IOStream *output = NULL;
+    const size_t maxlen = 4096;
+    size_t len;
+    bool result = false;
+
+    if (SDL_asprintf(&tmppath, "%s.tmp", newpath) < 0) {
+        goto done;
+    }
+
+    input = SDL_IOFromFile(oldpath, "rb");
+    if (!input) {
+        goto done;
+    }
+
+    output = SDL_IOFromFile(tmppath, "wb");
+    if (!output) {
+        goto done;
+    }
+
+    buffer = (char *)SDL_malloc(maxlen);
+    if (!buffer) {
+        goto done;
+    }
+
+    while ((len = SDL_ReadIO(input, buffer, maxlen)) > 0) {
+        if (SDL_WriteIO(output, buffer, len) < len) {
+            goto done;
+        }
+    }
+    if (SDL_GetIOStatus(input) != SDL_IO_STATUS_EOF) {
+        goto done;
+    }
+
+    SDL_CloseIO(input);
+    input = NULL;
+
+    if (!SDL_CloseIO(output)) {
+        goto done;
+    }
+    output = NULL;
+
+    if (!SDL_RenamePath(tmppath, newpath)) {
+        SDL_RemovePath(tmppath);
+        goto done;
+    }
+
+    result = true;
+
+done:
+    if (output) {
+        SDL_CloseIO(output);
+        SDL_RemovePath(tmppath);
+    }
+    if (input) {
+        SDL_CloseIO(input);
+    }
+    SDL_free(tmppath);
+    SDL_free(buffer);
+
+    return result;
+}
+
+bool SDL_SYS_CreateDirectory(const char *path)
 {
     const int rc = mkdir(path, 0770);
     if (rc < 0) {
@@ -84,15 +155,15 @@ int SDL_SYS_CreateDirectory(const char *path)
         if (origerrno == EEXIST) {
             struct stat statbuf;
             if ((stat(path, &statbuf) == 0) && (S_ISDIR(statbuf.st_mode))) {
-                return 0;  // it already exists and it's a directory, consider it success.
+                return true;  // it already exists and it's a directory, consider it success.
             }
         }
         return SDL_SetError("Can't create directory: %s", strerror(origerrno));
     }
-    return 0;
+    return true;
 }
 
-int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
+bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
     struct stat statbuf;
     const int rc = stat(path, &statbuf);
@@ -110,7 +181,7 @@ int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     }
 
 #if defined(HAVE_ST_MTIM)
-    /* POSIX.1-2008 standard */
+    // POSIX.1-2008 standard
     info->create_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_ctim.tv_sec) + statbuf.st_ctim.tv_nsec;
     info->modify_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_mtim.tv_sec) + statbuf.st_mtim.tv_nsec;
     info->access_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_atim.tv_sec) + statbuf.st_atim.tv_nsec;
@@ -124,7 +195,7 @@ int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     info->modify_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_mtime);
     info->access_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_atime);
 #endif
-    return 0;
+    return true;
 }
 
 #endif // SDL_FSOPS_POSIX

@@ -4,7 +4,7 @@
 
 #ifndef NO_BUILD_CONFIG
 /* Disable intrinsics that are unsupported by the current compiler */
-#include <build_config/SDL_build_config.h>
+#include "SDL_build_config.h"
 #endif
 
 #include <SDL3/SDL.h>
@@ -317,7 +317,7 @@ SDL_TARGETING("avx512f") static void kernel_floats_add_avx512f(float *dest, cons
 
 /* Test case functions */
 
-static int intrinsics_selftest(void *arg)
+static int SDLCALL intrinsics_selftest(void *arg)
 {
     {
         size_t size;
@@ -362,7 +362,7 @@ static int intrinsics_selftest(void *arg)
     return TEST_COMPLETED;
 }
 
-static int intrinsics_testMMX(void *arg)
+static int SDLCALL intrinsics_testMMX(void *arg)
 {
     if (SDL_HasMMX()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has MMX support.");
@@ -390,7 +390,7 @@ static int intrinsics_testMMX(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testSSE(void *arg)
+static int SDLCALL intrinsics_testSSE(void *arg)
 {
     if (SDL_HasSSE()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE support.");
@@ -418,7 +418,7 @@ static int intrinsics_testSSE(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testSSE2(void *arg)
+static int SDLCALL intrinsics_testSSE2(void *arg)
 {
     if (SDL_HasSSE2()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE2 support.");
@@ -446,7 +446,7 @@ static int intrinsics_testSSE2(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testSSE3(void *arg)
+static int SDLCALL intrinsics_testSSE3(void *arg)
 {
     if (SDL_HasSSE3()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE3 support.");
@@ -474,7 +474,7 @@ static int intrinsics_testSSE3(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testSSE4_1(void *arg)
+static int SDLCALL intrinsics_testSSE4_1(void *arg)
 {
     if (SDL_HasSSE41()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.1 support.");
@@ -502,7 +502,7 @@ static int intrinsics_testSSE4_1(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testSSE4_2(void *arg)
+static int SDLCALL intrinsics_testSSE4_2(void *arg)
 {
     if (SDL_HasSSE42()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.2 support.");
@@ -537,7 +537,7 @@ static int intrinsics_testSSE4_2(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testAVX(void *arg)
+static int SDLCALL intrinsics_testAVX(void *arg)
 {
     if (SDL_HasAVX()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX support.");
@@ -565,7 +565,7 @@ static int intrinsics_testAVX(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testAVX2(void *arg)
+static int SDLCALL intrinsics_testAVX2(void *arg)
 {
     if (SDL_HasAVX2()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX2 support.");
@@ -593,7 +593,7 @@ static int intrinsics_testAVX2(void *arg)
     return TEST_SKIPPED;
 }
 
-static int intrinsics_testAVX512F(void *arg)
+static int SDLCALL intrinsics_testAVX512F(void *arg)
 {
     if (SDL_HasAVX512F()) {
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX512F support.");
@@ -627,43 +627,43 @@ static int intrinsics_testAVX512F(void *arg)
 /* Intrinsics test cases */
 
 static const SDLTest_TestCaseReference intrinsicsTest1 = {
-    (SDLTest_TestCaseFp)intrinsics_selftest, "intrinsics_selftest", "Intrinsics testautomation selftest", TEST_ENABLED
+    intrinsics_selftest, "intrinsics_selftest", "Intrinsics testautomation selftest", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest2 = {
-    (SDLTest_TestCaseFp)intrinsics_testMMX, "intrinsics_testMMX", "Tests MMX intrinsics", TEST_ENABLED
+    intrinsics_testMMX, "intrinsics_testMMX", "Tests MMX intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest3 = {
-    (SDLTest_TestCaseFp)intrinsics_testSSE, "intrinsics_testSSE", "Tests SSE intrinsics", TEST_ENABLED
+    intrinsics_testSSE, "intrinsics_testSSE", "Tests SSE intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest4 = {
-    (SDLTest_TestCaseFp)intrinsics_testSSE2, "intrinsics_testSSE2", "Tests SSE2 intrinsics", TEST_ENABLED
+    intrinsics_testSSE2, "intrinsics_testSSE2", "Tests SSE2 intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest5 = {
-    (SDLTest_TestCaseFp)intrinsics_testSSE3, "intrinsics_testSSE3", "Tests SSE3 intrinsics", TEST_ENABLED
+    intrinsics_testSSE3, "intrinsics_testSSE3", "Tests SSE3 intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest6 = {
-    (SDLTest_TestCaseFp)intrinsics_testSSE4_1, "intrinsics_testSSE4.1", "Tests SSE4.1 intrinsics", TEST_ENABLED
+    intrinsics_testSSE4_1, "intrinsics_testSSE4.1", "Tests SSE4.1 intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest7 = {
-    (SDLTest_TestCaseFp)intrinsics_testSSE4_2, "intrinsics_testSSE4.2", "Tests SSE4.2 intrinsics", TEST_ENABLED
+    intrinsics_testSSE4_2, "intrinsics_testSSE4.2", "Tests SSE4.2 intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest8 = {
-    (SDLTest_TestCaseFp)intrinsics_testAVX, "intrinsics_testAVX", "Tests AVX intrinsics", TEST_ENABLED
+    intrinsics_testAVX, "intrinsics_testAVX", "Tests AVX intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest9 = {
-    (SDLTest_TestCaseFp)intrinsics_testAVX2, "intrinsics_testAVX2", "Tests AVX2 intrinsics", TEST_ENABLED
+    intrinsics_testAVX2, "intrinsics_testAVX2", "Tests AVX2 intrinsics", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference intrinsicsTest10 = {
-    (SDLTest_TestCaseFp)intrinsics_testAVX512F, "intrinsics_testAVX512F", "Tests AVX512F intrinsics", TEST_ENABLED
+    intrinsics_testAVX512F, "intrinsics_testAVX512F", "Tests AVX512F intrinsics", TEST_ENABLED
 };
 
 /* Sequence of Platform test cases */

@@ -23,7 +23,6 @@
 #ifndef SDL_windowevents_c_h_
 #define SDL_windowevents_c_h_
 
-extern int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
-                               int data1, int data2);
+extern bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data1, int data2);
 
-#endif /* SDL_windowevents_c_h_ */
+#endif // SDL_windowevents_c_h_

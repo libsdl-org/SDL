@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -49,26 +49,27 @@ int main(int argc, char *argv[])
         i += consumed;
     }
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("SDL_Init failed (%s)", SDL_GetError());
         return 1;
     }
 
-    if (SDL_CreateWindowAndRenderer("Parent Window", 640, 480, 0, &w1, &r1)) {
+    if (!SDL_CreateWindowAndRenderer("Parent Window", 640, 480, 0, &w1, &r1)) {
         SDL_Log("Failed to create parent window and/or renderer: %s\n", SDL_GetError());
         exit_code = 1;
         goto sdl_quit;
     }
 
-    SDL_CreateWindowAndRenderer("Non-Modal Window", 320, 200, 0, &w2, &r2);
-    if (!w2) {
+    if (!SDL_CreateWindowAndRenderer("Non-Modal Window", 320, 200, 0, &w2, &r2)) {
         SDL_Log("Failed to create parent window and/or renderer: %s\n", SDL_GetError());
         exit_code = 1;
         goto sdl_quit;
     }
 
-    if (!SDL_SetWindowModalFor(w2, w1)) {
-        SDL_SetWindowTitle(w2, "Modal Window");
+    if (SDL_SetWindowParent(w2, w1)) {
+        if (SDL_SetWindowModal(w2, true)) {
+            SDL_SetWindowTitle(w2, "Modal Window");
+        }
     }
 
     while (1) {
@@ -91,25 +92,27 @@ int main(int argc, char *argv[])
                     w1 = NULL;
                 }
             } else if (e.type == SDL_EVENT_KEY_DOWN) {
-                if ((e.key.keysym.sym == SDLK_m || e.key.keysym.sym == SDLK_n) && !w2) {
-                    if (SDL_CreateWindowAndRenderer("Non-Modal Window", 320, 200, SDL_WINDOW_HIDDEN, &w2, &r2) < 0) {
+                if ((e.key.key == SDLK_M || e.key.key == SDLK_N) && !w2) {
+                    if (!SDL_CreateWindowAndRenderer("Non-Modal Window", 320, 200, SDL_WINDOW_HIDDEN, &w2, &r2)) {
                         SDL_Log("Failed to create modal window and/or renderer: %s\n", SDL_GetError());
                         exit_code = 1;
                         goto sdl_quit;
                     }
 
-                    if (e.key.keysym.sym == SDLK_m) {
-                        if (!SDL_SetWindowModalFor(w2, w1)) {
-                            SDL_SetWindowTitle(w2, "Modal Window");
+                    if (e.key.key == SDLK_M) {
+                        if (SDL_SetWindowParent(w2, w2)) {
+                            if (SDL_SetWindowModal(w2, true)) {
+                                SDL_SetWindowTitle(w2, "Modal Window");
+                            }
                         }
                     }
                     SDL_ShowWindow(w2);
-                } else if (e.key.keysym.sym == SDLK_ESCAPE && w2) {
+                } else if (e.key.key == SDLK_ESCAPE && w2) {
                     SDL_DestroyWindow(w2);
                     r2 = NULL;
                     w2 = NULL;
-                } else if (e.key.keysym.sym == SDLK_h) {
-                    if (e.key.keysym.mod & SDL_KMOD_CTRL) {
+                } else if (e.key.key == SDLK_H) {
+                    if (e.key.mod & SDL_KMOD_CTRL) {
                         /* Hide the parent, which should hide the modal too. */
                         show_deadline = SDL_GetTicksNS() + SDL_SECONDS_TO_NS(3);
                         SDL_HideWindow(w1);
@@ -121,16 +124,20 @@ int main(int argc, char *argv[])
                             SDL_HideWindow(w2);
                         }
                     }
-                } else if (e.key.keysym.sym == SDLK_p && w2) {
+                } else if (e.key.key == SDLK_P && w2) {
                     if (SDL_GetWindowFlags(w2) & SDL_WINDOW_MODAL) {
                         /* Unparent the window */
-                        if (!SDL_SetWindowModalFor(w2, NULL)) {
-                            SDL_SetWindowTitle(w2, "Non-Modal Window");
+                        if (SDL_SetWindowModal(w2, false)) {
+                            if (SDL_SetWindowParent(w2, NULL)) {
+                                SDL_SetWindowTitle(w2, "Non-Modal Window");
+                            }
                         }
                     } else {
                         /* Reparent the window */
-                        if (!SDL_SetWindowModalFor(w2, w1)) {
-                            SDL_SetWindowTitle(w2, "Modal Window");
+                        if (SDL_SetWindowParent(w2, w1)) {
+                            if (SDL_SetWindowModal(w2, true)) {
+                                SDL_SetWindowTitle(w2, "Modal Window");
+                            }
                         }
                     }
                 }

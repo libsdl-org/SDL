@@ -51,7 +51,7 @@
 #include <mach/mach_time.h>
 #endif
 
-/* Use CLOCK_MONOTONIC_RAW, if available, which is not subject to adjustment by NTP */
+// Use CLOCK_MONOTONIC_RAW, if available, which is not subject to adjustment by NTP
 #ifdef HAVE_CLOCK_GETTIME
 #ifdef CLOCK_MONOTONIC_RAW
 #define SDL_MONOTONIC_CLOCK CLOCK_MONOTONIC_RAW
@@ -60,26 +60,26 @@
 #endif
 #endif
 
-/* The first ticks value of the application */
+// The first ticks value of the application
 #if !defined(HAVE_CLOCK_GETTIME) && defined(SDL_PLATFORM_APPLE)
 mach_timebase_info_data_t mach_base_info;
 #endif
-static SDL_bool checked_monotonic_time = SDL_FALSE;
-static SDL_bool has_monotonic_time = SDL_FALSE;
+static bool checked_monotonic_time = false;
+static bool has_monotonic_time = false;
 
 static void CheckMonotonicTime(void)
 {
 #ifdef HAVE_CLOCK_GETTIME
     struct timespec value;
     if (clock_gettime(SDL_MONOTONIC_CLOCK, &value) == 0) {
-        has_monotonic_time = SDL_TRUE;
+        has_monotonic_time = true;
     } else
 #elif defined(SDL_PLATFORM_APPLE)
     if (mach_timebase_info(&mach_base_info) == 0) {
-        has_monotonic_time = SDL_TRUE;
+        has_monotonic_time = true;
     }
 #endif
-    checked_monotonic_time = SDL_TRUE;
+    checked_monotonic_time = true;
 }
 
 Uint64 SDL_GetPerformanceCounter(void)
@@ -101,7 +101,7 @@ Uint64 SDL_GetPerformanceCounter(void)
 #elif defined(SDL_PLATFORM_APPLE)
         ticks = mach_absolute_time();
 #else
-        SDL_assert(SDL_FALSE);
+        SDL_assert(false);
         ticks = 0;
 #endif
     } else {
@@ -135,7 +135,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return SDL_US_PER_SECOND;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     int was_error;
 
@@ -147,14 +147,14 @@ void SDL_DelayNS(Uint64 ns)
 #endif
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
-    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
-        /* pseudo-synchronous pause, used directly or through e.g. SDL_WaitEvent */
+    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, true)) {
+        // pseudo-synchronous pause, used directly or through e.g. SDL_WaitEvent
         emscripten_sleep(ns / SDL_NS_PER_MS);
         return;
     }
 #endif
 
-    /* Set the timeout interval */
+    // Set the timeout interval
 #ifdef HAVE_NANOSLEEP
     remaining.tv_sec = (time_t)(ns / SDL_NS_PER_SECOND);
     remaining.tv_nsec = (long)(ns % SDL_NS_PER_SECOND);
@@ -169,7 +169,7 @@ void SDL_DelayNS(Uint64 ns)
         tv.tv_nsec = remaining.tv_nsec;
         was_error = nanosleep(&tv, &remaining);
 #else
-        /* Calculate the time interval left (in case of interrupt) */
+        // Calculate the time interval left (in case of interrupt)
         now = SDL_GetTicksNS();
         elapsed = (now - then);
         then = now;
@@ -181,8 +181,8 @@ void SDL_DelayNS(Uint64 ns)
         tv.tv_usec = SDL_NS_TO_US(ns % SDL_NS_PER_SECOND);
 
         was_error = select(0, NULL, NULL, NULL, &tv);
-#endif /* HAVE_NANOSLEEP */
+#endif // HAVE_NANOSLEEP
     } while (was_error && (errno == EINTR));
 }
 
-#endif /* SDL_TIMER_UNIX */
+#endif // SDL_TIMER_UNIX

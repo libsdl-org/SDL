@@ -37,7 +37,7 @@ static const char *GetSensorTypeString(SDL_SensorType type)
 
 static void HandleSensorEvent(SDL_SensorEvent *event)
 {
-    SDL_Sensor *sensor = SDL_GetSensorFromInstanceID(event->which);
+    SDL_Sensor *sensor = SDL_GetSensorFromID(event->which);
     if (!sensor) {
         SDL_Log("Couldn't get sensor for sensor event\n");
         return;
@@ -69,16 +69,18 @@ int main(int argc, char **argv)
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }
 
     /* Load the SDL library */
-    if (SDL_Init(SDL_INIT_SENSOR) < 0) {
+    if (!SDL_Init(SDL_INIT_SENSOR)) {
         SDL_Log("Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }
@@ -91,11 +93,11 @@ int main(int argc, char **argv)
         for (i = 0; i < num_sensors; ++i) {
             SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %s, platform type %d\n",
                     sensors[i],
-                    SDL_GetSensorInstanceName(sensors[i]),
-                    GetSensorTypeString(SDL_GetSensorInstanceType(sensors[i])),
-                    SDL_GetSensorInstanceNonPortableType(sensors[i]));
+                    SDL_GetSensorNameForID(sensors[i]),
+                    GetSensorTypeString(SDL_GetSensorTypeForID(sensors[i])),
+                    SDL_GetSensorNonPortableTypeForID(sensors[i]));
 
-            if (SDL_GetSensorInstanceType(sensors[i]) != SDL_SENSOR_UNKNOWN) {
+            if (SDL_GetSensorTypeForID(sensors[i]) != SDL_SENSOR_UNKNOWN) {
                 SDL_Sensor *sensor = SDL_OpenSensor(sensors[i]);
                 if (!sensor) {
                     SDL_Log("Couldn't open sensor %" SDL_PRIu32 ": %s\n", sensors[i], SDL_GetError());

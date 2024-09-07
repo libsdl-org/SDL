@@ -3,12 +3,12 @@ projectshortname = SDL
 incsubdir = include/SDL3
 wikisubdir =
 readmesubdir = docs
-apiprefixregex = (SDL_|SDLK_|KMOD_|AUDIO_)
+apiprefixregex = (SDL_|SDLK_)
 mainincludefname = SDL3/SDL.h
 versionfname = include/SDL3/SDL_version.h
 versionmajorregex = \A\#define\s+SDL_MAJOR_VERSION\s+(\d+)\Z
 versionminorregex = \A\#define\s+SDL_MINOR_VERSION\s+(\d+)\Z
-versionpatchregex = \A\#define\s+SDL_PATCHLEVEL\s+(\d+)\Z
+versionmicroregex = \A\#define\s+SDL_MICRO_VERSION\s+(\d+)\Z
 selectheaderregex = \ASDL.*?\.h\Z
 projecturl = https://libsdl.org/
 wikiurl = https://wiki.libsdl.org
@@ -17,3 +17,7 @@ warn_about_missing = 0
 wikipreamble = (This is the documentation for SDL3, which is under heavy development and the API is changing! [SDL2](https://wiki.libsdl.org/SDL2/) is the current stable version!)
 wikiheaderfiletext = Defined in [<SDL3/%fname%>](https://github.com/libsdl-org/SDL/blob/main/include/SDL3/%fname%)
 manpageheaderfiletext = Defined in SDL3/%fname%
+
+# All SDL_test_* headers become undefined categories, everything else just converts like SDL_audio.h -> Audio
+# A handful of others we fix up in the header itself with /* WIKI CATEGORY: x */ comments.
+headercategoryeval = s/\ASDL_test_?.*?\.h\Z//; s/\ASDL_?(.*?)\.h\Z/$1/; ucfirst();

@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     SDL_zero(cvtspec);
 
@@ -95,20 +95,20 @@ int main(int argc, char **argv)
         goto end;
     }
 
-    if (SDL_Init(SDL_INIT_AUDIO) == -1) {
+    if (!SDL_Init(SDL_INIT_AUDIO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
         ret = 2;
         goto end;
     }
 
-    if (SDL_LoadWAV(file_in, &spec, &data, &len) == -1) {
+    if (!SDL_LoadWAV(file_in, &spec, &data, &len)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to load %s: %s\n", file_in, SDL_GetError());
         ret = 3;
         goto end;
     }
 
     cvtspec.format = spec.format;
-    if (SDL_ConvertAudioSamples(&spec, data, len, &cvtspec, &dst_buf, &dst_len) < 0) {
+    if (!SDL_ConvertAudioSamples(&spec, data, len, &cvtspec, &dst_buf, &dst_len)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to convert samples: %s\n", SDL_GetError());
         ret = 4;
         goto end;
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
     SDL_WriteU32LE(io, dst_len);                                /* size */
     SDL_WriteIO(io, dst_buf, dst_len);
 
-    if (SDL_CloseIO(io) == -1) {
+    if (!SDL_CloseIO(io)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "closing '%s' failed: %s\n", file_out, SDL_GetError());
         ret = 6;
         goto end;

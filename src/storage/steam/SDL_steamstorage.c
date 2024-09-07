@@ -23,8 +23,6 @@
 
 #include "../SDL_sysstorage.h"
 
-#include <stdbool.h> /* Needed by Steamworks */
-
 // !!! FIXME: Async API can use SteamRemoteStorage_ReadFileAsync
 // !!! FIXME: Async API can use SteamRemoteStorage_WriteFileAsync
 
@@ -40,9 +38,9 @@ typedef struct STEAM_RemoteStorage
     #include "SDL_steamstorage_proc.h"
 } STEAM_RemoteStorage;
 
-static int STEAM_CloseStorage(void *userdata)
+static SDL_bool STEAM_CloseStorage(void *userdata)
 {
-    int result = 0;
+    bool result = true;
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
     void *steamremotestorage = steam->SteamAPI_SteamRemoteStorage_v016();
     if (steamremotestorage == NULL) {
@@ -57,10 +55,10 @@ static int STEAM_CloseStorage(void *userdata)
 
 static SDL_bool STEAM_StorageReady(void *userdata)
 {
-    return SDL_TRUE;
+    return true;
 }
 
-static int STEAM_GetStoragePathInfo(void *userdata, const char *path, SDL_PathInfo *info)
+static SDL_bool STEAM_GetStoragePathInfo(void *userdata, const char *path, SDL_PathInfo *info)
 {
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
     void *steamremotestorage = steam->SteamAPI_SteamRemoteStorage_v016();
@@ -73,12 +71,12 @@ static int STEAM_GetStoragePathInfo(void *userdata, const char *path, SDL_PathIn
         info->type = SDL_PATHTYPE_FILE;
         info->size = steam->SteamAPI_ISteamRemoteStorage_GetFileSize(steamremotestorage, path);
     }
-    return 0;
+    return true;
 }
 
-static int STEAM_ReadStorageFile(void *userdata, const char *path, void *destination, Uint64 length)
+static SDL_bool STEAM_ReadStorageFile(void *userdata, const char *path, void *destination, Uint64 length)
 {
-    int result = -1;
+    bool result = false;
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
     void *steamremotestorage = steam->SteamAPI_SteamRemoteStorage_v016();
     if (steamremotestorage == NULL) {
@@ -88,16 +86,16 @@ static int STEAM_ReadStorageFile(void *userdata, const char *path, void *destina
         return SDL_SetError("SteamRemoteStorage only supports INT32_MAX read size");
     }
     if (steam->SteamAPI_ISteamRemoteStorage_FileRead(steamremotestorage, path, destination, (Sint32) length) == length) {
-        result = 0;
+        result = true;
     } else {
         SDL_SetError("SteamAPI_ISteamRemoteStorage_FileRead() failed");
     }
     return result;
 }
 
-static int STEAM_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
+static SDL_bool STEAM_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
 {
-    int result = -1;
+    int result = false;
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
     void *steamremotestorage = steam->SteamAPI_SteamRemoteStorage_v016();
     if (steamremotestorage == NULL) {
@@ -107,7 +105,7 @@ static int STEAM_WriteStorageFile(void *userdata, const char *path, const void *
         return SDL_SetError("SteamRemoteStorage only supports INT32_MAX write size");
     }
     if (steam->SteamAPI_ISteamRemoteStorage_FileWrite(steamremotestorage, path, source, (Sint32) length) == length) {
-        result = 0;
+        result = true;
     } else {
         SDL_SetError("SteamAPI_ISteamRemoteStorage_FileRead() failed");
     }
@@ -131,15 +129,17 @@ static Uint64 STEAM_GetStorageSpaceRemaining(void *userdata)
 }
 
 static const SDL_StorageInterface STEAM_user_iface = {
+    sizeof(SDL_StorageInterface),
     STEAM_CloseStorage,
     STEAM_StorageReady,
-    NULL,   /* enumerate */
+    NULL,   // enumerate
     STEAM_GetStoragePathInfo,
     STEAM_ReadStorageFile,
     STEAM_WriteStorageFile,
-    NULL,   /* mkdir */
-    NULL,   /* remove */
-    NULL,   /* rename */
+    NULL,   // mkdir
+    NULL,   // remove
+    NULL,   // rename
+    NULL,   // copy
     STEAM_GetStorageSpaceRemaining
 };
 
@@ -151,7 +151,6 @@ static SDL_Storage *STEAM_User_Create(const char *org, const char *app, SDL_Prop
 
     steam = (STEAM_RemoteStorage*) SDL_malloc(sizeof(STEAM_RemoteStorage));
     if (steam == NULL) {
-        SDL_OutOfMemory();
         return NULL;
     }
 

@@ -23,7 +23,7 @@
 #ifdef SDL_LOADSO_DLOPEN
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent library loading routines                           */
+// System dependent library loading routines
 
 #include <stdio.h>
 #include <dlfcn.h>
@@ -56,8 +56,8 @@ SDL_FunctionPointer SDL_LoadFunction(void *handle, const char *name)
 {
     void *symbol = dlsym(handle, name);
     if (!symbol) {
-        /* prepend an underscore for platforms that need that. */
-        SDL_bool isstack;
+        // prepend an underscore for platforms that need that.
+        bool isstack;
         size_t len = SDL_strlen(name) + 1;
         char *_name = SDL_small_alloc(char, len + 1, &isstack);
         _name[0] = '_';
@@ -79,4 +79,4 @@ void SDL_UnloadObject(void *handle)
     }
 }
 
-#endif /* SDL_LOADSO_DLOPEN */
+#endif // SDL_LOADSO_DLOPEN

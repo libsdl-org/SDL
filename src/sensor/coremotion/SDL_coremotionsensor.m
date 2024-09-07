@@ -22,7 +22,7 @@
 
 #ifdef SDL_SENSOR_COREMOTION
 
-/* This is the system specific header for the SDL sensor API */
+// This is the system specific header for the SDL sensor API
 #include <CoreMotion/CoreMotion.h>
 
 #include "SDL_coremotionsensor.h"
@@ -39,7 +39,7 @@ static CMMotionManager *SDL_motion_manager;
 static SDL_CoreMotionSensor *SDL_sensors;
 static int SDL_sensors_count;
 
-static int SDL_COREMOTION_SensorInit(void)
+static bool SDL_COREMOTION_SensorInit(void)
 {
     int i, sensors_count = 0;
 
@@ -57,7 +57,7 @@ static int SDL_COREMOTION_SensorInit(void)
     if (sensors_count > 0) {
         SDL_sensors = (SDL_CoreMotionSensor *)SDL_calloc(sensors_count, sizeof(*SDL_sensors));
         if (!SDL_sensors) {
-            return -1;
+            return false;
         }
 
         i = 0;
@@ -73,7 +73,7 @@ static int SDL_COREMOTION_SensorInit(void)
         }
         SDL_sensors_count = sensors_count;
     }
-    return 0;
+    return true;
 }
 
 static int SDL_COREMOTION_SensorGetCount(void)
@@ -112,13 +112,13 @@ static SDL_SensorID SDL_COREMOTION_SensorGetDeviceInstanceID(int device_index)
     return SDL_sensors[device_index].instance_id;
 }
 
-static int SDL_COREMOTION_SensorOpen(SDL_Sensor *sensor, int device_index)
+static bool SDL_COREMOTION_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     struct sensor_hwdata *hwdata;
 
     hwdata = (struct sensor_hwdata *)SDL_calloc(1, sizeof(*hwdata));
     if (hwdata == NULL) {
-        return -1;
+        return false;
     }
     sensor->hwdata = hwdata;
 
@@ -132,7 +132,7 @@ static int SDL_COREMOTION_SensorOpen(SDL_Sensor *sensor, int device_index)
     default:
         break;
     }
-    return 0;
+    return true;
 }
 
 static void SDL_COREMOTION_SensorUpdate(SDL_Sensor *sensor)
@@ -211,4 +211,4 @@ SDL_SensorDriver SDL_COREMOTION_SensorDriver = {
     SDL_COREMOTION_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_COREMOTION */
+#endif // SDL_SENSOR_COREMOTION

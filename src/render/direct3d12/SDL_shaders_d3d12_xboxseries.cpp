@@ -20,19 +20,19 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_D3D12 && defined(SDL_PLATFORM_XBOXSERIES)
+#if defined(SDL_VIDEO_RENDER_D3D12) && defined(SDL_PLATFORM_XBOXSERIES)
 
 #include <SDL3/SDL_stdinc.h>
 
 #include "../../core/windows/SDL_windows.h"
-#include <d3d12_xs.h>
+#include "../../video/directx/SDL_d3d12.h"
 
 #include "SDL_shaders_d3d12.h"
 
 #define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
 
 
-/* Shader blob headers are generated with a pre-build step using compile_shaders_xbox.bat */
+// Shader blob headers are generated with a pre-build step using compile_shaders_xbox.bat
 
 #define g_main D3D12_PixelShader_Colors
 #include "D3D12_PixelShader_Colors_Series.h"
@@ -102,33 +102,32 @@ static struct
     { D3D12_RootSig_Advanced, sizeof(D3D12_RootSig_Advanced) },
 };
 
-extern "C" void
-D3D12_GetVertexShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)
+extern "C"
+void D3D12_GetVertexShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)
 {
     outBytecode->pShaderBytecode = D3D12_shaders[shader].vs_shader_data;
     outBytecode->BytecodeLength = D3D12_shaders[shader].vs_shader_size;
 }
 
-extern "C" void
-D3D12_GetPixelShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)
+extern "C"
+void D3D12_GetPixelShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)
 {
     outBytecode->pShaderBytecode = D3D12_shaders[shader].ps_shader_data;
     outBytecode->BytecodeLength = D3D12_shaders[shader].ps_shader_size;
 }
 
-extern "C" D3D12_RootSignature
-D3D12_GetRootSignatureType(D3D12_Shader shader)
+extern "C"
+D3D12_RootSignature D3D12_GetRootSignatureType(D3D12_Shader shader)
 {
     return D3D12_shaders[shader].root_sig;
 }
 
-extern "C" void
-D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECODE *outBytecode)
+extern "C"
+void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECODE *outBytecode)
 {
     outBytecode->pShaderBytecode = D3D12_rootsigs[rootSig].rs_shader_data;
     outBytecode->BytecodeLength = D3D12_rootsigs[rootSig].rs_shader_size;
 }
 
-#endif /* SDL_VIDEO_RENDER_D3D12 && defined(SDL_PLATFORM_XBOXSERIES) */
+#endif // SDL_VIDEO_RENDER_D3D12 && SDL_PLATFORM_XBOXSERIES
 
-/* vi: set ts=4 sw=4 expandtab: */

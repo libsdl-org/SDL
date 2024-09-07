@@ -44,17 +44,17 @@
 
 @end
 
-/* Initialization/Query functions */
-static int UIKit_VideoInit(SDL_VideoDevice *_this);
+// Initialization/Query functions
+static bool UIKit_VideoInit(SDL_VideoDevice *_this);
 static void UIKit_VideoQuit(SDL_VideoDevice *_this);
 
-/* DUMMY driver bootstrap functions */
+// DUMMY driver bootstrap functions
 
 static void UIKit_DeleteDevice(SDL_VideoDevice *device)
 {
     @autoreleasepool {
-        if (device->driverdata){
-            CFRelease(device->driverdata);
+        if (device->internal){
+            CFRelease(device->internal);
         }
         SDL_free(device);
     }
@@ -66,7 +66,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         SDL_VideoDevice *device;
         SDL_UIKitVideoData *data;
 
-        /* Initialize all variables that we clean on shutdown */
+        // Initialize all variables that we clean on shutdown
         device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
         if (!device) {
             return NULL;
@@ -74,10 +74,10 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
 
         data = [SDL_UIKitVideoData new];
 
-        device->driverdata = (SDL_VideoData *)CFBridgingRetain(data);
+        device->internal = (SDL_VideoData *)CFBridgingRetain(data);
         device->system_theme = UIKit_GetSystemTheme();
 
-        /* Set the function pointers */
+        // Set the function pointers
         device->VideoInit = UIKit_VideoInit;
         device->VideoQuit = UIKit_VideoQuit;
         device->GetDisplayModes = UIKit_GetDisplayModes;
@@ -100,19 +100,19 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->ShowScreenKeyboard = UIKit_ShowScreenKeyboard;
         device->HideScreenKeyboard = UIKit_HideScreenKeyboard;
         device->IsScreenKeyboardShown = UIKit_IsScreenKeyboardShown;
-        device->SetTextInputRect = UIKit_SetTextInputRect;
+        device->UpdateTextInputArea = UIKit_UpdateTextInputArea;
 #endif
 
         device->SetClipboardText = UIKit_SetClipboardText;
         device->GetClipboardText = UIKit_GetClipboardText;
         device->HasClipboardText = UIKit_HasClipboardText;
 
-        /* OpenGL (ES) functions */
+        // OpenGL (ES) functions
 #if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
         device->GL_MakeCurrent = UIKit_GL_MakeCurrent;
         device->GL_SwapWindow = UIKit_GL_SwapWindow;
         device->GL_CreateContext = UIKit_GL_CreateContext;
-        device->GL_DeleteContext = UIKit_GL_DeleteContext;
+        device->GL_DestroyContext = UIKit_GL_DestroyContext;
         device->GL_GetProcAddress = UIKit_GL_GetProcAddress;
         device->GL_LoadLibrary = UIKit_GL_LoadLibrary;
 #endif
@@ -123,6 +123,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->Vulkan_UnloadLibrary = UIKit_Vulkan_UnloadLibrary;
         device->Vulkan_GetInstanceExtensions = UIKit_Vulkan_GetInstanceExtensions;
         device->Vulkan_CreateSurface = UIKit_Vulkan_CreateSurface;
+        device->Vulkan_DestroySurface = UIKit_Vulkan_DestroySurface;
 #endif
 
 #ifdef SDL_VIDEO_METAL
@@ -145,40 +146,44 @@ VideoBootStrap UIKIT_bootstrap = {
     UIKit_ShowMessageBox
 };
 
-int UIKit_VideoInit(SDL_VideoDevice *_this)
+static bool UIKit_VideoInit(SDL_VideoDevice *_this)
 {
     _this->gl_config.driver_loaded = 1;
 
-    if (UIKit_InitModes(_this) < 0) {
-        return -1;
+    if (!UIKit_InitModes(_this)) {
+        return false;
     }
 
     SDL_InitGCKeyboard();
     SDL_InitGCMouse();
 
-    return 0;
+    UIKit_InitClipboard(_this);
+
+    return true;
 }
 
-void UIKit_VideoQuit(SDL_VideoDevice *_this)
+static void UIKit_VideoQuit(SDL_VideoDevice *_this)
 {
+    UIKit_QuitClipboard(_this);
+
     SDL_QuitGCKeyboard();
     SDL_QuitGCMouse();
 
     UIKit_QuitModes(_this);
 }
 
-int UIKit_SuspendScreenSaver(SDL_VideoDevice *_this)
+bool UIKit_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         UIApplication *app = [UIApplication sharedApplication];
 
-        /* Prevent the display from dimming and going to sleep. */
-        app.idleTimerDisabled = (_this->suspend_screensaver != SDL_FALSE);
+        // Prevent the display from dimming and going to sleep.
+        app.idleTimerDisabled = (_this->suspend_screensaver != false);
     }
-    return 0;
+    return true;
 }
 
-SDL_bool UIKit_IsSystemVersionAtLeast(double version)
+bool UIKit_IsSystemVersionAtLeast(double version)
 {
     return [[UIDevice currentDevice].systemVersion doubleValue] >= version;
 }
@@ -207,7 +212,7 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window){
 #else
 CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
-    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
     CGRect frame = screen.bounds;
 
     /* Use the UIWindow bounds instead of the UIScreen bounds, when possible.
@@ -248,10 +253,10 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 void UIKit_ForceUpdateHomeIndicator(void)
 {
 #ifndef SDL_PLATFORM_TVOS
-    /* Force the main SDL window to re-evaluate home indicator state */
+    // Force the main SDL window to re-evaluate home indicator state
     SDL_Window *focus = SDL_GetKeyboardFocus();
     if (focus) {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)focus->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)focus->internal;
         if (data != nil) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability-new"
@@ -262,7 +267,7 @@ void UIKit_ForceUpdateHomeIndicator(void)
 #pragma clang diagnostic pop
         }
     }
-#endif /* !SDL_PLATFORM_TVOS */
+#endif // !SDL_PLATFORM_TVOS
 }
 
 /*
@@ -281,15 +286,15 @@ void SDL_NSLog(const char *prefix, const char *text)
 {
     @autoreleasepool {
         NSString *nsText = [NSString stringWithUTF8String:text];
-        if (prefix) {
+        if (prefix && *prefix) {
             NSString *nsPrefix = [NSString stringWithUTF8String:prefix];
-            NSLog(@"%@: %@", nsPrefix, nsText);
+            NSLog(@"%@%@", nsPrefix, nsText);
         } else {
             NSLog(@"%@", nsText);
         }
     }
 }
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA
 
 /*
  * iOS Tablet detection
@@ -297,9 +302,9 @@ void SDL_NSLog(const char *prefix, const char *text)
  * This doesn't really have anything to do with the interfaces of the SDL video
  * subsystem, but we need to stuff this into an Objective-C source code file.
  */
-SDL_bool SDL_IsIPad(void)
+bool SDL_IsIPad(void)
 {
     return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad);
 }
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

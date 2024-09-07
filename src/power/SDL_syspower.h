@@ -20,28 +20,27 @@
 */
 #include "SDL_internal.h"
 
-/* These are functions that need to be implemented by a port of SDL */
+// These are functions that need to be implemented by a port of SDL
 
 #ifndef SDL_syspower_h_
 #define SDL_syspower_h_
 
-/* Not all of these are available in a given build. Use #ifdefs, etc. */
-SDL_bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Windows(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_MacOSX(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_VITA(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_N3DS(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_WinRT(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *, int *, int *);
+// Not all of these are available in a given build. Use #ifdefs, etc.
+bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_Windows(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_UIKit(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_MacOSX(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_Haiku(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_Android(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_PSP(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_VITA(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_N3DS(SDL_PowerState *, int *, int *);
+bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *, int *, int *);
 
-/* this one is static in SDL_power.c */
-/* SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);*/
+// this one is static in SDL_power.c
+/* bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);*/
 
-#endif /* SDL_syspower_h_ */
+#endif // SDL_syspower_h_

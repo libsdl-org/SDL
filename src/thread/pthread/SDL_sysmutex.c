@@ -60,7 +60,7 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
 
 void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
-    if (mutex != NULL) {
+    if (mutex) {
 #ifdef FAKE_RECURSIVE_MUTEX
         pthread_t this_thread = pthread_self();
         if (mutex->owner == this_thread) {
@@ -82,9 +82,9 @@ void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang does
     }
 }
 
-int SDL_TryLockMutex(SDL_Mutex *mutex)
+SDL_bool SDL_TryLockMutex(SDL_Mutex *mutex)
 {
-    int retval = 0;
+    bool result = true;
 
     if (mutex) {
 #ifdef FAKE_RECURSIVE_MUTEX
@@ -93,39 +93,39 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
             ++mutex->recursive;
         } else {
             /* The order of operations is important.
-             We set the locking thread id after we obtain the lock
-             so unlocks from other threads will fail.
+               We set the locking thread id after we obtain the lock
+               so unlocks from other threads will fail.
              */
-            const int result = pthread_mutex_trylock(&mutex->id);
-            if (result == 0) {
+            const int rc = pthread_mutex_trylock(&mutex->id);
+            if (rc == 0) {
                 mutex->owner = this_thread;
                 mutex->recursive = 0;
-            } else if (result == EBUSY) {
-                retval = SDL_MUTEX_TIMEDOUT;
+            } else if (rc == EBUSY) {
+                result = false;
             } else {
                 SDL_assert(!"Error trying to lock mutex");  // assume we're in a lot of trouble if this assert fails.
-                retval = SDL_MUTEX_TIMEDOUT;
+                result = false;
             }
         }
 #else
-        const int result = pthread_mutex_trylock(&mutex->id);
-        if (result != 0) {
-            if (result == EBUSY) {
-                retval = SDL_MUTEX_TIMEDOUT;
+        const int rc = pthread_mutex_trylock(&mutex->id);
+        if (rc != 0) {
+            if (rc == EBUSY) {
+                result = false;
             } else {
                 SDL_assert(!"Error trying to lock mutex");  // assume we're in a lot of trouble if this assert fails.
-                retval = SDL_MUTEX_TIMEDOUT;
+                result = false;
             }
         }
 #endif
     }
 
-    return retval;
+    return result;
 }
 
 void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
-    if (mutex != NULL) {
+    if (mutex) {
 #ifdef FAKE_RECURSIVE_MUTEX
         // We can only unlock the mutex if we own it
         if (pthread_self() == mutex->owner) {

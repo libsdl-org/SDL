@@ -37,7 +37,8 @@ quit(int rc)
 static int SDLCALL
 SubThreadFunc(void *data)
 {
-    while (!*(int volatile *)data) {
+    SDL_AtomicInt *flag = (SDL_AtomicInt *)data;
+    while (!SDL_AtomicGet(flag)) {
         SDL_Delay(10);
     }
     return 0;
@@ -47,7 +48,7 @@ static int SDLCALL
 ThreadFunc(void *data)
 {
     SDL_Thread *sub_threads[NUMTHREADS];
-    int flags[NUMTHREADS];
+    SDL_AtomicInt flags[NUMTHREADS];
     int i;
     int tid = (int)(uintptr_t)data;
 
@@ -56,7 +57,7 @@ ThreadFunc(void *data)
     for (i = 0; i < NUMTHREADS; i++) {
         char name[64];
         (void)SDL_snprintf(name, sizeof(name), "Child%d_%d", tid, i);
-        flags[i] = 0;
+        SDL_AtomicSet(&flags[i], 0);
         sub_threads[i] = SDL_CreateThread(SubThreadFunc, name, &flags[i]);
     }
 
@@ -67,7 +68,7 @@ ThreadFunc(void *data)
 
     SDL_Log("Thread '%d' sending signals to subthreads\n", tid);
     for (i = 0; i < NUMTHREADS; i++) {
-        flags[i] = 1;
+        SDL_AtomicSet(&flags[i], 1);
         SDL_WaitThread(sub_threads[i], NULL);
     }
 
@@ -89,15 +90,16 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Load the SDL library */
-    if (SDL_Init(0) < 0) {
+    if (!SDL_Init(0)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }

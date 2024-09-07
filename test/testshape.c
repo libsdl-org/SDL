@@ -20,7 +20,7 @@ static SDL_HitTestResult SDLCALL ShapeHitTest(SDL_Window *window, const SDL_Poin
     SDL_Surface *shape = (SDL_Surface *)userdata;
     Uint8 r, g, b, a;
 
-    if (SDL_ReadSurfacePixel(shape, area->x, area->y, &r, &g, &b, &a) == 0) {
+    if (SDL_ReadSurfacePixel(shape, area->x, area->y, &r, &g, &b, &a)) {
         if (a != SDL_ALPHA_TRANSPARENT) {
             /* We'll just make everything draggable */
             return SDL_HITTEST_DRAGGABLE;
@@ -80,23 +80,23 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    renderer = SDL_CreateRenderer(window, NULL, 0);
+    renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
         SDL_Log("Couldn't create renderer: %s\n", SDL_GetError());
         goto quit;
     }
 
-    if (!SDL_ISPIXELFORMAT_ALPHA(shape->format->format)) {
+    if (!SDL_ISPIXELFORMAT_ALPHA(shape->format)) {
         /* Set the colorkey to the top-left pixel */
         Uint8 r, g, b, a;
 
         SDL_ReadSurfacePixel(shape, 0, 0, &r, &g, &b, &a);
-        SDL_SetSurfaceColorKey(shape, 1, SDL_MapRGBA(shape->format, r, g, b, a));
+        SDL_SetSurfaceColorKey(shape, 1, SDL_MapSurfaceRGBA(shape, r, g, b, a));
     }
 
     if (!resizable) {
         /* Set the hit test callback so we can drag the window */
-        if (SDL_SetWindowHitTest(window, ShapeHitTest, shape) < 0) {
+        if (!SDL_SetWindowHitTest(window, ShapeHitTest, shape)) {
             SDL_Log("Couldn't set hit test callback: %s\n", SDL_GetError());
             goto quit;
         }
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_EVENT_KEY_DOWN:
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                if (event.key.key == SDLK_ESCAPE) {
                     done = SDL_TRUE;
                 }
                 break;

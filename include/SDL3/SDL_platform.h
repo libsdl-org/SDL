@@ -20,9 +20,10 @@
 */
 
 /**
- *  \file SDL_platform.h
+ * # CategoryPlatform
  *
- *  Header file for platform functions.
+ * SDL provides a means to identify the app's platform, both at compile time
+ * and runtime.
  */
 
 #ifndef SDL_platform_h_
@@ -52,7 +53,7 @@ extern "C" {
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC const char * SDLCALL SDL_GetPlatform (void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetPlatform(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

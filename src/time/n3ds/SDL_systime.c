@@ -30,7 +30,7 @@
  * no timezone or DST functionality.
  */
 
-/* 3DS epoch is Jan 1 1900 */
+// 3DS epoch is Jan 1 1900
 #define DELTA_EPOCH_1900_OFFSET_MS 2208988800000LL
 
 /* Returns year/month/day triple in civil calendar
@@ -58,20 +58,20 @@ static void civil_from_days(int days, int *year, int *month, int *day)
 
 void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 {
-    /* The 3DS only has 12 supported languages, so take the standard for each */
+    // The 3DS only has 12 supported languages, so take the standard for each
     static const SDL_DateFormat LANG_TO_DATE_FORMAT[] = {
-        SDL_DATE_FORMAT_YYYYMMDD, /* JP */
-        SDL_DATE_FORMAT_DDMMYYYY, /* EN, assume non-american format */
-        SDL_DATE_FORMAT_DDMMYYYY, /* FR */
-        SDL_DATE_FORMAT_DDMMYYYY, /* DE */
-        SDL_DATE_FORMAT_DDMMYYYY, /* IT */
-        SDL_DATE_FORMAT_DDMMYYYY, /* ES */
-        SDL_DATE_FORMAT_YYYYMMDD, /* ZH (CN) */
-        SDL_DATE_FORMAT_YYYYMMDD, /* KR */
-        SDL_DATE_FORMAT_DDMMYYYY, /* NL */
-        SDL_DATE_FORMAT_DDMMYYYY, /* PT */
-        SDL_DATE_FORMAT_DDMMYYYY, /* RU */
-        SDL_DATE_FORMAT_YYYYMMDD  /* ZH (TW) */
+        SDL_DATE_FORMAT_YYYYMMDD, // JP
+        SDL_DATE_FORMAT_DDMMYYYY, // EN, assume non-american format
+        SDL_DATE_FORMAT_DDMMYYYY, // FR
+        SDL_DATE_FORMAT_DDMMYYYY, // DE
+        SDL_DATE_FORMAT_DDMMYYYY, // IT
+        SDL_DATE_FORMAT_DDMMYYYY, // ES
+        SDL_DATE_FORMAT_YYYYMMDD, // ZH (CN)
+        SDL_DATE_FORMAT_YYYYMMDD, // KR
+        SDL_DATE_FORMAT_DDMMYYYY, // NL
+        SDL_DATE_FORMAT_DDMMYYYY, // PT
+        SDL_DATE_FORMAT_DDMMYYYY, // RU
+        SDL_DATE_FORMAT_YYYYMMDD  // ZH (TW)
     };
     u8 system_language, is_north_america;
     Result result, has_region;
@@ -86,34 +86,42 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
         return;
     }
 
-    *df = LANG_TO_DATE_FORMAT[system_language];
-    *tf = SDL_TIME_FORMAT_24HR;
+    if (df) {
+        *df = LANG_TO_DATE_FORMAT[system_language];
+    }
+    if (tf) {
+        *tf = SDL_TIME_FORMAT_24HR;
+    }
 
     /* Only American English (en_US) uses MM/DD/YYYY and 12hr system, this gets
        the formats wrong for canadians though (en_CA) */
     if (system_language == CFG_LANGUAGE_EN &&
         R_SUCCEEDED(has_region) && is_north_america) {
-        *df = SDL_DATE_FORMAT_MMDDYYYY;
-        *tf = SDL_TIME_FORMAT_12HR;
+        if (df) {
+            *df = SDL_DATE_FORMAT_MMDDYYYY;
+        }
+        if (tf) {
+            *tf = SDL_TIME_FORMAT_12HR;
+        }
     }
 }
 
-int SDL_GetCurrentTime(SDL_Time *ticks)
+SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     if (!ticks) {
         return SDL_InvalidParamError("ticks");
     }
 
-    /* Returns milliseconds since the epoch. */
+    // Returns milliseconds since the epoch.
     const Uint64 ndsTicksMax = (SDL_MAX_TIME / SDL_NS_PER_MS) + DELTA_EPOCH_1900_OFFSET_MS;
     const Uint64 ndsTicks = SDL_min(osGetTime(), ndsTicksMax);
 
     *ticks = SDL_MS_TO_NS(ndsTicks - DELTA_EPOCH_1900_OFFSET_MS);
 
-    return 0;
+    return true;
 }
 
-int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
+SDL_bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
 {
     if (!dt) {
         return SDL_InvalidParamError("dt");
@@ -129,11 +137,11 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
     rem -= dt->minute * 60;
     dt->second = rem;
     dt->nanosecond = ticks % SDL_NS_PER_SECOND;
-    dt->utc_offset = 0; /* Unknown */
+    dt->utc_offset = 0; // Unknown
 
     SDL_CivilToDays(dt->year, dt->month, dt->day, &dt->day_of_week, NULL);
 
-    return 0;
+    return true;
 }
 
-#endif /* SDL_TIME_N3DS */
+#endif // SDL_TIME_N3DS

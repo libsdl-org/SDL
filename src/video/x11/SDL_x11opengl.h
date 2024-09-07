@@ -41,12 +41,12 @@ struct SDL_GLDriverData
 {
     int errorBase, eventBase;
 
-    SDL_bool HAS_GLX_EXT_visual_rating;
-    SDL_bool HAS_GLX_EXT_visual_info;
-    SDL_bool HAS_GLX_EXT_swap_control_tear;
-    SDL_bool HAS_GLX_ARB_context_flush_control;
-    SDL_bool HAS_GLX_ARB_create_context_robustness;
-    SDL_bool HAS_GLX_ARB_create_context_no_error;
+    bool HAS_GLX_EXT_visual_rating;
+    bool HAS_GLX_EXT_visual_info;
+    bool HAS_GLX_EXT_swap_control_tear;
+    bool HAS_GLX_ARB_context_flush_control;
+    bool HAS_GLX_ARB_create_context_robustness;
+    bool HAS_GLX_ARB_create_context_no_error;
 
     /* Max version of OpenGL ES context that can be created if the
        implementation supports GLX_EXT_create_context_es2_profile.
@@ -77,20 +77,20 @@ struct SDL_GLDriverData
     int (*glXGetSwapIntervalMESA)(void);
 };
 
-/* OpenGL functions */
-extern int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+// OpenGL functions
+extern bool X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_FunctionPointer X11_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 extern void X11_GL_UnloadLibrary(SDL_VideoDevice *_this);
-extern SDL_bool X11_GL_UseEGL(SDL_VideoDevice *_this);
-extern XVisualInfo *X11_GL_GetVisual(SDL_VideoDevice *_this, Display *display, int screen, SDL_bool transparent);
+extern bool X11_GL_UseEGL(SDL_VideoDevice *_this);
+extern XVisualInfo *X11_GL_GetVisual(SDL_VideoDevice *_this, Display *display, int screen, bool transparent);
 extern SDL_GLContext X11_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int X11_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
+extern bool X11_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
                               SDL_GLContext context);
-extern int X11_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern int X11_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
-extern int X11_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int X11_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern bool X11_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
+extern bool X11_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
+extern bool X11_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool X11_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);
 
-#endif /* SDL_VIDEO_OPENGL_GLX */
+#endif // SDL_VIDEO_OPENGL_GLX
 
-#endif /* SDL_x11opengl_h_ */
+#endif // SDL_x11opengl_h_

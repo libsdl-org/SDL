@@ -43,4 +43,4 @@ void X11_ResetTouch(SDL_VideoDevice *_this)
     X11_InitTouch(_this);
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11 */
+#endif // SDL_VIDEO_DRIVER_X11

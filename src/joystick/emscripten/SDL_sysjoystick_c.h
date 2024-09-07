@@ -26,7 +26,7 @@
 
 #include <emscripten/html5.h>
 
-/* A linked list of available joysticks */
+// A linked list of available joysticks
 typedef struct SDL_joylist_item
 {
     int index;
@@ -46,4 +46,4 @@ typedef struct SDL_joylist_item
 
 typedef SDL_joylist_item joystick_hwdata;
 
-#endif /* SDL_JOYSTICK_EMSCRIPTEN */
+#endif // SDL_JOYSTICK_EMSCRIPTEN

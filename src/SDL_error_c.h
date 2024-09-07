@@ -43,7 +43,7 @@ typedef struct SDL_error
     SDL_free_func free_func;
 } SDL_error;
 
-/* Defined in SDL_thread.c */
-extern SDL_error *SDL_GetErrBuf(SDL_bool create);
+// Defined in SDL_thread.c
+extern SDL_error *SDL_GetErrBuf(bool create);
 
-#endif /* SDL_error_c_h_ */
+#endif // SDL_error_c_h_

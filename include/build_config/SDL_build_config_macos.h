@@ -39,6 +39,7 @@
 #define HAVE_MATH_H 1
 #define HAVE_SIGNAL_H 1
 #define HAVE_STDARG_H 1
+#define HAVE_STDBOOL_H 1
 #define HAVE_STDDEF_H 1
 #define HAVE_STDINT_H 1
 #define HAVE_STDIO_H 1
@@ -67,6 +68,7 @@
 #define HAVE_STRLEN 1
 #define HAVE_STRLCPY    1
 #define HAVE_STRLCAT    1
+#define HAVE_STRPBRK    1
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR    1
 #define HAVE_STRSTR 1
@@ -105,6 +107,10 @@
 #define HAVE_FLOORF 1
 #define HAVE_FMOD   1
 #define HAVE_FMODF  1
+#define HAVE_ISINF  1
+#define HAVE_ISINF_FLOAT_MACRO 1
+#define HAVE_ISNAN  1
+#define HAVE_ISNAN_FLOAT_MACRO 1
 #define HAVE_LOG    1
 #define HAVE_LOGF   1
 #define HAVE_LOG10  1
@@ -183,6 +189,7 @@
 /* Enable various video drivers */
 #define SDL_VIDEO_DRIVER_COCOA  1
 #define SDL_VIDEO_DRIVER_DUMMY  1
+#define SDL_VIDEO_DRIVER_OFFSCREEN 1
 #undef SDL_VIDEO_DRIVER_X11
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC "/opt/X11/lib/libX11.6.dylib"
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT "/opt/X11/lib/libXext.6.dylib"
@@ -193,7 +200,7 @@
 #define SDL_VIDEO_DRIVER_X11_XRANDR 1
 #define SDL_VIDEO_DRIVER_X11_XSCRNSAVER 1
 #define SDL_VIDEO_DRIVER_X11_XSHAPE 1
-#define SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM 1
+#define SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM 1
 
 #ifdef MAC_OS_X_VERSION_10_8
 /*
@@ -205,61 +212,32 @@
 #define SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1
 #endif
 
-#ifndef SDL_VIDEO_RENDER_OGL
 #define SDL_VIDEO_RENDER_OGL    1
-#endif
-
-#ifndef SDL_VIDEO_RENDER_OGL_ES2
 #define SDL_VIDEO_RENDER_OGL_ES2 1
-#endif
 
 /* Metal only supported on 64-bit architectures with 10.11+ */
 #if TARGET_RT_64_BIT && (MAC_OS_X_VERSION_MAX_ALLOWED >= 101100)
-#define SDL_PLATFORM_SUPPORTS_METAL    1
-#else
-#define SDL_PLATFORM_SUPPORTS_METAL    0
+#define SDL_PLATFORM_SUPPORTS_METAL 1
 #endif
 
-#ifndef SDL_VIDEO_RENDER_METAL
-#if SDL_PLATFORM_SUPPORTS_METAL
-#define SDL_VIDEO_RENDER_METAL    1
-#else
-#define SDL_VIDEO_RENDER_METAL    0
-#endif
+#ifdef SDL_PLATFORM_SUPPORTS_METAL
+#define SDL_VIDEO_RENDER_METAL 1
 #endif
 
 /* Enable OpenGL support */
-#ifndef SDL_VIDEO_OPENGL
-#define SDL_VIDEO_OPENGL    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_ES2
-#define SDL_VIDEO_OPENGL_ES2    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_EGL
-#define SDL_VIDEO_OPENGL_EGL    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_CGL
-#define SDL_VIDEO_OPENGL_CGL    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_GLX
-#define SDL_VIDEO_OPENGL_GLX    1
-#endif
+#define SDL_VIDEO_OPENGL 1
+#define SDL_VIDEO_OPENGL_ES2 1
+#define SDL_VIDEO_OPENGL_EGL 1
+#define SDL_VIDEO_OPENGL_CGL 1
+#define SDL_VIDEO_OPENGL_GLX 1
 
 /* Enable Vulkan and Metal support */
-#ifndef SDL_VIDEO_VULKAN
-#if SDL_PLATFORM_SUPPORTS_METAL
-#define SDL_VIDEO_VULKAN 1
-#else
-#define SDL_VIDEO_VULKAN 0
-#endif
-#endif
-
-#ifndef SDL_VIDEO_METAL
-#if SDL_PLATFORM_SUPPORTS_METAL
+#ifdef SDL_PLATFORM_SUPPORTS_METAL
 #define SDL_VIDEO_METAL 1
-#else
-#define SDL_VIDEO_METAL 0
-#endif
+#define SDL_GPU_METAL 1
+#define SDL_VIDEO_VULKAN 1
+#define SDL_GPU_VULKAN 1
+#define SDL_VIDEO_RENDER_GPU 1
 #endif
 
 /* Enable system power support */

@@ -31,7 +31,7 @@ static void log_usage(char *progname, SDLTest_CommonState *state) {
 int main(int argc, char *argv[])
 {
     int i;
-    int retval = 0;
+    int result = 0;
     int hello = 0;
     const char *libname = NULL;
     const char *symname = NULL;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     }
 
     /* Initialize SDL */
-    if (SDL_Init(0) < 0) {
+    if (!SDL_Init(0)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 2;
     }
@@ -91,13 +91,13 @@ int main(int argc, char *argv[])
     if (!lib) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_LoadObject('%s') failed: %s\n",
                      libname, SDL_GetError());
-        retval = 3;
+        result = 3;
     } else {
         fn = (fntype)SDL_LoadFunction(lib, symname);
         if (!fn) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_LoadFunction('%s') failed: %s\n",
                          symname, SDL_GetError());
-            retval = 4;
+            result = 4;
         } else {
             SDL_Log("Found %s in %s at %p\n", symname, libname, fn);
             if (hello) {
@@ -111,5 +111,5 @@ int main(int argc, char *argv[])
     }
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
-    return retval;
+    return result;
 }

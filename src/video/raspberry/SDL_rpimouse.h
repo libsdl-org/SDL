@@ -24,8 +24,7 @@
 
 #include "../SDL_sysvideo.h"
 
-typedef struct _RPI_CursorData RPI_CursorData;
-struct _RPI_CursorData
+struct SDL_CursorData
 {
     DISPMANX_RESOURCE_HANDLE_T resource;
     DISPMANX_ELEMENT_HANDLE_T element;
@@ -33,9 +32,9 @@ struct _RPI_CursorData
     int w, h;
 };
 
-#define SDL_RPI_CURSORDATA(curs) RPI_CursorData *curdata = (RPI_CursorData *)((curs) ? (curs)->driverdata : NULL)
+#define SDL_RPI_CURSORDATA(curs) RPI_CursorData *curdata = (RPI_CursorData *)((curs) ? (curs)->internal : NULL)
 
 extern void RPI_InitMouse(SDL_VideoDevice *_this);
 extern void RPI_QuitMouse(SDL_VideoDevice *_this);
 
-#endif /* SDL_RPI_mouse_h_ */
+#endif // SDL_RPI_mouse_h_

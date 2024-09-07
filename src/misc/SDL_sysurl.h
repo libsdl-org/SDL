@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-extern int SDL_SYS_OpenURL(const char *url);
+extern bool SDL_SYS_OpenURL(const char *url);
 
 #ifdef __cplusplus
 }

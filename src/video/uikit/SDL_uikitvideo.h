@@ -39,14 +39,14 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window);
 CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
 #endif
 
-#endif /* __OBJC__ */
+#endif // __OBJC__
 
-int UIKit_SuspendScreenSaver(SDL_VideoDevice *_this);
+bool UIKit_SuspendScreenSaver(SDL_VideoDevice *_this);
 
 void UIKit_ForceUpdateHomeIndicator(void);
 
-SDL_bool UIKit_IsSystemVersionAtLeast(double version);
+bool UIKit_IsSystemVersionAtLeast(double version);
 
 SDL_SystemTheme UIKit_GetSystemTheme(void);
 
-#endif /* SDL_uikitvideo_h_ */
+#endif // SDL_uikitvideo_h_

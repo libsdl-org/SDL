@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -66,12 +66,12 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 
     /* Initialize SDL (Note: video is required to start event loop) */
-    if (SDL_Init(init_subsystems) < 0) {
+    if (!SDL_Init(init_subsystems)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }
@@ -103,13 +103,13 @@ int main(int argc, char *argv[])
                 keepGoing = SDL_FALSE;
                 break;
             case SDL_EVENT_KEYBOARD_ADDED:
-                SDL_Log("Keyboard '%s' added  : %" SDL_PRIu32 "\n", SDL_GetKeyboardInstanceName(event.kdevice.which), event.kdevice.which);
+                SDL_Log("Keyboard '%s' added  : %" SDL_PRIu32 "\n", SDL_GetKeyboardNameForID(event.kdevice.which), event.kdevice.which);
                 break;
             case SDL_EVENT_KEYBOARD_REMOVED:
                 SDL_Log("Keyboard removed: %" SDL_PRIu32 "\n", event.kdevice.which);
                 break;
             case SDL_EVENT_MOUSE_ADDED:
-                SDL_Log("Mouse '%s' added  : %" SDL_PRIu32 "\n", SDL_GetMouseInstanceName(event.mdevice.which), event.mdevice.which);
+                SDL_Log("Mouse '%s' added  : %" SDL_PRIu32 "\n", SDL_GetMouseNameForID(event.mdevice.which), event.mdevice.which);
                 break;
             case SDL_EVENT_MOUSE_REMOVED:
                 SDL_Log("Mouse removed: %" SDL_PRIu32 "\n", event.mdevice.which);
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
                             haptic = SDL_OpenHapticFromJoystick(joystick);
                             if (haptic) {
                                 SDL_Log("Joy Haptic Opened\n");
-                                if (SDL_InitHapticRumble(haptic) != 0) {
+                                if (!SDL_InitHapticRumble(haptic)) {
                                     SDL_Log("Could not init Rumble!: %s\n", SDL_GetError());
                                     SDL_CloseHaptic(haptic);
                                     haptic = NULL;

@@ -35,11 +35,11 @@
 #define VIVANTE_PLATFORM_GENERIC
 #endif
 
-extern int VIVANTE_SetupPlatform(SDL_VideoDevice *_this);
+extern bool VIVANTE_SetupPlatform(SDL_VideoDevice *_this);
 extern char *VIVANTE_GetDisplayName(SDL_VideoDevice *_this);
 extern void VIVANTE_UpdateDisplayScale(SDL_VideoDevice *_this);
 extern void VIVANTE_CleanupPlatform(SDL_VideoDevice *_this);
 
-#endif /* SDL_VIDEO_DRIVER_VIVANTE */
+#endif // SDL_VIDEO_DRIVER_VIVANTE
 
-#endif /* SDL_vivanteplatform_h_ */
+#endif // SDL_vivanteplatform_h_

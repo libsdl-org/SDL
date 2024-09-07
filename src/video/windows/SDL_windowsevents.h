@@ -31,9 +31,9 @@ extern LRESULT CALLBACK WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lP
 extern LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam,
                                        LPARAM lParam);
 extern void WIN_PollRawInput(SDL_VideoDevice *_this);
-extern void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, SDL_bool initial_check);
+extern void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check);
 extern void WIN_PumpEvents(SDL_VideoDevice *_this);
 extern void WIN_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
 extern int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 
-#endif /* SDL_windowsevents_h_ */
+#endif // SDL_windowsevents_h_

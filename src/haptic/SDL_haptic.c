@@ -22,30 +22,22 @@
 
 #include "SDL_syshaptic.h"
 #include "SDL_haptic_c.h"
-#include "../joystick/SDL_joystick_c.h" /* For SDL_IsJoystickValid */
+#include "../joystick/SDL_joystick_c.h" // For SDL_IsJoystickValid
 
 static SDL_Haptic *SDL_haptics = NULL;
-static char SDL_haptic_magic;
 
-#define CHECK_HAPTIC_MAGIC(haptic, retval)                  \
-    if (!haptic || haptic->magic != &SDL_haptic_magic) {    \
+#define CHECK_HAPTIC_MAGIC(haptic, result)                  \
+    if (!SDL_ObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC)) { \
         SDL_InvalidParamError("haptic");                    \
-        return retval;                                      \
+        return result;                                      \
     }
 
-int SDL_InitHaptics(void)
+bool SDL_InitHaptics(void)
 {
-    int status;
-
-    status = SDL_SYS_HapticInit();
-    if (status >= 0) {
-        status = 0;
-    }
-
-    return status;
+    return SDL_SYS_HapticInit();
 }
 
-static SDL_bool SDL_GetHapticIndex(SDL_HapticID instance_id, int *driver_index)
+static bool SDL_GetHapticIndex(SDL_HapticID instance_id, int *driver_index)
 {
     int num_haptics, device_index;
 
@@ -55,13 +47,13 @@ static SDL_bool SDL_GetHapticIndex(SDL_HapticID instance_id, int *driver_index)
             SDL_HapticID haptic_id = SDL_SYS_HapticInstanceID(device_index);
             if (haptic_id == instance_id) {
                 *driver_index = device_index;
-                return SDL_TRUE;
+                return true;
             }
         }
     }
 
     SDL_SetError("Haptic device %" SDL_PRIu32 " not found", instance_id);
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_HapticID *SDL_GetHaptics(int *count)
@@ -93,13 +85,13 @@ SDL_HapticID *SDL_GetHaptics(int *count)
     return haptics;
 }
 
-const char *SDL_GetHapticInstanceName(SDL_HapticID instance_id)
+const char *SDL_GetHapticNameForID(SDL_HapticID instance_id)
 {
     int device_index;
     const char *name = NULL;
 
     if (SDL_GetHapticIndex(instance_id, &device_index)) {
-        name = SDL_SYS_HapticName(device_index);
+        name = SDL_GetPersistentString(SDL_SYS_HapticName(device_index));
     }
     return name;
 }
@@ -128,17 +120,17 @@ SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
         hapticlist = hapticlist->next;
     }
 
-    /* Create the haptic device */
+    // Create the haptic device
     haptic = (SDL_Haptic *)SDL_calloc(1, sizeof(*haptic));
     if (!haptic) {
         return NULL;
     }
 
-    /* Initialize the haptic device */
-    haptic->magic = &SDL_haptic_magic;
+    // Initialize the haptic device
+    SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, true);
     haptic->instance_id = instance_id;
     haptic->rumble_id = -1;
-    if (SDL_SYS_HapticOpen(haptic) < 0) {
+    if (!SDL_SYS_HapticOpen(haptic)) {
         SDL_free(haptic);
         return NULL;
     }
@@ -150,13 +142,13 @@ SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
         }
     }
 
-    /* Add haptic to list */
+    // Add haptic to list
     ++haptic->ref_count;
-    /* Link the haptic in the list */
+    // Link the haptic in the list
     haptic->next = SDL_haptics;
     SDL_haptics = haptic;
 
-    /* Disable autocenter and set gain to max. */
+    // Disable autocenter and set gain to max.
     if (haptic->supported & SDL_HAPTIC_GAIN) {
         SDL_SetHapticGain(haptic, 100);
     }
@@ -167,7 +159,7 @@ SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
     return haptic;
 }
 
-SDL_Haptic *SDL_GetHapticFromInstanceID(SDL_HapticID instance_id)
+SDL_Haptic *SDL_GetHapticFromID(SDL_HapticID instance_id)
 {
     SDL_Haptic *haptic;
 
@@ -179,7 +171,7 @@ SDL_Haptic *SDL_GetHapticFromInstanceID(SDL_HapticID instance_id)
     return haptic;
 }
 
-SDL_HapticID SDL_GetHapticInstanceID(SDL_Haptic *haptic)
+SDL_HapticID SDL_GetHapticID(SDL_Haptic *haptic)
 {
     CHECK_HAPTIC_MAGIC(haptic, 0);
 
@@ -188,17 +180,17 @@ SDL_HapticID SDL_GetHapticInstanceID(SDL_Haptic *haptic)
 
 const char *SDL_GetHapticName(SDL_Haptic *haptic)
 {
-    CHECK_HAPTIC_MAGIC(haptic, 0);
+    CHECK_HAPTIC_MAGIC(haptic, NULL);
 
-    return haptic->name;
+    return SDL_GetPersistentString(haptic->name);
 }
 
 SDL_bool SDL_IsMouseHaptic(void)
 {
     if (SDL_SYS_HapticMouse() < 0) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 SDL_Haptic *SDL_OpenHapticFromMouse(void)
@@ -217,16 +209,14 @@ SDL_Haptic *SDL_OpenHapticFromMouse(void)
 
 SDL_bool SDL_IsJoystickHaptic(SDL_Joystick *joystick)
 {
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     SDL_LockJoysticks();
     {
-        /* Must be a valid joystick */
+        // Must be a valid joystick
         if (SDL_IsJoystickValid(joystick) &&
-            !SDL_IsGamepad(SDL_GetJoystickInstanceID(joystick))) {
-            if (SDL_SYS_JoystickIsHaptic(joystick) > 0) {
-                result = SDL_TRUE;
-            }
+            !SDL_IsGamepad(SDL_GetJoystickID(joystick))) {
+            result = SDL_SYS_JoystickIsHaptic(joystick);
         }
     }
     SDL_UnlockJoysticks();
@@ -241,23 +231,23 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
 
     SDL_LockJoysticks();
     {
-        /* Must be a valid joystick */
+        // Must be a valid joystick
         if (!SDL_IsJoystickValid(joystick)) {
             SDL_SetError("Haptic: Joystick isn't valid.");
             SDL_UnlockJoysticks();
             return NULL;
         }
 
-        /* Joystick must be haptic */
-        if (SDL_IsGamepad(SDL_GetJoystickInstanceID(joystick)) ||
-            SDL_SYS_JoystickIsHaptic(joystick) <= 0) {
+        // Joystick must be haptic
+        if (SDL_IsGamepad(SDL_GetJoystickID(joystick)) ||
+            !SDL_SYS_JoystickIsHaptic(joystick)) {
             SDL_SetError("Haptic: Joystick isn't a haptic device.");
             SDL_UnlockJoysticks();
             return NULL;
         }
 
         hapticlist = SDL_haptics;
-        /* Check to see if joystick's haptic is already open */
+        // Check to see if joystick's haptic is already open
         while (hapticlist) {
             if (SDL_SYS_JoystickSameHaptic(hapticlist, joystick)) {
                 haptic = hapticlist;
@@ -268,7 +258,7 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
             hapticlist = hapticlist->next;
         }
 
-        /* Create the haptic device */
+        // Create the haptic device
         haptic = (SDL_Haptic *)SDL_calloc(1, sizeof(*haptic));
         if (!haptic) {
             SDL_UnlockJoysticks();
@@ -279,7 +269,7 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
          * This function should fill in the instance ID and name.
          */
         haptic->rumble_id = -1;
-        if (SDL_SYS_HapticOpenFromJoystick(haptic, joystick) < 0) {
+        if (!SDL_SYS_HapticOpenFromJoystick(haptic, joystick)) {
             SDL_SetError("Haptic: SDL_SYS_HapticOpenFromJoystick failed.");
             SDL_free(haptic);
             SDL_UnlockJoysticks();
@@ -289,9 +279,9 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
     }
     SDL_UnlockJoysticks();
 
-    /* Add haptic to list */
+    // Add haptic to list
     ++haptic->ref_count;
-    /* Link the haptic in the list */
+    // Link the haptic in the list
     haptic->next = SDL_haptics;
     SDL_haptics = haptic;
 
@@ -306,27 +296,27 @@ void SDL_CloseHaptic(SDL_Haptic *haptic)
 
     CHECK_HAPTIC_MAGIC(haptic,);
 
-    /* Check if it's still in use */
+    // Check if it's still in use
     if (--haptic->ref_count > 0) {
         return;
     }
 
-    /* Close it, properly removing effects if needed */
+    // Close it, properly removing effects if needed
     for (i = 0; i < haptic->neffects; i++) {
         if (haptic->effects[i].hweffect != NULL) {
             SDL_DestroyHapticEffect(haptic, i);
         }
     }
     SDL_SYS_HapticClose(haptic);
-    haptic->magic = NULL;
+    SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, false);
 
-    /* Remove from the list */
+    // Remove from the list
     hapticlist = SDL_haptics;
     hapticlistprev = NULL;
     while (hapticlist) {
         if (haptic == hapticlist) {
             if (hapticlistprev) {
-                /* unlink this entry */
+                // unlink this entry
                 hapticlistprev->next = hapticlist->next;
             } else {
                 SDL_haptics = haptic->next;
@@ -338,7 +328,7 @@ void SDL_CloseHaptic(SDL_Haptic *haptic)
         hapticlist = hapticlist->next;
     }
 
-    /* Free the data associated with this device */
+    // Free the data associated with this device
     SDL_free(haptic->name);
     SDL_free(haptic);
 }
@@ -382,16 +372,16 @@ int SDL_GetNumHapticAxes(SDL_Haptic *haptic)
 
 SDL_bool SDL_HapticEffectSupported(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
 {
-    CHECK_HAPTIC_MAGIC(haptic, SDL_FALSE);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (!effect) {
-        return SDL_FALSE;
+        return false;
     }
 
     if ((haptic->supported & effect->type) != 0) {
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
@@ -401,21 +391,23 @@ int SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
     CHECK_HAPTIC_MAGIC(haptic, -1);
 
     if (!effect) {
-        return SDL_InvalidParamError("effect");
+        SDL_InvalidParamError("effect");
+        return -1;
     }
 
-    /* Check to see if effect is supported */
-    if (SDL_HapticEffectSupported(haptic, effect) == SDL_FALSE) {
-        return SDL_SetError("Haptic: Effect not supported by haptic device.");
+    // Check to see if effect is supported
+    if (SDL_HapticEffectSupported(haptic, effect) == false) {
+        SDL_SetError("Haptic: Effect not supported by haptic device.");
+        return -1;
     }
 
-    /* See if there's a free slot */
+    // See if there's a free slot
     for (i = 0; i < haptic->neffects; i++) {
         if (haptic->effects[i].hweffect == NULL) {
 
-            /* Now let the backend create the real effect */
-            if (SDL_SYS_HapticNewEffect(haptic, &haptic->effects[i], effect) != 0) {
-                return -1; /* Backend failed to create effect */
+            // Now let the backend create the real effect
+            if (!SDL_SYS_HapticNewEffect(haptic, &haptic->effects[i], effect)) {
+                return -1; // Backend failed to create effect
             }
 
             SDL_memcpy(&haptic->effects[i].effect, effect,
@@ -424,76 +416,76 @@ int SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
         }
     }
 
-    return SDL_SetError("Haptic: Device has no free space left.");
+    SDL_SetError("Haptic: Device has no free space left.");
+    return -1;
 }
 
-static int ValidEffect(SDL_Haptic *haptic, int effect)
+static bool ValidEffect(SDL_Haptic *haptic, int effect)
 {
     if ((effect < 0) || (effect >= haptic->neffects)) {
         SDL_SetError("Haptic: Invalid effect identifier.");
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }
 
-int SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effect, const SDL_HapticEffect *data)
+SDL_bool SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effect, const SDL_HapticEffect *data)
 {
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (!ValidEffect(haptic, effect)) {
-        return -1;
+        return false;
     }
 
     if (!data) {
         return SDL_InvalidParamError("data");
     }
 
-    /* Can't change type dynamically. */
+    // Can't change type dynamically.
     if (data->type != haptic->effects[effect].effect.type) {
         return SDL_SetError("Haptic: Updating effect type is illegal.");
     }
 
-    /* Updates the effect */
-    if (SDL_SYS_HapticUpdateEffect(haptic, &haptic->effects[effect], data) <
-        0) {
-        return -1;
+    // Updates the effect
+    if (!SDL_SYS_HapticUpdateEffect(haptic, &haptic->effects[effect], data)) {
+        return false;
     }
 
     SDL_memcpy(&haptic->effects[effect].effect, data,
                sizeof(SDL_HapticEffect));
-    return 0;
+    return true;
 }
 
-int SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, Uint32 iterations)
+SDL_bool SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, Uint32 iterations)
 {
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (!ValidEffect(haptic, effect)) {
-        return -1;
+        return false;
     }
 
-    /* Run the effect */
-    if (SDL_SYS_HapticRunEffect(haptic, &haptic->effects[effect], iterations) < 0) {
-        return -1;
+    // Run the effect
+    if (!SDL_SYS_HapticRunEffect(haptic, &haptic->effects[effect], iterations)) {
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
-int SDL_StopHapticEffect(SDL_Haptic *haptic, int effect)
+SDL_bool SDL_StopHapticEffect(SDL_Haptic *haptic, int effect)
 {
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (!ValidEffect(haptic, effect)) {
-        return -1;
+        return false;
     }
 
-    /* Stop the effect */
-    if (SDL_SYS_HapticStopEffect(haptic, &haptic->effects[effect]) < 0) {
-        return -1;
+    // Stop the effect
+    if (!SDL_SYS_HapticStopEffect(haptic, &haptic->effects[effect])) {
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 void SDL_DestroyHapticEffect(SDL_Haptic *haptic, int effect)
@@ -504,7 +496,7 @@ void SDL_DestroyHapticEffect(SDL_Haptic *haptic, int effect)
         return;
     }
 
-    /* Not allocated */
+    // Not allocated
     if (haptic->effects[effect].hweffect == NULL) {
         return;
     }
@@ -512,27 +504,29 @@ void SDL_DestroyHapticEffect(SDL_Haptic *haptic, int effect)
     SDL_SYS_HapticDestroyEffect(haptic, &haptic->effects[effect]);
 }
 
-int SDL_GetHapticEffectStatus(SDL_Haptic *haptic, int effect)
+SDL_bool SDL_GetHapticEffectStatus(SDL_Haptic *haptic, int effect)
 {
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (!ValidEffect(haptic, effect)) {
-        return -1;
+        return false;
     }
 
     if (!(haptic->supported & SDL_HAPTIC_STATUS)) {
         return SDL_SetError("Haptic: Device does not support status queries.");
     }
 
+    SDL_ClearError();
+
     return SDL_SYS_HapticGetEffectStatus(haptic, &haptic->effects[effect]);
 }
 
-int SDL_SetHapticGain(SDL_Haptic *haptic, int gain)
+SDL_bool SDL_SetHapticGain(SDL_Haptic *haptic, int gain)
 {
     const char *env;
     int real_gain, max_gain;
 
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (!(haptic->supported & SDL_HAPTIC_GAIN)) {
         return SDL_SetError("Haptic: Device does not support setting gain.");
@@ -542,34 +536,30 @@ int SDL_SetHapticGain(SDL_Haptic *haptic, int gain)
         return SDL_SetError("Haptic: Gain must be between 0 and 100.");
     }
 
-    /* We use the envvar to get the maximum gain. */
+    // The user can use an environment variable to override the max gain.
     env = SDL_getenv("SDL_HAPTIC_GAIN_MAX");
     if (env) {
         max_gain = SDL_atoi(env);
 
-        /* Check for sanity. */
+        // Check for sanity.
         if (max_gain < 0) {
             max_gain = 0;
         } else if (max_gain > 100) {
             max_gain = 100;
         }
 
-        /* We'll scale it linearly with SDL_HAPTIC_GAIN_MAX */
+        // We'll scale it linearly with SDL_HAPTIC_GAIN_MAX
         real_gain = (gain * max_gain) / 100;
     } else {
         real_gain = gain;
     }
 
-    if (SDL_SYS_HapticSetGain(haptic, real_gain) < 0) {
-        return -1;
-    }
-
-    return 0;
+    return SDL_SYS_HapticSetGain(haptic, real_gain);
 }
 
-int SDL_SetHapticAutocenter(SDL_Haptic *haptic, int autocenter)
+SDL_bool SDL_SetHapticAutocenter(SDL_Haptic *haptic, int autocenter)
 {
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (!(haptic->supported & SDL_HAPTIC_AUTOCENTER)) {
         return SDL_SetError("Haptic: Device does not support setting autocenter.");
@@ -579,16 +569,12 @@ int SDL_SetHapticAutocenter(SDL_Haptic *haptic, int autocenter)
         return SDL_SetError("Haptic: Autocenter must be between 0 and 100.");
     }
 
-    if (SDL_SYS_HapticSetAutocenter(haptic, autocenter) < 0) {
-        return -1;
-    }
-
-    return 0;
+    return SDL_SYS_HapticSetAutocenter(haptic, autocenter);
 }
 
-int SDL_PauseHaptic(SDL_Haptic *haptic)
+SDL_bool SDL_PauseHaptic(SDL_Haptic *haptic)
 {
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (!(haptic->supported & SDL_HAPTIC_PAUSE)) {
         return SDL_SetError("Haptic: Device does not support setting pausing.");
@@ -597,41 +583,41 @@ int SDL_PauseHaptic(SDL_Haptic *haptic)
     return SDL_SYS_HapticPause(haptic);
 }
 
-int SDL_ResumeHaptic(SDL_Haptic *haptic)
+SDL_bool SDL_ResumeHaptic(SDL_Haptic *haptic)
 {
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (!(haptic->supported & SDL_HAPTIC_PAUSE)) {
-        return 0; /* Not going to be paused, so we pretend it's unpaused. */
+        return true; // Not going to be paused, so we pretend it's unpaused.
     }
 
-    return SDL_SYS_HapticUnpause(haptic);
+    return SDL_SYS_HapticResume(haptic);
 }
 
-int SDL_StopHapticEffects(SDL_Haptic *haptic)
+SDL_bool SDL_StopHapticEffects(SDL_Haptic *haptic)
 {
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     return SDL_SYS_HapticStopAll(haptic);
 }
 
 SDL_bool SDL_HapticRumbleSupported(SDL_Haptic *haptic)
 {
-    CHECK_HAPTIC_MAGIC(haptic, SDL_FALSE);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
-    /* Most things can use SINE, but XInput only has LEFTRIGHT. */
+    // Most things can use SINE, but XInput only has LEFTRIGHT.
     return (haptic->supported & (SDL_HAPTIC_SINE | SDL_HAPTIC_LEFTRIGHT)) != 0;
 }
 
-int SDL_InitHapticRumble(SDL_Haptic *haptic)
+SDL_bool SDL_InitHapticRumble(SDL_Haptic *haptic)
 {
     SDL_HapticEffect *efx = &haptic->rumble_effect;
 
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
-    /* Already allocated. */
+    // Already allocated.
     if (haptic->rumble_id >= 0) {
-        return 0;
+        return true;
     }
 
     SDL_zerop(efx);
@@ -643,7 +629,7 @@ int SDL_InitHapticRumble(SDL_Haptic *haptic)
         efx->periodic.length = 5000;
         efx->periodic.attack_length = 0;
         efx->periodic.fade_length = 0;
-    } else if (haptic->supported & SDL_HAPTIC_LEFTRIGHT) { /* XInput? */
+    } else if (haptic->supported & SDL_HAPTIC_LEFTRIGHT) { // XInput?
         efx->type = SDL_HAPTIC_LEFTRIGHT;
         efx->leftright.length = 5000;
         efx->leftright.large_magnitude = 0x4000;
@@ -654,23 +640,23 @@ int SDL_InitHapticRumble(SDL_Haptic *haptic)
 
     haptic->rumble_id = SDL_CreateHapticEffect(haptic, &haptic->rumble_effect);
     if (haptic->rumble_id >= 0) {
-        return 0;
+        return true;
     }
-    return -1;
+    return false;
 }
 
-int SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, Uint32 length)
+SDL_bool SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, Uint32 length)
 {
     SDL_HapticEffect *efx;
     Sint16 magnitude;
 
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (haptic->rumble_id < 0) {
         return SDL_SetError("Haptic: Rumble effect not initialized on haptic device");
     }
 
-    /* Clamp strength. */
+    // Clamp strength.
     if (strength > 1.0f) {
         strength = 1.0f;
     } else if (strength < 0.0f) {
@@ -689,16 +675,16 @@ int SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, Uint32 length)
         SDL_assert(!"This should have been caught elsewhere");
     }
 
-    if (SDL_UpdateHapticEffect(haptic, haptic->rumble_id, &haptic->rumble_effect) < 0) {
-        return -1;
+    if (!SDL_UpdateHapticEffect(haptic, haptic->rumble_id, &haptic->rumble_effect)) {
+        return false;
     }
 
     return SDL_RunHapticEffect(haptic, haptic->rumble_id, 1);
 }
 
-int SDL_StopHapticRumble(SDL_Haptic *haptic)
+SDL_bool SDL_StopHapticRumble(SDL_Haptic *haptic)
 {
-    CHECK_HAPTIC_MAGIC(haptic, -1);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (haptic->rumble_id < 0) {
         return SDL_SetError("Haptic: Rumble effect not initialized on haptic device");

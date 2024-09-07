@@ -23,12 +23,12 @@
 #ifndef SDL_windowsclipboard_h_
 #define SDL_windowsclipboard_h_
 
-/* Forward declaration */
+// Forward declaration
 struct SDL_VideoData;
 
-extern int WIN_SetClipboardData(SDL_VideoDevice *_this);
+extern bool WIN_SetClipboardData(SDL_VideoDevice *_this);
 extern void *WIN_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *size);
-extern SDL_bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
+extern bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
 extern void WIN_CheckClipboardUpdate(struct SDL_VideoData *data);
 
-#endif /* SDL_windowsclipboard_h_ */
+#endif // SDL_windowsclipboard_h_

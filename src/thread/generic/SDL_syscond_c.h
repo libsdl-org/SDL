@@ -27,10 +27,10 @@
 
 SDL_Condition *SDL_CreateCondition_generic(void);
 void SDL_DestroyCondition_generic(SDL_Condition *cond);
-int SDL_SignalCondition_generic(SDL_Condition *cond);
-int SDL_BroadcastCondition_generic(SDL_Condition *cond);
-int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
+void SDL_SignalCondition_generic(SDL_Condition *cond);
+void SDL_BroadcastCondition_generic(SDL_Condition *cond);
+bool SDL_WaitConditionTimeoutNS_generic(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
 
-#endif /* SDL_THREAD_GENERIC_COND_SUFFIX */
+#endif // SDL_THREAD_GENERIC_COND_SUFFIX
 
-#endif /* SDL_syscond_generic_h_ */
+#endif // SDL_syscond_generic_h_

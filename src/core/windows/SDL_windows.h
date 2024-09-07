@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* This is an include file for windows.h with the SDL build settings */
+// This is an include file for windows.h with the SDL build settings
 
 #ifndef _INCLUDED_WINDOWS_H
 #define _INCLUDED_WINDOWS_H
@@ -36,12 +36,12 @@
 #endif
 #undef WINVER
 #undef _WIN32_WINNT
-#if SDL_VIDEO_RENDER_D3D12
-#define _WIN32_WINNT 0xA00 /* For D3D12, 0xA00 is required */
+#if SDL_VIDEO_RENDER_D3D12 || defined(HAVE_DXGI1_6_H)
+#define _WIN32_WINNT 0xA00 // For D3D12, 0xA00 is required
 #elif defined(HAVE_SHELLSCALINGAPI_H)
-#define _WIN32_WINNT 0x603 /* For DPI support */
+#define _WIN32_WINNT 0x603 // For DPI support
 #else
-#define _WIN32_WINNT 0x501 /* Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input */
+#define _WIN32_WINNT 0x501 // Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input
 #endif
 #define WINVER _WIN32_WINNT
 
@@ -76,8 +76,8 @@
 #define WINVER       _WIN32_WINNT
 #endif
 
-/* See https://github.com/libsdl-org/SDL/pull/7607  */
-/* force_align_arg_pointer attribute requires gcc >= 4.2.x.  */
+// See https://github.com/libsdl-org/SDL/pull/7607
+// force_align_arg_pointer attribute requires gcc >= 4.2.x.
 #if defined(__clang__)
 #define HAVE_FORCE_ALIGN_ARG_POINTER
 #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
@@ -90,13 +90,13 @@
 #endif
 
 #include <windows.h>
-#include <basetyps.h> /* for REFIID with broken mingw.org headers */
+#include <basetyps.h> // for REFIID with broken mingw.org headers
 #include <mmreg.h>
 
-/* Routines to convert from UTF8 to native Windows text */
+// Routines to convert from UTF8 to native Windows text
 #define WIN_StringToUTF8W(S) SDL_iconv_string("UTF-8", "UTF-16LE", (const char *)(S), (SDL_wcslen(S) + 1) * sizeof(WCHAR))
 #define WIN_UTF8ToStringW(S) (WCHAR *)SDL_iconv_string("UTF-16LE", "UTF-8", (const char *)(S), SDL_strlen(S) + 1)
-/* !!! FIXME: UTF8ToString() can just be a SDL_strdup() here. */
+// !!! FIXME: UTF8ToString() can just be a SDL_strdup() here.
 #define WIN_StringToUTF8A(S) SDL_iconv_string("UTF-8", "ASCII", (const char *)(S), (SDL_strlen(S) + 1))
 #define WIN_UTF8ToStringA(S) SDL_iconv_string("ASCII", "UTF-8", (const char *)(S), SDL_strlen(S) + 1)
 #if UNICODE
@@ -111,64 +111,62 @@
 #define SDL_tcsstr       SDL_strstr
 #endif
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Sets an error message based on a given HRESULT */
-extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
+// Sets an error message based on a given HRESULT
+extern bool WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 
-/* Sets an error message based on GetLastError(). Always return -1. */
-extern int WIN_SetError(const char *prefix);
+// Sets an error message based on GetLastError(). Always return -1.
+extern bool WIN_SetError(const char *prefix);
 
-#ifndef SDL_PLATFORM_WINRT
-/* Load a function from combase.dll */
+// Load a function from combase.dll
 FARPROC WIN_LoadComBaseFunction(const char *name);
-#endif
 
-/* Wrap up the oddities of CoInitialize() into a common function. */
+// Wrap up the oddities of CoInitialize() into a common function.
 extern HRESULT WIN_CoInitialize(void);
 extern void WIN_CoUninitialize(void);
 
-/* Wrap up the oddities of RoInitialize() into a common function. */
+// Wrap up the oddities of RoInitialize() into a common function.
 extern HRESULT WIN_RoInitialize(void);
 extern void WIN_RoUninitialize(void);
 
-/* Returns SDL_TRUE if we're running on Windows XP (any service pack). DOES NOT CHECK XP "OR GREATER"! */
+// Returns true if we're running on Windows XP (any service pack). DOES NOT CHECK XP "OR GREATER"!
 extern BOOL WIN_IsWindowsXP(void);
 
-/* Returns SDL_TRUE if we're running on Windows Vista and newer */
+// Returns true if we're running on Windows Vista and newer
 extern BOOL WIN_IsWindowsVistaOrGreater(void);
 
-/* Returns SDL_TRUE if we're running on Windows 7 and newer */
+// Returns true if we're running on Windows 7 and newer
 extern BOOL WIN_IsWindows7OrGreater(void);
 
-/* Returns SDL_TRUE if we're running on Windows 8 and newer */
+// Returns true if we're running on Windows 8 and newer
 extern BOOL WIN_IsWindows8OrGreater(void);
 
-/* You need to SDL_free() the result of this call. */
+// You need to SDL_free() the result of this call.
 extern char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid);
 
-/* Checks to see if two GUID are the same. */
+// Checks to see if two GUID are the same.
 extern BOOL WIN_IsEqualGUID(const GUID *a, const GUID *b);
 extern BOOL WIN_IsEqualIID(REFIID a, REFIID b);
 
-/* Convert between SDL_rect and RECT */
+// Convert between SDL_rect and RECT
 extern void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect);
 extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
 
-/* Returns SDL_TRUE if the rect is empty */
+// Returns true if the rect is empty
 extern BOOL WIN_IsRectEmpty(const RECT *rect);
 
 extern SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);
 
-/* WideCharToMultiByte, but with some WinXP manangement. */
+// WideCharToMultiByte, but with some WinXP manangement.
 extern int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCCH lpDefaultChar, LPBOOL lpUsedDefaultChar);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _INCLUDED_WINDOWS_H */
+#endif // _INCLUDED_WINDOWS_H

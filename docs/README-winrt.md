@@ -46,7 +46,7 @@ Here is a rough list of what works, and what doesn't:
   * mouse input  (unsupported on Windows Phone)
   * audio, via SDL's WASAPI backend (if you want to record, your app must
     have "Microphone" capabilities enabled in its manifest, and the user must
-    not have blocked access. Otherwise, capture devices will fail to work,
+    not have blocked access. Otherwise, recording devices will fail to work,
     presenting as a device disconnect shortly after opening it.)
   * .DLL file loading.  Libraries *MUST* be packaged inside applications.  Loading
     anything outside of the app is not supported.
@@ -88,49 +88,10 @@ Here is a rough list of what works, and what doesn't:
     UWP itself).
   * turning off VSync when rendering on Windows Phone.  Attempts to turn VSync
     off on Windows Phone result either in Direct3D not drawing anything, or it
-    forcing VSync back on.  As such, SDL_RENDERER_PRESENTVSYNC will always get
-    turned-on on Windows Phone.  This limitation is not present in non-Phone
-    WinRT (such as Windows 8.x), where turning off VSync appears to work.
+    forcing VSync back on.  As such, vsync will always get turned-on on Windows
+    Phone.  This limitation is not present in non-Phone WinRT (such as Windows 8.x),
+    where turning off VSync appears to work.
   * probably anything else that's not listed as supported
-
-
-
-Upgrade Notes
--------------
-
-#### SDL_GetPrefPath() usage when upgrading WinRT apps from SDL 2.0.3
-
-SDL 2.0.4 fixes two bugs found in the WinRT version of SDL_GetPrefPath().
-The fixes may affect older, SDL 2.0.3-based apps' save data.  Please note
-that these changes only apply to SDL-based WinRT apps, and not to apps for
-any other platform.
-
-1. SDL_GetPrefPath() would return an invalid path, one in which the path's
-   directory had not been created.  Attempts to create files there
-   (via fopen(), for example), would fail, unless that directory was
-   explicitly created beforehand.
-
-2. SDL_GetPrefPath(), for non-WinPhone-based apps, would return a path inside
-   a WinRT 'Roaming' folder, the contents of which get automatically
-   synchronized across multiple devices.  This process can occur while an
-   application runs, and can cause existing save-data to be overwritten
-   at unexpected times, with data from other devices.  (Windows Phone apps
-   written with SDL 2.0.3 did not utilize a Roaming folder, due to API
-   restrictions in Windows Phone 8.0).
-
-
-SDL_GetPrefPath(), starting with SDL 2.0.4, addresses these by:
-
-1. making sure that SDL_GetPrefPath() returns a directory in which data
-   can be written to immediately, without first needing to create directories.
-
-2. basing SDL_GetPrefPath() off of a different, non-Roaming folder, the
-   contents of which do not automatically get synchronized across devices
-   (and which require less work to use safely, in terms of data integrity).
-
-Apps that wish to get their Roaming folder's path can do so either by using
-SDL_WinRTGetFSPath(), or directly through the WinRT class,
-Windows.Storage.ApplicationData.
 
 
 
@@ -337,9 +298,9 @@ int main(int argc, char **argv)
     SDL_Event evt;
     SDL_bool keep_going = SDL_TRUE;
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         return 1;
-    } else if (SDL_CreateWindowAndRenderer("Hello SDL", 0, 0, SDL_WINDOW_FULLSCREEN, &window, &renderer) != 0) {
+    } else if (!SDL_CreateWindowAndRenderer("Hello SDL", 0, 0, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
         return 1;
     }
 

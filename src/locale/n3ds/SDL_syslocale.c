@@ -24,14 +24,14 @@
 
 #include <3ds.h>
 
-/* Used when the CFGU fails to work. */
+// Used when the CFGU fails to work.
 #define BAD_LOCALE 255
 
 static u8 GetLocaleIndex(void);
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
-    /* The 3DS only supports these 12 languages, only one can be active at a time */
+    // The 3DS only supports these 12 languages, only one can be active at a time
     static const char AVAILABLE_LOCALES[][6] = { "ja_JP", "en_US", "fr_FR", "de_DE",
                                                  "it_IT", "es_ES", "zh_CN", "ko_KR",
                                                  "nl_NL", "pt_PT", "ru_RU", "zh_TW" };
@@ -39,7 +39,7 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     if (current_locale != BAD_LOCALE) {
         SDL_strlcpy(buf, AVAILABLE_LOCALES[current_locale], buflen);
     }
-    return 0;
+    return true;
 }
 
 static u8 GetLocaleIndex(void)

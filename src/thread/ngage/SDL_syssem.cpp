@@ -20,12 +20,9 @@
 */
 #include "SDL_internal.h"
 
-/* An implementation of semaphores using the Symbian API. */
+// An implementation of semaphores using the Symbian API.
 
 #include <e32std.h>
-
-/* !!! FIXME: Should this be SDL_MUTEX_TIMEDOUT? */
-#define SDL_MUTEX_TIMEOUT -2
 
 struct SDL_Semaphore
 {
@@ -35,10 +32,10 @@ struct SDL_Semaphore
 
 struct TInfo
 {
-    TInfo(TInt aTime, TInt aHandle) : iTime(aTime), iHandle(aHandle), iVal(0) {}
+    TInfo(TInt aTime, TInt aHandle) : iTime(aTime), iHandle(aHandle), iVal(true) {}
     TInt iTime;
     TInt iHandle;
-    TInt iVal;
+    bool iVal;
 };
 
 extern TInt CreateUnique(TInt (*aFunc)(const TDesC &aName, TAny *, TAny *), TAny *, TAny *);
@@ -50,7 +47,7 @@ static TBool RunThread(TAny *aInfo)
     RSemaphore sema;
     sema.SetHandle(info->iHandle);
     sema.Signal();
-    info->iVal = SDL_MUTEX_TIMEOUT;
+    info->iVal = false;
     return 0;
 }
 
@@ -100,23 +97,23 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     }
 }
 
-int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     if (!sem) {
-        return SDL_InvalidParamError("sem");
+        return true;
     }
 
     if (timeoutNS == 0) {
         if (sem->count > 0) {
             --sem->count;
-            return 0;
+            return true;
         }
-        return SDL_MUTEX_TIMEOUT;
+        return false;
     }
 
     if (timeoutNS == -1) {  // -1 == wait indefinitely.
         WaitAll(sem);
-        return 0;
+        return true;
     }
 
     RThread thread;
@@ -124,14 +121,14 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     TInt status = CreateUnique(NewThread, &thread, info);
 
     if (status != KErrNone) {
-        return status;
+        return false;
     }
 
     thread.Resume();
     WaitAll(sem);
 
     if (thread.ExitType() == EExitPending) {
-        thread.Kill(SDL_MUTEX_TIMEOUT);
+        thread.Kill(false);
     }
 
     thread.Close();
@@ -147,7 +144,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     return sem->count;
 }
 
-int SDL_PostSemaphore(SDL_Semaphore *sem)
+int SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
     if (!sem) {
         return SDL_InvalidParamError("sem");

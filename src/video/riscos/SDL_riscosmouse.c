@@ -28,12 +28,12 @@
 
 #include <kernel.h>
 
-static SDL_Cursor *RISCOS_CreateDefaultCursor()
+static SDL_Cursor *RISCOS_CreateDefaultCursor(void)
 {
     SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        /* NULL is used to indicate the default cursor */
-        cursor->driverdata = NULL;
+        // NULL is used to indicate the default cursor
+        cursor->internal = NULL;
     }
 
     return cursor;
@@ -44,36 +44,36 @@ static void RISCOS_FreeCursor(SDL_Cursor *cursor)
     SDL_free(cursor);
 }
 
-static int RISCOS_ShowCursor(SDL_Cursor *cursor)
+static bool RISCOS_ShowCursor(SDL_Cursor *cursor)
 {
     if (cursor) {
-        /* Turn the mouse pointer on */
+        // Turn the mouse pointer on
         _kernel_osbyte(106, 1, 0);
     } else {
-        /* Turn the mouse pointer off */
+        // Turn the mouse pointer off
         _kernel_osbyte(106, 0, 0);
     }
 
-    return 0;
+    return true;
 }
 
-int RISCOS_InitMouse(SDL_VideoDevice *_this)
+bool RISCOS_InitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    /* mouse->CreateCursor = RISCOS_CreateCursor; */
-    /* mouse->CreateSystemCursor = RISCOS_CreateSystemCursor; */
+    // mouse->CreateCursor = RISCOS_CreateCursor;
+    // mouse->CreateSystemCursor = RISCOS_CreateSystemCursor;
     mouse->ShowCursor = RISCOS_ShowCursor;
     mouse->FreeCursor = RISCOS_FreeCursor;
-    /* mouse->WarpMouse = RISCOS_WarpMouse; */
-    /* mouse->WarpMouseGlobal = RISCOS_WarpMouseGlobal; */
-    /* mouse->SetRelativeMouseMode = RISCOS_SetRelativeMouseMode; */
-    /* mouse->CaptureMouse = RISCOS_CaptureMouse; */
-    /* mouse->GetGlobalMouseState = RISCOS_GetGlobalMouseState; */
+    // mouse->WarpMouse = RISCOS_WarpMouse;
+    // mouse->WarpMouseGlobal = RISCOS_WarpMouseGlobal;
+    // mouse->SetRelativeMouseMode = RISCOS_SetRelativeMouseMode;
+    // mouse->CaptureMouse = RISCOS_CaptureMouse;
+    // mouse->GetGlobalMouseState = RISCOS_GetGlobalMouseState;
 
     SDL_SetDefaultCursor(RISCOS_CreateDefaultCursor());
 
-    return 0;
+    return true;
 }
 
-#endif /* SDL_VIDEO_DRIVER_RISCOS */
+#endif // SDL_VIDEO_DRIVER_RISCOS

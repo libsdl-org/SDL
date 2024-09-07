@@ -35,6 +35,8 @@
 ;
 */
 
+#define NUM_FONT_GLYPHS 257
+
 static unsigned char SDLTest_FontData[] = {
 
     /*
@@ -3110,14 +3112,26 @@ static unsigned char SDLTest_FontData[] = {
     0x30, /* 00001100 */
     0x1f, /* 11111000 */
 
+    /*
+     * 256 0x100 - missing character
+     */
+    0x55, /* 01010101 */
+    0xAA, /* 10101010 */
+    0x55, /* 01010101 */
+    0xAA, /* 10101010 */
+    0x55, /* 01010101 */
+    0xAA, /* 10101010 */
+    0x55, /* 01010101 */
+    0xAA, /* 10101010 */
 };
+SDL_COMPILE_TIME_ASSERT(SDLTest_FontDataSize, SDL_arraysize(SDLTest_FontData) == NUM_FONT_GLYPHS * 8);
 
 /* ---- Character */
 
 struct SDLTest_CharTextureCache
 {
     SDL_Renderer *renderer;
-    SDL_Texture *charTextureCache[256];
+    SDL_Texture *charTextureCache[NUM_FONT_GLYPHS];
     struct SDLTest_CharTextureCache *next;
 };
 
@@ -3128,13 +3142,13 @@ static struct SDLTest_CharTextureCache *SDLTest_CharTextureCacheList;
 
 int FONT_CHARACTER_SIZE = 8;
 
-int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
+SDL_bool SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
 {
     const Uint32 charWidth = FONT_CHARACTER_SIZE;
     const Uint32 charHeight = FONT_CHARACTER_SIZE;
     SDL_FRect srect;
     SDL_FRect drect;
-    int result;
+    SDL_bool result;
     Uint32 ix, iy;
     const unsigned char *charpos;
     Uint32 *curpos;
@@ -3163,6 +3177,9 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
 
     /* Character index in cache */
     ci = c;
+    if (ci >= NUM_FONT_GLYPHS) {
+        ci = (NUM_FONT_GLYPHS - 1);
+    }
 
     /* Search for this renderer's cache */
     for (cache = SDLTest_CharTextureCacheList; cache; cache = cache->next) {
@@ -3188,7 +3205,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
          */
         character = SDL_CreateSurface(charWidth, charHeight, SDL_PIXELFORMAT_RGBA8888);
         if (!character) {
-            return -1;
+            return SDL_FALSE;
         }
 
         charpos = SDLTest_FontData + ci * 8;
@@ -3220,7 +3237,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
          * Check pointer
          */
         if (cache->charTextureCache[ci] == NULL) {
-            return -1;
+            return SDL_FALSE;
         }
 
         SDL_SetTextureScaleMode(cache->charTextureCache[ci], SDL_SCALEMODE_NEAREST);
@@ -3229,15 +3246,15 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
     /*
      * Set color
      */
-    result = 0;
-    result |= SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
-    result |= SDL_SetTextureColorMod(cache->charTextureCache[ci], r, g, b);
-    result |= SDL_SetTextureAlphaMod(cache->charTextureCache[ci], a);
+    result = SDL_TRUE;
+    result &= SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+    result &= SDL_SetTextureColorMod(cache->charTextureCache[ci], r, g, b);
+    result &= SDL_SetTextureAlphaMod(cache->charTextureCache[ci], a);
 
     /*
      * Draw texture onto destination
      */
-    result |= SDL_RenderTexture(renderer, cache->charTextureCache[ci], &srect, &drect);
+    result &= SDL_RenderTexture(renderer, cache->charTextureCache[ci], &srect, &drect);
 
     return result;
 }
@@ -3331,20 +3348,18 @@ static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
 
 #define UTF8_IsTrailingByte(c) ((c) >= 0x80 && (c) <= 0xBF)
 
-int SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s)
+SDL_bool SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s)
 {
     const Uint32 charWidth = FONT_CHARACTER_SIZE;
-    int result = 0;
+    SDL_bool result = SDL_TRUE;
     float curx = x;
     float cury = y;
     size_t len = SDL_strlen(s);
 
-    while (len > 0 && !result) {
+    while (len > 0 && result) {
         int advance = 0;
         Uint32 ch = UTF8_getch(s, len, &advance);
-        if (ch < 256) {
-            result |= SDLTest_DrawCharacter(renderer, curx, cury, ch);
-        }
+        result &= SDLTest_DrawCharacter(renderer, curx, cury, ch);
         curx += charWidth;
         s += advance;
         len -= advance;

@@ -22,18 +22,18 @@
 
 #ifdef SDL_JOYSTICK_VITA
 
-/* This is the PSVita implementation of the SDL joystick API */
+// This is the PSVita implementation of the SDL joystick API
 #include <psp2/types.h>
 #include <psp2/ctrl.h>
 #include <psp2/kernel/threadmgr.h>
 
-#include <stdio.h> /* For the definition of NULL */
+#include <stdio.h> // For the definition of NULL
 #include <stdlib.h>
 
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-/* Current pad state */
+// Current pad state
 static SceCtrlData pad0 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };
 static SceCtrlData pad1 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };
 static SceCtrlData pad2 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };
@@ -62,38 +62,32 @@ static const unsigned int ext_button_map[] = {
     SCE_CTRL_R3
 };
 
-static int analog_map[256]; /* Map analog inputs to -32768 -> 32767 */
+static int analog_map[256]; // Map analog inputs to -32768 -> 32767
 
-typedef struct
+// 4 points define the bezier-curve.
+// The Vita has a good amount of analog travel, so use a linear curve
+static SDL_Point a = { 0, 0 };
+static SDL_Point b = { 0, 0 };
+static SDL_Point c = { 128, 32767 };
+static SDL_Point d = { 128, 32767 };
+
+// simple linear interpolation between two points
+static SDL_INLINE void lerp(SDL_Point *dest, const SDL_Point *first, const SDL_Point *second, float t)
 {
-    int x;
-    int y;
-} point;
-
-/* 4 points define the bezier-curve. */
-/* The Vita has a good amount of analog travel, so use a linear curve */
-static point a = { 0, 0 };
-static point b = { 0, 0 };
-static point c = { 128, 32767 };
-static point d = { 128, 32767 };
-
-/* simple linear interpolation between two points */
-static SDL_INLINE void lerp(point *dest, point *first, point *second, float t)
-{
-    dest->x = first->x + (second->x - first->x) * t;
-    dest->y = first->y + (second->y - first->y) * t;
+    dest->x = first->x + (int)((second->x - first->x) * t);
+    dest->y = first->y + (int)((second->y - first->y) * t);
 }
 
-/* evaluate a point on a bezier-curve. t goes from 0 to 1.0 */
+// evaluate a point on a bezier-curve. t goes from 0 to 1.0
 static int calc_bezier_y(float t)
 {
-    point ab, bc, cd, abbc, bccd, dest;
-    lerp(&ab, &a, &b, t);         /* point between a and b */
-    lerp(&bc, &b, &c, t);         /* point between b and c */
-    lerp(&cd, &c, &d, t);         /* point between c and d */
-    lerp(&abbc, &ab, &bc, t);     /* point between ab and bc */
-    lerp(&bccd, &bc, &cd, t);     /* point between bc and cd */
-    lerp(&dest, &abbc, &bccd, t); /* point on the bezier-curve */
+    SDL_Point ab, bc, cd, abbc, bccd, dest;
+    lerp(&ab, &a, &b, t);         // point between a and b
+    lerp(&bc, &b, &c, t);         // point between b and c
+    lerp(&cd, &c, &d, t);         // point between c and d
+    lerp(&abbc, &ab, &bc, t);     // point between ab and bc
+    lerp(&bccd, &bc, &cd, t);     // point between bc and cd
+    lerp(&dest, &abbc, &bccd, t); // point on the bezier-curve
     return dest.y;
 }
 
@@ -101,12 +95,12 @@ static int calc_bezier_y(float t)
  * Joystick 0 should be the system default joystick.
  * It should return number of joysticks, or -1 on an unrecoverable fatal error.
  */
-static int VITA_JoystickInit(void)
+static bool VITA_JoystickInit(void)
 {
     int i;
     SceCtrlPortInfo myPortInfo;
 
-    /* Setup input */
+    // Setup input
     sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
     sceCtrlSetSamplingModeExt(SCE_CTRL_MODE_ANALOG_WIDE);
 
@@ -140,22 +134,22 @@ static int VITA_JoystickInit(void)
     return SDL_numjoysticks;
 }
 
-static int VITA_JoystickGetCount()
+static int VITA_JoystickGetCount(void)
 {
     return SDL_numjoysticks;
 }
 
-static void VITA_JoystickDetect()
+static void VITA_JoystickDetect(void)
 {
 }
 
-static SDL_bool VITA_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool VITA_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    /* We don't override any other drivers */
-    return SDL_FALSE;
+    // We don't override any other drivers
+    return false;
 }
 
-/* Function to perform the mapping from device index to the instance id for this index */
+// Function to perform the mapping from device index to the instance id for this index
 static SDL_JoystickID VITA_JoystickGetDeviceInstanceID(int device_index)
 {
     return device_index + 1;
@@ -207,16 +201,16 @@ static void VITA_JoystickSetDevicePlayerIndex(int device_index, int player_index
    This should fill the nbuttons and naxes fields of the joystick structure.
    It returns 0, or -1 if there is an error.
  */
-static int VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     joystick->nbuttons = SDL_arraysize(ext_button_map);
     joystick->naxes = 6;
     joystick->nhats = 0;
 
-    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, SDL_TRUE);
-    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, true);
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
 
-    return 0;
+    return true;
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -240,7 +234,7 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     SceCtrlData *pad = NULL;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
+    int index = (int)SDL_GetJoystickID(joystick) - 1;
 
     if (index == 0)
         pad = &pad0;
@@ -314,30 +308,30 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     }
 }
 
-/* Function to close a joystick after use */
+// Function to close a joystick after use
 static void VITA_JoystickClose(SDL_Joystick *joystick)
 {
 }
 
-/* Function to perform any system-specific joystick related cleanup */
+// Function to perform any system-specific joystick related cleanup
 static void VITA_JoystickQuit(void)
 {
 }
 
-static SDL_JoystickGUID VITA_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID VITA_JoystickGetDeviceGUID(int device_index)
 {
-    /* the GUID is just the name for now */
+    // the GUID is just the name for now
     const char *name = VITA_JoystickGetDeviceName(device_index);
     return SDL_CreateJoystickGUIDForName(name);
 }
 
-static int VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
+    int index = (int)SDL_GetJoystickID(joystick) - 1;
     SceCtrlActuator act;
 
     if (index < 0 || index > 3) {
-        return -1;
+        return false;
     }
     SDL_zero(act);
     act.small = high_frequency_rumble / 256;
@@ -345,39 +339,39 @@ static int VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     if (sceCtrlSetActuator(ext_port_map[index], &act) < 0) {
         return SDL_Unsupported();
     }
-    return 0;
+    return true;
 }
 
-static int VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
+static bool VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
 {
     return SDL_Unsupported();
 }
 
-static int VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
+    int index = (int)SDL_GetJoystickID(joystick) - 1;
     if (index < 0 || index > 3) {
-        return -1;
+        return false;
     }
     if (sceCtrlSetLightBar(ext_port_map[index], red, green, blue) < 0) {
         return SDL_Unsupported();
     }
-    return 0;
+    return true;
 }
 
-static int VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static bool VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
 
-static SDL_bool VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_JoystickDriver SDL_VITA_JoystickDriver = {
@@ -404,4 +398,4 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver = {
     VITA_JoystickGetGamepadMapping,
 };
 
-#endif /* SDL_JOYSTICK_VITA */
+#endif // SDL_JOYSTICK_VITA

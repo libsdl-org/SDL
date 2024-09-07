@@ -25,8 +25,6 @@
 
 #include "SDL_windows.h"
 
-#ifndef SDL_PLATFORM_WINRT
-
 typedef LONG NTSTATUS;
 typedef USHORT USAGE;
 typedef struct _HIDP_PREPARSED_DATA *PHIDP_PREPARSED_DATA;
@@ -190,7 +188,7 @@ typedef struct
 #define HIDP_STATUS_REPORT_DOES_NOT_EXIST   HIDP_ERROR_CODES(0xC, 0x0010)
 #define HIDP_STATUS_NOT_IMPLEMENTED         HIDP_ERROR_CODES(0xC, 0x0020)
 
-extern int WIN_LoadHIDDLL(void);
+extern bool WIN_LoadHIDDLL(void);
 extern void WIN_UnloadHIDDLL(void);
 
 typedef BOOLEAN (WINAPI *HidD_GetString_t)(HANDLE HidDeviceObject, PVOID Buffer, ULONG BufferLength);
@@ -208,11 +206,8 @@ extern HidP_GetValueCaps_t SDL_HidP_GetValueCaps;
 extern HidP_MaxDataListLength_t SDL_HidP_MaxDataListLength;
 extern HidP_GetData_t SDL_HidP_GetData;
 
-#endif /* !SDL_PLATFORM_WINRT */
-
-
 void WIN_InitDeviceNotification(void);
 Uint64 WIN_GetLastDeviceNotification(void);
 void WIN_QuitDeviceNotification(void);
 
-#endif /* SDL_hid_h_ */
+#endif // SDL_hid_h_

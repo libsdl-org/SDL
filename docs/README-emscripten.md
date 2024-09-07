@@ -110,7 +110,7 @@ to actually run if main() were to continue on, since we're just
 getting started.
 
 There's a lot of little details that are beyond the scope of this
-document, but that's the biggest intial set of hurdles to porting
+document, but that's the biggest initial set of hurdles to porting
 your app to the web.
 
 
@@ -157,7 +157,7 @@ different depending on what sort of build you're compiling.
 Audio works as expected at the API level, but not exactly like other
 platforms.
 
-You'll only see a single default audio device. Audio capture also works;
+You'll only see a single default audio device. Audio recording also works;
 if the browser pops up a prompt to ask for permission to access the
 microphone, the SDL_OpenAudioDevice call will succeed and start producing
 silence at a regular interval. Once the user approves the request, real
@@ -317,7 +317,7 @@ The _easiest_ (but not the best) way to get at your data files is to embed
 them in the app itself. Emscripten's linker has support for automating this.
 
 ```bash
-emcc -o index.html loopwave.c --embed-file=../test/sample.wav@/sounds/sample.wav
+emcc -o index.html loopwave.c --embed-file ../test/sample.wav@/sounds/sample.wav
 ```
 
 This will pack ../test/sample.wav in your app, and make it available at

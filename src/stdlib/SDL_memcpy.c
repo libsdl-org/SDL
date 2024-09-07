@@ -45,7 +45,7 @@ void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void 
        aligned before we loop using them.
      */
     if (((uintptr_t)src & 0x3) || ((uintptr_t)dst & 0x3)) {
-        /* Do an unaligned byte copy */
+        // Do an unaligned byte copy
         Uint8 *srcp1 = (Uint8 *)src;
         Uint8 *dstp1 = (Uint8 *)dst;
 
@@ -78,13 +78,13 @@ void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void 
         }
     }
     return dst;
-#endif /* HAVE_MEMCPY */
+#endif // HAVE_MEMCPY
 }
 
 /* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls.
    We will provide our own implementation if we're not building with a C runtime. */
 #ifndef HAVE_LIBC
-/* NOLINTNEXTLINE(readability-redundant-declaration) */
+// NOLINTNEXTLINE(readability-redundant-declaration)
 extern void *memcpy(void *dst, const void *src, size_t len);
 #if defined(_MSC_VER) && !defined(__INTEL_LLVM_COMPILER)
 #pragma intrinsic(memcpy)
@@ -93,9 +93,9 @@ extern void *memcpy(void *dst, const void *src, size_t len);
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma function(memcpy)
 #endif
-/* NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) */
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 void *memcpy(void *dst, const void *src, size_t len)
 {
     return SDL_memcpy(dst, src, len);
 }
-#endif /* !HAVE_LIBC */
+#endif // !HAVE_LIBC

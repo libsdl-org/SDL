@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_NGAGE
 
-/* N-Gage thread management routines for SDL */
+// N-Gage thread management routines for SDL
 
 #include <e32std.h>
 
@@ -57,7 +57,9 @@ int CreateUnique(TInt (*aFunc)(const TDesC &aName, TAny *, TAny *), TAny *aPtr1,
     return status;
 }
 
-int SDL_SYS_CreateThread(SDL_Thread *thread)
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                          SDL_FunctionPointer pfnBeginThread,
+                          SDL_FunctionPointer pfnEndThread)
 {
     RThread rthread;
 
@@ -70,7 +72,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
 
     rthread.Resume();
     thread->handle = rthread.Handle();
-    return 0;
+    return true;
 }
 
 void SDL_SYS_SetupThread(const char *name)
@@ -85,9 +87,9 @@ SDL_ThreadID SDL_GetCurrentThreadID(void)
     return id;
 }
 
-int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-    return 0;
+    return true;
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)
@@ -107,4 +109,4 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
     return;
 }
 
-#endif /* SDL_THREAD_NGAGE */
+#endif // SDL_THREAD_NGAGE

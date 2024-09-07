@@ -41,13 +41,13 @@ struct
     float range;
 } force_info[SCE_TOUCH_PORT_MAX_NUM];
 
-char *disableFrontPoll = NULL;
-char *disableBackPoll = NULL;
+static bool disableFrontPoll;
+static bool disableBackPoll;
 
 void VITA_InitTouch(void)
 {
-    disableFrontPoll = SDL_getenv("VITA_DISABLE_TOUCH_FRONT");
-    disableBackPoll = SDL_getenv("VITA_DISABLE_TOUCH_BACK");
+    disableFrontPoll = !SDL_GetHintBoolean(SDL_HINT_VITA_ENABLE_FRONT_TOUCH, true);
+    disableBackPoll = !SDL_GetHintBoolean(SDL_HINT_VITA_ENABLE_BACK_TOUCH, true);
 
     sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
     sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, SCE_TOUCH_SAMPLING_STATE_START);
@@ -92,7 +92,7 @@ void VITA_PollTouch(void)
     SDL_memcpy(touch_old, touch, sizeof(touch_old));
 
     for (port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
-        /** Skip polling of Touch Device if environment variable is set **/
+        /** Skip polling of Touch Device if hint is set **/
         if (((port == 0) && disableFrontPoll) || ((port == 1) && disableBackPoll)) {
             continue;
         }
@@ -125,7 +125,7 @@ void VITA_PollTouch(void)
                 // Skip if finger was already previously down
                 if (!finger_down) {
                     // Send an initial touch
-                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, SDL_TRUE, x, y, force);
+                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, true, x, y, force);
                 }
 
                 // Always send the motion
@@ -151,7 +151,7 @@ void VITA_PollTouch(void)
                     VITA_ConvertTouchXYToSDLXY(&x, &y, touch_old[port].report[i].x, touch_old[port].report[i].y, port);
                     finger_id = (SDL_FingerID)(touch_old[port].report[i].id + 1);
                     // Finger released from screen
-                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, SDL_FALSE, x, y, force);
+                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, false, x, y, force);
                 }
             }
         }
@@ -173,14 +173,14 @@ void VITA_ConvertTouchXYToSDLXY(float *sdl_x, float *sdl_y, int vita_x, int vita
         y = (vita_y - area_info[port].y) / (area_info[port].h - 1);
     }
 
-    x = SDL_max(x, 0.0);
-    x = SDL_min(x, 1.0);
+    x = SDL_max(x, 0.0f);
+    x = SDL_min(x, 1.0f);
 
-    y = SDL_max(y, 0.0);
-    y = SDL_min(y, 1.0);
+    y = SDL_max(y, 0.0f);
+    y = SDL_min(y, 1.0f);
 
     *sdl_x = x;
     *sdl_y = y;
 }
 
-#endif /* SDL_VIDEO_DRIVER_VITA */
+#endif // SDL_VIDEO_DRIVER_VITA

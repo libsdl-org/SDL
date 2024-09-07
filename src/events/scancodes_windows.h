@@ -24,7 +24,7 @@
  * Windows scancode to SDL scancode mapping table
  * https://learn.microsoft.com/windows/win32/inputdev/about-keyboard-input#scan-codes */
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 static const SDL_Scancode windows_scancode_table[] = {
     /*0x00*/ SDL_SCANCODE_UNKNOWN,
     /*0x01*/ SDL_SCANCODE_ESCAPE,
@@ -164,22 +164,22 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe007*/ SDL_SCANCODE_UNKNOWN,
     /*0xe008*/ SDL_SCANCODE_UNKNOWN,
     /*0xe009*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe00a*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe00a*/ SDL_SCANCODE_PASTE,
     /*0xe00b*/ SDL_SCANCODE_UNKNOWN,
     /*0xe00c*/ SDL_SCANCODE_UNKNOWN,
     /*0xe00d*/ SDL_SCANCODE_UNKNOWN,
     /*0xe00e*/ SDL_SCANCODE_UNKNOWN,
     /*0xe00f*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe010*/ SDL_SCANCODE_AUDIOPREV,
+    /*0xe010*/ SDL_SCANCODE_MEDIA_PREVIOUS_TRACK,
     /*0xe011*/ SDL_SCANCODE_UNKNOWN,
     /*0xe012*/ SDL_SCANCODE_UNKNOWN,
     /*0xe013*/ SDL_SCANCODE_UNKNOWN,
     /*0xe014*/ SDL_SCANCODE_UNKNOWN,
     /*0xe015*/ SDL_SCANCODE_UNKNOWN,
     /*0xe016*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe017*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe018*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe019*/ SDL_SCANCODE_AUDIONEXT,
+    /*0xe017*/ SDL_SCANCODE_CUT,
+    /*0xe018*/ SDL_SCANCODE_COPY,
+    /*0xe019*/ SDL_SCANCODE_MEDIA_NEXT_TRACK,
     /*0xe01a*/ SDL_SCANCODE_UNKNOWN,
     /*0xe01b*/ SDL_SCANCODE_UNKNOWN,
     /*0xe01c*/ SDL_SCANCODE_KP_ENTER,
@@ -187,10 +187,10 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe01e*/ SDL_SCANCODE_UNKNOWN,
     /*0xe01f*/ SDL_SCANCODE_UNKNOWN,
     /*0xe020*/ SDL_SCANCODE_MUTE,
-    /*0xe021*/ SDL_SCANCODE_CALCULATOR,
-    /*0xe022*/ SDL_SCANCODE_AUDIOPLAY,
+    /*0xe021*/ SDL_SCANCODE_UNKNOWN, // LaunchApp2
+    /*0xe022*/ SDL_SCANCODE_MEDIA_PLAY_PAUSE,
     /*0xe023*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe024*/ SDL_SCANCODE_AUDIOSTOP,
+    /*0xe024*/ SDL_SCANCODE_MEDIA_STOP,
     /*0xe025*/ SDL_SCANCODE_UNKNOWN,
     /*0xe026*/ SDL_SCANCODE_UNKNOWN,
     /*0xe027*/ SDL_SCANCODE_UNKNOWN,
@@ -198,7 +198,7 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe029*/ SDL_SCANCODE_UNKNOWN,
     /*0xe02a*/ SDL_SCANCODE_UNKNOWN,
     /*0xe02b*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe02c*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe02c*/ SDL_SCANCODE_MEDIA_EJECT,
     /*0xe02d*/ SDL_SCANCODE_UNKNOWN,
     /*0xe02e*/ SDL_SCANCODE_VOLUMEDOWN,
     /*0xe02f*/ SDL_SCANCODE_UNKNOWN,
@@ -213,7 +213,7 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe038*/ SDL_SCANCODE_RALT,
     /*0xe039*/ SDL_SCANCODE_UNKNOWN,
     /*0xe03a*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe03b*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe03b*/ SDL_SCANCODE_HELP,
     /*0xe03c*/ SDL_SCANCODE_UNKNOWN,
     /*0xe03d*/ SDL_SCANCODE_UNKNOWN,
     /*0xe03e*/ SDL_SCANCODE_UNKNOWN,
@@ -261,9 +261,9 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe068*/ SDL_SCANCODE_AC_STOP,
     /*0xe069*/ SDL_SCANCODE_AC_FORWARD,
     /*0xe06a*/ SDL_SCANCODE_AC_BACK,
-    /*0xe06b*/ SDL_SCANCODE_COMPUTER,
-    /*0xe06c*/ SDL_SCANCODE_MAIL,
-    /*0xe06d*/ SDL_SCANCODE_MEDIASELECT,
+    /*0xe06b*/ SDL_SCANCODE_UNKNOWN,    // LaunchApp1
+    /*0xe06c*/ SDL_SCANCODE_UNKNOWN,    // LaunchMail
+    /*0xe06d*/ SDL_SCANCODE_MEDIA_SELECT,
     /*0xe06e*/ SDL_SCANCODE_UNKNOWN,
     /*0xe06f*/ SDL_SCANCODE_UNKNOWN,
     /*0xe070*/ SDL_SCANCODE_UNKNOWN,
@@ -283,4 +283,4 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe07e*/ SDL_SCANCODE_UNKNOWN,
     /*0xe07f*/ SDL_SCANCODE_UNKNOWN
 };
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on

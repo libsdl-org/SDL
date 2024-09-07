@@ -87,7 +87,7 @@ int main(int argc, char **argv)
     state->window_flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE;
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     }
 
     for (i = 0; i < state->num_windows; i++) {
-        if (SDL_SetWindowHitTest(state->windows[i], hitTest, NULL) == -1) {
+        if (!SDL_SetWindowHitTest(state->windows[i], hitTest, NULL)) {
             SDL_Log("Enabling hit-testing failed for window %d: %s", i, SDL_GetError());
             SDL_Quit();
             return 1;
@@ -137,9 +137,9 @@ int main(int argc, char **argv)
                 break;
 
             case SDL_EVENT_KEY_DOWN:
-                if (e.key.keysym.sym == SDLK_ESCAPE) {
+                if (e.key.key == SDLK_ESCAPE) {
                     done = 1;
-                } else if (e.key.keysym.sym == SDLK_x) {
+                } else if (e.key.key == SDLK_X) {
                     if (!areas) {
                         areas = drag_areas;
                         numareas = SDL_arraysize(drag_areas);

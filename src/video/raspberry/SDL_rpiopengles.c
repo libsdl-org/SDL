@@ -25,7 +25,7 @@
 #include "SDL_rpivideo.h"
 #include "SDL_rpiopengles.h"
 
-/* EGL implementation of SDL OpenGL support */
+// EGL implementation of SDL OpenGL support
 
 void RPI_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor)
 {
@@ -34,18 +34,18 @@ void RPI_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major
     *minor = 0;
 }
 
-int RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
 }
 
-int RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *wdata = window->driverdata;
+    SDL_WindowData *wdata = window->internal;
 
     if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, wdata->egl_surface))) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed.");
-        return 0;
+        return true;
     }
 
     /* Wait immediately for vsync (as if we only had two buffers), for low input-lag scenarios.
@@ -56,10 +56,10 @@ int RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_UnlockMutex(wdata->vsync_cond_mutex);
     }
 
-    return 0;
+    return true;
 }
 
 SDL_EGL_CreateContext_impl(RPI)
-    SDL_EGL_MakeCurrent_impl(RPI)
+SDL_EGL_MakeCurrent_impl(RPI)
 
-#endif /* SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL

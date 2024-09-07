@@ -24,8 +24,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_VITA
 
-extern int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
+extern bool VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-#endif /* SDL_VIDEO_DRIVER_VITA */
+#endif // SDL_VIDEO_DRIVER_VITA
 
-#endif /* SDL_vitamessagebox_h_ */
+#endif // SDL_vitamessagebox_h_

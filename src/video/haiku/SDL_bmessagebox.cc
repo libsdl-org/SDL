@@ -25,7 +25,7 @@
 #ifdef SDL_VIDEO_DRIVER_HAIKU
 
 
-/* For application signature. */
+// For application signature.
 #include "../../core/haiku/SDL_BeApp.h"
 
 #include <Alert.h>
@@ -154,7 +154,7 @@ class HAIKU_SDL_MessageBox : public BAlert
 		(aMessageBoxData->message[0]) ?
 			SetMessageText(aMessageBoxData->message) : SetMessageText(HAIKU_SDL_DefMessage);
 
-		SetType(ConvertMessageBoxType(static_cast<SDL_MessageBoxFlags>(aMessageBoxData->flags)));
+		SetType(ConvertMessageBoxType(aMessageBoxData->flags));
 	}
 
 	void
@@ -264,23 +264,12 @@ class HAIKU_SDL_MessageBox : public BAlert
 
 		size_t countButtons = fButtons.size();
 		for (size_t i = 0; i < countButtons; ++i) {
-			switch (fButtons[i]->flags)
-			{
-				case SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT:
-				{
-					fCloseButton = static_cast<int>(i);
-					break;
-				}
-				case SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT:
-				{
-					fDefaultButton = static_cast<int>(i);
-					break;
-				}
-				default:
-				{
-					break;
-				}
-			}
+			if (fButtons[i]->flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
+                fCloseButton = static_cast<int>(i);
+            }
+			if (fButtons[i]->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
+                fDefaultButton = static_cast<int>(i);
+            }
 			AddButton(fButtons[i]->text);
 		}
 
@@ -346,7 +335,7 @@ protected:
 extern "C" {
 #endif
 
-int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+bool HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
 	// Initialize button by closed or error value first.
 	*buttonID = G_CLOSE_BUTTON_ID;
@@ -384,11 +373,11 @@ int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID
 	// Initialize button by real pushed value then.
 	*buttonID = pushedButton;
 
-	return 0;
+	return true;
 }
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif // SDL_VIDEO_DRIVER_HAIKU

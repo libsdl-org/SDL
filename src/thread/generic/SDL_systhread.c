@@ -20,17 +20,13 @@
 */
 #include "SDL_internal.h"
 
-/* Thread management routines for SDL */
+// Thread management routines for SDL
 
 #include "../SDL_systhread.h"
 
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-int SDL_SYS_CreateThread(SDL_Thread *thread,
-                         pfnSDL_CurrentBeginThread pfnBeginThread,
-                         pfnSDL_CurrentEndThread pfnEndThread)
-#else
-int SDL_SYS_CreateThread(SDL_Thread *thread)
-#endif /* SDL_PASSED_BEGINTHREAD_ENDTHREAD */
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                          SDL_FunctionPointer pfnBeginThread,
+                          SDL_FunctionPointer pfnEndThread)
 {
     return SDL_SetError("Threads are not supported on this platform");
 }
@@ -45,9 +41,9 @@ SDL_ThreadID SDL_GetCurrentThreadID(void)
     return 0;
 }
 
-int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-    return 0;
+    return true;
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)

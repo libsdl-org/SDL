@@ -68,6 +68,7 @@ static SDL_GLContext *context = NULL;
 static int depth = 16;
 static SDL_bool suspend_when_occluded;
 static GLES2_Context ctx;
+static shader_data *datas;
 
 static int LoadContext(GLES2_Context *data)
 {
@@ -100,10 +101,11 @@ quit(int rc)
 {
     int i;
 
+    SDL_free(datas);
     if (context) {
         for (i = 0; i < state->num_windows; i++) {
             if (context[i]) {
-                SDL_GL_DeleteContext(context[i]);
+                SDL_GL_DestroyContext(context[i]);
             }
         }
 
@@ -498,7 +500,7 @@ Render(unsigned int width, unsigned int height, shader_data *data)
     multiply_matrix(matrix_rotate, matrix_modelview, matrix_modelview);
 
     /* Pull the camera back from the cube */
-    matrix_modelview[14] -= 2.5;
+    matrix_modelview[14] -= 2.5f;
 
     perspective_matrix(45.0f, (float)width / height, 0.01f, 100.0f, matrix_perspective);
     multiply_matrix(matrix_perspective, matrix_modelview, matrix_mvp);
@@ -535,7 +537,6 @@ Render(unsigned int width, unsigned int height, shader_data *data)
 
 static int done;
 static Uint32 frames;
-static shader_data *datas;
 #ifndef SDL_PLATFORM_EMSCRIPTEN
 static thread_data *threads;
 #endif
@@ -543,14 +544,13 @@ static thread_data *threads;
 static void
 render_window(int index)
 {
-    int w, h, status;
+    int w, h;
 
     if (!state->windows[index]) {
         return;
     }
 
-    status = SDL_GL_MakeCurrent(state->windows[index], context[index]);
-    if (status) {
+    if (!SDL_GL_MakeCurrent(state->windows[index], context[index])) {
         SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
         return;
     }
@@ -609,7 +609,7 @@ loop_threaded(void)
             tdata = GetThreadDataForWindow(event.window.windowID);
             if (tdata) {
                 if (SDL_AtomicSet(&tdata->suspended, WAIT_STATE_GO) == WAIT_STATE_WAITING_ON_SEM) {
-                    SDL_PostSemaphore(tdata->suspend_sem);
+                    SDL_SignalSemaphore(tdata->suspend_sem);
                 }
             }
         } else if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
@@ -619,7 +619,7 @@ loop_threaded(void)
                 tdata->done = 1;
                 if (tdata->thread) {
                     SDL_AtomicSet(&tdata->suspended, WAIT_STATE_GO);
-                    SDL_PostSemaphore(tdata->suspend_sem);
+                    SDL_SignalSemaphore(tdata->suspend_sem);
                     SDL_WaitThread(tdata->thread, NULL);
                     tdata->thread = NULL;
                     SDL_DestroySemaphore(tdata->suspend_sem);
@@ -672,7 +672,6 @@ int main(int argc, char *argv[])
     int i;
     const SDL_DisplayMode *mode;
     Uint64 then, now;
-    int status;
     shader_data *data;
 
     /* Initialize parameters */
@@ -771,11 +770,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (state->render_flags & SDL_RENDERER_PRESENTVSYNC) {
-        SDL_GL_SetSwapInterval(1);
-    } else {
-        SDL_GL_SetSwapInterval(0);
-    }
+    SDL_GL_SetSwapInterval(state->render_vsync);
 
     mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
     SDL_Log("Threaded  : %s\n", threaded ? "yes" : "no");
@@ -789,44 +784,38 @@ int main(int argc, char *argv[])
     SDL_Log("Extensions : %s\n", ctx.glGetString(GL_EXTENSIONS));
     SDL_Log("\n");
 
-    status = SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
-    if (!status) {
+    if (SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value)) {
         SDL_Log("SDL_GL_RED_SIZE: requested %d, got %d\n", 5, value);
     } else {
         SDL_Log("Failed to get SDL_GL_RED_SIZE: %s\n",
                 SDL_GetError());
     }
-    status = SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
-    if (!status) {
+    if (SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value)) {
         SDL_Log("SDL_GL_GREEN_SIZE: requested %d, got %d\n", 5, value);
     } else {
         SDL_Log("Failed to get SDL_GL_GREEN_SIZE: %s\n",
                 SDL_GetError());
     }
-    status = SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
-    if (!status) {
+    if (SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value)) {
         SDL_Log("SDL_GL_BLUE_SIZE: requested %d, got %d\n", 5, value);
     } else {
         SDL_Log("Failed to get SDL_GL_BLUE_SIZE: %s\n",
                 SDL_GetError());
     }
-    status = SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
-    if (!status) {
+    if (SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value)) {
         SDL_Log("SDL_GL_DEPTH_SIZE: requested %d, got %d\n", depth, value);
     } else {
         SDL_Log("Failed to get SDL_GL_DEPTH_SIZE: %s\n",
                 SDL_GetError());
     }
     if (fsaa) {
-        status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
-        if (!status) {
+        if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value)) {
             SDL_Log("SDL_GL_MULTISAMPLEBUFFERS: requested 1, got %d\n", value);
         } else {
             SDL_Log("Failed to get SDL_GL_MULTISAMPLEBUFFERS: %s\n",
                     SDL_GetError());
         }
-        status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &value);
-        if (!status) {
+        if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &value)) {
             SDL_Log("SDL_GL_MULTISAMPLESAMPLES: requested %d, got %d\n", fsaa,
                     value);
         } else {
@@ -835,8 +824,7 @@ int main(int argc, char *argv[])
         }
     }
     if (accel) {
-        status = SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &value);
-        if (!status) {
+        if (SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &value)) {
             SDL_Log("SDL_GL_ACCELERATED_VISUAL: requested 1, got %d\n", value);
         } else {
             SDL_Log("Failed to get SDL_GL_ACCELERATED_VISUAL: %s\n",
@@ -850,8 +838,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < state->num_windows; ++i) {
 
         int w, h;
-        status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
-        if (status) {
+        if (!SDL_GL_MakeCurrent(state->windows[i], context[i])) {
             SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
 
             /* Continue for next window */
@@ -938,6 +925,7 @@ int main(int argc, char *argv[])
                 SDL_WaitThread(threads[i].thread, NULL);
             }
         }
+        SDL_free(threads);
     } else {
         while (!done) {
             loop();

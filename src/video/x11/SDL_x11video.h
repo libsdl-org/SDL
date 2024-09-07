@@ -36,10 +36,11 @@
 #include "SDL_x11modes.h"
 #include "SDL_x11mouse.h"
 #include "SDL_x11opengl.h"
+#include "SDL_x11settings.h"
 #include "SDL_x11window.h"
 #include "SDL_x11vulkan.h"
 
-/* Private display data */
+// Private display data
 
 struct SDL_VideoData
 {
@@ -57,12 +58,14 @@ struct SDL_VideoData
     SDLX11_ClipboardData primary_selection;
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_Window *active_cursor_confined_window;
-#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+#endif // SDL_VIDEO_DRIVER_X11_XFIXES
+    Window xsettings_window;
+    SDLX11_SettingsData xsettings_data;
 
-    /* This is true for ICCCM2.0-compliant window managers */
-    SDL_bool net_wm;
+    // This is true for ICCCM2.0-compliant window managers
+    bool net_wm;
 
-    /* Useful atoms */
+    // Useful atoms
     Atom WM_PROTOCOLS;
     Atom WM_DELETE_WINDOW;
     Atom WM_TAKE_FOCUS;
@@ -101,44 +104,53 @@ struct SDL_VideoData
     Atom XdndSelection;
     Atom XKLAVIER_STATE;
 
-    SDL_Scancode key_layout[256];
-    SDL_bool selection_waiting;
+    // Pen atoms (these have names that don't map well to C symbols)
+    Atom pen_atom_device_product_id;
+    Atom pen_atom_abs_pressure;
+    Atom pen_atom_abs_tilt_x;
+    Atom pen_atom_abs_tilt_y;
+    Atom pen_atom_wacom_serial_ids;
+    Atom pen_atom_wacom_tool_type;
 
-    SDL_bool broken_pointer_grab; /* true if XGrabPointer seems unreliable. */
+    SDL_Scancode key_layout[256];
+    bool selection_waiting;
+    bool selection_incr_waiting;
+
+    bool broken_pointer_grab; // true if XGrabPointer seems unreliable.
 
     Uint64 last_mode_change_deadline;
 
-    SDL_bool global_mouse_changed;
+    bool global_mouse_changed;
     SDL_Point global_mouse_position;
     Uint32 global_mouse_buttons;
 
     SDL_XInput2DeviceInfo *mouse_device_info;
-    SDL_bool xinput_hierarchy_changed;
+    bool xinput_hierarchy_changed;
 
     int xrandr_event_base;
 
-#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
     XkbDescPtr xkb;
 #endif
     int xkb_event;
+    unsigned int xkb_group;
 
     KeyCode filter_code;
     Time filter_time;
 
 #ifdef SDL_VIDEO_VULKAN
-    /* Vulkan variables only valid if _this->vulkan_config.loader_handle is not NULL */
+    // Vulkan variables only valid if _this->vulkan_config.loader_handle is not NULL
     void *vulkan_xlib_xcb_library;
     PFN_XGetXCBConnection vulkan_XGetXCBConnection;
 #endif
 
-    /* Used to interact with the on-screen keyboard */
-    SDL_bool is_steam_deck;
-    SDL_bool steam_keyboard_open;
+    // Used to interact with the on-screen keyboard
+    bool is_steam_deck;
+    bool steam_keyboard_open;
 
-    SDL_bool is_xwayland;
-
+    bool is_xwayland;
 };
 
-extern SDL_bool X11_UseDirectColorVisuals(void);
+extern bool X11_UseDirectColorVisuals(void);
 
-#endif /* SDL_x11video_h_ */
+#endif // SDL_x11video_h_

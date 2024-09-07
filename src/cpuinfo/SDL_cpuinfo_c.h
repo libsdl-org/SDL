@@ -24,4 +24,4 @@
 
 extern void SDL_QuitCPUInfo(void);
 
-#endif /* SDL_cpuinfo_c_h_ */
+#endif // SDL_cpuinfo_c_h_

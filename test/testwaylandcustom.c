@@ -10,9 +10,6 @@
   freely.
 */
 
-#include <stdlib.h>
-#include <time.h>
-
 #include <SDL3/SDL.h>
 #include <wayland-client.h>
 #include <xdg-shell-client-protocol.h>
@@ -41,7 +38,7 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
         surface = SDL_LoadBMP_IO(src, SDL_TRUE);
         if (surface) {
             /* Treat white as transparent */
-            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 255, 255, 255));
+            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapSurfaceRGB(surface, 255, 255, 255));
 
             texture = SDL_CreateTextureFromSurface(r, surface);
             *w = surface->w;
@@ -99,17 +96,16 @@ static int InitSprites(void)
         return -1;
     }
 
-    srand((unsigned int)time(NULL));
     for (int i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = (float)(rand() % (WINDOW_WIDTH - sprite_w));
-        positions[i].y = (float)(rand() % (WINDOW_HEIGHT - sprite_h));
+        positions[i].x = (float)SDL_rand(WINDOW_WIDTH - sprite_w);
+        positions[i].y = (float)SDL_rand(WINDOW_HEIGHT - sprite_h);
         positions[i].w = (float)sprite_w;
         positions[i].h = (float)sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
-        while (!velocities[i].x && !velocities[i].y) {
-            velocities[i].x = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
-            velocities[i].y = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+        while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
+            velocities[i].x = (float)(SDL_rand(MAX_SPEED * 2 + 1) - MAX_SPEED);
+            velocities[i].y = (float)(SDL_rand(MAX_SPEED * 2 + 1) - MAX_SPEED);
         }
     }
 
@@ -198,7 +194,7 @@ int main(int argc, char **argv)
     int ret = -1;
     SDL_PropertiesID props;
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         return -1;
     }
 
@@ -224,14 +220,14 @@ int main(int argc, char **argv)
     }
 
     /* Create the renderer */
-    renderer = SDL_CreateRenderer(window, NULL, 0);
+    renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Renderer creation failed");
         goto exit;
     }
 
     /* Get the display object and use it to create a registry object, which will enumerate the xdg_wm_base protocol. */
-    state.wl_display = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+    state.wl_display = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
     wl_registry_add_listener(state.wl_registry, &wl_registry_listener, NULL);
 
@@ -244,7 +240,7 @@ int main(int argc, char **argv)
     }
 
     /* Get the wl_surface object from the SDL_Window, and create a toplevel window with it. */
-    state.wl_surface = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+    state.wl_surface = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
 
     /* Create the xdg_surface from the wl_surface. */
     state.xdg_surface = xdg_wm_base_get_xdg_surface(state.xdg_wm_base, state.wl_surface);
@@ -264,13 +260,13 @@ int main(int argc, char **argv)
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                switch (event.key.keysym.sym) {
+                switch (event.key.key) {
                 case SDLK_ESCAPE:
                     done = 1;
                     break;
                 case SDLK_EQUALS:
                     /* Ctrl+ enlarges the window */
-                    if (event.key.keysym.mod & SDL_KMOD_CTRL) {
+                    if (event.key.mod & SDL_KMOD_CTRL) {
                         int w, h;
                         SDL_GetWindowSize(window, &w, &h);
                         SDL_SetWindowSize(window, w * 2, h * 2);
@@ -278,7 +274,7 @@ int main(int argc, char **argv)
                     break;
                 case SDLK_MINUS:
                     /* Ctrl- shrinks the window */
-                    if (event.key.keysym.mod & SDL_KMOD_CTRL) {
+                    if (event.key.mod & SDL_KMOD_CTRL) {
                         int w, h;
                         SDL_GetWindowSize(window, &w, &h);
                         SDL_SetWindowSize(window, w / 2, h / 2);

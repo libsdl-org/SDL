@@ -25,7 +25,7 @@
 #include <string.h>
 #include <psp2/apputil.h>
 
-int SDL_SYS_OpenURL(const char *url)
+bool SDL_SYS_OpenURL(const char *url)
 {
     SceAppUtilInitParam init_param;
     SceAppUtilBootParam boot_param;
@@ -37,5 +37,5 @@ int SDL_SYS_OpenURL(const char *url)
     browser_param.str = url;
     browser_param.strlen = SDL_strlen(url);
     sceAppUtilLaunchWebBrowser(&browser_param);
-    return 0;
+    return true;
 }

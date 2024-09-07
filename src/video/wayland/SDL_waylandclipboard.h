@@ -24,11 +24,11 @@
 #define SDL_waylandclipboard_h_
 
 extern const char **Wayland_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types);
-extern int Wayland_SetClipboardData(SDL_VideoDevice *_this);
+extern bool Wayland_SetClipboardData(SDL_VideoDevice *_this);
 extern void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length);
-extern SDL_bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
-extern int Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text);
+extern bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
+extern bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text);
 extern char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this);
-extern SDL_bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this);
+extern bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this);
 
-#endif /* SDL_waylandclipboard_h_ */
+#endif // SDL_waylandclipboard_h_

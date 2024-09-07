@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
 
 #include "../SDL_sysrender.h"
 
@@ -36,35 +36,35 @@
 
 #include <psp2/common_dialog.h>
 
-/* #define DEBUG_RAZOR */
+// #define DEBUG_RAZOR
 
 #ifdef DEBUG_RAZOR
 #include <psp2/sysmodule.h>
 #endif
 
-static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props);
+static bool VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props);
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event);
 
-static SDL_bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode);
+static bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode);
 
-static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
+static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
 
-static int VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect, const void *pixels, int pitch);
 
-static int VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                      const SDL_Rect *rect,
                                      const Uint8 *Yplane, int Ypitch,
                                      const Uint8 *Uplane, int Upitch,
                                      const Uint8 *Vplane, int Vpitch);
 
-static int VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                     const SDL_Rect *rect,
                                     const Uint8 *Yplane, int Ypitch,
                                     const Uint8 *UVplane, int UVpitch);
 
-static int VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                 const SDL_Rect *rect, void **pixels, int *pitch);
 
 static void VITA_GXM_UnlockTexture(SDL_Renderer *renderer,
@@ -72,52 +72,35 @@ static void VITA_GXM_UnlockTexture(SDL_Renderer *renderer,
 
 static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode);
 
-static int VITA_GXM_SetRenderTarget(SDL_Renderer *renderer,
+static bool VITA_GXM_SetRenderTarget(SDL_Renderer *renderer,
                                     SDL_Texture *texture);
 
-static int VITA_GXM_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
+static bool VITA_GXM_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
 
-static int VITA_GXM_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
+static bool VITA_GXM_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
 
-static int VITA_GXM_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count);
-static int VITA_GXM_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count);
+static bool VITA_GXM_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count);
+static bool VITA_GXM_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count);
 
-static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+static bool VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                                   const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
                                   int num_vertices, const void *indices, int num_indices, int size_indices,
                                   float scale_x, float scale_y);
 
-static int VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
+static bool VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
 
 static void VITA_GXM_InvalidateCachedState(SDL_Renderer *renderer);
 
-static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
+static bool VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
 
 static SDL_Surface *VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect);
 
-static int VITA_GXM_RenderPresent(SDL_Renderer *renderer);
+static bool VITA_GXM_RenderPresent(SDL_Renderer *renderer);
 static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture);
 static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer);
 
 SDL_RenderDriver VITA_GXM_RenderDriver = {
-    .CreateRenderer = VITA_GXM_CreateRenderer,
-    .info = {
-        .name = "VITA gxm",
-        .flags = SDL_RENDERER_PRESENTVSYNC,
-        .num_texture_formats = 8,
-        .texture_formats = {
-            [0] = SDL_PIXELFORMAT_ABGR8888,
-            [1] = SDL_PIXELFORMAT_ARGB8888,
-            [2] = SDL_PIXELFORMAT_RGB565,
-            [3] = SDL_PIXELFORMAT_BGR565,
-            [4] = SDL_PIXELFORMAT_YV12,
-            [5] = SDL_PIXELFORMAT_IYUV,
-            [6] = SDL_PIXELFORMAT_NV12,
-            [7] = SDL_PIXELFORMAT_NV21,
-        },
-        .max_texture_width = 4096,
-        .max_texture_height = 4096,
-    }
+    VITA_GXM_CreateRenderer, "VITA gxm"
 };
 
 static int PixelFormatToVITAFMT(Uint32 format)
@@ -151,7 +134,7 @@ static int PixelFormatToVITAFMT(Uint32 format)
 
 void StartDrawing(SDL_Renderer *renderer)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     if (data->drawing) {
         return;
     }
@@ -160,7 +143,7 @@ void StartDrawing(SDL_Renderer *renderer)
     data->drawstate.vertex_program = NULL;
     data->drawstate.fragment_program = NULL;
     data->drawstate.last_command = -1;
-    data->drawstate.viewport_dirty = SDL_TRUE;
+    data->drawstate.viewport_dirty = true;
 
     // reset blend mode
     //    data->currentBlendMode = SDL_BLENDMODE_BLEND;
@@ -179,7 +162,7 @@ void StartDrawing(SDL_Renderer *renderer)
             &data->displaySurface[data->backBufferIndex],
             &data->depthSurface);
     } else {
-        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)renderer->target->driverdata;
+        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)renderer->target->internal;
 
         sceGxmBeginScene(
             data->gxm_context,
@@ -194,23 +177,21 @@ void StartDrawing(SDL_Renderer *renderer)
 
     //    unset_clip_rectangle(data);
 
-    data->drawing = SDL_TRUE;
+    data->drawing = true;
 }
 
-static int VITA_GXM_SetVSync(SDL_Renderer *renderer, const int vsync)
+static bool VITA_GXM_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
-    VITA_GXM_RenderData *data = renderer->driverdata;
+    VITA_GXM_RenderData *data = renderer->internal;
     if (vsync) {
-        data->displayData.wait_vblank = SDL_TRUE;
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+        data->displayData.wait_vblank = true;
     } else {
-        data->displayData.wait_vblank = SDL_FALSE;
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+        data->displayData.wait_vblank = false;
     }
-    return 0;
+    return true;
 }
 
-static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
+static bool VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     VITA_GXM_RenderData *data;
 
@@ -222,7 +203,7 @@ static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, S
 
     data = (VITA_GXM_RenderData *)SDL_calloc(1, sizeof(VITA_GXM_RenderData));
     if (!data) {
-        return -1;
+        return false;
     }
 
     renderer->WindowEvent = VITA_GXM_WindowEvent;
@@ -250,19 +231,22 @@ static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, S
     renderer->DestroyRenderer = VITA_GXM_DestroyRenderer;
     renderer->SetVSync = VITA_GXM_SetVSync;
 
-    renderer->info = VITA_GXM_RenderDriver.info;
-    renderer->driverdata = data;
+    renderer->internal = data;
     VITA_GXM_InvalidateCachedState(renderer);
     renderer->window = window;
 
-    data->initialized = SDL_TRUE;
+    renderer->name = VITA_GXM_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGB565);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGR565);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 4096);
 
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        data->displayData.wait_vblank = SDL_TRUE;
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    } else {
-        data->displayData.wait_vblank = SDL_FALSE;
-    }
+    data->initialized = true;
 
 #ifdef DEBUG_RAZOR
     sceSysmoduleLoadModule(SCE_SYSMODULE_RAZOR_HUD);
@@ -270,30 +254,29 @@ static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, S
 #endif
 
     if (gxm_init(renderer) != 0) {
-        SDL_free(data);
         return SDL_SetError("gxm_init failed");
     }
 
-    return 0;
+    return true;
 }
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
 }
 
-static SDL_bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
+static bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     // only for custom modes. we build all modes on init, so no custom modes, sorry
-    return SDL_FALSE;
+    return false;
 }
 
-static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
+static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)SDL_calloc(1, sizeof(VITA_GXM_TextureData));
 
     if (!vita_texture) {
-        return -1;
+        return false;
     }
 
     vita_texture->tex = create_gxm_texture(
@@ -312,7 +295,7 @@ static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, 
         return SDL_OutOfMemory();
     }
 
-    texture->driverdata = vita_texture;
+    texture->internal = vita_texture;
 
     VITA_GXM_SetTextureScaleMode(renderer, texture, texture->scaleMode);
 
@@ -321,12 +304,12 @@ static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, 
     vita_texture->nv12 = ((texture->format == SDL_PIXELFORMAT_NV12) || (texture->format == SDL_PIXELFORMAT_NV21));
 #endif
 
-    return 0;
+    return true;
 }
 
 static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     int ret = 0;
     if (SDL_ISCOLORSPACE_MATRIX_BT601(texture->colorspace)) {
         if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
@@ -349,10 +332,10 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 }
 
-static int VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect, const void *pixels, int pitch)
 {
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->driverdata;
+    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
     Uint8 *dst;
     int row, length, dpitch;
 
@@ -437,11 +420,11 @@ static int VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 #endif
 
-    return 0;
+    return true;
 }
 
 #if SDL_HAVE_YUV
-static int VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                      const SDL_Rect *rect,
                                      const Uint8 *Yplane, int Ypitch,
                                      const Uint8 *Uplane, int Upitch,
@@ -473,7 +456,7 @@ static int VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *textur
     {
         void *Udst;
         void *Vdst;
-        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->driverdata;
+        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
         int uv_pitch = (dpitch + 1) / 2;
 
         // skip Y plane
@@ -512,10 +495,10 @@ static int VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *textur
         }
     }
 
-    return 0;
+    return true;
 }
 
-static int VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                     const SDL_Rect *rect,
                                     const Uint8 *Yplane, int Ypitch,
                                     const Uint8 *UVplane, int UVpitch)
@@ -545,7 +528,7 @@ static int VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture
     // UV plane
     {
         void *UVdst;
-        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->driverdata;
+        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
         int uv_pitch = 2 * ((dpitch + 1) / 2);
 
         // skip Y plane
@@ -567,16 +550,16 @@ static int VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture
         }
     }
 
-    return 0;
+    return true;
 }
 
 #endif
 
-static int VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+static bool VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                 const SDL_Rect *rect, void **pixels, int *pitch)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
+    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
 
     *pixels =
         (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (rect->y * vita_texture->pitch) + rect->x * SDL_BYTESPERPIXEL(texture->format));
@@ -587,7 +570,7 @@ static int VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         sceGxmFinish(data->gxm_context);
     }
 
-    return 0;
+    return true;
 }
 
 static void VITA_GXM_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -599,7 +582,7 @@ static void VITA_GXM_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->driverdata;
+    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
 
     /*
      set texture filtering according to scaleMode
@@ -616,9 +599,9 @@ static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *te
     return;
 }
 
-static int VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
+static bool VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    return 0;
+    return true;
 }
 
 static void VITA_GXM_SetBlendMode(VITA_GXM_RenderData *data, int blendMode)
@@ -649,26 +632,26 @@ static void VITA_GXM_SetBlendMode(VITA_GXM_RenderData *data, int blendMode)
     }
 }
 
-static int VITA_GXM_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static bool VITA_GXM_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    return 0;
+    return true;
 }
 
-static int VITA_GXM_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static bool VITA_GXM_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
 
     data->drawstate.color.r = cmd->data.color.color.r * cmd->data.color.color_scale;
     data->drawstate.color.g = cmd->data.color.color.g * cmd->data.color.color_scale;
     data->drawstate.color.b = cmd->data.color.color.b * cmd->data.color.color_scale;
     data->drawstate.color.a = cmd->data.color.color.a;
 
-    return 0;
+    return true;
 }
 
-static int VITA_GXM_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
+static bool VITA_GXM_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
 
     SDL_FColor color = data->drawstate.color;
 
@@ -685,12 +668,12 @@ static int VITA_GXM_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *c
         vertex[i].color = color;
     }
 
-    return 0;
+    return true;
 }
 
-static int VITA_GXM_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
+static bool VITA_GXM_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     SDL_FColor color = data->drawstate.color;
 
     color_vertex *vertex = (color_vertex *)pool_malloc(
@@ -710,15 +693,15 @@ static int VITA_GXM_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cm
         vertex[i * 2 + 1].color = color;
     }
 
-    return 0;
+    return true;
 }
 
-static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+static bool VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                                   const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
                                   int num_vertices, const void *indices, int num_indices, int size_indices,
                                   float scale_x, float scale_y)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     int i;
     int count = indices ? num_indices : num_vertices;
     const float color_scale = cmd->data.draw.color_scale;
@@ -727,7 +710,7 @@ static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     size_indices = indices ? size_indices : 0;
 
     if (texture) {
-        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->driverdata;
+        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
         texture_vertex *vertices;
 
         vertices = (texture_vertex *)pool_malloc(
@@ -735,7 +718,7 @@ static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             count * sizeof(texture_vertex));
 
         if (!vertices) {
-            return -1;
+            return false;
         }
 
         for (i = 0; i < count; i++) {
@@ -778,7 +761,7 @@ static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             count * sizeof(color_vertex));
 
         if (!vertices) {
-            return -1;
+            return false;
         }
 
         for (i = 0; i < count; i++) {
@@ -809,15 +792,15 @@ static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd
         cmd->data.draw.first = (size_t)vertices;
     }
 
-    return 0;
+    return true;
 }
 
-static int VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static bool VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     void *color_buffer;
     SDL_FColor color;
 
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     unset_clip_rectangle(data);
 
     // set clear shaders
@@ -838,24 +821,24 @@ static int VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     sceGxmSetVertexStream(data->gxm_context, 0, data->clearVertices);
     sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, 3);
 
-    data->drawstate.cliprect_dirty = SDL_TRUE;
-    return 0;
+    data->drawstate.cliprect_dirty = true;
+    return true;
 }
 
-static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
+static bool SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SceGxmFragmentProgram *fragment_program;
     SceGxmVertexProgram *vertex_program;
-    SDL_bool matrix_updated = SDL_FALSE;
-    SDL_bool program_updated = SDL_FALSE;
+    bool matrix_updated = false;
+    bool program_updated = false;
 
     if (data->drawstate.viewport_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
 
-        float sw = viewport->w / 2.;
-        float sh = viewport->h / 2.;
+        float sw = viewport->w / 2.f;
+        float sh = viewport->h / 2.f;
 
         float x_scale = sw;
         float x_off = viewport->x + sw;
@@ -871,23 +854,23 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
                                      (float)viewport->h,
                                      (float)0,
                                      0.0f, 1.0f);
-            matrix_updated = SDL_TRUE;
+            matrix_updated = true;
         }
 
-        data->drawstate.viewport_dirty = SDL_FALSE;
+        data->drawstate.viewport_dirty = false;
     }
 
     if (data->drawstate.cliprect_enabled_dirty) {
         if (!data->drawstate.cliprect_enabled) {
             unset_clip_rectangle(data);
         }
-        data->drawstate.cliprect_enabled_dirty = SDL_FALSE;
+        data->drawstate.cliprect_enabled_dirty = false;
     }
 
     if (data->drawstate.cliprect_enabled && data->drawstate.cliprect_dirty) {
         const SDL_Rect *rect = &data->drawstate.cliprect;
         set_clip_rectangle(data, rect->x, rect->y, rect->x + rect->w, rect->y + rect->h);
-        data->drawstate.cliprect_dirty = SDL_FALSE;
+        data->drawstate.cliprect_dirty = false;
     }
 
     VITA_GXM_SetBlendMode(data, blend); // do that first, to select appropriate shaders
@@ -903,13 +886,13 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
     if (data->drawstate.vertex_program != vertex_program) {
         data->drawstate.vertex_program = vertex_program;
         sceGxmSetVertexProgram(data->gxm_context, vertex_program);
-        program_updated = SDL_TRUE;
+        program_updated = true;
     }
 
     if (data->drawstate.fragment_program != fragment_program) {
         data->drawstate.fragment_program = fragment_program;
         sceGxmSetFragmentProgram(data->gxm_context, fragment_program);
-        program_updated = SDL_TRUE;
+        program_updated = true;
     }
 
     if (program_updated || matrix_updated) {
@@ -926,26 +909,26 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
 
     if (texture != data->drawstate.texture) {
         if (texture) {
-            VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)cmd->data.draw.texture->driverdata;
+            VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)cmd->data.draw.texture->internal;
             sceGxmSetFragmentTexture(data->gxm_context, 0, &vita_texture->tex->gxm_tex);
         }
         data->drawstate.texture = texture;
     }
 
-    /* all drawing commands use this */
+    // all drawing commands use this
     sceGxmSetVertexStream(data->gxm_context, 0, (const void *)cmd->data.draw.first);
 
-    return 0;
+    return true;
 }
 
 static void VITA_GXM_InvalidateCachedState(SDL_Renderer *renderer)
 {
-    /* currently this doesn't do anything. If this needs to do something (and someone is mixing their own rendering calls in!), update this. */
+    // currently this doesn't do anything. If this needs to do something (and someone is mixing their own rendering calls in!), update this.
 }
 
-static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
+static bool VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     StartDrawing(renderer);
 
     data->drawstate.target = renderer->target;
@@ -953,8 +936,8 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
         int w, h;
         SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
         if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
-            data->drawstate.viewport_dirty = SDL_TRUE; // if the window dimensions changed, invalidate the current viewport, etc.
-            data->drawstate.cliprect_dirty = SDL_TRUE;
+            data->drawstate.viewport_dirty = true; // if the window dimensions changed, invalidate the current viewport, etc.
+            data->drawstate.cliprect_dirty = true;
             data->drawstate.drawablew = w;
             data->drawstate.drawableh = h;
         }
@@ -968,8 +951,8 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
             SDL_Rect *viewport = &data->drawstate.viewport;
             if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof(cmd->data.viewport.rect)) != 0) {
                 SDL_copyp(viewport, &cmd->data.viewport.rect);
-                data->drawstate.viewport_dirty = SDL_TRUE;
-                data->drawstate.cliprect_dirty = SDL_TRUE;
+                data->drawstate.viewport_dirty = true;
+                data->drawstate.cliprect_dirty = true;
             }
             break;
         }
@@ -979,12 +962,12 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
             const SDL_Rect *rect = &cmd->data.cliprect.rect;
             if (data->drawstate.cliprect_enabled != cmd->data.cliprect.enabled) {
                 data->drawstate.cliprect_enabled = cmd->data.cliprect.enabled;
-                data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
+                data->drawstate.cliprect_enabled_dirty = true;
             }
 
             if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof(*rect)) != 0) {
                 SDL_copyp(&data->drawstate.cliprect, rect);
-                data->drawstate.cliprect_dirty = SDL_TRUE;
+                data->drawstate.cliprect_dirty = true;
             }
             break;
         }
@@ -1000,13 +983,13 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
             break;
         }
 
-        case SDL_RENDERCMD_FILL_RECTS: /* unused */
+        case SDL_RENDERCMD_FILL_RECTS: // unused
             break;
 
-        case SDL_RENDERCMD_COPY: /* unused */
+        case SDL_RENDERCMD_COPY: // unused
             break;
 
-        case SDL_RENDERCMD_COPY_EX: /* unused */
+        case SDL_RENDERCMD_COPY_EX: // unused
             break;
 
         case SDL_RENDERCMD_DRAW_POINTS:
@@ -1023,11 +1006,11 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
             while (nextcmd) {
                 const SDL_RenderCommandType nextcmdtype = nextcmd->command;
                 if (nextcmdtype != thiscmdtype) {
-                    break; /* can't go any further on this draw call, different render command up next. */
+                    break; // can't go any further on this draw call, different render command up next.
                 } else if (nextcmd->data.draw.texture != thistexture || nextcmd->data.draw.blend != thisblend) {
-                    break; /* can't go any further on this draw call, different texture/blendmode copy up next. */
+                    break; // can't go any further on this draw call, different texture/blendmode copy up next.
                 } else {
-                    finalcmd = nextcmd; /* we can combine copy operations here. Mark this one as the furthest okay command. */
+                    finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
                     count += nextcmd->data.draw.count;
                 }
                 nextcmd = nextcmd->next;
@@ -1035,7 +1018,7 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
 
             ret = SetDrawState(data, cmd);
 
-            if (ret == 0) {
+            if (ret) {
                 int op = SCE_GXM_PRIMITIVE_TRIANGLES;
 
                 if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
@@ -1053,7 +1036,7 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
                 }
             }
 
-            cmd = finalcmd; /* skip any copy commands we just combined in here. */
+            cmd = finalcmd; // skip any copy commands we just combined in here.
             break;
         }
 
@@ -1065,9 +1048,9 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
     }
 
     sceGxmEndScene(data->gxm_context, NULL, NULL);
-    data->drawing = SDL_FALSE;
+    data->drawing = false;
 
-    return 0;
+    return true;
 }
 
 void read_pixels(int x, int y, size_t width, size_t height, void *data)
@@ -1116,10 +1099,10 @@ static SDL_Surface *VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_
     read_pixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
                 rect->w, rect->h, surface->pixels);
 
-    /* Flip the rows to be top-down if necessary */
+    // Flip the rows to be top-down if necessary
 
     if (!renderer->target) {
-        SDL_bool isstack;
+        bool isstack;
         int length = rect->w * SDL_BYTESPERPIXEL(format);
         Uint8 *src = (Uint8 *)surface->pixels + (rect->h - 1) * surface->pitch;
         Uint8 *dst = (Uint8 *)surface->pixels;
@@ -1137,9 +1120,9 @@ static SDL_Surface *VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_
     return surface;
 }
 
-static int VITA_GXM_RenderPresent(SDL_Renderer *renderer)
+static bool VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     SceCommonDialogUpdateParam updateParam;
 
     data->displayData.address = data->displayBufferData[data->backBufferIndex];
@@ -1176,13 +1159,13 @@ static int VITA_GXM_RenderPresent(SDL_Renderer *renderer)
     data->pool_index = 0;
 
     data->current_pool = (data->current_pool + 1) % 2;
-    return 0;
+    return true;
 }
 
 static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
+    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
 
     if (!data) {
         return;
@@ -1202,12 +1185,12 @@ static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture
 
     SDL_free(vita_texture);
 
-    texture->driverdata = NULL;
+    texture->internal = NULL;
 }
 
 static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     if (data) {
         if (!data->initialized) {
             return;
@@ -1215,10 +1198,10 @@ static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
 
         gxm_finish(renderer);
 
-        data->initialized = SDL_FALSE;
-        data->drawing = SDL_FALSE;
+        data->initialized = false;
+        data->drawing = false;
         SDL_free(data);
     }
 }
 
-#endif /* SDL_VIDEO_RENDER_VITA_GXM */
+#endif // SDL_VIDEO_RENDER_VITA_GXM

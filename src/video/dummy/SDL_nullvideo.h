@@ -25,4 +25,4 @@
 
 #include "../SDL_sysvideo.h"
 
-#endif /* SDL_nullvideo_h_ */
+#endif // SDL_nullvideo_h_

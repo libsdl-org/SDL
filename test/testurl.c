@@ -15,7 +15,7 @@
 static void tryOpenURL(const char *url)
 {
     SDL_Log("Opening '%s' ...", url);
-    if (SDL_OpenURL(url) == 0) {
+    if (SDL_OpenURL(url)) {
         SDL_Log("  success!");
     } else {
         SDL_Log("  failed! %s", SDL_GetError());
@@ -25,7 +25,7 @@ static void tryOpenURL(const char *url)
 int main(int argc, char **argv)
 {
     int i;
-    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("SDL_Init failed: %s\n", SDL_GetError());
         return 1;
     }

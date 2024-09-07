@@ -22,7 +22,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_HAIKU
 
-/* BWindow based clipboard implementation */
+// BWindow based clipboard implementation
 
 #include <unistd.h>
 #include <TypeConstants.h>
@@ -34,12 +34,13 @@
 extern "C" {
 #endif
 
-int HAIKU_SetClipboardText(SDL_VideoDevice *_this, const char *text) {
+bool HAIKU_SetClipboardText(SDL_VideoDevice *_this, const char *text)
+{
     BMessage *clip = NULL;
     if (be_clipboard->Lock()) {
         be_clipboard->Clear();
         if ((clip = be_clipboard->Data())) {
-            /* Presumably the string of characters is ascii-format */
+            // Presumably the string of characters is ascii-format
             ssize_t asciiLength = 0;
             for (; text[asciiLength] != 0; ++asciiLength) {}
             clip->AddData("text/plain", B_MIME_TYPE, text, asciiLength);
@@ -47,7 +48,7 @@ int HAIKU_SetClipboardText(SDL_VideoDevice *_this, const char *text) {
         }
         be_clipboard->Unlock();
     }
-    return 0;
+    return true;
 }
 
 char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
@@ -57,7 +58,7 @@ char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
     char *result;
     if (be_clipboard->Lock()) {
         if ((clip = be_clipboard->Data())) {
-            /* Presumably the string of characters is ascii-format */
+            // Presumably the string of characters is ascii-format
             clip->FindData("text/plain", B_MIME_TYPE, (const void**)&text,
                 &length);
         }
@@ -67,7 +68,7 @@ char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
     if (!text) {
         result = SDL_strdup("");
     } else {
-        /* Copy the data and pass on to SDL */
+        // Copy the data and pass on to SDL
         result = (char *)SDL_malloc((length + 1) * sizeof(char));
         SDL_strlcpy(result, text, length + 1);
     }
@@ -75,8 +76,8 @@ char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
     return result;
 }
 
-SDL_bool HAIKU_HasClipboardText(SDL_VideoDevice *_this) {
-    SDL_bool result = SDL_FALSE;
+bool HAIKU_HasClipboardText(SDL_VideoDevice *_this) {
+    bool result = false;
     char *text = HAIKU_GetClipboardText(_this);
     if (text) {
         result = (text[0] != '\0');
@@ -89,4 +90,4 @@ SDL_bool HAIKU_HasClipboardText(SDL_VideoDevice *_this) {
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif // SDL_VIDEO_DRIVER_HAIKU

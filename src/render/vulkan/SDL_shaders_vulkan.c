@@ -20,11 +20,11 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_VULKAN
+#ifdef SDL_VIDEO_RENDER_VULKAN
 
 #include "SDL_shaders_vulkan.h"
 
-/* The shaders here were compiled with compile_shaders.bat */
+// The shaders here were compiled with compile_shaders.bat
 #include "VULKAN_PixelShader_Colors.h"
 #include "VULKAN_PixelShader_Textures.h"
 #include "VULKAN_PixelShader_Advanced.h"
@@ -57,4 +57,4 @@ void VULKAN_GetPixelShader(VULKAN_Shader shader, const uint32_t **outBytecode, s
     *outSize = VULKAN_shaders[shader].ps_shader_size;
 }
 
-#endif /* SDL_VIDEO_RENDER_VULKAN */
+#endif // SDL_VIDEO_RENDER_VULKAN

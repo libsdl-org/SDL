@@ -24,26 +24,27 @@
 
 #include "../SDL_syscamera.h"
 
-static int DUMMYCAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *spec)
+static bool DUMMYCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
     return SDL_Unsupported();
 }
 
-static void DUMMYCAMERA_CloseDevice(SDL_CameraDevice *device)
+static void DUMMYCAMERA_CloseDevice(SDL_Camera *device)
 {
 }
 
-static int DUMMYCAMERA_WaitDevice(SDL_CameraDevice *device)
-{
-    return SDL_Unsupported();
-}
-
-static int DUMMYCAMERA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS)
+static bool DUMMYCAMERA_WaitDevice(SDL_Camera *device)
 {
     return SDL_Unsupported();
 }
 
-static void DUMMYCAMERA_ReleaseFrame(SDL_CameraDevice *device, SDL_Surface *frame)
+static SDL_CameraFrameResult DUMMYCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+{
+    SDL_Unsupported();
+    return SDL_CAMERA_FRAME_ERROR;
+}
+
+static void DUMMYCAMERA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 {
 }
 
@@ -51,7 +52,7 @@ static void DUMMYCAMERA_DetectDevices(void)
 {
 }
 
-static void DUMMYCAMERA_FreeDeviceHandle(SDL_CameraDevice *device)
+static void DUMMYCAMERA_FreeDeviceHandle(SDL_Camera *device)
 {
 }
 
@@ -59,7 +60,7 @@ static void DUMMYCAMERA_Deinitialize(void)
 {
 }
 
-static SDL_bool DUMMYCAMERA_Init(SDL_CameraDriverImpl *impl)
+static bool DUMMYCAMERA_Init(SDL_CameraDriverImpl *impl)
 {
     impl->DetectDevices = DUMMYCAMERA_DetectDevices;
     impl->OpenDevice = DUMMYCAMERA_OpenDevice;
@@ -70,11 +71,11 @@ static SDL_bool DUMMYCAMERA_Init(SDL_CameraDriverImpl *impl)
     impl->FreeDeviceHandle = DUMMYCAMERA_FreeDeviceHandle;
     impl->Deinitialize = DUMMYCAMERA_Deinitialize;
 
-    return SDL_TRUE;
+    return true;
 }
 
 CameraBootStrap DUMMYCAMERA_bootstrap = {
-    "dummy", "SDL dummy camera driver", DUMMYCAMERA_Init, SDL_TRUE
+    "dummy", "SDL dummy camera driver", DUMMYCAMERA_Init, true
 };
 
 #endif  // SDL_CAMERA_DRIVER_DUMMY

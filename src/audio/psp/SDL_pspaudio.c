@@ -33,16 +33,16 @@
 #include <pspaudio.h>
 #include <pspthreadman.h>
 
-static inline SDL_bool isBasicAudioConfig(const SDL_AudioSpec *spec)
+static bool isBasicAudioConfig(const SDL_AudioSpec *spec)
 {
     return spec->freq == 44100;
 }
 
-static int PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return -1;
+        return false;
     }
 
     // device only natively supports S16LSB
@@ -102,10 +102,10 @@ static int PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
         device->hidden->mixbufs[i] = &device->hidden->rawbuf[i * device->buffer_size];
     }
 
-    return 0;
+    return true;
 }
 
-static int PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     int rc;
     if (!isBasicAudioConfig(&device->spec)) {
@@ -114,12 +114,12 @@ static int PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int
     } else {
         rc = sceAudioOutputPannedBlocking(device->hidden->channel, PSP_AUDIO_VOLUME_MAX, PSP_AUDIO_VOLUME_MAX, (void *) buffer);
     }
-    return (rc == 0) ? 0 : -1;
+    return (rc == 0);
 }
 
-static int PSPAUDIO_WaitDevice(SDL_AudioDevice *device)
+static bool PSPAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
-    return 0;  // Because we block when sending audio, there's no need for this function to do anything.
+    return true;  // Because we block when sending audio, there's no need for this function to do anything.
 }
 
 static Uint8 *PSPAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -162,7 +162,7 @@ static void PSPAUDIO_ThreadInit(SDL_AudioDevice *device)
     }
 }
 
-static SDL_bool PSPAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool PSPAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     impl->OpenDevice = PSPAUDIO_OpenDevice;
     impl->PlayDevice = PSPAUDIO_PlayDevice;
@@ -170,14 +170,14 @@ static SDL_bool PSPAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->GetDeviceBuf = PSPAUDIO_GetDeviceBuf;
     impl->CloseDevice = PSPAUDIO_CloseDevice;
     impl->ThreadInit = PSPAUDIO_ThreadInit;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    //impl->HasCaptureSupport = SDL_TRUE;
-    //impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
-    return SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = true;
+    //impl->HasRecordingSupport = true;
+    //impl->OnlyHasDefaultRecordingDevice = true;
+    return true;
 }
 
 AudioBootStrap PSPAUDIO_bootstrap = {
-    "psp", "PSP audio driver", PSPAUDIO_Init, SDL_FALSE
+    "psp", "PSP audio driver", PSPAUDIO_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_PSP

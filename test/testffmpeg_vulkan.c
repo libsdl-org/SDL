@@ -91,11 +91,11 @@ struct VulkanVideoContext
 
     VulkanDeviceFeatures features;
 
-	PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
 #define VULKAN_GLOBAL_FUNCTION(name)   PFN_##name name;
 #define VULKAN_INSTANCE_FUNCTION(name) PFN_##name name;
 #define VULKAN_DEVICE_FUNCTION(name)   PFN_##name name;
-	VULKAN_FUNCTIONS()
+    VULKAN_FUNCTIONS()
 #undef VULKAN_GLOBAL_FUNCTION
 #undef VULKAN_INSTANCE_FUNCTION
 #undef VULKAN_DEVICE_FUNCTION
@@ -253,10 +253,7 @@ static int createInstance(VulkanVideoContext *context)
 
 static int createSurface(VulkanVideoContext *context, SDL_Window *window)
 {
-    if (!SDL_Vulkan_CreateSurface(window,
-                                  context->instance,
-                                  NULL,
-                                  &context->surface)) {
+    if (!SDL_Vulkan_CreateSurface(window, context->instance, NULL, &context->surface)) {
         context->surface = VK_NULL_HANDLE;
         return -1;
     }
@@ -443,7 +440,7 @@ static int findPhysicalDevice(VulkanVideoContext *context)
     if (!context->physicalDevice) {
         return SDL_SetError("Vulkan: no viable physical devices found");
     }
-	return 0;
+    return 0;
 }
 
 static void initDeviceFeatures(VulkanDeviceFeatures *features)
@@ -652,32 +649,32 @@ done:
     if (result != VK_SUCCESS) {
         return -1;
     }
-	return 0;
+    return 0;
 }
 
 VulkanVideoContext *CreateVulkanVideoContext(SDL_Window *window)
 {
-	VulkanVideoContext *context = SDL_calloc(1, sizeof(*context));
-	if (!context) {
-		return NULL;
-	}
+    VulkanVideoContext *context = SDL_calloc(1, sizeof(*context));
+    if (!context) {
+        return NULL;
+    }
     if (loadGlobalFunctions(context) < 0 ||
         createInstance(context) < 0 ||
         createSurface(context, window) < 0 ||
         findPhysicalDevice(context) < 0 ||
         createDevice(context) < 0) {
-		DestroyVulkanVideoContext(context);
-		return NULL;
-	}
-	return context;
+        DestroyVulkanVideoContext(context);
+        return NULL;
+    }
+    return context;
 }
 
 void SetupVulkanRenderProperties(VulkanVideoContext *context, SDL_PropertiesID props)
 {
-    SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER, context->instance);
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER, context->instance);
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_SURFACE_NUMBER, (Sint64)context->surface);
-    SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_PHYSICAL_DEVICE_POINTER, context->physicalDevice);
-    SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_DEVICE_POINTER, context->device);
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_PHYSICAL_DEVICE_POINTER, context->physicalDevice);
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_DEVICE_POINTER, context->device);
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER, context->presentQueueFamilyIndex);
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_GRAPHICS_QUEUE_FAMILY_INDEX_NUMBER, context->graphicsQueueFamilyIndex);
 }

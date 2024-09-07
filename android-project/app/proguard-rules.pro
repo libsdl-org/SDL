@@ -5,7 +5,7 @@
 # directive in build.gradle.
 #
 # For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+#   https://developer.android.com/build/shrink-code
 
 # Add any project specific keep options here:
 
@@ -17,69 +17,59 @@
 #}
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.SDLActivity {
-    void manualBackButton();
-    boolean setActivityTitle(java.lang.String);
-    void setWindowStyle(boolean);
-    void setOrientation(int, int, boolean, java.lang.String);
-    void minimizeWindow();
-    boolean shouldMinimizeOnFocusLoss();
-    boolean isScreenKeyboardShown();
-    boolean supportsRelativeMouse();
-    boolean setRelativeMouseEnabled(boolean);
-    boolean sendMessage(int, int);
-    android.content.Context getContext();
-    boolean isAndroidTV();
-    boolean isTablet();
-    boolean isChromebook();
-    boolean isDeXMode();
-    boolean getManifestEnvironmentVariables();
-    boolean showTextInput(int, int, int, int);
-    android.view.Surface getNativeSurface();
-    void initTouch();
-    int messageboxShowMessageBox(int, java.lang.String, java.lang.String, int[], int[], java.lang.String[], int[]);
-    boolean clipboardHasText();
+    java.lang.String nativeGetHint(java.lang.String); # Java-side doesn't use this, so it gets minified, but C-side still tries to register it
     java.lang.String clipboardGetText();
+    boolean clipboardHasText();
     void clipboardSetText(java.lang.String);
     int createCustomCursor(int[], int, int, int, int);
     void destroyCustomCursor(int);
-    boolean setCustomCursor(int);
-    boolean setSystemCursor(int);
-    void requestPermission(java.lang.String, int);
+    android.content.Context getContext();
+    boolean getManifestEnvironmentVariables();
+    android.view.Surface getNativeSurface();
+    void initTouch();
+    boolean isAndroidTV();
+    boolean isChromebook();
+    boolean isDeXMode();
+    boolean isScreenKeyboardShown();
+    boolean isTablet();
+    void manualBackButton();
+    int messageboxShowMessageBox(int, java.lang.String, java.lang.String, int[], int[], java.lang.String[], int[]);
+    void minimizeWindow();
     int openURL(java.lang.String);
+    void requestPermission(java.lang.String, int);
     int showToast(java.lang.String, int, int, int, int);
-    native java.lang.String nativeGetHint(java.lang.String);
+    boolean sendMessage(int, int);
+    boolean setActivityTitle(java.lang.String);
+    boolean setCustomCursor(int);
+    void setOrientation(int, int, boolean, java.lang.String);
+    boolean setRelativeMouseEnabled(boolean);
+    boolean setSystemCursor(int);
+    void setWindowStyle(boolean);
+    boolean shouldMinimizeOnFocusLoss();
+    boolean showTextInput(int, int, int, int, int);
+    boolean supportsRelativeMouse();
+    int openFileDescriptor(java.lang.String, java.lang.String);
+    boolean showFileDialog(java.lang.String[], boolean, boolean, int);
 }
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.HIDDeviceManager {
+    void closeDevice(int);
     boolean initialize(boolean, boolean);
     boolean openDevice(int);
-    int writeReport(int, byte[], boolean);
     boolean readReport(int, byte[], boolean);
-    void closeDevice(int);
+    int writeReport(int, byte[], boolean);
 }
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.SDLAudioManager {
     void registerAudioDeviceCallback();
     void unregisterAudioDeviceCallback();
-    int[] audioOpen(int, int, int, int, int);
-    void audioWriteFloatBuffer(float[]);
-    void audioWriteShortBuffer(short[]);
-    void audioWriteByteBuffer(byte[]);
-    int[] captureOpen(int, int, int, int, int);
-    int captureReadFloatBuffer(float[], boolean);
-    int captureReadShortBuffer(short[], boolean);
-    int captureReadByteBuffer(byte[], boolean);
-    void audioClose();
-    void captureClose();
     void audioSetThreadPriority(boolean, int);
-    int nativeSetupJNI();
-    void removeAudioDevice(boolean, int);
-    void addAudioDevice(boolean, java.lang.String, int);
 }
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.SDLControllerManager {
     void pollInputDevices();
     void pollHapticDevices();
     void hapticRun(int, float, int);
+    void hapticRumble(int, float, float, int);
     void hapticStop(int);
 }

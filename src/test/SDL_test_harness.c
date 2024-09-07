@@ -47,24 +47,41 @@
 /* Final result message format */
 #define SDLTEST_FINAL_RESULT_FORMAT COLOR_YELLOW ">>> %s '%s':" COLOR_END " %s\n"
 
-/* ! Timeout for single test case execution */
-static Uint32 SDLTest_TestCaseTimeout = 3600;
+typedef struct SDLTest_TestSuiteRunner {
+    struct
+    {
+        SDLTest_TestSuiteReference **testSuites;
+        char *runSeed;
+        Uint64 execKey;
+        char *filter;
+        int testIterations;
+        SDL_bool randomOrder;
+    } user;
 
-/**
- * Generates a random run seed string for the harness. The generated seed
- * will contain alphanumeric characters (0-9A-Z).
- *
- * Note: The returned string needs to be deallocated by the caller.
- *
- * \param length The length of the seed string to generate
- *
- * \returns The generated seed string
- */
-char *SDLTest_GenerateRunSeed(const int length)
+    SDLTest_ArgumentParser argparser;
+} SDLTest_TestSuiteRunner;
+
+/* ! Timeout for single test case execution */
+static Uint32 SDLTest_TestCaseTimeout = 3600;;
+
+static const char *common_harness_usage[] = {
+    "[--iterations #]",
+    "[--execKey #]",
+    "[--seed string]",
+    "[--filter suite_name|test_name]",
+    "[--random-order]",
+    NULL
+};
+
+char *SDLTest_GenerateRunSeed(char *buffer, int length)
 {
-    char *seed = NULL;
-    SDLTest_RandomContext randomContext;
+    Uint64 randomContext = SDL_GetPerformanceCounter();
     int counter;
+
+    if (!buffer) {
+        SDLTest_LogError("Input buffer must not be NULL.");
+        return NULL;
+    }
 
     /* Sanity check input */
     if (length <= 0) {
@@ -72,27 +89,20 @@ char *SDLTest_GenerateRunSeed(const int length)
         return NULL;
     }
 
-    /* Allocate output buffer */
-    seed = (char *)SDL_malloc((length + 1) * sizeof(char));
-    if (!seed) {
-        SDLTest_LogError("SDL_malloc for run seed output buffer failed.");
-        SDL_Error(SDL_ENOMEM);
-        return NULL;
-    }
-
     /* Generate a random string of alphanumeric characters */
-    SDLTest_RandomInitTime(&randomContext);
     for (counter = 0; counter < length; counter++) {
-        unsigned int number = SDLTest_Random(&randomContext);
-        char ch = (char)(number % (91 - 48)) + 48;
-        if (ch >= 58 && ch <= 64) {
-            ch = 65;
+        char ch;
+        int v = SDL_rand_r(&randomContext, 10 + 26);
+        if (v < 10) {
+            ch = (char)('0' + v);
+        } else {
+            ch = (char)('A' + v - 10);
         }
-        seed[counter] = ch;
+        buffer[counter] = ch;
     }
-    seed[length] = '\0';
+    buffer[length] = '\0';
 
-    return seed;
+    return buffer;
 }
 
 /**
@@ -151,7 +161,6 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
     buffer = (char *)SDL_malloc(entireStringLength);
     if (!buffer) {
         SDLTest_LogError("Failed to allocate buffer for execKey generation.");
-        SDL_Error(SDL_ENOMEM);
         return 0;
     }
     (void)SDL_snprintf(buffer, entireStringLength, "%s%s%s%d", runSeed, suiteName, testName, iteration);
@@ -192,8 +201,8 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
     }
 
     /* Init SDL timer if not initialized before */
-    if (SDL_WasInit(SDL_INIT_TIMER) == 0) {
-        if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
+    if (!SDL_WasInit(SDL_INIT_TIMER)) {
+        if (!SDL_InitSubSystem(SDL_INIT_TIMER)) {
             SDLTest_LogError("Failed to init timer subsystem: %s", SDL_GetError());
             return 0;
         }
@@ -238,6 +247,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
     int testCaseResult = 0;
     int testResult = 0;
     int fuzzerCount;
+    void *data = NULL;
 
     if (!testSuite || !testCase || !testSuite->name || !testCase->name) {
         SDLTest_LogError("Setup failure: testSuite or testCase references NULL");
@@ -260,7 +270,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
 
     /* Maybe run suite initializer function */
     if (testSuite->testSetUp) {
-        testSuite->testSetUp(0x0);
+        testSuite->testSetUp(&data);
         if (SDLTest_AssertSummaryToTestResult() == TEST_RESULT_FAILED) {
             SDLTest_LogError(SDLTEST_FINAL_RESULT_FORMAT, "Suite Setup", testSuite->name, COLOR_RED "Failed" COLOR_END);
             return TEST_RESULT_SETUP_FAILURE;
@@ -268,7 +278,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
     }
 
     /* Run test case function */
-    testCaseResult = testCase->testCase(0x0);
+    testCaseResult = testCase->testCase(data);
 
     /* Convert test execution result into harness result */
     if (testCaseResult == TEST_SKIPPED) {
@@ -287,7 +297,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
 
     /* Maybe run suite cleanup function (ignore failed asserts) */
     if (testSuite->testTearDown) {
-        testSuite->testTearDown(0x0);
+        testSuite->testTearDown(data);
     }
 
     /* Cancel timeout timer */
@@ -361,15 +371,11 @@ static float GetClock(void)
  * The filter string is matched to the suite name (full comparison) to select a single suite,
  * or if no suite matches, it is matched to the test names (full comparison) to select a single test.
  *
- * \param testSuites Suites containing the test case.
- * \param userRunSeed Custom run seed provided by user, or NULL to autogenerate one.
- * \param userExecKey Custom execution key provided by user, or 0 to autogenerate one.
- * \param filter Filter specification. NULL disables. Case sensitive.
- * \param testIterations Number of iterations to run each test case.
+ * \param runner The runner to execute.
  *
  * \returns Test run result; 0 when all tests passed, 1 if any tests failed.
  */
-int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *userRunSeed, Uint64 userExecKey, const char *filter, int testIterations)
+int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
 {
     int totalNumberOfTests = 0;
     int failedNumberOfTests = 0;
@@ -405,24 +411,24 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     int countSum = 0;
     const SDLTest_TestCaseReference **failedTests;
     char generatedSeed[16 + 1];
+    int nbSuites = 0;
+    int i = 0;
+    int *arraySuites = NULL;
 
     /* Sanitize test iterations */
-    if (testIterations < 1) {
-        testIterations = 1;
+    if (runner->user.testIterations < 1) {
+        runner->user.testIterations = 1;
     }
 
     /* Generate run see if we don't have one already */
-    if (!userRunSeed || userRunSeed[0] == '\0') {
-        char *tmp = SDLTest_GenerateRunSeed(16);
-        if (!tmp) {
+    if (!runner->user.runSeed || runner->user.runSeed[0] == '\0') {
+        runSeed = SDLTest_GenerateRunSeed(generatedSeed, 16);
+        if (!runSeed) {
             SDLTest_LogError("Generating a random seed failed");
             return 2;
         }
-        SDL_memcpy(generatedSeed, tmp, 16 + 1);
-        SDL_free(tmp);
-        runSeed = generatedSeed;
     } else {
-        runSeed = userRunSeed;
+        runSeed = runner->user.runSeed;
     }
 
     /* Reset per-run counters */
@@ -438,8 +444,8 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
     /* Count the total number of tests */
     suiteCounter = 0;
-    while (testSuites[suiteCounter]) {
-        testSuite = testSuites[suiteCounter];
+    while (runner->user.testSuites[suiteCounter]) {
+        testSuite = runner->user.testSuites[suiteCounter];
         suiteCounter++;
         testCounter = 0;
         while (testSuite->testCases[testCounter]) {
@@ -457,18 +463,17 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     failedTests = (const SDLTest_TestCaseReference **)SDL_malloc(totalNumberOfTests * sizeof(SDLTest_TestCaseReference *));
     if (!failedTests) {
         SDLTest_LogError("Unable to allocate cache for failed tests");
-        SDL_Error(SDL_ENOMEM);
         return -1;
     }
 
     /* Initialize filtering */
-    if (filter && filter[0] != '\0') {
+    if (runner->user.filter && runner->user.filter[0] != '\0') {
         /* Loop over all suites to check if we have a filter match */
         suiteCounter = 0;
-        while (testSuites[suiteCounter] && suiteFilter == 0) {
-            testSuite = testSuites[suiteCounter];
+        while (runner->user.testSuites[suiteCounter] && suiteFilter == 0) {
+            testSuite = runner->user.testSuites[suiteCounter];
             suiteCounter++;
-            if (testSuite->name && SDL_strcasecmp(filter, testSuite->name) == 0) {
+            if (testSuite->name && SDL_strcasecmp(runner->user.filter, testSuite->name) == 0) {
                 /* Matched a suite name */
                 suiteFilter = 1;
                 suiteFilterName = testSuite->name;
@@ -481,7 +486,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             while (testSuite->testCases[testCounter] && testFilter == 0) {
                 testCase = testSuite->testCases[testCounter];
                 testCounter++;
-                if (testCase->name && SDL_strcasecmp(filter, testCase->name) == 0) {
+                if (testCase->name && SDL_strcasecmp(runner->user.filter, testCase->name) == 0) {
                     /* Matched a test name */
                     suiteFilter = 1;
                     suiteFilterName = testSuite->name;
@@ -494,9 +499,9 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
         }
 
         if (suiteFilter == 0 && testFilter == 0) {
-            SDLTest_LogError("Filter '%s' did not match any test suite/case.", filter);
-            for (suiteCounter = 0; testSuites[suiteCounter]; ++suiteCounter) {
-                testSuite = testSuites[suiteCounter];
+            SDLTest_LogError("Filter '%s' did not match any test suite/case.", runner->user.filter);
+            for (suiteCounter = 0; runner->user.testSuites[suiteCounter]; ++suiteCounter) {
+                testSuite = runner->user.testSuites[suiteCounter];
                 if (testSuite->name) {
                     SDLTest_Log("Test suite: %s", testSuite->name);
                 }
@@ -511,12 +516,67 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             SDL_free((void *)failedTests);
             return 2;
         }
+
+        runner->user.randomOrder = SDL_FALSE;
+    }
+
+    /* Number of test suites */
+    while (runner->user.testSuites[nbSuites]) {
+        nbSuites++;
+    }
+
+    arraySuites = SDL_malloc(nbSuites * sizeof(int));
+    if (!arraySuites) {
+        return SDL_OutOfMemory();
+    }
+    for (i = 0; i < nbSuites; i++) {
+        arraySuites[i] = i;
+    }
+
+    /* Mix the list of suites to run them in random order */
+    {
+        /* Exclude last test "subsystemsTestSuite" which is said to interfer with other tests */
+        nbSuites--;
+
+        if (runner->user.execKey != 0) {
+            execKey = runner->user.execKey;
+        } else {
+            /* dummy values to have random numbers working */
+            execKey = SDLTest_GenerateExecKey(runSeed, "random testSuites", "initialisation", 1);
+        }
+
+        /* Initialize fuzzer */
+        SDLTest_FuzzerInit(execKey);
+
+        i = 100;
+        while (i--) {
+            int a, b;
+            int tmp;
+            a = SDLTest_RandomIntegerInRange(0, nbSuites - 1);
+            b = SDLTest_RandomIntegerInRange(0, nbSuites - 1);
+            /*
+             * NB: prevent swapping here to make sure the tests start with the same
+             * random seed (whether they are run in order or not).
+             * So we consume same number of SDLTest_RandomIntegerInRange() in all cases.
+             *
+             * If some random value were used at initialization before the tests start, the --seed wouldn't do the same with or without randomOrder.
+             */
+            /* Swap */
+            if (runner->user.randomOrder) {
+                tmp = arraySuites[b];
+                arraySuites[b] = arraySuites[a];
+                arraySuites[a] = tmp;
+            }
+        }
+
+        /* re-add last lest */
+        nbSuites++;
     }
 
     /* Loop over all suites */
-    suiteCounter = 0;
-    while (testSuites[suiteCounter]) {
-        testSuite = testSuites[suiteCounter];
+    for (i = 0; i < nbSuites; i++) {
+        suiteCounter = arraySuites[i];
+        testSuite = runner->user.testSuites[suiteCounter];
         currentSuiteName = (testSuite->name ? testSuite->name : SDLTEST_INVALID_NAME_FORMAT);
         suiteCounter++;
 
@@ -528,6 +588,37 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                         suiteCounter,
                         currentSuiteName);
         } else {
+
+            int nbTestCases = 0;
+            int *arrayTestCases;
+            int j;
+            while (testSuite->testCases[nbTestCases]) {
+                nbTestCases++;
+            }
+
+            arrayTestCases = SDL_malloc(nbTestCases * sizeof(int));
+            if (!arrayTestCases) {
+                return SDL_OutOfMemory();
+            }
+            for (j = 0; j < nbTestCases; j++) {
+                arrayTestCases[j] = j;
+            }
+
+            /* Mix the list of testCases to run them in random order */
+            j = 100;
+            while (j--) {
+                int a, b;
+                int tmp;
+                a = SDLTest_RandomIntegerInRange(0, nbTestCases - 1);
+                b = SDLTest_RandomIntegerInRange(0, nbTestCases - 1);
+                /* Swap */
+                /* See previous note */
+                if (runner->user.randomOrder) {
+                    tmp = arrayTestCases[b];
+                    arrayTestCases[b] = arrayTestCases[a];
+                    arrayTestCases[a] = tmp;
+                }
+            }
 
             /* Reset per-suite counters */
             testFailedCount = 0;
@@ -543,8 +634,8 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                         currentSuiteName);
 
             /* Loop over all test cases */
-            testCounter = 0;
-            while (testSuite->testCases[testCounter]) {
+            for (j = 0; j < nbTestCases; j++) {
+                testCounter = arrayTestCases[j];
                 testCase = testSuite->testCases[testCounter];
                 currentTestName = (testCase->name ? testCase->name : SDLTEST_INVALID_NAME_FORMAT);
                 testCounter++;
@@ -579,11 +670,11 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
                     /* Loop over all iterations */
                     iterationCounter = 0;
-                    while (iterationCounter < testIterations) {
+                    while (iterationCounter < runner->user.testIterations) {
                         iterationCounter++;
 
-                        if (userExecKey != 0) {
-                            execKey = userExecKey;
+                        if (runner->user.execKey != 0) {
+                            execKey = runner->user.execKey;
                         } else {
                             execKey = SDLTest_GenerateExecKey(runSeed, testSuite->name, testCase->name, iterationCounter);
                         }
@@ -610,10 +701,10 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                         runtime = 0.0f;
                     }
 
-                    if (testIterations > 1) {
+                    if (runner->user.testIterations > 1) {
                         /* Log test runtime */
-                        SDLTest_Log("Runtime of %i iterations: %.1f sec", testIterations, runtime);
-                        SDLTest_Log("Average Test runtime: %.5f sec", runtime / (float)testIterations);
+                        SDLTest_Log("Runtime of %i iterations: %.1f sec", runner->user.testIterations, runtime);
+                        SDLTest_Log("Average Test runtime: %.5f sec", runtime / (float)runner->user.testIterations);
                     } else {
                         /* Log test runtime */
                         SDLTest_Log("Total Test runtime: %.1f sec", runtime);
@@ -659,8 +750,12 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                 SDLTest_LogError(SDLTEST_LOG_SUMMARY_FORMAT, "Suite", countSum, testPassedCount, testFailedCount, testSkippedCount);
                 SDLTest_LogError(SDLTEST_FINAL_RESULT_FORMAT, "Suite", currentSuiteName, COLOR_RED "Failed" COLOR_END);
             }
+
+            SDL_free(arrayTestCases);
         }
     }
+
+    SDL_free(arraySuites);
 
     /* Take time - run end */
     runEndSeconds = GetClock();
@@ -695,4 +790,84 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
     SDLTest_Log("Exit code: %d", runResult);
     return runResult;
+}
+
+static int SDLCALL SDLTest_TestSuiteCommonArg(void *data, char **argv, int index)
+{
+    SDLTest_TestSuiteRunner *runner = data;
+
+    if (SDL_strcasecmp(argv[index], "--iterations") == 0) {
+        if (argv[index + 1]) {
+            runner->user.testIterations = SDL_atoi(argv[index + 1]);
+            if (runner->user.testIterations < 1) {
+                runner->user.testIterations = 1;
+            }
+            return 2;
+        }
+    }
+    else if (SDL_strcasecmp(argv[index], "--execKey") == 0) {
+        if (argv[index + 1]) {
+            (void)SDL_sscanf(argv[index + 1], "%" SDL_PRIu64, &runner->user.execKey);
+            return 2;
+        }
+    }
+    else if (SDL_strcasecmp(argv[index], "--seed") == 0) {
+        if (argv[index + 1]) {
+            runner->user.runSeed = SDL_strdup(argv[index + 1]);
+            return 2;
+        }
+    }
+    else if (SDL_strcasecmp(argv[index], "--filter") == 0) {
+        if (argv[index + 1]) {
+            runner->user.filter = SDL_strdup(argv[index + 1]);
+            return 2;
+        }
+    }
+    else if (SDL_strcasecmp(argv[index], "--random-order") == 0) {
+        runner->user.randomOrder = SDL_TRUE;
+        return 1;
+    }
+    return 0;
+}
+
+SDLTest_TestSuiteRunner *SDLTest_CreateTestSuiteRunner(SDLTest_CommonState *state, SDLTest_TestSuiteReference *testSuites[])
+{
+    SDLTest_TestSuiteRunner *runner;
+    SDLTest_ArgumentParser *argparser;
+
+    if (!state) {
+        SDLTest_LogError("SDL Test Suites require a common state");
+        return NULL;
+    }
+
+    runner = SDL_calloc(1, sizeof(SDLTest_TestSuiteRunner));
+    if (!runner) {
+        SDLTest_LogError("Failed to allocate memory for test suite runner");
+        return NULL;
+    }
+    runner->user.testSuites = testSuites;
+
+    runner->argparser.parse_arguments = SDLTest_TestSuiteCommonArg;
+    runner->argparser.usage = common_harness_usage;
+    runner->argparser.data = runner;
+
+    /* Find last argument description and append our description */
+    argparser = state->argparser;
+    for (;;) {
+        if (argparser->next == NULL) {
+            argparser->next = &runner->argparser;
+            break;
+        }
+        argparser = argparser->next;
+
+    }
+
+    return runner;
+}
+
+void SDLTest_DestroyTestSuiteRunner(SDLTest_TestSuiteRunner *runner) {
+
+    SDL_free(runner->user.filter);
+    SDL_free(runner->user.runSeed);
+    SDL_free(runner);
 }

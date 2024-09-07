@@ -44,16 +44,16 @@ typedef struct SystemThemeData
 
 static SystemThemeData system_theme_data;
 
-static SDL_bool DBus_ExtractThemeVariant(DBusMessageIter *iter, SDL_SystemTheme *theme) {
+static bool DBus_ExtractThemeVariant(DBusMessageIter *iter, SDL_SystemTheme *theme) {
     SDL_DBusContext *dbus = system_theme_data.dbus;
     Uint32 color_scheme;
     DBusMessageIter variant_iter;
 
     if (dbus->message_iter_get_arg_type(iter) != DBUS_TYPE_VARIANT)
-        return SDL_FALSE;
+        return false;
     dbus->message_iter_recurse(iter, &variant_iter);
     if (dbus->message_iter_get_arg_type(&variant_iter) != DBUS_TYPE_UINT32)
-        return SDL_FALSE;
+        return false;
     dbus->message_iter_get_basic(&variant_iter, &color_scheme);
     switch (color_scheme) {
         case 0:
@@ -66,7 +66,7 @@ static SDL_bool DBus_ExtractThemeVariant(DBusMessageIter *iter, SDL_SystemTheme 
             *theme = SDL_SYSTEM_THEME_LIGHT;
             break;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data) {
@@ -77,7 +77,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
         const char *namespace, *key;
 
         dbus->message_iter_init(msg, &signal_iter);
-        /* Check if the parameters are what we expect */
+        // Check if the parameters are what we expect
         if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_STRING)
             goto not_our_signal;
         dbus->message_iter_get_basic(&signal_iter, &namespace);
@@ -106,7 +106,7 @@ not_our_signal:
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-SDL_bool SDL_SystemTheme_Init(void)
+bool SDL_SystemTheme_Init(void)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     DBusMessage *msg;
@@ -116,7 +116,7 @@ SDL_bool SDL_SystemTheme_Init(void)
     system_theme_data.theme = SDL_SYSTEM_THEME_UNKNOWN;
     system_theme_data.dbus = dbus;
     if (!dbus) {
-        return SDL_FALSE;
+        return false;
     }
 
     msg = dbus->message_new_method_call(PORTAL_DESTINATION, PORTAL_PATH, PORTAL_INTERFACE, PORTAL_METHOD);
@@ -127,7 +127,7 @@ SDL_bool SDL_SystemTheme_Init(void)
                 DBusMessageIter reply_iter, variant_outer_iter;
 
                 dbus->message_iter_init(reply, &reply_iter);
-                /* The response has signature <<u>> */
+                // The response has signature <<u>>
                 if (dbus->message_iter_get_arg_type(&reply_iter) != DBUS_TYPE_VARIANT)
                     goto incorrect_type;
                 dbus->message_iter_recurse(&reply_iter, &variant_outer_iter);
@@ -147,7 +147,7 @@ incorrect_type:
     dbus->connection_add_filter(dbus->session_conn,
                                 &DBus_MessageFilter, dbus, NULL);
     dbus->connection_flush(dbus->session_conn);
-    return SDL_TRUE;
+    return true;
 }
 
 SDL_SystemTheme SDL_SystemTheme_Get(void)

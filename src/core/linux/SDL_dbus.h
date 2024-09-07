@@ -91,24 +91,24 @@ extern void SDL_DBus_Init(void);
 extern void SDL_DBus_Quit(void);
 extern SDL_DBusContext *SDL_DBus_GetContext(void);
 
-/* These use the built-in Session connection. */
-extern SDL_bool SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...);
-extern SDL_bool SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interface, const char *method, ...);
-extern SDL_bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result);
+// These use the built-in Session connection.
+extern bool SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...);
+extern bool SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interface, const char *method, ...);
+extern bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result);
 
-/* These use whatever connection you like. */
-extern SDL_bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...);
-extern SDL_bool SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...);
-extern SDL_bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result);
+// These use whatever connection you like.
+extern bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...);
+extern bool SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...);
+extern bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result);
 
 extern void SDL_DBus_ScreensaverTickle(void);
-extern SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit);
+extern bool SDL_DBus_ScreensaverInhibit(bool inhibit);
 
 extern void SDL_DBus_PumpEvents(void);
 extern char *SDL_DBus_GetLocalMachineId(void);
 
 extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_count);
 
-#endif /* HAVE_DBUS_DBUS_H */
+#endif // HAVE_DBUS_DBUS_H
 
-#endif /* SDL_dbus_h_ */
+#endif // SDL_dbus_h_

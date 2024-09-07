@@ -38,32 +38,30 @@ struct SDL_PrivateAudioData
     IAudioCaptureClient *capture;
     HANDLE event;
     HANDLE task;
-    SDL_bool coinitialized;
+    bool coinitialized;
     int framesize;
-    SDL_bool device_lost;
-    SDL_bool device_dead;
-    void *activation_handler;
+    bool device_lost;
+    bool device_dead;
 };
 
-// win32 and winrt implementations call into these.
-int WASAPI_PrepDevice(SDL_AudioDevice *device);
+// win32 implementation calls into these.
+bool WASAPI_PrepDevice(SDL_AudioDevice *device);
 void WASAPI_DisconnectDevice(SDL_AudioDevice *device);  // don't hold the device lock when calling this!
 
 
 // BE CAREFUL: if you are holding the device lock and proxy to the management thread with wait_until_complete, and grab the lock again, you will deadlock.
-typedef int (*ManagementThreadTask)(void *userdata);
-int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, int *wait_until_complete);
+typedef bool (*ManagementThreadTask)(void *userdata);
+bool WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, bool *wait_until_complete);
 
-// These are functions that are implemented differently for Windows vs WinRT.
+// These are functions that are (were...?) implemented differently for various Windows versions.
 // UNLESS OTHERWISE NOTED THESE ALL HAPPEN ON THE MANAGEMENT THREAD.
-int WASAPI_PlatformInit(void);
+bool WASAPI_PlatformInit(void);
 void WASAPI_PlatformDeinit(void);
 void WASAPI_PlatformDeinitializeStart(void);
-void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);
-int WASAPI_ActivateDevice(SDL_AudioDevice *device);
+void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
+bool WASAPI_ActivateDevice(SDL_AudioDevice *device);
 void WASAPI_PlatformThreadInit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
 void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
-void WASAPI_PlatformDeleteActivationHandler(void *handler);
 void WASAPI_PlatformFreeDeviceHandle(SDL_AudioDevice *device);
 
 #ifdef __cplusplus

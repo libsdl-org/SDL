@@ -39,7 +39,7 @@ void VITA_InitMouse(void)
     sceHidMouseEnumerate(&mouse_hid_handle, 1);
 
     if (mouse_hid_handle > 0) {
-        SDL_AddMouse((SDL_MouseID)mouse_hid_handle, NULL, SDL_FALSE);
+        SDL_AddMouse((SDL_MouseID)mouse_hid_handle, NULL, false);
     }
 }
 
@@ -79,11 +79,11 @@ void VITA_PollMouse(void)
                 prev_buttons = m_reports[i].buttons;
 
                 if (m_reports[i].rel_x || m_reports[i].rel_y) {
-                    SDL_SendMouseMotion(0, Vita_Window, mouseID, SDL_TRUE, (float)m_reports[i].rel_x, (float)m_reports[i].rel_y);
+                    SDL_SendMouseMotion(0, Vita_Window, mouseID, true, (float)m_reports[i].rel_x, (float)m_reports[i].rel_y);
                 }
             }
         }
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_VITA */
+#endif // SDL_VIDEO_DRIVER_VITA

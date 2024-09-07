@@ -25,4 +25,4 @@
 
 extern void SDL_AssertionsQuit(void);
 
-#endif /* SDL_assert_c_h_ */
+#endif // SDL_assert_c_h_

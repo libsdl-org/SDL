@@ -20,27 +20,17 @@
  *
  * Fails and returns NULL if out of memory.
  */
-char *
-GetNearbyFilename(const char *file)
+char *GetNearbyFilename(const char *file)
 {
-    char *base;
+    const char *base = SDL_GetBasePath();
     char *path;
-
-    base = SDL_GetBasePath();
 
     if (base) {
         SDL_IOStream *rw;
-        size_t len = SDL_strlen(base) + SDL_strlen(file) + 1;
 
-        path = SDL_malloc(len);
-
-        if (!path) {
-            SDL_free(base);
+        if (SDL_asprintf(&path, "%s%s", base, file) < 0) {
             return NULL;
         }
-
-        (void)SDL_snprintf(path, len, "%s%s", base, file);
-        SDL_free(base);
 
         rw = SDL_IOFromFile(path, "rb");
         if (rw) {
@@ -64,8 +54,7 @@ GetNearbyFilename(const char *file)
  *
  * Fails and returns NULL if out of memory.
  */
-char *
-GetResourceFilename(const char *user_specified, const char *def)
+char *GetResourceFilename(const char *user_specified, const char *def)
 {
     if (user_specified) {
         return SDL_strdup(user_specified);
@@ -83,9 +72,7 @@ GetResourceFilename(const char *user_specified, const char *def)
  *
  * If height_out is non-NULL, set it to the texture height.
  */
-SDL_Texture *
-LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
-            int *width_out, int *height_out)
+SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent, int *width_out, int *height_out)
 {
     SDL_Surface *temp = NULL;
     SDL_Texture *texture = NULL;
@@ -103,15 +90,15 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
     } else {
         /* Set transparent pixel as the pixel at (0,0) */
         if (transparent) {
-            if (temp->format->palette) {
-                const Uint8 bpp = temp->format->bits_per_pixel;
+            if (SDL_GetSurfacePalette(temp)) {
+                const Uint8 bpp = SDL_BITSPERPIXEL(temp->format);
                 const Uint8 mask = (1 << bpp) - 1;
-                if (SDL_PIXELORDER(temp->format->format) == SDL_BITMAPORDER_4321)
+                if (SDL_PIXELORDER(temp->format) == SDL_BITMAPORDER_4321)
                     SDL_SetSurfaceColorKey(temp, SDL_TRUE, (*(Uint8 *)temp->pixels) & mask);
                 else
                     SDL_SetSurfaceColorKey(temp, SDL_TRUE, ((*(Uint8 *)temp->pixels) >> (8 - bpp)) & mask);
             } else {
-                switch (temp->format->bits_per_pixel) {
+                switch (SDL_BITSPERPIXEL(temp->format)) {
                 case 15:
                     SDL_SetSurfaceColorKey(temp, SDL_TRUE,
                                     (*(Uint16 *)temp->pixels) & 0x00007FFF);

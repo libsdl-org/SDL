@@ -24,11 +24,11 @@
 
 #include "SDL_internal.h"
 
-extern int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
-                                       SDL_PixelFormatEnum *format,
-                                       void **pixels, int *pitch);
-extern int X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
-                                       const SDL_Rect *rects, int numrects);
+extern bool X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
+                                        SDL_PixelFormat *format,
+                                        void **pixels, int *pitch);
+extern bool X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
+                                        const SDL_Rect *rects, int numrects);
 extern void X11_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_x11framebuffer_h_ */
+#endif // SDL_x11framebuffer_h_

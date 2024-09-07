@@ -23,9 +23,9 @@
 #include "./SDL_portaldialog.h"
 #include "./SDL_zenitydialog.h"
 
-static void (*detected_open)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many) = NULL;
-static void (*detected_save)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location) = NULL;
-static void (*detected_folder)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many) = NULL;
+static void (*detected_open)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many) = NULL;
+static void (*detected_save)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location) = NULL;
+static void (*detected_folder)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many) = NULL;
 
 static int detect_available_methods(const char *value);
 
@@ -36,15 +36,15 @@ void SDLCALL hint_callback(void *userdata, const char *name, const char *oldValu
 
 static void set_callback(void)
 {
-    static SDL_bool is_set = SDL_FALSE;
+    static bool is_set = false;
 
-    if (is_set == SDL_FALSE) {
-        is_set = SDL_TRUE;
+    if (is_set == false) {
+        is_set = true;
         SDL_AddHintCallback(SDL_HINT_FILE_DIALOG_DRIVER, hint_callback, NULL);
     }
 }
 
-/* Returns non-zero on success, 0 on failure */
+// Returns non-zero on success, 0 on failure
 static int detect_available_methods(const char *value)
 {
     const char *driver = value ? value : SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER);
@@ -73,35 +73,35 @@ static int detect_available_methods(const char *value)
     return 0;
 }
 
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)
+void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
 {
-    /* Call detect_available_methods() again each time in case the situation changed */
+    // Call detect_available_methods() again each time in case the situation changed
     if (!detected_open && !detect_available_methods(NULL)) {
-        /* SetError() done by detect_available_methods() */
+        // SetError() done by detect_available_methods()
         callback(userdata, NULL, -1);
         return;
     }
 
-    detected_open(callback, userdata, window, filters, default_location, allow_many);
+    detected_open(callback, userdata, window, filters, nfilters, default_location, allow_many);
 }
 
-void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location)
+void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location)
 {
-    /* Call detect_available_methods() again each time in case the situation changed */
+    // Call detect_available_methods() again each time in case the situation changed
     if (!detected_save && !detect_available_methods(NULL)) {
-        /* SetError() done by detect_available_methods() */
+        // SetError() done by detect_available_methods()
         callback(userdata, NULL, -1);
         return;
     }
 
-    detected_save(callback, userdata, window, filters, default_location);
+    detected_save(callback, userdata, window, filters, nfilters, default_location);
 }
 
 void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many)
 {
-    /* Call detect_available_methods() again each time in case the situation changed */
+    // Call detect_available_methods() again each time in case the situation changed
     if (!detected_folder && !detect_available_methods(NULL)) {
-        /* SetError() done by detect_available_methods() */
+        // SetError() done by detect_available_methods()
         callback(userdata, NULL, -1);
         return;
     }

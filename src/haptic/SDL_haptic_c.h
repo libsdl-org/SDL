@@ -22,7 +22,7 @@
 #ifndef SDL_haptic_c_h_
 #define SDL_haptic_c_h_
 
-extern int SDL_InitHaptics(void);
+extern bool SDL_InitHaptics(void);
 extern void SDL_QuitHaptics(void);
 
-#endif /* SDL_haptic_c_h_ */
+#endif // SDL_haptic_c_h_

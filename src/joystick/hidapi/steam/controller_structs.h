@@ -158,7 +158,7 @@ typedef struct
 // message types within ValveInReport_t or the header itself.  Hopefully this should
 // be super rare and instead you should just add new message payloads to the union,
 // or just add fields to the end of existing payload structs which is expected to be 
-// safe in all code consuming these as they should just consume/copy upto the prior size 
+// safe in all code consuming these as they should just consume/copy up to the prior size 
 // they were aware of when processing.
 #define k_ValveInReportMsgVersion 0x01
 

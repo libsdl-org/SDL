@@ -11,9 +11,6 @@
 */
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdlib.h>
-#include <time.h>
-
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
@@ -65,7 +62,7 @@ static int LoadSprite(const char *file)
         if (!sprites[i]) {
             return -1;
         }
-        if (SDL_SetTextureBlendMode(sprites[i], blendMode) < 0) {
+        if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
             return -1;
@@ -84,7 +81,9 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_FRect *position, *velocity;
 
     /* Query the sizes */
-    SDL_GetRenderViewport(renderer, &viewport);
+    SDL_SetRenderViewport(renderer, NULL);
+    SDL_GetRenderSafeArea(renderer, &viewport);
+    SDL_SetRenderViewport(renderer, &viewport);
 
     /* Cycle the color and alpha, if desired */
     if (cycle_color) {
@@ -386,12 +385,178 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_RenderPresent(renderer);
 }
 
-int SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
+{
+    SDL_Rect safe_area;
+    int i;
+    Uint64 seed;
+    const char *icon = "icon.bmp";
+
+    /* Initialize parameters */
+    num_sprites = NUM_SPRITES;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    if (!state) {
+        return SDL_APP_FAILURE;
+    }
+
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (consumed == 0) {
+            consumed = -1;
+            if (SDL_strcasecmp(argv[i], "--blend") == 0) {
+                if (argv[i + 1]) {
+                    if (SDL_strcasecmp(argv[i + 1], "none") == 0) {
+                        blendMode = SDL_BLENDMODE_NONE;
+                        consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "blend") == 0) {
+                        blendMode = SDL_BLENDMODE_BLEND;
+                        consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "blend_premultiplied") == 0) {
+                        blendMode = SDL_BLENDMODE_BLEND_PREMULTIPLIED;
+                        consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "add") == 0) {
+                        blendMode = SDL_BLENDMODE_ADD;
+                        consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "add_premultiplied") == 0) {
+                        blendMode = SDL_BLENDMODE_ADD_PREMULTIPLIED;
+                        consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "mod") == 0) {
+                        blendMode = SDL_BLENDMODE_MOD;
+                        consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "mul") == 0) {
+                        blendMode = SDL_BLENDMODE_MUL;
+                        consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "sub") == 0) {
+                        blendMode = SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_SUBTRACT, SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_SUBTRACT);
+                        consumed = 2;
+                    }
+                }
+            } else if (SDL_strcasecmp(argv[i], "--iterations") == 0) {
+                if (argv[i + 1]) {
+                    iterations = SDL_atoi(argv[i + 1]);
+                    if (iterations < -1) {
+                        iterations = -1;
+                    }
+                    consumed = 2;
+                }
+            } else if (SDL_strcasecmp(argv[i], "--cyclecolor") == 0) {
+                cycle_color = SDL_TRUE;
+                consumed = 1;
+            } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
+                cycle_alpha = SDL_TRUE;
+                consumed = 1;
+            } else if (SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
+                suspend_when_occluded = SDL_TRUE;
+                consumed = 1;
+            } else if (SDL_strcasecmp(argv[i], "--use-rendergeometry") == 0) {
+                if (argv[i + 1]) {
+                    if (SDL_strcasecmp(argv[i + 1], "mode1") == 0) {
+                        /* Draw sprite2 as triangles that can be recombined as rect by software renderer */
+                        use_rendergeometry = 1;
+                    } else if (SDL_strcasecmp(argv[i + 1], "mode2") == 0) {
+                        /* Draw sprite2 as triangles that can *not* be recombined as rect by software renderer
+                         * Use an 'indices' array */
+                        use_rendergeometry = 2;
+                    } else {
+                        return SDL_APP_FAILURE;
+                    }
+                }
+                consumed = 2;
+            } else if (SDL_isdigit(*argv[i])) {
+                num_sprites = SDL_atoi(argv[i]);
+                consumed = 1;
+            } else if (argv[i][0] != '-') {
+                icon = argv[i];
+                consumed = 1;
+            }
+        }
+        if (consumed < 0) {
+            static const char *options[] = {
+                "[--blend none|blend|blend_premultiplied|add|add_premultiplied|mod|mul|sub]",
+                "[--cyclecolor]",
+                "[--cyclealpha]",
+                "[--suspend-when-occluded]",
+                "[--iterations N]",
+                "[--use-rendergeometry mode1|mode2]",
+                "[num_sprites]",
+                "[icon.bmp]",
+                NULL
+            };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return SDL_APP_FAILURE;
+        }
+        i += consumed;
+    }
+    if (!SDLTest_CommonInit(state)) {
+        return SDL_APP_FAILURE;
+    }
+
+    /* Create the windows, initialize the renderers, and load the textures */
+    sprites =
+        (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
+    if (!sprites) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+        return SDL_APP_FAILURE;
+    }
+    for (i = 0; i < state->num_windows; ++i) {
+        SDL_Renderer *renderer = state->renderers[i];
+        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
+        SDL_RenderClear(renderer);
+    }
+    if (LoadSprite(icon) < 0) {
+        return SDL_APP_FAILURE;
+    }
+
+    /* Allocate memory for the sprite info */
+    positions = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*positions));
+    velocities = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*velocities));
+    if (!positions || !velocities) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+        return SDL_APP_FAILURE;
+    }
+
+    /* Position sprites and set their velocities using the fuzzer */
+    /* Really we should be using per-window safe area, but this is fine for a simple test */
+    SDL_GetRenderSafeArea(state->renderers[0], &safe_area);
+    if (iterations >= 0) {
+        /* Deterministic seed - used for visual tests */
+        seed = (Uint64)iterations;
+    } else {
+        /* Pseudo-random seed generated from the time */
+        seed = SDL_GetPerformanceCounter();
+    }
+    SDLTest_FuzzerInit(seed);
+    for (i = 0; i < num_sprites; ++i) {
+        positions[i].x = (float)SDLTest_RandomIntegerInRange(0, (int)(safe_area.w - sprite_w));
+        positions[i].y = (float)SDLTest_RandomIntegerInRange(0, (int)(safe_area.h - sprite_h));
+        positions[i].w = sprite_w;
+        positions[i].h = sprite_h;
+        velocities[i].x = 0;
+        velocities[i].y = 0;
+        while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
+            velocities[i].x = (float)SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
+            velocities[i].y = (float)SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
+        }
+    }
+
+    /* Main render loop in SDL_AppIterate will begin when this function returns. */
+    frames = 0;
+    next_fps_check = SDL_GetTicks() + fps_check_delay;
+
+    return SDL_APP_CONTINUE;
+}
+
+
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     return SDLTest_CommonEventMainCallbacks(state, event);
 }
 
-int SDL_AppIterate(void *appstate)
+SDL_AppResult SDL_AppIterate(void *appstate)
 {
     Uint64 now;
     int i;
@@ -422,162 +587,5 @@ int SDL_AppIterate(void *appstate)
         frames = 0;
     }
 
-    return 0;  /* keep going */
+    return SDL_APP_CONTINUE;
 }
-
-int SDL_AppInit(void **appstate, int argc, char *argv[])
-{
-    int i;
-    Uint64 seed;
-    const char *icon = "icon.bmp";
-
-    /* Initialize parameters */
-    num_sprites = NUM_SPRITES;
-
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (!state) {
-        return -1;
-    }
-
-    for (i = 1; i < argc;) {
-        int consumed;
-
-        consumed = SDLTest_CommonArg(state, i);
-        if (consumed == 0) {
-            consumed = -1;
-            if (SDL_strcasecmp(argv[i], "--blend") == 0) {
-                if (argv[i + 1]) {
-                    if (SDL_strcasecmp(argv[i + 1], "none") == 0) {
-                        blendMode = SDL_BLENDMODE_NONE;
-                        consumed = 2;
-                    } else if (SDL_strcasecmp(argv[i + 1], "blend") == 0) {
-                        blendMode = SDL_BLENDMODE_BLEND;
-                        consumed = 2;
-                    } else if (SDL_strcasecmp(argv[i + 1], "add") == 0) {
-                        blendMode = SDL_BLENDMODE_ADD;
-                        consumed = 2;
-                    } else if (SDL_strcasecmp(argv[i + 1], "mod") == 0) {
-                        blendMode = SDL_BLENDMODE_MOD;
-                        consumed = 2;
-                    } else if (SDL_strcasecmp(argv[i + 1], "mul") == 0) {
-                        blendMode = SDL_BLENDMODE_MUL;
-                        consumed = 2;
-                    } else if (SDL_strcasecmp(argv[i + 1], "sub") == 0) {
-                        blendMode = SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_SUBTRACT, SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_SUBTRACT);
-                        consumed = 2;
-                    }
-                }
-            } else if (SDL_strcasecmp(argv[i], "--iterations") == 0) {
-                if (argv[i + 1]) {
-                    iterations = SDL_atoi(argv[i + 1]);
-                    if (iterations < -1) {
-                        iterations = -1;
-                    }
-                    consumed = 2;
-                }
-            } else if (SDL_strcasecmp(argv[i], "--cyclecolor") == 0) {
-                cycle_color = SDL_TRUE;
-                consumed = 1;
-            } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
-                cycle_alpha = SDL_TRUE;
-                consumed = 1;
-            } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
-                suspend_when_occluded = SDL_TRUE;
-                consumed = 1;
-            } else if (SDL_strcasecmp(argv[i], "--use-rendergeometry") == 0) {
-                if (argv[i + 1]) {
-                    if (SDL_strcasecmp(argv[i + 1], "mode1") == 0) {
-                        /* Draw sprite2 as triangles that can be recombined as rect by software renderer */
-                        use_rendergeometry = 1;
-                    } else if (SDL_strcasecmp(argv[i + 1], "mode2") == 0) {
-                        /* Draw sprite2 as triangles that can *not* be recombined as rect by software renderer
-                         * Use an 'indices' array */
-                        use_rendergeometry = 2;
-                    } else {
-                        return -1;
-                    }
-                }
-                consumed = 2;
-            } else if (SDL_isdigit(*argv[i])) {
-                num_sprites = SDL_atoi(argv[i]);
-                consumed = 1;
-            } else if (argv[i][0] != '-') {
-                icon = argv[i];
-                consumed = 1;
-            }
-        }
-        if (consumed < 0) {
-            static const char *options[] = {
-                "[--blend none|blend|add|mod|mul|sub]",
-                "[--cyclecolor]",
-                "[--cyclealpha]",
-                "[--suspend-when-occluded]",
-                "[--iterations N]",
-                "[--use-rendergeometry mode1|mode2]",
-                "[num_sprites]",
-                "[icon.bmp]",
-                NULL
-            };
-            SDLTest_CommonLogUsage(state, argv[0], options);
-            return -1;
-        }
-        i += consumed;
-    }
-    if (!SDLTest_CommonInit(state)) {
-        return -1;
-    }
-
-    /* Create the windows, initialize the renderers, and load the textures */
-    sprites =
-        (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
-    if (!sprites) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
-        return -1;
-    }
-    for (i = 0; i < state->num_windows; ++i) {
-        SDL_Renderer *renderer = state->renderers[i];
-        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
-        SDL_RenderClear(renderer);
-    }
-    if (LoadSprite(icon) < 0) {
-        return -1;
-    }
-
-    /* Allocate memory for the sprite info */
-    positions = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*positions));
-    velocities = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*velocities));
-    if (!positions || !velocities) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
-        return -1;
-    }
-
-    /* Position sprites and set their velocities using the fuzzer */
-    if (iterations >= 0) {
-        /* Deterministic seed - used for visual tests */
-        seed = (Uint64)iterations;
-    } else {
-        /* Pseudo-random seed generated from the time */
-        seed = (Uint64)time(NULL);
-    }
-    SDLTest_FuzzerInit(seed);
-    for (i = 0; i < num_sprites; ++i) {
-        positions[i].x = (float)SDLTest_RandomIntegerInRange(0, (int)(state->window_w - sprite_w));
-        positions[i].y = (float)SDLTest_RandomIntegerInRange(0, (int)(state->window_h - sprite_h));
-        positions[i].w = sprite_w;
-        positions[i].h = sprite_h;
-        velocities[i].x = 0;
-        velocities[i].y = 0;
-        while (!velocities[i].x && !velocities[i].y) {
-            velocities[i].x = (float)SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
-            velocities[i].y = (float)SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
-        }
-    }
-
-    /* Main render loop in SDL_AppIterate will begin when this function returns. */
-    frames = 0;
-    next_fps_check = SDL_GetTicks() + fps_check_delay;
-
-    return 0;
-}
-

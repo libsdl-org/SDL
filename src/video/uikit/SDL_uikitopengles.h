@@ -25,16 +25,16 @@
 
 #include "../SDL_sysvideo.h"
 
-extern int UIKit_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
+extern bool UIKit_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
                                 SDL_GLContext context);
-extern int UIKit_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool UIKit_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int UIKit_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern bool UIKit_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);
 extern SDL_FunctionPointer UIKit_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
-extern int UIKit_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern bool UIKit_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 
 extern void UIKit_GL_RestoreCurrentContext(void);
 
 #endif // SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
 
-#endif /* SDL_uikitopengles_ */
+#endif // SDL_uikitopengles_

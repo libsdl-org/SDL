@@ -21,11 +21,11 @@
 
 #include "SDL_iostreamromfs.h"
 
-/* Checks if the mode is a kind of reading */
-static SDL_bool IsReadMode(const char *mode);
+// Checks if the mode is a kind of reading
+static bool IsReadMode(const char *mode);
 
-/* Checks if the file starts with the given prefix */
-static SDL_bool HasPrefix(const char *file, const char *prefix);
+// Checks if the file starts with the given prefix
+static bool HasPrefix(const char *file, const char *prefix);
 
 static FILE *TryOpenFile(const char *file, const char *mode);
 static FILE *TryOpenInRomfs(const char *file, const char *mode);
@@ -37,12 +37,12 @@ static FILE *TryOpenInRomfs(const char *file, const char *mode);
 */
 FILE *N3DS_FileOpen(const char *file, const char *mode)
 {
-    /* romfs are read-only */
+    // romfs are read-only
     if (!IsReadMode(mode)) {
         return fopen(file, mode);
     }
 
-    /* If the path has an explicit prefix, we skip the guess work */
+    // If the path has an explicit prefix, we skip the guess work
     if (HasPrefix(file, "romfs:/") || HasPrefix(file, "sdmc:/")) {
         return fopen(file, mode);
     }
@@ -50,12 +50,12 @@ FILE *N3DS_FileOpen(const char *file, const char *mode)
     return TryOpenFile(file, mode);
 }
 
-static SDL_bool IsReadMode(const char *mode)
+static bool IsReadMode(const char *mode)
 {
     return SDL_strchr(mode, 'r') != NULL;
 }
 
-static SDL_bool HasPrefix(const char *file, const char *prefix)
+static bool HasPrefix(const char *file, const char *prefix)
 {
     return SDL_strncmp(prefix, file, SDL_strlen(prefix)) == 0;
 }

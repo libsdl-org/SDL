@@ -1,0 +1,370 @@
+name: 'Build'
+run-name: 'Configure, Build and Test SDL'
+
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        description: 'JSON-encoded test properties'
+        type: string
+        required: true
+
+jobs:
+  build:
+    name: ${{ matrix.platform.name }}
+    runs-on: ${{ matrix.platform.os }}
+    container: ${{ matrix.platform.container }}
+    defaults:
+      run:
+        shell: ${{ matrix.platform.shell }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJSON(inputs.platforms) }}
+    steps:
+      - name: 'Set up MSYS2'
+        if: ${{ matrix.platform.platform == 'msys2' }}
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.platform.msys2-msystem }}
+          install: >-
+            ${{ matrix.platform.msys2-env }}-cc
+            ${{ matrix.platform.msys2-env }}-cmake
+            ${{ matrix.platform.msys2-env }}-ninja
+            ${{ (!matrix.platform.msys2-no-perl && format('{0}-perl', matrix.platform.msys2-env)) || '' }}
+            ${{ matrix.platform.msys2-env }}-pkg-config
+            ${{ matrix.platform.msys2-env }}-clang-tools-extra
+      - name: 'About this job'
+        run: |
+          echo "key=${{ matrix.platform.key }}"
+          echo "name=${{ matrix.platform.name }}"
+          echo "os=${{ matrix.platform.os }}"
+          echo ""
+          echo "Add [sdl-ci-filter ${{ matrix.platform.key }}] to your commit message to reduce the number of jobs."
+      - uses: actions/checkout@v4
+      - name: 'Set up ninja'
+        if: ${{ matrix.platform.setup-ninja }}
+        uses: ./.github/actions/setup-ninja
+      - name: 'Set up libusb for MSVC'
+        if: ${{ matrix.platform.setup-libusb-arch != '' }}
+        uses: ./.github/actions/setup-msvc-libusb
+        with:
+          arch: ${{ matrix.platform.setup-libusb-arch }}
+      - uses: mymindstorm/setup-emsdk@v14
+        if: ${{ matrix.platform.platform == 'emscripten' }}
+        with:
+          version: 3.1.35
+      - uses: browser-actions/setup-chrome@v1
+        id: setup-chrome
+        if: ${{ matrix.platform.platform == 'emscripten' }}
+        with:
+          install-chromedriver: true
+      - name: 'Add chrome to PATH'
+        if: ${{ matrix.platform.platform == 'emscripten' }}
+        run: |
+          chrome_dir="$(dirname "${{ steps.setup-chrome.outputs.chrome-path }}")"
+          chromedriver_dir="$(dirname "${{ steps.setup-chrome.outputs.chromedriver-path }}")"
+          echo "CHROME_BINARY=${{ steps.setup-chrome.outputs.chrome-path }}" >>$GITHUB_ENV
+          echo "CHROMEDRIVER_BINARY=${{ steps.setup-chrome.outputs.chromedriver-path }}" >>$GITHUB_ENV
+          echo "chrome_dir=${chrome_dir}"
+          echo "chromedriver_dir=${chromedriver_dir}"
+          echo "${chrome_dir}" >>${GITHUB_PATH}
+          echo "${chromedriver_dir}" >>${GITHUB_PATH}
+      - uses: nttld/setup-ndk@v1
+        if: ${{ matrix.platform.android-ndk }}
+        id: setup-ndk
+        with:
+          local-cache: true
+          ndk-version: r21e
+      - name: 'Configure Android NDK variables'
+        if: ${{ matrix.platform.android-ndk }}
+        shell: sh
+        run: |
+          # We cannot use GitHub expressions in the controller job
+          echo "ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}" >>$GITHUB_ENV
+      - uses: actions/setup-java@v4
+        if: ${{ matrix.platform.java }}
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: ${{ matrix.platform.platform == 'msvc' }}
+        with:
+          arch: ${{ matrix.platform.msvc-vcvars }}
+      - name: 'Set up Windows GDK Desktop'
+        uses: ./.github/actions/setup-gdk-desktop
+        if: ${{ matrix.platform.setup-gdk-folder != '' }}
+        with:
+          folder: '${{ matrix.platform.setup-gdk-folder }}'
+      - name: 'Set up LoongArch64 toolchain'
+        uses: ./.github/actions/setup-loongarch64-toolchain
+        id: setup-loongarch64-toolchain
+        if: ${{ matrix.platform.platform == 'loongarch64' }}
+      - name: 'Setup Intel oneAPI toolchain'
+        id: intel
+        if: ${{ matrix.platform.intel }}
+        run: |
+          # Download the key to system keyring
+          wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+            | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+          
+          # Add signed entry to apt sources and configure the APT client to use Intel repository:
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          
+          # Update package list
+          sudo apt-get update -y
+          
+          # Install oneAPI
+          sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+      - name: 'Install apk packages'
+        if: ${{ matrix.platform.apk-packages != '' }}
+        run: |
+          ${{ matrix.platform.sudo }} apk update
+          ${{ matrix.platform.sudo }} apk add ${{ matrix.platform.apk-packages }}
+      - name: 'Install apt packages'
+        if: ${{ matrix.platform.apt-packages != '' }}
+        run: |
+          ${{ matrix.platform.sudo }} apt-get update
+          ${{ matrix.platform.sudo }} apt-get install -y ${{ matrix.platform.apt-packages }}
+      - name: 'Install brew packages'
+        if: ${{ matrix.platform.brew-packages != '' }}
+        run: |
+          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+          brew update
+          brew install ${{ matrix.platform.brew-packages }}
+      - name: 'Set up GLES for VITA'  # Must be after apk
+        if: ${{ matrix.platform.setup-vita-gles-type != '' }}
+        uses: ./.github/actions/setup-vita-gles
+        with:
+          type: ${{ matrix.platform.setup-vita-gles-type }}
+
+      - name: 'Pollute toolchain with "bad" SDL headers'
+        if: ${{ matrix.platform.pollute-directories != '' }}
+        #shell: ${{ matrix.platform.shell }}
+        run: |
+          # Create "bad" SDL headers in the toolchain.
+          # SDL sources should not use these.
+          for include in ${{ matrix.platform.pollute-directories }}; do
+            toolchain_directory="${include}/SDL3"
+            echo "Creating directory ${toolchain_directory}"
+            mkdir -p "${toolchain_directory}/SDL3"
+            for header in include/SDL3/*.h; do
+              dest="${toolchain_directory}/SDL3/$(basename "${header}")"
+              echo "Creating ${dest}"
+              echo '#error "System SDL headers must not be used by build system"' >"$dest"
+            done
+          done
+
+      - name: 'Configure (CMake)'
+        if: ${{ !matrix.platform.no-cmake }}
+        #shell: ${{ matrix.platform.shell }}
+        run: |
+          ${{ matrix.platform.source-cmd }}
+          ${{ matrix.platform.cmake-config-emulator }} cmake -S . -B build -GNinja \
+            -Wdeprecated -Wdev -Werror \
+            ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
+            -DSDL_WERROR=${{ matrix.platform.werror }} \
+            -DSDL_EXAMPLES=${{ matrix.platform.build-tests }} \
+            -DSDL_TESTS=${{ matrix.platform.build-tests }} \
+            -DSDLTEST_TRACKMEM=ON \
+            -DSDL_INSTALL_TESTS=${{ matrix.platform.build-tests }} \
+            -DSDL_CLANG_TIDY=${{ matrix.platform.clang-tidy }} \
+            -DSDL_DISABLE_INSTALL_DOCS=OFF \
+            -DSDL_DISABLE_INSTALL_CPACK=OFF \
+            -DSDL_DISABLE_INSTALL_DOCS=OFF \
+            ${{ matrix.platform.cmake-arguments }} \
+            -DSDL_SHARED=${{ matrix.platform.shared }} \
+            -DSDL_STATIC=${{ matrix.platform.static  }} \
+            -DSDL_VENDOR_INFO="Github Workflow" \
+            -DCMAKE_INSTALL_PREFIX=prefix \
+            -DCMAKE_INSTALL_LIBDIR=lib \
+            -DCMAKE_BUILD_TYPE=${{ matrix.platform.cmake-build-type }}
+      - name: 'Build (CMake)'
+        id: build
+        if: ${{ !matrix.platform.no-cmake }}
+#        shell: ${{ matrix.platform.shell }}
+        run: |
+          ${{ matrix.platform.source-cmd }}
+          cmake --build build --config ${{ matrix.platform.cmake-build-type }} --verbose -- ${{ matrix.platform.cmake-build-arguments }}
+      - name: 'Verify SDL_REVISION'
+        if: ${{ !matrix.platform.no-cmake }}
+        run: |
+          echo "This should show us the SDL_REVISION"
+          echo "Shared library:"
+          ${{ (matrix.platform.shared-lib && format('strings build/{0} | grep SDL-', matrix.platform.shared-lib)) || 'echo "<Shared library not supported by platform>"' }}
+          echo "Static library:"
+          ${{ (matrix.platform.static-lib && format('strings build/{0} | grep SDL-', matrix.platform.static-lib)) || 'echo "<Static library not supported by platform>"' }}
+      - name: 'Run build-time tests (CMake)'
+        id: tests
+        if: ${{ !matrix.platform.no-cmake && matrix.platform.run-tests }}
+#        shell: ${{ matrix.platform.shell }}
+        run: |
+          ${{ matrix.platform.source-cmd }}
+          ${{ matrix.platform.pretest-cmd }}
+          set -eu
+          export SDL_TESTS_QUICK=1
+          ctest -VV --test-dir build/ -j2
+      - name: "Build test apk's (CMake)"
+        id: apks
+        if: ${{ steps.build.outcome == 'success' && matrix.platform.android-apks != '' }}
+#        shell: ${{ matrix.platform.shell }}
+        run: |
+          ${{ matrix.platform.source-cmd }}
+          cmake --build build --config ${{ matrix.platform.cmake-build-type }} \
+            --target \
+              ${{ matrix.platform.android-apks }} \
+            --verbose \
+            -- ${{ matrix.platform.cmake-build-arguments }}
+      - name: 'Install (CMake)'
+        id: install
+        if: ${{ steps.build.outcome == 'success' }}
+#        shell: ${{ matrix.platform.shell }}
+        run: |
+          ${{ matrix.platform.source-cmd }}
+          cmake --install build --config ${{ matrix.platform.cmake-build-type }}
+          echo "prefix=$(pwd)/prefix" >> $GITHUB_OUTPUT
+          ( cd prefix; find . ) | LC_ALL=C sort -u
+      - name: 'Package (CPack)'
+        id: package
+        if: ${{ steps.build.outcome == 'success' }}
+#        shell: ${{ matrix.platform.shell }}
+        run: |
+          # DMG creation on macOS occasionally fails, so try multiple times
+          # https://gitlab.kitware.com/cmake/cmake/-/issues/25671
+          success=0
+          max_tries=10
+          for i in $(seq $max_tries); do
+           cmake --build build/ --config ${{ matrix.platform.cmake-build-type }} --target package -- ${{ matrix.platform.cmake-build-arguments }} && success=1
+           if test $success = 1; then
+            break
+           fi
+           echo "Package creation failed. Sleep 1 second and try again."
+           sleep 1
+          done
+          if test $success = 0; then
+           echo "Package creation failed after $max_tries attempts."
+           exit 1
+          fi
+      - name: 'Verify CMake configuration files'
+        if: ${{ steps.install.outcome == 'success' }}
+#        shell: ${{ matrix.platform.shell }}
+        run: |
+          ${{ matrix.platform.source-cmd }}
+          ${{ matrix.platform.cmake-config-emulator }} cmake -S cmake/test -B cmake_test_build -GNinja \
+            ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
+            -DTEST_SHARED=${{ matrix.platform.shared }} \
+            -DTEST_STATIC=${{ matrix.platform.static }} \
+            ${{ matrix.platform.cmake-arguments }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.platform.cmake-build-type }} \
+            -DCMAKE_PREFIX_PATH="${{ steps.install.outputs.prefix }}"
+          cmake --build cmake_test_build --verbose --config ${{ matrix.platform.cmake-build-type }} -- ${{ matrix.platform.cmake-build-arguments }}
+      - name: 'Extract CC/CXX/CFLAGS/CXXFLAGS from CMake toolchain'
+        if: ${{ steps.install.outcome == 'success' && matrix.platform.cc-from-cmake }}
+#        shell: ${{ matrix.platform.shell }}
+        run: |
+          cmake -S .github/cmake -B /tmp/cmake_extract \
+            ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.platform.cmake-build-type }} \
+            -DVAR_PATH=/tmp/env.txt
+          cat /tmp/env.txt >> $GITHUB_ENV
+      - name: 'Verify sdl3.pc'
+#        shell: ${{ matrix.platform.shell }}
+        if: ${{ steps.install.outcome == 'success' && matrix.platform.test-pkg-config }}
+        run: |
+          ${{ matrix.platform.source-cmd }}
+          ${{ matrix.platform.cc && format('export CC="{0}"', matrix.platform.cc) || '' }}
+          ${{ matrix.platform.cflags && format('export CFLAGS="{0}"', matrix.platform.cflags) || '' }}
+          ${{ matrix.platform.ldflags && format('export LDFLAGS="{0}"', matrix.platform.ldflags) || '' }}
+          export PKG_CONFIG_PATH=${{ steps.install.outputs.prefix }}/lib/pkgconfig
+          cmake/test/test_pkgconfig.sh
+      - name: 'Build (cross-platform-actions, BSD)'
+        id: cpactions
+        if: ${{ matrix.platform.cpactions }}
+        uses: cross-platform-actions/action@v0.25.0
+        with:
+          operating_system: ${{ matrix.platform.cpactions-os }}
+          architecture: ${{ matrix.platform.cpactions-arch }}
+          version: ${{ matrix.platform.cpactions-version }}
+          run: |
+            ${{ matrix.platform.cpactions-setup-cmd }}
+            ${{ matrix.platform.cpactions-install-cmd }}
+            cmake -S . -B build -GNinja  \
+              ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
+              -Wdeprecated -Wdev -Werror \
+              -DSDL_WERROR=${{ matrix.platform.werror }} \
+              -DSDL_DISABLE_INSTALL_DOCS=OFF \
+              ${{ matrix.platform.cmake-arguments }} \
+              -DSDL_SHARED=${{ matrix.platform.shared }} \
+              -DSDL_STATIC=${{ matrix.platform.static  }} \
+              -DSDL_VENDOR_INFO="Github Workflow" \
+              -DCMAKE_INSTALL_PREFIX=prefix \
+              -DCMAKE_INSTALL_LIBDIR=lib \
+              -DCMAKE_BUILD_TYPE=${{ matrix.platform.cmake-build-type }}
+            cmake --build build/ --config ${{ matrix.platform.cmake-build-type }} --verbose
+            cmake --build build/ --config ${{ matrix.platform.cmake-build-type }} --target package
+
+            cmake --build build/ --config ${{ matrix.platform.cmake-build-type }} --target clean
+            rm -rf build/dist/_CPack_Packages
+            rm -rf build/CMakeFiles
+            rm -rf build/docs
+      - name: Add msbuild to PATH
+        id: setup-msbuild
+        if: ${{ matrix.platform.msvc-project != '' }}
+        uses: microsoft/setup-msbuild@v2
+      - name: Build msbuild
+        if: ${{ matrix.platform.msvc-project != '' }}
+        run: |
+          "$(cygpath -u '${{ steps.setup-msbuild.outputs.msbuildPath }}\msbuild.exe')" ${{ matrix.platform.msvc-project }} -m -p:BuildInParallel=true -p:Configuration=Release ${{ matrix.platform.msvc-project-flags }}
+      - name: 'Build (Android.mk)'
+        if: ${{ matrix.platform.android-mk }}
+        run: |
+          ./build-scripts/androidbuildlibs.sh
+      - name: 'Create Gradle project (Android)'
+        if: ${{ matrix.platform.android-gradle }}
+        run: |
+          for folder in build-ndk-build build-cmake; do
+            python build-scripts/create-android-project.py \
+              --output "${folder}" \
+              --variant copy \
+              org.libsdl.testspriteminimal \
+              test/testspriteminimal.c test/icon.h
+          done
+          echo ""
+          echo "Project contents:"
+          echo ""
+          find "build-ndk-build/org.libsdl.testspriteminimal"
+      - name: 'Build Android app (Gradle & ndk-build)'
+        if: ${{ matrix.platform.android-gradle }}
+        run: |
+          cd build-ndk-build/org.libsdl.testspriteminimal
+          ./gradlew -i assembleRelease
+      - name: 'Build Android app (Gradle & CMake)'
+        if: ${{ matrix.platform.android-gradle }}
+        run: |
+          cd build-cmake/org.libsdl.testspriteminimal
+          ./gradlew -i assembleRelease -PBUILD_WITH_CMAKE=1
+      - name: 'Build (xcode)'
+        if: ${{ matrix.platform.xcode-sdk != '' }}
+        run: |
+          xcodebuild -project Xcode/SDL/SDL.xcodeproj -target SDL3 -configuration Release -sdk ${{ matrix.platform.xcode-sdk }} clean build
+      - name: 'Upload binary package'
+        uses: actions/upload-artifact@v4
+        if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}
+        with:
+          if-no-files-found: error
+          name: '${{ matrix.platform.artifact }}'
+          path: build/dist/SDL3*
+      - name: 'Upload minidumps'
+        uses: actions/upload-artifact@v4
+        if: ${{ always() && steps.tests.outcome == 'failure' && (matrix.platform.platform == 'msvc' || matrix.platform.platform == 'msys2') }}
+        with:
+          if-no-files-found: ignore
+          name: '${{ matrix.platform.artifact }}-minidumps'
+          path: build/**/*.dmp
+      - name: "Upload Android test apk's"
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.platform.enable-artifacts && always() && matrix.platform.artifact != '' && steps.apks.outcome == 'success' }}
+        with:
+          if-no-files-found: error
+          name: '${{ matrix.platform.artifact }}-apks'
+          path: build/test/*.apk

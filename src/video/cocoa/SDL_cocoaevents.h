@@ -28,6 +28,6 @@ extern Uint64 Cocoa_GetEventTimestamp(NSTimeInterval nsTimestamp);
 extern void Cocoa_PumpEvents(SDL_VideoDevice *_this);
 extern int Cocoa_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 extern void Cocoa_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Cocoa_SuspendScreenSaver(SDL_VideoDevice *_this);
+extern bool Cocoa_SuspendScreenSaver(SDL_VideoDevice *_this);
 
-#endif /* SDL_cocoaevents_h_ */
+#endif // SDL_cocoaevents_h_

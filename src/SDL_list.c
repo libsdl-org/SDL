@@ -22,27 +22,27 @@
 
 #include "./SDL_list.h"
 
-/* Push */
-int SDL_ListAdd(SDL_ListNode **head, void *ent)
+// Push
+bool SDL_ListAdd(SDL_ListNode **head, void *ent)
 {
     SDL_ListNode *node = (SDL_ListNode *)SDL_malloc(sizeof(*node));
 
     if (!node) {
-        return -1;
+        return false;
     }
 
     node->entry = ent;
     node->next = *head;
     *head = node;
-    return 0;
+    return true;
 }
 
-/* Pop from end as a FIFO (if add with SDL_ListAdd) */
+// Pop from end as a FIFO (if add with SDL_ListAdd)
 void SDL_ListPop(SDL_ListNode **head, void **ent)
 {
     SDL_ListNode **ptr = head;
 
-    /* Invalid or empty */
+    // Invalid or empty
     if (!head || !*head) {
         return;
     }

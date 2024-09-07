@@ -29,10 +29,6 @@
 
 /*****************************************************************************************************/
 
-#define bool SDL_bool
-#define true SDL_TRUE
-#define false SDL_FALSE
-
 #include "steam/controller_constants.h"
 #include "steam/controller_structs.h"
 
@@ -107,22 +103,22 @@ typedef struct SteamControllerStateInternal_t
     short sPrevLeftStick[2];
 } SteamControllerStateInternal_t;
 
-/* Defines for ulButtons in SteamControllerStateInternal_t */
+// Defines for ulButtons in SteamControllerStateInternal_t
 #define STEAM_RIGHT_TRIGGER_MASK           0x00000001
 #define STEAM_LEFT_TRIGGER_MASK            0x00000002
 #define STEAM_RIGHT_BUMPER_MASK            0x00000004
 #define STEAM_LEFT_BUMPER_MASK             0x00000008
-#define STEAM_BUTTON_NORTH_MASK            0x00000010 /* Y */
-#define STEAM_BUTTON_EAST_MASK             0x00000020 /* B */
-#define STEAM_BUTTON_WEST_MASK             0x00000040 /* X */
-#define STEAM_BUTTON_SOUTH_MASK            0x00000080 /* A */
-#define STEAM_DPAD_UP_MASK                 0x00000100 /* DPAD UP */
-#define STEAM_DPAD_RIGHT_MASK              0x00000200 /* DPAD RIGHT */
-#define STEAM_DPAD_LEFT_MASK               0x00000400 /* DPAD LEFT */
-#define STEAM_DPAD_DOWN_MASK               0x00000800 /* DPAD DOWN */
-#define STEAM_BUTTON_MENU_MASK             0x00001000 /* SELECT */
-#define STEAM_BUTTON_STEAM_MASK            0x00002000 /* GUIDE */
-#define STEAM_BUTTON_ESCAPE_MASK           0x00004000 /* START */
+#define STEAM_BUTTON_NORTH_MASK            0x00000010 // Y
+#define STEAM_BUTTON_EAST_MASK             0x00000020 // B
+#define STEAM_BUTTON_WEST_MASK             0x00000040 // X
+#define STEAM_BUTTON_SOUTH_MASK            0x00000080 // A
+#define STEAM_DPAD_UP_MASK                 0x00000100 // DPAD UP
+#define STEAM_DPAD_RIGHT_MASK              0x00000200 // DPAD RIGHT
+#define STEAM_DPAD_LEFT_MASK               0x00000400 // DPAD LEFT
+#define STEAM_DPAD_DOWN_MASK               0x00000800 // DPAD DOWN
+#define STEAM_BUTTON_MENU_MASK             0x00001000 // SELECT
+#define STEAM_BUTTON_STEAM_MASK            0x00002000 // GUIDE
+#define STEAM_BUTTON_ESCAPE_MASK           0x00004000 // START
 #define STEAM_BUTTON_BACK_LEFT_MASK        0x00008000
 #define STEAM_BUTTON_BACK_RIGHT_MASK       0x00010000
 #define STEAM_BUTTON_LEFTPAD_CLICKED_MASK  0x00020000
@@ -217,7 +213,7 @@ static void ResetSteamControllerPacketAssembler(SteamControllerPacketAssembler *
 
 static void InitializeSteamControllerPacketAssembler(SteamControllerPacketAssembler *pAssembler)
 {
-    /* We only support BLE devices right now */
+    // We only support BLE devices right now
     pAssembler->bIsBle = true;
     ResetSteamControllerPacketAssembler(pAssembler);
 }
@@ -513,7 +509,7 @@ static bool ResetSteamController(SDL_hid_device *dev, bool bSuppressErrorSpew, u
     ADD_SETTING(SETTING_RIGHT_TRACKPAD_MODE, TRACKPAD_ABSOLUTE_MOUSE);
     ADD_SETTING(SETTING_SMOOTH_ABSOLUTE_MOUSE, 1);
     ADD_SETTING(SETTING_MOMENTUM_MAXIMUM_VELOCITY, 20000); // [0-20000] default 8000
-    ADD_SETTING(SETTING_MOMENTUM_DECAY_AMMOUNT, 50);       // [0-50] default 5
+    ADD_SETTING(SETTING_MOMENTUM_DECAY_AMOUNT, 50);       // [0-50] default 5
 #else
     ADD_SETTING(SETTING_RIGHT_TRACKPAD_MODE, TRACKPAD_NONE);
     ADD_SETTING(SETTING_SMOOTH_ABSOLUTE_MOUSE, 0);
@@ -941,7 +937,7 @@ static bool UpdateSteamControllerState(const uint8_t *pData, int nDataSize, Stea
 
 typedef struct
 {
-    SDL_bool report_sensors;
+    bool report_sensors;
     uint32_t update_rate_in_us;
     Uint64 sensor_timestamp;
 
@@ -957,36 +953,36 @@ static void HIDAPI_DriverSteam_RegisterHints(SDL_HintCallback callback, void *us
 
 static void HIDAPI_DriverSteam_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM, callback, userdata);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM, callback, userdata);
 }
 
-static SDL_bool HIDAPI_DriverSteam_IsEnabled(void)
+static bool HIDAPI_DriverSteam_IsEnabled(void)
 {
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STEAM, SDL_FALSE);
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STEAM, false);
 }
 
-static SDL_bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return SDL_IsJoystickSteamController(vendor_id, product_id);
 }
 
-static SDL_bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSteam_Context *ctx;
 
     ctx = (SDL_DriverSteam_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
-        return SDL_FALSE;
+        return false;
     }
     device->context = ctx;
 
 #ifdef SDL_PLATFORM_WIN32
     if (device->serial) {
-        /* We get a garbage serial number on Windows */
+        // We get a garbage serial number on Windows
         SDL_free(device->serial);
         device->serial = NULL;
     }
-#endif /* SDL_PLATFORM_WIN32 */
+#endif // SDL_PLATFORM_WIN32
 
     HIDAPI_SetDeviceName(device, "Steam Controller");
 
@@ -1002,21 +998,21 @@ static void HIDAPI_DriverSteam_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, S
 {
 }
 
-static SDL_bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
     float update_rate_in_hz = 0.0f;
 
     SDL_AssertJoysticksLocked();
 
-    ctx->report_sensors = SDL_FALSE;
+    ctx->report_sensors = false;
     SDL_zero(ctx->m_assembler);
     SDL_zero(ctx->m_state);
     SDL_zero(ctx->m_last_state);
 
     if (!ResetSteamController(device->dev, false, &ctx->update_rate_in_us)) {
         SDL_SetError("Couldn't reset controller");
-        return SDL_FALSE;
+        return false;
     }
     if (ctx->update_rate_in_us > 0) {
         update_rate_in_hz = 1000000.0f / ctx->update_rate_in_us;
@@ -1024,7 +1020,7 @@ static SDL_bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
 
     InitializeSteamControllerPacketAssembler(&ctx->m_assembler);
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     joystick->nbuttons = SDL_GAMEPAD_NUM_STEAM_BUTTONS;
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
@@ -1032,38 +1028,38 @@ static SDL_bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, update_rate_in_hz);
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, update_rate_in_hz);
 
-    return SDL_TRUE;
+    return true;
 }
 
-static int HIDAPI_DriverSteam_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_DriverSteam_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    /* You should use the full Steam Input API for rumble support */
+    // You should use the full Steam Input API for rumble support
     return SDL_Unsupported();
 }
 
-static int HIDAPI_DriverSteam_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_DriverSteam_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
 static Uint32 HIDAPI_DriverSteam_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    /* You should use the full Steam Input API for extended capabilities */
+    // You should use the full Steam Input API for extended capabilities
     return 0;
 }
 
-static int HIDAPI_DriverSteam_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_DriverSteam_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    /* You should use the full Steam Input API for LED support */
+    // You should use the full Steam Input API for LED support
     return SDL_Unsupported();
 }
 
-static int HIDAPI_DriverSteam_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
+static bool HIDAPI_DriverSteam_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+static bool HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
     unsigned char buf[65];
@@ -1083,18 +1079,18 @@ static int HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_J
 
     ctx->report_sensors = enabled;
 
-    return 0;
+    return true;
 }
 
-static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
     SDL_Joystick *joystick = NULL;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     } else {
-        return SDL_FALSE;
+        return false;
     }
 
     for (;;) {
@@ -1201,12 +1197,12 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
         }
 
         if (r <= 0) {
-            /* Failed to read from controller */
+            // Failed to read from controller
             HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
-            return SDL_FALSE;
+            return false;
         }
     }
-    return SDL_TRUE;
+    return true;
 }
 
 static void HIDAPI_DriverSteam_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -1220,7 +1216,7 @@ static void HIDAPI_DriverSteam_FreeDevice(SDL_HIDAPI_Device *device)
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam = {
     SDL_HINT_JOYSTICK_HIDAPI_STEAM,
-    SDL_TRUE,
+    true,
     HIDAPI_DriverSteam_RegisterHints,
     HIDAPI_DriverSteam_UnregisterHints,
     HIDAPI_DriverSteam_IsEnabled,
@@ -1240,6 +1236,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam = {
     HIDAPI_DriverSteam_FreeDevice,
 };
 
-#endif /* SDL_JOYSTICK_HIDAPI_STEAM */
+#endif // SDL_JOYSTICK_HIDAPI_STEAM
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

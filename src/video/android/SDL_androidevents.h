@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_androidvideo.h"
-
-extern void Android_PumpEvents_Blocking(SDL_VideoDevice *_this);
-extern void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this);
+extern void Android_InitEvents(void);
+extern void Android_PumpEvents(Sint64 timeoutNS);
+extern bool Android_WaitActiveAndLockActivity(void);
+extern void Android_QuitEvents(void);

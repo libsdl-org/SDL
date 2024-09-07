@@ -24,20 +24,20 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_directx.h"
 
-#define MAX_INPUTS 256 /* each joystick can have up to 256 inputs */
+#define MAX_INPUTS 256 // each joystick can have up to 256 inputs
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct JoyStick_DeviceData
 {
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     char *joystickname;
     Uint8 send_add_event;
     SDL_JoystickID nInstanceID;
-    SDL_bool bXInputDevice;
+    bool bXInputDevice;
     BYTE SubType;
     Uint8 XInputUserId;
     DIDEVICEINSTANCE dxdevice;
@@ -46,7 +46,7 @@ typedef struct JoyStick_DeviceData
     struct JoyStick_DeviceData *pNext;
 } JoyStick_DeviceData;
 
-extern JoyStick_DeviceData *SYS_Joystick; /* array to hold joystick ID values */
+extern JoyStick_DeviceData *SYS_Joystick; // array to hold joystick ID values
 
 typedef enum Type
 {
@@ -57,37 +57,37 @@ typedef enum Type
 
 typedef struct input_t
 {
-    /* DirectInput offset for this input type: */
+    // DirectInput offset for this input type:
     DWORD ofs;
 
-    /* Button, axis or hat: */
+    // Button, axis or hat:
     Type type;
 
-    /* SDL input offset: */
+    // SDL input offset:
     Uint8 num;
 } input_t;
 
-/* The private structure used to keep track of a joystick */
+// The private structure used to keep track of a joystick
 struct joystick_hwdata
 {
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
 
 #ifdef SDL_JOYSTICK_DINPUT
     LPDIRECTINPUTDEVICE8 InputDevice;
     DIDEVCAPS Capabilities;
-    SDL_bool buffered;
-    SDL_bool first_update;
+    bool buffered;
+    bool first_update;
     input_t Inputs[MAX_INPUTS];
     int NumInputs;
     int NumSliders;
-    SDL_bool ff_initialized;
+    bool ff_initialized;
     DIEFFECT *ffeffect;
     LPDIRECTINPUTEFFECT ffeffect_ref;
 #endif
 
-    SDL_bool bXInputDevice; /* SDL_TRUE if this device supports using the xinput API rather than DirectInput */
-    SDL_bool bXInputHaptic; /* Supports force feedback via XInput. */
-    Uint8 userid;           /* XInput userid index for this joystick */
+    bool bXInputDevice; // true if this device supports using the xinput API rather than DirectInput
+    bool bXInputHaptic; // Supports force feedback via XInput.
+    Uint8 userid;           // XInput userid index for this joystick
     DWORD dwPacketNumber;
 };
 
@@ -97,7 +97,7 @@ extern const DIDATAFORMAT SDL_c_dfDIJoystick2;
 
 extern void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif

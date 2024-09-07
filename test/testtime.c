@@ -79,6 +79,18 @@ static void RenderDateTime(SDL_Renderer *r)
     SDLTest_DrawString(r, 10, 15, str);
 
     SDL_TimeToDateTime(ticks, &dt, SDL_TRUE);
+    if (time_format) {
+        if (dt.hour > 12) { /* PM */
+            dt.hour -= 12;
+            postfix = TIMEPOST[2];
+        } else {
+            if (!dt.hour) { /* AM */
+                dt.hour = 12; /* Midnight */
+            }
+            postfix = TIMEPOST[1];
+        }
+    }
+
     SDL_snprintf(str, sizeof(str), "Local: %s %02d %s %04d (%s) %02d:%02d:%02d.%09d%s %+05d",
                  WDAY[dt.day_of_week], dt.day, MNAME[dt.month - 1], dt.year, short_date,
                  dt.hour, dt.minute, dt.second, dt.nanosecond, postfix,
@@ -143,7 +155,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
@@ -154,8 +166,7 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    time_format = SDL_GetNumberProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER, SDL_TIME_FORMAT_24HR);
-    date_format = SDL_GetNumberProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER, SDL_DATE_FORMAT_YYYYMMDD);
+    SDL_GetDateTimeLocalePreferences(&date_format, &time_format);
 
     /* Main render loop */
     done = 0;
@@ -165,7 +176,7 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                switch (event.key.keysym.sym) {
+                switch (event.key.key) {
                 case SDLK_UP:
                     if (++cal_month > 12) {
                         cal_month = 1;
@@ -196,6 +207,8 @@ int main(int argc, char *argv[])
                 default:
                     break;
                 }
+            } else if (event.type == SDL_EVENT_LOCALE_CHANGED) {
+                SDL_GetDateTimeLocalePreferences(&date_format, &time_format);
             }
         }
 
@@ -208,6 +221,7 @@ int main(int argc, char *argv[])
     }
 
 quit:
+    SDLTest_CleanupTextDrawing();
     SDLTest_CommonQuit(state);
     return 0;
 }

@@ -23,11 +23,50 @@
 #ifndef SDL_utils_h_
 #define SDL_utils_h_
 
-/* Common utility functions that aren't in the public API */
+// Common utility functions that aren't in the public API
 
-/* Return the smallest power of 2 greater than or equal to 'x' */
+// Return the smallest power of 2 greater than or equal to 'x'
 extern int SDL_powerof2(int x);
 
-SDL_bool SDL_endswith(const char *string, const char *suffix);
+extern Uint32 SDL_CalculateGCD(Uint32 a, Uint32 b);
+extern void SDL_CalculateFraction(float x, int *numerator, int *denominator);
 
-#endif /* SDL_utils_h_ */
+extern bool SDL_startswith(const char *string, const char *prefix);
+extern bool SDL_endswith(const char *string, const char *suffix);
+
+/** Convert URI to a local filename, stripping the "file://"
+ *  preamble and hostname if present, and writes the result
+ *  to the dst buffer. Since URI-encoded characters take
+ *  three times the space of normal characters, src and dst
+ *  can safely point to the same buffer for in situ conversion.
+ *
+ *  Returns the number of decoded bytes that wound up in
+ *  the destination buffer, excluding the terminating NULL byte.
+ *
+ *  On error, -1 is returned.
+ */
+extern int SDL_URIToLocal(const char *src, char *dst);
+
+typedef enum
+{
+    SDL_OBJECT_TYPE_UNKNOWN,
+    SDL_OBJECT_TYPE_WINDOW,
+    SDL_OBJECT_TYPE_RENDERER,
+    SDL_OBJECT_TYPE_TEXTURE,
+    SDL_OBJECT_TYPE_JOYSTICK,
+    SDL_OBJECT_TYPE_GAMEPAD,
+    SDL_OBJECT_TYPE_HAPTIC,
+    SDL_OBJECT_TYPE_SENSOR,
+    SDL_OBJECT_TYPE_HIDAPI_DEVICE,
+    SDL_OBJECT_TYPE_HIDAPI_JOYSTICK,
+
+} SDL_ObjectType;
+
+extern Uint32 SDL_GetNextObjectID(void);
+extern void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid);
+extern bool SDL_ObjectValid(void *object, SDL_ObjectType type);
+extern void SDL_SetObjectsInvalid(void);
+
+extern const char *SDL_GetPersistentString(const char *string);
+
+#endif // SDL_utils_h_

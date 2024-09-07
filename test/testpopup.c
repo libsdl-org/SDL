@@ -20,7 +20,6 @@ freely.
 #endif
 
 #include <stdlib.h>
-#include <time.h>
 
 #define MENU_WIDTH  120
 #define MENU_HEIGHT 300
@@ -56,6 +55,7 @@ static void quit(int rc)
     SDL_free(menus);
     menus = NULL;
 
+    SDLTest_CleanupTextDrawing();
     SDLTest_CommonQuit(state);
     /* Let 'main()' return normally */
     if (rc != 0) {
@@ -105,7 +105,7 @@ static SDL_bool create_popup(struct PopupWindow *new_popup, SDL_bool is_menu)
                                     (int)x, (int)y + v_off, w, h, flags);
 
     if (new_win) {
-        new_renderer = SDL_CreateRenderer(new_win, state->renderdriver, state->render_flags);
+        new_renderer = SDL_CreateRenderer(new_win, state->renderdriver);
 
         new_popup->win = new_win;
         new_popup->renderer = new_renderer;
@@ -172,7 +172,7 @@ static void loop(void)
                 }
             }
         } else if (event.type == SDL_EVENT_KEY_DOWN) {
-            if (event.key.keysym.sym == SDLK_SPACE) {
+            if (event.key.key == SDLK_SPACE) {
                 for (i = 0; i < num_menus; ++i) {
                     if (SDL_GetWindowFlags(menus[i].win) & SDL_WINDOW_HIDDEN) {
                         SDL_ShowWindow(menus[i].win);
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {

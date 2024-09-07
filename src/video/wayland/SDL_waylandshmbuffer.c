@@ -33,7 +33,7 @@
 #include "SDL_waylandshmbuffer.h"
 #include "SDL_waylandvideo.h"
 
-static int SetTempFileSize(int fd, off_t size)
+static bool SetTempFileSize(int fd, off_t size)
 {
 #ifdef HAVE_POSIX_FALLOCATE
     sigset_t set, old_set;
@@ -53,16 +53,16 @@ static int SetTempFileSize(int fd, off_t size)
     sigprocmask(SIG_SETMASK, &old_set, NULL);
 
     if (ret == 0) {
-        return 0;
+        return true;
     } else if (ret != EINVAL && errno != EOPNOTSUPP) {
-        return -1;
+        return false;
     }
 #endif
 
     if (ftruncate(fd, size) < 0) {
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
 static int CreateTempFD(off_t size)
@@ -77,7 +77,7 @@ static int CreateTempFD(off_t size)
 #endif
     {
         static const char template[] = "/sdl-shared-XXXXXX";
-        char *xdg_path;
+        const char *xdg_path;
         char tmp_path[PATH_MAX];
 
         xdg_path = SDL_getenv("XDG_RUNTIME_DIR");
@@ -93,11 +93,11 @@ static int CreateTempFD(off_t size)
             return -1;
         }
 
-        /* Need to manually unlink the temp files, or they can persist after close and fill up the temp storage. */
+        // Need to manually unlink the temp files, or they can persist after close and fill up the temp storage.
         unlink(tmp_path);
     }
 
-    if (SetTempFileSize(fd, size) < 0) {
+    if (!SetTempFileSize(fd, size)) {
         close(fd);
         return -1;
     }
@@ -107,17 +107,17 @@ static int CreateTempFD(off_t size)
 
 static void buffer_handle_release(void *data, struct wl_buffer *wl_buffer)
 {
-    /* NOP */
+    // NOP
 }
 
 static struct wl_buffer_listener buffer_listener = {
     buffer_handle_release
 };
 
-int Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shmBuffer)
+bool Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shmBuffer)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *data = vd->driverdata;
+    SDL_VideoData *data = vd->internal;
     struct wl_shm_pool *shm_pool;
     const Uint32 SHM_FMT = WL_SHM_FORMAT_ARGB8888;
 
@@ -149,7 +149,7 @@ int Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shmB
     wl_shm_pool_destroy(shm_pool);
     close(shm_fd);
 
-    return 0;
+    return true;
 }
 
 void Wayland_ReleaseSHMBuffer(struct Wayland_SHMBuffer *shmBuffer)

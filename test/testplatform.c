@@ -39,9 +39,9 @@ SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT32, SDL_MIN_SINT32 == ~0x7fffffff); /* Inste
 SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT32, SDL_MAX_UINT32 == 4294967295u);
 SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT32, SDL_MIN_UINT32 == 0);
 
-SDL_COMPILE_TIME_ASSERT(SDL_MAX_SINT64, SDL_MAX_SINT64 == 9223372036854775807ll);
-SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT64, SDL_MIN_SINT64 == ~0x7fffffffffffffffll); /* Instead of -9223372036854775808, which is treated as unsigned by compilers */
-SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT64, SDL_MAX_UINT64 == 18446744073709551615ull);
+SDL_COMPILE_TIME_ASSERT(SDL_MAX_SINT64, SDL_MAX_SINT64 == INT64_C(9223372036854775807));
+SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT64, SDL_MIN_SINT64 == ~INT64_C(0x7fffffffffffffff)); /* Instead of -9223372036854775808, which is treated as unsigned by compilers */
+SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT64, SDL_MAX_UINT64 == UINT64_C(18446744073709551615));
 SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT64, SDL_MIN_UINT64 == 0);
 
 static int TestTypes(SDL_bool verbose)
@@ -452,7 +452,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -484,6 +484,7 @@ int main(int argc, char *argv[])
     status += TestCPUInfo(verbose);
     status += TestAssertions(verbose);
 
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
 
     return status;

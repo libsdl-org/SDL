@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>@project_name@ Example: @category_name@/@example_name@</title>
+    <style>
+      html, body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        font-family: 'Liberation Sans', sans-serif;
+      }
+
+      .canvas-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: black;
+      }
+
+      #canvas {
+        box-shadow: 0 0 0.5rem #7787;
+      }
+
+      #output-container {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        background-color: black;
+        border: none;
+        border-top: 1px solid #778;
+        margin: 0;
+        padding: 1rem;
+
+        transition: top 0.25s;
+      }
+
+      #output-container::before {
+        position: absolute;
+        bottom: 100%;
+        right: 1rem;
+
+        content: 'Console';
+        font-size: 1.5rem;
+        color: white;
+        background: black;
+        border: 1px solid #778;
+        border-bottom: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+
+      #output-container:hover,
+      #output-container:focus-within {
+        top: 50%;
+      }
+
+      #output-container:focus-within {
+        border-top: 2px solid orange;
+      }
+
+      #output-container:focus-within::before {
+        border: 2px solid orange;
+        border-bottom: none;
+      }
+
+      #output {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+
+        border: none;
+        background: black;
+        color: white;
+        outline: none;
+        resize: none;
+
+        font-family: 'Lucida Console', Monaco, monospace;
+      }
+
+      #source-code {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        background: #e0eaee;
+        padding: 1rem;
+
+        transition: top 0.25s;
+      }
+
+      #source-code::before {
+        position: absolute;
+        bottom: 100%;
+        left: 1rem;
+
+        content: 'Source code';
+        font-size: 1.5rem;
+        background: linear-gradient(to bottom, #789, #e0eaee);
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+
+      #source-code:hover,
+      #source-code:focus-within {
+        top: 50%;
+      }
+
+      #source-code:focus-within {
+        border-top: 2px solid orange;
+      }
+
+      #source-code:focus-within::before {
+        border: 2px solid orange;
+        border-bottom: none;
+      }
+
+      #source-code-contents {
+        height: 100%;
+        overflow: scroll;
+      }
+
+      #example-description {
+        color: white;
+        text-align: center;
+        position: relative; /* required for proper positioning */
+      }
+    </style>
+    <link rel="stylesheet" type="text/css" href="highlight.css">
+  </head>
+  <body>
+    <div class="canvas-container">
+      <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    </div>
+    <div id="example-description">
+      @description@
+    </div>
+    <div id="output-container">
+      <textarea id="output" rows="8" spellcheck="false" readonly></textarea>
+    </div>
+
+    <div id="source-code" tabindex="1">
+      <div id="source-code-contents">@htmlified_source_code@</div>
+    </div>
+
+    <script type='text/javascript'>
+      var Module = {
+        preRun: [],
+        postRun: [],
+        print: (function() {
+          var element = document.getElementById('output');
+          if (element) element.value = ''; // clear browser cache
+          return function(text) {
+            var elem = document.getElementById('output-container');
+            if (elem.style['top'] == '') {
+                elem.style['top'] = '50%';
+                setTimeout(function() { elem.style['top'] = ''; }, 3000);
+            }
+
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            // These replacements are necessary if you render to raw HTML
+            //text = text.replace(/&/g, "&amp;");
+            //text = text.replace(/</g, "&lt;");
+            //text = text.replace(/>/g, "&gt;");
+            //text = text.replace('\n', '<br>', 'g');
+            console.log(text);
+            if (element) {
+              element.value += text + "\n";
+              element.scrollTop = element.scrollHeight; // focus on bottom
+            }
+          };
+        })(),
+        printErr: function(text) { Module.print(text) },
+        canvas: (() => {
+          var canvas = document.getElementById('canvas');
+
+          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+          // application robust, you may want to override this behavior before shipping!
+          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+          canvas.addEventListener("webglcontextlost", (e) => { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+
+          return canvas;
+        })(),
+        setStatus: (text) => {},
+        totalDependencies: 0,
+        monitorRunDependencies: (left) => {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+      window.onerror = (event) => {
+        // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
+        Module.setStatus('Exception thrown, see JavaScript console');
+        Module.setStatus = (text) => {
+          if (text) console.error('[post-exception status] ' + text);
+        };
+      };
+    </script>
+    <script async type="text/javascript" src="@javascript_file@"></script>
+  </body>
+</html>
+
+

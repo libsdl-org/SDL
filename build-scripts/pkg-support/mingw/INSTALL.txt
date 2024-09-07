@@ -1,0 +1,25 @@
+
+The 32-bit files are in i686-w64-mingw32
+The 64-bit files are in x86_64-w64-mingw32
+
+To install SDL for 32-bit x86 executables (i686):
+    make install-i686
+
+To install SDL for 64-bit x86 executables (x86_64):
+    make install-x86_64
+
+To install both:
+    make install-all
+
+Use DESTDIR to change the target location
+    mkdir $HOME/mingw32-prefix
+    make install-i686 DESTDIR=$HOME/mingw32-prefix
+
+Look at the example programs in ./test, and check out online documentation:
+    https://wiki.libsdl.org/SDL3/FrontPage
+
+Join the SDL discourse server if you want to join the community:
+    https://discourse.libsdl.org/
+
+That's it!
+Sam Lantinga <slouken@libsdl.org>

@@ -32,15 +32,15 @@ const TUint32 WindowClientHandle = 9210;
 void DisableKeyBlocking(SDL_VideoDevice *_this);
 void ConstructWindowL(SDL_VideoDevice *_this);
 
-int NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+bool NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     NGAGE_Window *ngage_window = (NGAGE_Window *)SDL_calloc(1, sizeof(NGAGE_Window));
 
     if (!ngage_window) {
-        return -1;
+        return false;
     }
 
-    window->driverdata = ngage_window;
+    window->internal = ngage_window;
 
     if (window->x == SDL_WINDOWPOS_UNDEFINED) {
         window->x = 0;
@@ -54,27 +54,27 @@ int NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
 
     ConstructWindowL(_this);
 
-    return 0;
+    return true;
 }
 
 void NGAGE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    NGAGE_Window *ngage_window = (NGAGE_Window *)window->driverdata;
+    NGAGE_Window *ngage_window = (NGAGE_Window *)window->internal;
 
     if (ngage_window) {
         SDL_free(ngage_window);
     }
 
-    window->driverdata = NULL;
+    window->internal = NULL;
 }
 
 /*****************************************************************************/
-/* Internal                                                                  */
+// Internal
 /*****************************************************************************/
 
 void DisableKeyBlocking(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
     TRawEvent event;
 
     event.Set((TRawEvent::TType) /*EDisableKeyBlock*/ 51);
@@ -83,7 +83,7 @@ void DisableKeyBlocking(SDL_VideoDevice *_this)
 
 void ConstructWindowL(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
     TInt error;
 
     error = phdata->NGAGE_WsSession.Connect();
@@ -122,4 +122,4 @@ void ConstructWindowL(SDL_VideoDevice *_this)
     DisableKeyBlocking(_this);
 }
 
-#endif /* SDL_VIDEO_DRIVER_NGAGE */
+#endif // SDL_VIDEO_DRIVER_NGAGE

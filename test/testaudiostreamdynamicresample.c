@@ -102,13 +102,14 @@ static void draw_textf(SDL_Renderer* renderer, int x, int y, const char* fmt, ..
     draw_text(renderer, x, y, text);
 }
 
-static void queue_audio()
+static void queue_audio(void)
 {
     Uint8* new_data = NULL;
     int new_len = 0;
-    int retval = 0;
+    SDL_bool result = SDL_TRUE;
     SDL_AudioSpec new_spec;
 
+    SDL_zero(new_spec);
     new_spec.format = spec.format;
     new_spec.channels = (int) sliders[2].value;
     new_spec.freq = (int) sliders[1].value;
@@ -116,20 +117,20 @@ static void queue_audio()
     SDL_Log("Converting audio from %i to %i", spec.freq, new_spec.freq);
 
     /* You shouldn't actually use SDL_ConvertAudioSamples like this (just put the data straight into the stream and let it handle conversion) */
-    retval = retval ? retval : SDL_ConvertAudioSamples(&spec, audio_buf, audio_len, &new_spec, &new_data, &new_len);
-    retval = retval ? retval : SDL_SetAudioStreamFormat(stream, &new_spec, NULL);
-    retval = retval ? retval : SDL_PutAudioStreamData(stream, new_data, new_len);
+    result = result && SDL_ConvertAudioSamples(&spec, audio_buf, audio_len, &new_spec, &new_data, &new_len);
+    result = result && SDL_SetAudioStreamFormat(stream, &new_spec, NULL);
+    result = result && SDL_PutAudioStreamData(stream, new_data, new_len);
 
     if (auto_flush) {
-        retval = retval ? retval : SDL_FlushAudioStream(stream);
+        result = result && SDL_FlushAudioStream(stream);
     }
 
     SDL_free(new_data);
 
-    if (retval) {
-        SDL_Log("Failed to queue audio: %s", SDL_GetError());
-    } else {
+    if (result) {
         SDL_Log("Queued audio");
+    } else {
+        SDL_Log("Failed to queue audio: %s", SDL_GetError());
     }
 }
 
@@ -138,7 +139,7 @@ static void skip_audio(float amount)
     float speed;
     SDL_AudioSpec dst_spec;
     int num_bytes;
-    int retval = 0;
+    int result = 0;
     void* buf = NULL;
 
     SDL_LockAudioStream(stream);
@@ -152,7 +153,7 @@ static void skip_audio(float amount)
     buf = SDL_malloc(num_bytes);
 
     if (buf) {
-        retval = SDL_GetAudioStreamData(stream, buf, num_bytes);
+        result = SDL_GetAudioStreamData(stream, buf, num_bytes);
         SDL_free(buf);
     }
 
@@ -160,28 +161,11 @@ static void skip_audio(float amount)
 
     SDL_UnlockAudioStream(stream);
 
-    if (retval >= 0) {
+    if (result >= 0) {
         SDL_Log("Skipped %.2f seconds", amount);
     } else {
         SDL_Log("Failed to skip: %s", SDL_GetError());
     }
-}
-
-static const char *AudioFmtToString(const SDL_AudioFormat fmt)
-{
-    switch (fmt) {
-        #define FMTCASE(x) case SDL_AUDIO_##x: return #x
-        FMTCASE(U8);
-        FMTCASE(S8);
-        FMTCASE(S16LE);
-        FMTCASE(S16BE);
-        FMTCASE(S32LE);
-        FMTCASE(S32BE);
-        FMTCASE(F32LE);
-        FMTCASE(F32BE);
-        #undef FMTCASE
-    }
-    return "?";
 }
 
 static const char *AudioChansToStr(const int channels)
@@ -218,26 +202,26 @@ static void loop(void)
         }
 #endif
         if (e.type == SDL_EVENT_KEY_DOWN) {
-            SDL_Keycode sym = e.key.keysym.sym;
-            if (sym == SDLK_q) {
+            SDL_Keycode key = e.key.key;
+            if (key == SDLK_Q) {
                 if (SDL_AudioDevicePaused(state->audio_id)) {
                     SDL_ResumeAudioDevice(state->audio_id);
                 } else {
                     SDL_PauseAudioDevice(state->audio_id);
                 }
-            } else if (sym == SDLK_w) {
+            } else if (key == SDLK_W) {
                 auto_loop = !auto_loop;
-            } else if (sym == SDLK_e) {
+            } else if (key == SDLK_E) {
                 auto_flush = !auto_flush;
-            } else if (sym == SDLK_a) {
+            } else if (key == SDLK_A) {
                 SDL_ClearAudioStream(stream);
                 SDL_Log("Cleared audio stream");
-            } else if (sym == SDLK_s) {
+            } else if (key == SDLK_S) {
                 queue_audio();
-            } else if (sym == SDLK_d) {
+            } else if (key == SDLK_D) {
                 float amount = 1.0f;
-                amount *= (e.key.keysym.mod & SDL_KMOD_CTRL) ? 10.0f : 1.0f;
-                amount *= (e.key.keysym.mod & SDL_KMOD_SHIFT) ? 10.0f : 1.0f;
+                amount *= (e.key.mod & SDL_KMOD_CTRL) ? 10.0f : 1.0f;
+                amount *= (e.key.mod & SDL_KMOD_SHIFT) ? 10.0f : 1.0f;
                 skip_audio(amount);
             }
         }
@@ -284,7 +268,7 @@ static void loop(void)
         SDL_SetAudioStreamFrequencyRatio(stream, sliders[0].value);
     }
 
-    if (SDL_GetAudioStreamFormat(stream, &src_spec, &dst_spec) == 0) {
+    if (SDL_GetAudioStreamFormat(stream, &src_spec, &dst_spec)) {
         available_bytes = SDL_GetAudioStreamAvailable(stream);
         available_seconds = (float)available_bytes / (float)(SDL_AUDIO_FRAMESIZE(dst_spec) * dst_spec.freq);
 
@@ -342,15 +326,15 @@ static void loop(void)
         draw_y = state->window_h - FONT_LINE_HEIGHT * 3;
 
         draw_textf(rend, 0, draw_y, "Wav: %6s/%6s/%i",
-            AudioFmtToString(spec.format), AudioChansToStr(spec.channels), spec.freq);
+            SDL_GetAudioFormatName(spec.format), AudioChansToStr(spec.channels), spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Src: %6s/%6s/%i",
-            AudioFmtToString(src_spec.format), AudioChansToStr(src_spec.channels), src_spec.freq);
+            SDL_GetAudioFormatName(src_spec.format), AudioChansToStr(src_spec.channels), src_spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Dst: %6s/%6s/%i",
-            AudioFmtToString(dst_spec.format), AudioChansToStr(dst_spec.channels), dst_spec.freq);
+            SDL_GetAudioFormatName(dst_spec.format), AudioChansToStr(dst_spec.channels), dst_spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         SDL_RenderPresent(rend);
@@ -368,7 +352,6 @@ int main(int argc, char *argv[])
 {
     char *filename = NULL;
     int i;
-    int rc;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_AUDIO | SDL_INIT_VIDEO);
@@ -377,7 +360,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -408,9 +391,7 @@ int main(int argc, char *argv[])
     FONT_CHARACTER_SIZE = 16;
 
     filename = GetResourceFilename(filename, "sample.wav");
-    rc = SDL_LoadWAV(filename, &spec, &audio_buf, &audio_len);
-
-    if (rc < 0) {
+    if (!SDL_LoadWAV(filename, &spec, &audio_buf, &audio_len)) {
         SDL_Log("Failed to load '%s': %s", filename, SDL_GetError());
         SDL_free(filename);
         SDL_Quit();

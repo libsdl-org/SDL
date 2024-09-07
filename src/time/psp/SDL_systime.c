@@ -22,19 +22,20 @@
 
 #ifdef SDL_TIME_PSP
 
+#include <psptypes.h>
 #include <psprtc.h>
 #include <psputility_sysparam.h>
 
 #include "../SDL_time_c.h"
 
-/* Sony seems to use 0001-01-01T00:00:00 as an epoch. */
+// Sony seems to use 0001-01-01T00:00:00 as an epoch.
 #define DELTA_EPOCH_0001_OFFSET 62135596800ULL
 
 void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 {
     int val;
 
-    if (sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_DATE_FORMAT, &val) == 0) {
+    if (df && sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_DATE_FORMAT, &val) == 0) {
         switch (val) {
         case PSP_SYSTEMPARAM_DATE_FORMAT_YYYYMMDD:
             *df = SDL_DATE_FORMAT_YYYYMMDD;
@@ -50,7 +51,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
         }
     }
 
-    if (sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_TIME_FORMAT, &val) == 0) {
+    if (tf && sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_TIME_FORMAT, &val) == 0) {
         switch (val) {
         case PSP_SYSTEMPARAM_TIME_FORMAT_24HR:
             *tf = SDL_TIME_FORMAT_24HR;
@@ -64,7 +65,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
     }
 }
 
-int SDL_GetCurrentTime(SDL_Time *ticks)
+SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     u64 sceTicks;
 
@@ -81,18 +82,18 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
         const Uint64 scetime_min = (Uint64)((SDL_MIN_TIME / div) + epoch_offset);
         const Uint64 scetime_max = (Uint64)((SDL_MAX_TIME / div) + epoch_offset);
 
-        /* Clamp to the valid SDL_Time range. */
+        // Clamp to the valid SDL_Time range.
         sceTicks = SDL_clamp(sceTicks, scetime_min, scetime_max);
 
         *ticks = (SDL_Time)(sceTicks - epoch_offset) * div;
 
-        return 0;
+        return true;
     }
 
     return SDL_SetError("Failed to retrieve system time (%i)", ret);
 }
 
-int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
+SDL_bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
 {
     ScePspDateTime t;
     u64 local;
@@ -126,11 +127,11 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
 
             SDL_CivilToDays(dt->year, dt->month, dt->day, &dt->day_of_week, NULL);
 
-            return 0;
+            return true;
         }
     }
 
     return SDL_SetError("Local time conversion failed (%i)", ret);
 }
 
-#endif /* SDL_TIME_PSP */
+#endif // SDL_TIME_PSP

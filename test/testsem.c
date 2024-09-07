@@ -37,7 +37,7 @@ typedef struct Thread_State
 } Thread_State;
 
 static void log_usage(char *progname, SDLTest_CommonState *state) {
-    static const char *options[] = { "init_value", NULL };
+    static const char *options[] = { "[--no-threads]", "init_value", NULL };
     SDLTest_CommonLogUsage(state, progname, options);
 }
 
@@ -56,7 +56,7 @@ ThreadFuncRealWorld(void *data)
         SDL_Log("Thread number %d has got the semaphore (value = %" SDL_PRIu32 ")!\n",
                 state->number, SDL_GetSemaphoreValue(sem));
         SDL_Delay(200);
-        SDL_PostSemaphore(sem);
+        SDL_SignalSemaphore(sem);
         SDL_Log("Thread number %d has released the semaphore (value = %" SDL_PRIu32 ")!\n",
                 state->number, SDL_GetSemaphoreValue(sem));
         ++state->loop_count;
@@ -108,24 +108,24 @@ TestWaitTimeout(void)
     Uint64 start_ticks;
     Uint64 end_ticks;
     Uint64 duration;
-    int retval;
+    SDL_bool result;
 
     sem = SDL_CreateSemaphore(0);
     SDL_Log("Waiting 2 seconds on semaphore\n");
 
     start_ticks = SDL_GetTicks();
-    retval = SDL_WaitSemaphoreTimeout(sem, 2000);
+    result = SDL_WaitSemaphoreTimeout(sem, 2000);
     end_ticks = SDL_GetTicks();
 
     duration = end_ticks - start_ticks;
 
     /* Accept a little offset in the effective wait */
-    SDL_assert(duration > 1900 && duration < 2050);
     SDL_Log("Wait took %" SDL_PRIu64 " milliseconds\n\n", duration);
+    SDL_assert(duration > 1900 && duration < 2050);
 
     /* Check to make sure the return value indicates timed out */
-    if (retval != SDL_MUTEX_TIMEDOUT) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_WaitSemaphoreTimeout returned: %d; expected: %d\n\n", retval, SDL_MUTEX_TIMEDOUT);
+    if (result) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_WaitSemaphoreTimeout returned: %d; expected: SDL_FALSE\n\n", result);
     }
 
     SDL_DestroySemaphore(sem);
@@ -145,7 +145,7 @@ TestOverheadUncontended(void)
     start_ticks = SDL_GetTicks();
     for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++) {
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
-            SDL_PostSemaphore(sem);
+            SDL_SignalSemaphore(sem);
         }
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
             SDL_WaitSemaphore(sem);
@@ -166,7 +166,7 @@ ThreadFuncOverheadContended(void *data)
 
     if (state->flag) {
         while (alive) {
-            if (SDL_TryWaitSemaphore(sem) == SDL_MUTEX_TIMEDOUT) {
+            if (!SDL_TryWaitSemaphore(sem)) {
                 ++state->content_count;
             }
             ++state->loop_count;
@@ -174,7 +174,7 @@ ThreadFuncOverheadContended(void *data)
     } else {
         while (alive) {
             /* Timeout needed to allow check on alive flag */
-            if (SDL_WaitSemaphoreTimeout(sem, 50) == SDL_MUTEX_TIMEDOUT) {
+            if (!SDL_WaitSemaphoreTimeout(sem, 50)) {
                 ++state->content_count;
             }
             ++state->loop_count;
@@ -211,7 +211,7 @@ TestOverheadContended(SDL_bool try_wait)
     start_ticks = SDL_GetTicks();
     for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++) {
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
-            SDL_PostSemaphore(sem);
+            SDL_SignalSemaphore(sem);
         }
         /* Make sure threads consumed everything */
         while (SDL_GetSemaphoreValue(sem)) {
@@ -257,6 +257,7 @@ int main(int argc, char **argv)
     int arg_count = 0;
     int i;
     int init_sem = 0;
+    SDL_bool enable_threads = SDL_TRUE;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
@@ -266,19 +267,25 @@ int main(int argc, char **argv)
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
         int consumed;
 
         consumed = SDLTest_CommonArg(state, i);
-        if (arg_count == 0) {
-            char *endptr;
-            init_sem = SDL_strtol(argv[i], &endptr, 0);
-            if (endptr != argv[i] && *endptr == '\0') {
-                arg_count++;
+        if (consumed == 0) {
+            consumed = -1;
+            if (SDL_strcasecmp(argv[i], "--no-threads") == 0) {
+                enable_threads = SDL_FALSE;
                 consumed = 1;
+            } else if (arg_count == 0) {
+                char *endptr;
+                init_sem = SDL_strtol(argv[i], &endptr, 0);
+                if (endptr != argv[i] && *endptr == '\0') {
+                    arg_count++;
+                    consumed = 1;
+                }
             }
         }
         if (consumed <= 0) {
@@ -295,24 +302,28 @@ int main(int argc, char **argv)
     }
 
     /* Load the SDL library */
-    if (SDL_Init(0) < 0) {
+    if (!SDL_Init(0)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
     (void)signal(SIGTERM, killed);
     (void)signal(SIGINT, killed);
 
-    if (init_sem > 0) {
-        TestRealWorld(init_sem);
-    }
+    if (enable_threads) {
+        if (init_sem > 0) {
+            TestRealWorld(init_sem);
+        }
 
-    TestWaitTimeout();
+        TestWaitTimeout();
+    }
 
     TestOverheadUncontended();
 
-    TestOverheadContended(SDL_FALSE);
+    if (enable_threads) {
+        TestOverheadContended(SDL_FALSE);
 
-    TestOverheadContended(SDL_TRUE);
+        TestOverheadContended(SDL_TRUE);
+    }
 
     SDL_Quit();
     SDLTest_CommonDestroyState(state);

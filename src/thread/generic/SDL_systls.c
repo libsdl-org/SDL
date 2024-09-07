@@ -22,12 +22,23 @@
 #include "SDL_internal.h"
 #include "../SDL_thread_c.h"
 
+void SDL_SYS_InitTLSData(void)
+{
+    SDL_Generic_InitTLSData();
+}
+
 SDL_TLSData *SDL_SYS_GetTLSData(void)
 {
     return SDL_Generic_GetTLSData();
 }
 
-int SDL_SYS_SetTLSData(SDL_TLSData *data)
+bool SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
     return SDL_Generic_SetTLSData(data);
 }
+
+void SDL_SYS_QuitTLSData(void)
+{
+    SDL_Generic_QuitTLSData();
+}
+

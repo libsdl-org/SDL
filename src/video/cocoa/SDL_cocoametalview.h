@@ -39,7 +39,7 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
-@interface SDL_cocoametalview : NSView
+@interface SDL3_cocoametalview : NSView
 
 - (instancetype)initWithFrame:(NSRect)frame
                       highDPI:(BOOL)highDPI
@@ -49,7 +49,7 @@
 - (void)updateDrawableSize;
 - (NSView *)hitTest:(NSPoint)point;
 
-/* Override superclass tag so this class can set it. */
+// Override superclass tag so this class can set it.
 @property(assign, readonly) NSInteger tag;
 
 @property(nonatomic) BOOL highDPI;
@@ -61,6 +61,6 @@ SDL_MetalView Cocoa_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
 void Cocoa_Metal_DestroyView(SDL_VideoDevice *_this, SDL_MetalView view);
 void *Cocoa_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view);
 
-#endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
+#endif // SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
 
-#endif /* SDL_cocoametalview_h_ */
+#endif // SDL_cocoametalview_h_

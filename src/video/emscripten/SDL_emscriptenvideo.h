@@ -39,12 +39,12 @@ struct SDL_WindowData
 
     float pixel_ratio;
 
-    SDL_bool external_size;
+    bool external_size;
 
     Uint32 fullscreen_mode_flags;
-    SDL_bool fullscreen_resize;
+    bool fullscreen_resize;
 
-    SDL_bool has_pointer_lock;
+    bool has_pointer_lock;
 };
 
-#endif /* SDL_emscriptenvideo_h_ */
+#endif // SDL_emscriptenvideo_h_

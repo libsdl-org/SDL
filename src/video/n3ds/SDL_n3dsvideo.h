@@ -38,4 +38,4 @@ struct SDL_WindowData
     gfxScreen_t screen; /**< Keeps track of which N3DS screen is targeted */
 };
 
-#endif /* SDL_n3dsvideo_h_ */
+#endif // SDL_n3dsvideo_h_

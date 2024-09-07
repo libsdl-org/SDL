@@ -31,50 +31,50 @@ struct recElement
 {
     IOHIDElementRef elementRef;
     IOHIDElementCookie cookie;
-    uint32_t usagePage, usage; /* HID usage */
-    SInt32 min;                /* reported min value possible */
-    SInt32 max;                /* reported max value possible */
+    uint32_t usagePage, usage; // HID usage
+    SInt32 min;                // reported min value possible
+    SInt32 max;                // reported max value possible
 
-    /* runtime variables used for auto-calibration */
-    SInt32 minReport; /* min returned value */
-    SInt32 maxReport; /* max returned value */
+    // runtime variables used for auto-calibration
+    SInt32 minReport; // min returned value
+    SInt32 maxReport; // max returned value
 
-    struct recElement *pNext; /* next element in list */
+    struct recElement *pNext; // next element in list
 };
 typedef struct recElement recElement;
 
 struct joystick_hwdata
 {
-    IOHIDDeviceRef deviceRef; /* HIDManager device handle */
-    io_service_t ffservice;   /* Interface for force feedback, 0 = no ff */
+    IOHIDDeviceRef deviceRef; // HIDManager device handle
+    io_service_t ffservice;   // Interface for force feedback, 0 = no ff
     FFDeviceObjectReference ffdevice;
     FFEFFECT *ffeffect;
     FFEffectObjectReference ffeffect_ref;
-    SDL_bool ff_initialized;
+    bool ff_initialized;
 
-    char product[256];  /* name of product */
-    uint32_t usage;     /* usage page from IOUSBHID Parser.h which defines general usage */
-    uint32_t usagePage; /* usage within above page from IOUSBHID Parser.h which defines specific usage */
+    char product[256];  // name of product
+    uint32_t usage;     // usage page from IOUSBHID Parser.h which defines general usage
+    uint32_t usagePage; // usage within above page from IOUSBHID Parser.h which defines specific usage
 
-    int axes;     /* number of axis (calculated, not reported by device) */
-    int buttons;  /* number of buttons (calculated, not reported by device) */
-    int hats;     /* number of hat switches (calculated, not reported by device) */
-    int elements; /* number of total elements (should be total of above) (calculated, not reported by device) */
+    int axes;     // number of axis (calculated, not reported by device)
+    int buttons;  // number of buttons (calculated, not reported by device)
+    int hats;     // number of hat switches (calculated, not reported by device)
+    int elements; // number of total elements (should be total of above) (calculated, not reported by device)
 
     recElement *firstAxis;
     recElement *firstButton;
     recElement *firstHat;
 
-    SDL_bool removed;
+    bool removed;
     SDL_Joystick *joystick;
-    SDL_bool runLoopAttached; /* is 'deviceRef' attached to a CFRunLoop? */
+    bool runLoopAttached; // is 'deviceRef' attached to a CFRunLoop?
 
     int instance_id;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     int steam_virtual_gamepad_slot;
 
-    struct joystick_hwdata *pNext; /* next device */
+    struct joystick_hwdata *pNext; // next device
 };
 typedef struct joystick_hwdata recDevice;
 
-#endif /* SDL_JOYSTICK_IOKIT_H */
+#endif // SDL_JOYSTICK_IOKIT_H

@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
                                        "Simple MessageBox",
                                        "This is a simple error MessageBox",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
                                        "Simple MessageBox",
                                        "This is a simple MessageBox with a newline:\r\nHello world!",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
                                        NULL,
                                        "NULL Title",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
                                        "NULL Message",
                                        NULL,
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
                                        "UTF-8 Simple MessageBox",
                                        "Unicode text: '牛肉西蘭花' ...",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
                                        "UTF-8 Simple MessageBox",
                                        "Unicode text and newline:\r\n'牛肉西蘭花'\n'牛肉西蘭花'",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
                                        "牛肉西蘭花",
                                        "Unicode text in the title.",
                                        NULL);
-    if (success == -1) {
+    if (!success) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         quit(1);
     }
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
        to work, since the message box events are dispatched by the Cocoa
        subsystem on the main thread.
      */
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video subsystem: %s\n", SDL_GetError());
         return 1;
     }
@@ -204,14 +204,14 @@ int main(int argc, char *argv[])
         /* On wayland, no window will actually show until something has
            actually been displayed.
         */
-        SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL, 0);
+        SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
         SDL_RenderPresent(renderer);
 
         success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
                                            "Simple MessageBox",
                                            "This is a simple error MessageBox with a parent window. Press a key or close the window after dismissing this messagebox.",
                                            window);
-        if (success == -1) {
+        if (!success) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
             quit(1);
         }

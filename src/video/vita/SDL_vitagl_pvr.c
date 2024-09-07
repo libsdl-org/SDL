@@ -33,7 +33,7 @@
 
 #define MAX_PATH 256 // vita limits are somehow wrong
 
-/* Defaults */
+// Defaults
 static int FB_WIDTH = 960;
 static int FB_HEIGHT = 544;
 
@@ -43,16 +43,16 @@ static void getFBSize(int *width, int *height)
     *height = FB_HEIGHT;
 }
 
-int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
-    char *override = SDL_getenv("VITA_MODULE_PATH");
-    char *skip_init = SDL_getenv("VITA_PVR_SKIP_INIT");
     char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (!skip_init) { // we don't care about actual value
-        if (override) {
+    if (SDL_GetHintBoolean(SDL_HINT_VITA_PVR_INIT, true)) {
+        const char *override = SDL_GetHint(SDL_HINT_VITA_MODULE_PATH);
+
+        if (override && *override) {
             default_path = override;
         }
 
@@ -88,12 +88,12 @@ SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     int temp_minor = _this->gl_config.minor_version;
     int temp_profile = _this->gl_config.profile_mask;
 
-    /* Set version to 2.0 and PROFILE to ES */
+    // Set version to 2.0 and PROFILE to ES
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 0;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 
-    context = SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
+    context = SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 
     if (context != NULL) {
         FB_WIDTH = window->w;
@@ -101,12 +101,12 @@ SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         set_getprocaddress((void *(*)(const char *))eglGetProcAddress);
         set_getmainfbsize(getFBSize);
         SDL_snprintf(gl_version, 3, "%d%d", temp_major, temp_minor);
-        gl4es_setenv("LIBGL_NOTEXRECT", "1", 1); /* Currently broken in driver */
+        gl4es_setenv("LIBGL_NOTEXRECT", "1", 1); // Currently broken in driver
         gl4es_setenv("LIBGL_GL", gl_version, 1);
         initialize_gl4es();
     }
 
-    /* Restore gl_config */
+    // Restore gl_config
     _this->gl_config.major_version = temp_major;
     _this->gl_config.minor_version = temp_minor;
     _this->gl_config.profile_mask = temp_profile;
@@ -119,4 +119,4 @@ SDL_FunctionPointer VITA_GL_GetProcAddress(SDL_VideoDevice *_this, const char *p
     return gl4es_GetProcAddress(proc);
 }
 
-#endif /* SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR */
+#endif // SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR

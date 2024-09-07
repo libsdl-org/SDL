@@ -23,7 +23,9 @@
 #ifdef SDL_FILESYSTEM_VITA
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
+
+#include "../SDL_sysfilesystem.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -34,17 +36,15 @@
 #include <limits.h>
 #include <fcntl.h>
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
-    const char *basepath = "app0:/";
-    char *retval = SDL_strdup(basepath);
-    return retval;
+    return SDL_strdup("app0:/");
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     const char *envr = "ux0:/data/";
-    char *retval = NULL;
+    char *result = NULL;
     char *ptr = NULL;
     size_t len = 0;
 
@@ -59,34 +59,34 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     len = SDL_strlen(envr);
 
     len += SDL_strlen(org) + SDL_strlen(app) + 3;
-    retval = (char *)SDL_malloc(len);
-    if (!retval) {
+    result = (char *)SDL_malloc(len);
+    if (!result) {
         return NULL;
     }
 
     if (*org) {
-        SDL_snprintf(retval, len, "%s%s/%s/", envr, org, app);
+        SDL_snprintf(result, len, "%s%s/%s/", envr, org, app);
     } else {
-        SDL_snprintf(retval, len, "%s%s/", envr, app);
+        SDL_snprintf(result, len, "%s%s/", envr, app);
     }
 
-    for (ptr = retval + 1; *ptr; ptr++) {
+    for (ptr = result + 1; *ptr; ptr++) {
         if (*ptr == '/') {
             *ptr = '\0';
-            sceIoMkdir(retval, 0777);
+            sceIoMkdir(result, 0777);
             *ptr = '/';
         }
     }
-    sceIoMkdir(retval, 0777);
+    sceIoMkdir(result, 0777);
 
-    return retval;
+    return result;
 }
 
-/* TODO */
-char *SDL_GetUserFolder(SDL_Folder folder)
+// TODO
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-#endif /* SDL_FILESYSTEM_VITA */
+#endif // SDL_FILESYSTEM_VITA

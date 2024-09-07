@@ -28,7 +28,7 @@
 #include "SDL_syspower.h"
 
 #ifndef SDL_PLATFORM_TVOS
-/* turn off the battery monitor if it's been more than X ms since last check. */
+// turn off the battery monitor if it's been more than X ms since last check.
 static const int BATTERY_MONITORING_TIMEOUT = 3000;
 static Uint64 SDL_UIKitLastPowerInfoQuery = 0;
 
@@ -46,17 +46,17 @@ void SDL_UIKit_UpdateBatteryMonitoring(void)
 #else
 void SDL_UIKit_UpdateBatteryMonitoring(void)
 {
-    /* Do nothing. */
+    // Do nothing.
 }
-#endif /* !SDL_PLATFORM_TVOS */
+#endif // !SDL_PLATFORM_TVOS
 
-SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percent)
+bool SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percent)
 {
 #ifdef SDL_PLATFORM_TVOS
     *state = SDL_POWERSTATE_NO_BATTERY;
     *seconds = -1;
     *percent = -1;
-#else  /* SDL_PLATFORM_TVOS */
+#else  // SDL_PLATFORM_TVOS
     @autoreleasepool {
         UIDevice *uidev = [UIDevice currentDevice];
 
@@ -72,7 +72,7 @@ SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percen
          */
         SDL_UIKitLastPowerInfoQuery = SDL_GetTicks();
 
-        *seconds = -1; /* no API to estimate this in UIKit. */
+        *seconds = -1; // no API to estimate this in UIKit.
 
         switch (uidev.batteryState) {
         case UIDeviceBatteryStateCharging:
@@ -96,10 +96,10 @@ SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percen
         const float level = uidev.batteryLevel;
         *percent = ((level < 0.0f) ? -1 : ((int)((level * 100) + 0.5f)));
     }
-#endif /* SDL_PLATFORM_TVOS */
+#endif // SDL_PLATFORM_TVOS
 
-    return SDL_TRUE; /* always the definitive answer on iOS. */
+    return true; // always the definitive answer on iOS.
 }
 
-#endif /* SDL_POWER_UIKIT */
-#endif /* SDL_POWER_DISABLED */
+#endif // SDL_POWER_UIKIT
+#endif // SDL_POWER_DISABLED

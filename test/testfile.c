@@ -58,6 +58,7 @@ iostrm_error_quit(unsigned line, SDL_IOStream *iostrm)
         SDL_CloseIO(iostrm);
     }
     cleanup();
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
     exit(1); /* quit with iostrm error (test failed) */
 }
@@ -76,7 +77,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {

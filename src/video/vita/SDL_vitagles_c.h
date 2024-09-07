@@ -39,15 +39,15 @@ typedef struct SDL_GLDriverData
 } SDL_GLDriverData;
 
 extern SDL_FunctionPointer VITA_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
-extern int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern bool VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 extern void VITA_GLES_SwapBuffers(SDL_VideoDevice *_this);
 
-extern int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
 
-extern int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern bool VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern void VITA_GLES_UnloadLibrary(SDL_VideoDevice *_this);
-extern int VITA_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern int VITA_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
+extern bool VITA_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
+extern bool VITA_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
 
-#endif /* SDL_vitagles_c_h_ */
+#endif // SDL_vitagles_c_h_

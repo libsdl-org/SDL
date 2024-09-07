@@ -209,8 +209,8 @@ function(target_get_dynamic_library DEST TARGET)
     endforeach()
   else()
     # 1. find the target library a file might be symbolic linking to
-    # 2. find all other files in the same folder that symolic link to it
-    # 3. sort all these files, and select the 1st item on Linux, and last on Macos
+    # 2. find all other files in the same folder that symbolic link to it
+    # 3. sort all these files, and select the 1st item on Linux, and last on macOS
     set(location_properties IMPORTED_LOCATION)
     if(CMAKE_BUILD_TYPE)
       list(APPEND location_properties IMPORTED_LOCATION_${CMAKE_BUILD_TYPE})
@@ -226,7 +226,7 @@ function(target_get_dynamic_library DEST TARGET)
     foreach(location_property ${location_properties})
       if(NOT result)
         get_target_property(library_path "${TARGET}" ${location_property})
-        message(DEBUG "get_target_property(${TARGET} ${location_propert}) -> ${library_path}")
+        message(DEBUG "get_target_property(${TARGET} ${location_property}) -> ${library_path}")
         if(EXISTS "${library_path}")
           get_filename_component(library_path "${library_path}" ABSOLUTE)
           while (IS_SYMLINK "${library_path}")
@@ -392,6 +392,14 @@ function(SDL_PrintSummary)
     message(STATUS "")
     message(STATUS "    -DSDL_ARMNEON=OFF")
     message(STATUS "")
+  endif()
+
+  if(UNIX AND NOT (ANDROID OR APPLE OR EMSCRIPTEN))
+    if(NOT (HAVE_X11 OR HAVE_WAYLAND))
+      message(STATUS "SDL is being built without a X11 or wayland video driver.")
+      message(STATUS "The library will not be able to create windows on most unix environments.")
+      message(STATUS "")
+    endif()
   endif()
 endfunction()
 

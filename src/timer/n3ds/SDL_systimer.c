@@ -35,9 +35,9 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return SYSCLOCK_ARM11;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     svcSleepThread(ns);
 }
 
-#endif /* SDL_TIMER_N3DS */
+#endif // SDL_TIMER_N3DS

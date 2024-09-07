@@ -27,15 +27,14 @@ typedef struct SDL_WaylandTextInput
 {
     struct zwp_text_input_v3 *text_input;
     SDL_Rect cursor_rect;
-    SDL_bool has_preedit;
-    SDL_bool is_enabled;
+    bool has_preedit;
 } SDL_WaylandTextInput;
 
-extern int Wayland_InitKeyboard(SDL_VideoDevice *_this);
+extern bool Wayland_InitKeyboard(SDL_VideoDevice *_this);
 extern void Wayland_QuitKeyboard(SDL_VideoDevice *_this);
-extern void Wayland_StartTextInput(SDL_VideoDevice *_this);
-extern void Wayland_StopTextInput(SDL_VideoDevice *_this);
-extern int Wayland_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);
-extern SDL_bool Wayland_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
+extern bool Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
+extern bool Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool Wayland_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 
-#endif /* SDL_waylandkeyboard_h_ */
+#endif // SDL_waylandkeyboard_h_

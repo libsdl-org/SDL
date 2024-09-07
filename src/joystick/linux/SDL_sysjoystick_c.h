@@ -27,55 +27,55 @@
 struct SDL_joylist_item;
 struct SDL_sensorlist_item;
 
-/* The private structure used to keep track of a joystick */
+// The private structure used to keep track of a joystick
 struct joystick_hwdata
 {
     int fd;
-    /* linux driver creates a separate device for gyro/accelerometer */
+    // linux driver creates a separate device for gyro/accelerometer
     int fd_sensor;
     struct SDL_joylist_item *item;
     struct SDL_sensorlist_item *item_sensor;
-    SDL_JoystickGUID guid;
-    char *fname; /* Used in haptic subsystem */
+    SDL_GUID guid;
+    char *fname; // Used in haptic subsystem
 
-    SDL_bool ff_rumble;
-    SDL_bool ff_sine;
+    bool ff_rumble;
+    bool ff_sine;
     struct ff_effect effect;
     Uint32 effect_expiration;
 
-    /* The current Linux joystick driver maps balls to two axes */
+    // The current Linux joystick driver maps balls to two axes
     struct hwdata_ball
     {
         int axis[2];
     } *balls;
 
-    /* The current Linux joystick driver maps hats to two axes */
+    // The current Linux joystick driver maps hats to two axes
     struct hwdata_hat
     {
         int axis[2];
     } *hats;
 
-    /* Support for the Linux 2.4 unified input interface */
+    // Support for the Linux 2.4 unified input interface
     Uint8 key_map[KEY_MAX];
     Uint8 abs_map[ABS_MAX];
-    SDL_bool has_key[KEY_MAX];
-    SDL_bool has_abs[ABS_MAX];
-    SDL_bool has_accelerometer;
-    SDL_bool has_gyro;
+    bool has_key[KEY_MAX];
+    bool has_abs[ABS_MAX];
+    bool has_accelerometer;
+    bool has_gyro;
 
-    /* Support for the classic joystick interface */
-    SDL_bool classic;
+    // Support for the classic joystick interface
+    bool classic;
     Uint16 *key_pam;
     Uint8 *abs_pam;
 
     struct axis_correct
     {
-        SDL_bool use_deadzones;
+        bool use_deadzones;
 
-        /* Deadzone coefficients */
+        // Deadzone coefficients
         int coef[3];
 
-        /* Raw coordinate scale */
+        // Raw coordinate scale
         int minimum;
         int maximum;
         float scale;
@@ -91,27 +91,27 @@ struct joystick_hwdata
     Uint64 sensor_tick;
     Sint32 last_tick;
 
-    SDL_bool report_sensor;
-    SDL_bool fresh;
-    SDL_bool recovering_from_dropped;
-    SDL_bool recovering_from_dropped_sensor;
+    bool report_sensor;
+    bool fresh;
+    bool recovering_from_dropped;
+    bool recovering_from_dropped_sensor;
 
-    /* Steam Controller support */
-    SDL_bool m_bSteamController;
+    // Steam Controller support
+    bool m_bSteamController;
 
-    /* 4 = (ABS_HAT3X-ABS_HAT0X)/2 (see input-event-codes.h in kernel) */
+    // 4 = (ABS_HAT3X-ABS_HAT0X)/2 (see input-event-codes.h in kernel)
     int hats_indices[4];
-    SDL_bool has_hat[4];
+    bool has_hat[4];
     struct hat_axis_correct
     {
-        SDL_bool use_deadzones;
+        bool use_deadzones;
         int minimum[2];
         int maximum[2];
     } hat_correct[4];
 
-    /* Set when gamepad is pending removal due to ENODEV read error */
-    SDL_bool gone;
-    SDL_bool sensor_gone;
+    // Set when gamepad is pending removal due to ENODEV read error
+    bool gone;
+    bool sensor_gone;
 };
 
-#endif /* SDL_sysjoystick_c_h_ */
+#endif // SDL_sysjoystick_c_h_

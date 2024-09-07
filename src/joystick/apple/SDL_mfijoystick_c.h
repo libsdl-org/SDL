@@ -40,34 +40,34 @@ typedef struct joystick_hwdata
     char *name;
     SDL_Joystick *joystick;
     SDL_JoystickID instance_id;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
 
     int naxes;
     int nbuttons;
     int nhats;
     Uint32 button_mask;
-    SDL_bool is_xbox;
-    SDL_bool is_ps4;
-    SDL_bool is_ps5;
-    SDL_bool is_switch_pro;
-    SDL_bool is_switch_joycon_pair;
-    SDL_bool is_switch_joyconL;
-    SDL_bool is_switch_joyconR;
-    SDL_bool is_stadia;
-    SDL_bool is_backbone_one;
+    bool is_xbox;
+    bool is_ps4;
+    bool is_ps5;
+    bool is_switch_pro;
+    bool is_switch_joycon_pair;
+    bool is_switch_joyconL;
+    bool is_switch_joyconR;
+    bool is_stadia;
+    bool is_backbone_one;
     int is_siri_remote;
 
     NSArray __unsafe_unretained *axes;
     NSArray __unsafe_unretained *buttons;
 
-    SDL_bool has_dualshock_touchpad;
-    SDL_bool has_xbox_paddles;
-    SDL_bool has_xbox_share_button;
-    SDL_bool has_nintendo_buttons;
+    bool has_dualshock_touchpad;
+    bool has_xbox_paddles;
+    bool has_xbox_share_button;
+    bool has_nintendo_buttons;
 
     struct joystick_hwdata *next;
 } joystick_hwdata;
 
 typedef joystick_hwdata SDL_JoystickDeviceItem;
 
-#endif /* SDL_JOYSTICK_IOS_H */
+#endif // SDL_JOYSTICK_IOS_H

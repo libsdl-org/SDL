@@ -25,6 +25,8 @@
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsshape.h"
 
+#include "../SDL_blit.h"
+
 
 static void AddRegion(HRGN *mask, int x1, int y1, int x2, int y2)
 {
@@ -59,7 +61,7 @@ static HRGN GenerateSpanListRegion(SDL_Surface *shape, int offset_x, int offset_
             a += 4;
         }
         if (span_start != -1) {
-            /* Add the final span */
+            // Add the final span
             AddRegion(&mask, offset_x + span_start, offset_y + y, offset_x + x, offset_y + y + 1);
             span_start = -1;
         }
@@ -67,12 +69,12 @@ static HRGN GenerateSpanListRegion(SDL_Surface *shape, int offset_x, int offset_
     return mask;
 }
 
-int WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape)
+bool WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     HRGN mask = NULL;
 
-    /* Generate a set of spans for the region */
+    // Generate a set of spans for the region
     if (shape) {
         SDL_Surface *stretched = NULL;
         RECT rect;
@@ -80,11 +82,11 @@ int WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfac
         if (shape->w != window->w || shape->h != window->h) {
             stretched = SDL_CreateSurface(window->w, window->h, SDL_PIXELFORMAT_ARGB32);
             if (!stretched) {
-                return -1;
+                return false;
             }
-            if (SDL_SoftStretch(shape, NULL, stretched, NULL, SDL_SCALEMODE_LINEAR) < 0) {
+            if (!SDL_SoftStretch(shape, NULL, stretched, NULL, SDL_SCALEMODE_LINEAR)) {
                 SDL_DestroySurface(stretched);
-                return -1;
+                return false;
             }
             shape = stretched;
         }
@@ -100,14 +102,14 @@ int WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfac
         mask = GenerateSpanListRegion(shape, -rect.left, -rect.top);
 
         if (!(SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS)) {
-            /* Add the window borders */
-            /* top */
+            // Add the window borders
+            // top
             AddRegion(&mask, 0, 0, -rect.left + shape->w + rect.right + 1, -rect.top + 1);
-            /* left */
+            // left
             AddRegion(&mask, 0, -rect.top, -rect.left + 1, -rect.top + shape->h + 1);
-            /* right */
+            // right
             AddRegion(&mask, -rect.left + shape->w, -rect.top, -rect.left + shape->w + rect.right + 1, -rect.top + shape->h + 1);
-            /* bottom */
+            // bottom
             AddRegion(&mask, 0, -rect.top + shape->h, -rect.left + shape->w + rect.right + 1, -rect.top + shape->h + rect.bottom + 1);
         }
 
@@ -118,7 +120,7 @@ int WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfac
     if (!SetWindowRgn(data->hwnd, mask, TRUE)) {
         return WIN_SetError("SetWindowRgn failed");
     }
-    return 0;
+    return true;
 }
 
-#endif /* defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */
+#endif // defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

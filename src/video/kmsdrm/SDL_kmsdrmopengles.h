@@ -28,19 +28,19 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
-/* OpenGLES functions */
+// OpenGLES functions
 #define KMSDRM_GLES_GetAttribute    SDL_EGL_GetAttribute
 #define KMSDRM_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
-#define KMSDRM_GLES_DeleteContext   SDL_EGL_DeleteContext
+#define KMSDRM_GLES_DestroyContext   SDL_EGL_DestroyContext
 #define KMSDRM_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 
 extern void KMSDRM_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor);
-extern int KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern int KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern bool KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
+extern bool KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_GLContext KMSDRM_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int KMSDRM_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+extern bool KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool KMSDRM_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 
-#endif /* SDL_VIDEO_DRIVER_KMSDRM */
+#endif // SDL_VIDEO_DRIVER_KMSDRM
 
-#endif /* SDL_kmsdrmopengles_h_ */
+#endif // SDL_kmsdrmopengles_h_

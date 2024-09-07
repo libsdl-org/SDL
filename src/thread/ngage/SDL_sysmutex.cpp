@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* An implementation of mutexes using the Symbian API. */
+// An implementation of mutexes using the Symbian API.
 
 #include <e32std.h>
 
@@ -38,7 +38,7 @@ static TInt NewMutex(const TDesC &aName, TAny *aPtr1, TAny *)
     return ((RMutex *)aPtr1)->CreateGlobal(aName);
 }
 
-/* Create a mutex */
+// Create a mutex
 SDL_Mutex *SDL_CreateMutex(void)
 {
     RMutex rmutex;
@@ -53,7 +53,7 @@ SDL_Mutex *SDL_CreateMutex(void)
     return mutex;
 }
 
-/* Free the mutex */
+// Free the mutex
 void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
@@ -66,34 +66,32 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
     }
 }
 
-/* Lock the mutex */
-void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+// Lock the mutex
+void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
-    if (mutex != NULL) {
+    if (mutex) {
         RMutex rmutex;
         rmutex.SetHandle(mutex->handle);
         rmutex.Wait();
     }
 }
 
-/* Try to lock the mutex */
+// Try to lock the mutex
 #if 0
-int SDL_TryLockMutex(SDL_Mutex *mutex)
+SDL_bool SDL_TryLockMutex(SDL_Mutex *mutex)
 {
-    if (mutex == NULL)
-    {
-        return 0;
+    if (mutex) {
+        // Not yet implemented.
+        return true;
     }
-
-    // Not yet implemented.
-    return 0;
+    return true;
 }
 #endif
 
-/* Unlock the mutex */
-void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+// Unlock the mutex
+void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
-    if (mutex != NULL) {
+    if (mutex) {
         RMutex rmutex;
         rmutex.SetHandle(mutex->handle);
         rmutex.Signal();

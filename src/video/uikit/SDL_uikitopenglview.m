@@ -29,21 +29,21 @@
 
 @implementation SDL_uikitopenglview
 {
-    /* The renderbuffer and framebuffer used to render to this layer. */
+    // The renderbuffer and framebuffer used to render to this layer.
     GLuint viewRenderbuffer, viewFramebuffer;
 
-    /* The depth buffer that is attached to viewFramebuffer, if it exists. */
+    // The depth buffer that is attached to viewFramebuffer, if it exists.
     GLuint depthRenderbuffer;
 
     GLenum colorBufferFormat;
 
-    /* format of depthRenderbuffer */
+    // format of depthRenderbuffer
     GLenum depthBufferFormat;
 
-    /* The framebuffer and renderbuffer used for rendering with MSAA. */
+    // The framebuffer and renderbuffer used for rendering with MSAA.
     GLuint msaaFramebuffer, msaaRenderbuffer;
 
-    /* The number of MSAA samples. */
+    // The number of MSAA samples.
     int samples;
 
     BOOL retainedBacking;
@@ -89,7 +89,7 @@
             GLint maxsamples = 0;
             glGetIntegerv(GL_MAX_SAMPLES, &maxsamples);
 
-            /* Clamp the samples to the max supported count. */
+            // Clamp the samples to the max supported count.
             samples = SDL_min(samples, maxsamples);
         }
 
@@ -97,11 +97,11 @@
             colorFormat = kEAGLColorFormatSRGBA8;
             colorBufferFormat = GL_SRGB8_ALPHA8;
         } else if (rBits >= 8 || gBits >= 8 || bBits >= 8 || aBits > 0) {
-            /* if user specifically requests rbg888 or some color format higher than 16bpp */
+            // if user specifically requests rbg888 or some color format higher than 16bpp
             colorFormat = kEAGLColorFormatRGBA8;
             colorBufferFormat = GL_RGBA8;
         } else {
-            /* default case (potentially faster) */
+            // default case (potentially faster)
             colorFormat = kEAGLColorFormatRGB565;
             colorBufferFormat = GL_RGB565;
         }
@@ -114,10 +114,10 @@
             kEAGLDrawablePropertyColorFormat : colorFormat
         };
 
-        /* Set the appropriate scale (for retina display support) */
+        // Set the appropriate scale (for retina display support)
         self.contentScaleFactor = scale;
 
-        /* Create the color Renderbuffer Object */
+        // Create the color Renderbuffer Object
         glGenRenderbuffers(1, &viewRenderbuffer);
         glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
 
@@ -126,11 +126,11 @@
             return nil;
         }
 
-        /* Create the Framebuffer Object */
+        // Create the Framebuffer Object
         glGenFramebuffers(1, &viewFramebuffer);
         glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
 
-        /* attach the color renderbuffer to the FBO */
+        // attach the color renderbuffer to the FBO
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, viewRenderbuffer);
 
         glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
@@ -157,7 +157,7 @@
 
         if (useDepthBuffer || useStencilBuffer) {
             if (useStencilBuffer) {
-                /* Apparently you need to pack stencil and depth into one buffer. */
+                // Apparently you need to pack stencil and depth into one buffer.
                 depthBufferFormat = GL_DEPTH24_STENCIL8_OES;
             } else if (useDepthBuffer) {
                 /* iOS only uses 32-bit float (exposed as fixed point 24-bit)
@@ -202,7 +202,7 @@
 
 - (GLuint)drawableFramebuffer
 {
-    /* When MSAA is used, the MSAA draw framebuffer is used for drawing. */
+    // When MSAA is used, the MSAA draw framebuffer is used for drawing.
     if (msaaFramebuffer) {
         return msaaFramebuffer;
     } else {
@@ -292,7 +292,7 @@
             glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
             if (!retainedBacking) {
-                /* Discard the contents of the MSAA drawable color buffer. */
+                // Discard the contents of the MSAA drawable color buffer.
                 glInvalidateFramebuffer(GL_READ_FRAMEBUFFER, 1, attachments);
             }
         } else {
@@ -321,7 +321,7 @@
     int width = (int)(self.bounds.size.width * self.contentScaleFactor);
     int height = (int)(self.bounds.size.height * self.contentScaleFactor);
 
-    /* Update the color and depth buffer storage if the layer size has changed. */
+    // Update the color and depth buffer storage if the layer size has changed.
     if (width != backingWidth || height != backingHeight) {
         EAGLContext *prevContext = [EAGLContext currentContext];
         if (prevContext != context) {
@@ -374,4 +374,4 @@
 
 @end
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

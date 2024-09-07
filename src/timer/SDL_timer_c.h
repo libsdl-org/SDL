@@ -24,14 +24,16 @@
 
 #include "SDL_internal.h"
 
-/* Useful functions and variables from SDL_timer.c */
+// Useful functions and variables from SDL_timer.c
 
 #define ROUND_RESOLUTION(X) \
     (((X + TIMER_RESOLUTION - 1) / TIMER_RESOLUTION) * TIMER_RESOLUTION)
 
 extern void SDL_InitTicks(void);
 extern void SDL_QuitTicks(void);
-extern int SDL_InitTimers(void);
+extern bool SDL_InitTimers(void);
 extern void SDL_QuitTimers(void);
 
-#endif /* SDL_timer_c_h_ */
+extern void SDL_SYS_DelayNS(Uint64 ns);
+
+#endif // SDL_timer_c_h_

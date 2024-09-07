@@ -88,19 +88,19 @@ static void *X11_GetSym(const char *fnname, int *pHasModule)
 #endif
 
     if (!fn) {
-        *pHasModule = 0; /* kill this module. */
+        *pHasModule = 0; // kill this module.
     }
 
     return fn;
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11_DYNAMIC */
+#endif // SDL_VIDEO_DRIVER_X11_DYNAMIC
 
-/* Define all the function pointers and wrappers... */
+// Define all the function pointers and wrappers...
 #define SDL_X11_SYM(rc, fn, params, args, ret) SDL_DYNX11FN_##fn X11_##fn = NULL;
 #include "SDL_x11sym.h"
 
-/* Annoying varargs entry point... */
+// Annoying varargs entry point...
 #ifdef X_HAVE_UTF8_STRING
 SDL_DYNX11FN_XCreateIC X11_XCreateIC = NULL;
 SDL_DYNX11FN_XGetICValues X11_XGetICValues = NULL;
@@ -114,14 +114,14 @@ static int x11_load_refcount = 0;
 
 void SDL_X11_UnloadSymbols(void)
 {
-    /* Don't actually unload if more than one module is using the libs... */
+    // Don't actually unload if more than one module is using the libs...
     if (x11_load_refcount > 0) {
         if (--x11_load_refcount == 0) {
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
             int i;
 #endif
 
-            /* set all the function pointers to NULL. */
+            // set all the function pointers to NULL.
 #define SDL_X11_MODULE(modname)                SDL_X11_HAVE_##modname = 0;
 #define SDL_X11_SYM(rc, fn, params, args, ret) X11_##fn = NULL;
 #include "SDL_x11sym.h"
@@ -143,12 +143,12 @@ void SDL_X11_UnloadSymbols(void)
     }
 }
 
-/* returns non-zero if all needed symbols were loaded. */
-int SDL_X11_LoadSymbols(void)
+// returns non-zero if all needed symbols were loaded.
+bool SDL_X11_LoadSymbols(void)
 {
-    int rc = 1; /* always succeed if not using Dynamic X11 stuff. */
+    bool result = true; // always succeed if not using Dynamic X11 stuff.
 
-    /* deal with multiple modules (dga, x11, etc) needing these symbols... */
+    // deal with multiple modules (dga, x11, etc) needing these symbols...
     if (x11_load_refcount++ == 0) {
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
         int i;
@@ -159,7 +159,7 @@ int SDL_X11_LoadSymbols(void)
             }
         }
 
-#define SDL_X11_MODULE(modname) SDL_X11_HAVE_##modname = 1; /* default yes */
+#define SDL_X11_MODULE(modname) SDL_X11_HAVE_##modname = 1; // default yes
 #include "SDL_x11sym.h"
 
 #define SDL_X11_MODULE(modname)     thismod = &SDL_X11_HAVE_##modname;
@@ -174,17 +174,17 @@ int SDL_X11_LoadSymbols(void)
 #endif
 
         if (SDL_X11_HAVE_BASEXLIB) {
-            /* all required symbols loaded. */
+            // all required symbols loaded.
             SDL_ClearError();
         } else {
-            /* in case something got loaded... */
+            // in case something got loaded...
             SDL_X11_UnloadSymbols();
-            rc = 0;
+            result = false;
         }
 
-#else /* no dynamic X11 */
+#else // no dynamic X11
 
-#define SDL_X11_MODULE(modname)     SDL_X11_HAVE_##modname = 1; /* default yes */
+#define SDL_X11_MODULE(modname)     SDL_X11_HAVE_##modname = 1; // default yes
 #define SDL_X11_SYM(a, fn, x, y, z) X11_##fn = (SDL_DYNX11FN_##fn)fn;
 #include "SDL_x11sym.h"
 
@@ -195,7 +195,7 @@ int SDL_X11_LoadSymbols(void)
 #endif
     }
 
-    return rc;
+    return result;
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11 */
+#endif // SDL_VIDEO_DRIVER_X11

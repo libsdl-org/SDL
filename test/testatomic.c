@@ -121,14 +121,15 @@ static int SDLCALL adder(void *junk)
         bad -= CountInc;
     }
     SDL_AtomicAdd(&threadsRunning, -1);
-    SDL_PostSemaphore(threadDone);
+    SDL_SignalSemaphore(threadDone);
     return 0;
 }
 
 static void runAdder(void)
 {
     Uint64 start, end;
-    int T = NThreads;
+    int i;
+    SDL_Thread *threads[NThreads];
 
     start = SDL_GetTicksNS();
 
@@ -136,12 +137,16 @@ static void runAdder(void)
 
     SDL_AtomicSet(&threadsRunning, NThreads);
 
-    while (T--) {
-        SDL_CreateThread(adder, "Adder", NULL);
+    for (i = 0; i < NThreads; i++) {
+        threads[i] = SDL_CreateThread(adder, "Adder", NULL);
     }
 
     while (SDL_AtomicGet(&threadsRunning) > 0) {
         SDL_WaitSemaphore(threadDone);
+    }
+
+    for (i = 0; i < NThreads; i++) {
+        SDL_WaitThread(threads[i], NULL);
     }
 
     SDL_DestroySemaphore(threadDone);
@@ -698,6 +703,8 @@ static void RunFIFOTest(SDL_bool lock_free)
 int main(int argc, char *argv[])
 {
     SDLTest_CommonState *state;
+    int i;
+    SDL_bool enable_threads = SDL_TRUE;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -706,11 +713,29 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return 1;
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (consumed == 0) {
+            consumed = -1;
+            if (SDL_strcasecmp(argv[i], "--no-threads") == 0) {
+                enable_threads = SDL_FALSE;
+                consumed = 1;
+            }
+        }
+        if (consumed < 0) {
+            static const char *options[] = {
+                "[--no-threads]",
+                NULL
+            };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return 1;
+        }
+        i += consumed;
     }
 
     RunBasicTest();
@@ -720,12 +745,15 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    RunEpicTest();
+    if (enable_threads) {
+        RunEpicTest();
+    }
 /* This test is really slow, so don't run it by default */
 #if 0
     RunFIFOTest(SDL_FALSE);
 #endif
     RunFIFOTest(SDL_TRUE);
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
     return 0;
 }

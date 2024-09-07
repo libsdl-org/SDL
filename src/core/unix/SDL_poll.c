@@ -38,7 +38,7 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
 
     SDL_assert(flags & (SDL_IOR_READ | SDL_IOR_WRITE));
 
-    /* Note: We don't bother to account for elapsed time if we get EINTR */
+    // Note: We don't bother to account for elapsed time if we get EINTR
     do {
 #ifdef HAVE_POLL
         struct pollfd info;
@@ -52,7 +52,7 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
         if (flags & SDL_IOR_WRITE) {
             info.events |= POLLOUT;
         }
-        /* FIXME: Add support for ppoll() for nanosecond precision */
+        // FIXME: Add support for ppoll() for nanosecond precision
         if (timeoutNS > 0) {
             timeoutMS = (int)SDL_NS_TO_MS(timeoutNS);
         } else if (timeoutNS == 0) {
@@ -66,7 +66,7 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
         fd_set wfdset, *wfdp = NULL;
         struct timeval tv, *tvp = NULL;
 
-        /* If this assert triggers we'll corrupt memory here */
+        // If this assert triggers we'll corrupt memory here
         SDL_assert(fd >= 0 && fd < FD_SETSIZE);
 
         if (flags & SDL_IOR_READ) {
@@ -87,7 +87,7 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
         }
 
         result = select(fd + 1, rfdp, wfdp, NULL, tvp);
-#endif /* HAVE_POLL */
+#endif // HAVE_POLL
 
     } while (result < 0 && errno == EINTR && !(flags & SDL_IOR_NO_RETRY));
 

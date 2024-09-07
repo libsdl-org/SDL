@@ -43,7 +43,7 @@ static void loop(void)
 #endif
 
 static void
-test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
+test_multi_audio(const SDL_AudioDeviceID *devices, int devcount)
 {
     int keep_going = 1;
     SDL_AudioStream **streams = NULL;
@@ -57,14 +57,14 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
 #endif
 
     for (i = 0; i < devcount; i++) {
-        char *devname = SDL_GetAudioDeviceName(devices[i]);
+        const char *devname = SDL_GetAudioDeviceName(devices[i]);
 
         SDL_Log("Playing on device #%d of %d: id=%u, name='%s'...", i, devcount, (unsigned int) devices[i], devname);
 
         if ((stream = SDL_OpenAudioDeviceStream(devices[i], &spec, NULL, NULL)) == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Audio stream creation failed: %s", SDL_GetError());
         } else {
-            SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
+            SDL_ResumeAudioStreamDevice(stream);
             SDL_PutAudioStreamData(stream, sound, soundlen);
             SDL_FlushAudioStream(stream);
 #ifdef SDL_PLATFORM_EMSCRIPTEN
@@ -82,7 +82,6 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
             SDL_Log("done.");
             SDL_DestroyAudioStream(stream);
         }
-        SDL_free(devname);
         stream = NULL;
     }
 
@@ -105,7 +104,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
         /* try to start all the devices about the same time. SDL does not guarantee sync across physical devices. */
         for (i = 0; i < devcount; i++) {
             if (streams[i]) {
-                SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(streams[i]));
+                SDL_ResumeAudioStreamDevice(streams[i]);
             }
         }
 
@@ -136,20 +135,20 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
 
 int main(int argc, char **argv)
 {
-    SDL_AudioDeviceID *devices = NULL;
+    SDL_AudioDeviceID *devices;
     int devcount = 0;
     int i;
     char *filename = NULL;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_AUDIO);
     if (!state) {
         return 1;
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -172,7 +171,7 @@ int main(int argc, char **argv)
     }
 
     /* Load the SDL library */
-    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+    if (!SDLTest_CommonInit(state)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
@@ -181,25 +180,24 @@ int main(int argc, char **argv)
 
     filename = GetResourceFilename(filename, "sample.wav");
 
-    devices = SDL_GetAudioOutputDevices(&devcount);
+    devices = SDL_GetAudioPlaybackDevices(&devcount);
     if (!devices) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio devices!");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio playback devices!");
     } else {
         /* Load the wave file into memory */
-        if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) == -1) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename,
-                         SDL_GetError());
-        } else {
+        if (SDL_LoadWAV(filename, &spec, &sound, &soundlen)) {
             test_multi_audio(devices, devcount);
             SDL_free(sound);
+        } else {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename,
+                         SDL_GetError());
         }
+        SDL_free(devices);
     }
 
-    SDL_free(devices);
     SDL_free(filename);
 
-    SDL_Quit();
-    SDLTest_CommonDestroyState(state);
+    SDLTest_CommonQuit(state);
 
     return 0;
 }

@@ -24,11 +24,11 @@
 #include "SDL_appid.h"
 #include <unistd.h>
 
-const char *SDL_GetExeName()
+const char *SDL_GetExeName(void)
 {
     static const char *proc_name = NULL;
 
-    /* TODO: Use a fallback if BSD has no mounted procfs (OpenBSD has no procfs at all) */
+    // TODO: Use a fallback if BSD has no mounted procfs (OpenBSD has no procfs at all)
     if (!proc_name) {
 #if defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_FREEBSD) || defined (SDL_PLATFORM_NETBSD)
         static char linkfile[1024];
@@ -57,18 +57,17 @@ const char *SDL_GetExeName()
     return proc_name;
 }
 
-const char *SDL_GetAppID()
+const char *SDL_GetAppID(void)
 {
-    /* Always check the hint, as it may have changed */
-    const char *id_str = SDL_GetHint(SDL_HINT_APP_ID);
+    const char *id_str = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING);
 
     if (!id_str) {
-        /* If the hint isn't set, try to use the application's executable name */
+        // If the hint isn't set, try to use the application's executable name
         id_str = SDL_GetExeName();
     }
 
     if (!id_str) {
-        /* Finally, use the default we've used forever */
+        // Finally, use the default we've used forever
         id_str = "SDL_App";
     }
 

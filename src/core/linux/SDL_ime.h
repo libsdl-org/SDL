@@ -24,12 +24,12 @@
 
 #include "SDL_internal.h"
 
-extern SDL_bool SDL_IME_Init(void);
+extern bool SDL_IME_Init(void);
 extern void SDL_IME_Quit(void);
-extern void SDL_IME_SetFocus(SDL_bool focused);
+extern void SDL_IME_SetFocus(bool focused);
 extern void SDL_IME_Reset(void);
-extern SDL_bool SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state);
-extern void SDL_IME_UpdateTextRect(const SDL_Rect *rect);
+extern bool SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state);
+extern void SDL_IME_UpdateTextInputArea(SDL_Window *window);
 extern void SDL_IME_PumpEvents(void);
 
-#endif /* SDL_ime_h_ */
+#endif // SDL_ime_h_

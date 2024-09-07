@@ -108,7 +108,7 @@ static void AddVirtualGamepadInfo(int slot, SDL_SteamVirtualGamepadInfo *info)
     }
 
     if (SDL_steam_virtual_gamepad_info[slot]) {
-        /* We already have this slot info */
+        // We already have this slot info
         return;
     }
 
@@ -134,14 +134,14 @@ void SDL_InitSteamVirtualGamepadInfo(void)
     SDL_UpdateSteamVirtualGamepadInfo();
 }
 
-SDL_bool SDL_SteamVirtualGamepadEnabled(void)
+bool SDL_SteamVirtualGamepadEnabled(void)
 {
     SDL_AssertJoysticksLocked();
 
     return (SDL_steam_virtual_gamepad_info != NULL);
 }
 
-SDL_bool SDL_UpdateSteamVirtualGamepadInfo(void)
+bool SDL_UpdateSteamVirtualGamepadInfo(void)
 {
     const int UPDATE_CHECK_INTERVAL_MS = 3000;
     Uint64 now;
@@ -154,24 +154,24 @@ SDL_bool SDL_UpdateSteamVirtualGamepadInfo(void)
     SDL_AssertJoysticksLocked();
 
     if (!SDL_steam_virtual_gamepad_info_file) {
-        return SDL_FALSE;
+        return false;
     }
 
     now = SDL_GetTicks();
     if (SDL_steam_virtual_gamepad_info_check_time &&
         now < (SDL_steam_virtual_gamepad_info_check_time + UPDATE_CHECK_INTERVAL_MS)) {
-        return SDL_FALSE;
+        return false;
     }
     SDL_steam_virtual_gamepad_info_check_time = now;
 
     mtime = GetFileModificationTime(SDL_steam_virtual_gamepad_info_file);
     if (mtime == 0 || mtime == SDL_steam_virtual_gamepad_info_file_mtime) {
-        return SDL_FALSE;
+        return false;
     }
 
     data = (char *)SDL_LoadFile(SDL_steam_virtual_gamepad_info_file, &size);
     if (!data) {
-        return SDL_FALSE;
+        return false;
     }
 
     SDL_FreeSteamVirtualGamepadInfo();
@@ -224,7 +224,7 @@ SDL_bool SDL_UpdateSteamVirtualGamepadInfo(void)
 
     SDL_steam_virtual_gamepad_info_file_mtime = mtime;
 
-    return SDL_TRUE;
+    return true;
 }
 
 const SDL_SteamVirtualGamepadInfo *SDL_GetSteamVirtualGamepadInfo(int slot)

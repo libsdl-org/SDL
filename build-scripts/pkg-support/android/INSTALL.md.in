@@ -1,0 +1,58 @@
+
+This Android archive allows use of @PROJECT_NAME@ in your Android project, without needing to copy any SDL source.
+For integration with CMake/ndk-build, it uses [prefab](https://google.github.io/prefab/).
+
+Copy this archive (@PROJECT_NAME@-@PROJECT_VERSION@.aar) to a `app/libs` directory of your project.
+
+In `app/build.gradle` of your Android project, add:
+```
+android {
+    /* ... */
+    buildFeatures {
+        prefab true
+    }
+}
+dependencies {
+    implementation files('libs/@PROJECT_NAME@-@PROJECT_VERSION@.aar')
+    /* ... */
+}
+```
+
+If you're using CMake, add the following to your CMakeLists.txt:
+```
+find_package(@PROJECT_NAME@ REQUIRED CONFIG)
+target_link_libraries(yourgame PRIVATE @PROJECT_NAME@::@PROJECT_NAME@)
+```
+
+If you're using ndk-build, add the following somewhere after `LOCAL_MODULE := yourgame` to your `Android.mk` or `Application.mk`:
+```
+# https://google.github.io/prefab/build-systems.html
+
+# Add the prefab modules to the import path.
+$(call import-add-path,/out)
+
+# Import @PROJECT_NAME@ so we can depend on it.
+$(call import-module,prefab/@PROJECT_NAME@)
+```
+
+---
+
+For advanced users:
+
+If you want to build a 3rd party library outside Gradle,
+running the following command will extract the Android archive into a more common directory structure.
+```
+python @PROJECT_NAME@-@PROJECT_VERSION@.aar -o android_prefix
+```
+Add `--help` for a list of all available options.
+
+
+Look at the example programs in ./test (of the source archive), and check out online documentation:
+    https://wiki.libsdl.org/SDL3/FrontPage
+
+Join the SDL discourse server if you want to join the community:
+    https://discourse.libsdl.org/
+
+
+That's it!
+Sam Lantinga <slouken@libsdl.org>

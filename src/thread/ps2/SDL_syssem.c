@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_PS2
 
-/* Semaphore functions for the PS2. */
+// Semaphore functions for the PS2.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,7 +35,7 @@ struct SDL_Semaphore
     s32 semid;
 };
 
-/* Create a semaphore */
+// Create a semaphore
 SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_Semaphore *sem;
@@ -43,7 +43,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 
     sem = (SDL_Semaphore *)SDL_malloc(sizeof(*sem));
     if (sem) {
-        /* TODO: Figure out the limit on the maximum value. */
+        // TODO: Figure out the limit on the maximum value.
         sema.init_count = initial_value;
         sema.max_count = 255;
         sema.option = 0;
@@ -59,7 +59,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
     return sem;
 }
 
-/* Free the semaphore */
+// Free the semaphore
 void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
     if (sem) {
@@ -72,21 +72,17 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     }
 }
 
-int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+SDL_bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-    int ret;
     u64 timeout_usec;
     u64 *timeout_ptr;
 
     if (!sem) {
-        return SDL_InvalidParamError("sem");
+        return true;
     }
 
     if (timeoutNS == 0) {
-        if (PollSema(sem->semid) < 0) {
-            return SDL_MUTEX_TIMEDOUT;
-        }
-        return 0;
+        return (PollSema(sem->semid) == 0);
     }
 
     timeout_ptr = NULL;
@@ -96,45 +92,31 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         timeout_ptr = &timeout_usec;
     }
 
-    ret = WaitSemaEx(sem->semid, 1, timeout_ptr);
-
-    if (ret < 0) {
-        return SDL_MUTEX_TIMEDOUT;
-    }
-    return 0; // Wait condition satisfied.
+    return (WaitSemaEx(sem->semid, 1, timeout_ptr) == 0);
 }
 
-/* Returns the current count of the semaphore */
+// Returns the current count of the semaphore
 Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     ee_sema_t info;
 
     if (!sem) {
-        SDL_InvalidParamError("sem");
         return 0;
     }
 
-    if (ReferSemaStatus(sem->semid, &info) >= 0) {
+    if (ReferSemaStatus(sem->semid, &info) == 0) {
         return info.count;
     }
-
     return 0;
 }
 
-int SDL_PostSemaphore(SDL_Semaphore *sem)
+void SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
-    int res;
-
     if (!sem) {
-        return SDL_InvalidParamError("sem");
+        return;
     }
 
-    res = SignalSema(sem->semid);
-    if (res < 0) {
-        return SDL_SetError("sceKernelSignalSema() failed");
-    }
-
-    return 0;
+    SignalSema(sem->semid);
 }
 
-#endif /* SDL_THREAD_PS2 */
+#endif // SDL_THREAD_PS2

@@ -56,6 +56,8 @@
 #ifndef SDL_test_md5_h_
 #define SDL_test_md5_h_
 
+#include <SDL3/SDL_stdinc.h>
+
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -65,15 +67,15 @@ extern "C" {
 /* ------------ Definitions --------- */
 
 /* typedef a 32-bit type */
-  typedef Uint32 MD5UINT4;
+typedef Uint32 MD5UINT4;
 
 /* Data structure for MD5 (Message-Digest) computation */
-  typedef struct SDLTest_Md5Context {
-    MD5UINT4  i[2];     /* number of _bits_ handled mod 2^64 */
-    MD5UINT4  buf[4];       /* scratch buffer */
-    unsigned char in[64];   /* input buffer */
+typedef struct SDLTest_Md5Context {
+    MD5UINT4 i[2];              /* number of _bits_ handled mod 2^64 */
+    MD5UINT4 buf[4];            /* scratch buffer */
+    unsigned char in[64];       /* input buffer */
     unsigned char digest[16];   /* actual digest after Md5Final call */
-  } SDLTest_Md5Context;
+} SDLTest_Md5Context;
 
 /* ---------- Function Prototypes ------------- */
 
@@ -86,8 +88,7 @@ extern "C" {
  *       mdContext. Call before each new use of the context -
  *       all fields are set to zero.
  */
- void SDLTest_Md5Init(SDLTest_Md5Context *mdContext);
-
+void SDLCALL SDLTest_Md5Init(SDLTest_Md5Context *mdContext);
 
 /**
  * update digest from variable length data
@@ -99,11 +100,9 @@ extern "C" {
  * Note: The function updates the message-digest context to account
  *       for the presence of each of the characters inBuf[0..inLen-1]
  *       in the message whose digest is being computed.
-*/
-
- void SDLTest_Md5Update(SDLTest_Md5Context *mdContext, unsigned char *inBuf,
+ */
+void SDLCALL SDLTest_Md5Update(SDLTest_Md5Context *mdContext, unsigned char *inBuf,
                  unsigned int inLen);
-
 
 /**
  * complete digest computation
@@ -113,10 +112,8 @@ extern "C" {
  * Note: The function terminates the message-digest computation and
  *       ends with the desired message digest in mdContext.digest[0..15].
  *       Always call before using the digest[] variable.
-*/
-
- void SDLTest_Md5Final(SDLTest_Md5Context *mdContext);
-
+ */
+void SDLCALL SDLTest_Md5Final(SDLTest_Md5Context *mdContext);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

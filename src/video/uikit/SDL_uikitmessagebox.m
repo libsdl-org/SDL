@@ -25,11 +25,11 @@
 #include "SDL_uikitvideo.h"
 #include "SDL_uikitwindow.h"
 
-/* Display a UIKit message box */
+// Display a UIKit message box
 
-static SDL_bool s_showingMessageBox = SDL_FALSE;
+static bool s_showingMessageBox = false;
 
-SDL_bool UIKit_ShowingMessageBox(void)
+bool UIKit_ShowingMessageBox(void)
 {
     return s_showingMessageBox;
 }
@@ -39,13 +39,13 @@ static void UIKit_WaitUntilMessageBoxClosed(const SDL_MessageBoxData *messagebox
     *clickedindex = messageboxdata->numbuttons;
 
     @autoreleasepool {
-        /* Run the main event loop until the alert has finished */
-        /* Note that this needs to be done on the main thread */
-        s_showingMessageBox = SDL_TRUE;
+        // Run the main event loop until the alert has finished
+        // Note that this needs to be done on the main thread
+        s_showingMessageBox = true;
         while ((*clickedindex) == messageboxdata->numbuttons) {
             [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         }
-        s_showingMessageBox = SDL_FALSE;
+        s_showingMessageBox = false;
     }
 }
 
@@ -93,7 +93,7 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
     }
 
     if (messageboxdata->window) {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)messageboxdata->window->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)messageboxdata->window->internal;
         window = data.uiwindow;
     }
 
@@ -124,31 +124,31 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
     return YES;
 }
 
-static void UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID, int *returnValue)
+static void UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID, int *result)
 {
     @autoreleasepool {
         if (UIKit_ShowMessageBoxAlertController(messageboxdata, buttonID)) {
-            *returnValue = 0;
+            *result = true;
         } else {
-            *returnValue = SDL_SetError("Could not show message box.");
+            *result = SDL_SetError("Could not show message box.");
         }
     }
 }
 
-int UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+bool UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     @autoreleasepool {
-        __block int returnValue = 0;
+        __block int result = true;
 
         if ([NSThread isMainThread]) {
-            UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &returnValue);
+            UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &result);
         } else {
             dispatch_sync(dispatch_get_main_queue(), ^{
-              UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &returnValue);
+              UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &result);
             });
         }
-        return returnValue;
+        return result;
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

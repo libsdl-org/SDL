@@ -28,10 +28,10 @@
 
 #include "SDL_pspmouse_c.h"
 
-/* The implementation dependent data for the window manager cursor */
+// The implementation dependent data for the window manager cursor
 struct WMcursor
 {
     int unused;
 };
 
-#endif /* SDL_VIDEO_DRIVER_PSP */
+#endif // SDL_VIDEO_DRIVER_PSP

@@ -61,9 +61,9 @@ static int chooseFormat(EGLConfig egl_conf)
  * Enumerates the supported EGL configurations and chooses a suitable one.
  * @param[out]  pconf   The chosen configuration
  * @param[out]  pformat The chosen pixel format
- * @return 0 if successful, -1 on error
+ * @return true if successful, -1 on error
  */
-int glGetConfig(EGLConfig *pconf, int *pformat)
+bool glGetConfig(EGLConfig *pconf, int *pformat)
 {
     EGLConfig egl_conf = (EGLConfig)0;
     EGLConfig *egl_configs;
@@ -75,17 +75,17 @@ int glGetConfig(EGLConfig *pconf, int *pformat)
     // Determine the numbfer of configurations.
     rc = eglGetConfigs(egl_disp, NULL, 0, &egl_num_configs);
     if (rc != EGL_TRUE) {
-        return -1;
+        return false;
     }
 
     if (egl_num_configs == 0) {
-        return -1;
+        return false;
     }
 
     // Allocate enough memory for all configurations.
     egl_configs = SDL_malloc(egl_num_configs * sizeof(*egl_configs));
     if (!egl_configs) {
-        return -1;
+        return false;
     }
 
     // Get the list of configurations.
@@ -93,7 +93,7 @@ int glGetConfig(EGLConfig *pconf, int *pformat)
                        &egl_num_configs);
     if (rc != EGL_TRUE) {
         SDL_free(egl_configs);
-        return -1;
+        return false;
     }
 
     // Find a good configuration.
@@ -121,7 +121,7 @@ int glGetConfig(EGLConfig *pconf, int *pformat)
     *pconf = egl_conf;
     *pformat = chooseFormat(egl_conf);
 
-    return 0;
+    return true;
 }
 
 /**
@@ -130,20 +130,20 @@ int glGetConfig(EGLConfig *pconf, int *pformat)
  * @param   name    unused
  * @return  0 if successful, -1 on error
  */
-int glLoadLibrary(SDL_VideoDevice *_this, const char *name)
+bool glLoadLibrary(SDL_VideoDevice *_this, const char *name)
 {
     EGLNativeDisplayType    disp_id = EGL_DEFAULT_DISPLAY;
 
     egl_disp = eglGetDisplay(disp_id);
     if (egl_disp == EGL_NO_DISPLAY) {
-        return -1;
+        return false;
     }
 
     if (eglInitialize(egl_disp, NULL, NULL) == EGL_FALSE) {
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 /**
@@ -165,7 +165,7 @@ SDL_FunctionPointer glGetProcAddress(SDL_VideoDevice *_this, const char *proc)
  */
 SDL_GLContext glCreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    window_impl_t   *impl = (window_impl_t *)window->driverdata;
+    window_impl_t   *impl = (window_impl_t *)window->internal;
     EGLContext      context;
     EGLSurface      surface;
 
@@ -210,13 +210,13 @@ SDL_GLContext glCreateContext(SDL_VideoDevice *_this, SDL_Window *window)
  * @param   interval    New interval value
  * @return  0 if successful, -1 on error
  */
-int glSetSwapInterval(SDL_VideoDevice *_this, int interval)
+bool glSetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     if (eglSwapInterval(egl_disp, interval) != EGL_TRUE) {
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 /**
@@ -225,10 +225,10 @@ int glSetSwapInterval(SDL_VideoDevice *_this, int interval)
  * @param   window  Window to swap buffers for
  * @return  0 if successful, -1 on error
  */
-int glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    /* !!! FIXME: should we migrate this all over to use SDL_egl.c? */
-    window_impl_t   *impl = (window_impl_t *)window->driverdata;
+    // !!! FIXME: should we migrate this all over to use SDL_egl.c?
+    window_impl_t   *impl = (window_impl_t *)window->internal;
     return eglSwapBuffers(egl_disp, impl->surface) == EGL_TRUE ? 0 : -1;
 }
 
@@ -239,21 +239,21 @@ int glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
  * @param   context The context to activate
  * @return  0 if successful, -1 on error
  */
-int glMakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+bool glMakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     window_impl_t   *impl;
     EGLSurface      surface = NULL;
 
     if (window) {
-        impl = (window_impl_t *)window->driverdata;
+        impl = (window_impl_t *)window->internal;
         surface = impl->surface;
     }
 
     if (eglMakeCurrent(egl_disp, surface, surface, context) != EGL_TRUE) {
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 /**
@@ -261,9 +261,10 @@ int glMakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext cont
  * @param   SDL_VideoDevice *_this
  * @param   context The context to destroy
  */
-void glDeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
+bool glDeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     eglDestroyContext(egl_disp, context);
+    return true;
 }
 
 /**

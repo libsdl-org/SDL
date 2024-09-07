@@ -30,7 +30,7 @@ cmake --build .
 sudo cmake --install .
 ```
 
-Please note that building SDL requires at least Xcode 6 and the 10.9 SDK.
+Please note that building SDL requires at least Xcode 12.2 and the 11.0 SDK.
 PowerPC support for macOS has been officially dropped as of SDL 2.0.2.
 32-bit Intel and macOS 10.8 runtime support has been officially dropped as
 of SDL 2.24.0.
@@ -54,6 +54,7 @@ NSApplicationDelegate implementation:
 {
     if (SDL_GetEventState(SDL_EVENT_QUIT) == SDL_ENABLE) {
         SDL_Event event;
+        SDL_zero(event);
         event.type = SDL_EVENT_QUIT;
         SDL_PushEvent(&event);
     }
@@ -65,9 +66,10 @@ NSApplicationDelegate implementation:
 {
     if (SDL_GetEventState(SDL_EVENT_DROP_FILE) == SDL_ENABLE) {
         SDL_Event event;
+        SDL_zero(event);
         event.type = SDL_EVENT_DROP_FILE;
         event.drop.file = SDL_strdup([filename UTF8String]);
-        return (SDL_PushEvent(&event) > 0);
+        return SDL_PushEvent(&event);
     }
 
     return NO;
@@ -228,10 +230,10 @@ Some things that may be of interest about how it all works...
 ## Working directory
 
 In SDL 1.2, the working directory of your SDL app is by default set to its
-parent, but this is no longer the case in SDL 2.0. SDL2 does change the
-working directory, which means it'll be whatever the command line prompt
-that launched the program was using, or if launched by double-clicking in
-the finger, it will be "/", the _root of the filesystem_. Plan accordingly!
+parent, but this is no longer the case in SDL 2.0 and later. SDL2 does not
+change the working directory, which means it'll be whatever the command line
+prompt that launched the program was using, or if launched by double-clicking
+in the Finder, it will be "/", the _root of the filesystem_. Plan accordingly!
 You can use SDL_GetBasePath() to find where the program is running from and
 chdir() there directly.
 

@@ -22,8 +22,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 
-extern SDL_bool UIKit_ShowingMessageBox(void);
+extern bool UIKit_ShowingMessageBox(void);
+extern bool UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-extern int UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
-
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

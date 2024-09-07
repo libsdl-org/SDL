@@ -27,7 +27,7 @@
 
 #include "../SDL_syssensor.h"
 
-/* 1 accelerometer and 1 gyroscope */
+// 1 accelerometer and 1 gyroscope
 #define N3DS_SENSOR_COUNT 2
 
 typedef struct
@@ -38,18 +38,18 @@ typedef struct
 
 static SDL_N3DSSensor N3DS_sensors[N3DS_SENSOR_COUNT];
 
-static int InitN3DSServices(void);
+static bool InitN3DSServices(void);
 static void UpdateN3DSAccelerometer(SDL_Sensor *sensor);
 static void UpdateN3DSGyroscope(SDL_Sensor *sensor);
 
-static SDL_bool IsDeviceIndexValid(int device_index)
+static bool IsDeviceIndexValid(int device_index)
 {
     return device_index >= 0 && device_index < N3DS_SENSOR_COUNT;
 }
 
-static int N3DS_SensorInit(void)
+static bool N3DS_SensorInit(void)
 {
-    if (InitN3DSServices() < 0) {
+    if (!InitN3DSServices()) {
         return SDL_SetError("Failed to initialise N3DS services");
     }
 
@@ -57,23 +57,23 @@ static int N3DS_SensorInit(void)
     N3DS_sensors[0].instance_id = SDL_GetNextObjectID();
     N3DS_sensors[1].type = SDL_SENSOR_GYRO;
     N3DS_sensors[1].instance_id = SDL_GetNextObjectID();
-    return 0;
+    return true;
 }
 
-static int InitN3DSServices(void)
+static bool InitN3DSServices(void)
 {
     if (R_FAILED(hidInit())) {
-        return -1;
+        return false;
     }
 
     if (R_FAILED(HIDUSER_EnableAccelerometer())) {
-        return -1;
+        return false;
     }
 
     if (R_FAILED(HIDUSER_EnableGyroscope())) {
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
 static int N3DS_SensorGetCount(void)
@@ -122,9 +122,9 @@ static SDL_SensorID N3DS_SensorGetDeviceInstanceID(int device_index)
     return -1;
 }
 
-static int N3DS_SensorOpen(SDL_Sensor *sensor, int device_index)
+static bool N3DS_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
-    return 0;
+    return true;
 }
 
 static void N3DS_SensorUpdate(SDL_Sensor *sensor)
@@ -200,4 +200,4 @@ SDL_SensorDriver SDL_N3DS_SensorDriver = {
     .Quit = N3DS_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_N3DS */
+#endif // SDL_SENSOR_N3DS

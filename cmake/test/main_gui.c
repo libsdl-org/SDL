@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     SDL_Window *window = NULL;
     SDL_Surface *screenSurface = NULL;
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Could not initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     screenSurface = SDL_GetWindowSurface(window);
-    SDL_FillSurfaceRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xff, 0xff, 0xff));
+    SDL_FillSurfaceRect(screenSurface, NULL, SDL_MapSurfaceRGB(screenSurface, 0xff, 0xff, 0xff));
     SDL_UpdateWindowSurface(window);
     SDL_Delay(100);
     SDL_DestroyWindow(window);

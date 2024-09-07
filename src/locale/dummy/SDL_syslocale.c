@@ -22,8 +22,8 @@
 #include "SDL_internal.h"
 #include "../SDL_syslocale.h"
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
-    /* dummy implementation. Caller already zero'd out buffer. */
+    // dummy implementation. Caller already zero'd out buffer.
     return SDL_Unsupported();
 }

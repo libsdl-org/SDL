@@ -23,25 +23,20 @@
 #define SDL_render_d3d12_xbox_h_
 
 #include "../../SDL_internal.h"
+#include "../../video/directx/SDL_d3d12.h"
 
-#if defined(SDL_PLATFORM_XBOXONE)
-#include <d3d12_x.h>
-#else /* SDL_PLATFORM_XBOXSERIES */
-#include <d3d12_xs.h>
-#endif
-
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern HRESULT D3D12_XBOX_CreateDevice(ID3D12Device **device, SDL_bool createDebug);
+extern HRESULT D3D12_XBOX_CreateDevice(ID3D12Device **device, bool createDebug);
 extern HRESULT D3D12_XBOX_CreateBackBufferTarget(ID3D12Device1 *device, int width, int height, void **resource);
 extern HRESULT D3D12_XBOX_StartFrame(ID3D12Device1 *device, UINT64 *outToken);
 extern HRESULT D3D12_XBOX_PresentFrame(ID3D12CommandQueue *commandQueue, UINT64 token, ID3D12Resource *renderTarget);
 extern void D3D12_XBOX_GetResolution(Uint32 *width, Uint32 *height);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif

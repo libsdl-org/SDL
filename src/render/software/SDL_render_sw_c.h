@@ -22,6 +22,6 @@
 #ifndef SDL_render_sw_c_h_
 #define SDL_render_sw_c_h_
 
-extern int SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SDL_PropertiesID create_props);
+extern bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SDL_PropertiesID create_props);
 
-#endif /* SDL_render_sw_c_h_ */
+#endif // SDL_render_sw_c_h_

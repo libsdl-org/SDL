@@ -46,12 +46,12 @@ encounter limitations or behavior that is different from other windowing systems
 
 ### The application icon can't be set via ```SDL_SetWindowIcon()```
 
-- Wayland doesn't support programmatically setting the application icon. To provide a custom icon for your application,
-  you must create an associated desktop entry file, aka a `.desktop` file, that points to the icon image. Please see the
-  [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/) for more information
-  on the format of this file. Note that if your application manually sets the application ID via the `SDL_APP_ID` hint
-  string, the desktop entry file name should match the application ID. For example, if your application ID is set
-  to `org.my_org.sdl_app`, the desktop entry file should be named `org.my_org.sdl_app.desktop`.
+- Wayland requires compositor support for the `xdg-toplevel-icon-v1` protocol to set window icons programmatically.
+  Otherwise, the launcher icon from the associated desktop entry file, aka a `.desktop` file, will typically be used.
+  Please see the [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/) for
+  more information on the format of this file. Note that if your application manually sets the application ID via the
+  `SDL_APP_ID` hint string, the desktop entry file name should match the application ID. For example, if your
+  application ID is set to `org.my_org.sdl_app`, the desktop entry file should be named `org.my_org.sdl_app.desktop`.
 
 ## Using custom Wayland windowing protocols with SDL windows
 
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
     }
 
     /* Set SDL to use the existing wl_display object from Qt and initialize. */
-    SDL_SetProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
+    SDL_SetPointerProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
     /* Create a basic, frameless QWindow */
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
      * Qt objects should not be flagged as DPI-aware or protocol violations will result.
      */
     props = SDL_CreateProperties();
-    SDL_SetProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, surface);
+    SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, surface);
     SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_TRUE);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 640);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 480);
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     }
 
     /* Create a renderer */
-    sdlRenderer = SDL_CreateRenderer(sdlWindow, NULL, 0);
+    sdlRenderer = SDL_CreateRenderer(sdlWindow, NULL);
     if (!sdlRenderer) {
         goto exit;
     }
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
     /* Draw a blue screen for the window until ESC is pressed or the window is no longer visible. */
     while (!done) {
         while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_EVENT_KEY_DOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+            if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE) {
                 done = 1;
             }
         }

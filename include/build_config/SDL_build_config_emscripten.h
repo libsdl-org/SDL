@@ -44,6 +44,7 @@
 #define HAVE_MEMORY_H 1
 #define HAVE_SIGNAL_H 1
 #define HAVE_STDARG_H 1
+#define HAVE_STDBOOL_H 1
 #define HAVE_STDDEF_H 1
 #define HAVE_STDINT_H 1
 #define HAVE_STDIO_H 1
@@ -163,6 +164,7 @@
 
 /* Enable various input drivers */
 #define SDL_JOYSTICK_EMSCRIPTEN 1
+#define SDL_JOYSTICK_VIRTUAL    1
 
 /* Enable various sensor drivers */
 #define SDL_SENSOR_DUMMY 1

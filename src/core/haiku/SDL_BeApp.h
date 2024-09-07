@@ -23,15 +23,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* Handle the BeApp specific portions of the application */
+// Handle the BeApp specific portions of the application
 
-/* Initialize the Be Application, if it's not already started */
-extern int SDL_InitBeApp(void);
+// Initialize the Be Application, if it's not already started
+extern bool SDL_InitBeApp(void);
 
-/* Quit the Be Application, if there's nothing left to do */
+// Quit the Be Application, if there's nothing left to do
 extern void SDL_QuitBeApp(void);
 
-/* Be Application Signature*/
+// Be Application Signature
 extern const char *SDL_signature;
 
 

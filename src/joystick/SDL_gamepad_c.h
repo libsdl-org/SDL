@@ -24,27 +24,27 @@
 
 #include "SDL_internal.h"
 
-/* Useful functions and variables from SDL_gamepad.c */
+// Useful functions and variables from SDL_gamepad.c
 
-/* Initialization and shutdown functions */
-extern int SDL_InitGamepadMappings(void);
+// Initialization and shutdown functions
+extern bool SDL_InitGamepadMappings(void);
 extern void SDL_QuitGamepadMappings(void);
-extern int SDL_InitGamepads(void);
+extern bool SDL_InitGamepads(void);
 extern void SDL_QuitGamepads(void);
 
 extern void SDL_PrivateGamepadAdded(SDL_JoystickID instance_id);
 extern void SDL_PrivateGamepadRemoved(SDL_JoystickID instance_id);
 
-/* Function to return whether a joystick name and GUID is a gamepad  */
-extern SDL_bool SDL_IsGamepadNameAndGUID(const char *name, SDL_JoystickGUID guid);
+// Function to return whether a joystick name and GUID is a gamepad
+extern bool SDL_IsGamepadNameAndGUID(const char *name, SDL_GUID guid);
 
-/* Function to return whether a gamepad should be ignored */
-extern SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid);
+// Function to return whether a gamepad should be ignored
+extern bool SDL_ShouldIgnoreGamepad(const char *name, SDL_GUID guid);
 
-/* Handle delayed guide button on a gamepad */
+// Handle delayed guide button on a gamepad
 extern void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick);
 
-/* Handle system sensor data */
+// Handle system sensor data
 extern void SDL_GamepadSensorWatcher(Uint64 timestamp, SDL_SensorID sensor, Uint64 sensor_timestamp, float *data, int num_values);
 
-#endif /* SDL_gamepad_c_h_ */
+#endif // SDL_gamepad_c_h_
