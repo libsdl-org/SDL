@@ -265,6 +265,8 @@ void SDL_GPU_BlitCommon(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUBlitRegion *source,
     const SDL_GPUBlitRegion *destination,
+    SDL_GPULoadOp loadOp,
+    SDL_FColor clearColor,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filter,
     bool cycle,
@@ -607,6 +609,8 @@ struct SDL_GPUDevice
         SDL_GPUCommandBuffer *commandBuffer,
         const SDL_GPUBlitRegion *source,
         const SDL_GPUBlitRegion *destination,
+        SDL_GPULoadOp load_op,
+        SDL_FColor clear_color,
         SDL_FlipMode flipMode,
         SDL_GPUFilter filter,
         bool cycle);

@@ -5769,10 +5769,15 @@ static void D3D12_GenerateMipmaps(
             dstRegion.w = container->header.info.width >> levelIndex;
             dstRegion.h = container->header.info.height >> levelIndex;
 
+            SDL_FColor clearColor;
+            SDL_zero(clearColor);
+
             SDL_BlitGPUTexture(
                 commandBuffer,
                 &srcRegion,
                 &dstRegion,
+                SDL_GPU_LOADOP_DONT_CARE,
+                clearColor,
                 SDL_FLIP_NONE,
                 SDL_GPU_FILTER_LINEAR,
                 false);
@@ -5786,6 +5791,8 @@ static void D3D12_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUBlitRegion *source,
     const SDL_GPUBlitRegion *destination,
+    SDL_GPULoadOp loadOp,
+    SDL_FColor clearColor,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filter,
     bool cycle)
@@ -5797,6 +5804,8 @@ static void D3D12_Blit(
         commandBuffer,
         source,
         destination,
+        loadOp,
+        clearColor,
         flipMode,
         filter,
         cycle,

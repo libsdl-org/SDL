@@ -223,6 +223,8 @@ void SDL_GPU_BlitCommon(
     SDL_GPUCommandBuffer *command_buffer,
     const SDL_GPUBlitRegion *source,
     const SDL_GPUBlitRegion *destination,
+    SDL_GPULoadOp load_op,
+    SDL_FColor clear_color,
     SDL_FlipMode flip_mode,
     SDL_GPUFilter filter,
     bool cycle,
@@ -266,18 +268,8 @@ void SDL_GPU_BlitCommon(
         return;
     }
 
-    // If the entire destination is blitted, we don't have to load
-    if (
-        dst_header->info.layer_count_or_depth == 1 &&
-        dst_header->info.num_levels == 1 &&
-        dst_header->info.type != SDL_GPU_TEXTURETYPE_3D &&
-        destination->w == dst_header->info.width &&
-        destination->h == dst_header->info.height) {
-        color_target_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
-    } else {
-        color_target_info.load_op = SDL_GPU_LOADOP_LOAD;
-    }
-
+    color_target_info.load_op = load_op;
+    color_target_info.clear_color = clear_color;
     color_target_info.store_op = SDL_GPU_STOREOP_STORE;
 
     color_target_info.texture = destination->texture;
@@ -2122,6 +2114,8 @@ void SDL_BlitGPUTexture(
     SDL_GPUCommandBuffer *command_buffer,
     const SDL_GPUBlitRegion *source,
     const SDL_GPUBlitRegion *destination,
+    SDL_GPULoadOp load_op,
+    SDL_FColor clear_color,
     SDL_FlipMode flip_mode,
     SDL_GPUFilter filter,
     SDL_bool cycle)
@@ -2178,6 +2172,8 @@ void SDL_BlitGPUTexture(
         command_buffer,
         source,
         destination,
+        load_op,
+        clear_color,
         flip_mode,
         filter,
         cycle);

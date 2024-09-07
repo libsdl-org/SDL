@@ -85,7 +85,7 @@ SDL_DYNAPI_PROC(void,SDL_BindGPUVertexBuffers,(SDL_GPURenderPass *a, Uint32 b, c
 SDL_DYNAPI_PROC(void,SDL_BindGPUVertexSamplers,(SDL_GPURenderPass *a, Uint32 b, const SDL_GPUTextureSamplerBinding *c, Uint32 d),(a,b,c,d),)
 SDL_DYNAPI_PROC(void,SDL_BindGPUVertexStorageBuffers,(SDL_GPURenderPass *a, Uint32 b, SDL_GPUBuffer *const *c, Uint32 d),(a,b,c,d),)
 SDL_DYNAPI_PROC(void,SDL_BindGPUVertexStorageTextures,(SDL_GPURenderPass *a, Uint32 b, SDL_GPUTexture *const *c, Uint32 d),(a,b,c,d),)
-SDL_DYNAPI_PROC(void,SDL_BlitGPUTexture,(SDL_GPUCommandBuffer *a, const SDL_GPUBlitRegion *b, const SDL_GPUBlitRegion *c, SDL_FlipMode d, SDL_GPUFilter e, SDL_bool f),(a,b,c,d,e,f),)
+SDL_DYNAPI_PROC(void,SDL_BlitGPUTexture,(SDL_GPUCommandBuffer *a, const SDL_GPUBlitRegion *b, const SDL_GPUBlitRegion *c, SDL_GPULoadOp d, SDL_FColor e, SDL_FlipMode f, SDL_GPUFilter g, SDL_bool h),(a,b,c,d,e,f,g,h),)
 SDL_DYNAPI_PROC(SDL_bool,SDL_BlitSurface,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_BlitSurface9Grid,(SDL_Surface *a, const SDL_Rect *b, int c, int d, int e, int f, float g, SDL_ScaleMode h, SDL_Surface *i, const SDL_Rect *j),(a,b,c,d,e,f,g,h,i,j),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_BlitSurfaceScaled,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d, SDL_ScaleMode e),(a,b,c,d,e),return)

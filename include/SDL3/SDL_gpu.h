@@ -3055,6 +3055,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GenerateMipmapsForGPUTexture(
  * \param command_buffer a command buffer.
  * \param source the texture region to copy from.
  * \param destination the texture region to copy to.
+ * \param load_op the load op for the destination texture.
+ * \param clear_color the color to clear the destination to. Ignored if load_op is not SDL_GPU_LOADOP_LOAD.
  * \param flip_mode the flip mode for the source texture region.
  * \param filter the filter mode that will be used when blitting.
  * \param cycle if SDL_TRUE, cycles the destination texture if the destination
@@ -3066,6 +3068,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BlitGPUTexture(
     SDL_GPUCommandBuffer *command_buffer,
     const SDL_GPUBlitRegion *source,
     const SDL_GPUBlitRegion *destination,
+    SDL_GPULoadOp load_op,
+    SDL_FColor clear_color,
     SDL_FlipMode flip_mode,
     SDL_GPUFilter filter,
     SDL_bool cycle);

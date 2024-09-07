@@ -976,8 +976,10 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
     dst.texture = swapchain;
     dst.w = swapchain_w;
     dst.h = swapchain_h;
+    SDL_FColor clear_color;
+    SDL_zero(clear_color);
 
-    SDL_BlitGPUTexture(data->state.command_buffer, &src, &dst, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, true);
+    SDL_BlitGPUTexture(data->state.command_buffer, &src, &dst, SDL_GPU_LOADOP_DONT_CARE, clear_color, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, true);
 
     if (swapchain_w != data->backbuffer.width || swapchain_h != data->backbuffer.height || swapchain_fmt != data->backbuffer.format) {
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);

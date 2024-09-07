@@ -4175,6 +4175,8 @@ static void D3D11_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUBlitRegion *source,
     const SDL_GPUBlitRegion *destination,
+    SDL_GPULoadOp loadOp,
+    SDL_FColor clearColor,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filter,
     bool cycle)
@@ -4187,6 +4189,8 @@ static void D3D11_Blit(
         commandBuffer,
         source,
         destination,
+        loadOp,
+        clearColor,
         flipMode,
         filter,
         cycle,

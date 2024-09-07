@@ -401,7 +401,10 @@ Render(SDL_Window *window, const int windownum)
         dst_region = src_region;
         dst_region.texture = swapchain;
 
-        SDL_BlitGPUTexture(cmd, &src_region, &dst_region, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, SDL_FALSE);
+        SDL_FColor clearColor;
+        SDL_zero(clearColor);
+
+        SDL_BlitGPUTexture(cmd, &src_region, &dst_region, SDL_GPU_LOADOP_DONT_CARE, clearColor, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, SDL_FALSE);
     }
 
     /* Submit the command buffer! */

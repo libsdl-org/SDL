@@ -9254,6 +9254,8 @@ static void VULKAN_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUBlitRegion *source,
     const SDL_GPUBlitRegion *destination,
+    SDL_GPULoadOp loadOp,
+    SDL_FColor clearColor,
     SDL_FlipMode flipMode,
     SDL_GPUFilter filter,
     bool cycle)
@@ -9268,6 +9270,23 @@ static void VULKAN_Blit(
     Uint32 dstLayer = dstHeader->info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : destination->layer_or_depth_plane;
     Uint32 dstDepth = dstHeader->info.type == SDL_GPU_TEXTURETYPE_3D ? destination->layer_or_depth_plane : 0;
     int32_t swap;
+
+    if (loadOp == SDL_GPU_LOADOP_CLEAR) {
+        SDL_GPUColorTargetInfo targetInfo;
+        targetInfo.texture = destination->texture;
+        targetInfo.mip_level = destination->mip_level;
+        targetInfo.layer_or_depth_plane = destination->layer_or_depth_plane;
+        targetInfo.load_op = loadOp;
+        targetInfo.store_op = SDL_GPU_STOREOP_STORE;
+        targetInfo.clear_color = clearColor;
+        targetInfo.cycle = cycle;
+        VULKAN_BeginRenderPass(
+            commandBuffer,
+            &targetInfo,
+            1,
+            NULL);
+        VULKAN_EndRenderPass(commandBuffer);
+    }
 
     VulkanTextureSubresource *srcSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
         (VulkanTextureContainer *)source->texture,
