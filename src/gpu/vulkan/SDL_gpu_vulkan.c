@@ -4461,17 +4461,17 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
     bool hasValidSwapchainComposition, hasValidPresentMode;
     Sint32 drawableWidth, drawableHeight;
     Uint32 i;
-    SDL_VideoDevice *this = SDL_GetVideoDevice();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-    SDL_assert(this && this->Vulkan_CreateSurface);
+    SDL_assert(_this && _this->Vulkan_CreateSurface);
 
     swapchainData = SDL_malloc(sizeof(VulkanSwapchainData));
     swapchainData->frameCounter = 0;
 
     // Each swapchain must have its own surface.
 
-    if (!this->Vulkan_CreateSurface(
-            this,
+    if (!_this->Vulkan_CreateSurface(
+            _this,
             windowData->window,
             renderer->instance,
             NULL, // FIXME: VAllocationCallbacks
@@ -11629,13 +11629,13 @@ static bool VULKAN_INTERNAL_PrepareVulkan(
     return true;
 }
 
-static bool VULKAN_PrepareDriver(SDL_VideoDevice *this)
+static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this)
 {
     // Set up dummy VulkanRenderer
     VulkanRenderer *renderer;
     Uint8 result;
 
-    if (this->Vulkan_CreateSurface == NULL) {
+    if (_this->Vulkan_CreateSurface == NULL) {
         return false;
     }
 
