@@ -2221,7 +2221,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
  * Set the window as a child of a parent window.
  *
  * If the window is already the child of an existing window, it will be
- * reparented to the new owner. Setting the parent window to null unparents
+ * reparented to the new owner. Setting the parent window to NULL unparents
  * the window and removes child window status.
  *
  * Attempting to set the parent of a window that is currently in the modal
