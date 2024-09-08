@@ -94,7 +94,6 @@
 #include <SDL3/SDL_mutex.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_iostream.h>
-#include <SDL3/SDL_thread.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */

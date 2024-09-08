@@ -34,7 +34,6 @@
 
 /* Thread synchronization primitives */
 #include <SDL3/SDL_atomic.h>
-#include <SDL3/SDL_mutex.h>
 
 #if defined(SDL_PLATFORM_WINDOWS)
 #include <process.h> /* _beginthreadex() and _endthreadex() */
