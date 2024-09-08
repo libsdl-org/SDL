@@ -47,7 +47,7 @@
 /* Final result message format */
 #define SDLTEST_FINAL_RESULT_FORMAT COLOR_YELLOW ">>> %s '%s':" COLOR_END " %s\n"
 
-typedef struct SDLTest_TestSuiteRunner {
+struct SDLTest_TestSuiteRunner {
     struct
     {
         SDLTest_TestSuiteReference **testSuites;
@@ -59,7 +59,7 @@ typedef struct SDLTest_TestSuiteRunner {
     } user;
 
     SDLTest_ArgumentParser argparser;
-} SDLTest_TestSuiteRunner;
+};
 
 /* ! Timeout for single test case execution */
 static Uint32 SDLTest_TestCaseTimeout = 3600;;
