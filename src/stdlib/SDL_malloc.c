@@ -6461,7 +6461,7 @@ void *SDL_realloc(void *ptr, size_t size)
 {
     void *mem;
 
-    if (!ptr && !size) {
+    if (!size) {
         size = 1;
     }
 
