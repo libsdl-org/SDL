@@ -2654,7 +2654,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     result = VULKAN_AllocateImage(rendererData, create_props, width, height, textureFormat, usage, imageViewSwizzle, textureData->samplerYcbcrConversion, &textureData->mainImage);
     if (result != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "VULKAN_AllocateImage(): %s\n", SDL_Vulkan_GetResultString(result));
-        return result;
+        return false;
     }
 
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
@@ -2671,7 +2671,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
             textureData->mainRenderpasses);
         if (result != VK_SUCCESS) {
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "VULKAN_CreateFramebuffersAndRenderPasses(): %s\n", SDL_Vulkan_GetResultString(result));
-            return result;
+            return false;
         }
     }
     return true;
