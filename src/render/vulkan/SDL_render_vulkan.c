@@ -2674,7 +2674,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
             return result;
         }
     }
-    return result;
+    return true;
 }
 
 static void VULKAN_DestroyTexture(SDL_Renderer *renderer,
