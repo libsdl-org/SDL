@@ -74,7 +74,11 @@ extern "C" {
  */
 #define SDL_ALPHA_TRANSPARENT_FLOAT 0.0f
 
-/** Pixel type. */
+/**
+ * Pixel type.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_PixelType
 {
     SDL_PIXELTYPE_UNKNOWN,
@@ -93,7 +97,11 @@ typedef enum SDL_PixelType
     SDL_PIXELTYPE_INDEX2
 } SDL_PixelType;
 
-/** Bitmap pixel order, high bit -> low bit. */
+/**
+ * Bitmap pixel order, high bit -> low bit.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_BitmapOrder
 {
     SDL_BITMAPORDER_NONE,
@@ -101,7 +109,11 @@ typedef enum SDL_BitmapOrder
     SDL_BITMAPORDER_1234
 } SDL_BitmapOrder;
 
-/** Packed component order, high bit -> low bit. */
+/**
+ * Packed component order, high bit -> low bit.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_PackedOrder
 {
     SDL_PACKEDORDER_NONE,
@@ -115,7 +127,11 @@ typedef enum SDL_PackedOrder
     SDL_PACKEDORDER_BGRA
 } SDL_PackedOrder;
 
-/** Array component order, low byte -> high byte. */
+/**
+ * Array component order, low byte -> high byte.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_ArrayOrder
 {
     SDL_ARRAYORDER_NONE,
@@ -127,7 +143,11 @@ typedef enum SDL_ArrayOrder
     SDL_ARRAYORDER_ABGR
 } SDL_ArrayOrder;
 
-/** Packed component layout. */
+/**
+ * Packed component layout.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_PackedLayout
 {
     SDL_PACKEDLAYOUT_NONE,

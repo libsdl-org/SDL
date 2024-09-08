@@ -112,4 +112,3 @@ typedef enum SDL_PenAxis
 
 #endif /* SDL_pen_h_ */
 
-/* vi: set ts=4 sw=4 expandtab: */

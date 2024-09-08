@@ -139,15 +139,14 @@ extern "C" {
  */
 
 /**
- *  \typedef SDL_Haptic
+ * The haptic structure used to identify an SDL haptic.
  *
- *  The haptic structure used to identify an SDL haptic.
+ * \sa SDL_OpenHaptic
+ * \sa SDL_OpenHapticFromJoystick
+ * \sa SDL_CloseHaptic
  *
- *  \sa SDL_OpenHaptic
- *  \sa SDL_OpenHapticFromJoystick
- *  \sa SDL_CloseHaptic
+ * \since This struct is available since SDL 3.0.0.
  */
-struct SDL_Haptic;
 typedef struct SDL_Haptic SDL_Haptic;
 
 
