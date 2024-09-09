@@ -1227,6 +1227,22 @@ extern SDL_DECLSPEC int SDLCALL SDL_tolower(int x);
 extern SDL_DECLSPEC Uint16 SDLCALL SDL_crc16(Uint16 crc, const void *data, size_t len);
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_crc32(Uint32 crc, const void *data, size_t len);
 
+/**
+ * Copy non-overlapping memory.
+ *
+ * The memory regions must not overlap. If they do, use SDL_memmove() instead.
+ *
+ * \param dst The destination memory region. Must not be NULL, and must not overlap with `src`.
+ * \param src The source memory region. Must not be NULL, and must not overlap with `dst`.
+ * \param len The length in bytes of both `dst` and `src`.
+ * \returns `dst`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_memmove
+ */
 extern SDL_DECLSPEC void * SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
 
 /* Take advantage of compiler optimizations for memcpy */
@@ -1241,6 +1257,23 @@ extern SDL_DECLSPEC void * SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SD
     { SDL_COMPILE_TIME_ASSERT(SDL_copyp, sizeof (*(dst)) == sizeof (*(src))); }             \
     SDL_memcpy((dst), (src), sizeof(*(src)))
 
+/**
+ * Copy memory.
+ *
+ * It is okay for the memory regions to overlap.
+ * If you are confident that the regions never overlap, using SDL_memset() may improve performance.
+ *
+ * \param dst The destination memory region. Must not be NULL.
+ * \param src The source memory region. Must not be NULL.
+ * \param len The length in bytes of both `dst` and `src`.
+ * \returns `dst`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_memcpy
+ */
 extern SDL_DECLSPEC void * SDLCALL SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
 
 /* Take advantage of compiler optimizations for memmove */
@@ -1270,8 +1303,52 @@ extern SDL_DECLSPEC int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_
 
 extern SDL_DECLSPEC size_t SDLCALL SDL_wcslen(const wchar_t *wstr);
 extern SDL_DECLSPEC size_t SDLCALL SDL_wcsnlen(const wchar_t *wstr, size_t maxlen);
+
+/**
+ * Copy a wide string.
+ *
+ * This function copies `maxlen` - 1 wide characters from `src` to `dst`, then appends a null terminator.
+ *
+ * `src` and `dst` must not overlap.
+ *
+ * If `maxlen` is 0, no wide characters are copied and no null terminator is written.
+ *
+ * \param dst The destination buffer. Must not be NULL, and must not overlap with `src`.
+ * \param src The null-terminated wide string to copy. Must not be NULL, and must not overlap with `dst`.
+ * \param maxlen The length (in wide characters) of the destination buffer.
+ * \returns The length (in wide characters, excluding the null terminator) of `src`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_wcslcat
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_wcslcpy(SDL_OUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen);
+
+/**
+ * Concatenate wide strings.
+ *
+ * This function appends up to `maxlen` - SDL_wcslen(dst) - 1 wide characters from `src`
+ * to the end of the wide string in `dst`, then appends a null terminator.
+ *
+ * `src` and `dst` must not overlap.
+ *
+ * If `maxlen` - SDL_wcslen(dst) - 1 is less than or equal to 0, then `dst` is unmodified.
+ *
+ * \param dst The destination buffer already containing the first null-terminated wide string. Must not be NULL and must not overlap with `src`.
+ * \param src The second null-terminated wide string. Must not be NULL, and must not overlap with `dst`.
+ * \param maxlen The length (in wide characters) of the destination buffer.
+ * \returns The length (in wide characters, excluding the null terminator) of the string in `dst` plus the length of `src`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_wcslcpy
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_wcslcat(SDL_INOUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen);
+
 extern SDL_DECLSPEC wchar_t * SDLCALL SDL_wcsdup(const wchar_t *wstr);
 extern SDL_DECLSPEC wchar_t * SDLCALL SDL_wcsstr(const wchar_t *haystack, const wchar_t *needle);
 extern SDL_DECLSPEC wchar_t * SDLCALL SDL_wcsnstr(const wchar_t *haystack, const wchar_t *needle, size_t maxlen);
@@ -1402,9 +1479,81 @@ extern SDL_DECLSPEC long SDLCALL SDL_wcstol(const wchar_t *str, wchar_t **endp, 
 
 extern SDL_DECLSPEC size_t SDLCALL SDL_strlen(const char *str);
 extern SDL_DECLSPEC size_t SDLCALL SDL_strnlen(const char *str, size_t maxlen);
+
+/**
+ * Copy a string.
+ *
+ * This function copies up to `maxlen` - 1 characters from `src` to `dst`, then appends a null terminator.
+ *
+ * `src` and `dst` must not overlap.
+ *
+ * If `maxlen` is 0, no characters are copied and no null terminator is written.
+ *
+ * If you want to copy an UTF-8 string but need to ensure that multi-byte sequences are not truncated,
+ * consider using SDL_utf8strlcpy().
+ *
+ * \param dst The destination buffer. Must not be NULL, and must not overlap with `src`.
+ * \param src The null-terminated string to copy. Must not be NULL, and must not overlap with `dst`.
+ * \param maxlen The length (in characters) of the destination buffer.
+ * \returns The length (in characters, excluding the null terminator) of `src`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_strlcat
+ * \sa SDL_utf8strlcpy
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
+
+/**
+ * Copy an UTF-8 string.
+ *
+ * This function copies up to `dst_bytes` - 1 bytes from `src` to `dst`
+ * while also ensuring that the string written to `dst`
+ * does not end in a truncated multi-byte sequence. Finally, it appends a null terminator.
+ *
+ * `src` and `dst` must not overlap.
+ *
+ * Note that unlike SDL_strlcpy(), `dst_bytes` must not be 0. Also note that unlike SDL_strlcpy(),
+ * this function returns the number of bytes written, not the length of `src`.
+ *
+ * \param dst The destination buffer. Must not be NULL, and must not overlap with `src`.
+ * \param src The null-terminated UTF-8 string to copy. Must not be NULL, and must not overlap with `dst`.
+ * \param dst_bytes The length (in bytes) of the destination buffer. Must not be 0.
+ * \returns The number of bytes written, excluding the null terminator.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_strlcpy
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_bytes);
+
+/**
+ * Concatenate strings.
+ *
+ * This function appends up to `maxlen` - SDL_strlen(dst) - 1 characters from `src`
+ * to the end of the string in `dst`, then appends a null terminator.
+ *
+ * `src` and `dst` must not overlap.
+ *
+ * If `maxlen` - SDL_strlen(dst) - 1 is less than or equal to 0, then `dst` is unmodified.
+ *
+ * \param dst The destination buffer already containing the first null-terminated string. Must not be NULL and must not overlap with `src`.
+ * \param src The second null-terminated string. Must not be NULL, and must not overlap with `dst`.
+ * \param maxlen The length (in characters) of the destination buffer.
+ * \returns The length (in characters, excluding the null terminator) of the string in `dst` plus the length of `src`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_strlcpy
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
+
 extern SDL_DECLSPEC SDL_MALLOC char * SDLCALL SDL_strdup(const char *str);
 extern SDL_DECLSPEC SDL_MALLOC char * SDLCALL SDL_strndup(const char *str, size_t maxlen);
 extern SDL_DECLSPEC char * SDLCALL SDL_strrev(char *str);
