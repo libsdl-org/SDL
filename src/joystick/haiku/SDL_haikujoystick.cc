@@ -212,7 +212,8 @@ extern "C"
 
         // Generate button events
         for (i = 0; i < joystick->nbuttons; ++i) {
-            SDL_SendJoystickButton(timestamp, joystick, i, (buttons & 0x01));
+            bool down = ((buttons & 0x01) != 0);
+            SDL_SendJoystickButton(timestamp, joystick, i, down);
             buttons >>= 1;
         }
     }

@@ -120,7 +120,7 @@ static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick)
     if (updated_down) {
         for (Uint8 i = 0; i < joystick->nbuttons; i++) {
             if (current_state & BIT(i) & updated_down) {
-                SDL_SendJoystickButton(timestamp, joystick, i, SDL_PRESSED);
+                SDL_SendJoystickButton(timestamp, joystick, i, true);
             }
         }
     }
@@ -136,7 +136,7 @@ static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick)
     if (updated_up) {
         for (Uint8 i = 0; i < joystick->nbuttons; i++) {
             if (current_state & BIT(i) & updated_up) {
-                SDL_SendJoystickButton(timestamp, joystick, i, SDL_RELEASED);
+                SDL_SendJoystickButton(timestamp, joystick, i, false);
             }
         }
     }

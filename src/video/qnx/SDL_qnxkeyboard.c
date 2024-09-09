@@ -125,8 +125,8 @@ void handleKeyboardEvent(screen_event_t event)
     // FIXME:
     // Need to handle more key states (such as key combinations).
     if (val & KEY_DOWN) {
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, val, scancode, SDL_PRESSED);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, val, scancode, true);
     } else {
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, val, scancode, SDL_RELEASED);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, val, scancode, false);
     }
 }

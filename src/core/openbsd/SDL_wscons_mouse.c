@@ -79,13 +79,13 @@ void updateMouse(SDL_WSCONS_mouse_input_data *input)
             {
                 switch (events[i].value) {
                 case 0: // Left Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_PRESSED, SDL_BUTTON_LEFT);
+                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_LEFT, true);
                     break;
                 case 1: // Middle Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_PRESSED, SDL_BUTTON_MIDDLE);
+                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_MIDDLE, true);
                     break;
                 case 2: // Right Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_PRESSED, SDL_BUTTON_RIGHT);
+                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_RIGHT, true);
                     break;
                 }
             } break;
@@ -93,13 +93,13 @@ void updateMouse(SDL_WSCONS_mouse_input_data *input)
             {
                 switch (events[i].value) {
                 case 0: // Left Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_RELEASED, SDL_BUTTON_LEFT);
+                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_LEFT, false);
                     break;
                 case 1: // Middle Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_RELEASED, SDL_BUTTON_MIDDLE);
+                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_MIDDLE, false);
                     break;
                 case 2: // Right Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_RELEASED, SDL_BUTTON_RIGHT);
+                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_RIGHT, false);
                     break;
                 }
             } break;

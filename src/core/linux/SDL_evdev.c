@@ -347,11 +347,7 @@ void SDL_EVDEV_Poll(void)
                 case EV_KEY:
                     if (event->code >= BTN_MOUSE && event->code < BTN_MOUSE + SDL_arraysize(EVDEV_MouseButtons)) {
                         mouse_button = event->code - BTN_MOUSE;
-                        if (event->value == 0) {
-                            SDL_SendMouseButton(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, SDL_RELEASED, EVDEV_MouseButtons[mouse_button]);
-                        } else if (event->value == 1) {
-                            SDL_SendMouseButton(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, SDL_PRESSED, EVDEV_MouseButtons[mouse_button]);
-                        }
+                        SDL_SendMouseButton(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, EVDEV_MouseButtons[mouse_button], (event->value != 0));
                         break;
                     }
 
@@ -373,9 +369,9 @@ void SDL_EVDEV_Poll(void)
                     // Probably keyboard
                     scancode = SDL_EVDEV_translate_keycode(event->code);
                     if (event->value == 0) {
-                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, SDL_RELEASED);
+                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, false);
                     } else if (event->value == 1 || event->value == 2 /* key repeated */) {
-                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, SDL_PRESSED);
+                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, true);
                     }
                     SDL_EVDEV_kbd_keycode(_this->kbd, event->code, event->value);
                     break;

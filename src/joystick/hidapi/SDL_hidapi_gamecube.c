@@ -231,7 +231,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
         timestamp,                      \
         joystick,                       \
         button,                         \
-        (packet[off] & flag) ? SDL_PRESSED : SDL_RELEASED);
+        ((packet[off] & flag) != 0));
     READ_BUTTON(1, 0x02, 0) // A
     READ_BUTTON(1, 0x04, 1) // B
     READ_BUTTON(1, 0x08, 3) // Y
@@ -314,7 +314,7 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
         timestamp,                      \
         joystick,                       \
         button,                         \
-        (curSlot[off] & flag) ? SDL_PRESSED : SDL_RELEASED);
+        ((curSlot[off] & flag) != 0));
         READ_BUTTON(1, 0x01, 0) // A
         READ_BUTTON(1, 0x02, 1) // B
         READ_BUTTON(1, 0x04, 2) // X

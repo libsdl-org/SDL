@@ -309,7 +309,7 @@ void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handl
     SDL_UnlockRWLock(pen_device_rwlock);
 }
 
-void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 eraser)
+void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, bool eraser, bool down)
 {
     bool send_event = false;
     SDL_PenInputFlags input_state = 0;
@@ -327,10 +327,10 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
         x = pen->x;
         y = pen->y;
 
-        if (state && ((input_state & SDL_PEN_INPUT_DOWN) == 0)) {
+        if (down && ((input_state & SDL_PEN_INPUT_DOWN) == 0)) {
             input_state |= SDL_PEN_INPUT_DOWN;
             send_event = true;
-        } else if (!state && (input_state & SDL_PEN_INPUT_DOWN)) {
+        } else if (!down && (input_state & SDL_PEN_INPUT_DOWN)) {
             input_state &= ~SDL_PEN_INPUT_DOWN;
             send_event = true;
         }
@@ -338,7 +338,7 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
         if (eraser && ((input_state & SDL_PEN_INPUT_ERASER_TIP) == 0)) {
             input_state |= SDL_PEN_INPUT_ERASER_TIP;
             send_event = true;
-        } else if (!state && (input_state & SDL_PEN_INPUT_ERASER_TIP)) {
+        } else if (!down && (input_state & SDL_PEN_INPUT_ERASER_TIP)) {
             input_state &= ~SDL_PEN_INPUT_ERASER_TIP;
             send_event = true;
         }
@@ -348,7 +348,7 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
     SDL_UnlockRWLock(pen_device_rwlock);
 
     if (send_event) {
-        const SDL_EventType evtype = state ? SDL_EVENT_PEN_DOWN : SDL_EVENT_PEN_UP;
+        const SDL_EventType evtype = down ? SDL_EVENT_PEN_DOWN : SDL_EVENT_PEN_UP;
         if (send_event && SDL_EventEnabled(evtype)) {
             SDL_Event event;
             SDL_zero(event);
@@ -359,8 +359,8 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
             event.ptouch.pen_state = input_state;
             event.ptouch.x = x;
             event.ptouch.y = y;
-            event.ptouch.eraser = eraser ? 1 : 0;
-            event.ptouch.state = state ? SDL_PRESSED : SDL_RELEASED;
+            event.ptouch.eraser = eraser;
+            event.ptouch.down = down;
             SDL_PushEvent(&event);
         }
     }
@@ -443,7 +443,7 @@ void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window
     }
 }
 
-void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 button)
+void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 button, bool down)
 {
     bool send_event = false;
     SDL_PenInputFlags input_state = 0;
@@ -463,13 +463,13 @@ void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window
     if (pen) {
         input_state = pen->input_state;
         const Uint32 flag = (Uint32) (1u << button);
-        const Uint8 current = (input_state & flag) ? 1 : 0;
+        const bool current = ((input_state & flag) != 0);
         x = pen->x;
         y = pen->y;
-        if (state && !current) {
+        if (down && !current) {
             input_state |= flag;
             send_event = true;
-        } else if (!state && current) {
+        } else if (!down && current) {
             input_state &= ~flag;
             send_event = true;
         }
@@ -478,7 +478,7 @@ void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window
     SDL_UnlockRWLock(pen_device_rwlock);
 
     if (send_event) {
-        const SDL_EventType evtype = state ? SDL_EVENT_PEN_BUTTON_DOWN : SDL_EVENT_PEN_BUTTON_UP;
+        const SDL_EventType evtype = down ? SDL_EVENT_PEN_BUTTON_DOWN : SDL_EVENT_PEN_BUTTON_UP;
         if (SDL_EventEnabled(evtype)) {
             SDL_Event event;
             SDL_zero(event);
@@ -490,7 +490,7 @@ void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window
             event.pbutton.x = x;
             event.pbutton.y = y;
             event.pbutton.button = button;
-            event.pbutton.state = state ? SDL_PRESSED : SDL_RELEASED;
+            event.pbutton.down = down;
             SDL_PushEvent(&event);
         }
     }

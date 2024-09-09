@@ -228,7 +228,7 @@ static void loop(void *arg)
         case SDL_EVENT_KEY_UP:
             switch (event.key.key) {
             case SDLK_LSHIFT:
-                isRect = (event.key.state == SDL_PRESSED);
+                isRect = event.key.down;
                 if (active) {
                     active->isRect = isRect;
                 }

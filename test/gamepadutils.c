@@ -81,7 +81,7 @@ static SDL_FRect touchpad_area = {
 
 typedef struct
 {
-    Uint8 state;
+    SDL_bool down;
     float x;
     float y;
     float pressure;
@@ -428,11 +428,7 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
     for (i = 0; i < SDL_GAMEPAD_BUTTON_TOUCHPAD; ++i) {
         const SDL_GamepadButton button = (SDL_GamepadButton)i;
 
-        if (SDL_GetGamepadButton(gamepad, button) == SDL_PRESSED) {
-            SetGamepadImageElement(ctx, button, SDL_TRUE);
-        } else {
-            SetGamepadImageElement(ctx, button, SDL_FALSE);
-        }
+        SetGamepadImageElement(ctx, button, SDL_GetGamepadButton(gamepad, button));
     }
 
     for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
@@ -483,7 +479,7 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
         for (i = 0; i < num_fingers; ++i) {
             GamepadTouchpadFinger *finger = &ctx->fingers[i];
 
-            SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &finger->state, &finger->x, &finger->y, &finger->pressure);
+            SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &finger->down, &finger->x, &finger->y, &finger->pressure);
         }
         ctx->showing_touchpad = SDL_TRUE;
     } else {
@@ -614,7 +610,7 @@ void RenderGamepadImage(GamepadImage *ctx)
         for (i = 0; i < ctx->num_fingers; ++i) {
             GamepadTouchpadFinger *finger = &ctx->fingers[i];
 
-            if (finger->state) {
+            if (finger->down) {
                 dst.x = ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2;
                 dst.x += touchpad_area.x + finger->x * touchpad_area.w;
                 dst.x -= ctx->button_width / 2;
@@ -1220,17 +1216,17 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
             int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, 0);
             for (i = 0; i < num_fingers; ++i) {
-                Uint8 state;
+                SDL_bool down;
                 float finger_x, finger_y, finger_pressure;
 
-                if (!SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &state, &finger_x, &finger_y, &finger_pressure)) {
+                if (!SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &down, &finger_x, &finger_y, &finger_pressure)) {
                     continue;
                 }
 
                 SDL_snprintf(text, sizeof(text), "Touch finger %d:", i);
                 SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
 
-                if (state) {
+                if (down) {
                     SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
                 } else {
                     SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
@@ -1242,7 +1238,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                 dst.h = ctx->button_height;
                 SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
-                if (state) {
+                if (down) {
                     SDL_snprintf(text, sizeof(text), "(%.2f,%.2f)", finger_x, finger_y);
                     SDLTest_DrawString(ctx->renderer, x + center + ctx->button_width + 4.0f, y, text);
                 }

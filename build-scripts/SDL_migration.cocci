@@ -3614,6 +3614,14 @@ typedef SDL_JoystickGUID, SDL_GUID;
 - SDL_size_add_overflow
 + SDL_size_add_check_overflow
   (...)
+@@
+@@
+- SDL_PRESSED
++ SDL_TRUE
+@@
+@@
+- SDL_RELEASED
++ SDL_FALSE
 
 // This should be the last rule in the file, since it works on SDL3 functions and previous rules may have renamed old functions.
 @ bool_return_type  @

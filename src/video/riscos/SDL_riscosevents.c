@@ -58,7 +58,7 @@ void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
     for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {
         if (internal->key_pressed[i] != 255) {
             if ((_kernel_osbyte(129, internal->key_pressed[i] ^ 0xff, 0xff) & 0xff) != 255) {
-                SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, internal->key_pressed[i], SDL_RISCOS_translate_keycode(internal->key_pressed[i]), SDL_RELEASED);
+                SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, internal->key_pressed[i], SDL_RISCOS_translate_keycode(internal->key_pressed[i]), false);
                 internal->key_pressed[i] = 255;
             }
         }
@@ -81,7 +81,7 @@ void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
             break;
 
         default:
-            SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, key, SDL_RISCOS_translate_keycode(key), SDL_PRESSED);
+            SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, key, SDL_RISCOS_translate_keycode(key), true);
 
             // Record the press so we can detect release later.
             for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {
@@ -131,7 +131,8 @@ void RISCOS_PollMouse(SDL_VideoDevice *_this)
 
     if (internal->last_mouse_buttons != buttons) {
         for (i = 0; i < SDL_arraysize(mouse_button_map); i++) {
-            SDL_SendMouseButton(0, mouse->focus, SDL_DEFAULT_MOUSE_ID, (buttons & (1 << i)) ? SDL_PRESSED : SDL_RELEASED, mouse_button_map[i]);
+            bool down = ((buttons & (1 << i)) != 0);
+            SDL_SendMouseButton(0, mouse->focus, SDL_DEFAULT_MOUSE_ID, mouse_button_map[i], down);
         }
         internal->last_mouse_buttons = buttons;
     }

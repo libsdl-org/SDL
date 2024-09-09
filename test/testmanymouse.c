@@ -285,7 +285,7 @@ static void HandleMouseButton(SDL_MouseButtonEvent *event)
             continue;
         }
         if (event->which == mouse_state->instance_id) {
-            if (event->state) {
+            if (event->down) {
                 mouse_state->button_state |= SDL_BUTTON(event->button);
             } else {
                 mouse_state->button_state &= ~SDL_BUTTON(event->button);

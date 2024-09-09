@@ -1113,7 +1113,7 @@ static SDL_bool ShowingFront(void)
 
     /* Show the back of the gamepad if the paddles are being held or bound */
     for (i = SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1; i <= SDL_GAMEPAD_BUTTON_LEFT_PADDLE2; ++i) {
-        if (SDL_GetGamepadButton(controller->gamepad, (SDL_GamepadButton)i) == SDL_PRESSED ||
+        if (SDL_GetGamepadButton(controller->gamepad, (SDL_GamepadButton)i) ||
             binding_element == i) {
             showing_front = SDL_FALSE;
             break;
@@ -1210,7 +1210,7 @@ static void VirtualGamepadMouseMotion(float x, float y)
             const float MOVING_DISTANCE = 2.0f;
             if (SDL_fabs(x - virtual_axis_start_x) >= MOVING_DISTANCE ||
                 SDL_fabs(y - virtual_axis_start_y) >= MOVING_DISTANCE) {
-                SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_RELEASED);
+                SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_FALSE);
                 virtual_button_active = SDL_GAMEPAD_BUTTON_INVALID;
             }
         }
@@ -1248,7 +1248,7 @@ static void VirtualGamepadMouseMotion(float x, float y)
         GetGamepadTouchpadArea(image, &touchpad);
         virtual_touchpad_x = (x - touchpad.x) / touchpad.w;
         virtual_touchpad_y = (y - touchpad.y) / touchpad.h;
-        SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, SDL_PRESSED, virtual_touchpad_x, virtual_touchpad_y, 1.0f);
+        SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, SDL_TRUE, virtual_touchpad_x, virtual_touchpad_y, 1.0f);
     }
 }
 
@@ -1264,14 +1264,14 @@ static void VirtualGamepadMouseDown(float x, float y)
             virtual_touchpad_active = SDL_TRUE;
             virtual_touchpad_x = (x - touchpad.x) / touchpad.w;
             virtual_touchpad_y = (y - touchpad.y) / touchpad.h;
-            SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, SDL_PRESSED, virtual_touchpad_x, virtual_touchpad_y, 1.0f);
+            SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, SDL_TRUE, virtual_touchpad_x, virtual_touchpad_y, 1.0f);
         }
         return;
     }
 
     if (element < SDL_GAMEPAD_BUTTON_MAX) {
         virtual_button_active = (SDL_GamepadButton)element;
-        SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_PRESSED);
+        SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_TRUE);
     } else {
         switch (element) {
         case SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_NEGATIVE:
@@ -1301,7 +1301,7 @@ static void VirtualGamepadMouseDown(float x, float y)
 static void VirtualGamepadMouseUp(float x, float y)
 {
     if (virtual_button_active != SDL_GAMEPAD_BUTTON_INVALID) {
-        SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_RELEASED);
+        SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_FALSE);
         virtual_button_active = SDL_GAMEPAD_BUTTON_INVALID;
     }
 
@@ -1317,7 +1317,7 @@ static void VirtualGamepadMouseUp(float x, float y)
     }
 
     if (virtual_touchpad_active) {
-        SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, SDL_RELEASED, virtual_touchpad_x, virtual_touchpad_y, 0.0f);
+        SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, SDL_FALSE, virtual_touchpad_x, virtual_touchpad_y, 0.0f);
         virtual_touchpad_active = SDL_FALSE;
     }
 }
@@ -1772,7 +1772,7 @@ static void loop(void *arg)
             if (virtual_joystick && controller && controller->joystick == virtual_joystick) {
                 VirtualGamepadMouseDown(event.button.x, event.button.y);
             }
-            UpdateButtonHighlights(event.button.x, event.button.y, event.button.state ? SDL_TRUE : SDL_FALSE);
+            UpdateButtonHighlights(event.button.x, event.button.y, event.button.down);
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_UP:
@@ -1833,7 +1833,7 @@ static void loop(void *arg)
                     }
                 }
             }
-            UpdateButtonHighlights(event.button.x, event.button.y, event.button.state ? SDL_TRUE : SDL_FALSE);
+            UpdateButtonHighlights(event.button.x, event.button.y, event.button.down);
             break;
 
         case SDL_EVENT_MOUSE_MOTION:

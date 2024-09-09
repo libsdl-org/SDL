@@ -1466,8 +1466,8 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     const bool osenabled = ([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? true : false;
     const bool sdlenabled = (SDL_GetModState() & SDL_KMOD_CAPS) ? true : false;
     if (osenabled ^ sdlenabled) {
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, SDL_SCANCODE_CAPSLOCK, SDL_PRESSED);
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, SDL_SCANCODE_CAPSLOCK, SDL_RELEASED);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, SDL_SCANCODE_CAPSLOCK, true);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, SDL_SCANCODE_CAPSLOCK, false);
     }
 }
 - (void)keyDown:(NSEvent *)theEvent
@@ -1538,7 +1538,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     return NO; // not a special area, carry on.
 }
 
-static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_Window *window, const Uint8 state, const Uint8 button)
+static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_Window *window, Uint8 button, SDL_bool down)
 {
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     const int clicks = (int)[theEvent clickCount];
@@ -1550,14 +1550,14 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     //  event for the background window, this just makes sure the button is reported at the
     //  correct position in its own event.
     if (focus && ([theEvent window] == ((__bridge SDL_CocoaWindowData *)focus->internal).nswindow)) {
-        SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, state, button, clicks);
+        SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, button, down, clicks);
     } else {
         const float orig_x = mouse->x;
         const float orig_y = mouse->y;
         const NSPoint point = [theEvent locationInWindow];
         mouse->x = (int)point.x;
         mouse->y = (int)(window->h - point.y);
-        SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, state, button, clicks);
+        SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, button, down, clicks);
         mouse->x = orig_x;
         mouse->y = orig_y;
     }
@@ -1611,7 +1611,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
         break;
     }
 
-    Cocoa_SendMouseButtonClicks(mouse, theEvent, _data.window, SDL_PRESSED, button);
+    Cocoa_SendMouseButtonClicks(mouse, theEvent, _data.window, button, true);
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
@@ -1662,7 +1662,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
         break;
     }
 
-    Cocoa_SendMouseButtonClicks(mouse, theEvent, _data.window, SDL_RELEASED, button);
+    Cocoa_SendMouseButtonClicks(mouse, theEvent, _data.window, button, false);
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent

@@ -650,8 +650,8 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                 v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * ((Sint32)y - ymin)) / (ymax - ymin)) + SDL_JOYSTICK_AXIS_MIN;
                 SDL_SendJoystickAxis(timestamp, joy, 1, v);
             }
-            SDL_SendJoystickButton(timestamp, joy, 0, gameport.b1);
-            SDL_SendJoystickButton(timestamp, joy, 1, gameport.b2);
+            SDL_SendJoystickButton(timestamp, joy, 0, (gameport.b1 != 0));
+            SDL_SendJoystickButton(timestamp, joy, 1, (gameport.b2 != 0));
         }
         return;
     }
@@ -720,7 +720,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                 case HUP_BUTTON:
                     v = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                     nbutton = HID_USAGE(hitem.usage) - 1; // SDL buttons are zero-based
-                    SDL_SendJoystickButton(timestamp, joy, nbutton, v);
+                    SDL_SendJoystickButton(timestamp, joy, nbutton, (v != 0));
                     break;
                 default:
                     continue;

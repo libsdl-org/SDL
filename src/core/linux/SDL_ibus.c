@@ -660,7 +660,7 @@ void SDL_IBus_Reset(void)
     IBus_SimpleMessage("Reset");
 }
 
-bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
+bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
 {
     Uint32 result = 0;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
@@ -668,7 +668,7 @@ bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
     if (IBus_CheckConnection(dbus)) {
         Uint32 mods = IBus_ModState();
         Uint32 ibus_keycode = keycode - 8;
-        if (state == SDL_RELEASED) {
+        if (!down) {
             mods |= (1 << 30); // IBUS_RELEASE_MASK
         }
         if (!SDL_DBus_CallMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, "ProcessKeyEvent",
