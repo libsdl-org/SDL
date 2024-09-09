@@ -860,31 +860,35 @@ size_t SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxl
 
 size_t SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_bytes)
 {
-    size_t src_bytes = SDL_strlen(src);
-    size_t bytes = SDL_min(src_bytes, dst_bytes - 1);
-    size_t i = 0;
-    size_t trailing_bytes = 0;
+    size_t bytes = 0;
 
-    if (bytes) {
-        unsigned char c = (unsigned char)src[bytes - 1];
-        if (UTF8_IsLeadByte(c)) {
-            --bytes;
-        } else if (UTF8_IsTrailingByte(c)) {
-            for (i = bytes - 1; i != 0; --i) {
-                c = (unsigned char)src[i];
-                trailing_bytes = UTF8_GetTrailingBytes(c);
-                if (trailing_bytes) {
-                    if ((bytes - i) != (trailing_bytes + 1)) {
-                        bytes = i;
-                    }
+	if (dst_bytes > 0) {
+		size_t src_bytes = SDL_strlen(src);
+		size_t i = 0;
+		size_t trailing_bytes = 0;
 
-                    break;
-                }
-            }
-        }
-        SDL_memcpy(dst, src, bytes);
-    }
-    dst[bytes] = '\0';
+		bytes = SDL_min(src_bytes, dst_bytes - 1);
+		if (bytes) {
+			unsigned char c = (unsigned char)src[bytes - 1];
+			if (UTF8_IsLeadByte(c)) {
+				--bytes;
+			} else if (UTF8_IsTrailingByte(c)) {
+				for (i = bytes - 1; i != 0; --i) {
+					c = (unsigned char)src[i];
+					trailing_bytes = UTF8_GetTrailingBytes(c);
+					if (trailing_bytes) {
+						if ((bytes - i) != (trailing_bytes + 1)) {
+							bytes = i;
+						}
+
+						break;
+					}
+				}
+			}
+			SDL_memcpy(dst, src, bytes);
+		}
+		dst[bytes] = '\0';
+	}
 
     return bytes;
 }
