@@ -5273,7 +5273,6 @@ static SDL_GPUTexture *D3D11_AcquireSwapchainTexture(
     // Check for window size changes and resize the swapchain if needed.
     IDXGISwapChain_GetDesc(windowData->swapchain, &swapchainDesc);
     SDL_GetWindowSize(window, &windowW, &windowH);
-    SDL_Log("%d x %d", windowW, windowH);
 
     if ((UINT)windowW != swapchainDesc.BufferDesc.Width || (UINT)windowH != swapchainDesc.BufferDesc.Height) {
         res = D3D11_INTERNAL_ResizeSwapchain(
