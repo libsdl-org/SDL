@@ -1756,7 +1756,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *st
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC char * SDLCALL SDL_strpbrk(const char * SDL_RESTRICT str, const char * SDL_RESTRICT breakset);
+extern SDL_DECLSPEC char * SDLCALL SDL_strpbrk(const char *str, const char *breakset);
 
 /**
  * The Unicode REPLACEMENT CHARACTER codepoint.
