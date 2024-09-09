@@ -33,8 +33,10 @@
 
 #ifdef SDL_PLATFORM_OPENBSD
 #define DEFAULT_VULKAN "libvulkan.so"
+#define DEFAULT_X11_XCB "libX11-xcb.so"
 #else
 #define DEFAULT_VULKAN "libvulkan.so.1"
+#define DEFAULT_X11_XCB "libX11-xcb.so.1"
 #endif
 
 /*
@@ -109,7 +111,7 @@ bool X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     } else {
         const char *libX11XCBLibraryName = SDL_GetHint(SDL_HINT_X11_XCB_LIBRARY);
         if (!libX11XCBLibraryName || !*libX11XCBLibraryName) {
-            libX11XCBLibraryName = "libX11-xcb.so";
+            libX11XCBLibraryName = DEFAULT_X11_XCB;
         }
         videoData->vulkan_xlib_xcb_library = SDL_LoadObject(libX11XCBLibraryName);
         if (!videoData->vulkan_xlib_xcb_library) {
