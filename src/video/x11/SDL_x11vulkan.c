@@ -32,8 +32,10 @@
 
 #if defined(__OpenBSD__)
 #define DEFAULT_VULKAN "libvulkan.so"
+#define DEFAULT_X11_XCB "libX11-xcb.so"
 #else
 #define DEFAULT_VULKAN "libvulkan.so.1"
+#define DEFAULT_X11_XCB "libX11-xcb.so.1"
 #endif
 
 /*
@@ -108,7 +110,7 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     } else {
         const char *libX11XCBLibraryName = SDL_getenv("SDL_X11_XCB_LIBRARY");
         if (!libX11XCBLibraryName) {
-            libX11XCBLibraryName = "libX11-xcb.so";
+            libX11XCBLibraryName = DEFAULT_X11_XCB;
         }
         videoData->vulkan_xlib_xcb_library = SDL_LoadObject(libX11XCBLibraryName);
         if (!videoData->vulkan_xlib_xcb_library) {
