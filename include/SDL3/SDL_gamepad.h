@@ -1252,11 +1252,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *ga
  * \param gamepad a gamepad.
  * \param touchpad a touchpad.
  * \param finger a finger.
- * \param down a pointer filled with SDL_TRUE if the finger is down, SDL_FALSE otherwise, may be NULL.
- * \param x a pointer filled with the x position, normalized 0 to 1, with the origin in the
- *          upper left, may be NULL.
- * \param y a pointer filled with the y position, normalized 0 to 1, with the origin in the
- *          upper left, may be NULL.
+ * \param down a pointer filled with SDL_TRUE if the finger is down, SDL_FALSE
+ *             otherwise, may be NULL.
+ * \param x a pointer filled with the x position, normalized 0 to 1, with the
+ *          origin in the upper left, may be NULL.
+ * \param y a pointer filled with the y position, normalized 0 to 1, with the
+ *          origin in the upper left, may be NULL.
  * \param pressure a pointer filled with pressure value, may be NULL.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.

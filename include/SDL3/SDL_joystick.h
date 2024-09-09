@@ -598,8 +598,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joy
  * \param touchpad the index of the touchpad on the virtual joystick to
  *                 update.
  * \param finger the index of the finger on the touchpad to set.
- * \param down SDL_TRUE if the finger is pressed, SDL_FALSE if the
- *              finger is released.
+ * \param down SDL_TRUE if the finger is pressed, SDL_FALSE if the finger is
+ *             released.
  * \param x the x coordinate of the finger on the touchpad, normalized 0 to 1,
  *          with the origin in the upper left.
  * \param y the y coordinate of the finger on the touchpad, normalized 0 to 1,

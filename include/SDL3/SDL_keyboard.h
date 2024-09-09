@@ -119,9 +119,9 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  * valid for the whole lifetime of the application and should not be freed by
  * the caller.
  *
- * A array element with a value of SDL_TRUE means that the key is pressed and a value
- * of SDL_FALSE means that it is not. Indexes into this array are obtained by using
- * SDL_Scancode values.
+ * A array element with a value of SDL_TRUE means that the key is pressed and
+ * a value of SDL_FALSE means that it is not. Indexes into this array are
+ * obtained by using SDL_Scancode values.
  *
  * Use SDL_PumpEvents() to update the state array.
  *
