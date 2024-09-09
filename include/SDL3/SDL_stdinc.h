@@ -23,8 +23,10 @@
  * # CategoryStdinc
  *
  * This is a general header that includes C language support. It implements a
- * subset of the C runtime: these should all behave the same way as their C
- * runtime equivalents, but with an SDL_ prefix.
+ * subset of the C runtime APIs, but with an `SDL_` prefix.
+ * For most common use cases, these should behave the same way as their C
+ * runtime equivalents, but they may differ in how or whether they handle certain edge cases.
+ * When in doubt, consult the documentation for details.
  */
 
 #ifndef SDL_stdinc_h_
@@ -665,14 +667,178 @@ extern "C" {
 #define SDL_stack_free(data)            SDL_free(data)
 #endif
 
+/**
+ * Allocate uninitialized memory.
+ *
+ * The allocated memory returned by this function must be freed with SDL_free().
+ *
+ * If `size` is 0, it will be set to 1.
+ *
+ * If you want to allocate memory aligned to a specific alignment, consider using SDL_aligned_alloc().
+ *
+ * \param size the size to allocate.
+ * \returns a pointer to the allocated memory, or NULL if allocation failed.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_free
+ * \sa SDL_calloc
+ * \sa SDL_realloc
+ * \sa SDL_aligned_alloc
+ */
 extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_malloc(size_t size);
+
+/**
+ * Allocate a zero-initialized array.
+ *
+ * The memory returned by this function must be freed with SDL_free().
+ *
+ * If either of `nmemb` or `size` is 0, they will both be set to 1.
+ *
+ * \param nmemb the number of elements in the array.
+ * \param size the size of each element of the array.
+ * \returns a pointer to the allocated array, or NULL if allocation failed.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_free
+ * \sa SDL_malloc
+ * \sa SDL_realloc
+ */
 extern SDL_DECLSPEC SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) void * SDLCALL SDL_calloc(size_t nmemb, size_t size);
+
+/**
+ * Change the size of allocated memory.
+ *
+ * The memory returned by this function must be freed with SDL_free().
+ *
+ * If `size` is 0, it will be set to 1.
+ * Note that this is unlike some other C runtime `realloc` implementations,
+ * which may treat `realloc(mem, 0)` the same way as `free(mem)`.
+ *
+ * If `mem` is NULL, the behavior of this function is equivalent to SDL_malloc().
+ * Otherwise, the function can have one of three possible outcomes:
+ *
+ * - If it returns the same pointer as `mem`,
+ *   it means that `mem` was resized in place without freeing.
+ * - If it returns a different non-NULL pointer,
+ *   it means that `mem` was freed and cannot be dereferenced anymore.
+ * - If it returns NULL (indicating failure),
+ *   then `mem` will remain valid and must still be freed with SDL_free().
+ *
+ * \param mem a pointer to allocated memory to reallocate, or NULL.
+ * \param size the new size of the memory.
+ * \returns a pointer to the newly allocated memory, or NULL if allocation failed.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_free
+ * \sa SDL_malloc
+ * \sa SDL_calloc
+ */
 extern SDL_DECLSPEC SDL_ALLOC_SIZE(2) void * SDLCALL SDL_realloc(void *mem, size_t size);
+
+/**
+ * Free allocated memory.
+ *
+ * The pointer is no longer valid after this call and cannot be dereferenced
+ * anymore.
+ *
+ * If `mem` is NULL, this function does nothing.
+ *
+ * \param mem a pointer to allocated memory, or NULL.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_malloc
+ * \sa SDL_calloc
+ * \sa SDL_realloc
+ */
 extern SDL_DECLSPEC void SDLCALL SDL_free(void *mem);
 
+/**
+ * A callback used to implement SDL_malloc().
+ *
+ * SDL will always ensure that the passed `size` is greater than 0.
+ *
+ * \param size the size to allocate.
+ * \returns a pointer to the allocated memory, or NULL if allocation failed.
+ *
+ * \threadsafety It should be safe to call this callback from any thread.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_malloc
+ * \sa SDL_GetOriginalMemoryFunctions
+ * \sa SDL_GetMemoryFunctions
+ * \sa SDL_SetMemoryFunctions
+ */
 typedef void *(SDLCALL *SDL_malloc_func)(size_t size);
+
+/**
+ * A callback used to implement SDL_calloc().
+ *
+ * SDL will always ensure that the passed `nmemb` and `size` are both greater than 0.
+ *
+ * \param nmemb the number of elements in the array.
+ * \param size the size of each element of the array.
+ * \returns a pointer to the allocated array, or NULL if allocation failed.
+ *
+ * \threadsafety It should be safe to call this callback from any thread.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_calloc
+ * \sa SDL_GetOriginalMemoryFunctions
+ * \sa SDL_GetMemoryFunctions
+ * \sa SDL_SetMemoryFunctions
+ */
 typedef void *(SDLCALL *SDL_calloc_func)(size_t nmemb, size_t size);
+
+/**
+ * A callback used to implement SDL_realloc().
+ *
+ * SDL will always ensure that the passed `size` is greater than 0.
+ *
+ * \param mem a pointer to allocated memory to reallocate, or NULL.
+ * \param size the new size of the memory.
+ * \returns a pointer to the newly allocated memory, or NULL if allocation failed.
+ *
+ * \threadsafety It should be safe to call this callback from any thread.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_realloc
+ * \sa SDL_GetOriginalMemoryFunctions
+ * \sa SDL_GetMemoryFunctions
+ * \sa SDL_SetMemoryFunctions
+ */
 typedef void *(SDLCALL *SDL_realloc_func)(void *mem, size_t size);
+
+/**
+ * A callback used to implement SDL_free().
+ *
+ * SDL will always ensure that the passed `mem` is a non-NULL pointer.
+ *
+ * \param mem a pointer to allocated memory.
+ *
+ * \threadsafety It should be safe to call this callback from any thread.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_free
+ * \sa SDL_GetOriginalMemoryFunctions
+ * \sa SDL_GetMemoryFunctions
+ * \sa SDL_SetMemoryFunctions
+ */
 typedef void (SDLCALL *SDL_free_func)(void *mem);
 
 /**
@@ -751,20 +917,20 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func mall
                                                             SDL_free_func free_func);
 
 /**
- * Allocate memory aligned to a specific value.
+ * Allocate memory aligned to a specific alignment.
  *
- * If `alignment` is less than the size of `void *`, then it will be increased
+ * The memory returned by this function must be freed with SDL_aligned_free(),
+ * _not_ SDL_free().
+ *
+ * If `alignment` is less than the size of `void *`, it will be increased
  * to match that.
  *
  * The returned memory address will be a multiple of the alignment value, and
- * the amount of memory allocated will be a multiple of the alignment value.
+ * the size of the memory allocated will be a multiple of the alignment value.
  *
- * The memory returned by this function must be freed with SDL_aligned_free(),
- * and _not_ SDL_free.
- *
- * \param alignment the alignment requested.
+ * \param alignment the alignment of the memory.
  * \param size the size to allocate.
- * \returns a pointer to the aligned memory.
+ * \returns a pointer to the aligned memory, or NULL if allocation failed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -780,7 +946,9 @@ extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_aligned_alloc(size_t alignment
  * The pointer is no longer valid after this call and cannot be dereferenced
  * anymore.
  *
- * \param mem a pointer previously returned by SDL_aligned_alloc.
+ * If `mem` is NULL, this function does nothing.
+ *
+ * \param mem a pointer previously returned by SDL_aligned_alloc(), or NULL.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
