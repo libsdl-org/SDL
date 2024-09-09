@@ -1603,6 +1603,25 @@ typedef struct SDL_GPUDepthStencilTargetInfo
     Uint8 padding3;
 } SDL_GPUDepthStencilTargetInfo;
 
+/**
+ * A structure containing parameters for a blit command.
+ *
+ * \since This struct is available since SDL 3.0.0
+ *
+ * \sa SDL_BlitGPUTexture
+ */
+typedef struct SDL_GPUBlitInfo {
+    SDL_GPUBlitRegion source;       /**< The source region for the blit. */
+    SDL_GPUBlitRegion destination;  /**< The destination region for the blit. */
+    SDL_GPULoadOp load_op;          /**< What is done with the contents of the destination before the blit. */
+    SDL_FColor clear_color;         /**< The color to clear the destination region to before the blit. Ignored if load_op is not SDL_GPU_LOADOP_CLEAR. */
+    SDL_FlipMode flip_mode;         /**< The flip mode for the source region. */
+    SDL_GPUFilter filter;           /**< The filter mode used when blitting. */
+    SDL_bool cycle;                 /**< SDL_TRUE cycles the destination texture if it is already bound. */
+    Uint8 padding;
+    Uint8 padding2;
+    Uint8 padding3;
+} SDL_GPUBlitInfo;
 /* Binding structs */
 
 /**
@@ -3053,22 +3072,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_GenerateMipmapsForGPUTexture(
  * This function must not be called inside of any pass.
  *
  * \param command_buffer a command buffer.
- * \param source the texture region to copy from.
- * \param destination the texture region to copy to.
- * \param flip_mode the flip mode for the source texture region.
- * \param filter the filter mode that will be used when blitting.
- * \param cycle if SDL_TRUE, cycles the destination texture if the destination
- *              texture is bound, otherwise overwrites the data.
+ * \param info the blit info struct containing the blit parameters.
  *
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_BlitGPUTexture(
     SDL_GPUCommandBuffer *command_buffer,
-    const SDL_GPUBlitRegion *source,
-    const SDL_GPUBlitRegion *destination,
-    SDL_FlipMode flip_mode,
-    SDL_GPUFilter filter,
-    SDL_bool cycle);
+    const SDL_GPUBlitInfo *info);
 
 /* Submission/Presentation */
 

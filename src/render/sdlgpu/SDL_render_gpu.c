@@ -965,19 +965,20 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
     }
 
     SDL_GPUTextureFormat swapchain_fmt = SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window);
-    SDL_GPUBlitRegion src;
-    SDL_zero(src);
-    src.texture = data->backbuffer.texture;
-    src.w = data->backbuffer.width;
-    src.h = data->backbuffer.height;
 
-    SDL_GPUBlitRegion dst;
-    SDL_zero(dst);
-    dst.texture = swapchain;
-    dst.w = swapchain_w;
-    dst.h = swapchain_h;
+    SDL_GPUBlitInfo blit_info;
+    SDL_zero(blit_info);
 
-    SDL_BlitGPUTexture(data->state.command_buffer, &src, &dst, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, true);
+    blit_info.source.texture = data->backbuffer.texture;
+    blit_info.source.w = data->backbuffer.width;
+    blit_info.source.h = data->backbuffer.height;
+    blit_info.destination.texture = swapchain;
+    blit_info.destination.w = swapchain_w;
+    blit_info.destination.h = swapchain_h;
+    blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
+    blit_info.filter = SDL_GPU_FILTER_LINEAR;
+
+    SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
 
     if (swapchain_w != data->backbuffer.width || swapchain_h != data->backbuffer.height || swapchain_fmt != data->backbuffer.format) {
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);

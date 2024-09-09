@@ -263,11 +263,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
 
 void SDL_GPU_BlitCommon(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUBlitRegion *source,
-    const SDL_GPUBlitRegion *destination,
-    SDL_FlipMode flipMode,
-    SDL_GPUFilter filter,
-    bool cycle,
+    const SDL_GPUBlitInfo *info,
     SDL_GPUSampler *blitLinearSampler,
     SDL_GPUSampler *blitNearestSampler,
     SDL_GPUShader *blitVertexShader,
@@ -605,11 +601,7 @@ struct SDL_GPUDevice
 
     void (*Blit)(
         SDL_GPUCommandBuffer *commandBuffer,
-        const SDL_GPUBlitRegion *source,
-        const SDL_GPUBlitRegion *destination,
-        SDL_FlipMode flipMode,
-        SDL_GPUFilter filter,
-        bool cycle);
+        const SDL_GPUBlitInfo *info);
 
     // Submission/Presentation
 

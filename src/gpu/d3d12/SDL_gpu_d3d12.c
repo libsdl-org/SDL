@@ -5729,7 +5729,6 @@ static void D3D12_GenerateMipmaps(
     D3D12Renderer *renderer = d3d12CommandBuffer->renderer;
     D3D12TextureContainer *container = (D3D12TextureContainer *)texture;
     SDL_GPUGraphicsPipeline *blitPipeline;
-    SDL_GPUBlitRegion srcRegion, dstRegion;
 
     blitPipeline = SDL_GPU_FetchBlitPipeline(
         renderer->sdlGPUDevice,
@@ -5752,30 +5751,31 @@ static void D3D12_GenerateMipmaps(
     // We have to do this one subresource at a time
     for (Uint32 layerOrDepthIndex = 0; layerOrDepthIndex < container->header.info.layer_count_or_depth; layerOrDepthIndex += 1) {
         for (Uint32 levelIndex = 1; levelIndex < container->header.info.num_levels; levelIndex += 1) {
+            SDL_GPUBlitInfo blitInfo;
+            SDL_zero(blitInfo);
 
-            srcRegion.texture = texture;
-            srcRegion.mip_level = levelIndex - 1;
-            srcRegion.layer_or_depth_plane = layerOrDepthIndex;
-            srcRegion.x = 0;
-            srcRegion.y = 0;
-            srcRegion.w = container->header.info.width >> (levelIndex - 1);
-            srcRegion.h = container->header.info.height >> (levelIndex - 1);
+            blitInfo.source.texture = texture;
+            blitInfo.source.mip_level = levelIndex - 1;
+            blitInfo.source.layer_or_depth_plane = layerOrDepthIndex;
+            blitInfo.source.x = 0;
+            blitInfo.source.y = 0;
+            blitInfo.source.w = container->header.info.width >> (levelIndex - 1);
+            blitInfo.source.h = container->header.info.height >> (levelIndex - 1);
 
-            dstRegion.texture = texture;
-            dstRegion.mip_level = levelIndex;
-            dstRegion.layer_or_depth_plane = layerOrDepthIndex;
-            dstRegion.x = 0;
-            dstRegion.y = 0;
-            dstRegion.w = container->header.info.width >> levelIndex;
-            dstRegion.h = container->header.info.height >> levelIndex;
+            blitInfo.destination.texture = texture;
+            blitInfo.destination.mip_level = levelIndex;
+            blitInfo.destination.layer_or_depth_plane = layerOrDepthIndex;
+            blitInfo.destination.x = 0;
+            blitInfo.destination.y = 0;
+            blitInfo.destination.w = container->header.info.width >> levelIndex;
+            blitInfo.destination.h = container->header.info.height >> levelIndex;
+
+            blitInfo.load_op = SDL_GPU_LOADOP_DONT_CARE;
+            blitInfo.filter = SDL_GPU_FILTER_LINEAR;
 
             SDL_BlitGPUTexture(
                 commandBuffer,
-                &srcRegion,
-                &dstRegion,
-                SDL_FLIP_NONE,
-                SDL_GPU_FILTER_LINEAR,
-                false);
+                &blitInfo);
         }
     }
 
@@ -5784,22 +5784,14 @@ static void D3D12_GenerateMipmaps(
 
 static void D3D12_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUBlitRegion *source,
-    const SDL_GPUBlitRegion *destination,
-    SDL_FlipMode flipMode,
-    SDL_GPUFilter filter,
-    bool cycle)
+    const SDL_GPUBlitInfo *info)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12Renderer *renderer = (D3D12Renderer *)d3d12CommandBuffer->renderer;
 
     SDL_GPU_BlitCommon(
         commandBuffer,
-        source,
-        destination,
-        flipMode,
-        filter,
-        cycle,
+        info,
         renderer->blitLinearSampler,
         renderer->blitNearestSampler,
         renderer->blitVertexShader,

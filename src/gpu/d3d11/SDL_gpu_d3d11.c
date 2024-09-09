@@ -4173,11 +4173,7 @@ static void D3D11_PushFragmentUniformData(
 
 static void D3D11_Blit(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUBlitRegion *source,
-    const SDL_GPUBlitRegion *destination,
-    SDL_FlipMode flipMode,
-    SDL_GPUFilter filter,
-    bool cycle)
+    const SDL_GPUBlitInfo *info)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
@@ -4185,11 +4181,7 @@ static void D3D11_Blit(
 
     SDL_GPU_BlitCommon(
         commandBuffer,
-        source,
-        destination,
-        flipMode,
-        filter,
-        cycle,
+        info,
         renderer->blitLinearSampler,
         renderer->blitNearestSampler,
         NULL,
@@ -5281,7 +5273,6 @@ static SDL_GPUTexture *D3D11_AcquireSwapchainTexture(
     // Check for window size changes and resize the swapchain if needed.
     IDXGISwapChain_GetDesc(windowData->swapchain, &swapchainDesc);
     SDL_GetWindowSize(window, &windowW, &windowH);
-    SDL_Log("%d x %d", windowW, windowH);
 
     if ((UINT)windowW != swapchainDesc.BufferDesc.Width || (UINT)windowH != swapchainDesc.BufferDesc.Height) {
         res = D3D11_INTERNAL_ResizeSwapchain(
