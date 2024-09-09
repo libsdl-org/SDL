@@ -369,7 +369,7 @@ Render(SDL_Window *window, const int windownum)
     color_target.texture = winstate->tex_msaa ? winstate->tex_msaa : swapchain;
 
     SDL_zero(depth_target);
-    depth_target.clear_value.depth = 1.0f;
+    depth_target.clear_depth = 1.0f;
     depth_target.load_op = SDL_GPU_LOADOP_CLEAR;
     depth_target.store_op = SDL_GPU_STOREOP_DONT_CARE;
     depth_target.texture = winstate->tex_depth;

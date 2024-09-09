@@ -3561,8 +3561,8 @@ static void D3D11_BeginRenderPass(
                 d3d11CommandBuffer->context,
                 dsv,
                 dsClearFlags,
-                depthStencilTargetInfo->clear_value.depth,
-                depthStencilTargetInfo->clear_value.stencil);
+                depthStencilTargetInfo->clear_depth,
+                depthStencilTargetInfo->clear_stencil);
         }
     }
 

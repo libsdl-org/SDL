@@ -8011,9 +8011,9 @@ static void VULKAN_BeginRenderPass(
 
     if (depthStencilTargetInfo != NULL) {
         clearValues[totalColorAttachmentCount].depthStencil.depth =
-            depthStencilTargetInfo->clear_value.depth;
+            depthStencilTargetInfo->clear_depth;
         clearValues[totalColorAttachmentCount].depthStencil.stencil =
-            depthStencilTargetInfo->clear_value.stencil;
+            depthStencilTargetInfo->clear_stencil;
     }
 
     VkRenderPassBeginInfo renderPassBeginInfo;

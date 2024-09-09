@@ -3905,8 +3905,8 @@ static void D3D12_BeginRenderPass(
                 d3d12CommandBuffer->graphicsCommandList,
                 subresource->dsvHandle.cpuHandle,
                 clearFlags,
-                depthStencilTargetInfo->clear_value.depth,
-                depthStencilTargetInfo->clear_value.stencil,
+                depthStencilTargetInfo->clear_depth,
+                depthStencilTargetInfo->clear_stencil,
                 0,
                 NULL);
         }

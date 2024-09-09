@@ -2204,7 +2204,7 @@ static void METAL_BeginRenderPass(
             passDescriptor.depthAttachment.storeAction = SDLToMetal_StoreOp(
                 depthStencilTargetInfo->store_op,
                 texture->msaaHandle ? 1 : 0);
-            passDescriptor.depthAttachment.clearDepth = depthStencilTargetInfo->clear_value.depth;
+            passDescriptor.depthAttachment.clearDepth = depthStencilTargetInfo->clear_depth;
 
             if (IsStencilFormat(container->header.info.format)) {
                 if (texture->msaaHandle) {
@@ -2217,7 +2217,7 @@ static void METAL_BeginRenderPass(
                 passDescriptor.stencilAttachment.storeAction = SDLToMetal_StoreOp(
                     depthStencilTargetInfo->store_op,
                     texture->msaaHandle ? 1 : 0);
-                passDescriptor.stencilAttachment.clearStencil = depthStencilTargetInfo->clear_value.stencil;
+                passDescriptor.stencilAttachment.clearStencil = depthStencilTargetInfo->clear_stencil;
             }
 
             METAL_INTERNAL_TrackTexture(metalCommandBuffer, texture);
