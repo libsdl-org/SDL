@@ -241,9 +241,9 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
 
     kbd->shift_state = 0;
 
-    kbd->accents = SDL_calloc(sizeof(accentmap_t), 1);
-    kbd->key_map = SDL_calloc(sizeof(keymap_t), 1);
-    kbd->kbInfo = SDL_calloc(sizeof(keyboard_info_t), 1);
+    kbd->accents = SDL_calloc(1, sizeof(accentmap_t));
+    kbd->key_map = SDL_calloc(1, sizeof(keymap_t));
+    kbd->kbInfo = SDL_calloc(1, sizeof(keyboard_info_t));
 
     ioctl(kbd->console_fd, KDGKBINFO, kbd->kbInfo);
     ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
