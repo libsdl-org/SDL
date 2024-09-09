@@ -23,10 +23,10 @@
  * # CategoryStdinc
  *
  * This is a general header that includes C language support. It implements a
- * subset of the C runtime APIs, but with an `SDL_` prefix.
- * For most common use cases, these should behave the same way as their C
- * runtime equivalents, but they may differ in how or whether they handle certain edge cases.
- * When in doubt, consult the documentation for details.
+ * subset of the C runtime APIs, but with an `SDL_` prefix. For most common
+ * use cases, these should behave the same way as their C runtime equivalents,
+ * but they may differ in how or whether they handle certain edge cases. When
+ * in doubt, consult the documentation for details.
  */
 
 #ifndef SDL_stdinc_h_
@@ -670,11 +670,13 @@ extern "C" {
 /**
  * Allocate uninitialized memory.
  *
- * The allocated memory returned by this function must be freed with SDL_free().
+ * The allocated memory returned by this function must be freed with
+ * SDL_free().
  *
  * If `size` is 0, it will be set to 1.
  *
- * If you want to allocate memory aligned to a specific alignment, consider using SDL_aligned_alloc().
+ * If you want to allocate memory aligned to a specific alignment, consider
+ * using SDL_aligned_alloc().
  *
  * \param size the size to allocate.
  * \returns a pointer to the allocated memory, or NULL if allocation failed.
@@ -716,23 +718,25 @@ extern SDL_DECLSPEC SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) void * SDLCALL SDL_calloc(s
  *
  * The memory returned by this function must be freed with SDL_free().
  *
- * If `size` is 0, it will be set to 1.
- * Note that this is unlike some other C runtime `realloc` implementations,
- * which may treat `realloc(mem, 0)` the same way as `free(mem)`.
+ * If `size` is 0, it will be set to 1. Note that this is unlike some other C
+ * runtime `realloc` implementations, which may treat `realloc(mem, 0)` the
+ * same way as `free(mem)`.
  *
- * If `mem` is NULL, the behavior of this function is equivalent to SDL_malloc().
- * Otherwise, the function can have one of three possible outcomes:
+ * If `mem` is NULL, the behavior of this function is equivalent to
+ * SDL_malloc(). Otherwise, the function can have one of three possible
+ * outcomes:
  *
- * - If it returns the same pointer as `mem`,
- *   it means that `mem` was resized in place without freeing.
- * - If it returns a different non-NULL pointer,
- *   it means that `mem` was freed and cannot be dereferenced anymore.
- * - If it returns NULL (indicating failure),
- *   then `mem` will remain valid and must still be freed with SDL_free().
+ * - If it returns the same pointer as `mem`, it means that `mem` was resized
+ *   in place without freeing.
+ * - If it returns a different non-NULL pointer, it means that `mem` was freed
+ *   and cannot be dereferenced anymore.
+ * - If it returns NULL (indicating failure), then `mem` will remain valid and
+ *   must still be freed with SDL_free().
  *
  * \param mem a pointer to allocated memory to reallocate, or NULL.
  * \param size the new size of the memory.
- * \returns a pointer to the newly allocated memory, or NULL if allocation failed.
+ * \returns a pointer to the newly allocated memory, or NULL if allocation
+ *          failed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -786,7 +790,8 @@ typedef void *(SDLCALL *SDL_malloc_func)(size_t size);
 /**
  * A callback used to implement SDL_calloc().
  *
- * SDL will always ensure that the passed `nmemb` and `size` are both greater than 0.
+ * SDL will always ensure that the passed `nmemb` and `size` are both greater
+ * than 0.
  *
  * \param nmemb the number of elements in the array.
  * \param size the size of each element of the array.
@@ -810,7 +815,8 @@ typedef void *(SDLCALL *SDL_calloc_func)(size_t nmemb, size_t size);
  *
  * \param mem a pointer to allocated memory to reallocate, or NULL.
  * \param size the new size of the memory.
- * \returns a pointer to the newly allocated memory, or NULL if allocation failed.
+ * \returns a pointer to the newly allocated memory, or NULL if allocation
+ *          failed.
  *
  * \threadsafety It should be safe to call this callback from any thread.
  *
@@ -922,8 +928,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func mall
  * The memory returned by this function must be freed with SDL_aligned_free(),
  * _not_ SDL_free().
  *
- * If `alignment` is less than the size of `void *`, it will be increased
- * to match that.
+ * If `alignment` is less than the size of `void *`, it will be increased to
+ * match that.
  *
  * The returned memory address will be a multiple of the alignment value, and
  * the size of the memory allocated will be a multiple of the alignment value.
@@ -1232,8 +1238,10 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_crc32(Uint32 crc, const void *data, size_
  *
  * The memory regions must not overlap. If they do, use SDL_memmove() instead.
  *
- * \param dst The destination memory region. Must not be NULL, and must not overlap with `src`.
- * \param src The source memory region. Must not be NULL, and must not overlap with `dst`.
+ * \param dst The destination memory region. Must not be NULL, and must not
+ *            overlap with `src`.
+ * \param src The source memory region. Must not be NULL, and must not overlap
+ *            with `dst`.
  * \param len The length in bytes of both `dst` and `src`.
  * \returns `dst`.
  *
@@ -1260,8 +1268,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SD
 /**
  * Copy memory.
  *
- * It is okay for the memory regions to overlap.
- * If you are confident that the regions never overlap, using SDL_memcpy() may improve performance.
+ * It is okay for the memory regions to overlap. If you are confident that the
+ * regions never overlap, using SDL_memcpy() may improve performance.
  *
  * \param dst The destination memory region. Must not be NULL.
  * \param src The source memory region. Must not be NULL.
@@ -1307,16 +1315,21 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_wcsnlen(const wchar_t *wstr, size_t maxle
 /**
  * Copy a wide string.
  *
- * This function copies `maxlen` - 1 wide characters from `src` to `dst`, then appends a null terminator.
+ * This function copies `maxlen` - 1 wide characters from `src` to `dst`, then
+ * appends a null terminator.
  *
  * `src` and `dst` must not overlap.
  *
- * If `maxlen` is 0, no wide characters are copied and no null terminator is written.
+ * If `maxlen` is 0, no wide characters are copied and no null terminator is
+ * written.
  *
- * \param dst The destination buffer. Must not be NULL, and must not overlap with `src`.
- * \param src The null-terminated wide string to copy. Must not be NULL, and must not overlap with `dst`.
+ * \param dst The destination buffer. Must not be NULL, and must not overlap
+ *            with `src`.
+ * \param src The null-terminated wide string to copy. Must not be NULL, and
+ *            must not overlap with `dst`.
  * \param maxlen The length (in wide characters) of the destination buffer.
- * \returns The length (in wide characters, excluding the null terminator) of `src`.
+ * \returns The length (in wide characters, excluding the null terminator) of
+ *          `src`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1329,17 +1342,23 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_wcslcpy(SDL_OUT_Z_CAP(maxlen) wchar_t *ds
 /**
  * Concatenate wide strings.
  *
- * This function appends up to `maxlen` - SDL_wcslen(dst) - 1 wide characters from `src`
- * to the end of the wide string in `dst`, then appends a null terminator.
+ * This function appends up to `maxlen` - SDL_wcslen(dst) - 1 wide characters
+ * from `src` to the end of the wide string in `dst`, then appends a null
+ * terminator.
  *
  * `src` and `dst` must not overlap.
  *
- * If `maxlen` - SDL_wcslen(dst) - 1 is less than or equal to 0, then `dst` is unmodified.
+ * If `maxlen` - SDL_wcslen(dst) - 1 is less than or equal to 0, then `dst` is
+ * unmodified.
  *
- * \param dst The destination buffer already containing the first null-terminated wide string. Must not be NULL and must not overlap with `src`.
- * \param src The second null-terminated wide string. Must not be NULL, and must not overlap with `dst`.
+ * \param dst The destination buffer already containing the first
+ *            null-terminated wide string. Must not be NULL and must not
+ *            overlap with `src`.
+ * \param src The second null-terminated wide string. Must not be NULL, and
+ *            must not overlap with `dst`.
  * \param maxlen The length (in wide characters) of the destination buffer.
- * \returns The length (in wide characters, excluding the null terminator) of the string in `dst` plus the length of `src`.
+ * \returns The length (in wide characters, excluding the null terminator) of
+ *          the string in `dst` plus the length of `src`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1480,14 +1499,18 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar
  *
  * This function makes fewer guarantees than the C runtime `wcstol`:
  *
- * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
- * - It is unspecified what this function returns when the parsed integer does not fit inside a `long`.
+ * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for
+ *   other bases is unspecified.
+ * - It is unspecified what this function returns when the parsed integer does
+ *   not fit inside a `long`.
  *
  * \param str The null-terminated wide string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid wide character
- *             (i.e. the next character after the parsed number) will be written to this pointer.
- * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
- *             If 0, the base will be inferred from the integer's prefix.
+ *             (i.e. the next character after the parsed number) will be
+ *             written to this pointer.
+ * \param base The base of the integer to read. The values 0, 10 and 16 are
+ *             supported. If 0, the base will be inferred from the integer's
+ *             prefix.
  * \returns The parsed `long`.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1504,17 +1527,22 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_strnlen(const char *str, size_t maxlen);
 /**
  * Copy a string.
  *
- * This function copies up to `maxlen` - 1 characters from `src` to `dst`, then appends a null terminator.
+ * This function copies up to `maxlen` - 1 characters from `src` to `dst`,
+ * then appends a null terminator.
  *
- * If `maxlen` is 0, no characters are copied and no null terminator is written.
+ * If `maxlen` is 0, no characters are copied and no null terminator is
+ * written.
  *
- * If you want to copy an UTF-8 string but need to ensure that multi-byte sequences are not truncated,
- * consider using SDL_utf8strlcpy().
+ * If you want to copy an UTF-8 string but need to ensure that multi-byte
+ * sequences are not truncated, consider using SDL_utf8strlcpy().
  *
- * \param dst The destination buffer. Must not be NULL, and must not overlap with `src`.
- * \param src The null-terminated string to copy. Must not be NULL, and must not overlap with `dst`.
+ * \param dst The destination buffer. Must not be NULL, and must not overlap
+ *            with `src`.
+ * \param src The null-terminated string to copy. Must not be NULL, and must
+ *            not overlap with `dst`.
  * \param maxlen The length (in characters) of the destination buffer.
- * \returns The length (in characters, excluding the null terminator) of `src`.
+ * \returns The length (in characters, excluding the null terminator) of
+ *          `src`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1528,17 +1556,21 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, 
 /**
  * Copy an UTF-8 string.
  *
- * This function copies up to `dst_bytes` - 1 bytes from `src` to `dst`
- * while also ensuring that the string written to `dst`
- * does not end in a truncated multi-byte sequence. Finally, it appends a null terminator.
+ * This function copies up to `dst_bytes` - 1 bytes from `src` to `dst` while
+ * also ensuring that the string written to `dst` does not end in a truncated
+ * multi-byte sequence. Finally, it appends a null terminator.
  *
  * `src` and `dst` must not overlap.
  *
- * Note that unlike SDL_strlcpy(), this function returns the number of bytes written, not the length of `src`.
+ * Note that unlike SDL_strlcpy(), this function returns the number of bytes
+ * written, not the length of `src`.
  *
- * \param dst The destination buffer. Must not be NULL, and must not overlap with `src`.
- * \param src The null-terminated UTF-8 string to copy. Must not be NULL, and must not overlap with `dst`.
- * \param dst_bytes The length (in bytes) of the destination buffer. Must not be 0.
+ * \param dst The destination buffer. Must not be NULL, and must not overlap
+ *            with `src`.
+ * \param src The null-terminated UTF-8 string to copy. Must not be NULL, and
+ *            must not overlap with `dst`.
+ * \param dst_bytes The length (in bytes) of the destination buffer. Must not
+ *                  be 0.
  * \returns The number of bytes written, excluding the null terminator.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1552,17 +1584,22 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char
 /**
  * Concatenate strings.
  *
- * This function appends up to `maxlen` - SDL_strlen(dst) - 1 characters from `src`
- * to the end of the string in `dst`, then appends a null terminator.
+ * This function appends up to `maxlen` - SDL_strlen(dst) - 1 characters from
+ * `src` to the end of the string in `dst`, then appends a null terminator.
  *
  * `src` and `dst` must not overlap.
  *
- * If `maxlen` - SDL_strlen(dst) - 1 is less than or equal to 0, then `dst` is unmodified.
+ * If `maxlen` - SDL_strlen(dst) - 1 is less than or equal to 0, then `dst` is
+ * unmodified.
  *
- * \param dst The destination buffer already containing the first null-terminated string. Must not be NULL and must not overlap with `src`.
- * \param src The second null-terminated string. Must not be NULL, and must not overlap with `dst`.
+ * \param dst The destination buffer already containing the first
+ *            null-terminated string. Must not be NULL and must not overlap
+ *            with `src`.
+ * \param src The second null-terminated string. Must not be NULL, and must
+ *            not overlap with `dst`.
  * \param maxlen The length (in characters) of the destination buffer.
- * \returns The length (in characters, excluding the null terminator) of the string in `dst` plus the length of `src`.
+ * \returns The length (in characters, excluding the null terminator) of the
+ *          string in `dst` plus the length of `src`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1637,7 +1674,8 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ulltoa(Uint64 value, char *str, int radix
 /**
  * Parse an `int` from a string.
  *
- * The result of calling `SDL_atoi(str)` is equivalent to `(int)SDL_strtol(str, NULL, 10)`.
+ * The result of calling `SDL_atoi(str)` is equivalent to
+ * `(int)SDL_strtol(str, NULL, 10)`.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \returns The parsed `int`.
@@ -1659,7 +1697,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_atoi(const char *str);
 /**
  * Parse a `double` from a string.
  *
- * The result of calling `SDL_atof(str)` is equivalent to `SDL_strtod(str, NULL)`.
+ * The result of calling `SDL_atof(str)` is equivalent to `SDL_strtod(str,
+ * NULL)`.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \returns The parsed `double`.
@@ -1682,14 +1721,18 @@ extern SDL_DECLSPEC double SDLCALL SDL_atof(const char *str);
  *
  * This function makes fewer guarantees than the C runtime `strtol`:
  *
- * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
- * - It is unspecified what this function returns when the parsed integer does not fit inside a `long`.
+ * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for
+ *   other bases is unspecified.
+ * - It is unspecified what this function returns when the parsed integer does
+ *   not fit inside a `long`.
  *
  * \param str The null-terminated string to read. Must not be NULL.
- * \param endp If not NULL, the address of the first invalid character
- *             (i.e. the next character after the parsed number) will be written to this pointer.
- * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
- *             If 0, the base will be inferred from the integer's prefix.
+ * \param endp If not NULL, the address of the first invalid character (i.e.
+ *             the next character after the parsed number) will be written to
+ *             this pointer.
+ * \param base The base of the integer to read. The values 0, 10 and 16 are
+ *             supported. If 0, the base will be inferred from the integer's
+ *             prefix.
  * \returns The parsed `long`.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1712,14 +1755,18 @@ extern SDL_DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int ba
  *
  * This function makes fewer guarantees than the C runtime `strtoul`:
  *
- * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
- * - It is unspecified what this function returns when the parsed integer does not fit inside an `unsigned long`.
+ * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for
+ *   other bases is unspecified.
+ * - It is unspecified what this function returns when the parsed integer does
+ *   not fit inside an `unsigned long`.
  *
  * \param str The null-terminated string to read. Must not be NULL.
- * \param endp If not NULL, the address of the first invalid character
- *             (i.e. the next character after the parsed number) will be written to this pointer.
- * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
- *             If 0, the base will be inferred from the integer's prefix.
+ * \param endp If not NULL, the address of the first invalid character (i.e.
+ *             the next character after the parsed number) will be written to
+ *             this pointer.
+ * \param base The base of the integer to read. The values 0, 10 and 16 are
+ *             supported. If 0, the base will be inferred from the integer's
+ *             prefix.
  * \returns The parsed `unsigned long`.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1741,16 +1788,21 @@ extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **en
  *
  * This function makes fewer guarantees than the C runtime `strtoll`:
  *
- * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
- * - It is unspecified what this function returns when the parsed integer does not fit inside a `long long`.
+ * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for
+ *   other bases is unspecified.
+ * - It is unspecified what this function returns when the parsed integer does
+ *   not fit inside a `long long`.
  *
- * Also note that unlike the C runtime `strtoll`, this function returns an Sint64, not a `long long`.
+ * Also note that unlike the C runtime `strtoll`, this function returns an
+ * Sint64, not a `long long`.
  *
  * \param str The null-terminated string to read. Must not be NULL.
- * \param endp If not NULL, the address of the first invalid character
- *             (i.e. the next character after the parsed number) will be written to this pointer.
- * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
- *             If 0, the base will be inferred from the integer's prefix.
+ * \param endp If not NULL, the address of the first invalid character (i.e.
+ *             the next character after the parsed number) will be written to
+ *             this pointer.
+ * \param base The base of the integer to read. The values 0, 10 and 16 are
+ *             supported. If 0, the base will be inferred from the integer's
+ *             prefix.
  * \returns The parsed Sint64.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1772,16 +1824,21 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_strtoll(const char *str, char **endp, int
  *
  * This function makes fewer guarantees than the C runtime `strtoull`:
  *
- * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
- * - It is unspecified what this function returns when the parsed integer does not fit inside a `long long`.
+ * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for
+ *   other bases is unspecified.
+ * - It is unspecified what this function returns when the parsed integer does
+ *   not fit inside a `long long`.
  *
- * Also note that unlike the C runtime `strtoull`, this function returns a Uint64, not an `unsigned long long`.
+ * Also note that unlike the C runtime `strtoull`, this function returns a
+ * Uint64, not an `unsigned long long`.
  *
  * \param str The null-terminated string to read. Must not be NULL.
- * \param endp If not NULL, the address of the first invalid character
- *             (i.e. the next character after the parsed number) will be written to this pointer.
- * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
- *             If 0, the base will be inferred from the integer's prefix.
+ * \param endp If not NULL, the address of the first invalid character (i.e.
+ *             the next character after the parsed number) will be written to
+ *             this pointer.
+ * \param base The base of the integer to read. The values 0, 10 and 16 are
+ *             supported. If 0, the base will be inferred from the integer's
+ *             prefix.
  * \returns The parsed Uint64.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1803,14 +1860,15 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_strtoull(const char *str, char **endp, in
  *
  * This function makes fewer guarantees than the C runtime `strtod`:
  *
- * - Only decimal notation is guaranteed to be supported.
- *   The handling of scientific and hexadecimal notation is unspecified.
+ * - Only decimal notation is guaranteed to be supported. The handling of
+ *   scientific and hexadecimal notation is unspecified.
  * - Whether or not INF and NAN can be parsed is unspecified.
  * - The precision of the result is unspecified.
  *
  * \param str The null-terminated string to read. Must not be NULL.
- * \param endp If not NULL, the address of the first invalid character
- *             (i.e. the next character after the parsed number) will be written to this pointer.
+ * \param endp If not NULL, the address of the first invalid character (i.e.
+ *             the next character after the parsed number) will be written to
+ *             this pointer.
  * \returns The parsed `double`.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1948,9 +2006,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *st
  * Searches a string for the first occurence of any character contained in a
  * breakset, and returns a pointer from the string to that character.
  *
- * \param str The null-terminated string to be searched. Must not be NULL, and must not overlap with `breakset`.
+ * \param str The null-terminated string to be searched. Must not be NULL, and
+ *            must not overlap with `breakset`.
  * \param breakset A null-terminated string containing the list of characters
- *                 to look for. Must not be NULL, and must not overlap with `str`.
+ *                 to look for. Must not be NULL, and must not overlap with
+ *                 `str`.
  * \returns A pointer to the location, in str, of the first occurence of a
  *          character present in the breakset, or NULL if none is found.
  *
