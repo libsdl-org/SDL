@@ -1086,7 +1086,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     }
 
     // Create and initialize the joystick
-    joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
+    joystick = (SDL_Joystick *)SDL_calloc(1, sizeof(*joystick));
     if (!joystick) {
         SDL_UnlockJoysticks();
         return NULL;

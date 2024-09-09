@@ -96,7 +96,7 @@ static void DBus_AppendFilter(SDL_DBusContext *dbus, DBusMessageIter *parent, co
         dbus->message_iter_open_container(&filter_array, DBUS_TYPE_STRUCT, NULL, &filter_array_entry);
         dbus->message_iter_append_basic(&filter_array_entry, DBUS_TYPE_UINT32, &zero);
 
-        glob_pattern = SDL_calloc(sizeof(char), max_len);
+        glob_pattern = SDL_calloc(max_len, sizeof(char));
         if (!glob_pattern) {
             goto cleanup;
         }

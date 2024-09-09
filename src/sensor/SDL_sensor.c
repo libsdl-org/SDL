@@ -321,7 +321,7 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
     }
 
     // Create and initialize the sensor
-    sensor = (SDL_Sensor *)SDL_calloc(sizeof(*sensor), 1);
+    sensor = (SDL_Sensor *)SDL_calloc(1, sizeof(*sensor));
     if (!sensor) {
         SDL_UnlockSensors();
         return NULL;
