@@ -570,15 +570,17 @@ typedef Sint64 SDL_Time;
 
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
-SDL_COMPILE_TIME_ASSERT(bool, sizeof(SDL_bool) == 1);
-SDL_COMPILE_TIME_ASSERT(uint8, sizeof(Uint8) == 1);
-SDL_COMPILE_TIME_ASSERT(sint8, sizeof(Sint8) == 1);
-SDL_COMPILE_TIME_ASSERT(uint16, sizeof(Uint16) == 2);
-SDL_COMPILE_TIME_ASSERT(sint16, sizeof(Sint16) == 2);
-SDL_COMPILE_TIME_ASSERT(uint32, sizeof(Uint32) == 4);
-SDL_COMPILE_TIME_ASSERT(sint32, sizeof(Sint32) == 4);
-SDL_COMPILE_TIME_ASSERT(uint64, sizeof(Uint64) == 8);
-SDL_COMPILE_TIME_ASSERT(sint64, sizeof(Sint64) == 8);
+SDL_COMPILE_TIME_ASSERT(bool_size, sizeof(SDL_bool) == 1);
+SDL_COMPILE_TIME_ASSERT(uint8_size, sizeof(Uint8) == 1);
+SDL_COMPILE_TIME_ASSERT(sint8_size, sizeof(Sint8) == 1);
+SDL_COMPILE_TIME_ASSERT(uint16_size, sizeof(Uint16) == 2);
+SDL_COMPILE_TIME_ASSERT(sint16_size, sizeof(Sint16) == 2);
+SDL_COMPILE_TIME_ASSERT(uint32_size, sizeof(Uint32) == 4);
+SDL_COMPILE_TIME_ASSERT(sint32_size, sizeof(Sint32) == 4);
+SDL_COMPILE_TIME_ASSERT(uint64_size, sizeof(Uint64) == 8);
+SDL_COMPILE_TIME_ASSERT(sint64_size, sizeof(Sint64) == 8);
+SDL_COMPILE_TIME_ASSERT(uint64_longlong, sizeof(Uint64) <= sizeof(unsigned long long));
+SDL_COMPILE_TIME_ASSERT(size_t_longlong, sizeof(size_t) <= sizeof(unsigned long long));
 typedef struct SDL_alignment_test
 {
     Uint8 a;
@@ -1668,8 +1670,8 @@ extern SDL_DECLSPEC char * SDLCALL SDL_itoa(int value, char *str, int radix);
 extern SDL_DECLSPEC char * SDLCALL SDL_uitoa(unsigned int value, char *str, int radix);
 extern SDL_DECLSPEC char * SDLCALL SDL_ltoa(long value, char *str, int radix);
 extern SDL_DECLSPEC char * SDLCALL SDL_ultoa(unsigned long value, char *str, int radix);
-extern SDL_DECLSPEC char * SDLCALL SDL_lltoa(Sint64 value, char *str, int radix);
-extern SDL_DECLSPEC char * SDLCALL SDL_ulltoa(Uint64 value, char *str, int radix);
+extern SDL_DECLSPEC char * SDLCALL SDL_lltoa(long long value, char *str, int radix);
+extern SDL_DECLSPEC char * SDLCALL SDL_ulltoa(unsigned long long value, char *str, int radix);
 
 /**
  * Parse an `int` from a string.
@@ -1784,7 +1786,7 @@ extern SDL_DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int ba
 extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **endp, int base);
 
 /**
- * Parse an Sint64 from a string.
+ * Parse a `long long` from a string.
  *
  * This function makes fewer guarantees than the C runtime `strtoll`:
  *
@@ -1793,9 +1795,6 @@ extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **en
  * - It is unspecified what this function returns when the parsed integer does
  *   not fit inside a `long long`.
  *
- * Also note that unlike the C runtime `strtoll`, this function returns an
- * Sint64, not a `long long`.
- *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
@@ -1803,7 +1802,7 @@ extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **en
  * \param base The base of the integer to read. The values 0, 10 and 16 are
  *             supported. If 0, the base will be inferred from the integer's
  *             prefix.
- * \returns The parsed Sint64.
+ * \returns The parsed `long long`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1817,10 +1816,10 @@ extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **en
  * \sa SDL_strtod
  * \sa SDL_lltoa
  */
-extern SDL_DECLSPEC Sint64 SDLCALL SDL_strtoll(const char *str, char **endp, int base);
+extern SDL_DECLSPEC long long SDLCALL SDL_strtoll(const char *str, char **endp, int base);
 
 /**
- * Parse a Uint64 from a string.
+ * Parse an `unsigned long long` from a string.
  *
  * This function makes fewer guarantees than the C runtime `strtoull`:
  *
@@ -1829,9 +1828,6 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_strtoll(const char *str, char **endp, int
  * - It is unspecified what this function returns when the parsed integer does
  *   not fit inside a `long long`.
  *
- * Also note that unlike the C runtime `strtoull`, this function returns a
- * Uint64, not an `unsigned long long`.
- *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
@@ -1839,7 +1835,7 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_strtoll(const char *str, char **endp, int
  * \param base The base of the integer to read. The values 0, 10 and 16 are
  *             supported. If 0, the base will be inferred from the integer's
  *             prefix.
- * \returns The parsed Uint64.
+ * \returns The parsed `unsigned long long`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1853,7 +1849,7 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_strtoll(const char *str, char **endp, int
  * \sa SDL_strtod
  * \sa SDL_ulltoa
  */
-extern SDL_DECLSPEC Uint64 SDLCALL SDL_strtoull(const char *str, char **endp, int base);
+extern SDL_DECLSPEC unsigned long long SDLCALL SDL_strtoull(const char *str, char **endp, int base);
 
 /**
  * Parse a `double` from a string.

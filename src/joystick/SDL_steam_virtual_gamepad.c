@@ -211,7 +211,7 @@ bool SDL_UpdateSteamVirtualGamepadInfo(void)
                 } else if (SDL_strcmp(line, "type") == 0) {
                     info.type = SDL_GetGamepadTypeFromString(value);
                 } else if (SDL_strcmp(line, "handle") == 0) {
-                    info.handle = SDL_strtoull(value, NULL, 0);
+                    info.handle = (Uint64)SDL_strtoull(value, NULL, 0);
                 }
             }
         }

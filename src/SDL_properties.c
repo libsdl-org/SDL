@@ -617,7 +617,7 @@ Sint64 SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 de
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
             switch (property->type) {
             case SDL_PROPERTY_TYPE_STRING:
-                value = SDL_strtoll(property->value.string_value, NULL, 0);
+                value = (Sint64)SDL_strtoll(property->value.string_value, NULL, 0);
                 break;
             case SDL_PROPERTY_TYPE_NUMBER:
                 value = property->value.number_value;
