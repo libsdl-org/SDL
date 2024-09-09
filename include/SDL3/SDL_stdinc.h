@@ -1261,7 +1261,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SD
  * Copy memory.
  *
  * It is okay for the memory regions to overlap.
- * If you are confident that the regions never overlap, using SDL_memset() may improve performance.
+ * If you are confident that the regions never overlap, using SDL_memcpy() may improve performance.
  *
  * \param dst The destination memory region. Must not be NULL.
  * \param src The source memory region. Must not be NULL.
@@ -1483,12 +1483,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar
  * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
  * - It is unspecified what this function returns when the parsed integer does not fit inside a `long`.
  *
- * `str` and `endp` must not overlap.
- *
- * \param str The null-terminated wide string to read. Must not be NULL and must not overlap with `endp`.
+ * \param str The null-terminated wide string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid wide character
  *             (i.e. the next character after the parsed number) will be written to this pointer.
- *             Must not overlap with `dst`.
  * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
  *             If 0, the base will be inferred from the integer's prefix.
  * \returns The parsed `long`.
@@ -1508,8 +1505,6 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_strnlen(const char *str, size_t maxlen);
  * Copy a string.
  *
  * This function copies up to `maxlen` - 1 characters from `src` to `dst`, then appends a null terminator.
- *
- * `src` and `dst` must not overlap.
  *
  * If `maxlen` is 0, no characters are copied and no null terminator is written.
  *
@@ -1539,8 +1534,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, 
  *
  * `src` and `dst` must not overlap.
  *
- * Note that unlike SDL_strlcpy(), `dst_bytes` must not be 0. Also note that unlike SDL_strlcpy(),
- * this function returns the number of bytes written, not the length of `src`.
+ * Note that unlike SDL_strlcpy(), this function returns the number of bytes written, not the length of `src`.
  *
  * \param dst The destination buffer. Must not be NULL, and must not overlap with `src`.
  * \param src The null-terminated UTF-8 string to copy. Must not be NULL, and must not overlap with `dst`.
@@ -1665,7 +1659,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_atoi(const char *str);
 /**
  * Parse a `double` from a string.
  *
- * The result of calling `SDL_atoi(str)` is equivalent to `SDL_strtod(str, NULL)`.
+ * The result of calling `SDL_atof(str)` is equivalent to `SDL_strtod(str, NULL)`.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \returns The parsed `double`.
@@ -1691,12 +1685,9 @@ extern SDL_DECLSPEC double SDLCALL SDL_atof(const char *str);
  * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
  * - It is unspecified what this function returns when the parsed integer does not fit inside a `long`.
  *
- * `str` and `endp` must not overlap.
- *
- * \param str The null-terminated string to read. Must not be NULL and must not overlap with `endp`.
+ * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character
  *             (i.e. the next character after the parsed number) will be written to this pointer.
- *             Must not overlap with `dst`.
  * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
  *             If 0, the base will be inferred from the integer's prefix.
  * \returns The parsed `long`.
@@ -1724,12 +1715,9 @@ extern SDL_DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int ba
  * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
  * - It is unspecified what this function returns when the parsed integer does not fit inside an `unsigned long`.
  *
- * `str` and `endp` must not overlap.
- *
- * \param str The null-terminated string to read. Must not be NULL and must not overlap with `endp`.
+ * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character
  *             (i.e. the next character after the parsed number) will be written to this pointer.
- *             Must not overlap with `dst`.
  * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
  *             If 0, the base will be inferred from the integer's prefix.
  * \returns The parsed `unsigned long`.
@@ -1758,12 +1746,9 @@ extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **en
  *
  * Also note that unlike the C runtime `strtoll`, this function returns an Sint64, not a `long long`.
  *
- * `str` and `endp` must not overlap.
- *
- * \param str The null-terminated string to read. Must not be NULL and must not overlap with `endp`.
+ * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character
  *             (i.e. the next character after the parsed number) will be written to this pointer.
- *             Must not overlap with `dst`.
  * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
  *             If 0, the base will be inferred from the integer's prefix.
  * \returns The parsed Sint64.
@@ -1792,12 +1777,9 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_strtoll(const char *str, char **endp, int
  *
  * Also note that unlike the C runtime `strtoull`, this function returns a Uint64, not an `unsigned long long`.
  *
- * `str` and `endp` must not overlap.
- *
- * \param str The null-terminated string to read. Must not be NULL and must not overlap with `endp`.
+ * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character
  *             (i.e. the next character after the parsed number) will be written to this pointer.
- *             Must not overlap with `dst`.
  * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
  *             If 0, the base will be inferred from the integer's prefix.
  * \returns The parsed Uint64.
@@ -1826,12 +1808,9 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_strtoull(const char *str, char **endp, in
  * - Whether or not INF and NAN can be parsed is unspecified.
  * - The precision of the result is unspecified.
  *
- * `str` and `endp` must not overlap.
- *
- * \param str The null-terminated string to read. Must not be NULL and must not overlap with `endp`.
+ * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character
  *             (i.e. the next character after the parsed number) will be written to this pointer.
- *             Must not overlap with `dst`.
  * \returns The parsed `double`.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1969,9 +1948,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *st
  * Searches a string for the first occurence of any character contained in a
  * breakset, and returns a pointer from the string to that character.
  *
- * \param str The null-terminated string to be searched.
+ * \param str The null-terminated string to be searched. Must not be NULL, and must not overlap with `breakset`.
  * \param breakset A null-terminated string containing the list of characters
- *                 to look for.
+ *                 to look for. Must not be NULL, and must not overlap with `str`.
  * \returns A pointer to the location, in str, of the first occurence of a
  *          character present in the breakset, or NULL if none is found.
  *
