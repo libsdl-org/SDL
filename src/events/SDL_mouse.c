@@ -486,7 +486,7 @@ void SDL_ResetMouse(void)
 
     for (i = 1; i <= sizeof(buttonState)*8; ++i) {
         if (buttonState & SDL_BUTTON(i)) {
-            SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_RELEASED, i);
+            SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, i, false);
         }
     }
     SDL_assert(SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, false) == 0);
@@ -863,7 +863,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
     }
 }
 
-static SDL_MouseInputSource *GetMouseInputSource(SDL_Mouse *mouse, SDL_MouseID mouseID, Uint8 state, Uint8 button)
+static SDL_MouseInputSource *GetMouseInputSource(SDL_Mouse *mouse, SDL_MouseID mouseID, bool down, Uint8 button)
 {
     SDL_MouseInputSource *source, *match = NULL, *sources;
     int i;
@@ -876,7 +876,7 @@ static SDL_MouseInputSource *GetMouseInputSource(SDL_Mouse *mouse, SDL_MouseID m
         }
     }
 
-    if (!state && (!match || !(match->buttonstate & SDL_BUTTON(button)))) {
+    if (!down && (!match || !(match->buttonstate & SDL_BUTTON(button)))) {
         /* This might be a button release from a transition between mouse messages and raw input.
          * See if there's another mouse source that already has that button down and use that.
          */
@@ -922,7 +922,7 @@ static SDL_MouseClickState *GetMouseClickState(SDL_Mouse *mouse, Uint8 button)
     return &mouse->clickstate[button];
 }
 
-static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks)
+static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 button, bool down, int clicks)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     Uint32 type;
@@ -934,7 +934,7 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
         mouseID = SDL_GLOBAL_MOUSE_ID;
     }
 
-    source = GetMouseInputSource(mouse, mouseID, state, button);
+    source = GetMouseInputSource(mouse, mouseID, down, button);
     if (!source) {
         return;
     }
@@ -943,7 +943,7 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
     // SDL_HINT_MOUSE_TOUCH_EVENTS: controlling whether mouse events should generate synthetic touch events
     if (mouse->mouse_touch_events) {
         if (mouseID != SDL_TOUCH_MOUSEID && button == SDL_BUTTON_LEFT) {
-            if (state == SDL_PRESSED) {
+            if (down) {
                 track_mouse_down = true;
             } else {
                 track_mouse_down = false;
@@ -964,22 +964,16 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
     }
 
     // Figure out which event to perform
-    switch (state) {
-    case SDL_PRESSED:
+    if (down) {
         type = SDL_EVENT_MOUSE_BUTTON_DOWN;
         buttonstate |= SDL_BUTTON(button);
-        break;
-    case SDL_RELEASED:
+    } else {
         type = SDL_EVENT_MOUSE_BUTTON_UP;
         buttonstate &= ~SDL_BUTTON(button);
-        break;
-    default:
-        // Invalid state -- bail
-        return;
     }
 
     // We do this after calculating buttonstate so button presses gain focus
-    if (window && state == SDL_PRESSED) {
+    if (window && down) {
         SDL_UpdateMouseFocus(window, mouse->x, mouse->y, buttonstate, true);
     }
 
@@ -992,7 +986,7 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
     if (clicks < 0) {
         SDL_MouseClickState *clickstate = GetMouseClickState(mouse, button);
         if (clickstate) {
-            if (state == SDL_PRESSED) {
+            if (down) {
                 Uint64 now = SDL_GetTicks();
 
                 if (now >= (clickstate->last_timestamp + mouse->double_click_time) ||
@@ -1020,7 +1014,7 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
         event.common.timestamp = timestamp;
         event.button.windowID = mouse->focus ? mouse->focus->id : 0;
         event.button.which = source->mouseID;
-        event.button.state = state;
+        event.button.down = down;
         event.button.button = button;
         event.button.clicks = (Uint8)SDL_min(clicks, 255);
         event.button.x = mouse->x;
@@ -1029,7 +1023,7 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
     }
 
     // We do this after dispatching event so button releases can lose focus
-    if (window && state == SDL_RELEASED) {
+    if (window && !down) {
         SDL_UpdateMouseFocus(window, mouse->x, mouse->y, buttonstate, true);
     }
 
@@ -1039,15 +1033,15 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
     }
 }
 
-void SDL_SendMouseButtonClicks(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks)
+void SDL_SendMouseButtonClicks(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 button, bool down, int clicks)
 {
     clicks = SDL_max(clicks, 0);
-    SDL_PrivateSendMouseButton(timestamp, window, mouseID, state, button, clicks);
+    SDL_PrivateSendMouseButton(timestamp, window, mouseID, button, down, clicks);
 }
 
-void SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button)
+void SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 button, bool down)
 {
-    SDL_PrivateSendMouseButton(timestamp, window, mouseID, state, button, -1);
+    SDL_PrivateSendMouseButton(timestamp, window, mouseID, button, down, -1);
 }
 
 void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction)

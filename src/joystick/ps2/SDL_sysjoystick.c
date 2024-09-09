@@ -294,7 +294,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
                     previous = info->btns & mask;
                     current = pressed_buttons & mask;
                     if (previous != current) {
-                        SDL_SendJoystickButton(timestamp, joystick, i, current ? SDL_PRESSED : SDL_RELEASED);
+                        SDL_SendJoystickButton(timestamp, joystick, i, (current != 0));
                     }
                 }
             }

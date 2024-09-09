@@ -360,6 +360,8 @@ The following functions have been removed:
 
 ## SDL_events.h
 
+SDL_PRESSED and SDL_RELEASED have been removed. For the most part you can replace uses of these with SDL_TRUE and SDL_FALSE respectively. Events which had a field `state` to represent these values have had those fields changed to SDL_bool `down`, e.g. `event.key.state` is now `event.key.down`.
+
 The timestamp member of the SDL_Event structure now represents nanoseconds, and is populated with SDL_GetTicksNS()
 
 The timestamp_us member of the sensor events has been renamed sensor_timestamp and now represents nanoseconds. This value is filled in from the hardware, if available, and may not be synchronized with values returned from SDL_GetTicksNS().
@@ -595,6 +597,8 @@ SDL_bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_i
 ```
 
 The inputType and outputType fields of SDL_GamepadBinding have been renamed input_type and output_type.
+
+SDL_GetGamepadTouchpadFinger() takes a pointer to SDL_bool for the finger state instead of a pointer to Uint8.
 
 The following enums have been renamed:
 * SDL_GameControllerAxis => SDL_GamepadAxis
@@ -1001,6 +1005,8 @@ Text input is no longer automatically enabled when initializing video, you shoul
 The text input state hase been changed to be window-specific. SDL_StartTextInput(), SDL_StopTextInput(), SDL_TextInputActive(), and SDL_ClearComposition() all now take a window parameter.
 
 SDL_GetDefaultKeyFromScancode(), SDL_GetKeyFromScancode(), and SDL_GetScancodeFromKey() take an SDL_Keymod parameter and use that to provide the correct result based on keyboard modifier state.
+
+SDL_GetKeyboardState() returns a pointer to SDL_bool instead of Uint8.
 
 The following functions have been renamed:
 * SDL_IsScreenKeyboardShown() => SDL_ScreenKeyboardShown()

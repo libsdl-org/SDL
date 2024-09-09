@@ -40,7 +40,7 @@ extern void SDL_IBus_Reset(void);
 /* Sends a keypress event to IBus, returns true if IBus used this event to
    update its candidate list or change input methods. PumpEvents should be
    called some time after this, to receive the TextInput / TextEditing event back. */
-extern bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state);
+extern bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down);
 
 /* Update the position of IBus' candidate list. If rect is NULL then this will
    just reposition it relative to the focused window's new position. */

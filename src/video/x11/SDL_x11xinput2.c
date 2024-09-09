@@ -407,15 +407,15 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
         X11_PenHandle *pen = X11_FindPenByDeviceID(xev->deviceid);
         const int button = xev->detail;
-        const bool pressed = (cookie->evtype == XI_ButtonPress) ? true : false;
+        const bool down = (cookie->evtype == XI_ButtonPress);
 
         if (pen) {
             // Only report button event; if there was also pen movement / pressure changes, we expect an XI_Motion event first anyway.
             SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
             if (button == 1) { // button 1 is the pen tip
-                SDL_SendPenTouch(0, pen->pen, window, pressed ? SDL_PRESSED : SDL_RELEASED, pen->is_eraser);
+                SDL_SendPenTouch(0, pen->pen, window, pen->is_eraser, down);
             } else {
-                SDL_SendPenButton(0, pen->pen, window, pressed ? SDL_PRESSED : SDL_RELEASED, button - 1);
+                SDL_SendPenButton(0, pen->pen, window, button - 1, down);
             }
         } else {
             // Otherwise assume a regular mouse
@@ -426,7 +426,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
                 break;
             }
 
-            if (pressed) {
+            if (down) {
                 X11_HandleButtonPress(_this, windowdata, (SDL_MouseID)xev->sourceid, button,
                                       (float)xev->event_x, (float)xev->event_y, xev->time);
             } else {

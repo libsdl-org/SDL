@@ -18,7 +18,7 @@
 static int SDLCALL keyboard_getKeyboardState(void *arg)
 {
     int numkeys;
-    const Uint8 *state;
+    const SDL_bool *state;
 
     /* Case where numkeys pointer is NULL */
     state = SDL_GetKeyboardState(NULL);

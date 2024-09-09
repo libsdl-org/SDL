@@ -198,7 +198,7 @@ static void PrintKey(SDL_KeyboardEvent *event)
     if (event->key) {
         print_string(&spot, &left,
                      "Key %s:  raw 0x%.2x, scancode %d = %s, keycode 0x%08X = %s ",
-                     event->state ? "pressed " : "released",
+                     event->down ? "pressed " : "released",
                      event->raw,
                      event->scancode,
                      event->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(event->scancode),
@@ -209,7 +209,7 @@ static void PrintKey(SDL_KeyboardEvent *event)
                      event->raw,
                      event->scancode,
                      event->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(event->scancode),
-                     event->state ? "pressed " : "released");
+                     event->down ? "pressed " : "released");
     }
     print_modifiers(&spot, &left, event->mod);
     if (event->repeat) {
@@ -234,7 +234,7 @@ static void PrintText(const char *eventtype, const char *text)
 static void CountKeysDown(void)
 {
     int i, count = 0, max_keys = 0;
-    const Uint8 *keystate = SDL_GetKeyboardState(&max_keys);
+    const SDL_bool *keystate = SDL_GetKeyboardState(&max_keys);
 
     for (i = 0; i < max_keys; ++i) {
         if (keystate[i]) {

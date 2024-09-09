@@ -203,9 +203,9 @@ bool Android_OnPadDown(int device_id, int keycode)
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
-            SDL_SendJoystickButton(timestamp, item->joystick, button, SDL_PRESSED);
+            SDL_SendJoystickButton(timestamp, item->joystick, button, true);
         } else {
-            SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, keycode, button_to_scancode(button), SDL_PRESSED);
+            SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, keycode, button_to_scancode(button), true);
         }
         SDL_UnlockJoysticks();
         return true;
@@ -223,9 +223,9 @@ bool Android_OnPadUp(int device_id, int keycode)
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
-            SDL_SendJoystickButton(timestamp, item->joystick, button, SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, item->joystick, button, false);
         } else {
-            SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, keycode, button_to_scancode(button), SDL_RELEASED);
+            SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, keycode, button_to_scancode(button), false);
         }
         SDL_UnlockJoysticks();
         return true;
@@ -280,16 +280,20 @@ bool Android_OnHat(int device_id, int hat_id, int x, int y)
             dpad_delta = (dpad_state ^ item->dpad_state);
             if (dpad_delta) {
                 if (dpad_delta & DPAD_UP_MASK) {
-                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, (dpad_state & DPAD_UP_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    bool down = ((dpad_state & DPAD_UP_MASK) != 0);
+                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, down);
                 }
                 if (dpad_delta & DPAD_DOWN_MASK) {
-                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, (dpad_state & DPAD_DOWN_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    bool down = ((dpad_state & DPAD_DOWN_MASK) != 0);
+                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, down);
                 }
                 if (dpad_delta & DPAD_LEFT_MASK) {
-                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, (dpad_state & DPAD_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    bool down = ((dpad_state & DPAD_LEFT_MASK) != 0);
+                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, down);
                 }
                 if (dpad_delta & DPAD_RIGHT_MASK) {
-                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, (dpad_state & DPAD_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    bool down = ((dpad_state & DPAD_RIGHT_MASK) != 0);
+                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, down);
                 }
                 item->dpad_state = dpad_state;
             }

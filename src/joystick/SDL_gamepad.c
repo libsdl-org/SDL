@@ -154,7 +154,7 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_GUID jGUID, const char
 static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t *pGamepadMapping);
 static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id, bool create_mapping);
 static void SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadAxis axis, Sint16 value);
-static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, Uint8 state);
+static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, bool down);
 
 static bool HasSameOutput(SDL_GamepadBinding *a, SDL_GamepadBinding *b)
 {
@@ -174,7 +174,7 @@ static void ResetOutput(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadBindi
     if (bind->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
         SDL_SendGamepadAxis(timestamp, gamepad, bind->output.axis.axis, 0);
     } else {
-        SDL_SendGamepadButton(timestamp, gamepad, bind->output.button, SDL_RELEASED);
+        SDL_SendGamepadButton(timestamp, gamepad, bind->output.button, false);
     }
 }
 
@@ -220,20 +220,20 @@ static void HandleJoystickAxis(Uint64 timestamp, SDL_Gamepad *gamepad, int axis,
             }
             SDL_SendGamepadAxis(timestamp, gamepad, match->output.axis.axis, (Sint16)value);
         } else {
-            Uint8 state;
+            bool down;
             int threshold = match->input.axis.axis_min + (match->input.axis.axis_max - match->input.axis.axis_min) / 2;
             if (match->input.axis.axis_max < match->input.axis.axis_min) {
-                state = (value <= threshold) ? SDL_PRESSED : SDL_RELEASED;
+                down = (value <= threshold);
             } else {
-                state = (value >= threshold) ? SDL_PRESSED : SDL_RELEASED;
+                down = (value >= threshold);
             }
-            SDL_SendGamepadButton(timestamp, gamepad, match->output.button, state);
+            SDL_SendGamepadButton(timestamp, gamepad, match->output.button, down);
         }
     }
     gamepad->last_match_axis[axis] = match;
 }
 
-static void HandleJoystickButton(Uint64 timestamp, SDL_Gamepad *gamepad, int button, Uint8 state)
+static void HandleJoystickButton(Uint64 timestamp, SDL_Gamepad *gamepad, int button, bool down)
 {
     int i;
 
@@ -244,10 +244,10 @@ static void HandleJoystickButton(Uint64 timestamp, SDL_Gamepad *gamepad, int but
         if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON &&
             button == binding->input.button) {
             if (binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                int value = state ? binding->output.axis.axis_max : binding->output.axis.axis_min;
+                int value = down ? binding->output.axis.axis_max : binding->output.axis.axis_min;
                 SDL_SendGamepadAxis(timestamp, gamepad, binding->output.axis.axis, (Sint16)value);
             } else {
-                SDL_SendGamepadButton(timestamp, gamepad, binding->output.button, state);
+                SDL_SendGamepadButton(timestamp, gamepad, binding->output.button, down);
             }
             break;
         }
@@ -271,7 +271,7 @@ static void HandleJoystickHat(Uint64 timestamp, SDL_Gamepad *gamepad, int hat, U
                     if (binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
                         SDL_SendGamepadAxis(timestamp, gamepad, binding->output.axis.axis, (Sint16)binding->output.axis.axis_max);
                     } else {
-                        SDL_SendGamepadButton(timestamp, gamepad, binding->output.button, SDL_PRESSED);
+                        SDL_SendGamepadButton(timestamp, gamepad, binding->output.button, true);
                     }
                 } else {
                     ResetOutput(timestamp, gamepad, binding);
@@ -296,7 +296,7 @@ static void RecenterGamepad(SDL_Gamepad *gamepad)
     for (i = 0; i < SDL_GAMEPAD_BUTTON_MAX; ++i) {
         SDL_GamepadButton button = (SDL_GamepadButton)i;
         if (SDL_GetGamepadButton(gamepad, button)) {
-            SDL_SendGamepadButton(timestamp, gamepad, button, SDL_RELEASED);
+            SDL_SendGamepadButton(timestamp, gamepad, button, false);
         }
     }
 
@@ -386,7 +386,7 @@ static SDL_bool SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event
 
         for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
             if (gamepad->joystick->instance_id == event->jbutton.which) {
-                HandleJoystickButton(event->common.timestamp, gamepad, event->jbutton.button, event->jbutton.state);
+                HandleJoystickButton(event->common.timestamp, gamepad, event->jbutton.button, event->jbutton.down);
                 break;
             }
         }
@@ -2810,8 +2810,7 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
                         value = 0;
                     }
                 } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
-                    value = SDL_GetJoystickButton(gamepad->joystick, binding->input.button);
-                    if (value == SDL_PRESSED) {
+                    if (SDL_GetJoystickButton(gamepad->joystick, binding->input.button)) {
                         value = binding->output.axis.axis_max;
                     }
                 } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
@@ -2868,15 +2867,15 @@ SDL_bool SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 /*
  * Get the current state of a button on a gamepad
  */
-Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
+SDL_bool SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
-    Uint8 result = SDL_RELEASED;
+    bool result = false;
 
     SDL_LockJoysticks();
     {
         int i;
 
-        CHECK_GAMEPAD_MAGIC(gamepad, 0);
+        CHECK_GAMEPAD_MAGIC(gamepad, false);
 
         for (i = 0; i < gamepad->num_bindings; ++i) {
             SDL_GamepadBinding *binding = &gamepad->bindings[i];
@@ -2889,13 +2888,13 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
                     if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
                         valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
                         if (valid_input_range) {
-                            result = (value >= threshold) ? SDL_PRESSED : SDL_RELEASED;
+                            result = (value >= threshold);
                             break;
                         }
                     } else {
                         valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
                         if (valid_input_range) {
-                            result = (value <= threshold) ? SDL_PRESSED : SDL_RELEASED;
+                            result = (value <= threshold);
                             break;
                         }
                     }
@@ -2904,7 +2903,7 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
                     break;
                 } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
                     int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
-                    result = (hat_mask & binding->input.hat.hat_mask) ? SDL_PRESSED : SDL_RELEASED;
+                    result = ((hat_mask & binding->input.hat.hat_mask) != 0);
                     break;
                 }
             }
@@ -3054,7 +3053,7 @@ int SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *gamepad, int touchpad)
 /**
  *  Get the current state of a finger on a touchpad on a gamepad.
  */
-SDL_bool SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger, Uint8 *state, float *x, float *y, float *pressure)
+SDL_bool SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger, SDL_bool *down, float *x, float *y, float *pressure)
 {
     bool result = false;
 
@@ -3067,8 +3066,8 @@ SDL_bool SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int fi
                 if (finger >= 0 && finger < touchpad_info->nfingers) {
                     SDL_JoystickTouchpadFingerInfo *info = &touchpad_info->fingers[finger];
 
-                    if (state) {
-                        *state = info->state;
+                    if (down) {
+                        *down = info->down;
                     }
                     if (x) {
                         *x = info->x;
@@ -3732,7 +3731,7 @@ static void SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Game
     }
 }
 
-static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, Uint8 state)
+static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, bool down)
 {
     SDL_Event event;
 
@@ -3742,21 +3741,15 @@ static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Ga
         return;
     }
 
-    switch (state) {
-    case SDL_PRESSED:
+    if (down) {
         event.type = SDL_EVENT_GAMEPAD_BUTTON_DOWN;
-        break;
-    case SDL_RELEASED:
+    } else {
         event.type = SDL_EVENT_GAMEPAD_BUTTON_UP;
-        break;
-    default:
-        // Invalid state -- bail
-        return;
     }
 
     if (button == SDL_GAMEPAD_BUTTON_GUIDE) {
         Uint64 now = SDL_GetTicks();
-        if (state == SDL_PRESSED) {
+        if (down) {
             gamepad->guide_button_down = now;
 
             if (gamepad->joystick->delayed_guide_button) {
@@ -3777,7 +3770,7 @@ static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Ga
         event.common.timestamp = timestamp;
         event.gbutton.which = gamepad->joystick->instance_id;
         event.gbutton.button = button;
-        event.gbutton.state = state;
+        event.gbutton.down = down;
         SDL_PushEvent(&event);
     }
 }
@@ -3826,7 +3819,7 @@ void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick)
 
     for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
         if (gamepad->joystick == joystick) {
-            SDL_SendGamepadButton(0, gamepad, SDL_GAMEPAD_BUTTON_GUIDE, SDL_RELEASED);
+            SDL_SendGamepadButton(0, gamepad, SDL_GAMEPAD_BUTTON_GUIDE, false);
 
             // Make sure we send an update complete event for this change
             if (!gamepad->joystick->update_complete) {

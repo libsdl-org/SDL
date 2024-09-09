@@ -264,15 +264,16 @@ class SDL_BLooper : public BLooper
     {
         SDL_Window *win;
         int32 winID;
-        int32 button, state; // left/middle/right, pressed/released
+        int32 button;
+		bool down;
         if (
             !_GetWinID(msg, &winID) ||
             msg->FindInt32("button-id", &button) != B_OK ||
-            msg->FindInt32("button-state", &state) != B_OK) {
+            msg->FindBool("button-down", &down) != B_OK) {
             return;
         }
         win = GetSDLWindow(winID);
-        SDL_SendMouseButton(0, win, SDL_DEFAULT_MOUSE_ID, state, button);
+        SDL_SendMouseButton(0, win, SDL_DEFAULT_MOUSE_ID, button, down);
     }
 
     void _HandleMouseWheel(BMessage *msg)
@@ -294,18 +295,19 @@ class SDL_BLooper : public BLooper
     {
         SDL_Window *win;
         int32 winID;
-        int32 scancode, state; // scancode, pressed/released
+        int32 scancode;
+		bool down;
         if (
             !_GetWinID(msg, &winID) ||
-            msg->FindInt32("key-state", &state) != B_OK ||
-            msg->FindInt32("key-scancode", &scancode) != B_OK) {
+            msg->FindInt32("key-scancode", &scancode) != B_OK ||
+            msg->FindBool("key-down", &down) != B_OK) {
             return;
         }
 
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, scancode, HAIKU_GetScancodeFromBeKey(scancode), state);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, scancode, HAIKU_GetScancodeFromBeKey(scancode), down);
 
         win = GetSDLWindow(winID);
-        if (state == SDL_PRESSED && SDL_TextInputActive(win)) {
+        if (down && SDL_TextInputActive(win)) {
             const int8 *keyUtf8;
             ssize_t count;
             if (msg->FindData("key-utf8", B_INT8_TYPE, (const void **)&keyUtf8, &count) == B_OK) {

@@ -68,7 +68,7 @@ extern void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id);
 extern void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handle, void *userdata), void *userdata);
 
 // Backend calls this when a pen's button changes, to generate events and update state.
-extern void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 eraser);
+extern void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, bool eraser, bool down);
 
 // Backend calls this when a pen moves on the tablet, to generate events and update state.
 extern void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, float x, float y);
@@ -77,7 +77,7 @@ extern void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL
 extern void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, SDL_PenAxis axis, float value);
 
 // Backend calls this when a pen's button changes, to generate events and update state.
-extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 button);
+extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 button, bool down);
 
 // Backend can optionally use this to find the SDL_PenID for the `handle` that was passed to SDL_AddPenDevice.
 extern SDL_PenID SDL_FindPenByHandle(void *handle);

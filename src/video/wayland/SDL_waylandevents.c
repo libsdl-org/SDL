@@ -268,7 +268,7 @@ static bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint6
     while (elapsed >= repeat_info->next_repeat_ns) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
             const Uint64 timestamp = repeat_info->wl_press_time_ns + repeat_info->next_repeat_ns;
-            SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetEventTimestamp(timestamp), repeat_info->keyboard_id, repeat_info->key, repeat_info->scancode, SDL_PRESSED);
+            SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetEventTimestamp(timestamp), repeat_info->keyboard_id, repeat_info->key, repeat_info->scancode, true);
         }
         if (repeat_info->text[0]) {
             SDL_SendKeyboardText(repeat_info->text);
@@ -593,11 +593,11 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
             // Clear the capture flag and raise all buttons
             wind->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
 
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_RELEASED, SDL_BUTTON_LEFT);
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_RELEASED, SDL_BUTTON_RIGHT);
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_RELEASED, SDL_BUTTON_MIDDLE);
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_RELEASED, SDL_BUTTON_X1);
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_RELEASED, SDL_BUTTON_X2);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_BUTTON_LEFT, false);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_BUTTON_RIGHT, false);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_BUTTON_MIDDLE, false);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_BUTTON_X1, false);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_BUTTON_X2, false);
         }
 
 
@@ -760,7 +760,7 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
 
         if (!ignore_click) {
             SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, input->pointer_id,
-                                state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
+                                sdl_button, (state != 0));
         }
     }
 }
@@ -1549,7 +1549,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         case SDLK_RGUI:
         case SDLK_MODE:
             Wayland_HandleModifierKeys(input, scancode, true);
-            SDL_SendKeyboardKeyIgnoreModifiers(0, input->keyboard_id, *key, scancode, SDL_PRESSED);
+            SDL_SendKeyboardKeyIgnoreModifiers(0, input->keyboard_id, *key, scancode, true);
             break;
         default:
             break;
@@ -1600,7 +1600,7 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     }
 }
 
-static bool keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key, Uint8 state, bool *handled_by_ime)
+static bool keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key, bool down, bool *handled_by_ime)
 {
     SDL_WindowData *window = input->keyboard_focus;
     const xkb_keysym_t *syms;
@@ -1617,7 +1617,7 @@ static bool keyboard_input_get_text(char text[8], const struct SDL_WaylandInput 
     sym = syms[0];
 
 #ifdef SDL_USE_IME
-    if (SDL_IME_ProcessKeyEvent(sym, key + 8, state)) {
+    if (SDL_IME_ProcessKeyEvent(sym, key + 8, down)) {
         if (handled_by_ime) {
             *handled_by_ime = true;
         }
@@ -1625,7 +1625,7 @@ static bool keyboard_input_get_text(char text[8], const struct SDL_WaylandInput 
     }
 #endif
 
-    if (state == SDL_RELEASED) {
+    if (!down) {
         return false;
     }
 
@@ -1668,7 +1668,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         SDL_Window *keyboard_focus = SDL_GetKeyboardFocus();
         if (keyboard_focus && SDL_TextInputActive(keyboard_focus)) {
-            has_text = keyboard_input_get_text(text, input, key, SDL_PRESSED, &handled_by_ime);
+            has_text = keyboard_input_get_text(text, input, key, true, &handled_by_ime);
         }
     } else {
         if (keyboard_repeat_key_is_set(&input->keyboard_repeat, key)) {
@@ -1680,12 +1680,12 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
             keyboard_repeat_handle(&input->keyboard_repeat, timestamp_raw_ns - input->keyboard_repeat.wl_press_time_ns);
             keyboard_repeat_clear(&input->keyboard_repeat);
         }
-        keyboard_input_get_text(text, input, key, SDL_RELEASED, &handled_by_ime);
+        keyboard_input_get_text(text, input, key, false, &handled_by_ime);
     }
 
     scancode = Wayland_get_scancode_from_key(input, key + 8);
     Wayland_HandleModifierKeys(input, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
-    SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetKeyboardTimestamp(input, time), input->keyboard_id, key, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED);
+    SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetKeyboardTimestamp(input, time), input->keyboard_id, key, scancode, (state == WL_KEYBOARD_KEY_STATE_PRESSED));
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         if (has_text && !(SDL_GetModState() & SDL_KMOD_CTRL)) {
@@ -1725,7 +1725,7 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
         char text[8];
         const uint32_t key = keyboard_repeat_get_key(&input->keyboard_repeat);
 
-        if (keyboard_input_get_text(text, input, key, SDL_PRESSED, NULL)) {
+        if (keyboard_input_get_text(text, input, key, true, NULL)) {
             keyboard_repeat_set_text(&input->keyboard_repeat, text);
         }
     }
@@ -2690,14 +2690,14 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     if (sdltool->frame_motion_set && (sdltool->frame_pen_down != -1)) {
         if (sdltool->frame_pen_down) {
             SDL_SendPenMotion(timestamp, instance_id, window, sdltool->x, sdltool->y);
-            SDL_SendPenTouch(timestamp, instance_id, window, SDL_PRESSED, 0);  // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, false, true);  // !!! FIXME: how do we know what tip is in use?
         } else {
-            SDL_SendPenTouch(timestamp, instance_id, window, SDL_RELEASED, 0);  // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, false, false); // !!! FIXME: how do we know what tip is in use?
             SDL_SendPenMotion(timestamp, instance_id, window, sdltool->x, sdltool->y);
         }
     } else {
         if (sdltool->frame_pen_down != -1) {
-            SDL_SendPenTouch(timestamp, instance_id, window, sdltool->frame_pen_down ? SDL_PRESSED : SDL_RELEASED, 0);  // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, false, (sdltool->frame_pen_down != 0));  // !!! FIXME: how do we know what tip is in use?
         }
 
         if (sdltool->frame_motion_set) {
@@ -2714,7 +2714,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     for (int i = 0; i < SDL_arraysize(sdltool->frame_buttons); i++) {
         const int state = sdltool->frame_buttons[i];
         if (state != -1) {
-            SDL_SendPenButton(timestamp, instance_id, window, state ? SDL_PRESSED : SDL_RELEASED, (Uint8) (i + 1));
+            SDL_SendPenButton(timestamp, instance_id, window, (Uint8)(i + 1), (state != 0));
             sdltool->frame_buttons[i] = -1;
         }
     }

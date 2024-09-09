@@ -325,7 +325,7 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
 {
     EmscriptenGamepadEvent gamepadState;
     SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
-    int i, result, buttonState;
+    int i, result;
     Uint64 timestamp = SDL_GetTicksNS();
 
     emscripten_sample_gamepad_data();
@@ -336,8 +336,8 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
             if (gamepadState.timestamp == 0 || gamepadState.timestamp != item->timestamp) {
                 for (i = 0; i < item->nbuttons; i++) {
                     if (item->digitalButton[i] != gamepadState.digitalButton[i]) {
-                        buttonState = gamepadState.digitalButton[i] ? SDL_PRESSED : SDL_RELEASED;
-                        SDL_SendJoystickButton(timestamp, item->joystick, i, buttonState);
+                        bool down = (gamepadState.digitalButton[i] != 0);
+                        SDL_SendJoystickButton(timestamp, item->joystick, i, down);
                     }
 
                     // store values to compare them in the next update

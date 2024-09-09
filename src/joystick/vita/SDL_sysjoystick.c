@@ -300,9 +300,8 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     if (changed) {
         for (i = 0; i < SDL_arraysize(ext_button_map); i++) {
             if (changed & ext_button_map[i]) {
-                SDL_SendJoystickButton(timestamp,
-                    joystick, i,
-                    (buttons & ext_button_map[i]) ? SDL_PRESSED : SDL_RELEASED);
+                bool down = ((buttons & ext_button_map[i]) != 0);
+                SDL_SendJoystickButton(timestamp, joystick, i, down);
             }
         }
     }

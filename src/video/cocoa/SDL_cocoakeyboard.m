@@ -209,7 +209,7 @@
         return;
     }
 
-    SDL_SendKeyboardKey(_pendingTimestamp, SDL_DEFAULT_KEYBOARD_ID, _pendingRawCode, _pendingScancode, SDL_PRESSED);
+    SDL_SendKeyboardKey(_pendingTimestamp, SDL_DEFAULT_KEYBOARD_ID, _pendingRawCode, _pendingScancode, true);
     [self clearPendingKey];
 }
 
@@ -268,9 +268,9 @@ static void HandleModifiers(SDL_VideoDevice *_this, SDL_Scancode code, unsigned 
     }
 
     if (pressed) {
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, code, SDL_PRESSED);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, code, true);
     } else {
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, code, SDL_RELEASED);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, code, false);
     }
 }
 
@@ -471,11 +471,11 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
             [data.fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
             [data.fieldEdit sendPendingKey];
         } else {
-            SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, SDL_PRESSED);
+            SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, true);
         }
         break;
     case NSEventTypeKeyUp:
-        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, SDL_RELEASED);
+        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, false);
         break;
     case NSEventTypeFlagsChanged: {
         // see if the new modifierFlags mean any existing keys should be pressed/released...

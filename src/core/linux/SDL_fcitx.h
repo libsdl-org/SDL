@@ -28,7 +28,7 @@ extern bool SDL_Fcitx_Init(void);
 extern void SDL_Fcitx_Quit(void);
 extern void SDL_Fcitx_SetFocus(bool focused);
 extern void SDL_Fcitx_Reset(void);
-extern bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state);
+extern bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down);
 extern void SDL_Fcitx_UpdateTextInputArea(SDL_Window *window);
 extern void SDL_Fcitx_PumpEvents(void);
 

@@ -512,7 +512,7 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define PRINT_KEY_EVENT(event)                                                                                                              \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u state=%s repeat=%s scancode=%u keycode=%u mod=0x%x)", \
                        (uint)event->key.timestamp, (uint)event->key.windowID, (uint)event->key.which,                                       \
-                       event->key.state == SDL_PRESSED ? "pressed" : "released",                                                            \
+                       event->key.down ? "pressed" : "released",                                                            \
                        event->key.repeat ? "true" : "false",                                                                                \
                        (uint)event->key.scancode,                                                                                           \
                        (uint)event->key.key,                                                                                                \
@@ -562,7 +562,7 @@ static void SDL_LogEvent(const SDL_Event *event)
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u button=%u state=%s clicks=%u x=%g y=%g)", \
                        (uint)event->button.timestamp, (uint)event->button.windowID,                                             \
                        (uint)event->button.which, (uint)event->button.button,                                                   \
-                       event->button.state == SDL_PRESSED ? "pressed" : "released",                                             \
+                       event->button.down ? "pressed" : "released",                                             \
                        (uint)event->button.clicks, event->button.x, event->button.y)
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTON_DOWN)
         PRINT_MBUTTON_EVENT(event);
@@ -600,7 +600,7 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define PRINT_JBUTTON_EVENT(event)                                                              \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d button=%u state=%s)", \
                        (uint)event->jbutton.timestamp, (int)event->jbutton.which,               \
-                       (uint)event->jbutton.button, event->jbutton.state == SDL_PRESSED ? "pressed" : "released")
+                       (uint)event->jbutton.button, event->jbutton.down ? "pressed" : "released")
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_BUTTON_DOWN)
         PRINT_JBUTTON_EVENT(event);
         break;
@@ -636,7 +636,7 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define PRINT_CBUTTON_EVENT(event)                                                              \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d button=%u state=%s)", \
                        (uint)event->gbutton.timestamp, (int)event->gbutton.which,               \
-                       (uint)event->gbutton.button, event->gbutton.state == SDL_PRESSED ? "pressed" : "released")
+                       (uint)event->gbutton.button, event->gbutton.down ? "pressed" : "released")
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_BUTTON_DOWN)
         PRINT_CBUTTON_EVENT(event);
         break;
@@ -704,7 +704,7 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define PRINT_PTOUCH_EVENT(event)                                                                             \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u pen_state=%u x=%g y=%g eraser=%s state=%s)", \
                        (uint)event->ptouch.timestamp, (uint)event->ptouch.windowID, (uint)event->ptouch.which, (uint)event->ptouch.pen_state, event->ptouch.x, event->ptouch.y, \
-                       event->ptouch.eraser ? "yes" : "no", event->ptouch.state == SDL_PRESSED ? "down" : "up");
+                       event->ptouch.eraser ? "yes" : "no", event->ptouch.down ? "down" : "up");
         SDL_EVENT_CASE(SDL_EVENT_PEN_DOWN)
         PRINT_PTOUCH_EVENT(event);
         break;
@@ -738,7 +738,7 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define PRINT_PBUTTON_EVENT(event)                                                                                                               \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u pen_state=%u x=%g y=%g button=%u state=%s)", \
                        (uint)event->pbutton.timestamp, (uint)event->pbutton.windowID, (uint)event->pbutton.which, (uint)event->pbutton.pen_state, event->pbutton.x, event->pbutton.y, \
-                       (uint)event->pbutton.button, event->pbutton.state == SDL_PRESSED ? "down" : "up");
+                       (uint)event->pbutton.button, event->pbutton.down ? "down" : "up");
         SDL_EVENT_CASE(SDL_EVENT_PEN_BUTTON_DOWN)
         PRINT_PBUTTON_EVENT(event);
         break;
