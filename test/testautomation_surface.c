@@ -1339,7 +1339,7 @@ static int SDLCALL surface_testPalettization(void *arg)
         int idx = i;
         Uint8 actual = pixels[idx];
         Uint8 expected = colors[i].e;
-        SDLTest_AssertCheck(0 <= actual && actual < SDL_arraysize(palette_colors), "0 <= output->pixels[%d] < %d", idx, (int)SDL_arraysize(palette_colors));
+        SDLTest_AssertCheck(actual < SDL_arraysize(palette_colors), "output->pixels[%d] < %d", idx, (int)SDL_arraysize(palette_colors));
         SDLTest_AssertCheck(actual == expected, "Expected output->pixels[%d] == %u, got %u", idx, expected, actual);
     }
     SDLTest_AssertPass("Check palette 1:1 mapping");
@@ -1347,7 +1347,7 @@ static int SDLCALL surface_testPalettization(void *arg)
         int idx = SDL_arraysize(colors) + i;
         Uint8 actual = pixels[idx];
         Uint8 expected = i;
-        SDLTest_AssertCheck(0 <= actual && actual < SDL_arraysize(palette_colors), "0 <= output->pixels[%d] < %d", idx, (int)SDL_arraysize(palette_colors));
+        SDLTest_AssertCheck(actual < SDL_arraysize(palette_colors), "output->pixels[%d] < %d", idx, (int)SDL_arraysize(palette_colors));
         SDLTest_AssertCheck(actual == expected, "Expected output->pixels[%d] == %u, got %u", idx, expected, actual);
     }
     SDL_DestroyPalette(palette);
