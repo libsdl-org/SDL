@@ -221,7 +221,7 @@ static int createInstance(VulkanVideoContext *context)
     {
         uint32_t extensionCount;
         if (context->vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL) == VK_SUCCESS && extensionCount > 0) {
-            VkExtensionProperties *extensionProperties = SDL_calloc(sizeof(VkExtensionProperties), extensionCount);
+            VkExtensionProperties *extensionProperties = SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
             if (context->vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extensionProperties) == VK_SUCCESS) {
                 for (uint32_t i = 0; i < SDL_arraysize(optional_extensions); ++i) {
                     for (uint32_t j = 0; j < extensionCount; ++j) {
@@ -595,7 +595,7 @@ static int createDevice(VulkanVideoContext *context)
     {
         uint32_t extensionCount;
         if (context->vkEnumerateDeviceExtensionProperties(context->physicalDevice, NULL, &extensionCount, NULL) == VK_SUCCESS && extensionCount > 0) {
-            VkExtensionProperties *extensionProperties = SDL_calloc(sizeof(VkExtensionProperties), extensionCount);
+            VkExtensionProperties *extensionProperties = SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
             if (context->vkEnumerateDeviceExtensionProperties(context->physicalDevice, NULL, &extensionCount, extensionProperties) == VK_SUCCESS) {
                 for (uint32_t i = 0; i < SDL_arraysize(optional_extensions); ++i) {
                     for (uint32_t j = 0; j < extensionCount; ++j) {

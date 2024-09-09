@@ -1599,7 +1599,7 @@ static bool VULKAN_DeviceExtensionsFound(VULKAN_RenderData *rendererData, int ex
         return false;
     }
     if (extensionCount > 0 ) {
-        VkExtensionProperties *extensionProperties = (VkExtensionProperties *)SDL_calloc(sizeof(VkExtensionProperties), extensionCount);
+        VkExtensionProperties *extensionProperties = (VkExtensionProperties *)SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
         result = vkEnumerateDeviceExtensionProperties(rendererData->physicalDevice, NULL, &extensionCount, extensionProperties);
         if (result != VK_SUCCESS ) {
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkEnumerateDeviceExtensionProperties): %s.\n", SDL_Vulkan_GetResultString(result));
@@ -2356,8 +2356,8 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         }
         SDL_free(rendererData->renderingFinishedSemaphores);
     }
-    rendererData->imageAvailableSemaphores = (VkSemaphore *)SDL_calloc(sizeof(VkSemaphore), rendererData->swapchainImageCount);
-    rendererData->renderingFinishedSemaphores = (VkSemaphore *)SDL_calloc(sizeof(VkSemaphore), rendererData->swapchainImageCount);
+    rendererData->imageAvailableSemaphores = (VkSemaphore *)SDL_calloc(rendererData->swapchainImageCount, sizeof(VkSemaphore));
+    rendererData->renderingFinishedSemaphores = (VkSemaphore *)SDL_calloc(rendererData->swapchainImageCount, sizeof(VkSemaphore));
     for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
         rendererData->imageAvailableSemaphores[i] = VULKAN_CreateSemaphore(rendererData);
         if (rendererData->imageAvailableSemaphores[i] == VK_NULL_HANDLE) {

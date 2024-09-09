@@ -57,7 +57,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!SDLTest_CommonInit(state)) {
         goto onerror;
     }
-    dialog = SDL_calloc(sizeof(dropfile_dialog), 1);
+    dialog = SDL_calloc(1, sizeof(dropfile_dialog));
     if (!dialog) {
         goto onerror;
     }
