@@ -122,7 +122,78 @@ void *alloca(size_t);
  *  -Wold-style-cast of GCC (and -Werror=old-style-cast in GCC 4.2 and above).
  */
 /* @{ */
-#ifdef __cplusplus
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+/**
+ * Handle a Reinterpret Cast properly whether using C or C++.
+ *
+ * If compiled as C++, this macro offers a proper C++ reinterpret_cast<>.
+ *
+ * If compiled as C, this macro does a normal C-style cast.
+ *
+ * This is helpful to avoid compiler warnings in C++.
+ *
+ * \param type the type to cast the expression to.
+ * \param expression the expression to cast to a different type.
+ *
+ * \returns `expression`, cast to `type`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_static_cast
+ * \sa SDL_const_cast
+ */
+#define SDL_reinterpret_cast(type, expression) reinterpret_cast<type>(expression)  /* or `((type)(expression))` in C */
+
+/**
+ * Handle a Static Cast properly whether using C or C++.
+ *
+ * If compiled as C++, this macro offers a proper C++ static_cast<>.
+ *
+ * If compiled as C, this macro does a normal C-style cast.
+ *
+ * This is helpful to avoid compiler warnings in C++.
+ *
+ * \param type the type to cast the expression to.
+ * \param expression the expression to cast to a different type.
+ *
+ * \returns `expression`, cast to `type`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_reinterpret_cast
+ * \sa SDL_const_cast
+ */
+#define SDL_static_cast(type, expression) static_cast<type>(expression)  /* or `((type)(expression))` in C */
+
+/**
+ * Handle a Const Cast properly whether using C or C++.
+ *
+ * If compiled as C++, this macro offers a proper C++ const_cast<>.
+ *
+ * If compiled as C, this macro does a normal C-style cast.
+ *
+ * This is helpful to avoid compiler warnings in C++.
+ *
+ * \param type the type to cast the expression to.
+ * \param expression the expression to cast to a different type.
+ *
+ * \returns `expression`, cast to `type`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_reinterpret_cast
+ * \sa SDL_static_cast
+ */
+#define SDL_const_cast(type, expression) const_cast<type>(expression)  /* or `((type)(expression))` in C */
+
+#elif defined(__cplusplus)
 #define SDL_reinterpret_cast(type, expression) reinterpret_cast<type>(expression)
 #define SDL_static_cast(type, expression) static_cast<type>(expression)
 #define SDL_const_cast(type, expression) const_cast<type>(expression)
@@ -131,9 +202,23 @@ void *alloca(size_t);
 #define SDL_static_cast(type, expression) ((type)(expression))
 #define SDL_const_cast(type, expression) ((type)(expression))
 #endif
+
 /* @} *//* Cast operators */
 
-/* Define a four character code as a Uint32 */
+/**
+ * Define a four character code as a Uint32.
+ *
+ * \param A the first ASCII character.
+ * \param B the second ASCII character.
+ * \param C the third ASCII character.
+ * \param D the fourth ASCII character.
+ *
+ * \returns the four characters converted into a Uint32, one character per-byte.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_FOURCC(A, B, C, D) \
     ((SDL_static_cast(Uint32, SDL_static_cast(Uint8, (A))) << 0) | \
      (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (B))) << 8) | \
@@ -3227,7 +3312,24 @@ SDL_FORCE_INLINE SDL_bool SDL_size_add_check_overflow_builtin(size_t a, size_t b
 #endif
 
 /* This is a generic function pointer which should be cast to the type you expect */
-#ifdef SDL_FUNCTION_POINTER_IS_VOID_POINTER
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+/**
+ * A generic function pointer.
+ *
+ * In theory, generic function pointers should use this, instead of `void *`,
+ * since some platforms could treat code addresses differently than data
+ * addresses. Although in current times no popular platforms make this
+ * distinction, it is more correct and portable to use the correct type for
+ * a generic pointer.
+ *
+ * If for some reason you need to force this typedef to be an actual `void *`,
+ * perhaps to work around a compiler or existing code, you can define
+ * `SDL_FUNCTION_IS_VOID_POINTER` before including any SDL headers.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ */
+typedef void (*SDL_FunctionPointer)(void);
+#elif defined(SDL_FUNCTION_POINTER_IS_VOID_POINTER)
 typedef void *SDL_FunctionPointer;
 #else
 typedef void (*SDL_FunctionPointer)(void);

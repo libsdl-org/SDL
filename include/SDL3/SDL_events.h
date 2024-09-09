@@ -1008,11 +1008,17 @@ SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NUL
 extern SDL_DECLSPEC void SDLCALL SDL_PumpEvents(void);
 
 /* @{ */
+
+/**
+ * The type of action to request from SDL_PeepEvents().
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_EventAction
 {
-    SDL_ADDEVENT,
-    SDL_PEEKEVENT,
-    SDL_GETEVENT
+    SDL_ADDEVENT,  /**< Add events to the back of the queue. */
+    SDL_PEEKEVENT, /**< Check but don't remove events from the queue front. */
+    SDL_GETEVENT   /**< Retrieve/remove events from the front of the queue. */
 } SDL_EventAction;
 
 /**
