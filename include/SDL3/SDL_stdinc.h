@@ -1475,6 +1475,30 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcscasecmp(const wchar_t *str1, const wchar_
  */
 extern SDL_DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen);
 
+/**
+ * Parse a `long` from a wide string.
+ *
+ * This function makes fewer guarantees than the C runtime `wcstol`:
+ *
+ * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
+ * - It is unspecified what this function returns when the parsed integer does not fit inside a `long`.
+ *
+ * `str` and `endp` must not overlap.
+ *
+ * \param str The null-terminated wide string to read. Must not be NULL and must not overlap with `endp`.
+ * \param endp If not NULL, the address of the first invalid wide character
+ *             (i.e. the next character after the parsed number) will be written to this pointer.
+ *             Must not overlap with `dst`.
+ * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
+ *             If 0, the base will be inferred from the integer's prefix.
+ * \returns The parsed `long`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_strtol
+ */
 extern SDL_DECLSPEC long SDLCALL SDL_wcstol(const wchar_t *str, wchar_t **endp, int base);
 
 extern SDL_DECLSPEC size_t SDLCALL SDL_strlen(const char *str);
@@ -1616,12 +1640,211 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ultoa(unsigned long value, char *str, int
 extern SDL_DECLSPEC char * SDLCALL SDL_lltoa(Sint64 value, char *str, int radix);
 extern SDL_DECLSPEC char * SDLCALL SDL_ulltoa(Uint64 value, char *str, int radix);
 
+/**
+ * Parse an `int` from a string.
+ *
+ * The result of calling `SDL_atoi(str)` is equivalent to `(int)SDL_strtol(str, NULL, 10)`.
+ *
+ * \param str The null-terminated string to read. Must not be NULL.
+ * \returns The parsed `int`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_atof
+ * \sa SDL_strtol
+ * \sa SDL_strtoul
+ * \sa SDL_strtoll
+ * \sa SDL_strtoull
+ * \sa SDL_strtod
+ * \sa SDL_itoa
+ */
 extern SDL_DECLSPEC int SDLCALL SDL_atoi(const char *str);
+
+/**
+ * Parse a `double` from a string.
+ *
+ * The result of calling `SDL_atoi(str)` is equivalent to `SDL_strtod(str, NULL)`.
+ *
+ * \param str The null-terminated string to read. Must not be NULL.
+ * \returns The parsed `double`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_atoi
+ * \sa SDL_strtol
+ * \sa SDL_strtoul
+ * \sa SDL_strtoll
+ * \sa SDL_strtoull
+ * \sa SDL_strtod
+ */
 extern SDL_DECLSPEC double SDLCALL SDL_atof(const char *str);
+
+/**
+ * Parse a `long` from a string.
+ *
+ * This function makes fewer guarantees than the C runtime `strtol`:
+ *
+ * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
+ * - It is unspecified what this function returns when the parsed integer does not fit inside a `long`.
+ *
+ * `str` and `endp` must not overlap.
+ *
+ * \param str The null-terminated string to read. Must not be NULL and must not overlap with `endp`.
+ * \param endp If not NULL, the address of the first invalid character
+ *             (i.e. the next character after the parsed number) will be written to this pointer.
+ *             Must not overlap with `dst`.
+ * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
+ *             If 0, the base will be inferred from the integer's prefix.
+ * \returns The parsed `long`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_atoi
+ * \sa SDL_atof
+ * \sa SDL_strtoul
+ * \sa SDL_strtoll
+ * \sa SDL_strtoull
+ * \sa SDL_strtod
+ * \sa SDL_ltoa
+ * \sa SDL_wcstol
+ */
 extern SDL_DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int base);
+
+/**
+ * Parse an `unsigned long` from a string.
+ *
+ * This function makes fewer guarantees than the C runtime `strtoul`:
+ *
+ * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
+ * - It is unspecified what this function returns when the parsed integer does not fit inside an `unsigned long`.
+ *
+ * `str` and `endp` must not overlap.
+ *
+ * \param str The null-terminated string to read. Must not be NULL and must not overlap with `endp`.
+ * \param endp If not NULL, the address of the first invalid character
+ *             (i.e. the next character after the parsed number) will be written to this pointer.
+ *             Must not overlap with `dst`.
+ * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
+ *             If 0, the base will be inferred from the integer's prefix.
+ * \returns The parsed `unsigned long`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_atoi
+ * \sa SDL_atof
+ * \sa SDL_strtol
+ * \sa SDL_strtoll
+ * \sa SDL_strtoull
+ * \sa SDL_strtod
+ * \sa SDL_ultoa
+ */
 extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **endp, int base);
+
+/**
+ * Parse an Sint64 from a string.
+ *
+ * This function makes fewer guarantees than the C runtime `strtoll`:
+ *
+ * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
+ * - It is unspecified what this function returns when the parsed integer does not fit inside a `long long`.
+ *
+ * Also note that unlike the C runtime `strtoll`, this function returns an Sint64, not a `long long`.
+ *
+ * `str` and `endp` must not overlap.
+ *
+ * \param str The null-terminated string to read. Must not be NULL and must not overlap with `endp`.
+ * \param endp If not NULL, the address of the first invalid character
+ *             (i.e. the next character after the parsed number) will be written to this pointer.
+ *             Must not overlap with `dst`.
+ * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
+ *             If 0, the base will be inferred from the integer's prefix.
+ * \returns The parsed Sint64.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_atoi
+ * \sa SDL_atof
+ * \sa SDL_strtol
+ * \sa SDL_strtoul
+ * \sa SDL_strtoull
+ * \sa SDL_strtod
+ * \sa SDL_lltoa
+ */
 extern SDL_DECLSPEC Sint64 SDLCALL SDL_strtoll(const char *str, char **endp, int base);
+
+/**
+ * Parse a Uint64 from a string.
+ *
+ * This function makes fewer guarantees than the C runtime `strtoull`:
+ *
+ * - Only the bases 10 and 16 are guaranteed to be supported. The behavior for other bases is unspecified.
+ * - It is unspecified what this function returns when the parsed integer does not fit inside a `long long`.
+ *
+ * Also note that unlike the C runtime `strtoull`, this function returns a Uint64, not an `unsigned long long`.
+ *
+ * `str` and `endp` must not overlap.
+ *
+ * \param str The null-terminated string to read. Must not be NULL and must not overlap with `endp`.
+ * \param endp If not NULL, the address of the first invalid character
+ *             (i.e. the next character after the parsed number) will be written to this pointer.
+ *             Must not overlap with `dst`.
+ * \param base The base of the integer to read. The values 0, 10 and 16 are supported.
+ *             If 0, the base will be inferred from the integer's prefix.
+ * \returns The parsed Uint64.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_atoi
+ * \sa SDL_atof
+ * \sa SDL_strtol
+ * \sa SDL_strtoll
+ * \sa SDL_strtoul
+ * \sa SDL_strtod
+ * \sa SDL_ulltoa
+ */
 extern SDL_DECLSPEC Uint64 SDLCALL SDL_strtoull(const char *str, char **endp, int base);
+
+/**
+ * Parse a `double` from a string.
+ *
+ * This function makes fewer guarantees than the C runtime `strtod`:
+ *
+ * - Only decimal notation is guaranteed to be supported.
+ *   The handling of scientific and hexadecimal notation is unspecified.
+ * - Whether or not INF and NAN can be parsed is unspecified.
+ * - The precision of the result is unspecified.
+ *
+ * `str` and `endp` must not overlap.
+ *
+ * \param str The null-terminated string to read. Must not be NULL and must not overlap with `endp`.
+ * \param endp If not NULL, the address of the first invalid character
+ *             (i.e. the next character after the parsed number) will be written to this pointer.
+ *             Must not overlap with `dst`.
+ * \returns The parsed `double`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_atoi
+ * \sa SDL_atof
+ * \sa SDL_strtol
+ * \sa SDL_strtoll
+ * \sa SDL_strtoul
+ * \sa SDL_strtoull
+ */
 extern SDL_DECLSPEC double SDLCALL SDL_strtod(const char *str, char **endp);
 
 /**
