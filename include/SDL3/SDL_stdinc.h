@@ -3323,7 +3323,7 @@ SDL_FORCE_INLINE SDL_bool SDL_size_add_check_overflow_builtin(size_t a, size_t b
  *
  * If for some reason you need to force this typedef to be an actual `void *`,
  * perhaps to work around a compiler or existing code, you can define
- * `SDL_FUNCTION_IS_VOID_POINTER` before including any SDL headers.
+ * `SDL_FUNCTION_POINTER_IS_VOID_POINTER` before including any SDL headers.
  *
  * \since This datatype is available since SDL 3.0.0.
  */
