@@ -124,6 +124,7 @@ void *alloca(size_t);
 /* @{ */
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * Handle a Reinterpret Cast properly whether using C or C++.
  *
@@ -135,7 +136,6 @@ void *alloca(size_t);
  *
  * \param type the type to cast the expression to.
  * \param expression the expression to cast to a different type.
- *
  * \returns `expression`, cast to `type`.
  *
  * \threadsafety It is safe to call this macro from any thread.
@@ -158,7 +158,6 @@ void *alloca(size_t);
  *
  * \param type the type to cast the expression to.
  * \param expression the expression to cast to a different type.
- *
  * \returns `expression`, cast to `type`.
  *
  * \threadsafety It is safe to call this macro from any thread.
@@ -181,7 +180,6 @@ void *alloca(size_t);
  *
  * \param type the type to cast the expression to.
  * \param expression the expression to cast to a different type.
- *
  * \returns `expression`, cast to `type`.
  *
  * \threadsafety It is safe to call this macro from any thread.
@@ -212,8 +210,8 @@ void *alloca(size_t);
  * \param B the second ASCII character.
  * \param C the third ASCII character.
  * \param D the fourth ASCII character.
- *
- * \returns the four characters converted into a Uint32, one character per-byte.
+ * \returns the four characters converted into a Uint32, one character
+ *          per-byte.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
@@ -3313,14 +3311,15 @@ SDL_FORCE_INLINE SDL_bool SDL_size_add_check_overflow_builtin(size_t a, size_t b
 
 /* This is a generic function pointer which should be cast to the type you expect */
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A generic function pointer.
  *
  * In theory, generic function pointers should use this, instead of `void *`,
  * since some platforms could treat code addresses differently than data
  * addresses. Although in current times no popular platforms make this
- * distinction, it is more correct and portable to use the correct type for
- * a generic pointer.
+ * distinction, it is more correct and portable to use the correct type for a
+ * generic pointer.
  *
  * If for some reason you need to force this typedef to be an actual `void *`,
  * perhaps to work around a compiler or existing code, you can define
