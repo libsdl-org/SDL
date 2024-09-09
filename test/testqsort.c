@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
             if (!seed_seen) {
                 char *endptr = NULL;
 
-                seed = SDL_strtoull(argv[i], &endptr, 0);
+                seed = (Uint64)SDL_strtoull(argv[i], &endptr, 0);
                 if (endptr != argv[i] && *endptr == '\0') {
                     seed_seen = 1;
                     consumed = 1;
