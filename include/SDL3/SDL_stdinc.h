@@ -665,9 +665,59 @@ extern "C" {
 #define SDL_stack_free(data)            SDL_free(data)
 #endif
 
+/**
+ * Allocate `size` bytes of uninitialized memory, similar to Standard C
+ * `malloc`.
+ *
+ * This function does not necessarily use the same memory pool as the C
+ * runtime's `malloc` implementation. The returned pointer must be freed
+ * with SDL_free(), and not with `free`.
+ *
+ * \param size minimum size to be allocated
+ * \returns a newly-allocated memory region of size `size`, or `NULL` on failure
+ */
 extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_malloc(size_t size);
+/**
+ * Allocate an array of `nmemb` objects, each of size `size`, initialized
+ * to all bits zero, similar to Standard C `calloc`.
+ *
+ * This function uses the same memory pool as SDL_malloc() and SDL_free().
+ * The returned pointer must be freed with SDL_free().
+ *
+ * \param nmemb number of objects
+ * \param size size of each object
+ * \returns a newly-allocated memory region, or `NULL` on failure
+ */
 extern SDL_DECLSPEC SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) void * SDLCALL SDL_calloc(size_t nmemb, size_t size);
+/**
+ * Reallocate a memory region returned by SDL_malloc(), SDL_calloc() or
+ * SDL_realloc() to be at least `size` bytes, similar to Standard C
+ * `realloc`.
+ *
+ * `SDL_realloc(NULL, size)` is equivalent to `SDL_malloc(size)`.
+ *
+ * If the returned pointer is non-null, it replaces `mem`. If it is not
+ * the same pointer as `mem`, then `mem` has been freed.
+ *
+ * If the returned pointer is `NULL`, the caller still owns `mem` and
+ * is still responsible for freeing it.
+ *
+ * In some `realloc` implementations, `realloc(mem, 0)` frees `mem`
+ * without allocating any memory to replace it. `SDL_realloc` does not
+ * do this: `SDL_realloc(mem, 0)` always attempts to allocate and return
+ * a memory region, so its behaviour is consistent with `SDL_realloc(mem, 1)`.
+ *
+ * \param mem memory region to reallocate
+ * \param size minimum size to be reallocated
+ * \returns either `mem` or a new pointer, or `NULL` on failure
+ */
 extern SDL_DECLSPEC SDL_ALLOC_SIZE(2) void * SDLCALL SDL_realloc(void *mem, size_t size);
+/**
+ * Free a memory region returned by `SDL_malloc`, `SDL_calloc` or
+ * `SDL_realloc`.
+ *
+ * \param mem memory region to free
+ */
 extern SDL_DECLSPEC void SDLCALL SDL_free(void *mem);
 
 typedef void *(SDLCALL *SDL_malloc_func)(size_t size);
