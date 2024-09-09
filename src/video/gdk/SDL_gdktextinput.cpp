@@ -123,7 +123,7 @@ static void CALLBACK GDK_InternalTextEntryCallback(XAsyncBlock *asyncBlock)
         SDL_SetError("XGameUiShowTextEntryResultSize failure with HRESULT of %08X", hR);
     } else if (resultSize > 0) {
         // +1 to be super sure that the buffer will be null terminated
-        resultBuffer = (char *)SDL_calloc(sizeof(*resultBuffer), 1 + (size_t)resultSize);
+        resultBuffer = (char *)SDL_calloc(1 + (size_t)resultSize, sizeof(*resultBuffer));
         if (resultBuffer) {
             // still pass the original size that we got from ResultSize
             if (FAILED(hR = XGameUiShowTextEntryResult(
