@@ -981,7 +981,7 @@ static bool hotplug_loop_init(void)
 
     hotplug.have_1_0_5 = PIPEWIRE_pw_check_library_version(1,0,5);
 
-    hotplug.loop = PIPEWIRE_pw_thread_loop_new("SDLAudioHotplug", NULL);
+    hotplug.loop = PIPEWIRE_pw_thread_loop_new("SDLPwCameraPlug", NULL);
     if (!hotplug.loop) {
         return SDL_SetError("Pipewire: Failed to create hotplug detection loop (%i)", errno);
     }
