@@ -2203,8 +2203,8 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
 
     if (createInfo->num_readonly_storage_buffers) {
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        descriptorRange.NumDescriptors = createInfo->num_samplers + createInfo->num_readonly_storage_buffers;
-        descriptorRange.BaseShaderRegister = createInfo->num_readonly_storage_textures;
+        descriptorRange.NumDescriptors = createInfo->num_readonly_storage_buffers;
+        descriptorRange.BaseShaderRegister = createInfo->num_samplers + createInfo->num_readonly_storage_textures;
         descriptorRange.RegisterSpace = 0;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
         descriptorRanges[rangeCount] = descriptorRange;
