@@ -22,6 +22,9 @@
 
 #include "SDL_windowsvideo.h"
 
+// GameInput currently has a bug with keys stuck on focus change, and crashes on initialization on some systems, so we'll disable it until these issues are fixed.
+#undef HAVE_GAMEINPUT_H
+
 #ifdef HAVE_GAMEINPUT_H
 
 #define COBJMACROS
