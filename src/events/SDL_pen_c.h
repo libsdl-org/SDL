@@ -24,7 +24,6 @@
 #ifndef SDL_pen_c_h_
 #define SDL_pen_c_h_
 
-#include "../../include/SDL3/SDL_pen.h"
 #include "SDL_mouse_c.h"
 
 typedef Uint32 SDL_PenCapabilityFlags;
