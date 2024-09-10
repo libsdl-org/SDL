@@ -371,46 +371,78 @@ static size_t SDL_ScanLong(const char *text, int count, int radix, long *valuep)
 #endif
 
 #if !defined(HAVE_WCSTOL)
+// SDL_ScanLongW assumes that wchar_t can converted to int without truncating bits
+SDL_COMPILE_TIME_ASSERT(wchar_t_int, sizeof(wchar_t) <= sizeof(int));
+
 static size_t SDL_ScanLongW(const wchar_t *text, int count, int radix, long *valuep)
 {
-    const wchar_t *textstart = text;
-    long value = 0;
+    const wchar_t *text_start = text;
+    const wchar_t *number_start = text_start;
+    unsigned long value = 0;
     bool negative = false;
 
-    if (*text == '-') {
-        negative = true;
-        ++text;
-    }
-    if (radix == 16 && SDL_wcsncmp(text, L"0x", 2) == 0) {
-        text += 2;
-    }
-    for (;;) {
-        int v;
-        if (*text >= '0' && *text <= '9') {
-            v = *text - '0';
-        } else if (radix == 16 && SDL_isupperhex(*text)) {
-            v = 10 + (*text - 'A');
-        } else if (radix == 16 && SDL_islowerhex(*text)) {
-            v = 10 + (*text - 'a');
-        } else {
-            break;
+    if (radix == 0 || (radix >= 2 && radix <= 36)) {
+        while (SDL_isspace(*text)) {
+            ++text;
         }
-        value *= radix;
-        value += v;
-        ++text;
-
-        if (count > 0 && (text - textstart) == count) {
-            break;
+        if (*text == '-' || *text == '+') {
+            negative = *text == '-';
+            ++text;
         }
+        if ((radix == 0 || radix == 16) && *text == '0') {
+            ++text;
+            if (*text == 'x' || *text == 'X') {
+                radix = 16;
+                ++text;
+            } else if (radix == 0) {
+                radix = 8;
+            }
+        } else if (radix == 0) {
+            radix = 10;
+        }
+        number_start = text;
+        do {
+            unsigned long digit;
+            if (*text >= '0' && *text <= '9') {
+                digit = *text - '0';
+            } else if (radix > 10) {
+                if (*text >= 'A' && *text < 'A' + (radix - 10)) {
+                    digit = 10 + (*text - 'A');
+                } else if (*text >= 'a' && *text < 'a' + (radix - 10)) {
+                    digit = 10 + (*text - 'a');
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+            { // saturate to ULONG_MAX
+                unsigned long next_value = value * radix + digit;
+                if (next_value < value) {
+                    next_value = ~0UL;
+                }
+                value = next_value;
+            }
+            ++text;
+        } while (count == 0 || (text - text_start) != count);
     }
-    if (valuep && text > textstart) {
-        if (negative && value) {
-            *valuep = -value;
+    if (text == number_start) { // no number was parsed, so no character were consumed
+        text = text_start;
+    }
+    if (valuep) {
+        if (negative) {
+            *valuep = 0UL - value;
+            if (*valuep > 0) {
+                *valuep = ((~0UL) >> 1) + 1UL; // LONG_MIN
+            }
         } else {
             *valuep = value;
+            if (*valuep < 0) {
+                *valuep = (~0UL) >> 1; // LONG_MAX
+            }
         }
     }
-    return text - textstart;
+    return text - text_start;
 }
 #endif
 
@@ -824,18 +856,8 @@ long SDL_wcstol(const wchar_t *string, wchar_t **endp, int base)
 #ifdef HAVE_WCSTOL
     return wcstol(string, endp, base);
 #else
-    size_t len;
     long value = 0;
-
-    if (!base) {
-        if ((SDL_wcslen(string) > 2) && (SDL_wcsncmp(string, L"0x", 2) == 0)) {
-            base = 16;
-        } else {
-            base = 10;
-        }
-    }
-
-    len = SDL_ScanLongW(string, 0, base, &value);
+    size_t len = SDL_ScanLongW(string, 0, base, &value);
     if (endp) {
         *endp = (wchar_t *)string + len;
     }
