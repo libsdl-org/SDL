@@ -506,6 +506,12 @@ struct SDL_GPUDevice
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUComputePipeline *computePipeline);
 
+    void (*BindComputeSamplers)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        Uint32 firstSlot,
+        const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+        Uint32 numBindings);
+
     void (*BindComputeStorageTextures)(
         SDL_GPUCommandBuffer *commandBuffer,
         Uint32 firstSlot,
@@ -735,6 +741,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(EndRenderPass, name)                 \
     ASSIGN_DRIVER_FUNC(BeginComputePass, name)              \
     ASSIGN_DRIVER_FUNC(BindComputePipeline, name)           \
+    ASSIGN_DRIVER_FUNC(BindComputeSamplers, name)           \
     ASSIGN_DRIVER_FUNC(BindComputeStorageTextures, name)    \
     ASSIGN_DRIVER_FUNC(BindComputeStorageBuffers, name)     \
     ASSIGN_DRIVER_FUNC(PushComputeUniformData, name)        \

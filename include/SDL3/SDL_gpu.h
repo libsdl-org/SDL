@@ -1480,6 +1480,7 @@ typedef struct SDL_GPUComputePipelineCreateInfo
     const Uint8 *code;                      /**< A pointer to compute shader code. */
     const char *entrypoint;                 /**< A pointer to a null-terminated UTF-8 string specifying the entry point function name for the shader. */
     SDL_GPUShaderFormat format;             /**< The format of the compute shader code. */
+    Uint32 num_samplers;                    /**< The number of samplers defined in the shader. */
     Uint32 num_readonly_storage_textures;   /**< The number of readonly storage textures defined in the shader. */
     Uint32 num_readonly_storage_buffers;    /**< The number of readonly storage buffers defined in the shader. */
     Uint32 num_writeonly_storage_textures;  /**< The number of writeonly storage textures defined in the shader. */
@@ -1780,13 +1781,13 @@ extern SDL_DECLSPEC SDL_GPUDriver SDLCALL SDL_GetGPUDriver(SDL_GPUDevice *device
  *
  * For SPIR-V shaders, use the following resource sets:
  *
- * - 0: Read-only storage textures, followed by read-only storage buffers
+ * - 0: Sampled textures, followed by read-only storage textures, followed by read-only storage buffers
  * - 1: Write-only storage textures, followed by write-only storage buffers
  * - 2: Uniform buffers
  *
  * For DXBC Shader Model 5_0 shaders, use the following register order:
  *
- * - t registers: Read-only storage textures, followed by read-only storage
+ * - t registers: Sampled textures, followed by read-only storage textures, followed by read-only storage
  *   buffers
  * - u registers: Write-only storage textures, followed by write-only storage
  *   buffers
@@ -1794,7 +1795,7 @@ extern SDL_DECLSPEC SDL_GPUDriver SDLCALL SDL_GetGPUDriver(SDL_GPUDevice *device
  *
  * For DXIL shaders, use the following register order:
  *
- * - (t[n], space0): Read-only storage textures, followed by read-only storage
+ * - (t[n], space0): Sampled textures, followed by read-only storage textures, followed by read-only storage
  *   buffers
  * - (u[n], space1): Write-only storage textures, followed by write-only
  *   storage buffers
@@ -1804,7 +1805,7 @@ extern SDL_DECLSPEC SDL_GPUDriver SDLCALL SDL_GetGPUDriver(SDL_GPUDevice *device
  *
  * - [[buffer]]: Uniform buffers, followed by write-only storage buffers,
  *   followed by write-only storage buffers
- * - [[texture]]: Read-only storage textures, followed by write-only storage
+ * - [[texture]]: Sampled textures, followed by read-only storage textures, followed by write-only storage
  *   textures
  *
  * \param device a GPU Context.
@@ -2745,6 +2746,24 @@ extern SDL_DECLSPEC SDL_GPUComputePass *SDLCALL SDL_BeginGPUComputePass(
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputePipeline(
     SDL_GPUComputePass *compute_pass,
     SDL_GPUComputePipeline *compute_pipeline);
+
+/**
+ * Binds texture-sampler pairs for use on the compute shader.
+ *
+ * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER.
+ *
+ * \param compute_pass a compute pass handle.
+ * \param first_slot the compute sampler slot to begin binding from.
+ * \param texture_sampler_bindings an array of texture-sampler binding structs.
+ * \param num_bindings the number of texture-sampler bindings to bind from the array.
+ *
+ * \since This function is available since SDL 3.0.0
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeSamplers(
+    SDL_GPUComputePass *compute_pass,
+    Uint32 first_slot,
+    const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
+    Uint32 num_bindings);
 
 /**
  * Binds storage textures as readonly for use on the compute pipeline.
