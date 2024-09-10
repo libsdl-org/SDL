@@ -1347,6 +1347,129 @@ static int SDLCALL stdlib_wcstol(void *arg)
     return TEST_COMPLETED;
 }
 
+static int SDLCALL stdlib_strtoull(void *arg)
+{
+    const char *text;
+    unsigned long long result;
+    char *endp;
+    unsigned long long expected_result;
+    char *expected_endp;
+
+    // infer decimal
+
+    text = "\t  123abcxyz"; // skip leading space
+    expected_result = 123;
+    expected_endp = (char *)text + 6;
+    result = SDL_strtoull(text, &endp, 0);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"\\t  123abcxyz\", &endp, 0)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "+123abcxyz";
+    expected_result = 123;
+    expected_endp = (char *)text + 4;
+    result = SDL_strtoull(text, &endp, 0);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"+123abcxyz\", &endp, 0)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "-123abcxyz";
+    expected_result = 0ULL - 123;
+    expected_endp = (char *)text + 4;
+    result = SDL_strtoull(text, &endp, 0);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"-123abcxyz\", &endp, 0)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "9999999999999999999999999999999999999999abcxyz";
+    expected_result = ~0ULL; // ULLONG_MAX
+    expected_endp = (char *)text + 40;
+    result = SDL_strtoull(text, &endp, 0);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"9999999999999999999999999999999999999999abcxyz\", &endp, 0)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "-9999999999999999999999999999999999999999abcxyz";
+    expected_result = ~0ULL; // ULLONG_MAX
+    expected_endp = (char *)text + 41;
+    result = SDL_strtoull(text, &endp, 0);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"-9999999999999999999999999999999999999999abcxyz\", &endp, 0)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    // infer hexadecimal
+
+    text = "0x123abcxyz";
+    expected_result = 0x123abc;
+    expected_endp = (char *)text + 8;
+    result = SDL_strtoull(text, &endp, 0);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"0x123abcxyz\", &endp, 0)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "0X123ABCXYZ"; // uppercase X
+    expected_result = 0x123abc;
+    expected_endp = (char *)text + 8;
+    result = SDL_strtoull(text, &endp, 0);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"0X123ABCXYZ\", &endp, 0)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    // infer octal
+
+    text = "0123abcxyz";
+    expected_result = 0123;
+    expected_endp = (char *)text + 4;
+    result = SDL_strtoull(text, &endp, 0);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"0123abcxyz\", &endp, 0)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    // arbitrary bases
+
+    text = "00110011";
+    expected_result = 51;
+    expected_endp = (char *)text + 8;
+    result = SDL_strtoull(text, &endp, 2);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"00110011\", &endp, 2)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "-uvwxyz";
+    expected_result = -991;
+    expected_endp = (char *)text + 3;
+    result = SDL_strtoull(text, &endp, 32);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"-uvwxyz\", &endp, 32)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "ZzZzZzZzZzZzZzZzZzZzZzZzZ";
+    expected_result = ~0ULL; // ULLONG_MAX
+    expected_endp = (char *)text + 25;
+    result = SDL_strtoull(text, &endp, 36);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"ZzZzZzZzZzZzZzZzZzZzZzZzZ\", &endp, 36)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "-0";
+    expected_result = 0;
+    expected_endp = (char *)text + 2;
+    result = SDL_strtoull(text, &endp, 10);
+    SDLTest_AssertPass("Call to SDL_strtoull(\"-0\", &endp, 10)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = " +0x"; // invalid hexadecimal
+    expected_result = 0;
+    expected_endp = (char *)text;
+    result = SDL_strtoull(text, &endp, 0);
+    SDLTest_AssertPass("Call to SDL_strtoull(\" +0x\", &endp, 0)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Standard C routine test cases */
@@ -1398,6 +1521,10 @@ static const SDLTest_TestCaseReference stdlibTest_wcstol = {
     stdlib_wcstol, "stdlib_wcstol", "Calls to SDL_wcstol", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference stdlibTest_strtoull = {
+    stdlib_strtoull, "stdlib_strtoull", "Calls to SDL_strtoull", TEST_ENABLED
+};
+
 /* Sequence of Standard C routine test cases */
 static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest_strnlen,
@@ -1412,6 +1539,7 @@ static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest_iconv,
     &stdlibTest_strpbrk,
     &stdlibTest_wcstol,
+    &stdlibTest_strtoull,
     NULL
 };
 
