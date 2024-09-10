@@ -1712,7 +1712,7 @@ void SDL_BindGPUComputePipeline(
 }
 
 void SDL_BindGPUComputeSamplers(
-        SDL_GPUComputePass *compute_pass,
+    SDL_GPUComputePass *compute_pass,
     Uint32 first_slot,
     const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
     Uint32 num_bindings)
