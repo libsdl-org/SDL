@@ -587,6 +587,7 @@ typedef struct SDL_alignment_test
     void *b;
 } SDL_alignment_test;
 SDL_COMPILE_TIME_ASSERT(struct_alignment, sizeof(SDL_alignment_test) == (2 * sizeof(void *)));
+SDL_COMPILE_TIME_ASSERT(two_s_complement, (int)~(int)0 == (int)(-1));
 #endif /* DOXYGEN_SHOULD_IGNORE_THIS */
 /** \endcond */
 
