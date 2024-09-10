@@ -1252,6 +1252,7 @@ static bool PipewireInitialize(SDL_AudioDriverImpl *impl)
         }
 
         if (!hotplug_loop_init()) {
+            hotplug_loop_destroy();
             PIPEWIRE_Deinitialize();
             return false;
         }
