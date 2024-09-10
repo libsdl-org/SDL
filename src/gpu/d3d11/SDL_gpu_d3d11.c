@@ -226,7 +226,7 @@ static DXGI_FORMAT SDLToD3D11_TextureFormat[] = {
     DXGI_FORMAT_D24_UNORM_S8_UINT,    // D24_UNORM_S8_UINT
     DXGI_FORMAT_D32_FLOAT_S8X24_UINT, // D32_FLOAT_S8_UINT
 };
-SDL_COMPILE_TIME_ASSERT(SDLToD3D11_TextureFormat, SDL_arraysize(SDLToD3D11_TextureFormat) == SDL_GPU_TEXTUREFORMAT_MAX);
+SDL_COMPILE_TIME_ASSERT(SDLToD3D11_TextureFormat, SDL_arraysize(SDLToD3D11_TextureFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
 static DXGI_FORMAT SDLToD3D11_VertexFormat[] = {
     DXGI_FORMAT_UNKNOWN,            // INVALID
@@ -261,7 +261,7 @@ static DXGI_FORMAT SDLToD3D11_VertexFormat[] = {
     DXGI_FORMAT_R16G16_FLOAT,       // HALF2
     DXGI_FORMAT_R16G16B16A16_FLOAT  // HALF4
 };
-SDL_COMPILE_TIME_ASSERT(SDLToD3D11_VertexFormat, SDL_arraysize(SDLToD3D11_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX);
+SDL_COMPILE_TIME_ASSERT(SDLToD3D11_VertexFormat, SDL_arraysize(SDLToD3D11_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
 static Uint32 SDLToD3D11_SampleCount[] = {
     1, // SDL_GPU_SAMPLECOUNT_1
@@ -276,10 +276,10 @@ static DXGI_FORMAT SDLToD3D11_IndexType[] = {
 };
 
 static D3D11_PRIMITIVE_TOPOLOGY SDLToD3D11_PrimitiveType[] = {
+    D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, // TRIANGLELIST
     D3D_PRIMITIVE_TOPOLOGY_POINTLIST,    // POINTLIST
     D3D_PRIMITIVE_TOPOLOGY_LINELIST,     // LINELIST
     D3D_PRIMITIVE_TOPOLOGY_LINESTRIP,    // LINESTRIP
-    D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, // TRIANGLELIST
     D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP // TRIANGLESTRIP
 };
 
@@ -290,6 +290,7 @@ static D3D11_CULL_MODE SDLToD3D11_CullMode[] = {
 };
 
 static D3D11_BLEND SDLToD3D11_BlendFactor[] = {
+    D3D11_BLEND_ZERO,             // INVALID
     D3D11_BLEND_ZERO,             // ZERO
     D3D11_BLEND_ONE,              // ONE
     D3D11_BLEND_SRC_COLOR,        // SRC_COLOR
@@ -304,8 +305,10 @@ static D3D11_BLEND SDLToD3D11_BlendFactor[] = {
     D3D11_BLEND_INV_BLEND_FACTOR, // ONE_MINUS_CONSTANT_COLOR
     D3D11_BLEND_SRC_ALPHA_SAT,    // SRC_ALPHA_SATURATE
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D11_BlendFactor, SDL_arraysize(SDLToD3D11_BlendFactor) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
 
 static D3D11_BLEND SDLToD3D11_BlendFactorAlpha[] = {
+    D3D11_BLEND_ZERO,             // ALPHA
     D3D11_BLEND_ZERO,             // ZERO
     D3D11_BLEND_ONE,              // ONE
     D3D11_BLEND_SRC_ALPHA,        // SRC_COLOR
@@ -320,16 +323,20 @@ static D3D11_BLEND SDLToD3D11_BlendFactorAlpha[] = {
     D3D11_BLEND_INV_BLEND_FACTOR, // ONE_MINUS_CONSTANT_COLOR
     D3D11_BLEND_SRC_ALPHA_SAT,    // SRC_ALPHA_SATURATE
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D11_BlendFactorAlpha, SDL_arraysize(SDLToD3D11_BlendFactorAlpha) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
 
 static D3D11_BLEND_OP SDLToD3D11_BlendOp[] = {
+    D3D11_BLEND_OP_ADD,          // INVALID
     D3D11_BLEND_OP_ADD,          // ADD
     D3D11_BLEND_OP_SUBTRACT,     // SUBTRACT
     D3D11_BLEND_OP_REV_SUBTRACT, // REVERSE_SUBTRACT
     D3D11_BLEND_OP_MIN,          // MIN
     D3D11_BLEND_OP_MAX           // MAX
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D11_BlendOp, SDL_arraysize(SDLToD3D11_BlendOp) == SDL_GPU_BLENDOP_MAX_ENUM_VALUE);
 
 static D3D11_COMPARISON_FUNC SDLToD3D11_CompareOp[] = {
+    D3D11_COMPARISON_NEVER,         // INVALID
     D3D11_COMPARISON_NEVER,         // NEVER
     D3D11_COMPARISON_LESS,          // LESS
     D3D11_COMPARISON_EQUAL,         // EQUAL
@@ -339,8 +346,10 @@ static D3D11_COMPARISON_FUNC SDLToD3D11_CompareOp[] = {
     D3D11_COMPARISON_GREATER_EQUAL, // GREATER_OR_EQUAL
     D3D11_COMPARISON_ALWAYS         // ALWAYS
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D11_CompareOp, SDL_arraysize(SDLToD3D11_CompareOp) == SDL_GPU_COMPAREOP_MAX_ENUM_VALUE);
 
 static D3D11_STENCIL_OP SDLToD3D11_StencilOp[] = {
+    D3D11_STENCIL_OP_KEEP,     // INVALID
     D3D11_STENCIL_OP_KEEP,     // KEEP
     D3D11_STENCIL_OP_ZERO,     // ZERO
     D3D11_STENCIL_OP_REPLACE,  // REPLACE
@@ -350,6 +359,7 @@ static D3D11_STENCIL_OP SDLToD3D11_StencilOp[] = {
     D3D11_STENCIL_OP_INCR,     // INCREMENT_AND_WRAP
     D3D11_STENCIL_OP_DECR      // DECREMENT_AND_WRAP
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D11_StencilOp, SDL_arraysize(SDLToD3D11_StencilOp) == SDL_GPU_STENCILOP_MAX_ENUM_VALUE);
 
 static D3D11_INPUT_CLASSIFICATION SDLToD3D11_VertexInputRate[] = {
     D3D11_INPUT_PER_VERTEX_DATA,  // VERTEX
@@ -1258,6 +1268,8 @@ static ID3D11BlendState *D3D11_INTERNAL_FetchBlendState(
     D3D11_BLEND_DESC blendDesc;
     HRESULT res;
 
+
+
     /* Create a new blend state.
      * The spec says the driver will not create duplicate states, so there's no need to cache.
      */
@@ -1267,12 +1279,16 @@ static ID3D11BlendState *D3D11_INTERNAL_FetchBlendState(
     blendDesc.IndependentBlendEnable = TRUE;
 
     for (Uint32 i = 0; i < numColorTargets; i += 1) {
+        SDL_GPUColorComponentFlags colorWriteMask = colorTargets[i].blend_state.enable_color_write_mask ?
+            colorTargets[i].blend_state.color_write_mask :
+            0xF;
+
         blendDesc.RenderTarget[i].BlendEnable = colorTargets[i].blend_state.enable_blend;
         blendDesc.RenderTarget[i].BlendOp = SDLToD3D11_BlendOp[colorTargets[i].blend_state.color_blend_op];
         blendDesc.RenderTarget[i].BlendOpAlpha = SDLToD3D11_BlendOp[colorTargets[i].blend_state.alpha_blend_op];
         blendDesc.RenderTarget[i].DestBlend = SDLToD3D11_BlendFactor[colorTargets[i].blend_state.dst_color_blendfactor];
         blendDesc.RenderTarget[i].DestBlendAlpha = SDLToD3D11_BlendFactorAlpha[colorTargets[i].blend_state.dst_alpha_blendfactor];
-        blendDesc.RenderTarget[i].RenderTargetWriteMask = colorTargets[i].blend_state.color_write_mask;
+        blendDesc.RenderTarget[i].RenderTargetWriteMask = colorWriteMask;
         blendDesc.RenderTarget[i].SrcBlend = SDLToD3D11_BlendFactor[colorTargets[i].blend_state.src_color_blendfactor];
         blendDesc.RenderTarget[i].SrcBlendAlpha = SDLToD3D11_BlendFactorAlpha[colorTargets[i].blend_state.src_alpha_blendfactor];
     }

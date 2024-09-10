@@ -1,4 +1,4 @@
-/*
+﻿/*
   Simple DirectMedia Layer
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
@@ -80,25 +80,49 @@
     }
 
 #define CHECK_TEXTUREFORMAT_ENUM_INVALID(format, retval)     \
-    if (format == 0 || format >= SDL_GPU_TEXTUREFORMAT_MAX) {               \
+    if (format == SDL_GPU_TEXTUREFORMAT_INVALID || format >= SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE) {               \
         SDL_assert_release(!"Invalid texture format enum!"); \
         return retval;                                       \
     }
 
 #define CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(format, retval)       \
-    if (format == 0 || format >= SDL_GPU_VERTEXELEMENTFORMAT_MAX) {  \
+    if (format == SDL_GPU_VERTEXELEMENTFORMAT_INVALID || format >= SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE) {  \
         SDL_assert_release(!"Invalid vertex format enum!");          \
         return retval;                                               \
     }
 
+#define CHECK_COMPAREOP_ENUM_INVALID(format, retval)                              \
+    if (format == SDL_GPU_COMPAREOP_INVALID || format >= SDL_GPU_COMPAREOP_MAX_ENUM_VALUE) { \
+        SDL_assert_release(!"Invalid compare op enum!");                          \
+        return retval;                                                            \
+    }
+
+#define CHECK_STENCILOP_ENUM_INVALID(format, retval)                                \
+    if (format == SDL_GPU_STENCILOP_INVALID || format >= SDL_GPU_STENCILOP_MAX_ENUM_VALUE) { \
+        SDL_assert_release(!"Invalid stencil op enum!");                            \
+        return retval;                                                              \
+    }
+
+#define CHECK_BLENDOP_ENUM_INVALID(format, retval)                              \
+    if (format == SDL_GPU_BLENDOP_INVALID || format >= SDL_GPU_BLENDOP_MAX_ENUM_VALUE) { \
+        SDL_assert_release(!"Invalid blend op enum!");                          \
+        return retval;                                                          \
+    }
+
+#define CHECK_BLENDFACTOR_ENUM_INVALID(format, retval)                                  \
+    if (format == SDL_GPU_BLENDFACTOR_INVALID || format >= SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE) { \
+        SDL_assert_release(!"Invalid blend factor enum!");                              \
+        return retval;                                                                  \
+    }
+
 #define CHECK_SWAPCHAINCOMPOSITION_ENUM_INVALID(enumval, retval)    \
-    if (enumval >= SDL_GPU_SWAPCHAINCOMPOSITION_MAX) {              \
+    if (enumval >= SDL_GPU_SWAPCHAINCOMPOSITION_MAX_ENUM_VALUE) {              \
         SDL_assert_release(!"Invalid swapchain composition enum!"); \
         return retval;                                              \
     }
 
 #define CHECK_PRESENTMODE_ENUM_INVALID(enumval, retval)    \
-    if (enumval >= SDL_GPU_PRESENTMODE_MAX) {              \
+    if (enumval >= SDL_GPU_PRESENTMODE_MAX_ENUM_VALUE) {              \
         SDL_assert_release(!"Invalid present mode enum!"); \
         return retval;                                     \
     }
@@ -596,11 +620,14 @@ SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
     }
 
     if (device->debug_mode) {
+        if (createinfo->format == SDL_GPU_SHADERFORMAT_INVALID) {
+            SDL_assert_release(!"Shader format cannot be INVALID!");
+            return NULL;
+        }
         if (!(createinfo->format & device->shader_formats)) {
             SDL_assert_release(!"Incompatible shader format for GPU backend");
             return NULL;
         }
-
         if (createinfo->num_writeonly_storage_textures > MAX_COMPUTE_WRITE_TEXTURES) {
             SDL_assert_release(!"Compute pipeline write-only texture count cannot be higher than 8!");
             return NULL;
@@ -643,6 +670,34 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
                 SDL_assert_release(!"Color target formats cannot be a depth format!");
                 return NULL;
             }
+            if (graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].blend_state.enable_blend) {
+                const SDL_GPUColorTargetBlendState *blend_state = &graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].blend_state;
+                CHECK_BLENDFACTOR_ENUM_INVALID(blend_state->src_color_blendfactor, NULL)
+                CHECK_BLENDFACTOR_ENUM_INVALID(blend_state->dst_color_blendfactor, NULL)
+                CHECK_BLENDOP_ENUM_INVALID(blend_state->color_blend_op, NULL)
+                CHECK_BLENDFACTOR_ENUM_INVALID(blend_state->src_alpha_blendfactor, NULL)
+                CHECK_BLENDFACTOR_ENUM_INVALID(blend_state->dst_alpha_blendfactor, NULL)
+                CHECK_BLENDOP_ENUM_INVALID(blend_state->alpha_blend_op, NULL)
+                if (blend_state->src_color_blendfactor == SDL_GPU_BLENDFACTOR_INVALID) {
+                    SDL_assert_release(!"Blend factor cannot be INVALID!");
+                    return NULL;
+                } else if (blend_state->dst_color_blendfactor == SDL_GPU_BLENDFACTOR_INVALID) {
+                    SDL_assert_release(!"Blend factor cannot be INVALID!");
+                    return NULL;
+                } else if (blend_state->color_blend_op == SDL_GPU_BLENDOP_INVALID) {
+                    SDL_assert_release(!"Blend op cannot be INVALID");
+                    return NULL;
+                } else if (blend_state->src_alpha_blendfactor == SDL_GPU_BLENDFACTOR_INVALID) {
+                    SDL_assert_release(!"Blend factor cannot be INVALID!");
+                    return NULL;
+                } else if (blend_state->dst_alpha_blendfactor == SDL_GPU_BLENDFACTOR_INVALID) {
+                    SDL_assert_release(!"Blend factor cannot be INVALID!");
+                    return NULL;
+                } else if (blend_state->alpha_blend_op == SDL_GPU_BLENDOP_INVALID) {
+                    SDL_assert_release(!"Blend op cannot be INVALID!");
+                    return NULL;
+                }
+            }
         }
         if (graphicsPipelineCreateInfo->target_info.has_depth_stencil_target) {
             CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->target_info.depth_stencil_format, NULL);
@@ -651,16 +706,26 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
                 return NULL;
             }
         }
-        if (graphicsPipelineCreateInfo->vertex_input_state.vertex_bindings == NULL) {
+        if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_bindings > 0 && graphicsPipelineCreateInfo->vertex_input_state.vertex_bindings == NULL) {
             SDL_assert_release(!"Vertex bindings array pointer cannot be NULL!");
             return NULL;
         }
-        if (graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes == NULL) {
+        if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes > 0 && graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes == NULL) {
             SDL_assert_release(!"Vertex attributes array pointer cannot be NULL!");
             return NULL;
         }
         for (Uint32 i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes; i += 1) {
             CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].format, NULL);
+        }
+        if (graphicsPipelineCreateInfo->depth_stencil_state.enable_depth_test) {
+            CHECK_COMPAREOP_ENUM_INVALID(graphicsPipelineCreateInfo->depth_stencil_state.compare_op, NULL)
+        }
+        if (graphicsPipelineCreateInfo->depth_stencil_state.enable_stencil_test) {
+            const SDL_GPUStencilOpState *stencil_state = &graphicsPipelineCreateInfo->depth_stencil_state.back_stencil_state;
+            CHECK_COMPAREOP_ENUM_INVALID(stencil_state->compare_op, NULL)
+            CHECK_STENCILOP_ENUM_INVALID(stencil_state->fail_op, NULL)
+            CHECK_STENCILOP_ENUM_INVALID(stencil_state->pass_op, NULL)
+            CHECK_STENCILOP_ENUM_INVALID(stencil_state->depth_fail_op, NULL)
         }
     }
 
@@ -695,6 +760,10 @@ SDL_GPUShader *SDL_CreateGPUShader(
     }
 
     if (device->debug_mode) {
+        if (createinfo->format == SDL_GPU_SHADERFORMAT_INVALID) {
+            SDL_assert_release(!"Shader format cannot be INVALID!");
+            return NULL;
+        }
         if (!(createinfo->format & device->shader_formats)) {
             SDL_assert_release(!"Incompatible shader format for GPU backend");
             return NULL;

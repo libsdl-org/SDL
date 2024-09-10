@@ -586,12 +586,13 @@ typedef enum SDL_GPUShaderStage
  */
 typedef Uint32 SDL_GPUShaderFormat;
 
-#define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 0) /**< Shaders for NDA'd platforms. */
-#define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1) /**< SPIR-V shaders for Vulkan. */
-#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_0 shaders for D3D11. */
-#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL shaders for D3D12. */
-#define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal. */
-#define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< Precompiled metallib shaders for Metal. */
+#define SDL_GPU_SHADERFORMAT_INVALID  (1u << 0)
+#define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 1) /**< Shaders for NDA'd platforms. */
+#define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 2) /**< SPIR-V shaders for Vulkan. */
+#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 3) /**< DXBC SM5_0 shaders for D3D11. */
+#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 4) /**< DXIL shaders for D3D12. */
+#define SDL_GPU_SHADERFORMAT_MSL      (1u << 5) /**< MSL shaders for Metal. */
+#define SDL_GPU_SHADERFORMAT_METALLIB (1u << 6) /**< Precompiled metallib shaders for Metal. */
 
 /**
  * Specifies the format of a vertex attribute.
@@ -722,6 +723,7 @@ typedef enum SDL_GPUFrontFace
  */
 typedef enum SDL_GPUCompareOp
 {
+    SDL_GPU_COMPAREOP_INVALID,
     SDL_GPU_COMPAREOP_NEVER,             /**< The comparison always evaluates false. */
     SDL_GPU_COMPAREOP_LESS,              /**< The comparison evaluates reference < test. */
     SDL_GPU_COMPAREOP_EQUAL,             /**< The comparison evaluates reference == test. */
@@ -742,6 +744,7 @@ typedef enum SDL_GPUCompareOp
  */
 typedef enum SDL_GPUStencilOp
 {
+    SDL_GPU_STENCILOP_INVALID,
     SDL_GPU_STENCILOP_KEEP,                 /**< Keeps the current value. */
     SDL_GPU_STENCILOP_ZERO,                 /**< Sets the value to 0. */
     SDL_GPU_STENCILOP_REPLACE,              /**< Sets the value to reference. */
@@ -765,6 +768,7 @@ typedef enum SDL_GPUStencilOp
  */
 typedef enum SDL_GPUBlendOp
 {
+    SDL_GPU_BLENDOP_INVALID,
     SDL_GPU_BLENDOP_ADD,               /**< (source * source_factor) + (destination * destination_factor) */
     SDL_GPU_BLENDOP_SUBTRACT,          /**< (source * source_factor) - (destination * destination_factor) */
     SDL_GPU_BLENDOP_REVERSE_SUBTRACT,  /**< (destination * destination_factor) - (source * source_factor) */
@@ -785,6 +789,7 @@ typedef enum SDL_GPUBlendOp
  */
 typedef enum SDL_GPUBlendFactor
 {
+    SDL_GPU_BLENDFACTOR_INVALID,
     SDL_GPU_BLENDFACTOR_ZERO,                      /**< 0 */
     SDL_GPU_BLENDFACTOR_ONE,                       /**< 1 */
     SDL_GPU_BLENDFACTOR_SRC_COLOR,                 /**< source color */
@@ -1259,9 +1264,9 @@ typedef struct SDL_GPUColorTargetBlendState
     SDL_GPUBlendFactor src_alpha_blendfactor;     /**< The value to be multiplied by the source alpha. */
     SDL_GPUBlendFactor dst_alpha_blendfactor;     /**< The value to be multiplied by the destination alpha. */
     SDL_GPUBlendOp alpha_blend_op;                /**< The blend operation for the alpha component. */
-    SDL_GPUColorComponentFlags color_write_mask;  /**< A bitmask specifying which of the RGBA components are enabled for writing. */
+    SDL_GPUColorComponentFlags color_write_mask;  /**< A bitmask specifying which of the RGBA components are enabled for writing. Writes to all channels if color_write_mask is SDL_FALSE. */
     SDL_bool enable_blend;                        /**< Whether blending is enabled for the color target. */
-    Uint8 padding1;
+    SDL_bool enable_color_write_mask;             /**< Whether the color write mask is enabled. */
     Uint8 padding2;
     Uint8 padding3;
 } SDL_GPUColorTargetBlendState;

@@ -192,6 +192,7 @@ static DXGI_COLOR_SPACE_TYPE SwapchainCompositionToColorSpace[] = {
 };
 
 static D3D12_BLEND SDLToD3D12_BlendFactor[] = {
+    D3D12_BLEND_ZERO,             // INVALID
     D3D12_BLEND_ZERO,             // ZERO
     D3D12_BLEND_ONE,              // ONE
     D3D12_BLEND_SRC_COLOR,        // SRC_COLOR
@@ -206,8 +207,10 @@ static D3D12_BLEND SDLToD3D12_BlendFactor[] = {
     D3D12_BLEND_INV_BLEND_FACTOR, // ONE_MINUS_CONSTANT_COLOR
     D3D12_BLEND_SRC_ALPHA_SAT,    // SRC_ALPHA_SATURATE
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D12_BlendFactor, SDL_arraysize(SDLToD3D12_BlendFactor) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
 
 static D3D12_BLEND SDLToD3D12_BlendFactorAlpha[] = {
+    D3D12_BLEND_ZERO,             // INVALID
     D3D12_BLEND_ZERO,             // ZERO
     D3D12_BLEND_ONE,              // ONE
     D3D12_BLEND_SRC_ALPHA,        // SRC_COLOR
@@ -222,14 +225,17 @@ static D3D12_BLEND SDLToD3D12_BlendFactorAlpha[] = {
     D3D12_BLEND_INV_BLEND_FACTOR, // ONE_MINUS_CONSTANT_COLOR
     D3D12_BLEND_SRC_ALPHA_SAT,    // SRC_ALPHA_SATURATE
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D12_BlendFactorAlpha, SDL_arraysize(SDLToD3D12_BlendFactorAlpha) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
 
 static D3D12_BLEND_OP SDLToD3D12_BlendOp[] = {
+    D3D12_BLEND_OP_ADD,          // INVALID
     D3D12_BLEND_OP_ADD,          // ADD
     D3D12_BLEND_OP_SUBTRACT,     // SUBTRACT
     D3D12_BLEND_OP_REV_SUBTRACT, // REVERSE_SUBTRACT
     D3D12_BLEND_OP_MIN,          // MIN
     D3D12_BLEND_OP_MAX           // MAX
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D12_BlendOp, SDL_arraysize(SDLToD3D12_BlendOp) == SDL_GPU_BLENDOP_MAX_ENUM_VALUE);
 
 static DXGI_FORMAT SDLToD3D12_TextureFormat[] = {
     DXGI_FORMAT_UNKNOWN,              // INVALID
@@ -290,9 +296,10 @@ static DXGI_FORMAT SDLToD3D12_TextureFormat[] = {
     DXGI_FORMAT_D24_UNORM_S8_UINT,    // D24_UNORM_S8_UINT
     DXGI_FORMAT_D32_FLOAT_S8X24_UINT, // D32_FLOAT_S8_UINT
 };
-SDL_COMPILE_TIME_ASSERT(SDLToD3D12_TextureFormat, SDL_arraysize(SDLToD3D12_TextureFormat) == SDL_GPU_TEXTUREFORMAT_MAX);
+SDL_COMPILE_TIME_ASSERT(SDLToD3D12_TextureFormat, SDL_arraysize(SDLToD3D12_TextureFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
 static D3D12_COMPARISON_FUNC SDLToD3D12_CompareOp[] = {
+    D3D12_COMPARISON_FUNC_NEVER,         // INVALID
     D3D12_COMPARISON_FUNC_NEVER,         // NEVER
     D3D12_COMPARISON_FUNC_LESS,          // LESS
     D3D12_COMPARISON_FUNC_EQUAL,         // EQUAL
@@ -302,8 +309,10 @@ static D3D12_COMPARISON_FUNC SDLToD3D12_CompareOp[] = {
     D3D12_COMPARISON_FUNC_GREATER_EQUAL, // GREATER_OR_EQUAL
     D3D12_COMPARISON_FUNC_ALWAYS         // ALWAYS
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D12_CompareOp, SDL_arraysize(SDLToD3D12_CompareOp) == SDL_GPU_COMPAREOP_MAX_ENUM_VALUE);
 
 static D3D12_STENCIL_OP SDLToD3D12_StencilOp[] = {
+    D3D12_STENCIL_OP_KEEP,     // INVALID
     D3D12_STENCIL_OP_KEEP,     // KEEP
     D3D12_STENCIL_OP_ZERO,     // ZERO
     D3D12_STENCIL_OP_REPLACE,  // REPLACE
@@ -313,6 +322,7 @@ static D3D12_STENCIL_OP SDLToD3D12_StencilOp[] = {
     D3D12_STENCIL_OP_INCR,     // INCREMENT_AND_WRAP
     D3D12_STENCIL_OP_DECR      // DECREMENT_AND_WRAP
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D12_StencilOp, SDL_arraysize(SDLToD3D12_StencilOp) == SDL_GPU_STENCILOP_MAX_ENUM_VALUE);
 
 static D3D12_CULL_MODE SDLToD3D12_CullMode[] = {
     D3D12_CULL_MODE_NONE,  // NONE
@@ -363,7 +373,7 @@ static DXGI_FORMAT SDLToD3D12_VertexFormat[] = {
     DXGI_FORMAT_R16G16_FLOAT,       // HALF2
     DXGI_FORMAT_R16G16B16A16_FLOAT  // HALF4
 };
-SDL_COMPILE_TIME_ASSERT(SDLToD3D12_VertexFormat, SDL_arraysize(SDLToD3D12_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX);
+SDL_COMPILE_TIME_ASSERT(SDLToD3D12_VertexFormat, SDL_arraysize(SDLToD3D12_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
 static Uint32 SDLToD3D12_SampleCount[] = {
     1, // SDL_GPU_SAMPLECOUNT_1
@@ -373,10 +383,10 @@ static Uint32 SDLToD3D12_SampleCount[] = {
 };
 
 static D3D12_PRIMITIVE_TOPOLOGY SDLToD3D12_PrimitiveType[] = {
+    D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, // TRIANGLELIST
     D3D_PRIMITIVE_TOPOLOGY_POINTLIST,    // POINTLIST
     D3D_PRIMITIVE_TOPOLOGY_LINELIST,     // LINELIST
     D3D_PRIMITIVE_TOPOLOGY_LINESTRIP,    // LINESTRIP
-    D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, // TRIANGLELIST
     D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP // TRIANGLESTRIP
 };
 
@@ -2412,8 +2422,10 @@ static bool D3D12_INTERNAL_ConvertBlendState(
 
         // If target_info has more blend states, you can set IndependentBlendEnable to TRUE and assign different blend states to each render target slot
         if (i < pipelineInfo->target_info.num_color_targets) {
-
             SDL_GPUColorTargetBlendState sdlBlendState = pipelineInfo->target_info.color_target_descriptions[i].blend_state;
+            SDL_GPUColorComponentFlags colorWriteMask = sdlBlendState.enable_color_write_mask ?
+                sdlBlendState.color_write_mask :
+                0xF;
 
             rtBlendDesc.BlendEnable = sdlBlendState.enable_blend;
             rtBlendDesc.SrcBlend = SDLToD3D12_BlendFactor[sdlBlendState.src_color_blendfactor];
@@ -2422,7 +2434,7 @@ static bool D3D12_INTERNAL_ConvertBlendState(
             rtBlendDesc.SrcBlendAlpha = SDLToD3D12_BlendFactorAlpha[sdlBlendState.src_alpha_blendfactor];
             rtBlendDesc.DestBlendAlpha = SDLToD3D12_BlendFactorAlpha[sdlBlendState.dst_alpha_blendfactor];
             rtBlendDesc.BlendOpAlpha = SDLToD3D12_BlendOp[sdlBlendState.alpha_blend_op];
-            rtBlendDesc.RenderTargetWriteMask = sdlBlendState.color_write_mask;
+            rtBlendDesc.RenderTargetWriteMask = colorWriteMask;
 
             if (i > 0) {
                 blendDesc->IndependentBlendEnable = TRUE;
