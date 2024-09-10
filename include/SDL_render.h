@@ -764,7 +764,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_RenderTargetSupported(SDL_Renderer *rendere
  *
  * The default render target is the window for which the renderer was created.
  * To stop rendering to a texture and render to the window again, call this
- * function with a NULL `texture`.
+ * function with a NULL `texture`. This will reset the renderer's viewport,
+ * clipping rectangle, and scaling settings to the state they were in before
+ * setting a non-NULL `texture` target, losing any changes made in the
+ * meantime.
  *
  * \param renderer the rendering context.
  * \param texture the targeted texture, which must be created with the
