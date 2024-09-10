@@ -80,9 +80,15 @@
     }
 
 #define CHECK_TEXTUREFORMAT_ENUM_INVALID(format, retval)     \
-    if (format >= SDL_GPU_TEXTUREFORMAT_MAX) {               \
+    if (format == 0 || format >= SDL_GPU_TEXTUREFORMAT_MAX) {               \
         SDL_assert_release(!"Invalid texture format enum!"); \
         return retval;                                       \
+    }
+
+#define CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(format, retval)       \
+    if (format == 0 || format >= SDL_GPU_VERTEXELEMENTFORMAT_MAX) {  \
+        SDL_assert_release(!"Invalid vertex format enum!");          \
+        return retval;                                               \
     }
 
 #define CHECK_SWAPCHAINCOMPOSITION_ENUM_INVALID(enumval, retval)    \
@@ -190,7 +196,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     }
 
     blit_pipeline_create_info.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    blit_pipeline_create_info.multisample_state.sample_mask = 0xFFFFFFFF;
+    blit_pipeline_create_info.multisample_state.enable_mask = SDL_FALSE;
 
     blit_pipeline_create_info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 
@@ -640,6 +646,17 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
                 SDL_assert_release(!"Depth-stencil target format must be a depth format!");
                 return NULL;
             }
+        }
+        if (graphicsPipelineCreateInfo->vertex_input_state.vertex_bindings == NULL) {
+            SDL_assert_release(!"Vertex bindings array pointer cannot be NULL!");
+            return NULL;
+        }
+        if (graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes == NULL) {
+            SDL_assert_release(!"Vertex attributes array pointer cannot be NULL!");
+            return NULL;
+        }
+        for (Uint32 i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes; i += 1) {
+            CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].format, NULL);
         }
     }
 
@@ -1909,6 +1926,14 @@ void SDL_UploadToGPUTexture(
 
     if (COPYPASS_DEVICE->debug_mode) {
         CHECK_COPYPASS
+        if (source->transfer_buffer == NULL) {
+            SDL_assert_release(!"Source transfer buffer cannot be NULL!");
+            return;
+        }
+        if (destination->texture == NULL) {
+            SDL_assert_release(!"Destination texture cannot be NULL!");
+            return;
+        }
     }
 
     COPYPASS_DEVICE->UploadToTexture(
@@ -1935,6 +1960,18 @@ void SDL_UploadToGPUBuffer(
     if (destination == NULL) {
         SDL_InvalidParamError("destination");
         return;
+    }
+
+    if (COPYPASS_DEVICE->debug_mode) {
+        CHECK_COPYPASS
+        if (source->transfer_buffer == NULL) {
+            SDL_assert_release(!"Source transfer buffer cannot be NULL!");
+            return;
+        }
+        if (destination->buffer == NULL) {
+            SDL_assert_release(!"Destination buffer cannot be NULL!");
+            return;
+        }
     }
 
     COPYPASS_DEVICE->UploadToBuffer(
@@ -1964,6 +2001,18 @@ void SDL_CopyGPUTextureToTexture(
     if (destination == NULL) {
         SDL_InvalidParamError("destination");
         return;
+    }
+
+    if (COPYPASS_DEVICE->debug_mode) {
+        CHECK_COPYPASS
+        if (source->texture == NULL) {
+            SDL_assert_release(!"Source texture cannot be NULL!");
+            return;
+        }
+        if (destination->texture == NULL) {
+            SDL_assert_release(!"Destination texture cannot be NULL!");
+            return;
+        }
     }
 
     COPYPASS_DEVICE->CopyTextureToTexture(
@@ -1996,6 +2045,18 @@ void SDL_CopyGPUBufferToBuffer(
         return;
     }
 
+    if (COPYPASS_DEVICE->debug_mode) {
+        CHECK_COPYPASS
+        if (source->buffer == NULL) {
+            SDL_assert_release(!"Source buffer cannot be NULL!");
+            return;
+        }
+        if (destination->buffer == NULL) {
+            SDL_assert_release(!"Destination buffer cannot be NULL!");
+            return;
+        }
+    }
+
     COPYPASS_DEVICE->CopyBufferToBuffer(
         COPYPASS_COMMAND_BUFFER,
         source,
@@ -2022,6 +2083,18 @@ void SDL_DownloadFromGPUTexture(
         return;
     }
 
+    if (COPYPASS_DEVICE->debug_mode) {
+        CHECK_COPYPASS
+        if (source->texture == NULL) {
+            SDL_assert_release(!"Source texture cannot be NULL!");
+            return;
+        }
+        if (destination->transfer_buffer == NULL) {
+            SDL_assert_release(!"Destination transfer buffer cannot be NULL!");
+            return;
+        }
+    }
+
     COPYPASS_DEVICE->DownloadFromTexture(
         COPYPASS_COMMAND_BUFFER,
         source,
@@ -2044,6 +2117,18 @@ void SDL_DownloadFromGPUBuffer(
     if (destination == NULL) {
         SDL_InvalidParamError("destination");
         return;
+    }
+
+    if (COPYPASS_DEVICE->debug_mode) {
+        CHECK_COPYPASS
+        if (source->buffer == NULL) {
+            SDL_assert_release(!"Source buffer cannot be NULL!");
+            return;
+        }
+        if (destination->transfer_buffer == NULL) {
+            SDL_assert_release(!"Destination transfer buffer cannot be NULL!");
+            return;
+        }
     }
 
     COPYPASS_DEVICE->DownloadFromBuffer(

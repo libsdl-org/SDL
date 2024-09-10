@@ -68,6 +68,7 @@ static void METAL_INTERNAL_DestroyBlitResources(SDL_GPURenderer *driverData);
 // Conversions
 
 static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
+    MTLPixelFormatInvalid,      // INVALID
     MTLPixelFormatA8Unorm,      // A8_UNORM
     MTLPixelFormatR8Unorm,      // R8_UNORM
     MTLPixelFormatRG8Unorm,     // R8G8_UNORM
@@ -154,6 +155,7 @@ static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToMetal_SurfaceFormat, SDL_arraysize(SDLToMetal_SurfaceFormat) == SDL_GPU_TEXTUREFORMAT_MAX);
 
 static MTLVertexFormat SDLToMetal_VertexFormat[] = {
+    MTLVertexFormatInvalid,           // INVALID
     MTLVertexFormatInt,               // INT
     MTLVertexFormatInt2,              // INT2
     MTLVertexFormatInt3,              // INT3
@@ -185,6 +187,7 @@ static MTLVertexFormat SDLToMetal_VertexFormat[] = {
     MTLVertexFormatHalf2,             // HALF2
     MTLVertexFormatHalf4              // HALF4
 };
+SDL_COMPILE_TIME_ASSERT(SDLToMetal_VertexFormat, SDL_arraysize(SDLToMetal_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX);
 
 static MTLIndexType SDLToMetal_IndexType[] = {
     MTLIndexTypeUInt16, // 16BIT
@@ -1099,9 +1102,13 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
             return NULL;
         }
 
+        Uint32 sampleMask = createinfo->multisample_state.enable_mask ?
+            createinfo->multisample_state.sample_mask :
+            0xFFFFFFFF;
+
         result = SDL_calloc(1, sizeof(MetalGraphicsPipeline));
         result->handle = pipelineState;
-        result->sample_mask = createinfo->multisample_state.sample_mask;
+        result->sample_mask = sampleMask;
         result->depth_stencil_state = depthStencilState;
         result->rasterizerState = createinfo->rasterizer_state;
         result->primitiveType = createinfo->primitive_type;

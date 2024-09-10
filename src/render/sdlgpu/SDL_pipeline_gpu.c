@@ -119,7 +119,7 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     pci.vertex_shader = GPU_GetVertexShader(shaders, params->vert_shader);
     pci.fragment_shader = GPU_GetFragmentShader(shaders, params->frag_shader);
     pci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    pci.multisample_state.sample_mask = 0xFFFF;
+    pci.multisample_state.enable_mask = SDL_FALSE;
     pci.primitive_type = params->primitive_type;
 
     pci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;

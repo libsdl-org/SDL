@@ -136,6 +136,7 @@ static VkPresentModeKHR SDLToVK_PresentMode[] = {
 };
 
 static VkFormat SDLToVK_SurfaceFormat[] = {
+    VK_FORMAT_UNDEFINED,                // INVALID
     VK_FORMAT_R8_UNORM,                 // A8_UNORM
     VK_FORMAT_R8_UNORM,                 // R8_UNORM
     VK_FORMAT_R8G8_UNORM,               // R8G8_UNORM
@@ -337,6 +338,7 @@ static VkComponentMapping SwapchainCompositionSwizzle[] = {
 };
 
 static VkFormat SDLToVK_VertexFormat[] = {
+    VK_FORMAT_UNDEFINED,           // UNKNOWN
     VK_FORMAT_R32_SINT,            // INT
     VK_FORMAT_R32G32_SINT,         // INT2
     VK_FORMAT_R32G32B32_SINT,      // INT3
@@ -368,6 +370,7 @@ static VkFormat SDLToVK_VertexFormat[] = {
     VK_FORMAT_R16G16_SFLOAT,       // HALF2
     VK_FORMAT_R16G16B16A16_SFLOAT  // HALF4
 };
+SDL_COMPILE_TIME_ASSERT(SDLToVK_VertexFormat, SDL_arraysize(SDLToVK_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX);
 
 static VkIndexType SDLToVK_IndexType[] = {
     VK_INDEX_TYPE_UINT16,
@@ -6573,6 +6576,10 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     // Multisample
 
+    Uint32 sampleMask = createinfo->multisample_state.enable_mask ?
+        createinfo->multisample_state.sample_mask :
+        0xFFFFFFFF;
+
     multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleStateCreateInfo.pNext = NULL;
     multisampleStateCreateInfo.flags = 0;
@@ -6580,7 +6587,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     multisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
     multisampleStateCreateInfo.minSampleShading = 1.0f;
     multisampleStateCreateInfo.pSampleMask =
-        &createinfo->multisample_state.sample_mask;
+        &sampleMask;
     multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE;
     multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;
 

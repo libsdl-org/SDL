@@ -232,6 +232,7 @@ static D3D12_BLEND_OP SDLToD3D12_BlendOp[] = {
 };
 
 static DXGI_FORMAT SDLToD3D12_TextureFormat[] = {
+    DXGI_FORMAT_UNKNOWN,              // INVALID
     DXGI_FORMAT_A8_UNORM,             // A8_UNORM
     DXGI_FORMAT_R8_UNORM,             // R8_UNORM
     DXGI_FORMAT_R8G8_UNORM,           // R8G8_UNORM
@@ -330,6 +331,7 @@ static D3D12_INPUT_CLASSIFICATION SDLToD3D12_InputRate[] = {
 };
 
 static DXGI_FORMAT SDLToD3D12_VertexFormat[] = {
+    DXGI_FORMAT_UNKNOWN,            // UNKNOWN
     DXGI_FORMAT_R32_SINT,           // INT
     DXGI_FORMAT_R32G32_SINT,        // INT2
     DXGI_FORMAT_R32G32B32_SINT,     // INT3
@@ -361,6 +363,7 @@ static DXGI_FORMAT SDLToD3D12_VertexFormat[] = {
     DXGI_FORMAT_R16G16_FLOAT,       // HALF2
     DXGI_FORMAT_R16G16B16A16_FLOAT  // HALF4
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D12_VertexFormat, SDL_arraysize(SDLToD3D12_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX);
 
 static Uint32 SDLToD3D12_SampleCount[] = {
     1, // SDL_GPU_SAMPLECOUNT_1
@@ -2550,7 +2553,11 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
         return NULL;
     }
 
-    psoDesc.SampleMask = UINT_MAX;
+    Uint32 sampleMask = createinfo->multisample_state.enable_mask ?
+        createinfo->multisample_state.sample_mask :
+        0xFFFFFFFF;
+
+    psoDesc.SampleMask = sampleMask;
     psoDesc.SampleDesc.Count = SDLToD3D12_SampleCount[createinfo->multisample_state.sample_count];
     psoDesc.SampleDesc.Quality = 0;
 

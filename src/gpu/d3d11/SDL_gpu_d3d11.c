@@ -168,6 +168,7 @@ static DXGI_COLOR_SPACE_TYPE SwapchainCompositionToColorSpace[] = {
 };
 
 static DXGI_FORMAT SDLToD3D11_TextureFormat[] = {
+    DXGI_FORMAT_UNKNOWN,              // INVALID
     DXGI_FORMAT_A8_UNORM,             // A8_UNORM
     DXGI_FORMAT_R8_UNORM,             // R8_UNORM
     DXGI_FORMAT_R8G8_UNORM,           // R8G8_UNORM
@@ -228,6 +229,7 @@ static DXGI_FORMAT SDLToD3D11_TextureFormat[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToD3D11_TextureFormat, SDL_arraysize(SDLToD3D11_TextureFormat) == SDL_GPU_TEXTUREFORMAT_MAX);
 
 static DXGI_FORMAT SDLToD3D11_VertexFormat[] = {
+    DXGI_FORMAT_UNKNOWN,            // INVALID
     DXGI_FORMAT_R32_SINT,           // INT
     DXGI_FORMAT_R32G32_SINT,        // INT2
     DXGI_FORMAT_R32G32B32_SINT,     // INT3
@@ -259,6 +261,7 @@ static DXGI_FORMAT SDLToD3D11_VertexFormat[] = {
     DXGI_FORMAT_R16G16_FLOAT,       // HALF2
     DXGI_FORMAT_R16G16B16A16_FLOAT  // HALF4
 };
+SDL_COMPILE_TIME_ASSERT(SDLToD3D11_VertexFormat, SDL_arraysize(SDLToD3D11_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX);
 
 static Uint32 SDLToD3D11_SampleCount[] = {
     1, // SDL_GPU_SAMPLECOUNT_1
@@ -3427,7 +3430,9 @@ static void D3D11_SetBlendConstants(
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     FLOAT blendFactor[4] = { blendConstants.r, blendConstants.g, blendConstants.b, blendConstants.a };
-
+    Uint32 sample_mask = d3d11CommandBuffer->graphicsPipeline->multisampleState.enable_mask ?
+        d3d11CommandBuffer->graphicsPipeline->multisampleState.sample_mask :
+        0xFFFFFFFF;
     d3d11CommandBuffer->blendConstants = blendConstants;
 
     if (d3d11CommandBuffer->graphicsPipeline != NULL) {
@@ -3435,7 +3440,7 @@ static void D3D11_SetBlendConstants(
             d3d11CommandBuffer->context,
             d3d11CommandBuffer->graphicsPipeline->colorTargetBlendState,
             blendFactor,
-            d3d11CommandBuffer->graphicsPipeline->multisampleState.sample_mask);
+            sample_mask);
     }
 }
 
@@ -3643,14 +3648,16 @@ static void D3D11_BindGraphicsPipeline(
         d3d11CommandBuffer->blendConstants.b,
         d3d11CommandBuffer->blendConstants.a
     };
-
+    Uint32 sample_mask = pipeline->multisampleState.enable_mask ?
+        pipeline->multisampleState.sample_mask :
+        0xFFFFFFFF;
     d3d11CommandBuffer->graphicsPipeline = pipeline;
 
     ID3D11DeviceContext_OMSetBlendState(
         d3d11CommandBuffer->context,
         pipeline->colorTargetBlendState,
         blendFactor,
-        pipeline->multisampleState.sample_mask);
+        sample_mask);
 
     ID3D11DeviceContext_OMSetDepthStencilState(
         d3d11CommandBuffer->context,
@@ -5825,7 +5832,7 @@ static void D3D11_INTERNAL_InitBlitPipelines(
     blitPipelineCreateInfo.fragment_shader = blitFrom2DPixelShader;
 
     blitPipelineCreateInfo.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    blitPipelineCreateInfo.multisample_state.sample_mask = 0xFFFFFFFF;
+    blitPipelineCreateInfo.multisample_state.enable_mask = SDL_FALSE;
 
     blitPipelineCreateInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 
