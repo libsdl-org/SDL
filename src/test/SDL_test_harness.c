@@ -185,7 +185,7 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
  *
  * \return Timer id or -1 on failure.
  */
-static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(void))
+static SDL_TimerID SDLTest_SetTestTimeout(int timeout, SDL_TimerCallback callback)
 {
     Uint32 timeoutInMilliseconds;
     SDL_TimerID timerID;
@@ -210,7 +210,7 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
 
     /* Set timer */
     timeoutInMilliseconds = timeout * 1000;
-    timerID = SDL_AddTimer(timeoutInMilliseconds, (SDL_TimerCallback)callback, 0x0);
+    timerID = SDL_AddTimer(timeoutInMilliseconds, callback, 0x0);
     if (timerID == 0) {
         SDLTest_LogError("Creation of SDL timer failed: %s", SDL_GetError());
         return 0;
@@ -222,13 +222,11 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
 /**
  * Timeout handler. Aborts test run and exits harness process.
  */
-#ifdef __WATCOMC__
-#pragma aux SDLTest_BailOut aborts;
-#endif
-static SDL_NORETURN void SDLCALL SDLTest_BailOut(void)
+static Uint32 SDLCALL SDLTest_BailOut(void *userdata, SDL_TimerID timerID, Uint32 interval)
 {
     SDLTest_LogError("TestCaseTimeout timer expired. Aborting test run.");
     exit(TEST_ABORTED); /* bail out from the test */
+    return 0;
 }
 
 /**
