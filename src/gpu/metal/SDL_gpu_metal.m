@@ -1024,7 +1024,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
         for (Uint32 i = 0; i < createinfo->target_info.num_color_targets; i += 1) {
             blendState = &createinfo->target_info.color_target_descriptions[i].blend_state;
             SDL_GPUColorComponentFlags colorWriteMask = blendState->enable_color_write_mask ?
-                blendState.color_write_mask :
+                blendState->color_write_mask :
                 0xF;
 
             pipelineDescriptor.colorAttachments[i].pixelFormat = SDLToMetal_SurfaceFormat[createinfo->target_info.color_target_descriptions[i].format];
