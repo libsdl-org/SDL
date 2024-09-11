@@ -59,19 +59,19 @@ extern "C" {
 // Sampler types
 typedef enum
 {
-    SDL_D3D12_SAMPLER_NEAREST_CLAMP,
-    SDL_D3D12_SAMPLER_NEAREST_WRAP,
-    SDL_D3D12_SAMPLER_LINEAR_CLAMP,
-    SDL_D3D12_SAMPLER_LINEAR_WRAP,
-    SDL_D3D12_NUM_SAMPLERS
-} SDL_D3D12_sampler_type;
+    D3D12_SAMPLER_NEAREST_CLAMP,
+    D3D12_SAMPLER_NEAREST_WRAP,
+    D3D12_SAMPLER_LINEAR_CLAMP,
+    D3D12_SAMPLER_LINEAR_WRAP,
+    D3D12_SAMPLER_COUNT
+} D3D12_Sampler;
 
 // Vertex shader, common values
 typedef struct
 {
     Float4X4 model;
     Float4X4 projectionAndView;
-} VertexShaderConstants;
+} D3D12_VertexShaderConstants;
 
 // These should mirror the definitions in D3D12_PixelShader_Common.hlsli
 //static const float TONEMAP_NONE = 0;
@@ -102,7 +102,7 @@ typedef struct
     float sdr_white_point;
 
     float YCbCr_matrix[16];
-} PixelShaderConstants;
+} D3D12_PixelShaderConstants;
 
 // Per-vertex data
 typedef struct
@@ -110,7 +110,7 @@ typedef struct
     Float2 pos;
     Float2 tex;
     SDL_FColor color;
-} VertexPositionColor;
+} D3D12_VertexPositionColor;
 
 // Per-texture data
 typedef struct
@@ -154,7 +154,7 @@ typedef struct
 typedef struct
 {
     D3D12_Shader shader;
-    PixelShaderConstants shader_constants;
+    D3D12_PixelShaderConstants shader_constants;
     SDL_BlendMode blendMode;
     D3D12_PRIMITIVE_TOPOLOGY_TYPE topology;
     DXGI_FORMAT rtvFormat;
@@ -226,7 +226,7 @@ typedef struct
     D3D12_PipelineState *currentPipelineState;
 
     D3D12_VertexBuffer vertexBuffers[SDL_D3D12_NUM_VERTEX_BUFFERS];
-    D3D12_CPU_DESCRIPTOR_HANDLE samplers[SDL_D3D12_NUM_SAMPLERS];
+    D3D12_CPU_DESCRIPTOR_HANDLE samplers[D3D12_SAMPLER_COUNT];
 
     // Data for staging/allocating textures
     ID3D12Resource *uploadBuffers[SDL_D3D12_NUM_UPLOAD_BUFFERS];
@@ -237,7 +237,7 @@ typedef struct
     D3D12_SRVPoolNode srvPoolNodes[SDL_D3D12_MAX_NUM_TEXTURES];
 
     // Vertex buffer constants
-    VertexShaderConstants vertexShaderConstantsData;
+    D3D12_VertexShaderConstants vertexShaderConstantsData;
 
     // Cached renderer properties
     DXGI_MODE_ROTATION rotation;
@@ -752,7 +752,7 @@ static HRESULT D3D12_CreateVertexBuffer(D3D12_RenderData *data, size_t vbidx, si
     }
 
     data->vertexBuffers[vbidx].view.BufferLocation = ID3D12Resource_GetGPUVirtualAddress(data->vertexBuffers[vbidx].resource);
-    data->vertexBuffers[vbidx].view.StrideInBytes = sizeof(VertexPositionColor);
+    data->vertexBuffers[vbidx].view.StrideInBytes = sizeof(D3D12_VertexPositionColor);
     data->vertexBuffers[vbidx].size = size;
 
     return result;
@@ -1106,7 +1106,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         { D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP },
         { D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP },
     };
-    SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == SDL_D3D12_NUM_SAMPLERS);
+    SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == D3D12_SAMPLER_COUNT);
     SDL_zero(samplerDesc);
     samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
     samplerDesc.MipLODBias = 0.0f;
@@ -2294,7 +2294,7 @@ static bool D3D12_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
 static bool D3D12_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+    D3D12_VertexPositionColor *verts = (D3D12_VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(D3D12_VertexPositionColor), 0, &cmd->data.draw.first);
     int i;
     SDL_FColor color = cmd->data.draw.color;
     bool convert_color = SDL_RenderingLinearSpace(renderer);
@@ -2328,7 +2328,7 @@ static bool D3D12_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 {
     int i;
     int count = indices ? num_indices : num_vertices;
-    VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+    D3D12_VertexPositionColor *verts = (D3D12_VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(D3D12_VertexPositionColor), 0, &cmd->data.draw.first);
     bool convert_color = SDL_RenderingLinearSpace(renderer);
     D3D12_TextureData *textureData = texture ? (D3D12_TextureData *)texture->internal : NULL;
     float u_scale = textureData ? (float)texture->w / textureData->w : 0.0f;
@@ -2517,7 +2517,7 @@ static bool D3D12_UpdateViewport(SDL_Renderer *renderer)
     return true;
 }
 
-static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, PixelShaderConstants *constants)
+static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, D3D12_PixelShaderConstants *constants)
 {
     float output_headroom;
 
@@ -2579,7 +2579,7 @@ static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
     }
 }
 
-static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, D3D12_Shader shader, const PixelShaderConstants *shader_constants,
+static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, D3D12_Shader shader, const D3D12_PixelShaderConstants *shader_constants,
                               D3D12_PRIMITIVE_TOPOLOGY_TYPE topology,
                               const int numShaderResources, D3D12_CPU_DESCRIPTOR_HANDLE *shaderResources,
                               D3D12_CPU_DESCRIPTOR_HANDLE *sampler, const Float4X4 *matrix)
@@ -2594,7 +2594,7 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
     D3D12_CPU_DESCRIPTOR_HANDLE firstShaderResource;
     DXGI_FORMAT rtvFormat = rendererData->renderTargetFormat;
     D3D12_PipelineState *currentPipelineState = rendererData->currentPipelineState;;
-    PixelShaderConstants solid_constants;
+    D3D12_PixelShaderConstants solid_constants;
 
     if (rendererData->textureRenderTarget) {
         rtvFormat = rendererData->textureRenderTarget->mainTextureFormat;
@@ -2735,7 +2735,7 @@ static bool D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
     D3D12_TextureData *textureData = (D3D12_TextureData *)texture->internal;
     D3D12_CPU_DESCRIPTOR_HANDLE *textureSampler;
-    PixelShaderConstants constants;
+    D3D12_PixelShaderConstants constants;
 
     D3D12_SetupShaderConstants(renderer, cmd, texture, &constants);
 
@@ -2743,10 +2743,10 @@ static bool D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     case D3D12_FILTER_MIN_MAG_MIP_POINT:
         switch (cmd->data.draw.texture_address_mode) {
         case SDL_TEXTURE_ADDRESS_CLAMP:
-            textureSampler = &rendererData->samplers[SDL_D3D12_SAMPLER_NEAREST_CLAMP];
+            textureSampler = &rendererData->samplers[D3D12_SAMPLER_NEAREST_CLAMP];
             break;
         case SDL_TEXTURE_ADDRESS_WRAP:
-            textureSampler = &rendererData->samplers[SDL_D3D12_SAMPLER_NEAREST_WRAP];
+            textureSampler = &rendererData->samplers[D3D12_SAMPLER_NEAREST_WRAP];
             break;
         default:
             return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
@@ -2755,10 +2755,10 @@ static bool D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     case D3D12_FILTER_MIN_MAG_MIP_LINEAR:
         switch (cmd->data.draw.texture_address_mode) {
         case SDL_TEXTURE_ADDRESS_CLAMP:
-            textureSampler = &rendererData->samplers[SDL_D3D12_SAMPLER_LINEAR_CLAMP];
+            textureSampler = &rendererData->samplers[D3D12_SAMPLER_LINEAR_CLAMP];
             break;
         case SDL_TEXTURE_ADDRESS_WRAP:
-            textureSampler = &rendererData->samplers[SDL_D3D12_SAMPLER_LINEAR_WRAP];
+            textureSampler = &rendererData->samplers[D3D12_SAMPLER_LINEAR_WRAP];
             break;
         default:
             return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
@@ -2899,7 +2899,7 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
         {
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(VertexPositionColor);
+            const size_t start = first / sizeof(D3D12_VertexPositionColor);
             D3D12_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT, 0, NULL, NULL, NULL);
             D3D12_DrawPrimitives(renderer, D3D_PRIMITIVE_TOPOLOGY_POINTLIST, start, count);
             break;
@@ -2909,8 +2909,8 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
         {
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(VertexPositionColor);
-            const VertexPositionColor *verts = (VertexPositionColor *)(((Uint8 *)vertices) + first);
+            const size_t start = first / sizeof(D3D12_VertexPositionColor);
+            const D3D12_VertexPositionColor *verts = (D3D12_VertexPositionColor *)(((Uint8 *)vertices) + first);
             D3D12_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, 0, NULL, NULL, NULL);
             D3D12_DrawPrimitives(renderer, D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, start, count);
             if (verts[0].pos.x != verts[count - 1].pos.x || verts[0].pos.y != verts[count - 1].pos.y) {
@@ -2933,7 +2933,7 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             SDL_Texture *texture = cmd->data.draw.texture;
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(VertexPositionColor);
+            const size_t start = first / sizeof(D3D12_VertexPositionColor);
 
             if (texture) {
                 D3D12_SetCopyState(renderer, cmd, NULL);

@@ -152,27 +152,27 @@ VULKAN_FUNCTIONS()
 
 // Renderpass types
 typedef enum {
-    SDL_VULKAN_RENDERPASS_LOAD = 0,
-    SDL_VULKAN_RENDERPASS_CLEAR = 1,
-    SDL_VULKAN_NUM_RENDERPASSES
-} SDL_vulkan_renderpass_type;
+    VULKAN_RENDERPASS_LOAD = 0,
+    VULKAN_RENDERPASS_CLEAR = 1,
+    VULKAN_RENDERPASS_COUNT
+} VULKAN_RenderPass;
 
 // Sampler types
 typedef enum
 {
-    SDL_VULKAN_SAMPLER_NEAREST_CLAMP,
-    SDL_VULKAN_SAMPLER_NEAREST_WRAP,
-    SDL_VULKAN_SAMPLER_LINEAR_CLAMP,
-    SDL_VULKAN_SAMPLER_LINEAR_WRAP,
-    SDL_VULKAN_NUM_SAMPLERS
-} SDL_vulkan_sampler_type;
+    VULKAN_SAMPLER_NEAREST_CLAMP,
+    VULKAN_SAMPLER_NEAREST_WRAP,
+    VULKAN_SAMPLER_LINEAR_CLAMP,
+    VULKAN_SAMPLER_LINEAR_WRAP,
+    VULKAN_SAMPLER_COUNT
+} VULKAN_Sampler;
 
 // Vertex shader, common values
 typedef struct
 {
     Float4X4 model;
     Float4X4 projectionAndView;
-} VertexShaderConstants;
+} VULKAN_VertexShaderConstants;
 
 // These should mirror the definitions in VULKAN_PixelShader_Common.hlsli
 //static const float TONEMAP_NONE = 0;
@@ -205,7 +205,7 @@ typedef struct
     float tonemap_factor1;
     float tonemap_factor2;
     float sdr_white_point;
-} PixelShaderConstants;
+} VULKAN_PixelShaderConstants;
 
 // Per-vertex data
 typedef struct
@@ -213,7 +213,7 @@ typedef struct
     float pos[2];
     float tex[2];
     SDL_FColor color;
-} VertexPositionColor;
+} VULKAN_VertexPositionColor;
 
 // Vulkan Buffer
 typedef struct
@@ -240,7 +240,7 @@ typedef struct
 typedef struct
 {
     VULKAN_Image mainImage;
-    VkRenderPass mainRenderpasses[SDL_VULKAN_NUM_RENDERPASSES];
+    VkRenderPass mainRenderpasses[VULKAN_RENDERPASS_COUNT];
     VkFramebuffer mainFramebuffer;
     VULKAN_Buffer stagingBuffer;
     VkFilter scaleMode;
@@ -264,7 +264,7 @@ typedef struct
 typedef struct
 {
     VULKAN_Shader shader;
-    PixelShaderConstants shader_constants;
+    VULKAN_PixelShaderConstants shader_constants;
     SDL_BlendMode blendMode;
     VkPrimitiveTopology topology;
     VkFormat format;
@@ -308,7 +308,7 @@ typedef struct
     int vsync;
 
     VkFramebuffer *framebuffers;
-    VkRenderPass renderPasses[SDL_VULKAN_NUM_RENDERPASSES];
+    VkRenderPass renderPasses[VULKAN_RENDERPASS_COUNT];
     VkRenderPass currentRenderPass;
 
     VkShaderModule vertexShaderModules[NUM_SHADERS];
@@ -318,7 +318,7 @@ typedef struct
 
     // Vertex buffer data
     VULKAN_Buffer vertexBuffers[SDL_VULKAN_NUM_VERTEX_BUFFERS];
-    VertexShaderConstants vertexShaderConstantsData;
+    VULKAN_VertexShaderConstants vertexShaderConstantsData;
 
     // Data for staging/allocating textures
     VULKAN_Buffer **uploadBuffers;
@@ -330,7 +330,7 @@ typedef struct
     uint32_t currentConstantBufferIndex;
     int32_t currentConstantBufferOffset;
 
-    VkSampler samplers[SDL_VULKAN_NUM_SAMPLERS];
+    VkSampler samplers[VULKAN_SAMPLER_COUNT];
     VkDescriptorPool **descriptorPools;
     uint32_t *numDescriptorPools;
     uint32_t currentDescriptorPoolIndex;
@@ -542,7 +542,7 @@ static void VULKAN_DestroyAll(SDL_Renderer *renderer)
         VULKAN_DestroyBuffer(rendererData, &rendererData->vertexBuffers[i]);
     }
     SDL_memset(rendererData->vertexBuffers, 0, sizeof(rendererData->vertexBuffers));
-    for (uint32_t i = 0; i < SDL_VULKAN_NUM_RENDERPASSES; i++) {
+    for (uint32_t i = 0; i < VULKAN_RENDERPASS_COUNT; i++) {
         if (rendererData->renderPasses[i] != VK_NULL_HANDLE) {
             vkDestroyRenderPass(rendererData->device, rendererData->renderPasses[i], NULL);
             rendererData->renderPasses[i] = VK_NULL_HANDLE;
@@ -902,15 +902,15 @@ static void VULKAN_BeginRenderPass(VULKAN_RenderData *rendererData, VkAttachment
     switch (loadOp) {
     case VK_ATTACHMENT_LOAD_OP_CLEAR:
         rendererData->currentRenderPass = rendererData->textureRenderTarget ?
-            rendererData->textureRenderTarget->mainRenderpasses[SDL_VULKAN_RENDERPASS_CLEAR] :
-            rendererData->renderPasses[SDL_VULKAN_RENDERPASS_CLEAR];
+            rendererData->textureRenderTarget->mainRenderpasses[VULKAN_RENDERPASS_CLEAR] :
+            rendererData->renderPasses[VULKAN_RENDERPASS_CLEAR];
         break;
 
     case VK_ATTACHMENT_LOAD_OP_LOAD:
     default:
         rendererData->currentRenderPass = rendererData->textureRenderTarget ?
-            rendererData->textureRenderTarget->mainRenderpasses[SDL_VULKAN_RENDERPASS_LOAD] :
-            rendererData->renderPasses[SDL_VULKAN_RENDERPASS_LOAD];
+            rendererData->textureRenderTarget->mainRenderpasses[VULKAN_RENDERPASS_LOAD] :
+            rendererData->renderPasses[VULKAN_RENDERPASS_LOAD];
         break;
     }
 
@@ -1926,7 +1926,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
             { VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE },
             { VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT },
         };
-        SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == SDL_VULKAN_NUM_SAMPLERS);
+        SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == VULKAN_SAMPLER_COUNT);
         VkSamplerCreateInfo samplerCreateInfo = { 0 };
         samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
@@ -1962,7 +1962,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
 }
 
 static VkResult VULKAN_CreateFramebuffersAndRenderPasses(SDL_Renderer *renderer, int w, int h,
-    VkFormat format, int imageViewCount, VkImageView *imageViews, VkFramebuffer *framebuffers, VkRenderPass renderPasses[SDL_VULKAN_NUM_RENDERPASSES])
+    VkFormat format, int imageViewCount, VkImageView *imageViews, VkFramebuffer *framebuffers, VkRenderPass renderPasses[VULKAN_RENDERPASS_COUNT])
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *) renderer->internal;
     VkResult result;
@@ -2013,14 +2013,14 @@ static VkResult VULKAN_CreateFramebuffersAndRenderPasses(SDL_Renderer *renderer,
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &subPassDependency;
 
-    result = vkCreateRenderPass(rendererData->device, &renderPassCreateInfo, NULL, &renderPasses[SDL_VULKAN_RENDERPASS_LOAD]);
+    result = vkCreateRenderPass(rendererData->device, &renderPassCreateInfo, NULL, &renderPasses[VULKAN_RENDERPASS_LOAD]);
     if (result != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkCreateRenderPass(): %s\n", SDL_Vulkan_GetResultString(result));
         return result;
     }
 
     attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    result = vkCreateRenderPass(rendererData->device, &renderPassCreateInfo, NULL, &renderPasses[SDL_VULKAN_RENDERPASS_CLEAR]);
+    result = vkCreateRenderPass(rendererData->device, &renderPassCreateInfo, NULL, &renderPasses[VULKAN_RENDERPASS_CLEAR]);
     if (result != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkCreateRenderPass(): %s\n", SDL_Vulkan_GetResultString(result));
         return result;
@@ -2029,7 +2029,7 @@ static VkResult VULKAN_CreateFramebuffersAndRenderPasses(SDL_Renderer *renderer,
     VkFramebufferCreateInfo framebufferCreateInfo = { 0 };
     framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebufferCreateInfo.pNext = NULL;
-    framebufferCreateInfo.renderPass = rendererData->renderPasses[SDL_VULKAN_RENDERPASS_LOAD];
+    framebufferCreateInfo.renderPass = rendererData->renderPasses[VULKAN_RENDERPASS_LOAD];
     framebufferCreateInfo.attachmentCount = 1;
     framebufferCreateInfo.width = w;
     framebufferCreateInfo.height = h;
@@ -3072,7 +3072,7 @@ static bool VULKAN_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
 static bool VULKAN_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+    VULKAN_VertexPositionColor *verts = (VULKAN_VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VULKAN_VertexPositionColor), 0, &cmd->data.draw.first);
     int i;
     bool convert_color = SDL_RenderingLinearSpace(renderer);
 
@@ -3102,7 +3102,7 @@ static bool VULKAN_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 {
     int i;
     int count = indices ? num_indices : num_vertices;
-    VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+    VULKAN_VertexPositionColor *verts = (VULKAN_VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VULKAN_VertexPositionColor), 0, &cmd->data.draw.first);
     bool convert_color = SDL_RenderingLinearSpace(renderer);
     VULKAN_TextureData *textureData = texture ? (VULKAN_TextureData *)texture->internal : NULL;
     float u_scale = textureData ? (float)texture->w / textureData->width : 0.0f;
@@ -3255,7 +3255,7 @@ static bool VULKAN_UpdateClipRect(SDL_Renderer *renderer)
     return true;
 }
 
-static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, PixelShaderConstants *constants)
+static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, VULKAN_PixelShaderConstants *constants)
 {
     float output_headroom;
 
@@ -3366,7 +3366,7 @@ static VkResult VULKAN_CreateDescriptorSetAndPipelineLayout(VULKAN_RenderData *r
     // Pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = { 0 };
     VkPushConstantRange pushConstantRange;
-    pushConstantRange.size = sizeof( VertexShaderConstants );
+    pushConstantRange.size = sizeof( VULKAN_VertexShaderConstants );
     pushConstantRange.offset = 0;
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -3441,7 +3441,7 @@ static VkDescriptorSet VULKAN_AllocateDescriptorSet(SDL_Renderer *renderer, VULK
     VkDescriptorBufferInfo bufferDescriptor = { 0 };
     bufferDescriptor.buffer = constantBuffer;
     bufferDescriptor.offset = constantBufferOffset;
-    bufferDescriptor.range = sizeof(PixelShaderConstants);
+    bufferDescriptor.range = sizeof(VULKAN_PixelShaderConstants);
 
     VkWriteDescriptorSet descriptorWrites[2];
     SDL_memset(descriptorWrites, 0, sizeof(descriptorWrites));
@@ -3479,7 +3479,7 @@ static VkDescriptorSet VULKAN_AllocateDescriptorSet(SDL_Renderer *renderer, VULK
 }
 
 static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, VULKAN_Shader shader, VkPipelineLayout pipelineLayout, VkDescriptorSetLayout descriptorSetLayout,
-    const PixelShaderConstants *shader_constants, VkPrimitiveTopology topology, VkImageView imageView, VkSampler sampler, const Float4X4 *matrix, VULKAN_DrawStateCache *stateCache)
+    const VULKAN_PixelShaderConstants *shader_constants, VkPrimitiveTopology topology, VkImageView imageView, VkSampler sampler, const Float4X4 *matrix, VULKAN_DrawStateCache *stateCache)
 
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
@@ -3487,7 +3487,7 @@ static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand 
     VkFormat format = rendererData->surfaceFormat.format;
     const Float4X4 *newmatrix = matrix ? matrix : &rendererData->identity;
     bool updateConstants = false;
-    PixelShaderConstants solid_constants;
+    VULKAN_PixelShaderConstants solid_constants;
     VkDescriptorSet descriptorSet;
     VkBuffer constantBuffer;
     VkDeviceSize constantBufferOffset;
@@ -3570,7 +3570,7 @@ static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand 
             // Align the next address to the minUniformBufferOffsetAlignment
             VkDeviceSize alignment = rendererData->physicalDeviceProperties.limits.minUniformBufferOffsetAlignment;
             SDL_assert(rendererData->currentConstantBufferOffset >= 0 );
-            rendererData->currentConstantBufferOffset += (int32_t)(sizeof(PixelShaderConstants) + alignment - 1) & ~(alignment - 1);
+            rendererData->currentConstantBufferOffset += (int32_t)(sizeof(VULKAN_PixelShaderConstants) + alignment - 1) & ~(alignment - 1);
             constantBufferOffset = rendererData->currentConstantBufferOffset;
         }
 
@@ -3610,7 +3610,7 @@ static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand 
         // Upload constants to persistently mapped buffer
         uint8_t *dst = (uint8_t *)rendererData->constantBuffers[rendererData->currentCommandBufferIndex][rendererData->currentConstantBufferIndex].mappedBufferPtr;
         dst += constantBufferOffset;
-        SDL_memcpy(dst, &rendererData->currentPipelineState->shader_constants, sizeof(PixelShaderConstants));
+        SDL_memcpy(dst, &rendererData->currentPipelineState->shader_constants, sizeof(VULKAN_PixelShaderConstants));
     }
 
     // Allocate/update descriptor set with the bindings
@@ -3633,7 +3633,7 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
     VkSampler textureSampler = VK_NULL_HANDLE;
-    PixelShaderConstants constants;
+    VULKAN_PixelShaderConstants constants;
     VkDescriptorSetLayout descriptorSetLayout = (textureData->descriptorSetLayoutYcbcr != VK_NULL_HANDLE) ? textureData->descriptorSetLayoutYcbcr : rendererData->descriptorSetLayout;
     VkPipelineLayout pipelineLayout = (textureData->pipelineLayoutYcbcr != VK_NULL_HANDLE) ? textureData->pipelineLayoutYcbcr : rendererData->pipelineLayout;
 
@@ -3643,10 +3643,10 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
     case VK_FILTER_NEAREST:
         switch (cmd->data.draw.texture_address_mode) {
         case SDL_TEXTURE_ADDRESS_CLAMP:
-            textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_NEAREST_CLAMP];
+            textureSampler = rendererData->samplers[VULKAN_SAMPLER_NEAREST_CLAMP];
             break;
         case SDL_TEXTURE_ADDRESS_WRAP:
-            textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_NEAREST_WRAP];
+            textureSampler = rendererData->samplers[VULKAN_SAMPLER_NEAREST_WRAP];
             break;
         default:
             return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
@@ -3655,10 +3655,10 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
     case VK_FILTER_LINEAR:
         switch (cmd->data.draw.texture_address_mode) {
         case SDL_TEXTURE_ADDRESS_CLAMP:
-            textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_LINEAR_CLAMP];
+            textureSampler = rendererData->samplers[VULKAN_SAMPLER_LINEAR_CLAMP];
             break;
         case SDL_TEXTURE_ADDRESS_WRAP:
-            textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_LINEAR_WRAP];
+            textureSampler = rendererData->samplers[VULKAN_SAMPLER_LINEAR_WRAP];
             break;
         default:
             return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
@@ -3779,7 +3779,7 @@ static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cm
         {
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(VertexPositionColor);
+            const size_t start = first / sizeof(VULKAN_VertexPositionColor);
             VULKAN_SetDrawState(renderer, cmd, SHADER_SOLID, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, VK_NULL_HANDLE, VK_NULL_HANDLE, NULL, &stateCache);
             VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, start, count);
             break;
@@ -3789,8 +3789,8 @@ static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cm
         {
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(VertexPositionColor);
-            const VertexPositionColor *verts = (VertexPositionColor *)(((Uint8 *)vertices) + first);
+            const size_t start = first / sizeof(VULKAN_VertexPositionColor);
+            const VULKAN_VertexPositionColor *verts = (VULKAN_VertexPositionColor *)(((Uint8 *)vertices) + first);
             VULKAN_SetDrawState(renderer, cmd, SHADER_SOLID, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, VK_NULL_HANDLE, VK_NULL_HANDLE, NULL, &stateCache);
             VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, start, count);
             if (verts[0].pos[0] != verts[count - 1].pos[0] || verts[0].pos[1] != verts[count - 1].pos[1]) {
@@ -3814,7 +3814,7 @@ static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cm
             SDL_Texture *texture = cmd->data.draw.texture;
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(VertexPositionColor);
+            const size_t start = first / sizeof(VULKAN_VertexPositionColor);
 
             if (texture) {
                 VULKAN_SetCopyState(renderer, cmd, NULL, &stateCache);
