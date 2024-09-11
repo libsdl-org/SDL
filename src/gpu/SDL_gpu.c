@@ -177,6 +177,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     SDL_GPUShader *blit_from_2d_array_shader,
     SDL_GPUShader *blit_from_3d_shader,
     SDL_GPUShader *blit_from_cube_shader,
+    SDL_GPUShader *blit_from_cube_array_shader,
     BlitPipelineCacheEntry **blit_pipelines,
     Uint32 *blit_pipeline_count,
     Uint32 *blit_pipeline_capacity)
@@ -211,7 +212,9 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     blit_pipeline_create_info.vertex_shader = blit_vertex_shader;
     if (source_texture_type == SDL_GPU_TEXTURETYPE_CUBE) {
         blit_pipeline_create_info.fragment_shader = blit_from_cube_shader;
-    } else if (source_texture_type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
+    } else if (source_texture_type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+        blit_pipeline_create_info.fragment_shader = blit_from_cube_array_shader;
+    }  else if (source_texture_type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
         blit_pipeline_create_info.fragment_shader = blit_from_2d_array_shader;
     } else if (source_texture_type == SDL_GPU_TEXTURETYPE_3D) {
         blit_pipeline_create_info.fragment_shader = blit_from_3d_shader;
@@ -259,6 +262,7 @@ void SDL_GPU_BlitCommon(
     SDL_GPUShader *blit_from_2d_array_shader,
     SDL_GPUShader *blit_from_3d_shader,
     SDL_GPUShader *blit_from_cube_shader,
+    SDL_GPUShader *blit_from_cube_array_shader,
     BlitPipelineCacheEntry **blit_pipelines,
     Uint32 *blit_pipeline_count,
     Uint32 *blit_pipeline_capacity)
@@ -283,6 +287,7 @@ void SDL_GPU_BlitCommon(
         blit_from_2d_array_shader,
         blit_from_3d_shader,
         blit_from_cube_shader,
+        blit_from_cube_array_shader,
         blit_pipelines,
         blit_pipeline_count,
         blit_pipeline_capacity);

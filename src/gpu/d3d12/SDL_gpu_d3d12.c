@@ -34,11 +34,12 @@
 
 // Built-in shaders, compiled with compile_shaders.bat
 
-#define g_FullscreenVert  D3D12_FullscreenVert
-#define g_BlitFrom2D      D3D12_BlitFrom2D
-#define g_BlitFrom2DArray D3D12_BlitFrom2DArray
-#define g_BlitFrom3D      D3D12_BlitFrom3D
-#define g_BlitFromCube    D3D12_BlitFromCube
+#define g_FullscreenVert    D3D12_FullscreenVert
+#define g_BlitFrom2D        D3D12_BlitFrom2D
+#define g_BlitFrom2DArray   D3D12_BlitFrom2DArray
+#define g_BlitFrom3D        D3D12_BlitFrom3D
+#define g_BlitFromCube      D3D12_BlitFromCube
+#define g_BlitFromCubeArray D3D12_BlitFromCubeArray
 #if defined(SDL_PLATFORM_XBOXSERIES)
 #include "D3D12_Blit_Series.h"
 #elif defined(SDL_PLATFORM_XBOXONE)
@@ -51,6 +52,7 @@
 #undef g_BlitFrom2DArray
 #undef g_BlitFrom3D
 #undef g_BlitFromCube
+#undef g_BlitFromCubeArray
 
 // Macros
 
@@ -587,6 +589,7 @@ struct D3D12Renderer
     SDL_GPUShader *blitFrom2DArrayShader;
     SDL_GPUShader *blitFrom3DShader;
     SDL_GPUShader *blitFromCubeShader;
+    SDL_GPUShader *blitFromCubeArrayShader;
 
     SDL_GPUSampler *blitNearestSampler;
     SDL_GPUSampler *blitLinearSampler;
@@ -2875,6 +2878,13 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             srvDesc.TextureCube.MipLevels = createinfo->num_levels;
             srvDesc.TextureCube.MostDetailedMip = 0;
             srvDesc.TextureCube.ResourceMinLODClamp = 0;
+        } else if (createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+            srvDesc.TextureCubeArray.MipLevels = createinfo->num_levels;
+            srvDesc.TextureCubeArray.MostDetailedMip = 0;
+            srvDesc.TextureCubeArray.First2DArrayFace = 0;
+            srvDesc.TextureCubeArray.NumCubes = createinfo->layer_count_or_depth / 6;
+            srvDesc.TextureCubeArray.ResourceMinLODClamp = 0;
         } else if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
             srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
             srvDesc.Texture2DArray.MipLevels = createinfo->num_levels;
@@ -2943,7 +2953,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
                     rtvDesc.Format = SDLToD3D12_TextureFormat[createinfo->format];
 
-                    if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE) {
+                    if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
                         rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
                         rtvDesc.Texture2DArray.MipSlice = levelIndex;
                         rtvDesc.Texture2DArray.FirstArraySlice = layerIndex;
@@ -3000,7 +3010,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
                 uavDesc.Format = SDLToD3D12_TextureFormat[createinfo->format];
 
-                if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE) {
+                if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
                     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
                     uavDesc.Texture2DArray.MipSlice = levelIndex;
                     uavDesc.Texture2DArray.FirstArraySlice = layerIndex;
@@ -3628,6 +3638,7 @@ static void D3D12_INTERNAL_ReleaseBlitPipelines(SDL_GPURenderer *driverData)
     D3D12_ReleaseShader(driverData, renderer->blitFrom2DArrayShader);
     D3D12_ReleaseShader(driverData, renderer->blitFrom3DShader);
     D3D12_ReleaseShader(driverData, renderer->blitFromCubeShader);
+    D3D12_ReleaseShader(driverData, renderer->blitFromCubeArrayShader);
 
     for (Uint32 i = 0; i < renderer->blitPipelineCount; i += 1) {
         D3D12_ReleaseGraphicsPipeline(driverData, renderer->blitPipelines[i].pipeline);
@@ -5868,6 +5879,7 @@ static void D3D12_GenerateMipmaps(
         renderer->blitFrom2DArrayShader,
         renderer->blitFrom3DShader,
         renderer->blitFromCubeShader,
+        renderer->blitFromCubeArrayShader,
         &renderer->blitPipelines,
         &renderer->blitPipelineCount,
         &renderer->blitPipelineCapacity);
@@ -5928,6 +5940,7 @@ static void D3D12_Blit(
         renderer->blitFrom2DArrayShader,
         renderer->blitFrom3DShader,
         renderer->blitFromCubeShader,
+        renderer->blitFromCubeArrayShader,
         &renderer->blitPipelines,
         &renderer->blitPipelineCount,
         &renderer->blitPipelineCapacity);
@@ -6065,7 +6078,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     windowData->swapchainHeight = height;
 
     // Precache blit pipelines for the swapchain format
-    for (Uint32 i = 0; i < 4; i += 1) {
+    for (Uint32 i = 0; i < 5; i += 1) {
         SDL_GPU_FetchBlitPipeline(
             renderer->sdlGPUDevice,
             (SDL_GPUTextureType)i,
@@ -6445,7 +6458,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     windowData->frameCounter = 0;
 
     // Precache blit pipelines for the swapchain format
-    for (Uint32 i = 0; i < 4; i += 1) {
+    for (Uint32 i = 0; i < 5; i += 1) {
         SDL_GPU_FetchBlitPipeline(
             renderer->sdlGPUDevice,
             (SDL_GPUTextureType)i,
@@ -6455,6 +6468,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
             renderer->blitFrom2DArrayShader,
             renderer->blitFrom3DShader,
             renderer->blitFromCubeShader,
+            renderer->blitFromCubeArrayShader,
             &renderer->blitPipelines,
             &renderer->blitPipelineCount,
             &renderer->blitPipelineCapacity);
@@ -7488,6 +7502,9 @@ static bool D3D12_SupportsTextureFormat(
     if (type == SDL_GPU_TEXTURETYPE_CUBE && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_TEXTURECUBE)) {
         return false;
     }
+    if (type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_TEXTURECUBE)) {
+        return false;
+    }
 
     // Are the usage flags supported?
     if ((usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE)) {
@@ -7610,6 +7627,18 @@ static void D3D12_INTERNAL_InitBlitResources(
 
     if (renderer->blitFromCubeShader == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to compile BlitFromCube pixel shader!");
+    }
+
+    // BlitFromCubeArray pixel shader
+    shaderCreateInfo.code = (Uint8 *)D3D12_BlitFromCubeArray;
+    shaderCreateInfo.code_size = sizeof(D3D12_BlitFromCubeArray);
+
+    renderer->blitFromCubeArrayShader = D3D12_CreateShader(
+        (SDL_GPURenderer *)renderer,
+        &shaderCreateInfo);
+
+    if (renderer->blitFromCubeArrayShader == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to compile BlitFromCubeArray pixel shader!");
     }
 
     // Create samplers
