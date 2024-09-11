@@ -195,11 +195,11 @@ static MTLIndexType SDLToMetal_IndexType[] = {
 };
 
 static MTLPrimitiveType SDLToMetal_PrimitiveType[] = {
-    MTLPrimitiveTypeTriangle,     // TRIANGLELIST
-    MTLPrimitiveTypePoint,        // POINTLIST
-    MTLPrimitiveTypeLine,         // LINELIST
-    MTLPrimitiveTypeLineStrip,    // LINESTRIP
-    MTLPrimitiveTypeTriangleStrip // TRIANGLESTRIP
+    MTLPrimitiveTypeTriangle,      // TRIANGLELIST
+    MTLPrimitiveTypeTriangleStrip, // TRIANGLESTRIP
+    MTLPrimitiveTypeLine,          // LINELIST
+    MTLPrimitiveTypeLineStrip,     // LINESTRIP
+    MTLPrimitiveTypePoint          // POINTLIST
 };
 
 static MTLTriangleFillMode SDLToMetal_PolygonMode[] = {

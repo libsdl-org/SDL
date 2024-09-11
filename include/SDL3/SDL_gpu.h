@@ -251,10 +251,10 @@ typedef struct SDL_GPUFence SDL_GPUFence;
 typedef enum SDL_GPUPrimitiveType
 {
     SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,  /**< A series of separate triangles. */
-    SDL_GPU_PRIMITIVETYPE_POINTLIST,     /**< A series of separate points. */
+    SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP, /**< A series of connected triangles. */
     SDL_GPU_PRIMITIVETYPE_LINELIST,      /**< A series of separate lines. */
     SDL_GPU_PRIMITIVETYPE_LINESTRIP,     /**< A series of connected lines. */
-    SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP  /**< A series of connected triangles. */
+    SDL_GPU_PRIMITIVETYPE_POINTLIST      /**< A series of separate points. */
 } SDL_GPUPrimitiveType;
 
 /**
@@ -1264,7 +1264,7 @@ typedef struct SDL_GPUColorTargetBlendState
     SDL_GPUBlendFactor src_alpha_blendfactor;     /**< The value to be multiplied by the source alpha. */
     SDL_GPUBlendFactor dst_alpha_blendfactor;     /**< The value to be multiplied by the destination alpha. */
     SDL_GPUBlendOp alpha_blend_op;                /**< The blend operation for the alpha component. */
-    SDL_GPUColorComponentFlags color_write_mask;  /**< A bitmask specifying which of the RGBA components are enabled for writing. Writes to all channels if color_write_mask is SDL_FALSE. */
+    SDL_GPUColorComponentFlags color_write_mask;  /**< A bitmask specifying which of the RGBA components are enabled for writing. Writes to all channels if enable_color_write_mask is SDL_FALSE. */
     SDL_bool enable_blend;                        /**< Whether blending is enabled for the color target. */
     SDL_bool enable_color_write_mask;             /**< Whether the color write mask is enabled. */
     Uint8 padding2;
