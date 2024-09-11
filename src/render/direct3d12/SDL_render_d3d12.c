@@ -310,7 +310,7 @@ static SDL_PixelFormat D3D12_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
     }
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 colorspace)
+static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 output_colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
@@ -318,12 +318,12 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 color
     case SDL_PIXELFORMAT_XBGR2101010:
         return DXGI_FORMAT_R10G10B10A2_UNORM;
     case SDL_PIXELFORMAT_ARGB8888:
-        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
             return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
         }
         return DXGI_FORMAT_B8G8R8A8_UNORM;
     case SDL_PIXELFORMAT_XRGB8888:
-        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
             return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
         }
         return DXGI_FORMAT_B8G8R8X8_UNORM;
@@ -2554,6 +2554,7 @@ static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             } else if (texture->colorspace == SDL_COLORSPACE_HDR10) {
                 constants->input_type = INPUTTYPE_HDR10;
             } else {
+                // The sampler will convert from sRGB to linear on load if working in linear colorspace
                 constants->input_type = INPUTTYPE_UNSPECIFIED;
             }
             break;

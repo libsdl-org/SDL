@@ -426,7 +426,7 @@ static VkDeviceSize VULKAN_GetBytesPerPixel(VkFormat vkFormat)
     }
 }
 
-static VkFormat SDLPixelFormatToVkTextureFormat(Uint32 format, Uint32 colorspace)
+static VkFormat SDLPixelFormatToVkTextureFormat(Uint32 format, Uint32 output_colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
@@ -435,7 +435,7 @@ static VkFormat SDLPixelFormatToVkTextureFormat(Uint32 format, Uint32 colorspace
         return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
     case SDL_PIXELFORMAT_ARGB8888:
     case SDL_PIXELFORMAT_XRGB8888:
-        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
             return VK_FORMAT_B8G8R8A8_SRGB;
         }
         return VK_FORMAT_B8G8R8A8_UNORM;
@@ -3282,6 +3282,7 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
                        SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
                 constants->input_type = INPUTTYPE_HDR10;
             } else {
+                // The sampler will convert from sRGB to linear on load if working in linear colorspace
                 constants->input_type = INPUTTYPE_UNSPECIFIED;
             }
             break;
