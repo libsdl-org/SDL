@@ -407,38 +407,27 @@ static size_t SDL_ScanUnsignedLongLongInternal(const char *text, int count, int 
 }
 #endif
 
-#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL)
-static size_t SDL_ScanLong(const char *text, int count, int radix, long *valuep)
-{
-    const unsigned long long_max = (~0UL) >> 1;
-    unsigned long long value;
-    bool negative;
-    size_t len = SDL_ScanUnsignedLongLongInternal(text, count, radix, &value, &negative);
-    if (negative) {
-        const unsigned long abs_long_min = long_max + 1;
-        if (value == 0 || value > abs_long_min) {
-            value = 0ULL - abs_long_min;
-        } else {
-            value = 0ULL - value;
-        }
-    } else if (value > long_max) {
-        value = long_max;
-    }
-    *valuep = value;
-    return len;
-}
-#endif
-
-#if !defined(HAVE_WCSTOL)
-// SDL_ScanLongW assumes that wchar_t can converted to int without truncating bits
+#ifndef HAVE_WCSTOL
+// SDL_ScanUnsignedLongLongInternalW assumes that wchar_t can be converted to int without truncating bits
 SDL_COMPILE_TIME_ASSERT(wchar_t_int, sizeof(wchar_t) <= sizeof(int));
 
-static size_t SDL_ScanLongW(const wchar_t *text, int count, int radix, long *valuep)
+/**
+ * Parses an unsigned long long and returns the unsigned value and sign bit.
+ *
+ * Positive values are clamped to ULLONG_MAX.
+ * The result `value == 0 && negative` indicates negative overflow
+ * and might need to be handled differently depending on whether a
+ * signed or unsigned integer is being parsed.
+ */
+static size_t SDL_ScanUnsignedLongLongInternalW(const wchar_t *text, int count, int radix, unsigned long long *valuep, bool *negativep)
 {
+    const unsigned long long ullong_max = ~0ULL;
+
     const wchar_t *text_start = text;
     const wchar_t *number_start = text_start;
-    unsigned long value = 0;
+    unsigned long long value = 0;
     bool negative = false;
+    bool overflow = false;
 
     if (radix == 0 || (radix >= 2 && radix <= 36)) {
         while (SDL_isspace(*text)) {
@@ -461,7 +450,7 @@ static size_t SDL_ScanLongW(const wchar_t *text, int count, int radix, long *val
         }
         number_start = text;
         do {
-            unsigned long digit;
+            unsigned long long digit;
             if (*text >= '0' && *text <= '9') {
                 digit = *text - '0';
             } else if (radix > 10) {
@@ -475,33 +464,79 @@ static size_t SDL_ScanLongW(const wchar_t *text, int count, int radix, long *val
             } else {
                 break;
             }
-            { // saturate to ULONG_MAX
-                unsigned long next_value = value * radix + digit;
-                if (next_value < value) {
-                    next_value = ~0UL;
+            if (value != 0 && radix > ullong_max / value) {
+                overflow = true;
+            } else {
+                value *= radix;
+                if (digit > ullong_max - value) {
+                    overflow = true;
+                } else {
+                    value += digit;
                 }
-                value = next_value;
             }
             ++text;
         } while (count == 0 || (text - text_start) != count);
     }
-    if (text == number_start) { // no number was parsed, so no character were consumed
+    if (text == number_start) {
+        // no number was parsed, and thus no characters were consumed
         text = text_start;
     }
-    if (valuep) {
+    if (overflow) {
         if (negative) {
-            *valuep = 0UL - value;
-            if (*valuep > 0) {
-                *valuep = ((~0UL) >> 1) + 1UL; // LONG_MIN
-            }
+            value = 0;
         } else {
-            *valuep = value;
-            if (*valuep < 0) {
-                *valuep = (~0UL) >> 1; // LONG_MAX
-            }
+            value = ullong_max;
         }
+    } else if (value == 0) {
+        negative = false;
     }
+    *valuep = value;
+    *negativep = negative;
     return text - text_start;
+}
+#endif
+
+#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL)
+static size_t SDL_ScanLong(const char *text, int count, int radix, long *valuep)
+{
+    const unsigned long long_max = (~0UL) >> 1;
+    unsigned long long value;
+    bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternal(text, count, radix, &value, &negative);
+    if (negative) {
+        const unsigned long abs_long_min = long_max + 1;
+        if (value == 0 || value > abs_long_min) {
+            value = 0ULL - abs_long_min;
+        } else {
+            value = 0ULL - value;
+        }
+    } else if (value > long_max) {
+        value = long_max;
+    }
+    *valuep = value;
+    return len;
+}
+#endif
+
+#ifndef HAVE_WCSTOL
+static size_t SDL_ScanLongW(const wchar_t *text, int count, int radix, long *valuep)
+{
+    const unsigned long long_max = (~0UL) >> 1;
+    unsigned long long value;
+    bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternalW(text, count, radix, &value, &negative);
+    if (negative) {
+        const unsigned long abs_long_min = long_max + 1;
+        if (value == 0 || value > abs_long_min) {
+            value = 0ULL - abs_long_min;
+        } else {
+            value = 0ULL - value;
+        }
+    } else if (value > long_max) {
+        value = long_max;
+    }
+    *valuep = value;
+    return len;
 }
 #endif
 
