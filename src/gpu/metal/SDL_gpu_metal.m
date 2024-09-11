@@ -68,6 +68,7 @@ static void METAL_INTERNAL_DestroyBlitResources(SDL_GPURenderer *driverData);
 // Conversions
 
 static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
+    MTLPixelFormatInvalid,      // INVALID
     MTLPixelFormatA8Unorm,      // A8_UNORM
     MTLPixelFormatR8Unorm,      // R8_UNORM
     MTLPixelFormatRG8Unorm,     // R8G8_UNORM
@@ -151,9 +152,10 @@ static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
 #endif
     MTLPixelFormatDepth32Float_Stencil8, // D32_FLOAT_S8_UINT
 };
-SDL_COMPILE_TIME_ASSERT(SDLToMetal_SurfaceFormat, SDL_arraysize(SDLToMetal_SurfaceFormat) == SDL_GPU_TEXTUREFORMAT_MAX);
+SDL_COMPILE_TIME_ASSERT(SDLToMetal_SurfaceFormat, SDL_arraysize(SDLToMetal_SurfaceFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
 static MTLVertexFormat SDLToMetal_VertexFormat[] = {
+    MTLVertexFormatInvalid,           // INVALID
     MTLVertexFormatInt,               // INT
     MTLVertexFormatInt2,              // INT2
     MTLVertexFormatInt3,              // INT3
@@ -185,6 +187,7 @@ static MTLVertexFormat SDLToMetal_VertexFormat[] = {
     MTLVertexFormatHalf2,             // HALF2
     MTLVertexFormatHalf4              // HALF4
 };
+SDL_COMPILE_TIME_ASSERT(SDLToMetal_VertexFormat, SDL_arraysize(SDLToMetal_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
 static MTLIndexType SDLToMetal_IndexType[] = {
     MTLIndexTypeUInt16, // 16BIT
@@ -192,11 +195,11 @@ static MTLIndexType SDLToMetal_IndexType[] = {
 };
 
 static MTLPrimitiveType SDLToMetal_PrimitiveType[] = {
-    MTLPrimitiveTypePoint,        // POINTLIST
-    MTLPrimitiveTypeLine,         // LINELIST
-    MTLPrimitiveTypeLineStrip,    // LINESTRIP
-    MTLPrimitiveTypeTriangle,     // TRIANGLELIST
-    MTLPrimitiveTypeTriangleStrip // TRIANGLESTRIP
+    MTLPrimitiveTypeTriangle,      // TRIANGLELIST
+    MTLPrimitiveTypeTriangleStrip, // TRIANGLESTRIP
+    MTLPrimitiveTypeLine,          // LINELIST
+    MTLPrimitiveTypeLineStrip,     // LINESTRIP
+    MTLPrimitiveTypePoint          // POINTLIST
 };
 
 static MTLTriangleFillMode SDLToMetal_PolygonMode[] = {
@@ -216,6 +219,7 @@ static MTLWinding SDLToMetal_FrontFace[] = {
 };
 
 static MTLBlendFactor SDLToMetal_BlendFactor[] = {
+    MTLBlendFactorZero,                     // INVALID
     MTLBlendFactorZero,                     // ZERO
     MTLBlendFactorOne,                      // ONE
     MTLBlendFactorSourceColor,              // SRC_COLOR
@@ -230,16 +234,20 @@ static MTLBlendFactor SDLToMetal_BlendFactor[] = {
     MTLBlendFactorOneMinusBlendColor,       // ONE_MINUS_CONSTANT_COLOR
     MTLBlendFactorSourceAlphaSaturated,     // SRC_ALPHA_SATURATE
 };
+SDL_COMPILE_TIME_ASSERT(SDLToMetal_BlendFactor, SDL_arraysize(SDLToMetal_BlendFactor) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
 
 static MTLBlendOperation SDLToMetal_BlendOp[] = {
+    MTLBlendOperationAdd,             // INVALID
     MTLBlendOperationAdd,             // ADD
     MTLBlendOperationSubtract,        // SUBTRACT
     MTLBlendOperationReverseSubtract, // REVERSE_SUBTRACT
     MTLBlendOperationMin,             // MIN
     MTLBlendOperationMax,             // MAX
 };
+SDL_COMPILE_TIME_ASSERT(SDLToMetal_BlendOp, SDL_arraysize(SDLToMetal_BlendOp) == SDL_GPU_BLENDOP_MAX_ENUM_VALUE);
 
 static MTLCompareFunction SDLToMetal_CompareOp[] = {
+    MTLCompareFunctionNever,        // INVALID
     MTLCompareFunctionNever,        // NEVER
     MTLCompareFunctionLess,         // LESS
     MTLCompareFunctionEqual,        // EQUAL
@@ -249,8 +257,10 @@ static MTLCompareFunction SDLToMetal_CompareOp[] = {
     MTLCompareFunctionGreaterEqual, // GREATER_OR_EQUAL
     MTLCompareFunctionAlways,       // ALWAYS
 };
+SDL_COMPILE_TIME_ASSERT(SDLToMetal_CompareOp, SDL_arraysize(SDLToMetal_CompareOp) == SDL_GPU_COMPAREOP_MAX_ENUM_VALUE);
 
 static MTLStencilOperation SDLToMetal_StencilOp[] = {
+    MTLStencilOperationKeep,           // INVALID
     MTLStencilOperationKeep,           // KEEP
     MTLStencilOperationZero,           // ZERO
     MTLStencilOperationReplace,        // REPLACE
@@ -260,6 +270,7 @@ static MTLStencilOperation SDLToMetal_StencilOp[] = {
     MTLStencilOperationIncrementWrap,  // INCREMENT_AND_WRAP
     MTLStencilOperationDecrementWrap,  // DECREMENT_AND_WRAP
 };
+SDL_COMPILE_TIME_ASSERT(SDLToMetal_StencilOp, SDL_arraysize(SDLToMetal_StencilOp) == SDL_GPU_STENCILOP_MAX_ENUM_VALUE);
 
 static MTLSamplerAddressMode SDLToMetal_SamplerAddressMode[] = {
     MTLSamplerAddressModeRepeat,       // REPEAT
@@ -1012,9 +1023,12 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
 
         for (Uint32 i = 0; i < createinfo->target_info.num_color_targets; i += 1) {
             blendState = &createinfo->target_info.color_target_descriptions[i].blend_state;
+            SDL_GPUColorComponentFlags colorWriteMask = blendState->enable_color_write_mask ?
+                blendState->color_write_mask :
+                0xF;
 
             pipelineDescriptor.colorAttachments[i].pixelFormat = SDLToMetal_SurfaceFormat[createinfo->target_info.color_target_descriptions[i].format];
-            pipelineDescriptor.colorAttachments[i].writeMask = SDLToMetal_ColorWriteMask(blendState->color_write_mask);
+            pipelineDescriptor.colorAttachments[i].writeMask = SDLToMetal_ColorWriteMask(colorWriteMask);
             pipelineDescriptor.colorAttachments[i].blendingEnabled = blendState->enable_blend;
             pipelineDescriptor.colorAttachments[i].rgbBlendOperation = SDLToMetal_BlendOp[blendState->color_blend_op];
             pipelineDescriptor.colorAttachments[i].alphaBlendOperation = SDLToMetal_BlendOp[blendState->alpha_blend_op];
@@ -1099,9 +1113,13 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
             return NULL;
         }
 
+        Uint32 sampleMask = createinfo->multisample_state.enable_mask ?
+            createinfo->multisample_state.sample_mask :
+            0xFFFFFFFF;
+
         result = SDL_calloc(1, sizeof(MetalGraphicsPipeline));
         result->handle = pipelineState;
-        result->sample_mask = createinfo->multisample_state.sample_mask;
+        result->sample_mask = sampleMask;
         result->depth_stencil_state = depthStencilState;
         result->rasterizerState = createinfo->rasterizer_state;
         result->primitiveType = createinfo->primitive_type;

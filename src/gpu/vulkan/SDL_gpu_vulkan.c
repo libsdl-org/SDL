@@ -136,6 +136,7 @@ static VkPresentModeKHR SDLToVK_PresentMode[] = {
 };
 
 static VkFormat SDLToVK_SurfaceFormat[] = {
+    VK_FORMAT_UNDEFINED,                // INVALID
     VK_FORMAT_R8_UNORM,                 // A8_UNORM
     VK_FORMAT_R8_UNORM,                 // R8_UNORM
     VK_FORMAT_R8G8_UNORM,               // R8G8_UNORM
@@ -193,9 +194,10 @@ static VkFormat SDLToVK_SurfaceFormat[] = {
     VK_FORMAT_D24_UNORM_S8_UINT,        // D24_UNORM_S8_UINT
     VK_FORMAT_D32_SFLOAT_S8_UINT,       // D32_FLOAT_S8_UINT
 };
-SDL_COMPILE_TIME_ASSERT(SDLToVK_SurfaceFormat, SDL_arraysize(SDLToVK_SurfaceFormat) == SDL_GPU_TEXTUREFORMAT_MAX);
+SDL_COMPILE_TIME_ASSERT(SDLToVK_SurfaceFormat, SDL_arraysize(SDLToVK_SurfaceFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
 static VkComponentMapping SDLToVK_SurfaceSwizzle[] = {
+    IDENTITY_SWIZZLE,
     {
         // A8
         VK_COMPONENT_SWIZZLE_ZERO,
@@ -283,6 +285,7 @@ static VkComponentMapping SDLToVK_SurfaceSwizzle[] = {
     IDENTITY_SWIZZLE, // D24_UNORM_S8_UINT
     IDENTITY_SWIZZLE, // D32_SFLOAT_S8_UINT
 };
+SDL_COMPILE_TIME_ASSERT(SDLToVK_SurfaceSwizzle, SDL_arraysize(SDLToVK_SurfaceSwizzle) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
 static VkFormat SwapchainCompositionToFormat[] = {
     VK_FORMAT_B8G8R8A8_UNORM,          // SDR
@@ -337,6 +340,7 @@ static VkComponentMapping SwapchainCompositionSwizzle[] = {
 };
 
 static VkFormat SDLToVK_VertexFormat[] = {
+    VK_FORMAT_UNDEFINED,           // INVALID
     VK_FORMAT_R32_SINT,            // INT
     VK_FORMAT_R32G32_SINT,         // INT2
     VK_FORMAT_R32G32B32_SINT,      // INT3
@@ -368,6 +372,7 @@ static VkFormat SDLToVK_VertexFormat[] = {
     VK_FORMAT_R16G16_SFLOAT,       // HALF2
     VK_FORMAT_R16G16B16A16_SFLOAT  // HALF4
 };
+SDL_COMPILE_TIME_ASSERT(SDLToVK_VertexFormat, SDL_arraysize(SDLToVK_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
 static VkIndexType SDLToVK_IndexType[] = {
     VK_INDEX_TYPE_UINT16,
@@ -375,11 +380,11 @@ static VkIndexType SDLToVK_IndexType[] = {
 };
 
 static VkPrimitiveTopology SDLToVK_PrimitiveType[] = {
-    VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
+    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
     VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
     VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,
-    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP
+    VK_PRIMITIVE_TOPOLOGY_POINT_LIST
 };
 
 static VkCullModeFlags SDLToVK_CullMode[] = {
@@ -395,6 +400,7 @@ static VkFrontFace SDLToVK_FrontFace[] = {
 };
 
 static VkBlendFactor SDLToVK_BlendFactor[] = {
+    VK_BLEND_FACTOR_ZERO, // INVALID
     VK_BLEND_FACTOR_ZERO,
     VK_BLEND_FACTOR_ONE,
     VK_BLEND_FACTOR_SRC_COLOR,
@@ -407,20 +413,22 @@ static VkBlendFactor SDLToVK_BlendFactor[] = {
     VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,
     VK_BLEND_FACTOR_CONSTANT_COLOR,
     VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR,
-    VK_BLEND_FACTOR_CONSTANT_ALPHA,
-    VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA,
     VK_BLEND_FACTOR_SRC_ALPHA_SATURATE
 };
+SDL_COMPILE_TIME_ASSERT(SDLToVK_BlendFactor, SDL_arraysize(SDLToVK_BlendFactor) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
 
 static VkBlendOp SDLToVK_BlendOp[] = {
+    VK_BLEND_OP_ADD, // INVALID
     VK_BLEND_OP_ADD,
     VK_BLEND_OP_SUBTRACT,
     VK_BLEND_OP_REVERSE_SUBTRACT,
     VK_BLEND_OP_MIN,
     VK_BLEND_OP_MAX
 };
+SDL_COMPILE_TIME_ASSERT(SDLToVK_BlendOp, SDL_arraysize(SDLToVK_BlendOp) == SDL_GPU_BLENDOP_MAX_ENUM_VALUE);
 
 static VkCompareOp SDLToVK_CompareOp[] = {
+    VK_COMPARE_OP_NEVER, // INVALID
     VK_COMPARE_OP_NEVER,
     VK_COMPARE_OP_LESS,
     VK_COMPARE_OP_EQUAL,
@@ -430,8 +438,10 @@ static VkCompareOp SDLToVK_CompareOp[] = {
     VK_COMPARE_OP_GREATER_OR_EQUAL,
     VK_COMPARE_OP_ALWAYS
 };
+SDL_COMPILE_TIME_ASSERT(SDLToVK_CompareOp, SDL_arraysize(SDLToVK_CompareOp) == SDL_GPU_COMPAREOP_MAX_ENUM_VALUE);
 
 static VkStencilOp SDLToVK_StencilOp[] = {
+    VK_STENCIL_OP_KEEP, // INVALID
     VK_STENCIL_OP_KEEP,
     VK_STENCIL_OP_ZERO,
     VK_STENCIL_OP_REPLACE,
@@ -441,6 +451,7 @@ static VkStencilOp SDLToVK_StencilOp[] = {
     VK_STENCIL_OP_INCREMENT_AND_WRAP,
     VK_STENCIL_OP_DECREMENT_AND_WRAP
 };
+SDL_COMPILE_TIME_ASSERT(SDLToVK_StencilOp, SDL_arraysize(SDLToVK_StencilOp) == SDL_GPU_STENCILOP_MAX_ENUM_VALUE);
 
 static VkAttachmentLoadOp SDLToVK_LoadOp[] = {
     VK_ATTACHMENT_LOAD_OP_LOAD,
@@ -6573,6 +6584,10 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     // Multisample
 
+    Uint32 sampleMask = createinfo->multisample_state.enable_mask ?
+        createinfo->multisample_state.sample_mask :
+        0xFFFFFFFF;
+
     multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleStateCreateInfo.pNext = NULL;
     multisampleStateCreateInfo.flags = 0;
@@ -6580,7 +6595,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     multisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
     multisampleStateCreateInfo.minSampleShading = 1.0f;
     multisampleStateCreateInfo.pSampleMask =
-        &createinfo->multisample_state.sample_mask;
+        &sampleMask;
     multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE;
     multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;
 
@@ -6626,6 +6641,9 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     for (i = 0; i < createinfo->target_info.num_color_targets; i += 1) {
         SDL_GPUColorTargetBlendState blendState = createinfo->target_info.color_target_descriptions[i].blend_state;
+        SDL_GPUColorComponentFlags colorWriteMask = blendState.enable_color_write_mask ?
+            blendState.color_write_mask :
+            0xF;
 
         colorBlendAttachmentStates[i].blendEnable =
             blendState.enable_blend;
@@ -6636,7 +6654,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
         colorBlendAttachmentStates[i].dstAlphaBlendFactor = SDLToVK_BlendFactor[blendState.dst_alpha_blendfactor];
         colorBlendAttachmentStates[i].alphaBlendOp = SDLToVK_BlendOp[blendState.alpha_blend_op];
         colorBlendAttachmentStates[i].colorWriteMask =
-            blendState.color_write_mask;
+            colorWriteMask;
     }
 
     colorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

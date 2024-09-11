@@ -250,11 +250,11 @@ typedef struct SDL_GPUFence SDL_GPUFence;
  */
 typedef enum SDL_GPUPrimitiveType
 {
-    SDL_GPU_PRIMITIVETYPE_POINTLIST,     /**< A series of separate points. */
+    SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,  /**< A series of separate triangles. */
+    SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP, /**< A series of connected triangles. */
     SDL_GPU_PRIMITIVETYPE_LINELIST,      /**< A series of separate lines. */
     SDL_GPU_PRIMITIVETYPE_LINESTRIP,     /**< A series of connected lines. */
-    SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,  /**< A series of separate triangles. */
-    SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP  /**< A series of connected triangles. */
+    SDL_GPU_PRIMITIVETYPE_POINTLIST      /**< A series of separate points. */
 } SDL_GPUPrimitiveType;
 
 /**
@@ -384,7 +384,7 @@ typedef enum SDL_GPUIndexElementSize
  */
 typedef enum SDL_GPUTextureFormat
 {
-    SDL_GPU_TEXTUREFORMAT_INVALID = -1,
+    SDL_GPU_TEXTUREFORMAT_INVALID,
 
     /* Unsigned Normalized Float Color Formats */
     SDL_GPU_TEXTUREFORMAT_A8_UNORM,
@@ -586,12 +586,13 @@ typedef enum SDL_GPUShaderStage
  */
 typedef Uint32 SDL_GPUShaderFormat;
 
-#define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 0) /**< Shaders for NDA'd platforms. */
-#define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1) /**< SPIR-V shaders for Vulkan. */
-#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_0 shaders for D3D11. */
-#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL shaders for D3D12. */
-#define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal. */
-#define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< Precompiled metallib shaders for Metal. */
+#define SDL_GPU_SHADERFORMAT_INVALID  0
+#define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 1) /**< Shaders for NDA'd platforms. */
+#define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 2) /**< SPIR-V shaders for Vulkan. */
+#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 3) /**< DXBC SM5_0 shaders for D3D11. */
+#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 4) /**< DXIL shaders for D3D12. */
+#define SDL_GPU_SHADERFORMAT_MSL      (1u << 5) /**< MSL shaders for Metal. */
+#define SDL_GPU_SHADERFORMAT_METALLIB (1u << 6) /**< Precompiled metallib shaders for Metal. */
 
 /**
  * Specifies the format of a vertex attribute.
@@ -602,6 +603,8 @@ typedef Uint32 SDL_GPUShaderFormat;
  */
 typedef enum SDL_GPUVertexElementFormat
 {
+    SDL_GPU_VERTEXELEMENTFORMAT_INVALID,
+
     /* 32-bit Signed Integers */
     SDL_GPU_VERTEXELEMENTFORMAT_INT,
     SDL_GPU_VERTEXELEMENTFORMAT_INT2,
@@ -666,8 +669,8 @@ typedef enum SDL_GPUVertexElementFormat
  */
 typedef enum SDL_GPUVertexInputRate
 {
-    SDL_GPU_VERTEXINPUTRATE_VERTEX = 0,   /**< Attribute addressing is a function of the vertex index. */
-    SDL_GPU_VERTEXINPUTRATE_INSTANCE = 1  /**< Attribute addressing is a function of the instance index. */
+    SDL_GPU_VERTEXINPUTRATE_VERTEX,   /**< Attribute addressing is a function of the vertex index. */
+    SDL_GPU_VERTEXINPUTRATE_INSTANCE  /**< Attribute addressing is a function of the instance index. */
 } SDL_GPUVertexInputRate;
 
 /**
@@ -720,6 +723,7 @@ typedef enum SDL_GPUFrontFace
  */
 typedef enum SDL_GPUCompareOp
 {
+    SDL_GPU_COMPAREOP_INVALID,
     SDL_GPU_COMPAREOP_NEVER,             /**< The comparison always evaluates false. */
     SDL_GPU_COMPAREOP_LESS,              /**< The comparison evaluates reference < test. */
     SDL_GPU_COMPAREOP_EQUAL,             /**< The comparison evaluates reference == test. */
@@ -740,6 +744,7 @@ typedef enum SDL_GPUCompareOp
  */
 typedef enum SDL_GPUStencilOp
 {
+    SDL_GPU_STENCILOP_INVALID,
     SDL_GPU_STENCILOP_KEEP,                 /**< Keeps the current value. */
     SDL_GPU_STENCILOP_ZERO,                 /**< Sets the value to 0. */
     SDL_GPU_STENCILOP_REPLACE,              /**< Sets the value to reference. */
@@ -763,6 +768,7 @@ typedef enum SDL_GPUStencilOp
  */
 typedef enum SDL_GPUBlendOp
 {
+    SDL_GPU_BLENDOP_INVALID,
     SDL_GPU_BLENDOP_ADD,               /**< (source * source_factor) + (destination * destination_factor) */
     SDL_GPU_BLENDOP_SUBTRACT,          /**< (source * source_factor) - (destination * destination_factor) */
     SDL_GPU_BLENDOP_REVERSE_SUBTRACT,  /**< (destination * destination_factor) - (source * source_factor) */
@@ -783,6 +789,7 @@ typedef enum SDL_GPUBlendOp
  */
 typedef enum SDL_GPUBlendFactor
 {
+    SDL_GPU_BLENDFACTOR_INVALID,
     SDL_GPU_BLENDFACTOR_ZERO,                      /**< 0 */
     SDL_GPU_BLENDFACTOR_ONE,                       /**< 1 */
     SDL_GPU_BLENDFACTOR_SRC_COLOR,                 /**< source color */
@@ -933,7 +940,7 @@ typedef enum SDL_GPUSwapchainComposition
  */
 typedef enum SDL_GPUDriver
 {
-    SDL_GPU_DRIVER_INVALID = -1,
+    SDL_GPU_DRIVER_INVALID,
     SDL_GPU_DRIVER_PRIVATE, /* NDA'd platforms */
     SDL_GPU_DRIVER_VULKAN,
     SDL_GPU_DRIVER_D3D11,
@@ -1159,13 +1166,13 @@ typedef struct SDL_GPUSamplerCreateInfo
     SDL_GPUSamplerAddressMode address_mode_w;  /**< The addressing mode for W coordinates outside [0, 1). */
     float mip_lod_bias;                        /**< The bias to be added to mipmap LOD calculation. */
     float max_anisotropy;                      /**< The anisotropy value clamp used by the sampler. If enable_anisotropy is SDL_FALSE, this is ignored. */
+    SDL_GPUCompareOp compare_op;               /**< The comparison operator to apply to fetched data before filtering. */
+    float min_lod;                             /**< Clamps the minimum of the computed LOD value. */
+    float max_lod;                             /**< Clamps the maximum of the computed LOD value. */
     SDL_bool enable_anisotropy;                /**< SDL_TRUE to enable anisotropic filtering. */
     SDL_bool enable_compare;                   /**< SDL_TRUE to enable comparison against a reference value during lookups. */
     Uint8 padding1;
     Uint8 padding2;
-    SDL_GPUCompareOp compare_op;               /**< The comparison operator to apply to fetched data before filtering. */
-    float min_lod;                             /**< Clamps the minimum of the computed LOD value. */
-    float max_lod;                             /**< Clamps the maximum of the computed LOD value. */
 
     SDL_PropertiesID props;                    /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUSamplerCreateInfo;
@@ -1251,17 +1258,17 @@ typedef struct SDL_GPUStencilOpState
  */
 typedef struct SDL_GPUColorTargetBlendState
 {
-    SDL_bool enable_blend;                        /**< Whether blending is enabled for the color target. */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
     SDL_GPUBlendFactor src_color_blendfactor;     /**< The value to be multiplied by the source RGB value. */
     SDL_GPUBlendFactor dst_color_blendfactor;     /**< The value to be multiplied by the destination RGB value. */
     SDL_GPUBlendOp color_blend_op;                /**< The blend operation for the RGB components. */
     SDL_GPUBlendFactor src_alpha_blendfactor;     /**< The value to be multiplied by the source alpha. */
     SDL_GPUBlendFactor dst_alpha_blendfactor;     /**< The value to be multiplied by the destination alpha. */
     SDL_GPUBlendOp alpha_blend_op;                /**< The blend operation for the alpha component. */
-    SDL_GPUColorComponentFlags color_write_mask;  /**< A bitmask specifying which of the RGBA components are enabled for writing. */
+    SDL_GPUColorComponentFlags color_write_mask;  /**< A bitmask specifying which of the RGBA components are enabled for writing. Writes to all channels if enable_color_write_mask is SDL_FALSE. */
+    SDL_bool enable_blend;                        /**< Whether blending is enabled for the color target. */
+    SDL_bool enable_color_write_mask;             /**< Whether the color write mask is enabled. */
+    Uint8 padding2;
+    Uint8 padding3;
 } SDL_GPUColorTargetBlendState;
 
 
@@ -1367,13 +1374,13 @@ typedef struct SDL_GPURasterizerState
     SDL_GPUFillMode fill_mode;         /**< Whether polygons will be filled in or drawn as lines. */
     SDL_GPUCullMode cull_mode;         /**< The facing direction in which triangles will be culled. */
     SDL_GPUFrontFace front_face;       /**< The vertex winding that will cause a triangle to be determined as front-facing. */
+    float depth_bias_constant_factor;  /**< A scalar factor controlling the depth value added to each fragment. */
+    float depth_bias_clamp;            /**< The maximum depth bias of a fragment. */
+    float depth_bias_slope_factor;     /**< A scalar factor applied to a fragment's slope in depth calculations. */
     SDL_bool enable_depth_bias;        /**< SDL_TRUE to bias fragment depth values. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
-    float depth_bias_constant_factor;  /**< A scalar factor controlling the depth value added to each fragment. */
-    float depth_bias_clamp;            /**< The maximum depth bias of a fragment. */
-    float depth_bias_slope_factor;     /**< A scalar factor applied to a fragment's slope in depth calculations. */
 } SDL_GPURasterizerState;
 
 /**
@@ -1387,7 +1394,11 @@ typedef struct SDL_GPURasterizerState
 typedef struct SDL_GPUMultisampleState
 {
     SDL_GPUSampleCount sample_count;  /**< The number of samples to be used in rasterization. */
-    Uint32 sample_mask;               /**< Determines which samples get updated in the render targets. 0xFFFFFFFF is a reasonable default. */
+    Uint32 sample_mask;               /**< Determines which samples get updated in the render targets. Treated as 0xFFFFFFFF if enable_mask is SDL_FALSE. */
+    SDL_bool enable_mask;             /**< Enables sample masking. */
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
 } SDL_GPUMultisampleState;
 
 /**
@@ -1400,15 +1411,15 @@ typedef struct SDL_GPUMultisampleState
  */
 typedef struct SDL_GPUDepthStencilState
 {
-    SDL_bool enable_depth_test;                 /**< SDL_TRUE enables the depth test. */
-    SDL_bool enable_depth_write;                /**< SDL_TRUE enables depth writes. Depth writes are always disabled when enable_depth_test is SDL_FALSE. */
-    SDL_bool enable_stencil_test;               /**< SDL_TRUE enables the stencil test. */
-    Uint8 padding1;
     SDL_GPUCompareOp compare_op;                /**< The comparison operator used for depth testing. */
     SDL_GPUStencilOpState back_stencil_state;   /**< The stencil op state for back-facing triangles. */
     SDL_GPUStencilOpState front_stencil_state;  /**< The stencil op state for front-facing triangles. */
     Uint8 compare_mask;                         /**< Selects the bits of the stencil values participating in the stencil test. */
     Uint8 write_mask;                           /**< Selects the bits of the stencil values updated by the stencil test. */
+    SDL_bool enable_depth_test;                 /**< SDL_TRUE enables the depth test. */
+    SDL_bool enable_depth_write;                /**< SDL_TRUE enables depth writes. Depth writes are always disabled when enable_depth_test is SDL_FALSE. */
+    SDL_bool enable_stencil_test;               /**< SDL_TRUE enables the stencil test. */
+    Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
 } SDL_GPUDepthStencilState;
@@ -1439,11 +1450,11 @@ typedef struct SDL_GpuGraphicsPipelineTargetInfo
 {
     const SDL_GPUColorTargetDescription *color_target_descriptions;  /**< A pointer to an array of color target descriptions. */
     Uint32 num_color_targets;                                        /**< The number of color target descriptions in the above array. */
+    SDL_GPUTextureFormat depth_stencil_format;                       /**< The pixel format of the depth-stencil target. Ignored if has_depth_stencil_target is SDL_FALSE. */
     SDL_bool has_depth_stencil_target;                               /**< SDL_TRUE specifies that the pipeline uses a depth-stencil target. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
-    SDL_GPUTextureFormat depth_stencil_format;                       /**< The pixel format of the depth-stencil target. Ignored if has_depth_stencil_target is SDL_FALSE. */
 } SDL_GpuGraphicsPipelineTargetInfo;
 
 /**
@@ -1601,7 +1612,7 @@ typedef struct SDL_GPUBlitInfo {
     SDL_FlipMode flip_mode;         /**< The flip mode for the source region. */
     SDL_GPUFilter filter;           /**< The filter mode used when blitting. */
     SDL_bool cycle;                 /**< SDL_TRUE cycles the destination texture if it is already bound. */
-    Uint8 padding;
+    Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
 } SDL_GPUBlitInfo;
