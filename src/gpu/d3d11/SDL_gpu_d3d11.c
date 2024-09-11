@@ -492,6 +492,7 @@ typedef struct D3D11GraphicsPipeline
     Sint32 numColorTargets;
     DXGI_FORMAT colorTargetFormats[MAX_COLOR_TARGET_BINDINGS];
     ID3D11BlendState *colorTargetBlendState;
+    Uint32 sampleMask;
 
     SDL_GPUMultisampleState multisampleState;
 
@@ -665,6 +666,9 @@ typedef struct D3D11CommandBuffer
     bool needComputeReadOnlyTextureBind;
     bool needComputeReadOnlyBufferBind;
     bool needComputeUniformBufferBind;
+
+    // defer OMSetBlendState because it combines three different states
+    bool needBlendStateSet;
 
     ID3D11Buffer *vertexBuffers[MAX_BUFFER_BINDINGS];
     Uint32 vertexBufferOffsets[MAX_BUFFER_BINDINGS];
@@ -1567,6 +1571,9 @@ static SDL_GPUGraphicsPipeline *D3D11_CreateGraphicsPipeline(
     // Multisample
 
     pipeline->multisampleState = createinfo->multisample_state;
+    pipeline->sampleMask = createinfo->multisample_state.enable_mask ?
+        createinfo->multisample_state.sample_mask :
+        0xFFFFFFFF;
 
     // Depth-Stencil
 
@@ -3249,6 +3256,7 @@ static SDL_GPUCommandBuffer *D3D11_AcquireCommandBuffer(
     commandBuffer->needFragmentStorageBufferBind = true;
     commandBuffer->needFragmentUniformBufferBind = true;
     commandBuffer->needComputeUniformBufferBind = true;
+    commandBuffer->needBlendStateSet = true;
 
     SDL_zeroa(commandBuffer->vertexSamplers);
     SDL_zeroa(commandBuffer->vertexSamplerTextures);
@@ -3459,19 +3467,8 @@ static void D3D11_SetBlendConstants(
     SDL_FColor blendConstants)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
-    FLOAT blendFactor[4] = { blendConstants.r, blendConstants.g, blendConstants.b, blendConstants.a };
-    Uint32 sample_mask = d3d11CommandBuffer->graphicsPipeline->multisampleState.enable_mask ?
-        d3d11CommandBuffer->graphicsPipeline->multisampleState.sample_mask :
-        0xFFFFFFFF;
     d3d11CommandBuffer->blendConstants = blendConstants;
-
-    if (d3d11CommandBuffer->graphicsPipeline != NULL) {
-        ID3D11DeviceContext_OMSetBlendState(
-            d3d11CommandBuffer->context,
-            d3d11CommandBuffer->graphicsPipeline->colorTargetBlendState,
-            blendFactor,
-            sample_mask);
-    }
+    d3d11CommandBuffer->needBlendStateSet = true;
 }
 
 static void D3D11_SetStencilReference(
@@ -3667,22 +3664,7 @@ static void D3D11_BindGraphicsPipeline(
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11GraphicsPipeline *pipeline = (D3D11GraphicsPipeline *)graphicsPipeline;
-    FLOAT blendFactor[4] = {
-        d3d11CommandBuffer->blendConstants.r,
-        d3d11CommandBuffer->blendConstants.g,
-        d3d11CommandBuffer->blendConstants.b,
-        d3d11CommandBuffer->blendConstants.a
-    };
-    Uint32 sample_mask = pipeline->multisampleState.enable_mask ?
-        pipeline->multisampleState.sample_mask :
-        0xFFFFFFFF;
     d3d11CommandBuffer->graphicsPipeline = pipeline;
-
-    ID3D11DeviceContext_OMSetBlendState(
-        d3d11CommandBuffer->context,
-        pipeline->colorTargetBlendState,
-        blendFactor,
-        sample_mask);
 
     ID3D11DeviceContext_OMSetDepthStencilState(
         d3d11CommandBuffer->context,
@@ -3737,6 +3719,7 @@ static void D3D11_BindGraphicsPipeline(
     d3d11CommandBuffer->needFragmentStorageTextureBind = true;
     d3d11CommandBuffer->needFragmentStorageBufferBind = true;
     d3d11CommandBuffer->needFragmentUniformBufferBind = true;
+    d3d11CommandBuffer->needBlendStateSet = true;
 }
 
 static void D3D11_BindVertexBuffers(
@@ -4111,6 +4094,23 @@ static void D3D11_INTERNAL_BindGraphicsResources(
         }
 
         commandBuffer->needFragmentUniformBufferBind = false;
+    }
+
+    if (commandBuffer->needBlendStateSet) {
+        FLOAT blendFactor[4] = {
+            commandBuffer->blendConstants.r,
+            commandBuffer->blendConstants.g,
+            commandBuffer->blendConstants.b,
+            commandBuffer->blendConstants.a
+        };
+
+        ID3D11DeviceContext_OMSetBlendState(
+            commandBuffer->context,
+            graphicsPipeline->colorTargetBlendState,
+            blendFactor,
+            graphicsPipeline->sampleMask);
+
+        commandBuffer->needBlendStateSet = false;
     }
 }
 
