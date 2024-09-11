@@ -586,7 +586,7 @@ typedef enum SDL_GPUShaderStage
  */
 typedef Uint32 SDL_GPUShaderFormat;
 
-#define SDL_GPU_SHADERFORMAT_INVALID  (1u << 0)
+#define SDL_GPU_SHADERFORMAT_INVALID  0
 #define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 1) /**< Shaders for NDA'd platforms. */
 #define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 2) /**< SPIR-V shaders for Vulkan. */
 #define SDL_GPU_SHADERFORMAT_DXBC     (1u << 3) /**< DXBC SM5_0 shaders for D3D11. */

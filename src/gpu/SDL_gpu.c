@@ -1,4 +1,4 @@
-﻿/*
+/*
   Simple DirectMedia Layer
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
@@ -678,25 +678,6 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
                 CHECK_BLENDFACTOR_ENUM_INVALID(blend_state->src_alpha_blendfactor, NULL)
                 CHECK_BLENDFACTOR_ENUM_INVALID(blend_state->dst_alpha_blendfactor, NULL)
                 CHECK_BLENDOP_ENUM_INVALID(blend_state->alpha_blend_op, NULL)
-                if (blend_state->src_color_blendfactor == SDL_GPU_BLENDFACTOR_INVALID) {
-                    SDL_assert_release(!"Blend factor cannot be INVALID!");
-                    return NULL;
-                } else if (blend_state->dst_color_blendfactor == SDL_GPU_BLENDFACTOR_INVALID) {
-                    SDL_assert_release(!"Blend factor cannot be INVALID!");
-                    return NULL;
-                } else if (blend_state->color_blend_op == SDL_GPU_BLENDOP_INVALID) {
-                    SDL_assert_release(!"Blend op cannot be INVALID");
-                    return NULL;
-                } else if (blend_state->src_alpha_blendfactor == SDL_GPU_BLENDFACTOR_INVALID) {
-                    SDL_assert_release(!"Blend factor cannot be INVALID!");
-                    return NULL;
-                } else if (blend_state->dst_alpha_blendfactor == SDL_GPU_BLENDFACTOR_INVALID) {
-                    SDL_assert_release(!"Blend factor cannot be INVALID!");
-                    return NULL;
-                } else if (blend_state->alpha_blend_op == SDL_GPU_BLENDOP_INVALID) {
-                    SDL_assert_release(!"Blend op cannot be INVALID!");
-                    return NULL;
-                }
             }
         }
         if (graphicsPipelineCreateInfo->target_info.has_depth_stencil_target) {
