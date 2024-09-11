@@ -82,8 +82,8 @@ float4 BlitFromCube(VertexToPixel input) : SV_Target0
     switch ((uint)LayerOrDepth) {
         case 0: newCoord = float3(1.0, -v, -u); break; // POSITIVE X
         case 1: newCoord = float3(-1.0, -v, u); break; // NEGATIVE X
-        case 2: newCoord = float3(u, -1.0, -v); break; // POSITIVE Y
-        case 3: newCoord = float3(u, 1.0, v); break; // NEGATIVE Y
+        case 2: newCoord = float3(u, 1.0, -v); break; // POSITIVE Y
+        case 3: newCoord = float3(u, -1.0, v); break; // NEGATIVE Y
         case 4: newCoord = float3(u, -v, 1.0); break; // POSITIVE Z
         case 5: newCoord = float3(-u, -v, -1.0); break; // NEGATIVE Z
         default: newCoord = float3(0, 0, 0); break; // silences warning
@@ -105,8 +105,8 @@ float4 BlitFromCubeArray(VertexToPixel input) : SV_Target0
     switch ((uint)LayerOrDepth % 6) {
         case 0: newCoord = float3(1.0, -v, -u); break; // POSITIVE X
         case 1: newCoord = float3(-1.0, -v, u); break; // NEGATIVE X
-        case 2: newCoord = float3(u, -1.0, -v); break; // POSITIVE Y
-        case 3: newCoord = float3(u, 1.0, v); break; // NEGATIVE Y
+        case 2: newCoord = float3(u, 1.0, -v); break; // POSITIVE Y
+        case 3: newCoord = float3(u, -1.0, v); break; // NEGATIVE Y
         case 4: newCoord = float3(u, -v, 1.0); break; // POSITIVE Z
         case 5: newCoord = float3(-u, -v, -1.0); break; // NEGATIVE Z
         default: newCoord = float3(0, 0, 0); break; // silences warning
