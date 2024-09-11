@@ -305,11 +305,6 @@ static Uint32 StepUTF32(const Uint32 **_str, const size_t slen)
 }
 #endif
 
-#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_WCSTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
-#define SDL_isupperhex(X) (((X) >= 'A') && ((X) <= 'F'))
-#define SDL_islowerhex(X) (((X) >= 'a') && ((X) <= 'f'))
-#endif
-
 #define UTF8_IsLeadByte(c)     ((c) >= 0xC0 && (c) <= 0xF4)
 #define UTF8_IsTrailingByte(c) ((c) >= 0x80 && (c) <= 0xBF)
 
@@ -534,33 +529,25 @@ static size_t SDL_ScanUnsignedLong(const char *text, int count, int radix, unsig
 #endif
 
 #ifndef HAVE_VSSCANF
-static size_t SDL_ScanUintPtrT(const char *text, int radix, uintptr_t *valuep)
+static size_t SDL_ScanUintPtrT(const char *text, uintptr_t *valuep)
 {
-    const char *textstart = text;
-    uintptr_t value = 0;
-
-    if (radix == 16 && SDL_strncmp(text, "0x", 2) == 0) {
-        text += 2;
-    }
-    for (;;) {
-        int v;
-        if (SDL_isdigit((unsigned char)*text)) {
-            v = *text - '0';
-        } else if (radix == 16 && SDL_isupperhex(*text)) {
-            v = 10 + (*text - 'A');
-        } else if (radix == 16 && SDL_islowerhex(*text)) {
-            v = 10 + (*text - 'a');
+    const uintptr_t uintptr_max = ~(uintptr_t)0;
+    unsigned long long value;
+    bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternal(text, 0, 16, &value, &negative);
+    if (negative) {
+        if (value == 0 || value > uintptr_max) {
+            value = uintptr_max;
+        } else if (value == uintptr_max) {
+            value = 1;
         } else {
-            break;
+            value = 0ULL - value;
         }
-        value *= radix;
-        value += v;
-        ++text;
+    } else if (value > uintptr_max) {
+        value = uintptr_max;
     }
-    if (valuep && text > textstart) {
-        *valuep = value;
-    }
-    return text - textstart;
+    *valuep = value;
+    return len;
 }
 #endif
 
@@ -1616,7 +1603,7 @@ int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_li
                 case 'p':
                 {
                     uintptr_t value = 0;
-                    advance = SDL_ScanUintPtrT(text, 16, &value);
+                    advance = SDL_ScanUintPtrT(text, &value);
                     text += advance;
                     if (advance && !suppress) {
                         void **valuep = va_arg(ap, void **);

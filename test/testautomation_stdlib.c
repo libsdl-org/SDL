@@ -726,6 +726,7 @@ static int SDLCALL stdlib_sscanf(void *arg)
     long long_output, expected_long_output;
     long long long_long_output, expected_long_long_output;
     size_t size_output, expected_size_output;
+    uintptr_t uintptr_output, expected_uintptr_output;
     char text[128], text2[128];
 
     expected_output = output = 123;
@@ -788,6 +789,15 @@ static int SDLCALL stdlib_sscanf(void *arg)
     result = SDL_sscanf(text, "%zu", &size_output);
     SDLTest_AssertPass("Call to SDL_sscanf(\"%s\", \"%%zu\", &output)", text);
     SDLTest_AssertCheck(expected_size_output == size_output, "Check output, expected: %zu, got: %zu", expected_size_output, size_output);
+    SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
+
+    uintptr_output = 123;
+    expected_uintptr_output = 0x1234567;
+    expected_result = 1;
+    result = SDL_snprintf(text, sizeof(text), "%p", expected_uintptr_output);
+    result = SDL_sscanf(text, "%p", &uintptr_output);
+    SDLTest_AssertPass("Call to SDL_sscanf(\"%s\", \"%%p\", &output)", text);
+    SDLTest_AssertCheck(expected_uintptr_output == uintptr_output, "Check output, expected: %p, got: %p", expected_uintptr_output, uintptr_output);
     SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
 
     expected_result = 1;
