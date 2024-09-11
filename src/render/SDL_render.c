@@ -326,7 +326,6 @@ static bool FlushRenderCommands(SDL_Renderer *renderer)
     renderer->vertex_data_used = 0;
     renderer->render_command_generation++;
     renderer->color_queued = false;
-    renderer->color_scale_queued = false;
     renderer->viewport_queued = false;
     renderer->cliprect_queued = false;
     return result;
@@ -748,6 +747,17 @@ static void UpdateMainViewDimensions(SDL_Renderer *renderer)
     UpdatePixelViewport(renderer, &renderer->main_view);
 }
 
+static void UpdateColorScale(SDL_Renderer *renderer)
+{
+    float SDR_white_point;
+    if (renderer->target) {
+        SDR_white_point = renderer->target->SDR_white_point;
+    } else {
+        SDR_white_point = renderer->SDR_white_point;
+    }
+    renderer->color_scale = renderer->desired_color_scale * SDR_white_point;
+}
+
 static void UpdateHDRProperties(SDL_Renderer *renderer)
 {
     SDL_PropertiesID window_props;
@@ -762,8 +772,6 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
     if (!renderer_props) {
         return;
     }
-
-    renderer->color_scale /= renderer->SDR_white_point;
 
     if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
         renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
@@ -781,7 +789,7 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
     SDL_SetFloatProperty(renderer_props, SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point);
     SDL_SetFloatProperty(renderer_props, SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT, renderer->HDR_headroom);
 
-    renderer->color_scale *= renderer->SDR_white_point;
+    UpdateColorScale(renderer);
 }
 
 static bool UpdateLogicalPresentation(SDL_Renderer *renderer);
@@ -1072,6 +1080,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     renderer->SDR_white_point = 1.0f;
     renderer->HDR_headroom = 1.0f;
+    renderer->desired_color_scale = 1.0f;
     renderer->color_scale = 1.0f;
 
     if (window) {
@@ -2502,6 +2511,7 @@ static bool SDL_SetRenderTargetInternal(SDL_Renderer *renderer, SDL_Texture *tex
     } else {
         renderer->view = &renderer->main_view;
     }
+    UpdateColorScale(renderer);
 
     if (!renderer->SetRenderTarget(renderer, texture)) {
         SDL_UnlockMutex(renderer->target_mutex);
@@ -3262,7 +3272,8 @@ SDL_bool SDL_SetRenderColorScale(SDL_Renderer *renderer, float scale)
 {
     CHECK_RENDERER_MAGIC(renderer, false);
 
-    renderer->color_scale = scale * renderer->SDR_white_point;
+    renderer->desired_color_scale = scale;
+    UpdateColorScale(renderer);
     return true;
 }
 
@@ -3275,7 +3286,7 @@ SDL_bool SDL_GetRenderColorScale(SDL_Renderer *renderer, float *scale)
     CHECK_RENDERER_MAGIC(renderer, false);
 
     if (scale) {
-        *scale = renderer->color_scale / renderer->SDR_white_point;
+        *scale = renderer->desired_color_scale;
     }
     return true;
 }
