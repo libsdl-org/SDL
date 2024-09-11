@@ -580,7 +580,7 @@ typedef enum SDL_GPUShaderStage
  *
  * Each format corresponds to a specific backend that accepts it.
  *
- * \since This enum is available since SDL 3.0.0
+ * \since This datatype is available since SDL 3.0.0
  *
  * \sa SDL_CreateGPUShader
  */
