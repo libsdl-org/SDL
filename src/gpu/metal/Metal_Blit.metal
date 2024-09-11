@@ -74,12 +74,37 @@ fragment float4 BlitFromCube(
     switch ((uint)sourceRegion.LayerOrDepth) {
         case 0: newCoord = float3(1.0, -v, -u); break; // POSITIVE X
         case 1: newCoord = float3(-1.0, -v, u); break; // NEGATIVE X
-        case 2: newCoord = float3(u, -1.0, -v); break; // POSITIVE Y
-        case 3: newCoord = float3(u, 1.0, v); break; // NEGATIVE Y
+        case 2: newCoord = float3(u, 1.0, -v); break; // POSITIVE Y
+        case 3: newCoord = float3(u, -1.0, v); break; // NEGATIVE Y
         case 4: newCoord = float3(u, -v, 1.0); break; // POSITIVE Z
         case 5: newCoord = float3(-u, -v, -1.0); break; // NEGATIVE Z
         default: newCoord = float3(0, 0, 0); break; // silences warning
     }
     return sourceTexture.sample(sourceSampler, newCoord, level(sourceRegion.MipLevel));
+}
+#endif
+
+#if COMPILE_BlitFromCubeArray
+fragment float4 BlitFromCubeArray(
+    VertexToFragment input [[stage_in]],
+    constant SourceRegion &sourceRegion [[buffer(0)]],
+    texturecube_array<float> sourceTexture [[texture(0)]],
+    sampler sourceSampler [[sampler(0)]])
+{
+    // Thanks, Wikipedia! https://en.wikipedia.org/wiki/Cube_mapping
+    float2 scaledUV = sourceRegion.UVLeftTop + sourceRegion.UVDimensions * input.tex;
+    float u = 2.0 * scaledUV.x - 1.0;
+    float v = 2.0 * scaledUV.y - 1.0;
+    float3 newCoord;
+    switch (((uint)sourceRegion.LayerOrDepth) % 6) {
+        case 0: newCoord = float3(1.0, -v, -u); break; // POSITIVE X
+        case 1: newCoord = float3(-1.0, -v, u); break; // NEGATIVE X
+        case 2: newCoord = float3(u, 1.0, -v); break; // POSITIVE Y
+        case 3: newCoord = float3(u, -1.0, v); break; // NEGATIVE Y
+        case 4: newCoord = float3(u, -v, 1.0); break; // POSITIVE Z
+        case 5: newCoord = float3(-u, -v, -1.0); break; // NEGATIVE Z
+        default: newCoord = float3(0, 0, 0); break; // silences warning
+    }
+    return sourceTexture.sample(sourceSampler, newCoord, (uint)sourceRegion.LayerOrDepth / 6, level(sourceRegion.MipLevel));
 }
 #endif

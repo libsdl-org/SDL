@@ -307,10 +307,11 @@ static NSUInteger SDLToMetal_SampleCount[] = {
 };
 
 static MTLTextureType SDLToMetal_TextureType[] = {
-    MTLTextureType2D,      // SDL_GPU_TEXTURETYPE_2D
-    MTLTextureType2DArray, // SDL_GPU_TEXTURETYPE_2D_ARRAY
-    MTLTextureType3D,      // SDL_GPU_TEXTURETYPE_3D
-    MTLTextureTypeCube     // SDL_GPU_TEXTURETYPE_CUBE
+    MTLTextureType2D,       // SDL_GPU_TEXTURETYPE_2D
+    MTLTextureType2DArray,  // SDL_GPU_TEXTURETYPE_2D_ARRAY
+    MTLTextureType3D,       // SDL_GPU_TEXTURETYPE_3D
+    MTLTextureTypeCube,     // SDL_GPU_TEXTURETYPE_CUBE
+    MTLTextureTypeCubeArray // SDL_GPU_TEXTURETYPE_CUBE_ARRAY
 };
 
 static SDL_GPUTextureFormat SwapchainCompositionToFormat[] = {
@@ -612,6 +613,7 @@ struct MetalRenderer
     SDL_GPUShader *blitFrom2DArrayShader;
     SDL_GPUShader *blitFrom3DShader;
     SDL_GPUShader *blitFromCubeShader;
+    SDL_GPUShader *blitFromCubeArrayShader;
 
     SDL_GPUSampler *blitNearestSampler;
     SDL_GPUSampler *blitLinearSampler;
@@ -1348,7 +1350,10 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
     textureDescriptor.depth = (createinfo->type == SDL_GPU_TEXTURETYPE_3D) ? createinfo->layer_count_or_depth : 1;
     textureDescriptor.mipmapLevelCount = createinfo->num_levels;
     textureDescriptor.sampleCount = 1;
-    textureDescriptor.arrayLength = (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) ? createinfo->layer_count_or_depth : 1;
+    textureDescriptor.arrayLength =
+        (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY)
+            ? createinfo->layer_count_or_depth
+            : 1;
     textureDescriptor.storageMode = MTLStorageModePrivate;
 
     textureDescriptor.usage = 0;
@@ -2955,6 +2960,7 @@ static void METAL_Blit(
         renderer->blitFrom2DArrayShader,
         renderer->blitFrom3DShader,
         renderer->blitFromCubeShader,
+        renderer->blitFromCubeArrayShader,
         &renderer->blitPipelines,
         &renderer->blitPipelineCount,
         &renderer->blitPipelineCapacity);
@@ -3468,6 +3474,7 @@ static Uint8 METAL_INTERNAL_CreateSwapchain(
             renderer->blitFrom2DArrayShader,
             renderer->blitFrom3DShader,
             renderer->blitFromCubeShader,
+            renderer->blitFromCubeArrayShader,
             &renderer->blitPipelines,
             &renderer->blitPipelineCount,
             &renderer->blitPipelineCapacity);
@@ -3795,6 +3802,14 @@ static bool METAL_SupportsTextureFormat(
             }
         }
 
+        // Cube arrays are not supported on older iOS devices
+        if (type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+            if (!([renderer->device supportsFamily:MTLGPUFamilyCommon2] ||
+                  [renderer->device supportsFamily:MTLGPUFamilyApple4])) {
+                return false;
+            }
+        }
+
         switch (format) {
         // Apple GPU exclusive
         case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
@@ -3934,6 +3949,19 @@ static void METAL_INTERNAL_InitBlitResources(
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to compile BlitFromCube fragment shader!");
     }
 
+    // BlitFromCubeArray fragment shader
+    shaderModuleCreateInfo.code = BlitFromCubeArray_metallib;
+    shaderModuleCreateInfo.code_size = BlitFromCubeArray_metallib_len;
+    shaderModuleCreateInfo.entrypoint = "BlitFromCubeArray";
+
+    renderer->blitFromCubeArrayShader = METAL_CreateShader(
+        (SDL_GPURenderer *)renderer,
+        &shaderModuleCreateInfo);
+
+    if (renderer->blitFromCubeArrayShader == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to compile BlitFromCubeArray fragment shader!");
+    }
+
     // Create samplers
     createinfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     createinfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
@@ -3981,6 +4009,7 @@ static void METAL_INTERNAL_DestroyBlitResources(
     METAL_ReleaseShader(driverData, renderer->blitFrom2DArrayShader);
     METAL_ReleaseShader(driverData, renderer->blitFrom3DShader);
     METAL_ReleaseShader(driverData, renderer->blitFromCubeShader);
+    METAL_ReleaseShader(driverData, renderer->blitFromCubeArrayShader);
 
     for (Uint32 i = 0; i < renderer->blitPipelineCount; i += 1) {
         METAL_ReleaseGraphicsPipeline(driverData, renderer->blitPipelines[i].pipeline);
