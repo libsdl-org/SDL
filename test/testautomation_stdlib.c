@@ -1467,6 +1467,126 @@ static int SDLCALL stdlib_strtoull(void *arg)
     SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %llu, got: %llu", expected_result, result);
     SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
 
+    // We know that SDL_strtol, SDL_strtoul and SDL_strtoll share the same code path as SDL_strtoull under the hood,
+    // so the most interesting test cases are those close to the bounds of the integer type.
+
+    // For simplicity, we only run long/long long tests when they are 32-bit/64-bit respectively.
+    // Since the tests are run against a variety of targets, this should be fine in practice.
+
+    // SDL_strtol (32-bit)
+    if (sizeof(long) == 4) {
+        long lresult;
+        long expected_lresult;
+
+        text = "2147483647";
+        expected_lresult = 2147483647;
+        expected_endp = (char *)text + 10;
+        lresult = SDL_strtol(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtol(\"2147483647\", &endp, 0)");
+        SDLTest_AssertCheck(lresult == expected_lresult, "Check result value, expected: %ld, got: %ld", expected_lresult, lresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+        text = "2147483648";
+        expected_lresult = 2147483647;
+        expected_endp = (char *)text + 10;
+        lresult = SDL_strtol(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtol(\"2147483648\", &endp, 0)");
+        SDLTest_AssertCheck(lresult == expected_lresult, "Check result value, expected: %ld, got: %ld", expected_lresult, lresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+        text = "-2147483648";
+        expected_lresult = -2147483648;
+        expected_endp = (char *)text + 11;
+        lresult = SDL_strtol(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtol(\"-2147483648\", &endp, 0)");
+        SDLTest_AssertCheck(lresult == expected_lresult, "Check result value, expected: %ld, got: %ld", expected_lresult, lresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+        text = "-2147483649";
+        expected_lresult = -2147483648;
+        expected_endp = (char *)text + 11;
+        lresult = SDL_strtol(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtol(\"-2147483649\", &endp, 0)");
+        SDLTest_AssertCheck(lresult == expected_lresult, "Check result value, expected: %ld, got: %ld", expected_lresult, lresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+    }
+
+    // SDL_strtoul (32-bit)
+    if (sizeof(unsigned long) == 4) {
+        unsigned long ulresult;
+        unsigned long expected_ulresult;
+
+        text = "4294967295";
+        expected_ulresult = 4294967295;
+        expected_endp = (char *)text + 10;
+        ulresult = SDL_strtoul(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtoul(\"4294967295\", &endp, 0)");
+        SDLTest_AssertCheck(ulresult == expected_ulresult, "Check result value, expected: %lu, got: %lu", expected_ulresult, ulresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+        text = "4294967296";
+        expected_ulresult = 4294967295;
+        expected_endp = (char *)text + 10;
+        ulresult = SDL_strtoul(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtoul(\"4294967296\", &endp, 0)");
+        SDLTest_AssertCheck(ulresult == expected_ulresult, "Check result value, expected: %lu, got: %lu", expected_ulresult, ulresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+        text = "-4294967295";
+        expected_ulresult = 1;
+        expected_endp = (char *)text + 11;
+        ulresult = SDL_strtoul(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtoul(\"-4294967295\", &endp, 0)");
+        SDLTest_AssertCheck(ulresult == expected_ulresult, "Check result value, expected: %lu, got: %lu", expected_ulresult, ulresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+        text = "-4294967296";
+        expected_ulresult = 4294967295;
+        expected_endp = (char *)text + 11;
+        ulresult = SDL_strtoul(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtoul(\"-4294967296\", &endp, 0)");
+        SDLTest_AssertCheck(ulresult == expected_ulresult, "Check result value, expected: %lu, got: %lu", expected_ulresult, ulresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+    }
+
+    // SDL_strtoll (64-bit)
+    if (sizeof(long long) == 8) {
+        long long llresult;
+        long long expected_llresult;
+
+        text = "9223372036854775807";
+        expected_llresult = 9223372036854775807;
+        expected_endp = (char *)text + 19;
+        llresult = SDL_strtoll(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtoll(\"9223372036854775807\", &endp, 0)");
+        SDLTest_AssertCheck(llresult == expected_llresult, "Check result value, expected: %lld, got: %lld", expected_llresult, llresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+        text = "9223372036854775808";
+        expected_llresult = 9223372036854775807;
+        expected_endp = (char *)text + 19;
+        llresult = SDL_strtoll(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtoll(\"9223372036854775808\", &endp, 0)");
+        SDLTest_AssertCheck(llresult == expected_llresult, "Check result value, expected: %lld, got: %lld", expected_llresult, llresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+        text = "-9223372036854775808";
+        expected_llresult = -9223372036854775807 - 1;
+        expected_endp = (char *)text + 20;
+        llresult = SDL_strtoll(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtoll(\"-9223372036854775808\", &endp, 0)");
+        SDLTest_AssertCheck(llresult == expected_llresult, "Check result value, expected: %lld, got: %lld", expected_llresult, llresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+        text = "-9223372036854775809";
+        expected_llresult = -9223372036854775807 - 1;
+        expected_endp = (char *)text + 20;
+        llresult = SDL_strtoll(text, &endp, 0);
+        SDLTest_AssertPass("Call to SDL_strtoll(\"-9223372036854775809\", &endp, 0)");
+        SDLTest_AssertCheck(llresult == expected_llresult, "Check result value, expected: %lld, got: %lld", expected_llresult, llresult);
+        SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+    }
+
     return TEST_COMPLETED;
 }
 
@@ -1522,7 +1642,7 @@ static const SDLTest_TestCaseReference stdlibTest_wcstol = {
 };
 
 static const SDLTest_TestCaseReference stdlibTest_strtoull = {
-    stdlib_strtoull, "stdlib_strtoull", "Calls to SDL_strtoull", TEST_ENABLED
+    stdlib_strtoull, "stdlib_strtoull", "Calls to SDL_strtoull, SDL_strtol, SDL_strtoul and SDL_strtoll", TEST_ENABLED
 };
 
 /* Sequence of Standard C routine test cases */
