@@ -87,7 +87,7 @@ typedef enum SDL_SystemCursor
     SDL_SYSTEM_CURSOR_S_RESIZE,     /**< Window resize bottom. May be NS_RESIZE. */
     SDL_SYSTEM_CURSOR_SW_RESIZE,    /**< Window resize bottom-left. May be NESW_RESIZE. */
     SDL_SYSTEM_CURSOR_W_RESIZE,     /**< Window resize left. May be EW_RESIZE. */
-    SDL_NUM_SYSTEM_CURSORS
+    SDL_SYSTEM_CURSOR_COUNT
 } SDL_SystemCursor;
 
 /**

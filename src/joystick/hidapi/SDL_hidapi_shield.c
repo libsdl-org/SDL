@@ -184,13 +184,13 @@ static bool HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     // Initialize the joystick capabilities
     if (device->product_id == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
         joystick->nbuttons = SDL_GAMEPAD_NUM_SHIELD_V103_BUTTONS;
-        joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+        joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
         joystick->nhats = 1;
 
         SDL_PrivateJoystickAddTouchpad(joystick, 1);
     } else {
         joystick->nbuttons = SDL_GAMEPAD_NUM_SHIELD_V104_BUTTONS;
-        joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+        joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
         joystick->nhats = 1;
     }
 

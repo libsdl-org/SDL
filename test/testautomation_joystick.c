@@ -29,8 +29,8 @@ static int SDLCALL TestVirtualJoystick(void *arg)
 
     SDL_INIT_INTERFACE(&desc);
     desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
-    desc.naxes = SDL_GAMEPAD_AXIS_MAX;
-    desc.nbuttons = SDL_GAMEPAD_BUTTON_MAX;
+    desc.naxes = SDL_GAMEPAD_AXIS_COUNT;
+    desc.nbuttons = SDL_GAMEPAD_BUTTON_COUNT;
     desc.vendor_id = USB_VENDOR_NVIDIA;
     desc.product_id = USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104;
     desc.name = "Virtual NVIDIA SHIELD Controller";

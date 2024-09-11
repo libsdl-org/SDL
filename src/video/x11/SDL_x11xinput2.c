@@ -458,7 +458,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
             SDL_SendPenMotion(0, pen->pen, window, (float) xev->event_x, (float) xev->event_y);
 
-            float axes[SDL_PEN_NUM_AXES];
+            float axes[SDL_PEN_AXIS_COUNT];
             X11_PenAxesFromValuators(pen, xev->valuators.values, xev->valuators.mask, xev->valuators.mask_len, axes);
 
             for (int i = 0; i < SDL_arraysize(axes); i++) {

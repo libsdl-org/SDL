@@ -222,7 +222,7 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
             const float min = (float)val_classinfo->min;
             const float max = (float)val_classinfo->max;
             bool use_this_axis = true;
-            SDL_PenAxis axis = SDL_PEN_NUM_AXES;
+            SDL_PenAxis axis = SDL_PEN_AXIS_COUNT;
 
             // afaict, SDL_PEN_AXIS_DISTANCE is never reported by XInput2 (Wayland can offer it, though)
             if (vname == data->pen_atom_abs_pressure) {
@@ -336,7 +336,7 @@ void X11_QuitPen(SDL_VideoDevice *_this)
 static void X11_XInput2NormalizePenAxes(const X11_PenHandle *pen, float *coords)
 {
     // Normalise axes
-    for (int axis = 0; axis < SDL_PEN_NUM_AXES; ++axis) {
+    for (int axis = 0; axis < SDL_PEN_AXIS_COUNT; ++axis) {
         const int valuator = pen->valuator_for_axis[axis];
         if (valuator == SDL_X11_PEN_AXIS_VALUATOR_MISSING) {
             continue;
@@ -403,9 +403,9 @@ static void X11_XInput2NormalizePenAxes(const X11_PenHandle *pen, float *coords)
 
 void X11_PenAxesFromValuators(const X11_PenHandle *pen,
                               const double *input_values, const unsigned char *mask, const int mask_len,
-                              float axis_values[SDL_PEN_NUM_AXES])
+                              float axis_values[SDL_PEN_AXIS_COUNT])
 {
-    for (int i = 0; i < SDL_PEN_NUM_AXES; i++) {
+    for (int i = 0; i < SDL_PEN_AXIS_COUNT; i++) {
         const int valuator = pen->valuator_for_axis[i];
         if ((valuator == SDL_X11_PEN_AXIS_VALUATOR_MISSING) || (valuator >= mask_len * 8) || !(XIMaskIsSet(mask, valuator))) {
             axis_values[i] = 0.0f;

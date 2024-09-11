@@ -293,14 +293,14 @@ static void RecenterGamepad(SDL_Gamepad *gamepad)
     int i;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    for (i = 0; i < SDL_GAMEPAD_BUTTON_MAX; ++i) {
+    for (i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; ++i) {
         SDL_GamepadButton button = (SDL_GamepadButton)i;
         if (SDL_GetGamepadButton(gamepad, button)) {
             SDL_SendGamepadButton(timestamp, gamepad, button, false);
         }
     }
 
-    for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
+    for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
         SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
         if (SDL_GetGamepadAxis(gamepad, axis) != 0) {
             SDL_SendGamepadAxis(timestamp, gamepad, axis, 0);
@@ -979,7 +979,7 @@ static const char *map_StringForGamepadType[] = {
     "joyconright",
     "joyconpair"
 };
-SDL_COMPILE_TIME_ASSERT(map_StringForGamepadType, SDL_arraysize(map_StringForGamepadType) == SDL_GAMEPAD_TYPE_MAX);
+SDL_COMPILE_TIME_ASSERT(map_StringForGamepadType, SDL_arraysize(map_StringForGamepadType) == SDL_GAMEPAD_TYPE_COUNT);
 
 /*
  * convert a string to its enum equivalent
@@ -1009,7 +1009,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromString(const char *str)
  */
 const char *SDL_GetGamepadStringForType(SDL_GamepadType type)
 {
-    if (type >= SDL_GAMEPAD_TYPE_STANDARD && type < SDL_GAMEPAD_TYPE_MAX) {
+    if (type >= SDL_GAMEPAD_TYPE_STANDARD && type < SDL_GAMEPAD_TYPE_COUNT) {
         return map_StringForGamepadType[type];
     }
     return NULL;
@@ -1023,7 +1023,7 @@ static const char *map_StringForGamepadAxis[] = {
     "lefttrigger",
     "righttrigger"
 };
-SDL_COMPILE_TIME_ASSERT(map_StringForGamepadAxis, SDL_arraysize(map_StringForGamepadAxis) == SDL_GAMEPAD_AXIS_MAX);
+SDL_COMPILE_TIME_ASSERT(map_StringForGamepadAxis, SDL_arraysize(map_StringForGamepadAxis) == SDL_GAMEPAD_AXIS_COUNT);
 
 /*
  * convert a string to its enum equivalent
@@ -1053,7 +1053,7 @@ SDL_GamepadAxis SDL_GetGamepadAxisFromString(const char *str)
  */
 const char *SDL_GetGamepadStringForAxis(SDL_GamepadAxis axis)
 {
-    if (axis > SDL_GAMEPAD_AXIS_INVALID && axis < SDL_GAMEPAD_AXIS_MAX) {
+    if (axis > SDL_GAMEPAD_AXIS_INVALID && axis < SDL_GAMEPAD_AXIS_COUNT) {
         return map_StringForGamepadAxis[axis];
     }
     return NULL;
@@ -1087,7 +1087,7 @@ static const char *map_StringForGamepadButton[] = {
     "misc5",
     "misc6"
 };
-SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButton, SDL_arraysize(map_StringForGamepadButton) == SDL_GAMEPAD_BUTTON_MAX);
+SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButton, SDL_arraysize(map_StringForGamepadButton) == SDL_GAMEPAD_BUTTON_COUNT);
 
 /*
  * convert a string to its enum equivalent
@@ -1132,7 +1132,7 @@ SDL_GamepadButton SDL_GetGamepadButtonFromString(const char *str)
  */
 const char *SDL_GetGamepadStringForButton(SDL_GamepadButton button)
 {
-    if (button > SDL_GAMEPAD_BUTTON_INVALID && button < SDL_GAMEPAD_BUTTON_MAX) {
+    if (button > SDL_GAMEPAD_BUTTON_INVALID && button < SDL_GAMEPAD_BUTTON_COUNT) {
         return map_StringForGamepadButton[button];
     }
     return NULL;

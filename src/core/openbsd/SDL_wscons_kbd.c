@@ -808,7 +808,7 @@ static void updateKeyboard(SDL_WSCONS_input_data *input)
                 }
             } break;
             case WSCONS_EVENT_ALL_KEYS_UP:
-                for (i = 0; i < SDL_NUM_SCANCODES; i++) {
+                for (i = 0; i < SDL_SCANCODE_COUNT; i++) {
                     SDL_SendKeyboardKey(0, input->keyboardID, 0, (SDL_Scancode)i, false);
                 }
                 break;

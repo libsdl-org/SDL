@@ -43,7 +43,7 @@ static const char *cursorNames[] = {
     "window bottom left",
     "window left"
 };
-SDL_COMPILE_TIME_ASSERT(cursorNames, SDL_arraysize(cursorNames) == SDL_NUM_SYSTEM_CURSORS);
+SDL_COMPILE_TIME_ASSERT(cursorNames, SDL_arraysize(cursorNames) == SDL_SYSTEM_CURSOR_COUNT);
 
 static int system_cursor = -1;
 static SDL_Cursor *cursor = NULL;
@@ -193,12 +193,12 @@ static void loop(void)
             } else if (event.key.key == SDLK_LEFT) {
                 --system_cursor;
                 if (system_cursor < 0) {
-                    system_cursor = SDL_NUM_SYSTEM_CURSORS - 1;
+                    system_cursor = SDL_SYSTEM_CURSOR_COUNT - 1;
                 }
                 updateCursor = SDL_TRUE;
             } else if (event.key.key == SDLK_RIGHT) {
                 ++system_cursor;
-                if (system_cursor >= SDL_NUM_SYSTEM_CURSORS) {
+                if (system_cursor >= SDL_SYSTEM_CURSOR_COUNT) {
                     system_cursor = 0;
                 }
                 updateCursor = SDL_TRUE;

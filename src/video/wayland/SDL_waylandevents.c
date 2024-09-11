@@ -2486,7 +2486,7 @@ typedef struct SDL_WaylandPenTool  // a stylus, etc, on a tablet.
     float x;
     float y;
     bool frame_motion_set;
-    float frame_axes[SDL_PEN_NUM_AXES];
+    float frame_axes[SDL_PEN_AXIS_COUNT];
     Uint32 frame_axes_set;
     int frame_pen_down;
     int frame_buttons[3];
@@ -2705,7 +2705,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
         }
     }
 
-    for (SDL_PenAxis i = 0; i < SDL_PEN_NUM_AXES; i++) {
+    for (SDL_PenAxis i = 0; i < SDL_PEN_AXIS_COUNT; i++) {
         if (sdltool->frame_axes_set & (1u << i)) {
             SDL_SendPenAxis(timestamp, instance_id, window, i, sdltool->frame_axes[i]);
         }
