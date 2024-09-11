@@ -62,7 +62,7 @@ struct SDLTest_TestSuiteRunner {
 };
 
 /* ! Timeout for single test case execution */
-static Uint32 SDLTest_TestCaseTimeout = 3600;;
+static Uint32 SDLTest_TestCaseTimeout = 3600;
 
 static const char *common_harness_usage[] = {
     "[--iterations #]",
