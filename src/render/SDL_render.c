@@ -172,16 +172,6 @@ void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props)
     renderer->output_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
 }
 
-static float sRGBtoLinear(float v)
-{
-    return v <= 0.04045f ? (v / 12.92f) : SDL_powf(((v + 0.055f) / 1.055f), 2.4f);
-}
-
-static float sRGBfromLinear(float v)
-{
-    return v <= 0.0031308f ? (v * 12.92f) : (SDL_powf(v, 1.0f / 2.4f) * 1.055f - 0.055f);
-}
-
 bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
 {
     SDL_Colorspace colorspace;
@@ -199,16 +189,16 @@ bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
 
 void SDL_ConvertToLinear(SDL_FColor *color)
 {
-    color->r = sRGBtoLinear(color->r);
-    color->g = sRGBtoLinear(color->g);
-    color->b = sRGBtoLinear(color->b);
+    color->r = SDL_sRGBtoLinear(color->r);
+    color->g = SDL_sRGBtoLinear(color->g);
+    color->b = SDL_sRGBtoLinear(color->b);
 }
 
 void SDL_ConvertFromLinear(SDL_FColor *color)
 {
-    color->r = sRGBfromLinear(color->r);
-    color->g = sRGBfromLinear(color->g);
-    color->b = sRGBfromLinear(color->b);
+    color->r = SDL_sRGBfromLinear(color->r);
+    color->g = SDL_sRGBfromLinear(color->g);
+    color->b = SDL_sRGBfromLinear(color->b);
 }
 
 static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
