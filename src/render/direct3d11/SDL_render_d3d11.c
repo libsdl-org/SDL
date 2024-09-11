@@ -53,19 +53,19 @@
 // Sampler types
 typedef enum
 {
-    SDL_D3D11_SAMPLER_NEAREST_CLAMP,
-    SDL_D3D11_SAMPLER_NEAREST_WRAP,
-    SDL_D3D11_SAMPLER_LINEAR_CLAMP,
-    SDL_D3D11_SAMPLER_LINEAR_WRAP,
-    SDL_NUM_D3D11_SAMPLERS
-} SDL_D3D11_sampler_type;
+    D3D11_SAMPLER_NEAREST_CLAMP,
+    D3D11_SAMPLER_NEAREST_WRAP,
+    D3D11_SAMPLER_LINEAR_CLAMP,
+    D3D11_SAMPLER_LINEAR_WRAP,
+    D3D11_SAMPLER_COUNT
+} D3D11_Sampler;
 
 // Vertex shader, common values
 typedef struct
 {
     Float4X4 model;
     Float4X4 projectionAndView;
-} VertexShaderConstants;
+} D3D11_VertexShaderConstants;
 
 // These should mirror the definitions in D3D11_PixelShader_Common.hlsli
 //static const float TONEMAP_NONE = 0;
@@ -96,13 +96,13 @@ typedef struct
     float sdr_white_point;
 
     float YCbCr_matrix[16];
-} PixelShaderConstants;
+} D3D11_PixelShaderConstants;
 
 typedef struct
 {
     ID3D11Buffer *constants;
-    PixelShaderConstants shader_constants;
-} PixelShaderState;
+    D3D11_PixelShaderConstants shader_constants;
+} D3D11_PixelShaderState;
 
 // Per-vertex data
 typedef struct
@@ -110,7 +110,7 @@ typedef struct
     Float2 pos;
     Float2 tex;
     SDL_FColor color;
-} VertexPositionColor;
+} D3D11_VertexPositionColor;
 
 // Per-texture data
 typedef struct
@@ -173,7 +173,7 @@ typedef struct
     ID3D11PixelShader *pixelShaders[NUM_SHADERS];
     int blendModesCount;
     D3D11_BlendMode *blendModes;
-    ID3D11SamplerState *samplers[SDL_NUM_D3D11_SAMPLERS];
+    ID3D11SamplerState *samplers[D3D11_SAMPLER_COUNT];
     D3D_FEATURE_LEVEL featureLevel;
     bool pixelSizeChanged;
 
@@ -182,7 +182,7 @@ typedef struct
     ID3D11RasterizerState *clippedRasterizer;
 
     // Vertex buffer constants
-    VertexShaderConstants vertexShaderConstantsData;
+    D3D11_VertexShaderConstants vertexShaderConstantsData;
     ID3D11Buffer *vertexShaderConstants;
 
     // Cached renderer properties
@@ -191,7 +191,7 @@ typedef struct
     ID3D11RasterizerState *currentRasterizerState;
     ID3D11BlendState *currentBlendState;
     D3D11_Shader currentShader;
-    PixelShaderState currentShaderState[NUM_SHADERS];
+    D3D11_PixelShaderState currentShaderState[NUM_SHADERS];
     ID3D11ShaderResourceView *currentShaderResource;
     ID3D11SamplerState *currentSampler;
     bool cliprectDirty;
@@ -698,7 +698,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 
     // Setup space to hold vertex shader constants:
     SDL_zero(constantBufferDesc);
-    constantBufferDesc.ByteWidth = sizeof(VertexShaderConstants);
+    constantBufferDesc.ByteWidth = sizeof(D3D11_VertexShaderConstants);
     constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
     constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     result = ID3D11Device_CreateBuffer(data->d3dDevice,
@@ -721,7 +721,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         { D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP },
         { D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP },
     };
-    SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == SDL_NUM_D3D11_SAMPLERS);
+    SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == D3D11_SAMPLER_COUNT);
     SDL_zero(samplerDesc);
     samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
     samplerDesc.MipLODBias = 0.0f;
@@ -1834,7 +1834,7 @@ static bool D3D11_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
 static bool D3D11_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+    D3D11_VertexPositionColor *verts = (D3D11_VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(D3D11_VertexPositionColor), 0, &cmd->data.draw.first);
     int i;
     SDL_FColor color = cmd->data.draw.color;
     bool convert_color = SDL_RenderingLinearSpace(renderer);
@@ -1868,7 +1868,7 @@ static bool D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 {
     int i;
     int count = indices ? num_indices : num_vertices;
-    VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+    D3D11_VertexPositionColor *verts = (D3D11_VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(D3D11_VertexPositionColor), 0, &cmd->data.draw.first);
     bool convert_color = SDL_RenderingLinearSpace(renderer);
     D3D11_TextureData *textureData = texture ? (D3D11_TextureData *)texture->internal : NULL;
     float u_scale = textureData ? (float)texture->w / textureData->w : 0.0f;
@@ -1923,7 +1923,7 @@ static bool D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     HRESULT result = S_OK;
     const int vbidx = rendererData->currentVertexBuffer;
-    const UINT stride = sizeof(VertexPositionColor);
+    const UINT stride = sizeof(D3D11_VertexPositionColor);
     const UINT offset = 0;
 
     if (dataSizeInBytes == 0) {
@@ -2087,7 +2087,7 @@ static ID3D11RenderTargetView *D3D11_GetCurrentRenderTargetView(SDL_Renderer *re
     }
 }
 
-static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, PixelShaderConstants *constants)
+static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, D3D11_PixelShaderConstants *constants)
 {
     float output_headroom;
 
@@ -2150,7 +2150,7 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
 }
 
 static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd,
-                              D3D11_Shader shader, const PixelShaderConstants *shader_constants,
+                              D3D11_Shader shader, const D3D11_PixelShaderConstants *shader_constants,
                               const int numShaderResources, ID3D11ShaderResourceView **shaderResources,
                               ID3D11SamplerState *sampler, const Float4X4 *matrix)
 
@@ -2163,8 +2163,8 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
     const SDL_BlendMode blendMode = cmd->data.draw.blend;
     ID3D11BlendState *blendState = NULL;
     bool updateSubresource = false;
-    PixelShaderState *shader_state = &rendererData->currentShaderState[shader];
-    PixelShaderConstants solid_constants;
+    D3D11_PixelShaderState *shader_state = &rendererData->currentShaderState[shader];
+    D3D11_PixelShaderConstants solid_constants;
 
     if (numShaderResources > 0) {
         shaderResource = shaderResources[0];
@@ -2308,7 +2308,7 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
     ID3D11SamplerState *textureSampler;
-    PixelShaderConstants constants;
+    D3D11_PixelShaderConstants constants;
 
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
@@ -2320,10 +2320,10 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     case D3D11_FILTER_MIN_MAG_MIP_POINT:
         switch (cmd->data.draw.texture_address_mode) {
         case SDL_TEXTURE_ADDRESS_CLAMP:
-            textureSampler = rendererData->samplers[SDL_D3D11_SAMPLER_NEAREST_CLAMP];
+            textureSampler = rendererData->samplers[D3D11_SAMPLER_NEAREST_CLAMP];
             break;
         case SDL_TEXTURE_ADDRESS_WRAP:
-            textureSampler = rendererData->samplers[SDL_D3D11_SAMPLER_NEAREST_WRAP];
+            textureSampler = rendererData->samplers[D3D11_SAMPLER_NEAREST_WRAP];
             break;
         default:
             return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
@@ -2332,10 +2332,10 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     case D3D11_FILTER_MIN_MAG_MIP_LINEAR:
         switch (cmd->data.draw.texture_address_mode) {
         case SDL_TEXTURE_ADDRESS_CLAMP:
-            textureSampler = rendererData->samplers[SDL_D3D11_SAMPLER_LINEAR_CLAMP];
+            textureSampler = rendererData->samplers[D3D11_SAMPLER_LINEAR_CLAMP];
             break;
         case SDL_TEXTURE_ADDRESS_WRAP:
-            textureSampler = rendererData->samplers[SDL_D3D11_SAMPLER_LINEAR_WRAP];
+            textureSampler = rendererData->samplers[D3D11_SAMPLER_LINEAR_WRAP];
             break;
         default:
             return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
@@ -2458,7 +2458,7 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
         {
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(VertexPositionColor);
+            const size_t start = first / sizeof(D3D11_VertexPositionColor);
             D3D11_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, 0, NULL, NULL, NULL);
             D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, start, count);
             break;
@@ -2468,8 +2468,8 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
         {
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(VertexPositionColor);
-            const VertexPositionColor *verts = (VertexPositionColor *)(((Uint8 *)vertices) + first);
+            const size_t start = first / sizeof(D3D11_VertexPositionColor);
+            const D3D11_VertexPositionColor *verts = (D3D11_VertexPositionColor *)(((Uint8 *)vertices) + first);
             D3D11_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, 0, NULL, NULL, NULL);
             D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, start, count);
             if (verts[0].pos.x != verts[count - 1].pos.x || verts[0].pos.y != verts[count - 1].pos.y) {
@@ -2492,7 +2492,7 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             SDL_Texture *texture = cmd->data.draw.texture;
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(VertexPositionColor);
+            const size_t start = first / sizeof(D3D11_VertexPositionColor);
 
             if (texture) {
                 D3D11_SetCopyState(renderer, cmd, NULL);
