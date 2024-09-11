@@ -958,7 +958,7 @@ static bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     } else {
         joystick->nbuttons = 11;
     }
-    joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
     joystick->firmware_version = ctx->firmware_version;
 

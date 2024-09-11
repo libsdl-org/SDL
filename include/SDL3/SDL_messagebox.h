@@ -96,7 +96,7 @@ typedef enum SDL_MessageBoxColorType
     SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
     SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
     SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
-    SDL_MESSAGEBOX_COLOR_MAX                    /**< Size of the colors array of SDL_MessageBoxColorScheme. */
+    SDL_MESSAGEBOX_COLOR_COUNT                    /**< Size of the colors array of SDL_MessageBoxColorScheme. */
 } SDL_MessageBoxColorType;
 
 /**
@@ -106,7 +106,7 @@ typedef enum SDL_MessageBoxColorType
  */
 typedef struct SDL_MessageBoxColorScheme
 {
-    SDL_MessageBoxColor colors[SDL_MESSAGEBOX_COLOR_MAX];
+    SDL_MessageBoxColor colors[SDL_MESSAGEBOX_COLOR_COUNT];
 } SDL_MessageBoxColorScheme;
 
 /**

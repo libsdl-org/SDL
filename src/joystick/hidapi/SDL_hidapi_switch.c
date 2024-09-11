@@ -1498,7 +1498,7 @@ static bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 
     // Initialize the joystick capabilities
     joystick->nbuttons = SDL_GAMEPAD_NUM_SWITCH_BUTTONS;
-    joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
     // Set up for input

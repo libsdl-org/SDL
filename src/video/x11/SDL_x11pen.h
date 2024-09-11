@@ -46,17 +46,17 @@ typedef struct X11_PenHandle
     SDL_PenID pen;
     bool is_eraser;
     int x11_deviceid;
-    int valuator_for_axis[SDL_PEN_NUM_AXES];
+    int valuator_for_axis[SDL_PEN_AXIS_COUNT];
     float slider_bias;      // shift value to add to PEN_AXIS_SLIDER (before normalisation)
     float rotation_bias;    // rotation to add to PEN_AXIS_ROTATION  (after normalisation)
-    float axis_min[SDL_PEN_NUM_AXES];
-    float axis_max[SDL_PEN_NUM_AXES];
+    float axis_min[SDL_PEN_AXIS_COUNT];
+    float axis_max[SDL_PEN_AXIS_COUNT];
 } X11_PenHandle;
 
 // Converts XINPUT2 valuators into pen axis information, including normalisation.
 extern void X11_PenAxesFromValuators(const X11_PenHandle *pen,
                                      const double *input_values, const unsigned char *mask, const int mask_len,
-                                     float axis_values[SDL_PEN_NUM_AXES]);
+                                     float axis_values[SDL_PEN_AXIS_COUNT]);
 
 // Add a pen (if this function's further checks validate it).
 extern X11_PenHandle *X11_MaybeAddPenByDeviceID(SDL_VideoDevice *_this, int deviceid);

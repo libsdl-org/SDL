@@ -218,7 +218,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
 
         // Find the trigger axes
         axis = 0;
-        for (i = 0; axis < hwdata->desc.naxes && i < SDL_GAMEPAD_AXIS_MAX; ++i) {
+        for (i = 0; axis < hwdata->desc.naxes && i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
             if (hwdata->desc.axis_mask & (1 << i)) {
                 if (i == SDL_GAMEPAD_AXIS_LEFT_TRIGGER) {
                     axis_triggerleft = axis;

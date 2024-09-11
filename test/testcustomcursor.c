@@ -219,8 +219,8 @@ static SDL_Cursor *init_system_cursor(const char *image[])
 
 static SDLTest_CommonState *state;
 static int done;
-static SDL_Cursor *cursors[3 + SDL_NUM_SYSTEM_CURSORS];
-static SDL_SystemCursor cursor_types[3 + SDL_NUM_SYSTEM_CURSORS];
+static SDL_Cursor *cursors[3 + SDL_SYSTEM_CURSOR_COUNT];
+static SDL_SystemCursor cursor_types[3 + SDL_SYSTEM_CURSOR_COUNT];
 static int num_cursors;
 static int current_cursor;
 static SDL_bool show_cursor;
@@ -437,7 +437,7 @@ int main(int argc, char *argv[])
         num_cursors++;
     }
 
-    for (i = 0; i < SDL_NUM_SYSTEM_CURSORS; ++i) {
+    for (i = 0; i < SDL_SYSTEM_CURSOR_COUNT; ++i) {
         cursor = SDL_CreateSystemCursor((SDL_SystemCursor)i);
         if (cursor) {
             cursors[num_cursors] = cursor;

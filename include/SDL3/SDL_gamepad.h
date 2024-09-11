@@ -100,7 +100,7 @@ typedef enum SDL_GamepadType
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
-    SDL_GAMEPAD_TYPE_MAX
+    SDL_GAMEPAD_TYPE_COUNT
 } SDL_GamepadType;
 
 /**
@@ -155,7 +155,7 @@ typedef enum SDL_GamepadButton
     SDL_GAMEPAD_BUTTON_MISC4,           /* Additional button */
     SDL_GAMEPAD_BUTTON_MISC5,           /* Additional button */
     SDL_GAMEPAD_BUTTON_MISC6,           /* Additional button */
-    SDL_GAMEPAD_BUTTON_MAX
+    SDL_GAMEPAD_BUTTON_COUNT
 } SDL_GamepadButton;
 
 /**
@@ -205,7 +205,7 @@ typedef enum SDL_GamepadAxis
     SDL_GAMEPAD_AXIS_RIGHTY,
     SDL_GAMEPAD_AXIS_LEFT_TRIGGER,
     SDL_GAMEPAD_AXIS_RIGHT_TRIGGER,
-    SDL_GAMEPAD_AXIS_MAX
+    SDL_GAMEPAD_AXIS_COUNT
 } SDL_GamepadAxis;
 
 /**

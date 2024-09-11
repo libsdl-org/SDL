@@ -53,8 +53,8 @@ typedef struct SDL_Keyboard
     // Data common to all keyboards
     SDL_Window *focus;
     SDL_Keymod modstate;
-    Uint8 keysource[SDL_NUM_SCANCODES];
-    SDL_bool keystate[SDL_NUM_SCANCODES];
+    Uint8 keysource[SDL_SCANCODE_COUNT];
+    SDL_bool keystate[SDL_SCANCODE_COUNT];
     SDL_Keymap *keymap;
     bool french_numbers;
     bool latin_letters;
@@ -219,7 +219,7 @@ void SDL_ResetKeyboard(void)
 #ifdef DEBUG_KEYBOARD
     printf("Resetting keyboard\n");
 #endif
-    for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
+    for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_SCANCODE_COUNT; ++scancode) {
         if (keyboard->keystate[scancode]) {
             SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, (SDL_Scancode)scancode, false);
         }
@@ -510,7 +510,7 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
         type = SDL_EVENT_KEY_UP;
     }
 
-    if (scancode > SDL_SCANCODE_UNKNOWN && scancode < SDL_NUM_SCANCODES) {
+    if (scancode > SDL_SCANCODE_UNKNOWN && scancode < SDL_SCANCODE_COUNT) {
         // Drop events that don't change state
         if (down) {
             if (keyboard->keystate[scancode]) {
@@ -691,7 +691,7 @@ void SDL_ReleaseAutoReleaseKeys(void)
     int scancode;
 
     if (keyboard->autorelease_pending) {
-        for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
+        for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_SCANCODE_COUNT; ++scancode) {
             if (keyboard->keysource[scancode] == KEYBOARD_AUTORELEASE) {
                 SDL_SendKeyboardKeyInternal(0, KEYBOARD_AUTORELEASE, SDL_GLOBAL_KEYBOARD_ID, 0, (SDL_Scancode)scancode, false);
             }
@@ -712,7 +712,7 @@ bool SDL_HardwareKeyboardKeyPressed(void)
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int scancode;
 
-    for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
+    for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_SCANCODE_COUNT; ++scancode) {
         if (keyboard->keysource[scancode] & KEYBOARD_HARDWARE) {
             return true;
         }
@@ -868,7 +868,7 @@ const SDL_bool *SDL_GetKeyboardState(int *numkeys)
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
     if (numkeys != (int *)0) {
-        *numkeys = SDL_NUM_SCANCODES;
+        *numkeys = SDL_SCANCODE_COUNT;
     }
     return keyboard->keystate;
 }

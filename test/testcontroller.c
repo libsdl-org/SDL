@@ -479,8 +479,8 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
     /* If the controller generates multiple events for a single element, pick the best one */
     if (!force && binding_advance_time) {
         char *current = GetElementBinding(mapping, binding_element);
-        SDL_bool native_button = (binding_element < SDL_GAMEPAD_BUTTON_MAX);
-        SDL_bool native_axis = (binding_element >= SDL_GAMEPAD_BUTTON_MAX &&
+        SDL_bool native_button = (binding_element < SDL_GAMEPAD_BUTTON_COUNT);
+        SDL_bool native_axis = (binding_element >= SDL_GAMEPAD_BUTTON_COUNT &&
                                 binding_element <= SDL_GAMEPAD_ELEMENT_AXIS_MAX);
         SDL_bool native_trigger = (binding_element == SDL_GAMEPAD_ELEMENT_AXIS_LEFT_TRIGGER ||
                                    binding_element == SDL_GAMEPAD_ELEMENT_AXIS_RIGHT_TRIGGER);
@@ -1161,8 +1161,8 @@ static void OpenVirtualGamepad(void)
 
     SDL_INIT_INTERFACE(&desc);
     desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
-    desc.naxes = SDL_GAMEPAD_AXIS_MAX;
-    desc.nbuttons = SDL_GAMEPAD_BUTTON_MAX;
+    desc.naxes = SDL_GAMEPAD_AXIS_COUNT;
+    desc.nbuttons = SDL_GAMEPAD_BUTTON_COUNT;
     desc.ntouchpads = 1;
     desc.touchpads = &virtual_touchpad;
     desc.nsensors = 1;
@@ -1269,7 +1269,7 @@ static void VirtualGamepadMouseDown(float x, float y)
         return;
     }
 
-    if (element < SDL_GAMEPAD_BUTTON_MAX) {
+    if (element < SDL_GAMEPAD_BUTTON_COUNT) {
         virtual_button_active = (SDL_GamepadButton)element;
         SDL_SetJoystickVirtualButton(virtual_joystick, virtual_button_active, SDL_TRUE);
     } else {

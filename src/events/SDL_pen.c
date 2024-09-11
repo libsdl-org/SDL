@@ -31,7 +31,7 @@ typedef struct SDL_Pen
     SDL_PenID instance_id;
     char *name;
     SDL_PenInfo info;
-    float axes[SDL_PEN_NUM_AXES];
+    float axes[SDL_PEN_AXIS_COUNT];
     float x;
     float y;
     SDL_PenInputFlags input_state;
@@ -170,10 +170,10 @@ SDL_PenInputFlags SDL_GetPenStatus(SDL_PenID instance_id, float *axes, int num_a
     if (pen) {
         result = pen->input_state;
         if (axes && num_axes) {
-            SDL_memcpy(axes, pen->axes, SDL_min(num_axes, SDL_PEN_NUM_AXES) * sizeof (*axes));
+            SDL_memcpy(axes, pen->axes, SDL_min(num_axes, SDL_PEN_AXIS_COUNT) * sizeof (*axes));
             // zero out axes we don't know about, in case the caller built with newer SDL headers that support more of them.
-            if (num_axes > SDL_PEN_NUM_AXES) {
-                SDL_memset(&axes[SDL_PEN_NUM_AXES], '\0', (num_axes - SDL_PEN_NUM_AXES) * sizeof (*axes));
+            if (num_axes > SDL_PEN_AXIS_COUNT) {
+                SDL_memset(&axes[SDL_PEN_AXIS_COUNT], '\0', (num_axes - SDL_PEN_AXIS_COUNT) * sizeof (*axes));
             }
         }
     }
@@ -368,7 +368,7 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
 
 void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, SDL_PenAxis axis, float value)
 {
-    SDL_assert((axis >= 0) && (axis < SDL_PEN_NUM_AXES));  // fix the backend if this triggers.
+    SDL_assert((axis >= 0) && (axis < SDL_PEN_AXIS_COUNT));  // fix the backend if this triggers.
 
     bool send_event = false;
     SDL_PenInputFlags input_state = 0;

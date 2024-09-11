@@ -427,7 +427,7 @@ const char *SDL_GetBasePath(void)
 }
 
 
-static char *CachedUserFolders[SDL_FOLDER_TOTAL];
+static char *CachedUserFolders[SDL_FOLDER_COUNT];
 
 const char *SDL_GetUserFolder(SDL_Folder folder)
 {

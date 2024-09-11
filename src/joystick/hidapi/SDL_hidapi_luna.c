@@ -101,7 +101,7 @@ static bool HIDAPI_DriverLuna_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
 
     // Initialize the joystick capabilities
     joystick->nbuttons = SDL_GAMEPAD_NUM_LUNA_BUTTONS;
-    joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
     return true;

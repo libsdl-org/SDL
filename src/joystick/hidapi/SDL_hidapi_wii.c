@@ -813,7 +813,7 @@ static bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
         // Maximum is Classic Controller + Wiimote
         joystick->nbuttons = k_eWiiButtons_Max;
     }
-    joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
 
     ctx->m_ulLastInput = SDL_GetTicks();
 

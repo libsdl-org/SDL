@@ -293,7 +293,7 @@ int GetGamepadImageElementAt(GamepadImage *ctx, float x, float y)
 
     if (ctx->showing_front) {
         for (i = 0; i < SDL_arraysize(axis_positions); ++i) {
-            const int element = SDL_GAMEPAD_BUTTON_MAX + i;
+            const int element = SDL_GAMEPAD_BUTTON_COUNT + i;
             SDL_FRect rect;
 
             if (element == SDL_GAMEPAD_ELEMENT_AXIS_LEFT_TRIGGER ||
@@ -431,7 +431,7 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
         SetGamepadImageElement(ctx, button, SDL_GetGamepadButton(gamepad, button));
     }
 
-    for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
+    for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
         const SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
         const Sint16 deadzone = 8000; /* !!! FIXME: real deadzone */
         const Sint16 value = SDL_GetGamepadAxis(gamepad, axis);
@@ -553,7 +553,7 @@ void RenderGamepadImage(GamepadImage *ctx)
 
     if (ctx->showing_front) {
         for (i = 0; i < SDL_arraysize(axis_positions); ++i) {
-            const int element = SDL_GAMEPAD_BUTTON_MAX + i;
+            const int element = SDL_GAMEPAD_BUTTON_COUNT + i;
             if (ctx->elements[element]) {
                 const double angle = axis_positions[i].angle;
                 dst.w = ctx->axis_width;
@@ -676,7 +676,7 @@ static const char *gamepad_button_names[] = {
     "Misc5",
     "Misc6",
 };
-SDL_COMPILE_TIME_ASSERT(gamepad_button_names, SDL_arraysize(gamepad_button_names) == SDL_GAMEPAD_BUTTON_MAX);
+SDL_COMPILE_TIME_ASSERT(gamepad_button_names, SDL_arraysize(gamepad_button_names) == SDL_GAMEPAD_BUTTON_COUNT);
 
 static const char *gamepad_axis_names[] = {
     "LeftX",
@@ -686,7 +686,7 @@ static const char *gamepad_axis_names[] = {
     "Left Trigger",
     "Right Trigger",
 };
-SDL_COMPILE_TIME_ASSERT(gamepad_axis_names, SDL_arraysize(gamepad_axis_names) == SDL_GAMEPAD_AXIS_MAX);
+SDL_COMPILE_TIME_ASSERT(gamepad_axis_names, SDL_arraysize(gamepad_axis_names) == SDL_GAMEPAD_AXIS_COUNT);
 
 struct GamepadDisplay
 {
@@ -915,7 +915,7 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
     rect.w = ctx->area.w - (margin * 2);
     rect.h = ctx->button_height;
 
-    for (i = 0; i < SDL_GAMEPAD_BUTTON_MAX; ++i) {
+    for (i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; ++i) {
         SDL_GamepadButton button = (SDL_GamepadButton)i;
 
         if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
@@ -931,7 +931,7 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
         rect.y += ctx->button_height + 2.0f;
     }
 
-    for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
+    for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
         SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
         SDL_FRect area;
 
@@ -1033,7 +1033,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     x = ctx->area.x + margin;
     y = ctx->area.y + margin;
 
-    for (i = 0; i < SDL_GAMEPAD_BUTTON_MAX; ++i) {
+    for (i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; ++i) {
         SDL_GamepadButton button = (SDL_GamepadButton)i;
 
         if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
@@ -1072,7 +1072,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         y += ctx->button_height + 2.0f;
     }
 
-    for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
+    for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
         SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
         SDL_bool has_negative = (axis != SDL_GAMEPAD_AXIS_LEFT_TRIGGER && axis != SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
         Sint16 value;
@@ -1376,7 +1376,7 @@ int GetGamepadTypeDisplayAt(GamepadTypeDisplay *ctx, float x, float y)
     x = ctx->area.x + margin;
     y = ctx->area.y + margin;
 
-    for (i = SDL_GAMEPAD_TYPE_UNKNOWN; i < SDL_GAMEPAD_TYPE_MAX; ++i) {
+    for (i = SDL_GAMEPAD_TYPE_UNKNOWN; i < SDL_GAMEPAD_TYPE_COUNT; ++i) {
         highlight.x = x;
         highlight.y = y;
         highlight.w = ctx->area.w - (margin * 2);
@@ -1430,7 +1430,7 @@ void RenderGamepadTypeDisplay(GamepadTypeDisplay *ctx)
     x = ctx->area.x + margin;
     y = ctx->area.y + margin;
 
-    for (i = SDL_GAMEPAD_TYPE_UNKNOWN; i < SDL_GAMEPAD_TYPE_MAX; ++i) {
+    for (i = SDL_GAMEPAD_TYPE_UNKNOWN; i < SDL_GAMEPAD_TYPE_COUNT; ++i) {
         highlight.x = x;
         highlight.y = y;
         highlight.w = ctx->area.w - (margin * 2);
@@ -2662,14 +2662,14 @@ SDL_bool MappingHasBindings(const char *mapping)
     }
 
     SplitMapping(mapping, &parts);
-    for (i = 0; i < SDL_GAMEPAD_BUTTON_MAX; ++i) {
+    for (i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; ++i) {
         if (FindMappingKey(&parts, SDL_GetGamepadStringForButton((SDL_GamepadButton)i)) >= 0) {
             result = SDL_TRUE;
             break;
         }
     }
     if (!result) {
-        for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
+        for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
             if (FindMappingKey(&parts, SDL_GetGamepadStringForAxis((SDL_GamepadAxis)i)) >= 0) {
                 result = SDL_TRUE;
                 break;
@@ -2795,7 +2795,7 @@ char *SetMappingType(char *mapping, SDL_GamepadType type)
 
 static const char *GetElementKey(int element)
 {
-    if (element < SDL_GAMEPAD_BUTTON_MAX) {
+    if (element < SDL_GAMEPAD_BUTTON_COUNT) {
         return SDL_GetGamepadStringForButton((SDL_GamepadButton)element);
     } else {
         static char key[16];

@@ -19,7 +19,7 @@ typedef struct Pen
 {
     SDL_PenID pen;
     Uint8 r, g, b;
-    float axes[SDL_PEN_NUM_AXES];
+    float axes[SDL_PEN_AXIS_COUNT];
     float x;
     float y;
     Uint32 buttons;
