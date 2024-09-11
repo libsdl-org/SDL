@@ -545,17 +545,9 @@ init_render_state(int msaa)
     /* Set up the graphics pipeline */
 
     SDL_zero(pipelinedesc);
+    SDL_zero(color_target_desc);
 
     color_target_desc.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
-
-    color_target_desc.blend_state.enable_blend = 0;
-    color_target_desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-    color_target_desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-    color_target_desc.blend_state.color_write_mask = 0xF;
-    color_target_desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    color_target_desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
-    color_target_desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    color_target_desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
 
     pipelinedesc.target_info.num_color_targets = 1;
     pipelinedesc.target_info.color_target_descriptions = &color_target_desc;
@@ -567,7 +559,6 @@ init_render_state(int msaa)
     pipelinedesc.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL;
 
     pipelinedesc.multisample_state.sample_count = render_state.sample_count;
-    pipelinedesc.multisample_state.sample_mask = 0xF;
 
     pipelinedesc.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 
