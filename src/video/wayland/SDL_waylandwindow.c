@@ -1926,7 +1926,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                                        data->surface);
 
             // Clear this variable, per the protocol's request
-            unsetenv("XDG_ACTIVATION_TOKEN");
+            SDL_unsetenv("XDG_ACTIVATION_TOKEN");
         }
     }
 
