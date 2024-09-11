@@ -267,6 +267,7 @@ struct SDL_Renderer
     float SDR_white_point;
     float HDR_headroom;
 
+    float desired_color_scale;
     float color_scale;
     SDL_FColor color;        /**< Color for drawing operations values */
     SDL_BlendMode blendMode; /**< The drawing blend mode */
@@ -282,7 +283,6 @@ struct SDL_Renderer
     SDL_Rect last_queued_cliprect;
     bool last_queued_cliprect_enabled;
     bool color_queued;
-    bool color_scale_queued;
     bool viewport_queued;
     bool cliprect_queued;
 
