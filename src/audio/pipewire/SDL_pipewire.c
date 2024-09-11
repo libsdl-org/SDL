@@ -1215,6 +1215,7 @@ static void PIPEWIRE_DeinitializeStart(void)
 static void PIPEWIRE_Deinitialize(void)
 {
     if (pipewire_initialized) {
+        hotplug_loop_destroy();
         deinit_pipewire_library();
         pipewire_initialized = false;
     }
@@ -1230,7 +1231,6 @@ static bool PipewireInitialize(SDL_AudioDriverImpl *impl)
         pipewire_initialized = true;
 
         if (!hotplug_loop_init()) {
-            hotplug_loop_destroy();
             PIPEWIRE_Deinitialize();
             return false;
         }
@@ -1271,7 +1271,6 @@ static bool PIPEWIRE_PREFERRED_Init(SDL_AudioDriverImpl *impl)
     PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
 
     if (no_devices || !pipewire_core_version_at_least(1, 0, 0)) {
-        hotplug_loop_destroy();
         PIPEWIRE_Deinitialize();
         return false;
     }
