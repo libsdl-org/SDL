@@ -1782,6 +1782,32 @@ void SDL_BindGPUComputePipeline(
     commandBufferHeader->compute_pipeline_bound = true;
 }
 
+void SDL_BindGPUComputeSamplers(
+    SDL_GPUComputePass *compute_pass,
+    Uint32 first_slot,
+    const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
+    Uint32 num_bindings)
+{
+    if (compute_pass == NULL) {
+        SDL_InvalidParamError("compute_pass");
+        return;
+    }
+    if (texture_sampler_bindings == NULL && num_bindings > 0) {
+        SDL_InvalidParamError("texture_sampler_bindings");
+        return;
+    }
+
+    if (COMPUTEPASS_DEVICE->debug_mode) {
+        CHECK_COMPUTEPASS
+    }
+
+    COMPUTEPASS_DEVICE->BindComputeSamplers(
+        COMPUTEPASS_COMMAND_BUFFER,
+        first_slot,
+        texture_sampler_bindings,
+        num_bindings);
+}
+
 void SDL_BindGPUComputeStorageTextures(
     SDL_GPUComputePass *compute_pass,
     Uint32 first_slot,

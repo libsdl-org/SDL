@@ -74,6 +74,7 @@ SDL_DYNAPI_PROC(SDL_GPURenderPass*,SDL_BeginGPURenderPass,(SDL_GPUCommandBuffer 
 SDL_DYNAPI_PROC(SDL_bool,SDL_BindAudioStream,(SDL_AudioDeviceID a, SDL_AudioStream *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_BindAudioStreams,(SDL_AudioDeviceID a, SDL_AudioStream **b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(void,SDL_BindGPUComputePipeline,(SDL_GPUComputePass *a, SDL_GPUComputePipeline *b),(a,b),)
+SDL_DYNAPI_PROC(void,SDL_BindGPUComputeSamplers,(SDL_GPUComputePass *a, Uint32 b, const SDL_GPUTextureSamplerBinding *c, Uint32 d),(a,b,c,d),)
 SDL_DYNAPI_PROC(void,SDL_BindGPUComputeStorageBuffers,(SDL_GPUComputePass *a, Uint32 b, SDL_GPUBuffer *const *c, Uint32 d),(a,b,c,d),)
 SDL_DYNAPI_PROC(void,SDL_BindGPUComputeStorageTextures,(SDL_GPUComputePass *a, Uint32 b, SDL_GPUTexture *const *c, Uint32 d),(a,b,c,d),)
 SDL_DYNAPI_PROC(void,SDL_BindGPUFragmentSamplers,(SDL_GPURenderPass *a, Uint32 b, const SDL_GPUTextureSamplerBinding *c, Uint32 d),(a,b,c,d),)
