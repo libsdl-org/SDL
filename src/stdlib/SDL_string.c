@@ -540,7 +540,7 @@ static size_t SDL_ScanLongW(const wchar_t *text, int count, int radix, long *val
 }
 #endif
 
-#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD)
+#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOUL)
 static size_t SDL_ScanUnsignedLong(const char *text, int count, int radix, unsigned long *valuep)
 {
     const unsigned long ulong_max = ~0UL;
@@ -608,7 +608,7 @@ static size_t SDL_ScanLongLong(const char *text, int count, int radix, long long
 }
 #endif
 
-#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOULL)
+#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOULL) || !defined(HAVE_STRTOD)
 static size_t SDL_ScanUnsignedLongLong(const char *text, int count, int radix, unsigned long long *valuep)
 {
     const unsigned long long ullong_max = ~0ULL;
@@ -628,35 +628,40 @@ static size_t SDL_ScanUnsignedLongLong(const char *text, int count, int radix, u
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOD)
 static size_t SDL_ScanFloat(const char *text, double *valuep)
 {
-    const char *textstart = text;
-    unsigned long lvalue = 0;
+    const char *text_start = text;
+    const char *number_start = text_start;
     double value = 0.0;
     bool negative = false;
 
-    if (*text == '-') {
-        negative = true;
+    while (SDL_isspace(*text)) {
         ++text;
     }
-    text += SDL_ScanUnsignedLong(text, 0, 10, &lvalue);
-    value += lvalue;
-    if (*text == '.') {
-        int mult = 10;
+    if (*text == '-' || *text == '+') {
+        negative = *text == '-';
         ++text;
-        while (SDL_isdigit((unsigned char)*text)) {
-            lvalue = *text - '0';
-            value += (double)lvalue / mult;
-            mult *= 10;
+    }
+    number_start = text;
+    if (SDL_isdigit(*text)) {
+        value += SDL_strtoull(text, (char **)(&text), 10);
+        if (*text == '.') {
+            double denom = 10;
             ++text;
+            while (SDL_isdigit(*text)) {
+                value += (double)(*text - '0') / denom;
+                denom *= 10;
+                ++text;
+            }
         }
     }
-    if (valuep && text > textstart) {
-        if (negative && value != 0.0) {
-            *valuep = -value;
-        } else {
-            *valuep = value;
-        }
+    if (text == number_start) {
+        // no number was parsed, and thus no characters were consumed
+        text = text_start;
     }
-    return text - textstart;
+    if (negative) {
+        value = -value;
+    }
+    *valuep = value;
+    return text - text_start;
 }
 #endif
 
@@ -1302,10 +1307,8 @@ double SDL_strtod(const char *string, char **endp)
 #ifdef HAVE_STRTOD
     return strtod(string, endp);
 #else
-    size_t len;
-    double value = 0.0;
-
-    len = SDL_ScanFloat(string, &value);
+    double value;
+    size_t len = SDL_ScanFloat(string, &value);
     if (endp) {
         *endp = (char *)string + len;
     }
@@ -1977,7 +1980,7 @@ static size_t SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, do
     // This isn't especially accurate, but hey, it's easy. :)
     unsigned long long value;
 
-    if (arg < 0) {
+    if (arg < 0.0 || (arg == 0.0 && 1.0 / arg < 0.0)) { // additional check for signed zero
         num[length++] = '-';
         arg = -arg;
     } else if (info->force_sign) {
