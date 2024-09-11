@@ -5651,7 +5651,7 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     texture->isMSAAColorTarget = isMSAAColorTarget;
     texture->markedForDestroy = 0;
 
-    if (type == SDL_GPU_TEXTURETYPE_CUBE) {
+    if (type == SDL_GPU_TEXTURETYPE_CUBE || type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
         imageCreateFlags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
     } else if (type == SDL_GPU_TEXTURETYPE_3D) {
         imageCreateFlags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
@@ -5735,6 +5735,8 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
 
         if (type == SDL_GPU_TEXTURETYPE_CUBE) {
             imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+        } else if (type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY){
+            imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
         } else if (type == SDL_GPU_TEXTURETYPE_3D) {
             imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
         } else if (type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
@@ -10945,7 +10947,7 @@ static bool VULKAN_SupportsTextureFormat(
         vulkanUsage |= VK_IMAGE_USAGE_STORAGE_BIT;
     }
 
-    if (type == SDL_GPU_TEXTURETYPE_CUBE) {
+    if (type == SDL_GPU_TEXTURETYPE_CUBE || type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
         createFlags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
     }
 
@@ -11532,6 +11534,7 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     SDL_zero(desiredDeviceFeatures);
     desiredDeviceFeatures.independentBlend = VK_TRUE;
     desiredDeviceFeatures.samplerAnisotropy = VK_TRUE;
+    desiredDeviceFeatures.imageCubeArray = VK_TRUE;
 
     if (haveDeviceFeatures.fillModeNonSolid) {
         desiredDeviceFeatures.fillModeNonSolid = VK_TRUE;

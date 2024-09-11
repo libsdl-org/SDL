@@ -818,6 +818,28 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                 SDL_assert_release(!"For cube textures: the format is unsupported for the given usage");
                 failed = true;
             }
+        } else if (createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+            // Cubemap array validation
+            if (createinfo->width != createinfo->height) {
+                SDL_assert_release(!"For cube array textures: width and height must be identical");
+                failed = true;
+            }
+            if (createinfo->width > MAX_2D_DIMENSION || createinfo->height > MAX_2D_DIMENSION) {
+                SDL_assert_release(!"For cube array textures: width and height must be <= 16384");
+                failed = true;
+            }
+            if (createinfo->layer_count_or_depth % 6 != 0) {
+                SDL_assert_release(!"For cube array textures: layer_count_or_depth must be a multiple of 6");
+                failed = true;
+            }
+            if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
+                SDL_assert_release(!"For cube array textures: sample_count must be SDL_GPU_SAMPLECOUNT_1");
+                failed = true;
+            }
+            if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_CUBE_ARRAY, createinfo->usage)) {
+                SDL_assert_release(!"For cube array textures: the format is unsupported for the given usage");
+                failed = true;
+            }
         } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
             // 3D Texture Validation
             if (createinfo->width > MAX_3D_DIMENSION || createinfo->height > MAX_3D_DIMENSION || createinfo->layer_count_or_depth > MAX_3D_DIMENSION) {
