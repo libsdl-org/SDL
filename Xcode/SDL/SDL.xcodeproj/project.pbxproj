@@ -2104,10 +2104,10 @@
 		A7D8A8DA23E2514000DCD162 /* render */ = {
 			isa = PBXGroup;
 			children = (
+				F3A9AE912C8A139C00AAC390 /* gpu */,
 				A7D8A8DD23E2514000DCD162 /* metal */,
 				A7D8A90C23E2514000DCD162 /* opengl */,
 				A7D8A90323E2514000DCD162 /* opengles2 */,
-				F3A9AE912C8A139C00AAC390 /* sdlgpu */,
 				A7D8A8EF23E2514000DCD162 /* software */,
 				A7D8A8FF23E2514000DCD162 /* SDL_d3dmath.c */,
 				A7D8A8DC23E2514000DCD162 /* SDL_d3dmath.h */,
@@ -2347,7 +2347,7 @@
 			path = dummy;
 			sourceTree = "<group>";
 		};
-		F3A9AE912C8A139C00AAC390 /* sdlgpu */ = {
+		F3A9AE912C8A139C00AAC390 /* gpu */ = {
 			isa = PBXGroup;
 			children = (
 				F3A9AE922C8A13C100AAC390 /* SDL_gpu_util.h */,
@@ -2357,7 +2357,7 @@
 				F3A9AE942C8A13C100AAC390 /* SDL_shaders_gpu.c */,
 				F3A9AE972C8A13C100AAC390 /* SDL_shaders_gpu.h */,
 			);
-			path = sdlgpu;
+			path = gpu;
 			sourceTree = "<group>";
 		};
 		F3ADAB8C2576F08500A6B1D9 /* ios */ = {
