@@ -1624,6 +1624,57 @@ static int SDLCALL stdlib_strtoull(void *arg)
     return TEST_COMPLETED;
 }
 
+static int SDLCALL stdlib_strtod(void *arg)
+{
+    const char *text;
+    double result;
+    char *endp;
+    double expected_result;
+    char *expected_endp;
+
+    text = "\t  123.75abcxyz"; // skip leading space
+    expected_result = 123.75;
+    expected_endp = (char *)text + 9;
+    result = SDL_strtod(text, &endp);
+    SDLTest_AssertPass("Call to SDL_strtod(\"\\t  123.75abcxyz\", &endp)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %f, got: %f", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "+999.555";
+    expected_result = 999.555;
+    expected_endp = (char *)text + 8;
+    result = SDL_strtod(text, &endp);
+    SDLTest_AssertPass("Call to SDL_strtod(\"+999.555\", &endp)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %f, got: %f", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "-999.555";
+    expected_result = -999.555;
+    expected_endp = (char *)text + 8;
+    result = SDL_strtod(text, &endp);
+    SDLTest_AssertPass("Call to SDL_strtod(\"-999.555\", &endp)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %f, got: %f", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = "-0"; // signed zero
+    expected_result = -0.0;
+    expected_endp = (char *)text + 2;
+    result = SDL_strtod(text, &endp);
+    SDLTest_AssertPass("Call to SDL_strtod(\"-0.0\", &endp)");
+    SDLTest_AssertCheck((1.0 / result) == (1.0 / expected_result), "Check result value, expected: %f, got: %f", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    text = " - 1"; // invalid input
+    expected_result = 0.0;
+    expected_endp = (char *)text;
+    result = SDL_strtod(text, &endp);
+    SDLTest_AssertPass("Call to SDL_strtod(\" - 1\", &endp)");
+    SDLTest_AssertCheck(result == expected_result, "Check result value, expected: %f, got: %f", expected_result, result);
+    SDLTest_AssertCheck(endp == expected_endp, "Check endp value, expected: %p, got: %p", expected_endp, endp);
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Standard C routine test cases */
@@ -1679,6 +1730,10 @@ static const SDLTest_TestCaseReference stdlibTest_strtoull = {
     stdlib_strtoull, "stdlib_strtoull", "Calls to SDL_strtoull, SDL_strtol, SDL_strtoul and SDL_strtoll", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference stdlibTest_strtod = {
+    stdlib_strtod, "stdlib_strtod", "Calls to SDL_strtod", TEST_ENABLED
+};
+
 /* Sequence of Standard C routine test cases */
 static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest_strnlen,
@@ -1694,6 +1749,7 @@ static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest_strpbrk,
     &stdlibTest_wcstol,
     &stdlibTest_strtoull,
+    &stdlibTest_strtod,
     NULL
 };
 
