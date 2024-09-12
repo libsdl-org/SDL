@@ -83,7 +83,7 @@ static bool get_zenity_version(int *major, int *minor)
         return SDL_SetError("pipe() failed: %s", strerror(errno));
     }
 
-    if (run_zenity(argv, fd_pipe) == 0) {
+    if (!run_zenity(argv, fd_pipe) == 0) {
         FILE *outputfp = NULL;
         char version_str[ZENITY_VERSION_LEN];
         char *version_ptr = NULL, *end_ptr = NULL;
