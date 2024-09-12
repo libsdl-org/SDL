@@ -4156,8 +4156,7 @@ static void D3D11_DrawPrimitivesIndirect(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBuffer *buffer,
     Uint32 offset,
-    Uint32 drawCount,
-    Uint32 pitch)
+    Uint32 drawCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11_INTERNAL_BindGraphicsResources(d3d11CommandBuffer);
@@ -4171,7 +4170,7 @@ static void D3D11_DrawPrimitivesIndirect(
         ID3D11DeviceContext_DrawInstancedIndirect(
             d3d11CommandBuffer->context,
             d3d11Buffer->handle,
-            offset + (pitch * i));
+            offset + (sizeof(SDL_GPUIndirectDrawCommand) * i));
     }
 
     D3D11_INTERNAL_TrackBuffer(d3d11CommandBuffer, d3d11Buffer);
@@ -4181,8 +4180,7 @@ static void D3D11_DrawIndexedPrimitivesIndirect(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBuffer *buffer,
     Uint32 offset,
-    Uint32 drawCount,
-    Uint32 pitch)
+    Uint32 drawCount)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11_INTERNAL_BindGraphicsResources(d3d11CommandBuffer);
@@ -4196,7 +4194,7 @@ static void D3D11_DrawIndexedPrimitivesIndirect(
         ID3D11DeviceContext_DrawIndexedInstancedIndirect(
             d3d11CommandBuffer->context,
             d3d11Buffer->handle,
-            offset + (pitch * i));
+            offset + (sizeof(SDL_GPUIndexedIndirectDrawCommand) * i));
     }
 
     D3D11_INTERNAL_TrackBuffer(d3d11CommandBuffer, d3d11Buffer);

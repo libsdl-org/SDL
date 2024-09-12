@@ -1631,8 +1631,7 @@ void SDL_DrawGPUPrimitivesIndirect(
     SDL_GPURenderPass *render_pass,
     SDL_GPUBuffer *buffer,
     Uint32 offset,
-    Uint32 draw_count,
-    Uint32 pitch)
+    Uint32 draw_count)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1652,16 +1651,14 @@ void SDL_DrawGPUPrimitivesIndirect(
         RENDERPASS_COMMAND_BUFFER,
         buffer,
         offset,
-        draw_count,
-        pitch);
+        draw_count);
 }
 
 void SDL_DrawGPUIndexedPrimitivesIndirect(
     SDL_GPURenderPass *render_pass,
     SDL_GPUBuffer *buffer,
     Uint32 offset,
-    Uint32 draw_count,
-    Uint32 pitch)
+    Uint32 draw_count)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1681,8 +1678,7 @@ void SDL_DrawGPUIndexedPrimitivesIndirect(
         RENDERPASS_COMMAND_BUFFER,
         buffer,
         offset,
-        draw_count,
-        pitch);
+        draw_count);
 }
 
 void SDL_EndGPURenderPass(

@@ -2651,7 +2651,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUPrimitives(
  * Draws data using bound graphics state and with draw parameters set from a
  * buffer.
  *
- * The buffer layout should match the layout of SDL_GPUIndirectDrawCommand.
+ * The buffer must consist of tightly-packed draw parameter sets that
+ * each match the the layout of SDL_GPUIndirectDrawCommand.
  * You must not call this function before binding a graphics pipeline.
  *
  * \param render_pass a render pass handle.
@@ -2659,7 +2660,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUPrimitives(
  * \param offset the offset to start reading from the draw buffer.
  * \param draw_count the number of draw parameter sets that should be read
  *                   from the draw buffer.
- * \param pitch the byte pitch between sets of draw parameters.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -2667,23 +2667,21 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUPrimitivesIndirect(
     SDL_GPURenderPass *render_pass,
     SDL_GPUBuffer *buffer,
     Uint32 offset,
-    Uint32 draw_count,
-    Uint32 pitch);
+    Uint32 draw_count);
 
 /**
  * Draws data using bound graphics state with an index buffer enabled and with
  * draw parameters set from a buffer.
  *
- * The buffer layout should match the layout of
- * SDL_GPUIndexedIndirectDrawCommand. You must not call this function before
- * binding a graphics pipeline.
+ * The buffer must consist of tightly-packed draw parameter sets that
+ * each match the the layout of SDL_GPUIndexedIndirectDrawCommand.
+ * You must not call this function before binding a graphics pipeline.
  *
  * \param render_pass a render pass handle.
  * \param buffer a buffer containing draw parameters.
  * \param offset the offset to start reading from the draw buffer.
  * \param draw_count the number of draw parameter sets that should be read
  *                   from the draw buffer.
- * \param pitch the byte pitch between sets of draw parameters.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -2691,8 +2689,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUIndexedPrimitivesIndirect(
     SDL_GPURenderPass *render_pass,
     SDL_GPUBuffer *buffer,
     Uint32 offset,
-    Uint32 draw_count,
-    Uint32 pitch);
+    Uint32 draw_count);
 
 /**
  * Ends the given render pass.
@@ -2846,9 +2843,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DispatchGPUCompute(
 /**
  * Dispatches compute work with parameters set from a buffer.
  *
- * The buffer layout should match the layout of
- * SDL_GPUIndirectDispatchCommand. You must not call this function before
- * binding a compute pipeline.
+ * The buffer layout should match the layout of SDL_GPUIndirectDispatchCommand.
+ * You must not call this function before binding a compute pipeline.
  *
  * A VERY IMPORTANT NOTE If you dispatch multiple times in a compute pass, and
  * the dispatches write to the same resource region as each other, there is no

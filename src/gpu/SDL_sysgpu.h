@@ -485,15 +485,13 @@ struct SDL_GPUDevice
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUBuffer *buffer,
         Uint32 offset,
-        Uint32 drawCount,
-        Uint32 pitch);
+        Uint32 drawCount);
 
     void (*DrawIndexedPrimitivesIndirect)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUBuffer *buffer,
         Uint32 offset,
-        Uint32 drawCount,
-        Uint32 pitch);
+        Uint32 drawCount);
 
     void (*EndRenderPass)(
         SDL_GPUCommandBuffer *commandBuffer);
