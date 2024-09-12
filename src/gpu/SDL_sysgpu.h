@@ -232,7 +232,8 @@ static inline Sint32 BytesPerImage(
 #define MAX_COMPUTE_WRITE_TEXTURES     8
 #define MAX_COMPUTE_WRITE_BUFFERS      8
 #define UNIFORM_BUFFER_SIZE            32768
-#define MAX_BUFFER_BINDINGS            16
+#define MAX_VERTEX_BUFFERS             16
+#define MAX_VERTEX_ATTRIBUTES          16
 #define MAX_COLOR_TARGET_BINDINGS      4
 #define MAX_PRESENT_COUNT              16
 #define MAX_FRAMES_IN_FLIGHT           3
@@ -411,7 +412,7 @@ struct SDL_GPUDevice
 
     void (*BindVertexBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstBinding,
+        Uint32 firstSlot,
         const SDL_GPUBufferBinding *bindings,
         Uint32 numBindings);
 

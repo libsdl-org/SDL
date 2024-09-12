@@ -692,16 +692,32 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
                 return NULL;
             }
         }
-        if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_bindings > 0 && graphicsPipelineCreateInfo->vertex_input_state.vertex_bindings == NULL) {
-            SDL_assert_release(!"Vertex bindings array pointer cannot be NULL!");
+        if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_buffers > 0 && graphicsPipelineCreateInfo->vertex_input_state.vertex_buffer_descriptions == NULL) {
+            SDL_assert_release(!"Vertex buffer descriptions array pointer cannot be NULL!");
+            return NULL;
+        }
+        if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_buffers > MAX_VERTEX_BUFFERS) {
+            SDL_assert_release(!"The number of vertex buffer descriptions in a vertex input state must not exceed 16!");
             return NULL;
         }
         if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes > 0 && graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes == NULL) {
             SDL_assert_release(!"Vertex attributes array pointer cannot be NULL!");
             return NULL;
         }
+        if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes > MAX_VERTEX_ATTRIBUTES) {
+            SDL_assert_release(!"The number of vertex attributes in a vertex input state must not exceed 16!");
+            return NULL;
+        }
+        Uint32 locations[MAX_VERTEX_ATTRIBUTES];
         for (Uint32 i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes; i += 1) {
             CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].format, NULL);
+
+            locations[i] = graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].location;
+            for (Uint32 j = 0; j < i; j += 1) {
+                if (locations[j] == locations[i]) {
+                    SDL_assert_release(!"Each vertex attribute location in a vertex input state must be unique!");
+                }
+            }
         }
         if (graphicsPipelineCreateInfo->depth_stencil_state.enable_depth_test) {
             CHECK_COMPAREOP_ENUM_INVALID(graphicsPipelineCreateInfo->depth_stencil_state.compare_op, NULL)

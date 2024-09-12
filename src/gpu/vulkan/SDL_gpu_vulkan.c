@@ -6366,9 +6366,9 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo;
     VkPipelineVertexInputDivisorStateCreateInfoEXT divisorStateCreateInfo;
-    VkVertexInputBindingDescription *vertexInputBindingDescriptions = SDL_stack_alloc(VkVertexInputBindingDescription, createinfo->vertex_input_state.num_vertex_bindings);
+    VkVertexInputBindingDescription *vertexInputBindingDescriptions = SDL_stack_alloc(VkVertexInputBindingDescription, createinfo->vertex_input_state.num_vertex_buffers);
     VkVertexInputAttributeDescription *vertexInputAttributeDescriptions = SDL_stack_alloc(VkVertexInputAttributeDescription, createinfo->vertex_input_state.num_vertex_attributes);
-    VkVertexInputBindingDivisorDescriptionEXT *divisorDescriptions = SDL_stack_alloc(VkVertexInputBindingDivisorDescriptionEXT, createinfo->vertex_input_state.num_vertex_bindings);
+    VkVertexInputBindingDivisorDescriptionEXT *divisorDescriptions = SDL_stack_alloc(VkVertexInputBindingDivisorDescriptionEXT, createinfo->vertex_input_state.num_vertex_buffers);
     Uint32 divisorDescriptionCount = 0;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo;
@@ -6445,18 +6445,18 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     // Vertex input
 
-    for (i = 0; i < createinfo->vertex_input_state.num_vertex_bindings; i += 1) {
-        vertexInputBindingDescriptions[i].binding = createinfo->vertex_input_state.vertex_bindings[i].index;
-        vertexInputBindingDescriptions[i].inputRate = SDLToVK_VertexInputRate[createinfo->vertex_input_state.vertex_bindings[i].input_rate];
-        vertexInputBindingDescriptions[i].stride = createinfo->vertex_input_state.vertex_bindings[i].pitch;
+    for (i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i += 1) {
+        vertexInputBindingDescriptions[i].binding = createinfo->vertex_input_state.vertex_buffer_descriptions[i].slot;
+        vertexInputBindingDescriptions[i].inputRate = SDLToVK_VertexInputRate[createinfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate];
+        vertexInputBindingDescriptions[i].stride = createinfo->vertex_input_state.vertex_buffer_descriptions[i].pitch;
 
-        if (createinfo->vertex_input_state.vertex_bindings[i].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) {
+        if (createinfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) {
             divisorDescriptionCount += 1;
         }
     }
 
     for (i = 0; i < createinfo->vertex_input_state.num_vertex_attributes; i += 1) {
-        vertexInputAttributeDescriptions[i].binding = createinfo->vertex_input_state.vertex_attributes[i].binding_index;
+        vertexInputAttributeDescriptions[i].binding = createinfo->vertex_input_state.vertex_attributes[i].buffer_slot;
         vertexInputAttributeDescriptions[i].format = SDLToVK_VertexFormat[createinfo->vertex_input_state.vertex_attributes[i].format];
         vertexInputAttributeDescriptions[i].location = createinfo->vertex_input_state.vertex_attributes[i].location;
         vertexInputAttributeDescriptions[i].offset = createinfo->vertex_input_state.vertex_attributes[i].offset;
@@ -6465,7 +6465,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputStateCreateInfo.pNext = NULL;
     vertexInputStateCreateInfo.flags = 0;
-    vertexInputStateCreateInfo.vertexBindingDescriptionCount = createinfo->vertex_input_state.num_vertex_bindings;
+    vertexInputStateCreateInfo.vertexBindingDescriptionCount = createinfo->vertex_input_state.num_vertex_buffers;
     vertexInputStateCreateInfo.pVertexBindingDescriptions = vertexInputBindingDescriptions;
     vertexInputStateCreateInfo.vertexAttributeDescriptionCount = createinfo->vertex_input_state.num_vertex_attributes;
     vertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexInputAttributeDescriptions;
@@ -6473,10 +6473,10 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     if (divisorDescriptionCount > 0) {
         divisorDescriptionCount = 0;
 
-        for (i = 0; i < createinfo->vertex_input_state.num_vertex_bindings; i += 1) {
-            if (createinfo->vertex_input_state.vertex_bindings[i].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) {
-                divisorDescriptions[divisorDescriptionCount].binding = createinfo->vertex_input_state.vertex_bindings[i].index;
-                divisorDescriptions[divisorDescriptionCount].divisor = createinfo->vertex_input_state.vertex_bindings[i].instance_step_rate;
+        for (i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i += 1) {
+            if (createinfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) {
+                divisorDescriptions[divisorDescriptionCount].binding = createinfo->vertex_input_state.vertex_buffer_descriptions[i].slot;
+                divisorDescriptions[divisorDescriptionCount].divisor = createinfo->vertex_input_state.vertex_buffer_descriptions[i].instance_step_rate;
 
                 divisorDescriptionCount += 1;
             }
@@ -8087,7 +8087,7 @@ static void VULKAN_BindGraphicsPipeline(
 
 static void VULKAN_BindVertexBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
-    Uint32 firstBinding,
+    Uint32 firstSlot,
     const SDL_GPUBufferBinding *bindings,
     Uint32 numBindings)
 {
@@ -8107,7 +8107,7 @@ static void VULKAN_BindVertexBuffers(
 
     renderer->vkCmdBindVertexBuffers(
         vulkanCommandBuffer->commandBuffer,
-        firstBinding,
+        firstSlot,
         numBindings,
         buffers,
         offsets);

@@ -1179,42 +1179,46 @@ typedef struct SDL_GPUSamplerCreateInfo
 } SDL_GPUSamplerCreateInfo;
 
 /**
- * A structure specifying a vertex binding.
+ * A structure specifying the parameters of vertex buffers used in a graphics
+ * pipeline.
  *
- * When you call SDL_BindGPUVertexBuffers, you specify the binding indices of
+ * When you call SDL_BindGPUVertexBuffers, you specify the binding slots of
  * the vertex buffers. For example if you called SDL_BindGPUVertexBuffers with
- * a first_binding of 2 and num_bindings of 3, the binding indices 2, 3, 4
- * would be used by the vertex buffers you pass in.
+ * a first_slot of 2 and num_bindings of 3, the binding slots 2, 3, 4 would be
+ * used by the vertex buffers you pass in.
  *
- * Vertex attributes are linked to bindings via the index. The binding_index
- * field of SDL_GPUVertexAttribute specifies the vertex buffer binding index
- * that the attribute will be read from.
+ * Vertex attributes are linked to buffers via the buffer_slot field of
+ * SDL_GPUVertexAttribute. For example, if an attribute has a buffer_slot of 0,
+ * then that attribute belongs to the vertex buffer bound at slot 0.
  *
  * \since This struct is available since SDL 3.0.0
  *
  * \sa SDL_GPUVertexAttribute
  * \sa SDL_GPUVertexInputState
  */
-typedef struct SDL_GPUVertexBinding
+typedef struct SDL_GPUVertexBufferDescription
 {
-    Uint32 index;                     /**< The binding index. */
+    Uint32 slot;                        /**< The binding slot of the vertex buffer. */
     Uint32 pitch;                       /**< The byte pitch between consecutive elements of the vertex buffer. */
     SDL_GPUVertexInputRate input_rate;  /**< Whether attribute addressing is a function of the vertex index or instance index. */
     Uint32 instance_step_rate;          /**< The number of instances to draw using the same per-instance data before advancing in the instance buffer by one element. Ignored unless input_rate is SDL_GPU_VERTEXINPUTRATE_INSTANCE */
-} SDL_GPUVertexBinding;
+} SDL_GPUVertexBufferDescription;
 
 /**
  * A structure specifying a vertex attribute.
  *
+ * All vertex attribute locations provided to an SDL_GPUVertexInputState
+ * must be unique.
+ *
  * \since This struct is available since SDL 3.0.0
  *
- * \sa SDL_GPUVertexBinding
+ * \sa SDL_GPUVertexBufferDescription
  * \sa SDL_GPUVertexInputState
  */
 typedef struct SDL_GPUVertexAttribute
 {
     Uint32 location;                    /**< The shader input location index. */
-    Uint32 binding_index;               /**< The binding index. */
+    Uint32 buffer_slot;                 /**< The binding slot of the associated vertex buffer. */
     SDL_GPUVertexElementFormat format;  /**< The size and type of the attribute data. */
     Uint32 offset;                      /**< The byte offset of this attribute relative to the start of the vertex element. */
 } SDL_GPUVertexAttribute;
@@ -1229,10 +1233,10 @@ typedef struct SDL_GPUVertexAttribute
  */
 typedef struct SDL_GPUVertexInputState
 {
-    const SDL_GPUVertexBinding *vertex_bindings;      /**< A pointer to an array of vertex binding descriptions. */
-    Uint32 num_vertex_bindings;                       /**< The number of vertex binding descriptions in the above array. */
-    const SDL_GPUVertexAttribute *vertex_attributes;  /**< A pointer to an array of vertex attribute descriptions. */
-    Uint32 num_vertex_attributes;                     /**< The number of vertex attribute descriptions in the above array. */
+    const SDL_GPUVertexBufferDescription *vertex_buffer_descriptions; /**< A pointer to an array of vertex buffer descriptions. */
+    Uint32 num_vertex_buffers;                                        /**< The number of vertex buffer descriptions in the above array. */
+    const SDL_GPUVertexAttribute *vertex_attributes;                  /**< A pointer to an array of vertex attribute descriptions. */
+    Uint32 num_vertex_attributes;                                     /**< The number of vertex attribute descriptions in the above array. */
 } SDL_GPUVertexInputState;
 
 /**
@@ -2447,7 +2451,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUStencilReference(
  * calls.
  *
  * \param render_pass a render pass handle.
- * \param first_binding the starting bind point for the vertex buffers.
+ * \param first_slot the vertex buffer slot to begin binding from.
  * \param bindings an array of SDL_GPUBufferBinding structs containing vertex
  *                 buffers and offset values.
  * \param num_bindings the number of bindings in the bindings array.
@@ -2456,7 +2460,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUStencilReference(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexBuffers(
     SDL_GPURenderPass *render_pass,
-    Uint32 first_binding,
+    Uint32 first_slot,
     const SDL_GPUBufferBinding *bindings,
     Uint32 num_bindings);
 

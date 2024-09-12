@@ -702,8 +702,8 @@ struct D3D12CommandBuffer
     bool needComputeReadOnlyStorageBufferBind;
     bool needComputeUniformBufferBind[MAX_UNIFORM_BUFFERS_PER_STAGE];
 
-    D3D12Buffer *vertexBuffers[MAX_BUFFER_BINDINGS];
-    Uint32 vertexBufferOffsets[MAX_BUFFER_BINDINGS];
+    D3D12Buffer *vertexBuffers[MAX_VERTEX_BUFFERS];
+    Uint32 vertexBufferOffsets[MAX_VERTEX_BUFFERS];
     Uint32 vertexBufferCount;
 
     D3D12Texture *vertexSamplerTextures[MAX_TEXTURE_SAMPLERS_PER_STAGE];
@@ -792,7 +792,7 @@ struct D3D12GraphicsPipeline
     D3D12GraphicsRootSignature *rootSignature;
     SDL_GPUPrimitiveType primitiveType;
 
-    Uint32 vertexStrides[MAX_BUFFER_BINDINGS];
+    Uint32 vertexStrides[MAX_VERTEX_BUFFERS];
 
     Uint32 vertexSamplerCount;
     Uint32 vertexUniformBufferCount;
@@ -2531,10 +2531,12 @@ static bool D3D12_INTERNAL_ConvertVertexInputState(SDL_GPUVertexInputState verte
         desc[i].SemanticName = semantic;
         desc[i].SemanticIndex = attribute.location;
         desc[i].Format = SDLToD3D12_VertexFormat[attribute.format];
-        desc[i].InputSlot = attribute.binding_index;
+        desc[i].InputSlot = attribute.buffer_slot;
         desc[i].AlignedByteOffset = attribute.offset;
-        desc[i].InputSlotClass = SDLToD3D12_InputRate[vertexInputState.vertex_bindings[attribute.binding_index].input_rate];
-        desc[i].InstanceDataStepRate = (vertexInputState.vertex_bindings[attribute.binding_index].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) ? vertexInputState.vertex_bindings[attribute.binding_index].instance_step_rate : 0;
+        desc[i].InputSlotClass = SDLToD3D12_InputRate[vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].input_rate];
+        desc[i].InstanceDataStepRate = (vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE)
+            ? vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].instance_step_rate
+            : 0;
     }
 
     return true;
@@ -2660,8 +2662,8 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
 
     pipeline->pipelineState = pipelineState;
 
-    for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_bindings; i += 1) {
-        pipeline->vertexStrides[i] = createinfo->vertex_input_state.vertex_bindings[i].pitch;
+    for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i += 1) {
+        pipeline->vertexStrides[i] = createinfo->vertex_input_state.vertex_buffer_descriptions[i].pitch;
     }
 
     pipeline->primitiveType = createinfo->primitive_type;
@@ -4250,7 +4252,7 @@ static void D3D12_BindGraphicsPipeline(
 
 static void D3D12_BindVertexBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
-    Uint32 firstBinding,
+    Uint32 firstSlot,
     const SDL_GPUBufferBinding *bindings,
     Uint32 numBindings)
 {
@@ -4258,13 +4260,13 @@ static void D3D12_BindVertexBuffers(
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12Buffer *currentBuffer = ((D3D12BufferContainer *)bindings[i].buffer)->activeBuffer;
-        d3d12CommandBuffer->vertexBuffers[firstBinding + i] = currentBuffer;
-        d3d12CommandBuffer->vertexBufferOffsets[firstBinding + i] = bindings[i].offset;
+        d3d12CommandBuffer->vertexBuffers[firstSlot + i] = currentBuffer;
+        d3d12CommandBuffer->vertexBufferOffsets[firstSlot + i] = bindings[i].offset;
         D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, currentBuffer);
     }
 
     d3d12CommandBuffer->vertexBufferCount =
-        SDL_max(d3d12CommandBuffer->vertexBufferCount, firstBinding + numBindings);
+        SDL_max(d3d12CommandBuffer->vertexBufferCount, firstSlot + numBindings);
 
     d3d12CommandBuffer->needVertexBufferBind = true;
 }
@@ -4492,7 +4494,7 @@ static void D3D12_INTERNAL_BindGraphicsResources(
 
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandles[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     D3D12_GPU_DESCRIPTOR_HANDLE gpuDescriptorHandle;
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[MAX_BUFFER_BINDINGS];
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[MAX_VERTEX_BUFFERS];
 
     if (commandBuffer->needVertexBufferBind) {
         for (Uint32 i = 0; i < commandBuffer->vertexBufferCount; i += 1) {
