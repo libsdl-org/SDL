@@ -262,6 +262,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     SDL_GPUShader *blitFrom2DArrayShader,
     SDL_GPUShader *blitFrom3DShader,
     SDL_GPUShader *blitFromCubeShader,
+    SDL_GPUShader *blitFromCubeArrayShader,
     BlitPipelineCacheEntry **blitPipelines,
     Uint32 *blitPipelineCount,
     Uint32 *blitPipelineCapacity);
@@ -276,6 +277,7 @@ void SDL_GPU_BlitCommon(
     SDL_GPUShader *blitFrom2DArrayShader,
     SDL_GPUShader *blitFrom3DShader,
     SDL_GPUShader *blitFromCubeShader,
+    SDL_GPUShader *blitFromCubeArrayShader,
     BlitPipelineCacheEntry **blitPipelines,
     Uint32 *blitPipelineCount,
     Uint32 *blitPipelineCapacity);

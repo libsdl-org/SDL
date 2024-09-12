@@ -27,6 +27,7 @@ Texture2D SourceTexture2D : REG(t0, space2);
 Texture2DArray SourceTexture2DArray : REG(t0, space2);
 Texture3D SourceTexture3D : REG(t0, space2);
 TextureCube SourceTextureCube : REG(t0, space2);
+TextureCubeArray SourceTextureCubeArray : REG(t0, space2);
 sampler SourceSampler : REG(s0, space2);
 
 #if D3D12
@@ -81,11 +82,34 @@ float4 BlitFromCube(VertexToPixel input) : SV_Target0
     switch ((uint)LayerOrDepth) {
         case 0: newCoord = float3(1.0, -v, -u); break; // POSITIVE X
         case 1: newCoord = float3(-1.0, -v, u); break; // NEGATIVE X
-        case 2: newCoord = float3(u, -1.0, -v); break; // POSITIVE Y
-        case 3: newCoord = float3(u, 1.0, v); break; // NEGATIVE Y
+        case 2: newCoord = float3(u, 1.0, -v); break; // POSITIVE Y
+        case 3: newCoord = float3(u, -1.0, v); break; // NEGATIVE Y
         case 4: newCoord = float3(u, -v, 1.0); break; // POSITIVE Z
         case 5: newCoord = float3(-u, -v, -1.0); break; // NEGATIVE Z
         default: newCoord = float3(0, 0, 0); break; // silences warning
     }
     return SourceTextureCube.SampleLevel(SourceSampler, newCoord, MipLevel);
+}
+
+#if D3D12
+[RootSignature(BlitRS)]
+#endif
+float4 BlitFromCubeArray(VertexToPixel input) : SV_Target0
+{
+    // Thanks, Wikipedia! https://en.wikipedia.org/wiki/Cube_mapping
+    float3 newCoord;
+    float2 scaledUV = UVLeftTop + UVDimensions * input.tex;
+    float u = 2.0 * scaledUV.x - 1.0;
+    float v = 2.0 * scaledUV.y - 1.0;
+    uint ArrayIndex = (uint)LayerOrDepth / 6;
+    switch ((uint)LayerOrDepth % 6) {
+        case 0: newCoord = float3(1.0, -v, -u); break; // POSITIVE X
+        case 1: newCoord = float3(-1.0, -v, u); break; // NEGATIVE X
+        case 2: newCoord = float3(u, 1.0, -v); break; // POSITIVE Y
+        case 3: newCoord = float3(u, -1.0, v); break; // NEGATIVE Y
+        case 4: newCoord = float3(u, -v, 1.0); break; // POSITIVE Z
+        case 5: newCoord = float3(-u, -v, -1.0); break; // NEGATIVE Z
+        default: newCoord = float3(0, 0, 0); break; // silences warning
+    }
+    return SourceTextureCubeArray.SampleLevel(SourceSampler, float4(newCoord, float(ArrayIndex)), MipLevel);
 }

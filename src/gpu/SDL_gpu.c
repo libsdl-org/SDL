@@ -177,6 +177,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     SDL_GPUShader *blit_from_2d_array_shader,
     SDL_GPUShader *blit_from_3d_shader,
     SDL_GPUShader *blit_from_cube_shader,
+    SDL_GPUShader *blit_from_cube_array_shader,
     BlitPipelineCacheEntry **blit_pipelines,
     Uint32 *blit_pipeline_count,
     Uint32 *blit_pipeline_capacity)
@@ -211,7 +212,9 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     blit_pipeline_create_info.vertex_shader = blit_vertex_shader;
     if (source_texture_type == SDL_GPU_TEXTURETYPE_CUBE) {
         blit_pipeline_create_info.fragment_shader = blit_from_cube_shader;
-    } else if (source_texture_type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
+    } else if (source_texture_type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+        blit_pipeline_create_info.fragment_shader = blit_from_cube_array_shader;
+    }  else if (source_texture_type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
         blit_pipeline_create_info.fragment_shader = blit_from_2d_array_shader;
     } else if (source_texture_type == SDL_GPU_TEXTURETYPE_3D) {
         blit_pipeline_create_info.fragment_shader = blit_from_3d_shader;
@@ -259,6 +262,7 @@ void SDL_GPU_BlitCommon(
     SDL_GPUShader *blit_from_2d_array_shader,
     SDL_GPUShader *blit_from_3d_shader,
     SDL_GPUShader *blit_from_cube_shader,
+    SDL_GPUShader *blit_from_cube_array_shader,
     BlitPipelineCacheEntry **blit_pipelines,
     Uint32 *blit_pipeline_count,
     Uint32 *blit_pipeline_capacity)
@@ -283,6 +287,7 @@ void SDL_GPU_BlitCommon(
         blit_from_2d_array_shader,
         blit_from_3d_shader,
         blit_from_cube_shader,
+        blit_from_cube_array_shader,
         blit_pipelines,
         blit_pipeline_count,
         blit_pipeline_capacity);
@@ -816,6 +821,28 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
             }
             if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_CUBE, createinfo->usage)) {
                 SDL_assert_release(!"For cube textures: the format is unsupported for the given usage");
+                failed = true;
+            }
+        } else if (createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+            // Cubemap array validation
+            if (createinfo->width != createinfo->height) {
+                SDL_assert_release(!"For cube array textures: width and height must be identical");
+                failed = true;
+            }
+            if (createinfo->width > MAX_2D_DIMENSION || createinfo->height > MAX_2D_DIMENSION) {
+                SDL_assert_release(!"For cube array textures: width and height must be <= 16384");
+                failed = true;
+            }
+            if (createinfo->layer_count_or_depth % 6 != 0) {
+                SDL_assert_release(!"For cube array textures: layer_count_or_depth must be a multiple of 6");
+                failed = true;
+            }
+            if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
+                SDL_assert_release(!"For cube array textures: sample_count must be SDL_GPU_SAMPLECOUNT_1");
+                failed = true;
+            }
+            if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_CUBE_ARRAY, createinfo->usage)) {
+                SDL_assert_release(!"For cube array textures: the format is unsupported for the given usage");
                 failed = true;
             }
         } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
