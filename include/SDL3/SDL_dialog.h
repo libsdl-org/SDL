@@ -262,4 +262,4 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback
 #endif
 #include <SDL3/SDL_close_code.h>
 
-#endif /* SDL_joystick_h_ */
+#endif /* SDL_dialog_h_ */
