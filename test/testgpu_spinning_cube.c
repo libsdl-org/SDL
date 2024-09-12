@@ -465,7 +465,7 @@ init_render_state(int msaa)
     SDL_GPUColorTargetDescription color_target_desc;
     Uint32 drawablew, drawableh;
     SDL_GPUVertexAttribute vertex_attributes[2];
-    SDL_GPUVertexBinding vertex_binding;
+    SDL_GPUVertexBufferDescription vertex_buffer_desc;
     SDL_GPUShader *vertex_shader;
     SDL_GPUShader *fragment_shader;
     int i;
@@ -554,8 +554,8 @@ init_render_state(int msaa)
     pipelinedesc.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
     pipelinedesc.target_info.has_depth_stencil_target = SDL_TRUE;
 
-    pipelinedesc.depth_stencil_state.enable_depth_test = 1;
-    pipelinedesc.depth_stencil_state.enable_depth_write = 1;
+    pipelinedesc.depth_stencil_state.enable_depth_test = SDL_TRUE;
+    pipelinedesc.depth_stencil_state.enable_depth_write = SDL_TRUE;
     pipelinedesc.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL;
 
     pipelinedesc.multisample_state.sample_count = render_state.sample_count;
@@ -565,23 +565,23 @@ init_render_state(int msaa)
     pipelinedesc.vertex_shader = vertex_shader;
     pipelinedesc.fragment_shader = fragment_shader;
 
-    vertex_binding.index = 0;
-    vertex_binding.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
-    vertex_binding.instance_step_rate = 0;
-    vertex_binding.pitch = sizeof(VertexData);
+    vertex_buffer_desc.slot = 0;
+    vertex_buffer_desc.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+    vertex_buffer_desc.instance_step_rate = 0;
+    vertex_buffer_desc.pitch = sizeof(VertexData);
 
-    vertex_attributes[0].binding_index = 0;
+    vertex_attributes[0].buffer_slot = 0;
     vertex_attributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
     vertex_attributes[0].location = 0;
     vertex_attributes[0].offset = 0;
 
-    vertex_attributes[1].binding_index = 0;
+    vertex_attributes[1].buffer_slot = 0;
     vertex_attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
     vertex_attributes[1].location = 1;
     vertex_attributes[1].offset = sizeof(float) * 3;
 
-    pipelinedesc.vertex_input_state.num_vertex_bindings = 1;
-    pipelinedesc.vertex_input_state.vertex_bindings = &vertex_binding;
+    pipelinedesc.vertex_input_state.num_vertex_buffers = 1;
+    pipelinedesc.vertex_input_state.vertex_buffer_descriptions = &vertex_buffer_desc;
     pipelinedesc.vertex_input_state.num_vertex_attributes = 2;
     pipelinedesc.vertex_input_state.vertex_attributes = (SDL_GPUVertexAttribute*) &vertex_attributes;
 
