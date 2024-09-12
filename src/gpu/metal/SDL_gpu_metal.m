@@ -2750,8 +2750,7 @@ static void METAL_DrawPrimitivesIndirect(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBuffer *buffer,
     Uint32 offset,
-    Uint32 drawCount,
-    Uint32 pitch)
+    Uint32 drawCount)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2767,7 +2766,7 @@ static void METAL_DrawPrimitivesIndirect(
             [metalCommandBuffer->renderEncoder
                       drawPrimitives:SDLToMetal_PrimitiveType[primitiveType]
                       indirectBuffer:metalBuffer->handle
-                indirectBufferOffset:offset + (pitch * i)];
+                indirectBufferOffset:offset + (sizeof(SDL_GPUIndirectDrawCommand) * i)];
         }
 
         METAL_INTERNAL_TrackBuffer(metalCommandBuffer, metalBuffer);
@@ -2778,8 +2777,7 @@ static void METAL_DrawIndexedPrimitivesIndirect(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBuffer *buffer,
     Uint32 offset,
-    Uint32 drawCount,
-    Uint32 pitch)
+    Uint32 drawCount)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2795,7 +2793,7 @@ static void METAL_DrawIndexedPrimitivesIndirect(
                           indexBuffer:metalCommandBuffer->indexBuffer->handle
                     indexBufferOffset:metalCommandBuffer->indexBufferOffset
                        indirectBuffer:metalBuffer->handle
-                 indirectBufferOffset:offset + (pitch * i)];
+                 indirectBufferOffset:offset + (sizeof(SDL_GPUIndexedIndirectDrawCommand) * i)];
         }
 
         METAL_INTERNAL_TrackBuffer(metalCommandBuffer, metalBuffer);

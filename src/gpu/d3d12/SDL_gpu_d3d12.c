@@ -4722,80 +4722,42 @@ static void D3D12_DrawPrimitivesIndirect(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBuffer *buffer,
     Uint32 offset,
-    Uint32 drawCount,
-    Uint32 pitch)
+    Uint32 drawCount)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12Buffer *d3d12Buffer = ((D3D12BufferContainer *)buffer)->activeBuffer;
 
     D3D12_INTERNAL_BindGraphicsResources(d3d12CommandBuffer);
 
-    if (pitch == sizeof(SDL_GPUIndirectDrawCommand)) {
-        // Real multi-draw!
-        ID3D12GraphicsCommandList_ExecuteIndirect(
-            d3d12CommandBuffer->graphicsCommandList,
-            d3d12CommandBuffer->renderer->indirectDrawCommandSignature,
-            drawCount,
-            d3d12Buffer->handle,
-            offset,
-            NULL,
-            0);
-    } else {
-        /* Fake multi-draw...
-         * FIXME: we could make this real multi-draw
-         * if we have a lookup to get command signature per pitch value
-         */
-        for (Uint32 i = 0; i < drawCount; i += 1) {
-            ID3D12GraphicsCommandList_ExecuteIndirect(
-                d3d12CommandBuffer->graphicsCommandList,
-                d3d12CommandBuffer->renderer->indirectDrawCommandSignature,
-                1,
-                d3d12Buffer->handle,
-                offset + (pitch * i),
-                NULL,
-                0);
-        }
-    }
+    ID3D12GraphicsCommandList_ExecuteIndirect(
+        d3d12CommandBuffer->graphicsCommandList,
+        d3d12CommandBuffer->renderer->indirectDrawCommandSignature,
+        drawCount,
+        d3d12Buffer->handle,
+        offset,
+        NULL,
+        0);
 }
 
 static void D3D12_DrawIndexedPrimitivesIndirect(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUBuffer *buffer,
     Uint32 offset,
-    Uint32 drawCount,
-    Uint32 pitch)
+    Uint32 drawCount)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12Buffer *d3d12Buffer = ((D3D12BufferContainer *)buffer)->activeBuffer;
 
     D3D12_INTERNAL_BindGraphicsResources(d3d12CommandBuffer);
 
-    if (pitch == sizeof(SDL_GPUIndexedIndirectDrawCommand)) {
-        // Real multi-draw!
-        ID3D12GraphicsCommandList_ExecuteIndirect(
-            d3d12CommandBuffer->graphicsCommandList,
-            d3d12CommandBuffer->renderer->indirectIndexedDrawCommandSignature,
-            drawCount,
-            d3d12Buffer->handle,
-            offset,
-            NULL,
-            0);
-    } else {
-        /* Fake multi-draw...
-         * FIXME: we could make this real multi-draw
-         * if we have a lookup to get command signature per pitch value
-         */
-        for (Uint32 i = 0; i < drawCount; i += 1) {
-            ID3D12GraphicsCommandList_ExecuteIndirect(
-                d3d12CommandBuffer->graphicsCommandList,
-                d3d12CommandBuffer->renderer->indirectIndexedDrawCommandSignature,
-                1,
-                d3d12Buffer->handle,
-                offset + (pitch * i),
-                NULL,
-                0);
-        }
-    }
+    ID3D12GraphicsCommandList_ExecuteIndirect(
+        d3d12CommandBuffer->graphicsCommandList,
+        d3d12CommandBuffer->renderer->indirectIndexedDrawCommandSignature,
+        drawCount,
+        d3d12Buffer->handle,
+        offset,
+        NULL,
+        0);
 }
 
 static void D3D12_EndRenderPass(
