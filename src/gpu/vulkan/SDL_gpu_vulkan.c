@@ -7440,6 +7440,7 @@ static void VULKAN_INTERNAL_SetCurrentViewport(
     const SDL_GPUViewport *viewport)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
 
     vulkanCommandBuffer->currentViewport.x = viewport->x;
     vulkanCommandBuffer->currentViewport.width = viewport->w;
@@ -7450,18 +7451,6 @@ static void VULKAN_INTERNAL_SetCurrentViewport(
     // FIXME: need moltenVK hack
     vulkanCommandBuffer->currentViewport.y = viewport->y + viewport->h;
     vulkanCommandBuffer->currentViewport.height = -viewport->h;
-}
-
-static void VULKAN_SetViewport(
-    SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUViewport *viewport)
-{
-    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-
-    VULKAN_INTERNAL_SetCurrentViewport(
-        vulkanCommandBuffer,
-        viewport);
 
     renderer->vkCmdSetViewport(
         vulkanCommandBuffer->commandBuffer,
@@ -7470,26 +7459,27 @@ static void VULKAN_SetViewport(
         &vulkanCommandBuffer->currentViewport);
 }
 
+static void VULKAN_SetViewport(
+    SDL_GPUCommandBuffer *commandBuffer,
+    const SDL_GPUViewport *viewport)
+{
+    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+
+    VULKAN_INTERNAL_SetCurrentViewport(
+        vulkanCommandBuffer,
+        viewport);
+}
+
 static void VULKAN_INTERNAL_SetCurrentScissor(
     VulkanCommandBuffer *vulkanCommandBuffer,
     const SDL_Rect *scissor)
 {
+    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+
     vulkanCommandBuffer->currentScissor.offset.x = scissor->x;
     vulkanCommandBuffer->currentScissor.offset.y = scissor->y;
     vulkanCommandBuffer->currentScissor.extent.width = scissor->w;
     vulkanCommandBuffer->currentScissor.extent.height = scissor->h;
-}
-
-static void VULKAN_SetScissor(
-    SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_Rect *scissor)
-{
-    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-
-    VULKAN_INTERNAL_SetCurrentScissor(
-        vulkanCommandBuffer,
-        scissor);
 
     renderer->vkCmdSetScissor(
         vulkanCommandBuffer->commandBuffer,
@@ -7498,14 +7488,31 @@ static void VULKAN_SetScissor(
         &vulkanCommandBuffer->currentScissor);
 }
 
+static void VULKAN_SetScissor(
+    SDL_GPUCommandBuffer *commandBuffer,
+    const SDL_Rect *scissor)
+{
+    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+
+    VULKAN_INTERNAL_SetCurrentScissor(
+        vulkanCommandBuffer,
+        scissor);
+}
+
 static void VULKAN_INTERNAL_SetCurrentBlendConstants(
     VulkanCommandBuffer *vulkanCommandBuffer,
     SDL_FColor blendConstants)
 {
+    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+
     vulkanCommandBuffer->blendConstants[0] = blendConstants.r;
     vulkanCommandBuffer->blendConstants[1] = blendConstants.g;
     vulkanCommandBuffer->blendConstants[2] = blendConstants.b;
     vulkanCommandBuffer->blendConstants[3] = blendConstants.a;
+
+    renderer->vkCmdSetBlendConstants(
+        vulkanCommandBuffer->commandBuffer,
+        vulkanCommandBuffer->blendConstants);
 }
 
 static void VULKAN_SetBlendConstants(
@@ -7513,22 +7520,24 @@ static void VULKAN_SetBlendConstants(
     SDL_FColor blendConstants)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
 
     VULKAN_INTERNAL_SetCurrentBlendConstants(
         vulkanCommandBuffer,
         blendConstants);
-
-    renderer->vkCmdSetBlendConstants(
-        vulkanCommandBuffer->commandBuffer,
-        vulkanCommandBuffer->blendConstants);
 }
 
 static void VULKAN_INTERNAL_SetCurrentStencilReference(
     VulkanCommandBuffer *vulkanCommandBuffer,
     Uint8 reference)
 {
+    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+
     vulkanCommandBuffer->stencilRef = reference;
+
+    renderer->vkCmdSetStencilReference(
+        vulkanCommandBuffer->commandBuffer,
+        VK_STENCIL_FACE_FRONT_AND_BACK,
+        vulkanCommandBuffer->stencilRef);
 }
 
 static void VULKAN_SetStencilReference(
@@ -7536,15 +7545,9 @@ static void VULKAN_SetStencilReference(
     Uint8 reference)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
 
     VULKAN_INTERNAL_SetCurrentStencilReference(
         vulkanCommandBuffer,
-        reference);
-
-    renderer->vkCmdSetStencilReference(
-        vulkanCommandBuffer->commandBuffer,
-        VK_STENCIL_FACE_FRONT_AND_BACK,
         reference);
 }
 
@@ -8057,27 +8060,6 @@ static void VULKAN_BindGraphicsPipeline(
     vulkanCommandBuffer->currentGraphicsPipeline = pipeline;
 
     VULKAN_INTERNAL_TrackGraphicsPipeline(vulkanCommandBuffer, pipeline);
-
-    renderer->vkCmdSetViewport(
-        vulkanCommandBuffer->commandBuffer,
-        0,
-        1,
-        &vulkanCommandBuffer->currentViewport);
-
-    renderer->vkCmdSetScissor(
-        vulkanCommandBuffer->commandBuffer,
-        0,
-        1,
-        &vulkanCommandBuffer->currentScissor);
-
-    renderer->vkCmdSetBlendConstants(
-        vulkanCommandBuffer->commandBuffer,
-        vulkanCommandBuffer->blendConstants);
-
-    renderer->vkCmdSetStencilReference(
-        vulkanCommandBuffer->commandBuffer,
-        VK_STENCIL_FACE_FRONT_AND_BACK,
-        vulkanCommandBuffer->stencilRef);
 
     // Acquire uniform buffers if necessary
     for (Uint32 i = 0; i < pipeline->resourceLayout.vertexUniformBufferCount; i += 1) {
