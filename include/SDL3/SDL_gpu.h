@@ -1188,8 +1188,8 @@ typedef struct SDL_GPUSamplerCreateInfo
  * used by the vertex buffers you pass in.
  *
  * Vertex attributes are linked to buffers via the buffer_slot field of
- * SDL_GPUVertexAttribute. For example, if an attribute has a buffer_slot of 0,
- * then that attribute belongs to the vertex buffer bound at slot 0.
+ * SDL_GPUVertexAttribute. For example, if an attribute has a buffer_slot of
+ * 0, then that attribute belongs to the vertex buffer bound at slot 0.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1207,8 +1207,8 @@ typedef struct SDL_GPUVertexBufferDescription
 /**
  * A structure specifying a vertex attribute.
  *
- * All vertex attribute locations provided to an SDL_GPUVertexInputState
- * must be unique.
+ * All vertex attribute locations provided to an SDL_GPUVertexInputState must
+ * be unique.
  *
  * \since This struct is available since SDL 3.0.0
  *
