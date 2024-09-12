@@ -110,14 +110,14 @@ struct SDL_WindowData
     SDL_Window *keyboard_focus;
 
     char *app_id;
-    float windowed_scale_factor;
+    double scale_factor;
 
     struct Wayland_SHMBuffer icon;
 
     struct
     {
-        float x;
-        float y;
+        double x;
+        double y;
     } pointer_scale;
 
     // The in-flight window size request.

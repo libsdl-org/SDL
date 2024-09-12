@@ -51,7 +51,7 @@ typedef struct
 
     int dst_width;
     int dst_height;
-    float scale;
+    double scale;
 
     struct wl_list node;
 } Wayland_CachedCustomCursor;
@@ -332,7 +332,7 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     wl_surface_commit(c->surface);
 }
 
-static bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdata, float *scale)
+static bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdata, double *scale)
 {
     struct wl_cursor_theme *theme = NULL;
     struct wl_cursor *cursor;
@@ -357,9 +357,9 @@ static bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdat
     focus = SDL_GetMouse()->focus;
     if (focus) {
         // TODO: Use the fractional scale once GNOME supports viewports on cursor surfaces.
-        *scale = SDL_ceilf(focus->internal->windowed_scale_factor);
+        *scale = SDL_ceil(focus->internal->scale_factor);
     } else {
-        *scale = 1.0f;
+        *scale = 1.0;
     }
 
     size *= (int)*scale;
@@ -435,15 +435,15 @@ static Wayland_CachedCustomCursor *Wayland_GetCachedCustomCursor(SDL_Cursor *cur
     SDL_CursorData *data = cursor->internal;
     Wayland_CachedCustomCursor *cache;
     SDL_Window *focus = SDL_GetMouseFocus();
-    float scale = 1.0f;
+    double scale = 1.0;
 
     if (focus && SDL_SurfaceHasAlternateImages(data->cursor_data.custom.sdl_cursor_surface)) {
-        scale = focus->internal->windowed_scale_factor;
+        scale = focus->internal->scale_factor;
     }
 
     // Only use fractional scale values if viewports are available.
     if (!wd->viewporter) {
-        scale = SDL_ceilf(scale);
+        scale = SDL_ceil(scale);
     }
 
     // Is this cursor already cached at the target scale?
@@ -458,7 +458,7 @@ static Wayland_CachedCustomCursor *Wayland_GetCachedCustomCursor(SDL_Cursor *cur
         return NULL;
     }
 
-    SDL_Surface *surface = SDL_GetSurfaceImage(data->cursor_data.custom.sdl_cursor_surface, scale);
+    SDL_Surface *surface = SDL_GetSurfaceImage(data->cursor_data.custom.sdl_cursor_surface, (float)scale);
     if (!surface) {
         SDL_free(cache);
         return NULL;
@@ -675,7 +675,7 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
     SDL_VideoData *d = vd->internal;
     struct SDL_WaylandInput *input = d->input;
     struct wl_pointer *pointer = d->pointer;
-    float scale = 1.0f;
+    double scale = 1.0;
     int dst_width = 0;
     int dst_height = 0;
 
@@ -728,7 +728,7 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
         }
 
         // TODO: Make the viewport path the default in all cases once GNOME finally supports viewports on cursor surfaces.
-        if (SDL_ceilf(scale) != scale && d->viewporter) {
+        if (SDL_ceil(scale) != scale && d->viewporter) {
             if (!data->viewport) {
                 data->viewport = wp_viewporter_get_viewport(d->viewporter, data->surface);
             }

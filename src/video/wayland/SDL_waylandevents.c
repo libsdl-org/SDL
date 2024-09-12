@@ -521,8 +521,8 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
     input->sx_w = sx_w;
     input->sy_w = sy_w;
     if (input->pointer_focus) {
-        float sx = (float)(wl_fixed_to_double(sx_w) * window_data->pointer_scale.x);
-        float sy = (float)(wl_fixed_to_double(sy_w) * window_data->pointer_scale.y);
+        const float sx = (float)(wl_fixed_to_double(sx_w) * window_data->pointer_scale.x);
+        const float sy = (float)(wl_fixed_to_double(sy_w) * window_data->pointer_scale.y);
         SDL_SendMouseMotion(Wayland_GetPointerTimestamp(input, time), window_data->sdlwindow, input->pointer_id, false, sx, sy);
     }
 
@@ -2590,12 +2590,8 @@ static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *too
     SDL_Window *window = sdltool->tool_focus;
     if (window) {
         const SDL_WindowData *windowdata = window->internal;
-        const float sx_f = (float)wl_fixed_to_double(sx_w);
-        const float sy_f = (float)wl_fixed_to_double(sy_w);
-        const float sx = sx_f * windowdata->pointer_scale.x;
-        const float sy = sy_f * windowdata->pointer_scale.y;
-        sdltool->x = sx;
-        sdltool->y = sy;
+        sdltool->x = (float)(wl_fixed_to_double(sx_w) * windowdata->pointer_scale.x);
+        sdltool->y = (float)(wl_fixed_to_double(sy_w) * windowdata->pointer_scale.y);
         sdltool->frame_motion_set = true;
     }
 }
@@ -3178,10 +3174,10 @@ bool Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *w
     } else {
         SDL_Rect scaled_mouse_rect;
 
-        scaled_mouse_rect.x = (int)SDL_floorf((float)window->mouse_rect.x / w->pointer_scale.x);
-        scaled_mouse_rect.y = (int)SDL_floorf((float)window->mouse_rect.y / w->pointer_scale.y);
-        scaled_mouse_rect.w = (int)SDL_ceilf((float)window->mouse_rect.w / w->pointer_scale.x);
-        scaled_mouse_rect.h = (int)SDL_ceilf((float)window->mouse_rect.h / w->pointer_scale.y);
+        scaled_mouse_rect.x = (int)SDL_floor(window->mouse_rect.x / w->pointer_scale.x);
+        scaled_mouse_rect.y = (int)SDL_floor(window->mouse_rect.y / w->pointer_scale.y);
+        scaled_mouse_rect.w = (int)SDL_ceil(window->mouse_rect.w / w->pointer_scale.x);
+        scaled_mouse_rect.h = (int)SDL_ceil(window->mouse_rect.h / w->pointer_scale.y);
 
         confine_rect = wl_compositor_create_region(d->compositor);
         wl_region_add(confine_rect,
