@@ -513,7 +513,7 @@ static size_t SDL_ScanLong(const char *text, int count, int radix, long *valuep)
     } else if (value > long_max) {
         value = long_max;
     }
-    *valuep = value;
+    *valuep = (long)value;
     return len;
 }
 #endif
@@ -535,7 +535,7 @@ static size_t SDL_ScanLongW(const wchar_t *text, int count, int radix, long *val
     } else if (value > long_max) {
         value = long_max;
     }
-    *valuep = value;
+    *valuep = (long)value;
     return len;
 }
 #endif
@@ -558,7 +558,7 @@ static size_t SDL_ScanUnsignedLong(const char *text, int count, int radix, unsig
     } else if (value > ulong_max) {
         value = ulong_max;
     }
-    *valuep = value;
+    *valuep = (unsigned long)value;
     return len;
 }
 #endif
@@ -581,7 +581,7 @@ static size_t SDL_ScanUintPtrT(const char *text, uintptr_t *valuep)
     } else if (value > uintptr_max) {
         value = uintptr_max;
     }
-    *valuep = value;
+    *valuep = (uintptr_t)value;
     return len;
 }
 #endif
