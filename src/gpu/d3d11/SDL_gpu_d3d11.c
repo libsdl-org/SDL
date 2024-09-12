@@ -672,8 +672,8 @@ typedef struct D3D11CommandBuffer
     // defer OMSetBlendState because it combines three different states
     bool needBlendStateSet;
 
-    ID3D11Buffer *vertexBuffers[MAX_BUFFER_BINDINGS];
-    Uint32 vertexBufferOffsets[MAX_BUFFER_BINDINGS];
+    ID3D11Buffer *vertexBuffers[MAX_VERTEX_BUFFERS];
+    Uint32 vertexBufferOffsets[MAX_VERTEX_BUFFERS];
     Uint32 vertexBufferCount;
 
     D3D11Texture *vertexSamplerTextures[MAX_TEXTURE_SAMPLERS_PER_STAGE];
@@ -1380,18 +1380,18 @@ static ID3D11RasterizerState *D3D11_INTERNAL_FetchRasterizerState(
     return result;
 }
 
-static Uint32 D3D11_INTERNAL_FindIndexOfVertexBinding(
-    Uint32 targetBinding,
-    const SDL_GPUVertexBinding *bindings,
-    Uint32 numBindings)
+static Uint32 D3D11_INTERNAL_FindIndexOfVertexSlot(
+    Uint32 targetSlot,
+    const SDL_GPUVertexBufferDescription *bufferDescriptions,
+    Uint32 numDescriptions)
 {
-    for (Uint32 i = 0; i < numBindings; i += 1) {
-        if (bindings[i].index == targetBinding) {
+    for (Uint32 i = 0; i < numDescriptions; i += 1) {
+        if (bufferDescriptions[i].slot == targetSlot) {
             return i;
         }
     }
 
-    SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not find vertex binding %u!", targetBinding);
+    SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not find vertex buffer slot %u!", targetSlot);
     return 0;
 }
 
@@ -1420,15 +1420,17 @@ static ID3D11InputLayout *D3D11_INTERNAL_FetchInputLayout(
     for (Uint32 i = 0; i < inputState.num_vertex_attributes; i += 1) {
         elementDescs[i].AlignedByteOffset = inputState.vertex_attributes[i].offset;
         elementDescs[i].Format = SDLToD3D11_VertexFormat[inputState.vertex_attributes[i].format];
-        elementDescs[i].InputSlot = inputState.vertex_attributes[i].binding_index;
+        elementDescs[i].InputSlot = inputState.vertex_attributes[i].buffer_slot;
 
-        bindingIndex = D3D11_INTERNAL_FindIndexOfVertexBinding(
+        bindingIndex = D3D11_INTERNAL_FindIndexOfVertexSlot(
             elementDescs[i].InputSlot,
-            inputState.vertex_bindings,
-            inputState.num_vertex_bindings);
-        elementDescs[i].InputSlotClass = SDLToD3D11_VertexInputRate[inputState.vertex_bindings[bindingIndex].input_rate];
+            inputState.vertex_buffer_descriptions,
+            inputState.num_vertex_buffers);
+        elementDescs[i].InputSlotClass = SDLToD3D11_VertexInputRate[inputState.vertex_buffer_descriptions[bindingIndex].input_rate];
         // The spec requires this to be 0 for per-vertex data
-        elementDescs[i].InstanceDataStepRate = (inputState.vertex_bindings[bindingIndex].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) ? inputState.vertex_bindings[bindingIndex].instance_step_rate : 0;
+        elementDescs[i].InstanceDataStepRate = (inputState.vertex_buffer_descriptions[bindingIndex].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE)
+            ? inputState.vertex_buffer_descriptions[bindingIndex].instance_step_rate
+            : 0;
 
         elementDescs[i].SemanticIndex = inputState.vertex_attributes[i].location;
         elementDescs[i].SemanticName = "TEXCOORD";
@@ -1609,13 +1611,13 @@ static SDL_GPUGraphicsPipeline *D3D11_CreateGraphicsPipeline(
         vertShader->bytecode,
         vertShader->bytecodeSize);
 
-    if (createinfo->vertex_input_state.num_vertex_bindings > 0) {
+    if (createinfo->vertex_input_state.num_vertex_buffers > 0) {
         pipeline->vertexStrides = SDL_malloc(
             sizeof(Uint32) *
-            createinfo->vertex_input_state.num_vertex_bindings);
+            createinfo->vertex_input_state.num_vertex_buffers);
 
-        for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_bindings; i += 1) {
-            pipeline->vertexStrides[i] = createinfo->vertex_input_state.vertex_bindings[i].pitch;
+        for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i += 1) {
+            pipeline->vertexStrides[i] = createinfo->vertex_input_state.vertex_buffer_descriptions[i].pitch;
         }
     } else {
         pipeline->vertexStrides = NULL;
@@ -3732,7 +3734,7 @@ static void D3D11_BindGraphicsPipeline(
 
 static void D3D11_BindVertexBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
-    Uint32 firstBinding,
+    Uint32 firstSlot,
     const SDL_GPUBufferBinding *bindings,
     Uint32 numBindings)
 {
@@ -3740,13 +3742,13 @@ static void D3D11_BindVertexBuffers(
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D11Buffer *currentBuffer = ((D3D11BufferContainer *)bindings[i].buffer)->activeBuffer;
-        d3d11CommandBuffer->vertexBuffers[firstBinding + i] = currentBuffer->handle;
-        d3d11CommandBuffer->vertexBufferOffsets[firstBinding + i] = bindings[i].offset;
+        d3d11CommandBuffer->vertexBuffers[firstSlot + i] = currentBuffer->handle;
+        d3d11CommandBuffer->vertexBufferOffsets[firstSlot + i] = bindings[i].offset;
         D3D11_INTERNAL_TrackBuffer(d3d11CommandBuffer, currentBuffer);
     }
 
     d3d11CommandBuffer->vertexBufferCount =
-        SDL_max(d3d11CommandBuffer->vertexBufferCount, firstBinding + numBindings);
+        SDL_max(d3d11CommandBuffer->vertexBufferCount, firstSlot + numBindings);
 
     d3d11CommandBuffer->needVertexBufferBind = true;
 }
