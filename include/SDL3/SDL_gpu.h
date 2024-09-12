@@ -2652,7 +2652,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUPrimitives(
  * buffer.
  *
  * The buffer must consist of tightly-packed draw parameter sets that each
- * match the the layout of SDL_GPUIndirectDrawCommand. You must not call this
+ * match the layout of SDL_GPUIndirectDrawCommand. You must not call this
  * function before binding a graphics pipeline.
  *
  * \param render_pass a render pass handle.
@@ -2674,7 +2674,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUPrimitivesIndirect(
  * draw parameters set from a buffer.
  *
  * The buffer must consist of tightly-packed draw parameter sets that each
- * match the the layout of SDL_GPUIndexedIndirectDrawCommand. You must not
+ * match the layout of SDL_GPUIndexedIndirectDrawCommand. You must not
  * call this function before binding a graphics pipeline.
  *
  * \param render_pass a render pass handle.
