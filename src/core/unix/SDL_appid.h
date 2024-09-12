@@ -24,7 +24,7 @@ freely, subject to the following restrictions:
 #ifndef SDL_appid_h_
 #define SDL_appid_h_
 
-extern const char *SDL_GetExeName();
-extern const char *SDL_GetAppID();
+extern const char *SDL_GetExeName(void);
+extern const char *SDL_GetAppID(void);
 
 #endif // SDL_appid_h_

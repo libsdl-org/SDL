@@ -35,7 +35,7 @@ static void DrawRects(SDL_Renderer *renderer)
     SDLTest_DrawString(renderer, 0.f, 0.f, "Relative Mode: Enabled");
 }
 
-static void CenterMouse()
+static void CenterMouse(void)
 {
     /* Warp the mouse back to the center of the window with input focus to use the
      * center point for calculating future motion deltas.

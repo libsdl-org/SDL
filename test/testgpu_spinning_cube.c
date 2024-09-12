@@ -619,7 +619,7 @@ init_render_state(int msaa)
 
 static int done = 0;
 
-void loop()
+void loop(void)
 {
     SDL_Event event;
     int i;
