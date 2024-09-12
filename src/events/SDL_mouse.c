@@ -1254,7 +1254,7 @@ void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, bool ign
     }
 }
 
-void SDL_DisableMouseWarpEmulation()
+void SDL_DisableMouseWarpEmulation(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 

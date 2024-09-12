@@ -158,7 +158,7 @@ SDL_X11_SYM(Status,XmbTextListToTextProperty,(Display* a,char** b,int c,XICCEnco
 SDL_X11_SYM(Region,XCreateRegion,(void),(),return)
 SDL_X11_SYM(int,XUnionRectWithRegion,(XRectangle *a, Region b, Region c),(a,b,c), return)
 SDL_X11_SYM(void,XDestroyRegion,(Region),(a),)
-SDL_X11_SYM(void,XrmInitialize,(),(),)
+SDL_X11_SYM(void,XrmInitialize,(void),(),)
 SDL_X11_SYM(char*,XResourceManagerString,(Display *display),(display),)
 SDL_X11_SYM(XrmDatabase,XrmGetStringDatabase,(char *data),(data),)
 SDL_X11_SYM(void,XrmDestroyDatabase,(XrmDatabase db),(db),)
