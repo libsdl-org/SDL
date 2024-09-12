@@ -765,7 +765,7 @@ typedef struct VulkanDescriptorInfo
 
 typedef struct DescriptorSetPool
 {
-    SDL_Mutex *lock;
+    SDL_SpinLock lock;
 
     VkDescriptorSetLayout descriptorSetLayout;
 
@@ -3071,7 +3071,6 @@ static void VULKAN_INTERNAL_DestroyDescriptorSetPool(
     SDL_free(pool->descriptorInfos);
     SDL_free(pool->descriptorPools);
     SDL_free(pool->inactiveDescriptorSets);
-    SDL_DestroyMutex(pool->lock);
 }
 
 static void VULKAN_INTERNAL_DestroyGraphicsPipeline(
@@ -3493,7 +3492,7 @@ static void VULKAN_INTERNAL_InitializeDescriptorSetPool(
     VulkanRenderer *renderer,
     DescriptorSetPool *descriptorSetPool)
 {
-    descriptorSetPool->lock = SDL_CreateMutex();
+    descriptorSetPool->lock = 0;
 
     // Descriptor set layout and descriptor infos are already set when this function is called
 
@@ -4891,7 +4890,7 @@ static VkDescriptorSet VULKAN_INTERNAL_FetchDescriptorSet(
 {
     VkDescriptorSet descriptorSet;
 
-    SDL_LockMutex(descriptorSetPool->lock);
+    SDL_LockSpinlock(&descriptorSetPool->lock);
 
     // If no inactive descriptor sets remain, create a new pool and allocate new inactive sets
 
@@ -4907,7 +4906,7 @@ static VkDescriptorSet VULKAN_INTERNAL_FetchDescriptorSet(
                 descriptorSetPool->descriptorInfoCount,
                 descriptorSetPool->nextPoolSize,
                 &descriptorSetPool->descriptorPools[descriptorSetPool->descriptorPoolCount - 1])) {
-            SDL_UnlockMutex(descriptorSetPool->lock);
+            SDL_UnlockSpinlock(&descriptorSetPool->lock);
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create descriptor pool!");
             return VK_NULL_HANDLE;
         }
@@ -4924,7 +4923,7 @@ static VkDescriptorSet VULKAN_INTERNAL_FetchDescriptorSet(
                 descriptorSetPool->descriptorSetLayout,
                 descriptorSetPool->nextPoolSize,
                 descriptorSetPool->inactiveDescriptorSets)) {
-            SDL_UnlockMutex(descriptorSetPool->lock);
+            SDL_UnlockSpinlock(&descriptorSetPool->lock);
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to allocate descriptor sets!");
             return VK_NULL_HANDLE;
         }
@@ -4937,7 +4936,7 @@ static VkDescriptorSet VULKAN_INTERNAL_FetchDescriptorSet(
     descriptorSet = descriptorSetPool->inactiveDescriptorSets[descriptorSetPool->inactiveDescriptorSetCount - 1];
     descriptorSetPool->inactiveDescriptorSetCount -= 1;
 
-    SDL_UnlockMutex(descriptorSetPool->lock);
+    SDL_UnlockSpinlock(&descriptorSetPool->lock);
 
     if (vulkanCommandBuffer->boundDescriptorSetDataCount == vulkanCommandBuffer->boundDescriptorSetDataCapacity) {
         vulkanCommandBuffer->boundDescriptorSetDataCapacity *= 2;
@@ -10355,7 +10354,7 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
     for (i = 0; i < commandBuffer->boundDescriptorSetDataCount; i += 1) {
         descriptorSetData = &commandBuffer->boundDescriptorSetDatas[i];
 
-        SDL_LockMutex(descriptorSetData->descriptorSetPool->lock);
+        SDL_TryLockSpinlock(&descriptorSetData->descriptorSetPool->lock);
 
         if (descriptorSetData->descriptorSetPool->inactiveDescriptorSetCount == descriptorSetData->descriptorSetPool->inactiveDescriptorSetCapacity) {
             descriptorSetData->descriptorSetPool->inactiveDescriptorSetCapacity *= 2;
@@ -10367,7 +10366,7 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
         descriptorSetData->descriptorSetPool->inactiveDescriptorSets[descriptorSetData->descriptorSetPool->inactiveDescriptorSetCount] = descriptorSetData->descriptorSet;
         descriptorSetData->descriptorSetPool->inactiveDescriptorSetCount += 1;
 
-        SDL_UnlockMutex(descriptorSetData->descriptorSetPool->lock);
+        SDL_UnlockSpinlock(&descriptorSetData->descriptorSetPool->lock);
     }
 
     commandBuffer->boundDescriptorSetDataCount = 0;
