@@ -897,8 +897,12 @@ static void PULSEAUDIO_DetectDevices(void)
 
     /* ok, we have a sane list, let's set up hotplug notifications now... */
     SDL_AtomicSet(&pulseaudio_hotplug_thread_active, 1);
-    pulseaudio_hotplug_thread = SDL_CreateThreadInternal(HotplugThread, "PulseHotplug", 256 * 1024, ready_sem);  /* !!! FIXME: this can probably survive in significantly less stack space. */
-    SDL_SemWait(ready_sem);
+    pulseaudio_hotplug_thread = SDL_CreateThreadInternal(HotplugThread, "PulseHotplug", 0, ready_sem);
+    if (pulseaudio_hotplug_thread) {
+        SDL_SemWait(ready_sem);
+    } else {
+        SDL_AtomicSet(&pulseaudio_hotplug_thread_active, 0);  // thread failed to start, we'll go on without hotplug.
+    }
     SDL_DestroySemaphore(ready_sem);
 }
 
