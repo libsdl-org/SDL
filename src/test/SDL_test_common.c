@@ -2543,29 +2543,31 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
 
 void SDLTest_CommonQuit(SDLTest_CommonState *state)
 {
-    int i;
+    if (state) {
+        int i;
 
-    if (state->targets) {
-        for (i = 0; i < state->num_windows; ++i) {
-            if (state->targets[i]) {
-                SDL_DestroyTexture(state->targets[i]);
+        if (state->targets) {
+            for (i = 0; i < state->num_windows; ++i) {
+                if (state->targets[i]) {
+                    SDL_DestroyTexture(state->targets[i]);
+                }
             }
+            SDL_free(state->targets);
         }
-        SDL_free(state->targets);
-    }
-    if (state->renderers) {
-        for (i = 0; i < state->num_windows; ++i) {
-            if (state->renderers[i]) {
-                SDL_DestroyRenderer(state->renderers[i]);
+        if (state->renderers) {
+            for (i = 0; i < state->num_windows; ++i) {
+                if (state->renderers[i]) {
+                    SDL_DestroyRenderer(state->renderers[i]);
+                }
             }
+            SDL_free(state->renderers);
         }
-        SDL_free(state->renderers);
-    }
-    if (state->windows) {
-        for (i = 0; i < state->num_windows; i++) {
-            SDL_DestroyWindow(state->windows[i]);
+        if (state->windows) {
+            for (i = 0; i < state->num_windows; i++) {
+                SDL_DestroyWindow(state->windows[i]);
+            }
+            SDL_free(state->windows);
         }
-        SDL_free(state->windows);
     }
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
