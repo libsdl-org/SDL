@@ -1500,17 +1500,20 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar
 /**
  * Parse a `long` from a wide string.
  *
- * If `str` starts with whitespace, then those whitespace characters are skipped before attempting to parse the number.
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
  *
- * If the parsed number does not fit inside a `long`, the result is clamped to the minimum and maximum representable `long` values.
+ * If the parsed number does not fit inside a `long`, the result is clamped to
+ * the minimum and maximum representable `long` values.
  *
  * \param str The null-terminated wide string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid wide character
  *             (i.e. the next character after the parsed number) will be
  *             written to this pointer.
- * \param base The base of the integer to read. Supported values are 0 and 2 to 36 inclusive.
- *             If 0, the base will be inferred from the number's
- *             prefix (0x for hexadecimal, 0 for octal, decimal otherwise).
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
  * \returns The parsed `long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1719,17 +1722,20 @@ extern SDL_DECLSPEC double SDLCALL SDL_atof(const char *str);
 /**
  * Parse a `long` from a string.
  *
- * If `str` starts with whitespace, then those whitespace characters are skipped before attempting to parse the number.
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
  *
- * If the parsed number does not fit inside a `long`, the result is clamped to the minimum and maximum representable `long` values.
+ * If the parsed number does not fit inside a `long`, the result is clamped to
+ * the minimum and maximum representable `long` values.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
  *             this pointer.
- * \param base The base of the integer to read. Supported values are 0 and 2 to 36 inclusive.
- *             If 0, the base will be inferred from the number's
- *             prefix (0x for hexadecimal, 0 for octal, decimal otherwise).
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
  * \returns The parsed `long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1750,18 +1756,20 @@ extern SDL_DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int ba
 /**
  * Parse an `unsigned long` from a string.
  *
- * If `str` starts with whitespace, then those whitespace characters are skipped before attempting to parse the number.
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
  *
- * If the parsed number does not fit inside an `unsigned long`,
- * the result is clamped to the maximum representable `unsigned long` value.
+ * If the parsed number does not fit inside an `unsigned long`, the result is
+ * clamped to the maximum representable `unsigned long` value.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
  *             this pointer.
- * \param base The base of the integer to read. Supported values are 0 and 2 to 36 inclusive.
- *             If 0, the base will be inferred from the number's
- *             prefix (0x for hexadecimal, 0 for octal, decimal otherwise).
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
  * \returns The parsed `unsigned long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1781,17 +1789,20 @@ extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **en
 /**
  * Parse a `long long` from a string.
  *
- * If `str` starts with whitespace, then those whitespace characters are skipped before attempting to parse the number.
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
  *
- * If the parsed number does not fit inside a `long long`, the result is clamped to the minimum and maximum representable `long long` values.
+ * If the parsed number does not fit inside a `long long`, the result is
+ * clamped to the minimum and maximum representable `long long` values.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
  *             this pointer.
- * \param base The base of the integer to read. Supported values are 0 and 2 to 36 inclusive.
- *             If 0, the base will be inferred from the number's
- *             prefix (0x for hexadecimal, 0 for octal, decimal otherwise).
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
  * \returns The parsed `long long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1811,19 +1822,22 @@ extern SDL_DECLSPEC long long SDLCALL SDL_strtoll(const char *str, char **endp, 
 /**
  * Parse an `unsigned long long` from a string.
  *
- * If `str` starts with whitespace, then those whitespace characters are skipped before attempting to parse the number.
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
  *
- * If the parsed number does not fit inside an `unsigned long long`,
- * the result is clamped to the maximum representable `unsigned long long` value.
+ * If the parsed number does not fit inside an `unsigned long long`, the
+ * result is clamped to the maximum representable `unsigned long long` value.
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
  *             this pointer.
- * \param base The base of the integer to read. Supported values are 0 and 2 to 36 inclusive.
- *             If 0, the base will be inferred from the number's
- *             prefix (0x for hexadecimal, 0 for octal, decimal otherwise).
- * \returns The parsed `unsigned long long`, or 0 if no number could be parsed.
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
+ * \returns The parsed `unsigned long long`, or 0 if no number could be
+ *          parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
