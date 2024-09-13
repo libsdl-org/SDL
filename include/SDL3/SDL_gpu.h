@@ -932,23 +932,6 @@ typedef enum SDL_GPUSwapchainComposition
     SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048
 } SDL_GPUSwapchainComposition;
 
-/**
- * Specifies a backend API supported by SDL_GPU.
- *
- * Only one of these will be in use at a time.
- *
- * \since This enum is available since SDL 3.0.0
- */
-typedef enum SDL_GPUDriver
-{
-    SDL_GPU_DRIVER_INVALID,
-    SDL_GPU_DRIVER_PRIVATE, /* NDA'd platforms */
-    SDL_GPU_DRIVER_VULKAN,
-    SDL_GPU_DRIVER_D3D11,
-    SDL_GPU_DRIVER_D3D12,
-    SDL_GPU_DRIVER_METAL
-} SDL_GPUDriver;
-
 /* Structures */
 
 /**
@@ -1704,7 +1687,8 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGPUDriver
+ * \sa SDL_GetGPUShaderFormats
+ * \sa SDL_GetGPUDeviceDriver
  * \sa SDL_DestroyGPUDevice
  */
 extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
@@ -1749,7 +1733,8 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGPUDriver
+ * \sa SDL_GetGPUShaderFormats
+ * \sa SDL_GetGPUDeviceDriver
  * \sa SDL_DestroyGPUDevice
  */
 extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
@@ -1778,14 +1763,55 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
 extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPUDevice(SDL_GPUDevice *device);
 
 /**
- * Returns the backend used to create this GPU context.
+ * Get the number of GPU drivers compiled into SDL.
+ *
+ * \returns the number of built in GPU drivers.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetGPUDriver
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumGPUDrivers(void);
+
+/**
+ * Get the name of a built in GPU driver.
+ *
+ * The GPU drivers are presented in the order in which they are normally
+ * checked during initialization.
+ *
+ * The names of drivers are all simple, low-ASCII identifiers, like "vulkan",
+ * "metal" or "direct3d12". These never have Unicode characters, and are not
+ * meant to be proper names.
+ *
+ * \param index the index of a GPU driver.
+ * \returns the name of the GPU driver with the given **index**.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetNumGPUDrivers
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDriver(int index);
+
+/**
+ * Returns the name of the backend used to create this GPU context.
  *
  * \param device a GPU context to query.
- * \returns an SDL_GPUDriver value, or SDL_GPU_DRIVER_INVALID on error.
+ * \returns the name of the device's driver, or NULL on error.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_GPUDriver SDLCALL SDL_GetGPUDriver(SDL_GPUDevice *device);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDeviceDriver(SDL_GPUDevice *device);
+
+/**
+ * Returns the supported shader formats for this GPU context.
+ *
+ * \param device a GPU context to query.
+ * \returns a bitflag indicating which shader formats the driver is
+ *                     able to consume.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUDevice *device);
 
 /* State Creation */
 

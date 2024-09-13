@@ -693,12 +693,14 @@ struct SDL_GPUDevice
     // Opaque pointer for the Driver
     SDL_GPURenderer *driverData;
 
-    // Store this for SDL_GetGPUDriver()
-    SDL_GPUDriver backend;
+    // Store this for SDL_GetGPUDeviceDriver()
+    const char *backend;
+
+    // Store this for SDL_GetGPUShaderFormats()
+    SDL_GPUShaderFormat shader_formats;
 
     // Store this for SDL_gpu.c's debug layer
     bool debug_mode;
-    SDL_GPUShaderFormat shader_formats;
 };
 
 #define ASSIGN_DRIVER_FUNC(func, name) \
@@ -786,7 +788,6 @@ struct SDL_GPUDevice
 typedef struct SDL_GPUBootstrap
 {
     const char *name;
-    const SDL_GPUDriver backendflag;
     const SDL_GPUShaderFormat shader_formats;
     bool (*PrepareDriver)(SDL_VideoDevice *_this);
     SDL_GPUDevice *(*CreateDevice)(bool debug_mode, bool prefer_low_power, SDL_PropertiesID props);

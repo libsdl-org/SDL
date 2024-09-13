@@ -371,7 +371,7 @@ void SDL_GPU_BlitCommon(
 // Driver Functions
 
 #ifndef SDL_GPU_DISABLED
-static SDL_GPUDriver SDL_GPUSelectBackend(
+static const SDL_GPUBootstrap * SDL_GPUSelectBackend(
     SDL_VideoDevice *_this,
     const char *gpudriver,
     SDL_GPUShaderFormat format_flags)
@@ -384,16 +384,16 @@ static SDL_GPUDriver SDL_GPUSelectBackend(
             if (SDL_strcasecmp(gpudriver, backends[i]->name) == 0) {
                 if (!(backends[i]->shader_formats & format_flags)) {
                     SDL_LogError(SDL_LOG_CATEGORY_GPU, "Required shader format for backend %s not provided!", gpudriver);
-                    return SDL_GPU_DRIVER_INVALID;
+                    return NULL;
                 }
                 if (backends[i]->PrepareDriver(_this)) {
-                    return backends[i]->backendflag;
+                    return backends[i];
                 }
             }
         }
 
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "SDL_HINT_GPU_DRIVER %s unsupported!", gpudriver);
-        return SDL_GPU_DRIVER_INVALID;
+        return NULL;
     }
 
     for (i = 0; backends[i]; i += 1) {
@@ -402,12 +402,12 @@ static SDL_GPUDriver SDL_GPUSelectBackend(
             continue;
         }
         if (backends[i]->PrepareDriver(_this)) {
-            return backends[i]->backendflag;
+            return backends[i];
         }
     }
 
     SDL_LogError(SDL_LOG_CATEGORY_GPU, "No supported SDL_GPU backend found!");
-    return SDL_GPU_DRIVER_INVALID;
+    return NULL;
 }
 #endif // SDL_GPU_DISABLED
 
@@ -455,10 +455,9 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
     bool debug_mode;
     bool preferLowPower;
 
-    int i;
     const char *gpudriver;
     SDL_GPUDevice *result = NULL;
-    SDL_GPUDriver selectedBackend;
+    const SDL_GPUBootstrap *selectedBackend;
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     if (_this == NULL) {
@@ -494,17 +493,12 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
     }
 
     selectedBackend = SDL_GPUSelectBackend(_this, gpudriver, format_flags);
-    if (selectedBackend != SDL_GPU_DRIVER_INVALID) {
-        for (i = 0; backends[i]; i += 1) {
-            if (backends[i]->backendflag == selectedBackend) {
-                result = backends[i]->CreateDevice(debug_mode, preferLowPower, props);
-                if (result != NULL) {
-                    result->backend = backends[i]->backendflag;
-                    result->shader_formats = backends[i]->shader_formats;
-                    result->debug_mode = debug_mode;
-                    break;
-                }
-            }
+    if (selectedBackend != NULL) {
+        result = selectedBackend->CreateDevice(debug_mode, preferLowPower, props);
+        if (result != NULL) {
+            result->backend = selectedBackend->name;
+            result->shader_formats = selectedBackend->shader_formats;
+            result->debug_mode = debug_mode;
         }
     }
     return result;
@@ -521,11 +515,32 @@ void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
     device->DestroyDevice(device);
 }
 
-SDL_GPUDriver SDL_GetGPUDriver(SDL_GPUDevice *device)
+int SDL_GetNumGPUDrivers(void)
 {
-    CHECK_DEVICE_MAGIC(device, SDL_GPU_DRIVER_INVALID);
+    return SDL_arraysize(backends) - 1;
+}
+
+const char * SDL_GetGPUDriver(int index)
+{
+    if (index < 0 || index >= SDL_GetNumGPUDrivers()) {
+        SDL_InvalidParamError("index");
+        return NULL;
+    }
+    return backends[index]->name;
+}
+
+const char * SDL_GetGPUDeviceDriver(SDL_GPUDevice *device)
+{
+    CHECK_DEVICE_MAGIC(device, NULL);
 
     return device->backend;
+}
+
+SDL_GPUShaderFormat SDL_GetGPUShaderFormats(SDL_GPUDevice *device)
+{
+    CHECK_DEVICE_MAGIC(device, SDL_GPU_SHADERFORMAT_INVALID);
+
+    return device->shader_formats;
 }
 
 Uint32 SDL_GPUTextureFormatTexelBlockSize(
