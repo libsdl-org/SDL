@@ -1806,8 +1806,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDeviceDriver(SDL_GPUDevice *d
  * Returns the supported shader formats for this GPU context.
  *
  * \param device a GPU context to query.
- * \returns a bitflag indicating which shader formats the driver is
- *                     able to consume.
+ * \returns a bitflag indicating which shader formats the driver is able to
+ *          consume.
  *
  * \since This function is available since SDL 3.0.0.
  */
