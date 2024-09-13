@@ -77,6 +77,7 @@
 #include <SDL3/SDL_thread.h>
 #include <SDL3/SDL_time.h>
 #include <SDL3/SDL_timer.h>
+#include <SDL3/SDL_tray.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_video.h>

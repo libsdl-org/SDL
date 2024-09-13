@@ -1196,3 +1196,14 @@
 #define SDL_wcsnstr SDL_wcsnstr_REAL
 #define SDL_wcsstr SDL_wcsstr_REAL
 #define SDL_wcstol SDL_wcstol_REAL
+#define SDL_CreateTray SDL_CreateTray_REAL
+#define SDL_CreateTrayMenu SDL_CreateTrayMenu_REAL
+#define SDL_CreateTraySubmenu SDL_CreateTraySubmenu_REAL
+#define SDL_AppendTrayEntry SDL_AppendTrayEntry_REAL
+#define SDL_AppendTraySeparator SDL_AppendTraySeparator_REAL
+#define SDL_SetTrayEntryChecked SDL_SetTrayEntryChecked_REAL
+#define SDL_GetTrayEntryChecked SDL_GetTrayEntryChecked_REAL
+#define SDL_SetTrayEntryEnabled SDL_SetTrayEntryEnabled_REAL
+#define SDL_GetTrayEntryEnabled SDL_GetTrayEntryEnabled_REAL
+#define SDL_SetTrayEntryCallback SDL_SetTrayEntryCallback_REAL
+#define SDL_DestroyTray SDL_DestroyTray_REAL
