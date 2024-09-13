@@ -194,6 +194,7 @@
 #define SDL_FlushAudioStream SDL_FlushAudioStream_REAL
 #define SDL_FlushEvent SDL_FlushEvent_REAL
 #define SDL_FlushEvents SDL_FlushEvents_REAL
+#define SDL_FlushIO SDL_FlushIO_REAL
 #define SDL_FlushRenderer SDL_FlushRenderer_REAL
 #define SDL_GDKResumeGPU SDL_GDKResumeGPU_REAL
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL

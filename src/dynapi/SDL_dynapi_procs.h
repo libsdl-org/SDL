@@ -214,6 +214,7 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_FlipSurface,(SDL_Surface *a, SDL_FlipMode b),(a,b),
 SDL_DYNAPI_PROC(SDL_bool,SDL_FlushAudioStream,(SDL_AudioStream *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_FlushEvent,(Uint32 a),(a),)
 SDL_DYNAPI_PROC(void,SDL_FlushEvents,(Uint32 a, Uint32 b),(a,b),)
+SDL_DYNAPI_PROC(SDL_bool,SDL_FlushIO,(SDL_IOStream *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_FlushRenderer,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_GDKResumeGPU,(SDL_GPUDevice *a),(a),)
 SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),)
