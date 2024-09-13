@@ -6432,7 +6432,6 @@ tryCreateDevice:
 
 SDL_GPUBootstrap D3D11Driver = {
     "direct3d11",
-    SDL_GPU_DRIVER_D3D11,
     SDL_GPU_SHADERFORMAT_DXBC,
     D3D11_PrepareDriver,
     D3D11_CreateDevice

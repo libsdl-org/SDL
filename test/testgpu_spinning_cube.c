@@ -423,18 +423,18 @@ load_shader(SDL_bool is_vertex)
     createinfo.num_uniform_buffers = is_vertex ? 1 : 0;
     createinfo.props = 0;
 
-    SDL_GPUDriver backend = SDL_GetGPUDriver(gpu_device);
-    if (backend == SDL_GPU_DRIVER_D3D11) {
+    SDL_GPUShaderFormat format = SDL_GetGPUShaderFormats(gpu_device);
+    if (format & SDL_GPU_SHADERFORMAT_DXBC) {
         createinfo.format = SDL_GPU_SHADERFORMAT_DXBC;
         createinfo.code = is_vertex ? D3D11_CubeVert : D3D11_CubeFrag;
         createinfo.code_size = is_vertex ? SDL_arraysize(D3D11_CubeVert) : SDL_arraysize(D3D11_CubeFrag);
         createinfo.entrypoint = is_vertex ? "VSMain" : "PSMain";
-    } else if (backend == SDL_GPU_DRIVER_D3D12) {
+    } else if (format & SDL_GPU_SHADERFORMAT_DXIL) {
         createinfo.format = SDL_GPU_SHADERFORMAT_DXIL;
         createinfo.code = is_vertex ? D3D12_CubeVert : D3D12_CubeFrag;
         createinfo.code_size = is_vertex ? SDL_arraysize(D3D12_CubeVert) : SDL_arraysize(D3D12_CubeFrag);
         createinfo.entrypoint = is_vertex ? "VSMain" : "PSMain";
-    } else if (backend == SDL_GPU_DRIVER_METAL) {
+    } else if (format & SDL_GPU_SHADERFORMAT_METALLIB) {
         createinfo.format = SDL_GPU_SHADERFORMAT_METALLIB;
         createinfo.code = is_vertex ? cube_vert_metallib : cube_frag_metallib;
         createinfo.code_size = is_vertex ? cube_vert_metallib_len : cube_frag_metallib_len;

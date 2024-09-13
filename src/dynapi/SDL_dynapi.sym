@@ -276,7 +276,9 @@ SDL3_0.0.0 {
     SDL_GetFullscreenDisplayModes;
     SDL_GetGDKDefaultUser;
     SDL_GetGDKTaskQueue;
+    SDL_GetGPUDeviceDriver;
     SDL_GetGPUDriver;
+    SDL_GetGPUShaderFormats;
     SDL_GetGPUSwapchainTextureFormat;
     SDL_GetGamepadAppleSFSymbolsNameForAxis;
     SDL_GetGamepadAppleSFSymbolsNameForButton;
@@ -392,6 +394,7 @@ SDL3_0.0.0 {
     SDL_GetNumAllocations;
     SDL_GetNumAudioDrivers;
     SDL_GetNumCameraDrivers;
+    SDL_GetNumGPUDrivers;
     SDL_GetNumGamepadTouchpadFingers;
     SDL_GetNumGamepadTouchpads;
     SDL_GetNumHapticAxes;
