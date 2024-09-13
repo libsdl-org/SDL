@@ -150,6 +150,7 @@
 
 // Drivers
 
+#ifndef SDL_GPU_DISABLED
 static const SDL_GPUBootstrap *backends[] = {
 #ifdef SDL_GPU_METAL
     &MetalDriver,
@@ -165,6 +166,7 @@ static const SDL_GPUBootstrap *backends[] = {
 #endif
     NULL
 };
+#endif // SDL_GPU_DISABLED
 
 // Internal Utility Functions
 
@@ -368,6 +370,7 @@ void SDL_GPU_BlitCommon(
 
 // Driver Functions
 
+#ifndef SDL_GPU_DISABLED
 static SDL_GPUDriver SDL_GPUSelectBackend(
     SDL_VideoDevice *_this,
     const char *gpudriver,
@@ -406,12 +409,14 @@ static SDL_GPUDriver SDL_GPUSelectBackend(
     SDL_LogError(SDL_LOG_CATEGORY_GPU, "No supported SDL_GPU backend found!");
     return SDL_GPU_DRIVER_INVALID;
 }
+#endif // SDL_GPU_DISABLED
 
 SDL_GPUDevice *SDL_CreateGPUDevice(
     SDL_GPUShaderFormat format_flags,
     SDL_bool debug_mode,
     const char *name)
 {
+#ifndef SDL_GPU_DISABLED
     SDL_GPUDevice *result;
     SDL_PropertiesID props = SDL_CreateProperties();
     if (format_flags & SDL_GPU_SHADERFORMAT_PRIVATE) {
@@ -437,10 +442,15 @@ SDL_GPUDevice *SDL_CreateGPUDevice(
     result = SDL_CreateGPUDeviceWithProperties(props);
     SDL_DestroyProperties(props);
     return result;
+#else
+    SDL_SetError("SDL not built with GPU support");
+    return NULL;
+#endif // SDL_GPU_DISABLED
 }
 
 SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
 {
+#ifndef SDL_GPU_DISABLED
     SDL_GPUShaderFormat format_flags = 0;
     bool debug_mode;
     bool preferLowPower;
@@ -498,6 +508,10 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
         }
     }
     return result;
+#else
+    SDL_SetError("SDL not built with GPU support");
+    return NULL;
+#endif // SDL_GPU_DISABLED
 }
 
 void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
