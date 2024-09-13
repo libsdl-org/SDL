@@ -470,10 +470,11 @@ init_render_state(int msaa)
     SDL_GPUShader *fragment_shader;
     int i;
 
-    gpu_device = SDL_CreateGPUDevice(
+    SDL_CreateGPUDevice(
         TESTGPU_SUPPORTED_FORMATS,
         SDL_TRUE,
-        state->gpudriver
+        state->gpudriver,
+        &gpu_device
     );
     CHECK_CREATE(gpu_device, "GPU device");
 

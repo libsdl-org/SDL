@@ -411,13 +411,14 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(
 }
 #endif // SDL_GPU_DISABLED
 
-SDL_GPUDevice *SDL_CreateGPUDevice(
+SDL_bool SDL_CreateGPUDevice(
     SDL_GPUShaderFormat format_flags,
     SDL_bool debug_mode,
-    const char *name)
+    const char *name,
+    SDL_GPUDevice **driver)
 {
 #ifndef SDL_GPU_DISABLED
-    SDL_GPUDevice *result;
+    SDL_bool result;
     SDL_PropertiesID props = SDL_CreateProperties();
     if (format_flags & SDL_GPU_SHADERFORMAT_PRIVATE) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, true);
@@ -439,7 +440,7 @@ SDL_GPUDevice *SDL_CreateGPUDevice(
     }
     SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, debug_mode);
     SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);
-    result = SDL_CreateGPUDeviceWithProperties(props);
+    result = SDL_CreateGPUDeviceWithProperties(props, driver);
     SDL_DestroyProperties(props);
     return result;
 #else
@@ -448,7 +449,9 @@ SDL_GPUDevice *SDL_CreateGPUDevice(
 #endif // SDL_GPU_DISABLED
 }
 
-SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
+SDL_bool SDL_CreateGPUDeviceWithProperties(
+    SDL_PropertiesID props,
+    SDL_GPUDevice **driver)
 {
 #ifndef SDL_GPU_DISABLED
     SDL_GPUShaderFormat format_flags = 0;
@@ -456,13 +459,12 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
     bool preferLowPower;
 
     const char *gpudriver;
-    SDL_GPUDevice *result = NULL;
     const SDL_GPUBootstrap *selectedBackend;
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     if (_this == NULL) {
         SDL_SetError("Video subsystem not initialized");
-        return NULL;
+        return SDL_FALSE;
     }
 
     if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, false)) {
@@ -494,17 +496,22 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
 
     selectedBackend = SDL_GPUSelectBackend(_this, gpudriver, format_flags);
     if (selectedBackend != NULL) {
-        result = selectedBackend->CreateDevice(debug_mode, preferLowPower, props);
-        if (result != NULL) {
-            result->backend = selectedBackend->name;
-            result->shader_formats = selectedBackend->shader_formats;
-            result->debug_mode = debug_mode;
+        if (driver != NULL) {
+            *driver = selectedBackend->CreateDevice(debug_mode, preferLowPower, props);
+            if (*driver == NULL) {
+                SDL_assert(!"Backend was supported, but device creation still failed");
+                return false;
+            }
+            (*driver)->backend = selectedBackend->name;
+            (*driver)->shader_formats = selectedBackend->shader_formats;
+            (*driver)->debug_mode = debug_mode;
         }
+        return true;
     }
-    return result;
+    return false;
 #else
     SDL_SetError("SDL not built with GPU support");
-    return NULL;
+    return false;
 #endif // SDL_GPU_DISABLED
 }
 

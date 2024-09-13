@@ -44,8 +44,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-	gpu_device = SDL_CreateGPUDevice(TESTGPU_SUPPORTED_FORMATS, SDL_TRUE, NULL);
-	if (!gpu_device) {
+	if (!SDL_CreateGPUDevice(TESTGPU_SUPPORTED_FORMATS, SDL_TRUE, NULL, &gpu_device)) {
 		SDL_Log("SDL_CreateGPUDevice failed: %s", SDL_GetError());
 		return -1;
 	}

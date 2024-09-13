@@ -1683,7 +1683,8 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
  * \param debug_mode enable debug mode properties and validations.
  * \param name the preferred GPU driver, or NULL to let SDL pick the optimal
  *             driver.
- * \returns a GPU context on success or NULL on failure.
+ * \param device a pointer to fill with a new GPU context, or NULL to query driver support.
+ * \returns SDL_TRUE if SDL_GPU is supported, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1691,10 +1692,11 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
  * \sa SDL_GetGPUDeviceDriver
  * \sa SDL_DestroyGPUDevice
  */
-extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CreateGPUDevice(
     SDL_GPUShaderFormat format_flags,
     SDL_bool debug_mode,
-    const char *name);
+    const char *name,
+    SDL_GPUDevice **device);
 
 /**
  * Creates a GPU context.
@@ -1729,7 +1731,8 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  *   use for all vertex semantics, default is "TEXCOORD".
  *
  * \param props the properties to use.
- * \returns a GPU context on success or NULL on failure.
+ * \param device a pointer to fill with a new GPU context, or NULL to query driver support.
+ * \returns SDL_TRUE if SDL_GPU is supported, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1737,8 +1740,9 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  * \sa SDL_GetGPUDeviceDriver
  * \sa SDL_DestroyGPUDevice
  */
-extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
-    SDL_PropertiesID props);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CreateGPUDeviceWithProperties(
+    SDL_PropertiesID props,
+    SDL_GPUDevice **device);
 
 #define SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL             "SDL.gpu.device.create.debugmode"
 #define SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL        "SDL.gpu.device.create.preferlowpower"

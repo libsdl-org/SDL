@@ -1224,9 +1224,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, lowpower);
 
     GPU_FillSupportedShaderFormats(create_props);
-    data->device = SDL_CreateGPUDeviceWithProperties(create_props);
-
-    if (!data->device) {
+    if (!SDL_CreateGPUDeviceWithProperties(create_props, &data->device)) {
         return false;
     }
 
