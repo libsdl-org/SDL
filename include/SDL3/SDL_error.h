@@ -44,7 +44,7 @@ extern "C" {
  *
  * Calling this function will replace any previous error message that was set.
  *
- * This function always returns -1, since SDL frequently uses -1 to signify an
+ * This function always returns SDL_FALSE, since SDL frequently uses SDL_FALSE to signify an
  * failing result, leading to this idiom:
  *
  * ```c
