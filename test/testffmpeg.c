@@ -476,7 +476,7 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
         context->strict_std_compliance = -2;
 
         /* Enable threaded decoding, VVC decode is slow */
-        context->thread_count = SDL_GetCPUCount();
+        context->thread_count = SDL_GetNumLogicalCPUCores();
         context->thread_type = (FF_THREAD_FRAME | FF_THREAD_SLICE);
     }
 

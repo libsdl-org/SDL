@@ -620,35 +620,35 @@ static int CPU_haveAVX512F(void)
 }
 #endif
 
-static int SDL_CPUCount = 0;
+static int SDL_NumLogicalCPUCores = 0;
 
-int SDL_GetCPUCount(void)
+int SDL_GetNumLogicalCPUCores(void)
 {
-    if (!SDL_CPUCount) {
+    if (!SDL_NumLogicalCPUCores) {
 #if defined(HAVE_SYSCONF) && defined(_SC_NPROCESSORS_ONLN)
-        if (SDL_CPUCount <= 0) {
-            SDL_CPUCount = (int)sysconf(_SC_NPROCESSORS_ONLN);
+        if (SDL_NumLogicalCPUCores <= 0) {
+            SDL_NumLogicalCPUCores = (int)sysconf(_SC_NPROCESSORS_ONLN);
         }
 #endif
 #ifdef HAVE_SYSCTLBYNAME
-        if (SDL_CPUCount <= 0) {
-            size_t size = sizeof(SDL_CPUCount);
-            sysctlbyname("hw.ncpu", &SDL_CPUCount, &size, NULL, 0);
+        if (SDL_NumLogicalCPUCores <= 0) {
+            size_t size = sizeof(SDL_NumLogicalCPUCores);
+            sysctlbyname("hw.ncpu", &SDL_NumLogicalCPUCores, &size, NULL, 0);
         }
 #endif
 #if defined(SDL_PLATFORM_WINDOWS)
-        if (SDL_CPUCount <= 0) {
+        if (SDL_NumLogicalCPUCores <= 0) {
             SYSTEM_INFO info;
             GetSystemInfo(&info);
-            SDL_CPUCount = info.dwNumberOfProcessors;
+            SDL_NumLogicalCPUCores = info.dwNumberOfProcessors;
         }
 #endif
         // There has to be at least 1, right? :)
-        if (SDL_CPUCount <= 0) {
-            SDL_CPUCount = 1;
+        if (SDL_NumLogicalCPUCores <= 0) {
+            SDL_NumLogicalCPUCores = 1;
         }
     }
-    return SDL_CPUCount;
+    return SDL_NumLogicalCPUCores;
 }
 
 #ifdef __e2k__

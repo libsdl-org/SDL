@@ -120,7 +120,7 @@ static int SDLCALL platform_testEndianessAndSwap(void *arg)
 /**
  * Tests SDL_GetXYZ() functions
  * \sa SDL_GetPlatform
- * \sa SDL_GetCPUCount
+ * \sa SDL_GetNumLogicalCPUCores
  * \sa SDL_GetRevision
  * \sa SDL_GetCPUCacheLineSize
  */
@@ -142,10 +142,10 @@ static int SDLCALL platform_testGetFunctions(void *arg)
                             (int)len);
     }
 
-    ret = SDL_GetCPUCount();
-    SDLTest_AssertPass("SDL_GetCPUCount()");
+    ret = SDL_GetNumLogicalCPUCores();
+    SDLTest_AssertPass("SDL_GetNumLogicalCPUCores()");
     SDLTest_AssertCheck(ret > 0,
-                        "SDL_GetCPUCount(): expected count > 0, was: %i",
+                        "SDL_GetNumLogicalCPUCores(): expected count > 0, was: %i",
                         ret);
 
     ret = SDL_GetCPUCacheLineSize();

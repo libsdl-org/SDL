@@ -255,7 +255,7 @@
 #define SDL_GetBasePath SDL_GetBasePath_REAL
 #define SDL_GetBooleanProperty SDL_GetBooleanProperty_REAL
 #define SDL_GetCPUCacheLineSize SDL_GetCPUCacheLineSize_REAL
-#define SDL_GetCPUCount SDL_GetCPUCount_REAL
+#define SDL_GetNumLogicalCPUCores SDL_GetNumLogicalCPUCores_REAL
 #define SDL_GetCameraDriver SDL_GetCameraDriver_REAL
 #define SDL_GetCameraFormat SDL_GetCameraFormat_REAL
 #define SDL_GetCameraID SDL_GetCameraID_REAL

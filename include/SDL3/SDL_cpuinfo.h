@@ -54,7 +54,7 @@ extern "C" {
 #define SDL_CACHELINE_SIZE  128
 
 /**
- * Get the number of CPU cores available.
+ * Get the number of logical CPU cores available.
  *
  * \returns the total number of logical CPU cores. On CPUs that include
  *          technologies such as hyperthreading, the number of logical cores
@@ -62,7 +62,7 @@ extern "C" {
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetCPUCount(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumLogicalCPUCores(void);
 
 /**
  * Determine the L1 cache line size of the CPU.
