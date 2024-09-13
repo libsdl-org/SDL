@@ -371,12 +371,41 @@ void SDL_GPU_BlitCommon(
 // Driver Functions
 
 #ifndef SDL_GPU_DISABLED
-static const SDL_GPUBootstrap * SDL_GPUSelectBackend(
-    SDL_VideoDevice *_this,
-    const char *gpudriver,
-    SDL_GPUShaderFormat format_flags)
+static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
 {
     Uint32 i;
+    SDL_GPUShaderFormat format_flags = 0;
+    const char *gpudriver;
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+    if (_this == NULL) {
+        SDL_SetError("Video subsystem not initialized");
+        return NULL;
+    }
+
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, false)) {
+        format_flags |= SDL_GPU_SHADERFORMAT_PRIVATE;
+    }
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, false)) {
+        format_flags |= SDL_GPU_SHADERFORMAT_SPIRV;
+    }
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL, false)) {
+        format_flags |= SDL_GPU_SHADERFORMAT_DXBC;
+    }
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL, false)) {
+        format_flags |= SDL_GPU_SHADERFORMAT_DXIL;
+    }
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL, false)) {
+        format_flags |= SDL_GPU_SHADERFORMAT_MSL;
+    }
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, false)) {
+        format_flags |= SDL_GPU_SHADERFORMAT_METALLIB;
+    }
+
+    gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);
+    if (gpudriver == NULL) {
+        gpudriver = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, NULL);
+    }
 
     // Environment/Properties override...
     if (gpudriver != NULL) {
@@ -411,14 +440,12 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(
 }
 #endif // SDL_GPU_DISABLED
 
-SDL_GPUDevice *SDL_CreateGPUDevice(
+static void SDL_GPU_FillProperties(
+    SDL_PropertiesID props,
     SDL_GPUShaderFormat format_flags,
     SDL_bool debug_mode,
     const char *name)
 {
-#ifndef SDL_GPU_DISABLED
-    SDL_GPUDevice *result;
-    SDL_PropertiesID props = SDL_CreateProperties();
     if (format_flags & SDL_GPU_SHADERFORMAT_PRIVATE) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, true);
     }
@@ -439,6 +466,44 @@ SDL_GPUDevice *SDL_CreateGPUDevice(
     }
     SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, debug_mode);
     SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);
+}
+
+SDL_bool SDL_QueryGPUSupport(
+    SDL_GPUShaderFormat format_flags,
+    const char *name)
+{
+#ifndef SDL_GPU_DISABLED
+    bool result;
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_GPU_FillProperties(props, format_flags, SDL_FALSE, name);
+    result = SDL_QueryGPUSupportWithProperties(props);
+    SDL_DestroyProperties(props);
+    return result;
+#else
+    SDL_SetError("SDL not built with GPU support");
+    return SDL_FALSE;
+#endif
+}
+
+SDL_bool SDL_QueryGPUSupportWithProperties(SDL_PropertiesID props)
+{
+#ifndef SDL_GPU_DISABLED
+    return (SDL_GPUSelectBackend(props) != NULL);
+#else
+    SDL_SetError("SDL not built with GPU support");
+    return SDL_FALSE;
+#endif
+}
+
+SDL_GPUDevice *SDL_CreateGPUDevice(
+    SDL_GPUShaderFormat format_flags,
+    SDL_bool debug_mode,
+    const char *name)
+{
+#ifndef SDL_GPU_DISABLED
+    SDL_GPUDevice *result;
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_GPU_FillProperties(props, format_flags, debug_mode, name);
     result = SDL_CreateGPUDeviceWithProperties(props);
     SDL_DestroyProperties(props);
     return result;
@@ -451,49 +516,16 @@ SDL_GPUDevice *SDL_CreateGPUDevice(
 SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
 {
 #ifndef SDL_GPU_DISABLED
-    SDL_GPUShaderFormat format_flags = 0;
     bool debug_mode;
     bool preferLowPower;
-
-    const char *gpudriver;
     SDL_GPUDevice *result = NULL;
     const SDL_GPUBootstrap *selectedBackend;
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-    if (_this == NULL) {
-        SDL_SetError("Video subsystem not initialized");
-        return NULL;
-    }
-
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, false)) {
-        format_flags |= SDL_GPU_SHADERFORMAT_PRIVATE;
-    }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, false)) {
-        format_flags |= SDL_GPU_SHADERFORMAT_SPIRV;
-    }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL, false)) {
-        format_flags |= SDL_GPU_SHADERFORMAT_DXBC;
-    }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL, false)) {
-        format_flags |= SDL_GPU_SHADERFORMAT_DXIL;
-    }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL, false)) {
-        format_flags |= SDL_GPU_SHADERFORMAT_MSL;
-    }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, false)) {
-        format_flags |= SDL_GPU_SHADERFORMAT_METALLIB;
-    }
-
-    debug_mode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, true);
-    preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, false);
-
-    gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);
-    if (gpudriver == NULL) {
-        gpudriver = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, NULL);
-    }
-
-    selectedBackend = SDL_GPUSelectBackend(_this, gpudriver, format_flags);
+    selectedBackend = SDL_GPUSelectBackend(props);
     if (selectedBackend != NULL) {
+        debug_mode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, true);
+        preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL, false);
+
         result = selectedBackend->CreateDevice(debug_mode, preferLowPower, props);
         if (result != NULL) {
             result->backend = selectedBackend->name;

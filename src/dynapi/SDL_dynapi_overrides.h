@@ -694,6 +694,8 @@
 #define SDL_PushGPUVertexUniformData SDL_PushGPUVertexUniformData_REAL
 #define SDL_PutAudioStreamData SDL_PutAudioStreamData_REAL
 #define SDL_QueryGPUFence SDL_QueryGPUFence_REAL
+#define SDL_QueryGPUSupport SDL_QueryGPUSupport_REAL
+#define SDL_QueryGPUSupportWithProperties SDL_QueryGPUSupportWithProperties_REAL
 #define SDL_Quit SDL_Quit_REAL
 #define SDL_QuitSubSystem SDL_QuitSubSystem_REAL
 #define SDL_RaiseWindow SDL_RaiseWindow_REAL

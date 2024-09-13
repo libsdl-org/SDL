@@ -1676,6 +1676,36 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
 /* Device */
 
 /**
+ * Checks for GPU runtime support.
+ *
+ * \param format_flags a bitflag indicating which shader formats the app is
+ *                     able to provide.
+ * \param name the preferred GPU driver, or NULL to let SDL pick the optimal
+ *             driver.
+ * \returns SDL_TRUE if supported, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateGPUDevice
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_QueryGPUSupport(
+    SDL_GPUShaderFormat format_flags,
+    const char *name);
+
+/**
+ * Checks for GPU runtime support.
+ *
+ * \param props the properties to use.
+ * \returns SDL_TRUE if supported, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateGPUDeviceWithProperties
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_QueryGPUSupportWithProperties(
+    SDL_PropertiesID props);
+
+/**
  * Creates a GPU context.
  *
  * \param format_flags a bitflag indicating which shader formats the app is
@@ -1690,6 +1720,7 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
  * \sa SDL_GetGPUShaderFormats
  * \sa SDL_GetGPUDeviceDriver
  * \sa SDL_DestroyGPUDevice
+ * \sa SDL_QueryGPUSupport
  */
 extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
     SDL_GPUShaderFormat format_flags,
@@ -1736,6 +1767,7 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  * \sa SDL_GetGPUShaderFormats
  * \sa SDL_GetGPUDeviceDriver
  * \sa SDL_DestroyGPUDevice
+ * \sa SDL_QueryGPUSupportWithProperties
  */
 extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
     SDL_PropertiesID props);
