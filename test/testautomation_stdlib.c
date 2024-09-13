@@ -4,6 +4,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
+#include "SDL_build_config.h"
 
 /* Test case functions */
 
@@ -1267,8 +1268,23 @@ static int SDLCALL stdlib_wcstol(void *arg)
     WCSTOL_TEST_CASE(L"00110011", 2, 51, 8);
     WCSTOL_TEST_CASE(L"-uvwxyz", 32, -991, 3);
     WCSTOL_TEST_CASE(L"ZzZzZzZzZzZzZ", 36, long_max, 13);
+
     WCSTOL_TEST_CASE(L"-0", 10, 0, 2);
     WCSTOL_TEST_CASE(L" - 1", 0, 0, 0); // invalid input
+
+#ifndef HAVE_WCSTOL
+    // implementation-defined
+    WCSTOL_TEST_CASE(L" +0x", 0, 0, 3);
+#endif
+
+    // values near the bounds of the type
+    if (sizeof(long) == 4) {
+        WCSTOL_TEST_CASE(L"2147483647", 10, 2147483647, 10);
+        WCSTOL_TEST_CASE(L"2147483648", 10, 2147483647, 10);
+        WCSTOL_TEST_CASE(L"-2147483648", 10, -2147483647L - 1, 11);
+        WCSTOL_TEST_CASE(L"-2147483649", 10, -2147483647L - 1, 11);
+        WCSTOL_TEST_CASE(L"-9999999999999999999999999999999999999999", 10, -2147483647L - 1, 41);
+    }
 
 #undef WCSTOL_TEST_CASE
 
@@ -1295,7 +1311,6 @@ static int SDLCALL stdlib_strtox(void *arg)
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "+123abcxyz", 0, 123, 4);
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "-123abcxyz", 0, -123, 4);
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "9999999999999999999999999999999999999999abcxyz", 0, ullong_max, 40);
-    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "-9999999999999999999999999999999999999999abcxyz", 0, ullong_max, 41);
 
     // infer hexadecimal
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "0x123abcxyz", 0, 0x123abc, 8);
@@ -1308,40 +1323,54 @@ static int SDLCALL stdlib_strtox(void *arg)
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "00110011", 2, 51, 8);
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "-uvwxyz", 32, -991, 3);
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "ZzZzZzZzZzZzZzZzZzZzZzZzZ", 36, ullong_max, 25);
+
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "-0", 10, 0, 2);
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", " - 1", 0, 0, 0); // invalid input
+
+#ifndef HAVE_STRTOULL
+    // implementation-defined
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", " +0x", 0, 0, 3);
+#endif
 
     // We know that SDL_strtol, SDL_strtoul and SDL_strtoll share the same code path as SDL_strtoull under the hood,
     // so the most interesting test cases are those close to the bounds of the integer type.
 
     // For simplicity, we only run long/long long tests when they are 32-bit/64-bit, respectively.
+    // Suppressing warnings would be difficult otherwise.
     // Since the CI runs the tests against a variety of targets, this should be fine in practice.
 
-    // SDL_strtol (32-bit)
     if (sizeof(long) == 4) {
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "2147483647", 10, 2147483647, 10);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "2147483648", 10, 2147483647, 10);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-2147483648", 10, -2147483647L - 1, 11);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-2147483649", 10, -2147483647L - 1, 11);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-9999999999999999999999999999999999999999", 10, -2147483647L - 1, 41);
-    }
 
-    // SDL_strtoul (32-bit)
-    if (sizeof(unsigned long) == 4) {
         STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "4294967295", 10, 4294967295, 10);
         STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "4294967296", 10, 4294967295, 10);
         STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "-4294967295", 10, 1, 11);
+#ifndef HAVE_STRTOUL
+        // implementation-defined
         STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "-4294967296", 10, 4294967295, 11);
         STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "-9999999999999999999999999999999999999999", 10, 4294967295, 41);
+#endif
     }
 
-    // SDL_strtoll (64-bit)
     if (sizeof(long long) == 8) {
-        STRTOX_TEST_CASE(SDL_strtoll, long long, "%lld", "9223372036854775807", 10, 9223372036854775807, 19);
-        STRTOX_TEST_CASE(SDL_strtoll, long long, "%lld", "9223372036854775808", 10, 9223372036854775807, 19);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, "%lld", "9223372036854775807", 10, 9223372036854775807LL, 19);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, "%lld", "9223372036854775808", 10, 9223372036854775807LL, 19);
         STRTOX_TEST_CASE(SDL_strtoll, long long, "%lld", "-9223372036854775808", 10, -9223372036854775807LL - 1, 20);
         STRTOX_TEST_CASE(SDL_strtoll, long long, "%lld", "-9223372036854775809", 10, -9223372036854775807LL - 1, 20);
         STRTOX_TEST_CASE(SDL_strtoll, long long, "%lld", "-9999999999999999999999999999999999999999", 10, -9223372036854775807LL - 1, 41);
+
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "18446744073709551615", 10, 18446744073709551615ULL, 20);
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "18446744073709551616", 10, 18446744073709551615ULL, 20);
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "-18446744073709551615", 10, 1, 21);
+#ifndef HAVE_STRTOULL
+        // implementation-defined
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "-18446744073709551616", 10, 18446744073709551615ULL, 21);
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, "%llu", "-9999999999999999999999999999999999999999", 10, 18446744073709551615ULL, 41);
+#endif
     }
 
 #undef STRTOX_TEST_CASE
@@ -1351,21 +1380,25 @@ static int SDLCALL stdlib_strtox(void *arg)
 
 static int SDLCALL stdlib_strtod(void *arg)
 {
-#define STRTOD_TEST_CASE(str, expected_result, expected_endp_offset) do {                                   \
-        const char *s = str;                                                                                \
-        double r, expected_r = expected_result;                                                             \
-        char *ep, *expected_ep = (char *)s + expected_endp_offset;                                          \
-        r = SDL_strtod(s, &ep);                                                                             \
-        SDLTest_AssertPass("Call to SDL_strtod(" #str ", &endp)");                                          \
-        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: %f, got: %f", expected_r, r);   \
-        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep); \
+#define STRTOD_TEST_CASE(str, expected_result, expected_endp_offset) do {                                                                              \
+        const char *s = str;                                                                                                                           \
+        double r, expected_r = expected_result;                                                                                                        \
+        char *ep, *expected_ep = (char *)s + expected_endp_offset;                                                                                     \
+        r = SDL_strtod(s, &ep);                                                                                                                        \
+        SDLTest_AssertPass("Call to SDL_strtod(" #str ", &endp)");                                                                                     \
+        SDLTest_AssertCheck(r == expected_r && (r != 0.0 || 1.0 / r == 1.0 / expected_r), "Check result value, expected: %f, got: %f", expected_r, r); \
+        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep);                                            \
     } while (0)
 
     STRTOD_TEST_CASE("\t  123.75abcxyz", 123.75, 9); // skip leading space
     STRTOD_TEST_CASE("+999.555", 999.555, 8);
     STRTOD_TEST_CASE("-999.555", -999.555, 8);
+
+#ifndef HAVE_STRTOD
+    // implementation-defined
     STRTOD_TEST_CASE("-0", -0.0, 2);
     STRTOD_TEST_CASE(" - 1", 0.0, 0); // invalid input
+#endif
 
 #undef STRTOD_TEST_CASE
 
