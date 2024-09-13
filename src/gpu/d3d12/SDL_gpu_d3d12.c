@@ -2663,7 +2663,8 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     pipeline->pipelineState = pipelineState;
 
     for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i += 1) {
-        pipeline->vertexStrides[i] = createinfo->vertex_input_state.vertex_buffer_descriptions[i].pitch;
+        pipeline->vertexStrides[createinfo->vertex_input_state.vertex_buffer_descriptions[i].slot] =
+            createinfo->vertex_input_state.vertex_buffer_descriptions[i].pitch;
     }
 
     pipeline->primitiveType = createinfo->primitive_type;
