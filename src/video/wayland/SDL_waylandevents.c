@@ -2048,6 +2048,16 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
     Wayland_UpdateImplicitGrabSerial(seat, serial);
 
+    if (state == WL_KEYBOARD_KEY_STATE_REPEATED) {
+        // If this key shouldn't be repeated, just return.
+        if (seat->keyboard.xkb.keymap && !WAYLAND_xkb_keymap_key_repeats(seat->keyboard.xkb.keymap, key + 8)) {
+            return;
+        }
+
+        // SDL automatically handles key tracking and repeat status, so just map 'repeated' to 'pressed'.
+        state = WL_KEYBOARD_KEY_STATE_PRESSED;
+    }
+
     if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap(true)) {
         SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
         SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
