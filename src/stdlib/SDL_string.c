@@ -389,8 +389,13 @@ static size_t SDL_ScanUnsignedLongLongInternal(const char *text, int count, int 
         } while (count == 0 || (text - text_start) != count);
     }
     if (text == number_start) {
-        // no number was parsed, and thus no characters were consumed
-        text = text_start;
+        if (radix == 16 && text > text_start && (*(text - 1) == 'x' || *(text - 1) == 'X')) {
+            // the string was "0x"; consume the '0' but not the 'x'
+            --text;
+        } else {
+            // no number was parsed, and thus no characters were consumed
+            text = text_start;
+        }
     }
     if (overflow) {
         if (negative) {
@@ -478,8 +483,13 @@ static size_t SDL_ScanUnsignedLongLongInternalW(const wchar_t *text, int count, 
         } while (count == 0 || (text - text_start) != count);
     }
     if (text == number_start) {
-        // no number was parsed, and thus no characters were consumed
-        text = text_start;
+        if (radix == 16 && text > text_start && (*(text - 1) == 'x' || *(text - 1) == 'X')) {
+            // the string was "0x"; consume the '0' but not the 'x'
+            --text;
+        } else {
+            // no number was parsed, and thus no characters were consumed
+            text = text_start;
+        }
     }
     if (overflow) {
         if (negative) {
@@ -656,8 +666,7 @@ static size_t SDL_ScanFloat(const char *text, double *valuep)
     if (text == number_start) {
         // no number was parsed, and thus no characters were consumed
         text = text_start;
-    }
-    if (negative) {
+    } else if (negative) {
         value = -value;
     }
     *valuep = value;
