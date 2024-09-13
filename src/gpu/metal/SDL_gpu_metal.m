@@ -2371,7 +2371,7 @@ static void METAL_BindVertexBuffers(
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
         id<MTLBuffer> metalBuffers[MAX_VERTEX_BUFFERS];
         NSUInteger bufferOffsets[MAX_VERTEX_BUFFERS];
-        NSRange range = NSMakeRange(METAL_INTERNAL_GetVertexBufferIndex(firstBinding), numBindings);
+        NSRange range = NSMakeRange(METAL_INTERNAL_GetVertexBufferIndex(firstBinding + numBindings - 1), numBindings);
 
         if (range.length == 0) {
             return;
