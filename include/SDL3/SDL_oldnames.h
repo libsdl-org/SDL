@@ -74,6 +74,7 @@
 #define SDL_NewAudioStream SDL_CreateAudioStream
 
 /* ##SDL_cpuinfo.h */
+#define SDL_GetCPUCount SDL_GetNumLogicalCPUCores
 #define SDL_SIMDGetAlignment SDL_GetSIMDAlignment
 
 /* ##SDL_endian.h */
@@ -703,6 +704,7 @@
 #define SDL_NewAudioStream SDL_NewAudioStream_renamed_SDL_CreateAudioStream
 
 /* ##SDL_cpuinfo.h */
+#define SDL_GetCPUCount SDL_GetCPUCount_renamed_SDL_GetNumLogicalCPUCores
 #define SDL_SIMDGetAlignment SDL_SIMDGetAlignment_renamed_SDL_GetSIMDAlignment
 
 /* ##SDL_endian.h */

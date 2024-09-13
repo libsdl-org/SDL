@@ -341,6 +341,7 @@ SDL_HasRDTSC() has been removed; there is no replacement. Don't use the RDTSC op
 SDL_SIMDAlloc(), SDL_SIMDRealloc(), and SDL_SIMDFree() have been removed. You can use SDL_aligned_alloc() and SDL_aligned_free() with SDL_GetSIMDAlignment() to get the same functionality.
 
 The following functions have been renamed:
+* SDL_GetCPUCount() => SDL_GetNumLogicalCPUCores()
 * SDL_SIMDGetAlignment() => SDL_GetSIMDAlignment()
 
 ## SDL_endian.h

@@ -239,7 +239,7 @@ SDL3_0.0.0 {
     SDL_GetBasePath;
     SDL_GetBooleanProperty;
     SDL_GetCPUCacheLineSize;
-    SDL_GetCPUCount;
+    SDL_GetNumLogicalCPUCores;
     SDL_GetCameraDriver;
     SDL_GetCameraFormat;
     SDL_GetCameraID;

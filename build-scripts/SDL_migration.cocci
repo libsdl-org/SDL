@@ -3667,3 +3667,8 @@ identifier func =~ "^(SDL_AddEventWatch|SDL_AddHintCallback|SDL_AddSurfaceAltern
 @@
 - SDL_NUM_SCANCODES
 + SDL_SCANCODE_COUNT
+@@
+@@
+- SDL_GetCPUCount
++ SDL_GetNumLogicalCPUCores
+  (...)
