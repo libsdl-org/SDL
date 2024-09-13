@@ -509,7 +509,7 @@ typedef struct D3D11GraphicsPipeline
     ID3D11PixelShader *fragmentShader;
 
     ID3D11InputLayout *inputLayout;
-    Uint32 *vertexStrides;
+    Uint32 vertexStrides[MAX_VERTEX_BUFFERS];
 
     Uint32 vertexSamplerCount;
     Uint32 vertexUniformBufferCount;
@@ -1258,9 +1258,6 @@ static void D3D11_ReleaseGraphicsPipeline(
     if (d3d11GraphicsPipeline->inputLayout) {
         ID3D11InputLayout_Release(d3d11GraphicsPipeline->inputLayout);
     }
-    if (d3d11GraphicsPipeline->vertexStrides) {
-        SDL_free(d3d11GraphicsPipeline->vertexStrides);
-    }
 
     ID3D11VertexShader_Release(d3d11GraphicsPipeline->vertexShader);
     ID3D11PixelShader_Release(d3d11GraphicsPipeline->fragmentShader);
@@ -1611,16 +1608,12 @@ static SDL_GPUGraphicsPipeline *D3D11_CreateGraphicsPipeline(
         vertShader->bytecode,
         vertShader->bytecodeSize);
 
+    SDL_zeroa(pipeline->vertexStrides);
     if (createinfo->vertex_input_state.num_vertex_buffers > 0) {
-        pipeline->vertexStrides = SDL_malloc(
-            sizeof(Uint32) *
-            createinfo->vertex_input_state.num_vertex_buffers);
-
         for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i += 1) {
-            pipeline->vertexStrides[i] = createinfo->vertex_input_state.vertex_buffer_descriptions[i].pitch;
+            pipeline->vertexStrides[createinfo->vertex_input_state.vertex_buffer_descriptions[i].slot] =
+                createinfo->vertex_input_state.vertex_buffer_descriptions[i].pitch;
         }
-    } else {
-        pipeline->vertexStrides = NULL;
     }
 
     // Resource layout
