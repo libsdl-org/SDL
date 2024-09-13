@@ -1096,10 +1096,6 @@ struct VulkanRenderer
 
     Uint32 minUBOAlignment;
 
-    // Some drivers don't support D16 for some reason. Fun!
-    VkFormat D16Format;
-    VkFormat D16S8Format;
-
     // Deferred resource destruction
 
     VulkanTexture **texturesToDestroy;
@@ -11681,11 +11677,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     VulkanRenderer *renderer;
 
     SDL_GPUDevice *result;
-    VkResult vulkanResult;
     Uint32 i;
-
-    // Variables: Image Format Detection
-    VkImageFormatProperties imageFormatProperties;
 
     if (!SDL_Vulkan_LoadLibrary(NULL)) {
         SDL_assert(!"This should have failed in PrepareDevice first!");
@@ -11832,38 +11824,6 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->fencePool.availableFenceCount = 0;
     renderer->fencePool.availableFences = SDL_malloc(
         renderer->fencePool.availableFenceCapacity * sizeof(VulkanFenceHandle *));
-
-    // Some drivers don't support D16, so we have to fall back to D32.
-
-    vulkanResult = renderer->vkGetPhysicalDeviceImageFormatProperties(
-        renderer->physicalDevice,
-        VK_FORMAT_D16_UNORM,
-        VK_IMAGE_TYPE_2D,
-        VK_IMAGE_TILING_OPTIMAL,
-        VK_IMAGE_ASPECT_DEPTH_BIT,
-        0,
-        &imageFormatProperties);
-
-    if (vulkanResult == VK_ERROR_FORMAT_NOT_SUPPORTED) {
-        renderer->D16Format = VK_FORMAT_D32_SFLOAT;
-    } else {
-        renderer->D16Format = VK_FORMAT_D16_UNORM;
-    }
-
-    vulkanResult = renderer->vkGetPhysicalDeviceImageFormatProperties(
-        renderer->physicalDevice,
-        VK_FORMAT_D16_UNORM_S8_UINT,
-        VK_IMAGE_TYPE_2D,
-        VK_IMAGE_TILING_OPTIMAL,
-        VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
-        0,
-        &imageFormatProperties);
-
-    if (vulkanResult == VK_ERROR_FORMAT_NOT_SUPPORTED) {
-        renderer->D16S8Format = VK_FORMAT_D32_SFLOAT_S8_UINT;
-    } else {
-        renderer->D16S8Format = VK_FORMAT_D16_UNORM_S8_UINT;
-    }
 
     // Deferred destroy storage
 
