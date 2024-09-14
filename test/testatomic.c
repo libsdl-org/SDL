@@ -740,7 +740,7 @@ int main(int argc, char *argv[])
 
     RunBasicTest();
 
-    if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+    if (SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_TESTS_QUICK") != NULL) {
         SDL_Log("Not running slower tests");
         return 0;
     }

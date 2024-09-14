@@ -130,7 +130,7 @@ static int SDLCALL hints_setHint(void *arg)
     SDL_free(value);
 
     /* Set default value in environment */
-    SDL_setenv(testHint, "original", 1);
+    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), testHint, "original", 1);
 
     SDLTest_AssertPass("Call to SDL_GetHint() after saving and restoring hint");
     originalValue = SDL_GetHint(testHint);

@@ -35,39 +35,35 @@ static void SDLCALL setUpProcess(void **arg) {
 
 static const char *options[] = { "/path/to/childprocess" EXE, NULL };
 
-static char *env_key_val_string(const char *key) {
-    const char *env = SDL_getenv(key);
-    size_t size_result;
-    char *result;
-
-    if (env == NULL) {
-        return NULL;
-    }
-    size_result = SDL_strlen(key) + SDL_strlen(env) + 2;
-    result = SDL_malloc(size_result);
-    SDL_snprintf(result, size_result, "%s=%s", key, env);
-    return result;
-}
-
 static char **DuplicateEnvironment(const char *key0, ...)
 {
     va_list ap;
-    size_t count = 1;
-    size_t i;
     const char *keyN;
+    SDL_Environment *env = SDL_GetEnvironment();
+    SDL_Environment *new_env = SDL_CreateEnvironment(SDL_TRUE);
     char **result;
 
     if (key0) {
-        if (SDL_strchr(key0, '=') || SDL_getenv(key0)) {
-            count += 1;
+        char *sep = SDL_strchr(key0, '=');
+        if (sep) {
+            *sep = '\0';
+            SDL_SetEnvironmentVariable(new_env, key0, sep + 1, SDL_TRUE);
+            *sep = '=';
+            SDL_SetEnvironmentVariable(new_env, key0, sep, SDL_TRUE);
+        } else {
+            SDL_SetEnvironmentVariable(new_env, key0, SDL_GetEnvironmentVariable(env, key0), SDL_TRUE);
         }
-
         va_start(ap, key0);
         for (;;) {
             keyN = va_arg(ap, const char *);
             if (keyN) {
-                if (SDL_strchr(keyN, '=') || SDL_getenv(keyN)) {
-                    count += 1;
+                sep = SDL_strchr(keyN, '=');
+                if (sep) {
+                    *sep = '\0';
+                    SDL_SetEnvironmentVariable(new_env, keyN, sep + 1, SDL_TRUE);
+                    *sep = '=';
+                } else {
+                    SDL_SetEnvironmentVariable(new_env, keyN, SDL_GetEnvironmentVariable(env, keyN), SDL_TRUE);
                 }
             } else {
                 break;
@@ -76,43 +72,9 @@ static char **DuplicateEnvironment(const char *key0, ...)
         va_end(ap);
     }
 
-    result = SDL_calloc(count, sizeof(char *));
-
-    i = 0;
-    if (key0) {
-        if (SDL_strchr(key0, '=')) {
-            result[i++] = SDL_strdup(key0);
-        } else if (SDL_getenv(key0)) {
-            result[i++] = env_key_val_string(key0);
-        }
-        va_start(ap, key0);
-        for (;;) {
-            keyN = va_arg(ap, const char *);
-            if (keyN) {
-                if (SDL_strchr(keyN, '=')) {
-                    result[i++] = SDL_strdup(keyN);
-                } else if (SDL_getenv(keyN)) {
-                    result[i++] = env_key_val_string(keyN);
-                }
-            } else {
-                break;
-            }
-        }
-        va_end(ap);
-    }
+    result = SDL_GetEnvironmentVariables(new_env);
+    SDL_DestroyEnvironment(new_env);
     return result;
-}
-
-static void DestroyEnvironment(char **environment) {
-    char **envp;
-
-    if (!environment) {
-        return;
-    }
-    for (envp = environment; *envp; envp++) {
-        SDL_free(*envp);
-    }
-    SDL_free(environment);
 }
 
 static int SDLCALL process_testArguments(void *arg)
@@ -187,7 +149,7 @@ static int SDLCALL process_testInheritedEnv(void *arg)
 
     test_env_val = SDLTest_RandomAsciiStringOfSize(32);
     SDLTest_AssertPass("Setting parent environment variable %s=%s", TEST_ENV_KEY, test_env_val);
-    SDL_setenv(TEST_ENV_KEY, test_env_val, 1);
+    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), TEST_ENV_KEY, test_env_val, SDL_TRUE);
     SDL_snprintf(buffer, sizeof(buffer), "%s=%s", TEST_ENV_KEY, test_env_val);
     process_args[3] = buffer;
 
@@ -312,13 +274,14 @@ static int SDLCALL process_testNewEnv(void *arg)
     SDLTest_AssertCheck(exit_code == 0, "Exit code should be 0, is %d", exit_code);
     SDLTest_AssertPass("About to destroy process");
     SDL_DestroyProcess(process);
-    DestroyEnvironment(process_env);
+    SDL_free(process_env);
     SDL_free(test_env_val);
     return TEST_COMPLETED;
+
 failed:
     SDL_free(test_env_val);
     SDL_DestroyProcess(process);
-    DestroyEnvironment(process_env);
+    SDL_free(process_env);
     return TEST_ABORTED;
 }
 
@@ -330,7 +293,6 @@ static int process_testStdinToStdout(void *arg)
         "--stdin-to-stdout",
         NULL,
     };
-    const char **process_env = NULL;
     SDL_PropertiesID props;
     SDL_Process *process = NULL;
     Sint64 pid;
@@ -346,7 +308,6 @@ static int process_testStdinToStdout(void *arg)
 
     props = SDL_CreateProperties();
     SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, (void *)process_args);
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, (void *)process_env);
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_APP);
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
     process = SDL_CreateProcessWithProperties(props);

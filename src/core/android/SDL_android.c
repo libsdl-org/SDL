@@ -1524,7 +1524,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
     const char *utfname = (*env)->GetStringUTFChars(env, name, NULL);
     const char *utfvalue = (*env)->GetStringUTFChars(env, value, NULL);
 
-    SDL_setenv(utfname, utfvalue, 1);
+    // This is only called at startup, to initialize the environment
+    SDL_setenv_unsafe(utfname, utfvalue, 1);
 
     (*env)->ReleaseStringUTFChars(env, name, utfname);
     (*env)->ReleaseStringUTFChars(env, value, utfvalue);
