@@ -207,7 +207,7 @@ static void run_zenity(zenityArgs* arg_struct)
         goto done;
     }
 
-    env = SDL_CreateEnvironment(SDL_FALSE);
+    env = SDL_CreateEnvironment(true);
     if (!env) {
         goto done;
     }

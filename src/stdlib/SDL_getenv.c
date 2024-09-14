@@ -329,7 +329,7 @@ static SDL_Environment *SDL_environment;
 SDL_Environment *SDL_GetEnvironment(void)
 {
     if (!SDL_environment) {
-        SDL_environment = SDL_CreateEnvironment(false);
+        SDL_environment = SDL_CreateEnvironment(true);
     }
     return SDL_environment;
 }
@@ -344,7 +344,7 @@ void SDL_CleanupEnvironment(void)
     }
 }
 
-SDL_Environment *SDL_CreateEnvironment(SDL_bool empty)
+SDL_Environment *SDL_CreateEnvironment(SDL_bool populated)
 {
     SDL_Environment *env = SDL_calloc(1, sizeof(*env));
     if (!env) {
@@ -360,7 +360,7 @@ SDL_Environment *SDL_CreateEnvironment(SDL_bool empty)
     // Don't fail if we can't create a mutex (e.g. on a single-thread environment)
     env->lock = SDL_CreateMutex();
 
-    if (!empty) {
+    if (populated) {
 #ifdef SDL_PLATFORM_WINDOWS
         LPWCH strings = GetEnvironmentStringsW();
         if (strings) {
