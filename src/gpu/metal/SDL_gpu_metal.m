@@ -30,9 +30,9 @@
 
 // Defines
 
-#define METAL_MAX_BUFFER_COUNT      31
-#define WINDOW_PROPERTY_DATA        "SDL_GPUMetalWindowPropertyData"
-#define SDL_GPU_SHADERSTAGE_COMPUTE 2
+#define METAL_FIRST_VERTEX_BUFFER_SLOT 14
+#define WINDOW_PROPERTY_DATA           "SDL_GPUMetalWindowPropertyData"
+#define SDL_GPU_SHADERSTAGE_COMPUTE    2
 
 #define TRACK_RESOURCE(resource, type, array, count, capacity) \
     Uint32 i;                                                  \
@@ -633,11 +633,6 @@ struct MetalRenderer
 
 // Helper Functions
 
-static Uint32 METAL_INTERNAL_GetVertexBufferIndex(Uint32 binding)
-{
-    return METAL_MAX_BUFFER_COUNT - 1 - binding;
-}
-
 // FIXME: This should be moved into SDL_sysgpu.h
 static inline Uint32 METAL_INTERNAL_NextHighestAlignment(
     Uint32 n,
@@ -1097,11 +1092,12 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
                 Uint32 loc = createinfo->vertex_input_state.vertex_attributes[i].location;
                 vertexDescriptor.attributes[loc].format = SDLToMetal_VertexFormat[createinfo->vertex_input_state.vertex_attributes[i].format];
                 vertexDescriptor.attributes[loc].offset = createinfo->vertex_input_state.vertex_attributes[i].offset;
-                vertexDescriptor.attributes[loc].bufferIndex = METAL_INTERNAL_GetVertexBufferIndex(createinfo->vertex_input_state.vertex_attributes[i].buffer_slot);
+                vertexDescriptor.attributes[loc].bufferIndex =
+                    METAL_FIRST_VERTEX_BUFFER_SLOT + createinfo->vertex_input_state.vertex_attributes[i].buffer_slot;
             }
 
             for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i += 1) {
-                binding = METAL_INTERNAL_GetVertexBufferIndex(createinfo->vertex_input_state.vertex_buffer_descriptions[i].slot);
+                binding = METAL_FIRST_VERTEX_BUFFER_SLOT + createinfo->vertex_input_state.vertex_buffer_descriptions[i].slot;
                 vertexDescriptor.layouts[binding].stepFunction = SDLToMetal_StepFunction[createinfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate];
                 vertexDescriptor.layouts[binding].stepRate = (createinfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE)
                     ? createinfo->vertex_input_state.vertex_buffer_descriptions[i].instance_step_rate
@@ -2371,17 +2367,16 @@ static void METAL_BindVertexBuffers(
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
         id<MTLBuffer> metalBuffers[MAX_VERTEX_BUFFERS];
         NSUInteger bufferOffsets[MAX_VERTEX_BUFFERS];
-        NSRange range = NSMakeRange(METAL_INTERNAL_GetVertexBufferIndex(firstBinding), numBindings);
+        NSRange range = NSMakeRange(METAL_FIRST_VERTEX_BUFFER_SLOT + firstBinding, numBindings);
 
         if (range.length == 0) {
             return;
         }
 
-        for (Uint32 i = 0; i < range.length; i += 1) {
+        for (Uint32 i = 0; i < numBindings; i += 1) {
             MetalBuffer *currentBuffer = ((MetalBufferContainer *)bindings[i].buffer)->activeBuffer;
-            NSUInteger bindingIndex = range.length - 1 - i;
-            metalBuffers[bindingIndex] = currentBuffer->handle;
-            bufferOffsets[bindingIndex] = bindings[i].offset;
+            metalBuffers[firstBinding + i] = currentBuffer->handle;
+            bufferOffsets[firstBinding + i] = bindings[i].offset;
             METAL_INTERNAL_TrackBuffer(metalCommandBuffer, currentBuffer);
         }
 
