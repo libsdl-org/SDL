@@ -95,6 +95,10 @@ static bool join_arguments(const char * const *args, char **args_out)
             case '"':
                 len += 2;
                 break;
+            case '\\':
+                /* only escape backslashes that precede a double quote */
+                len += (*(a + 1) == '"' || *(a + 1) == '\0') ? 2 : 1;
+                break;
             default:
                 len += 1;
                 break;
@@ -120,6 +124,12 @@ static bool join_arguments(const char * const *args, char **args_out)
             case '"':
                 result[i_out++] = '\\';
                 result[i_out++] = *a;
+                break;
+            case '\\':
+                result[i_out++] = *a;
+                if (*(a + 1) == '"' || *(a + 1) == '\0') {
+                    result[i_out++] = *a;
+                }
                 break;
             default:
                 result[i_out++] = *a;
