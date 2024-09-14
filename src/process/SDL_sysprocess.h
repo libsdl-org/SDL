@@ -25,6 +25,7 @@ typedef struct SDL_ProcessData SDL_ProcessData;
 struct SDL_Process
 {
     bool alive;
+    bool background;
     int exitcode;
     SDL_PropertiesID props;
     SDL_ProcessData *internal;

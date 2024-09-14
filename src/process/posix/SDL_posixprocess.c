@@ -137,6 +137,19 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         goto posix_spawn_fail_attr;
     }
 
+    // Background processes don't have access to the terminal
+    if (process->background) {
+        if (stdin_option == SDL_PROCESS_STDIO_INHERITED) {
+            stdin_option = SDL_PROCESS_STDIO_NULL;
+        }
+        if (stdout_option == SDL_PROCESS_STDIO_INHERITED) {
+            stdout_option = SDL_PROCESS_STDIO_NULL;
+        }
+        if (stderr_option == SDL_PROCESS_STDIO_INHERITED) {
+            stderr_option = SDL_PROCESS_STDIO_NULL;
+        }
+    }
+
     switch (stdin_option) {
     case SDL_PROCESS_STDIO_REDIRECT:
         if (!GetStreamFD(props, SDL_PROP_PROCESS_CREATE_STDIN_POINTER, &fd)) {
@@ -276,9 +289,38 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     }
 
     // Spawn the new process
-    if (posix_spawnp(&data->pid, args[0], &fa, &attr, args, env) != 0) {
-        SDL_SetError("posix_spawn failed: %s", strerror(errno));
-        goto posix_spawn_fail_all;
+    if (process->background) {
+        int status = -1;
+        pid_t pid = vfork();
+        switch (pid) {
+        case -1:
+            SDL_SetError("vfork() failed: %s", strerror(errno));
+            goto posix_spawn_fail_all;
+
+        case 0:
+            // Detach from the terminal and launch the process
+            setsid();
+            if (posix_spawnp(&data->pid, args[0], &fa, &attr, args, env) != 0) {
+                _exit(errno);
+            }
+            _exit(0);
+
+        default:
+            if (waitpid(pid, &status, 0) < 0) {
+                SDL_SetError("waitpid() failed: %s", strerror(errno));
+                goto posix_spawn_fail_all;
+            }
+            if (status != 0) {
+                SDL_SetError("posix_spawn() failed: %s", strerror(status));
+                goto posix_spawn_fail_all;
+            }
+            break;
+        }
+    } else {
+        if (posix_spawnp(&data->pid, args[0], &fa, &attr, args, env) != 0) {
+            SDL_SetError("posix_spawn() failed: %s", strerror(errno));
+            goto posix_spawn_fail_all;
+        }
     }
     SDL_SetNumberProperty(process->props, SDL_PROP_PROCESS_PID_NUMBER, data->pid);
 
@@ -353,26 +395,43 @@ bool SDL_SYS_KillProcess(SDL_Process *process, SDL_bool force)
 bool SDL_SYS_WaitProcess(SDL_Process *process, SDL_bool block, int *exitcode)
 {
     int wstatus = 0;
-    int ret = waitpid(process->internal->pid, &wstatus, block ? 0 : WNOHANG);
+    int ret;
+    pid_t pid = process->internal->pid;
 
-    if (ret < 0) {
-        return SDL_SetError("Could not waitpid(): %s", strerror(errno));
-    }
-
-    if (ret == 0) {
-        SDL_ClearError();
-        return false;
-    }
-
-    if (WIFEXITED(wstatus)) {
-        *exitcode = WEXITSTATUS(wstatus);
-    } else if (WIFSIGNALED(wstatus)) {
-        *exitcode = -WTERMSIG(wstatus);
+    if (process->background) {
+        // We can't wait on the status, so we'll poll to see if it's alive
+        if (block) {
+            while (kill(pid, 0) == 0) {
+                SDL_Delay(10);
+            }
+        } else {
+            if (kill(pid, 0) == 0) {
+                return false;
+            }
+        }
+        *exitcode = 0;
+        return true;
     } else {
-        *exitcode = -255;
-    }
+        ret = waitpid(pid, &wstatus, block ? 0 : WNOHANG);
+        if (ret < 0) {
+            return SDL_SetError("Could not waitpid(): %s", strerror(errno));
+        }
 
-    return true;
+        if (ret == 0) {
+            SDL_ClearError();
+            return false;
+        }
+
+        if (WIFEXITED(wstatus)) {
+            *exitcode = WEXITSTATUS(wstatus);
+        } else if (WIFSIGNALED(wstatus)) {
+            *exitcode = -WTERMSIG(wstatus);
+        } else {
+            *exitcode = -255;
+        }
+
+        return true;
+    }
 }
 
 void SDL_SYS_DestroyProcess(SDL_Process *process)

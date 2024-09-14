@@ -232,6 +232,20 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     security_attributes.bInheritHandle = TRUE;
     security_attributes.lpSecurityDescriptor = NULL;
 
+    // Background processes don't have access to the terminal
+    // This isn't necessary on Windows, but we keep the same behavior as the POSIX implementation.
+    if (process->background) {
+        if (stdin_option == SDL_PROCESS_STDIO_INHERITED) {
+            stdin_option = SDL_PROCESS_STDIO_NULL;
+        }
+        if (stdout_option == SDL_PROCESS_STDIO_INHERITED) {
+            stdout_option = SDL_PROCESS_STDIO_NULL;
+        }
+        if (stderr_option == SDL_PROCESS_STDIO_INHERITED) {
+            stderr_option = SDL_PROCESS_STDIO_NULL;
+        }
+    }
+
     switch (stdin_option) {
     case SDL_PROCESS_STDIO_REDIRECT:
         if (!SetupRedirect(props, SDL_PROP_PROCESS_CREATE_STDIN_POINTER, &startup_info.hStdInput)) {

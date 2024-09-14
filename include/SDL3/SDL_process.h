@@ -175,6 +175,7 @@ typedef enum SDL_ProcessIO
  *   output of the process should be redirected into the standard output of
  *   the process. This property has no effect if
  *   `SDL_PROP_PROCESS_CREATE_STDERR_NUMBER` is set.
+ * - `SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN`: true if the process should run in the background. In this case the default input and output is `SDL_PROCESS_STDIO_NULL` and the exitcode of the process is not available, and will always be 0.
  *
  * On POSIX platforms, wait() and waitpid(-1, ...) should not be called, and
  * SIGCHLD should not be ignored or handled because those would prevent SDL
@@ -208,6 +209,7 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcessWithProperties(SDL_Pro
 #define SDL_PROP_PROCESS_CREATE_STDERR_NUMBER               "SDL.process.create.stderr_option"
 #define SDL_PROP_PROCESS_CREATE_STDERR_POINTER              "SDL.process.create.stderr_source"
 #define SDL_PROP_PROCESS_CREATE_STDERR_TO_STDOUT_BOOLEAN    "SDL.process.create.stderr_to_stdout"
+#define SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN          "SDL.process.create.background"
 
 /**
  * Get the properties associated with a process.
@@ -218,6 +220,7 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcessWithProperties(SDL_Pro
  * - `SDL_PROP_PROCESS_STDIN_POINTER`: an SDL_IOStream that can be used to write input to the process, if it was created with `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER` set to `SDL_PROCESS_STDIO_APP`.
  * - `SDL_PROP_PROCESS_STDOUT_POINTER`: a non-blocking SDL_IOStream that can be used to read output from the process, if it was created with `SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER` set to `SDL_PROCESS_STDIO_APP`.
  * - `SDL_PROP_PROCESS_STDERR_POINTER`: a non-blocking SDL_IOStream that can be used to read error output from the process, if it was created with `SDL_PROP_PROCESS_CREATE_STDERR_NUMBER` set to `SDL_PROCESS_STDIO_APP`.
+ * - `SDL_PROP_PROCESS_BACKGROUND_BOOLEAN`: true if the process is running in the background.
  *
  * \param process the process to query.
  * \returns a valid property ID on success or 0 on failure; call
@@ -232,10 +235,11 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcessWithProperties(SDL_Pro
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDL_GetProcessProperties(SDL_Process *process);
 
-#define SDL_PROP_PROCESS_PID_NUMBER     "SDL.process.pid"
-#define SDL_PROP_PROCESS_STDIN_POINTER  "SDL.process.stdin"
-#define SDL_PROP_PROCESS_STDOUT_POINTER "SDL.process.stdout"
-#define SDL_PROP_PROCESS_STDERR_POINTER "SDL.process.stderr"
+#define SDL_PROP_PROCESS_PID_NUMBER         "SDL.process.pid"
+#define SDL_PROP_PROCESS_STDIN_POINTER      "SDL.process.stdin"
+#define SDL_PROP_PROCESS_STDOUT_POINTER     "SDL.process.stdout"
+#define SDL_PROP_PROCESS_STDERR_POINTER     "SDL.process.stderr"
+#define SDL_PROP_PROCESS_BACKGROUND_BOOLEAN "SDL.process.background"
 
 /**
  * Read all the output from a process.

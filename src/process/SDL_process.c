@@ -54,12 +54,14 @@ SDL_Process *SDL_CreateProcessWithProperties(SDL_PropertiesID props)
     if (!process) {
         return NULL;
     }
+    process->background = SDL_GetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN, false);
 
     process->props = SDL_CreateProperties();
     if (!process->props) {
         SDL_DestroyProcess(process);
         return NULL;
     }
+    SDL_SetBooleanProperty(process->props, SDL_PROP_PROCESS_BACKGROUND_BOOLEAN, process->background);
 
     if (!SDL_SYS_CreateProcessWithProperties(process, props)) {
         SDL_DestroyProcess(process);
@@ -180,6 +182,9 @@ SDL_bool SDL_WaitProcess(SDL_Process *process, SDL_bool block, int *exitcode)
     if (SDL_SYS_WaitProcess(process, block, &process->exitcode)) {
         process->alive = false;
         if (exitcode) {
+            if (process->background) {
+                process->exitcode = 0;
+            }
             *exitcode = process->exitcode;
         }
         return true;
