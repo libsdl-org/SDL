@@ -92,6 +92,9 @@ static int SDLCALL process_testArguments(void *arg)
         "'a' 'b' 'c'",
         "%d%%%s",
         "\\t\\c",
+        "evil\\",
+        "a\\b\"c\\",
+        "\"\\^&|<>%", /* characters with a special meaning */
         NULL
     };
     SDL_Process *process = NULL;
