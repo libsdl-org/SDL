@@ -150,7 +150,6 @@
 
 // Drivers
 
-#ifndef SDL_GPU_DISABLED
 static const SDL_GPUBootstrap *backends[] = {
 #ifdef SDL_GPU_METAL
     &MetalDriver,
@@ -166,7 +165,6 @@ static const SDL_GPUBootstrap *backends[] = {
 #endif
     NULL
 };
-#endif // SDL_GPU_DISABLED
 
 // Internal Utility Functions
 
@@ -438,7 +436,6 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
     SDL_LogError(SDL_LOG_CATEGORY_GPU, "No supported SDL_GPU backend found!");
     return NULL;
 }
-#endif // SDL_GPU_DISABLED
 
 static void SDL_GPU_FillProperties(
     SDL_PropertiesID props,
@@ -467,6 +464,7 @@ static void SDL_GPU_FillProperties(
     SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, debug_mode);
     SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);
 }
+#endif // SDL_GPU_DISABLED
 
 SDL_bool SDL_GPUSupportsShaderFormats(
     SDL_GPUShaderFormat format_flags,
