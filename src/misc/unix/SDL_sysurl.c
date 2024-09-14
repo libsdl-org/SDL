@@ -35,9 +35,8 @@ extern char **environ;
 
 bool SDL_SYS_OpenURL(const char *url)
 {
+    const char *args[] = { "xdg-open", url, NULL };
     SDL_Environment *env = NULL;
-    char **process_env = NULL;
-    const char *process_args[] = { "xdg-open", url, NULL };
     SDL_Process *process = NULL;
     bool result = false;
 
@@ -49,17 +48,12 @@ bool SDL_SYS_OpenURL(const char *url)
     // Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam
     SDL_UnsetEnvironmentVariable(env, "LD_PRELOAD");
 
-    process_env = SDL_GetEnvironmentVariables(env);
-    if (!process_env) {
-        goto done;
-    }
-
     SDL_PropertiesID props = SDL_CreateProperties();
     if (!props) {
         goto done;
     }
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, process_args);
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, process_env);
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args);
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, env);
     SDL_SetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN, true);
     process = SDL_CreateProcessWithProperties(props);
     SDL_DestroyProperties(props);
@@ -70,7 +64,6 @@ bool SDL_SYS_OpenURL(const char *url)
     result = true;
 
 done:
-    SDL_free(process_env);
     SDL_DestroyEnvironment(env);
     SDL_DestroyProcess(process);
 

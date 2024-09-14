@@ -141,7 +141,8 @@ static bool AddFileDescriptorCloseActions(posix_spawn_file_actions_t *fa)
 bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props)
 {
     char * const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
-    char * const *env = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, NULL);
+    SDL_Environment *env = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, SDL_GetEnvironment());
+    char **envp = NULL;
     SDL_ProcessIO stdin_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
     SDL_ProcessIO stdout_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_INHERITED);
     SDL_ProcessIO stderr_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_INHERITED);
@@ -151,11 +152,16 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     int stdout_pipe[2] = { -1, -1 };
     int stderr_pipe[2] = { -1, -1 };
     int fd = -1;
-    char **env_copy = NULL;
 
     // Keep the malloc() before exec() so that an OOM won't run a process at all
+    envp = SDL_GetEnvironmentVariables(env);
+    if (!envp) {
+        return false;
+    }
+
     SDL_ProcessData *data = SDL_calloc(1, sizeof(*data));
     if (!data) {
+        SDL_free(envp);
         return false;
     }
     process->internal = data;
@@ -323,11 +329,6 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         }
     }
 
-    if (!env) {
-        env_copy = SDL_GetEnvironmentVariables(SDL_GetEnvironment());
-        env = env_copy;
-    }
-
     // Spawn the new process
     if (process->background) {
         int status = -1;
@@ -340,7 +341,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         case 0:
             // Detach from the terminal and launch the process
             setsid();
-            if (posix_spawnp(&data->pid, args[0], &fa, &attr, args, env) != 0) {
+            if (posix_spawnp(&data->pid, args[0], &fa, &attr, args, envp) != 0) {
                 _exit(errno);
             }
             _exit(0);
@@ -357,7 +358,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             break;
         }
     } else {
-        if (posix_spawnp(&data->pid, args[0], &fa, &attr, args, env) != 0) {
+        if (posix_spawnp(&data->pid, args[0], &fa, &attr, args, envp) != 0) {
             SDL_SetError("posix_spawn() failed: %s", strerror(errno));
             goto posix_spawn_fail_all;
         }
@@ -387,7 +388,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
 
     posix_spawn_file_actions_destroy(&fa);
     posix_spawnattr_destroy(&attr);
-    SDL_free(env_copy);
+    SDL_free(envp);
 
     return true;
 
@@ -418,7 +419,7 @@ posix_spawn_fail_none:
     if (stderr_pipe[WRITE_END] >= 0) {
         close(stderr_pipe[WRITE_END]);
     }
-    SDL_free(env_copy);
+    SDL_free(envp);
     return false;
 }
 

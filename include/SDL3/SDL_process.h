@@ -148,9 +148,7 @@ typedef enum SDL_ProcessIO
  * - `SDL_PROP_PROCESS_CREATE_ARGS_POINTER`: an array of strings containing
  *   the program to run, any arguments, and a NULL pointer, e.g. const char
  *   *args[] = { "myprogram", "argument", NULL }. This is a required property.
- * - `SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER`: an array of strings
- *   containing variable=value, and a NULL pointer, e.g. const char *env[] = {
- *   "PATH=/bin:/usr/bin", NULL }. If this property is set, it will be the
+ * - `SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER`: an SDL_Environment pointer. If this property is set, it will be the
  *   entire environment for the process, otherwise the current environment is
  *   used.
  * - `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER`: an SDL_ProcessIO value describing

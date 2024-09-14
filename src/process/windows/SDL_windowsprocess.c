@@ -145,16 +145,11 @@ static bool join_arguments(const char * const *args, char **args_out)
     return true;
 }
 
-static bool join_env(const char * const *env, char **environment_out)
+static bool join_env(char **env, char **environment_out)
 {
     size_t len;
-    const char * const *var;
+    char **var;
     char *result;
-
-    if (!env) {
-        *environment_out = NULL;
-        return true;
-    }
 
     len = 0;
     for (var = env; *var; var++) {
@@ -181,7 +176,8 @@ static bool join_env(const char * const *env, char **environment_out)
 bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props)
 {
     const char * const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
-    const char * const *env = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, NULL);
+    SDL_Environment *env = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, SDL_GetEnvironment());
+    char **envp = NULL;
     SDL_ProcessIO stdin_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
     SDL_ProcessIO stdout_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_INHERITED);
     SDL_ProcessIO stderr_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_INHERITED);
@@ -196,12 +192,17 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     HANDLE stdin_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
     HANDLE stdout_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
     HANDLE stderr_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
-    char **env_copy = NULL;
     bool result = false;
 
     // Keep the malloc() before exec() so that an OOM won't run a process at all
+    envp = SDL_GetEnvironmentVariables(env);
+    if (!envp) {
+        return false;
+    }
+
     SDL_ProcessData *data = SDL_calloc(1, sizeof(*data));
     if (!data) {
+        SDL_free(envp);
         return false;
     }
     process->internal = data;
@@ -210,11 +211,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         goto done;
     }
 
-    if (!env) {
-        env_copy = SDL_GetEnvironmentVariables(SDL_GetEnvironment());
-        env = (const char * const *)env_copy;
-    }
-    if (!join_env(env, &createprocess_env)) {
+    if (!join_env(envp, &createprocess_env)) {
         goto done;
     }
 
@@ -410,7 +407,7 @@ done:
     }
     SDL_free(createprocess_cmdline);
     SDL_free(createprocess_env);
-    SDL_free(env_copy);
+    SDL_free(envp);
 
     if (!result) {
         if (stdin_pipe[WRITE_END] != INVALID_HANDLE_VALUE) {
