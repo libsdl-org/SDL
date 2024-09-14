@@ -97,7 +97,7 @@ static bool join_arguments(const char * const *args, char **args_out)
                 break;
             case '\\':
                 /* only escape backslashes that precede a double quote */
-                len += (*(a + 1) == '"' || *(a + 1) == '\0') ? 2 : 1;
+                len += (a[1] == '"' || a[1] == '\0') ? 2 : 1;
                 break;
             default:
                 len += 1;
