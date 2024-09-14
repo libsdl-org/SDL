@@ -35,13 +35,12 @@ static void SDLCALL setUpProcess(void **arg) {
 
 static const char *options[] = { "/path/to/childprocess" EXE, NULL };
 
-static char **DuplicateEnvironment(const char *key0, ...)
+static SDL_Environment *DuplicateEnvironment(const char *key0, ...)
 {
     va_list ap;
     const char *keyN;
     SDL_Environment *env = SDL_GetEnvironment();
     SDL_Environment *new_env = SDL_CreateEnvironment(SDL_FALSE);
-    char **result;
 
     if (key0) {
         char *sep = SDL_strchr(key0, '=');
@@ -72,9 +71,7 @@ static char **DuplicateEnvironment(const char *key0, ...)
         va_end(ap);
     }
 
-    result = SDL_GetEnvironmentVariables(new_env);
-    SDL_DestroyEnvironment(new_env);
-    return result;
+    return new_env;
 }
 
 static int SDLCALL process_testArguments(void *arg)
@@ -216,7 +213,7 @@ static int SDLCALL process_testNewEnv(void *arg)
         "--expect-env", NULL,
         NULL,
     };
-    char **process_env;
+    SDL_Environment *process_env;
     SDL_PropertiesID props;
     SDL_Process *process = NULL;
     Sint64 pid;
@@ -235,7 +232,7 @@ static int SDLCALL process_testNewEnv(void *arg)
 
     props = SDL_CreateProperties();
     SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, (void *)process_args);
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, (void *)process_env);
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, process_env);
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
     process = SDL_CreateProcessWithProperties(props);
     SDL_DestroyProperties(props);
@@ -276,15 +273,15 @@ static int SDLCALL process_testNewEnv(void *arg)
     SDLTest_AssertPass("exit_code will be != 0 when environment variable was not set");
     SDLTest_AssertCheck(exit_code == 0, "Exit code should be 0, is %d", exit_code);
     SDLTest_AssertPass("About to destroy process");
-    SDL_DestroyProcess(process);
-    SDL_free(process_env);
     SDL_free(test_env_val);
+    SDL_DestroyProcess(process);
+    SDL_DestroyEnvironment(process_env);
     return TEST_COMPLETED;
 
 failed:
     SDL_free(test_env_val);
     SDL_DestroyProcess(process);
-    SDL_free(process_env);
+    SDL_DestroyEnvironment(process_env);
     return TEST_ABORTED;
 }
 

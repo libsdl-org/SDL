@@ -192,9 +192,8 @@ static void run_zenity(zenityArgs* arg_struct)
     SDL_DialogFileCallback callback = arg_struct->callback;
     void* userdata = arg_struct->userdata;
     SDL_Process *process = NULL;
+    char **args = NULL;
     SDL_Environment *env = NULL;
-    char **process_env = NULL;
-    char **process_args = NULL;
     int status = -1;
     size_t bytes_read = 0;
     char *container = NULL;
@@ -202,8 +201,8 @@ static void run_zenity(zenityArgs* arg_struct)
     char **array = NULL;
     bool result = false;
 
-    process_args = generate_args(arg_struct);
-    if (!process_args) {
+    args = generate_args(arg_struct);
+    if (!args) {
         goto done;
     }
 
@@ -221,14 +220,9 @@ static void run_zenity(zenityArgs* arg_struct)
     SDL_SetEnvironmentVariable(env, "ZENITY_ERROR", "2", SDL_TRUE);
     SDL_SetEnvironmentVariable(env, "ZENITY_TIMEOUT", "2", SDL_TRUE);
 
-    process_env = SDL_GetEnvironmentVariables(env);
-    if (!process_env) {
-        goto done;
-    }
-
     SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, process_args);
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, process_env);
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args);
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, env);
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_NULL);
@@ -280,8 +274,7 @@ static void run_zenity(zenityArgs* arg_struct)
 done:
     SDL_free(array);
     SDL_free(container);
-    free_args(process_args);
-    SDL_free(process_env);
+    free_args(args);
     SDL_DestroyEnvironment(env);
     SDL_DestroyProcess(process);
 
