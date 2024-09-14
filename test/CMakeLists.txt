@@ -368,13 +368,6 @@ add_sdl_test_executable(testmouse SOURCES testmouse.c)
 add_sdl_test_executable(testoverlay NEEDS_RESOURCES TESTUTILS SOURCES testoverlay.c)
 add_sdl_test_executable(testplatform NONINTERACTIVE SOURCES testplatform.c)
 add_sdl_test_executable(testpower NONINTERACTIVE SOURCES testpower.c)
-add_sdl_test_executable(testprocess
-                        NONINTERACTIVE THREADS
-                        NONINTERACTIVE_ARGS $<TARGET_FILE:childprocess>
-                        INSTALLED_ARGS "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL3/childprocess${CMAKE_EXECUTABLE_SUFFIX}"
-                        SOURCES testprocess.c)
-add_sdl_test_executable(childprocess SOURCES childprocess.c)
-add_dependencies(testprocess childprocess)
 add_sdl_test_executable(testfilesystem NONINTERACTIVE SOURCES testfilesystem.c)
 if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
     add_sdl_test_executable(pretest SOURCES pretest.c NONINTERACTIVE NONINTERACTIVE_TIMEOUT 60)
@@ -413,6 +406,16 @@ add_sdl_test_executable(testdialog SOURCES testdialog.c)
 add_sdl_test_executable(testtime SOURCES testtime.c)
 add_sdl_test_executable(testmanymouse SOURCES testmanymouse.c)
 add_sdl_test_executable(testmodal SOURCES testmodal.c)
+
+
+add_sdl_test_executable(testprocess
+    NONINTERACTIVE THREADS
+    NONINTERACTIVE_ARGS $<TARGET_FILE:childprocess>
+    INSTALLED_ARGS "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL3/childprocess${CMAKE_EXECUTABLE_SUFFIX}"
+    SOURCES testprocess.c
+)
+add_sdl_test_executable(childprocess SOURCES childprocess.c)
+add_dependencies(testprocess childprocess)
 
 if (HAVE_WAYLAND)
     # Set the GENERATED property on the protocol file, since it is first created at build time
