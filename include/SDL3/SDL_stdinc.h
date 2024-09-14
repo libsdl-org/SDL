@@ -1034,8 +1034,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_CleanupEnvironment(void);
 /**
  * Create a set of environment variables.
  *
- * \param populated SDL_TRUE to initialize it from the C runtime environment, SDL_FALSE to create an empty environment.
- *
+ * \param populated SDL_TRUE to initialize it from the C runtime environment,
+ *                  SDL_FALSE to create an empty environment.
  * \returns a pointer to the new environment or NULL on failure; call
  *          SDL_GetError() for more information.
  *
