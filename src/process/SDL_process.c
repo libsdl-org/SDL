@@ -151,6 +151,38 @@ done:
     return result;
 }
 
+SDL_IOStream *SDL_GetProcessOutputStream(SDL_Process *process)
+{
+    if (!process) {
+        SDL_InvalidParamError("process");
+        return NULL;
+    }
+
+    SDL_IOStream *io = (SDL_IOStream *)SDL_GetPointerProperty(process->props, SDL_PROP_PROCESS_STDOUT_POINTER, NULL);
+    if (!io) {
+        SDL_SetError("Process not created with I/O enabled");
+        return NULL;
+    }
+
+    return io;
+}
+
+SDL_IOStream *SDL_GetProcessInputStream(SDL_Process *process)
+{
+    if (!process) {
+        SDL_InvalidParamError("process");
+        return NULL;
+    }
+
+    SDL_IOStream *io = (SDL_IOStream *)SDL_GetPointerProperty(process->props, SDL_PROP_PROCESS_STDIN_POINTER, NULL);
+    if (!io) {
+        SDL_SetError("Process not created with I/O enabled");
+        return NULL;
+    }
+
+    return io;
+}
+
 SDL_bool SDL_KillProcess(SDL_Process *process, SDL_bool force)
 {
     if (!process) {

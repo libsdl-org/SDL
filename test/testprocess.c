@@ -207,7 +207,7 @@ static int SDLCALL process_testInheritedEnv(void *arg)
     pid = SDL_GetNumberProperty(props, SDL_PROP_PROCESS_PID_NUMBER, 0);
     SDLTest_AssertCheck(pid != 0, "Checking process ID, expected non-zero, got %" SDL_PRIs64, pid);
 
-    process_stdout = (SDL_IOStream *)SDL_GetPointerProperty(props, SDL_PROP_PROCESS_STDOUT_POINTER, NULL);
+    process_stdout = SDL_GetProcessOutputStream(process);
     SDLTest_AssertCheck(process_stdout != NULL, "SDL_GetPointerProperty(SDL_PROP_PROCESS_STDOUT_POINTER) returns a valid IO stream");
     if (!process_stdout) {
         goto failed;
@@ -285,7 +285,7 @@ static int SDLCALL process_testNewEnv(void *arg)
     pid = SDL_GetNumberProperty(props, SDL_PROP_PROCESS_PID_NUMBER, 0);
     SDLTest_AssertCheck(pid != 0, "Checking process ID, expected non-zero, got %" SDL_PRIs64, pid);
 
-    process_stdout = (SDL_IOStream *)SDL_GetPointerProperty(props, SDL_PROP_PROCESS_STDOUT_POINTER, NULL);
+    process_stdout = SDL_GetProcessOutputStream(process);
     SDLTest_AssertCheck(process_stdout != NULL, "SDL_GetPointerProperty(SDL_PROP_PROCESS_STDOUT_POINTER) returns a valid IO stream");
     if (!process_stdout) {
         goto failed;
@@ -362,9 +362,9 @@ static int process_testStdinToStdout(void *arg)
     pid = SDL_GetNumberProperty(props, SDL_PROP_PROCESS_PID_NUMBER, 0);
     SDLTest_AssertCheck(pid != 0, "Checking process ID, expected non-zero, got %" SDL_PRIs64, pid);
 
-    process_stdin = (SDL_IOStream *)SDL_GetPointerProperty(props, SDL_PROP_PROCESS_STDIN_POINTER, NULL);
+    process_stdin = SDL_GetProcessInputStream(process);
     SDLTest_AssertCheck(process_stdin != NULL, "SDL_GetPointerProperty(SDL_PROP_PROCESS_STDIN_POINTER) returns a valid IO stream");
-    process_stdout = (SDL_IOStream *)SDL_GetPointerProperty(props, SDL_PROP_PROCESS_STDOUT_POINTER, NULL);
+    process_stdout = SDL_GetProcessOutputStream(process);
     SDLTest_AssertCheck(process_stdout != NULL, "SDL_GetPointerProperty(SDL_PROP_PROCESS_STDOUT_POINTER) returns a valid IO stream");
     if (!process_stdin || !process_stdout) {
         goto failed;
@@ -406,7 +406,7 @@ static int process_testStdinToStdout(void *arg)
     /* Closing stdin of `subprocessstdin --stdin-to-stdout` should close the process */
     SDL_CloseIO(process_stdin);
 
-    process_stdin = (SDL_IOStream *)SDL_GetPointerProperty(props, SDL_PROP_PROCESS_STDIN_POINTER, NULL);
+    process_stdin = SDL_GetProcessInputStream(process);
     SDLTest_AssertCheck(process_stdin == NULL, "SDL_GetPointerProperty(SDL_PROP_PROCESS_STDIN_POINTER) is cleared after close");
 
     SDLTest_AssertPass("About to wait on process");

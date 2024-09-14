@@ -307,6 +307,46 @@ extern SDL_DECLSPEC void * SDLCALL SDL_ReadProcess(SDL_Process *process, size_t 
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WriteProcess(SDL_Process *process, const void *ptr, size_t size, SDL_bool closeio);
 
 /**
+ * Get the SDL_IOStream associated with process standard output.
+ *
+ * The process must have been created with I/O enabled.
+ *
+ * This is just a convenience function that retrieves the SDL_IOStream from the process `SDL_PROP_PROCESS_STDOUT_POINTER` property.
+ *
+ * \param process The process to get the output stream for.
+ * \returns the output stream or NULL on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateProcess
+ * \sa SDL_CreateProcessWithProperties
+ */
+extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessOutputStream(SDL_Process *process);
+
+/**
+ * Get the SDL_IOStream associated with process standard input.
+ *
+ * The process must have been created with I/O enabled.
+ *
+ * This is just a convenience function that retrieves the SDL_IOStream from the process `SDL_PROP_PROCESS_STDIN_POINTER` property.
+ *
+ * \param process The process to get the input stream for.
+ * \returns the input stream or NULL on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateProcess
+ * \sa SDL_CreateProcessWithProperties
+ */
+extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessInputStream(SDL_Process *process);
+
+/**
  * Stop a process.
  *
  * \param process The process to stop.
