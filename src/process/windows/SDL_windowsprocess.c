@@ -76,7 +76,7 @@ static bool SetupRedirect(SDL_PropertiesID props, const char *property, HANDLE *
     return true;
 }
 
-static bool join_arguments(const char * const *args, char **args_out)
+static bool join_arguments(const char * const *args, LPWSTR *args_out)
 {
     size_t len;
     int i;
@@ -141,11 +141,16 @@ static bool join_arguments(const char * const *args, char **args_out)
     }
     SDL_assert(i_out == len);
     result[len - 1] = '\0';
-    *args_out = result;
+
+    *args_out = (LPWSTR)SDL_iconv_string("UTF-16LE", "UTF-8", (const char *)result, len);
+    SDL_free(result);
+    if (!args_out) {
+        return false;
+    }
     return true;
 }
 
-static bool join_env(char **env, char **environment_out)
+static bool join_env(char **env, LPWSTR *env_out)
 {
     size_t len;
     char **var;
@@ -169,7 +174,11 @@ static bool join_env(char **env, char **environment_out)
     }
     result[len] = '\0';
 
-    *environment_out = result;
+    *env_out = (LPWSTR)SDL_iconv_string("UTF-16LE", "UTF-8", (const char *)result, len);
+    SDL_free(result);
+    if (!*env_out) {
+        return false;
+    }
     return true;
 }
 
@@ -183,11 +192,10 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     SDL_ProcessIO stderr_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_INHERITED);
     bool redirect_stderr = SDL_GetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_TO_STDOUT_BOOLEAN, false) &&
                            !SDL_HasProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER);
-    char *createprocess_cmdline = NULL;
-    char *createprocess_env = NULL;
-    STARTUPINFOA startup_info;
+    LPWSTR createprocess_cmdline = NULL;
+    LPWSTR createprocess_env = NULL;
+    STARTUPINFOW startup_info;
     DWORD creation_flags;
-    char *create_process_cwd;
     SECURITY_ATTRIBUTES security_attributes;
     HANDLE stdin_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
     HANDLE stdout_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
@@ -215,7 +223,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         goto done;
     }
 
-    creation_flags = 0;
+    creation_flags = CREATE_UNICODE_ENVIRONMENT;
 
     SDL_zero(startup_info);
     startup_info.cb = sizeof(startup_info);
@@ -352,11 +360,8 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         }
     }
 
-    // FIXME: This should use CreateProcessW()
-    // FIXME: current directory as extended option? SDL_CreatProcessWithProperties
-    create_process_cwd = NULL;
-    if (!CreateProcessA(NULL, createprocess_cmdline, NULL, NULL, TRUE, creation_flags, createprocess_env, create_process_cwd, &startup_info, &data->process_information)) {
-        WIN_SetError("CreateProcessA");
+    if (!CreateProcessW(NULL, createprocess_cmdline, NULL, NULL, TRUE, creation_flags, createprocess_env, NULL, &startup_info, &data->process_information)) {
+        WIN_SetError("CreateProcess");
         goto done;
     }
 
