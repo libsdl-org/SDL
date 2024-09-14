@@ -456,6 +456,8 @@
 #define SDL_GetPreferredLocales SDL_GetPreferredLocales_REAL
 #define SDL_GetPrimaryDisplay SDL_GetPrimaryDisplay_REAL
 #define SDL_GetPrimarySelectionText SDL_GetPrimarySelectionText_REAL
+#define SDL_GetProcessInputStream SDL_GetProcessInputStream_REAL
+#define SDL_GetProcessOutputStream SDL_GetProcessOutputStream_REAL
 #define SDL_GetProcessProperties SDL_GetProcessProperties_REAL
 #define SDL_GetPropertyType SDL_GetPropertyType_REAL
 #define SDL_GetRGB SDL_GetRGB_REAL

@@ -431,6 +431,8 @@ SDL3_0.0.0 {
     SDL_GetPreferredLocales;
     SDL_GetPrimaryDisplay;
     SDL_GetPrimarySelectionText;
+    SDL_GetProcessInputStream;
+    SDL_GetProcessOutputStream;
     SDL_GetProcessProperties;
     SDL_GetPropertyType;
     SDL_GetRGB;
