@@ -127,7 +127,7 @@ static bool join_arguments(const char * const *args, char **args_out)
                 break;
             case '\\':
                 result[i_out++] = *a;
-                if (*(a + 1) == '"' || *(a + 1) == '\0') {
+                if (a[1] == '"' || a[1] == '\0') {
                     result[i_out++] = *a;
                 }
                 break;
