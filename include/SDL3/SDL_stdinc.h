@@ -1194,7 +1194,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_setenv_unsafe(const char *name, const char *
  * \returns 0 on success, -1 on error.
  *
  * \threadsafety This function is not thread safe, consider using
- *               SDL_UnsetEnvironmentVariable() instead..
+ *               SDL_UnsetEnvironmentVariable() instead.
  *
  * \since This function is available since SDL 3.0.0.
  *
