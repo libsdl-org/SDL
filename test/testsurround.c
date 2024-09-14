@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
             SDL_Log("Playing %d Hz test tone on channel: %s\n", sine_freq, get_channel_name(j, total_channels));
 
             /* fill_buffer() will increment the active channel */
-            if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+            if (SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_TESTS_QUICK") != NULL) {
                 SDL_Delay(QUICK_TEST_TIME_MSEC);
             } else {
                 SDL_Delay(CHANNEL_TEST_TIME_SEC * 1000);

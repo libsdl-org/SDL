@@ -93,7 +93,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         return NULL;
     }
 
-    home = SDL_getenv("HOME");
+    home = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "HOME");
     if (!home) {
         SDL_SetError("No $HOME environment variable available");
         return NULL;

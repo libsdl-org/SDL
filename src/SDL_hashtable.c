@@ -318,6 +318,11 @@ bool SDL_KeyMatchID(const void *a, const void *b, void *unused)
     return false;
 }
 
+void SDL_NukeFreeKey(const void *key, const void *value, void *unused)
+{
+    SDL_free((void *)key);
+}
+
 void SDL_NukeFreeValue(const void *key, const void *value, void *unused)
 {
     SDL_free((void *)value);

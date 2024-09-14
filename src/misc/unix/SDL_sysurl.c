@@ -41,7 +41,7 @@ bool SDL_SYS_OpenURL(const char *url)
         pid_t pid2;
         const char *args[] = { "xdg-open", url, NULL };
         // Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam
-        SDL_unsetenv("LD_PRELOAD");
+        SDL_unsetenv_unsafe("LD_PRELOAD");
         if (posix_spawnp(&pid2, args[0], NULL, NULL, (char **)args, environ) == 0) {
             // Child process doesn't wait for possibly-blocking grandchild.
             _exit(EXIT_SUCCESS);
@@ -51,7 +51,7 @@ bool SDL_SYS_OpenURL(const char *url)
 #else
         pid_t pid2;
         // Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam
-        SDL_unsetenv("LD_PRELOAD");
+        SDL_unsetenv_unsafe("LD_PRELOAD");
         // Notice this is vfork and not fork!
         pid2 = vfork();
         if (pid2 == 0) { // Grandchild process will try to launch the url

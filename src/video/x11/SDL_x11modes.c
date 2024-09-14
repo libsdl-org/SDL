@@ -248,7 +248,7 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
 
         // If that failed, try the GDK_SCALE envvar...
         if (scale_factor <= 0.0) {
-            const char *scale_str = SDL_getenv("GDK_SCALE");
+            const char *scale_str = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "GDK_SCALE");
             if (scale_str) {
                 scale_factor = SDL_atoi(scale_str);
             }

@@ -1292,11 +1292,11 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
      */
 
     // Look up the preferred locale, falling back to "C" as default
-    locale = SDL_getenv("LC_ALL");
+    locale = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "LC_ALL");
     if (!locale) {
-        locale = SDL_getenv("LC_CTYPE");
+        locale = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "LC_CTYPE");
         if (!locale) {
-            locale = SDL_getenv("LANG");
+            locale = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "LANG");
             if (!locale) {
                 locale = "C";
             }

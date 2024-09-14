@@ -43,7 +43,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
         needs_renderer = SDL_TRUE;
     } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
         /* Try to detect if the x11 driver is running under XWayland */
-        const char *session_type = SDL_getenv("XDG_SESSION_TYPE");
+        const char *session_type = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XDG_SESSION_TYPE");
         if (session_type && SDL_strcasecmp(session_type, "wayland") == 0) {
             needs_renderer = SDL_TRUE;
         }
@@ -1929,7 +1929,7 @@ static int SDLCALL video_getSetWindowState(void *arg)
      * Other desktops can be enabled in the future as required.
      */
     if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0 || SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
-        const char *desktop = SDL_getenv("XDG_CURRENT_DESKTOP");
+        const char *desktop = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XDG_CURRENT_DESKTOP");
         if (SDL_strcmp(desktop, "GNOME") != 0 && SDL_strcmp(desktop, "KDE") != 0) {
             SDLTest_Log("Skipping test video_getSetWindowState: desktop environment %s not supported", desktop);
             return TEST_SKIPPED;

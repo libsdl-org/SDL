@@ -11591,7 +11591,7 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
 static void VULKAN_INTERNAL_LoadEntryPoints(void)
 {
     // Required for MoltenVK support
-    SDL_setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
+    SDL_setenv_unsafe("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
 
     // Load Vulkan entry points
     if (!SDL_Vulkan_LoadLibrary(NULL)) {

@@ -537,7 +537,7 @@ SDL_bool SDL_SetHapticGain(SDL_Haptic *haptic, int gain)
     }
 
     // The user can use an environment variable to override the max gain.
-    env = SDL_getenv("SDL_HAPTIC_GAIN_MAX");
+    env = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_HAPTIC_GAIN_MAX");
     if (env) {
         max_gain = SDL_atoi(env);
 

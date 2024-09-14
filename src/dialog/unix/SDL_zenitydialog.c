@@ -229,12 +229,12 @@ static void run_zenity(zenityArgs* arg_struct)
 
         /* Recent versions of Zenity have different exit codes, but picks up
           different codes from the environment */
-        SDL_setenv("ZENITY_OK", "0", 1);
-        SDL_setenv("ZENITY_CANCEL", "1", 1);
-        SDL_setenv("ZENITY_ESC", "1", 1);
-        SDL_setenv("ZENITY_EXTRA", "2", 1);
-        SDL_setenv("ZENITY_ERROR", "2", 1);
-        SDL_setenv("ZENITY_TIMEOUT", "2", 1);
+        SDL_setenv_unsafe("ZENITY_OK", "0", 1);
+        SDL_setenv_unsafe("ZENITY_CANCEL", "1", 1);
+        SDL_setenv_unsafe("ZENITY_ESC", "1", 1);
+        SDL_setenv_unsafe("ZENITY_EXTRA", "2", 1);
+        SDL_setenv_unsafe("ZENITY_ERROR", "2", 1);
+        SDL_setenv_unsafe("ZENITY_TIMEOUT", "2", 1);
 
         execv(args[0], args);
 

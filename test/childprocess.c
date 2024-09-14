@@ -5,14 +5,6 @@
 #include <stdio.h>
 #include <errno.h>
 
-#if defined(SDL_PLATFORM_WINDOWS)
-#include <windows.h>
-#elif defined(SDL_PLATFORM_MACOS)
-#include <crt_externs.h>
-#define environ (*_NSGetEnviron())
-#else
-extern char **environ;
-#endif
 
 int main(int argc, char *argv[]) {
     SDLTest_CommonState *state;
@@ -95,26 +87,18 @@ int main(int argc, char *argv[]) {
     }
 
     if (print_environment || expect_environment) {
-
-#if defined(SDL_PLATFORM_WINDOWS)
-        char *original_env = GetEnvironmentStrings();
-        const char *env = original_env;
-        for (; env[0]; env += SDL_strlen(env) + 1) {
-#else
-        char **envp = environ;
-        for (; *envp; envp++) {
-            const char *env = *envp;
-#endif
-            if (print_environment) {
-                fprintf(stdout, "%s\n", env);
+        char **env = SDL_GetEnvironmentVariables(SDL_GetEnvironment());
+        if (env) {
+            for (i = 0; env[i]; ++i) {
+                if (print_environment) {
+                    fprintf(stdout, "%s\n", env[i]);
+                }
+                if (expect_environment) {
+                    expect_environment_match |= SDL_strcmp(env[i], expect_environment) == 0;
+                }
             }
-            if (expect_environment) {
-                expect_environment_match |= SDL_strcmp(env, expect_environment) == 0;
-            }
+            SDL_free(env);
         }
-#ifdef SDL_PLATFORM_WINDOWS
-        FreeEnvironmentStringsA(original_env);
-#endif
     }
 
     if (stdin_to_stdout || stdin_to_stderr) {

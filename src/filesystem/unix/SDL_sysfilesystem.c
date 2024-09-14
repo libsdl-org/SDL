@@ -74,7 +74,7 @@ static char *readSymLink(const char *path)
 #ifdef SDL_PLATFORM_OPENBSD
 static char *search_path_for_binary(const char *bin)
 {
-    const char *envr_real = SDL_getenv("PATH");
+    const char *envr_real = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "PATH");
     char *envr;
     size_t alloc_size;
     char *exe = NULL;
@@ -163,7 +163,7 @@ char *SDL_SYS_GetBasePath(void)
             exe = search_path_for_binary(cmdline[0]);
         } else {
             if (exe && *exe == '.') {
-                const char *pwd = SDL_getenv("PWD");
+                const char *pwd = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "PWD");
                 if (pwd && *pwd) {
                     SDL_asprintf(&pwddst, "%s/%s", pwd, exe);
                 }
@@ -265,7 +265,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
      *
      * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
      */
-    const char *envr = SDL_getenv("XDG_DATA_HOME");
+    const char *envr = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XDG_DATA_HOME");
     const char *append;
     char *result = NULL;
     char *ptr = NULL;
@@ -281,7 +281,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 
     if (!envr) {
         // You end up with "$HOME/.local/share/Game Name 2"
-        envr = SDL_getenv("HOME");
+        envr = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "HOME");
         if (!envr) {
             // we could take heroic measures with /etc/passwd, but oh well.
             SDL_SetError("neither XDG_DATA_HOME nor HOME environment is set");
@@ -368,12 +368,12 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
   int relative;
   size_t l;
 
-  home_dir = SDL_getenv ("HOME");
+  home_dir = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "HOME");
 
   if (!home_dir)
     goto error;
 
-  config_home = SDL_getenv ("XDG_CONFIG_HOME");
+  config_home = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XDG_CONFIG_HOME");
   if (!config_home || config_home[0] == 0)
     {
       l = SDL_strlen (home_dir) + SDL_strlen ("/.config/user-dirs.dirs") + 1;
@@ -495,7 +495,7 @@ static char *xdg_user_dir_lookup (const char *type)
     if (dir)
         return dir;
 
-    home_dir = SDL_getenv("HOME");
+    home_dir = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "HOME");
 
     if (!home_dir)
         return NULL;
@@ -533,7 +533,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     */
     switch(folder) {
     case SDL_FOLDER_HOME:
-        param = SDL_getenv("HOME");
+        param = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "HOME");
 
         if (!param) {
             SDL_SetError("No $HOME environment variable available");

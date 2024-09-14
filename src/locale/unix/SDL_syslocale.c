@@ -78,13 +78,13 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     *tmp = '\0';
 
     // LANG is the primary locale (maybe)
-    envr = SDL_getenv("LANG");
+    envr = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "LANG");
     if (envr) {
         SDL_strlcpy(tmp, envr, buflen);
     }
 
     // fallback languages
-    envr = SDL_getenv("LANGUAGE");
+    envr = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "LANGUAGE");
     if (envr) {
         if (*tmp) {
             SDL_strlcat(tmp, ":", buflen);

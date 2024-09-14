@@ -186,6 +186,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     HANDLE stdin_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
     HANDLE stdout_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
     HANDLE stderr_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
+    char **env_copy = NULL;
     bool result = false;
 
     // Keep the malloc() before exec() so that an OOM won't run a process at all
@@ -199,6 +200,10 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         goto done;
     }
 
+    if (!env) {
+        env_copy = SDL_GetEnvironmentVariables(SDL_GetEnvironment());
+        env = (const char * const *)env_copy;
+    }
     if (!join_env(env, &createprocess_env)) {
         goto done;
     }
@@ -381,6 +386,7 @@ done:
     }
     SDL_free(createprocess_cmdline);
     SDL_free(createprocess_env);
+    SDL_free(env_copy);
 
     if (!result) {
         if (stdin_pipe[WRITE_END] != INVALID_HANDLE_VALUE) {

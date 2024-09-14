@@ -48,7 +48,7 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
                 _free(cvalue);
             }
         }
-    }, SDL_setenv);
+    }, SDL_setenv_unsafe);
 
     return mainFunction(argc, argv);
 }

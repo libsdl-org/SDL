@@ -52,6 +52,7 @@ SDL3_0.0.0 {
     SDL_BroadcastCondition;
     SDL_CaptureMouse;
     SDL_ClaimWindowForGPUDevice;
+    SDL_CleanupEnvironment;
     SDL_CleanupTLS;
     SDL_ClearAudioStream;
     SDL_ClearClipboardData;
@@ -84,6 +85,7 @@ SDL3_0.0.0 {
     SDL_CreateCondition;
     SDL_CreateCursor;
     SDL_CreateDirectory;
+    SDL_CreateEnvironment;
     SDL_CreateGPUBuffer;
     SDL_CreateGPUComputePipeline;
     SDL_CreateGPUDevice;
@@ -125,6 +127,7 @@ SDL3_0.0.0 {
     SDL_DestroyAudioStream;
     SDL_DestroyCondition;
     SDL_DestroyCursor;
+    SDL_DestroyEnvironment;
     SDL_DestroyGPUDevice;
     SDL_DestroyHapticEffect;
     SDL_DestroyMutex;
@@ -274,6 +277,9 @@ SDL3_0.0.0 {
     SDL_GetDisplayProperties;
     SDL_GetDisplayUsableBounds;
     SDL_GetDisplays;
+    SDL_GetEnvironment;
+    SDL_GetEnvironmentVariable;
+    SDL_GetEnvironmentVariables;
     SDL_GetError;
     SDL_GetEventFilter;
     SDL_GetFloatProperty;
@@ -785,6 +791,7 @@ SDL3_0.0.0 {
     SDL_SetClipboardData;
     SDL_SetClipboardText;
     SDL_SetCursor;
+    SDL_SetEnvironmentVariable;
     SDL_SetError;
     SDL_SetEventEnabled;
     SDL_SetEventFilter;
@@ -933,6 +940,7 @@ SDL3_0.0.0 {
     SDL_UnlockTexture;
     SDL_UnmapGPUTransferBuffer;
     SDL_UnregisterApp;
+    SDL_UnsetEnvironmentVariable;
     SDL_UpdateGamepads;
     SDL_UpdateHapticEffect;
     SDL_UpdateJoysticks;
@@ -1020,7 +1028,7 @@ SDL3_0.0.0 {
     SDL_fmod;
     SDL_fmodf;
     SDL_free;
-    SDL_getenv;
+    SDL_getenv_unsafe;
     SDL_hid_ble_scan;
     SDL_hid_close;
     SDL_hid_device_change_count;
@@ -1095,7 +1103,7 @@ SDL3_0.0.0 {
     SDL_roundf;
     SDL_scalbn;
     SDL_scalbnf;
-    SDL_setenv;
+    SDL_setenv_unsafe;
     SDL_sin;
     SDL_sinf;
     SDL_snprintf;
@@ -1138,7 +1146,7 @@ SDL3_0.0.0 {
     SDL_uitoa;
     SDL_ulltoa;
     SDL_ultoa;
-    SDL_unsetenv;
+    SDL_unsetenv_unsafe;
     SDL_utf8strlcpy;
     SDL_utf8strlen;
     SDL_utf8strnlen;

@@ -80,7 +80,7 @@ static int CreateTempFD(off_t size)
         const char *xdg_path;
         char tmp_path[PATH_MAX];
 
-        xdg_path = SDL_getenv("XDG_RUNTIME_DIR");
+        xdg_path = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XDG_RUNTIME_DIR");
         if (!xdg_path) {
             return -1;
         }

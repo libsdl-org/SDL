@@ -299,7 +299,7 @@ void SDLTest_TrackAllocations(void)
 #ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
     do {
         /* Don't use SDL_GetHint: SDL_malloc is off limits. */
-        const char *env_trackmem = SDL_getenv("SDL_TRACKMEM_SYMBOL_NAMES");
+        const char *env_trackmem = SDL_getenv_unsafe("SDL_TRACKMEM_SYMBOL_NAMES");
         if (env_trackmem) {
             if (SDL_strcasecmp(env_trackmem, "1") == 0 || SDL_strcasecmp(env_trackmem, "yes") == 0 || SDL_strcasecmp(env_trackmem, "true") == 0) {
                 s_unwind_symbol_names = SDL_TRUE;
