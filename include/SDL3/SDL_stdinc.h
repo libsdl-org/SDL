@@ -997,10 +997,12 @@ typedef struct SDL_Environment SDL_Environment;
 /**
  * Get the process environment.
  *
- * This is initialized at application start and is not affected by setenv() and unsetenv() calls after that point. Use SDL_SetEnvironmentVariable() and SDL_UnsetEnvironmentVariable() if you want to modify this environment.
+ * This is initialized at application start and is not affected by setenv()
+ * and unsetenv() calls after that point. Use SDL_SetEnvironmentVariable() and
+ * SDL_UnsetEnvironmentVariable() if you want to modify this environment.
  *
- * \returns a pointer to the environment for the process or NULL on failure; call SDL_GetError()
- *          for more information.
+ * \returns a pointer to the environment for the process or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1017,7 +1019,9 @@ extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_GetEnvironment(void);
 /**
  * Cleanup the process environment.
  *
- * This is called during SDL_Quit() to free the process environment. If SDL_GetEnvironment() is called afterwards, it will automatically create a new environment copied from the C runtime environment.
+ * This is called during SDL_Quit() to free the process environment. If
+ * SDL_GetEnvironment() is called afterwards, it will automatically create a
+ * new environment copied from the C runtime environment.
  *
  * \threadsafety This function is not thread-safe.
  *
@@ -1030,11 +1034,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_CleanupEnvironment(void);
 /**
  * Create a set of environment variables
  *
- * \param populated SDL_TRUE to initialize it from the C runtime environment, SDL_FALSE to create an empty environment.
- * \returns a pointer to the new environment or NULL on failure; call SDL_GetError()
- *          for more information.
+ * \param populated SDL_TRUE to initialize it from the C runtime environment,
+ *                  SDL_FALSE to create an empty environment.
+ * \returns a pointer to the new environment or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
- * \threadsafety If `populated` is SDL_FALSE, it is safe to call this function from any thread, otherwise it is safe if no other threads are calling setenv() or unsetenv()
+ * \threadsafety If `populated` is SDL_FALSE, it is safe to call this function
+ *               from any thread, otherwise it is safe if no other threads are
+ *               calling setenv() or unsetenv()
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1051,7 +1058,8 @@ extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_CreateEnvironment(SDL_bool pop
  *
  * \param env the environment to query.
  * \param name the name of the variable to get.
- * \returns a pointer to the value of the variable or NULL if it can't be found.
+ * \returns a pointer to the value of the variable or NULL if it can't be
+ *          found.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1069,10 +1077,10 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetEnvironmentVariable(SDL_Environm
  * Get all variables in the environment.
  *
  * \param env the environment to query.
- * \returns a NULL terminated array of pointers to environment variables in the form "variable=value" or NULL on
- *          failure; call SDL_GetError() for more information. This is a
- *          single allocation that should be freed with SDL_free() when it is
- *          no longer needed.
+ * \returns a NULL terminated array of pointers to environment variables in
+ *          the form "variable=value" or NULL on failure; call SDL_GetError()
+ *          for more information. This is a single allocation that should be
+ *          freed with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1092,7 +1100,9 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GetEnvironmentVariables(SDL_Environment 
  * \param env the environment to modify.
  * \param name the name of the variable to set.
  * \param value the value of the variable to set.
- * \param overwrite SDL_TRUE to overwrite the variable if it exists, SDL_FALSE to return success without setting the variable if it already exists.
+ * \param overwrite SDL_TRUE to overwrite the variable if it exists, SDL_FALSE
+ *                  to return success without setting the variable if it
+ *                  already exists.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.
  *
@@ -1134,7 +1144,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_UnsetEnvironmentVariable(SDL_Environmen
  *
  * \param env the environment to destroy.
  *
- * \threadsafety It is safe to call this function from any thread, as long as the environment is no longer in use.
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the environment is no longer in use.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1146,9 +1157,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyEnvironment(SDL_Environment *env);
  * Get the value of a variable in the environment.
  *
  * \param name the name of the variable to get.
- * \returns a pointer to the value of the variable or NULL if it can't be found.
+ * \returns a pointer to the value of the variable or NULL if it can't be
+ *          found.
  *
- * \threadsafety This function is not thread safe, consider using SDL_GetEnvironmentVariable() instead.
+ * \threadsafety This function is not thread safe, consider using
+ *               SDL_GetEnvironmentVariable() instead.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1161,10 +1174,12 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_getenv_unsafe(const char *name);
  *
  * \param name the name of the variable to set.
  * \param value the value of the variable to set.
- * \param overwrite 1 to overwrite the variable if it exists, 0 to return success without setting the variable if it already exists.
+ * \param overwrite 1 to overwrite the variable if it exists, 0 to return
+ *                  success without setting the variable if it already exists.
  * \returns 0 on success, -1 on error.
  *
- * \threadsafety This function is not thread safe, consider using SDL_SetEnvironmentVariable() instead.
+ * \threadsafety This function is not thread safe, consider using
+ *               SDL_SetEnvironmentVariable() instead.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1178,7 +1193,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_setenv_unsafe(const char *name, const char *
  * \param name the name of the variable to unset.
  * \returns 0 on success, -1 on error.
  *
- * \threadsafety This function is not thread safe, consider using SDL_UnsetEnvironmentVariable() instead..
+ * \threadsafety This function is not thread safe, consider using
+ *               SDL_UnsetEnvironmentVariable() instead..
  *
  * \since This function is available since SDL 3.0.0.
  *
