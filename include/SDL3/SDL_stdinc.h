@@ -1030,11 +1030,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_CleanupEnvironment(void);
 /**
  * Create a set of environment variables
  *
- * \param empty SDL_TRUE to create an empty environment, SDL_FALSE to initialize it from the C runtime environment.
+ * \param populated SDL_TRUE to initialize it from the C runtime environment, SDL_FALSE to create an empty environment.
  * \returns a pointer to the new environment or NULL on failure; call SDL_GetError()
  *          for more information.
  *
- * \threadsafety If `empty` is SDL_TRUE, it is safe to call this function from any thread, otherwise it is safe if no other threads are calling setenv() or unsetenv()
+ * \threadsafety If `populated` is SDL_FALSE, it is safe to call this function from any thread, otherwise it is safe if no other threads are calling setenv() or unsetenv()
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1044,7 +1044,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CleanupEnvironment(void);
  * \sa SDL_UnsetEnvironmentVariable
  * \sa SDL_DestroyEnvironment
  */
-extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_CreateEnvironment(SDL_bool empty);
+extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_CreateEnvironment(SDL_bool populated);
 
 /**
  * Get the value of a variable in the environment.

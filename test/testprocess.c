@@ -40,7 +40,7 @@ static char **DuplicateEnvironment(const char *key0, ...)
     va_list ap;
     const char *keyN;
     SDL_Environment *env = SDL_GetEnvironment();
-    SDL_Environment *new_env = SDL_CreateEnvironment(SDL_TRUE);
+    SDL_Environment *new_env = SDL_CreateEnvironment(SDL_FALSE);
     char **result;
 
     if (key0) {

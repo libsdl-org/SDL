@@ -41,7 +41,7 @@ bool SDL_SYS_OpenURL(const char *url)
     SDL_Process *process = NULL;
     bool result = false;
 
-    env = SDL_CreateEnvironment(SDL_FALSE);
+    env = SDL_CreateEnvironment(true);
     if (!env) {
         goto done;
     }
