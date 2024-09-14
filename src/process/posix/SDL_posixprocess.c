@@ -22,6 +22,7 @@
 
 #ifdef SDL_PROCESS_POSIX
 
+#include <dirent.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
@@ -102,6 +103,41 @@ static bool GetStreamFD(SDL_PropertiesID props, const char *property, int *resul
     return true;
 }
 
+static bool AddFileDescriptorCloseActions(posix_spawn_file_actions_t *fa)
+{
+    DIR *dir = opendir("/proc/self/fd");
+    if (dir) {
+        struct dirent *entry;
+        while ((entry = readdir(dir)) != NULL) {
+            int fd = SDL_atoi(entry->d_name);
+            if (fd <= STDERR_FILENO) {
+                continue;
+            }
+
+            int flags = fcntl(fd, F_GETFD);
+            if (flags < 0 || (flags & FD_CLOEXEC)) {
+                continue;
+            }
+            if (posix_spawn_file_actions_addclose(fa, fd) != 0) {
+                closedir(dir);
+                return SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
+            }
+        }
+        closedir(dir);
+    } else {
+        for (int fd = sysconf(_SC_OPEN_MAX) - 1; fd > STDERR_FILENO; --fd) {
+            int flags = fcntl(fd, F_GETFD);
+            if (flags < 0 || (flags & FD_CLOEXEC)) {
+                continue;
+            }
+            if (posix_spawn_file_actions_addclose(fa, fd) != 0) {
+                return SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
+            }
+        }
+    }
+    return true;
+}
+
 bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props)
 {
     char * const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
@@ -135,6 +171,10 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     if (posix_spawn_file_actions_init(&fa) != 0) {
         SDL_SetError("posix_spawn_file_actions_init failed: %s", strerror(errno));
         goto posix_spawn_fail_attr;
+    }
+
+    if (!AddFileDescriptorCloseActions(&fa)) {
+        goto posix_spawn_fail_all;
     }
 
     // Background processes don't have access to the terminal
