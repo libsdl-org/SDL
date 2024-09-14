@@ -217,6 +217,8 @@
 #define SDL_GL_SetSwapInterval SDL_GL_SetSwapInterval_REAL
 #define SDL_GL_SwapWindow SDL_GL_SwapWindow_REAL
 #define SDL_GL_UnloadLibrary SDL_GL_UnloadLibrary_REAL
+#define SDL_GPUSupportsProperties SDL_GPUSupportsProperties_REAL
+#define SDL_GPUSupportsShaderFormats SDL_GPUSupportsShaderFormats_REAL
 #define SDL_GPUTextureFormatTexelBlockSize SDL_GPUTextureFormatTexelBlockSize_REAL
 #define SDL_GPUTextureSupportsFormat SDL_GPUTextureSupportsFormat_REAL
 #define SDL_GPUTextureSupportsSampleCount SDL_GPUTextureSupportsSampleCount_REAL
@@ -700,8 +702,6 @@
 #define SDL_PushGPUVertexUniformData SDL_PushGPUVertexUniformData_REAL
 #define SDL_PutAudioStreamData SDL_PutAudioStreamData_REAL
 #define SDL_QueryGPUFence SDL_QueryGPUFence_REAL
-#define SDL_QueryGPUSupport SDL_QueryGPUSupport_REAL
-#define SDL_QueryGPUSupportWithProperties SDL_QueryGPUSupportWithProperties_REAL
 #define SDL_Quit SDL_Quit_REAL
 #define SDL_QuitSubSystem SDL_QuitSubSystem_REAL
 #define SDL_RaiseWindow SDL_RaiseWindow_REAL

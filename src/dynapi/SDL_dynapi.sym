@@ -192,6 +192,8 @@ SDL3_0.0.0 {
     SDL_GL_SetSwapInterval;
     SDL_GL_SwapWindow;
     SDL_GL_UnloadLibrary;
+    SDL_GPUSupportsProperties;
+    SDL_GPUSupportsShaderFormats;
     SDL_GPUTextureFormatTexelBlockSize;
     SDL_GPUTextureSupportsFormat;
     SDL_GPUTextureSupportsSampleCount;
@@ -675,8 +677,6 @@ SDL3_0.0.0 {
     SDL_PushGPUVertexUniformData;
     SDL_PutAudioStreamData;
     SDL_QueryGPUFence;
-    SDL_QueryGPUSupport;
-    SDL_QueryGPUSupportWithProperties;
     SDL_Quit;
     SDL_QuitSubSystem;
     SDL_RaiseWindow;

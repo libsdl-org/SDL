@@ -468,7 +468,7 @@ static void SDL_GPU_FillProperties(
     SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);
 }
 
-SDL_bool SDL_QueryGPUSupport(
+SDL_bool SDL_GPUSupportsShaderFormats(
     SDL_GPUShaderFormat format_flags,
     const char *name)
 {
@@ -476,7 +476,7 @@ SDL_bool SDL_QueryGPUSupport(
     bool result;
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_GPU_FillProperties(props, format_flags, SDL_FALSE, name);
-    result = SDL_QueryGPUSupportWithProperties(props);
+    result = SDL_GPUSupportsProperties(props);
     SDL_DestroyProperties(props);
     return result;
 #else
@@ -485,7 +485,7 @@ SDL_bool SDL_QueryGPUSupport(
 #endif
 }
 
-SDL_bool SDL_QueryGPUSupportWithProperties(SDL_PropertiesID props)
+SDL_bool SDL_GPUSupportsProperties(SDL_PropertiesID props)
 {
 #ifndef SDL_GPU_DISABLED
     return (SDL_GPUSelectBackend(props) != NULL);

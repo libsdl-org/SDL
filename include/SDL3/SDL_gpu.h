@@ -1688,7 +1688,7 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
  *
  * \sa SDL_CreateGPUDevice
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_QueryGPUSupport(
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GPUSupportsShaderFormats(
     SDL_GPUShaderFormat format_flags,
     const char *name);
 
@@ -1702,7 +1702,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_QueryGPUSupport(
  *
  * \sa SDL_CreateGPUDeviceWithProperties
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_QueryGPUSupportWithProperties(
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GPUSupportsProperties(
     SDL_PropertiesID props);
 
 /**
@@ -1720,7 +1720,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_QueryGPUSupportWithProperties(
  * \sa SDL_GetGPUShaderFormats
  * \sa SDL_GetGPUDeviceDriver
  * \sa SDL_DestroyGPUDevice
- * \sa SDL_QueryGPUSupport
+ * \sa SDL_GPUSupportsShaderFormats
  */
 extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
     SDL_GPUShaderFormat format_flags,
@@ -1767,7 +1767,7 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  * \sa SDL_GetGPUShaderFormats
  * \sa SDL_GetGPUDeviceDriver
  * \sa SDL_DestroyGPUDevice
- * \sa SDL_QueryGPUSupportWithProperties
+ * \sa SDL_GPUSupportsProperties
  */
 extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
     SDL_PropertiesID props);
