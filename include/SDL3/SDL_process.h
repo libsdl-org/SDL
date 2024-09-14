@@ -28,7 +28,7 @@
  * processes.
  *
  * You can create a new subprocess with SDL_CreateProcess() and optionally
- * read and write to it using SDL_ReadProcess() and SDL_WriteProcess(). If
+ * read and write to it using SDL_ReadProcess() or SDL_GetProcessInput() and SDL_GetProcessOutput(). If
  * more advanced functionality like chaining input between processes is
  * necessary, you can use SDL_CreateProcessWithProperties().
  *
@@ -66,7 +66,7 @@ typedef struct SDL_Process SDL_Process;
  * Setting pipe_stdio to SDL_TRUE is equivalent to setting
  * `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER` and
  * `SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER` to `SDL_PROCESS_STDIO_APP`, and
- * will allow the use of SDL_ReadProcess() and SDL_WriteProcess().
+ * will allow the use of SDL_ReadProcess() or SDL_GetProcessInput() and SDL_GetProcessOutput().
  *
  * See SDL_CreateProcessWithProperties() for more details.
  *
@@ -85,7 +85,8 @@ typedef struct SDL_Process SDL_Process;
  * \sa SDL_CreateProcessWithProperties
  * \sa SDL_GetProcessProperties
  * \sa SDL_ReadProcess
- * \sa SDL_WriteProcess
+ * \sa SDL_GetProcessInput
+ * \sa SDL_GetProcessOutput
  * \sa SDL_KillProcess
  * \sa SDL_WaitProcess
  * \sa SDL_DestroyProcess
@@ -107,8 +108,8 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcess(const char * const *a
  * If a standard I/O stream is set to SDL_PROCESS_STDIO_APP, it is connected
  * to a new SDL_IOStream that is available to the application. Standard input
  * will be available as `SDL_PROP_PROCESS_STDIN_POINTER` and allows
- * SDL_WriteProcess(), standard output will be available as
- * `SDL_PROP_PROCESS_STDOUT_POINTER` and allows SDL_ReadProcess(), and
+ * SDL_GetProcessInput(), standard output will be available as
+ * `SDL_PROP_PROCESS_STDOUT_POINTER` and allows SDL_ReadProcess() and SDL_GetProcessOutput(), and
  * standard error will be available as `SDL_PROP_PROCESS_STDERR_POINTER` in
  * the properties for the created process.
  *
@@ -130,7 +131,8 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcess(const char * const *a
  * \sa SDL_CreateProcessWithProperties
  * \sa SDL_GetProcessProperties
  * \sa SDL_ReadProcess
- * \sa SDL_WriteProcess
+ * \sa SDL_GetProcessInput
+ * \sa SDL_GetProcessOutput
  */
 typedef enum SDL_ProcessIO
 {
@@ -193,7 +195,8 @@ typedef enum SDL_ProcessIO
  * \sa SDL_CreateProcess
  * \sa SDL_GetProcessProperties
  * \sa SDL_ReadProcess
- * \sa SDL_WriteProcess
+ * \sa SDL_GetProcessInput
+ * \sa SDL_GetProcessOutput
  * \sa SDL_KillProcess
  * \sa SDL_WaitProcess
  * \sa SDL_DestroyProcess
@@ -248,10 +251,6 @@ extern SDL_DECLSPEC SDL_PropertiesID SDL_GetProcessProperties(SDL_Process *proce
  * read the output. This function blocks until the process is complete,
  * capturing all output, and providing the process exit code.
  *
- * This is just a convenience function. If you need more control over the
- * process, you can get the output stream from the process properties and read
- * it directly.
- *
  * The data is allocated with a zero byte at the end (null terminated) for
  * convenience. This extra byte is not included in the value reported via
  * `datasize`.
@@ -272,70 +271,16 @@ extern SDL_DECLSPEC SDL_PropertiesID SDL_GetProcessProperties(SDL_Process *proce
  *
  * \sa SDL_CreateProcess
  * \sa SDL_CreateProcessWithProperties
- * \sa SDL_GetProcessProperties
- * \sa SDL_WriteProcess
  * \sa SDL_DestroyProcess
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_ReadProcess(SDL_Process *process, size_t *datasize, int *exitcode);
 
 /**
- * Write to a process.
- *
- * If a process was created with I/O enabled, you can use this function to
- * send data as input to the process. This function blocks until the data is
- * written.
- *
- * This is just a convenience function. If the process is structured so it
- * takes large amounts of input and generates lots of output, you should get
- * the input and output streams from the process properties and handle them
- * simultaneously to prevent the process from being blocked waiting for I/O.
- *
- * \param process The process to write.
- * \param ptr a pointer to a buffer containing data to write.
- * \param size the number of bytes to write.
- * \param closeio if SDL_TRUE, closes the process input before returning, even
- *                in the case of an error.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
- *
- * \threadsafety This function is not thread safe.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreateProcess
- * \sa SDL_CreateProcessWithProperties
- * \sa SDL_GetProcessProperties
- * \sa SDL_ReadProcess
- * \sa SDL_DestroyProcess
- */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WriteProcess(SDL_Process *process, const void *ptr, size_t size, SDL_bool closeio);
-
-/**
- * Get the SDL_IOStream associated with process standard output.
- *
- * The process must have been created with I/O enabled.
- *
- * This is just a convenience function that retrieves the SDL_IOStream from the process `SDL_PROP_PROCESS_STDOUT_POINTER` property.
- *
- * \param process The process to get the output stream for.
- * \returns the output stream or NULL on failure; call SDL_GetError() for more
- *          information.
- *
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreateProcess
- * \sa SDL_CreateProcessWithProperties
- */
-extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessOutputStream(SDL_Process *process);
-
-/**
  * Get the SDL_IOStream associated with process standard input.
  *
- * The process must have been created with I/O enabled.
+ * The process must have been created with SDL_CreateProcess() and pipe_stdio set to SDL_TRUE, or with SDL_CreateProcessWithProperties() and `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER` set to `SDL_PROCESS_STDIO_APP`.
  *
- * This is just a convenience function that retrieves the SDL_IOStream from the process `SDL_PROP_PROCESS_STDIN_POINTER` property.
+ * Writing to this stream can return less data than expected if the process hasn't read its input. It may be blocked waiting for its output to be read, so if you may need to call SDL_GetOutputStream() and read the output in parallel with writing input.
  *
  * \param process The process to get the input stream for.
  * \returns the input stream or NULL on failure; call SDL_GetError() for more
@@ -347,8 +292,30 @@ extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessOutputStream(SDL_Process
  *
  * \sa SDL_CreateProcess
  * \sa SDL_CreateProcessWithProperties
+ * \sa SDL_GetProcessOutput
  */
-extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessInputStream(SDL_Process *process);
+extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessInput(SDL_Process *process);
+
+/**
+ * Get the SDL_IOStream associated with process standard output.
+ *
+ * The process must have been created with SDL_CreateProcess() and pipe_stdio set to SDL_TRUE, or with SDL_CreateProcessWithProperties() and `SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER` set to `SDL_PROCESS_STDIO_APP`.
+ *
+ * Reading from this stream can return 0 with SDL_GetIOStatus() returning SDL_IO_STATUS_NOT_READY if no output is available yet.
+ *
+ * \param process The process to get the output stream for.
+ * \returns the output stream or NULL on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateProcess
+ * \sa SDL_CreateProcessWithProperties
+ * \sa SDL_GetProcessInput
+ */
+extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessOutput(SDL_Process *process);
 
 /**
  * Stop a process.

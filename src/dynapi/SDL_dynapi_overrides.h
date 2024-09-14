@@ -456,8 +456,8 @@
 #define SDL_GetPreferredLocales SDL_GetPreferredLocales_REAL
 #define SDL_GetPrimaryDisplay SDL_GetPrimaryDisplay_REAL
 #define SDL_GetPrimarySelectionText SDL_GetPrimarySelectionText_REAL
-#define SDL_GetProcessInputStream SDL_GetProcessInputStream_REAL
-#define SDL_GetProcessOutputStream SDL_GetProcessOutputStream_REAL
+#define SDL_GetProcessInput SDL_GetProcessInput_REAL
+#define SDL_GetProcessOutput SDL_GetProcessOutput_REAL
 #define SDL_GetProcessProperties SDL_GetProcessProperties_REAL
 #define SDL_GetPropertyType SDL_GetPropertyType_REAL
 #define SDL_GetRGB SDL_GetRGB_REAL
@@ -1003,7 +1003,6 @@
 #define SDL_WindowSupportsGPUPresentMode SDL_WindowSupportsGPUPresentMode_REAL
 #define SDL_WindowSupportsGPUSwapchainComposition SDL_WindowSupportsGPUSwapchainComposition_REAL
 #define SDL_WriteIO SDL_WriteIO_REAL
-#define SDL_WriteProcess SDL_WriteProcess_REAL
 #define SDL_WriteS16BE SDL_WriteS16BE_REAL
 #define SDL_WriteS16LE SDL_WriteS16LE_REAL
 #define SDL_WriteS32BE SDL_WriteS32BE_REAL

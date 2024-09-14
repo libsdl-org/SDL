@@ -108,68 +108,7 @@ void *SDL_ReadProcess(SDL_Process *process, size_t *datasize, int *exitcode)
     return result;
 }
 
-SDL_bool SDL_WriteProcess(SDL_Process *process, const void *ptr, size_t size, SDL_bool closeio)
-{
-    bool result = false;
-    SDL_IOStream *io = NULL;
-
-    if (!process) {
-        SDL_InvalidParamError("process");
-        goto done;
-    }
-
-    io = (SDL_IOStream *)SDL_GetPointerProperty(process->props, SDL_PROP_PROCESS_STDIN_POINTER, NULL);
-    if (!io) {
-        SDL_SetError("Process not created with I/O enabled");
-        goto done;
-    }
-
-    size_t written = 0, left = size;
-    while (left > 0) {
-        size_t amount = SDL_WriteIO(io, (Uint8 *)ptr + written, left);
-        if (amount > 0) {
-            written += amount;
-            left -= amount;
-            continue;
-        } else if (SDL_GetIOStatus(io) == SDL_IO_STATUS_NOT_READY) {
-            // Wait for the stream to be ready
-            SDL_Delay(1);
-            continue;
-        }
-
-        // The stream status will remain set for the caller to check
-        break;
-    }
-
-    result = (written == size);
-
-done:
-    if (result) {
-        result = SDL_FlushIO(io);
-    }
-    if (closeio) {
-        result &= SDL_CloseIO(io);
-    }
-    return result;
-}
-
-SDL_IOStream *SDL_GetProcessOutputStream(SDL_Process *process)
-{
-    if (!process) {
-        SDL_InvalidParamError("process");
-        return NULL;
-    }
-
-    SDL_IOStream *io = (SDL_IOStream *)SDL_GetPointerProperty(process->props, SDL_PROP_PROCESS_STDOUT_POINTER, NULL);
-    if (!io) {
-        SDL_SetError("Process not created with I/O enabled");
-        return NULL;
-    }
-
-    return io;
-}
-
-SDL_IOStream *SDL_GetProcessInputStream(SDL_Process *process)
+SDL_IOStream *SDL_GetProcessInput(SDL_Process *process)
 {
     if (!process) {
         SDL_InvalidParamError("process");
@@ -178,7 +117,23 @@ SDL_IOStream *SDL_GetProcessInputStream(SDL_Process *process)
 
     SDL_IOStream *io = (SDL_IOStream *)SDL_GetPointerProperty(process->props, SDL_PROP_PROCESS_STDIN_POINTER, NULL);
     if (!io) {
-        SDL_SetError("Process not created with I/O enabled");
+        SDL_SetError("Process not created with standard input available");
+        return NULL;
+    }
+
+    return io;
+}
+
+SDL_IOStream *SDL_GetProcessOutput(SDL_Process *process)
+{
+    if (!process) {
+        SDL_InvalidParamError("process");
+        return NULL;
+    }
+
+    SDL_IOStream *io = (SDL_IOStream *)SDL_GetPointerProperty(process->props, SDL_PROP_PROCESS_STDOUT_POINTER, NULL);
+    if (!io) {
+        SDL_SetError("Process not created with standard output available");
         return NULL;
     }
 

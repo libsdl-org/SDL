@@ -172,7 +172,7 @@ static int SDLCALL process_testInheritedEnv(void *arg)
     pid = SDL_GetNumberProperty(props, SDL_PROP_PROCESS_PID_NUMBER, 0);
     SDLTest_AssertCheck(pid != 0, "Checking process ID, expected non-zero, got %" SDL_PRIs64, pid);
 
-    process_stdout = SDL_GetProcessOutputStream(process);
+    process_stdout = SDL_GetProcessOutput(process);
     SDLTest_AssertCheck(process_stdout != NULL, "SDL_GetPointerProperty(SDL_PROP_PROCESS_STDOUT_POINTER) returns a valid IO stream");
     if (!process_stdout) {
         goto failed;
@@ -250,7 +250,7 @@ static int SDLCALL process_testNewEnv(void *arg)
     pid = SDL_GetNumberProperty(props, SDL_PROP_PROCESS_PID_NUMBER, 0);
     SDLTest_AssertCheck(pid != 0, "Checking process ID, expected non-zero, got %" SDL_PRIs64, pid);
 
-    process_stdout = SDL_GetProcessOutputStream(process);
+    process_stdout = SDL_GetProcessOutput(process);
     SDLTest_AssertCheck(process_stdout != NULL, "SDL_GetPointerProperty(SDL_PROP_PROCESS_STDOUT_POINTER) returns a valid IO stream");
     if (!process_stdout) {
         goto failed;
@@ -326,9 +326,9 @@ static int process_testStdinToStdout(void *arg)
     pid = SDL_GetNumberProperty(props, SDL_PROP_PROCESS_PID_NUMBER, 0);
     SDLTest_AssertCheck(pid != 0, "Checking process ID, expected non-zero, got %" SDL_PRIs64, pid);
 
-    process_stdin = SDL_GetProcessInputStream(process);
+    process_stdin = SDL_GetProcessInput(process);
     SDLTest_AssertCheck(process_stdin != NULL, "SDL_GetPointerProperty(SDL_PROP_PROCESS_STDIN_POINTER) returns a valid IO stream");
-    process_stdout = SDL_GetProcessOutputStream(process);
+    process_stdout = SDL_GetProcessOutput(process);
     SDLTest_AssertCheck(process_stdout != NULL, "SDL_GetPointerProperty(SDL_PROP_PROCESS_STDOUT_POINTER) returns a valid IO stream");
     if (!process_stdin || !process_stdout) {
         goto failed;
@@ -370,7 +370,7 @@ static int process_testStdinToStdout(void *arg)
     /* Closing stdin of `subprocessstdin --stdin-to-stdout` should close the process */
     SDL_CloseIO(process_stdin);
 
-    process_stdin = SDL_GetProcessInputStream(process);
+    process_stdin = SDL_GetProcessInput(process);
     SDLTest_AssertCheck(process_stdin == NULL, "SDL_GetPointerProperty(SDL_PROP_PROCESS_STDIN_POINTER) is cleared after close");
 
     SDLTest_AssertPass("About to wait on process");
@@ -402,9 +402,10 @@ static int process_testSimpleStdinToStdout(void *arg)
         NULL,
     };
     SDL_Process *process = NULL;
+    SDL_IOStream *input = NULL;
     const char *text_in = "Tests whether we can write to stdin and read from stdout\r\n{'succes': true, 'message': 'Success!'}\r\nYippie ka yee\r\nEOF";
     char *buffer;
-    SDL_bool result;
+    size_t result;
     int exit_code;
 
     process = SDL_CreateProcess(process_args, SDL_TRUE);
@@ -414,11 +415,14 @@ static int process_testSimpleStdinToStdout(void *arg)
     }
 
     SDLTest_AssertPass("About to write to process");
-    result = SDL_WriteProcess(process, text_in, SDL_strlen(text_in), SDL_TRUE);
-    SDLTest_AssertCheck(result, "SDL_WriteProcess()");
-    if (!result) {
-        goto failed;
-    }
+    input = SDL_GetProcessInput(process);
+    SDLTest_AssertCheck(input != NULL, "SDL_GetProcessInput()");
+    result = SDL_WriteIO(input, text_in, SDL_strlen(text_in));
+    SDLTest_AssertCheck(result == SDL_strlen(text_in), "SDL_WriteIO() wrote %d, expected %d", (int)result, (int)SDL_strlen(text_in));
+    SDL_CloseIO(input);
+
+    input = SDL_GetProcessInput(process);
+    SDLTest_AssertCheck(input == NULL, "SDL_GetProcessInput() after close");
 
     exit_code = 0xdeadbeef;
     buffer = (char *)SDL_ReadProcess(process, NULL, &exit_code);
@@ -452,9 +456,10 @@ static int process_testMultiprocessStdinToStdout(void *arg)
     SDL_Process *process1 = NULL;
     SDL_Process *process2 = NULL;
     SDL_PropertiesID props;
+    SDL_IOStream *input = NULL;
     const char *text_in = "Tests whether we can write to stdin and read from stdout\r\n{'succes': true, 'message': 'Success!'}\r\nYippie ka yee\r\nEOF";
     char *buffer;
-    SDL_bool result;
+    size_t result;
     int exit_code;
 
     process1 = SDL_CreateProcess(process_args, SDL_TRUE);
@@ -476,11 +481,11 @@ static int process_testMultiprocessStdinToStdout(void *arg)
     }
 
     SDLTest_AssertPass("About to write to process");
-    result = SDL_WriteProcess(process1, text_in, SDL_strlen(text_in), SDL_TRUE);
-    SDLTest_AssertCheck(result, "SDL_WriteProcess()");
-    if (!result) {
-        goto failed;
-    }
+    input = SDL_GetProcessInput(process1);
+    SDLTest_AssertCheck(input != NULL, "SDL_GetProcessInput()");
+    result = SDL_WriteIO(input, text_in, SDL_strlen(text_in));
+    SDLTest_AssertCheck(result == SDL_strlen(text_in), "SDL_WriteIO() wrote %d, expected %d", (int)result, (int)SDL_strlen(text_in));
+    SDL_CloseIO(input);
 
     exit_code = 0xdeadbeef;
     buffer = (char *)SDL_ReadProcess(process2, NULL, &exit_code);

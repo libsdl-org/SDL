@@ -431,8 +431,8 @@ SDL3_0.0.0 {
     SDL_GetPreferredLocales;
     SDL_GetPrimaryDisplay;
     SDL_GetPrimarySelectionText;
-    SDL_GetProcessInputStream;
-    SDL_GetProcessOutputStream;
+    SDL_GetProcessInput;
+    SDL_GetProcessOutput;
     SDL_GetProcessProperties;
     SDL_GetPropertyType;
     SDL_GetRGB;
@@ -978,7 +978,6 @@ SDL3_0.0.0 {
     SDL_WindowSupportsGPUPresentMode;
     SDL_WindowSupportsGPUSwapchainComposition;
     SDL_WriteIO;
-    SDL_WriteProcess;
     SDL_WriteS16BE;
     SDL_WriteS16LE;
     SDL_WriteS32BE;
