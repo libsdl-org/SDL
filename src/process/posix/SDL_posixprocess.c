@@ -72,6 +72,28 @@ static bool SetupStream(SDL_Process *process, int fd, const char *mode, const ch
     return true;
 }
 
+static void IgnoreSignal(int sig)
+{
+#ifdef HAVE_SIGACTION
+    struct sigaction action;
+
+    sigaction(SIGPIPE, NULL, &action);
+#ifdef HAVE_SA_SIGACTION
+    if (action.sa_handler == SIG_DFL && (void (*)(int))action.sa_sigaction == SIG_DFL) {
+#else
+    if (action.sa_handler == SIG_DFL) {
+#endif
+        action.sa_handler = SIG_IGN;
+        sigaction(sig, &action, NULL);
+    }
+#elif defined(HAVE_SIGNAL_H)
+    void (*ohandler)(int) = signal(sig, SIG_IGN);
+    if (ohandler != SIG_DFL && ohandler != SIG_IGN) {
+        signal(sig, ohandler);
+    }
+#endif
+}
+
 static bool CreatePipe(int fds[2])
 {
     if (pipe(fds) < 0) {
@@ -81,6 +103,9 @@ static bool CreatePipe(int fds[2])
     // Make sure the pipe isn't accidentally inherited by another thread creating a process
     fcntl(fds[READ_END], F_SETFD, fcntl(fds[READ_END], F_GETFD) | FD_CLOEXEC);
     fcntl(fds[WRITE_END], F_SETFD, fcntl(fds[WRITE_END], F_GETFD) | FD_CLOEXEC);
+
+    // Make sure we don't crash if we write when the pipe is closed
+    IgnoreSignal(SIGPIPE);
 
     return true;
 }
