@@ -216,14 +216,6 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     }
     process->internal = data;
 
-    if (!join_arguments(args, &createprocess_cmdline)) {
-        goto done;
-    }
-
-    if (!join_env(envp, &createprocess_env)) {
-        goto done;
-    }
-
     creation_flags = CREATE_UNICODE_ENVIRONMENT;
 
     SDL_zero(startup_info);
@@ -237,6 +229,14 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     security_attributes.nLength = sizeof(SECURITY_ATTRIBUTES);
     security_attributes.bInheritHandle = TRUE;
     security_attributes.lpSecurityDescriptor = NULL;
+
+    if (!join_arguments(args, &createprocess_cmdline)) {
+        goto done;
+    }
+
+    if (!join_env(envp, &createprocess_env)) {
+        goto done;
+    }
 
     // Background processes don't have access to the terminal
     // This isn't necessary on Windows, but we keep the same behavior as the POSIX implementation.
