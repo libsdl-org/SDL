@@ -333,6 +333,7 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_VIDEO);
             if (!SDL_VideoInit(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_VIDEO);
+                SDL_QuitSubSystem(SDL_INIT_EVENTS);
                 goto quit_and_error;
             }
         } else {
@@ -357,6 +358,7 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_AUDIO);
             if (!SDL_InitAudio(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_AUDIO);
+                SDL_QuitSubSystem(SDL_INIT_EVENTS);
                 goto quit_and_error;
             }
         } else {
@@ -381,6 +383,7 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_JOYSTICK);
             if (!SDL_InitJoysticks()) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_JOYSTICK);
+                SDL_QuitSubSystem(SDL_INIT_EVENTS);
                 goto quit_and_error;
             }
         } else {
@@ -404,6 +407,7 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_GAMEPAD);
             if (!SDL_InitGamepads()) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_GAMEPAD);
+                SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
                 goto quit_and_error;
             }
         } else {
@@ -466,6 +470,7 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_CAMERA);
             if (!SDL_CameraInit(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_CAMERA);
+                SDL_QuitSubSystem(SDL_INIT_EVENTS);
                 goto quit_and_error;
             }
         } else {
