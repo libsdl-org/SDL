@@ -1156,16 +1156,33 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyEnvironment(SDL_Environment *env);
 /**
  * Get the value of a variable in the environment.
  *
+ * This function uses SDL's cached copy of the environment and is thread-safe.
+ *
+ * \param name the name of the variable to get.
+ * \returns a pointer to the value of the variable or NULL if it can't be
+ *          found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_getenv(const char *name);
+
+/**
+ * Get the value of a variable in the environment.
+ *
+ * This function bypasses SDL's cached copy of the environment and is not thread-safe.
+ *
  * \param name the name of the variable to get.
  * \returns a pointer to the value of the variable or NULL if it can't be
  *          found.
  *
  * \threadsafety This function is not thread safe, consider using
- *               SDL_GetEnvironmentVariable() instead.
+ *               SDL_getenv() instead.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetEnvironmentVariable
+ * \sa SDL_getenv
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_getenv_unsafe(const char *name);
 

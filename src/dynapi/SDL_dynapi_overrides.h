@@ -264,7 +264,6 @@
 #define SDL_GetBasePath SDL_GetBasePath_REAL
 #define SDL_GetBooleanProperty SDL_GetBooleanProperty_REAL
 #define SDL_GetCPUCacheLineSize SDL_GetCPUCacheLineSize_REAL
-#define SDL_GetNumLogicalCPUCores SDL_GetNumLogicalCPUCores_REAL
 #define SDL_GetCameraDriver SDL_GetCameraDriver_REAL
 #define SDL_GetCameraFormat SDL_GetCameraFormat_REAL
 #define SDL_GetCameraID SDL_GetCameraID_REAL
@@ -439,6 +438,7 @@
 #define SDL_GetNumJoystickBalls SDL_GetNumJoystickBalls_REAL
 #define SDL_GetNumJoystickButtons SDL_GetNumJoystickButtons_REAL
 #define SDL_GetNumJoystickHats SDL_GetNumJoystickHats_REAL
+#define SDL_GetNumLogicalCPUCores SDL_GetNumLogicalCPUCores_REAL
 #define SDL_GetNumRenderDrivers SDL_GetNumRenderDrivers_REAL
 #define SDL_GetNumVideoDrivers SDL_GetNumVideoDrivers_REAL
 #define SDL_GetNumberProperty SDL_GetNumberProperty_REAL
@@ -1054,6 +1054,7 @@
 #define SDL_fmod SDL_fmod_REAL
 #define SDL_fmodf SDL_fmodf_REAL
 #define SDL_free SDL_free_REAL
+#define SDL_getenv SDL_getenv_REAL
 #define SDL_getenv_unsafe SDL_getenv_unsafe_REAL
 #define SDL_hid_ble_scan SDL_hid_ble_scan_REAL
 #define SDL_hid_close SDL_hid_close_REAL

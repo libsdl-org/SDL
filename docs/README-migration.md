@@ -1743,6 +1743,8 @@ Please note that the case-folding technique used by SDL3 will not produce correc
 
 SDL_strtoll(), SDL_strtoull(), SDL_lltoa(), and SDL_ulltoa() use long long values instead of 64-bit values, to match their C runtime counterparts.
 
+SDL_setenv() is not thread-safe and has been renamed SDL_setenv_unsafe().
+
 The following macros have been removed:
 * SDL_TABLESIZE() - use SDL_arraysize() instead
 

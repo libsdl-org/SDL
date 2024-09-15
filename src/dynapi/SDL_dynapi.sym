@@ -239,7 +239,6 @@ SDL3_0.0.0 {
     SDL_GetBasePath;
     SDL_GetBooleanProperty;
     SDL_GetCPUCacheLineSize;
-    SDL_GetNumLogicalCPUCores;
     SDL_GetCameraDriver;
     SDL_GetCameraFormat;
     SDL_GetCameraID;
@@ -414,6 +413,7 @@ SDL3_0.0.0 {
     SDL_GetNumJoystickBalls;
     SDL_GetNumJoystickButtons;
     SDL_GetNumJoystickHats;
+    SDL_GetNumLogicalCPUCores;
     SDL_GetNumRenderDrivers;
     SDL_GetNumVideoDrivers;
     SDL_GetNumberProperty;
@@ -1029,6 +1029,7 @@ SDL3_0.0.0 {
     SDL_fmod;
     SDL_fmodf;
     SDL_free;
+    SDL_getenv;
     SDL_getenv_unsafe;
     SDL_hid_ble_scan;
     SDL_hid_close;
