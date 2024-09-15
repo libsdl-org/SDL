@@ -429,8 +429,8 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     bool display_is_external = !!display;
 
     // Are we trying to connect to or are currently in a Wayland session?
-    if (!SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "WAYLAND_DISPLAY")) {
-        const char *session = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XDG_SESSION_TYPE");
+    if (!SDL_getenv("WAYLAND_DISPLAY")) {
+        const char *session = SDL_getenv("XDG_SESSION_TYPE");
         if (session && SDL_strcasecmp(session, "wayland") != 0) {
             return NULL;
         }

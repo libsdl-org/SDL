@@ -345,7 +345,7 @@ static bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdat
 
     // Fallback envvar if the DBus properties don't exist
     if (size <= 0) {
-        const char *xcursor_size = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XCURSOR_SIZE");
+        const char *xcursor_size = SDL_getenv("XCURSOR_SIZE");
         if (xcursor_size) {
             size = SDL_atoi(xcursor_size);
         }
@@ -381,7 +381,7 @@ static bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdat
 
         // Fallback envvar if the DBus properties don't exist
         if (!xcursor_theme) {
-            xcursor_theme = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XCURSOR_THEME");
+            xcursor_theme = SDL_getenv("XCURSOR_THEME");
         }
 
         theme = WAYLAND_wl_cursor_theme_load(xcursor_theme, size, vdata->shm);

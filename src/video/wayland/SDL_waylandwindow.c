@@ -1914,7 +1914,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         /* Note that we don't check for empty strings, as that is still
          * considered a valid activation token!
          */
-        const char *activation_token = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XDG_ACTIVATION_TOKEN");
+        const char *activation_token = SDL_getenv("XDG_ACTIVATION_TOKEN");
         if (activation_token) {
             xdg_activation_v1_activate(c->activation_manager,
                                        activation_token,

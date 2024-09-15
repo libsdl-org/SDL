@@ -68,7 +68,7 @@ char *SDL_SYS_GetBasePath(void)
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     // !!! FIXME: is there a better way to do this?
-    const char *home = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "HOME");
+    const char *home = SDL_getenv("HOME");
     const char *append = "/config/settings/";
     size_t len = SDL_strlen(home);
 
@@ -102,7 +102,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     const char *home = NULL;
     char *result;
 
-    home = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "HOME");
+    home = SDL_getenv("HOME");
     if (!home) {
         SDL_SetError("No $HOME environment variable available");
         return NULL;

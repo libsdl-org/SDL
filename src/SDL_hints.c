@@ -72,7 +72,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
         return SDL_InvalidParamError("name");
     }
 
-    const char *env = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), name);
+    const char *env = SDL_getenv(name);
     if (env && (priority < SDL_HINT_OVERRIDE)) {
         return SDL_SetError("An environment variable is taking priority");
     }
@@ -126,7 +126,7 @@ SDL_bool SDL_ResetHint(const char *name)
         return SDL_InvalidParamError("name");
     }
 
-    const char *env = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), name);
+    const char *env = SDL_getenv(name);
 
     const SDL_PropertiesID hints = GetHintProperties(false);
     if (!hints) {
@@ -165,7 +165,7 @@ static void SDLCALL ResetHintsCallback(void *userdata, SDL_PropertiesID hints, c
         return;  // uh...okay.
     }
 
-    const char *env = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), name);
+    const char *env = SDL_getenv(name);
     if ((!env && hint->value) || (env && !hint->value) || (env && SDL_strcmp(env, hint->value) != 0)) {
         SDL_HintWatch *entry = hint->callbacks;
         while (entry) {
@@ -196,7 +196,7 @@ const char *SDL_GetHint(const char *name)
         return NULL;
     }
 
-    const char *result = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), name);
+    const char *result = SDL_getenv(name);
 
     const SDL_PropertiesID hints = GetHintProperties(false);
     if (hints) {

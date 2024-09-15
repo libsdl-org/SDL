@@ -331,14 +331,14 @@ static char *IBus_GetDBusAddressFilename(void)
     }
 
     // Use this environment variable if it exists.
-    addr = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "IBUS_ADDRESS");
+    addr = SDL_getenv("IBUS_ADDRESS");
     if (addr && *addr) {
         return SDL_strdup(addr);
     }
 
     /* Otherwise, we have to get the hostname, display, machine id, config dir
        and look up the address from a filepath using all those bits, eek. */
-    disp_env = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "DISPLAY");
+    disp_env = SDL_getenv("DISPLAY");
 
     if (!disp_env || !*disp_env) {
         display = SDL_strdup(":0.0");
@@ -363,7 +363,7 @@ static char *IBus_GetDBusAddressFilename(void)
     }
 
     if (!*host) {
-        const char *session = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XDG_SESSION_TYPE");
+        const char *session = SDL_getenv("XDG_SESSION_TYPE");
         if (session && SDL_strcmp(session, "wayland") == 0) {
             host = "unix-wayland";
         } else {
@@ -373,11 +373,11 @@ static char *IBus_GetDBusAddressFilename(void)
 
     SDL_memset(config_dir, 0, sizeof(config_dir));
 
-    conf_env = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XDG_CONFIG_HOME");
+    conf_env = SDL_getenv("XDG_CONFIG_HOME");
     if (conf_env && *conf_env) {
         SDL_strlcpy(config_dir, conf_env, sizeof(config_dir));
     } else {
-        const char *home_env = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "HOME");
+        const char *home_env = SDL_getenv("HOME");
         if (!home_env || !*home_env) {
             SDL_free(display);
             return NULL;

@@ -163,15 +163,15 @@ static const char *getlocale(char *buffer, size_t bufsize)
     const char *lang;
     char *ptr;
 
-    lang = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "LC_ALL");
+    lang = SDL_getenv("LC_ALL");
     if (!lang) {
-        lang = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "LC_CTYPE");
+        lang = SDL_getenv("LC_CTYPE");
     }
     if (!lang) {
-        lang = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "LC_MESSAGES");
+        lang = SDL_getenv("LC_MESSAGES");
     }
     if (!lang) {
-        lang = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "LANG");
+        lang = SDL_getenv("LANG");
     }
     if (!lang || !*lang || SDL_strcmp(lang, "C") == 0) {
         lang = "ASCII";

@@ -169,7 +169,7 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
         char *prev_locale = setlocale(LC_ALL, NULL);
         char *prev_xmods = X11_XSetLocaleModifiers(NULL);
         const char *new_xmods = "";
-        const char *env_xmods = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XMODIFIERS");
+        const char *env_xmods = SDL_getenv("XMODIFIERS");
         bool has_dbus_ime_support = false;
 
         if (prev_locale) {

@@ -44,8 +44,8 @@ static void InitIME(void)
 {
     static bool inited = false;
 #ifdef HAVE_FCITX
-    const char *im_module = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_IM_MODULE");
-    const char *xmodifiers = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "XMODIFIERS");
+    const char *im_module = SDL_getenv("SDL_IM_MODULE");
+    const char *xmodifiers = SDL_getenv("XMODIFIERS");
 #endif
 
     if (inited == true) {
