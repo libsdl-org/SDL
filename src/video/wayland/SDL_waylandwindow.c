@@ -43,6 +43,7 @@
 #include "xdg-dialog-v1-client-protocol.h"
 #include "frog-color-management-v1-client-protocol.h"
 #include "xdg-toplevel-icon-v1-client-protocol.h"
+#include "xdg-session-management-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1502,6 +1503,77 @@ static const struct wp_fractional_scale_v1_listener fractional_scale_listener = 
     handle_preferred_fractional_scale
 };
 
+static struct xdg_toplevel *GetToplevelForWindow(SDL_WindowData *wind)
+{
+    if (wind) {
+        /* Libdecor crashes on attempts to unset the parent by passing null, which is allowed by the
+         * toplevel spec, so just use the raw xdg-toplevel instead (that's what libdecor does
+         * internally anyways).
+         */
+#ifdef HAVE_LIBDECOR_H
+        if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR && wind->shell_surface.libdecor.frame) {
+            return libdecor_frame_get_xdg_toplevel(wind->shell_surface.libdecor.frame);
+        } else
+#endif
+            if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && wind->shell_surface.xdg.roleobj.toplevel) {
+                return wind->shell_surface.xdg.roleobj.toplevel;
+            }
+    }
+
+    return NULL;
+}
+
+static void handle_xdg_session_created(void *data, struct xdg_session_v1 *xdg_session_v1, const char *id)
+{
+    SDL_SetStringProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING, id);
+}
+
+static void handle_xdg_session_restored(void *data, struct xdg_session_v1 *xdg_session_v1)
+{
+    // NOP
+}
+
+static void handle_xdg_session_replaced(void *data, struct xdg_session_v1 *xdg_session_v1)
+{
+    // NOP
+}
+
+static const struct xdg_session_v1_listener xdg_session_listener = {
+    .created  = handle_xdg_session_created,
+    .restored = handle_xdg_session_restored,
+    .replaced = handle_xdg_session_replaced
+};
+
+static void Wayland_CreateSession(SDL_VideoData *data)
+{
+    if (!data->xdg_session_manager_v1) {
+        return;
+    }
+
+    // Register a new session, if one does not yet exist.
+    if (!data->xdg_session_v1) {
+        const char *session_id = SDL_GetStringProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING, NULL);
+        if (session_id && *session_id == '\0') {
+            session_id = NULL;
+        }
+        data->xdg_session_v1 = xdg_session_manager_v1_get_session(data->xdg_session_manager_v1, XDG_SESSION_MANAGER_V1_REASON_LAUNCH, session_id);
+
+        xdg_session_v1_add_listener(data->xdg_session_v1, &xdg_session_listener, data);
+
+        // Need to round trip as the session ID is needed now.
+        WAYLAND_wl_display_roundtrip(data->display);
+    }
+}
+
+static void Wayland_RegisterToplevelForSession(SDL_WindowData *data)
+{
+    SDL_VideoData *vid = data->waylandData;
+
+    if (vid->xdg_session_v1 && data->window_id) {
+        data->xdg_toplevel_session_v1 = xdg_session_v1_restore_toplevel(vid->xdg_session_v1, GetToplevelForWindow(data), data->window_id);
+    }
+}
+
 static void frog_preferred_metadata_handler(void *data, struct frog_color_managed_surface *frog_color_managed_surface, uint32_t transfer_function,
                                             uint32_t output_display_primary_red_x, uint32_t output_display_primary_red_y,
                                             uint32_t output_display_primary_green_x, uint32_t output_display_primary_green_y,
@@ -1560,26 +1632,6 @@ static void SetKeyboardFocus(SDL_Window *window)
 bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled)
 {
     return true; // just succeed, the real work is done elsewhere.
-}
-
-static struct xdg_toplevel *GetToplevelForWindow(SDL_WindowData *wind)
-{
-    if (wind) {
-        /* Libdecor crashes on attempts to unset the parent by passing null, which is allowed by the
-         * toplevel spec, so just use the raw xdg-toplevel instead (that's what libdecor does
-         * internally anyways).
-         */
-#ifdef HAVE_LIBDECOR_H
-        if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR && wind->shell_surface.libdecor.frame) {
-            return libdecor_frame_get_xdg_toplevel(wind->shell_surface.libdecor.frame);
-        } else
-#endif
-            if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && wind->shell_surface.xdg.roleobj.toplevel) {
-                return wind->shell_surface.xdg.roleobj.toplevel;
-            }
-    }
-
-    return NULL;
 }
 
 bool Wayland_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent_window)
@@ -1733,6 +1785,8 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, data->app_id);
             libdecor_frame_map(data->shell_surface.libdecor.frame);
 
+            Wayland_RegisterToplevelForSession(data);
+
             if (c->zxdg_exporter_v2) {
                 data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
                 zxdg_exported_v2_add_listener(data->exported, &exported_v2_listener, data);
@@ -1818,6 +1872,8 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             data->shell_surface.xdg.roleobj.toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
             xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, data->app_id);
             xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
+
+            Wayland_RegisterToplevelForSession(data);
 
             if (c->zxdg_exporter_v2) {
                 data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
@@ -2537,6 +2593,17 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
         data->surface_status = WAYLAND_SURFACE_STATUS_SHOWN;
     }
 
+    if (data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL || data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
+        const char *window_id = SDL_GetStringProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING, NULL);
+        if (window_id && *window_id == '\0') {
+            window_id = NULL;
+        }
+        if (window_id) {
+            data->window_id = SDL_strdup(window_id);
+            Wayland_CreateSession(c);
+        }
+    }
+
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, false)) {
         data->double_buffer = true;
     }
@@ -2861,6 +2928,7 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         SDL_free(wind->outputs);
         SDL_free(wind->app_id);
+        SDL_free(wind->window_id);
 
         if (wind->gles_swap_frame_callback) {
             wl_callback_destroy(wind->gles_swap_frame_callback);
@@ -2880,6 +2948,10 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         if (wind->xdg_toplevel_icon_v1) {
             xdg_toplevel_icon_v1_destroy(wind->xdg_toplevel_icon_v1);
+        }
+
+        if (wind->xdg_toplevel_session_v1) {
+            xdg_toplevel_session_v1_destroy(wind->xdg_toplevel_session_v1);
         }
 
         Wayland_ReleaseSHMBuffer(&wind->icon);

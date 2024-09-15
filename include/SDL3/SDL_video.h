@@ -80,6 +80,28 @@ typedef Uint32 SDL_WindowID;
 #define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "SDL.video.wayland.wl_display"
 
 /**
+ * The session ID string used for saving and restoring window state across runs.
+ *
+ * To save the current state of toplevel windows, serialize this value before
+ * shutting down. To restore the previous state, set this property to the previously
+ * serialized value before window creation begins.
+ *
+ * This can be set at any time before the first call to a window creation function, and
+ * read at any time after the first window with an ID string is created.
+ *
+ * Setting this to null or an empty string will cause a new session to be created.
+ *
+ * Note that for windows to be saved/restored by the session, they also need a stable, unique identifier
+ * string set via the `SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING` property at creation
+ * time.
+ *
+ * \since This property is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateWindowWithProperties
+ */
+#define SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING "SDL.video.wayland.session_id"
+
+/**
  * System theme.
  *
  * \since This enum is available since SDL 3.0.0.
@@ -1026,6 +1048,9 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  * - `SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN` - true if the
  *   application wants an associated `wl_egl_window` object to be created,
  *   even if the window does not have the OpenGL property or flag set.
+ * - `SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING` - a string used as
+ *   a stable identifier for toplevel windows for the purpose of allowing
+ *   the compositor to save/restore their state between runs.
  * - `SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` - the wl_surface
  *   associated with the window, if you want to wrap an existing window. See
  *   [README/wayland](README/wayland) for more information.
@@ -1099,6 +1124,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_COCOA_VIEW_POINTER                  "SDL.window.create.cocoa.view"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN "SDL.window.create.wayland.surface_role_custom"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN   "SDL.window.create.wayland.create_egl_window"
+#define SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING            "SDL.window.create.wayland.window_id"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER          "SDL.window.create.wayland.wl_surface"
 #define SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER                  "SDL.window.create.win32.hwnd"
 #define SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "SDL.window.create.win32.pixel_format_hwnd"

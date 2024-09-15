@@ -85,7 +85,9 @@ struct SDL_VideoData
     struct kde_output_order_v1 *kde_output_order;
     struct frog_color_management_factory_v1 *frog_color_management_factory_v1;
     struct zwp_tablet_manager_v2 *tablet_manager;
+    struct xdg_session_manager_v1 *xdg_session_manager_v1;
 
+    struct xdg_session_v1 *xdg_session_v1;
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
     struct wl_list output_list;
