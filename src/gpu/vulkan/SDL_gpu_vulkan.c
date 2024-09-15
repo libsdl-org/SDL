@@ -6192,7 +6192,7 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
 
 static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     VulkanRenderer *renderer,
-    SDL_GpuGraphicsPipelineTargetInfo attachmentInfo,
+    SDL_GPUGraphicsPipelineTargetInfo attachmentInfo,
     VkSampleCountFlagBits sampleCount)
 {
     VkAttachmentDescription attachmentDescriptions[2 * MAX_COLOR_TARGET_BINDINGS + 1];

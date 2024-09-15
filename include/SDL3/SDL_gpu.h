@@ -1434,7 +1434,7 @@ typedef struct SDL_GPUColorTargetDescription
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
  */
-typedef struct SDL_GpuGraphicsPipelineTargetInfo
+typedef struct SDL_GPUGraphicsPipelineTargetInfo
 {
     const SDL_GPUColorTargetDescription *color_target_descriptions;  /**< A pointer to an array of color target descriptions. */
     Uint32 num_color_targets;                                        /**< The number of color target descriptions in the above array. */
@@ -1443,7 +1443,7 @@ typedef struct SDL_GpuGraphicsPipelineTargetInfo
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
-} SDL_GpuGraphicsPipelineTargetInfo;
+} SDL_GPUGraphicsPipelineTargetInfo;
 
 /**
  * A structure specifying the parameters of a graphics pipeline state.
@@ -1461,7 +1461,7 @@ typedef struct SDL_GPUGraphicsPipelineCreateInfo
     SDL_GPURasterizerState rasterizer_state;        /**< The rasterizer state of the graphics pipeline. */
     SDL_GPUMultisampleState multisample_state;      /**< The multisample state of the graphics pipeline. */
     SDL_GPUDepthStencilState depth_stencil_state;   /**< The depth-stencil state of the graphics pipeline. */
-    SDL_GpuGraphicsPipelineTargetInfo target_info;  /**< Formats and blend modes for the render targets of the graphics pipeline. */
+    SDL_GPUGraphicsPipelineTargetInfo target_info;  /**< Formats and blend modes for the render targets of the graphics pipeline. */
 
     SDL_PropertiesID props;                         /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUGraphicsPipelineCreateInfo;
