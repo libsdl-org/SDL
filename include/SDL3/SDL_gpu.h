@@ -282,8 +282,10 @@ typedef enum SDL_GPULoadOp
  */
 typedef enum SDL_GPUStoreOp
 {
-    SDL_GPU_STOREOP_STORE,     /**< The contents generated during the render pass will be written to memory. */
-    SDL_GPU_STOREOP_DONT_CARE  /**< The contents generated during the render pass are not needed and may be discarded. The contents will be undefined. */
+    SDL_GPU_STOREOP_STORE,             /**< The contents generated during the render pass will be written to memory. */
+    SDL_GPU_STOREOP_DONT_CARE,         /**< The contents generated during the render pass are not needed and may be discarded. The contents will be undefined. */
+    SDL_GPU_STOREOP_RESOLVE,           /**< The multisample contents generated during the render pass will be resolved to a non-multisample texture. The contents in the multisample texture may then be discarded and will be undefined. */
+    SDL_GPU_STOREOP_RESOLVE_AND_STORE  /**< The multisample contents generated during the render pass will be resolved to a non-multisample texture. The contents in the multisample texture will be written to memory. */
 } SDL_GPUStoreOp;
 
 /**
@@ -1499,7 +1501,8 @@ typedef struct SDL_GPUComputePipelineCreateInfo
  * The load_op field determines what is done with the texture at the beginning
  * of the render pass.
  *
- * - LOAD: Loads the data currently in the texture.
+ * - LOAD: Loads the data currently in the texture. Not recommended for
+ *   multisample textures as it requires significant memory bandwidth.
  * - CLEAR: Clears the texture to a single color.
  * - DONT_CARE: The driver will do whatever it wants with the texture memory.
  *   This is a good option if you know that every single pixel will be touched
@@ -1508,9 +1511,16 @@ typedef struct SDL_GPUComputePipelineCreateInfo
  * The store_op field determines what is done with the color results of the
  * render pass.
  *
- * - STORE: Stores the results of the render pass in the texture.
+ * - STORE: Stores the results of the render pass in the texture. Not recommended
+ *   for multisample textures as it requires significant memory bandwidth.
  * - DONT_CARE: The driver will do whatever it wants with the texture memory.
  *   This is often a good option for depth/stencil textures.
+ * - RESOLVE: Resolves a multisample texture into resolve_texture, which must have
+ *   a sample count of 1. Then the driver may discard the multisample texture memory.
+ *   This is the most performant method of resolving a multisample target.
+ * - RESOLVE_AND_STORE: Resolves a multisample texture into the resolve_texture,
+ *   which must have a sample count of 1. Then the driver stores the multisample
+ *   texture's contents. Not recommended as it requires significant memory bandwidth.
  *
  * \since This struct is available since SDL 3.0.0
  *
@@ -1518,16 +1528,19 @@ typedef struct SDL_GPUComputePipelineCreateInfo
  */
 typedef struct SDL_GPUColorTargetInfo
 {
-    SDL_GPUTexture *texture;      /**< The texture that will be used as a color target by a render pass. */
-    Uint32 mip_level;             /**< The mip level to use as a color target. */
-    Uint32 layer_or_depth_plane;  /**< The layer index or depth plane to use as a color target. This value is treated as a layer index on 2D array and cube textures, and as a depth plane on 3D textures. */
-    SDL_FColor clear_color;       /**< The color to clear the color target to at the start of the render pass. Ignored if SDL_GPU_LOADOP_CLEAR is not used. */
-    SDL_GPULoadOp load_op;        /**< What is done with the contents of the color target at the beginning of the render pass. */
-    SDL_GPUStoreOp store_op;      /**< What is done with the results of the render pass. */
-    SDL_bool cycle;               /**< SDL_TRUE cycles the texture if the texture is bound and load_op is not LOAD */
+    SDL_GPUTexture *texture;         /**< The texture that will be used as a color target by a render pass. */
+    Uint32 mip_level;                /**< The mip level to use as a color target. */
+    Uint32 layer_or_depth_plane;     /**< The layer index or depth plane to use as a color target. This value is treated as a layer index on 2D array and cube textures, and as a depth plane on 3D textures. */
+    SDL_FColor clear_color;          /**< The color to clear the color target to at the start of the render pass. Ignored if SDL_GPU_LOADOP_CLEAR is not used. */
+    SDL_GPULoadOp load_op;           /**< What is done with the contents of the color target at the beginning of the render pass. */
+    SDL_GPUStoreOp store_op;         /**< What is done with the results of the render pass. */
+    SDL_GPUTexture *resolve_texture; /**< The texture that will receive the results of a multisample resolve operation. Ignored if texture is not multisample or if a RESOLVE* store_op is not used. */
+    Uint32 resolve_mip_level;        /**< The mip level of the resolve texture to use for the resolve operation. Ignored if texture is not multisample or if a RESOLVE* store_op is not used. */
+    Uint32 resolve_layer;            /**< The layer index of the resolve texture to use for the resolve operation. Ignored if texture is not multisample or if a RESOLVE* store_op is not used. */
+    SDL_bool cycle;                  /**< SDL_TRUE cycles the texture if the texture is bound and load_op is not LOAD */
+    SDL_bool cycle_resolve_texture;  /**< SDL_TRUE cycles the resolve texture if the resolve texture is bound. Ignored if texture is not multisample or if a RESOLVE* store_op is not used. */
     Uint8 padding1;
     Uint8 padding2;
-    Uint8 padding3;
 } SDL_GPUColorTargetInfo;
 
 /**
@@ -1567,6 +1580,8 @@ typedef struct SDL_GPUColorTargetInfo
  * - DONT_CARE: The driver will do whatever it wants with the stencil results.
  *   This is often a good option for depth/stencil textures that don't need to
  *   be reused again.
+ *
+ * Note that depth/stencil targets do not support multisample resolves.
  *
  * \since This struct is available since SDL 3.0.0
  *
