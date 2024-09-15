@@ -1534,11 +1534,11 @@ typedef struct SDL_GPUColorTargetInfo
     SDL_FColor clear_color;          /**< The color to clear the color target to at the start of the render pass. Ignored if SDL_GPU_LOADOP_CLEAR is not used. */
     SDL_GPULoadOp load_op;           /**< What is done with the contents of the color target at the beginning of the render pass. */
     SDL_GPUStoreOp store_op;         /**< What is done with the results of the render pass. */
-    SDL_GPUTexture *resolve_texture; /**< The texture that will receive the results of a multisample resolve operation. Ignored if texture is not multisample or if a RESOLVE* store_op is not used. */
-    Uint32 resolve_mip_level;        /**< The mip level of the resolve texture to use for the resolve operation. Ignored if texture is not multisample or if a RESOLVE* store_op is not used. */
-    Uint32 resolve_layer;            /**< The layer index of the resolve texture to use for the resolve operation. Ignored if texture is not multisample or if a RESOLVE* store_op is not used. */
+    SDL_GPUTexture *resolve_texture; /**< The texture that will receive the results of a multisample resolve operation. Ignored if a RESOLVE* store_op is not used. */
+    Uint32 resolve_mip_level;        /**< The mip level of the resolve texture to use for the resolve operation. Ignored if a RESOLVE* store_op is not used. */
+    Uint32 resolve_layer;            /**< The layer index of the resolve texture to use for the resolve operation. Ignored if a RESOLVE* store_op is not used. */
     SDL_bool cycle;                  /**< SDL_TRUE cycles the texture if the texture is bound and load_op is not LOAD */
-    SDL_bool cycle_resolve_texture;  /**< SDL_TRUE cycles the resolve texture if the resolve texture is bound. Ignored if texture is not multisample or if a RESOLVE* store_op is not used. */
+    SDL_bool cycle_resolve_texture;  /**< SDL_TRUE cycles the resolve texture if the resolve texture is bound. Ignored if a RESOLVE* store_op is not used. */
     Uint8 padding1;
     Uint8 padding2;
 } SDL_GPUColorTargetInfo;
