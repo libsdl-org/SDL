@@ -202,8 +202,17 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
 
     if (total_need < READAHEAD_BUFFER_SIZE) {
         if (!ReadFile(iodata->h, iodata->data, READAHEAD_BUFFER_SIZE, &bytes, NULL)) {
-            if (GetLastError() != ERROR_HANDLE_EOF && GetLastError() != ERROR_BROKEN_PIPE) {
+            DWORD error = GetLastError();
+            switch (error) {
+            case ERROR_BROKEN_PIPE:
+            case ERROR_HANDLE_EOF:
+                break;
+            case ERROR_NO_DATA:
+                *status = SDL_IO_STATUS_NOT_READY;
+                break;
+            default:
                 WIN_SetError("Error reading from datastream");
+                break;
             }
             return 0;
         }
@@ -214,8 +223,17 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
         total_read += read_ahead;
     } else {
         if (!ReadFile(iodata->h, ptr, (DWORD)total_need, &bytes, NULL)) {
-            if (GetLastError() != ERROR_HANDLE_EOF && GetLastError() != ERROR_BROKEN_PIPE) {
+            DWORD error = GetLastError();
+            switch (error) {
+            case ERROR_BROKEN_PIPE:
+            case ERROR_HANDLE_EOF:
+                break;
+            case ERROR_NO_DATA:
+                *status = SDL_IO_STATUS_NOT_READY;
+                break;
+            default:
                 WIN_SetError("Error reading from datastream");
+                break;
             }
             return 0;
         }
@@ -227,7 +245,6 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
 static size_t SDLCALL windows_file_write(void *userdata, const void *ptr, size_t size, SDL_IOStatus *status)
 {
     IOStreamWindowsData *iodata = (IOStreamWindowsData *) userdata;
-    const size_t total_bytes = size;
     DWORD bytes;
 
     if (iodata->left) {
@@ -248,11 +265,13 @@ static size_t SDLCALL windows_file_write(void *userdata, const void *ptr, size_t
         }
     }
 
-    if (!WriteFile(iodata->h, ptr, (DWORD)total_bytes, &bytes, NULL)) {
+    if (!WriteFile(iodata->h, ptr, (DWORD)size, &bytes, NULL)) {
         WIN_SetError("Error writing to datastream");
         return 0;
     }
-
+    if (bytes == 0 && size > 0) {
+        *status = SDL_IO_STATUS_NOT_READY;
+    }
     return bytes;
 }
 

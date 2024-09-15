@@ -200,6 +200,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     HANDLE stdin_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
     HANDLE stdout_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
     HANDLE stderr_pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
+    DWORD pipe_mode = PIPE_NOWAIT;
     bool result = false;
 
     // Keep the malloc() before exec() so that an OOM won't run a process at all
@@ -263,6 +264,10 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             stdin_pipe[WRITE_END] = INVALID_HANDLE_VALUE;
             goto done;
         }
+        if (!SetNamedPipeHandleState(stdin_pipe[WRITE_END], &pipe_mode, NULL, NULL)) {
+            WIN_SetError("SetNamedPipeHandleState()");
+            goto done;
+        }
         if (!SetHandleInformation(stdin_pipe[WRITE_END], HANDLE_FLAG_INHERIT, 0) ) {
             WIN_SetError("SetHandleInformation()");
             goto done;
@@ -294,6 +299,10 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         if (!CreatePipe(&stdout_pipe[READ_END], &stdout_pipe[WRITE_END], &security_attributes, 0)) {
             stdout_pipe[READ_END] = INVALID_HANDLE_VALUE;
             stdout_pipe[WRITE_END] = INVALID_HANDLE_VALUE;
+            goto done;
+        }
+        if (!SetNamedPipeHandleState(stdout_pipe[READ_END], &pipe_mode, NULL, NULL)) {
+            WIN_SetError("SetNamedPipeHandleState()");
             goto done;
         }
         if (!SetHandleInformation(stdout_pipe[READ_END], HANDLE_FLAG_INHERIT, 0) ) {
@@ -336,6 +345,10 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             if (!CreatePipe(&stderr_pipe[READ_END], &stderr_pipe[WRITE_END], &security_attributes, 0)) {
                 stderr_pipe[READ_END] = INVALID_HANDLE_VALUE;
                 stderr_pipe[WRITE_END] = INVALID_HANDLE_VALUE;
+                goto done;
+            }
+            if (!SetNamedPipeHandleState(stderr_pipe[READ_END], &pipe_mode, NULL, NULL)) {
+                WIN_SetError("SetNamedPipeHandleState()");
                 goto done;
             }
             if (!SetHandleInformation(stderr_pipe[READ_END], HANDLE_FLAG_INHERIT, 0) ) {
