@@ -49,6 +49,7 @@
 #include "joystick/SDL_joystick_c.h"
 #include "render/SDL_sysrender.h"
 #include "sensor/SDL_sensor_c.h"
+#include "stdlib/SDL_getenv_c.h"
 #include "thread/SDL_thread_c.h"
 #include "video/SDL_pixels_c.h"
 #include "video/SDL_video_c.h"
@@ -250,23 +251,23 @@ void SDL_SetMainReady(void)
 void SDL_InitMainThread(void)
 {
     SDL_InitTLSData();
+    SDL_InitEnvironment();
     SDL_InitTicks();
     SDL_InitFilesystem();
     SDL_InitLog();
     SDL_InitProperties();
     SDL_GetGlobalProperties();
-    SDL_GetEnvironment();
     SDL_InitHints();
 }
 
 static void SDL_QuitMainThread(void)
 {
     SDL_QuitHints();
-    SDL_CleanupEnvironment();
     SDL_QuitProperties();
     SDL_QuitLog();
     SDL_QuitFilesystem();
     SDL_QuitTicks();
+    SDL_QuitEnvironment();
     SDL_QuitTLSData();
 }
 

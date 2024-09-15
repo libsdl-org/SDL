@@ -66,7 +66,12 @@ SDL_Environment *SDL_GetEnvironment(void)
     return SDL_environment;
 }
 
-void SDL_CleanupEnvironment(void)
+SDL_bool SDL_InitEnvironment(void)
+{
+    return (SDL_GetEnvironment() != NULL);
+}
+
+void SDL_QuitEnvironment(void)
 {
     SDL_Environment *env = SDL_environment;
 
