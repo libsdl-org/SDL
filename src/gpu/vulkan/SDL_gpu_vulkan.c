@@ -503,15 +503,6 @@ typedef struct VulkanMemoryAllocator
 
 // Memory structures
 
-/* We use pointer indirection so that defrag can occur without objects
- * needing to be aware of the backing buffers changing.
- */
-typedef struct VulkanBufferHandle
-{
-    VulkanBuffer *vulkanBuffer;
-    VulkanBufferContainer *container;
-} VulkanBufferHandle;
-
 typedef enum VulkanBufferType
 {
     VULKAN_BUFFER_TYPE_GPU,
@@ -521,38 +512,29 @@ typedef enum VulkanBufferType
 
 struct VulkanBuffer
 {
+    VulkanBufferContainer *container;
+    Uint32 containerIndex;
+
     VkBuffer buffer;
-    VkDeviceSize size;
     VulkanMemoryUsedRegion *usedRegion;
 
+    // Needed for uniforms and defrag
     VulkanBufferType type;
-    SDL_GPUBufferUsageFlags usageFlags;
+    SDL_GPUBufferUsageFlags usage;
+    VkDeviceSize size;
 
-    SDL_AtomicInt referenceCount; // Tracks command buffer usage
-
-    VulkanBufferHandle *handle;
-
+    SDL_AtomicInt referenceCount;
     bool transitioned;
-    Uint8 markedForDestroy; // so that defrag doesn't double-free
+    bool markedForDestroy; // so that defrag doesn't double-free
 };
 
-/* Buffer resources consist of multiple backing buffer handles so that data transfers
- * can occur without blocking or the client having to manage extra resources.
- *
- * Cast from SDL_GPUBuffer or SDL_GPUTransferBuffer.
- */
 struct VulkanBufferContainer
 {
-    VulkanBufferHandle *activeBufferHandle;
+    VulkanBuffer *activeBuffer;
 
-    /* These are all the buffer handles that have been used by this container.
-     * If the resource is bound and then updated with a cycle parameter, a new resource
-     * will be added to this list.
-     * These can be reused after they are submitted and command processing is complete.
-     */
+    VulkanBuffer **buffers;
     Uint32 bufferCapacity;
     Uint32 bufferCount;
-    VulkanBufferHandle **bufferHandles;
 
     char *debugName;
 };
@@ -612,7 +594,9 @@ struct VulkanTexture
     VkComponentMapping swizzle;
     VkImageAspectFlags aspectFlags;
     Uint32 depth; // used for cleanup only
-    SDL_GPUTextureUsageFlags usageFlags; // used for defrag transitions only
+
+    // FIXME: It'd be nice if we didn't have to have this on the texture...
+    SDL_GPUTextureUsageFlags usage; // used for defrag transitions only.
 
     Uint32 subresourceCount;
     VulkanTextureSubresource *subresources;
@@ -724,7 +708,7 @@ typedef struct VulkanPresentData
 
 typedef struct VulkanUniformBuffer
 {
-    VulkanBufferHandle *bufferHandle;
+    VulkanBuffer *buffer;
     Uint32 drawOffset;
     Uint32 writeOffset;
 } VulkanUniformBuffer;
@@ -2413,7 +2397,7 @@ static void VULKAN_INTERNAL_TrackUniformBuffer(
 
     VULKAN_INTERNAL_TrackBuffer(
         commandBuffer,
-        uniformBuffer->bufferHandle->vulkanBuffer);
+        uniformBuffer->buffer);
 }
 
 #undef TRACK_RESOURCE
@@ -2677,17 +2661,17 @@ static VulkanBufferUsageMode VULKAN_INTERNAL_DefaultBufferUsageMode(
 {
     // NOTE: order matters here!
 
-    if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) {
+    if (buffer->usage & SDL_GPU_BUFFERUSAGE_VERTEX) {
         return VULKAN_BUFFER_USAGE_MODE_VERTEX_READ;
-    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) {
+    } else if (buffer->usage & SDL_GPU_BUFFERUSAGE_INDEX) {
         return VULKAN_BUFFER_USAGE_MODE_INDEX_READ;
-    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
+    } else if (buffer->usage & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         return VULKAN_BUFFER_USAGE_MODE_INDIRECT;
-    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
+    } else if (buffer->usage & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
         return VULKAN_BUFFER_USAGE_MODE_GRAPHICS_STORAGE_READ;
-    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ) {
+    } else if (buffer->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ) {
         return VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ;
-    } else if (buffer->usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
+    } else if (buffer->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         return VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ_WRITE;
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Buffer has no default usage mode!");
@@ -2701,19 +2685,17 @@ static VulkanTextureUsageMode VULKAN_INTERNAL_DefaultTextureUsageMode(
     // NOTE: order matters here!
     // NOTE: graphics storage bits and sampler bit are mutually exclusive!
 
-    SDL_GPUTextureUsageFlags usageFlags = texture->usageFlags;
-
-    if (usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER) {
+    if (texture->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) {
         return VULKAN_TEXTURE_USAGE_MODE_SAMPLER;
-    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) {
+    } else if (texture->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) {
         return VULKAN_TEXTURE_USAGE_MODE_GRAPHICS_STORAGE_READ;
-    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
+    } else if (texture->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
         return VULKAN_TEXTURE_USAGE_MODE_COLOR_ATTACHMENT;
-    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+    } else if (texture->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
         return VULKAN_TEXTURE_USAGE_MODE_DEPTH_STENCIL_ATTACHMENT;
-    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ) {
+    } else if (texture->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ) {
         return VULKAN_TEXTURE_USAGE_MODE_COMPUTE_STORAGE_READ;
-    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
+    } else if (texture->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
         return VULKAN_TEXTURE_USAGE_MODE_COMPUTE_STORAGE_READ_WRITE;
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Texture has no default usage mode!");
@@ -3998,9 +3980,9 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
     buffer = SDL_malloc(sizeof(VulkanBuffer));
 
     buffer->size = size;
-    buffer->usageFlags = usageFlags;
+    buffer->usage = usageFlags;
     buffer->type = type;
-    buffer->markedForDestroy = 0;
+    buffer->markedForDestroy = false;
     buffer->transitioned = false;
 
     createinfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -4039,41 +4021,10 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
     }
 
     buffer->usedRegion->vulkanBuffer = buffer; // lol
-    buffer->handle = NULL;
 
     SDL_AtomicSet(&buffer->referenceCount, 0);
 
     return buffer;
-}
-
-// Indirection so we can cleanly defrag buffers
-static VulkanBufferHandle *VULKAN_INTERNAL_CreateBufferHandle(
-    VulkanRenderer *renderer,
-    VkDeviceSize size,
-    SDL_GPUBufferUsageFlags usageFlags,
-    VulkanBufferType type)
-{
-    VulkanBufferHandle *bufferHandle;
-    VulkanBuffer *buffer;
-
-    buffer = VULKAN_INTERNAL_CreateBuffer(
-        renderer,
-        size,
-        usageFlags,
-        type);
-
-    if (buffer == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create buffer!");
-        return NULL;
-    }
-
-    bufferHandle = SDL_malloc(sizeof(VulkanBufferHandle));
-    bufferHandle->vulkanBuffer = buffer;
-    bufferHandle->container = NULL;
-
-    buffer->handle = bufferHandle;
-
-    return bufferHandle;
 }
 
 static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
@@ -4083,29 +4034,30 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
     VulkanBufferType type)
 {
     VulkanBufferContainer *bufferContainer;
-    VulkanBufferHandle *bufferHandle;
+    VulkanBuffer *buffer;
 
-    bufferHandle = VULKAN_INTERNAL_CreateBufferHandle(
+    buffer = VULKAN_INTERNAL_CreateBuffer(
         renderer,
         size,
         usageFlags,
         type);
 
-    if (bufferHandle == NULL) {
+    if (buffer == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create buffer container!");
         return NULL;
     }
 
     bufferContainer = SDL_malloc(sizeof(VulkanBufferContainer));
 
-    bufferContainer->activeBufferHandle = bufferHandle;
-    bufferHandle->container = bufferContainer;
+    bufferContainer->activeBuffer = buffer;
+    buffer->container = bufferContainer;
+    buffer->containerIndex = 0;
 
     bufferContainer->bufferCapacity = 1;
     bufferContainer->bufferCount = 1;
-    bufferContainer->bufferHandles = SDL_malloc(
-        bufferContainer->bufferCapacity * sizeof(VulkanBufferHandle *));
-    bufferContainer->bufferHandles[0] = bufferContainer->activeBufferHandle;
+    bufferContainer->buffers = SDL_malloc(
+        bufferContainer->bufferCapacity * sizeof(VulkanBuffer *));
+    bufferContainer->buffers[0] = bufferContainer->activeBuffer;
     bufferContainer->debugName = NULL;
 
     return bufferContainer;
@@ -4640,7 +4592,7 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         swapchainData->textureContainers[i].activeTexture->swizzle = swapchainData->swapchainSwizzle;
         swapchainData->textureContainers[i].activeTexture->aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
         swapchainData->textureContainers[i].activeTexture->depth = 1;
-        swapchainData->textureContainers[i].activeTexture->usageFlags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+        swapchainData->textureContainers[i].activeTexture->usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
         swapchainData->textureContainers[i].activeTexture->container = &swapchainData->textureContainers[i];
         SDL_AtomicSet(&swapchainData->textureContainers[i].activeTexture->referenceCount, 0);
 
@@ -4748,8 +4700,7 @@ static void VULKAN_DestroyDevice(
     for (Uint32 i = 0; i < renderer->uniformBufferPoolCount; i += 1) {
         VULKAN_INTERNAL_DestroyBuffer(
             renderer,
-            renderer->uniformBufferPool[i]->bufferHandle->vulkanBuffer);
-        SDL_free(renderer->uniformBufferPool[i]->bufferHandle);
+            renderer->uniformBufferPool[i]->buffer);
         SDL_free(renderer->uniformBufferPool[i]);
     }
     SDL_free(renderer->uniformBufferPool);
@@ -5034,7 +4985,7 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
             currentWriteDescriptorSet->pTexelBufferView = NULL;
             currentWriteDescriptorSet->pImageInfo = NULL;
 
-            bufferInfos[bufferInfoCount].buffer = commandBuffer->vertexUniformBuffers[i]->bufferHandle->vulkanBuffer->buffer;
+            bufferInfos[bufferInfoCount].buffer = commandBuffer->vertexUniformBuffers[i]->buffer->buffer;
             bufferInfos[bufferInfoCount].offset = 0;
             bufferInfos[bufferInfoCount].range = MAX_UBO_SECTION_SIZE;
 
@@ -5204,7 +5155,7 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
             currentWriteDescriptorSet->pTexelBufferView = NULL;
             currentWriteDescriptorSet->pImageInfo = NULL;
 
-            bufferInfos[bufferInfoCount].buffer = commandBuffer->fragmentUniformBuffers[i]->bufferHandle->vulkanBuffer->buffer;
+            bufferInfos[bufferInfoCount].buffer = commandBuffer->fragmentUniformBuffers[i]->buffer->buffer;
             bufferInfos[bufferInfoCount].offset = 0;
             bufferInfos[bufferInfoCount].range = MAX_UBO_SECTION_SIZE;
 
@@ -5297,7 +5248,7 @@ static void VULKAN_DrawPrimitivesIndirect(
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-    VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)buffer)->activeBufferHandle->vulkanBuffer;
+    VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)buffer)->activeBuffer;
     Uint32 pitch = sizeof(SDL_GPUIndirectDrawCommand);
     Uint32 i;
 
@@ -5334,7 +5285,7 @@ static void VULKAN_DrawIndexedPrimitivesIndirect(
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-    VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)buffer)->activeBufferHandle->vulkanBuffer;
+    VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)buffer)->activeBuffer;
     Uint32 pitch = sizeof(SDL_GPUIndexedIndirectDrawCommand);
     Uint32 i;
 
@@ -5407,7 +5358,7 @@ static void VULKAN_SetBufferName(
         for (Uint32 i = 0; i < container->bufferCount; i += 1) {
             VULKAN_INTERNAL_SetBufferName(
                 renderer,
-                container->bufferHandles[i]->vulkanBuffer,
+                container->buffers[i],
                 text);
         }
     }
@@ -5528,7 +5479,7 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     texture->markedForDestroy = false;
     texture->swizzle = SwizzleForSDLFormat(createinfo->format);
     texture->depth = depth;
-    texture->usageFlags = createinfo->usage;
+    texture->usage = createinfo->usage;
     texture->fullView = VK_NULL_HANDLE;
     SDL_AtomicSet(&texture->referenceCount, 0);
 
@@ -5721,47 +5672,50 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
 
 static void VULKAN_INTERNAL_CycleActiveBuffer(
     VulkanRenderer *renderer,
-    VulkanBufferContainer *bufferContainer)
+    VulkanBufferContainer *container)
 {
-    VulkanBufferHandle *bufferHandle;
-    Uint32 i;
+    VulkanBuffer *buffer;
 
     // If a previously-cycled buffer is available, we can use that.
-    for (i = 0; i < bufferContainer->bufferCount; i += 1) {
-        bufferHandle = bufferContainer->bufferHandles[i];
-        if (SDL_AtomicGet(&bufferHandle->vulkanBuffer->referenceCount) == 0) {
-            bufferContainer->activeBufferHandle = bufferHandle;
+    for (Uint32 i = 0; i < container->bufferCount; i += 1) {
+        buffer = container->buffers[i];
+        if (SDL_AtomicGet(&buffer->referenceCount) == 0) {
+            container->activeBuffer = buffer;
             return;
         }
     }
 
-    // No buffer handle is available, generate a new one.
-    bufferContainer->activeBufferHandle = VULKAN_INTERNAL_CreateBufferHandle(
+    // No buffer handle is available, create a new one.
+    buffer = VULKAN_INTERNAL_CreateBuffer(
         renderer,
-        bufferContainer->activeBufferHandle->vulkanBuffer->size,
-        bufferContainer->activeBufferHandle->vulkanBuffer->usageFlags,
-        bufferContainer->activeBufferHandle->vulkanBuffer->type);
+        container->activeBuffer->size,
+        container->activeBuffer->usage,
+        container->activeBuffer->type);
 
-    bufferContainer->activeBufferHandle->container = bufferContainer;
+    if (!buffer) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to cycle active buffer!");
+        return;
+    }
 
     EXPAND_ARRAY_IF_NEEDED(
-        bufferContainer->bufferHandles,
-        VulkanBufferHandle *,
-        bufferContainer->bufferCount + 1,
-        bufferContainer->bufferCapacity,
-        bufferContainer->bufferCapacity * 2);
+        container->buffers,
+        VulkanBuffer *,
+        container->bufferCount + 1,
+        container->bufferCapacity,
+        container->bufferCapacity * 2);
 
-    bufferContainer->bufferHandles[bufferContainer->bufferCount] = bufferContainer->activeBufferHandle;
-    bufferContainer->bufferCount += 1;
+    container->buffers[container->bufferCount] = buffer;
+    buffer->container = container;
+    buffer->containerIndex = container->bufferCount;
+    container->bufferCount += 1;
 
-    if (
-        renderer->debugMode &&
-        renderer->supportsDebugUtils &&
-        bufferContainer->debugName != NULL) {
+    container->activeBuffer = buffer;
+
+    if (renderer->debugMode && renderer->supportsDebugUtils && container->debugName != NULL) {
         VULKAN_INTERNAL_SetBufferName(
             renderer,
-            bufferContainer->activeBufferHandle->vulkanBuffer,
-            bufferContainer->debugName);
+            container->activeBuffer,
+            container->debugName);
     }
 }
 
@@ -5822,7 +5776,7 @@ static VulkanBuffer *VULKAN_INTERNAL_PrepareBufferForWrite(
 {
     if (
         cycle &&
-        SDL_AtomicGet(&bufferContainer->activeBufferHandle->vulkanBuffer->referenceCount) > 0) {
+        SDL_AtomicGet(&bufferContainer->activeBuffer->referenceCount) > 0) {
         VULKAN_INTERNAL_CycleActiveBuffer(
             renderer,
             bufferContainer);
@@ -5832,9 +5786,9 @@ static VulkanBuffer *VULKAN_INTERNAL_PrepareBufferForWrite(
         renderer,
         commandBuffer,
         destinationUsageMode,
-        bufferContainer->activeBufferHandle->vulkanBuffer);
+        bufferContainer->activeBuffer);
 
-    return bufferContainer->activeBufferHandle->vulkanBuffer;
+    return bufferContainer->activeBuffer;
 }
 
 static VulkanTextureSubresource *VULKAN_INTERNAL_PrepareTextureSubresourceForWrite(
@@ -6802,7 +6756,7 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
 {
     VulkanUniformBuffer *uniformBuffer = SDL_malloc(sizeof(VulkanUniformBuffer));
 
-    uniformBuffer->bufferHandle = VULKAN_INTERNAL_CreateBufferHandle(
+    uniformBuffer->buffer = VULKAN_INTERNAL_CreateBuffer(
         renderer,
         (VkDeviceSize)size,
         0,
@@ -6810,6 +6764,7 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
 
     uniformBuffer->drawOffset = 0;
     uniformBuffer->writeOffset = 0;
+    uniformBuffer->buffer->container = (VulkanBufferContainer *)uniformBuffer; // little hack for defrag
 
     return uniformBuffer;
 }
@@ -6931,15 +6886,14 @@ static void VULKAN_INTERNAL_ReleaseBufferContainer(
     SDL_LockMutex(renderer->disposeLock);
 
     for (i = 0; i < bufferContainer->bufferCount; i += 1) {
-        VULKAN_INTERNAL_ReleaseBuffer(renderer, bufferContainer->bufferHandles[i]->vulkanBuffer);
-        SDL_free(bufferContainer->bufferHandles[i]);
+        VULKAN_INTERNAL_ReleaseBuffer(renderer, bufferContainer->buffers[i]);
     }
 
     // Containers are just client handles, so we can free immediately
     if (bufferContainer->debugName != NULL) {
         SDL_free(bufferContainer->debugName);
     }
-    SDL_free(bufferContainer->bufferHandles);
+    SDL_free(bufferContainer->buffers);
     SDL_free(bufferContainer);
 
     SDL_UnlockMutex(renderer->disposeLock);
@@ -7441,11 +7395,11 @@ static void VULKAN_BindVertexStorageBuffers(
     for (i = 0; i < numBindings; i += 1) {
         bufferContainer = (VulkanBufferContainer *)storageBuffers[i];
 
-        vulkanCommandBuffer->vertexStorageBuffers[firstSlot + i] = bufferContainer->activeBufferHandle->vulkanBuffer;
+        vulkanCommandBuffer->vertexStorageBuffers[firstSlot + i] = bufferContainer->activeBuffer;
 
         VULKAN_INTERNAL_TrackBuffer(
             vulkanCommandBuffer,
-            bufferContainer->activeBufferHandle->vulkanBuffer);
+            bufferContainer->activeBuffer);
     }
 
     vulkanCommandBuffer->needNewVertexResourceDescriptorSet = true;
@@ -7511,11 +7465,11 @@ static void VULKAN_BindFragmentStorageBuffers(
     for (i = 0; i < numBindings; i += 1) {
         bufferContainer = (VulkanBufferContainer *)storageBuffers[i];
 
-        vulkanCommandBuffer->fragmentStorageBuffers[firstSlot + i] = bufferContainer->activeBufferHandle->vulkanBuffer;
+        vulkanCommandBuffer->fragmentStorageBuffers[firstSlot + i] = bufferContainer->activeBuffer;
 
         VULKAN_INTERNAL_TrackBuffer(
             vulkanCommandBuffer,
-            bufferContainer->activeBufferHandle->vulkanBuffer);
+            bufferContainer->activeBuffer);
     }
 
     vulkanCommandBuffer->needNewFragmentResourceDescriptorSet = true;
@@ -7601,7 +7555,7 @@ static void VULKAN_INTERNAL_PushUniformData(
     }
 
     // If there is no more room, acquire a new uniform buffer
-    if (uniformBuffer->writeOffset + blockSize + MAX_UBO_SECTION_SIZE >= uniformBuffer->bufferHandle->vulkanBuffer->size) {
+    if (uniformBuffer->writeOffset + blockSize + MAX_UBO_SECTION_SIZE >= uniformBuffer->buffer->size) {
         uniformBuffer = VULKAN_INTERNAL_AcquireUniformBufferFromPool(commandBuffer);
 
         uniformBuffer->drawOffset = 0;
@@ -7625,8 +7579,8 @@ static void VULKAN_INTERNAL_PushUniformData(
     uniformBuffer->drawOffset = uniformBuffer->writeOffset;
 
     Uint8 *dst =
-        uniformBuffer->bufferHandle->vulkanBuffer->usedRegion->allocation->mapPointer +
-        uniformBuffer->bufferHandle->vulkanBuffer->usedRegion->resourceOffset +
+        uniformBuffer->buffer->usedRegion->allocation->mapPointer +
+        uniformBuffer->buffer->usedRegion->resourceOffset +
         uniformBuffer->writeOffset;
 
     SDL_memcpy(
@@ -7928,7 +7882,7 @@ static void VULKAN_BindVertexBuffers(
     Uint32 i;
 
     for (i = 0; i < numBindings; i += 1) {
-        currentVulkanBuffer = ((VulkanBufferContainer *)bindings[i].buffer)->activeBufferHandle->vulkanBuffer;
+        currentVulkanBuffer = ((VulkanBufferContainer *)bindings[i].buffer)->activeBuffer;
         buffers[i] = currentVulkanBuffer->buffer;
         offsets[i] = (VkDeviceSize)bindings[i].offset;
         VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, currentVulkanBuffer);
@@ -7952,7 +7906,7 @@ static void VULKAN_BindIndexBuffer(
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-    VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)binding->buffer)->activeBufferHandle->vulkanBuffer;
+    VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)binding->buffer)->activeBuffer;
 
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, vulkanBuffer);
 
@@ -8211,17 +8165,17 @@ static void VULKAN_BindComputeStorageBuffers(
 
         bufferContainer = (VulkanBufferContainer *)storageBuffers[i];
 
-        vulkanCommandBuffer->readOnlyComputeStorageBuffers[firstSlot + i] = bufferContainer->activeBufferHandle->vulkanBuffer;
+        vulkanCommandBuffer->readOnlyComputeStorageBuffers[firstSlot + i] = bufferContainer->activeBuffer;
 
         VULKAN_INTERNAL_BufferTransitionFromDefaultUsage(
             renderer,
             vulkanCommandBuffer,
             VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ,
-            bufferContainer->activeBufferHandle->vulkanBuffer);
+            bufferContainer->activeBuffer);
 
         VULKAN_INTERNAL_TrackBuffer(
             vulkanCommandBuffer,
-            bufferContainer->activeBufferHandle->vulkanBuffer);
+            bufferContainer->activeBuffer);
     }
 
     vulkanCommandBuffer->needNewComputeReadOnlyDescriptorSet = true;
@@ -8468,7 +8422,7 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
             currentWriteDescriptorSet->pTexelBufferView = NULL;
             currentWriteDescriptorSet->pImageInfo = NULL;
 
-            bufferInfos[bufferInfoCount].buffer = commandBuffer->computeUniformBuffers[i]->bufferHandle->vulkanBuffer->buffer;
+            bufferInfos[bufferInfoCount].buffer = commandBuffer->computeUniformBuffers[i]->buffer->buffer;
             bufferInfos[bufferInfoCount].offset = 0;
             bufferInfos[bufferInfoCount].range = MAX_UBO_SECTION_SIZE;
 
@@ -8536,7 +8490,7 @@ static void VULKAN_DispatchComputeIndirect(
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-    VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)buffer)->activeBufferHandle->vulkanBuffer;
+    VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)buffer)->activeBuffer;
 
     VULKAN_INTERNAL_BindComputeDescriptorSets(renderer, vulkanCommandBuffer);
 
@@ -8621,15 +8575,15 @@ static void *VULKAN_MapTransferBuffer(
 
     if (
         cycle &&
-        SDL_AtomicGet(&transferBufferContainer->activeBufferHandle->vulkanBuffer->referenceCount) > 0) {
+        SDL_AtomicGet(&transferBufferContainer->activeBuffer->referenceCount) > 0) {
         VULKAN_INTERNAL_CycleActiveBuffer(
             renderer,
             transferBufferContainer);
     }
 
     Uint8 *bufferPointer =
-        transferBufferContainer->activeBufferHandle->vulkanBuffer->usedRegion->allocation->mapPointer +
-        transferBufferContainer->activeBufferHandle->vulkanBuffer->usedRegion->resourceOffset;
+        transferBufferContainer->activeBuffer->usedRegion->allocation->mapPointer +
+        transferBufferContainer->activeBuffer->usedRegion->resourceOffset;
 
     return bufferPointer;
 }
@@ -8690,7 +8644,7 @@ static void VULKAN_UploadToTexture(
 
     renderer->vkCmdCopyBufferToImage(
         vulkanCommandBuffer->commandBuffer,
-        transferBufferContainer->activeBufferHandle->vulkanBuffer->buffer,
+        transferBufferContainer->activeBuffer->buffer,
         vulkanTextureSubresource->parent->image,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         1,
@@ -8702,7 +8656,7 @@ static void VULKAN_UploadToTexture(
         VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION,
         vulkanTextureSubresource);
 
-    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBufferHandle->vulkanBuffer);
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, vulkanTextureSubresource->parent);
 }
 
@@ -8733,7 +8687,7 @@ static void VULKAN_UploadToBuffer(
 
     renderer->vkCmdCopyBuffer(
         vulkanCommandBuffer->commandBuffer,
-        transferBufferContainer->activeBufferHandle->vulkanBuffer->buffer,
+        transferBufferContainer->activeBuffer->buffer,
         vulkanBuffer->buffer,
         1,
         &bufferCopy);
@@ -8744,7 +8698,7 @@ static void VULKAN_UploadToBuffer(
         VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION,
         vulkanBuffer);
 
-    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBufferHandle->vulkanBuffer);
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, vulkanBuffer);
 }
 
@@ -8792,7 +8746,7 @@ static void VULKAN_DownloadFromTexture(
         vulkanCommandBuffer->commandBuffer,
         vulkanTextureSubresource->parent->image,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        transferBufferContainer->activeBufferHandle->vulkanBuffer->buffer,
+        transferBufferContainer->activeBuffer->buffer,
         1,
         &imageCopy);
 
@@ -8802,7 +8756,7 @@ static void VULKAN_DownloadFromTexture(
         VULKAN_TEXTURE_USAGE_MODE_COPY_SOURCE,
         vulkanTextureSubresource);
 
-    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBufferHandle->vulkanBuffer);
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, vulkanTextureSubresource->parent);
 }
 
@@ -8823,7 +8777,7 @@ static void VULKAN_DownloadFromBuffer(
         renderer,
         vulkanCommandBuffer,
         VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
-        bufferContainer->activeBufferHandle->vulkanBuffer);
+        bufferContainer->activeBuffer);
 
     bufferCopy.srcOffset = source->offset;
     bufferCopy.dstOffset = destination->offset;
@@ -8831,8 +8785,8 @@ static void VULKAN_DownloadFromBuffer(
 
     renderer->vkCmdCopyBuffer(
         vulkanCommandBuffer->commandBuffer,
-        bufferContainer->activeBufferHandle->vulkanBuffer->buffer,
-        transferBufferContainer->activeBufferHandle->vulkanBuffer->buffer,
+        bufferContainer->activeBuffer->buffer,
+        transferBufferContainer->activeBuffer->buffer,
         1,
         &bufferCopy);
 
@@ -8840,10 +8794,10 @@ static void VULKAN_DownloadFromBuffer(
         renderer,
         vulkanCommandBuffer,
         VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
-        bufferContainer->activeBufferHandle->vulkanBuffer);
+        bufferContainer->activeBuffer);
 
-    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBufferHandle->vulkanBuffer);
-    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, bufferContainer->activeBufferHandle->vulkanBuffer);
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, bufferContainer->activeBuffer);
 }
 
 static void VULKAN_CopyTextureToTexture(
@@ -8948,7 +8902,7 @@ static void VULKAN_CopyBufferToBuffer(
         renderer,
         vulkanCommandBuffer,
         VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
-        srcContainer->activeBufferHandle->vulkanBuffer);
+        srcContainer->activeBuffer);
 
     bufferCopy.srcOffset = source->offset;
     bufferCopy.dstOffset = destination->offset;
@@ -8956,7 +8910,7 @@ static void VULKAN_CopyBufferToBuffer(
 
     renderer->vkCmdCopyBuffer(
         vulkanCommandBuffer->commandBuffer,
-        srcContainer->activeBufferHandle->vulkanBuffer->buffer,
+        srcContainer->activeBuffer->buffer,
         dstBuffer->buffer,
         1,
         &bufferCopy);
@@ -8965,7 +8919,7 @@ static void VULKAN_CopyBufferToBuffer(
         renderer,
         vulkanCommandBuffer,
         VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
-        srcContainer->activeBufferHandle->vulkanBuffer);
+        srcContainer->activeBuffer);
 
     VULKAN_INTERNAL_BufferTransitionToDefaultUsage(
         renderer,
@@ -8973,7 +8927,7 @@ static void VULKAN_CopyBufferToBuffer(
         VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION,
         dstBuffer);
 
-    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, srcContainer->activeBufferHandle->vulkanBuffer);
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, srcContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, dstBuffer);
 }
 
@@ -10547,12 +10501,12 @@ static Uint8 VULKAN_INTERNAL_DefragmentMemory(
         currentRegion = allocation->usedRegions[i];
 
         if (currentRegion->isBuffer && !currentRegion->vulkanBuffer->markedForDestroy) {
-            currentRegion->vulkanBuffer->usageFlags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+            currentRegion->vulkanBuffer->usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
             newBuffer = VULKAN_INTERNAL_CreateBuffer(
                 renderer,
                 currentRegion->vulkanBuffer->size,
-                currentRegion->vulkanBuffer->usageFlags,
+                currentRegion->vulkanBuffer->usage,
                 currentRegion->vulkanBuffer->type);
 
             if (newBuffer == NULL) {
@@ -10563,13 +10517,12 @@ static Uint8 VULKAN_INTERNAL_DefragmentMemory(
             if (
                 renderer->debugMode &&
                 renderer->supportsDebugUtils &&
-                currentRegion->vulkanBuffer->handle != NULL &&
-                currentRegion->vulkanBuffer->handle->container != NULL &&
-                currentRegion->vulkanBuffer->handle->container->debugName != NULL) {
+                currentRegion->vulkanBuffer->container != NULL &&
+                currentRegion->vulkanBuffer->container->debugName != NULL) {
                 VULKAN_INTERNAL_SetBufferName(
                     renderer,
                     newBuffer,
-                    currentRegion->vulkanBuffer->handle->container->debugName);
+                    currentRegion->vulkanBuffer->container->debugName);
             }
 
             // Copy buffer contents if necessary
@@ -10609,10 +10562,15 @@ static Uint8 VULKAN_INTERNAL_DefragmentMemory(
             }
 
             // re-point original container to new buffer
-            if (currentRegion->vulkanBuffer->handle != NULL) {
-                newBuffer->handle = currentRegion->vulkanBuffer->handle;
-                newBuffer->handle->vulkanBuffer = newBuffer;
-                currentRegion->vulkanBuffer->handle = NULL;
+            newBuffer->container = currentRegion->vulkanBuffer->container;
+            newBuffer->containerIndex = currentRegion->vulkanBuffer->containerIndex;
+            if (newBuffer->type == VULKAN_BUFFER_TYPE_UNIFORM) {
+                ((VulkanUniformBuffer *)newBuffer->container)->buffer = newBuffer;
+            } else {
+                newBuffer->container->buffers[newBuffer->containerIndex] = newBuffer;
+                if (newBuffer->container->activeBuffer == currentRegion->vulkanBuffer) {
+                    newBuffer->container->activeBuffer = newBuffer;
+                }
             }
 
             VULKAN_INTERNAL_ReleaseBuffer(renderer, currentRegion->vulkanBuffer);
