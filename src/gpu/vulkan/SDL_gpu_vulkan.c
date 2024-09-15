@@ -396,7 +396,9 @@ static VkAttachmentLoadOp SDLToVK_LoadOp[] = {
 
 static VkAttachmentStoreOp SDLToVK_StoreOp[] = {
     VK_ATTACHMENT_STORE_OP_STORE,
-    VK_ATTACHMENT_STORE_OP_DONT_CARE
+    VK_ATTACHMENT_STORE_OP_DONT_CARE,
+    VK_ATTACHMENT_STORE_OP_DONT_CARE,
+    VK_ATTACHMENT_STORE_OP_STORE
 };
 
 static VkSampleCountFlagBits SDLToVK_SampleCount[] = {
@@ -830,7 +832,7 @@ typedef struct RenderPassHashTableKey
     RenderPassColorTargetDescription colorTargetDescriptions[MAX_COLOR_TARGET_BINDINGS];
     Uint32 numColorTargets;
     RenderPassDepthStencilTargetDescription depthStencilTargetDescription;
-    VkSampleCountFlagBits colorAttachmentSampleCount;
+    VkSampleCountFlagBits sampleCount;
 } RenderPassHashTableKey;
 
 typedef struct VulkanRenderPassHashTableValue
@@ -841,7 +843,6 @@ typedef struct VulkanRenderPassHashTableValue
 typedef struct FramebufferHashTableKey
 {
     VkImageView colorAttachmentViews[MAX_COLOR_TARGET_BINDINGS];
-    VkImageView colorMultiSampleAttachmentViews[MAX_COLOR_TARGET_BINDINGS];
     Uint32 numColorTargets;
     VkImageView depthStencilAttachmentView;
     Uint32 width;
@@ -896,6 +897,8 @@ typedef struct VulkanCommandBuffer
 
     VulkanTextureSubresource *colorAttachmentSubresources[MAX_COLOR_TARGET_BINDINGS];
     Uint32 colorAttachmentSubresourceCount;
+    VulkanTextureSubresource *resolveAttachmentSubresources[MAX_COLOR_TARGET_BINDINGS];
+    Uint32 resolveAttachmentSubresourceCount;
 
     VulkanTextureSubresource *depthStencilAttachmentSubresource; // may be NULL
 
@@ -1161,35 +1164,6 @@ static inline void LogVulkanResultAsError(
     }
 
 // Utility
-
-static inline bool VULKAN_INTERNAL_IsVulkanDepthFormat(VkFormat format)
-{
-    // FIXME: Can we refactor and use the regular IsDepthFormat for this?
-    return (
-        format == SDLToVK_TextureFormat[SDL_GPU_TEXTUREFORMAT_D16_UNORM] ||
-        format == SDLToVK_TextureFormat[SDL_GPU_TEXTUREFORMAT_D24_UNORM] ||
-        format == SDLToVK_TextureFormat[SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT] ||
-        format == SDLToVK_TextureFormat[SDL_GPU_TEXTUREFORMAT_D32_FLOAT] ||
-        format == SDLToVK_TextureFormat[SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT]);
-}
-
-static inline VkSampleCountFlagBits VULKAN_INTERNAL_GetMaxMultiSampleCount(
-    VulkanRenderer *renderer,
-    VkSampleCountFlagBits multiSampleCount)
-{
-    VkSampleCountFlags flags = renderer->physicalDeviceProperties.properties.limits.framebufferColorSampleCounts;
-    VkSampleCountFlagBits maxSupported = VK_SAMPLE_COUNT_1_BIT;
-
-    if (flags & VK_SAMPLE_COUNT_8_BIT) {
-        maxSupported = VK_SAMPLE_COUNT_8_BIT;
-    } else if (flags & VK_SAMPLE_COUNT_4_BIT) {
-        maxSupported = VK_SAMPLE_COUNT_4_BIT;
-    } else if (flags & VK_SAMPLE_COUNT_2_BIT) {
-        maxSupported = VK_SAMPLE_COUNT_2_BIT;
-    }
-
-    return SDL_min(multiSampleCount, maxSupported);
-}
 
 static inline VkPolygonMode SDLToVK_PolygonMode(
     VulkanRenderer *renderer,
@@ -3192,7 +3166,7 @@ static Uint32 VULKAN_INTERNAL_RenderPassHashFunction(
     result = result * hashFactor + hashTableKey->depthStencilTargetDescription.stencilStoreOp;
     result = result * hashFactor + hashTableKey->depthStencilTargetDescription.format;
 
-    result = result * hashFactor + hashTableKey->colorAttachmentSampleCount;
+    result = result * hashFactor + hashTableKey->sampleCount;
 
     return result;
 }
@@ -3209,7 +3183,7 @@ static bool VULKAN_INTERNAL_RenderPassHashKeyMatch(
         return 0;
     }
 
-    if (a->colorAttachmentSampleCount != b->colorAttachmentSampleCount) {
+    if (a->sampleCount != b->sampleCount) {
         return 0;
     }
 
@@ -3277,7 +3251,6 @@ static Uint32 VULKAN_INTERNAL_FramebufferHashFunction(
 
     for (Uint32 i = 0; i < hashTableKey->numColorTargets; i += 1) {
         result = result * hashFactor + (Uint32)(uintptr_t)hashTableKey->colorAttachmentViews[i];
-        result = result * hashFactor + (Uint32)(uintptr_t)hashTableKey->colorMultiSampleAttachmentViews[i];
     }
 
     result = result * hashFactor + (Uint32)(uintptr_t)hashTableKey->depthStencilAttachmentView;
@@ -3301,10 +3274,6 @@ static bool VULKAN_INTERNAL_FramebufferHashKeyMatch(
 
     for (Uint32 i = 0; i < a->numColorTargets; i += 1) {
         if (a->colorAttachmentViews[i] != b->colorAttachmentViews[i]) {
-            return 0;
-        }
-
-        if (a->colorMultiSampleAttachmentViews[i] != b->colorMultiSampleAttachmentViews[i]) {
             return 0;
         }
     }
@@ -5837,9 +5806,9 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
     const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
 {
     VkResult vulkanResult;
-    VkAttachmentDescription attachmentDescriptions[2 * MAX_COLOR_TARGET_BINDINGS + 1];
+    VkAttachmentDescription attachmentDescriptions[2 * MAX_COLOR_TARGET_BINDINGS + 1 /* depth */];
     VkAttachmentReference colorAttachmentReferences[MAX_COLOR_TARGET_BINDINGS];
-    //VkAttachmentReference resolveReferences[MAX_COLOR_TARGET_BINDINGS + 1];
+    VkAttachmentReference resolveReferences[MAX_COLOR_TARGET_BINDINGS];
     VkAttachmentReference depthStencilAttachmentReference;
     VkRenderPassCreateInfo renderPassCreateInfo;
     VkSubpassDescription subpass;
@@ -5852,84 +5821,41 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
 
     for (i = 0; i < numColorTargets; i += 1) {
         VulkanTextureContainer *container = (VulkanTextureContainer *)colorTargetInfos[i].texture;
-        VkFormat format = SDLToVK_TextureFormat[container->header.info.format];
+        attachmentDescriptions[attachmentDescriptionCount].flags = 0;
+        attachmentDescriptions[attachmentDescriptionCount].format = SDLToVK_TextureFormat[container->header.info.format];
+        attachmentDescriptions[attachmentDescriptionCount].samples = SDLToVK_SampleCount[container->header.info.sample_count];
+        attachmentDescriptions[attachmentDescriptionCount].loadOp = SDLToVK_LoadOp[colorTargetInfos[i].load_op];
+        attachmentDescriptions[attachmentDescriptionCount].storeOp = SDLToVK_StoreOp[colorTargetInfos[i].store_op];
+        attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachmentDescriptions[attachmentDescriptionCount].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attachmentDescriptions[attachmentDescriptionCount].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        #if 0 // FIXME
-        if (sampleCount > VK_SAMPLE_COUNT_1_BIT) {
-            // Resolve attachment and multisample attachment
+        colorAttachmentReferences[colorAttachmentReferenceCount].attachment = attachmentDescriptionCount;
+        colorAttachmentReferences[colorAttachmentReferenceCount].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        attachmentDescriptionCount += 1;
+        colorAttachmentReferenceCount += 1;
+
+        if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
+            VulkanTextureContainer *resolveContainer = (VulkanTextureContainer *)colorTargetInfos[i].resolve_texture;
 
             attachmentDescriptions[attachmentDescriptionCount].flags = 0;
-            attachmentDescriptions[attachmentDescriptionCount].format = format;
-            attachmentDescriptions[attachmentDescriptionCount].samples =
-                VK_SAMPLE_COUNT_1_BIT;
-            attachmentDescriptions[attachmentDescriptionCount].loadOp = SDLToVK_LoadOp[colorTargetInfos[i].load_op];
-            attachmentDescriptions[attachmentDescriptionCount].storeOp =
-                VK_ATTACHMENT_STORE_OP_STORE; // Always store the resolve texture
-            attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp =
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp =
-                VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].initialLayout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDescriptions[attachmentDescriptionCount].finalLayout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachmentDescriptions[attachmentDescriptionCount].format = SDLToVK_TextureFormat[resolveContainer->header.info.format];
+            attachmentDescriptions[attachmentDescriptionCount].samples = SDLToVK_SampleCount[resolveContainer->header.info.sample_count];
+            attachmentDescriptions[attachmentDescriptionCount].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // The texture will be overwritten anyway
+            attachmentDescriptions[attachmentDescriptionCount].storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Always store the resolve texture
+            attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachmentDescriptions[attachmentDescriptionCount].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachmentDescriptions[attachmentDescriptionCount].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-            resolveReferences[resolveReferenceCount].attachment =
-                attachmentDescriptionCount;
-            resolveReferences[resolveReferenceCount].layout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            resolveReferences[resolveReferenceCount].attachment = attachmentDescriptionCount;
+            resolveReferences[resolveReferenceCount].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
             attachmentDescriptionCount += 1;
             resolveReferenceCount += 1;
-
-            attachmentDescriptions[attachmentDescriptionCount].flags = 0;
-            attachmentDescriptions[attachmentDescriptionCount].format = format;
-            attachmentDescriptions[attachmentDescriptionCount].samples = sampleCount;
-            attachmentDescriptions[attachmentDescriptionCount].loadOp = SDLToVK_LoadOp[colorTargetInfos[i].load_op];
-            attachmentDescriptions[attachmentDescriptionCount].storeOp = SDLToVK_StoreOp[colorTargetInfos[i].store_op];
-            attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp =
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp =
-                VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].initialLayout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDescriptions[attachmentDescriptionCount].finalLayout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            colorAttachmentReferences[colorAttachmentReferenceCount].attachment =
-                attachmentDescriptionCount;
-            colorAttachmentReferences[colorAttachmentReferenceCount].layout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            attachmentDescriptionCount += 1;
-            colorAttachmentReferenceCount += 1;
-        } else {
-        #endif
-            attachmentDescriptions[attachmentDescriptionCount].flags = 0;
-            attachmentDescriptions[attachmentDescriptionCount].format = format;
-            attachmentDescriptions[attachmentDescriptionCount].samples =
-                VK_SAMPLE_COUNT_1_BIT;
-            attachmentDescriptions[attachmentDescriptionCount].loadOp = SDLToVK_LoadOp[colorTargetInfos[i].load_op];
-            attachmentDescriptions[attachmentDescriptionCount].storeOp =
-                VK_ATTACHMENT_STORE_OP_STORE; // Always store non-MSAA textures
-            attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp =
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp =
-                VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].initialLayout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDescriptions[attachmentDescriptionCount].finalLayout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            colorAttachmentReferences[colorAttachmentReferenceCount].attachment = attachmentDescriptionCount;
-            colorAttachmentReferences[colorAttachmentReferenceCount].layout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            attachmentDescriptionCount += 1;
-            colorAttachmentReferenceCount += 1;
-        #if 0
         }
-        #endif
     }
 
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -5945,39 +5871,30 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
         subpass.pDepthStencilAttachment = NULL;
     } else {
         VulkanTextureContainer *container = (VulkanTextureContainer *)depthStencilTargetInfo->texture;
-        VkFormat format = SDLToVK_TextureFormat[container->header.info.format];
-        VkSampleCountFlags sampleCount = SDLToVK_SampleCount[container->header.info.sample_count];
 
         attachmentDescriptions[attachmentDescriptionCount].flags = 0;
-        attachmentDescriptions[attachmentDescriptionCount].format = format;
-        attachmentDescriptions[attachmentDescriptionCount].samples = sampleCount;
-
+        attachmentDescriptions[attachmentDescriptionCount].format = SDLToVK_TextureFormat[container->header.info.format];
+        attachmentDescriptions[attachmentDescriptionCount].samples = SDLToVK_SampleCount[container->header.info.sample_count];
         attachmentDescriptions[attachmentDescriptionCount].loadOp = SDLToVK_LoadOp[depthStencilTargetInfo->load_op];
         attachmentDescriptions[attachmentDescriptionCount].storeOp = SDLToVK_StoreOp[depthStencilTargetInfo->store_op];
         attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp = SDLToVK_LoadOp[depthStencilTargetInfo->stencil_load_op];
         attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp = SDLToVK_StoreOp[depthStencilTargetInfo->stencil_store_op];
-        attachmentDescriptions[attachmentDescriptionCount].initialLayout =
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        attachmentDescriptions[attachmentDescriptionCount].finalLayout =
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachmentDescriptions[attachmentDescriptionCount].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachmentDescriptions[attachmentDescriptionCount].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        depthStencilAttachmentReference.attachment =
-            attachmentDescriptionCount;
-        depthStencilAttachmentReference.layout =
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthStencilAttachmentReference.attachment = attachmentDescriptionCount;
+        depthStencilAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        subpass.pDepthStencilAttachment =
-            &depthStencilAttachmentReference;
+        subpass.pDepthStencilAttachment = &depthStencilAttachmentReference;
 
         attachmentDescriptionCount += 1;
     }
 
-    #if 0 // FIXME
-    if (texture != NULL && texture->sampleCount > VK_SAMPLE_COUNT_1_BIT) {
+    if (resolveReferenceCount > 0) {
         subpass.pResolveAttachments = resolveReferences;
     } else {
-    #endif
         subpass.pResolveAttachments = NULL;
+    }
 
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassCreateInfo.pNext = NULL;
@@ -6005,12 +5922,11 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
 
 static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     VulkanRenderer *renderer,
-    SDL_GPUGraphicsPipelineTargetInfo attachmentInfo,
+    SDL_GPUGraphicsPipelineTargetInfo targetInfo,
     VkSampleCountFlagBits sampleCount)
 {
-    VkAttachmentDescription attachmentDescriptions[2 * MAX_COLOR_TARGET_BINDINGS + 1];
+    VkAttachmentDescription attachmentDescriptions[MAX_COLOR_TARGET_BINDINGS + 1 /* depth */];
     VkAttachmentReference colorAttachmentReferences[MAX_COLOR_TARGET_BINDINGS];
-    VkAttachmentReference resolveReferences[MAX_COLOR_TARGET_BINDINGS + 1];
     VkAttachmentReference depthStencilAttachmentReference;
     SDL_GPUColorTargetDescription attachmentDescription;
     VkSubpassDescription subpass;
@@ -6018,123 +5934,62 @@ static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     VkRenderPass renderPass;
     VkResult result;
 
-    Uint32 multisampling = 0;
     Uint32 attachmentDescriptionCount = 0;
     Uint32 colorAttachmentReferenceCount = 0;
-    Uint32 resolveReferenceCount = 0;
     Uint32 i;
 
-    for (i = 0; i < attachmentInfo.num_color_targets; i += 1) {
-        attachmentDescription = attachmentInfo.color_target_descriptions[i];
+    for (i = 0; i < targetInfo.num_color_targets; i += 1) {
+        attachmentDescription = targetInfo.color_target_descriptions[i];
 
-        if (sampleCount > VK_SAMPLE_COUNT_1_BIT) {
-            multisampling = 1;
+        attachmentDescriptions[attachmentDescriptionCount].flags = 0;
+        attachmentDescriptions[attachmentDescriptionCount].format = SDLToVK_TextureFormat[attachmentDescription.format];
+        attachmentDescriptions[attachmentDescriptionCount].samples = sampleCount;
+        attachmentDescriptions[attachmentDescriptionCount].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachmentDescriptions[attachmentDescriptionCount].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachmentDescriptions[attachmentDescriptionCount].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attachmentDescriptions[attachmentDescriptionCount].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-            // Resolve attachment and multisample attachment
+        colorAttachmentReferences[colorAttachmentReferenceCount].attachment = attachmentDescriptionCount;
+        colorAttachmentReferences[colorAttachmentReferenceCount].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-            attachmentDescriptions[attachmentDescriptionCount].flags = 0;
-            attachmentDescriptions[attachmentDescriptionCount].format = SDLToVK_TextureFormat[attachmentDescription.format];
-            attachmentDescriptions[attachmentDescriptionCount].samples = VK_SAMPLE_COUNT_1_BIT;
-            attachmentDescriptions[attachmentDescriptionCount].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDescriptions[attachmentDescriptionCount].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            resolveReferences[resolveReferenceCount].attachment = attachmentDescriptionCount;
-            resolveReferences[resolveReferenceCount].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            attachmentDescriptionCount += 1;
-            resolveReferenceCount += 1;
-
-            attachmentDescriptions[attachmentDescriptionCount].flags = 0;
-            attachmentDescriptions[attachmentDescriptionCount].format = SDLToVK_TextureFormat[attachmentDescription.format];
-            attachmentDescriptions[attachmentDescriptionCount].samples = sampleCount;
-
-            attachmentDescriptions[attachmentDescriptionCount].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDescriptions[attachmentDescriptionCount].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            colorAttachmentReferences[colorAttachmentReferenceCount].attachment =
-                attachmentDescriptionCount;
-            colorAttachmentReferences[colorAttachmentReferenceCount].layout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            attachmentDescriptionCount += 1;
-            colorAttachmentReferenceCount += 1;
-        } else {
-            attachmentDescriptions[attachmentDescriptionCount].flags = 0;
-            attachmentDescriptions[attachmentDescriptionCount].format = SDLToVK_TextureFormat[attachmentDescription.format];
-            attachmentDescriptions[attachmentDescriptionCount].samples =
-                VK_SAMPLE_COUNT_1_BIT;
-            attachmentDescriptions[attachmentDescriptionCount].loadOp =
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].storeOp =
-                VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp =
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp =
-                VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescriptions[attachmentDescriptionCount].initialLayout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDescriptions[attachmentDescriptionCount].finalLayout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            colorAttachmentReferences[colorAttachmentReferenceCount].attachment = attachmentDescriptionCount;
-            colorAttachmentReferences[colorAttachmentReferenceCount].layout =
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            attachmentDescriptionCount += 1;
-            colorAttachmentReferenceCount += 1;
-        }
+        attachmentDescriptionCount += 1;
+        colorAttachmentReferenceCount += 1;
     }
 
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.flags = 0;
     subpass.inputAttachmentCount = 0;
     subpass.pInputAttachments = NULL;
-    subpass.colorAttachmentCount = attachmentInfo.num_color_targets;
+    subpass.colorAttachmentCount = targetInfo.num_color_targets;
     subpass.pColorAttachments = colorAttachmentReferences;
     subpass.preserveAttachmentCount = 0;
     subpass.pPreserveAttachments = NULL;
 
-    if (attachmentInfo.has_depth_stencil_target) {
+    if (targetInfo.has_depth_stencil_target) {
         attachmentDescriptions[attachmentDescriptionCount].flags = 0;
-        attachmentDescriptions[attachmentDescriptionCount].format =
-            SDLToVK_TextureFormat[attachmentInfo.depth_stencil_format];
+        attachmentDescriptions[attachmentDescriptionCount].format = SDLToVK_TextureFormat[targetInfo.depth_stencil_format];
         attachmentDescriptions[attachmentDescriptionCount].samples = sampleCount;
-
         attachmentDescriptions[attachmentDescriptionCount].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachmentDescriptions[attachmentDescriptionCount].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         attachmentDescriptions[attachmentDescriptionCount].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachmentDescriptions[attachmentDescriptionCount].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachmentDescriptions[attachmentDescriptionCount].initialLayout =
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        attachmentDescriptions[attachmentDescriptionCount].finalLayout =
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachmentDescriptions[attachmentDescriptionCount].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachmentDescriptions[attachmentDescriptionCount].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        depthStencilAttachmentReference.attachment =
-            attachmentDescriptionCount;
-        depthStencilAttachmentReference.layout =
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthStencilAttachmentReference.attachment = attachmentDescriptionCount;
+        depthStencilAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        subpass.pDepthStencilAttachment =
-            &depthStencilAttachmentReference;
+        subpass.pDepthStencilAttachment = &depthStencilAttachmentReference;
 
         attachmentDescriptionCount += 1;
     } else {
         subpass.pDepthStencilAttachment = NULL;
     }
 
-    if (multisampling) {
-        subpass.pResolveAttachments = resolveReferences;
-    } else {
-        subpass.pResolveAttachments = NULL;
-    }
+    // Resolve attachments aren't needed for transient passes
+    subpass.pResolveAttachments = NULL;
 
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassCreateInfo.pNext = NULL;
@@ -6166,7 +6021,6 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 {
     VkResult vulkanResult;
     Uint32 i;
-    VkSampleCountFlagBits actualSampleCount;
 
     VulkanGraphicsPipeline *graphicsPipeline = (VulkanGraphicsPipeline *)SDL_malloc(sizeof(VulkanGraphicsPipeline));
     VkGraphicsPipelineCreateInfo vkPipelineCreateInfo;
@@ -6207,18 +6061,12 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
 
-    // Find a compatible sample count to use
-
-    actualSampleCount = VULKAN_INTERNAL_GetMaxMultiSampleCount(
-        renderer,
-        SDLToVK_SampleCount[createinfo->multisample_state.sample_count]);
-
     // Create a "compatible" render pass
 
     VkRenderPass transientRenderPass = VULKAN_INTERNAL_CreateTransientRenderPass(
         renderer,
         createinfo->target_info,
-        actualSampleCount);
+        SDLToVK_SampleCount[createinfo->multisample_state.sample_count]);
 
     // Dynamic state
 
@@ -6352,11 +6200,10 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleStateCreateInfo.pNext = NULL;
     multisampleStateCreateInfo.flags = 0;
-    multisampleStateCreateInfo.rasterizationSamples = actualSampleCount;
+    multisampleStateCreateInfo.rasterizationSamples = SDLToVK_SampleCount[createinfo->multisample_state.sample_count];
     multisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
     multisampleStateCreateInfo.minSampleShading = 1.0f;
-    multisampleStateCreateInfo.pSampleMask =
-        &sampleMask;
+    multisampleStateCreateInfo.pSampleMask = &sampleMask;
     multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE;
     multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;
 
@@ -7009,9 +6856,9 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
         key.colorTargetDescriptions[i].storeOp = colorTargetInfos[i].store_op;
     }
 
-    key.colorAttachmentSampleCount = VK_SAMPLE_COUNT_1_BIT;
+    key.sampleCount = VK_SAMPLE_COUNT_1_BIT;
     if (numColorTargets > 0) {
-        key.colorAttachmentSampleCount = SDLToVK_SampleCount[((VulkanTextureContainer *)colorTargetInfos[0].texture)->header.info.sample_count];
+        key.sampleCount = SDLToVK_SampleCount[((VulkanTextureContainer *)colorTargetInfos[0].texture)->header.info.sample_count];
     }
 
     key.numColorTargets = numColorTargets;
@@ -7085,14 +6932,13 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     VulkanFramebuffer *vulkanFramebuffer = NULL;
     VkFramebufferCreateInfo framebufferInfo;
     VkResult result;
-    VkImageView imageViewAttachments[2 * MAX_COLOR_TARGET_BINDINGS + 1];
+    VkImageView imageViewAttachments[2 * MAX_COLOR_TARGET_BINDINGS + 1 /* depth */];
     FramebufferHashTableKey key;
     Uint32 attachmentCount = 0;
     Uint32 i;
 
     for (i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1) {
         key.colorAttachmentViews[i] = VK_NULL_HANDLE;
-        key.colorMultiSampleAttachmentViews[i] = VK_NULL_HANDLE;
     }
 
     key.numColorTargets = numColorTargets;
@@ -7107,12 +6953,6 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
         Uint32 rtvIndex =
             container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
         key.colorAttachmentViews[i] = subresource->renderTargetViews[rtvIndex];
-
-        #if 0 // FIXME
-        if (subresource->msaaTexHandle != NULL) {
-            key.colorMultiSampleAttachmentViews[i] = subresource->msaaTexHandle->vulkanTexture->subresources[0].renderTargetViews[0];
-        }
-        #endif
     }
 
     if (depthStencilTargetInfo == NULL) {
@@ -7157,19 +6997,21 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
         Uint32 rtvIndex =
             container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
 
-        imageViewAttachments[attachmentCount] =
-            subresource->renderTargetViews[rtvIndex];
+        imageViewAttachments[attachmentCount] = subresource->renderTargetViews[rtvIndex];
 
         attachmentCount += 1;
 
-        #if 0 // FIXME
-        if (subresource->msaaTexHandle != NULL) {
-            imageViewAttachments[attachmentCount] =
-                subresource->msaaTexHandle->vulkanTexture->subresources[0].renderTargetViews[0];
+        if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
+            VulkanTextureContainer *resolveContainer = (VulkanTextureContainer *)colorTargetInfos[i].resolve_texture;
+            VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
+                resolveContainer,
+                colorTargetInfos[i].resolve_layer,
+                colorTargetInfos[i].resolve_mip_level);
+
+            imageViewAttachments[attachmentCount] = resolveSubresource->renderTargetViews[0];
 
             attachmentCount += 1;
         }
-        #endif
     }
 
     if (depthStencilTargetInfo != NULL) {
@@ -7233,7 +7075,6 @@ static void VULKAN_INTERNAL_SetCurrentViewport(
     vulkanCommandBuffer->currentViewport.maxDepth = viewport->max_depth;
 
     // Viewport flip for consistency with other backends
-    // FIXME: need moltenVK hack
     vulkanCommandBuffer->currentViewport.y = viewport->y + viewport->h;
     vulkanCommandBuffer->currentViewport.height = -viewport->h;
 
@@ -7615,8 +7456,7 @@ static void VULKAN_BeginRenderPass(
 
     Uint32 w, h;
     VkClearValue *clearValues;
-    Uint32 clearCount = numColorTargets;
-    Uint32 multisampleAttachmentCount = 0;
+    Uint32 clearCount = 0;
     Uint32 totalColorAttachmentCount = 0;
     Uint32 i;
     SDL_GPUViewport defaultViewport;
@@ -7639,12 +7479,6 @@ static void VULKAN_BeginRenderPass(
 
         if (h < framebufferHeight) {
             framebufferHeight = h;
-        }
-
-        // FIXME: validate this in gpu.c
-        if (!(textureContainer->header.info.usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Color attachment texture was not designated as a target!");
-            return;
         }
     }
 
@@ -7676,27 +7510,30 @@ static void VULKAN_BeginRenderPass(
             colorTargetInfos[i].cycle,
             VULKAN_TEXTURE_USAGE_MODE_COLOR_ATTACHMENT);
 
-        #if 0 // FIXME
-        if (subresource->msaaTexHandle != NULL) {
-            // Transition the multisample attachment
-            VULKAN_INTERNAL_TextureSubresourceTransitionFromDefaultUsage(
+        vulkanCommandBuffer->colorAttachmentSubresources[vulkanCommandBuffer->colorAttachmentSubresourceCount] = subresource;
+        vulkanCommandBuffer->colorAttachmentSubresourceCount += 1;
+        VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, subresource->parent);
+        totalColorAttachmentCount += 1;
+        clearCount += 1;
+
+        if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
+            VulkanTextureContainer *resolveContainer = (VulkanTextureContainer *)colorTargetInfos[i].resolve_texture;
+            VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_PrepareTextureSubresourceForWrite(
                 renderer,
                 vulkanCommandBuffer,
-                VULKAN_TEXTURE_USAGE_MODE_COLOR_ATTACHMENT,
-                &subresource->msaaTexHandle->vulkanTexture->subresources[0]);
+                resolveContainer,
+                colorTargetInfos[i].resolve_layer,
+                colorTargetInfos[i].resolve_mip_level,
+                colorTargetInfos[i].cycle_resolve_texture,
+                VULKAN_TEXTURE_USAGE_MODE_COLOR_ATTACHMENT);
 
+            vulkanCommandBuffer->resolveAttachmentSubresources[vulkanCommandBuffer->resolveAttachmentSubresourceCount] = resolveSubresource;
+            vulkanCommandBuffer->resolveAttachmentSubresourceCount += 1;
+            VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, resolveSubresource->parent);
+            totalColorAttachmentCount += 1;
             clearCount += 1;
-            multisampleAttachmentCount += 1;
         }
-        #endif
-
-        vulkanCommandBuffer->colorAttachmentSubresources[i] = subresource;
-
-        VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, subresource->parent);
-        // TODO: do we need to track the msaa texture? or is it implicitly only used when the regular texture is used?
     }
-
-    vulkanCommandBuffer->colorAttachmentSubresourceCount = numColorTargets;
 
     if (depthStencilTargetInfo != NULL) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)depthStencilTargetInfo->texture;
@@ -7709,11 +7546,9 @@ static void VULKAN_BeginRenderPass(
             depthStencilTargetInfo->cycle,
             VULKAN_TEXTURE_USAGE_MODE_DEPTH_STENCIL_ATTACHMENT);
 
-        clearCount += 1;
-
         vulkanCommandBuffer->depthStencilAttachmentSubresource = subresource;
-
         VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, subresource->parent);
+        clearCount += 1;
     }
 
     // Fetch required render objects
@@ -7740,29 +7575,16 @@ static void VULKAN_BeginRenderPass(
 
     clearValues = SDL_stack_alloc(VkClearValue, clearCount);
 
-    totalColorAttachmentCount = numColorTargets + multisampleAttachmentCount;
-
     for (i = 0; i < totalColorAttachmentCount; i += 1) {
         clearValues[i].color.float32[0] = colorTargetInfos[i].clear_color.r;
         clearValues[i].color.float32[1] = colorTargetInfos[i].clear_color.g;
         clearValues[i].color.float32[2] = colorTargetInfos[i].clear_color.b;
         clearValues[i].color.float32[3] = colorTargetInfos[i].clear_color.a;
 
-        VulkanTextureContainer *container = (VulkanTextureContainer *)colorTargetInfos[i].texture;
-        VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
-            container,
-            container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : colorTargetInfos[i].layer_or_depth_plane,
-            colorTargetInfos[i].mip_level);
-
-        #if 0 // FIXME
-        if (subresource->parent->sampleCount > VK_SAMPLE_COUNT_1_BIT) {
-            clearValues[i + 1].color.float32[0] = colorTargetInfos[i].clear_color.r;
-            clearValues[i + 1].color.float32[1] = colorTargetInfos[i].clear_color.g;
-            clearValues[i + 1].color.float32[2] = colorTargetInfos[i].clear_color.b;
-            clearValues[i + 1].color.float32[3] = colorTargetInfos[i].clear_color.a;
+        if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
+            // Skip over the resolve texture, we're not clearing it
             i += 1;
         }
-        #endif
     }
 
     if (depthStencilTargetInfo != NULL) {
@@ -7968,6 +7790,15 @@ static void VULKAN_EndRenderPass(
     }
     vulkanCommandBuffer->colorAttachmentSubresourceCount = 0;
 
+    for (i = 0; i < vulkanCommandBuffer->resolveAttachmentSubresourceCount; i += 1) {
+        VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
+            renderer,
+            vulkanCommandBuffer,
+            VULKAN_TEXTURE_USAGE_MODE_COLOR_ATTACHMENT,
+            vulkanCommandBuffer->resolveAttachmentSubresources[i]);
+    }
+    vulkanCommandBuffer->resolveAttachmentSubresourceCount = 0;
+
     if (vulkanCommandBuffer->depthStencilAttachmentSubresource != NULL) {
         VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
             renderer,
@@ -7986,6 +7817,7 @@ static void VULKAN_EndRenderPass(
 
     // Reset bind state
     SDL_zeroa(vulkanCommandBuffer->colorAttachmentSubresources);
+    SDL_zeroa(vulkanCommandBuffer->resolveAttachmentSubresources);
     vulkanCommandBuffer->depthStencilAttachmentSubresource = NULL;
 
     SDL_zeroa(vulkanCommandBuffer->vertexSamplers);
@@ -9395,17 +9227,17 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
     commandBuffer->currentComputePipeline = NULL;
     commandBuffer->currentGraphicsPipeline = NULL;
 
-    for (i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1) {
-        commandBuffer->colorAttachmentSubresources[i] = NULL;
-    }
+    SDL_zeroa(commandBuffer->colorAttachmentSubresources);
+    SDL_zeroa(commandBuffer->resolveAttachmentSubresources);
+    commandBuffer->depthStencilAttachmentSubresource = NULL;
+    commandBuffer->colorAttachmentSubresourceCount = 0;
+    commandBuffer->resolveAttachmentSubresourceCount = 0;
 
     for (i = 0; i < MAX_UNIFORM_BUFFERS_PER_STAGE; i += 1) {
         commandBuffer->vertexUniformBuffers[i] = NULL;
         commandBuffer->fragmentUniformBuffers[i] = NULL;
         commandBuffer->computeUniformBuffers[i] = NULL;
     }
-
-    commandBuffer->depthStencilAttachmentSubresource = NULL;
 
     commandBuffer->needNewVertexResourceDescriptorSet = true;
     commandBuffer->needNewVertexUniformDescriptorSet = true;
