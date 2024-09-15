@@ -442,7 +442,7 @@ bool SDL_SYS_WaitProcess(SDL_Process *process, SDL_bool block, int *exitcode)
 
     result = WaitForSingleObject(process->internal->process_information.hProcess, block ? INFINITE : 0);
 
-    if (result == WAIT_OBJECT_0 || result == WAIT_TIMEOUT) {
+    if (result == WAIT_OBJECT_0) {
         DWORD rc;
         if (!GetExitCodeProcess(process->internal->process_information.hProcess, &rc)) {
             return WIN_SetError("GetExitCodeProcess");
