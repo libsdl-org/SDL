@@ -74,7 +74,6 @@ static bool SetupStream(SDL_Process *process, int fd, const char *mode, const ch
 
 static void IgnoreSignal(int sig)
 {
-#ifdef HAVE_SIGACTION
     struct sigaction action;
 
     sigaction(SIGPIPE, NULL, &action);
@@ -86,12 +85,6 @@ static void IgnoreSignal(int sig)
         action.sa_handler = SIG_IGN;
         sigaction(sig, &action, NULL);
     }
-#elif defined(HAVE_SIGNAL_H)
-    void (*ohandler)(int) = signal(sig, SIG_IGN);
-    if (ohandler != SIG_DFL && ohandler != SIG_IGN) {
-        signal(sig, ohandler);
-    }
-#endif
 }
 
 static bool CreatePipe(int fds[2])
