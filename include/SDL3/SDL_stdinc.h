@@ -984,7 +984,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
  * \since This struct is available since SDL 3.0.0.
  *
  * \sa SDL_GetEnvironment
- * \sa SDL_CleanupEnvironment
  * \sa SDL_CreateEnvironment
  * \sa SDL_GetEnvironmentVariable
  * \sa SDL_GetEnvironmentVariables
@@ -999,7 +998,9 @@ typedef struct SDL_Environment SDL_Environment;
  *
  * This is initialized at application start and is not affected by setenv()
  * and unsetenv() calls after that point. Use SDL_SetEnvironmentVariable() and
- * SDL_UnsetEnvironmentVariable() if you want to modify this environment.
+ * SDL_UnsetEnvironmentVariable() if you want to modify this environment, or
+ * SDL_setenv_unsafe() or SDL_unsetenv_unsafe() if you want changes to persist
+ * in the C runtime environment after SDL_Quit().
  *
  * \returns a pointer to the environment for the process or NULL on failure;
  *          call SDL_GetError() for more information.
@@ -1008,28 +1009,12 @@ typedef struct SDL_Environment SDL_Environment;
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CleanupEnvironment
  * \sa SDL_GetEnvironmentVariable
  * \sa SDL_GetEnvironmentVariables
  * \sa SDL_SetEnvironmentVariable
  * \sa SDL_UnsetEnvironmentVariable
  */
 extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_GetEnvironment(void);
-
-/**
- * Cleanup the process environment.
- *
- * This is called during SDL_Quit() to free the process environment. If
- * SDL_GetEnvironment() is called afterwards, it will automatically create a
- * new environment copied from the C runtime environment.
- *
- * \threadsafety This function is not thread-safe.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetEnvironment
- */
-extern SDL_DECLSPEC void SDLCALL SDL_CleanupEnvironment(void);
 
 /**
  * Create a set of environment variables

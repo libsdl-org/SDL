@@ -97,7 +97,6 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_BlitSurfaceUncheckedScaled,(SDL_Surface *a, const S
 SDL_DYNAPI_PROC(void,SDL_BroadcastCondition,(SDL_Condition *a),(a),)
 SDL_DYNAPI_PROC(SDL_bool,SDL_CaptureMouse,(SDL_bool a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_ClaimWindowForGPUDevice,(SDL_GPUDevice *a, SDL_Window *b),(a,b),return)
-SDL_DYNAPI_PROC(void,SDL_CleanupEnvironment,(void),(),)
 SDL_DYNAPI_PROC(void,SDL_CleanupTLS,(void),(),)
 SDL_DYNAPI_PROC(SDL_bool,SDL_ClearAudioStream,(SDL_AudioStream *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_ClearClipboardData,(void),(),return)

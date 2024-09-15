@@ -77,7 +77,6 @@
 #define SDL_BroadcastCondition SDL_BroadcastCondition_REAL
 #define SDL_CaptureMouse SDL_CaptureMouse_REAL
 #define SDL_ClaimWindowForGPUDevice SDL_ClaimWindowForGPUDevice_REAL
-#define SDL_CleanupEnvironment SDL_CleanupEnvironment_REAL
 #define SDL_CleanupTLS SDL_CleanupTLS_REAL
 #define SDL_ClearAudioStream SDL_ClearAudioStream_REAL
 #define SDL_ClearClipboardData SDL_ClearClipboardData_REAL
