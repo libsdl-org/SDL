@@ -1171,14 +1171,15 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_getenv(const char *name);
 /**
  * Get the value of a variable in the environment.
  *
- * This function bypasses SDL's cached copy of the environment and is not thread-safe.
+ * This function bypasses SDL's cached copy of the environment and is not
+ * thread-safe.
  *
  * \param name the name of the variable to get.
  * \returns a pointer to the value of the variable or NULL if it can't be
  *          found.
  *
- * \threadsafety This function is not thread safe, consider using
- *               SDL_getenv() instead.
+ * \threadsafety This function is not thread safe, consider using SDL_getenv()
+ *               instead.
  *
  * \since This function is available since SDL 3.0.0.
  *
