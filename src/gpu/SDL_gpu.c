@@ -1359,6 +1359,9 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
                     SDL_assert_release(!"Store op is RESOLVE or RESOLVE_AND_STORE but resolve_texture is NULL!");
                 } else {
                     TextureCommonHeader *resolveTextureHeader = (TextureCommonHeader *)color_target_infos[i].resolve_texture;
+                    if (textureHeader->info.sample_count == SDL_GPU_SAMPLECOUNT_1) {
+                        SDL_assert_release(!"Store op is RESOLVE or RESOLVE_AND_STORE but texture is not multisample!");
+                    }
                     if (resolveTextureHeader->info.sample_count != SDL_GPU_SAMPLECOUNT_1) {
                         SDL_assert_release(!"Resolve texture must have a sample count of 1!");
                     }
