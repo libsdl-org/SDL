@@ -425,7 +425,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogMessageV(int category,
 /**
  * The prototype for the log output callback function.
  *
- * This function is called by SDL when there is new text to be logged. A mutex is held so that this function is never called by more than one thread at once.
+ * This function is called by SDL when there is new text to be logged. A mutex
+ * is held so that this function is never called by more than one thread at
+ * once.
  *
  * \param userdata what was passed as `userdata` to
  *                 SDL_SetLogOutputFunction().
