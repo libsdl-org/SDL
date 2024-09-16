@@ -10334,7 +10334,7 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
     for (i = 0; i < commandBuffer->boundDescriptorSetDataCount; i += 1) {
         descriptorSetData = &commandBuffer->boundDescriptorSetDatas[i];
 
-        SDL_TryLockSpinlock(&descriptorSetData->descriptorSetPool->lock);
+        SDL_LockSpinlock(&descriptorSetData->descriptorSetPool->lock);
 
         if (descriptorSetData->descriptorSetPool->inactiveDescriptorSetCount == descriptorSetData->descriptorSetPool->inactiveDescriptorSetCapacity) {
             descriptorSetData->descriptorSetPool->inactiveDescriptorSetCapacity *= 2;
