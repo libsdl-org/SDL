@@ -35,9 +35,9 @@
     void manualBackButton();
     int messageboxShowMessageBox(int, java.lang.String, java.lang.String, int[], int[], java.lang.String[], int[]);
     void minimizeWindow();
-    int openURL(java.lang.String);
+    boolean openURL(java.lang.String);
     void requestPermission(java.lang.String, int);
-    int showToast(java.lang.String, int, int, int, int);
+    boolean showToast(java.lang.String, int, int, int, int);
     boolean sendMessage(int, int);
     boolean setActivityTitle(java.lang.String);
     boolean setCustomCursor(int);
