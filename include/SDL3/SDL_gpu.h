@@ -1511,16 +1511,19 @@ typedef struct SDL_GPUComputePipelineCreateInfo
  * The store_op field determines what is done with the color results of the
  * render pass.
  *
- * - STORE: Stores the results of the render pass in the texture. Not recommended
- *   for multisample textures as it requires significant memory bandwidth.
+ * - STORE: Stores the results of the render pass in the texture. Not
+ *   recommended for multisample textures as it requires significant memory
+ *   bandwidth.
  * - DONT_CARE: The driver will do whatever it wants with the texture memory.
  *   This is often a good option for depth/stencil textures.
- * - RESOLVE: Resolves a multisample texture into resolve_texture, which must have
- *   a sample count of 1. Then the driver may discard the multisample texture memory.
- *   This is the most performant method of resolving a multisample target.
- * - RESOLVE_AND_STORE: Resolves a multisample texture into the resolve_texture,
- *   which must have a sample count of 1. Then the driver stores the multisample
- *   texture's contents. Not recommended as it requires significant memory bandwidth.
+ * - RESOLVE: Resolves a multisample texture into resolve_texture, which must
+ *   have a sample count of 1. Then the driver may discard the multisample
+ *   texture memory. This is the most performant method of resolving a
+ *   multisample target.
+ * - RESOLVE_AND_STORE: Resolves a multisample texture into the
+ *   resolve_texture, which must have a sample count of 1. Then the driver
+ *   stores the multisample texture's contents. Not recommended as it requires
+ *   significant memory bandwidth.
  *
  * \since This struct is available since SDL 3.0.0
  *
