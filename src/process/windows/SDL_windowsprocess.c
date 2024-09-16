@@ -259,6 +259,8 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         return false;
     }
     process->internal = data;
+    data->process_information.hProcess = INVALID_HANDLE_VALUE;
+    data->process_information.hThread = INVALID_HANDLE_VALUE;
 
     creation_flags = CREATE_UNICODE_ENVIRONMENT;
 
@@ -533,8 +535,14 @@ void SDL_SYS_DestroyProcess(SDL_Process *process)
     if (io) {
         SDL_CloseIO(io);
     }
-    CloseHandle(data->process_information.hThread);
-    CloseHandle(data->process_information.hProcess);
+    if (data) {
+        if (data->process_information.hThread != INVALID_HANDLE_VALUE) {
+            CloseHandle(data->process_information.hThread);
+        }
+        if (data->process_information.hProcess != INVALID_HANDLE_VALUE) {
+            CloseHandle(data->process_information.hProcess);
+        }
+    }
     SDL_free(data);
 }
 
