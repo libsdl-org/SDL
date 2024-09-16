@@ -743,8 +743,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowDisplayScale(SDL_Window *window);
  * taken effect.
  *
  * When the new mode takes effect, an SDL_EVENT_WINDOW_RESIZED and/or an
- * SDL_EVENT_WINDOOW_PIXEL_SIZE_CHANGED event will be emitted with the new
- * mode dimensions.
+ * SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event will be emitted with the new mode
+ * dimensions.
  *
  * \param window the window to affect.
  * \param mode a pointer to the display mode to use, which can be NULL for
