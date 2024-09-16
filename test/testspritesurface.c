@@ -105,9 +105,6 @@ int main(int argc, char *argv[])
     int return_code = -1;
     int i;
 
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     if (argc > 1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "USAGE: %s\n", argv[0]);
         return_code = 1;

@@ -54,14 +54,18 @@ typedef struct SDL_LogLevel
 // The default log output function
 static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
-static void SDL_ResetLogPrefixes(void);
+static void CleanupLogPriorities(void);
+static void CleanupLogPrefixes(void);
 
-static SDL_LogLevel *SDL_loglevels;
-static bool SDL_forced_priority = false;
-static SDL_LogPriority SDL_forced_priority_level;
-static SDL_LogOutputFunction SDL_log_function = SDL_LogOutput;
-static void *SDL_log_userdata = NULL;
-static SDL_Mutex *log_function_mutex = NULL;
+static SDL_AtomicInt SDL_log_initializing;
+static SDL_AtomicInt SDL_log_initialized;
+static SDL_Mutex *SDL_log_lock;
+static SDL_Mutex *SDL_log_function_lock;
+static SDL_LogLevel *SDL_loglevels SDL_GUARDED_BY(SDL_log_lock);
+static SDL_LogPriority SDL_log_priorities[SDL_LOG_CATEGORY_CUSTOM] SDL_GUARDED_BY(SDL_log_lock);
+static SDL_LogPriority SDL_log_default_priority SDL_GUARDED_BY(SDL_log_lock);
+static SDL_LogOutputFunction SDL_log_function SDL_GUARDED_BY(SDL_log_function_lock) = SDL_LogOutput;
+static void *SDL_log_userdata SDL_GUARDED_BY(SDL_log_function_lock) = NULL;
 
 #ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic push
@@ -80,7 +84,8 @@ static const char * const SDL_priority_names[] = {
 };
 SDL_COMPILE_TIME_ASSERT(priority_names, SDL_arraysize(SDL_priority_names) == SDL_LOG_PRIORITY_COUNT);
 
-static const char *SDL_priority_prefixes[SDL_LOG_PRIORITY_COUNT];
+// This is guarded by SDL_log_function_lock because it's the logging function that calls GetLogPriorityPrefix()
+static char *SDL_priority_prefixes[SDL_LOG_PRIORITY_COUNT] SDL_GUARDED_BY(SDL_log_function_lock);
 
 // If this list changes, update the documentation for SDL_HINT_LOGGING
 static const char * const SDL_category_names[] = {
@@ -113,59 +118,149 @@ static int SDL_android_priority[SDL_LOG_PRIORITY_COUNT] = {
 };
 #endif // SDL_PLATFORM_ANDROID
 
+static void SDLCALL SDL_LoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_ResetLogPriorities();
+}
+
 void SDL_InitLog(void)
 {
-    if (!log_function_mutex) {
-        // if this fails we'll try to continue without it.
-        log_function_mutex = SDL_CreateMutex();
+    if (SDL_AtomicGet(&SDL_log_initialized)) {
+        return;
     }
+
+    // Do a little tap dance to make sure only one thread initializes logging
+    if (!SDL_AtomicCompareAndSwap(&SDL_log_initializing, false, true)) {
+        // Wait for the other thread to complete initialization
+        while (!SDL_AtomicGet(&SDL_log_initialized)) {
+            SDL_Delay(1);
+        }
+        return;
+    }
+
+    // If these fail we'll continue without them.
+    SDL_log_lock = SDL_CreateMutex();
+    SDL_log_function_lock = SDL_CreateMutex();
+
+    SDL_AddHintCallback(SDL_HINT_LOGGING, SDL_LoggingChanged, NULL);
+
+    SDL_AtomicSet(&SDL_log_initializing, false);
+
+    SDL_AtomicSet(&SDL_log_initialized, true);
 }
 
 void SDL_QuitLog(void)
 {
-    SDL_ResetLogPriorities();
-    SDL_ResetLogPrefixes();
+    SDL_RemoveHintCallback(SDL_HINT_LOGGING, SDL_LoggingChanged, NULL);
 
-    if (log_function_mutex) {
-        SDL_DestroyMutex(log_function_mutex);
-        log_function_mutex = NULL;
+    CleanupLogPriorities();
+    CleanupLogPrefixes();
+
+    if (SDL_log_lock) {
+        SDL_DestroyMutex(SDL_log_lock);
+        SDL_log_lock = NULL;
+    }
+    if (SDL_log_function_lock) {
+        SDL_DestroyMutex(SDL_log_function_lock);
+        SDL_log_function_lock = NULL;
+    }
+    SDL_AtomicSet(&SDL_log_initialized, false);
+}
+
+static void SDL_CheckInitLog()
+{
+    if (!SDL_AtomicGet(&SDL_log_initialized) &&
+        !SDL_AtomicGet(&SDL_log_initializing)) {
+        SDL_InitLog();
+    }
+}
+
+static void CleanupLogPriorities(void)
+{
+    while (SDL_loglevels) {
+        SDL_LogLevel *entry = SDL_loglevels;
+        SDL_loglevels = entry->next;
+        SDL_free(entry);
     }
 }
 
 void SDL_SetLogPriorities(SDL_LogPriority priority)
 {
-    SDL_LogLevel *entry;
+    SDL_CheckInitLog();
 
-    for (entry = SDL_loglevels; entry; entry = entry->next) {
-        entry->priority = priority;
+    SDL_LockMutex(SDL_log_lock);
+    {
+        CleanupLogPriorities();
+
+        SDL_log_default_priority = priority;
+        for (int i = 0; i < SDL_arraysize(SDL_log_priorities); ++i) {
+            SDL_log_priorities[i] = priority;
+        }
     }
-
-    SDL_forced_priority = true;
-    SDL_forced_priority_level = priority;
+    SDL_UnlockMutex(SDL_log_lock);
 }
 
 void SDL_SetLogPriority(int category, SDL_LogPriority priority)
 {
     SDL_LogLevel *entry;
 
-    for (entry = SDL_loglevels; entry; entry = entry->next) {
-        if (entry->category == category) {
-            entry->priority = priority;
-            return;
+    SDL_CheckInitLog();
+
+    SDL_LockMutex(SDL_log_lock);
+    {
+        if (category >= 0 && category < SDL_arraysize(SDL_log_priorities)) {
+            SDL_log_priorities[category] = priority;
+        } else {
+            for (entry = SDL_loglevels; entry; entry = entry->next) {
+                if (entry->category == category) {
+                    entry->priority = priority;
+                    break;
+                }
+            }
+
+            if (!entry) {
+                entry = (SDL_LogLevel *)SDL_malloc(sizeof(*entry));
+                if (entry) {
+                    entry->category = category;
+                    entry->priority = priority;
+                    entry->next = SDL_loglevels;
+                    SDL_loglevels = entry;
+                }
+            }
         }
     }
-
-    // Create a new entry
-    entry = (SDL_LogLevel *)SDL_malloc(sizeof(*entry));
-    if (entry) {
-        entry->category = category;
-        entry->priority = priority;
-        entry->next = SDL_loglevels;
-        SDL_loglevels = entry;
-    }
+    SDL_UnlockMutex(SDL_log_lock);
 }
 
-static bool SDL_ParseLogCategory(const char *string, size_t length, int *category)
+SDL_LogPriority SDL_GetLogPriority(int category)
+{
+    SDL_LogLevel *entry;
+    SDL_LogPriority priority = SDL_LOG_PRIORITY_INVALID;
+
+    SDL_CheckInitLog();
+
+    SDL_LockMutex(SDL_log_lock);
+    {
+        if (category >= 0 && category < SDL_arraysize(SDL_log_priorities)) {
+            priority = SDL_log_priorities[category];
+        } else {
+            for (entry = SDL_loglevels; entry; entry = entry->next) {
+                if (entry->category == category) {
+                    priority = entry->priority;
+                    break;
+                }
+            }
+            if (priority == SDL_LOG_PRIORITY_INVALID) {
+                priority = SDL_log_default_priority;
+            }
+        }
+    }
+    SDL_UnlockMutex(SDL_log_lock);
+
+    return priority;
+}
+
+static bool ParseLogCategory(const char *string, size_t length, int *category)
 {
     int i;
 
@@ -188,7 +283,7 @@ static bool SDL_ParseLogCategory(const char *string, size_t length, int *categor
     return false;
 }
 
-static bool SDL_ParseLogPriority(const char *string, size_t length, SDL_LogPriority *priority)
+static bool ParseLogPriority(const char *string, size_t length, SDL_LogPriority *priority)
 {
     int i;
 
@@ -220,13 +315,17 @@ static bool SDL_ParseLogPriority(const char *string, size_t length, SDL_LogPrior
     return false;
 }
 
-static bool SDL_ParseLogCategoryPriority(const char *hint, int category, SDL_LogPriority *priority)
+static void ParseLogPriorities(const char *hint)
 {
     const char *name, *next;
-    int current_category;
+    int category = DEFAULT_CATEGORY;
+    SDL_LogPriority priority = SDL_LOG_PRIORITY_COUNT;
 
-    if (category == DEFAULT_CATEGORY && SDL_strchr(hint, '=') == NULL) {
-        return SDL_ParseLogPriority(hint, SDL_strlen(hint), priority);
+    if (SDL_strchr(hint, '=') == NULL) {
+        if (ParseLogPriority(hint, SDL_strlen(hint), &priority)) {
+            SDL_SetLogPriorities(priority);
+        }
+        return;
     }
 
     for (name = hint; name; name = next) {
@@ -239,85 +338,86 @@ static bool SDL_ParseLogCategoryPriority(const char *hint, int category, SDL_Log
             ++next;
         }
 
-        if (SDL_ParseLogCategory(name, (sep - name), &current_category)) {
-            if (current_category == category) {
-                const char *value = sep + 1;
-                size_t len;
-                if (next) {
-                    len = (next - value - 1);
+        if (ParseLogCategory(name, (sep - name), &category)) {
+            const char *value = sep + 1;
+            size_t len;
+            if (next) {
+                len = (next - value - 1);
+            } else {
+                len = SDL_strlen(value);
+            }
+            if (ParseLogPriority(value, len, &priority)) {
+                if (category == DEFAULT_CATEGORY) {
+                    for (int i = 0; i < SDL_arraysize(SDL_log_priorities); ++i) {
+                        if (SDL_log_priorities[i] == SDL_LOG_PRIORITY_INVALID) {
+                            SDL_log_priorities[i] = priority;
+                        }
+                    }
+                    SDL_log_default_priority = priority;
                 } else {
-                    len = SDL_strlen(value);
+                    SDL_SetLogPriority(category, priority);
                 }
-                return SDL_ParseLogPriority(value, len, priority);
             }
         }
     }
-    return false;
-}
-
-static SDL_LogPriority SDL_GetDefaultLogPriority(int category)
-{
-    const char *hint = SDL_GetHint(SDL_HINT_LOGGING);
-    if (hint) {
-        SDL_LogPriority priority;
-
-        if (SDL_ParseLogCategoryPriority(hint, category, &priority)) {
-            return priority;
-        }
-        if (SDL_ParseLogCategoryPriority(hint, DEFAULT_CATEGORY, &priority)) {
-            return priority;
-        }
-    }
-
-    switch (category) {
-    case SDL_LOG_CATEGORY_APPLICATION:
-        return SDL_LOG_PRIORITY_INFO;
-    case SDL_LOG_CATEGORY_ASSERT:
-        return SDL_LOG_PRIORITY_WARN;
-    case SDL_LOG_CATEGORY_TEST:
-        return SDL_LOG_PRIORITY_VERBOSE;
-    default:
-        return SDL_LOG_PRIORITY_ERROR;
-    }
-}
-
-SDL_LogPriority SDL_GetLogPriority(int category)
-{
-    SDL_LogLevel *entry;
-
-    for (entry = SDL_loglevels; entry; entry = entry->next) {
-        if (entry->category == category) {
-            return entry->priority;
-        }
-    }
-
-    if (SDL_forced_priority) {
-        return SDL_forced_priority_level;
-    }
-
-    return SDL_GetDefaultLogPriority(category);
 }
 
 void SDL_ResetLogPriorities(void)
 {
-    SDL_LogLevel *entry;
+    SDL_CheckInitLog();
 
-    while (SDL_loglevels) {
-        entry = SDL_loglevels;
-        SDL_loglevels = entry->next;
-        SDL_free(entry);
+    SDL_LockMutex(SDL_log_lock);
+    {
+        CleanupLogPriorities();
+
+        SDL_log_default_priority = SDL_LOG_PRIORITY_INVALID;
+        for (int i = 0; i < SDL_arraysize(SDL_log_priorities); ++i) {
+            SDL_log_priorities[i] = SDL_LOG_PRIORITY_INVALID;
+        }
+
+        const char *hint = SDL_GetHint(SDL_HINT_LOGGING);
+        if (hint) {
+            ParseLogPriorities(hint);
+        }
+
+        if (SDL_log_default_priority == SDL_LOG_PRIORITY_INVALID) {
+            SDL_log_default_priority = SDL_LOG_PRIORITY_ERROR;
+        }
+        for (int i = 0; i < SDL_arraysize(SDL_log_priorities); ++i) {
+            if (SDL_log_priorities[i] != SDL_LOG_PRIORITY_INVALID) {
+                continue;
+            }
+
+            switch (i) {
+            case SDL_LOG_CATEGORY_APPLICATION:
+                SDL_log_priorities[i] = SDL_LOG_PRIORITY_INFO;
+                break;
+            case SDL_LOG_CATEGORY_ASSERT:
+                SDL_log_priorities[i] = SDL_LOG_PRIORITY_WARN;
+                break;
+            case SDL_LOG_CATEGORY_TEST:
+                SDL_log_priorities[i] = SDL_LOG_PRIORITY_VERBOSE;
+                break;
+            default:
+                SDL_log_priorities[i] = SDL_LOG_PRIORITY_ERROR;
+                break;
+            }
+        }
     }
-    SDL_forced_priority = false;
+    SDL_UnlockMutex(SDL_log_lock);
 }
 
-static void SDL_ResetLogPrefixes(void)
+static void CleanupLogPrefixes(void)
 {
     for (int i = 0; i < SDL_arraysize(SDL_priority_prefixes); ++i) {
-        SDL_priority_prefixes[i] = NULL;
+        if (SDL_priority_prefixes[i]) {
+            SDL_free(SDL_priority_prefixes[i]);
+            SDL_priority_prefixes[i] = NULL;
+        }
     }
 }
 
-static const char *SDL_GetLogPriorityPrefix(SDL_LogPriority priority)
+static const char *GetLogPriorityPrefix(SDL_LogPriority priority)
 {
     if (priority < SDL_LOG_PRIORITY_VERBOSE || priority >= SDL_LOG_PRIORITY_COUNT) {
         return "";
@@ -341,19 +441,30 @@ static const char *SDL_GetLogPriorityPrefix(SDL_LogPriority priority)
 
 SDL_bool SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix)
 {
-    if (priority < SDL_LOG_PRIORITY_VERBOSE || priority >= SDL_LOG_PRIORITY_COUNT) {
+    char *prefix_copy;
+
+    if (priority <= SDL_LOG_PRIORITY_INVALID || priority >= SDL_LOG_PRIORITY_COUNT) {
         return SDL_InvalidParamError("priority");
     }
 
-    if (!prefix) {
-        prefix = "";
+    if (!prefix || !*prefix) {
+        prefix_copy = SDL_strdup("");
     } else {
-        prefix = SDL_GetPersistentString(prefix);
-        if (!prefix) {
-            return false;
-        }
+        prefix_copy = SDL_strdup(prefix);
     }
-    SDL_priority_prefixes[priority] = prefix;
+    if (!prefix_copy) {
+        return false;
+    }
+
+    SDL_LockMutex(SDL_log_function_lock);
+    {
+        if (SDL_priority_prefixes[priority]) {
+            SDL_free(SDL_priority_prefixes[priority]);
+        }
+        SDL_priority_prefixes[priority] = prefix_copy;
+    }
+    SDL_UnlockMutex(SDL_log_function_lock);
+
     return true;
 }
 
@@ -455,19 +566,9 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
         return;
     }
 
-    // Make sure we don't exceed array bounds
-    if ((int)priority < 0 || priority >= SDL_LOG_PRIORITY_COUNT) {
-        return;
-    }
-
     // See if we want to do anything with this message
     if (priority < SDL_GetLogPriority(category)) {
         return;
-    }
-
-    if (!log_function_mutex) {
-        // this mutex creation can race if you log from two threads at startup. You should have called SDL_Init first!
-        log_function_mutex = SDL_CreateMutex();
     }
 
     // Render into stack buffer
@@ -501,9 +602,11 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
         }
     }
 
-    SDL_LockMutex(log_function_mutex);
-    SDL_log_function(SDL_log_userdata, category, priority, message);
-    SDL_UnlockMutex(log_function_mutex);
+    SDL_LockMutex(SDL_log_function_lock);
+    {
+        SDL_log_function(SDL_log_userdata, category, priority, message);
+    }
+    SDL_UnlockMutex(SDL_log_function_lock);
 
     // Free only if dynamically allocated
     if (message != stack_buf) {
@@ -575,9 +678,9 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
             }
         }
 #endif // !defined(SDL_PLATFORM_GDK)
-        length = SDL_strlen(SDL_GetLogPriorityPrefix(priority)) + SDL_strlen(message) + 1 + 1 + 1;
+        length = SDL_strlen(GetLogPriorityPrefix(priority)) + SDL_strlen(message) + 1 + 1 + 1;
         output = SDL_small_alloc(char, length, &isstack);
-        (void)SDL_snprintf(output, length, "%s%s\r\n", SDL_GetLogPriorityPrefix(priority), message);
+        (void)SDL_snprintf(output, length, "%s%s\r\n", GetLogPriorityPrefix(priority), message);
         tstr = WIN_UTF8ToString(output);
 
         // Output to debugger
@@ -615,7 +718,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
      */
     extern void SDL_NSLog(const char *prefix, const char *text);
     {
-        SDL_NSLog(SDL_GetLogPriorityPrefix(priority), message);
+        SDL_NSLog(GetLogPriorityPrefix(priority), message);
         return;
     }
 #elif defined(SDL_PLATFORM_PSP) || defined(SDL_PLATFORM_PS2)
@@ -623,7 +726,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         FILE *pFile;
         pFile = fopen("SDL_Log.txt", "a");
         if (pFile) {
-            (void)fprintf(pFile, "%s%s\n", SDL_GetLogPriorityPrefix(priority), message);
+            (void)fprintf(pFile, "%s%s\n", GetLogPriorityPrefix(priority), message);
             (void)fclose(pFile);
         }
     }
@@ -632,7 +735,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         FILE *pFile;
         pFile = fopen("ux0:/data/SDL_Log.txt", "a");
         if (pFile) {
-            (void)fprintf(pFile, "%s%s\n", SDL_GetLogPriorityPrefix(priority), message);
+            (void)fprintf(pFile, "%s%s\n", GetLogPriorityPrefix(priority), message);
             (void)fclose(pFile);
         }
     }
@@ -641,7 +744,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         FILE *pFile;
         pFile = fopen("sdmc:/3ds/SDL_Log.txt", "a");
         if (pFile) {
-            (void)fprintf(pFile, "%s%s\n", SDL_GetLogPriorityPrefix(priority), message);
+            (void)fprintf(pFile, "%s%s\n", GetLogPriorityPrefix(priority), message);
             (void)fclose(pFile);
         }
     }
@@ -649,22 +752,30 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 #if defined(HAVE_STDIO_H) && \
     !(defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))) && \
     !(defined(SDL_PLATFORM_WIN32))
-    (void)fprintf(stderr, "%s%s\n", SDL_GetLogPriorityPrefix(priority), message);
+    (void)fprintf(stderr, "%s%s\n", GetLogPriorityPrefix(priority), message);
 #endif
 }
 
 void SDL_GetLogOutputFunction(SDL_LogOutputFunction *callback, void **userdata)
 {
-    if (callback) {
-        *callback = SDL_log_function;
+    SDL_LockMutex(SDL_log_function_lock);
+    {
+        if (callback) {
+            *callback = SDL_log_function;
+        }
+        if (userdata) {
+            *userdata = SDL_log_userdata;
+        }
     }
-    if (userdata) {
-        *userdata = SDL_log_userdata;
-    }
+    SDL_UnlockMutex(SDL_log_function_lock);
 }
 
 void SDL_SetLogOutputFunction(SDL_LogOutputFunction callback, void *userdata)
 {
-    SDL_log_function = callback;
-    SDL_log_userdata = userdata;
+    SDL_LockMutex(SDL_log_function_lock);
+    {
+        SDL_log_function = callback;
+        SDL_log_userdata = userdata;
+    }
+    SDL_UnlockMutex(SDL_log_function_lock);
 }

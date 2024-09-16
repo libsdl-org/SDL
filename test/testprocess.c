@@ -567,9 +567,6 @@ int main(int argc, char *argv[])
 
     runner = SDLTest_CreateTestSuiteRunner(state, testSuites);
 
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_TEST, SDL_LOG_PRIORITY_INFO);
-
     /* Parse commandline */
     for (i = 1; i < argc;) {
         int consumed;

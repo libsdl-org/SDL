@@ -252,21 +252,21 @@ void SDL_InitMainThread(void)
 {
     SDL_InitTLSData();
     SDL_InitEnvironment();
+    SDL_InitProperties();
+    SDL_InitHints();
     SDL_InitTicks();
     SDL_InitFilesystem();
     SDL_InitLog();
-    SDL_InitProperties();
     SDL_GetGlobalProperties();
-    SDL_InitHints();
 }
 
 static void SDL_QuitMainThread(void)
 {
-    SDL_QuitHints();
-    SDL_QuitProperties();
     SDL_QuitLog();
     SDL_QuitFilesystem();
     SDL_QuitTicks();
+    SDL_QuitHints();
+    SDL_QuitProperties();
     SDL_QuitEnvironment();
     SDL_QuitTLSData();
 }
