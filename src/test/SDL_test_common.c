@@ -482,21 +482,6 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         }
         return -1;
     }
-    if (SDL_strcasecmp(argv[index], "--logical-scale-quality") == 0) {
-        ++index;
-        if (!argv[index]) {
-            return -1;
-        }
-        if (SDL_strcasecmp(argv[index], "nearest") == 0) {
-            state->logical_scale_mode = SDL_SCALEMODE_NEAREST;
-            return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "linear") == 0) {
-            state->logical_scale_mode = SDL_SCALEMODE_LINEAR;
-            return 2;
-        }
-        return -1;
-    }
     if (SDL_strcasecmp(argv[index], "--scale") == 0) {
         ++index;
         if (!argv[index]) {
@@ -708,7 +693,6 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags)
     state->window_w = DEFAULT_WINDOW_WIDTH;
     state->window_h = DEFAULT_WINDOW_HEIGHT;
     state->logical_presentation = SDL_LOGICAL_PRESENTATION_DISABLED;
-    state->logical_scale_mode = SDL_SCALEMODE_LINEAR;
     state->num_windows = 1;
     state->audio_freq = 22050;
     state->audio_format = SDL_AUDIO_S16;
@@ -1078,21 +1062,6 @@ static void SDLTest_PrintLogicalPresentation(char *text, size_t maxlen, SDL_Rend
         break;
     default:
         SDL_snprintfcat(text, maxlen, "0x%8.8x", logical_presentation);
-        break;
-    }
-}
-
-static void SDLTest_PrintScaleMode(char *text, size_t maxlen, SDL_ScaleMode scale_mode)
-{
-    switch (scale_mode) {
-    case SDL_SCALEMODE_NEAREST:
-        SDL_snprintfcat(text, maxlen, "NEAREST");
-        break;
-    case SDL_SCALEMODE_LINEAR:
-        SDL_snprintfcat(text, maxlen, "LINEAR");
-        break;
-    default:
-        SDL_snprintfcat(text, maxlen, "0x%8.8x", scale_mode);
         break;
     }
 }
@@ -1480,7 +1449,7 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
                 if (state->render_vsync) {
                     SDL_SetRenderVSync(state->renderers[i], state->render_vsync);
                 }
-                if (!SDL_SetRenderLogicalPresentation(state->renderers[i], state->logical_w, state->logical_h, state->logical_presentation, state->logical_scale_mode)) {
+                if (!SDL_SetRenderLogicalPresentation(state->renderers[i], state->logical_w, state->logical_h, state->logical_presentation)) {
                     SDL_Log("Couldn't set logical presentation: %s\n", SDL_GetError());
                     return false;
                 }
@@ -2587,7 +2556,6 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     SDL_DisplayID windowDisplayID = SDL_GetDisplayForWindow(window);
     const char *name;
     SDL_RendererLogicalPresentation logical_presentation;
-    SDL_ScaleMode logical_scale_mode;
 
     /* Video */
 
@@ -2638,12 +2606,9 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
-    SDL_GetRenderLogicalPresentation(renderer, &w, &h, &logical_presentation, &logical_scale_mode);
+    SDL_GetRenderLogicalPresentation(renderer, &w, &h, &logical_presentation);
     (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderLogicalPresentation: %dx%d ", w, h);
     SDLTest_PrintLogicalPresentation(text, sizeof(text), logical_presentation);
-    SDL_snprintfcat(text, sizeof(text), ", ");
-    SDLTest_PrintScaleMode(text, sizeof(text), logical_scale_mode);
-    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     /* Window */

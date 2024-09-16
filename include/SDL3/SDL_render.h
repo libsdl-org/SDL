@@ -1266,13 +1266,23 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *rend
 /**
  * Set a device independent resolution and presentation mode for rendering.
  *
- * This function sets the width and height of the logical rendering output. A
- * render target is created at the specified size and used for rendering and
- * then copied to the output during presentation.
+ * This function sets the width and height of the logical rendering output.
+ * The renderer will act as if the window is always the requested dimensions,
+ * scaling to the actual window resolution as necessary.
+ *
+ * This can be useful for games that expect a fixed size, but would like to
+ * scale the output to whatever is available, regardless of how a user resizes
+ * a window, or if the display is high DPI.
  *
  * You can disable logical coordinates by setting the mode to
  * SDL_LOGICAL_PRESENTATION_DISABLED, and in that case you get the full pixel
- * resolution of the output window.
+ * resolution of the output window; it is safe to toggle logical presentation
+ * during the rendering of a frame: perhaps most of the rendering is done to
+ * specific dimensions but to make fonts look sharp, the app turns off logical
+ * presentation while drawing text.
+ *
+ * Letterboxing will only happen if logical presentation is enabled during
+ * SDL_RenderPresent; be sure to reenable it first if you were using it.
  *
  * You can convert coordinates in an event into rendering coordinates using
  * SDL_ConvertEventToRenderCoordinates().
@@ -1281,7 +1291,6 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *rend
  * \param w the width of the logical resolution.
  * \param h the height of the logical resolution.
  * \param mode the presentation mode used.
- * \param scale_mode the scale mode used.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -1291,7 +1300,7 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *rend
  * \sa SDL_GetRenderLogicalPresentation
  * \sa SDL_GetRenderLogicalPresentationRect
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_RendererLogicalPresentation mode, SDL_ScaleMode scale_mode);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_RendererLogicalPresentation mode);
 
 /**
  * Get device independent resolution and presentation mode for rendering.
@@ -1302,8 +1311,6 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *
  * \param renderer the rendering context.
  * \param w an int to be filled with the width.
  * \param h an int to be filled with the height.
- * \param mode a pointer filled in with the presentation mode.
- * \param scale_mode a pointer filled in with the scale mode.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -1311,7 +1318,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *
  *
  * \sa SDL_SetRenderLogicalPresentation
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL_RendererLogicalPresentation *mode, SDL_ScaleMode *scale_mode);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL_RendererLogicalPresentation *mode);
 
 /**
  * Get the final presentation rectangle for rendering.

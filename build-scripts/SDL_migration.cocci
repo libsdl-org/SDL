@@ -1761,10 +1761,10 @@ expression e2;
 @@
 (
 - SDL_RenderSetLogicalSize(renderer, 0, 0)
-+ SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_ScaleModeNearest)
++ SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED)
 |
 - SDL_RenderSetLogicalSize(renderer, e1, e2)
-+ SDL_SetRenderLogicalPresentation(renderer, e1, e2, SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_ScaleModeLinear)
++ SDL_SetRenderLogicalPresentation(renderer, e1, e2, SDL_LOGICAL_PRESENTATION_LETTERBOX)
 )
 @@
 @@

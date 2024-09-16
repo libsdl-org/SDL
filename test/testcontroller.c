@@ -2086,8 +2086,7 @@ int main(int argc, char *argv[])
 
     /* scale for platforms that don't give you the window size you asked for. */
     SDL_SetRenderLogicalPresentation(screen, (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT,
-                                     SDL_LOGICAL_PRESENTATION_LETTERBOX,
-                                     SDL_SCALEMODE_LINEAR);
+                                     SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
 
     title_area.w = GAMEPAD_WIDTH;

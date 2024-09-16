@@ -117,10 +117,12 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    if (!SDL_CreateWindowAndRenderer("testspriteminimal", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("testspriteminimal", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         return_code = 2;
         goto quit;
     }
+
+    SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     sprite = CreateTexture(renderer, icon_bmp, icon_bmp_len, &sprite_w, &sprite_h);
 
