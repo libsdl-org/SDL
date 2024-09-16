@@ -76,12 +76,24 @@ static bool SetupRedirect(SDL_PropertiesID props, const char *property, HANDLE *
     return true;
 }
 
+static bool is_batch_file_path(const char *path) {
+    size_t len_path = SDL_strlen(path);
+    if (len_path < 4) {
+        return false;
+    }
+    if (SDL_strcasecmp(path + len_path - 4, ".bat") == 0 || SDL_strcasecmp(path + len_path - 4, ".cmd") == 0) {
+        return true;
+    }
+    return false;
+}
+
 static bool join_arguments(const char * const *args, LPWSTR *args_out)
 {
     size_t len;
     int i;
     int i_out;
     char *result;
+    bool batch_file = is_batch_file_path(args[0]);
 
     len = 0;
     for (i = 0; args[i]; i++) {
@@ -98,6 +110,18 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
             case '\\':
                 /* only escape backslashes that precede a double quote */
                 len += (a[1] == '"' || a[1] == '\0') ? 2 : 1;
+                break;
+            case ' ':
+            case '^':
+            case '&':
+            case '|':
+            case '<':
+            case '>':
+                if (batch_file) {
+                    len += 2;
+                } else {
+                    len += 1;
+                }
                 break;
             default:
                 len += 1;
@@ -122,7 +146,11 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
         for (; *a; a++) {
             switch (*a) {
             case '"':
-                result[i_out++] = '\\';
+                if (batch_file) {
+                    result[i_out++] = '"';
+                } else {
+                    result[i_out++] = '\\';
+                }
                 result[i_out++] = *a;
                 break;
             case '\\':
@@ -130,6 +158,22 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
                 if (a[1] == '"' || a[1] == '\0') {
                     result[i_out++] = *a;
                 }
+                break;
+            case ' ':
+                if (batch_file) {
+                    result[i_out++] = '^';
+                }
+                result[i_out++] = *a;
+                break;
+            case '^':
+            case '&':
+            case '|':
+            case '<':
+            case '>':
+                if (batch_file) {
+                    result[i_out++] = '^';
+                }
+                result[i_out++] = *a;
                 break;
             default:
                 result[i_out++] = *a;
