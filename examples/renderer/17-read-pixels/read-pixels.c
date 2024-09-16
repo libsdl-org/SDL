@@ -19,9 +19,11 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *texture = NULL;
-static SDL_Texture *converted_texture = NULL;
 static int texture_width = 0;
 static int texture_height = 0;
+static SDL_Texture *converted_texture = NULL;
+static int converted_texture_width = 0;
+static int converted_texture_height = 0;
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -68,12 +70,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SDL_DestroySurface(surface);  /* done with this, the texture has a copy of the pixels now. */
 
-    converted_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
-    if (!texture) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create conversion texture!", SDL_GetError(), NULL);
-        return SDL_APP_FAILURE;
-    }
-
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 
@@ -111,8 +107,13 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     center.y = texture_height / 2.0f;
     SDL_RenderTextureRotated(renderer, texture, NULL, &dst_rect, rotation, &center, SDL_FLIP_NONE);
 
-    /* this whole thing is _super_ expensive. Seriously, don't do this in real life. */
+    /* this next whole thing is _super_ expensive. Seriously, don't do this in real life. */
+
+    /* Download the pixels of what has just been rendered. This has to wait for the GPU to finish rendering it and everything before it,
+       and then make an expensive copy from the GPU to system RAM! */
     surface = SDL_RenderReadPixels(renderer, NULL);
+
+    /* This is also expensive, but easier: convert the pixels to a format we want. */
     if (surface && (surface->format != SDL_PIXELFORMAT_RGBA8888) && (surface->format != SDL_PIXELFORMAT_BGRA8888)) {
         SDL_Surface *converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA8888);
         SDL_DestroySurface(surface);
@@ -120,6 +121,18 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     }
 
     if (surface) {
+        /* Rebuild converted_texture if the dimensions have changed (window resized, etc). */
+        if ((surface->w != converted_texture_width) || (surface->h != converted_texture_height)) {
+            SDL_DestroyTexture(converted_texture);
+            converted_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, surface->w, surface->h);
+            if (!converted_texture) {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't (re)create conversion texture!", SDL_GetError(), NULL);
+                return SDL_APP_FAILURE;
+            }
+            converted_texture_width = surface->w;
+            converted_texture_height = surface->h;
+        }
+
         /* Turn each pixel into either black or white. This is a lousy technique but it works here.
            In real life, something like Floyd-Steinberg dithering might work
            better: https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering*/
@@ -130,9 +143,10 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                 Uint8 *p = (Uint8 *) (&pixels[x]);
                 const Uint32 average = (((Uint32) p[1]) + ((Uint32) p[2]) + ((Uint32) p[3])) / 3;
                 if (average == 0) {
-                    p[0] = 0;  // turn off alpha for pure black pixels.
+                    p[0] = p[3] = 0xFF; p[1] = p[2] = 0;  /* make pure black pixels red. */
+                } else {
+                    p[1] = p[2] = p[3] = (average > 50) ? 0xFF : 0x00;  /* make everything else either black or white. */
                 }
-                p[1] = p[2] = p[3] = (average > 50) ? 0xFF : 0x00;
             }
         }
 
@@ -142,8 +156,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
         /* draw the texture to the top-left of the screen. */
         dst_rect.x = dst_rect.y = 0.0f;
-        dst_rect.w = ((float) WINDOW_WIDTH) / 2.0f;
-        dst_rect.h = ((float) WINDOW_WIDTH) / 2.0f;
+        dst_rect.w = ((float) WINDOW_WIDTH) / 4.0f;
+        dst_rect.h = ((float) WINDOW_HEIGHT) / 4.0f;
         SDL_RenderTexture(renderer, converted_texture, NULL, &dst_rect);
     }
 

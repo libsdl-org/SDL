@@ -63,7 +63,9 @@ typedef struct SDL_RenderViewState
     SDL_Rect pixel_clip_rect;
     bool clipping_enabled;
     SDL_FPoint scale;
-
+    SDL_FPoint logical_scale;
+    SDL_FPoint logical_offset;
+    SDL_FPoint current_scale;  // this is just `scale * logical_scale`, precalculated, since we use it a lot.
 } SDL_RenderViewState;
 
 // Define the SDL texture structure
@@ -240,9 +242,8 @@ struct SDL_Renderer
     Uint64 last_present;
 
     // Support for logical output coordinates
-    SDL_Texture *logical_target;
     SDL_RendererLogicalPresentation logical_presentation_mode;
-    SDL_ScaleMode logical_scale_mode;
+    int logical_w, logical_h;
     SDL_FRect logical_src_rect;
     SDL_FRect logical_dst_rect;
 

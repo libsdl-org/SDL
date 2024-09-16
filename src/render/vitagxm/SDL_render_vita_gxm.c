@@ -1080,7 +1080,6 @@ void read_pixels(int x, int y, size_t width, size_t height, void *data)
 static SDL_Surface *VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     Uint32 format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ABGR8888;
-    int w, h;
     SDL_Surface *surface;
 
     // TODO: read from texture rendertarget.
@@ -1094,10 +1093,14 @@ static SDL_Surface *VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_
         return NULL;
     }
 
-    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
+    int y = rect->y;
+    if (!renderer->target) {
+        int w, h;
+        SDL_GetRenderOutputSize(renderer, &w, &h);
+        y = (h - y) - rect->h;
+    }
 
-    read_pixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
-                rect->w, rect->h, surface->pixels);
+    read_pixels(rect->x, y, rect->w, rect->h, surface->pixels);
 
     // Flip the rows to be top-down if necessary
 

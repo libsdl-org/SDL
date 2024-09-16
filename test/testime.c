@@ -1109,7 +1109,7 @@ int main(int argc, char *argv[])
         SDL_Renderer *renderer = state->renderers[i];
         int icon_w = 0, icon_h = 0;
 
-        SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_SCALEMODE_LINEAR);
+        SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
         ctx->window = window;
         ctx->renderer = renderer;

@@ -103,7 +103,6 @@ typedef struct
     int logical_h;
     bool auto_scale_content;
     SDL_RendererLogicalPresentation logical_presentation;
-    SDL_ScaleMode logical_scale_mode;
     float scale;
     int depth;
     float refresh_rate;
