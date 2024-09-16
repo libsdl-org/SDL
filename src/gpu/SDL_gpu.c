@@ -867,6 +867,13 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
             SDL_assert_release(!"For any texture: usage cannot contain both GRAPHICS_STORAGE_READ and SAMPLER");
             failed = true;
         }
+        if (createinfo->sample_count > 1 && (createinfo->usage & (SDL_GPU_TEXTUREUSAGE_SAMPLER |
+                                                                  SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ |
+                                                                  SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ |
+                                                                  SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE))) {
+            SDL_assert_release(!"For multisample textures: usage cannot contain SAMPLER or STORAGE flags");
+            failed = true;
+        }
         if (IsDepthFormat(createinfo->format) && (createinfo->usage & ~(SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER))) {
             SDL_assert_release(!"For depth textures: usage cannot contain any flags except for DEPTH_STENCIL_TARGET and SAMPLER");
             failed = true;
@@ -945,16 +952,10 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                     SDL_assert_release(!"For array textures: usage must not contain DEPTH_STENCIL_TARGET");
                     failed = true;
                 }
-                if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
-                    SDL_assert_release(!"For array textures: sample_count must be SDL_GPU_SAMPLECOUNT_1");
-                    failed = true;
-                }
-            } else {
-                // 2D Texture Validation
-                if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1 && createinfo->num_levels > 1) {
-                    SDL_assert_release(!"For 2D textures: if sample_count is >= SDL_GPU_SAMPLECOUNT_1, then num_levels must be 1");
-                    failed = true;
-                }
+            }
+            if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1 && createinfo->num_levels > 1) {
+                SDL_assert_release(!"For 2D multisample textures: num_levels must be 1");
+                failed = true;
             }
             if (!SDL_GPUTextureSupportsFormat(device, createinfo->format, SDL_GPU_TEXTURETYPE_2D, createinfo->usage)) {
                 SDL_assert_release(!"For 2D textures: the format is unsupported for the given usage");
@@ -1347,13 +1348,50 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         CHECK_ANY_PASS_IN_PROGRESS("Cannot begin render pass during another pass!", NULL)
 
         for (Uint32 i = 0; i < num_color_targets; i += 1) {
+            TextureCommonHeader *textureHeader = (TextureCommonHeader *)color_target_infos[i].texture;
+
             if (color_target_infos[i].cycle && color_target_infos[i].load_op == SDL_GPU_LOADOP_LOAD) {
                 SDL_assert_release(!"Cannot cycle color target when load op is LOAD!");
             }
+
+            if (color_target_infos[i].store_op == SDL_GPU_STOREOP_RESOLVE || color_target_infos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
+                if (color_target_infos[i].resolve_texture == NULL) {
+                    SDL_assert_release(!"Store op is RESOLVE or RESOLVE_AND_STORE but resolve_texture is NULL!");
+                } else {
+                    TextureCommonHeader *resolveTextureHeader = (TextureCommonHeader *)color_target_infos[i].resolve_texture;
+                    if (textureHeader->info.sample_count == SDL_GPU_SAMPLECOUNT_1) {
+                        SDL_assert_release(!"Store op is RESOLVE or RESOLVE_AND_STORE but texture is not multisample!");
+                    }
+                    if (resolveTextureHeader->info.sample_count != SDL_GPU_SAMPLECOUNT_1) {
+                        SDL_assert_release(!"Resolve texture must have a sample count of 1!");
+                    }
+                    if (resolveTextureHeader->info.format != textureHeader->info.format) {
+                        SDL_assert_release(!"Resolve texture must have the same format as its corresponding color target!");
+                    }
+                    if (resolveTextureHeader->info.type == SDL_GPU_TEXTURETYPE_3D) {
+                        SDL_assert_release(!"Resolve texture must not be of TEXTURETYPE_3D!");
+                    }
+                }
+            }
         }
 
-        if (depth_stencil_target_info != NULL && depth_stencil_target_info->cycle && (depth_stencil_target_info->load_op == SDL_GPU_LOADOP_LOAD || depth_stencil_target_info->load_op == SDL_GPU_LOADOP_LOAD)) {
-            SDL_assert_release(!"Cannot cycle depth target when load op or stencil load op is LOAD!");
+        if (depth_stencil_target_info != NULL) {
+
+            TextureCommonHeader *textureHeader = (TextureCommonHeader *)depth_stencil_target_info->texture;
+            if (!(textureHeader->info.usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
+                SDL_assert_release(!"Depth target must have been created with the DEPTH_STENCIL_TARGET usage flag!");
+            }
+
+            if (depth_stencil_target_info->cycle && (depth_stencil_target_info->load_op == SDL_GPU_LOADOP_LOAD || depth_stencil_target_info->stencil_load_op == SDL_GPU_LOADOP_LOAD)) {
+                SDL_assert_release(!"Cannot cycle depth target when load op or stencil load op is LOAD!");
+            }
+
+            if (depth_stencil_target_info->store_op == SDL_GPU_STOREOP_RESOLVE ||
+                depth_stencil_target_info->stencil_store_op == SDL_GPU_STOREOP_RESOLVE ||
+                depth_stencil_target_info->store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE ||
+                depth_stencil_target_info->stencil_store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
+                SDL_assert_release(!"RESOLVE store ops are not supported for depth-stencil targets!");
+            }
         }
     }
 
@@ -2396,6 +2434,10 @@ void SDL_BlitGPUTexture(
         if (dstHeader == NULL) {
             SDL_assert_release(!"Blit destination texture must be non-NULL");
             return; // attempting to proceed will crash
+        }
+        if (srcHeader->info.sample_count != SDL_GPU_SAMPLECOUNT_1) {
+            SDL_assert_release(!"Blit source texture must have a sample count of 1");
+            failed = true;
         }
         if ((srcHeader->info.usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) == 0) {
             SDL_assert_release(!"Blit source texture must be created with the SAMPLER usage flag");
