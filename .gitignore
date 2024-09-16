@@ -16,6 +16,7 @@ gen
 Build
 buildbot
 /VERSION.txt
+dist
 
 *.so
 *.so.*

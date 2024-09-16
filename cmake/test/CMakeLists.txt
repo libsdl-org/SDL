@@ -27,6 +27,12 @@ add_feature_info("TEST_SHARED" TEST_SHARED "Test linking with shared library")
 option(TEST_STATIC "Test linking to static SDL2 library" ON)
 add_feature_info("TEST_STATIC" TEST_STATIC "Test linking with static library")
 
+option(TEST_TEST "Test linking to SDL3_test library" ON)
+add_feature_info("TEST_TEST" TEST_STATIC "Test linking to SDL test library")
+
+option(TEST_FULL "Run complete SDL test suite" OFF)
+add_feature_info("TEST_FULL" TEST_FULL "Build full SDL testsuite")
+
 # FIXME: how to target ios/tvos with Swift?
 # https://gitlab.kitware.com/cmake/cmake/-/issues/20104
 if(APPLE AND CMAKE_SYSTEM_NAME MATCHES ".*(Darwin|MacOS).*")
@@ -89,6 +95,11 @@ if(TEST_SHARED)
     target_compile_definitions(sharedlib-shared-vars PRIVATE "EXPORT_HEADER=\"${CMAKE_CURRENT_BINARY_DIR}/sharedlib-shared-vars_export.h\"")
     set_target_properties(sharedlib-shared-vars PROPERTIES C_VISIBILITY_PRESET "hidden")
 
+    if(TEST_TEST)
+        add_executable(sdltest-shared sdltest.c)
+        target_link_libraries(sdltest-shared PRIVATE SDL2::SDL2main SDL2::SDL2test SDL2::SDL2)
+    endif()
+
     if(CMAKE_Swift_COMPILER)
         add_executable(swift-shared main.swift)
         target_include_directories(swift-shared PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/swift")
@@ -131,11 +142,25 @@ if(TEST_STATIC)
         target_include_directories(cli-static-vars PRIVATE ${SDL2_INCLUDE_DIRS})
     endif()
 
+    if(TEST_TEST)
+        add_executable(sdltest-static sdltest.c)
+        target_link_libraries(sdltest-static PRIVATE SDL2::SDL2main SDL2::SDL2test SDL2::SDL2-static)
+    endif()
+
     if(CMAKE_Swift_COMPILER)
         add_executable(swift-static main.swift)
         target_include_directories(swift-static PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/swift")
         target_link_libraries(swift-static PRIVATE SDL2::SDL2-static)
     endif()
+endif()
+
+if(TEST_FULL)
+    enable_testing()
+    set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Test timeout multiplier")
+    set(SDL_TESTS_LINK_SHARED ${TEST_SHARED})
+
+    add_definitions(-DNO_BUILD_CONFIG)
+    add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../test" SDL_test)
 endif()
 
 message(STATUS "SDL2_PREFIX:            ${SDL2_PREFIX}")
