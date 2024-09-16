@@ -1564,7 +1564,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetWindowAspectRatio(SDL_Window *window
 /**
  * Get the size of a window's borders (decorations) around the client area.
  *
- * Note: If this function fails (returns -1), the size values will be
+ * Note: If this function fails (returns SDL_FALSE), the size values will be
  * initialized to 0, 0, 0, 0 (if a non-NULL pointer is provided), as if the
  * window in question was borderless.
  *
@@ -1574,7 +1574,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetWindowAspectRatio(SDL_Window *window
  * window has been presented and composited, so that the window system has a
  * chance to decorate the window and provide the border dimensions to SDL.
  *
- * This function also returns -1 if getting the information is not supported.
+ * This function also returns SDL_FALSE if getting the information is not supported.
  *
  * \param window the window to query the size values of the border
  *               (decorations) from.
@@ -2188,7 +2188,7 @@ extern SDL_DECLSPEC const SDL_Rect * SDLCALL SDL_GetWindowMouseRect(SDL_Window *
  * The parameter `opacity` will be clamped internally between 0.0f
  * (transparent) and 1.0f (opaque).
  *
- * This function also returns -1 if setting the opacity isn't supported.
+ * This function also returns SDL_FALSE if setting the opacity isn't supported.
  *
  * \param window the window which will be made transparent or opaque.
  * \param opacity the opacity value (0.0f - transparent, 1.0f - opaque).

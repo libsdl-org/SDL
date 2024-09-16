@@ -989,7 +989,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetTextureAlphaModFloat(SDL_Texture *te
  * Set the blend mode for a texture, used by SDL_RenderTexture().
  *
  * If the blend mode is not supported, the closest supported mode is chosen
- * and this function returns -1.
+ * and this function returns SDL_FALSE.
  *
  * \param texture the texture to update.
  * \param blendMode the SDL_BlendMode to use for texture blending.

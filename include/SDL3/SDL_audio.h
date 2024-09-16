@@ -753,7 +753,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid
  * Audio devices default to a gain of 1.0f (no change in output).
  *
  * Physical devices may not have their gain changed, only logical devices, and
- * this function will always return -1 when used on physical devices. While it
+ * this function will always return SDL_FALSE when used on physical devices. While it
  * might seem attractive to adjust several logical devices at once in this
  * way, it would allow an app or library to interfere with another portion of
  * the program's otherwise-isolated devices.
