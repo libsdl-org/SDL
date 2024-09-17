@@ -48,10 +48,11 @@ typedef struct
     SDL_Mutex *lock;
 } SDL_Properties;
 
+static SDL_InitState SDL_properties_init;
 static SDL_HashTable *SDL_properties;
 static SDL_Mutex *SDL_properties_lock;
 static SDL_PropertiesID SDL_last_properties_id;
-static SDL_PropertiesID SDL_global_properties;
+static SDL_AtomicU32 SDL_global_properties;
 
 
 static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void *data, bool cleanup)
@@ -99,27 +100,42 @@ static void SDL_FreeProperties(const void *key, const void *value, void *data)
 
 bool SDL_InitProperties(void)
 {
-    if (!SDL_properties_lock) {
-        SDL_properties_lock = SDL_CreateMutex();
-        if (!SDL_properties_lock) {
-            return false;
-        }
+    if (!SDL_ShouldInit(&SDL_properties_init)) {
+        return true;
     }
+
+    // If this fails we'll continue without it.
+    SDL_properties_lock = SDL_CreateMutex();
+
+    SDL_properties = SDL_CreateHashTable(NULL, 16, SDL_HashID, SDL_KeyMatchID, SDL_FreeProperties, false);
     if (!SDL_properties) {
-        SDL_properties = SDL_CreateHashTable(NULL, 16, SDL_HashID, SDL_KeyMatchID, SDL_FreeProperties, false);
-        if (!SDL_properties) {
-            return false;
-        }
+        goto error;
     }
+
+    SDL_SetInitialized(&SDL_properties_init, true);
     return true;
+
+error:
+    SDL_SetInitialized(&SDL_properties_init, true);
+    SDL_QuitProperties();
+    return false;
 }
 
 void SDL_QuitProperties(void)
 {
-    if (SDL_global_properties) {
-        SDL_DestroyProperties(SDL_global_properties);
-        SDL_global_properties = 0;
+    if (!SDL_ShouldQuit(&SDL_properties_init)) {
+        return;
     }
+
+    SDL_PropertiesID props;
+    do {
+        props = SDL_GetAtomicU32(&SDL_global_properties);
+    } while (!SDL_CompareAndSwapAtomicU32(&SDL_global_properties, props, 0));
+
+    if (props) {
+        SDL_DestroyProperties(props);
+    }
+
     if (SDL_properties) {
         SDL_DestroyHashTable(SDL_properties);
         SDL_properties = NULL;
@@ -128,14 +144,27 @@ void SDL_QuitProperties(void)
         SDL_DestroyMutex(SDL_properties_lock);
         SDL_properties_lock = NULL;
     }
+
+    SDL_SetInitialized(&SDL_properties_init, false);
+}
+
+static bool SDL_CheckInitProperties(void)
+{
+    return SDL_InitProperties();
 }
 
 SDL_PropertiesID SDL_GetGlobalProperties(void)
 {
-    if (!SDL_global_properties) {
-        SDL_global_properties = SDL_CreateProperties();
+    SDL_PropertiesID props = SDL_GetAtomicU32(&SDL_global_properties);
+    if (!props) {
+        props = SDL_CreateProperties();
+        if (!SDL_CompareAndSwapAtomicU32(&SDL_global_properties, 0, props)) {
+            // Somebody else created global properties before us, just use those
+            SDL_DestroyProperties(props);
+            props = SDL_GetAtomicU32(&SDL_global_properties);
+        }
     }
-    return SDL_global_properties;
+    return props;
 }
 
 SDL_PropertiesID SDL_CreateProperties(void)
@@ -144,7 +173,7 @@ SDL_PropertiesID SDL_CreateProperties(void)
     SDL_Properties *properties = NULL;
     bool inserted = false;
 
-    if (!SDL_properties && !SDL_InitProperties()) {
+    if (!SDL_CheckInitProperties()) {
         return 0;
     }
 
@@ -156,14 +185,9 @@ SDL_PropertiesID SDL_CreateProperties(void)
     if (!properties->props) {
         goto error;
     }
-    properties->lock = SDL_CreateMutex();
-    if (!properties->lock) {
-        goto error;
-    }
 
-    if (!SDL_InitProperties()) {
-        goto error;
-    }
+    // If this fails we'll continue without it.
+    properties->lock = SDL_CreateMutex();
 
     SDL_LockMutex(SDL_properties_lock);
     ++SDL_last_properties_id;

@@ -252,21 +252,14 @@ void SDL_InitMainThread(void)
 {
     SDL_InitTLSData();
     SDL_InitEnvironment();
-    SDL_InitProperties();
-    SDL_InitHints();
     SDL_InitTicks();
     SDL_InitFilesystem();
-    SDL_InitLog();
-    SDL_GetGlobalProperties();
 }
 
 static void SDL_QuitMainThread(void)
 {
-    SDL_QuitLog();
     SDL_QuitFilesystem();
     SDL_QuitTicks();
-    SDL_QuitHints();
-    SDL_QuitProperties();
     SDL_QuitEnvironment();
     SDL_QuitTLSData();
 }
@@ -624,6 +617,10 @@ void SDL_Quit(void)
      * and the list of initialized subsystems.
      */
     SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
+
+    SDL_QuitLog();
+    SDL_QuitHints();
+    SDL_QuitProperties();
 
     SDL_QuitMainThread();
 
