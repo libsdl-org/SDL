@@ -239,6 +239,14 @@ SDL_LogPriority SDL_GetLogPriority(int category)
 
     SDL_CheckInitLog();
 
+    // Bypass the lock for known categories
+    // Technically if the priority was set on a different CPU the value might not
+    // be visible on this CPU for a while, but in practice it's fast enough that
+    // this performance improvement is worthwhile.
+    if (category >= 0 && category < SDL_arraysize(SDL_log_priorities)) {
+        return SDL_log_priorities[category];
+    }
+
     SDL_LockMutex(SDL_log_lock);
     {
         if (category >= 0 && category < SDL_arraysize(SDL_log_priorities)) {
