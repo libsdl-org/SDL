@@ -178,8 +178,6 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
 /**
  * Set timeout handler for test.
  *
- * Note: SDL_Init(SDL_INIT_TIMER) will be called if it wasn't done so before.
- *
  * \param timeout Timeout interval in seconds.
  * \param callback Function that will be called after timeout has elapsed.
  *
@@ -198,14 +196,6 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, SDL_TimerCallback callbac
     if (timeout < 0) {
         SDLTest_LogError("Timeout value must be bigger than zero.");
         return 0;
-    }
-
-    /* Init SDL timer if not initialized before */
-    if (!SDL_WasInit(SDL_INIT_TIMER)) {
-        if (!SDL_InitSubSystem(SDL_INIT_TIMER)) {
-            SDLTest_LogError("Failed to init timer subsystem: %s", SDL_GetError());
-            return 0;
-        }
     }
 
     /* Set timer */
