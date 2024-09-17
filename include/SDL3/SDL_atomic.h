@@ -303,9 +303,10 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  * A type representing an atomic integer value.
  *
  * This can be used to manage a value that is synchronized across multiple
- * CPUs without a race condition; when an app sets a value with SDL_SetAtomicInt
- * all other threads, regardless of the CPU it is running on, will see that
- * value when retrieved with SDL_GetAtomicInt, regardless of CPU caches, etc.
+ * CPUs without a race condition; when an app sets a value with
+ * SDL_SetAtomicInt all other threads, regardless of the CPU it is running on,
+ * will see that value when retrieved with SDL_GetAtomicInt, regardless of CPU
+ * caches, etc.
  *
  * This is also useful for atomic compare-and-swap operations: a thread can
  * change the value as long as its current value matches expectations. When
@@ -444,9 +445,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * A type representing an atomic unsigned 32-bit value.
  *
  * This can be used to manage a value that is synchronized across multiple
- * CPUs without a race condition; when an app sets a value with SDL_SetAtomicU32
- * all other threads, regardless of the CPU it is running on, will see that
- * value when retrieved with SDL_GetAtomicU32, regardless of CPU caches, etc.
+ * CPUs without a race condition; when an app sets a value with
+ * SDL_SetAtomicU32 all other threads, regardless of the CPU it is running on,
+ * will see that value when retrieved with SDL_GetAtomicU32, regardless of CPU
+ * caches, etc.
  *
  * This is also useful for atomic compare-and-swap operations: a thread can
  * change the value as long as its current value matches expectations. When
