@@ -58,6 +58,14 @@ else
     not_ok "CMakeLists.txt $version disagrees with SDL_version.h $ref_version"
 fi
 
+version=$(sed -Ene 's/^project\(fake-SDL[0-9]+ LANGUAGES C VERSION "([0-9.]*)"\)$/\1/p' build-scripts/fake/CMakeLists.txt)
+
+if [ "$ref_version" = "$version" ]; then
+    ok "build-scripts/fake/CMakeLists.txt $version"
+else
+    not_ok "build-scripts/fake/CMakeLists.txt $version disagrees with SDL_version.h $ref_version"
+fi
+
 major=$(sed -ne 's/.*SDL_MAJOR_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java)
 minor=$(sed -ne 's/.*SDL_MINOR_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java)
 micro=$(sed -ne 's/.*SDL_MICRO_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java)
