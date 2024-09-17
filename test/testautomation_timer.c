@@ -22,13 +22,6 @@ static int g_timerCallbackCalled = 0;
 
 static void SDLCALL timerSetUp(void **arg)
 {
-    /* Start SDL timer subsystem */
-    SDL_bool ret = SDL_InitSubSystem(SDL_INIT_TIMER);
-    SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_TIMER)");
-    SDLTest_AssertCheck(ret == SDL_TRUE, "Check result from SDL_InitSubSystem(SDL_INIT_TIMER)");
-    if (!ret) {
-        SDLTest_LogError("%s", SDL_GetError());
-    }
 }
 
 /* Test case functions */

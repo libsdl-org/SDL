@@ -307,20 +307,6 @@ SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
         flags_initialized |= SDL_INIT_EVENTS;
     }
 
-    // Initialize the timer subsystem
-    if (flags & SDL_INIT_TIMER) {
-        if (SDL_ShouldInitSubsystem(SDL_INIT_TIMER)) {
-            SDL_IncrementSubsystemRefCount(SDL_INIT_TIMER);
-            if (!SDL_InitTimers()) {
-                SDL_DecrementSubsystemRefCount(SDL_INIT_TIMER);
-                goto quit_and_error;
-            }
-        } else {
-            SDL_IncrementSubsystemRefCount(SDL_INIT_TIMER);
-        }
-        flags_initialized |= SDL_INIT_TIMER;
-    }
-
     // Initialize the video subsystem
     if (flags & SDL_INIT_VIDEO) {
 #ifndef SDL_VIDEO_DISABLED
@@ -573,13 +559,6 @@ void SDL_QuitSubSystem(SDL_InitFlags flags)
     }
 #endif
 
-    if (flags & SDL_INIT_TIMER) {
-        if (SDL_ShouldQuitSubsystem(SDL_INIT_TIMER)) {
-            SDL_QuitTimers();
-        }
-        SDL_DecrementSubsystemRefCount(SDL_INIT_TIMER);
-    }
-
     if (flags & SDL_INIT_EVENTS) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_EVENTS)) {
             SDL_QuitEvents();
@@ -631,6 +610,8 @@ void SDL_Quit(void)
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
+
+    SDL_QuitTimers();
 
     SDL_SetObjectsInvalid();
     SDL_AssertionsQuit();
