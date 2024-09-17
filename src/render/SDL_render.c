@@ -104,6 +104,7 @@ this should probably be removed at some point in the future.  --ryan. */
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_DST_COLOR, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD, \
                           SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD)
 
+#ifndef SDL_RENDER_DISABLED
 static const SDL_RenderDriver *render_drivers[] = {
 // Temporarily list the GPU renderer first so we get testing feedback
 #ifdef SDL_VIDEO_RENDER_GPU
@@ -144,6 +145,7 @@ static const SDL_RenderDriver *render_drivers[] = {
 #endif
     NULL
 };
+#endif // !SDL_RENDER_DISABLED
 
 static SDL_Renderer *SDL_renderers;
 
@@ -797,7 +799,11 @@ static bool UpdateLogicalPresentation(SDL_Renderer *renderer);
 
 int SDL_GetNumRenderDrivers(void)
 {
+#ifndef SDL_RENDER_DISABLED
     return SDL_arraysize(render_drivers) - 1;
+#else
+    return 0;
+#endif
 }
 
 const char *SDL_GetRenderDriver(int index)
