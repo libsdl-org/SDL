@@ -50,6 +50,7 @@ typedef struct SDL_TimerMap
 typedef struct
 {
     // Data used by the main thread
+    SDL_InitState init;
     SDL_Thread *thread;
     SDL_TimerMap *timermap;
     SDL_Mutex *timermap_lock;
@@ -209,29 +210,35 @@ bool SDL_InitTimers(void)
 {
     SDL_TimerData *data = &SDL_timer_data;
 
-    if (!SDL_AtomicGet(&data->active)) {
-        const char *name = "SDLTimer";
-        data->timermap_lock = SDL_CreateMutex();
-        if (!data->timermap_lock) {
-            return false;
-        }
-
-        data->sem = SDL_CreateSemaphore(0);
-        if (!data->sem) {
-            SDL_DestroyMutex(data->timermap_lock);
-            return false;
-        }
-
-        SDL_AtomicSet(&data->active, 1);
-
-        // Timer threads use a callback into the app, so we can't set a limited stack size here.
-        data->thread = SDL_CreateThread(SDL_TimerThread, name, data);
-        if (!data->thread) {
-            SDL_QuitTimers();
-            return false;
-        }
+    if (!SDL_ShouldInit(&data->init)) {
+        return true;
     }
+
+    data->timermap_lock = SDL_CreateMutex();
+    if (!data->timermap_lock) {
+        goto error;
+    }
+
+    data->sem = SDL_CreateSemaphore(0);
+    if (!data->sem) {
+        goto error;
+    }
+
+    SDL_AtomicSet(&data->active, true);
+
+    // Timer threads use a callback into the app, so we can't set a limited stack size here.
+    data->thread = SDL_CreateThread(SDL_TimerThread, "SDLTimer", data);
+    if (!data->thread) {
+        goto error;
+    }
+
+    SDL_SetInitialized(&data->init, true);
     return true;
+
+error:
+    SDL_SetInitialized(&data->init, true);
+    SDL_QuitTimers();
+    return false;
 }
 
 void SDL_QuitTimers(void)
@@ -240,37 +247,52 @@ void SDL_QuitTimers(void)
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    if (SDL_AtomicCompareAndSwap(&data->active, 1, 0)) { // active? Move to inactive.
-        // Shutdown the timer thread
-        if (data->thread) {
-            SDL_SignalSemaphore(data->sem);
-            SDL_WaitThread(data->thread, NULL);
-            data->thread = NULL;
-        }
+    if (!SDL_ShouldQuit(&data->init)) {
+        return;
+    }
 
+    SDL_AtomicSet(&data->active, false);
+
+    // Shutdown the timer thread
+    if (data->thread) {
+        SDL_SignalSemaphore(data->sem);
+        SDL_WaitThread(data->thread, NULL);
+        data->thread = NULL;
+    }
+
+    if (data->sem) {
         SDL_DestroySemaphore(data->sem);
         data->sem = NULL;
+    }
 
-        // Clean up the timer entries
-        while (data->timers) {
-            timer = data->timers;
-            data->timers = timer->next;
-            SDL_free(timer);
-        }
-        while (data->freelist) {
-            timer = data->freelist;
-            data->freelist = timer->next;
-            SDL_free(timer);
-        }
-        while (data->timermap) {
-            entry = data->timermap;
-            data->timermap = entry->next;
-            SDL_free(entry);
-        }
+    // Clean up the timer entries
+    while (data->timers) {
+        timer = data->timers;
+        data->timers = timer->next;
+        SDL_free(timer);
+    }
+    while (data->freelist) {
+        timer = data->freelist;
+        data->freelist = timer->next;
+        SDL_free(timer);
+    }
+    while (data->timermap) {
+        entry = data->timermap;
+        data->timermap = entry->next;
+        SDL_free(entry);
+    }
 
+    if (data->timermap_lock) {
         SDL_DestroyMutex(data->timermap_lock);
         data->timermap_lock = NULL;
     }
+
+    SDL_SetInitialized(&data->init, false);
+}
+
+static bool SDL_CheckInitTimers(void)
+{
+    return SDL_InitTimers();
 }
 
 static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_ms, SDL_NSTimerCallback callback_ns, void *userdata)
@@ -284,14 +306,11 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
         return 0;
     }
 
-    SDL_LockSpinlock(&data->lock);
-    if (!SDL_AtomicGet(&data->active)) {
-        if (!SDL_InitTimers()) {
-            SDL_UnlockSpinlock(&data->lock);
-            return 0;
-        }
+    if (!SDL_CheckInitTimers()) {
+        return 0;
     }
 
+    SDL_LockSpinlock(&data->lock);
     timer = data->freelist;
     if (timer) {
         data->freelist = timer->next;

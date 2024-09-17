@@ -47,6 +47,24 @@ extern bool SDL_endswith(const char *string, const char *suffix);
  */
 extern int SDL_URIToLocal(const char *src, char *dst);
 
+typedef enum SDL_InitStatus
+{
+    SDL_INIT_STATUS_UNINITIALIZED,
+    SDL_INIT_STATUS_INITIALIZING,
+    SDL_INIT_STATUS_INITIALIZED,
+    SDL_INIT_STATUS_UNINITIALIZING
+} SDL_InitStatus;
+
+typedef struct SDL_InitState
+{
+    SDL_AtomicInt status;
+    SDL_ThreadID thread;
+} SDL_InitState;
+
+extern bool SDL_ShouldInit(SDL_InitState *state);
+extern bool SDL_ShouldQuit(SDL_InitState *state);
+extern void SDL_SetInitialized(SDL_InitState *state, bool initialized);
+
 typedef enum
 {
     SDL_OBJECT_TYPE_UNKNOWN,
