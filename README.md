@@ -1,3 +1,7 @@
+# SDL3 WebGPU Fork
+
+**For more information on building and testing**:
+https://github.com/klukaszek/SDL3-WebGPU-Examples
 
 # Simple DirectMedia Layer (SDL) Version 3.0
 

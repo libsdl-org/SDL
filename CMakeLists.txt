@@ -184,6 +184,7 @@ set(SDL_STATIC_AVAILABLE ON)
 # All these *_DEFAULT vars will default to ON if not specified,
 # so you only need to override them if they need to be disabled.
 if(EMSCRIPTEN)
+
   # Set up default values for the currently supported set of subsystems:
   # Emscripten/Javascript does not have assembly support, a dynamic library
   # loading architecture, or low-level CPU inspection.
@@ -1494,7 +1495,58 @@ elseif(EMSCRIPTEN)
     if(SDL_GPU)
       set(SDL_WEBGPU ON)
       set(SDL_RENDER_WEBGPU ON)
+      set(SPIRV_CROSS_EMSC ${SDL3_SOURCE_DIR}/SPIRV-Cross/build)
+
+      if (NOT EXISTS ${SDL3_SOURCE_DIR}/SPIRV-Cross/build)
+        file(MAKE_DIRECTORY ${SDL3_SOURCE_DIR}/SPIRV-Cross/build)
+      endif()
+
+      if (NOT EXISTS ${SDL3_SOURCE_DIR}/SPIRV-Cross/build/CMakeCache.txt)
+        execute_process(
+          COMMAND emcmake cmake ..
+          WORKING_DIRECTORY ${SDL3_SOURCE_DIR}/SPIRV-Cross/build
+        )
+      endif()
+
+      if (NOT EXISTS ${SDL3_SOURCE_DIR}/SPIRV-Cross/build/libspirv-cross-c.a)
+        execute_process(
+          COMMAND emmake make
+          WORKING_DIRECTORY ${SDL3_SOURCE_DIR}/SPIRV-Cross/build
+        )
+      endif()
+
+      add_subdirectory("${SDL3_SOURCE_DIR}/SPIRV-Cross" EXCLUDE_FROM_ALL)
+
       sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.c")
+
+      # We must link against libspirv-cross for Shader reflection
+      set(SPIRV_CROSS_LIBRARIES
+          ${SPIRV_CROSS_EMSC}/libspirv-cross-c.a
+          ${SPIRV_CROSS_EMSC}/libspirv-cross-cpp.a
+          ${SPIRV_CROSS_EMSC}/libspirv-cross-core.a
+          ${SPIRV_CROSS_EMSC}/libspirv-cross-glsl.a
+          ${SPIRV_CROSS_EMSC}/libspirv-cross-hlsl.a
+          ${SPIRV_CROSS_EMSC}/libspirv-cross-msl.a
+          ${SPIRV_CROSS_EMSC}/libspirv-cross-reflect.a
+          ${SPIRV_CROSS_EMSC}/libspirv-cross-util.a
+      )
+
+      # Link against SPIRV-Cross
+      sdl_link_dependency(spirv-cross-c LIBS ${SPIRV_CROSS_LIBRARIES})
+      sdl_include_directories(PRIVATE ${SDL3_SOURCE_DIR}/SPIRV-Cross)
+      link_directories(${SPIRV_CROSS_LIBRARY_DIRS})
+
+      sdl_include_directories(PRIVATE /usr/include/c++/11/)
+      sdl_include_directories(PRIVATE /usr/include/x86_64-linux-gnu/c++/11/)
+      sdl_link_dependency(stdc++ LIBS stdc++)
+
+      # Link against Tint for SPIR-V to WGSL conversion
+      set(TINT_DIR ${SDL3_SOURCE_DIR}/src/gpu/webgpu/tint-wasm/)
+      set(TINT_WASM ${TINT_DIR}/libtint_wasm.a)
+      sdl_link_dependency(tint LIBS ${TINT_WASM})
+      sdl_include_directories(PRIVATE ${TINT_DIR})
+      link_directories(${TINT_DIR})
+
       set(HAVE_WEBGPU TRUE)
       set(HAVE_RENDER_WEBGPU TRUE)
     endif()
