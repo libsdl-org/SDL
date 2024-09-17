@@ -107,6 +107,8 @@ static bool V4L2_WaitDevice(SDL_Camera *device)
         rc = select(fd + 1, &fds, NULL, NULL, &tv);
         if ((rc == -1) && (errno == EINTR)) {
             rc = 0;  // pretend it was a timeout, keep looping.
+        } else if (rc > 0) {
+            return true;
         }
 
         // Thread is requested to shut down
