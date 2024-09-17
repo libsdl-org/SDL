@@ -116,6 +116,12 @@ void (*app_indicator_set_menu)(AppIndicator *self, GtkMenu *menu);
 
 static SDL_bool gtk_is_init = SDL_FALSE;
 
+static int main_gtk_thread(void *data)
+{
+    gtk_main();
+    return 0;
+}
+
 static void *libappindicator = NULL;
 static void *libgtk = NULL;
 static void *libgdk = NULL;
@@ -201,6 +207,8 @@ static SDL_bool init_gtk(void)
 
     gtk_is_init = SDL_TRUE;
 
+    SDL_DetachThread(SDL_CreateThread(main_gtk_thread, "tray gtk", NULL));
+
     return SDL_TRUE;
 }
 
@@ -236,12 +244,6 @@ static void call_callback(GtkMenuItem *item, gpointer ptr)
     }
 }
 
-static int main_gtk_thread(void *data)
-{
-    gtk_main();
-    return 0;
-}
-
 /* TODO: Replace this with a safer alternative */
 static SDL_bool get_tmp_filename(char *buffer, size_t size)
 {
@@ -262,8 +264,6 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
         return NULL;
     }
 
-    SDL_DetachThread(SDL_CreateThread(main_gtk_thread, "tray gtk", NULL));
-
     SDL_Tray *tray = (SDL_Tray *) SDL_malloc(sizeof(SDL_Tray));
 
     if (!tray) {
@@ -278,9 +278,23 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     tray->indicator = app_indicator_new(TRAY_APPINDICATOR_ID, tray->icon_path,
                                         APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
     app_indicator_set_status(tray->indicator, APP_INDICATOR_STATUS_ACTIVE);
-    //app_indicator_set_icon(indicator, tray->icon);
 
     return tray;
+}
+
+void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
+{
+    if (icon) {
+        SDL_SaveBMP(icon, tray->icon_path);
+        app_indicator_set_icon(tray->indicator, tray->icon_path);
+    } else {
+        app_indicator_set_icon(tray->indicator, NULL);
+    }
+}
+
+void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
+{
+    /* AppIndicator provides no tooltip support. */
 }
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)

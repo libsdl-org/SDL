@@ -42,29 +42,266 @@ typedef struct SDL_Tray SDL_Tray;
 typedef struct SDL_TrayMenu SDL_TrayMenu;
 typedef struct SDL_TrayEntry SDL_TrayEntry;
 
+/**
+ * Flags that control the creation of system tray entries.
+ *
+ * Some of these flags are mandatory; exactly one of them must be specified at
+ * the time a tray entry is created. Other flags are optional; zero or more of
+ * those can be OR'ed together with the mandatory flag.
+ */
 typedef enum {
-    /* Mandatory; must be specified at creation time */
+    /** Make the entry a simple button. This is a mandatory flag. */
     SDL_TRAYENTRY_BUTTON = 0,
-    SDL_TRAYENTRY_CHECKBOX = (1 << 0),
-    SDL_TRAYENTRY_SUBMENU = (1 << 1),
+    /** Make the entry a checkbox. This is a mandatory flag. */
+    SDL_TRAYENTRY_CHECKBOX,
+    /** Prepatre the entry to have a submenu. This is a mandatory flag. */
+    SDL_TRAYENTRY_SUBMENU,
 
-    /* Optional; can be changed later */
-    SDL_TRAYENTRY_DISABLED = (1 << 16),
-    SDL_TRAYENTRY_CHECKED = (1 << 17),
+    /** Make the entry disabled. */
+    SDL_TRAYENTRY_DISABLED = (1 << 31),
+    /** Make the entry checked. This is valid only for checkboxes. */
+    SDL_TRAYENTRY_CHECKED = (1 << 30),
 } SDL_TrayEntryFlags;
 
+/**
+ * A callback that is invoked when a tray entry is selected.
+ *
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked.
+ * \param entry the tray entry that was selected.
+ */
 typedef void (*SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
 
+/**
+ * Create an icon to be placed in the operating system's tray, or equivalent.
+ *
+ * Many platforms advise not using a system tray unless persistence is a
+ * necessary feature.
+ *
+ * \param icon a surface to be used as icon. May be NULL.
+ * \param tooltip a tooltip to be displayed when the mouse hovers the icon. Not
+ *        supported on all platforms. May be NULL.
+ * \returns The newly created system tray icon.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetTrayIcon
+ * \sa SDL_SetTrayTooltip
+ * \sa SDL_CreateTrayMenu
+ * \sa SDL_DestroyTray
+ */
 extern SDL_DECLSPEC SDL_Tray *SDLCALL SDL_CreateTray(SDL_Surface *icon, const char *tooltip);
+
+/**
+ * Updates the system tray icon's icon.
+ *
+ * \param tray the tray icon to be updated.
+ * \param icon the new icon. May be NULL.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateTray
+ * \sa SDL_SetTrayTooltip
+ * \sa SDL_CreateTrayMenu
+ * \sa SDL_DestroyTray
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon);
+
+/**
+ * Updates the system tray icon's tooltip.
+ *
+ * \param tray the tray icon to be updated.
+ * \param tooltip the new tooltip. May be NULL.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateTray
+ * \sa SDL_SetTrayIcon
+ * \sa SDL_CreateTrayMenu
+ * \sa SDL_DestroyTray
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip);
+
+/**
+ * Create a menu for a system tray.
+ *
+ * This should be called at most once per tray icon.
+ *
+ * This function does the same thing as SDL_CreateTraySubmenu, except that it
+ * takes a SDL_Tray instead of a SDL_TrayEntry.
+ *
+ * A menu does not need to be destroyed; it will be destroyed with the tray.
+ *
+ * \param tray the tray to bind the menu to.
+ * \returns the newly created menu.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateTray
+ * \sa SDL_CreateTraySubmenu
+ * \sa SDL_AppendTrayEntry
+ * \sa SDL_AppendTraySeparator
+ */
 extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTrayMenu(SDL_Tray *tray);
+
+/**
+ * Create a submenu for a system tray entry.
+ *
+ * This should be called at most once per tray entry.
+ *
+ * This function does the same thing as SDL_CreateTrayMenu, except that it
+ * takes a SDL_TrayEntry instead of a SDL_Tray.
+ *
+ * A menu does not need to be destroyed; it will be destroyed with the tray.
+ *
+ * \param entry the tray entry to bind the menu to.
+ * \returns the newly created menu.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateTrayMenu
+ * \sa SDL_AppendTrayEntry
+ * \sa SDL_AppendTraySeparator
+ */
 extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTraySubmenu(SDL_TrayEntry *entry);
+
+/**
+ * Create a menu item (entry) and append it to the given menu.
+ *
+ * An entry does not need to be destroyed; it will be destroyed with the tray.
+ *
+ * \param menu the menu to append the entry to.
+ * \param label the label to be displayed on the entry.
+ * \param flags a combination of flags, some of which are mandatory. See SDL_TrayEntryFlags.
+ * \returns the newly created entry.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_TrayEntryFlags
+ * \sa SDL_CreateTrayMenu
+ * \sa SDL_CreateTraySubmenu
+ * \sa SDL_SetTrayEntryChecked
+ * \sa SDL_GetTrayEntryChecked
+ * \sa SDL_SetTrayEntryEnabled
+ * \sa SDL_GetTrayEntryEnabled
+ * \sa SDL_SetTrayEntryCallback
+ * \sa SDL_AppendTraySeparator
+ */
 extern SDL_DECLSPEC SDL_TrayEntry *SDLCALL SDL_AppendTrayEntry(SDL_TrayMenu *menu, const char *label, SDL_TrayEntryFlags flags);
+
+/**
+ * Append a separator to the given menu.
+ *
+ * \param menu the menu to append the entry to.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateTrayMenu
+ * \sa SDL_CreateTraySubmenu
+ * \sa SDL_AppendTrayEntry
+ */
 extern SDL_DECLSPEC void SDLCALL SDL_AppendTraySeparator(SDL_TrayMenu *menu);
+
+/**
+ * Sets whether or not an entry is checked.
+ *
+ * The entry must have been created with the SDL_TRAYENTRY_CHECKBOX flag.
+ *
+ * \param entry the entry to be updated.
+ * \param checked SDL_TRUE if the entry should be checked; SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_TrayEntryFlags
+ * \sa SDL_AppendTrayEntry
+ * \sa SDL_GetTrayEntryChecked
+ * \sa SDL_SetTrayEntryEnabled
+ * \sa SDL_GetTrayEntryEnabled
+ * \sa SDL_SetTrayEntryCallback
+ */
 extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, SDL_bool checked);
+
+/**
+ * Gets whether or not an entry is checked.
+ *
+ * The entry must have been created with the SDL_TRAYENTRY_CHECKBOX flag.
+ *
+ * \param entry the entry to be read.
+ * \returns SDL_TRUE if the entry is checked; SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_TrayEntryFlags
+ * \sa SDL_AppendTrayEntry
+ * \sa SDL_SetTrayEntryChecked
+ * \sa SDL_SetTrayEntryEnabled
+ * \sa SDL_GetTrayEntryEnabled
+ * \sa SDL_SetTrayEntryCallback
+ */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetTrayEntryChecked(SDL_TrayEntry *entry);
+
+/**
+ * Sets whether or not an entry is enabled.
+ *
+ * \param entry the entry to be updated.
+ * \param enabled SDL_TRUE if the entry should be enabled; SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AppendTrayEntry
+ * \sa SDL_SetTrayEntryChecked
+ * \sa SDL_GetTrayEntryChecked
+ * \sa SDL_GetTrayEntryEnabled
+ * \sa SDL_SetTrayEntryCallback
+ */
 extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, SDL_bool enabled);
+
+/**
+ * Gets whether or not an entry is enabled.
+ *
+ * \param entry the entry to be read.
+ * \returns SDL_TRUE if the entry is enabled; SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AppendTrayEntry
+ * \sa SDL_SetTrayEntryChecked
+ * \sa SDL_GetTrayEntryChecked
+ * \sa SDL_SetTrayEntryEnabled
+ * \sa SDL_SetTrayEntryCallback
+ */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry);
+
+/**
+ * Sets a callback to be invoked when the entry is selected.
+ *
+ * \param entry the entry to be updated.
+ * \param callback a callback to be invoked when the entry is selected.
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_TrayCallback
+ * \sa SDL_AppendTrayEntry
+ * \sa SDL_SetTrayEntryChecked
+ * \sa SDL_GetTrayEntryChecked
+ * \sa SDL_SetTrayEntryEnabled
+ * \sa SDL_GetTrayEntryEnabled
+ */
 extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata);
+
+/**
+ * Destroys a tray object.
+ *
+ * This also destroys all associated menus and entries.
+ *
+ * \param tray the tray icon to be destroyed.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateTray
+ */
 extern SDL_DECLSPEC void SDLCALL SDL_DestroyTray(SDL_Tray *tray);
 
 /* Ends C function definitions when using C++ */

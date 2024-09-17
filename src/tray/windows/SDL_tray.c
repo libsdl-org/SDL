@@ -175,7 +175,7 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     tray->entries = NULL;
 
     char classname[32];
-    SDL_snprintf(classname, sizeof(classname), "SDLTray%lld", get_next_id());
+    SDL_snprintf(classname, sizeof(classname), "SDLTray%d", (unsigned int) get_next_id());
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
     WNDCLASS wc;
@@ -217,6 +217,40 @@ no_icon:
     SetWindowLongPtr(tray->hwnd, GWLP_USERDATA, (LONG_PTR) tray);
 
     return tray;
+}
+
+void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
+{
+    if (tray->icon) {
+        DestroyIcon(tray->icon);
+    }
+
+    if (icon) {
+        SDL_Surface *iconfmt = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
+        if (!iconfmt) {
+            /* TODO: Ignore errors silently, as in SDL_CreateTray? */
+            return;
+        }
+
+        tray->nid.hIcon = CreateIconFromRGBA(iconfmt->w, iconfmt->h, iconfmt->pixels);
+        tray->icon = tray->nid.hIcon;
+    } else {
+        tray->nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+        tray->icon = tray->nid.hIcon;
+    }
+
+    Shell_NotifyIconW(NIM_MODIFY, &tray->nid);
+}
+
+void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
+{
+    if (tooltip) {
+        mbstowcs_s(NULL, tray->nid.szTip, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip), tooltip, _TRUNCATE);
+    } else {
+        tray->nid.szTip[0] = '\0';
+    }
+
+    Shell_NotifyIconW(NIM_MODIFY, &tray->nid);
 }
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
@@ -286,7 +320,7 @@ void SDL_AppendTraySeparator(SDL_TrayMenu *menu)
 
 void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, SDL_bool checked)
 {
-    CheckMenuItem(entry->menu->hMenu, entry->id, checked ? MF_CHECKED : MF_UNCHECKED);
+    CheckMenuItem(entry->menu->hMenu, (UINT) entry->id, checked ? MF_CHECKED : MF_UNCHECKED);
 }
 
 SDL_bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
@@ -295,14 +329,14 @@ SDL_bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
     mii.cbSize = sizeof(MENUITEMINFO);
     mii.fMask = MIIM_STATE;
 
-    GetMenuItemInfo(entry->menu->hMenu, entry->id, FALSE, &mii);
+    GetMenuItemInfo(entry->menu->hMenu, (UINT) entry->id, FALSE, &mii);
 
     return !!(mii.fState & MFS_CHECKED);
 }
 
 void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, SDL_bool enabled)
 {
-    EnableMenuItem(entry->menu->hMenu, entry->id, MF_BYCOMMAND | (enabled ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
+    EnableMenuItem(entry->menu->hMenu, (UINT) entry->id, MF_BYCOMMAND | (enabled ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
 }
 
 SDL_bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
@@ -311,7 +345,7 @@ SDL_bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
     mii.cbSize = sizeof(MENUITEMINFO);
     mii.fMask = MIIM_STATE;
 
-    GetMenuItemInfo(entry->menu->hMenu, entry->id, FALSE, &mii);
+    GetMenuItemInfo(entry->menu->hMenu, (UINT) entry->id, FALSE, &mii);
 
     return !!(mii.fState & MFS_ENABLED);
 }

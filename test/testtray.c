@@ -45,7 +45,6 @@ int main(int argc, char **argv)
   SDL_Event e;
   while (SDL_WaitEvent(&e)) {
     if (e.type == SDL_EVENT_QUIT) {
-      SDL_Log("Someone said quit\n");
       break;
     }
   }

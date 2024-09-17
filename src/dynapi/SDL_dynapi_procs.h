@@ -1213,3 +1213,5 @@ SDL_DYNAPI_PROC(void,SDL_SetTrayEntryEnabled,(SDL_TrayEntry *a, SDL_bool b),(a,b
 SDL_DYNAPI_PROC(SDL_bool,SDL_GetTrayEntryEnabled,(SDL_TrayEntry *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_SetTrayEntryCallback,(SDL_TrayEntry *a, SDL_TrayCallback b, void *c),(a,b,c),)
 SDL_DYNAPI_PROC(void,SDL_DestroyTray,(SDL_Tray *a),(a),)
+SDL_DYNAPI_PROC(void,SDL_SetTrayIcon,(SDL_Tray *a, SDL_Surface *b),(a,b),)
+SDL_DYNAPI_PROC(void,SDL_SetTrayTooltip,(SDL_Tray *a, const char *b),(a,b),)

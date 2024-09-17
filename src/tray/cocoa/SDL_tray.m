@@ -82,6 +82,12 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     tray->statusItem = [tray->statusBar statusItemWithLength:NSVariableStatusItemLength];
     [app activateIgnoringOtherApps:TRUE];
 
+    if (tooltip) {
+        tray->statusItem.button.toolTip = [NSString stringWithUTF8String:tooltip];
+    } else {
+        tray->statusItem.button.toolTip = nil;
+    }
+
     if (icon) {
         SDL_Surface *iconfmt = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
         if (!iconfmt) {
@@ -116,6 +122,55 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
 skip_putting_an_icon:
     return tray;
+}
+
+void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
+{
+    if (!icon) {
+        tray->statusItem.button.image = nil;
+        return;
+    }
+
+    SDL_Surface *iconfmt = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
+    if (!iconfmt) {
+        /* TODO: Ignore errors silently, as in SDL_CreateTray? */
+        tray->statusItem.button.image = nil;
+        return;
+    }
+
+    NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:(unsigned char **)&iconfmt->pixels
+                                                                       pixelsWide:iconfmt->w
+                                                                       pixelsHigh:iconfmt->h
+                                                                    bitsPerSample:8
+                                                                  samplesPerPixel:4
+                                                                         hasAlpha:YES
+                                                                         isPlanar:NO
+                                                                   colorSpaceName:NSCalibratedRGBColorSpace
+                                                                      bytesPerRow:iconfmt->pitch
+                                                                     bitsPerPixel:32];
+    NSImage *iconimg = [[NSImage alloc] initWithSize:NSMakeSize(iconfmt->w, iconfmt->h)];
+    [iconimg addRepresentation:bitmap];
+
+    /* A typical icon size is 22x22 on macOS. Failing to resize the icon
+       may give oversized status bar buttons. */
+    NSImage *iconimg22 = [[NSImage alloc] initWithSize:NSMakeSize(22, 22)];
+    [iconimg22 lockFocus];
+    [iconimg setSize:NSMakeSize(22, 22)];
+    [iconimg drawInRect:NSMakeRect(0, 0, 22, 22)];
+    [iconimg22 unlockFocus];
+
+    tray->statusItem.button.image = iconimg22;
+
+    SDL_DestroySurface(iconfmt);
+}
+
+void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
+{
+    if (tooltip) {
+        tray->statusItem.button.toolTip = [NSString stringWithUTF8String:tooltip];
+    } else {
+        tray->statusItem.button.toolTip = nil;
+    }
 }
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)

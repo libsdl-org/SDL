@@ -1207,3 +1207,5 @@
 #define SDL_GetTrayEntryEnabled SDL_GetTrayEntryEnabled_REAL
 #define SDL_SetTrayEntryCallback SDL_SetTrayEntryCallback_REAL
 #define SDL_DestroyTray SDL_DestroyTray_REAL
+#define SDL_SetTrayIcon SDL_SetTrayIcon_REAL
+#define SDL_SetTrayTooltip SDL_SetTrayTooltip_REAL
