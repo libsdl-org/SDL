@@ -88,6 +88,7 @@
 #define SDL_CloseStorage SDL_CloseStorage_REAL
 #define SDL_CompareAndSwapAtomicInt SDL_CompareAndSwapAtomicInt_REAL
 #define SDL_CompareAndSwapAtomicPointer SDL_CompareAndSwapAtomicPointer_REAL
+#define SDL_CompareAndSwapAtomicU32 SDL_CompareAndSwapAtomicU32_REAL
 #define SDL_ComposeCustomBlendMode SDL_ComposeCustomBlendMode_REAL
 #define SDL_ConvertAudioSamples SDL_ConvertAudioSamples_REAL
 #define SDL_ConvertEventToRenderCoordinates SDL_ConvertEventToRenderCoordinates_REAL
@@ -240,6 +241,7 @@
 #define SDL_GetAssertionReport SDL_GetAssertionReport_REAL
 #define SDL_GetAtomicInt SDL_GetAtomicInt_REAL
 #define SDL_GetAtomicPointer SDL_GetAtomicPointer_REAL
+#define SDL_GetAtomicU32 SDL_GetAtomicU32_REAL
 #define SDL_GetAudioDeviceChannelMap SDL_GetAudioDeviceChannelMap_REAL
 #define SDL_GetAudioDeviceFormat SDL_GetAudioDeviceFormat_REAL
 #define SDL_GetAudioDeviceGain SDL_GetAudioDeviceGain_REAL
@@ -804,6 +806,7 @@
 #define SDL_SetAssertionHandler SDL_SetAssertionHandler_REAL
 #define SDL_SetAtomicInt SDL_SetAtomicInt_REAL
 #define SDL_SetAtomicPointer SDL_SetAtomicPointer_REAL
+#define SDL_SetAtomicU32 SDL_SetAtomicU32_REAL
 #define SDL_SetAudioDeviceGain SDL_SetAudioDeviceGain_REAL
 #define SDL_SetAudioPostmixCallback SDL_SetAudioPostmixCallback_REAL
 #define SDL_SetAudioStreamFormat SDL_SetAudioStreamFormat_REAL

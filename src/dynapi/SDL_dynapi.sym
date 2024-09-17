@@ -63,6 +63,7 @@ SDL3_0.0.0 {
     SDL_CloseStorage;
     SDL_CompareAndSwapAtomicInt;
     SDL_CompareAndSwapAtomicPointer;
+    SDL_CompareAndSwapAtomicU32;
     SDL_ComposeCustomBlendMode;
     SDL_ConvertAudioSamples;
     SDL_ConvertEventToRenderCoordinates;
@@ -215,6 +216,7 @@ SDL3_0.0.0 {
     SDL_GetAssertionReport;
     SDL_GetAtomicInt;
     SDL_GetAtomicPointer;
+    SDL_GetAtomicU32;
     SDL_GetAudioDeviceChannelMap;
     SDL_GetAudioDeviceFormat;
     SDL_GetAudioDeviceGain;
@@ -779,6 +781,7 @@ SDL3_0.0.0 {
     SDL_SetAssertionHandler;
     SDL_SetAtomicInt;
     SDL_SetAtomicPointer;
+    SDL_SetAtomicU32;
     SDL_SetAudioDeviceGain;
     SDL_SetAudioPostmixCallback;
     SDL_SetAudioStreamFormat;
