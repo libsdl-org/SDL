@@ -2474,7 +2474,7 @@ void SDL_UpdateAudio(void)
             SDL_zero(event);
             event.type = i->type;
             event.adevice.which = (Uint32) i->devid;
-            event.adevice.recording = ((i->devid & (1<<0)) != 0);  // bit #0 of devid is set for playback devices and unset for recording.
+            event.adevice.recording = ((i->devid & (1<<0)) == 0);  // bit #0 of devid is set for playback devices and unset for recording.
             SDL_PushEvent(&event);
         }
         SDL_free(i);
