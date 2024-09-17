@@ -155,7 +155,7 @@ SDL_Storage *SDL_OpenStorage(const SDL_StorageInterface *iface, void *userdata)
     }
     if (iface->version < sizeof(*iface)) {
         // Update this to handle older versions of this interface
-        SDL_SetError("Invalid interface, should be initialized with SDL_INIT_INTERFACE()");
+        SDL_SetError("Invalid interface, should be initialized with SDL_InitInterface()");
         return NULL;
     }
 

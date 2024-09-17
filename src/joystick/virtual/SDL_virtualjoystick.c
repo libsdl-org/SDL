@@ -144,7 +144,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
     }
     if (desc->version < sizeof(*desc)) {
         // Update this to handle older versions of this interface
-        SDL_SetError("Invalid desc, should be initialized with SDL_INIT_INTERFACE()");
+        SDL_SetError("Invalid desc, should be initialized with SDL_InitInterface()");
         return 0;
     }
 

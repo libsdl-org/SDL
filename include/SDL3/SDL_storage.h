@@ -52,11 +52,11 @@ extern "C" {
  * It is not usually necessary to do this; SDL provides standard
  * implementations for many things you might expect to do with an SDL_Storage.
  *
- * This structure should be initialized using SDL_INIT_INTERFACE()
+ * This structure should be initialized using SDL_InitInterface()
  *
  * \since This struct is available since SDL 3.0.0.
  *
- * \sa SDL_INIT_INTERFACE
+ * \sa SDL_InitInterface
  */
 typedef struct SDL_StorageInterface
 {
@@ -197,7 +197,7 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenFileStorage(const char *path);
  * it around after this call.
  *
  * \param iface the interface that implements this storage, initialized using
- *              SDL_INIT_INTERFACE().
+ *              SDL_InitInterface().
  * \param userdata the pointer that will be passed to the interface functions.
  * \returns a storage container on success or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -207,7 +207,7 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenFileStorage(const char *path);
  * \sa SDL_CloseStorage
  * \sa SDL_GetStorageFileSize
  * \sa SDL_GetStorageSpaceRemaining
- * \sa SDL_INIT_INTERFACE
+ * \sa SDL_InitInterface
  * \sa SDL_ReadStorageFile
  * \sa SDL_StorageReady
  * \sa SDL_WriteStorageFile

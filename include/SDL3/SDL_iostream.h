@@ -83,11 +83,11 @@ typedef enum SDL_IOWhence
  * already offers several common types of I/O streams, via functions like
  * SDL_IOFromFile() and SDL_IOFromMem().
  *
- * This structure should be initialized using SDL_INIT_INTERFACE()
+ * This structure should be initialized using SDL_InitInterface()
  *
  * \since This struct is available since SDL 3.0.0.
  *
- * \sa SDL_INIT_INTERFACE
+ * \sa SDL_InitInterface
  */
 typedef struct SDL_IOStreamInterface
 {
@@ -383,7 +383,7 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromDynamicMem(void);
  * it around after this call.
  *
  * \param iface the interface that implements this SDL_IOStream, initialized
- *              using SDL_INIT_INTERFACE().
+ *              using SDL_InitInterface().
  * \param userdata the pointer that will be passed to the interface functions.
  * \returns a pointer to the allocated memory on success or NULL on failure;
  *          call SDL_GetError() for more information.
@@ -391,7 +391,7 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromDynamicMem(void);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CloseIO
- * \sa SDL_INIT_INTERFACE
+ * \sa SDL_InitInterface
  * \sa SDL_IOFromConstMem
  * \sa SDL_IOFromFile
  * \sa SDL_IOFromMem

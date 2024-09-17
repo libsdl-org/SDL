@@ -628,7 +628,7 @@ extern "C" {
  * ```c
  * SDL_IOStreamInterface iface;
  *
- * SDL_INIT_INTERFACE(&iface);
+ * SDL_InitInterface(&iface);
  *
  * // Fill in the interface function pointers with your implementation
  * iface.seek = ...
@@ -655,7 +655,7 @@ extern "C" {
  * \sa SDL_StorageInterface
  * \sa SDL_VirtualJoystickDesc
  */
-#define SDL_INIT_INTERFACE(iface)               \
+#define SDL_InitInterface(iface)                \
     do {                                        \
         SDL_zerop(iface);                       \
         (iface)->version = sizeof(*(iface));    \

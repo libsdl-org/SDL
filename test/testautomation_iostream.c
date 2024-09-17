@@ -437,7 +437,7 @@ static int SDLCALL iostrm_testAllocFree(void *arg)
     SDL_IOStreamInterface iface;
     SDL_IOStream *rw;
 
-    SDL_INIT_INTERFACE(&iface);
+    SDL_InitInterface(&iface);
     rw = SDL_OpenIO(&iface, NULL);
     SDLTest_AssertPass("Call to SDL_OpenIO() succeeded");
     SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_OpenIO() is not NULL");
