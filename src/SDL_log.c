@@ -57,8 +57,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 static void CleanupLogPriorities(void);
 static void CleanupLogPrefixes(void);
 
-static SDL_AtomicInt SDL_log_initializing;
-static SDL_AtomicInt SDL_log_initialized;
+static SDL_InitState SDL_log_init;
 static SDL_Mutex *SDL_log_lock;
 static SDL_Mutex *SDL_log_function_lock;
 static SDL_LogLevel *SDL_loglevels SDL_GUARDED_BY(SDL_log_lock);
@@ -125,16 +124,7 @@ static void SDLCALL SDL_LoggingChanged(void *userdata, const char *name, const c
 
 void SDL_InitLog(void)
 {
-    if (SDL_AtomicGet(&SDL_log_initialized)) {
-        return;
-    }
-
-    // Do a little tap dance to make sure only one thread initializes logging
-    if (!SDL_AtomicCompareAndSwap(&SDL_log_initializing, false, true)) {
-        // Wait for the other thread to complete initialization
-        while (!SDL_AtomicGet(&SDL_log_initialized)) {
-            SDL_Delay(1);
-        }
+    if (!SDL_ShouldInit(&SDL_log_init)) {
         return;
     }
 
@@ -144,13 +134,15 @@ void SDL_InitLog(void)
 
     SDL_AddHintCallback(SDL_HINT_LOGGING, SDL_LoggingChanged, NULL);
 
-    SDL_AtomicSet(&SDL_log_initializing, false);
-
-    SDL_AtomicSet(&SDL_log_initialized, true);
+    SDL_SetInitialized(&SDL_log_init, true);
 }
 
 void SDL_QuitLog(void)
 {
+    if (!SDL_ShouldQuit(&SDL_log_init)) {
+        return;
+    }
+
     SDL_RemoveHintCallback(SDL_HINT_LOGGING, SDL_LoggingChanged, NULL);
 
     CleanupLogPriorities();
@@ -164,15 +156,19 @@ void SDL_QuitLog(void)
         SDL_DestroyMutex(SDL_log_function_lock);
         SDL_log_function_lock = NULL;
     }
-    SDL_AtomicSet(&SDL_log_initialized, false);
+
+    SDL_SetInitialized(&SDL_log_init, false);
 }
 
-static void SDL_CheckInitLog()
+static void SDL_CheckInitLog(void)
 {
-    if (!SDL_AtomicGet(&SDL_log_initialized) &&
-        !SDL_AtomicGet(&SDL_log_initializing)) {
-        SDL_InitLog();
+    int status = SDL_AtomicGet(&SDL_log_init.status);
+    if (status == SDL_INIT_STATUS_INITIALIZED ||
+        (status == SDL_INIT_STATUS_INITIALIZING && SDL_log_init.thread == SDL_GetCurrentThreadID())) {
+        return;
     }
+
+    SDL_InitLog();
 }
 
 static void CleanupLogPriorities(void)

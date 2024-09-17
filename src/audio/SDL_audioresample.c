@@ -574,16 +574,11 @@ static void SetupAudioResampler(void)
 
 void SDL_SetupAudioResampler(void)
 {
-    static SDL_SpinLock running = 0;
+    static SDL_InitState init;
 
-    if (!ResampleFrame[0]) {
-        SDL_LockSpinlock(&running);
-
-        if (!ResampleFrame[0]) {
-            SetupAudioResampler();
-        }
-
-        SDL_UnlockSpinlock(&running);
+    if (SDL_ShouldInit(&init)) {
+        SetupAudioResampler();
+        SDL_SetInitialized(&init, true);
     }
 }
 
