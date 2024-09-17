@@ -150,6 +150,7 @@
 
 // Drivers
 
+#ifndef SDL_GPU_DISABLED
 static const SDL_GPUBootstrap *backends[] = {
 #ifdef SDL_GPU_METAL
     &MetalDriver,
@@ -165,6 +166,7 @@ static const SDL_GPUBootstrap *backends[] = {
 #endif
     NULL
 };
+#endif // !SDL_GPU_DISABLED
 
 // Internal Utility Functions
 
@@ -547,7 +549,11 @@ void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
 
 int SDL_GetNumGPUDrivers(void)
 {
+#ifndef SDL_GPU_DISABLED
     return SDL_arraysize(backends) - 1;
+#else
+    return 0;
+#endif
 }
 
 const char * SDL_GetGPUDriver(int index)
