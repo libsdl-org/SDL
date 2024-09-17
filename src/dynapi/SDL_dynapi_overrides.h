@@ -654,6 +654,7 @@
 #define SDL_LogInfo SDL_LogInfo_REAL
 #define SDL_LogMessage  SDL_LogMessage_REAL
 #define SDL_LogMessageV SDL_LogMessageV_REAL
+#define SDL_LogTrace SDL_LogTrace_REAL
 #define SDL_LogVerbose  SDL_LogVerbose_REAL
 #define SDL_LogWarn SDL_LogWarn_REAL
 #define SDL_MapGPUTransferBuffer SDL_MapGPUTransferBuffer_REAL

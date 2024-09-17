@@ -138,8 +138,8 @@ static int SDLCALL log_testHint(void *arg)
 
     }
 
-    SDL_SetHint(SDL_HINT_LOGGING, "0=4,3=2,2=0,*=3");
-    SDLTest_AssertPass("SDL_SetHint(SDL_HINT_LOGGING, \"0=4,3=2,2=0,*=3\")");
+    SDL_SetHint(SDL_HINT_LOGGING, "0=5,3=3,2=0,*=4");
+    SDLTest_AssertPass("SDL_SetHint(SDL_HINT_LOGGING, \"0=5,3=3,2=1,*=4\")");
     {
         EnableTestLog(&count);
         SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_WARN, "test");

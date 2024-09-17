@@ -168,6 +168,7 @@ static void SDL_InitDynamicAPI(void);
         jump_table.SDL_LogMessageV(category, priority, fmt, ap);                                                                          \
         va_end(ap);                                                                                                                       \
     }                                                                                                                                     \
+    SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Trace, TRACE)                                                                   \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Verbose, VERBOSE)                                                                   \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Debug, DEBUG)                                                                       \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Info, INFO)                                                                         \
@@ -317,6 +318,7 @@ static void SDLCALL SDL_LogMessage_LOGSDLCALLS(int category, SDL_LogPriority pri
         SDL_LogMessageV_REAL(category, SDL_LOG_PRIORITY_##prio, fmt, ap);                                           \
         va_end(ap);                                                                                                 \
     }
+SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Trace, TRACE)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Verbose, VERBOSE)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Debug, DEBUG)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Info, INFO)

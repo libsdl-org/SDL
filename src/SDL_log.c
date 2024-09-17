@@ -75,6 +75,7 @@ static void *SDL_log_userdata SDL_GUARDED_BY(SDL_log_function_lock) = NULL;
 // If this list changes, update the documentation for SDL_HINT_LOGGING
 static const char * const SDL_priority_names[] = {
     NULL,
+    "TRACE",
     "VERBOSE",
     "DEBUG",
     "INFO",
@@ -107,8 +108,9 @@ SDL_COMPILE_TIME_ASSERT(category_names, SDL_arraysize(SDL_category_names) == SDL
 #endif
 
 #ifdef SDL_PLATFORM_ANDROID
-static int SDL_android_priority[SDL_LOG_PRIORITY_COUNT] = {
+static int SDL_android_priority[] = {
     ANDROID_LOG_UNKNOWN,
+    ANDROID_LOG_VERBOSE,
     ANDROID_LOG_VERBOSE,
     ANDROID_LOG_DEBUG,
     ANDROID_LOG_INFO,
@@ -116,6 +118,7 @@ static int SDL_android_priority[SDL_LOG_PRIORITY_COUNT] = {
     ANDROID_LOG_ERROR,
     ANDROID_LOG_FATAL
 };
+SDL_COMPILE_TIME_ASSERT(android_priority, SDL_arraysize(SDL_android_priority) == SDL_LOG_PRIORITY_COUNT);
 #endif // SDL_PLATFORM_ANDROID
 
 static void SDLCALL SDL_LoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -302,7 +305,7 @@ static bool ParseLogPriority(const char *string, size_t length, SDL_LogPriority 
             *priority = SDL_LOG_PRIORITY_COUNT;
             return true;
         }
-        if (i >= SDL_LOG_PRIORITY_VERBOSE && i < SDL_LOG_PRIORITY_COUNT) {
+        if (i > SDL_LOG_PRIORITY_INVALID && i < SDL_LOG_PRIORITY_COUNT) {
             *priority = (SDL_LogPriority)i;
             return true;
         }
@@ -314,7 +317,7 @@ static bool ParseLogPriority(const char *string, size_t length, SDL_LogPriority 
         return true;
     }
 
-    for (i = SDL_LOG_PRIORITY_VERBOSE; i < SDL_LOG_PRIORITY_COUNT; ++i) {
+    for (i = SDL_LOG_PRIORITY_INVALID + 1; i < SDL_LOG_PRIORITY_COUNT; ++i) {
         if (SDL_strncasecmp(string, SDL_priority_names[i], length) == 0) {
             *priority = (SDL_LogPriority)i;
             return true;
@@ -327,7 +330,7 @@ static void ParseLogPriorities(const char *hint)
 {
     const char *name, *next;
     int category = DEFAULT_CATEGORY;
-    SDL_LogPriority priority = SDL_LOG_PRIORITY_COUNT;
+    SDL_LogPriority priority = SDL_LOG_PRIORITY_INVALID;
 
     if (SDL_strchr(hint, '=') == NULL) {
         if (ParseLogPriority(hint, SDL_strlen(hint), &priority)) {
@@ -427,7 +430,7 @@ static void CleanupLogPrefixes(void)
 
 static const char *GetLogPriorityPrefix(SDL_LogPriority priority)
 {
-    if (priority < SDL_LOG_PRIORITY_VERBOSE || priority >= SDL_LOG_PRIORITY_COUNT) {
+    if (priority <= SDL_LOG_PRIORITY_INVALID || priority >= SDL_LOG_PRIORITY_COUNT) {
         return "";
     }
 
@@ -482,6 +485,15 @@ void SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 
     va_start(ap, fmt);
     SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, fmt, ap);
+    va_end(ap);
+}
+
+void SDL_LogTrace(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    SDL_LogMessageV(category, SDL_LOG_PRIORITY_TRACE, fmt, ap);
     va_end(ap);
 }
 

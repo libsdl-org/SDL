@@ -121,6 +121,7 @@ typedef enum SDL_LogCategory
 typedef enum SDL_LogPriority
 {
     SDL_LOG_PRIORITY_INVALID,
+    SDL_LOG_PRIORITY_TRACE,
     SDL_LOG_PRIORITY_VERBOSE,
     SDL_LOG_PRIORITY_DEBUG,
     SDL_LOG_PRIORITY_INFO,
@@ -228,10 +229,36 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetLogPriorityPrefix(SDL_LogPriority pr
  * \sa SDL_LogInfo
  * \sa SDL_LogMessage
  * \sa SDL_LogMessageV
+ * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
  */
 extern SDL_DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
+
+/**
+ * Log a message with SDL_LOG_PRIORITY_TRACE.
+ *
+ * \param category the category of the message.
+ * \param fmt a printf() style message format string.
+ * \param ... additional parameters matching % tokens in the **fmt** string,
+ *            if any.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_Log
+ * \sa SDL_LogCritical
+ * \sa SDL_LogDebug
+ * \sa SDL_LogError
+ * \sa SDL_LogInfo
+ * \sa SDL_LogMessage
+ * \sa SDL_LogMessageV
+ * \sa SDL_LogTrace
+ * \sa SDL_LogVerbose
+ * \sa SDL_LogWarn
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_LogTrace(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 /**
  * Log a message with SDL_LOG_PRIORITY_VERBOSE.
@@ -274,6 +301,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogVerbose(int category, SDL_PRINTF_FORMAT_
  * \sa SDL_LogInfo
  * \sa SDL_LogMessage
  * \sa SDL_LogMessageV
+ * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
  */
@@ -297,6 +325,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogDebug(int category, SDL_PRINTF_FORMAT_ST
  * \sa SDL_LogError
  * \sa SDL_LogMessage
  * \sa SDL_LogMessageV
+ * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
  */
@@ -321,6 +350,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogInfo(int category, SDL_PRINTF_FORMAT_STR
  * \sa SDL_LogInfo
  * \sa SDL_LogMessage
  * \sa SDL_LogMessageV
+ * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogWarn(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
@@ -343,6 +373,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogWarn(int category, SDL_PRINTF_FORMAT_STR
  * \sa SDL_LogInfo
  * \sa SDL_LogMessage
  * \sa SDL_LogMessageV
+ * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
  */
@@ -366,6 +397,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogError(int category, SDL_PRINTF_FORMAT_ST
  * \sa SDL_LogInfo
  * \sa SDL_LogMessage
  * \sa SDL_LogMessageV
+ * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
  */
@@ -390,6 +422,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogCritical(int category, SDL_PRINTF_FORMAT
  * \sa SDL_LogError
  * \sa SDL_LogInfo
  * \sa SDL_LogMessageV
+ * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
  */
@@ -415,6 +448,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogMessage(int category,
  * \sa SDL_LogError
  * \sa SDL_LogInfo
  * \sa SDL_LogMessage
+ * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
  */

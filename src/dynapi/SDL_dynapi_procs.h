@@ -37,6 +37,7 @@ SDL_DYNAPI_PROC(void,SDL_LogDebug,(int a, SDL_PRINTF_FORMAT_STRING const char *b
 SDL_DYNAPI_PROC(void,SDL_LogError,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
 SDL_DYNAPI_PROC(void,SDL_LogInfo,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
 SDL_DYNAPI_PROC(void,SDL_LogMessage,(int a, SDL_LogPriority b, SDL_PRINTF_FORMAT_STRING const char *c, ...),(a,b,c),)
+SDL_DYNAPI_PROC(void,SDL_LogTrace,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
 SDL_DYNAPI_PROC(void,SDL_LogVerbose,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
 SDL_DYNAPI_PROC(void,SDL_LogWarn,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
 SDL_DYNAPI_PROC(SDL_bool,SDL_SetError,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a),return)
