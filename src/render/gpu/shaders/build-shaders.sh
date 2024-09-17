@@ -27,7 +27,10 @@ rm -f "$spirv_bundle"
 [ "$USE_SPIRV_CROSS" != 0 ] && [ "$USE_DXC" != 0 ] && rm -f "$dxil60_bundle"
 
 make-header() {
-    xxd -i "$1" | sed -e 's/^unsigned /const unsigned /g' > "$1.h"
+    xxd -i "$1" | sed \
+        -e 's/^unsigned /const unsigned /g' \
+        -e 's,^const,static const,' \
+        > "$1.h"
 }
 
 compile-hlsl-dxbc() {
@@ -36,8 +39,14 @@ compile-hlsl-dxbc() {
     local output_basename="$3"
     local var_name="$(echo "$output_basename" | sed -e 's/\./_/g')"
 
-    fxc "$src" /E main /T $2 /Fh "$output_basename.h" || exit $?
-    sed -i "s/g_main/$var_name/;s/\r//g" "$output_basename.h"
+    fxc "$src" /E main /T $2 /Fh "$output_basename.tmp.h" || exit $?
+    sed \
+        -e "s/g_main/$var_name/;s/\r//g" \
+        -e 's,^const,static const,' \
+        -e 's,const unsigned,const signed,' \
+        < "$output_basename.tmp.h" \
+        > "$output_basename.h"
+    rm -f "$output_basename.tmp.h"
 }
 
 compile-hlsl-dxil() {
@@ -46,8 +55,13 @@ compile-hlsl-dxil() {
     local output_basename="$3"
     local var_name="$(echo "$output_basename" | sed -e 's/\./_/g')"
 
-    dxc "$src" -E main -T $2 -Fh "$output_basename.h" -O3 || exit $?
-    sed -i "s/g_main/$var_name/;s/\r//g" "$output_basename.h"
+    dxc "$src" -E main -T $2 -Fh "$output_basename.tmp.h" -O3 || exit $?
+    sed \
+        -e "s/g_main/$var_name/;s/\r//g" \
+        -e 's,^const,static const,' \
+        < "$output_basename.tmp.h" \
+        > "$output_basename.h"
+    rm -f "$output_basename.tmp.h"
 }
 
 for i in *.vert *.frag; do
@@ -90,4 +104,3 @@ for i in *.vert *.frag; do
     make-header "$metal"
     echo "#include \"$metal.h\"" >> "$metal_bundle"
 done
-./fix-shaders.sh
