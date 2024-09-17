@@ -4935,7 +4935,7 @@ func_win32_libid ()
   *ar\ archive*) # could be an import, or static
     # Keep the egrep pattern in sync with the one in _LT_CHECK_MAGIC_METHOD.
     if eval $OBJDUMP -f $1 | $SED -e '10q' 2>/dev/null |
-       $EGREP 'file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64)' >/dev/null; then
+       $EGREP 'file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64)' >/dev/null; then
       case $nm_interface in
       "MS dumpbin")
 	if func_cygming_ms_implib_p "$1" ||
@@ -6501,7 +6501,7 @@ func_mode_link ()
       # we shouldn't force the makefile maintainer to figure out
       # what system we are compiling for in order to pass an extra
       # flag for every libtool invocation.
-      # SDL customization: SDL code doesn't have any undefined symbols
+      # SDL customization: SDL code doesn't have any undefined symbols.
       allow_undefined=no
 
       # FIXME: Unfortunately, there are problems with the above when trying
@@ -6509,7 +6509,7 @@ func_mode_link ()
       # even a static library is built.  For now, we need to specify
       # -no-undefined on the libtool link line when we can be certain
       # that all symbols are satisfied, otherwise we get a static library.
-      # SDL customization: SDL code doesn't have any undefined symbols
+      # SDL customization: SDL code doesn't have any undefined symbols.
       # allow_undefined=yes
       ;;
     *)
@@ -8253,7 +8253,7 @@ func_mode_link ()
 	    elif test -n "$soname_spec"; then
 	      # bleh windows
 	      case $host_os in
-	      cygwin* | mingw* | windows* | cegcc*)  # | os2* # SDL customization: removed OS/2 versioning support.
+	      cygwin* | mingw* | windows* | cegcc*) # | os2* # SDL customization: removed OS/2 versioning support.
 	        func_arith $current - $age
 		major=$func_arith_result
 		versuffix=-$major
