@@ -10,8 +10,8 @@ which dxc &>/dev/null && HAVE_DXC=1 || HAVE_DXC=0
 [ "$HAVE_FXC" != 0 ] || echo "fxc not in PATH; D3D11 shaders will not be rebuilt"
 [ "$HAVE_DXC" != 0 ] || echo "dxc not in PATH; D3D12 shaders will not be rebuilt"
 
-USE_FXC=${USE_FXC:-HAVE_FXC}
-USE_DXC=${USE_DXC:-HAVE_DXC}
+USE_FXC=${USE_FXC:-$HAVE_FXC}
+USE_DXC=${USE_DXC:-$HAVE_DXC}
 
 spirv_bundle="spir-v.h"
 dxbc50_bundle="dxbc50.h"
