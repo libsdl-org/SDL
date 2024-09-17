@@ -197,10 +197,6 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         goto posix_spawn_fail_attr;
     }
 
-    if (!AddFileDescriptorCloseActions(&fa)) {
-        goto posix_spawn_fail_all;
-    }
-
     // Background processes don't have access to the terminal
     if (process->background) {
         if (stdin_option == SDL_PROCESS_STDIO_INHERITED) {
@@ -345,6 +341,10 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         default:
             break;
         }
+    }
+
+    if (!AddFileDescriptorCloseActions(&fa)) {
+        goto posix_spawn_fail_all;
     }
 
     // Spawn the new process
