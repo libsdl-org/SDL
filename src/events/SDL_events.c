@@ -852,12 +852,12 @@ void SDL_StopEventLoop(void)
         entry = next;
     }
 
-    SDL_AtomicSet(&SDL_EventQ.count, 0);
+    SDL_SetAtomicInt(&SDL_EventQ.count, 0);
     SDL_EventQ.max_events_seen = 0;
     SDL_EventQ.head = NULL;
     SDL_EventQ.tail = NULL;
     SDL_EventQ.free = NULL;
-    SDL_AtomicSet(&SDL_sentinel_pending, 0);
+    SDL_SetAtomicInt(&SDL_sentinel_pending, 0);
 
     // Clear disabled event state
     for (i = 0; i < SDL_arraysize(SDL_disabled_events); ++i) {
@@ -921,7 +921,7 @@ bool SDL_StartEventLoop(void)
 static int SDL_AddEvent(SDL_Event *event)
 {
     SDL_EventEntry *entry;
-    const int initial_count = SDL_AtomicGet(&SDL_EventQ.count);
+    const int initial_count = SDL_GetAtomicInt(&SDL_EventQ.count);
     int final_count;
 
     if (initial_count >= SDL_MAX_QUEUED_EVENTS) {
@@ -945,7 +945,7 @@ static int SDL_AddEvent(SDL_Event *event)
 
     SDL_copyp(&entry->event, event);
     if (event->type == SDL_EVENT_POLL_SENTINEL) {
-        SDL_AtomicAdd(&SDL_sentinel_pending, 1);
+        SDL_AddAtomicInt(&SDL_sentinel_pending, 1);
     }
     entry->memory = NULL;
     SDL_TransferTemporaryMemoryToEvent(entry);
@@ -963,7 +963,7 @@ static int SDL_AddEvent(SDL_Event *event)
         entry->next = NULL;
     }
 
-    final_count = SDL_AtomicAdd(&SDL_EventQ.count, 1) + 1;
+    final_count = SDL_AddAtomicInt(&SDL_EventQ.count, 1) + 1;
     if (final_count > SDL_EventQ.max_events_seen) {
         SDL_EventQ.max_events_seen = final_count;
     }
@@ -995,13 +995,13 @@ static void SDL_CutEvent(SDL_EventEntry *entry)
     }
 
     if (entry->event.type == SDL_EVENT_POLL_SENTINEL) {
-        SDL_AtomicAdd(&SDL_sentinel_pending, -1);
+        SDL_AddAtomicInt(&SDL_sentinel_pending, -1);
     }
 
     entry->next = SDL_EventQ.free;
     SDL_EventQ.free = entry;
-    SDL_assert(SDL_AtomicGet(&SDL_EventQ.count) > 0);
-    SDL_AtomicAdd(&SDL_EventQ.count, -1);
+    SDL_assert(SDL_GetAtomicInt(&SDL_EventQ.count) > 0);
+    SDL_AddAtomicInt(&SDL_EventQ.count, -1);
 }
 
 static void SDL_SendWakeupEvent(void)
@@ -1079,7 +1079,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
                         if (events == NULL || action != SDL_GETEVENT) {
                             ++sentinels_expected;
                         }
-                        if (SDL_AtomicGet(&SDL_sentinel_pending) > sentinels_expected) {
+                        if (SDL_GetAtomicInt(&SDL_sentinel_pending) > sentinels_expected) {
                             // Skip it, there's another one pending
                             continue;
                         }
@@ -1198,7 +1198,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
         SDL_Event sentinel;
 
         // Make sure we don't already have a sentinel in the queue, and add one to the end
-        if (SDL_AtomicGet(&SDL_sentinel_pending) > 0) {
+        if (SDL_GetAtomicInt(&SDL_sentinel_pending) > 0) {
             SDL_PeepEventsInternal(&sentinel, 1, SDL_GETEVENT, SDL_EVENT_POLL_SENTINEL, SDL_EVENT_POLL_SENTINEL, true);
         }
 
@@ -1362,7 +1362,7 @@ SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
     }
 
     // If there isn't a poll sentinel event pending, pump events and add one
-    if (SDL_AtomicGet(&SDL_sentinel_pending) == 0) {
+    if (SDL_GetAtomicInt(&SDL_sentinel_pending) == 0) {
         SDL_PumpEventsInternal(true);
     }
 

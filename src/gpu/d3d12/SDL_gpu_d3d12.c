@@ -2397,7 +2397,7 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     computePipeline->numWriteOnlyStorageTextures = createinfo->num_writeonly_storage_textures;
     computePipeline->numWriteOnlyStorageBuffers = createinfo->num_writeonly_storage_buffers;
     computePipeline->numUniformBuffers = createinfo->num_uniform_buffers;
-    SDL_AtomicSet(&computePipeline->referenceCount, 0);
+    SDL_SetAtomicInt(&computePipeline->referenceCount, 0);
 
     return (SDL_GPUComputePipeline *)computePipeline;
 }
@@ -2679,7 +2679,7 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     pipeline->fragmentStorageBufferCount = fragShader->numStorageBuffers;
     pipeline->fragmentUniformBufferCount = fragShader->numUniformBuffers;
 
-    SDL_AtomicSet(&pipeline->referenceCount, 0);
+    SDL_SetAtomicInt(&pipeline->referenceCount, 0);
     return (SDL_GPUGraphicsPipeline *)pipeline;
 }
 
@@ -2724,7 +2724,7 @@ static SDL_GPUSampler *D3D12_CreateSampler(
         sampler->handle.cpuHandle);
 
     sampler->createInfo = *createinfo;
-    SDL_AtomicSet(&sampler->referenceCount, 0);
+    SDL_SetAtomicInt(&sampler->referenceCount, 0);
     return (SDL_GPUSampler *)sampler;
 }
 
@@ -2917,7 +2917,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             texture->srvHandle.cpuHandle);
     }
 
-    SDL_AtomicSet(&texture->referenceCount, 0);
+    SDL_SetAtomicInt(&texture->referenceCount, 0);
 
     texture->subresourceCount = createinfo->num_levels * layerCount;
     texture->subresources = (D3D12TextureSubresource *)SDL_calloc(
@@ -3200,7 +3200,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
     }
 
     buffer->handle = handle;
-    SDL_AtomicSet(&buffer->referenceCount, 0);
+    SDL_SetAtomicInt(&buffer->referenceCount, 0);
 
     buffer->uavDescriptor.heap = NULL;
     buffer->srvDescriptor.heap = NULL;
@@ -3294,7 +3294,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
     buffer->containerIndex = 0;
 
     buffer->transitioned = initialState != D3D12_RESOURCE_STATE_COMMON;
-    SDL_AtomicSet(&buffer->referenceCount, 0);
+    SDL_SetAtomicInt(&buffer->referenceCount, 0);
     return buffer;
 }
 
@@ -3734,7 +3734,7 @@ static void D3D12_INTERNAL_CycleActiveTexture(
     for (Uint32 i = 0; i < container->textureCount; i += 1) {
         texture = container->textures[i];
 
-        if (SDL_AtomicGet(&texture->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&texture->referenceCount) == 0) {
             container->activeTexture = texture;
             return;
         }
@@ -3789,7 +3789,7 @@ static D3D12TextureSubresource *D3D12_INTERNAL_PrepareTextureSubresourceForWrite
     if (
         container->canBeCycled &&
         cycle &&
-        SDL_AtomicGet(&subresource->parent->referenceCount) > 0) {
+        SDL_GetAtomicInt(&subresource->parent->referenceCount) > 0) {
         D3D12_INTERNAL_CycleActiveTexture(
             commandBuffer->renderer,
             container);
@@ -3815,7 +3815,7 @@ static void D3D12_INTERNAL_CycleActiveBuffer(
     // If a previously-cycled buffer is available, we can use that.
     for (Uint32 i = 0; i < container->bufferCount; i += 1) {
         D3D12Buffer *buffer = container->buffers[i];
-        if (SDL_AtomicGet(&buffer->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&buffer->referenceCount) == 0) {
             container->activeBuffer = buffer;
             return;
         }
@@ -3863,7 +3863,7 @@ static D3D12Buffer *D3D12_INTERNAL_PrepareBufferForWrite(
 {
     if (
         cycle &&
-        SDL_AtomicGet(&container->activeBuffer->referenceCount) > 0) {
+        SDL_GetAtomicInt(&container->activeBuffer->referenceCount) > 0) {
         D3D12_INTERNAL_CycleActiveBuffer(
             commandBuffer->renderer,
             container);
@@ -5320,7 +5320,7 @@ static void *D3D12_MapTransferBuffer(
 
     if (
         cycle &&
-        SDL_AtomicGet(&container->activeBuffer->referenceCount) > 0) {
+        SDL_GetAtomicInt(&container->activeBuffer->referenceCount) > 0) {
         D3D12_INTERNAL_CycleActiveBuffer(
             renderer,
             container);
@@ -6177,7 +6177,7 @@ static bool D3D12_INTERNAL_InitializeSwapchainTexture(
         return false;
     }
     pTexture->resource = NULL; // This will be set in AcquireSwapchainTexture
-    SDL_AtomicSet(&pTexture->referenceCount, 0);
+    SDL_SetAtomicInt(&pTexture->referenceCount, 0);
     pTexture->subresourceCount = 1;
     pTexture->subresources = (D3D12TextureSubresource *)SDL_calloc(1, sizeof(D3D12TextureSubresource));
     if (!pTexture->subresources) {
@@ -6671,7 +6671,7 @@ static D3D12Fence *D3D12_INTERNAL_AcquireFence(
         }
         fence->handle = handle;
         fence->event = CreateEventEx(NULL, 0, 0, EVENT_ALL_ACCESS);
-        SDL_AtomicSet(&fence->referenceCount, 0);
+        SDL_SetAtomicInt(&fence->referenceCount, 0);
     } else {
         fence = renderer->availableFences[renderer->availableFenceCount - 1];
         renderer->availableFenceCount -= 1;
@@ -7000,7 +7000,7 @@ static void D3D12_INTERNAL_PerformPendingDestroys(D3D12Renderer *renderer)
     SDL_LockMutex(renderer->disposeLock);
 
     for (Sint32 i = renderer->buffersToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->buffersToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->buffersToDestroy[i]->referenceCount) == 0) {
             D3D12_INTERNAL_DestroyBuffer(
                 renderer,
                 renderer->buffersToDestroy[i]);
@@ -7011,7 +7011,7 @@ static void D3D12_INTERNAL_PerformPendingDestroys(D3D12Renderer *renderer)
     }
 
     for (Sint32 i = renderer->texturesToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->texturesToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->texturesToDestroy[i]->referenceCount) == 0) {
             D3D12_INTERNAL_DestroyTexture(
                 renderer,
                 renderer->texturesToDestroy[i]);
@@ -7022,7 +7022,7 @@ static void D3D12_INTERNAL_PerformPendingDestroys(D3D12Renderer *renderer)
     }
 
     for (Sint32 i = renderer->samplersToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->samplersToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->samplersToDestroy[i]->referenceCount) == 0) {
             D3D12_INTERNAL_DestroySampler(
                 renderer,
                 renderer->samplersToDestroy[i]);
@@ -7033,7 +7033,7 @@ static void D3D12_INTERNAL_PerformPendingDestroys(D3D12Renderer *renderer)
     }
 
     for (Sint32 i = renderer->graphicsPipelinesToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->graphicsPipelinesToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->graphicsPipelinesToDestroy[i]->referenceCount) == 0) {
             D3D12_INTERNAL_DestroyGraphicsPipeline(
                 renderer->graphicsPipelinesToDestroy[i]);
 
@@ -7043,7 +7043,7 @@ static void D3D12_INTERNAL_PerformPendingDestroys(D3D12Renderer *renderer)
     }
 
     for (Sint32 i = renderer->computePipelinesToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->computePipelinesToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->computePipelinesToDestroy[i]->referenceCount) == 0) {
             D3D12_INTERNAL_DestroyComputePipeline(
                 renderer->computePipelinesToDestroy[i]);
 

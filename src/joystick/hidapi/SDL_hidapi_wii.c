@@ -194,7 +194,7 @@ static int ReadInput(SDL_DriverWii_Context *ctx)
     int size;
 
     // Make sure we don't try to read at the same time a write is happening
-    if (SDL_AtomicGet(&ctx->device->rumble_pending) > 0) {
+    if (SDL_GetAtomicInt(&ctx->device->rumble_pending) > 0) {
         return 0;
     }
 

@@ -165,7 +165,7 @@ void SDL_QuitLog(void)
 
 static void SDL_CheckInitLog(void)
 {
-    int status = SDL_AtomicGet(&SDL_log_init.status);
+    int status = SDL_GetAtomicInt(&SDL_log_init.status);
     if (status == SDL_INIT_STATUS_INITIALIZED ||
         (status == SDL_INIT_STATUS_INITIALIZING && SDL_log_init.thread == SDL_GetCurrentThreadID())) {
         return;

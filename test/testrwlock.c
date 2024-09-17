@@ -54,7 +54,7 @@ static int SDLCALL
 ReaderRun(void *data)
 {
     SDL_Log("Reader Thread %" SDL_PRIu64 ": starting up", SDL_GetCurrentThreadID());
-    while (!SDL_AtomicGet(&doterminate)) {
+    while (!SDL_GetAtomicInt(&doterminate)) {
         DoWork(worktime);
     }
     SDL_Log("Reader Thread %" SDL_PRIu64 ": exiting!\n", SDL_GetCurrentThreadID());
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_AtomicSet(&doterminate, 0);
+    SDL_SetAtomicInt(&doterminate, 0);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_AtomicSet(&doterminate, 0);
+    SDL_SetAtomicInt(&doterminate, 0);
 
     rwlock = SDL_CreateRWLock();
     if (!rwlock) {
@@ -157,11 +157,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    while (!SDL_AtomicGet(&doterminate) && (SDL_GetTicks() < ((Uint64) timeout))) {
+    while (!SDL_GetAtomicInt(&doterminate) && (SDL_GetTicks() < ((Uint64) timeout))) {
         DoWork(writerworktime);
     }
 
-    SDL_AtomicSet(&doterminate, 1);
+    SDL_SetAtomicInt(&doterminate, 1);
     SDL_Log("Waiting on reader threads to terminate...");
     for (i = 0; i < nb_threads; ++i) {
         SDL_WaitThread(threads[i], NULL);

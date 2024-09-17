@@ -74,11 +74,11 @@ static void ManagementThreadMainloop(void)
 {
     SDL_LockMutex(ManagementThreadLock);
     ManagementThreadPendingTask *task;
-    while (((task = (ManagementThreadPendingTask *)SDL_AtomicGetPointer((void **)&ManagementThreadPendingTasks)) != NULL) || !SDL_AtomicGet(&ManagementThreadShutdown)) {
+    while (((task = (ManagementThreadPendingTask *)SDL_GetAtomicPointer((void **)&ManagementThreadPendingTasks)) != NULL) || !SDL_GetAtomicInt(&ManagementThreadShutdown)) {
         if (!task) {
             SDL_WaitCondition(ManagementThreadCondition, ManagementThreadLock); // block until there's something to do.
         } else {
-            SDL_AtomicSetPointer((void **) &ManagementThreadPendingTasks, task->next); // take task off the pending list.
+            SDL_SetAtomicPointer((void **) &ManagementThreadPendingTasks, task->next); // take task off the pending list.
             SDL_UnlockMutex(ManagementThreadLock);                       // let other things add to the list while we chew on this task.
             task->result = task->fn(task->userdata);                     // run this task.
             if (task->task_complete_sem) {                               // something waiting on result?
@@ -101,7 +101,7 @@ bool WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, b
         return true;  // completed!
     }
 
-    if (SDL_AtomicGet(&ManagementThreadShutdown)) {
+    if (SDL_GetAtomicInt(&ManagementThreadShutdown)) {
         return SDL_SetError("Can't add task, we're shutting down");
     }
 
@@ -127,14 +127,14 @@ bool WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, b
 
     // add to end of task list.
     ManagementThreadPendingTask *prev = NULL;
-    for (ManagementThreadPendingTask *i = (ManagementThreadPendingTask *)SDL_AtomicGetPointer((void **)&ManagementThreadPendingTasks); i; i = i->next) {
+    for (ManagementThreadPendingTask *i = (ManagementThreadPendingTask *)SDL_GetAtomicPointer((void **)&ManagementThreadPendingTasks); i; i = i->next) {
         prev = i;
     }
 
     if (prev) {
         prev->next = pending;
     } else {
-        SDL_AtomicSetPointer((void **) &ManagementThreadPendingTasks, pending);
+        SDL_SetAtomicPointer((void **) &ManagementThreadPendingTasks, pending);
     }
 
     // task is added to the end of the pending list, let management thread rip!
@@ -210,8 +210,8 @@ static bool InitManagementThread(void)
         return false;
     }
 
-    SDL_AtomicSetPointer((void **) &ManagementThreadPendingTasks, NULL);
-    SDL_AtomicSet(&ManagementThreadShutdown, 0);
+    SDL_SetAtomicPointer((void **) &ManagementThreadPendingTasks, NULL);
+    SDL_SetAtomicInt(&ManagementThreadShutdown, 0);
     ManagementThread = SDL_CreateThreadWithStackSize(ManagementThreadEntry, "SDLWASAPIMgmt", 256 * 1024, &mgmtdata); // !!! FIXME: maybe even smaller stack size?
     if (!ManagementThread) {
         return false;
@@ -234,7 +234,7 @@ static bool InitManagementThread(void)
 static void DeinitManagementThread(void)
 {
     if (ManagementThread) {
-        SDL_AtomicSet(&ManagementThreadShutdown, 1);
+        SDL_SetAtomicInt(&ManagementThreadShutdown, 1);
         SDL_LockMutex(ManagementThreadLock);
         SDL_SignalCondition(ManagementThreadCondition);
         SDL_UnlockMutex(ManagementThreadLock);
@@ -242,13 +242,13 @@ static void DeinitManagementThread(void)
         ManagementThread = NULL;
     }
 
-    SDL_assert(SDL_AtomicGetPointer((void **) &ManagementThreadPendingTasks) == NULL);
+    SDL_assert(SDL_GetAtomicPointer((void **) &ManagementThreadPendingTasks) == NULL);
 
     SDL_DestroyCondition(ManagementThreadCondition);
     SDL_DestroyMutex(ManagementThreadLock);
     ManagementThreadCondition = NULL;
     ManagementThreadLock = NULL;
-    SDL_AtomicSet(&ManagementThreadShutdown, 0);
+    SDL_SetAtomicInt(&ManagementThreadShutdown, 0);
 }
 
 typedef struct
@@ -403,14 +403,14 @@ static bool RecoverWasapiDevice(SDL_AudioDevice *device)
 // do not call when holding the device lock!
 static bool RecoverWasapiIfLost(SDL_AudioDevice *device)
 {
-    if (SDL_AtomicGet(&device->shutdown)) {
+    if (SDL_GetAtomicInt(&device->shutdown)) {
         return false; // already failed.
     } else if (device->hidden->device_dead) {  // had a fatal error elsewhere, clean up and quit
         IAudioClient_Stop(device->hidden->client);
         WASAPI_DisconnectDevice(device);
-        SDL_assert(SDL_AtomicGet(&device->shutdown));  // so we don't come back through here.
+        SDL_assert(SDL_GetAtomicInt(&device->shutdown));  // so we don't come back through here.
         return false; // already failed.
-    } else if (SDL_AtomicGet(&device->zombie)) {
+    } else if (SDL_GetAtomicInt(&device->zombie)) {
         return false;  // we're already dead, so just leave and let the Zombie implementations take over.
     } else if (!device->hidden->client) {
         return true; // still waiting for activation.
@@ -538,7 +538,7 @@ static void WASAPI_FlushRecording(SDL_AudioDevice *device)
     DWORD flags = 0;
 
     // just read until we stop getting packets, throwing them away.
-    while (!SDL_AtomicGet(&device->shutdown) && device->hidden->capture) {
+    while (!SDL_GetAtomicInt(&device->shutdown) && device->hidden->capture) {
         const HRESULT ret = IAudioCaptureClient_GetBuffer(device->hidden->capture, &ptr, &frames, &flags, NULL, NULL);
         if (ret == AUDCLNT_S_BUFFER_EMPTY) {
             break; // no more buffered data; we're done.

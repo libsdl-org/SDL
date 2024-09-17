@@ -3991,7 +3991,7 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
 
     buffer->usedRegion->vulkanBuffer = buffer; // lol
 
-    SDL_AtomicSet(&buffer->referenceCount, 0);
+    SDL_SetAtomicInt(&buffer->referenceCount, 0);
 
     return buffer;
 }
@@ -4563,7 +4563,7 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         swapchainData->textureContainers[i].activeTexture->depth = 1;
         swapchainData->textureContainers[i].activeTexture->usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
         swapchainData->textureContainers[i].activeTexture->container = &swapchainData->textureContainers[i];
-        SDL_AtomicSet(&swapchainData->textureContainers[i].activeTexture->referenceCount, 0);
+        SDL_SetAtomicInt(&swapchainData->textureContainers[i].activeTexture->referenceCount, 0);
 
         // Create slice
         swapchainData->textureContainers[i].activeTexture->subresourceCount = 1;
@@ -5450,7 +5450,7 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     texture->depth = depth;
     texture->usage = createinfo->usage;
     texture->fullView = VK_NULL_HANDLE;
-    SDL_AtomicSet(&texture->referenceCount, 0);
+    SDL_SetAtomicInt(&texture->referenceCount, 0);
 
     if (IsDepthFormat(createinfo->format)) {
         texture->aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -5648,7 +5648,7 @@ static void VULKAN_INTERNAL_CycleActiveBuffer(
     // If a previously-cycled buffer is available, we can use that.
     for (Uint32 i = 0; i < container->bufferCount; i += 1) {
         buffer = container->buffers[i];
-        if (SDL_AtomicGet(&buffer->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&buffer->referenceCount) == 0) {
             container->activeBuffer = buffer;
             return;
         }
@@ -5698,7 +5698,7 @@ static void VULKAN_INTERNAL_CycleActiveTexture(
     for (Uint32 i = 0; i < container->textureCount; i += 1) {
         texture = container->textures[i];
 
-        if (SDL_AtomicGet(&texture->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&texture->referenceCount) == 0) {
             container->activeTexture = texture;
             return;
         }
@@ -5745,7 +5745,7 @@ static VulkanBuffer *VULKAN_INTERNAL_PrepareBufferForWrite(
 {
     if (
         cycle &&
-        SDL_AtomicGet(&bufferContainer->activeBuffer->referenceCount) > 0) {
+        SDL_GetAtomicInt(&bufferContainer->activeBuffer->referenceCount) > 0) {
         VULKAN_INTERNAL_CycleActiveBuffer(
             renderer,
             bufferContainer);
@@ -5777,7 +5777,7 @@ static VulkanTextureSubresource *VULKAN_INTERNAL_PrepareTextureSubresourceForWri
     if (
         cycle &&
         textureContainer->canBeCycled &&
-        SDL_AtomicGet(&textureContainer->activeTexture->referenceCount) > 0) {
+        SDL_GetAtomicInt(&textureContainer->activeTexture->referenceCount) > 0) {
         VULKAN_INTERNAL_CycleActiveTexture(
             renderer,
             textureContainer);
@@ -6345,7 +6345,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
         return NULL;
     }
 
-    SDL_AtomicSet(&graphicsPipeline->referenceCount, 0);
+    SDL_SetAtomicInt(&graphicsPipeline->referenceCount, 0);
 
     return (SDL_GPUGraphicsPipeline *)graphicsPipeline;
 }
@@ -6446,7 +6446,7 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
         return NULL;
     }
 
-    SDL_AtomicSet(&vulkanComputePipeline->referenceCount, 0);
+    SDL_SetAtomicInt(&vulkanComputePipeline->referenceCount, 0);
 
     return (SDL_GPUComputePipeline *)vulkanComputePipeline;
 }
@@ -6491,7 +6491,7 @@ static SDL_GPUSampler *VULKAN_CreateSampler(
         return NULL;
     }
 
-    SDL_AtomicSet(&vulkanSampler->referenceCount, 0);
+    SDL_SetAtomicInt(&vulkanSampler->referenceCount, 0);
 
     return (SDL_GPUSampler *)vulkanSampler;
 }
@@ -6535,7 +6535,7 @@ static SDL_GPUShader *VULKAN_CreateShader(
     vulkanShader->numStorageBuffers = createinfo->num_storage_buffers;
     vulkanShader->numUniformBuffers = createinfo->num_uniform_buffers;
 
-    SDL_AtomicSet(&vulkanShader->referenceCount, 0);
+    SDL_SetAtomicInt(&vulkanShader->referenceCount, 0);
 
     return (SDL_GPUShader *)vulkanShader;
 }
@@ -6983,7 +6983,7 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
 
     vulkanFramebuffer = SDL_malloc(sizeof(VulkanFramebuffer));
 
-    SDL_AtomicSet(&vulkanFramebuffer->referenceCount, 0);
+    SDL_SetAtomicInt(&vulkanFramebuffer->referenceCount, 0);
 
     // Create a new framebuffer
 
@@ -8407,7 +8407,7 @@ static void *VULKAN_MapTransferBuffer(
 
     if (
         cycle &&
-        SDL_AtomicGet(&transferBufferContainer->activeBuffer->referenceCount) > 0) {
+        SDL_GetAtomicInt(&transferBufferContainer->activeBuffer->referenceCount) > 0) {
         VULKAN_INTERNAL_CycleActiveBuffer(
             renderer,
             transferBufferContainer);
@@ -9821,7 +9821,7 @@ static VulkanFenceHandle *VULKAN_INTERNAL_AcquireFenceFromPool(
 
         handle = SDL_malloc(sizeof(VulkanFenceHandle));
         handle->fence = fence;
-        SDL_AtomicSet(&handle->referenceCount, 0);
+        SDL_SetAtomicInt(&handle->referenceCount, 0);
         return handle;
     }
 
@@ -9850,7 +9850,7 @@ static void VULKAN_INTERNAL_PerformPendingDestroys(
     SDL_LockMutex(renderer->disposeLock);
 
     for (Sint32 i = renderer->texturesToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->texturesToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->texturesToDestroy[i]->referenceCount) == 0) {
             VULKAN_INTERNAL_DestroyTexture(
                 renderer,
                 renderer->texturesToDestroy[i]);
@@ -9861,7 +9861,7 @@ static void VULKAN_INTERNAL_PerformPendingDestroys(
     }
 
     for (Sint32 i = renderer->buffersToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->buffersToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->buffersToDestroy[i]->referenceCount) == 0) {
             VULKAN_INTERNAL_DestroyBuffer(
                 renderer,
                 renderer->buffersToDestroy[i]);
@@ -9872,7 +9872,7 @@ static void VULKAN_INTERNAL_PerformPendingDestroys(
     }
 
     for (Sint32 i = renderer->graphicsPipelinesToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->graphicsPipelinesToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->graphicsPipelinesToDestroy[i]->referenceCount) == 0) {
             VULKAN_INTERNAL_DestroyGraphicsPipeline(
                 renderer,
                 renderer->graphicsPipelinesToDestroy[i]);
@@ -9883,7 +9883,7 @@ static void VULKAN_INTERNAL_PerformPendingDestroys(
     }
 
     for (Sint32 i = renderer->computePipelinesToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->computePipelinesToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->computePipelinesToDestroy[i]->referenceCount) == 0) {
             VULKAN_INTERNAL_DestroyComputePipeline(
                 renderer,
                 renderer->computePipelinesToDestroy[i]);
@@ -9894,7 +9894,7 @@ static void VULKAN_INTERNAL_PerformPendingDestroys(
     }
 
     for (Sint32 i = renderer->shadersToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->shadersToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->shadersToDestroy[i]->referenceCount) == 0) {
             VULKAN_INTERNAL_DestroyShader(
                 renderer,
                 renderer->shadersToDestroy[i]);
@@ -9905,7 +9905,7 @@ static void VULKAN_INTERNAL_PerformPendingDestroys(
     }
 
     for (Sint32 i = renderer->samplersToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->samplersToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->samplersToDestroy[i]->referenceCount) == 0) {
             VULKAN_INTERNAL_DestroySampler(
                 renderer,
                 renderer->samplersToDestroy[i]);
@@ -9916,7 +9916,7 @@ static void VULKAN_INTERNAL_PerformPendingDestroys(
     }
 
     for (Sint32 i = renderer->framebuffersToDestroyCount - 1; i >= 0; i -= 1) {
-        if (SDL_AtomicGet(&renderer->framebuffersToDestroy[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&renderer->framebuffersToDestroy[i]->referenceCount) == 0) {
             VULKAN_INTERNAL_DestroyFramebuffer(
                 renderer,
                 renderer->framebuffersToDestroy[i]);

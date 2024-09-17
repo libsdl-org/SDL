@@ -48,7 +48,7 @@ static void printid(void)
 static void terminate(int sig)
 {
     (void)signal(SIGINT, terminate);
-    SDL_AtomicSet(&doterminate, 1);
+    SDL_SetAtomicInt(&doterminate, 1);
 }
 
 static void closemutex(int sig)
@@ -56,7 +56,7 @@ static void closemutex(int sig)
     SDL_ThreadID id = SDL_GetCurrentThreadID();
     int i;
     SDL_Log("Thread %" SDL_PRIu64 ":  Cleaning up...\n", id == mainthread ? 0 : id);
-    SDL_AtomicSet(&doterminate, 1);
+    SDL_SetAtomicInt(&doterminate, 1);
     if (threads) {
         for (i = 0; i < nb_threads; ++i) {
             SDL_WaitThread(threads[i], NULL);
@@ -80,7 +80,7 @@ Run(void *data)
         (void)signal(SIGTERM, closemutex);
     }
     SDL_Log("Thread %" SDL_PRIu64 ": starting up", current_thread);
-    while (!SDL_AtomicGet(&doterminate)) {
+    while (!SDL_GetAtomicInt(&doterminate)) {
         SDL_Log("Thread %" SDL_PRIu64 ": ready to work\n", current_thread);
         SDL_LockMutex(mutex);
         SDL_Log("Thread %" SDL_PRIu64 ": start work!\n", current_thread);
@@ -91,7 +91,7 @@ Run(void *data)
         /* If this sleep isn't done, then threads may starve */
         SDL_Delay(10);
     }
-    if (current_thread == mainthread && SDL_AtomicGet(&doterminate)) {
+    if (current_thread == mainthread && SDL_GetAtomicInt(&doterminate)) {
         SDL_Log("Thread %" SDL_PRIu64 ": raising SIGTERM\n", current_thread);
         (void)raise(SIGTERM);
     }
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
     }
     (void)atexit(SDL_Quit_Wrapper);
 
-    SDL_AtomicSet(&doterminate, 0);
+    SDL_SetAtomicInt(&doterminate, 0);
 
     mutex = SDL_CreateMutex();
     if (!mutex) {

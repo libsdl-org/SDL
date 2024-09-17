@@ -622,7 +622,7 @@ static void RecordingBufferReadyCallback(void *inUserData, AudioQueueRef inAQ, A
 
     // buffer is unexpectedly here? We're probably dying, but try to requeue this buffer anyhow.
     if (device->hidden->current_buffer != NULL) {
-        SDL_assert(SDL_AtomicGet(&device->shutdown) != 0);
+        SDL_assert(SDL_GetAtomicInt(&device->shutdown) != 0);
         COREAUDIO_FlushRecording(device);  // just flush it manually, which will requeue it.
     }
 }
@@ -641,7 +641,7 @@ static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
     }
 
     if (device->hidden->thread) {
-        SDL_assert(SDL_AtomicGet(&device->shutdown) != 0); // should have been set by SDL_audio.c
+        SDL_assert(SDL_GetAtomicInt(&device->shutdown) != 0); // should have been set by SDL_audio.c
         SDL_WaitThread(device->hidden->thread, NULL);
     }
 
@@ -839,7 +839,7 @@ static int AudioQueueThreadEntry(void *arg)
     SDL_SignalSemaphore(device->hidden->ready_semaphore);
 
     // This would be WaitDevice/WaitRecordingDevice in the normal SDL audio thread, but we get *BufferReadyCallback calls here to know when to iterate.
-    while (!SDL_AtomicGet(&device->shutdown)) {
+    while (!SDL_GetAtomicInt(&device->shutdown)) {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.10, 1);
     }
 

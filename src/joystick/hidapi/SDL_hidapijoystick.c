@@ -1033,7 +1033,7 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             HIDAPI_CleanupDeviceDriver(device);
 
             // Make sure the rumble thread is done with this device
-            while (SDL_AtomicGet(&device->rumble_pending) > 0) {
+            while (SDL_GetAtomicInt(&device->rumble_pending) > 0) {
                 SDL_Delay(10);
             }
 
@@ -1245,12 +1245,12 @@ static bool HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id, SDL
 
 static bool HIDAPI_StartUpdatingDevices()
 {
-    return SDL_AtomicCompareAndSwap(&SDL_HIDAPI_updating_devices, false, true);
+    return SDL_CompareAndSwapAtomicInt(&SDL_HIDAPI_updating_devices, false, true);
 }
 
 static void HIDAPI_FinishUpdatingDevices()
 {
-    SDL_AtomicSet(&SDL_HIDAPI_updating_devices, false);
+    SDL_SetAtomicInt(&SDL_HIDAPI_updating_devices, false);
 }
 
 bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type)
@@ -1645,7 +1645,7 @@ static void HIDAPI_JoystickClose(SDL_Joystick *joystick) SDL_NO_THREAD_SAFETY_AN
             SDL_UnlockMutex(device->dev_lock);
         }
         for (i = 0; i < 3; ++i) {
-            if (SDL_AtomicGet(&device->rumble_pending) > 0) {
+            if (SDL_GetAtomicInt(&device->rumble_pending) > 0) {
                 SDL_Delay(10);
             }
         }

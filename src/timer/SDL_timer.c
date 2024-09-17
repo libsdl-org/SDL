@@ -137,7 +137,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
         freelist_tail = NULL;
 
         // Check to see if we're still running, after maintenance
-        if (!SDL_AtomicGet(&data->active)) {
+        if (!SDL_GetAtomicInt(&data->active)) {
             break;
         }
 
@@ -159,7 +159,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
             // We're going to do something with this timer
             data->timers = current->next;
 
-            if (SDL_AtomicGet(&current->canceled)) {
+            if (SDL_GetAtomicInt(&current->canceled)) {
                 interval = 0;
             } else {
                 if (current->callback_ms) {
@@ -183,7 +183,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
                 }
                 freelist_tail = current;
 
-                SDL_AtomicSet(&current->canceled, 1);
+                SDL_SetAtomicInt(&current->canceled, 1);
             }
         }
 
@@ -224,7 +224,7 @@ bool SDL_InitTimers(void)
         goto error;
     }
 
-    SDL_AtomicSet(&data->active, true);
+    SDL_SetAtomicInt(&data->active, true);
 
     // Timer threads use a callback into the app, so we can't set a limited stack size here.
     data->thread = SDL_CreateThread(SDL_TimerThread, "SDLTimer", data);
@@ -251,7 +251,7 @@ void SDL_QuitTimers(void)
         return;
     }
 
-    SDL_AtomicSet(&data->active, false);
+    SDL_SetAtomicInt(&data->active, false);
 
     // Shutdown the timer thread
     if (data->thread) {
@@ -331,7 +331,7 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
     timer->userdata = userdata;
     timer->interval = interval;
     timer->scheduled = SDL_GetTicksNS() + timer->interval;
-    SDL_AtomicSet(&timer->canceled, 0);
+    SDL_SetAtomicInt(&timer->canceled, 0);
 
     entry = (SDL_TimerMap *)SDL_malloc(sizeof(*entry));
     if (!entry) {
@@ -394,8 +394,8 @@ SDL_bool SDL_RemoveTimer(SDL_TimerID id)
     SDL_UnlockMutex(data->timermap_lock);
 
     if (entry) {
-        if (!SDL_AtomicGet(&entry->timer->canceled)) {
-            SDL_AtomicSet(&entry->timer->canceled, 1);
+        if (!SDL_GetAtomicInt(&entry->timer->canceled)) {
+            SDL_SetAtomicInt(&entry->timer->canceled, 1);
             canceled = true;
         }
         SDL_free(entry);

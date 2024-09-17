@@ -343,7 +343,7 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
             send_event = true;
         }
 
-        pen->input_state = input_state;  // we could do an SDL_AtomicSet here if we run into trouble...
+        pen->input_state = input_state;  // we could do an SDL_SetAtomicInt here if we run into trouble...
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 
@@ -383,7 +383,7 @@ void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *
     SDL_Pen *pen = FindPenByInstanceId(instance_id);
     if (pen) {
         if (pen->axes[axis] != value) {
-            pen->axes[axis] = value;  // we could do an SDL_AtomicSet here if we run into trouble...
+            pen->axes[axis] = value;  // we could do an SDL_SetAtomicInt here if we run into trouble...
             input_state = pen->input_state;
             x = pen->x;
             y = pen->y;
@@ -421,8 +421,8 @@ void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window
     SDL_Pen *pen = FindPenByInstanceId(instance_id);
     if (pen) {
         if ((pen->x != x) || (pen->y != y)) {
-            pen->x = x;  // we could do an SDL_AtomicSet here if we run into trouble...
-            pen->y = y;  // we could do an SDL_AtomicSet here if we run into trouble...
+            pen->x = x;  // we could do an SDL_SetAtomicInt here if we run into trouble...
+            pen->y = y;  // we could do an SDL_SetAtomicInt here if we run into trouble...
             input_state = pen->input_state;
             send_event = true;
         }
@@ -473,7 +473,7 @@ void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window
             input_state &= ~flag;
             send_event = true;
         }
-        pen->input_state = input_state;  // we could do an SDL_AtomicSet here if we run into trouble...
+        pen->input_state = input_state;  // we could do an SDL_SetAtomicInt here if we run into trouble...
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 

@@ -2028,7 +2028,7 @@ static D3D11Texture *D3D11_INTERNAL_CreateTexture(
     d3d11Texture = (D3D11Texture *)SDL_malloc(sizeof(D3D11Texture));
     d3d11Texture->handle = textureHandle;
     d3d11Texture->shaderView = srv;
-    SDL_AtomicSet(&d3d11Texture->referenceCount, 0);
+    SDL_SetAtomicInt(&d3d11Texture->referenceCount, 0);
     d3d11Texture->container = NULL;
     d3d11Texture->containerIndex = 0;
 
@@ -2204,7 +2204,7 @@ static void D3D11_INTERNAL_CycleActiveTexture(
     D3D11TextureContainer *container)
 {
     for (Uint32 i = 0; i < container->textureCount; i += 1) {
-        if (SDL_AtomicGet(&container->textures[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&container->textures[i]->referenceCount) == 0) {
             container->activeTexture = container->textures[i];
             return;
         }
@@ -2270,7 +2270,7 @@ static D3D11TextureSubresource *D3D11_INTERNAL_PrepareTextureSubresourceForWrite
     if (
         container->canBeCycled &&
         cycle &&
-        SDL_AtomicGet(&subresource->parent->referenceCount) > 0) {
+        SDL_GetAtomicInt(&subresource->parent->referenceCount) > 0) {
         D3D11_INTERNAL_CycleActiveTexture(
             renderer,
             container);
@@ -2351,7 +2351,7 @@ static D3D11Buffer *D3D11_INTERNAL_CreateBuffer(
     d3d11Buffer->size = size;
     d3d11Buffer->uav = uav;
     d3d11Buffer->srv = srv;
-    SDL_AtomicSet(&d3d11Buffer->referenceCount, 0);
+    SDL_SetAtomicInt(&d3d11Buffer->referenceCount, 0);
 
     return d3d11Buffer;
 }
@@ -2460,7 +2460,7 @@ static void D3D11_INTERNAL_CycleActiveBuffer(
     Uint32 size = container->activeBuffer->size;
 
     for (Uint32 i = 0; i < container->bufferCount; i += 1) {
-        if (SDL_AtomicGet(&container->buffers[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&container->buffers[i]->referenceCount) == 0) {
             container->activeBuffer = container->buffers[i];
             return;
         }
@@ -2496,7 +2496,7 @@ static D3D11Buffer *D3D11_INTERNAL_PrepareBufferForWrite(
 {
     if (
         cycle &&
-        SDL_AtomicGet(&container->activeBuffer->referenceCount) > 0) {
+        SDL_GetAtomicInt(&container->activeBuffer->referenceCount) > 0) {
         D3D11_INTERNAL_CycleActiveBuffer(
             renderer,
             container);
@@ -2513,7 +2513,7 @@ static D3D11TransferBuffer *D3D11_INTERNAL_CreateTransferBuffer(
 
     transferBuffer->data = (Uint8 *)SDL_malloc(size);
     transferBuffer->size = size;
-    SDL_AtomicSet(&transferBuffer->referenceCount, 0);
+    SDL_SetAtomicInt(&transferBuffer->referenceCount, 0);
 
     transferBuffer->bufferDownloads = NULL;
     transferBuffer->bufferDownloadCount = 0;
@@ -2558,7 +2558,7 @@ static void D3D11_INTERNAL_CycleActiveTransferBuffer(
     Uint32 size = container->activeBuffer->size;
 
     for (Uint32 i = 0; i < container->bufferCount; i += 1) {
-        if (SDL_AtomicGet(&container->buffers[i]->referenceCount) == 0) {
+        if (SDL_GetAtomicInt(&container->buffers[i]->referenceCount) == 0) {
             container->activeBuffer = container->buffers[i];
             return;
         }
@@ -2591,7 +2591,7 @@ static void *D3D11_MapTransferBuffer(
     // Rotate the transfer buffer if necessary
     if (
         cycle &&
-        SDL_AtomicGet(&container->activeBuffer->referenceCount) > 0) {
+        SDL_GetAtomicInt(&container->activeBuffer->referenceCount) > 0) {
         D3D11_INTERNAL_CycleActiveTransferBuffer(
             renderer,
             container);
@@ -3126,7 +3126,7 @@ static bool D3D11_INTERNAL_CreateFence(
 
     fence = SDL_malloc(sizeof(D3D11Fence));
     fence->handle = queryHandle;
-    SDL_AtomicSet(&fence->referenceCount, 0);
+    SDL_SetAtomicInt(&fence->referenceCount, 0);
 
     // Add it to the available pool
     if (renderer->availableFenceCount >= renderer->availableFenceCapacity) {
@@ -4839,7 +4839,7 @@ static void D3D11_INTERNAL_PerformPendingDestroys(
     for (i = renderer->transferBufferContainersToDestroyCount - 1; i >= 0; i -= 1) {
         referenceCount = 0;
         for (j = 0; j < renderer->transferBufferContainersToDestroy[i]->bufferCount; j += 1) {
-            referenceCount += SDL_AtomicGet(&renderer->transferBufferContainersToDestroy[i]->buffers[j]->referenceCount);
+            referenceCount += SDL_GetAtomicInt(&renderer->transferBufferContainersToDestroy[i]->buffers[j]->referenceCount);
         }
 
         if (referenceCount == 0) {
@@ -4854,7 +4854,7 @@ static void D3D11_INTERNAL_PerformPendingDestroys(
     for (i = renderer->bufferContainersToDestroyCount - 1; i >= 0; i -= 1) {
         referenceCount = 0;
         for (j = 0; j < renderer->bufferContainersToDestroy[i]->bufferCount; j += 1) {
-            referenceCount += SDL_AtomicGet(&renderer->bufferContainersToDestroy[i]->buffers[j]->referenceCount);
+            referenceCount += SDL_GetAtomicInt(&renderer->bufferContainersToDestroy[i]->buffers[j]->referenceCount);
         }
 
         if (referenceCount == 0) {
@@ -4869,7 +4869,7 @@ static void D3D11_INTERNAL_PerformPendingDestroys(
     for (i = renderer->textureContainersToDestroyCount - 1; i >= 0; i -= 1) {
         referenceCount = 0;
         for (j = 0; j < renderer->textureContainersToDestroy[i]->textureCount; j += 1) {
-            referenceCount += SDL_AtomicGet(&renderer->textureContainersToDestroy[i]->textures[j]->referenceCount);
+            referenceCount += SDL_GetAtomicInt(&renderer->textureContainersToDestroy[i]->textures[j]->referenceCount);
         }
 
         if (referenceCount == 0) {
@@ -5038,7 +5038,7 @@ static bool D3D11_INTERNAL_InitializeSwapchainTexture(
     // Fill out the texture struct
     pTexture->handle = NULL;     // This will be set in AcquireSwapchainTexture.
     pTexture->shaderView = NULL; // We don't allow swapchain texture to be sampled
-    SDL_AtomicSet(&pTexture->referenceCount, 0);
+    SDL_SetAtomicInt(&pTexture->referenceCount, 0);
     pTexture->subresourceCount = 1;
     pTexture->subresources = SDL_malloc(sizeof(D3D11TextureSubresource));
     pTexture->subresources[0].colorTargetViews = SDL_calloc(1, sizeof(ID3D11RenderTargetView *));

@@ -38,7 +38,7 @@ static int SDLCALL
 SubThreadFunc(void *data)
 {
     SDL_AtomicInt *flag = (SDL_AtomicInt *)data;
-    while (!SDL_AtomicGet(flag)) {
+    while (!SDL_GetAtomicInt(flag)) {
         SDL_Delay(10);
     }
     return 0;
@@ -57,18 +57,18 @@ ThreadFunc(void *data)
     for (i = 0; i < NUMTHREADS; i++) {
         char name[64];
         (void)SDL_snprintf(name, sizeof(name), "Child%d_%d", tid, i);
-        SDL_AtomicSet(&flags[i], 0);
+        SDL_SetAtomicInt(&flags[i], 0);
         sub_threads[i] = SDL_CreateThread(SubThreadFunc, name, &flags[i]);
     }
 
     SDL_Log("Thread '%d' waiting for signal\n", tid);
-    while (SDL_AtomicGet(&time_for_threads_to_die[tid]) != 1) {
+    while (SDL_GetAtomicInt(&time_for_threads_to_die[tid]) != 1) {
         ; /* do nothing */
     }
 
     SDL_Log("Thread '%d' sending signals to subthreads\n", tid);
     for (i = 0; i < NUMTHREADS; i++) {
-        SDL_AtomicSet(&flags[i], 1);
+        SDL_SetAtomicInt(&flags[i], 1);
         SDL_WaitThread(sub_threads[i], NULL);
     }
 
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < NUMTHREADS; i++) {
         char name[64];
         (void)SDL_snprintf(name, sizeof(name), "Parent%d", i);
-        SDL_AtomicSet(&time_for_threads_to_die[i], 0);
+        SDL_SetAtomicInt(&time_for_threads_to_die[i], 0);
         threads[i] = SDL_CreateThread(ThreadFunc, name, (void *)(uintptr_t)i);
 
         if (threads[i] == NULL) {
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     }
 
     for (i = 0; i < NUMTHREADS; i++) {
-        SDL_AtomicSet(&time_for_threads_to_die[i], 1);
+        SDL_SetAtomicInt(&time_for_threads_to_die[i], 1);
     }
 
     for (i = 0; i < NUMTHREADS; i++) {

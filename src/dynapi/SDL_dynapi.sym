@@ -5,6 +5,7 @@ SDL3_0.0.0 {
     SDL_AcquireCameraFrame;
     SDL_AcquireGPUCommandBuffer;
     SDL_AcquireGPUSwapchainTexture;
+    SDL_AddAtomicInt;
     SDL_AddEventWatch;
     SDL_AddGamepadMapping;
     SDL_AddGamepadMappingsFromFile;
@@ -14,13 +15,6 @@ SDL3_0.0.0 {
     SDL_AddTimer;
     SDL_AddTimerNS;
     SDL_AddVulkanRenderSemaphores;
-    SDL_AtomicAdd;
-    SDL_AtomicCompareAndSwap;
-    SDL_AtomicCompareAndSwapPointer;
-    SDL_AtomicGet;
-    SDL_AtomicGetPointer;
-    SDL_AtomicSet;
-    SDL_AtomicSetPointer;
     SDL_AttachVirtualJoystick;
     SDL_AudioDevicePaused;
     SDL_BeginGPUComputePass;
@@ -67,6 +61,8 @@ SDL3_0.0.0 {
     SDL_CloseJoystick;
     SDL_CloseSensor;
     SDL_CloseStorage;
+    SDL_CompareAndSwapAtomicInt;
+    SDL_CompareAndSwapAtomicPointer;
     SDL_ComposeCustomBlendMode;
     SDL_ConvertAudioSamples;
     SDL_ConvertEventToRenderCoordinates;
@@ -217,6 +213,8 @@ SDL3_0.0.0 {
     SDL_GetAppMetadataProperty;
     SDL_GetAssertionHandler;
     SDL_GetAssertionReport;
+    SDL_GetAtomicInt;
+    SDL_GetAtomicPointer;
     SDL_GetAudioDeviceChannelMap;
     SDL_GetAudioDeviceFormat;
     SDL_GetAudioDeviceGain;
@@ -780,6 +778,8 @@ SDL3_0.0.0 {
     SDL_SetAppMetadata;
     SDL_SetAppMetadataProperty;
     SDL_SetAssertionHandler;
+    SDL_SetAtomicInt;
+    SDL_SetAtomicPointer;
     SDL_SetAudioDeviceGain;
     SDL_SetAudioPostmixCallback;
     SDL_SetAudioStreamFormat;

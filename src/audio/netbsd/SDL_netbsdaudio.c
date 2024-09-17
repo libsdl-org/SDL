@@ -117,7 +117,7 @@ static void NETBSDAUDIO_Status(SDL_AudioDevice *device)
 static bool NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     const bool recording = device->recording;
-    while (!SDL_AtomicGet(&device->shutdown)) {
+    while (!SDL_GetAtomicInt(&device->shutdown)) {
         audio_info_t info;
         const int rc = ioctl(device->hidden->audio_fd, AUDIO_GETINFO, &info);
         if (rc < 0) {

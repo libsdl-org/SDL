@@ -204,7 +204,7 @@ static bool DSP_WaitDevice(SDL_AudioDevice *device)
     const unsigned long ioctlreq = device->recording ? SNDCTL_DSP_GETISPACE : SNDCTL_DSP_GETOSPACE;
     struct SDL_PrivateAudioData *h = device->hidden;
 
-    while (!SDL_AtomicGet(&device->shutdown)) {
+    while (!SDL_GetAtomicInt(&device->shutdown)) {
         audio_buf_info info;
         const int rc = ioctl(h->audio_fd, ioctlreq, &info);
         if (rc < 0) {

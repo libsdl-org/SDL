@@ -303,9 +303,9 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  * A type representing an atomic integer value.
  *
  * This can be used to manage a value that is synchronized across multiple
- * CPUs without a race condition; when an app sets a value with SDL_AtomicSet
+ * CPUs without a race condition; when an app sets a value with SDL_SetAtomicInt
  * all other threads, regardless of the CPU it is running on, will see that
- * value when retrieved with SDL_AtomicGet, regardless of CPU caches, etc.
+ * value when retrieved with SDL_GetAtomicInt, regardless of CPU caches, etc.
  *
  * This is also useful for atomic compare-and-swap operations: a thread can
  * change the value as long as its current value matches expectations. When
@@ -320,10 +320,10 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  *
  * \since This struct is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCompareAndSwap
- * \sa SDL_AtomicGet
- * \sa SDL_AtomicSet
- * \sa SDL_AtomicAdd
+ * \sa SDL_CompareAndSwapAtomicInt
+ * \sa SDL_GetAtomicInt
+ * \sa SDL_SetAtomicInt
+ * \sa SDL_AddAtomicInt
  */
 typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
 
@@ -342,9 +342,9 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCompareAndSwapPointer
+ * \sa SDL_CompareAndSwapAtomicPointer
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval);
 
 /**
  * Set an atomic variable to a value.
@@ -362,9 +362,9 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicGet
+ * \sa SDL_GetAtomicInt
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AtomicSet(SDL_AtomicInt *a, int v);
+extern SDL_DECLSPEC int SDLCALL SDL_SetAtomicInt(SDL_AtomicInt *a, int v);
 
 /**
  * Get the value of an atomic variable.
@@ -379,9 +379,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicSet(SDL_AtomicInt *a, int v);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicSet
+ * \sa SDL_SetAtomicInt
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
+extern SDL_DECLSPEC int SDLCALL SDL_GetAtomicInt(SDL_AtomicInt *a);
 
 /**
  * Add to an atomic variable.
@@ -402,7 +402,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
  * \sa SDL_AtomicDecRef
  * \sa SDL_AtomicIncRef
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
+extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
 
 #ifndef SDL_AtomicIncRef
 
@@ -418,7 +418,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  *
  * \sa SDL_AtomicDecRef
  */
-#define SDL_AtomicIncRef(a)    SDL_AtomicAdd(a, 1)
+#define SDL_AtomicIncRef(a)    SDL_AddAtomicInt(a, 1)
 #endif
 
 #ifndef SDL_AtomicDecRef
@@ -436,7 +436,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  *
  * \sa SDL_AtomicIncRef
  */
-#define SDL_AtomicDecRef(a)    (SDL_AtomicAdd(a, -1) == 1)
+#define SDL_AtomicDecRef(a)    (SDL_AddAtomicInt(a, -1) == 1)
 #endif
 
 /**
@@ -454,11 +454,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCompareAndSwap
- * \sa SDL_AtomicGetPointer
- * \sa SDL_AtomicSetPointer
+ * \sa SDL_CompareAndSwapAtomicInt
+ * \sa SDL_GetAtomicPointer
+ * \sa SDL_SetAtomicPointer
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval);
 
 /**
  * Set a pointer to a value atomically.
@@ -474,10 +474,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, v
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCompareAndSwapPointer
- * \sa SDL_AtomicGetPointer
+ * \sa SDL_CompareAndSwapAtomicPointer
+ * \sa SDL_GetAtomicPointer
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_AtomicSetPointer(void **a, void *v);
+extern SDL_DECLSPEC void * SDLCALL SDL_SetAtomicPointer(void **a, void *v);
 
 /**
  * Get the value of a pointer atomically.
@@ -492,10 +492,10 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AtomicSetPointer(void **a, void *v);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCompareAndSwapPointer
- * \sa SDL_AtomicSetPointer
+ * \sa SDL_CompareAndSwapAtomicPointer
+ * \sa SDL_SetAtomicPointer
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_AtomicGetPointer(void **a);
+extern SDL_DECLSPEC void * SDLCALL SDL_GetAtomicPointer(void **a);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

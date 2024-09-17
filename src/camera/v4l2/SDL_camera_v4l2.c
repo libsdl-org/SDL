@@ -112,7 +112,7 @@ static bool V4L2_WaitDevice(SDL_Camera *device)
         }
 
         // Thread is requested to shut down
-        if (SDL_AtomicGet(&device->shutdown)) {
+        if (SDL_GetAtomicInt(&device->shutdown)) {
             return true;
         }
 

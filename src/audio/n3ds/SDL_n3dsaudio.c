@@ -203,7 +203,7 @@ static bool N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
 static bool N3DSAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     contextLock(device);
-    while (!device->hidden->isCancelled && !SDL_AtomicGet(&device->shutdown) &&
+    while (!device->hidden->isCancelled && !SDL_GetAtomicInt(&device->shutdown) &&
            device->hidden->waveBuf[device->hidden->nextbuf].status != NDSP_WBUF_FREE) {
         CondVar_Wait(&device->hidden->cv, &device->hidden->lock);
     }
