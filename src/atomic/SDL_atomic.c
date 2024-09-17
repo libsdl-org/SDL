@@ -122,7 +122,7 @@ static SDL_INLINE void leaveLock(void *a)
 }
 #endif
 
-SDL_bool SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval)
+SDL_bool SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
@@ -151,7 +151,7 @@ SDL_bool SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval)
 #endif
 }
 
-SDL_bool SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval)
+SDL_bool SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval)
 {
 #ifdef HAVE_MSC_ATOMICS
     return _InterlockedCompareExchangePointer(a, newval, oldval) == oldval;
@@ -181,7 +181,7 @@ SDL_bool SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval)
 #endif
 }
 
-int SDL_AtomicSet(SDL_AtomicInt *a, int v)
+int SDL_SetAtomicInt(SDL_AtomicInt *a, int v)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
@@ -196,12 +196,12 @@ int SDL_AtomicSet(SDL_AtomicInt *a, int v)
     int value;
     do {
         value = a->value;
-    } while (!SDL_AtomicCompareAndSwap(a, value, v));
+    } while (!SDL_CompareAndSwapAtomicInt(a, value, v));
     return value;
 #endif
 }
 
-void *SDL_AtomicSetPointer(void **a, void *v)
+void *SDL_SetAtomicPointer(void **a, void *v)
 {
 #ifdef HAVE_MSC_ATOMICS
     return _InterlockedExchangePointer(a, v);
@@ -215,12 +215,12 @@ void *SDL_AtomicSetPointer(void **a, void *v)
     void *value;
     do {
         value = *a;
-    } while (!SDL_AtomicCompareAndSwapPointer(a, value, v));
+    } while (!SDL_CompareAndSwapAtomicPointer(a, value, v));
     return value;
 #endif
 }
 
-int SDL_AtomicAdd(SDL_AtomicInt *a, int v)
+int SDL_AddAtomicInt(SDL_AtomicInt *a, int v)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
@@ -238,12 +238,12 @@ int SDL_AtomicAdd(SDL_AtomicInt *a, int v)
     int value;
     do {
         value = a->value;
-    } while (!SDL_AtomicCompareAndSwap(a, value, (value + v)));
+    } while (!SDL_CompareAndSwapAtomicInt(a, value, (value + v)));
     return value;
 #endif
 }
 
-int SDL_AtomicGet(SDL_AtomicInt *a)
+int SDL_GetAtomicInt(SDL_AtomicInt *a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
@@ -262,12 +262,12 @@ int SDL_AtomicGet(SDL_AtomicInt *a)
     int value;
     do {
         value = a->value;
-    } while (!SDL_AtomicCompareAndSwap(a, value, value));
+    } while (!SDL_CompareAndSwapAtomicInt(a, value, value));
     return value;
 #endif
 }
 
-void *SDL_AtomicGetPointer(void **a)
+void *SDL_GetAtomicPointer(void **a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(a, __ATOMIC_SEQ_CST);
@@ -281,7 +281,7 @@ void *SDL_AtomicGetPointer(void **a)
     void *value;
     do {
         value = *a;
-    } while (!SDL_AtomicCompareAndSwapPointer(a, value, value));
+    } while (!SDL_CompareAndSwapAtomicPointer(a, value, value));
     return value;
 #endif
 }

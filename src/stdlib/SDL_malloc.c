@@ -6417,7 +6417,7 @@ SDL_bool SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 
 int SDL_GetNumAllocations(void)
 {
-    return SDL_AtomicGet(&s_mem.num_allocations);
+    return SDL_GetAtomicInt(&s_mem.num_allocations);
 }
 
 void *SDL_malloc(size_t size)

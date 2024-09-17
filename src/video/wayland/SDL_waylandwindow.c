@@ -697,7 +697,7 @@ static const struct wl_callback_listener gles_swap_frame_listener;
 static void gles_swap_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
-    SDL_AtomicSet(&wind->swap_interval_ready, 1); // mark window as ready to present again.
+    SDL_SetAtomicInt(&wind->swap_interval_ready, 1); // mark window as ready to present again.
 
     // reset this callback to fire again once a new frame was presented and compositor wants the next one.
     wind->gles_swap_frame_callback = wl_surface_frame(wind->gles_swap_frame_surface_wrapper);

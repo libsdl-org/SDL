@@ -38,11 +38,14 @@
 #ifdef SDL_ENABLE_OLD_NAMES
 
 /* ##SDL_atomic.h */
-#define SDL_AtomicCAS SDL_AtomicCompareAndSwap
-#define SDL_AtomicCASPtr SDL_AtomicCompareAndSwapPointer
-#define SDL_AtomicGetPtr SDL_AtomicGetPointer
+#define SDL_AtomicAdd SDL_AddAtomicInt
+#define SDL_AtomicCAS SDL_CompareAndSwapAtomicInt
+#define SDL_AtomicCASPtr SDL_CompareAndSwapAtomicPointer
+#define SDL_AtomicGet SDL_GetAtomicInt
+#define SDL_AtomicGetPtr SDL_GetAtomicPointer
 #define SDL_AtomicLock SDL_LockSpinlock
-#define SDL_AtomicSetPtr SDL_AtomicSetPointer
+#define SDL_AtomicSet SDL_SetAtomicInt
+#define SDL_AtomicSetPtr SDL_SetAtomicPointer
 #define SDL_AtomicTryLock SDL_TryLockSpinlock
 #define SDL_AtomicUnlock SDL_UnlockSpinlock
 #define SDL_atomic_t SDL_AtomicInt
@@ -668,11 +671,14 @@
 #elif !defined(SDL_DISABLE_OLD_NAMES)
 
 /* ##SDL_atomic.h */
-#define SDL_AtomicCAS SDL_AtomicCAS_renamed_SDL_AtomicCompareAndSwap
-#define SDL_AtomicCASPtr SDL_AtomicCASPtr_renamed_SDL_AtomicCompareAndSwapPointer
-#define SDL_AtomicGetPtr SDL_AtomicGetPtr_renamed_SDL_AtomicGetPointer
+#define SDL_AtomicAdd SDL_AtomicAdd_renamed_SDL_AddAtomicInt
+#define SDL_AtomicCAS SDL_AtomicCAS_renamed_SDL_CompareAndSwapAtomicInt
+#define SDL_AtomicCASPtr SDL_AtomicCASPtr_renamed_SDL_CompareAndSwapAtomicPointer
+#define SDL_AtomicGet SDL_AtomicGet_renamed_SDL_GetAtomicInt
+#define SDL_AtomicGetPtr SDL_AtomicGetPtr_renamed_SDL_GetAtomicPointer
 #define SDL_AtomicLock SDL_AtomicLock_renamed_SDL_LockSpinlock
-#define SDL_AtomicSetPtr SDL_AtomicSetPtr_renamed_SDL_AtomicSetPointer
+#define SDL_AtomicSet SDL_AtomicSet_renamed_SDL_SetAtomicInt
+#define SDL_AtomicSetPtr SDL_AtomicSetPtr_renamed_SDL_SetAtomicPointer
 #define SDL_AtomicTryLock SDL_AtomicTryLock_renamed_SDL_TryLockSpinlock
 #define SDL_AtomicUnlock SDL_AtomicUnlock_renamed_SDL_UnlockSpinlock
 #define SDL_atomic_t SDL_atomic_t_renamed_SDL_AtomicInt

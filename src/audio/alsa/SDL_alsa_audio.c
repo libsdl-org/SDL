@@ -265,7 +265,7 @@ static bool ALSA_WaitDevice(SDL_AudioDevice *device)
     const int fulldelay = (int) ((((Uint64) device->sample_frames) * 1000) / device->spec.freq);
     const int delay = SDL_max(fulldelay, 10);
 
-    while (!SDL_AtomicGet(&device->shutdown)) {
+    while (!SDL_GetAtomicInt(&device->shutdown)) {
         const int rc = ALSA_snd_pcm_wait(device->hidden->pcm_handle, delay);
         if (rc < 0 && (rc != -EAGAIN)) {
             const int status = ALSA_snd_pcm_recover(device->hidden->pcm_handle, rc, 0);
@@ -294,7 +294,7 @@ static bool ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bu
     const int frame_size = SDL_AUDIO_FRAMESIZE(device->spec);
     snd_pcm_uframes_t frames_left = (snd_pcm_uframes_t) (buflen / frame_size);
 
-    while ((frames_left > 0) && !SDL_AtomicGet(&device->shutdown)) {
+    while ((frames_left > 0) && !SDL_GetAtomicInt(&device->shutdown)) {
         const int rc = ALSA_snd_pcm_writei(device->hidden->pcm_handle, sample_buf, frames_left);
         //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA PLAYDEVICE: WROTE %d of %d bytes", (rc >= 0) ? ((int) (rc * frame_size)) : rc, (int) (frames_left * frame_size));
         SDL_assert(rc != 0);  // assuming this can't happen if we used snd_pcm_wait and queried for available space.
@@ -825,10 +825,10 @@ static int SDLCALL ALSA_HotplugThread(void *arg)
 {
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
 
-    while (!SDL_AtomicGet(&ALSA_hotplug_shutdown)) {
+    while (!SDL_GetAtomicInt(&ALSA_hotplug_shutdown)) {
         // Block awhile before checking again, unless we're told to stop.
         const Uint64 ticks = SDL_GetTicks() + 5000;
-        while (!SDL_AtomicGet(&ALSA_hotplug_shutdown) && SDL_GetTicks() < ticks) {
+        while (!SDL_GetAtomicInt(&ALSA_hotplug_shutdown) && SDL_GetTicks() < ticks) {
             SDL_Delay(100);
         }
 
@@ -853,7 +853,7 @@ static void ALSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevi
     }
 
 #if SDL_ALSA_HOTPLUG_THREAD
-    SDL_AtomicSet(&ALSA_hotplug_shutdown, 0);
+    SDL_SetAtomicInt(&ALSA_hotplug_shutdown, 0);
     ALSA_hotplug_thread = SDL_CreateThread(ALSA_HotplugThread, "SDLHotplugALSA", NULL);
     // if the thread doesn't spin, oh well, you just don't get further hotplug events.
 #endif
@@ -866,7 +866,7 @@ static void ALSA_DeinitializeStart(void)
 
 #if SDL_ALSA_HOTPLUG_THREAD
     if (ALSA_hotplug_thread) {
-        SDL_AtomicSet(&ALSA_hotplug_shutdown, 1);
+        SDL_SetAtomicInt(&ALSA_hotplug_shutdown, 1);
         SDL_WaitThread(ALSA_hotplug_thread, NULL);
         ALSA_hotplug_thread = NULL;
     }

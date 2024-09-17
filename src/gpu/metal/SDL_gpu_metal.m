@@ -1361,7 +1361,7 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
 
     metalTexture = (MetalTexture *)SDL_calloc(1, sizeof(MetalTexture));
     metalTexture->handle = texture;
-    SDL_AtomicSet(&metalTexture->referenceCount, 0);
+    SDL_SetAtomicInt(&metalTexture->referenceCount, 0);
     return metalTexture;
 }
 
@@ -1421,7 +1421,7 @@ static MetalTexture *METAL_INTERNAL_PrepareTextureForWrite(
     // Cycle the active texture handle if needed
     if (cycle && container->canBeCycled) {
         for (i = 0; i < container->textureCount; i += 1) {
-            if (SDL_AtomicGet(&container->textures[i]->referenceCount) == 0) {
+            if (SDL_GetAtomicInt(&container->textures[i]->referenceCount) == 0) {
                 container->activeTexture = container->textures[i];
                 return container->activeTexture;
             }
@@ -1469,7 +1469,7 @@ static MetalBuffer *METAL_INTERNAL_CreateBuffer(
 
     metalBuffer = SDL_calloc(1, sizeof(MetalBuffer));
     metalBuffer->handle = bufferHandle;
-    SDL_AtomicSet(&metalBuffer->referenceCount, 0);
+    SDL_SetAtomicInt(&metalBuffer->referenceCount, 0);
 
     return metalBuffer;
 }
@@ -1572,9 +1572,9 @@ static MetalBuffer *METAL_INTERNAL_PrepareBufferForWrite(
     Uint32 i;
 
     // Cycle if needed
-    if (cycle && SDL_AtomicGet(&container->activeBuffer->referenceCount) > 0) {
+    if (cycle && SDL_GetAtomicInt(&container->activeBuffer->referenceCount) > 0) {
         for (i = 0; i < container->bufferCount; i += 1) {
-            if (SDL_AtomicGet(&container->buffers[i]->referenceCount) == 0) {
+            if (SDL_GetAtomicInt(&container->buffers[i]->referenceCount) == 0) {
                 container->activeBuffer = container->buffers[i];
                 return container->activeBuffer;
             }
@@ -1945,7 +1945,7 @@ static Uint8 METAL_INTERNAL_CreateFence(
     MetalFence *fence;
 
     fence = SDL_calloc(1, sizeof(MetalFence));
-    SDL_AtomicSet(&fence->complete, 0);
+    SDL_SetAtomicInt(&fence->complete, 0);
 
     // Add it to the available pool
     // FIXME: Should this be EXPAND_IF_NEEDED?
@@ -1987,7 +1987,7 @@ static Uint8 METAL_INTERNAL_AcquireFence(
 
     // Associate the fence with the command buffer
     commandBuffer->fence = fence;
-    SDL_AtomicSet(&fence->complete, 0); // FIXME: Is this right?
+    SDL_SetAtomicInt(&fence->complete, 0); // FIXME: Is this right?
 
     return 1;
 }
@@ -3297,7 +3297,7 @@ static void METAL_INTERNAL_PerformPendingDestroys(
     for (i = renderer->bufferContainersToDestroyCount - 1; i >= 0; i -= 1) {
         referenceCount = 0;
         for (j = 0; j < renderer->bufferContainersToDestroy[i]->bufferCount; j += 1) {
-            referenceCount += SDL_AtomicGet(&renderer->bufferContainersToDestroy[i]->buffers[j]->referenceCount);
+            referenceCount += SDL_GetAtomicInt(&renderer->bufferContainersToDestroy[i]->buffers[j]->referenceCount);
         }
 
         if (referenceCount == 0) {
@@ -3312,7 +3312,7 @@ static void METAL_INTERNAL_PerformPendingDestroys(
     for (i = renderer->textureContainersToDestroyCount - 1; i >= 0; i -= 1) {
         referenceCount = 0;
         for (j = 0; j < renderer->textureContainersToDestroy[i]->textureCount; j += 1) {
-            referenceCount += SDL_AtomicGet(&renderer->textureContainersToDestroy[i]->textures[j]->referenceCount);
+            referenceCount += SDL_GetAtomicInt(&renderer->textureContainersToDestroy[i]->textures[j]->referenceCount);
         }
 
         if (referenceCount == 0) {
@@ -3339,7 +3339,7 @@ static void METAL_WaitForFences(
 
         if (waitAll) {
             for (Uint32 i = 0; i < numFences; i += 1) {
-                while (!SDL_AtomicGet(&((MetalFence *)fences[i])->complete)) {
+                while (!SDL_GetAtomicInt(&((MetalFence *)fences[i])->complete)) {
                     // Spin!
                 }
             }
@@ -3347,7 +3347,7 @@ static void METAL_WaitForFences(
             waiting = 1;
             while (waiting) {
                 for (Uint32 i = 0; i < numFences; i += 1) {
-                    if (SDL_AtomicGet(&((MetalFence *)fences[i])->complete) > 0) {
+                    if (SDL_GetAtomicInt(&((MetalFence *)fences[i])->complete) > 0) {
                         waiting = 0;
                         break;
                     }
@@ -3364,7 +3364,7 @@ static bool METAL_QueryFence(
     SDL_GPUFence *fence)
 {
     MetalFence *metalFence = (MetalFence *)fence;
-    return SDL_AtomicGet(&metalFence->complete) == 1;
+    return SDL_GetAtomicInt(&metalFence->complete) == 1;
 }
 
 // Window and Swapchain Management
@@ -3688,7 +3688,7 @@ static void METAL_Submit(
 
         // Check if we can perform any cleanups
         for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
-            if (SDL_AtomicGet(&renderer->submittedCommandBuffers[i]->fence->complete)) {
+            if (SDL_GetAtomicInt(&renderer->submittedCommandBuffers[i]->fence->complete)) {
                 METAL_INTERNAL_CleanCommandBuffer(
                     renderer,
                     renderer->submittedCommandBuffers[i]);
@@ -3725,7 +3725,7 @@ static void METAL_Wait(
          * Sort of equivalent to vkDeviceWaitIdle.
          */
         for (Uint32 i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
-            while (!SDL_AtomicGet(&renderer->submittedCommandBuffers[i]->fence->complete)) {
+            while (!SDL_GetAtomicInt(&renderer->submittedCommandBuffers[i]->fence->complete)) {
                 // Spin!
             }
         }

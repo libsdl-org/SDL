@@ -61,7 +61,7 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
 
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
-    while (SDL_AtomicGet(&ctx->running)) {
+    while (SDL_GetAtomicInt(&ctx->running)) {
         SDL_HIDAPI_RumbleRequest *request = NULL;
 
         SDL_WaitSemaphore(ctx->request_sem);
@@ -102,7 +102,7 @@ static void SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
 {
     SDL_HIDAPI_RumbleRequest *request;
 
-    SDL_AtomicSet(&ctx->running, false);
+    SDL_SetAtomicInt(&ctx->running, false);
 
     if (ctx->thread) {
         int result;
@@ -138,7 +138,7 @@ static void SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
         SDL_HIDAPI_rumble_lock = NULL;
     }
 
-    SDL_AtomicSet(&ctx->initialized, false);
+    SDL_SetAtomicInt(&ctx->initialized, false);
 }
 
 static bool SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
@@ -155,7 +155,7 @@ static bool SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
         return false;
     }
 
-    SDL_AtomicSet(&ctx->running, true);
+    SDL_SetAtomicInt(&ctx->running, true);
     ctx->thread = SDL_CreateThread(SDL_HIDAPI_RumbleThread, "HIDAPI Rumble", ctx);
     if (!ctx->thread) {
         SDL_HIDAPI_StopRumbleThread(ctx);
@@ -168,7 +168,7 @@ bool SDL_HIDAPI_LockRumble(void)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
-    if (SDL_AtomicCompareAndSwap(&ctx->initialized, false, true)) {
+    if (SDL_CompareAndSwapAtomicInt(&ctx->initialized, false, true)) {
         if (!SDL_HIDAPI_StartRumbleThread(ctx)) {
             return false;
         }
@@ -277,7 +277,7 @@ void SDL_HIDAPI_QuitRumble(void)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
-    if (SDL_AtomicGet(&ctx->running)) {
+    if (SDL_GetAtomicInt(&ctx->running)) {
         SDL_HIDAPI_StopRumbleThread(ctx);
     }
 }

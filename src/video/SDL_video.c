@@ -5370,7 +5370,7 @@ SDL_bool SDL_ScreenKeyboardShown(SDL_Window *window)
 
 int SDL_GetMessageBoxCount(void)
 {
-    return SDL_AtomicGet(&SDL_messagebox_count);
+    return SDL_GetAtomicInt(&SDL_messagebox_count);
 }
 
 #ifdef SDL_VIDEO_DRIVER_ANDROID

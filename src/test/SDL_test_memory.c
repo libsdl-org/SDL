@@ -78,12 +78,12 @@ static SDL_AtomicInt s_lock;
 
 #define LOCK_ALLOCATOR()                               \
     do {                                               \
-        if (SDL_AtomicCompareAndSwap(&s_lock, 0, 1)) { \
+        if (SDL_CompareAndSwapAtomicInt(&s_lock, 0, 1)) { \
             break;                                     \
         }                                              \
         SDL_CPUPauseInstruction();                     \
     } while (SDL_TRUE)
-#define UNLOCK_ALLOCATOR() do { SDL_AtomicSet(&s_lock, 0); } while (0)
+#define UNLOCK_ALLOCATOR() do { SDL_SetAtomicInt(&s_lock, 0); } while (0)
 
 static unsigned int get_allocation_bucket(void *mem)
 {

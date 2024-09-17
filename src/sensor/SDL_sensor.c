@@ -86,7 +86,7 @@ void SDL_UnlockSensors(void)
 
     if (!SDL_sensors_initialized) {
         // NOTE: There's a small window here where another thread could lock the mutex after we've checked for pending locks
-        if (!SDL_sensors_locked && SDL_AtomicGet(&SDL_sensor_lock_pending) == 0) {
+        if (!SDL_sensors_locked && SDL_GetAtomicInt(&SDL_sensor_lock_pending) == 0) {
             last_unlock = true;
         }
     }

@@ -340,7 +340,7 @@ static int ReadInput(SDL_DriverSwitch_Context *ctx)
     int result;
 
     // Make sure we don't try to read at the same time a write is happening
-    if (SDL_AtomicGet(&ctx->device->rumble_pending) > 0) {
+    if (SDL_GetAtomicInt(&ctx->device->rumble_pending) > 0) {
         return 0;
     }
 

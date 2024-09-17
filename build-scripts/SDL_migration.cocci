@@ -2907,12 +2907,37 @@ expression e1, e2, e3, e4;
 @@
 @@
 - SDL_AtomicCAS
-+ SDL_AtomicCompareAndSwap
++ SDL_CompareAndSwapAtomicInt
+  (...)
+@@
+@@
+- SDL_AtomicSet
++ SDL_SetAtomicInt
+  (...)
+@@
+@@
+- SDL_AtomicGet
++ SDL_GetAtomicInt
+  (...)
+@@
+@@
+- SDL_AtomicAdd
++ SDL_AddAtomicInt
   (...)
 @@
 @@
 - SDL_AtomicCASPtr
-+ SDL_AtomicCompareAndSwapPointer
++ SDL_CompareAndSwapAtomicPointer
+  (...)
+@@
+@@
+- SDL_AtomicSetPtr
++ SDL_SetAtomicPointer
+  (...)
+@@
+@@
+- SDL_AtomicGetPtr
++ SDL_GetAtomicPointer
   (...)
 @@
 @@
@@ -3584,16 +3609,6 @@ typedef SDL_JoystickGUID, SDL_GUID;
 @@
 - SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP
 + SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE
-@@
-@@
-- SDL_AtomicSetPtr
-+ SDL_AtomicSetPointer
-  (...)
-@@
-@@
-- SDL_AtomicGetPtr
-+ SDL_AtomicGetPointer
-  (...)
 @@
 @@
 - SDL_DelEventWatch

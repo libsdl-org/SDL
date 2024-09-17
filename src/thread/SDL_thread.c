@@ -46,7 +46,7 @@ void *SDL_GetTLS(SDL_TLSID *id)
         return NULL;
     }
 
-    storage_index = SDL_AtomicGet(id) - 1;
+    storage_index = SDL_GetAtomicInt(id) - 1;
     storage = SDL_SYS_GetTLSData();
     if (!storage || storage_index < 0 || storage_index >= storage->limit) {
         return NULL;
@@ -70,16 +70,16 @@ SDL_bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback 
     SDL_InitTLSData();
 
     // Get the storage index associated with the ID in a thread-safe way
-    storage_index = SDL_AtomicGet(id) - 1;
+    storage_index = SDL_GetAtomicInt(id) - 1;
     if (storage_index < 0) {
         int new_id = (SDL_AtomicIncRef(&SDL_tls_id) + 1);
 
-        SDL_AtomicCompareAndSwap(id, 0, new_id);
+        SDL_CompareAndSwapAtomicInt(id, 0, new_id);
 
         /* If there was a race condition we'll have wasted an ID, but every thread
          * will have the same storage index for this id.
          */
-        storage_index = SDL_AtomicGet(id) - 1;
+        storage_index = SDL_GetAtomicInt(id) - 1;
     }
 
     // Get the storage for the current thread
@@ -135,7 +135,7 @@ void SDL_QuitTLSData(void)
 {
     SDL_CleanupTLS();
 
-    if (SDL_AtomicGet(&SDL_tls_allocated) == 0) {
+    if (SDL_GetAtomicInt(&SDL_tls_allocated) == 0) {
         SDL_SYS_QuitTLSData();
     } else {
         // Some thread hasn't called SDL_CleanupTLS()
@@ -326,9 +326,9 @@ void SDL_RunThread(SDL_Thread *thread)
     SDL_CleanupTLS();
 
     // Mark us as ready to be joined (or detached)
-    if (!SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {
+    if (!SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {
         // Clean up if something already detached us.
-        if (SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_DETACHED, SDL_THREAD_STATE_CLEANED)) {
+        if (SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_STATE_DETACHED, SDL_THREAD_STATE_CLEANED)) {
             SDL_free(thread->name); // Can't free later, we've already cleaned up TLS
             SDL_free(thread);
         }
@@ -364,7 +364,7 @@ SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
         return NULL;
     }
     thread->status = -1;
-    SDL_AtomicSet(&thread->state, SDL_THREAD_STATE_ALIVE);
+    SDL_SetAtomicInt(&thread->state, SDL_THREAD_STATE_ALIVE);
 
     // Set up the arguments for the thread
     if (name) {
@@ -463,11 +463,11 @@ void SDL_DetachThread(SDL_Thread *thread)
     }
 
     // Grab dibs if the state is alive+joinable.
-    if (SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_DETACHED)) {
+    if (SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_DETACHED)) {
         SDL_SYS_DetachThread(thread);
     } else {
         // all other states are pretty final, see where we landed.
-        const int thread_state = SDL_AtomicGet(&thread->state);
+        const int thread_state = SDL_GetAtomicInt(&thread->state);
         if ((thread_state == SDL_THREAD_STATE_DETACHED) || (thread_state == SDL_THREAD_STATE_CLEANED)) {
             return; // already detached (you shouldn't call this twice!)
         } else if (thread_state == SDL_THREAD_STATE_ZOMBIE) {

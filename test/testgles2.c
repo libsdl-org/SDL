@@ -568,7 +568,7 @@ render_thread_fn(void *render_ctx)
     thread_data *thread = render_ctx;
 
     while (!done && !thread->done && state->windows[thread->index]) {
-        if (SDL_AtomicCompareAndSwap(&thread->suspended, WAIT_STATE_ENTER_SEM, WAIT_STATE_WAITING_ON_SEM)) {
+        if (SDL_CompareAndSwapAtomicInt(&thread->suspended, WAIT_STATE_ENTER_SEM, WAIT_STATE_WAITING_ON_SEM)) {
             SDL_WaitSemaphore(thread->suspend_sem);
         }
         render_window(thread->index);
@@ -603,12 +603,12 @@ loop_threaded(void)
         if (suspend_when_occluded && event.type == SDL_EVENT_WINDOW_OCCLUDED) {
             tdata = GetThreadDataForWindow(event.window.windowID);
             if (tdata) {
-                SDL_AtomicCompareAndSwap(&tdata->suspended, WAIT_STATE_GO, WAIT_STATE_ENTER_SEM);
+                SDL_CompareAndSwapAtomicInt(&tdata->suspended, WAIT_STATE_GO, WAIT_STATE_ENTER_SEM);
             }
         } else if (suspend_when_occluded && event.type == SDL_EVENT_WINDOW_EXPOSED) {
             tdata = GetThreadDataForWindow(event.window.windowID);
             if (tdata) {
-                if (SDL_AtomicSet(&tdata->suspended, WAIT_STATE_GO) == WAIT_STATE_WAITING_ON_SEM) {
+                if (SDL_SetAtomicInt(&tdata->suspended, WAIT_STATE_GO) == WAIT_STATE_WAITING_ON_SEM) {
                     SDL_SignalSemaphore(tdata->suspend_sem);
                 }
             }
@@ -618,7 +618,7 @@ loop_threaded(void)
                 /* Stop the render thread when the window is closed */
                 tdata->done = 1;
                 if (tdata->thread) {
-                    SDL_AtomicSet(&tdata->suspended, WAIT_STATE_GO);
+                    SDL_SetAtomicInt(&tdata->suspended, WAIT_STATE_GO);
                     SDL_SignalSemaphore(tdata->suspend_sem);
                     SDL_WaitThread(tdata->thread, NULL);
                     tdata->thread = NULL;
@@ -909,7 +909,7 @@ int main(int argc, char *argv[])
         /* Start a render thread for each window */
         for (i = 0; i < state->num_windows; ++i) {
             threads[i].index = i;
-            SDL_AtomicSet(&threads[i].suspended, 0);
+            SDL_SetAtomicInt(&threads[i].suspended, 0);
             threads[i].suspend_sem = SDL_CreateSemaphore(0);
             threads[i].thread = SDL_CreateThread(render_thread_fn, "RenderThread", &threads[i]);
         }

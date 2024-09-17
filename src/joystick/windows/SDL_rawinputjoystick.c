@@ -493,13 +493,13 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_QueryInterface(__FIE
 static ULONG STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CGamepad *This)
 {
     GamepadDelegate *self = (GamepadDelegate *)This;
-    return SDL_AtomicAdd(&self->refcount, 1) + 1UL;
+    return SDL_AddAtomicInt(&self->refcount, 1) + 1UL;
 }
 
 static ULONG STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CGamepad *This)
 {
     GamepadDelegate *self = (GamepadDelegate *)This;
-    int rc = SDL_AtomicAdd(&self->refcount, -1) - 1;
+    int rc = SDL_AddAtomicInt(&self->refcount, -1) - 1;
     // Should never free the static delegate objects
     SDL_assert(rc > 0);
     return rc;

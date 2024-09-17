@@ -30,6 +30,7 @@
 #define SDL_AcquireCameraFrame SDL_AcquireCameraFrame_REAL
 #define SDL_AcquireGPUCommandBuffer SDL_AcquireGPUCommandBuffer_REAL
 #define SDL_AcquireGPUSwapchainTexture SDL_AcquireGPUSwapchainTexture_REAL
+#define SDL_AddAtomicInt SDL_AddAtomicInt_REAL
 #define SDL_AddEventWatch SDL_AddEventWatch_REAL
 #define SDL_AddGamepadMapping SDL_AddGamepadMapping_REAL
 #define SDL_AddGamepadMappingsFromFile SDL_AddGamepadMappingsFromFile_REAL
@@ -39,13 +40,6 @@
 #define SDL_AddTimer SDL_AddTimer_REAL
 #define SDL_AddTimerNS SDL_AddTimerNS_REAL
 #define SDL_AddVulkanRenderSemaphores SDL_AddVulkanRenderSemaphores_REAL
-#define SDL_AtomicAdd SDL_AtomicAdd_REAL
-#define SDL_AtomicCompareAndSwap SDL_AtomicCompareAndSwap_REAL
-#define SDL_AtomicCompareAndSwapPointer SDL_AtomicCompareAndSwapPointer_REAL
-#define SDL_AtomicGet SDL_AtomicGet_REAL
-#define SDL_AtomicGetPointer SDL_AtomicGetPointer_REAL
-#define SDL_AtomicSet SDL_AtomicSet_REAL
-#define SDL_AtomicSetPointer SDL_AtomicSetPointer_REAL
 #define SDL_AttachVirtualJoystick SDL_AttachVirtualJoystick_REAL
 #define SDL_AudioDevicePaused SDL_AudioDevicePaused_REAL
 #define SDL_BeginGPUComputePass SDL_BeginGPUComputePass_REAL
@@ -92,6 +86,8 @@
 #define SDL_CloseJoystick SDL_CloseJoystick_REAL
 #define SDL_CloseSensor SDL_CloseSensor_REAL
 #define SDL_CloseStorage SDL_CloseStorage_REAL
+#define SDL_CompareAndSwapAtomicInt SDL_CompareAndSwapAtomicInt_REAL
+#define SDL_CompareAndSwapAtomicPointer SDL_CompareAndSwapAtomicPointer_REAL
 #define SDL_ComposeCustomBlendMode SDL_ComposeCustomBlendMode_REAL
 #define SDL_ConvertAudioSamples SDL_ConvertAudioSamples_REAL
 #define SDL_ConvertEventToRenderCoordinates SDL_ConvertEventToRenderCoordinates_REAL
@@ -242,6 +238,8 @@
 #define SDL_GetAppMetadataProperty SDL_GetAppMetadataProperty_REAL
 #define SDL_GetAssertionHandler SDL_GetAssertionHandler_REAL
 #define SDL_GetAssertionReport SDL_GetAssertionReport_REAL
+#define SDL_GetAtomicInt SDL_GetAtomicInt_REAL
+#define SDL_GetAtomicPointer SDL_GetAtomicPointer_REAL
 #define SDL_GetAudioDeviceChannelMap SDL_GetAudioDeviceChannelMap_REAL
 #define SDL_GetAudioDeviceFormat SDL_GetAudioDeviceFormat_REAL
 #define SDL_GetAudioDeviceGain SDL_GetAudioDeviceGain_REAL
@@ -804,6 +802,8 @@
 #define SDL_SetAppMetadata SDL_SetAppMetadata_REAL
 #define SDL_SetAppMetadataProperty SDL_SetAppMetadataProperty_REAL
 #define SDL_SetAssertionHandler SDL_SetAssertionHandler_REAL
+#define SDL_SetAtomicInt SDL_SetAtomicInt_REAL
+#define SDL_SetAtomicPointer SDL_SetAtomicPointer_REAL
 #define SDL_SetAudioDeviceGain SDL_SetAudioDeviceGain_REAL
 #define SDL_SetAudioPostmixCallback SDL_SetAudioPostmixCallback_REAL
 #define SDL_SetAudioStreamFormat SDL_SetAudioStreamFormat_REAL

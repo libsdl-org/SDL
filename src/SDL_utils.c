@@ -123,8 +123,8 @@ bool SDL_endswith(const char *string, const char *suffix)
 
 bool SDL_ShouldInit(SDL_InitState *state)
 {
-    while (SDL_AtomicGet(&state->status) != SDL_INIT_STATUS_INITIALIZED) {
-        if (SDL_AtomicCompareAndSwap(&state->status, SDL_INIT_STATUS_UNINITIALIZED, SDL_INIT_STATUS_INITIALIZING)) {
+    while (SDL_GetAtomicInt(&state->status) != SDL_INIT_STATUS_INITIALIZED) {
+        if (SDL_CompareAndSwapAtomicInt(&state->status, SDL_INIT_STATUS_UNINITIALIZED, SDL_INIT_STATUS_INITIALIZING)) {
             state->thread = SDL_GetCurrentThreadID();
             return true;
         }
@@ -137,7 +137,7 @@ bool SDL_ShouldInit(SDL_InitState *state)
 
 bool SDL_ShouldQuit(SDL_InitState *state)
 {
-    if (SDL_AtomicCompareAndSwap(&state->status, SDL_INIT_STATUS_INITIALIZED, SDL_INIT_STATUS_UNINITIALIZING)) {
+    if (SDL_CompareAndSwapAtomicInt(&state->status, SDL_INIT_STATUS_INITIALIZED, SDL_INIT_STATUS_UNINITIALIZING)) {
         state->thread = SDL_GetCurrentThreadID();
         return true;
     }
@@ -149,9 +149,9 @@ void SDL_SetInitialized(SDL_InitState *state, bool initialized)
     SDL_assert(state->thread == SDL_GetCurrentThreadID());
 
     if (initialized) {
-        SDL_AtomicSet(&state->status, SDL_INIT_STATUS_INITIALIZED);
+        SDL_SetAtomicInt(&state->status, SDL_INIT_STATUS_INITIALIZED);
     } else {
-        SDL_AtomicSet(&state->status, SDL_INIT_STATUS_UNINITIALIZED);
+        SDL_SetAtomicInt(&state->status, SDL_INIT_STATUS_UNINITIALIZED);
     }
 }
 

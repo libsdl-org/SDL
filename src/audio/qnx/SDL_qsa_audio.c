@@ -112,14 +112,14 @@ static bool QSA_WaitDevice(SDL_AudioDevice *device)
 
 static bool QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
-    if (SDL_AtomicGet(&device->shutdown) || !device->hidden) {
+    if (SDL_GetAtomicInt(&device->shutdown) || !device->hidden) {
         return true;
     }
 
     int towrite = buflen;
 
     // Write the audio data, checking for EAGAIN (buffer full) and underrun
-    while ((towrite > 0) && !SDL_AtomicGet(&device->shutdown));
+    while ((towrite > 0) && !SDL_GetAtomicInt(&device->shutdown));
         const int bw = snd_pcm_plugin_write(device->hidden->audio_handle, buffer, towrite);
         if (bw != towrite) {
             // Check if samples playback got stuck somewhere in hardware or in the audio device driver

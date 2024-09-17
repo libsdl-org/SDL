@@ -450,7 +450,7 @@ void SDL_UnlockJoysticks(void)
 
     if (!SDL_joysticks_initialized) {
         // NOTE: There's a small window here where another thread could lock the mutex after we've checked for pending locks
-        if (!SDL_joysticks_locked && SDL_AtomicGet(&SDL_joystick_lock_pending) == 0) {
+        if (!SDL_joysticks_locked && SDL_GetAtomicInt(&SDL_joystick_lock_pending) == 0) {
             last_unlock = true;
         }
     }

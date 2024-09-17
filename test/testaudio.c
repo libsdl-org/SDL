@@ -786,7 +786,7 @@ static void SDLCALL PostmixCallback(void *userdata, const SDL_AudioSpec *spec, f
     SDL_copyp(&thing->data.logdev.postmix_spec, spec);
     SDL_memcpy(thing->data.logdev.postmix_buffer, buffer, buflen);
     thing->data.logdev.postmix_buflen = buflen;
-    SDL_AtomicSet(&thing->data.logdev.postmix_updated, 1);
+    SDL_SetAtomicInt(&thing->data.logdev.postmix_updated, 1);
 
     SDL_UnlockMutex(thing->data.logdev.postmix_lock);
 }
@@ -857,7 +857,7 @@ static void LogicalDeviceThing_ontick(Thing *thing, Uint64 now)
             if (thing->data.logdev.postmix_buffer) {
                 SDL_memset(thing->data.logdev.postmix_buffer, '\0', thing->data.logdev.postmix_buflen);
             }
-            SDL_AtomicSet(&thing->data.logdev.postmix_updated, 1);  /* so this will at least clear the texture later. */
+            SDL_SetAtomicInt(&thing->data.logdev.postmix_updated, 1);  /* so this will at least clear the texture later. */
             SDL_SetAudioPostmixCallback(thing->data.logdev.devid, PostmixCallback, thing);
         }
     }
@@ -872,7 +872,7 @@ static void LogicalDeviceThing_ondraw(Thing *thing, SDL_Renderer *renderer)
         dst.x = thing->rect.x + ((thing->rect.w - dst.w) / 2);
         dst.y = thing->rect.y + ((thing->rect.h - dst.h) / 2);
 
-        if (SDL_AtomicGet(&thing->data.logdev.postmix_updated)) {
+        if (SDL_GetAtomicInt(&thing->data.logdev.postmix_updated)) {
             float *buffer;
             int channels;
             int buflen;
@@ -883,7 +883,7 @@ static void LogicalDeviceThing_ondraw(Thing *thing, SDL_Renderer *renderer)
             buffer = (float *) SDL_malloc(thing->data.logdev.postmix_buflen);
             if (buffer) {
                 SDL_memcpy(buffer, thing->data.logdev.postmix_buffer, thing->data.logdev.postmix_buflen);
-                SDL_AtomicSet(&thing->data.logdev.postmix_updated, 0);
+                SDL_SetAtomicInt(&thing->data.logdev.postmix_updated, 0);
             }
             SDL_UnlockMutex(thing->data.logdev.postmix_lock);
 
