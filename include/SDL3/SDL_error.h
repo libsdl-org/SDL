@@ -44,8 +44,8 @@ extern "C" {
  *
  * Calling this function will replace any previous error message that was set.
  *
- * This function always returns false, since SDL frequently uses false
- * to signify a failing result, leading to this idiom:
+ * This function always returns false, since SDL frequently uses false to
+ * signify a failing result, leading to this idiom:
  *
  * ```c
  * if (error_code) {

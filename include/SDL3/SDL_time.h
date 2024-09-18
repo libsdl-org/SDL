@@ -95,8 +95,8 @@ typedef enum SDL_TimeFormat
  *                   format, may be NULL.
  * \param timeFormat a pointer to the SDL_TimeFormat to hold the returned time
  *                   format, may be NULL.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -107,8 +107,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat
  * Jan 1, 1970 in Universal Coordinated Time (UTC).
  *
  * \param ticks the SDL_Time to hold the returned tick count.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -123,8 +123,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
  * \param localTime the resulting SDL_DateTime will be expressed in local time
  *                  if true, otherwise it will be in Universal Coordinated
  *                  Time (UTC).
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -138,8 +138,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime
  *
  * \param dt the source SDL_DateTime.
  * \param ticks the resulting SDL_Time.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */

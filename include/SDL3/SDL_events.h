@@ -1052,8 +1052,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event *events, int numevents,
  * instead.
  *
  * \param type the type of event to be queried; see SDL_EventType for details.
- * \returns true if events matching `type` are present, or false if
- *          events matching `type` are not present.
+ * \returns true if events matching `type` are present, or false if events
+ *          matching `type` are not present.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1165,8 +1165,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType)
  *
  * \param event the SDL_Event structure to be filled with the next event from
  *              the queue, or NULL.
- * \returns true if this got an event or false if there are none
- *          available.
+ * \returns true if this got an event or false if there are none available.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1187,8 +1186,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PollEvent(SDL_Event *event);
  *
  * \param event the SDL_Event structure to be filled in with the next event
  *              from the queue, or NULL.
- * \returns true on success or false if there was an error while
- *          waiting for events; call SDL_GetError() for more information.
+ * \returns true on success or false if there was an error while waiting for
+ *          events; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1215,8 +1214,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitEvent(SDL_Event *event);
  *              from the queue, or NULL.
  * \param timeoutMS the maximum number of milliseconds to wait for the next
  *                  available event.
- * \returns true if this got an event or false if the timeout elapsed
- *          without any events available.
+ * \returns true if this got an event or false if the timeout elapsed without
+ *          any events available.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1248,9 +1247,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 t
  * its own custom event types.
  *
  * \param event the SDL_Event to be added to the queue.
- * \returns true on success, false if the event was filtered or on
- *          failure; call SDL_GetError() for more information. A common reason
- *          for error is the event queue being full.
+ * \returns true on success, false if the event was filtered or on failure;
+ *          call SDL_GetError() for more information. A common reason for
+ *          error is the event queue being full.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1266,9 +1265,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PushEvent(SDL_Event *event);
  * \param userdata what was passed as `userdata` to SDL_SetEventFilter() or
  *                 SDL_AddEventWatch, etc.
  * \param event the event that triggered the callback.
- * \returns true to permit event to be added to the queue, and false
- *          to disallow it. When used with SDL_AddEventWatch, the return value
- *          is ignored.
+ * \returns true to permit event to be added to the queue, and false to
+ *          disallow it. When used with SDL_AddEventWatch, the return value is
+ *          ignored.
  *
  * \threadsafety SDL may call this callback at any time from any thread; the
  *               application is responsible for locking resources the callback
@@ -1286,9 +1285,9 @@ typedef bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
  * are posted to the internal event queue.
  *
  * If the filter function returns true when called, then the event will be
- * added to the internal queue. If it returns false, then the event will
- * be dropped from the queue, but the internal state will still be updated.
- * This allows selective filtering of dynamically arriving events.
+ * added to the internal queue. If it returns false, then the event will be
+ * dropped from the queue, but the internal state will still be updated. This
+ * allows selective filtering of dynamically arriving events.
  *
  * **WARNING**: Be very careful of what you do in the event filter function,
  * as it may run in a different thread!
@@ -1366,8 +1365,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter, voi
  *
  * \param filter an SDL_EventFilter function to call when an event happens.
  * \param userdata a pointer that is passed to `filter`.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

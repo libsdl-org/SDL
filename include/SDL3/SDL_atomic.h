@@ -88,8 +88,7 @@ typedef int SDL_SpinLock;
  * doing. Please be careful using any sort of spinlock!***
  *
  * \param lock a pointer to a lock variable.
- * \returns true if the lock succeeded, false if the lock is already
- *          held.
+ * \returns true if the lock succeeded, false if the lock is already held.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -431,8 +430,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * ***Note: If you don't know what this macro is for, you shouldn't use it!***
  *
  * \param a a pointer to an SDL_AtomicInt to increment.
- * \returns true if the variable reached zero after decrementing,
- *          false otherwise.
+ * \returns true if the variable reached zero after decrementing, false
+ *          otherwise.
  *
  * \since This macro is available since SDL 3.0.0.
  *

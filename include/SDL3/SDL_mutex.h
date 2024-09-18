@@ -741,8 +741,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitCondition(SDL_Condition *cond, SDL_Mute
  * \param mutex the mutex used to coordinate thread access.
  * \param timeoutMS the maximum time to wait, in milliseconds, or -1 to wait
  *                  indefinitely.
- * \returns true if the condition variable is signaled, false if the
- *          condition is not signaled in the allotted time.
+ * \returns true if the condition variable is signaled, false if the condition
+ *          is not signaled in the allotted time.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

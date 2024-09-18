@@ -120,8 +120,7 @@ SDL_FORCE_INLINE int SDL_MostSignificantBitIndex32(Uint32 x)
  * Determine if a unsigned 32-bit value has exactly one bit set.
  *
  * If there are no bits set (`x` is zero), or more than one bit set, this
- * returns false. If any one bit is exclusively set, this returns
- * true.
+ * returns false. If any one bit is exclusively set, this returns true.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is

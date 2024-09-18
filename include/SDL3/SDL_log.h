@@ -200,8 +200,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
  * \param priority the SDL_LogPriority to modify.
  * \param prefix the prefix to use for that log priority, or NULL to use no
  *               prefix.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

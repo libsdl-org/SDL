@@ -96,8 +96,8 @@ struct VkAllocationCallbacks;
  * library version.
  *
  * \param path the platform dependent Vulkan loader library name or NULL.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -176,8 +176,8 @@ extern SDL_DECLSPEC char const * const * SDLCALL SDL_Vulkan_GetInstanceExtension
  *                  allocator that creates the surface. Can be NULL.
  * \param surface a pointer to a VkSurfaceKHR handle to output the newly
  *                created surface.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -227,8 +227,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_DestroySurface(VkInstance instance,
  * \param physicalDevice a valid Vulkan physical device handle.
  * \param queueFamilyIndex a valid queue family index for the given physical
  *                         device.
- * \returns true if supported, false if unsupported or an error
- *          occurred.
+ * \returns true if supported, false if unsupported or an error occurred.
  *
  * \since This function is available since SDL 3.0.0.
  *

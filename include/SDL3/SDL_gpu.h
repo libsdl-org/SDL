@@ -2966,8 +2966,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPUComputePass(
  *
  * \param device a GPU context.
  * \param transfer_buffer a transfer buffer.
- * \param cycle if true, cycles the transfer buffer if it is already
- *              bound.
+ * \param cycle if true, cycles the transfer buffer if it is already bound.
  * \returns the address of the mapped transfer buffer memory.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3018,8 +3017,8 @@ extern SDL_DECLSPEC SDL_GPUCopyPass *SDLCALL SDL_BeginGPUCopyPass(
  * \param copy_pass a copy pass handle.
  * \param source the source transfer buffer with image layout information.
  * \param destination the destination texture region.
- * \param cycle if true, cycles the texture if the texture is bound,
- *              otherwise overwrites the data.
+ * \param cycle if true, cycles the texture if the texture is bound, otherwise
+ *              overwrites the data.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -3040,8 +3039,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUTexture(
  * \param copy_pass a copy pass handle.
  * \param source the source transfer buffer with offset.
  * \param destination the destination buffer with offset and size.
- * \param cycle if true, cycles the buffer if it is already bound,
- *              otherwise overwrites the data.
+ * \param cycle if true, cycles the buffer if it is already bound, otherwise
+ *              overwrites the data.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -3089,8 +3088,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUTextureToTexture(
  * \param source the buffer and offset to copy from.
  * \param destination the buffer and offset to copy to.
  * \param size the length of the buffer to copy.
- * \param cycle if true, cycles the destination buffer if it is already
- *              bound, otherwise overwrites the data.
+ * \param cycle if true, cycles the destination buffer if it is already bound,
+ *              otherwise overwrites the data.
  *
  * \since This function is available since SDL 3.0.0.
  */

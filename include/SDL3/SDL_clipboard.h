@@ -46,8 +46,8 @@ extern "C" {
  * Put UTF-8 text into the clipboard.
  *
  * \param text the text to store in the clipboard.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -89,8 +89,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasClipboardText(void);
  * Put UTF-8 text into the primary selection.
  *
  * \param text the text to store in the primary selection.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -120,8 +120,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
  * Query whether the primary selection exists and contains a non-empty text
  * string.
  *
- * \returns true if the primary selection has text, or false if it
- *          does not.
+ * \returns true if the primary selection has text, or false if it does not.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -185,8 +184,8 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * \param userdata an opaque pointer that will be forwarded to the callbacks.
  * \param mime_types a list of mime-types that are being offered.
  * \param num_mime_types the number of mime-types in the mime_types list.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -199,8 +198,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback 
 /**
  * Clear the clipboard data.
  *
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -231,8 +230,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetClipboardData(const char *mime_type, s
  * Query whether there is data in the clipboard for the provided mime type.
  *
  * \param mime_type the mime type to check for data for.
- * \returns true if there exists data in clipboard for the provided mime
- *          type, false if it does not.
+ * \returns true if there exists data in clipboard for the provided mime type,
+ *          false if it does not.
  *
  * \since This function is available since SDL 3.0.0.
  *

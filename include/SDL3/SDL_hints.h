@@ -1730,8 +1730,8 @@ extern "C" {
  * - "0": HIDAPI driver is not used.
  * - "1": HIDAPI driver is used.
  *
- * This driver doesn't work with the dolphinbar, so the default is false
- * for now.
+ * This driver doesn't work with the dolphinbar, so the default is false for
+ * now.
  *
  * This hint should be set before enumerating controllers.
  *
@@ -4049,8 +4049,8 @@ typedef enum SDL_HintPriority
  * \param name the hint to set.
  * \param value the value of the hint variable.
  * \param priority the SDL_HintPriority level for the hint.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4071,8 +4071,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetHintWithPriority(const char *name, const
  *
  * \param name the hint to set.
  * \param value the value of the hint variable.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4092,8 +4092,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetHint(const char *name, const char *value
  * change.
  *
  * \param name the hint to set.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4187,8 +4187,8 @@ typedef void(SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const 
  * \param callback An SDL_HintCallback function that will be called when the
  *                 hint value changes.
  * \param userdata a pointer to pass to the callback function.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

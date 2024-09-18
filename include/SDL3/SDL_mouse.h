@@ -296,8 +296,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window,
  *
  * \param x the x coordinate.
  * \param y the y coordinate.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -317,8 +317,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WarpMouseGlobal(float x, float y);
  *
  * \param window the window to change.
  * \param enabled true to enable relative mode, false to disable.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -330,8 +330,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowRelativeMouseMode(SDL_Window *wind
  * Query whether relative mouse mode is enabled for a window.
  *
  * \param window the window to query.
- * \returns true if relative mode is enabled for a window or false
- *          otherwise.
+ * \returns true if relative mode is enabled for a window or false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -376,8 +375,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowRelativeMouseMode(SDL_Window *wind
  * `SDL_HINT_MOUSE_AUTO_CAPTURE` hint to zero.
  *
  * \param enabled true to enable capturing, false to disable.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -484,8 +483,8 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor
  * this is desired for any reason.
  *
  * \param cursor a cursor to make active.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -539,8 +538,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyCursor(SDL_Cursor *cursor);
 /**
  * Show the cursor.
  *
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -552,8 +551,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowCursor(void);
 /**
  * Hide the cursor.
  *
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -565,8 +564,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HideCursor(void);
 /**
  * Return whether the cursor is currently being shown.
  *
- * \returns `true` if the cursor is being shown, or `false` if the
- *          cursor is hidden.
+ * \returns `true` if the cursor is being shown, or `false` if the cursor is
+ *          hidden.
  *
  * \since This function is available since SDL 3.0.0.
  *

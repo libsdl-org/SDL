@@ -141,8 +141,8 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
  * SDL_SetAppMetadataProperty().
  *
  * \param flags subsystem initialization flags.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -161,8 +161,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_Init(SDL_InitFlags flags);
  * This function and SDL_Init() are interchangeable.
  *
  * \param flags any of the flags used by SDL_Init(); see SDL_Init for details.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -246,8 +246,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_Quit(void);
  *                   hash, or whatever makes sense).
  * \param appidentifier A unique string in reverse-domain format that
  *                      identifies this app ("com.example.mygame2").
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -308,8 +308,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAppMetadata(const char *appname, const c
  *
  * \param name the name of the metadata property to set.
  * \param value the value of the property, or NULL to remove that property.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

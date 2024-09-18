@@ -880,8 +880,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_
  * \param calloc_func custom calloc function.
  * \param realloc_func custom realloc function.
  * \param free_func custom free function.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread, but one
  *               should not replace the memory functions once any allocations
@@ -1057,11 +1057,11 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GetEnvironmentVariables(SDL_Environment 
  * \param env the environment to modify.
  * \param name the name of the variable to set.
  * \param value the value of the variable to set.
- * \param overwrite true to overwrite the variable if it exists, false
- *                  to return success without setting the variable if it
- *                  already exists.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \param overwrite true to overwrite the variable if it exists, false to
+ *                  return success without setting the variable if it already
+ *                  exists.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1080,8 +1080,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetEnvironmentVariable(SDL_Environment *env
  *
  * \param env the environment to modify.
  * \param name the name of the variable to unset.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4013,8 +4013,7 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
  * \param b the multiplier.
  * \param ret on non-overflow output, stores the multiplication result. May
  *            not be NULL.
- * \returns false on overflow, true if result is multiplied without
- *          overflow.
+ * \returns false on overflow, true if result is multiplied without overflow.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -4053,8 +4052,7 @@ SDL_FORCE_INLINE bool SDL_size_mul_check_overflow_builtin(size_t a, size_t b, si
  * \param b the second addend.
  * \param ret on non-overflow output, stores the addition result. May not be
  *            NULL.
- * \returns false on overflow, true if result is added without
- *          overflow.
+ * \returns false on overflow, true if result is added without overflow.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

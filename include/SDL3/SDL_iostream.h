@@ -403,15 +403,15 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_OpenIO(const SDL_IOStreamInterfac
  *
  * SDL_CloseIO() closes and cleans up the SDL_IOStream stream. It releases any
  * resources used by the stream and frees the SDL_IOStream itself. This
- * returns true on success, or false if the stream failed to flush to
- * its output (e.g. to disk).
+ * returns true on success, or false if the stream failed to flush to its
+ * output (e.g. to disk).
  *
  * Note that if this fails to flush the stream to disk, this function reports
  * an error, but the SDL_IOStream is still invalid once this function returns.
  *
  * \param context SDL_IOStream structure to close.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -605,8 +605,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_IOvprintf(SDL_IOStream *context, SDL_PRIN
  * guarantees that any pending data is sent.
  *
  * \param context SDL_IOStream structure to flush.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -627,8 +627,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FlushIO(SDL_IOStream *context);
  * \param src the SDL_IOStream to read all available data from.
  * \param datasize a pointer filled in with the number of bytes read, may be
  *                 NULL.
- * \param closeio if true, calls SDL_CloseIO() on `src` before returning,
- *                even in the case of an error.
+ * \param closeio if true, calls SDL_CloseIO() on `src` before returning, even
+ *                in the case of an error.
  * \returns the data or NULL on failure; call SDL_GetError() for more
  *          information.
  *
@@ -670,8 +670,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile(const char *file, size_t *datasi
  *
  * \param src the SDL_IOStream to read from.
  * \param value a pointer filled in with the data read.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -682,8 +682,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU8(SDL_IOStream *src, Uint8 *value);
  *
  * \param src the SDL_IOStream to read from.
  * \param value a pointer filled in with the data read.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -698,8 +698,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS8(SDL_IOStream *src, Sint8 *value);
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -714,8 +714,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -730,8 +730,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS16LE(SDL_IOStream *src, Sint16 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -746,8 +746,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU16BE(SDL_IOStream *src, Uint16 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -762,8 +762,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS16BE(SDL_IOStream *src, Sint16 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -778,8 +778,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU32LE(SDL_IOStream *src, Uint32 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -794,8 +794,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS32LE(SDL_IOStream *src, Sint32 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -810,8 +810,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU32BE(SDL_IOStream *src, Uint32 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -826,8 +826,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS32BE(SDL_IOStream *src, Sint32 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -842,8 +842,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU64LE(SDL_IOStream *src, Uint64 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -858,8 +858,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS64LE(SDL_IOStream *src, Sint64 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -874,8 +874,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU64BE(SDL_IOStream *src, Uint64 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -894,8 +894,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS64BE(SDL_IOStream *src, Sint64 *value)
  *
  * \param dst the SDL_IOStream to write to.
  * \param value the byte value to write.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -906,8 +906,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU8(SDL_IOStream *dst, Uint8 value);
  *
  * \param dst the SDL_IOStream to write to.
  * \param value the byte value to write.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -923,8 +923,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS8(SDL_IOStream *dst, Sint8 value);
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -940,8 +940,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU16LE(SDL_IOStream *dst, Uint16 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -956,8 +956,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS16LE(SDL_IOStream *dst, Sint16 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -972,8 +972,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU16BE(SDL_IOStream *dst, Uint16 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -989,8 +989,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS16BE(SDL_IOStream *dst, Sint16 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1006,8 +1006,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU32LE(SDL_IOStream *dst, Uint32 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1022,8 +1022,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS32LE(SDL_IOStream *dst, Sint32 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1038,8 +1038,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU32BE(SDL_IOStream *dst, Uint32 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1055,8 +1055,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS32BE(SDL_IOStream *dst, Sint32 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1072,8 +1072,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU64LE(SDL_IOStream *dst, Uint64 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1088,8 +1088,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS64LE(SDL_IOStream *dst, Sint64 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1104,8 +1104,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU64BE(SDL_IOStream *dst, Uint64 value)
  *
  * \param dst the stream to which data will be written.
  * \param value the data to be written, in native format.
- * \returns true on successful write or false on failure; call
- *          SDL_GetError() for more information.
+ * \returns true on successful write or false on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

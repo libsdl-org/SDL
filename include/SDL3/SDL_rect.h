@@ -247,8 +247,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRectIntersection(const SDL_Rect *A, cons
  * \param B an SDL_Rect structure representing the second rectangle.
  * \param result an SDL_Rect structure filled in with the union of rectangles
  *               `A` and `B`.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -266,8 +266,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRectUnion(const SDL_Rect *A, const SDL_R
  * \param clip an SDL_Rect used for clipping or NULL to enclose all points.
  * \param result an SDL_Rect structure filled in with the minimal enclosing
  *               rectangle.
- * \returns true if any points were enclosed or false if all the
- *          points were outside of the clipping rectangle.
+ * \returns true if any points were enclosed or false if all the points were
+ *          outside of the clipping rectangle.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -450,8 +450,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRectIntersectionFloat(const SDL_FRect *A
  * \param B an SDL_FRect structure representing the second rectangle.
  * \param result an SDL_FRect structure filled in with the union of rectangles
  *               `A` and `B`.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -470,8 +470,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRectUnionFloat(const SDL_FRect *A, const
  * \param clip an SDL_FRect used for clipping or NULL to enclose all points.
  * \param result an SDL_FRect structure filled in with the minimal enclosing
  *               rectangle.
- * \returns true if any points were enclosed or false if all the
- *          points were outside of the clipping rectangle.
+ * \returns true if any points were enclosed or false if all the points were
+ *          outside of the clipping rectangle.
  *
  * \since This function is available since SDL 3.0.0.
  */

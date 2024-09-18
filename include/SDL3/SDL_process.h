@@ -76,10 +76,10 @@ typedef struct SDL_Process SDL_Process;
  * See SDL_CreateProcessWithProperties() for more details.
  *
  * \param args the path and arguments for the new process.
- * \param pipe_stdio true to create pipes to the process's standard input
- *                   and from the process's standard output, false for the
- *                   process to have no input and inherit the application's
- *                   standard output.
+ * \param pipe_stdio true to create pipes to the process's standard input and
+ *                   from the process's standard output, false for the process
+ *                   to have no input and inherit the application's standard
+ *                   output.
  * \returns the newly created and running process, or NULL if the process
  *          couldn't be created.
  *
@@ -336,13 +336,13 @@ extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessOutput(SDL_Process *proc
  * Stop a process.
  *
  * \param process The process to stop.
- * \param force true to terminate the process immediately, false to
- *              try to stop the process gracefully. In general you should try
- *              to stop the process gracefully first as terminating a process
- *              may leave it with half-written data or in some other unstable
+ * \param force true to terminate the process immediately, false to try to
+ *              stop the process gracefully. In general you should try to stop
+ *              the process gracefully first as terminating a process may
+ *              leave it with half-written data or in some other unstable
  *              state.
- * \returns true on success or false on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety This function is not thread safe.
  *
