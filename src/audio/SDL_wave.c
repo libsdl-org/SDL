@@ -23,7 +23,6 @@
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
-#undef INT_MAX
 #ifndef INT_MAX
 SDL_COMPILE_TIME_ASSERT(int_size, sizeof(int) == sizeof(Sint32));
 #define INT_MAX SDL_MAX_SINT32
