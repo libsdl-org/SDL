@@ -243,7 +243,7 @@ void ShowDialog(bool save, SDL_DialogFileCallback callback, void *userdata, bool
     panel->Show();
 }
 
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, SDL_bool allow_many)
+void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, bool allow_many)
 {
     ShowDialog(false, callback, userdata, allow_many == true, !!window, filters, nfilters, false, default_location);
 }
@@ -253,7 +253,7 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL
     ShowDialog(true, callback, userdata, false, !!window, filters, nfilters, false, default_location);
 }
 
-void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char* default_location, SDL_bool allow_many)
+void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char* default_location, bool allow_many)
 {
     ShowDialog(false, callback, userdata, allow_many == true, !!window, NULL, 0, true, default_location);
 }

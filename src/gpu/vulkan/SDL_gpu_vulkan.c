@@ -9355,7 +9355,7 @@ static WindowData *VULKAN_INTERNAL_FetchWindowData(
     return (WindowData *)SDL_GetPointerProperty(properties, WINDOW_PROPERTY_DATA, NULL);
 }
 
-static SDL_bool VULKAN_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
+static bool VULKAN_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
 {
     SDL_Window *w = (SDL_Window *)userdata;
     WindowData *data;

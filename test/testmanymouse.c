@@ -125,7 +125,7 @@ SDL_COMPILE_TIME_ASSERT(keyboard_colors, SDL_arraysize(colors) == MAX_KEYBOARDS)
 typedef struct
 {
     SDL_MouseID instance_id;
-    SDL_bool active;
+    bool active;
     Uint8 button_state;
     SDL_FPoint position;
     int trail_head;
@@ -138,7 +138,7 @@ static MouseState mice[MAX_MICE];
 typedef struct
 {
     SDL_KeyboardID instance_id;
-    SDL_bool active;
+    bool active;
     Uint8 button_state;
     SDL_FPoint position;
 } KeyboardState;
@@ -172,7 +172,7 @@ static SDL_Texture *CreateTexture(const char *image[], SDL_Renderer *renderer)
     palette->colors['X'].g = 0x00;
     palette->colors['X'].b = 0x00;
 
-    SDL_SetSurfaceColorKey(surface, SDL_TRUE, ' ');
+    SDL_SetSurfaceColorKey(surface, true, ' ');
 
     texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_DestroySurface(surface);
@@ -190,7 +190,7 @@ static void HandleMouseAdded(SDL_MouseID instance_id)
         MouseState *mouse_state = &mice[i];
         if (!mouse_state->active) {
             mouse_state->instance_id = instance_id;
-            mouse_state->active = SDL_TRUE;
+            mouse_state->active = true;
             mouse_state->position.x = w * 0.5f;
             mouse_state->position.y = h * 0.5f;
             return;
@@ -339,7 +339,7 @@ static void HandleKeyboardAdded(SDL_KeyboardID instance_id)
         KeyboardState *keyboard_state = &keyboards[i];
         if (!keyboard_state->active) {
             keyboard_state->instance_id = instance_id;
-            keyboard_state->active = SDL_TRUE;
+            keyboard_state->active = true;
             keyboard_state->position.x = w * 0.5f;
             keyboard_state->position.y = h * 0.5f;
             return;
@@ -537,7 +537,7 @@ int main(int argc, char *argv[])
         SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, cursor_cross);
 
         /* We only get mouse motion for distinct devices when relative mode is enabled */
-        SDL_SetWindowRelativeMouseMode(state->windows[i], SDL_TRUE);
+        SDL_SetWindowRelativeMouseMode(state->windows[i], true);
     }
 
     /* Main render loop */

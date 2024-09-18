@@ -32,8 +32,8 @@ static SDL_AudioStream *stream;
 static Uint8 *audio_buf = NULL;
 static Uint32 audio_len = 0;
 
-static SDL_bool auto_loop = SDL_TRUE;
-static SDL_bool auto_flush = SDL_FALSE;
+static bool auto_loop = true;
+static bool auto_flush = false;
 
 static Uint64 last_get_callback = 0;
 static int last_get_amount_additional = 0;
@@ -42,7 +42,7 @@ static int last_get_amount_total = 0;
 typedef struct Slider
 {
     SDL_FRect area;
-    SDL_bool changed;
+    bool changed;
     char fmtlabel[64];
     float pos;
     int flags;
@@ -64,7 +64,7 @@ static void init_slider(int index, const char* fmtlabel, int flags, float value,
     slider->area.y = state->window_h * (0.2f + (index * SLIDER_HEIGHT_PERC * 1.4f));
     slider->area.w = SLIDER_WIDTH_PERC * state->window_w;
     slider->area.h = SLIDER_HEIGHT_PERC * state->window_h;
-    slider->changed = SDL_TRUE;
+    slider->changed = true;
     SDL_strlcpy(slider->fmtlabel, fmtlabel, SDL_arraysize(slider->fmtlabel));
     slider->flags = flags;
     slider->min = min;
@@ -106,7 +106,7 @@ static void queue_audio(void)
 {
     Uint8* new_data = NULL;
     int new_len = 0;
-    SDL_bool result = SDL_TRUE;
+    bool result = true;
     SDL_AudioSpec new_spec;
 
     SDL_zero(new_spec);
@@ -259,12 +259,12 @@ static void loop(void)
 
         if (value != slider->value) {
             slider->value = value;
-            slider->changed = SDL_TRUE;
+            slider->changed = true;
         }
     }
 
     if (sliders[0].changed) {
-        sliders[0].changed = SDL_FALSE;
+        sliders[0].changed = false;
         SDL_SetAudioStreamFrequencyRatio(stream, sliders[0].value);
     }
 

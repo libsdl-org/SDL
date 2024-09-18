@@ -95,7 +95,7 @@ static void SDLCALL IOStreamTearDown(void *arg)
  * \sa SDL_SeekIO
  * \sa SDL_ReadIO
  */
-static void testGenericIOStreamValidations(SDL_IOStream *rw, SDL_bool write)
+static void testGenericIOStreamValidations(SDL_IOStream *rw, bool write)
 {
     char buf[sizeof(IOStreamHelloWorldTestString)];
     Sint64 i;
@@ -270,12 +270,12 @@ static int SDLCALL iostrm_testMem(void *arg)
     }
 
     /* Run generic tests */
-    testGenericIOStreamValidations(rw, SDL_TRUE);
+    testGenericIOStreamValidations(rw, true);
 
     /* Close */
     result = SDL_CloseIO(rw);
     SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Verify result value is SDL_TRUE; got: %d", result);
+    SDLTest_AssertCheck(result == true, "Verify result value is true; got: %d", result);
 
     return TEST_COMPLETED;
 }
@@ -302,12 +302,12 @@ static int SDLCALL iostrm_testConstMem(void *arg)
     }
 
     /* Run generic tests */
-    testGenericIOStreamValidations(rw, SDL_FALSE);
+    testGenericIOStreamValidations(rw, false);
 
     /* Close handle */
     result = SDL_CloseIO(rw);
     SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Verify result value is SDL_TRUE; got: %d", result);
+    SDLTest_AssertCheck(result == true, "Verify result value is true; got: %d", result);
 
     return TEST_COMPLETED;
 }
@@ -340,7 +340,7 @@ static int SDLCALL iostrm_testDynamicMem(void *arg)
     SDL_SetNumberProperty(props, SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER, 1);
 
     /* Run generic tests */
-    testGenericIOStreamValidations(rw, SDL_TRUE);
+    testGenericIOStreamValidations(rw, true);
 
     /* Get the dynamic memory and verify it */
     mem = (char *)SDL_GetPointerProperty(props, SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
@@ -356,7 +356,7 @@ static int SDLCALL iostrm_testDynamicMem(void *arg)
     /* Close */
     result = SDL_CloseIO(rw);
     SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Verify result value is SDL_TRUE; got: %d", result);
+    SDLTest_AssertCheck(result == true, "Verify result value is true; got: %d", result);
 
     return TEST_COMPLETED;
 }
@@ -383,12 +383,12 @@ static int SDLCALL iostrm_testFileRead(void *arg)
     }
 
     /* Run generic tests */
-    testGenericIOStreamValidations(rw, SDL_FALSE);
+    testGenericIOStreamValidations(rw, false);
 
     /* Close handle */
     result = SDL_CloseIO(rw);
     SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Verify result value is SDL_TRUE; got: %d", result);
+    SDLTest_AssertCheck(result == true, "Verify result value is true; got: %d", result);
 
     return TEST_COMPLETED;
 }
@@ -415,12 +415,12 @@ static int SDLCALL iostrm_testFileWrite(void *arg)
     }
 
     /* Run generic tests */
-    testGenericIOStreamValidations(rw, SDL_TRUE);
+    testGenericIOStreamValidations(rw, true);
 
     /* Close handle */
     result = SDL_CloseIO(rw);
     SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Verify result value is SDL_TRUE; got: %d", result);
+    SDLTest_AssertCheck(result == true, "Verify result value is true; got: %d", result);
 
     return TEST_COMPLETED;
 }
@@ -486,7 +486,7 @@ static int SDLCALL iostrm_testCompareRWFromMemWithRWFromFile(void *arg)
         SDLTest_AssertPass("Call to SDL_SeekIO(mem,SEEK_END)");
         result = SDL_CloseIO(iostrm_mem);
         SDLTest_AssertPass("Call to SDL_CloseIO(mem)");
-        SDLTest_AssertCheck(result == SDL_TRUE, "Verify result value is SDL_TRUE; got: %d", result);
+        SDLTest_AssertCheck(result == true, "Verify result value is true; got: %d", result);
 
         /* Read/see from file */
         iostrm_file = SDL_IOFromFile(IOStreamAlphabetFilename, "r");
@@ -497,7 +497,7 @@ static int SDLCALL iostrm_testCompareRWFromMemWithRWFromFile(void *arg)
         SDLTest_AssertPass("Call to SDL_SeekIO(file,SEEK_END)");
         result = SDL_CloseIO(iostrm_file);
         SDLTest_AssertPass("Call to SDL_CloseIO(file)");
-        SDLTest_AssertCheck(result == SDL_TRUE, "Verify result value is SDL_TRUE; got: %d", result);
+        SDLTest_AssertCheck(result == true, "Verify result value is true; got: %d", result);
 
         /* Compare */
         SDLTest_AssertCheck(rv_mem == rv_file, "Verify returned read blocks matches for mem and file reads; got: rv_mem=%d rv_file=%d", (int)rv_mem, (int)rv_file);
@@ -540,7 +540,7 @@ static int SDLCALL iostrm_testFileWriteReadEndian(void *arg)
     Uint16 LE16test;
     Uint32 LE32test;
     Uint64 LE64test;
-    SDL_bool bresult;
+    bool bresult;
     int cresult;
 
     for (mode = 0; mode < 3; mode++) {
@@ -590,22 +590,22 @@ static int SDLCALL iostrm_testFileWriteReadEndian(void *arg)
         /* Write test data */
         bresult = SDL_WriteU16BE(rw, BE16value);
         SDLTest_AssertPass("Call to SDL_WriteU16BE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object written, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object written, expected: true, got: false");
         bresult = SDL_WriteU32BE(rw, BE32value);
         SDLTest_AssertPass("Call to SDL_WriteU32BE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object written, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object written, expected: true, got: false");
         bresult = SDL_WriteU64BE(rw, BE64value);
         SDLTest_AssertPass("Call to SDL_WriteU64BE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object written, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object written, expected: true, got: false");
         bresult = SDL_WriteU16LE(rw, LE16value);
         SDLTest_AssertPass("Call to SDL_WriteU16LE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object written, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object written, expected: true, got: false");
         bresult = SDL_WriteU32LE(rw, LE32value);
         SDLTest_AssertPass("Call to SDL_WriteU32LE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object written, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object written, expected: true, got: false");
         bresult = SDL_WriteU64LE(rw, LE64value);
         SDLTest_AssertPass("Call to SDL_WriteU64LE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object written, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object written, expected: true, got: false");
 
         /* Test seek to start */
         result = SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
@@ -615,33 +615,33 @@ static int SDLCALL iostrm_testFileWriteReadEndian(void *arg)
         /* Read test data */
         bresult = SDL_ReadU16BE(rw, &BE16test);
         SDLTest_AssertPass("Call to SDL_ReadU16BE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object read, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object read, expected: true, got: false");
         SDLTest_AssertCheck(BE16test == BE16value, "Validate object read from SDL_ReadU16BE, expected: %hu, got: %hu", BE16value, BE16test);
         bresult = SDL_ReadU32BE(rw, &BE32test);
         SDLTest_AssertPass("Call to SDL_ReadU32BE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object read, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object read, expected: true, got: false");
         SDLTest_AssertCheck(BE32test == BE32value, "Validate object read from SDL_ReadU32BE, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32, BE32value, BE32test);
         bresult = SDL_ReadU64BE(rw, &BE64test);
         SDLTest_AssertPass("Call to SDL_ReadU64BE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object read, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object read, expected: true, got: false");
         SDLTest_AssertCheck(BE64test == BE64value, "Validate object read from SDL_ReadU64BE, expected: %" SDL_PRIu64 ", got: %" SDL_PRIu64, BE64value, BE64test);
         bresult = SDL_ReadU16LE(rw, &LE16test);
         SDLTest_AssertPass("Call to SDL_ReadU16LE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object read, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object read, expected: true, got: false");
         SDLTest_AssertCheck(LE16test == LE16value, "Validate object read from SDL_ReadU16LE, expected: %hu, got: %hu", LE16value, LE16test);
         bresult = SDL_ReadU32LE(rw, &LE32test);
         SDLTest_AssertPass("Call to SDL_ReadU32LE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object read, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object read, expected: true, got: false");
         SDLTest_AssertCheck(LE32test == LE32value, "Validate object read from SDL_ReadU32LE, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32, LE32value, LE32test);
         bresult = SDL_ReadU64LE(rw, &LE64test);
         SDLTest_AssertPass("Call to SDL_ReadU64LE()");
-        SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object read, expected: SDL_TRUE, got: SDL_FALSE");
+        SDLTest_AssertCheck(bresult == true, "Validate object read, expected: true, got: false");
         SDLTest_AssertCheck(LE64test == LE64value, "Validate object read from SDL_ReadU64LE, expected: %" SDL_PRIu64 ", got: %" SDL_PRIu64, LE64value, LE64test);
 
         /* Close handle */
         cresult = SDL_CloseIO(rw);
         SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
-        SDLTest_AssertCheck(cresult == SDL_TRUE, "Verify result value is SDL_TRUE; got: %d", cresult);
+        SDLTest_AssertCheck(cresult == true, "Verify result value is true; got: %d", cresult);
     }
 
     return TEST_COMPLETED;

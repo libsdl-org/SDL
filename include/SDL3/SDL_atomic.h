@@ -88,7 +88,7 @@ typedef int SDL_SpinLock;
  * doing. Please be careful using any sort of spinlock!***
  *
  * \param lock a pointer to a lock variable.
- * \returns SDL_TRUE if the lock succeeded, SDL_FALSE if the lock is already
+ * \returns true if the lock succeeded, false if the lock is already
  *          held.
  *
  * \since This function is available since SDL 3.0.0.
@@ -96,7 +96,7 @@ typedef int SDL_SpinLock;
  * \sa SDL_LockSpinlock
  * \sa SDL_UnlockSpinlock
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TryLockSpinlock(SDL_SpinLock *lock);
+extern SDL_DECLSPEC bool SDLCALL SDL_TryLockSpinlock(SDL_SpinLock *lock);
 
 /**
  * Lock a spin lock by setting it to a non-zero value.
@@ -337,7 +337,7 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
  * \param a a pointer to an SDL_AtomicInt variable to be modified.
  * \param oldval the old value.
  * \param newval the new value.
- * \returns SDL_TRUE if the atomic variable was set, SDL_FALSE otherwise.
+ * \returns true if the atomic variable was set, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -346,7 +346,7 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
  * \sa SDL_GetAtomicInt
  * \sa SDL_SetAtomicInt
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval);
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval);
 
 /**
  * Set an atomic variable to a value.
@@ -431,8 +431,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * ***Note: If you don't know what this macro is for, you shouldn't use it!***
  *
  * \param a a pointer to an SDL_AtomicInt to increment.
- * \returns SDL_TRUE if the variable reached zero after decrementing,
- *          SDL_FALSE otherwise.
+ * \returns true if the variable reached zero after decrementing,
+ *          false otherwise.
  *
  * \since This macro is available since SDL 3.0.0.
  *
@@ -479,7 +479,7 @@ typedef struct SDL_AtomicU32 { Uint32 value; } SDL_AtomicU32;
  * \param a a pointer to an SDL_AtomicU32 variable to be modified.
  * \param oldval the old value.
  * \param newval the new value.
- * \returns SDL_TRUE if the atomic variable was set, SDL_FALSE otherwise.
+ * \returns true if the atomic variable was set, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -488,7 +488,7 @@ typedef struct SDL_AtomicU32 { Uint32 value; } SDL_AtomicU32;
  * \sa SDL_GetAtomicU32
  * \sa SDL_SetAtomicU32
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval);
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval);
 
 /**
  * Set an atomic variable to a value.
@@ -536,7 +536,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
  * \param a a pointer to a pointer.
  * \param oldval the old pointer value.
  * \param newval the new pointer value.
- * \returns SDL_TRUE if the pointer was set, SDL_FALSE otherwise.
+ * \returns true if the pointer was set, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -546,7 +546,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
  * \sa SDL_GetAtomicPointer
  * \sa SDL_SetAtomicPointer
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval);
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval);
 
 /**
  * Set a pointer to a value atomically.

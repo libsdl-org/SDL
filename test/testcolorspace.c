@@ -59,10 +59,10 @@ static void FreeRenderer(void)
 static void UpdateHDRState(void)
 {
     SDL_PropertiesID props;
-    SDL_bool HDR_enabled;
+    bool HDR_enabled;
 
     props = SDL_GetWindowProperties(window);
-    HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, SDL_FALSE);
+    HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
 
     SDL_Log("HDR %s\n", HDR_enabled ? "enabled" : "disabled");
 
@@ -144,11 +144,11 @@ static void PrevStage(void)
     }
 }
 
-static SDL_bool ReadPixel(int x, int y, SDL_Color *c)
+static bool ReadPixel(int x, int y, SDL_Color *c)
 {
     SDL_Surface *surface;
     SDL_Rect r;
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     r.x = x;
     r.y = y;
@@ -161,7 +161,7 @@ static SDL_bool ReadPixel(int x, int y, SDL_Color *c)
         SDL_SetStringProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING, "*=1");
 
         if (SDL_ReadSurfacePixel(surface, 0, 0, &c->r, &c->g, &c->b, &c->a)) {
-            result = SDL_TRUE;
+            result = true;
         } else {
             SDL_Log("Couldn't read pixel: %s\n", SDL_GetError());
         }

@@ -35,16 +35,16 @@ int main(int argc, char *argv[])
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
     SDL_Surface *shape = NULL;
-    SDL_bool resizable = SDL_FALSE;
+    bool resizable = false;
     SDL_WindowFlags flags;
-    SDL_bool done = SDL_FALSE;
+    bool done = false;
     SDL_Event event;
     int i;
     int return_code = 1;
 
     for (i = 1; i < argc; ++i) {
         if (SDL_strcmp(argv[i], "--resizable") == 0) {
-            resizable = SDL_TRUE;
+            resizable = true;
         } else if (!image_file) {
             image_file = argv[i];
         } else {
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
             goto quit;
         }
     } else {
-        shape = SDL_LoadBMP_IO(SDL_IOFromConstMem(glass_bmp, sizeof(glass_bmp)), SDL_TRUE);
+        shape = SDL_LoadBMP_IO(SDL_IOFromConstMem(glass_bmp, sizeof(glass_bmp)), true);
         if (!shape) {
             SDL_Log("Couldn't load glass.bmp: %s\n", SDL_GetError());
             goto quit;
@@ -112,11 +112,11 @@ int main(int argc, char *argv[])
             switch (event.type) {
             case SDL_EVENT_KEY_DOWN:
                 if (event.key.key == SDLK_ESCAPE) {
-                    done = SDL_TRUE;
+                    done = true;
                 }
                 break;
             case SDL_EVENT_QUIT:
-                done = SDL_TRUE;
+                done = true;
                 break;
             default:
                 break;

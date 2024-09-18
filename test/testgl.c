@@ -31,7 +31,7 @@ typedef struct GL_Context
 static SDLTest_CommonState *state;
 static SDL_GLContext context;
 static GL_Context ctx;
-static SDL_bool suspend_when_occluded;
+static bool suspend_when_occluded;
 
 static int LoadContext(GL_Context *data)
 {
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
                 accel = SDL_atoi(argv[i + 1]);
                 consumed = 2;
             } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
-                suspend_when_occluded = SDL_TRUE;
+                suspend_when_occluded = true;
                 consumed = 1;
             } else {
                 consumed = -1;
@@ -371,7 +371,7 @@ int main(int argc, char *argv[])
     then = SDL_GetTicks();
     done = 0;
     while (!done) {
-        SDL_bool update_swap_interval = SDL_FALSE;
+        bool update_swap_interval = false;
         int active_windows = 0;
 
         /* Check for events */
@@ -381,10 +381,10 @@ int main(int argc, char *argv[])
             if (event.type == SDL_EVENT_KEY_DOWN) {
                 if (event.key.key == SDLK_O) {
                     swap_interval--;
-                    update_swap_interval = SDL_TRUE;
+                    update_swap_interval = true;
                 } else if (event.key.key == SDLK_P) {
                     swap_interval++;
-                    update_swap_interval = SDL_TRUE;
+                    update_swap_interval = true;
                 }
             }
         }

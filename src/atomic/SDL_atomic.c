@@ -122,7 +122,7 @@ static SDL_INLINE void leaveLock(void *a)
 }
 #endif
 
-SDL_bool SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval)
+bool SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
@@ -152,7 +152,7 @@ SDL_bool SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval)
 #endif
 }
 
-SDL_bool SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval)
+bool SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
@@ -183,7 +183,7 @@ SDL_bool SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 new
 #endif
 }
 
-SDL_bool SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval)
+bool SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval)
 {
 #ifdef HAVE_MSC_ATOMICS
     return _InterlockedCompareExchangePointer(a, newval, oldval) == oldval;

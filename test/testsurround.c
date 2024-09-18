@@ -87,12 +87,12 @@ get_channel_name(int channel_index, int channel_count)
     case 7:
         return "Side Right";
     }
-    SDLTest_AssertCheck(SDL_FALSE, "Invalid channel_index for channel_count:  channel_count=%d channel_index=%d", channel_count, channel_index);
+    SDLTest_AssertCheck(false, "Invalid channel_index for channel_count:  channel_count=%d channel_index=%d", channel_count, channel_index);
     SDL_assert(0);
     return NULL;
 }
 
-static SDL_bool is_lfe_channel(int channel_index, int channel_count)
+static bool is_lfe_channel(int channel_index, int channel_count)
 {
     return (channel_count == 3 && channel_index == 2) || (channel_count >= 6 && channel_index == 3);
 }

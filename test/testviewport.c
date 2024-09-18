@@ -26,7 +26,7 @@ static SDLTest_CommonState *state;
 
 static SDL_Rect viewport;
 static int done, j;
-static SDL_bool use_target = SDL_FALSE;
+static bool use_target = false;
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 static Uint32 wait_start;
 #endif
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
         if (consumed == 0) {
             consumed = -1;
             if (SDL_strcasecmp(argv[i], "--target") == 0) {
-                use_target = SDL_TRUE;
+                use_target = true;
                 consumed = 1;
             }
         }
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
-    sprite = LoadTexture(state->renderers[0], "icon.bmp", SDL_TRUE, &sprite_w, &sprite_h);
+    sprite = LoadTexture(state->renderers[0], "icon.bmp", true, &sprite_w, &sprite_h);
 
     if (!sprite) {
         quit(2);

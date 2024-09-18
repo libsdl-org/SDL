@@ -516,7 +516,7 @@ static bool PrepareCamera(SDL_Camera *device)
     return true;
 }
 
-static void SDLCALL CameraPermissionCallback(void *userdata, const char *permission, SDL_bool granted)
+static void SDLCALL CameraPermissionCallback(void *userdata, const char *permission, bool granted)
 {
     SDL_Camera *device = (SDL_Camera *) userdata;
     if (device->hidden != NULL) {   // if device was already closed, don't send an event.

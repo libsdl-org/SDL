@@ -73,7 +73,7 @@ static int detect_available_methods(const char *value)
     return 0;
 }
 
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
+void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
 {
     // Call detect_available_methods() again each time in case the situation changed
     if (!detected_open && !detect_available_methods(NULL)) {
@@ -97,7 +97,7 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
     detected_save(callback, userdata, window, filters, nfilters, default_location);
 }
 
-void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many)
+void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many)
 {
     // Call detect_available_methods() again each time in case the situation changed
     if (!detected_folder && !detect_available_methods(NULL)) {

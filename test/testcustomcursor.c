@@ -223,7 +223,7 @@ static SDL_Cursor *cursors[3 + SDL_SYSTEM_CURSOR_COUNT];
 static SDL_SystemCursor cursor_types[3 + SDL_SYSTEM_CURSOR_COUNT];
 static int num_cursors;
 static int current_cursor;
-static SDL_bool show_cursor;
+static bool show_cursor;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -346,7 +346,7 @@ static void loop(void)
         rect.w = 128.0f;
         rect.h = 128.0f;
         for (y = 0, row = 0; y < window_h; y += (int)rect.h, ++row) {
-            SDL_bool black = ((row % 2) == 0) ? SDL_TRUE : SDL_FALSE;
+            bool black = ((row % 2) == 0) ? true : false;
             for (x = 0; x < window_w; x += (int)rect.w) {
                 rect.x = (float)x;
                 rect.y = (float)y;

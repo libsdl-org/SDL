@@ -371,7 +371,7 @@ static void GAMEINPUT_InitialKeyboardReading(WIN_GameInputData *data, SDL_Window
 
     // Go through and send key up events for any key that's not held down
     int num_scancodes;
-    const SDL_bool *keyboard_state = SDL_GetKeyboardState(&num_scancodes);
+    const bool *keyboard_state = SDL_GetKeyboardState(&num_scancodes);
     for (int i = 0; i < num_scancodes; ++i) {
         if (keyboard_state[i] && !KeysHaveScancode(keys, num_keys, (SDL_Scancode)i)) {
             SDL_SendKeyboardKey(timestamp, keyboardID, keys[i].scanCode, (SDL_Scancode)i, false);

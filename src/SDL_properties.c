@@ -210,7 +210,7 @@ error:
     return 0;
 }
 
-SDL_bool SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
+bool SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
 {
     SDL_Properties *src_properties = NULL;
     SDL_Properties *dst_properties = NULL;
@@ -282,7 +282,7 @@ SDL_bool SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
     return result;
 }
 
-SDL_bool SDL_LockProperties(SDL_PropertiesID props)
+bool SDL_LockProperties(SDL_PropertiesID props)
 {
     SDL_Properties *properties = NULL;
 
@@ -321,7 +321,7 @@ void SDL_UnlockProperties(SDL_PropertiesID props)
     SDL_UnlockMutex(properties->lock);
 }
 
-static SDL_bool SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_Property *property)
+static bool SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_Property *property)
 {
     SDL_Properties *properties = NULL;
     bool result = true;
@@ -360,7 +360,7 @@ static SDL_bool SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name,
     return result;
 }
 
-SDL_bool SDL_SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata)
+bool SDL_SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata)
 {
     SDL_Property *property;
 
@@ -386,7 +386,7 @@ SDL_bool SDL_SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char *n
     return SDL_PrivateSetProperty(props, name, property);
 }
 
-SDL_bool SDL_SetPointerProperty(SDL_PropertiesID props, const char *name, void *value)
+bool SDL_SetPointerProperty(SDL_PropertiesID props, const char *name, void *value)
 {
     SDL_Property *property;
 
@@ -425,7 +425,7 @@ bool SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surfac
     return SDL_SetPointerPropertyWithCleanup(props, name, surface, CleanupSurface, NULL);
 }
 
-SDL_bool SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char *value)
+bool SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char *value)
 {
     SDL_Property *property;
 
@@ -446,7 +446,7 @@ SDL_bool SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const c
     return SDL_PrivateSetProperty(props, name, property);
 }
 
-SDL_bool SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 value)
+bool SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 value)
 {
     SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
@@ -457,7 +457,7 @@ SDL_bool SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 
     return SDL_PrivateSetProperty(props, name, property);
 }
 
-SDL_bool SDL_SetFloatProperty(SDL_PropertiesID props, const char *name, float value)
+bool SDL_SetFloatProperty(SDL_PropertiesID props, const char *name, float value)
 {
     SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
@@ -468,7 +468,7 @@ SDL_bool SDL_SetFloatProperty(SDL_PropertiesID props, const char *name, float va
     return SDL_PrivateSetProperty(props, name, property);
 }
 
-SDL_bool SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool value)
+bool SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, bool value)
 {
     SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
@@ -479,7 +479,7 @@ SDL_bool SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bo
     return SDL_PrivateSetProperty(props, name, property);
 }
 
-SDL_bool SDL_HasProperty(SDL_PropertiesID props, const char *name)
+bool SDL_HasProperty(SDL_PropertiesID props, const char *name)
 {
     return (SDL_GetPropertyType(props, name) != SDL_PROPERTY_TYPE_INVALID);
 }
@@ -709,7 +709,7 @@ float SDL_GetFloatProperty(SDL_PropertiesID props, const char *name, float defau
     return value;
 }
 
-SDL_bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool default_value)
+bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, bool default_value)
 {
     SDL_Properties *properties = NULL;
     bool value = default_value ? true : false;
@@ -756,12 +756,12 @@ SDL_bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bo
     return value;
 }
 
-SDL_bool SDL_ClearProperty(SDL_PropertiesID props, const char *name)
+bool SDL_ClearProperty(SDL_PropertiesID props, const char *name)
 {
     return SDL_PrivateSetProperty(props, name, NULL);
 }
 
-SDL_bool SDL_EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallback callback, void *userdata)
+bool SDL_EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallback callback, void *userdata)
 {
     SDL_Properties *properties = NULL;
 

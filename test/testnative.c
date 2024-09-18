@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
     }
     props = SDL_CreateProperties();
     SDL_SetPointerProperty(props, "sdl2-compat.external_window", native_window);
-    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_TRUE);
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, WINDOW_W);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, WINDOW_H);
     window = SDL_CreateWindowWithProperties(props);
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
     SDL_RenderClear(renderer);
 
-    sprite = LoadTexture(renderer, "icon.bmp", SDL_TRUE, NULL, NULL);
+    sprite = LoadTexture(renderer, "icon.bmp", true, NULL, NULL);
     if (!sprite) {
         quit(6);
     }

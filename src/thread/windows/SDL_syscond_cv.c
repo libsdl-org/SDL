@@ -216,7 +216,7 @@ void SDL_BroadcastCondition(SDL_Condition *cond)
     SDL_cond_impl_active.Broadcast(cond);
 }
 
-SDL_bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
     if (!cond || !mutex) {
         return true;

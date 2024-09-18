@@ -219,7 +219,7 @@ bool SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, 
 }
 
 #ifndef SDL_THREAD_GENERIC_COND_SUFFIX
-SDL_bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
     return SDL_WaitConditionTimeoutNS_generic(cond, mutex, timeoutNS);
 }

@@ -142,8 +142,8 @@ static void RGBtoYUV(const Uint8 *rgb, int rgb_bits, int *yuv, int yuv_bits, YUV
      * U = clip3(0, (2^M)-1, floor(2^(M-8) * (112*(B-L) / ((1-Kb)*S) + 128) + 0.5));
      * V = clip3(0, (2^M)-1, floor(2^(M-8) * (112*(R-L) / ((1-Kr)*S) + 128) + 0.5));
      */
-    SDL_bool studio_RGB = SDL_FALSE;
-    SDL_bool full_range_YUV = SDL_FALSE;
+    bool studio_RGB = false;
+    bool full_range_YUV = false;
     float N, M, S, Z, R, G, B, L, Kr, Kb, Y, U, V;
 
     N = (float)rgb_bits;
@@ -177,7 +177,7 @@ static void RGBtoYUV(const Uint8 *rgb, int rgb_bits, int *yuv, int yuv_bits, YUV
     B = rgb[2];
 
     if (mode == YUV_CONVERSION_JPEG || mode == YUV_CONVERSION_BT2020) {
-        full_range_YUV = SDL_TRUE;
+        full_range_YUV = true;
     }
 
     if (mode == YUV_CONVERSION_BT2020) {
@@ -514,25 +514,25 @@ static void ConvertRGBtoPacked4(Uint32 format, Uint8 *src, int pitch, Uint8 *out
     }
 }
 
-SDL_bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     switch (format) {
     case SDL_PIXELFORMAT_P010:
         ConvertRGBtoPlanar2x2_P010(format, src, pitch, out, w, h, mode, monochrome, luminance);
-        return SDL_TRUE;
+        return true;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         ConvertRGBtoPlanar2x2(format, src, pitch, out, w, h, mode, monochrome, luminance);
-        return SDL_TRUE;
+        return true;
     case SDL_PIXELFORMAT_YUY2:
     case SDL_PIXELFORMAT_UYVY:
     case SDL_PIXELFORMAT_YVYU:
         ConvertRGBtoPacked4(format, src, pitch, out, w, h, mode, monochrome, luminance);
-        return SDL_TRUE;
+        return true;
     default:
-        return SDL_FALSE;
+        return false;
     }
 }
 

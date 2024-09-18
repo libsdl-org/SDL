@@ -60,7 +60,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     }
 }
 
-SDL_bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
 #ifdef HAVE_SEM_TIMEDWAIT
 #ifndef HAVE_CLOCK_GETTIME

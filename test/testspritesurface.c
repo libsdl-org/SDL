@@ -38,10 +38,10 @@ static SDL_Surface *CreateSurface(unsigned char *data, unsigned int len, int *w,
     SDL_Surface *surface = NULL;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_IO(src, SDL_TRUE);
+        surface = SDL_LoadBMP_IO(src, true);
         if (surface) {
             /* Treat white as transparent */
-            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapSurfaceRGB(surface, 255, 255, 255));
+            SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
 
             *w = surface->w;
             *h = surface->h;

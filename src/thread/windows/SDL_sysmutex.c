@@ -218,7 +218,7 @@ void SDL_LockMutex(SDL_Mutex *mutex)
     }
 }
 
-SDL_bool SDL_TryLockMutex(SDL_Mutex *mutex)
+bool SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     bool result = true;
 

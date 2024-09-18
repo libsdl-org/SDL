@@ -1035,72 +1035,72 @@ void SDL_QuitCPUInfo(void) {
 
 #define CPU_FEATURE_AVAILABLE(f) ((SDL_GetCPUFeatures() & (f)) ? true : false)
 
-SDL_bool SDL_HasAltiVec(void)
+bool SDL_HasAltiVec(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_ALTIVEC);
 }
 
-SDL_bool SDL_HasMMX(void)
+bool SDL_HasMMX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_MMX);
 }
 
-SDL_bool SDL_HasSSE(void)
+bool SDL_HasSSE(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE);
 }
 
-SDL_bool SDL_HasSSE2(void)
+bool SDL_HasSSE2(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE2);
 }
 
-SDL_bool SDL_HasSSE3(void)
+bool SDL_HasSSE3(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE3);
 }
 
-SDL_bool SDL_HasSSE41(void)
+bool SDL_HasSSE41(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE41);
 }
 
-SDL_bool SDL_HasSSE42(void)
+bool SDL_HasSSE42(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE42);
 }
 
-SDL_bool SDL_HasAVX(void)
+bool SDL_HasAVX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX);
 }
 
-SDL_bool SDL_HasAVX2(void)
+bool SDL_HasAVX2(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX2);
 }
 
-SDL_bool SDL_HasAVX512F(void)
+bool SDL_HasAVX512F(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX512F);
 }
 
-SDL_bool SDL_HasARMSIMD(void)
+bool SDL_HasARMSIMD(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_ARM_SIMD);
 }
 
-SDL_bool SDL_HasNEON(void)
+bool SDL_HasNEON(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_NEON);
 }
 
-SDL_bool SDL_HasLSX(void)
+bool SDL_HasLSX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_LSX);
 }
 
-SDL_bool SDL_HasLASX(void)
+bool SDL_HasLASX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_LASX);
 }

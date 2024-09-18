@@ -185,7 +185,7 @@ const char *SDL_GetHapticName(SDL_Haptic *haptic)
     return SDL_GetPersistentString(haptic->name);
 }
 
-SDL_bool SDL_IsMouseHaptic(void)
+bool SDL_IsMouseHaptic(void)
 {
     if (SDL_SYS_HapticMouse() < 0) {
         return false;
@@ -207,7 +207,7 @@ SDL_Haptic *SDL_OpenHapticFromMouse(void)
     return SDL_OpenHaptic(device_index);
 }
 
-SDL_bool SDL_IsJoystickHaptic(SDL_Joystick *joystick)
+bool SDL_IsJoystickHaptic(SDL_Joystick *joystick)
 {
     bool result = false;
 
@@ -370,7 +370,7 @@ int SDL_GetNumHapticAxes(SDL_Haptic *haptic)
     return haptic->naxes;
 }
 
-SDL_bool SDL_HapticEffectSupported(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
+bool SDL_HapticEffectSupported(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -429,7 +429,7 @@ static bool ValidEffect(SDL_Haptic *haptic, int effect)
     return true;
 }
 
-SDL_bool SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effect, const SDL_HapticEffect *data)
+bool SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effect, const SDL_HapticEffect *data)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -456,7 +456,7 @@ SDL_bool SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effect, const SDL_Haptic
     return true;
 }
 
-SDL_bool SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, Uint32 iterations)
+bool SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, Uint32 iterations)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -472,7 +472,7 @@ SDL_bool SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, Uint32 iterations)
     return true;
 }
 
-SDL_bool SDL_StopHapticEffect(SDL_Haptic *haptic, int effect)
+bool SDL_StopHapticEffect(SDL_Haptic *haptic, int effect)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -504,7 +504,7 @@ void SDL_DestroyHapticEffect(SDL_Haptic *haptic, int effect)
     SDL_SYS_HapticDestroyEffect(haptic, &haptic->effects[effect]);
 }
 
-SDL_bool SDL_GetHapticEffectStatus(SDL_Haptic *haptic, int effect)
+bool SDL_GetHapticEffectStatus(SDL_Haptic *haptic, int effect)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -521,7 +521,7 @@ SDL_bool SDL_GetHapticEffectStatus(SDL_Haptic *haptic, int effect)
     return SDL_SYS_HapticGetEffectStatus(haptic, &haptic->effects[effect]);
 }
 
-SDL_bool SDL_SetHapticGain(SDL_Haptic *haptic, int gain)
+bool SDL_SetHapticGain(SDL_Haptic *haptic, int gain)
 {
     const char *env;
     int real_gain, max_gain;
@@ -557,7 +557,7 @@ SDL_bool SDL_SetHapticGain(SDL_Haptic *haptic, int gain)
     return SDL_SYS_HapticSetGain(haptic, real_gain);
 }
 
-SDL_bool SDL_SetHapticAutocenter(SDL_Haptic *haptic, int autocenter)
+bool SDL_SetHapticAutocenter(SDL_Haptic *haptic, int autocenter)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -572,7 +572,7 @@ SDL_bool SDL_SetHapticAutocenter(SDL_Haptic *haptic, int autocenter)
     return SDL_SYS_HapticSetAutocenter(haptic, autocenter);
 }
 
-SDL_bool SDL_PauseHaptic(SDL_Haptic *haptic)
+bool SDL_PauseHaptic(SDL_Haptic *haptic)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -583,7 +583,7 @@ SDL_bool SDL_PauseHaptic(SDL_Haptic *haptic)
     return SDL_SYS_HapticPause(haptic);
 }
 
-SDL_bool SDL_ResumeHaptic(SDL_Haptic *haptic)
+bool SDL_ResumeHaptic(SDL_Haptic *haptic)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -594,14 +594,14 @@ SDL_bool SDL_ResumeHaptic(SDL_Haptic *haptic)
     return SDL_SYS_HapticResume(haptic);
 }
 
-SDL_bool SDL_StopHapticEffects(SDL_Haptic *haptic)
+bool SDL_StopHapticEffects(SDL_Haptic *haptic)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
     return SDL_SYS_HapticStopAll(haptic);
 }
 
-SDL_bool SDL_HapticRumbleSupported(SDL_Haptic *haptic)
+bool SDL_HapticRumbleSupported(SDL_Haptic *haptic)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -609,7 +609,7 @@ SDL_bool SDL_HapticRumbleSupported(SDL_Haptic *haptic)
     return (haptic->supported & (SDL_HAPTIC_SINE | SDL_HAPTIC_LEFTRIGHT)) != 0;
 }
 
-SDL_bool SDL_InitHapticRumble(SDL_Haptic *haptic)
+bool SDL_InitHapticRumble(SDL_Haptic *haptic)
 {
     SDL_HapticEffect *efx = &haptic->rumble_effect;
 
@@ -645,7 +645,7 @@ SDL_bool SDL_InitHapticRumble(SDL_Haptic *haptic)
     return false;
 }
 
-SDL_bool SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, Uint32 length)
+bool SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, Uint32 length)
 {
     SDL_HapticEffect *efx;
     Sint16 magnitude;
@@ -682,7 +682,7 @@ SDL_bool SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, Uint32 length)
     return SDL_RunHapticEffect(haptic, haptic->rumble_id, 1);
 }
 
-SDL_bool SDL_StopHapticRumble(SDL_Haptic *haptic)
+bool SDL_StopHapticRumble(SDL_Haptic *haptic)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 

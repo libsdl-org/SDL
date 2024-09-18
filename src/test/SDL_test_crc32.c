@@ -27,7 +27,7 @@
 */
 #include <SDL3/SDL_test.h>
 
-SDL_bool SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext)
+bool SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext)
 {
     int i, j;
     CrcUint32 c;
@@ -61,30 +61,30 @@ SDL_bool SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext)
     }
 #endif
 
-    return SDL_TRUE;
+    return true;
 }
 
 /* Complete CRC32 calculation on a memory block */
-SDL_bool SDLTest_Crc32Calc(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32)
+bool SDLTest_Crc32Calc(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32)
 {
     if (!SDLTest_Crc32CalcStart(crcContext, crc32)) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (!SDLTest_Crc32CalcBuffer(crcContext, inBuf, inLen, crc32)) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (!SDLTest_Crc32CalcEnd(crcContext, crc32)) {
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 /* Start crc calculation */
 
-SDL_bool SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
+bool SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
 {
     /* Sanity check pointers */
     if (!crcContext) {
@@ -97,12 +97,12 @@ SDL_bool SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *crc
      */
     *crc32 = 0xffffffff;
 
-    return SDL_TRUE;
+    return true;
 }
 
 /* Finish crc calculation */
 
-SDL_bool SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
+bool SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
 {
     /* Sanity check pointers */
     if (!crcContext) {
@@ -115,12 +115,12 @@ SDL_bool SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32
      */
     *crc32 = (~(*crc32));
 
-    return SDL_TRUE;
+    return true;
 }
 
 /* Include memory block in crc */
 
-SDL_bool SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32)
+bool SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32)
 {
     CrcUint8 *p;
     register CrcUint32 crc;
@@ -147,14 +147,14 @@ SDL_bool SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inB
     }
     *crc32 = crc;
 
-    return SDL_TRUE;
+    return true;
 }
 
-SDL_bool SDLTest_Crc32Done(SDLTest_Crc32Context *crcContext)
+bool SDLTest_Crc32Done(SDLTest_Crc32Context *crcContext)
 {
     if (!crcContext) {
         return SDL_InvalidParamError("crcContext");
     }
 
-    return SDL_TRUE;
+    return true;
 }

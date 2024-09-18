@@ -40,17 +40,17 @@ static SDL_Environment *DuplicateEnvironment(const char *key0, ...)
     va_list ap;
     const char *keyN;
     SDL_Environment *env = SDL_GetEnvironment();
-    SDL_Environment *new_env = SDL_CreateEnvironment(SDL_FALSE);
+    SDL_Environment *new_env = SDL_CreateEnvironment(false);
 
     if (key0) {
         char *sep = SDL_strchr(key0, '=');
         if (sep) {
             *sep = '\0';
-            SDL_SetEnvironmentVariable(new_env, key0, sep + 1, SDL_TRUE);
+            SDL_SetEnvironmentVariable(new_env, key0, sep + 1, true);
             *sep = '=';
-            SDL_SetEnvironmentVariable(new_env, key0, sep, SDL_TRUE);
+            SDL_SetEnvironmentVariable(new_env, key0, sep, true);
         } else {
-            SDL_SetEnvironmentVariable(new_env, key0, SDL_GetEnvironmentVariable(env, key0), SDL_TRUE);
+            SDL_SetEnvironmentVariable(new_env, key0, SDL_GetEnvironmentVariable(env, key0), true);
         }
         va_start(ap, key0);
         for (;;) {
@@ -59,10 +59,10 @@ static SDL_Environment *DuplicateEnvironment(const char *key0, ...)
                 sep = SDL_strchr(keyN, '=');
                 if (sep) {
                     *sep = '\0';
-                    SDL_SetEnvironmentVariable(new_env, keyN, sep + 1, SDL_TRUE);
+                    SDL_SetEnvironmentVariable(new_env, keyN, sep + 1, true);
                     *sep = '=';
                 } else {
-                    SDL_SetEnvironmentVariable(new_env, keyN, SDL_GetEnvironmentVariable(env, keyN), SDL_TRUE);
+                    SDL_SetEnvironmentVariable(new_env, keyN, SDL_GetEnvironmentVariable(env, keyN), true);
                 }
             } else {
                 break;
@@ -99,7 +99,7 @@ static int SDLCALL process_testArguments(void *arg)
     int exit_code;
     int i;
 
-    process = SDL_CreateProcess(process_args, SDL_TRUE);
+    process = SDL_CreateProcess(process_args, true);
     SDLTest_AssertCheck(process != NULL, "SDL_CreateProcess()");
     if (!process) {
         goto failed;
@@ -142,14 +142,14 @@ static int SDLCALL process_testInheritedEnv(void *arg)
     Sint64 pid;
     SDL_IOStream *process_stdout = NULL;
     char buffer[256];
-    SDL_bool wait_result;
+    bool wait_result;
     int exit_code;
     static const char *const TEST_ENV_KEY = "testprocess_environment";
     char *test_env_val = NULL;
 
     test_env_val = SDLTest_RandomAsciiStringOfSize(32);
     SDLTest_AssertPass("Setting parent environment variable %s=%s", TEST_ENV_KEY, test_env_val);
-    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), TEST_ENV_KEY, test_env_val, SDL_TRUE);
+    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), TEST_ENV_KEY, test_env_val, true);
     SDL_snprintf(buffer, sizeof(buffer), "%s=%s", TEST_ENV_KEY, test_env_val);
     process_args[3] = buffer;
 
@@ -190,8 +190,8 @@ static int SDLCALL process_testInheritedEnv(void *arg)
 
     SDLTest_AssertPass("About to wait on process");
     exit_code = 0xdeadbeef;
-    wait_result = SDL_WaitProcess(process, SDL_TRUE, &exit_code);
-    SDLTest_AssertCheck(wait_result == SDL_TRUE, "Process should have closed when closing stdin");
+    wait_result = SDL_WaitProcess(process, true, &exit_code);
+    SDLTest_AssertCheck(wait_result == true, "Process should have closed when closing stdin");
     SDLTest_AssertPass("exit_code will be != 0 when environment variable was not set");
     SDLTest_AssertCheck(exit_code == 0, "Exit code should be 0, is %d", exit_code);
     SDLTest_AssertPass("About to destroy process");
@@ -219,7 +219,7 @@ static int SDLCALL process_testNewEnv(void *arg)
     Sint64 pid;
     SDL_IOStream *process_stdout = NULL;
     char buffer[256];
-    SDL_bool wait_result;
+    bool wait_result;
     int exit_code;
     static const char *const TEST_ENV_KEY = "testprocess_environment";
     char *test_env_val = NULL;
@@ -268,8 +268,8 @@ static int SDLCALL process_testNewEnv(void *arg)
 
     SDLTest_AssertPass("About to wait on process");
     exit_code = 0xdeadbeef;
-    wait_result = SDL_WaitProcess(process, SDL_TRUE, &exit_code);
-    SDLTest_AssertCheck(wait_result == SDL_TRUE, "Process should have closed when closing stdin");
+    wait_result = SDL_WaitProcess(process, true, &exit_code);
+    SDLTest_AssertCheck(wait_result == true, "Process should have closed when closing stdin");
     SDLTest_AssertPass("exit_code will be != 0 when environment variable was not set");
     SDLTest_AssertCheck(exit_code == 0, "Exit code should be 0, is %d", exit_code);
     SDLTest_AssertPass("About to destroy process");
@@ -303,7 +303,7 @@ static int process_testStdinToStdout(void *arg)
     size_t amount_to_write;
     char buffer[128];
     size_t total_read;
-    SDL_bool wait_result;
+    bool wait_result;
     int exit_code;
 
     props = SDL_CreateProperties();
@@ -372,13 +372,13 @@ static int process_testStdinToStdout(void *arg)
 
     SDLTest_AssertPass("About to wait on process");
     exit_code = 0xdeadbeef;
-    wait_result = SDL_WaitProcess(process, SDL_TRUE, &exit_code);
-    SDLTest_AssertCheck(wait_result == SDL_TRUE, "Process should have closed when closing stdin");
+    wait_result = SDL_WaitProcess(process, true, &exit_code);
+    SDLTest_AssertCheck(wait_result == true, "Process should have closed when closing stdin");
     SDLTest_AssertCheck(exit_code == 0, "Exit code should be 0, is %d", exit_code);
     if (!wait_result) {
-        SDL_bool killed;
+        bool killed;
         SDL_Log("About to kill process");
-        killed = SDL_KillProcess(process, SDL_TRUE);
+        killed = SDL_KillProcess(process, true);
         SDLTest_AssertCheck(killed, "SDL_KillProcess succeeded");
     }
     SDLTest_AssertPass("About to destroy process");
@@ -405,7 +405,7 @@ static int process_testSimpleStdinToStdout(void *arg)
     size_t result;
     int exit_code;
 
-    process = SDL_CreateProcess(process_args, SDL_TRUE);
+    process = SDL_CreateProcess(process_args, true);
     SDLTest_AssertCheck(process != NULL, "SDL_CreateProcess()");
     if (!process) {
         goto failed;
@@ -459,7 +459,7 @@ static int process_testMultiprocessStdinToStdout(void *arg)
     size_t result;
     int exit_code;
 
-    process1 = SDL_CreateProcess(process_args, SDL_TRUE);
+    process1 = SDL_CreateProcess(process_args, true);
     SDLTest_AssertCheck(process1 != NULL, "SDL_CreateProcess()");
     if (!process1) {
         goto failed;

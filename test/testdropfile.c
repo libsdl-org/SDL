@@ -16,7 +16,7 @@
 
 typedef struct {
     SDLTest_CommonState *state;
-    SDL_bool is_hover;
+    bool is_hover;
     float x;
     float y;
     unsigned int windowID;
@@ -73,7 +73,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     if (event->type == SDL_EVENT_DROP_BEGIN) {
         SDL_Log("Drop beginning on window %u at (%f, %f)", (unsigned int)event->drop.windowID, event->drop.x, event->drop.y);
     } else if (event->type == SDL_EVENT_DROP_COMPLETE) {
-        dialog->is_hover = SDL_FALSE;
+        dialog->is_hover = false;
         SDL_Log("Drop complete on window %u at (%f, %f)", (unsigned int)event->drop.windowID, event->drop.x, event->drop.y);
     } else if ((event->type == SDL_EVENT_DROP_FILE) || (event->type == SDL_EVENT_DROP_TEXT)) {
         const char *typestr = (event->type == SDL_EVENT_DROP_FILE) ? "File" : "Text";
@@ -82,7 +82,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         const float w_x = event->drop.x;
         const float w_y = event->drop.y;
         SDL_ConvertEventToRenderCoordinates(SDL_GetRenderer(SDL_GetWindowFromEvent(event)), event);
-        dialog->is_hover = SDL_TRUE;
+        dialog->is_hover = true;
         dialog->x = event->drop.x;
         dialog->y = event->drop.y;
         dialog->windowID = event->drop.windowID;

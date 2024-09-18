@@ -590,7 +590,10 @@
 #define SDL_SensorUpdate SDL_UpdateSensors
 
 /* ##SDL_stdinc.h */
+#define SDL_FALSE false
 #define SDL_TABLESIZE SDL_arraysize
+#define SDL_TRUE true
+#define SDL_bool bool
 #define SDL_size_add_overflow SDL_size_add_check_overflow
 #define SDL_size_mul_overflow SDL_size_mul_check_overflow
 #define SDL_strtokr SDL_strtok_r
@@ -1224,7 +1227,10 @@
 #define SDL_SensorUpdate SDL_SensorUpdate_renamed_SDL_UpdateSensors
 
 /* ##SDL_stdinc.h */
+#define SDL_FALSE SDL_FALSE_renamed_false
 #define SDL_TABLESIZE SDL_TABLESIZE_renamed_SDL_arraysize
+#define SDL_TRUE SDL_TRUE_renamed_true
+#define SDL_bool SDL_bool_renamed_bool
 #define SDL_size_add_overflow SDL_size_add_overflow_renamed_SDL_size_add_check_overflow
 #define SDL_size_mul_overflow SDL_size_mul_overflow_renamed_SDL_size_mul_check_overflow
 #define SDL_strtokr SDL_strtokr_renamed_SDL_strtok_r

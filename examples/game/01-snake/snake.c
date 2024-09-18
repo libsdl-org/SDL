@@ -94,7 +94,7 @@ static int are_cells_full_(SnakeContext *ctx)
 
 static void new_food_pos_(SnakeContext *ctx)
 {
-    while (SDL_TRUE) {
+    while (true) {
         const char x = (char) SDL_rand(SNAKE_GAME_WIDTH);
         const char y = (char) SDL_rand(SNAKE_GAME_HEIGHT);
         if (snake_cell_at(ctx, x, y) == SNAKE_CELL_NOTHING) {

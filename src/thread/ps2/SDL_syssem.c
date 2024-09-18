@@ -72,7 +72,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     }
 }
 
-SDL_bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     u64 timeout_usec;
     u64 *timeout_ptr;

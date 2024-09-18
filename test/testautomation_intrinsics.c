@@ -28,7 +28,7 @@ static int allocate_random_int_arrays(Sint32 **dest, Sint32 **a, Sint32 **b, siz
     *b = SDL_malloc(sizeof(Sint32) * *size);
 
     if (!*dest || !*a || !*b) {
-        SDLTest_AssertCheck(SDL_FALSE, "SDL_malloc failed");
+        SDLTest_AssertCheck(false, "SDL_malloc failed");
         return -1;
     }
 
@@ -48,7 +48,7 @@ static int allocate_random_float_arrays(float **dest, float **a, float **b, size
     *b = SDL_malloc(sizeof(float) * *size);
 
     if (!*dest || !*a || !*b) {
-        SDLTest_AssertCheck(SDL_FALSE, "SDL_malloc failed");
+        SDLTest_AssertCheck(false, "SDL_malloc failed");
         return -1;
     }
 
@@ -69,7 +69,7 @@ static int allocate_random_double_arrays(double **dest, double **a, double **b, 
     *b = SDL_malloc(sizeof(double) * *size);
 
     if (!*dest || !*a || !*b) {
-        SDLTest_AssertCheck(SDL_FALSE, "SDL_malloc failed");
+        SDLTest_AssertCheck(false, "SDL_malloc failed");
         return -1;
     }
 
@@ -97,13 +97,13 @@ static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint
     for (i = 0; i < size; ++i) {
         Sint32 expected = a[i] + b[i];
         if (dest[i] != expected) {
-            SDLTest_AssertCheck(SDL_FALSE, "%" SDL_PRIs32 " + %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
+            SDLTest_AssertCheck(false, "%" SDL_PRIs32 " + %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
             all_good = 0;
         }
     }
     if (all_good) {
-        SDLTest_AssertCheck(SDL_TRUE, "All int additions were correct (%s)", desc);
+        SDLTest_AssertCheck(true, "All int additions were correct (%s)", desc);
     }
 }
 
@@ -117,13 +117,13 @@ static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, cons
     for (i = 0; i < size; ++i) {
         Sint32 expected = a[i] * b[i];
         if (dest[i] != expected) {
-            SDLTest_AssertCheck(SDL_FALSE, "%" SDL_PRIs32 " * %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
+            SDLTest_AssertCheck(false, "%" SDL_PRIs32 " * %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
             all_good = 0;
         }
     }
     if (all_good) {
-        SDLTest_AssertCheck(SDL_TRUE, "All int multiplication were correct (%s)", desc);
+        SDLTest_AssertCheck(true, "All int multiplication were correct (%s)", desc);
     }
 }
 
@@ -138,13 +138,13 @@ static void verify_floats_addition(const float *dest, const float *a, const floa
         float expected = a[i] + b[i];
         float abs_error = SDL_fabsf(dest[i] - expected);
         if (abs_error > 1.0e-5f) {
-            SDLTest_AssertCheck(SDL_FALSE, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
+            SDLTest_AssertCheck(false, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, abs_error, (Uint32) i, (Uint32) size, desc);
             all_good = 0;
         }
     }
     if (all_good) {
-        SDLTest_AssertCheck(SDL_TRUE, "All float additions were correct (%s)", desc);
+        SDLTest_AssertCheck(true, "All float additions were correct (%s)", desc);
     }
 }
 
@@ -161,11 +161,11 @@ static void verify_doubles_addition(const double *dest, const double *a, const d
         if (abs_error > 1.0e-5) {
             SDLTest_AssertCheck(abs_error < 1.0e-5f, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, abs_error, (Uint32) i, (Uint32) size, desc);
-            all_good = SDL_FALSE;
+            all_good = false;
         }
     }
     if (all_good) {
-        SDLTest_AssertCheck(SDL_TRUE, "All double additions were correct (%s)", desc);
+        SDLTest_AssertCheck(true, "All double additions were correct (%s)", desc);
     }
 }
 
@@ -365,13 +365,13 @@ static int SDLCALL intrinsics_selftest(void *arg)
 static int SDLCALL intrinsics_testMMX(void *arg)
 {
     if (SDL_HasMMX()) {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has MMX support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has MMX support.");
 #ifdef SDL_MMX_INTRINSICS
         {
             size_t size;
             Sint32 *dest, *a, *b;
 
-            SDLTest_AssertCheck(SDL_TRUE, "Test executable uses MMX intrinsics.");
+            SDLTest_AssertCheck(true, "Test executable uses MMX intrinsics.");
             if (allocate_random_int_arrays(&dest, &a, &b, &size) < 0) {
                 return TEST_ABORTED;
             }
@@ -382,10 +382,10 @@ static int SDLCALL intrinsics_testMMX(void *arg)
             return TEST_COMPLETED;
         }
 #else
-        SDLTest_AssertCheck(SDL_TRUE, "Test executable does NOT use MMX intrinsics.");
+        SDLTest_AssertCheck(true, "Test executable does NOT use MMX intrinsics.");
 #endif
     } else {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has NO MMX support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has NO MMX support.");
     }
     return TEST_SKIPPED;
 }
@@ -393,13 +393,13 @@ static int SDLCALL intrinsics_testMMX(void *arg)
 static int SDLCALL intrinsics_testSSE(void *arg)
 {
     if (SDL_HasSSE()) {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has SSE support.");
 #ifdef SDL_SSE_INTRINSICS
         {
             size_t size;
             float *dest, *a, *b;
 
-            SDLTest_AssertCheck(SDL_TRUE, "Test executable uses SSE intrinsics.");
+            SDLTest_AssertCheck(true, "Test executable uses SSE intrinsics.");
             if (allocate_random_float_arrays(&dest, &a, &b, &size) < 0) {
                 return TEST_ABORTED;
             }
@@ -410,10 +410,10 @@ static int SDLCALL intrinsics_testSSE(void *arg)
             return TEST_COMPLETED;
         }
 #else
-        SDLTest_AssertCheck(SDL_TRUE, "Test executable does NOT use SSE intrinsics.");
+        SDLTest_AssertCheck(true, "Test executable does NOT use SSE intrinsics.");
 #endif
     } else {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has NO SSE support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has NO SSE support.");
     }
     return TEST_SKIPPED;
 }
@@ -421,13 +421,13 @@ static int SDLCALL intrinsics_testSSE(void *arg)
 static int SDLCALL intrinsics_testSSE2(void *arg)
 {
     if (SDL_HasSSE2()) {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE2 support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has SSE2 support.");
 #ifdef SDL_SSE2_INTRINSICS
         {
             size_t size;
             double *dest, *a, *b;
 
-            SDLTest_AssertCheck(SDL_TRUE, "Test executable uses SSE2 intrinsics.");
+            SDLTest_AssertCheck(true, "Test executable uses SSE2 intrinsics.");
             if (allocate_random_double_arrays(&dest, &a, &b, &size) < 0) {
                 return TEST_ABORTED;
             }
@@ -438,10 +438,10 @@ static int SDLCALL intrinsics_testSSE2(void *arg)
             return TEST_COMPLETED;
         }
 #else
-        SDLTest_AssertCheck(SDL_TRUE, "Test executable does NOT use SSE2 intrinsics.");
+        SDLTest_AssertCheck(true, "Test executable does NOT use SSE2 intrinsics.");
 #endif
     } else {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has NO SSE2 support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has NO SSE2 support.");
     }
     return TEST_SKIPPED;
 }
@@ -449,13 +449,13 @@ static int SDLCALL intrinsics_testSSE2(void *arg)
 static int SDLCALL intrinsics_testSSE3(void *arg)
 {
     if (SDL_HasSSE3()) {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE3 support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has SSE3 support.");
 #ifdef SDL_SSE3_INTRINSICS
         {
             size_t size;
             Sint32 *dest, *a, *b;
 
-            SDLTest_AssertCheck(SDL_TRUE, "Test executable uses SSE3 intrinsics.");
+            SDLTest_AssertCheck(true, "Test executable uses SSE3 intrinsics.");
             if (allocate_random_int_arrays(&dest, &a, &b, &size) < 0) {
                 return TEST_ABORTED;
             }
@@ -466,10 +466,10 @@ static int SDLCALL intrinsics_testSSE3(void *arg)
             return TEST_COMPLETED;
         }
 #else
-        SDLTest_AssertCheck(SDL_TRUE, "Test executable does NOT use SSE3 intrinsics.");
+        SDLTest_AssertCheck(true, "Test executable does NOT use SSE3 intrinsics.");
 #endif
     } else {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has NO SSE3 support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has NO SSE3 support.");
     }
     return TEST_SKIPPED;
 }
@@ -477,13 +477,13 @@ static int SDLCALL intrinsics_testSSE3(void *arg)
 static int SDLCALL intrinsics_testSSE4_1(void *arg)
 {
     if (SDL_HasSSE41()) {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.1 support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has SSE4.1 support.");
 #ifdef SDL_SSE4_1_INTRINSICS
         {
             size_t size;
             Sint32 *dest, *a, *b;
 
-            SDLTest_AssertCheck(SDL_TRUE, "Test executable uses SSE4.1 intrinsics.");
+            SDLTest_AssertCheck(true, "Test executable uses SSE4.1 intrinsics.");
             if (allocate_random_int_arrays(&dest, &a, &b, &size) < 0) {
                 return TEST_ABORTED;
             }
@@ -494,10 +494,10 @@ static int SDLCALL intrinsics_testSSE4_1(void *arg)
             return TEST_COMPLETED;
         }
 #else
-        SDLTest_AssertCheck(SDL_TRUE, "Test executable does NOT use SSE4.1 intrinsics.");
+        SDLTest_AssertCheck(true, "Test executable does NOT use SSE4.1 intrinsics.");
 #endif
     } else {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has NO SSE4.1 support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has NO SSE4.1 support.");
     }
     return TEST_SKIPPED;
 }
@@ -505,7 +505,7 @@ static int SDLCALL intrinsics_testSSE4_1(void *arg)
 static int SDLCALL intrinsics_testSSE4_2(void *arg)
 {
     if (SDL_HasSSE42()) {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.2 support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has SSE4.2 support.");
 #ifdef SDL_SSE4_2_INTRINSICS
         {
             struct {
@@ -518,7 +518,7 @@ static int SDLCALL intrinsics_testSSE4_2(void *arg)
             };
             size_t i;
 
-            SDLTest_AssertCheck(SDL_TRUE, "Test executable uses SSE4.2 intrinsics.");
+            SDLTest_AssertCheck(true, "Test executable uses SSE4.2 intrinsics.");
 
             for (i = 0; i < SDL_arraysize(references); ++i) {
                 Uint32 actual = calculate_crc32c_sse4_2(references[i].input);
@@ -529,10 +529,10 @@ static int SDLCALL intrinsics_testSSE4_2(void *arg)
             return TEST_COMPLETED;
         }
 #else
-        SDLTest_AssertCheck(SDL_TRUE, "Test executable does NOT use SSE4.2 intrinsics.");
+        SDLTest_AssertCheck(true, "Test executable does NOT use SSE4.2 intrinsics.");
 #endif
     } else {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has NO SSE4.2 support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has NO SSE4.2 support.");
     }
     return TEST_SKIPPED;
 }
@@ -540,13 +540,13 @@ static int SDLCALL intrinsics_testSSE4_2(void *arg)
 static int SDLCALL intrinsics_testAVX(void *arg)
 {
     if (SDL_HasAVX()) {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has AVX support.");
 #ifdef SDL_AVX_INTRINSICS
         {
             size_t size;
             float *dest, *a, *b;
 
-            SDLTest_AssertCheck(SDL_TRUE, "Test executable uses AVX intrinsics.");
+            SDLTest_AssertCheck(true, "Test executable uses AVX intrinsics.");
             if (allocate_random_float_arrays(&dest, &a, &b, &size) < 0) {
                 return TEST_ABORTED;
             }
@@ -557,10 +557,10 @@ static int SDLCALL intrinsics_testAVX(void *arg)
             return TEST_COMPLETED;
         }
 #else
-        SDLTest_AssertCheck(SDL_TRUE, "Test executable does NOT use AVX intrinsics.");
+        SDLTest_AssertCheck(true, "Test executable does NOT use AVX intrinsics.");
 #endif
     } else {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has NO AVX support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has NO AVX support.");
     }
     return TEST_SKIPPED;
 }
@@ -568,13 +568,13 @@ static int SDLCALL intrinsics_testAVX(void *arg)
 static int SDLCALL intrinsics_testAVX2(void *arg)
 {
     if (SDL_HasAVX2()) {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX2 support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has AVX2 support.");
 #ifdef SDL_AVX2_INTRINSICS
         {
             size_t size;
             Sint32 *dest, *a, *b;
 
-            SDLTest_AssertCheck(SDL_TRUE, "Test executable uses AVX2 intrinsics.");
+            SDLTest_AssertCheck(true, "Test executable uses AVX2 intrinsics.");
             if (allocate_random_int_arrays(&dest, &a, &b, &size) < 0) {
                 return TEST_ABORTED;
             }
@@ -585,10 +585,10 @@ static int SDLCALL intrinsics_testAVX2(void *arg)
             return TEST_COMPLETED;
         }
 #else
-        SDLTest_AssertCheck(SDL_TRUE, "Test executable does NOT use AVX2 intrinsics.");
+        SDLTest_AssertCheck(true, "Test executable does NOT use AVX2 intrinsics.");
 #endif
     } else {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has NO AVX2 support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has NO AVX2 support.");
     }
     return TEST_SKIPPED;
 }
@@ -596,13 +596,13 @@ static int SDLCALL intrinsics_testAVX2(void *arg)
 static int SDLCALL intrinsics_testAVX512F(void *arg)
 {
     if (SDL_HasAVX512F()) {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has AVX512F support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has AVX512F support.");
 #ifdef SDL_AVX512F_INTRINSICS
         {
             size_t size;
             float *dest, *a, *b;
 
-            SDLTest_AssertCheck(SDL_TRUE, "Test executable uses AVX512F intrinsics.");
+            SDLTest_AssertCheck(true, "Test executable uses AVX512F intrinsics.");
             if (allocate_random_float_arrays(&dest, &a, &b, &size) < 0) {
                 return TEST_ABORTED;
             }
@@ -613,10 +613,10 @@ static int SDLCALL intrinsics_testAVX512F(void *arg)
             return TEST_COMPLETED;
         }
 #else
-        SDLTest_AssertCheck(SDL_TRUE, "Test executable does NOT use AVX512F intrinsics.");
+        SDLTest_AssertCheck(true, "Test executable does NOT use AVX512F intrinsics.");
 #endif
     } else {
-        SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has NO AVX512F support.");
+        SDLTest_AssertCheck(true, "CPU of test machine has NO AVX512F support.");
     }
 
     return TEST_SKIPPED;

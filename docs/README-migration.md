@@ -6,7 +6,7 @@ Details on API changes are organized by SDL 2.0 header below.
 
 The file with your main() function should include <SDL3/SDL_main.h>, as that is no longer included in SDL.h.
 
-Functions that previously returned a negative error code now return SDL_bool.
+Functions that previously returned a negative error code now return bool.
 
 Code that used to look like this:
 ```c
@@ -226,7 +226,7 @@ SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
 SDL_LoadWAV() is a proper function now and no longer a macro (but offers the same functionality otherwise).
 
-SDL_LoadWAV_IO() and SDL_LoadWAV() return an SDL_bool now, like most of SDL. They no longer return a pointer to an SDL_AudioSpec.
+SDL_LoadWAV_IO() and SDL_LoadWAV() return an bool now, like most of SDL. They no longer return a pointer to an SDL_AudioSpec.
 
 SDL_AudioCVT interface has been removed, the SDL_AudioStream interface (for audio supplied in pieces) or the new SDL_ConvertAudioSamples() function (for converting a complete audio buffer in one call) can be used instead.
 
@@ -283,13 +283,13 @@ In SDL2, SDL_AUDIODEVICEREMOVED events would fire for open devices with the `whi
 
 The following functions have been renamed:
 * SDL_AudioStreamAvailable() => SDL_GetAudioStreamAvailable()
-* SDL_AudioStreamClear() => SDL_ClearAudioStream(), returns SDL_bool
-* SDL_AudioStreamFlush() => SDL_FlushAudioStream(), returns SDL_bool
+* SDL_AudioStreamClear() => SDL_ClearAudioStream(), returns bool
+* SDL_AudioStreamFlush() => SDL_FlushAudioStream(), returns bool
 * SDL_AudioStreamGet() => SDL_GetAudioStreamData()
-* SDL_AudioStreamPut() => SDL_PutAudioStreamData(), returns SDL_bool
+* SDL_AudioStreamPut() => SDL_PutAudioStreamData(), returns bool
 * SDL_FreeAudioStream() => SDL_DestroyAudioStream()
-* SDL_LoadWAV_RW() => SDL_LoadWAV_IO(), returns SDL_bool
-* SDL_MixAudioFormat() => SDL_MixAudio(), returns SDL_bool
+* SDL_LoadWAV_RW() => SDL_LoadWAV_IO(), returns bool
+* SDL_MixAudioFormat() => SDL_MixAudio(), returns bool
 * SDL_NewAudioStream() => SDL_CreateAudioStream()
 
 
@@ -364,7 +364,7 @@ The following functions have been removed:
 
 ## SDL_events.h
 
-SDL_PRESSED and SDL_RELEASED have been removed. For the most part you can replace uses of these with SDL_TRUE and SDL_FALSE respectively. Events which had a field `state` to represent these values have had those fields changed to SDL_bool `down`, e.g. `event.key.state` is now `event.key.down`.
+SDL_PRESSED and SDL_RELEASED have been removed. For the most part you can replace uses of these with true and false respectively. Events which had a field `state` to represent these values have had those fields changed to bool `down`, e.g. `event.key.state` is now `event.key.down`.
 
 The timestamp member of the SDL_Event structure now represents nanoseconds, and is populated with SDL_GetTicksNS()
 
@@ -417,7 +417,7 @@ SDL_AddEventWatch() now returns SDL_FALSE_ if it fails because it ran out of mem
 
 SDL_RegisterEvents() now returns 0 if it couldn't allocate any user events.
 
-SDL_EventFilter functions now return SDL_bool.
+SDL_EventFilter functions now return bool.
 
 The following symbols have been renamed:
 * SDL_APP_DIDENTERBACKGROUND => SDL_EVENT_DID_ENTER_BACKGROUND
@@ -511,15 +511,15 @@ The gamepad face buttons have been renamed from A/B/X/Y to North/South/East/West
 #define CONFIRM_BUTTON SDL_GAMEPAD_BUTTON_SOUTH
 #define CANCEL_BUTTON SDL_GAMEPAD_BUTTON_EAST
 
-SDL_bool flipped_buttons;
+bool flipped_buttons;
 
 void InitMappedButtons(SDL_Gamepad *gamepad)
 {
     if (!GetFlippedButtonSetting(&flipped_buttons)) {
         if (SDL_GetGamepadButtonLabel(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_B) {
-            flipped_buttons = SDL_TRUE;
+            flipped_buttons = true;
         } else {
-            flipped_buttons = SDL_FALSE;
+            flipped_buttons = false;
         }
     }
 }
@@ -577,7 +577,7 @@ SDL_CONTROLLER_TYPE_VIRTUAL has been removed, so virtual controllers can emulate
 
 SDL_CONTROLLER_TYPE_AMAZON_LUNA has been removed, and can be replaced with this code:
 ```c
-SDL_bool SDL_IsJoystickAmazonLunaController(Uint16 vendor_id, Uint16 product_id)
+bool SDL_IsJoystickAmazonLunaController(Uint16 vendor_id, Uint16 product_id)
 {
     return ((vendor_id == 0x1949 && product_id == 0x0419) ||
             (vendor_id == 0x0171 && product_id == 0x0419));
@@ -586,7 +586,7 @@ SDL_bool SDL_IsJoystickAmazonLunaController(Uint16 vendor_id, Uint16 product_id)
 
 SDL_CONTROLLER_TYPE_GOOGLE_STADIA has been removed, and can be replaced with this code:
 ```c
-SDL_bool SDL_IsJoystickGoogleStadiaController(Uint16 vendor_id, Uint16 product_id)
+bool SDL_IsJoystickGoogleStadiaController(Uint16 vendor_id, Uint16 product_id)
 {
     return (vendor_id == 0x18d1 && product_id == 0x9400);
 }
@@ -594,7 +594,7 @@ SDL_bool SDL_IsJoystickGoogleStadiaController(Uint16 vendor_id, Uint16 product_i
 
 SDL_CONTROLLER_TYPE_NVIDIA_SHIELD has been removed, and can be replaced with this code:
 ```c
-SDL_bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_id)
+bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_id)
 {
     return (vendor_id == 0x0955 && (product_id == 0x7210 || product_id == 0x7214));
 }
@@ -602,7 +602,7 @@ SDL_bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_i
 
 The inputType and outputType fields of SDL_GamepadBinding have been renamed input_type and output_type.
 
-SDL_GetGamepadTouchpadFinger() takes a pointer to SDL_bool for the finger state instead of a pointer to Uint8.
+SDL_GetGamepadTouchpadFinger() takes a pointer to bool for the finger state instead of a pointer to Uint8.
 
 The following enums have been renamed:
 * SDL_GameControllerAxis => SDL_GamepadAxis
@@ -634,13 +634,13 @@ The following functions have been renamed:
 * SDL_GameControllerGetPlayerIndex() => SDL_GetGamepadPlayerIndex()
 * SDL_GameControllerGetProduct() => SDL_GetGamepadProduct()
 * SDL_GameControllerGetProductVersion() => SDL_GetGamepadProductVersion()
-* SDL_GameControllerGetSensorData() => SDL_GetGamepadSensorData(), returns SDL_bool
+* SDL_GameControllerGetSensorData() => SDL_GetGamepadSensorData(), returns bool
 * SDL_GameControllerGetSensorDataRate() => SDL_GetGamepadSensorDataRate()
 * SDL_GameControllerGetSerial() => SDL_GetGamepadSerial()
 * SDL_GameControllerGetSteamHandle() => SDL_GetGamepadSteamHandle()
 * SDL_GameControllerGetStringForAxis() => SDL_GetGamepadStringForAxis()
 * SDL_GameControllerGetStringForButton() => SDL_GetGamepadStringForButton()
-* SDL_GameControllerGetTouchpadFinger() => SDL_GetGamepadTouchpadFinger(), returns SDL_bool
+* SDL_GameControllerGetTouchpadFinger() => SDL_GetGamepadTouchpadFinger(), returns bool
 * SDL_GameControllerGetType() => SDL_GetGamepadType()
 * SDL_GameControllerGetVendor() => SDL_GetGamepadVendor()
 * SDL_GameControllerHasAxis() => SDL_GamepadHasAxis()
@@ -652,12 +652,12 @@ The following functions have been renamed:
 * SDL_GameControllerName() => SDL_GetGamepadName()
 * SDL_GameControllerOpen() => SDL_OpenGamepad()
 * SDL_GameControllerPath() => SDL_GetGamepadPath()
-* SDL_GameControllerRumble() => SDL_RumbleGamepad(), returns SDL_bool
-* SDL_GameControllerRumbleTriggers() => SDL_RumbleGamepadTriggers(), returns SDL_bool
-* SDL_GameControllerSendEffect() => SDL_SendGamepadEffect(), returns SDL_bool
-* SDL_GameControllerSetLED() => SDL_SetGamepadLED(), returns SDL_bool
-* SDL_GameControllerSetPlayerIndex() => SDL_SetGamepadPlayerIndex(), returns SDL_bool
-* SDL_GameControllerSetSensorEnabled() => SDL_SetGamepadSensorEnabled(), returns SDL_bool
+* SDL_GameControllerRumble() => SDL_RumbleGamepad(), returns bool
+* SDL_GameControllerRumbleTriggers() => SDL_RumbleGamepadTriggers(), returns bool
+* SDL_GameControllerSendEffect() => SDL_SendGamepadEffect(), returns bool
+* SDL_GameControllerSetLED() => SDL_SetGamepadLED(), returns bool
+* SDL_GameControllerSetPlayerIndex() => SDL_SetGamepadPlayerIndex(), returns bool
+* SDL_GameControllerSetSensorEnabled() => SDL_SetGamepadSensorEnabled(), returns bool
 * SDL_GameControllerUpdate() => SDL_UpdateGamepads()
 * SDL_IsGameController() => SDL_IsGamepad()
 
@@ -760,12 +760,12 @@ Rather than iterating over haptic devices using device index, there is a new fun
 }
 ```
 
-SDL_GetHapticEffectStatus() now returns SDL_bool instead of an int result. You should call SDL_GetHapticFeatures() to make sure effect status is supported before calling this function.
+SDL_GetHapticEffectStatus() now returns bool instead of an int result. You should call SDL_GetHapticFeatures() to make sure effect status is supported before calling this function.
 
 The following functions have been renamed:
 * SDL_HapticClose() => SDL_CloseHaptic()
 * SDL_HapticDestroyEffect() => SDL_DestroyHapticEffect()
-* SDL_HapticGetEffectStatus() => SDL_GetHapticEffectStatus(), returns SDL_bool
+* SDL_HapticGetEffectStatus() => SDL_GetHapticEffectStatus(), returns bool
 * SDL_HapticNewEffect() => SDL_CreateHapticEffect()
 * SDL_HapticNumAxes() => SDL_GetNumHapticAxes()
 * SDL_HapticNumEffects() => SDL_GetMaxHapticEffects()
@@ -773,18 +773,18 @@ The following functions have been renamed:
 * SDL_HapticOpen() => SDL_OpenHaptic()
 * SDL_HapticOpenFromJoystick() => SDL_OpenHapticFromJoystick()
 * SDL_HapticOpenFromMouse() => SDL_OpenHapticFromMouse()
-* SDL_HapticPause() => SDL_PauseHaptic(), returns SDL_bool
+* SDL_HapticPause() => SDL_PauseHaptic(), returns bool
 * SDL_HapticQuery() => SDL_GetHapticFeatures()
-* SDL_HapticRumbleInit() => SDL_InitHapticRumble(), returns SDL_bool
-* SDL_HapticRumblePlay() => SDL_PlayHapticRumble(), returns SDL_bool
-* SDL_HapticRumbleStop() => SDL_StopHapticRumble(), returns SDL_bool
-* SDL_HapticRunEffect() => SDL_RunHapticEffect(), returns SDL_bool
-* SDL_HapticSetAutocenter() => SDL_SetHapticAutocenter(), returns SDL_bool
-* SDL_HapticSetGain() => SDL_SetHapticGain(), returns SDL_bool
-* SDL_HapticStopAll() => SDL_StopHapticEffects(), returns SDL_bool
-* SDL_HapticStopEffect() => SDL_StopHapticEffect(), returns SDL_bool
-* SDL_HapticUnpause() => SDL_ResumeHaptic(), returns SDL_bool
-* SDL_HapticUpdateEffect() => SDL_UpdateHapticEffect(), returns SDL_bool
+* SDL_HapticRumbleInit() => SDL_InitHapticRumble(), returns bool
+* SDL_HapticRumblePlay() => SDL_PlayHapticRumble(), returns bool
+* SDL_HapticRumbleStop() => SDL_StopHapticRumble(), returns bool
+* SDL_HapticRunEffect() => SDL_RunHapticEffect(), returns bool
+* SDL_HapticSetAutocenter() => SDL_SetHapticAutocenter(), returns bool
+* SDL_HapticSetGain() => SDL_SetHapticGain(), returns bool
+* SDL_HapticStopAll() => SDL_StopHapticEffects(), returns bool
+* SDL_HapticStopEffect() => SDL_StopHapticEffect(), returns bool
+* SDL_HapticUnpause() => SDL_ResumeHaptic(), returns bool
+* SDL_HapticUpdateEffect() => SDL_UpdateHapticEffect(), returns bool
 * SDL_JoystickIsHaptic() => SDL_IsJoystickHaptic()
 * SDL_MouseIsHaptic() => SDL_IsMouseHaptic()
 
@@ -843,7 +843,7 @@ The following hints have been removed:
 * SDL_HINT_VIDEO_X11_XVIDMODE - Xvidmode no longer supported by the X11 backend
 * SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING - SDL now properly handles the 0x406D1388 Exception if no debugger intercepts it, preventing its propagation.
 * SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS - Slim Reader/Writer Locks are always used if available
-* SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 - replaced with SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4, defaulting to SDL_TRUE
+* SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 - replaced with SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4, defaulting to true
 * SDL_HINT_WINRT_HANDLE_BACK_BUTTON - WinRT support was removed in SDL3.
 * SDL_HINT_WINRT_PRIVACY_POLICY_LABEL - WinRT support was removed in SDL3.
 * SDL_HINT_WINRT_PRIVACY_POLICY_URL - WinRT support was removed in SDL3.
@@ -937,13 +937,13 @@ SDL_VirtualJoystickDesc version should not be set to SDL_VIRTUAL_JOYSTICK_DESC_V
 The following functions have been renamed:
 * SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystick()
 * SDL_JoystickClose() => SDL_CloseJoystick()
-* SDL_JoystickDetachVirtual() => SDL_DetachVirtualJoystick(), returns SDL_bool
+* SDL_JoystickDetachVirtual() => SDL_DetachVirtualJoystick(), returns bool
 * SDL_JoystickFromInstanceID() => SDL_GetJoystickFromID()
 * SDL_JoystickFromPlayerIndex() => SDL_GetJoystickFromPlayerIndex()
 * SDL_JoystickGetAttached() => SDL_JoystickConnected()
 * SDL_JoystickGetAxis() => SDL_GetJoystickAxis()
 * SDL_JoystickGetAxisInitialState() => SDL_GetJoystickAxisInitialState()
-* SDL_JoystickGetBall() => SDL_GetJoystickBall(), returns SDL_bool
+* SDL_JoystickGetBall() => SDL_GetJoystickBall(), returns bool
 * SDL_JoystickGetButton() => SDL_GetJoystickButton()
 * SDL_JoystickGetFirmwareVersion() => SDL_GetJoystickFirmwareVersion()
 * SDL_JoystickGetGUID() => SDL_GetJoystickGUID()
@@ -964,14 +964,14 @@ The following functions have been renamed:
 * SDL_JoystickNumHats() => SDL_GetNumJoystickHats()
 * SDL_JoystickOpen() => SDL_OpenJoystick()
 * SDL_JoystickPath() => SDL_GetJoystickPath()
-* SDL_JoystickRumble() => SDL_RumbleJoystick(), returns SDL_bool
-* SDL_JoystickRumbleTriggers() => SDL_RumbleJoystickTriggers(), returns SDL_bool
-* SDL_JoystickSendEffect() => SDL_SendJoystickEffect(), returns SDL_bool
-* SDL_JoystickSetLED() => SDL_SetJoystickLED(), returns SDL_bool
-* SDL_JoystickSetPlayerIndex() => SDL_SetJoystickPlayerIndex(), returns SDL_bool
-* SDL_JoystickSetVirtualAxis() => SDL_SetJoystickVirtualAxis(), returns SDL_bool
-* SDL_JoystickSetVirtualButton() => SDL_SetJoystickVirtualButton(), returns SDL_bool
-* SDL_JoystickSetVirtualHat() => SDL_SetJoystickVirtualHat(), returns SDL_bool
+* SDL_JoystickRumble() => SDL_RumbleJoystick(), returns bool
+* SDL_JoystickRumbleTriggers() => SDL_RumbleJoystickTriggers(), returns bool
+* SDL_JoystickSendEffect() => SDL_SendJoystickEffect(), returns bool
+* SDL_JoystickSetLED() => SDL_SetJoystickLED(), returns bool
+* SDL_JoystickSetPlayerIndex() => SDL_SetJoystickPlayerIndex(), returns bool
+* SDL_JoystickSetVirtualAxis() => SDL_SetJoystickVirtualAxis(), returns bool
+* SDL_JoystickSetVirtualButton() => SDL_SetJoystickVirtualButton(), returns bool
+* SDL_JoystickSetVirtualHat() => SDL_SetJoystickVirtualHat(), returns bool
 * SDL_JoystickUpdate() => SDL_UpdateJoysticks()
 
 The following symbols have been renamed:
@@ -1011,7 +1011,7 @@ The text input state hase been changed to be window-specific. SDL_StartTextInput
 
 SDL_GetDefaultKeyFromScancode(), SDL_GetKeyFromScancode(), and SDL_GetScancodeFromKey() take an SDL_Keymod parameter and use that to provide the correct result based on keyboard modifier state.
 
-SDL_GetKeyboardState() returns a pointer to SDL_bool instead of Uint8.
+SDL_GetKeyboardState() returns a pointer to bool instead of Uint8.
 
 The following functions have been renamed:
 * SDL_IsScreenKeyboardShown() => SDL_ScreenKeyboardShown()
@@ -1186,24 +1186,24 @@ The following symbols have been renamed:
 
 SDL_MUTEX_MAXWAIT has been removed; it suggested there was a maximum timeout one could outlive, instead of an infinite wait. Instead, pass a -1 to functions that accepted this symbol.
 
-SDL_MUTEX_TIMEDOUT has been removed, the wait functions return SDL_TRUE if the operation succeeded or SDL_FALSE if they timed out.
+SDL_MUTEX_TIMEDOUT has been removed, the wait functions return true if the operation succeeded or false if they timed out.
 
 SDL_LockMutex(), SDL_UnlockMutex(), SDL_WaitSemaphore(), SDL_SignalSemaphore(), SDL_WaitCondition(), SDL_SignalCondition(), and SDL_BroadcastCondition() now return void; if the object is valid (including being a NULL pointer, which returns immediately), these functions never fail. If the object is invalid or the caller does something illegal, like unlock another thread's mutex, this is considered undefined behavior.
 
-SDL_TryWaitSemaphore(), SDL_WaitSemaphoreTimeout(), and SDL_WaitConditionTimeout() now return SDL_TRUE if the operation succeeded or SDL_FALSE if they timed out.
+SDL_TryWaitSemaphore(), SDL_WaitSemaphoreTimeout(), and SDL_WaitConditionTimeout() now return true if the operation succeeded or false if they timed out.
 
 The following functions have been renamed:
 * SDL_CondBroadcast() => SDL_BroadcastCondition()
 * SDL_CondSignal() => SDL_SignalCondition()
 * SDL_CondWait() => SDL_WaitCondition()
-* SDL_CondWaitTimeout() => SDL_WaitConditionTimeout(), returns SDL_bool
+* SDL_CondWaitTimeout() => SDL_WaitConditionTimeout(), returns bool
 * SDL_CreateCond() => SDL_CreateCondition()
 * SDL_DestroyCond() => SDL_DestroyCondition()
 * SDL_SemPost() => SDL_SignalSemaphore()
-* SDL_SemTryWait() => SDL_TryWaitSemaphore(), returns SDL_bool
+* SDL_SemTryWait() => SDL_TryWaitSemaphore(), returns bool
 * SDL_SemValue() => SDL_GetSemaphoreValue()
 * SDL_SemWait() => SDL_WaitSemaphore()
-* SDL_SemWaitTimeout() => SDL_WaitSemaphoreTimeout(), returns SDL_bool
+* SDL_SemWaitTimeout() => SDL_WaitSemaphoreTimeout(), returns bool
 
 The following symbols have been renamed:
 * SDL_cond => SDL_Condition
@@ -1243,7 +1243,7 @@ The following functions have been renamed:
 * SDL_AllocPalette() => SDL_CreatePalette()
 * SDL_FreePalette() => SDL_DestroyPalette()
 * SDL_MasksToPixelFormatEnum() => SDL_GetPixelFormatForMasks()
-* SDL_PixelFormatEnumToMasks() => SDL_GetMasksForPixelFormat(), returns SDL_bool
+* SDL_PixelFormatEnumToMasks() => SDL_GetMasksForPixelFormat(), returns bool
 
 The following symbols have been renamed:
 * SDL_PIXELFORMAT_BGR444 => SDL_PIXELFORMAT_XBGR4444
@@ -1343,8 +1343,8 @@ The following functions have been renamed:
 * SDL_IntersectRectAndLine() => SDL_GetRectAndLineIntersection()
 * SDL_PointInFRect() => SDL_PointInRectFloat()
 * SDL_RectEquals() => SDL_RectsEqual()
-* SDL_UnionFRect() => SDL_GetRectUnionFloat(), returns SDL_bool
-* SDL_UnionRect() => SDL_GetRectUnion(), returns SDL_bool
+* SDL_UnionFRect() => SDL_GetRectUnionFloat(), returns bool
+* SDL_UnionRect() => SDL_GetRectUnion(), returns bool
 
 ## SDL_render.h
 
@@ -1390,42 +1390,42 @@ SDL_Vertex has been changed to use floating point colors, in the range of [0..1]
 SDL_RenderReadPixels() returns a surface instead of filling in preallocated memory.
 
 The following functions have been renamed:
-* SDL_GetRendererOutputSize() => SDL_GetCurrentRenderOutputSize(), returns SDL_bool
-* SDL_RenderCopy() => SDL_RenderTexture(), returns SDL_bool
-* SDL_RenderCopyEx() => SDL_RenderTextureRotated(), returns SDL_bool
-* SDL_RenderCopyExF() => SDL_RenderTextureRotated(), returns SDL_bool
-* SDL_RenderCopyF() => SDL_RenderTexture(), returns SDL_bool
-* SDL_RenderDrawLine() => SDL_RenderLine(), returns SDL_bool
-* SDL_RenderDrawLineF() => SDL_RenderLine(), returns SDL_bool
-* SDL_RenderDrawLines() => SDL_RenderLines(), returns SDL_bool
-* SDL_RenderDrawLinesF() => SDL_RenderLines(), returns SDL_bool
-* SDL_RenderDrawPoint() => SDL_RenderPoint(), returns SDL_bool
-* SDL_RenderDrawPointF() => SDL_RenderPoint(), returns SDL_bool
-* SDL_RenderDrawPoints() => SDL_RenderPoints(), returns SDL_bool
-* SDL_RenderDrawPointsF() => SDL_RenderPoints(), returns SDL_bool
-* SDL_RenderDrawRect() => SDL_RenderRect(), returns SDL_bool
-* SDL_RenderDrawRectF() => SDL_RenderRect(), returns SDL_bool
-* SDL_RenderDrawRects() => SDL_RenderRects(), returns SDL_bool
-* SDL_RenderDrawRectsF() => SDL_RenderRects(), returns SDL_bool
-* SDL_RenderFillRectF() => SDL_RenderFillRect(), returns SDL_bool
-* SDL_RenderFillRectsF() => SDL_RenderFillRects(), returns SDL_bool
-* SDL_RenderFlush() => SDL_FlushRenderer(), returns SDL_bool
-* SDL_RenderGetClipRect() => SDL_GetRenderClipRect(), returns SDL_bool
+* SDL_GetRendererOutputSize() => SDL_GetCurrentRenderOutputSize(), returns bool
+* SDL_RenderCopy() => SDL_RenderTexture(), returns bool
+* SDL_RenderCopyEx() => SDL_RenderTextureRotated(), returns bool
+* SDL_RenderCopyExF() => SDL_RenderTextureRotated(), returns bool
+* SDL_RenderCopyF() => SDL_RenderTexture(), returns bool
+* SDL_RenderDrawLine() => SDL_RenderLine(), returns bool
+* SDL_RenderDrawLineF() => SDL_RenderLine(), returns bool
+* SDL_RenderDrawLines() => SDL_RenderLines(), returns bool
+* SDL_RenderDrawLinesF() => SDL_RenderLines(), returns bool
+* SDL_RenderDrawPoint() => SDL_RenderPoint(), returns bool
+* SDL_RenderDrawPointF() => SDL_RenderPoint(), returns bool
+* SDL_RenderDrawPoints() => SDL_RenderPoints(), returns bool
+* SDL_RenderDrawPointsF() => SDL_RenderPoints(), returns bool
+* SDL_RenderDrawRect() => SDL_RenderRect(), returns bool
+* SDL_RenderDrawRectF() => SDL_RenderRect(), returns bool
+* SDL_RenderDrawRects() => SDL_RenderRects(), returns bool
+* SDL_RenderDrawRectsF() => SDL_RenderRects(), returns bool
+* SDL_RenderFillRectF() => SDL_RenderFillRect(), returns bool
+* SDL_RenderFillRectsF() => SDL_RenderFillRects(), returns bool
+* SDL_RenderFlush() => SDL_FlushRenderer(), returns bool
+* SDL_RenderGetClipRect() => SDL_GetRenderClipRect(), returns bool
 * SDL_RenderGetIntegerScale() => SDL_GetRenderIntegerScale()
-* SDL_RenderGetLogicalSize() => SDL_GetRenderLogicalPresentation(), returns SDL_bool
+* SDL_RenderGetLogicalSize() => SDL_GetRenderLogicalPresentation(), returns bool
 * SDL_RenderGetMetalCommandEncoder() => SDL_GetRenderMetalCommandEncoder()
 * SDL_RenderGetMetalLayer() => SDL_GetRenderMetalLayer()
-* SDL_RenderGetScale() => SDL_GetRenderScale(), returns SDL_bool
-* SDL_RenderGetViewport() => SDL_GetRenderViewport(), returns SDL_bool
+* SDL_RenderGetScale() => SDL_GetRenderScale(), returns bool
+* SDL_RenderGetViewport() => SDL_GetRenderViewport(), returns bool
 * SDL_RenderGetWindow() => SDL_GetRenderWindow()
 * SDL_RenderIsClipEnabled() => SDL_RenderClipEnabled()
-* SDL_RenderLogicalToWindow() => SDL_RenderCoordinatesToWindow(), returns SDL_bool
-* SDL_RenderSetClipRect() => SDL_SetRenderClipRect(), returns SDL_bool
-* SDL_RenderSetLogicalSize() => SDL_SetRenderLogicalPresentation(), returns SDL_bool
-* SDL_RenderSetScale() => SDL_SetRenderScale(), returns SDL_bool
-* SDL_RenderSetVSync() => SDL_SetRenderVSync(), returns SDL_bool
-* SDL_RenderSetViewport() => SDL_SetRenderViewport(), returns SDL_bool
-* SDL_RenderWindowToLogical() => SDL_RenderCoordinatesFromWindow(), returns SDL_bool
+* SDL_RenderLogicalToWindow() => SDL_RenderCoordinatesToWindow(), returns bool
+* SDL_RenderSetClipRect() => SDL_SetRenderClipRect(), returns bool
+* SDL_RenderSetLogicalSize() => SDL_SetRenderLogicalPresentation(), returns bool
+* SDL_RenderSetScale() => SDL_SetRenderScale(), returns bool
+* SDL_RenderSetVSync() => SDL_SetRenderVSync(), returns bool
+* SDL_RenderSetViewport() => SDL_SetRenderViewport(), returns bool
+* SDL_RenderWindowToLogical() => SDL_RenderCoordinatesFromWindow(), returns bool
 
 The following functions have been removed:
 * SDL_GL_BindTexture() - use SDL_GetTextureProperties() to get the OpenGL texture ID and bind the texture directly
@@ -1514,7 +1514,7 @@ You can implement this in your own code easily:
 typedef struct IOStreamStdioFPData
 {
     FILE *fp;
-    SDL_bool autoclose;
+    bool autoclose;
 } IOStreamStdioFPData;
 
 static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
@@ -1569,20 +1569,20 @@ static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size, 
     return bytes;
 }
 
-static SDL_bool SDLCALL stdio_close(void *userdata)
+static bool SDLCALL stdio_close(void *userdata)
 {
     IOStreamStdioData *rwopsdata = (IOStreamStdioData *) userdata;
-    SDL_bool status = SDL_TRUE;
+    bool status = true;
     if (rwopsdata->autoclose) {
         if (fclose(rwopsdata->fp) != 0) {
             SDL_SetError("Couldn't close stream");
-            status = SDL_FALSE;
+            status = false;
         }
     }
     return status;
 }
 
-SDL_IOStream *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
+SDL_IOStream *SDL_RWFromFP(FILE *fp, bool autoclose)
 {
     SDL_IOStreamInterface iface;
     IOStreamStdioFPData *rwopsdata;
@@ -1616,13 +1616,13 @@ The internal `FILE *` is available through a standard SDL_IOStream property, for
 On Apple platforms, SDL_RWFromFile (now called SDL_IOFromFile) no longer tries to read from inside the app bundle's resource directory, instead now using the specified path unchanged. One can use SDL_GetBasePath() to find the resource directory on these platforms.
 
 
-The functions SDL_ReadU8(), SDL_ReadU16LE(), SDL_ReadU16BE(), SDL_ReadU32LE(), SDL_ReadU32BE(), SDL_ReadU64LE(), and SDL_ReadU64BE() now return SDL_TRUE if the read succeeded and SDL_FALSE if it didn't, and store the data in a pointer passed in as a parameter.
+The functions SDL_ReadU8(), SDL_ReadU16LE(), SDL_ReadU16BE(), SDL_ReadU32LE(), SDL_ReadU32BE(), SDL_ReadU64LE(), and SDL_ReadU64BE() now return true if the read succeeded and false if it didn't, and store the data in a pointer passed in as a parameter.
 
 The following functions have been renamed:
 * SDL_RWFromConstMem() => SDL_IOFromConstMem()
 * SDL_RWFromFile() => SDL_IOFromFile()
 * SDL_RWFromMem() => SDL_IOFromMem()
-* SDL_RWclose() => SDL_CloseIO(), returns SDL_bool
+* SDL_RWclose() => SDL_CloseIO(), returns bool
 * SDL_RWread() => SDL_ReadIO()
 * SDL_RWseek() => SDL_SeekIO()
 * SDL_RWsize() => SDL_GetIOSize()
@@ -1704,7 +1704,7 @@ Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor 
 The following functions have been renamed:
 * SDL_SensorClose() => SDL_CloseSensor()
 * SDL_SensorFromInstanceID() => SDL_GetSensorFromID()
-* SDL_SensorGetData() => SDL_GetSensorData(), returns SDL_bool
+* SDL_SensorGetData() => SDL_GetSensorData(), returns bool
 * SDL_SensorGetInstanceID() => SDL_GetSensorID()
 * SDL_SensorGetName() => SDL_GetSensorName()
 * SDL_SensorGetNonPortableType() => SDL_GetSensorNonPortableType()
@@ -1730,7 +1730,7 @@ This header has been removed and a simplified version of this API has been added
 The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
 
-SDL_bool is now defined as bool, and is 1 byte instead of the size of an int.
+bool is now defined as bool, and is 1 byte instead of the size of an int.
 
 SDL3 attempts to apply consistency to case-insensitive string functions. In SDL2, things like SDL_strcasecmp() would usually only work on English letters, and depending on the user's locale, possibly not even those. In SDL3, consistency is applied:
 
@@ -1753,12 +1753,17 @@ The following macros have been removed:
 * SDL_TABLESIZE() - use SDL_arraysize() instead
 
 The following functions have been renamed:
-* SDL_size_add_overflow() => SDL_size_add_check_overflow(), returns SDL_bool
-* SDL_size_mul_overflow() => SDL_size_mul_check_overflow(), returns SDL_bool
+* SDL_size_add_overflow() => SDL_size_add_check_overflow(), returns bool
+* SDL_size_mul_overflow() => SDL_size_mul_check_overflow(), returns bool
 * SDL_strtokr() => SDL_strtok_r()
 
 The following functions have been removed:
 * SDL_memcpy4()
+
+The following symbols have been renamed:
+* SDL_FALSE => false
+* SDL_TRUE => true
+* SDL_bool => bool
 
 ## SDL_surface.h
 
@@ -1833,28 +1838,28 @@ SDL_SoftStretch() now takes a scale parameter.
 
 SDL_PixelFormat is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
 
-SDL_SetSurfaceColorKey() takes an SDL_bool to enable and disable colorkey. RLE acceleration isn't controlled by the parameter, you should use SDL_SetSurfaceRLE() to change that separately.
+SDL_SetSurfaceColorKey() takes an bool to enable and disable colorkey. RLE acceleration isn't controlled by the parameter, you should use SDL_SetSurfaceRLE() to change that separately.
 
-SDL_SetSurfaceRLE() takes an SDL_bool to enable and disable RLE acceleration.
+SDL_SetSurfaceRLE() takes an bool to enable and disable RLE acceleration.
 
 The following functions have been renamed:
-* SDL_BlitScaled() => SDL_BlitSurfaceScaled(), returns SDL_bool
+* SDL_BlitScaled() => SDL_BlitSurfaceScaled(), returns bool
 * SDL_ConvertSurfaceFormat() => SDL_ConvertSurface()
-* SDL_FillRect() => SDL_FillSurfaceRect(), returns SDL_bool
-* SDL_FillRects() => SDL_FillSurfaceRects(), returns SDL_bool
+* SDL_FillRect() => SDL_FillSurfaceRect(), returns bool
+* SDL_FillRects() => SDL_FillSurfaceRects(), returns bool
 * SDL_FreeSurface() => SDL_DestroySurface()
-* SDL_GetClipRect() => SDL_GetSurfaceClipRect(), returns SDL_bool
-* SDL_GetColorKey() => SDL_GetSurfaceColorKey(), returns SDL_bool
+* SDL_GetClipRect() => SDL_GetSurfaceClipRect(), returns bool
+* SDL_GetColorKey() => SDL_GetSurfaceColorKey(), returns bool
 * SDL_HasColorKey() => SDL_SurfaceHasColorKey()
 * SDL_HasSurfaceRLE() => SDL_SurfaceHasRLE()
 * SDL_LoadBMP_RW() => SDL_LoadBMP_IO()
-* SDL_LowerBlit() => SDL_BlitSurfaceUnchecked(), returns SDL_bool
-* SDL_LowerBlitScaled() => SDL_BlitSurfaceUncheckedScaled(), returns SDL_bool
-* SDL_SaveBMP_RW() => SDL_SaveBMP_IO(), returns SDL_bool
+* SDL_LowerBlit() => SDL_BlitSurfaceUnchecked(), returns bool
+* SDL_LowerBlitScaled() => SDL_BlitSurfaceUncheckedScaled(), returns bool
+* SDL_SaveBMP_RW() => SDL_SaveBMP_IO(), returns bool
 * SDL_SetClipRect() => SDL_SetSurfaceClipRect()
-* SDL_SetColorKey() => SDL_SetSurfaceColorKey(), returns SDL_bool
-* SDL_UpperBlit() => SDL_BlitSurface(), returns SDL_bool
-* SDL_UpperBlitScaled() => SDL_BlitSurfaceScaled(), returns SDL_bool
+* SDL_SetColorKey() => SDL_SetSurfaceColorKey(), returns bool
+* SDL_UpperBlit() => SDL_BlitSurface(), returns bool
+* SDL_UpperBlitScaled() => SDL_BlitSurfaceScaled(), returns bool
 
 The following symbols have been removed:
 * SDL_SWSURFACE
@@ -1894,21 +1899,21 @@ The following functions have been renamed:
 * SDL_AndroidGetExternalStorageState() => SDL_GetAndroidExternalStorageState()
 * SDL_AndroidGetInternalStoragePath() => SDL_GetAndroidInternalStoragePath()
 * SDL_AndroidGetJNIEnv() => SDL_GetAndroidJNIEnv()
-* SDL_AndroidRequestPermission() => SDL_RequestAndroidPermission(), returns SDL_bool
+* SDL_AndroidRequestPermission() => SDL_RequestAndroidPermission(), returns bool
 * SDL_AndroidRequestPermissionCallback() => SDL_RequestAndroidPermissionCallback()
-* SDL_AndroidSendMessage() => SDL_SendAndroidMessage(), returns SDL_bool
-* SDL_AndroidShowToast() => SDL_ShowAndroidToast(), returns SDL_bool
-* SDL_DXGIGetOutputInfo() => SDL_GetDXGIOutputInfo(), returns SDL_bool
+* SDL_AndroidSendMessage() => SDL_SendAndroidMessage(), returns bool
+* SDL_AndroidShowToast() => SDL_ShowAndroidToast(), returns bool
+* SDL_DXGIGetOutputInfo() => SDL_GetDXGIOutputInfo(), returns bool
 * SDL_Direct3D9GetAdapterIndex() => SDL_GetDirect3D9AdapterIndex()
-* SDL_GDKGetDefaultUser() => SDL_GetGDKDefaultUser(), returns SDL_bool
-* SDL_GDKGetTaskQueue() => SDL_GetGDKTaskQueue(), returns SDL_bool
-* SDL_LinuxSetThreadPriority() => SDL_SetLinuxThreadPriority(), returns SDL_bool
-* SDL_LinuxSetThreadPriorityAndPolicy() => SDL_SetLinuxThreadPriorityAndPolicy(), returns SDL_bool
+* SDL_GDKGetDefaultUser() => SDL_GetGDKDefaultUser(), returns bool
+* SDL_GDKGetTaskQueue() => SDL_GetGDKTaskQueue(), returns bool
+* SDL_LinuxSetThreadPriority() => SDL_SetLinuxThreadPriority(), returns bool
+* SDL_LinuxSetThreadPriorityAndPolicy() => SDL_SetLinuxThreadPriorityAndPolicy(), returns bool
 * SDL_OnApplicationDidBecomeActive() => SDL_OnApplicationDidEnterForeground()
 * SDL_OnApplicationWillResignActive() => SDL_OnApplicationWillEnterBackground()
-* SDL_iOSSetAnimationCallback() => SDL_SetiOSAnimationCallback(), returns SDL_bool
+* SDL_iOSSetAnimationCallback() => SDL_SetiOSAnimationCallback(), returns bool
 * SDL_iOSSetEventPump() => SDL_SetiOSEventPump()
-* SDL_iPhoneSetAnimationCallback() => SDL_SetiOSAnimationCallback(), returns SDL_bool
+* SDL_iPhoneSetAnimationCallback() => SDL_SetiOSAnimationCallback(), returns bool
 * SDL_iPhoneSetEventPump() => SDL_SetiOSEventPump()
 
 ## SDL_syswm.h
@@ -2016,7 +2021,7 @@ SDL_GetTLS() and SDL_SetTLS() take a pointer to a TLS ID, and will automatically
 The following functions have been renamed:
 * SDL_TLSCleanup() => SDL_CleanupTLS()
 * SDL_TLSGet() => SDL_GetTLS()
-* SDL_TLSSet() => SDL_SetTLS(), returns SDL_bool
+* SDL_TLSSet() => SDL_SetTLS(), returns bool
 * SDL_ThreadID() => SDL_GetCurrentThreadID()
 
 The following functions have been removed:
@@ -2169,7 +2174,7 @@ SDL_GL_GetProcAddress() and SDL_EGL_GetProcAddress() now return `SDL_FunctionPoi
 
 SDL_GL_DeleteContext() has been renamed to SDL_GL_DestroyContext to match SDL naming conventions (and glX/EGL!).
 
-SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns SDL_TRUE if the function succeeds or SDL_FALSE if there was an error.
+SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns true if the function succeeds or false if there was an error.
 
 SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
 
@@ -2180,8 +2185,8 @@ SDL_WindowFlags is used instead of Uint32 for API functions that refer to window
 SDL_GetWindowOpacity() directly returns the opacity instead of using an out parameter.
 
 The following functions have been renamed:
-* SDL_GL_DeleteContext() => SDL_GL_DestroyContext(), returns SDL_bool
-* SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode(), returns SDL_bool
+* SDL_GL_DeleteContext() => SDL_GL_DestroyContext(), returns bool
+* SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode(), returns bool
 * SDL_GetDisplayOrientation() => SDL_GetCurrentDisplayOrientation()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayForRect()
@@ -2189,7 +2194,7 @@ The following functions have been renamed:
 * SDL_GetWindowDisplayMode() => SDL_GetWindowFullscreenMode()
 * SDL_HasWindowSurface() => SDL_WindowHasSurface()
 * SDL_IsScreenSaverEnabled() => SDL_ScreenSaverEnabled()
-* SDL_SetWindowDisplayMode() => SDL_SetWindowFullscreenMode(), returns SDL_bool
+* SDL_SetWindowDisplayMode() => SDL_SetWindowFullscreenMode(), returns bool
 
 The following functions have been removed:
 * SDL_GetClosestFullscreenDisplayMode()

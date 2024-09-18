@@ -38,8 +38,8 @@ typedef struct
 
 static SDLTest_CommonState *state;
 static TextWindowState *windowstates;
-static SDL_bool escape_pressed;
-static SDL_bool cursor_visible;
+static bool escape_pressed;
+static bool cursor_visible;
 static Uint64 last_cursor_change;
 static int done;
 
@@ -234,7 +234,7 @@ static void PrintText(const char *eventtype, const char *text)
 static void CountKeysDown(void)
 {
     int i, count = 0, max_keys = 0;
-    const SDL_bool *keystate = SDL_GetKeyboardState(&max_keys);
+    const bool *keystate = SDL_GetKeyboardState(&max_keys);
 
     for (i = 0; i < max_keys; ++i) {
         if (keystate[i]) {
@@ -336,10 +336,10 @@ static void loop(void)
                     if (escape_pressed) {
                         done = 1;
                     } else {
-                        escape_pressed = SDL_TRUE;
+                        escape_pressed = true;
                     }
                 } else {
-                    escape_pressed = SDL_TRUE;
+                    escape_pressed = true;
                 }
             }
             CountKeysDown();

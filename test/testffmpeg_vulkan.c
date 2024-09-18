@@ -321,7 +321,7 @@ static int findPhysicalDevice(VulkanVideoContext *context)
         uint32_t queueFamiliesCount = 0;
         uint32_t queueFamilyIndex;
         uint32_t deviceExtensionCount = 0;
-        SDL_bool hasSwapchainExtension = SDL_FALSE;
+        bool hasSwapchainExtension = false;
         uint32_t i;
 
         VkPhysicalDevice physicalDevice = physicalDevices[physicalDeviceIndex];
@@ -424,7 +424,7 @@ static int findPhysicalDevice(VulkanVideoContext *context)
         }
         for (i = 0; i < deviceExtensionCount; i++) {
             if (SDL_strcmp(deviceExtensions[i].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0) {
-                hasSwapchainExtension = SDL_TRUE;
+                hasSwapchainExtension = true;
                 break;
             }
         }

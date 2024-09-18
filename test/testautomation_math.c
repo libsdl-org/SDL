@@ -213,7 +213,7 @@ helper_range(const char *func_name, d_to_d_func func)
 
         result = func(test_value);
         if (result != test_value) { /* Only log failures to save performances */
-            SDLTest_AssertCheck(SDL_FALSE,
+            SDLTest_AssertCheck(false,
                                 "%s(%.1f), expected %.1f, got %.1f",
                                 func_name, test_value,
                                 test_value, result);
@@ -800,7 +800,7 @@ copysign_rangeTest(void *args)
         /* Only log failures to save performances */
         result = SDL_copysign(test_value, 1.0);
         if (result != test_value) {
-            SDLTest_AssertCheck(SDL_FALSE,
+            SDLTest_AssertCheck(false,
                                 "Copysign(%.1f,%.1f), expected %.1f, got %.1f",
                                 test_value, 1.0, test_value, result);
             return TEST_ABORTED;
@@ -808,7 +808,7 @@ copysign_rangeTest(void *args)
 
         result = SDL_copysign(test_value, -1.0);
         if (result != -test_value) {
-            SDLTest_AssertCheck(SDL_FALSE,
+            SDLTest_AssertCheck(false,
                                 "Copysign(%.1f,%.1f), expected %.1f, got %.1f",
                                 test_value, -1.0, -test_value, result);
             return TEST_ABORTED;
@@ -1003,7 +1003,7 @@ fmod_rangeTest(void *args)
         /* Only log failures to save performances */
         result = SDL_fmod(test_value, 1.0);
         if (0.0 != result) {
-            SDLTest_AssertCheck(SDL_FALSE,
+            SDLTest_AssertCheck(false,
                                 "Fmod(%.1f,%.1f), expected %.1f, got %.1f",
                                 test_value, 1.0, 0.0, result);
             return TEST_ABORTED;
@@ -1734,7 +1734,7 @@ pow_rangeTest(void *args)
         /* Only log failures to save performances */
         result = SDL_pow(test_value, 0.0);
         if (result != 1.0) {
-            SDLTest_AssertCheck(SDL_FALSE,
+            SDLTest_AssertCheck(false,
                                 "Pow(%.1f,%.1f), expected %.1f, got %.1f",
                                 test_value, 1.0, 1.0, result);
             return TEST_ABORTED;
@@ -1742,7 +1742,7 @@ pow_rangeTest(void *args)
 
         result = SDL_pow(test_value, -0.0);
         if (result != 1.0) {
-            SDLTest_AssertCheck(SDL_FALSE,
+            SDLTest_AssertCheck(false,
                                 "Pow(%.1f,%.1f), expected %.1f, got %.1f",
                                 test_value, -0.0, 1.0, result);
             return TEST_ABORTED;
@@ -2061,7 +2061,7 @@ cos_rangeTest(void *args)
         /* Only log failures to save performances */
         result = SDL_cos(test_value);
         if (result < -1.0 || result > 1.0) {
-            SDLTest_AssertCheck(SDL_FALSE,
+            SDLTest_AssertCheck(false,
                                 "Cos(%.1f), expected [%.1f,%.1f], got %.1f",
                                 test_value, -1.0, 1.0, result);
             return TEST_ABORTED;
@@ -2179,7 +2179,7 @@ sin_rangeTest(void *args)
         /* Only log failures to save performances */
         result = SDL_sin(test_value);
         if (result < -1.0 || result > 1.0) {
-            SDLTest_AssertCheck(SDL_FALSE,
+            SDLTest_AssertCheck(false,
                                 "Sin(%.1f), expected [%.1f,%.1f], got %.1f",
                                 test_value, -1.0, 1.0, result);
             return TEST_ABORTED;

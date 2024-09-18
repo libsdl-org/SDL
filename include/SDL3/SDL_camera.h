@@ -369,14 +369,14 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetCameraProperties(SDL_Camera 
  * be converting to this format behind the scenes.
  *
  * If the system is waiting for the user to approve access to the camera, as
- * some platforms require, this will return SDL_FALSE, but this isn't
+ * some platforms require, this will return false, but this isn't
  * necessarily a fatal error; you should either wait for an
  * SDL_EVENT_CAMERA_DEVICE_APPROVED (or SDL_EVENT_CAMERA_DEVICE_DENIED) event,
  * or poll SDL_IsCameraApproved() occasionally until it returns non-zero.
  *
  * \param camera opened camera device.
  * \param spec the SDL_CameraSpec to be initialized by this function.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -385,7 +385,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetCameraProperties(SDL_Camera 
  *
  * \sa SDL_OpenCamera
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec);
 
 /**
  * Acquire a frame.

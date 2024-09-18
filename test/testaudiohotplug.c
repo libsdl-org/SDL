@@ -70,7 +70,7 @@ static void iteration(void)
             }
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_ADDED) {
             const SDL_AudioDeviceID which = (SDL_AudioDeviceID) e.adevice.which;
-            const SDL_bool recording = e.adevice.recording ? SDL_TRUE : SDL_FALSE;
+            const bool recording = e.adevice.recording ? true : false;
             const char *name = SDL_GetAudioDeviceName(which);
             if (name) {
                 SDL_Log("New %s audio device at id %u: %s", devtypestr(recording), (unsigned int)which, name);

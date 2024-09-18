@@ -35,7 +35,7 @@ SDL now has, internally, a table of function pointers. So, this is what SDL_Init
 now looks like:
 
 ```c
-SDL_bool SDL_Init(SDL_InitFlags flags)
+bool SDL_Init(SDL_InitFlags flags)
 {
     return jump_table.SDL_Init(flags);
 }
@@ -49,7 +49,7 @@ SDL_Init() that you've been calling all this time. But at startup, it looks more
 like this:
 
 ```c
-SDL_bool SDL_Init_DEFAULT(SDL_InitFlags flags)
+bool SDL_Init_DEFAULT(SDL_InitFlags flags)
 {
     SDL_InitDynamicAPI();
     return jump_table.SDL_Init(flags);

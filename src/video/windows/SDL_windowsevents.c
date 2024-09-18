@@ -1278,7 +1278,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         bool virtual_key = false;
         Uint16 rawcode = 0;
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam, &rawcode, &virtual_key);
-        const SDL_bool *keyboardState = SDL_GetKeyboardState(NULL);
+        const bool *keyboardState = SDL_GetKeyboardState(NULL);
 
         if (virtual_key || !data->videodata->raw_keyboard_enabled || data->window->text_input_active) {
             if (code == SDL_SCANCODE_PRINTSCREEN && !keyboardState[code]) {
@@ -2236,7 +2236,7 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
 #endif
     int new_messages = 0;
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    const SDL_bool *keystate;
+    const bool *keystate;
     SDL_Window *focusWindow;
 #endif
 
@@ -2370,7 +2370,7 @@ static BOOL CALLBACK WIN_ResourceNameCallback(HMODULE hModule, LPCTSTR lpType, L
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 // Register the class for this application
-SDL_bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
     WNDCLASSEX wcex;
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

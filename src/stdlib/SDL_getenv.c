@@ -66,7 +66,7 @@ SDL_Environment *SDL_GetEnvironment(void)
     return SDL_environment;
 }
 
-SDL_bool SDL_InitEnvironment(void)
+bool SDL_InitEnvironment(void)
 {
     return (SDL_GetEnvironment() != NULL);
 }
@@ -81,7 +81,7 @@ void SDL_QuitEnvironment(void)
     }
 }
 
-SDL_Environment *SDL_CreateEnvironment(SDL_bool populated)
+SDL_Environment *SDL_CreateEnvironment(bool populated)
 {
     SDL_Environment *env = SDL_calloc(1, sizeof(*env));
     if (!env) {
@@ -221,7 +221,7 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
     return result;
 }
 
-SDL_bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, SDL_bool overwrite)
+bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, bool overwrite)
 {
     bool result = false;
 
@@ -263,7 +263,7 @@ SDL_bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, cons
     return result;
 }
 
-SDL_bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
+bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
 {
     bool result = false;
 

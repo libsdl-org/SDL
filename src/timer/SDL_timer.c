@@ -368,7 +368,7 @@ SDL_TimerID SDL_AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void *
     return SDL_CreateTimer(interval, NULL, callback, userdata);
 }
 
-SDL_bool SDL_RemoveTimer(SDL_TimerID id)
+bool SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
@@ -502,7 +502,7 @@ SDL_TimerID SDL_AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void *
     return SDL_CreateTimer(interval, NULL, callback, userdata);
 }
 
-SDL_bool SDL_RemoveTimer(SDL_TimerID id)
+bool SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;

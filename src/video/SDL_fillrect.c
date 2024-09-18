@@ -229,7 +229,7 @@ static void SDL_FillSurfaceRect4(Uint8 *pixels, int pitch, Uint32 color, int w, 
 /*
  * This function performs a fast fill of the given rectangle with 'color'
  */
-SDL_bool SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
+bool SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 {
     if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRect(): dst");
@@ -247,7 +247,7 @@ SDL_bool SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 colo
     return SDL_FillSurfaceRects(dst, rect, 1, color);
 }
 
-SDL_bool SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Uint32 color)
+bool SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Uint32 color)
 {
     SDL_Rect clipped;
     Uint8 *pixels;

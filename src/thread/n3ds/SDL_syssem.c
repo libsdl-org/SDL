@@ -74,7 +74,7 @@ static bool WaitOnSemaphoreFor(SDL_Semaphore *sem, Sint64 timeoutNS)
     return false;
 }
 
-SDL_bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     if (!sem) {
         return true;

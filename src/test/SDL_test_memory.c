@@ -25,7 +25,7 @@
 #include <libunwind.h>
 #ifndef unw_get_proc_name_by_ip
 #define SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
-static SDL_bool s_unwind_symbol_names = SDL_TRUE;
+static bool s_unwind_symbol_names = true;
 #endif
 #endif
 
@@ -73,7 +73,7 @@ static SDL_realloc_func SDL_realloc_orig = NULL;
 static SDL_free_func SDL_free_orig = NULL;
 static int s_previous_allocations = 0;
 static SDL_tracked_allocation *s_tracked_allocations[256];
-static SDL_bool s_randfill_allocations = SDL_FALSE;
+static bool s_randfill_allocations = false;
 static SDL_AtomicInt s_lock;
 
 #define LOCK_ALLOCATOR()                               \
@@ -82,7 +82,7 @@ static SDL_AtomicInt s_lock;
             break;                                     \
         }                                              \
         SDL_CPUPauseInstruction();                     \
-    } while (SDL_TRUE)
+    } while (true)
 #define UNLOCK_ALLOCATOR() do { SDL_SetAtomicInt(&s_lock, 0); } while (0)
 
 static unsigned int get_allocation_bucket(void *mem)
@@ -116,7 +116,7 @@ static size_t SDL_GetTrackedAllocationSize(void *mem)
     return entry ? entry->size : SIZE_MAX;
 }
 
-static SDL_bool SDL_IsAllocationTracked(void *mem)
+static bool SDL_IsAllocationTracked(void *mem)
 {
     return SDL_GetTrackedAllocation(mem) != NULL;
 }
@@ -302,9 +302,9 @@ void SDLTest_TrackAllocations(void)
         const char *env_trackmem = SDL_getenv_unsafe("SDL_TRACKMEM_SYMBOL_NAMES");
         if (env_trackmem) {
             if (SDL_strcasecmp(env_trackmem, "1") == 0 || SDL_strcasecmp(env_trackmem, "yes") == 0 || SDL_strcasecmp(env_trackmem, "true") == 0) {
-                s_unwind_symbol_names = SDL_TRUE;
+                s_unwind_symbol_names = true;
             } else if (SDL_strcasecmp(env_trackmem, "0") == 0 || SDL_strcasecmp(env_trackmem, "no") == 0 || SDL_strcasecmp(env_trackmem, "false") == 0) {
-                s_unwind_symbol_names = SDL_FALSE;
+                s_unwind_symbol_names = false;
             }
         }
     } while (0);
@@ -348,7 +348,7 @@ void SDLTest_RandFillAllocations(void)
 {
     SDLTest_TrackAllocations();
 
-    s_randfill_allocations = SDL_TRUE;
+    s_randfill_allocations = true;
 }
 
 void SDLTest_LogAllocations(void)

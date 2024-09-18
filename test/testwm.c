@@ -186,7 +186,7 @@ static void loop(void)
             }
         }
         if (event.type == SDL_EVENT_KEY_UP) {
-            SDL_bool updateCursor = SDL_FALSE;
+            bool updateCursor = false;
 
             if (event.key.key == SDLK_A) {
                 SDL_assert(!"Keyboard generated assert");
@@ -195,13 +195,13 @@ static void loop(void)
                 if (system_cursor < 0) {
                     system_cursor = SDL_SYSTEM_CURSOR_COUNT - 1;
                 }
-                updateCursor = SDL_TRUE;
+                updateCursor = true;
             } else if (event.key.key == SDLK_RIGHT) {
                 ++system_cursor;
                 if (system_cursor >= SDL_SYSTEM_CURSOR_COUNT) {
                     system_cursor = 0;
                 }
-                updateCursor = SDL_TRUE;
+                updateCursor = true;
             }
             if (updateCursor) {
                 SDL_Log("Changing cursor to \"%s\"", cursorNames[system_cursor]);

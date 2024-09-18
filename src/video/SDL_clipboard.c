@@ -53,7 +53,7 @@ void SDL_CancelClipboardData(Uint32 sequence)
     _this->clipboard_userdata = NULL;
 }
 
-SDL_bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types)
+bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t i;
@@ -139,7 +139,7 @@ SDL_bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardC
     return true;
 }
 
-SDL_bool SDL_ClearClipboardData(void)
+bool SDL_ClearClipboardData(void)
 {
     return SDL_SetClipboardData(NULL, NULL, NULL, NULL, 0);
 }
@@ -209,7 +209,7 @@ bool SDL_HasInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     return false;
 }
 
-SDL_bool SDL_HasClipboardData(const char *mime_type)
+bool SDL_HasClipboardData(const char *mime_type)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -264,7 +264,7 @@ const void * SDLCALL SDL_ClipboardTextCallback(void *userdata, const char *mime_
     return text;
 }
 
-SDL_bool SDL_SetClipboardText(const char *text)
+bool SDL_SetClipboardText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t num_mime_types;
@@ -310,7 +310,7 @@ char *SDL_GetClipboardText(void)
     return text;
 }
 
-SDL_bool SDL_HasClipboardText(void)
+bool SDL_HasClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t i, num_mime_types;
@@ -332,7 +332,7 @@ SDL_bool SDL_HasClipboardText(void)
 
 // Primary selection text
 
-SDL_bool SDL_SetPrimarySelectionText(const char *text)
+bool SDL_SetPrimarySelectionText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -376,7 +376,7 @@ char *SDL_GetPrimarySelectionText(void)
     }
 }
 
-SDL_bool SDL_HasPrimarySelectionText(void)
+bool SDL_HasPrimarySelectionText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 

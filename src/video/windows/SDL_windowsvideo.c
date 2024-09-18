@@ -666,7 +666,7 @@ int SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID)
 }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-SDL_bool SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
+bool SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
 #ifndef HAVE_DXGI_H
     if (adapterIndex) {

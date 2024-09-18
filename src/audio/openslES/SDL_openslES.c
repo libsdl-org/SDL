@@ -229,7 +229,7 @@ static void OPENSLES_DestroyPCMRecorder(SDL_AudioDevice *device)
 }
 
 // !!! FIXME: make this non-blocking!
-static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, SDL_bool granted)
+static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, bool granted)
 {
     SDL_SetAtomicInt((SDL_AtomicInt *) userdata, granted ? 1 : -1);
 }

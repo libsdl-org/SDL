@@ -32,6 +32,6 @@ struct SDL_Process
 };
 
 bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props);
-bool SDL_SYS_KillProcess(SDL_Process *process, SDL_bool force);
-bool SDL_SYS_WaitProcess(SDL_Process *process, SDL_bool block, int *exitcode);
+bool SDL_SYS_KillProcess(SDL_Process *process, bool force);
+bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode);
 void SDL_SYS_DestroyProcess(SDL_Process *process);

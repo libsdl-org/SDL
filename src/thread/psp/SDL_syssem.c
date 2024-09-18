@@ -71,7 +71,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
  * If the timeout is 0 then just poll the semaphore; if it's -1, pass
  * NULL to sceKernelWaitSema() so that it waits indefinitely; and if the timeout
  * is specified, convert it to microseconds. */
-SDL_bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
 	SceUInt timeoutUS;
     SceUInt *pTimeout = NULL;

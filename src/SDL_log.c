@@ -446,7 +446,7 @@ static const char *GetLogPriorityPrefix(SDL_LogPriority priority)
     }
 }
 
-SDL_bool SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix)
+bool SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix)
 {
     char *prefix_copy;
 

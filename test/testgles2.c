@@ -66,7 +66,7 @@ typedef struct thread_data
 static SDLTest_CommonState *state;
 static SDL_GLContext *context = NULL;
 static int depth = 16;
-static SDL_bool suspend_when_occluded;
+static bool suspend_when_occluded;
 static GLES2_Context ctx;
 static shader_data *datas;
 
@@ -699,7 +699,7 @@ int main(int argc, char *argv[])
                 ++threaded;
                 consumed = 1;
             } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
-                suspend_when_occluded = SDL_TRUE;
+                suspend_when_occluded = true;
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--zdepth") == 0) {
                 i++;

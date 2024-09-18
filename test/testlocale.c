@@ -67,7 +67,7 @@ int main(int argc, char **argv)
     }
 
     /* Print locales and languages */
-    if (SDLTest_CommonInit(state) == SDL_FALSE) {
+    if (SDLTest_CommonInit(state) == false) {
         return 1;
     }
 

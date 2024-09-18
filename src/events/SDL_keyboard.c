@@ -54,7 +54,7 @@ typedef struct SDL_Keyboard
     SDL_Window *focus;
     SDL_Keymod modstate;
     Uint8 keysource[SDL_SCANCODE_COUNT];
-    SDL_bool keystate[SDL_SCANCODE_COUNT];
+    bool keystate[SDL_SCANCODE_COUNT];
     SDL_Keymap *keymap;
     bool french_numbers;
     bool latin_letters;
@@ -173,7 +173,7 @@ void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event)
     }
 }
 
-SDL_bool SDL_HasKeyboard(void)
+bool SDL_HasKeyboard(void)
 {
     return (SDL_keyboard_count > 0);
 }
@@ -453,7 +453,7 @@ static SDL_Keycode SDL_ConvertNumpadKeycode(SDL_Keycode keycode, bool numlock)
     }
 }
 
-SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, SDL_bool key_event)
+SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, bool key_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
@@ -863,7 +863,7 @@ void SDL_QuitKeyboard(void)
                         SDL_KeycodeOptionsChanged, &SDL_keyboard);
 }
 
-const SDL_bool *SDL_GetKeyboardState(int *numkeys)
+const bool *SDL_GetKeyboardState(int *numkeys)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 

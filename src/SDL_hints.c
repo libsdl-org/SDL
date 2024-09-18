@@ -83,7 +83,7 @@ static void SDLCALL CleanupHintProperty(void *userdata, void *value)
     SDL_free(hint);
 }
 
-SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
+bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
 {
     if (!name || !*name) {
         return SDL_InvalidParamError("name");
@@ -137,7 +137,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
     return result;
 }
 
-SDL_bool SDL_ResetHint(const char *name)
+bool SDL_ResetHint(const char *name)
 {
     if (!name || !*name) {
         return SDL_InvalidParamError("name");
@@ -202,7 +202,7 @@ void SDL_ResetHints(void)
     SDL_EnumerateProperties(GetHintProperties(false), ResetHintsCallback, NULL);
 }
 
-SDL_bool SDL_SetHint(const char *name, const char *value)
+bool SDL_SetHint(const char *name, const char *value)
 {
     return SDL_SetHintWithPriority(name, value, SDL_HINT_NORMAL);
 }
@@ -260,13 +260,13 @@ bool SDL_GetStringBoolean(const char *value, bool default_value)
     return true;
 }
 
-SDL_bool SDL_GetHintBoolean(const char *name, SDL_bool default_value)
+bool SDL_GetHintBoolean(const char *name, bool default_value)
 {
     const char *hint = SDL_GetHint(name);
     return SDL_GetStringBoolean(hint, default_value);
 }
 
-SDL_bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
+bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
     if (!name || !*name) {
         return SDL_InvalidParamError("name");

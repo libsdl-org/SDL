@@ -86,7 +86,7 @@ static int SDLCALL hints_setHint(void *arg)
     char *value;
     const char *testValue;
     char *callbackValue;
-    SDL_bool result;
+    bool result;
     int i, j;
 
     /* Create random values to set */
@@ -105,7 +105,7 @@ static int SDLCALL hints_setHint(void *arg)
             result = SDL_SetHint(HintsEnum[i], value);
             SDLTest_AssertPass("Call to SDL_SetHint(%s, %s) (iteration %i)", HintsEnum[i], value, j);
             SDLTest_AssertCheck(
-                result == SDL_TRUE || result == SDL_FALSE,
+                result == true || result == false,
                 "Verify valid result was returned, got: %i",
                 (int)result);
             testValue = SDL_GetHint(HintsEnum[i]);
@@ -121,7 +121,7 @@ static int SDLCALL hints_setHint(void *arg)
         result = SDL_SetHint(HintsEnum[i], originalValue);
         SDLTest_AssertPass("Call to SDL_SetHint(%s, originalValue)", HintsEnum[i]);
         SDLTest_AssertCheck(
-            result == SDL_TRUE || result == SDL_FALSE,
+            result == true || result == false,
             "Verify valid result was returned, got: %i",
             (int)result);
         SDL_free((void *)originalValue);

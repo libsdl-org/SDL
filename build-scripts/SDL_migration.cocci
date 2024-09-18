@@ -3687,3 +3687,15 @@ identifier func =~ "^(SDL_AddEventWatch|SDL_AddHintCallback|SDL_AddSurfaceAltern
 - SDL_GetCPUCount
 + SDL_GetNumLogicalCPUCores
   (...)
+@@
+@@
+- SDL_bool
++ bool
+@@
+@@
+- SDL_TRUE
++ true
+@@
+@@
+- SDL_FALSE
++ false

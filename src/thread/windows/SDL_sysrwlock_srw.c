@@ -204,7 +204,7 @@ void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS 
     }
 }
 
-SDL_bool SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
+bool SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
 {
     bool result = true;
     if (rwlock) {
@@ -213,7 +213,7 @@ SDL_bool SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
     return result;
 }
 
-SDL_bool SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
+bool SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
 {
     bool result = true;
     if (rwlock) {

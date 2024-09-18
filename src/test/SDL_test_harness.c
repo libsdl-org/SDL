@@ -55,7 +55,7 @@ struct SDLTest_TestSuiteRunner {
         Uint64 execKey;
         char *filter;
         int testIterations;
-        SDL_bool randomOrder;
+        bool randomOrder;
     } user;
 
     SDLTest_ArgumentParser argparser;
@@ -229,7 +229,7 @@ static Uint32 SDLCALL SDLTest_BailOut(void *userdata, SDL_TimerID timerID, Uint3
  *
  * \returns Test case result.
  */
-static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseReference *testCase, Uint64 execKey, SDL_bool forceTestRun)
+static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseReference *testCase, Uint64 execKey, bool forceTestRun)
 {
     SDL_TimerID timer = 0;
     int testCaseResult = 0;
@@ -242,7 +242,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
         return TEST_RESULT_SETUP_FAILURE;
     }
 
-    if (!testCase->enabled && forceTestRun == SDL_FALSE) {
+    if (!testCase->enabled && forceTestRun == false) {
         SDLTest_Log(SDLTEST_FINAL_RESULT_FORMAT, "Test", testCase->name, "Skipped (Disabled)");
         return TEST_RESULT_SKIPPED;
     }
@@ -387,7 +387,7 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
     const char *suiteFilterName = NULL;
     int testFilter = 0;
     const char *testFilterName = NULL;
-    SDL_bool forceTestRun = SDL_FALSE;
+    bool forceTestRun = false;
     int testResult = 0;
     int runResult = 0;
     int totalTestFailedCount = 0;
@@ -505,7 +505,7 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
             return 2;
         }
 
-        runner->user.randomOrder = SDL_FALSE;
+        runner->user.randomOrder = false;
     }
 
     /* Number of test suites */
@@ -640,7 +640,7 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
                     /* Override 'disabled' flag if we specified a test filter (i.e. force run for debugging) */
                     if (testFilter == 1 && !testCase->enabled) {
                         SDLTest_Log("Force run of disabled test since test filter was set");
-                        forceTestRun = SDL_TRUE;
+                        forceTestRun = true;
                     }
 
                     /* Take time - test start */
@@ -812,7 +812,7 @@ static int SDLCALL SDLTest_TestSuiteCommonArg(void *data, char **argv, int index
         }
     }
     else if (SDL_strcasecmp(argv[index], "--random-order") == 0) {
-        runner->user.randomOrder = SDL_TRUE;
+        runner->user.randomOrder = true;
         return 1;
     }
     return 0;

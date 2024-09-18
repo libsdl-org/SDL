@@ -126,8 +126,8 @@ int main(int argc, char *argv[])
 
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
-        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", SDL_TRUE, NULL, NULL);
-        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", SDL_FALSE, NULL, NULL);
+        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", true, NULL, NULL);
+        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", false, NULL, NULL);
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }

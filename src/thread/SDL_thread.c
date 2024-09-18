@@ -54,7 +54,7 @@ void *SDL_GetTLS(SDL_TLSID *id)
     return storage->array[storage_index].data;
 }
 
-SDL_bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback destructor)
+bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback destructor)
 {
     SDL_TLSData *storage;
     int storage_index;
@@ -439,7 +439,7 @@ const char *SDL_GetThreadName(SDL_Thread *thread)
     }
 }
 
-SDL_bool SDL_SetThreadPriority(SDL_ThreadPriority priority)
+bool SDL_SetThreadPriority(SDL_ThreadPriority priority)
 {
     return SDL_SYS_SetThreadPriority(priority);
 }
@@ -483,12 +483,12 @@ void SDL_WaitSemaphore(SDL_Semaphore *sem)
     SDL_WaitSemaphoreTimeoutNS(sem, -1);
 }
 
-SDL_bool SDL_TryWaitSemaphore(SDL_Semaphore *sem)
+bool SDL_TryWaitSemaphore(SDL_Semaphore *sem)
 {
     return SDL_WaitSemaphoreTimeoutNS(sem, 0);
 }
 
-SDL_bool SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sint32 timeoutMS)
+bool SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sint32 timeoutMS)
 {
     Sint64 timeoutNS;
 
@@ -505,7 +505,7 @@ void SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex *mutex)
     SDL_WaitConditionTimeoutNS(cond, mutex, -1);
 }
 
-SDL_bool SDL_WaitConditionTimeout(SDL_Condition *cond, SDL_Mutex *mutex, Sint32 timeoutMS)
+bool SDL_WaitConditionTimeout(SDL_Condition *cond, SDL_Mutex *mutex, Sint32 timeoutMS)
 {
     Sint64 timeoutNS;
 

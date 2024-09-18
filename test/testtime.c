@@ -46,7 +46,7 @@ static void RenderDateTime(SDL_Renderer *r)
 
     /* Query the current time and print it. */
     SDL_GetCurrentTime(&ticks);
-    SDL_TimeToDateTime(ticks, &dt, SDL_FALSE);
+    SDL_TimeToDateTime(ticks, &dt, false);
 
     switch (date_format) {
     case SDL_DATE_FORMAT_YYYYMMDD:
@@ -78,7 +78,7 @@ static void RenderDateTime(SDL_Renderer *r)
 
     SDLTest_DrawString(r, 10, 15, str);
 
-    SDL_TimeToDateTime(ticks, &dt, SDL_TRUE);
+    SDL_TimeToDateTime(ticks, &dt, true);
     if (time_format) {
         if (dt.hour > 12) { /* PM */
             dt.hour -= 12;

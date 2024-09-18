@@ -25,9 +25,9 @@
 
 #define CHECK_FUNC(FUNC, PARAMS)    \
 {                                   \
-    SDL_bool result = FUNC PARAMS;  \
+    bool result = FUNC PARAMS;  \
     if (!result) {                  \
-        SDLTest_AssertCheck(result, "Validate result from %s, expected: SDL_TRUE, got: SDL_FALSE, %s", #FUNC, SDL_GetError()); \
+        SDLTest_AssertCheck(result, "Validate result from %s, expected: true, got: false, %s", #FUNC, SDL_GetError()); \
     }                               \
 }
 
@@ -53,14 +53,14 @@ static void SDLCALL surfaceSetUp(void **arg)
     if (testSurface != NULL) {
         /* Disable blend mode for target surface */
         result = SDL_SetSurfaceBlendMode(testSurface, blendMode);
-        SDLTest_AssertCheck(result == SDL_TRUE, "Validate result from SDL_SetSurfaceBlendMode, expected: SDL_TRUE, got: %i", result);
+        SDLTest_AssertCheck(result == true, "Validate result from SDL_SetSurfaceBlendMode, expected: true, got: %i", result);
         result = SDL_GetSurfaceBlendMode(testSurface, &currentBlendMode);
-        SDLTest_AssertCheck(result == SDL_TRUE, "Validate result from SDL_GetSurfaceBlendMode, expected: SDL_TRUE, got: %i", result);
+        SDLTest_AssertCheck(result == true, "Validate result from SDL_GetSurfaceBlendMode, expected: true, got: %i", result);
         SDLTest_AssertCheck(currentBlendMode == blendMode, "Validate blendMode, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32, blendMode, currentBlendMode);
 
         /* Clear the target surface */
         result = SDL_FillSurfaceRect(testSurface, NULL, SDL_MapSurfaceRGBA(testSurface, 0, 0, 0, 255));
-        SDLTest_AssertCheck(result == SDL_TRUE, "Validate result from SDL_FillSurfaceRect, expected: SDL_TRUE, got: %i", result);
+        SDLTest_AssertCheck(result == true, "Validate result from SDL_FillSurfaceRect, expected: true, got: %i", result);
     }
 }
 
@@ -133,7 +133,7 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
     }
     ret = SDL_FillSurfaceRect(dst, NULL, color);
     SDLTest_AssertPass("Call to SDL_FillSurfaceRect()");
-    SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_FillSurfaceRect, expected: SDL_TRUE, got: %i", ret);
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_FillSurfaceRect, expected: true, got: %i", ret);
     SDL_GetRGBA(color, SDL_GetPixelFormatDetails(dst->format), SDL_GetSurfacePalette(dst), &dstR, &dstG, &dstB, &dstA);
 
     /* Create src surface */
@@ -153,35 +153,35 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
     /* Reset alpha modulation */
     ret = SDL_SetSurfaceAlphaMod(src, 255);
     SDLTest_AssertPass("Call to SDL_SetSurfaceAlphaMod()");
-    SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_SetSurfaceAlphaMod(), expected: SDL_TRUE, got: %i", ret);
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SetSurfaceAlphaMod(), expected: true, got: %i", ret);
 
     /* Reset color modulation */
     ret = SDL_SetSurfaceColorMod(src, 255, 255, 255);
     SDLTest_AssertPass("Call to SDL_SetSurfaceColorMod()");
-    SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_SetSurfaceColorMod(), expected: SDL_TRUE, got: %i", ret);
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SetSurfaceColorMod(), expected: true, got: %i", ret);
 
     /* Reset color key */
-    ret = SDL_SetSurfaceColorKey(src, SDL_FALSE, 0);
+    ret = SDL_SetSurfaceColorKey(src, false, 0);
     SDLTest_AssertPass("Call to SDL_SetSurfaceColorKey()");
-    SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_SetSurfaceColorKey(), expected: SDL_TRUE, got: %i", ret);
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SetSurfaceColorKey(), expected: true, got: %i", ret);
 
     /* Clear surface. */
     color = SDL_MapSurfaceRGBA(src, srcR, srcG, srcB, srcA);
     SDLTest_AssertPass("Call to SDL_MapSurfaceRGBA()");
     ret = SDL_FillSurfaceRect(src, NULL, color);
     SDLTest_AssertPass("Call to SDL_FillSurfaceRect()");
-    SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_FillSurfaceRect, expected: SDL_TRUE, got: %i", ret);
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_FillSurfaceRect, expected: true, got: %i", ret);
     SDL_GetRGBA(color, SDL_GetPixelFormatDetails(src->format), SDL_GetSurfacePalette(src), &srcR, &srcG, &srcB, &srcA);
 
     /* Set blend mode. */
     if (mode >= 0) {
         ret = SDL_SetSurfaceBlendMode(src, (SDL_BlendMode)mode);
         SDLTest_AssertPass("Call to SDL_SetSurfaceBlendMode()");
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_SetSurfaceBlendMode(..., %i), expected: SDL_TRUE, got: %i", mode, ret);
+        SDLTest_AssertCheck(ret == true, "Verify result from SDL_SetSurfaceBlendMode(..., %i), expected: true, got: %i", mode, ret);
     } else {
         ret = SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_BLEND);
         SDLTest_AssertPass("Call to SDL_SetSurfaceBlendMode()");
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_SetSurfaceBlendMode(..., %i), expected: SDL_TRUE, got: %i", mode, ret);
+        SDLTest_AssertCheck(ret == true, "Verify result from SDL_SetSurfaceBlendMode(..., %i), expected: true, got: %i", mode, ret);
     }
 
     /* Test blend mode. */
@@ -190,7 +190,7 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
     case -1:
         /* Set color mod. */
         ret = SDL_SetSurfaceColorMod(src, srcR, srcG, srcB);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Validate results from calls to SDL_SetSurfaceColorMod, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Validate results from calls to SDL_SetSurfaceColorMod, expected: true, got: %i", ret);
         expectedR = (Uint8)SDL_roundf(SDL_clamp((FLOAT(srcR) * FLOAT(srcR)) * FLOAT(srcA) + FLOAT(dstR) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
         expectedG = (Uint8)SDL_roundf(SDL_clamp((FLOAT(srcG) * FLOAT(srcG)) * FLOAT(srcA) + FLOAT(dstG) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
         expectedB = (Uint8)SDL_roundf(SDL_clamp((FLOAT(srcB) * FLOAT(srcB)) * FLOAT(srcA) + FLOAT(dstB) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
@@ -199,7 +199,7 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
     case -2:
         /* Set alpha mod. */
         ret = SDL_SetSurfaceAlphaMod(src, srcA);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Validate results from calls to SDL_SetSurfaceAlphaMod, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Validate results from calls to SDL_SetSurfaceAlphaMod, expected: true, got: %i", ret);
         expectedR = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcR) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstR) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
         expectedG = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcG) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstG) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
         expectedB = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcB) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstB) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
@@ -262,7 +262,7 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
 
     /* Blitting. */
     ret = SDL_BlitSurface(src, NULL, dst, NULL);
-    SDLTest_AssertCheck(ret == SDL_TRUE, "Validate results from calls to SDL_BlitSurface, expected: SDL_TRUE, got: %i: %s", ret, !ret ? SDL_GetError() : "success");
+    SDLTest_AssertCheck(ret == true, "Validate results from calls to SDL_BlitSurface, expected: true, got: %i: %s", ret, !ret ? SDL_GetError() : "success");
     if (ret) {
         SDL_ReadSurfacePixel(dst, 0, 0, &actualR, &actualG, &actualB, &actualA);
         deltaR = SDL_abs((int)actualR - expectedR);
@@ -336,7 +336,7 @@ static int SDLCALL surface_testSaveLoadBitmap(void *arg)
     /* Save a surface */
     ret = SDL_SaveBMP(face, sampleFilename);
     SDLTest_AssertPass("Call to SDL_SaveBMP()");
-    SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_SaveBMP, expected: SDL_TRUE, got: %i", ret);
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP, expected: true, got: %i", ret);
     AssertFileExist(sampleFilename);
 
     /* Load a surface */
@@ -380,7 +380,7 @@ static int SDLCALL surface_testBlitTiled(void *arg)
     /* Tiled blit - 1.0 scale */
     {
         ret = SDL_BlitSurfaceTiled(face, NULL, testSurface, NULL);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_BlitSurfaceTiled expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Verify result from SDL_BlitSurfaceTiled expected: true, got: %i", ret);
 
         /* See if it's the same */
         SDL_DestroySurface(referenceSurface);
@@ -394,15 +394,15 @@ static int SDLCALL surface_testBlitTiled(void *arg)
         testSurface2x = SDL_CreateSurface(testSurface->w * 2, testSurface->h * 2, testSurface->format);
         SDLTest_AssertCheck(testSurface != NULL, "Check that testSurface2x is not NULL");
         ret = SDL_FillSurfaceRect(testSurface2x, NULL, SDL_MapSurfaceRGBA(testSurface2x, 0, 0, 0, 255));
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Validate result from SDL_FillSurfaceRect, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Validate result from SDL_FillSurfaceRect, expected: true, got: %i", ret);
 
         ret = SDL_BlitSurfaceTiledWithScale(face, NULL, 2.0f, SDL_SCALEMODE_NEAREST, testSurface2x, NULL);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Validate results from call to SDL_BlitSurfaceTiledWithScale, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Validate results from call to SDL_BlitSurfaceTiledWithScale, expected: true, got: %i", ret);
 
         /* See if it's the same */
         referenceSurface2x = SDL_CreateSurface(referenceSurface->w * 2, referenceSurface->h * 2, referenceSurface->format);
         SDL_BlitSurfaceScaled(referenceSurface, NULL, referenceSurface2x, NULL, SDL_SCALEMODE_NEAREST);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Validate results from call to SDL_BlitSurfaceScaled, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Validate results from call to SDL_BlitSurfaceScaled, expected: true, got: %i", ret);
         ret = SDLTest_CompareSurfaces(testSurface2x, referenceSurface2x, 0);
         SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
     }
@@ -512,7 +512,7 @@ static int SDLCALL surface_testBlit9Grid(void *arg)
         Fill9GridReferenceSurface(referenceSurface, 1, 1, 1, 1);
 
         ret = SDL_BlitSurface9Grid(source, NULL, 1, 1, 1, 1, 0.0f, SDL_SCALEMODE_NEAREST, testSurface, NULL);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Validate result from SDL_BlitSurface9Grid, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Validate result from SDL_BlitSurface9Grid, expected: true, got: %i", ret);
 
         ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, 0);
         SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
@@ -527,7 +527,7 @@ static int SDLCALL surface_testBlit9Grid(void *arg)
         Fill9GridReferenceSurface(referenceSurface, 2, 2, 2, 2);
 
         ret = SDL_BlitSurface9Grid(source, NULL, 1, 1, 1, 1, 2.0f, SDL_SCALEMODE_NEAREST, testSurface, NULL);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Validate result from SDL_BlitSurface9Grid, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Validate result from SDL_BlitSurface9Grid, expected: true, got: %i", ret);
 
         ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, 0);
         SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
@@ -579,7 +579,7 @@ static int SDLCALL surface_testBlit9Grid(void *arg)
         Fill9GridReferenceSurface(referenceSurface, 1, 2, 1, 2);
 
         ret = SDL_BlitSurface9Grid(source, NULL, 1, 2, 1, 2, 0.0f, SDL_SCALEMODE_NEAREST, testSurface, NULL);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Validate result from SDL_BlitSurface9Grid, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Validate result from SDL_BlitSurface9Grid, expected: true, got: %i", ret);
 
         ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, 0);
         SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
@@ -595,7 +595,7 @@ static int SDLCALL surface_testBlit9Grid(void *arg)
         Fill9GridReferenceSurface(referenceSurface, 2, 4, 2, 4);
 
         ret = SDL_BlitSurface9Grid(source, NULL, 1, 2, 1, 2, 2.0f, SDL_SCALEMODE_NEAREST, testSurface, NULL);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Validate result from SDL_BlitSurface9Grid, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Validate result from SDL_BlitSurface9Grid, expected: true, got: %i", ret);
 
         ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, 0);
         SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
@@ -689,9 +689,9 @@ static int SDLCALL surface_testSurfaceConversion(void *arg)
 
     /* Set transparent pixel as the pixel at (0,0) */
     if (SDL_GetSurfacePalette(face)) {
-        ret = SDL_SetSurfaceColorKey(face, SDL_TRUE, *(Uint8 *)face->pixels);
+        ret = SDL_SetSurfaceColorKey(face, true, *(Uint8 *)face->pixels);
         SDLTest_AssertPass("Call to SDL_SetSurfaceColorKey()");
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_SetSurfaceColorKey, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Verify result from SDL_SetSurfaceColorKey, expected: true, got: %i", ret);
     }
 
     /* Convert to 32 bit to compare. */
@@ -764,9 +764,9 @@ static int SDLCALL surface_testCompleteSurfaceConversion(void *arg)
 
     /* Set transparent pixel as the pixel at (0,0) */
     if (SDL_GetSurfacePalette(face)) {
-        ret = SDL_SetSurfaceColorKey(face, SDL_TRUE, *(Uint8 *)face->pixels);
+        ret = SDL_SetSurfaceColorKey(face, true, *(Uint8 *)face->pixels);
         SDLTest_AssertPass("Call to SDL_SetSurfaceColorKey()");
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Verify result from SDL_SetSurfaceColorKey, expected: SDL_TRUE, got: %i", ret);
+        SDLTest_AssertCheck(ret == true, "Verify result from SDL_SetSurfaceColorKey, expected: true, got: %i", ret);
     }
 
     for (i = 0; i < SDL_arraysize(pixel_formats); ++i) {
@@ -1321,11 +1321,11 @@ static int SDLCALL surface_testPalettization(void *arg)
     SDLTest_AssertCheck(source->format == SDL_PIXELFORMAT_RGBA8888, "Expected source->format == SDL_PIXELFORMAT_RGBA8888, got 0x%x (%s)", source->format, SDL_GetPixelFormatName(source->format));
     for (i = 0; i < SDL_arraysize(colors); i++) {
         result = SDL_WriteSurfacePixel(source, i, 0, colors[i].c.r, colors[i].c.g, colors[i].c.b, colors[i].c.a);
-        SDLTest_AssertCheck(result == SDL_TRUE, "SDL_WriteSurfacePixel");
+        SDLTest_AssertCheck(result == true, "SDL_WriteSurfacePixel");
     }
     for (i = 0; i < SDL_arraysize(palette_colors); i++) {
         result = SDL_WriteSurfacePixel(source, SDL_arraysize(colors) + i, 0, palette_colors[i].r, palette_colors[i].g, palette_colors[i].b, palette_colors[i].a);
-        SDLTest_AssertCheck(result == SDL_TRUE, "SDL_WriteSurfacePixel");
+        SDLTest_AssertCheck(result == true, "SDL_WriteSurfacePixel");
     }
 
     output = SDL_ConvertSurfaceAndColorspace(source, SDL_PIXELFORMAT_INDEX8, palette, SDL_COLORSPACE_UNKNOWN, 0);
@@ -1383,9 +1383,9 @@ static int SDLCALL surface_testClearSurface(void *arg)
         surface = SDL_CreateSurface(1, 1, format);
         SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
         ret = SDL_ClearSurface(surface, srcR, srcG, srcB, srcA);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "SDL_ClearSurface()");
+        SDLTest_AssertCheck(ret == true, "SDL_ClearSurface()");
         ret = SDL_ReadSurfacePixelFloat(surface, 0, 0, &actualR, &actualG, &actualB, &actualA);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "SDL_ReadSurfacePixelFloat()");
+        SDLTest_AssertCheck(ret == true, "SDL_ReadSurfacePixelFloat()");
         deltaR = SDL_fabsf(actualR - srcR);
         deltaG = SDL_fabsf(actualG - srcG);
         deltaB = SDL_fabsf(actualB - srcB);
@@ -1433,13 +1433,13 @@ static int SDLCALL surface_testPremultiplyAlpha(void *arg)
         surface = SDL_CreateSurface(1, 1, format);
         SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
         ret = SDL_SetSurfaceColorspace(surface, SDL_COLORSPACE_SRGB);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "SDL_SetSurfaceColorspace()");
+        SDLTest_AssertCheck(ret == true, "SDL_SetSurfaceColorspace()");
         ret = SDL_ClearSurface(surface, srcR, srcG, srcB, srcA);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "SDL_ClearSurface()");
-        ret = SDL_PremultiplySurfaceAlpha(surface, SDL_FALSE);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "SDL_PremultiplySurfaceAlpha()");
+        SDLTest_AssertCheck(ret == true, "SDL_ClearSurface()");
+        ret = SDL_PremultiplySurfaceAlpha(surface, false);
+        SDLTest_AssertCheck(ret == true, "SDL_PremultiplySurfaceAlpha()");
         ret = SDL_ReadSurfacePixelFloat(surface, 0, 0, &actualR, &actualG, &actualB, NULL);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "SDL_ReadSurfacePixelFloat()");
+        SDLTest_AssertCheck(ret == true, "SDL_ReadSurfacePixelFloat()");
         deltaR = SDL_fabsf(actualR - expectedR);
         deltaG = SDL_fabsf(actualG - expectedG);
         deltaB = SDL_fabsf(actualB - expectedB);
