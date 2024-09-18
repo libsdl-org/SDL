@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#include "SDL_iostream_c.h"
+
 #if defined(SDL_PLATFORM_WINDOWS)
 #include "../core/windows/SDL_windows.h"
 #endif
