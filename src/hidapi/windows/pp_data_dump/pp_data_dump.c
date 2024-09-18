@@ -85,8 +85,8 @@ void dump_hidp_link_collection_node(FILE* file, phid_pp_link_collection_node pco
 	fprintf(file, "pp_data->LinkCollectionArray[%u]->NumberOfChildren   = %hu\n", coll_idx, pcoll->NumberOfChildren);
 	fprintf(file, "pp_data->LinkCollectionArray[%u]->NextSibling        = %hu\n", coll_idx, pcoll->NextSibling);
 	fprintf(file, "pp_data->LinkCollectionArray[%u]->FirstChild         = %hu\n", coll_idx, pcoll->FirstChild);
-	// The compilers are not consistent on ULONG-bit-fields: They lose the unsinged or define them as int.
-	// Thus just always cast them to unsinged int, which should be fine, as the biggest bit-field is 28 bit
+	// The compilers are not consistent on ULONG-bit-fields: They lose the unsigned or define them as int.
+	// Thus just always cast them to unsigned int, which should be fine, as the biggest bit-field is 28 bit
 	fprintf(file, "pp_data->LinkCollectionArray[%u]->CollectionType     = %u\n", coll_idx, (unsigned int)(pcoll->CollectionType));
 	fprintf(file, "pp_data->LinkCollectionArray[%u]->IsAlias            = %u\n", coll_idx, (unsigned int)(pcoll->IsAlias));
 	fprintf(file, "pp_data->LinkCollectionArray[%u]->Reserved           = 0x%08X\n", coll_idx, (unsigned int)(pcoll->Reserved));
