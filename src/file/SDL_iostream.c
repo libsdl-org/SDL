@@ -20,8 +20,6 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_iostream_c.h"
-
 #if defined(SDL_PLATFORM_WINDOWS)
 #include "../core/windows/SDL_windows.h"
 #endif
@@ -34,6 +32,8 @@
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
+
+#include "SDL_iostream_c.h"
 
 /* This file provides a general interface for SDL to read and write
    data sources.  It can easily be extended to files, memory, etc.
