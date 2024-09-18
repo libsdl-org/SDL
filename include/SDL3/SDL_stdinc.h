@@ -51,7 +51,7 @@
 #ifdef SDL_DEFINE_STDBOOL
 #ifndef __bool_true_false_are_defined
 #define __bool_true_false_are_defined 1
-#define bool  int8_t
+#define bool  uint8_t
 #define false 0
 #define true  1
 #endif
