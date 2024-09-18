@@ -38,6 +38,10 @@
 #if defined(_MSC_VER) && (_MSC_VER < 1910)
 #define SDL_DEFINE_STDBOOL
 #endif
+/* gcc-2.95 had non-standard stdbool.h */
+#if defined(__GNUC__) && (__GNUC__ < 3)
+#define SDL_DEFINE_STDBOOL
+#endif
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 #include <inttypes.h>
