@@ -48,6 +48,12 @@ static int TestTypes(bool verbose)
 {
     int error = 0;
 
+    if (badsize(sizeof(bool), 1)) {
+        if (verbose) {
+            SDL_Log("sizeof(bool) != 1, instead = %u\n", (unsigned int)sizeof(bool));
+        }
+        ++error;
+    }
     if (badsize(sizeof(Uint8), 1)) {
         if (verbose) {
             SDL_Log("sizeof(Uint8) != 1, instead = %u\n", (unsigned int)sizeof(Uint8));
