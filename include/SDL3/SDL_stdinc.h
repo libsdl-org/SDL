@@ -44,11 +44,13 @@
 #endif
 #include <stdarg.h>
 #ifndef __cplusplus
-#if defined(SDL_DEFINE_STDBOOL) && !defined(__bool_true_false_are_defined)
+#ifdef SDL_DEFINE_STDBOOL
+#ifndef __bool_true_false_are_defined
 #define __bool_true_false_are_defined 1
 #define bool  int8_t
 #define false 0
 #define true  1
+#endif
 #else
 #include <stdbool.h>
 #endif
