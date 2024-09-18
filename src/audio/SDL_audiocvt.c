@@ -1013,7 +1013,7 @@ static bool GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int o
     // Calculate the number of input frames necessary for this request.
     // Because resampling happens "between" frames, The same number of output_frames
     // can require a different number of input_frames, depending on the resample_offset.
-    // Infact, input_frames can sometimes even be zero when upsampling.
+    // In fact, input_frames can sometimes even be zero when upsampling.
     const int input_frames = (int) SDL_GetResamplerInputFrames(output_frames, resample_rate, stream->resample_offset);
 
     const int padding_frames = SDL_GetResamplerPaddingFrames(resample_rate);

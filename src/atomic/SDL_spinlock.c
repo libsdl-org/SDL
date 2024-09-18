@@ -129,14 +129,14 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
 #elif defined(PS2)
     uint32_t oldintr;
     bool res = false;
-    // disable interuption
+    // disable interruption
     oldintr = DIntr();
 
     if (*lock == 0) {
         *lock = 1;
         res = true;
     }
-    // enable interuption
+    // enable interruption
     if (oldintr) {
         EIntr();
     }

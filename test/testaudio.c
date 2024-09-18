@@ -454,11 +454,11 @@ static void PoofThing_ondrag(Thing *thing, int button, float x, float y)
 static void PoofThing_ontick(Thing *thing, Uint64 now)
 {
     const int lifetime = POOF_LIFETIME;
-    const int elasped = (int) (now - thing->createticks);
-    if (elasped > lifetime) {
+    const int elapsed = (int) (now - thing->createticks);
+    if (elapsed > lifetime) {
         DestroyThing(thing);
     } else {
-        const float pct = ((float) elasped) / ((float) lifetime);
+        const float pct = ((float) elapsed) / ((float) lifetime);
         thing->a = (Uint8) (int) (255.0f - (pct * 255.0f));
         thing->scale = 1.0f - pct;  /* shrink to nothing! */
     }
@@ -962,13 +962,13 @@ static void PhysicalDeviceThing_ondrop(Thing *thing, int button, float x, float 
 static void PhysicalDeviceThing_ontick(Thing *thing, Uint64 now)
 {
     const int lifetime = POOF_LIFETIME;
-    const int elasped = (int) (now - thing->createticks);
-    if (elasped > lifetime) {
+    const int elapsed = (int) (now - thing->createticks);
+    if (elapsed > lifetime) {
         thing->scale = 1.0f;
         thing->a = 255;
         thing->ontick = NULL;  /* no more ticking. */
     } else {
-        const float pct = ((float) elasped) / ((float) lifetime);
+        const float pct = ((float) elapsed) / ((float) lifetime);
         thing->a = (Uint8) (int) (pct * 255.0f);
         thing->scale = pct;  /* grow to normal size */
     }

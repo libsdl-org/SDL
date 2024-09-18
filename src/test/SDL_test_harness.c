@@ -523,7 +523,7 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
 
     /* Mix the list of suites to run them in random order */
     {
-        /* Exclude last test "subsystemsTestSuite" which is said to interfer with other tests */
+        /* Exclude last test "subsystemsTestSuite" which is said to interfere with other tests */
         nbSuites--;
 
         if (runner->user.execKey != 0) {

@@ -1048,7 +1048,7 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
             SDL_SendTouch(Wayland_GetTouchTimestamp(input, timestamp), (SDL_TouchID)(uintptr_t)touch,
                           (SDL_FingerID)(id + 1), window_data->sdlwindow, false, x, y, 0.0f);
 
-            /* If the seat lacks pointer focus, the seat's keyboard focus is another window or NULL, this window curently
+            /* If the seat lacks pointer focus, the seat's keyboard focus is another window or NULL, this window currently
              * has mouse focus, and the surface has no active touch events, consider mouse focus to be lost.
              */
             if (!input->pointer_focus && input->keyboard_focus != window_data &&

@@ -195,7 +195,7 @@ SDL_bool SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
 void SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime)
 {
     /* Convert nanoseconds to Win32 ticks.
-     * SDL_Time has a range of roughly 292 years, so even SDL_MIN_TIME can't underflow thw Win32 epoch.
+     * SDL_Time has a range of roughly 292 years, so even SDL_MIN_TIME can't underflow the Win32 epoch.
      */
     const Uint64 wtime = (Uint64)((ticks / 100) + DELTA_EPOCH_1601_100NS);
 
