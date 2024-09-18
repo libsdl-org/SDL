@@ -544,6 +544,8 @@
 		F3FA5A232B59ACE000FEAD97 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FA5A1A2B59ACE000FEAD97 /* yuv_rgb_lsx.c */; };
 		F3FA5A242B59ACE000FEAD97 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1B2B59ACE000FEAD97 /* yuv_rgb_lsx.h */; };
 		F3FA5A252B59ACE000FEAD97 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1C2B59ACE000FEAD97 /* yuv_rgb_common.h */; };
+		F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */; };
+		F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
 /* End PBXBuildFile section */
 
@@ -1115,6 +1117,8 @@
 		F3FA5A1A2B59ACE000FEAD97 /* yuv_rgb_lsx.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yuv_rgb_lsx.c; sourceTree = "<group>"; };
 		F3FA5A1B2B59ACE000FEAD97 /* yuv_rgb_lsx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_lsx.h; sourceTree = "<group>"; };
 		F3FA5A1C2B59ACE000FEAD97 /* yuv_rgb_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_common.h; sourceTree = "<group>"; };
+		F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_hidapi_nintendo.h; sourceTree = "<group>"; };
+		F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_steam_hori.c; sourceTree = "<group>"; };
 		F59C710300D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
@@ -1898,25 +1902,27 @@
 		A7D8A7BE23E2513E00DCD162 /* hidapi */ = {
 			isa = PBXGroup;
 			children = (
-				A797456F2B2E9D39009D224A /* SDL_hidapi_steamdeck.c */,
 				F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */,
 				A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */,
 				F3F07D59269640160074468B /* SDL_hidapi_luna.c */,
+				F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */,
 				F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */,
 				A7D8A7C323E2513E00DCD162 /* SDL_hidapi_ps4.c */,
 				F3A4909D2554D38500E92A8B /* SDL_hidapi_ps5.c */,
-				A75FDBC423EA380300529352 /* SDL_hidapi_rumble.c */,
 				A75FDBC323EA380300529352 /* SDL_hidapi_rumble.h */,
+				A75FDBC423EA380300529352 /* SDL_hidapi_rumble.c */,
 				9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */,
 				F3984CCF25BCC92800374F43 /* SDL_hidapi_stadia.c */,
 				A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */,
+				F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */,
+				A797456F2B2E9D39009D224A /* SDL_hidapi_steamdeck.c */,
 				A7D8A7C623E2513E00DCD162 /* SDL_hidapi_switch.c */,
 				F3D60A8228C16A1800788A3A /* SDL_hidapi_wii.c */,
 				A7D8A7C223E2513E00DCD162 /* SDL_hidapi_xbox360.c */,
 				A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */,
 				A7D8A7C523E2513E00DCD162 /* SDL_hidapi_xboxone.c */,
-				A7D8A7C723E2513E00DCD162 /* SDL_hidapijoystick_c.h */,
 				A7D8A7C423E2513E00DCD162 /* SDL_hidapijoystick.c */,
+				A7D8A7C723E2513E00DCD162 /* SDL_hidapijoystick_c.h */,
 			);
 			path = hidapi;
 			sourceTree = "<group>";
@@ -2671,6 +2677,7 @@
 				A7D8B26023E2514200DCD162 /* vulkan.h in Headers */,
 				A7D8B2B423E2514200DCD162 /* vulkan_android.h in Headers */,
 				A7D8B2A823E2514200DCD162 /* vulkan_core.h in Headers */,
+				F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */,
 				F3A9AE9B2C8A13C100AAC390 /* SDL_pipeline_gpu.h in Headers */,
 				E41D20152BA9577D003073FA /* SDL_storage.h in Headers */,
 				F37E18522BA50E760098C111 /* SDL_dialog.h in Headers */,
@@ -3003,6 +3010,7 @@
 				A7D8B42E23E2514300DCD162 /* SDL_syscond.c in Sources */,
 				A7D8AADA23E2514100DCD162 /* SDL_syshaptic.c in Sources */,
 				A7D8BAE523E2514500DCD162 /* e_exp.c in Sources */,
+				F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */,
 				A7D8BB8123E2514500DCD162 /* SDL_quit.c in Sources */,
 				F3FA5A232B59ACE000FEAD97 /* yuv_rgb_lsx.c in Sources */,
 				A7D8AEA623E2514100DCD162 /* SDL_cocoawindow.m in Sources */,
