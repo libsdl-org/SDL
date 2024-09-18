@@ -281,7 +281,7 @@ A.  sqrt(x) by Newton Iteration
 	This formula has one division fewer than the one above; however,
 	it requires more multiplications and additions. Also x must be
 	scaled in advance to avoid spurious overflow in evaluating the
-	expression 3y*y+x. Hence it is not recommended uless division
+	expression 3y*y+x. Hence it is not recommended unless division
 	is slow. If division is very slow, then one should use the
 	reciproot algorithm given in section B.
 
