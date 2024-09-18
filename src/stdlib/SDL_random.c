@@ -96,7 +96,7 @@ Sint32 SDL_rand_r(Uint64 *state, Sint32 n)
 
     if (n < 0) {
         // The algorithm looks like it works for numbers < 0 but it has an
-        // infintesimal chance of returning a value out of range.
+        // infinitesimal chance of returning a value out of range.
         // Returning -SDL_rand(abs(n)) blows up at INT_MIN instead.
         // It's easier to just say no.
         return 0;
