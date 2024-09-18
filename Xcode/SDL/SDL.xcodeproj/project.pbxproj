@@ -379,7 +379,6 @@
 		E479118F2BA9555500CE3B7F /* SDL_genericstorage.c in Sources */ = {isa = PBXBuildFile; fileRef = E479118A2BA9555500CE3B7F /* SDL_genericstorage.c */; };
 		E4A568B62AF763940062EEC4 /* SDL_sysmain_callbacks.c in Sources */ = {isa = PBXBuildFile; fileRef = E4A568B52AF763940062EEC4 /* SDL_sysmain_callbacks.c */; };
 		E4F257712C818FE200FCEAFC /* SDL_gpu.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F257702C818FE200FCEAFC /* SDL_gpu.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E4F257902C81903800FCEAFC /* compile_shaders.sh in Resources */ = {isa = PBXBuildFile; fileRef = E4F2577D2C81903800FCEAFC /* compile_shaders.sh */; };
 		E4F257912C81903800FCEAFC /* Metal_Blit.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F2577E2C81903800FCEAFC /* Metal_Blit.h */; };
 		E4F257922C81903800FCEAFC /* Metal_Blit.metal in Sources */ = {isa = PBXBuildFile; fileRef = E4F2577F2C81903800FCEAFC /* Metal_Blit.metal */; };
 		E4F257932C81903800FCEAFC /* SDL_gpu_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = E4F257802C81903800FCEAFC /* SDL_gpu_metal.m */; };
@@ -939,7 +938,6 @@
 		E479118A2BA9555500CE3B7F /* SDL_genericstorage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_genericstorage.c; sourceTree = "<group>"; };
 		E4A568B52AF763940062EEC4 /* SDL_sysmain_callbacks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysmain_callbacks.c; sourceTree = "<group>"; };
 		E4F257702C818FE200FCEAFC /* SDL_gpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_gpu.h; path = SDL3/SDL_gpu.h; sourceTree = "<group>"; };
-		E4F2577D2C81903800FCEAFC /* compile_shaders.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = compile_shaders.sh; sourceTree = "<group>"; };
 		E4F2577E2C81903800FCEAFC /* Metal_Blit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Metal_Blit.h; sourceTree = "<group>"; };
 		E4F2577F2C81903800FCEAFC /* Metal_Blit.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Metal_Blit.metal; sourceTree = "<group>"; };
 		E4F257802C81903800FCEAFC /* SDL_gpu_metal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_gpu_metal.m; sourceTree = "<group>"; };
@@ -2303,7 +2301,6 @@
 		E4F257812C81903800FCEAFC /* metal */ = {
 			isa = PBXGroup;
 			children = (
-				E4F2577D2C81903800FCEAFC /* compile_shaders.sh */,
 				E4F2577E2C81903800FCEAFC /* Metal_Blit.h */,
 				E4F2577F2C81903800FCEAFC /* Metal_Blit.metal */,
 				E4F257802C81903800FCEAFC /* SDL_gpu_metal.m */,
@@ -2770,7 +2767,6 @@
 			files = (
 				F37A8E1A28405AA100C38E95 /* CMake in Resources */,
 				A75FDBB823E4CBC700529352 /* ReadMe.txt in Resources */,
-				E4F257902C81903800FCEAFC /* compile_shaders.sh in Resources */,
 				A75FDBB723E4CBC700529352 /* License.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
