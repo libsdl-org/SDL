@@ -2497,11 +2497,11 @@ extern "C" {
  * system while relative mode is active, in case the desired confinement state
  * became out-of-sync due to interference from other running programs.
  *
- * The variable can be integers representing milliseconds between each refresh.
- * A value of zero means SDL will not automatically refresh the confinement.
- * The default value varies depending on the operating system, this variable
- * might not have any effects on inapplicable platforms such as those without
- * a cursor.
+ * The variable can be integers representing milliseconds between each
+ * refresh. A value of zero means SDL will not automatically refresh the
+ * confinement. The default value varies depending on the operating system,
+ * this variable might not have any effects on inapplicable platforms such as
+ * those without a cursor.
  *
  * This hint can be set anytime.
  *
