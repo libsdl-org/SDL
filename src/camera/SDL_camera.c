@@ -116,7 +116,7 @@ bool SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormat format, SDL_
 static bool ZombieWaitDevice(SDL_Camera *device)
 {
     if (!SDL_GetAtomicInt(&device->shutdown)) {
-        // !!! FIXME: this is bad for several reasons (uses double, could be precalculated, doesn't track elasped time).
+        // !!! FIXME: this is bad for several reasons (uses double, could be precalculated, doesn't track elapsed time).
         const double duration = ((double) device->actual_spec.framerate_denominator / ((double) device->actual_spec.framerate_numerator));
         SDL_Delay((Uint32) (duration * 1000.0));
     }
