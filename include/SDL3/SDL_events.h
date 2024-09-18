@@ -327,8 +327,8 @@ typedef struct SDL_KeyboardEvent
     SDL_Keycode key;        /**< SDL virtual key code */
     SDL_Keymod mod;         /**< current key modifiers */
     Uint16 raw;             /**< The platform dependent scancode for this event */
-    SDL_bool down;          /**< SDL_TRUE if the key is pressed */
-    SDL_bool repeat;        /**< SDL_TRUE if this is a key repeat */
+    bool down;          /**< true if the key is pressed */
+    bool repeat;        /**< true if this is a key repeat */
 } SDL_KeyboardEvent;
 
 /**
@@ -365,7 +365,7 @@ typedef struct SDL_TextEditingCandidatesEvent
     const char * const *candidates;    /**< The list of candidates, or NULL if there are no candidates available */
     Sint32 num_candidates;      /**< The number of strings in `candidates` */
     Sint32 selected_candidate;  /**< The index of the selected candidate, or -1 if no candidate is selected */
-    SDL_bool horizontal;          /**< SDL_TRUE if the list is horizontal, SDL_FALSE if it's vertical */
+    bool horizontal;          /**< true if the list is horizontal, false if it's vertical */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
@@ -436,7 +436,7 @@ typedef struct SDL_MouseButtonEvent
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
     SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID */
     Uint8 button;       /**< The mouse button index */
-    SDL_bool down;      /**< SDL_TRUE if the button is pressed */
+    bool down;      /**< true if the button is pressed */
     Uint8 clicks;       /**< 1 for single-click, 2 for double-click, etc. */
     Uint8 padding;
     float x;            /**< X coordinate, relative to window */
@@ -535,7 +535,7 @@ typedef struct SDL_JoyButtonEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 button;       /**< The joystick button index */
-    SDL_bool down;      /**< SDL_TRUE if the button is pressed */
+    bool down;      /**< true if the button is pressed */
     Uint8 padding1;
     Uint8 padding2;
 } SDL_JoyButtonEvent;
@@ -600,7 +600,7 @@ typedef struct SDL_GamepadButtonEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 button;       /**< The gamepad button (SDL_GamepadButton) */
-    SDL_bool down;      /**< SDL_TRUE if the button is pressed */
+    bool down;      /**< true if the button is pressed */
     Uint8 padding1;
     Uint8 padding2;
 } SDL_GamepadButtonEvent;
@@ -664,7 +664,7 @@ typedef struct SDL_AudioDeviceEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_AudioDeviceID which;       /**< SDL_AudioDeviceID for the device being added or removed or changing */
-    SDL_bool recording; /**< SDL_FALSE if a playback device, SDL_TRUE if a recording device. */
+    bool recording; /**< false if a playback device, true if a recording device. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
@@ -768,8 +768,8 @@ typedef struct SDL_PenTouchEvent
     SDL_PenInputFlags pen_state;   /**< Complete pen input state at time of event */
     float x;                /**< X position of pen on tablet */
     float y;                /**< Y position of pen on tablet */
-    SDL_bool eraser;        /**< SDL_TRUE if eraser end is used (not all pens support this). */
-    SDL_bool down;          /**< SDL_TRUE if the pen is touching or SDL_FALSE if the pen is lifted off */
+    bool eraser;        /**< true if eraser end is used (not all pens support this). */
+    bool down;          /**< true if the pen is touching or false if the pen is lifted off */
 } SDL_PenTouchEvent;
 
 /**
@@ -791,7 +791,7 @@ typedef struct SDL_PenButtonEvent
     float x;                /**< X position of pen on tablet */
     float y;                /**< Y position of pen on tablet */
     Uint8 button;       /**< The pen button index (first button is 1). */
-    SDL_bool down;      /**< SDL_TRUE if the button is pressed */
+    bool down;      /**< true if the button is pressed */
 } SDL_PenButtonEvent;
 
 /**
@@ -1052,14 +1052,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event *events, int numevents,
  * instead.
  *
  * \param type the type of event to be queried; see SDL_EventType for details.
- * \returns SDL_TRUE if events matching `type` are present, or SDL_FALSE if
+ * \returns true if events matching `type` are present, or false if
  *          events matching `type` are not present.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasEvents
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasEvent(Uint32 type);
+extern SDL_DECLSPEC bool SDLCALL SDL_HasEvent(Uint32 type);
 
 
 /**
@@ -1071,14 +1071,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasEvent(Uint32 type);
  *                SDL_EventType for details.
  * \param maxType the high end of event type to be queried, inclusive; see
  *                SDL_EventType for details.
- * \returns SDL_TRUE if events with type >= `minType` and <= `maxType` are
- *          present, or SDL_FALSE if not.
+ * \returns true if events with type >= `minType` and <= `maxType` are
+ *          present, or false if not.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasEvents
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasEvents(Uint32 minType, Uint32 maxType);
+extern SDL_DECLSPEC bool SDLCALL SDL_HasEvents(Uint32 minType, Uint32 maxType);
 
 /**
  * Clear events of a specific type from the event queue.
@@ -1165,7 +1165,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType)
  *
  * \param event the SDL_Event structure to be filled with the next event from
  *              the queue, or NULL.
- * \returns SDL_TRUE if this got an event or SDL_FALSE if there are none
+ * \returns true if this got an event or false if there are none
  *          available.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1174,7 +1174,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType)
  * \sa SDL_WaitEvent
  * \sa SDL_WaitEventTimeout
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PollEvent(SDL_Event *event);
+extern SDL_DECLSPEC bool SDLCALL SDL_PollEvent(SDL_Event *event);
 
 /**
  * Wait indefinitely for the next available event.
@@ -1187,7 +1187,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PollEvent(SDL_Event *event);
  *
  * \param event the SDL_Event structure to be filled in with the next event
  *              from the queue, or NULL.
- * \returns SDL_TRUE on success or SDL_FALSE if there was an error while
+ * \returns true on success or false if there was an error while
  *          waiting for events; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1196,7 +1196,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PollEvent(SDL_Event *event);
  * \sa SDL_PushEvent
  * \sa SDL_WaitEventTimeout
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitEvent(SDL_Event *event);
+extern SDL_DECLSPEC bool SDLCALL SDL_WaitEvent(SDL_Event *event);
 
 /**
  * Wait until the specified timeout (in milliseconds) for the next available
@@ -1215,7 +1215,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitEvent(SDL_Event *event);
  *              from the queue, or NULL.
  * \param timeoutMS the maximum number of milliseconds to wait for the next
  *                  available event.
- * \returns SDL_TRUE if this got an event or SDL_FALSE if the timeout elapsed
+ * \returns true if this got an event or false if the timeout elapsed
  *          without any events available.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1224,7 +1224,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitEvent(SDL_Event *event);
  * \sa SDL_PushEvent
  * \sa SDL_WaitEvent
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS);
+extern SDL_DECLSPEC bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS);
 
 /**
  * Add an event to the event queue.
@@ -1248,7 +1248,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint
  * its own custom event types.
  *
  * \param event the SDL_Event to be added to the queue.
- * \returns SDL_TRUE on success, SDL_FALSE if the event was filtered or on
+ * \returns true on success, false if the event was filtered or on
  *          failure; call SDL_GetError() for more information. A common reason
  *          for error is the event queue being full.
  *
@@ -1258,7 +1258,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint
  * \sa SDL_PollEvent
  * \sa SDL_RegisterEvents
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PushEvent(SDL_Event *event);
+extern SDL_DECLSPEC bool SDLCALL SDL_PushEvent(SDL_Event *event);
 
 /**
  * A function pointer used for callbacks that watch the event queue.
@@ -1266,7 +1266,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PushEvent(SDL_Event *event);
  * \param userdata what was passed as `userdata` to SDL_SetEventFilter() or
  *                 SDL_AddEventWatch, etc.
  * \param event the event that triggered the callback.
- * \returns SDL_TRUE to permit event to be added to the queue, and SDL_FALSE
+ * \returns true to permit event to be added to the queue, and false
  *          to disallow it. When used with SDL_AddEventWatch, the return value
  *          is ignored.
  *
@@ -1279,14 +1279,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PushEvent(SDL_Event *event);
  * \sa SDL_SetEventFilter
  * \sa SDL_AddEventWatch
  */
-typedef SDL_bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
+typedef bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
 
 /**
  * Set up a filter to process all events before they change internal state and
  * are posted to the internal event queue.
  *
- * If the filter function returns SDL_TRUE when called, then the event will be
- * added to the internal queue. If it returns SDL_FALSE, then the event will
+ * If the filter function returns true when called, then the event will be
+ * added to the internal queue. If it returns false, then the event will
  * be dropped from the queue, but the internal state will still be updated.
  * This allows selective filtering of dynamically arriving events.
  *
@@ -1338,13 +1338,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetEventFilter(SDL_EventFilter filter, void
  * \param filter the current callback function will be stored here.
  * \param userdata the pointer that is passed to the current event filter will
  *                 be stored here.
- * \returns SDL_TRUE on success or SDL_FALSE if there is no event filter set.
+ * \returns true on success or false if there is no event filter set.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetEventFilter
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata);
 
 /**
  * Add a callback to be triggered when an event is added to the event queue.
@@ -1366,7 +1366,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter,
  *
  * \param filter an SDL_EventFilter function to call when an event happens.
  * \param userdata a pointer that is passed to `filter`.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1376,7 +1376,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter,
  * \sa SDL_RemoveEventWatch
  * \sa SDL_SetEventFilter
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AddEventWatch(SDL_EventFilter filter, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_AddEventWatch(SDL_EventFilter filter, void *userdata);
 
 /**
  * Remove an event watch callback added with SDL_AddEventWatch().
@@ -1395,7 +1395,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_RemoveEventWatch(SDL_EventFilter filter, vo
 
 /**
  * Run a specific filter function on the current event queue, removing any
- * events for which the filter returns SDL_FALSE.
+ * events for which the filter returns false.
  *
  * See SDL_SetEventFilter() for more information. Unlike SDL_SetEventFilter(),
  * this function does not change the filter permanently, it only uses the
@@ -1421,19 +1421,19 @@ extern SDL_DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter, void *
  *
  * \sa SDL_EventEnabled
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SetEventEnabled(Uint32 type, SDL_bool enabled);
+extern SDL_DECLSPEC void SDLCALL SDL_SetEventEnabled(Uint32 type, bool enabled);
 
 /**
  * Query the state of processing events by type.
  *
  * \param type the type of event; see SDL_EventType for details.
- * \returns SDL_TRUE if the event is being processed, SDL_FALSE otherwise.
+ * \returns true if the event is being processed, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetEventEnabled
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_EventEnabled(Uint32 type);
+extern SDL_DECLSPEC bool SDLCALL SDL_EventEnabled(Uint32 type);
 
 /**
  * Allocate a set of user-defined events, and return the beginning event

@@ -23,8 +23,8 @@
 static SDLTest_CommonState *state;
 static int num_sprites;
 static SDL_Texture **sprites;
-static SDL_bool cycle_color;
-static SDL_bool cycle_alpha;
+static bool cycle_color;
+static bool cycle_alpha;
 static int cycle_direction = 1;
 static int current_alpha = 0;
 static int current_color = 0;
@@ -36,7 +36,7 @@ static Uint64 next_fps_check;
 static Uint32 frames;
 static const int fps_check_delay = 5000;
 static int use_rendergeometry = 0;
-static SDL_bool suspend_when_occluded;
+static bool suspend_when_occluded;
 
 /* Number of iterations to move sprites - used for visual tests. */
 /* -1: infinite random moves (default); >=0: enables N deterministic moves */
@@ -56,7 +56,7 @@ static int LoadSprite(const char *file)
 
     for (i = 0; i < state->num_windows; ++i) {
         /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
-        sprites[i] = LoadTexture(state->renderers[i], file, SDL_TRUE, &w, &h);
+        sprites[i] = LoadTexture(state->renderers[i], file, true, &w, &h);
         sprite_w = (float)w;
         sprite_h = (float)h;
         if (!sprites[i]) {
@@ -218,8 +218,8 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
         if (iterations > 0) {
             iterations--;
             if (iterations == 0) {
-                cycle_alpha = SDL_FALSE;
-                cycle_color = SDL_FALSE;
+                cycle_alpha = false;
+                cycle_color = false;
             }
         }
     }
@@ -444,13 +444,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
                     consumed = 2;
                 }
             } else if (SDL_strcasecmp(argv[i], "--cyclecolor") == 0) {
-                cycle_color = SDL_TRUE;
+                cycle_color = true;
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
-                cycle_alpha = SDL_TRUE;
+                cycle_alpha = true;
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
-                suspend_when_occluded = SDL_TRUE;
+                suspend_when_occluded = true;
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--use-rendergeometry") == 0) {
                 if (argv[i + 1]) {

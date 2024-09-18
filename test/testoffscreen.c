@@ -23,7 +23,7 @@
 
 static SDL_Renderer *renderer = NULL;
 static SDL_Window *window = NULL;
-static int done = SDL_FALSE;
+static int done = false;
 static int frame_number = 0;
 static int width = 640;
 static int height = 480;
@@ -69,7 +69,7 @@ static void loop(void)
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
         case SDL_EVENT_QUIT:
-            done = SDL_TRUE;
+            done = true;
             break;
         default:
             break;

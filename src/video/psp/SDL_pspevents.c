@@ -107,7 +107,7 @@ void PSP_PumpEvents(SDL_VideoDevice *_this)
                 count = length / sizeof(SIrKeybScanCodeData);
                 for (i = 0; i < count; i++) {
                     unsigned char raw;
-                    SDL_bool down;
+                    bool down;
                     scanData = (SIrKeybScanCodeData *)buffer + i;
                     raw = scanData->raw;
                     down = (scanData->pressed != 0);

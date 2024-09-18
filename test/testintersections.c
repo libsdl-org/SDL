@@ -29,8 +29,8 @@
 
 static SDLTest_CommonState *state;
 static int num_objects;
-static SDL_bool cycle_color;
-static SDL_bool cycle_alpha;
+static bool cycle_color;
+static bool cycle_alpha;
 static int cycle_direction = 1;
 static int current_alpha = 255;
 static int current_color = 255;
@@ -327,10 +327,10 @@ int main(int argc, char *argv[])
                     }
                 }
             } else if (SDL_strcasecmp(argv[i], "--cyclecolor") == 0) {
-                cycle_color = SDL_TRUE;
+                cycle_color = true;
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
-                cycle_alpha = SDL_TRUE;
+                cycle_alpha = true;
                 consumed = 1;
             } else if (num_objects < 0 && SDL_isdigit(*argv[i])) {
                 char *endptr = NULL;

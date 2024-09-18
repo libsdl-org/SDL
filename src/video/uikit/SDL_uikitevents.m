@@ -119,7 +119,7 @@ void SDL_UpdateLifecycleObserver(void)
     [lifecycleObserver update];
 }
 
-void SDL_SetiOSEventPump(SDL_bool enabled)
+void SDL_SetiOSEventPump(bool enabled)
 {
     UIKit_EventPumpEnabled = enabled;
 

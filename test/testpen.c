@@ -23,8 +23,8 @@ typedef struct Pen
     float x;
     float y;
     Uint32 buttons;
-    SDL_bool eraser;
-    SDL_bool touching;
+    bool eraser;
+    bool touching;
     struct Pen *next;
 } Pen;
 
@@ -150,7 +150,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             /*SDL_Log("Pen %" SDL_PRIu32 " down!", event->ptouch.which);*/
             pen = FindPen(event->ptouch.which);
             if (pen) {
-                pen->touching = SDL_TRUE;
+                pen->touching = true;
                 pen->eraser = (event->ptouch.eraser != 0);
             }
             return SDL_APP_CONTINUE;
@@ -159,7 +159,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             /*SDL_Log("Pen %" SDL_PRIu32 " up!", event->ptouch.which);*/
             pen = FindPen(event->ptouch.which);
             if (pen) {
-                pen->touching = SDL_FALSE;
+                pen->touching = false;
                 pen->axes[SDL_PEN_AXIS_PRESSURE] = 0.0f;
             }
             return SDL_APP_CONTINUE;

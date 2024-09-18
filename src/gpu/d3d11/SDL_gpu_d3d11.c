@@ -6008,7 +6008,7 @@ static void D3D11_INTERNAL_InitBlitPipelines(
     blitPipelineCreateInfo.fragment_shader = blitFrom2DPixelShader;
 
     blitPipelineCreateInfo.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    blitPipelineCreateInfo.multisample_state.enable_mask = SDL_FALSE;
+    blitPipelineCreateInfo.multisample_state.enable_mask = false;
 
     blitPipelineCreateInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 

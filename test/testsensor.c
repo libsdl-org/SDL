@@ -108,7 +108,7 @@ int main(int argc, char **argv)
     SDL_Log("Opened %d sensors\n", num_opened);
 
     if (num_opened > 0) {
-        SDL_bool done = SDL_FALSE;
+        bool done = false;
         SDL_Event event;
 
         SDL_CreateWindow("Sensor Test", 0, 0, SDL_WINDOW_FULLSCREEN);
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
                 case SDL_EVENT_MOUSE_BUTTON_UP:
                 case SDL_EVENT_KEY_UP:
                 case SDL_EVENT_QUIT:
-                    done = SDL_TRUE;
+                    done = true;
                     break;
                 default:
                     break;

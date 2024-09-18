@@ -23,7 +23,7 @@
 #include "SDL_sysprocess.h"
 
 
-SDL_Process *SDL_CreateProcess(const char * const *args, SDL_bool pipe_stdio)
+SDL_Process *SDL_CreateProcess(const char * const *args, bool pipe_stdio)
 {
     if (!args || !args[0] || !args[0][0]) {
         SDL_InvalidParamError("args");
@@ -140,7 +140,7 @@ SDL_IOStream *SDL_GetProcessOutput(SDL_Process *process)
     return io;
 }
 
-SDL_bool SDL_KillProcess(SDL_Process *process, SDL_bool force)
+bool SDL_KillProcess(SDL_Process *process, bool force)
 {
     if (!process) {
         return SDL_InvalidParamError("process");
@@ -153,7 +153,7 @@ SDL_bool SDL_KillProcess(SDL_Process *process, SDL_bool force)
     return SDL_SYS_KillProcess(process, force);
 }
 
-SDL_bool SDL_WaitProcess(SDL_Process *process, SDL_bool block, int *exitcode)
+bool SDL_WaitProcess(SDL_Process *process, bool block, int *exitcode)
 {
     if (!process) {
         return SDL_InvalidParamError("process");

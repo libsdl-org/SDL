@@ -178,7 +178,7 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
 #endif // defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_IOS)
 }
 
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
+void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
 {
     show_file_dialog(FDT_OPEN, callback, userdata, window, filters, nfilters, default_location, allow_many);
 }
@@ -188,7 +188,7 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
     show_file_dialog(FDT_SAVE, callback, userdata, window, filters, nfilters, default_location, 0);
 }
 
-void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many)
+void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many)
 {
     show_file_dialog(FDT_OPENFOLDER, callback, userdata, window, NULL, 0, default_location, allow_many);
 }

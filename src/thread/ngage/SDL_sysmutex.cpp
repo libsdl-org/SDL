@@ -78,7 +78,7 @@ void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang does
 
 // Try to lock the mutex
 #if 0
-SDL_bool SDL_TryLockMutex(SDL_Mutex *mutex)
+bool SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
         // Not yet implemented.

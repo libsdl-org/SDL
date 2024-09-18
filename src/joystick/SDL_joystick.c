@@ -696,7 +696,7 @@ bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, Uint1
     return result;
 }
 
-SDL_bool SDL_HasJoystick(void)
+bool SDL_HasJoystick(void)
 {
     int i;
     int total_joysticks = 0;
@@ -1127,7 +1127,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
         joystick->hats = (Uint8 *)SDL_calloc(joystick->nhats, sizeof(*joystick->hats));
     }
     if (joystick->nbuttons > 0) {
-        joystick->buttons = (SDL_bool *)SDL_calloc(joystick->nbuttons, sizeof(*joystick->buttons));
+        joystick->buttons = (bool *)SDL_calloc(joystick->nbuttons, sizeof(*joystick->buttons));
     }
     if (((joystick->naxes > 0) && !joystick->axes) ||
         ((joystick->nballs > 0) && !joystick->balls) ||
@@ -1186,7 +1186,7 @@ SDL_JoystickID SDL_AttachVirtualJoystick(const SDL_VirtualJoystickDesc *desc)
 #endif
 }
 
-SDL_bool SDL_DetachVirtualJoystick(SDL_JoystickID instance_id)
+bool SDL_DetachVirtualJoystick(SDL_JoystickID instance_id)
 {
 #ifdef SDL_JOYSTICK_VIRTUAL
     bool result;
@@ -1200,7 +1200,7 @@ SDL_bool SDL_DetachVirtualJoystick(SDL_JoystickID instance_id)
 #endif
 }
 
-SDL_bool SDL_IsJoystickVirtual(SDL_JoystickID instance_id)
+bool SDL_IsJoystickVirtual(SDL_JoystickID instance_id)
 {
 #ifdef SDL_JOYSTICK_VIRTUAL
     SDL_JoystickDriver *driver;
@@ -1221,7 +1221,7 @@ SDL_bool SDL_IsJoystickVirtual(SDL_JoystickID instance_id)
 #endif
 }
 
-SDL_bool SDL_SetJoystickVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 value)
+bool SDL_SetJoystickVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 value)
 {
     bool result;
 
@@ -1240,7 +1240,7 @@ SDL_bool SDL_SetJoystickVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 val
     return result;
 }
 
-SDL_bool SDL_SetJoystickVirtualBall(SDL_Joystick *joystick, int ball, Sint16 xrel, Sint16 yrel)
+bool SDL_SetJoystickVirtualBall(SDL_Joystick *joystick, int ball, Sint16 xrel, Sint16 yrel)
 {
     bool result;
 
@@ -1259,7 +1259,7 @@ SDL_bool SDL_SetJoystickVirtualBall(SDL_Joystick *joystick, int ball, Sint16 xre
     return result;
 }
 
-SDL_bool SDL_SetJoystickVirtualButton(SDL_Joystick *joystick, int button, SDL_bool down)
+bool SDL_SetJoystickVirtualButton(SDL_Joystick *joystick, int button, bool down)
 {
     bool result;
 
@@ -1278,7 +1278,7 @@ SDL_bool SDL_SetJoystickVirtualButton(SDL_Joystick *joystick, int button, SDL_bo
     return result;
 }
 
-SDL_bool SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value)
+bool SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value)
 {
     bool result;
 
@@ -1297,7 +1297,7 @@ SDL_bool SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value)
     return result;
 }
 
-SDL_bool SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystick, int touchpad, int finger, SDL_bool down, float x, float y, float pressure)
+bool SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystick, int touchpad, int finger, bool down, float x, float y, float pressure)
 {
     bool result;
 
@@ -1316,7 +1316,7 @@ SDL_bool SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystick, int touchpad, in
     return result;
 }
 
-SDL_bool SDL_SendJoystickVirtualSensorData(SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values)
+bool SDL_SendJoystickVirtualSensorData(SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values)
 {
     bool result;
 
@@ -1449,7 +1449,7 @@ Sint16 SDL_GetJoystickAxis(SDL_Joystick *joystick, int axis)
 /*
  * Get the initial state of an axis control on a joystick
  */
-SDL_bool SDL_GetJoystickAxisInitialState(SDL_Joystick *joystick, int axis, Sint16 *state)
+bool SDL_GetJoystickAxisInitialState(SDL_Joystick *joystick, int axis, Sint16 *state)
 {
     bool result;
 
@@ -1498,7 +1498,7 @@ Uint8 SDL_GetJoystickHat(SDL_Joystick *joystick, int hat)
 /*
  * Get the ball axis change since the last poll
  */
-SDL_bool SDL_GetJoystickBall(SDL_Joystick *joystick, int ball, int *dx, int *dy)
+bool SDL_GetJoystickBall(SDL_Joystick *joystick, int ball, int *dx, int *dy)
 {
     bool result;
 
@@ -1528,7 +1528,7 @@ SDL_bool SDL_GetJoystickBall(SDL_Joystick *joystick, int ball, int *dx, int *dy)
 /*
  * Get the current state of a button on a joystick
  */
-SDL_bool SDL_GetJoystickButton(SDL_Joystick *joystick, int button)
+bool SDL_GetJoystickButton(SDL_Joystick *joystick, int button)
 {
     bool down = false;
 
@@ -1551,7 +1551,7 @@ SDL_bool SDL_GetJoystickButton(SDL_Joystick *joystick, int button)
  * Return if the joystick in question is currently attached to the system,
  *  \return false if not plugged in, true if still present.
  */
-SDL_bool SDL_JoystickConnected(SDL_Joystick *joystick)
+bool SDL_JoystickConnected(SDL_Joystick *joystick)
 {
     bool result;
 
@@ -1709,7 +1709,7 @@ int SDL_GetJoystickPlayerIndex(SDL_Joystick *joystick)
 /**
  *  Set the player index of an opened joystick
  */
-SDL_bool SDL_SetJoystickPlayerIndex(SDL_Joystick *joystick, int player_index)
+bool SDL_SetJoystickPlayerIndex(SDL_Joystick *joystick, int player_index)
 {
     bool result;
 
@@ -1724,7 +1724,7 @@ SDL_bool SDL_SetJoystickPlayerIndex(SDL_Joystick *joystick, int player_index)
     return result;
 }
 
-SDL_bool SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+bool SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
     bool result;
 
@@ -1768,7 +1768,7 @@ SDL_bool SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble,
     return result;
 }
 
-SDL_bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
+bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
 {
     bool result;
 
@@ -1799,7 +1799,7 @@ SDL_bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, 
     return result;
 }
 
-SDL_bool SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+bool SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     bool result;
     bool isfreshvalue;
@@ -1830,7 +1830,7 @@ SDL_bool SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint
     return result;
 }
 
-SDL_bool SDL_SendJoystickEffect(SDL_Joystick *joystick, const void *data, int size)
+bool SDL_SendJoystickEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     bool result;
 
@@ -2463,7 +2463,7 @@ static const Uint32 SDL_joystick_event_list[] = {
     SDL_EVENT_JOYSTICK_BATTERY_UPDATED
 };
 
-void SDL_SetJoystickEventsEnabled(SDL_bool enabled)
+void SDL_SetJoystickEventsEnabled(bool enabled)
 {
     unsigned int i;
 
@@ -2472,7 +2472,7 @@ void SDL_SetJoystickEventsEnabled(SDL_bool enabled)
     }
 }
 
-SDL_bool SDL_JoystickEventsEnabled(void)
+bool SDL_JoystickEventsEnabled(void)
 {
     bool enabled = false;
     unsigned int i;

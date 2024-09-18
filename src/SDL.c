@@ -110,7 +110,7 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
 
 // App metadata
 
-SDL_bool SDL_SetAppMetadata(const char *appname, const char *appversion, const char *appidentifier)
+bool SDL_SetAppMetadata(const char *appname, const char *appversion, const char *appidentifier)
 {
     SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, appname);
     SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, appversion);
@@ -136,7 +136,7 @@ static bool SDL_ValidMetadataProperty(const char *name)
     return false;
 }
 
-SDL_bool SDL_SetAppMetadataProperty(const char *name, const char *value)
+bool SDL_SetAppMetadataProperty(const char *name, const char *value)
 {
     if (!SDL_ValidMetadataProperty(name)) {
         return SDL_InvalidParamError("name");
@@ -264,7 +264,7 @@ static void SDL_QuitMainThread(void)
     SDL_QuitTLSData();
 }
 
-SDL_bool SDL_InitSubSystem(SDL_InitFlags flags)
+bool SDL_InitSubSystem(SDL_InitFlags flags)
 {
     Uint32 flags_initialized = 0;
 
@@ -471,7 +471,7 @@ quit_and_error:
     return false;
 }
 
-SDL_bool SDL_Init(SDL_InitFlags flags)
+bool SDL_Init(SDL_InitFlags flags)
 {
     return SDL_InitSubSystem(flags);
 }
@@ -707,7 +707,7 @@ const char *SDL_GetPlatform(void)
 #endif
 }
 
-SDL_bool SDL_IsTablet(void)
+bool SDL_IsTablet(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
     extern bool SDL_IsAndroidTablet(void);

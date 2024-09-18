@@ -363,7 +363,7 @@ static void SDL_PrivateGamepadRemapped(SDL_JoystickID instance_id)
 /*
  * Event filter to fire gamepad events from joystick ones
  */
-static SDL_bool SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
+static bool SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
 {
     SDL_Gamepad *gamepad;
 
@@ -1799,7 +1799,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id
 /*
  * Add or update an entry into the Mappings Database
  */
-int SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, SDL_bool closeio)
+int SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, bool closeio)
 {
     const char *platform = SDL_GetPlatform();
     int gamepads = 0;
@@ -1859,7 +1859,7 @@ int SDL_AddGamepadMappingsFromFile(const char *file)
     return SDL_AddGamepadMappingsFromIO(SDL_IOFromFile(file, "rb"), true);
 }
 
-SDL_bool SDL_ReloadGamepadMappings(void)
+bool SDL_ReloadGamepadMappings(void)
 {
     SDL_Gamepad *gamepad;
 
@@ -2245,7 +2245,7 @@ char *SDL_GetGamepadMapping(SDL_Gamepad *gamepad)
 /*
  * Set the mapping string for this device
  */
-SDL_bool SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping)
+bool SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping)
 {
     SDL_GUID guid = SDL_GetJoystickGUIDForID(instance_id);
     bool result = false;
@@ -2380,7 +2380,7 @@ bool SDL_InitGamepads(void)
     return true;
 }
 
-SDL_bool SDL_HasGamepad(void)
+bool SDL_HasGamepad(void)
 {
     int num_joysticks = 0;
     int num_gamepads = 0;
@@ -2562,7 +2562,7 @@ bool SDL_IsGamepadNameAndGUID(const char *name, SDL_GUID guid)
 /*
  * Return 1 if the joystick at this device index is a supported gamepad
  */
-SDL_bool SDL_IsGamepad(SDL_JoystickID instance_id)
+bool SDL_IsGamepad(SDL_JoystickID instance_id)
 {
     bool result;
 
@@ -2751,7 +2751,7 @@ void SDL_UpdateGamepads(void)
 /**
  *  Return whether a gamepad has a given axis
  */
-SDL_bool SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
+bool SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
     bool result = false;
 
@@ -2841,7 +2841,7 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 /**
  *  Return whether a gamepad has a given button
  */
-SDL_bool SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
+bool SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
     bool result = false;
 
@@ -2867,7 +2867,7 @@ SDL_bool SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 /*
  * Get the current state of a button on a gamepad
  */
-SDL_bool SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
+bool SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
     bool result = false;
 
@@ -3053,7 +3053,7 @@ int SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *gamepad, int touchpad)
 /**
  *  Get the current state of a finger on a touchpad on a gamepad.
  */
-SDL_bool SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger, SDL_bool *down, float *x, float *y, float *pressure)
+bool SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger, bool *down, float *x, float *y, float *pressure)
 {
     bool result = false;
 
@@ -3095,7 +3095,7 @@ SDL_bool SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int fi
 /**
  *  Return whether a gamepad has a particular sensor.
  */
-SDL_bool SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_SensorType type)
+bool SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
     bool result = false;
 
@@ -3120,7 +3120,7 @@ SDL_bool SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_SensorType type)
 /*
  *  Set whether data reporting for a gamepad sensor is enabled
  */
-SDL_bool SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_bool enabled)
+bool SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, bool enabled)
 {
     SDL_LockJoysticks();
     {
@@ -3131,7 +3131,7 @@ SDL_bool SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, 
                 SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
 
                 if (sensor->type == type) {
-                    if (sensor->enabled == (enabled != SDL_FALSE)) {
+                    if (sensor->enabled == (enabled != false)) {
                         SDL_UnlockJoysticks();
                         return true;
                     }
@@ -3197,7 +3197,7 @@ SDL_bool SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, 
 /*
  *  Query whether sensor data reporting is enabled for a gamepad
  */
-SDL_bool SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
+bool SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
     bool result = false;
 
@@ -3249,7 +3249,7 @@ float SDL_GetGamepadSensorDataRate(SDL_Gamepad *gamepad, SDL_SensorType type)
 /*
  *  Get the current state of a gamepad sensor.
  */
-SDL_bool SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values)
+bool SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values)
 {
     SDL_LockJoysticks();
     {
@@ -3372,7 +3372,7 @@ int SDL_GetGamepadPlayerIndex(SDL_Gamepad *gamepad)
 /**
  *  Set the player index of an opened gamepad
  */
-SDL_bool SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index)
+bool SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3476,7 +3476,7 @@ SDL_PowerState SDL_GetGamepadPowerInfo(SDL_Gamepad *gamepad, int *percent)
  * Return if the gamepad in question is currently attached to the system,
  *  \return 0 if not plugged in, 1 if still present.
  */
-SDL_bool SDL_GamepadConnected(SDL_Gamepad *gamepad)
+bool SDL_GamepadConnected(SDL_Gamepad *gamepad)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3580,7 +3580,7 @@ SDL_GamepadBinding **SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count)
     return bindings;
 }
 
-SDL_bool SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+bool SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3590,7 +3590,7 @@ SDL_bool SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Ui
     return SDL_RumbleJoystick(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
 }
 
-SDL_bool SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
+bool SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3600,7 +3600,7 @@ SDL_bool SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uin
     return SDL_RumbleJoystickTriggers(joystick, left_rumble, right_rumble, duration_ms);
 }
 
-SDL_bool SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue)
+bool SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3610,7 +3610,7 @@ SDL_bool SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 b
     return SDL_SetJoystickLED(joystick, red, green, blue);
 }
 
-SDL_bool SDL_SendGamepadEffect(SDL_Gamepad *gamepad, const void *data, int size)
+bool SDL_SendGamepadEffect(SDL_Gamepad *gamepad, const void *data, int size)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3788,7 +3788,7 @@ static const Uint32 SDL_gamepad_event_list[] = {
     SDL_EVENT_GAMEPAD_SENSOR_UPDATE,
 };
 
-void SDL_SetGamepadEventsEnabled(SDL_bool enabled)
+void SDL_SetGamepadEventsEnabled(bool enabled)
 {
     unsigned int i;
 
@@ -3797,7 +3797,7 @@ void SDL_SetGamepadEventsEnabled(SDL_bool enabled)
     }
 }
 
-SDL_bool SDL_GamepadEventsEnabled(void)
+bool SDL_GamepadEventsEnabled(void)
 {
     bool enabled = false;
     unsigned int i;

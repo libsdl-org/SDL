@@ -69,7 +69,7 @@ static void SDL_DispatchMainCallbackEvents(void)
     }
 }
 
-static SDL_bool SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *event)
+static bool SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *event)
 {
     if (ShouldDispatchImmediately(event)) {
         // Make sure any currently queued events are processed then dispatch this before continuing

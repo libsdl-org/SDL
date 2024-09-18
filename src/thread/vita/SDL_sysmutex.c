@@ -68,7 +68,7 @@ void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doe
     }
 }
 
-SDL_bool SDL_TryLockMutex(SDL_Mutex *mutex)
+bool SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     bool result = true;
 

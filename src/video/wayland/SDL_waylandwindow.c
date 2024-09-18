@@ -1587,11 +1587,11 @@ bool Wayland_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Win
     SDL_WindowData *child_data = window->internal;
     SDL_WindowData *parent_data = parent_window ? parent_window->internal : NULL;
 
-    child_data->reparenting_required = SDL_FALSE;
+    child_data->reparenting_required = false;
 
     if (parent_data && parent_data->surface_status != WAYLAND_SURFACE_STATUS_SHOWN) {
         // Need to wait for the parent to become mapped, or it's the same as setting a null parent.
-        child_data->reparenting_required = SDL_TRUE;
+        child_data->reparenting_required = true;
         return true;
     }
 
@@ -2719,7 +2719,7 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
         return SDL_SetError("wayland: failed to allocate SHM buffer for the icon");
     }
 
-    SDL_PremultiplyAlpha(icon->w, icon->h, icon->format, icon->pixels, icon->pitch, SDL_PIXELFORMAT_ARGB8888, wind->icon.shm_data, icon->w * 4, SDL_TRUE);
+    SDL_PremultiplyAlpha(icon->w, icon->h, icon->format, icon->pixels, icon->pitch, SDL_PIXELFORMAT_ARGB8888, wind->icon.shm_data, icon->w * 4, true);
 
     wind->xdg_toplevel_icon_v1 = xdg_toplevel_icon_manager_v1_create_icon(_this->internal->xdg_toplevel_icon_manager_v1);
     xdg_toplevel_icon_v1_add_buffer(wind->xdg_toplevel_icon_v1, wind->icon.wl_buffer, 1);

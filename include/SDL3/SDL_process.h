@@ -67,7 +67,7 @@ typedef struct SDL_Process SDL_Process;
  * const char *args[] = { "myprogram", "argument", NULL };
  * ```
  *
- * Setting pipe_stdio to SDL_TRUE is equivalent to setting
+ * Setting pipe_stdio to true is equivalent to setting
  * `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER` and
  * `SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER` to `SDL_PROCESS_STDIO_APP`, and
  * will allow the use of SDL_ReadProcess() or SDL_GetProcessInput() and
@@ -76,8 +76,8 @@ typedef struct SDL_Process SDL_Process;
  * See SDL_CreateProcessWithProperties() for more details.
  *
  * \param args the path and arguments for the new process.
- * \param pipe_stdio SDL_TRUE to create pipes to the process's standard input
- *                   and from the process's standard output, SDL_FALSE for the
+ * \param pipe_stdio true to create pipes to the process's standard input
+ *                   and from the process's standard output, false for the
  *                   process to have no input and inherit the application's
  *                   standard output.
  * \returns the newly created and running process, or NULL if the process
@@ -96,7 +96,7 @@ typedef struct SDL_Process SDL_Process;
  * \sa SDL_WaitProcess
  * \sa SDL_DestroyProcess
  */
-extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcess(const char * const *args, SDL_bool pipe_stdio);
+extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcess(const char * const *args, bool pipe_stdio);
 
 /**
  * Description of where standard I/O should be directed when creating a
@@ -286,7 +286,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_ReadProcess(SDL_Process *process, size_t 
  * Get the SDL_IOStream associated with process standard input.
  *
  * The process must have been created with SDL_CreateProcess() and pipe_stdio
- * set to SDL_TRUE, or with SDL_CreateProcessWithProperties() and
+ * set to true, or with SDL_CreateProcessWithProperties() and
  * `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER` set to `SDL_PROCESS_STDIO_APP`.
  *
  * Writing to this stream can return less data than expected if the process
@@ -312,7 +312,7 @@ extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessInput(SDL_Process *proce
  * Get the SDL_IOStream associated with process standard output.
  *
  * The process must have been created with SDL_CreateProcess() and pipe_stdio
- * set to SDL_TRUE, or with SDL_CreateProcessWithProperties() and
+ * set to true, or with SDL_CreateProcessWithProperties() and
  * `SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER` set to `SDL_PROCESS_STDIO_APP`.
  *
  * Reading from this stream can return 0 with SDL_GetIOStatus() returning
@@ -336,12 +336,12 @@ extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessOutput(SDL_Process *proc
  * Stop a process.
  *
  * \param process The process to stop.
- * \param force SDL_TRUE to terminate the process immediately, SDL_FALSE to
+ * \param force true to terminate the process immediately, false to
  *              try to stop the process gracefully. In general you should try
  *              to stop the process gracefully first as terminating a process
  *              may leave it with half-written data or in some other unstable
  *              state.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -353,7 +353,7 @@ extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessOutput(SDL_Process *proc
  * \sa SDL_WaitProcess
  * \sa SDL_DestroyProcess
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_KillProcess(SDL_Process *process, SDL_bool force);
+extern SDL_DECLSPEC bool SDLCALL SDL_KillProcess(SDL_Process *process, bool force);
 
 /**
  * Wait for a process to finish.
@@ -369,7 +369,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_KillProcess(SDL_Process *process, SDL_b
  *              on the process' status.
  * \param exitcode a pointer filled in with the process exit code if the
  *                 process has exited, may be NULL.
- * \returns SDL_TRUE if the process exited, SDL_FALSE otherwise.
+ * \returns true if the process exited, false otherwise.
  *
  * \threadsafety This function is not thread safe.
  *
@@ -380,7 +380,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_KillProcess(SDL_Process *process, SDL_b
  * \sa SDL_KillProcess
  * \sa SDL_DestroyProcess
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitProcess(SDL_Process *process, SDL_bool block, int *exitcode);
+extern SDL_DECLSPEC bool SDLCALL SDL_WaitProcess(SDL_Process *process, bool block, int *exitcode);
 
 /**
  * Destroy a previously created process object.

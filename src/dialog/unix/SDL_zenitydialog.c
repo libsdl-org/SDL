@@ -213,12 +213,12 @@ static void run_zenity(zenityArgs* arg_struct)
 
     /* Recent versions of Zenity have different exit codes, but picks up
       different codes from the environment */
-    SDL_SetEnvironmentVariable(env, "ZENITY_OK", "0", SDL_TRUE);
-    SDL_SetEnvironmentVariable(env, "ZENITY_CANCEL", "1", SDL_TRUE);
-    SDL_SetEnvironmentVariable(env, "ZENITY_ESC", "1", SDL_TRUE);
-    SDL_SetEnvironmentVariable(env, "ZENITY_EXTRA", "2", SDL_TRUE);
-    SDL_SetEnvironmentVariable(env, "ZENITY_ERROR", "2", SDL_TRUE);
-    SDL_SetEnvironmentVariable(env, "ZENITY_TIMEOUT", "2", SDL_TRUE);
+    SDL_SetEnvironmentVariable(env, "ZENITY_OK", "0", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_CANCEL", "1", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_ESC", "1", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_EXTRA", "2", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_ERROR", "2", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_TIMEOUT", "2", true);
 
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args);

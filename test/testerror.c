@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     SDL_Thread *thread;
     SDLTest_CommonState *state;
     int i;
-    SDL_bool enable_threads = SDL_TRUE;
+    bool enable_threads = true;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
         if (consumed == 0) {
             consumed = -1;
             if (SDL_strcasecmp(argv[i], "--no-threads") == 0) {
-                enable_threads = SDL_FALSE;
+                enable_threads = false;
                 consumed = 1;
             }
         }

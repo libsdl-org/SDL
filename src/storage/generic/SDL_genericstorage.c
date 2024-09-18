@@ -38,13 +38,13 @@ static char *GENERIC_INTERNAL_CreateFullPath(const char *base, const char *relat
     return result;
 }
 
-static SDL_bool GENERIC_CloseStorage(void *userdata)
+static bool GENERIC_CloseStorage(void *userdata)
 {
     SDL_free(userdata);
     return true;
 }
 
-static SDL_bool GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata)
+static bool GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata)
 {
     bool result = false;
 
@@ -57,7 +57,7 @@ static SDL_bool GENERIC_EnumerateStorageDirectory(void *userdata, const char *pa
     return result;
 }
 
-static SDL_bool GENERIC_GetStoragePathInfo(void *userdata, const char *path, SDL_PathInfo *info)
+static bool GENERIC_GetStoragePathInfo(void *userdata, const char *path, SDL_PathInfo *info)
 {
     bool result = false;
 
@@ -70,7 +70,7 @@ static SDL_bool GENERIC_GetStoragePathInfo(void *userdata, const char *path, SDL
     return result;
 }
 
-static SDL_bool GENERIC_ReadStorageFile(void *userdata, const char *path, void *destination, Uint64 length)
+static bool GENERIC_ReadStorageFile(void *userdata, const char *path, void *destination, Uint64 length)
 {
     bool result = false;
 
@@ -93,7 +93,7 @@ static SDL_bool GENERIC_ReadStorageFile(void *userdata, const char *path, void *
     return result;
 }
 
-static SDL_bool GENERIC_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
+static bool GENERIC_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
 {
     // TODO: Recursively create subdirectories with SDL_CreateDirectory
     bool result = false;
@@ -118,7 +118,7 @@ static SDL_bool GENERIC_WriteStorageFile(void *userdata, const char *path, const
     return result;
 }
 
-static SDL_bool GENERIC_CreateStorageDirectory(void *userdata, const char *path)
+static bool GENERIC_CreateStorageDirectory(void *userdata, const char *path)
 {
     // TODO: Recursively create subdirectories with SDL_CreateDirectory
     bool result = false;
@@ -132,7 +132,7 @@ static SDL_bool GENERIC_CreateStorageDirectory(void *userdata, const char *path)
     return result;
 }
 
-static SDL_bool GENERIC_RemoveStoragePath(void *userdata, const char *path)
+static bool GENERIC_RemoveStoragePath(void *userdata, const char *path)
 {
     bool result = false;
 
@@ -145,7 +145,7 @@ static SDL_bool GENERIC_RemoveStoragePath(void *userdata, const char *path)
     return result;
 }
 
-static SDL_bool GENERIC_RenameStoragePath(void *userdata, const char *oldpath, const char *newpath)
+static bool GENERIC_RenameStoragePath(void *userdata, const char *oldpath, const char *newpath)
 {
     bool result = false;
 
@@ -160,7 +160,7 @@ static SDL_bool GENERIC_RenameStoragePath(void *userdata, const char *oldpath, c
     return result;
 }
 
-static SDL_bool GENERIC_CopyStorageFile(void *userdata, const char *oldpath, const char *newpath)
+static bool GENERIC_CopyStorageFile(void *userdata, const char *oldpath, const char *newpath)
 {
     bool result = false;
 

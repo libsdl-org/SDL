@@ -24,7 +24,7 @@
 
 #if defined(SDL_PLATFORM_WINDOWS)
 
-SDL_bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
     (void)name;
     (void)style;
@@ -42,8 +42,8 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
 
 #endif // defined(SDL_PLATFORM_WINDOWS)
 
-SDL_DECLSPEC SDL_bool SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
-SDL_bool SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
+SDL_DECLSPEC bool SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
+bool SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
     (void)displayID;
     (void)adapterIndex;
@@ -95,8 +95,8 @@ void SDL_OnApplicationDidChangeStatusBarOrientation(void)
 #ifndef SDL_VIDEO_DRIVER_UIKIT
 
 typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
-SDL_DECLSPEC SDL_bool SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
-SDL_bool SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam)
+SDL_DECLSPEC bool SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
+bool SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam)
 {
     (void)window;
     (void)interval;
@@ -105,8 +105,8 @@ SDL_bool SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAn
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(SDL_bool enabled);
-void SDL_SetiOSEventPump(SDL_bool enabled)
+SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(bool enabled);
+void SDL_SetiOSEventPump(bool enabled)
 {
     (void)enabled;
     SDL_Unsupported();

@@ -1103,12 +1103,12 @@ int SDL_PeepEvents(SDL_Event *events, int numevents, SDL_EventAction action,
     return SDL_PeepEventsInternal(events, numevents, action, minType, maxType, false);
 }
 
-SDL_bool SDL_HasEvent(Uint32 type)
+bool SDL_HasEvent(Uint32 type)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type) > 0;
 }
 
-SDL_bool SDL_HasEvents(Uint32 minType, Uint32 maxType)
+bool SDL_HasEvents(Uint32 minType, Uint32 maxType)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, minType, maxType) > 0;
 }
@@ -1215,7 +1215,7 @@ void SDL_PumpEvents(void)
 
 // Public functions
 
-SDL_bool SDL_PollEvent(SDL_Event *event)
+bool SDL_PollEvent(SDL_Event *event)
 {
     return SDL_WaitEventTimeoutNS(event, 0);
 }
@@ -1330,12 +1330,12 @@ static SDL_Window *SDL_find_active_window(SDL_VideoDevice *_this)
 
 #endif // !SDL_PLATFORM_ANDROID
 
-SDL_bool SDL_WaitEvent(SDL_Event *event)
+bool SDL_WaitEvent(SDL_Event *event)
 {
     return SDL_WaitEventTimeoutNS(event, -1);
 }
 
-SDL_bool SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
+bool SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
 {
     Sint64 timeoutNS;
 
@@ -1347,7 +1347,7 @@ SDL_bool SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
     return SDL_WaitEventTimeoutNS(event, timeoutNS);
 }
 
-SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
+bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
 {
     Uint64 start, expiration;
     bool include_sentinel = (timeoutNS == 0);
@@ -1500,7 +1500,7 @@ static bool SDL_CallEventWatchers(SDL_Event *event)
     return true;
 }
 
-SDL_bool SDL_PushEvent(SDL_Event *event)
+bool SDL_PushEvent(SDL_Event *event)
 {
     if (!event->common.timestamp) {
         event->common.timestamp = SDL_GetTicksNS();
@@ -1543,7 +1543,7 @@ void SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
     SDL_UnlockMutex(SDL_event_watchers_lock);
 }
 
-SDL_bool SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata)
+bool SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata)
 {
     SDL_EventWatcher event_ok;
 
@@ -1562,7 +1562,7 @@ SDL_bool SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata)
     return event_ok.callback ? true : false;
 }
 
-SDL_bool SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
+bool SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
 {
     bool result = true;
 
@@ -1628,7 +1628,7 @@ void SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
     SDL_UnlockMutex(SDL_EventQ.lock);
 }
 
-void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
+void SDL_SetEventEnabled(Uint32 type, bool enabled)
 {
     bool current_state;
     Uint8 hi = ((type >> 8) & 0xff);
@@ -1641,7 +1641,7 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
         current_state = true;
     }
 
-    if ((enabled != SDL_FALSE) != current_state) {
+    if ((enabled != false) != current_state) {
         if (enabled) {
             SDL_assert(SDL_disabled_events[hi] != NULL);
             SDL_disabled_events[hi]->bits[lo / 32] &= ~(1 << (lo & 31));
@@ -1688,7 +1688,7 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
     }
 }
 
-SDL_bool SDL_EventEnabled(Uint32 type)
+bool SDL_EventEnabled(Uint32 type)
 {
     Uint8 hi = ((type >> 8) & 0xff);
     Uint8 lo = (type & 0xff);

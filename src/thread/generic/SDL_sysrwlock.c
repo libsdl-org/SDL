@@ -139,7 +139,7 @@ bool SDL_TryLockRWLockForReading_generic(SDL_RWLock *rwlock)
 }
 
 #ifndef SDL_THREAD_GENERIC_RWLOCK_SUFFIX
-SDL_bool SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
+bool SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
 {
     return SDL_TryLockRWLockForReading_generic(rwlock);
 }
@@ -167,7 +167,7 @@ bool SDL_TryLockRWLockForWriting_generic(SDL_RWLock *rwlock)
 }
 
 #ifndef SDL_THREAD_GENERIC_RWLOCK_SUFFIX
-SDL_bool SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
+bool SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
 {
     return SDL_TryLockRWLockForWriting_generic(rwlock);
 }

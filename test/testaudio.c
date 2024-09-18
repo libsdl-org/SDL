@@ -50,17 +50,17 @@ struct Thing
     union {
         struct {
             SDL_AudioDeviceID devid;
-            SDL_bool recording;
+            bool recording;
             SDL_AudioSpec spec;
             char *name;
         } physdev;
         struct {
             SDL_AudioDeviceID devid;
-            SDL_bool recording;
+            bool recording;
             SDL_AudioSpec spec;
             Thing *physdev;
-            SDL_bool visualizer_enabled;
-            SDL_bool visualizer_updated;
+            bool visualizer_enabled;
+            bool visualizer_updated;
             SDL_Texture *visualizer;
             SDL_Mutex *postmix_lock;
             float *postmix_buffer;
@@ -121,8 +121,8 @@ static Thing *droppable_highlighted_thing = NULL;
 static Thing *dragging_thing = NULL;
 static int dragging_button = -1;
 static int dragging_button_real = -1;
-static SDL_bool ctrl_held = SDL_FALSE;
-static SDL_bool alt_held = SDL_FALSE;
+static bool ctrl_held = false;
+static bool alt_held = false;
 
 static Texture *physdev_texture = NULL;
 static Texture *logdev_texture = NULL;
@@ -718,7 +718,7 @@ static Texture *CreateTexture(const char *fname)
         SDL_Log("Out of memory!");
     } else {
         int texw, texh;
-        tex->texture = LoadTexture(state->renderers[0], fname, SDL_TRUE, &texw, &texh);
+        tex->texture = LoadTexture(state->renderers[0], fname, true, &texw, &texh);
         if (!tex->texture) {
             SDL_Log("Failed to load '%s': %s", fname, SDL_GetError());
             SDL_free(tex);
@@ -843,7 +843,7 @@ static void UpdateVisualizer(SDL_Renderer *renderer, SDL_Texture *visualizer, co
 
 static void LogicalDeviceThing_ontick(Thing *thing, Uint64 now)
 {
-    const SDL_bool ismousedover = (thing == mouseover_thing);
+    const bool ismousedover = (thing == mouseover_thing);
 
     if (!thing->data.logdev.visualizer || !thing->data.logdev.postmix_lock) {  /* need these to work, skip if they failed. */
         return;
@@ -907,7 +907,7 @@ static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID wh
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_NULL };
     Thing *physthing = ((parent->what == THING_LOGDEV) || (parent->what == THING_LOGDEV_RECORDING)) ? parent->data.logdev.physdev : parent;
-    const SDL_bool recording = physthing->data.physdev.recording;
+    const bool recording = physthing->data.physdev.recording;
     Thing *thing;
 
     SDL_Log("Adding logical audio device %u", (unsigned int) which);
@@ -975,7 +975,7 @@ static void PhysicalDeviceThing_ontick(Thing *thing, Uint64 now)
 }
 
 
-static Thing *CreatePhysicalDeviceThing(const SDL_AudioDeviceID which, const SDL_bool recording)
+static Thing *CreatePhysicalDeviceThing(const SDL_AudioDeviceID which, const bool recording)
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_NULL };
     static float next_physdev_x = 0;
@@ -1019,7 +1019,7 @@ static Thing *CreateTrashcanThing(void)
     return CreateThing(THING_TRASHCAN, winw - trashcan_texture->w, winh - trashcan_texture->h, 10, -1, -1, trashcan_texture, "Drag things here to remove them.");
 }
 
-static Thing *CreateDefaultPhysicalDevice(const SDL_bool recording)
+static Thing *CreateDefaultPhysicalDevice(const bool recording)
 {
     return CreatePhysicalDeviceThing(recording ? SDL_AUDIO_DEVICE_DEFAULT_RECORDING : SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, recording);
 }
@@ -1105,20 +1105,20 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     LoadStockWavThings();
     CreateTrashcanThing();
-    CreateDefaultPhysicalDevice(SDL_FALSE);
-    CreateDefaultPhysicalDevice(SDL_TRUE);
+    CreateDefaultPhysicalDevice(false);
+    CreateDefaultPhysicalDevice(true);
 
     return SDL_APP_CONTINUE;
 }
 
 
-static SDL_bool saw_event = SDL_FALSE;
+static bool saw_event = false;
 
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     Thing *thing = NULL;
 
-    saw_event = SDL_TRUE;
+    saw_event = true;
 
     switch (event->type) {
         case SDL_EVENT_MOUSE_MOTION:
@@ -1247,7 +1247,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     Draw();
 
     if (saw_event) {
-        saw_event = SDL_FALSE;  /* reset this so we know when SDL_AppEvent() runs again */
+        saw_event = false;  /* reset this so we know when SDL_AppEvent() runs again */
     } else {
         SDL_Delay(10);
     }

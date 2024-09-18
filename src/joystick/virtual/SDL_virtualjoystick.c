@@ -250,7 +250,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         }
     }
     if (hwdata->desc.nbuttons > 0) {
-        hwdata->buttons = (SDL_bool *)SDL_calloc(hwdata->desc.nbuttons, sizeof(*hwdata->buttons));
+        hwdata->buttons = (bool *)SDL_calloc(hwdata->desc.nbuttons, sizeof(*hwdata->buttons));
         if (!hwdata->buttons) {
             VIRTUAL_FreeHWData(hwdata);
             return 0;

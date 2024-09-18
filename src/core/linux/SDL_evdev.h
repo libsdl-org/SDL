@@ -28,7 +28,7 @@
 
 struct input_event;
 
-extern SDL_bool SDL_EVDEV_Init(void);
+extern bool SDL_EVDEV_Init(void);
 extern void SDL_EVDEV_Quit(void);
 extern void SDL_EVDEV_SetVTSwitchCallbacks(void (*release_callback)(void*), void *release_callback_data,
                                            void (*acquire_callback)(void*), void *acquire_callback_data);

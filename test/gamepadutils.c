@@ -81,7 +81,7 @@ static SDL_FRect touchpad_area = {
 
 typedef struct
 {
-    SDL_bool down;
+    bool down;
     float x;
     float y;
     float pressure;
@@ -114,12 +114,12 @@ struct GamepadImage
 
     float x;
     float y;
-    SDL_bool showing_front;
-    SDL_bool showing_touchpad;
+    bool showing_front;
+    bool showing_touchpad;
     SDL_GamepadType type;
     ControllerDisplayMode display_mode;
 
-    SDL_bool elements[SDL_GAMEPAD_ELEMENT_MAX];
+    bool elements[SDL_GAMEPAD_ELEMENT_MAX];
 
     SDL_PowerState battery_state;
     int battery_percent;
@@ -134,7 +134,7 @@ static SDL_Texture *CreateTexture(SDL_Renderer *renderer, unsigned char *data, u
     SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_IO(src, SDL_TRUE);
+        surface = SDL_LoadBMP_IO(src, true);
         if (surface) {
             texture = SDL_CreateTextureFromSurface(renderer, surface);
             SDL_DestroySurface(surface);
@@ -172,7 +172,7 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
         SDL_GetTextureSize(ctx->axis_texture, &ctx->axis_width, &ctx->axis_height);
         SDL_SetTextureColorMod(ctx->axis_texture, 10, 255, 21);
 
-        ctx->showing_front = SDL_TRUE;
+        ctx->showing_front = true;
     }
     return ctx;
 }
@@ -216,7 +216,7 @@ void GetGamepadTouchpadArea(GamepadImage *ctx, SDL_FRect *area)
     area->h = touchpad_area.h;
 }
 
-void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front)
+void SetGamepadImageShowingFront(GamepadImage *ctx, bool showing_front)
 {
     if (!ctx) {
         return;
@@ -370,10 +370,10 @@ int GetGamepadImageElementAt(GamepadImage *ctx, float x, float y)
     }
 
     for (i = 0; i < SDL_arraysize(button_positions); ++i) {
-        SDL_bool on_front = SDL_TRUE;
+        bool on_front = true;
 
         if (i >= SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1 && i <= SDL_GAMEPAD_BUTTON_LEFT_PADDLE2) {
-            on_front = SDL_FALSE;
+            on_front = false;
         }
         if (on_front == ctx->showing_front) {
             SDL_FRect rect;
@@ -398,7 +398,7 @@ void ClearGamepadImage(GamepadImage *ctx)
     SDL_zeroa(ctx->elements);
 }
 
-void SetGamepadImageElement(GamepadImage *ctx, int element, SDL_bool active)
+void SetGamepadImageElement(GamepadImage *ctx, int element, bool active)
 {
     if (!ctx) {
         return;
@@ -481,14 +481,14 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
 
             SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &finger->down, &finger->x, &finger->y, &finger->pressure);
         }
-        ctx->showing_touchpad = SDL_TRUE;
+        ctx->showing_touchpad = true;
     } else {
         if (ctx->fingers) {
             SDL_free(ctx->fingers);
             ctx->fingers = NULL;
             ctx->num_fingers = 0;
         }
-        ctx->showing_touchpad = SDL_FALSE;
+        ctx->showing_touchpad = false;
     }
 }
 
@@ -515,10 +515,10 @@ void RenderGamepadImage(GamepadImage *ctx)
     for (i = 0; i < SDL_arraysize(button_positions); ++i) {
         if (ctx->elements[i]) {
             SDL_GamepadButton button_position = (SDL_GamepadButton)i;
-            SDL_bool on_front = SDL_TRUE;
+            bool on_front = true;
 
             if (i >= SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1 && i <= SDL_GAMEPAD_BUTTON_LEFT_PADDLE2) {
-                on_front = SDL_FALSE;
+                on_front = false;
             }
             if (on_front == ctx->showing_front) {
                 dst.w = ctx->button_width;
@@ -704,7 +704,7 @@ struct GamepadDisplay
 
     ControllerDisplayMode display_mode;
     int element_highlighted;
-    SDL_bool element_pressed;
+    bool element_pressed;
     int element_selected;
 
     SDL_FRect area;
@@ -746,17 +746,17 @@ void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_FRect *area)
     SDL_copyp(&ctx->area, area);
 }
 
-static SDL_bool GetBindingString(const char *label, const char *mapping, char *text, size_t size)
+static bool GetBindingString(const char *label, const char *mapping, char *text, size_t size)
 {
     char *key;
     char *value, *end;
     size_t length;
-    SDL_bool found = SDL_FALSE;
+    bool found = false;
 
     *text = '\0';
 
     if (!mapping) {
-        return SDL_FALSE;
+        return false;
     }
 
     key = SDL_strstr(mapping, label);
@@ -766,7 +766,7 @@ static SDL_bool GetBindingString(const char *label, const char *mapping, char *t
             *text = '\0';
             --size;
         } else {
-            found = SDL_TRUE;
+            found = true;
         }
         value = key + SDL_strlen(label);
         end = SDL_strchr(value, ',');
@@ -787,23 +787,23 @@ static SDL_bool GetBindingString(const char *label, const char *mapping, char *t
     return found;
 }
 
-static SDL_bool GetButtonBindingString(SDL_GamepadButton button, const char *mapping, char *text, size_t size)
+static bool GetButtonBindingString(SDL_GamepadButton button, const char *mapping, char *text, size_t size)
 {
     char label[32];
-    SDL_bool baxy_mapping = SDL_FALSE;
+    bool baxy_mapping = false;
 
     if (!mapping) {
-        return SDL_FALSE;
+        return false;
     }
 
     SDL_snprintf(label, sizeof(label), ",%s:", SDL_GetGamepadStringForButton(button));
     if (GetBindingString(label, mapping, text, size)) {
-        return SDL_TRUE;
+        return true;
     }
 
     /* Try the legacy button names */
     if (SDL_strstr(mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
-        baxy_mapping = SDL_TRUE;
+        baxy_mapping = true;
     }
     switch (button) {
     case SDL_GAMEPAD_BUTTON_SOUTH:
@@ -831,11 +831,11 @@ static SDL_bool GetButtonBindingString(SDL_GamepadButton button, const char *map
             return GetBindingString(",y:", mapping, text, size);
         }
     default:
-        return SDL_FALSE;
+        return false;
     }
 }
 
-static SDL_bool GetAxisBindingString(SDL_GamepadAxis axis, int direction, const char *mapping, char *text, size_t size)
+static bool GetAxisBindingString(SDL_GamepadAxis axis, int direction, const char *mapping, char *text, size_t size)
 {
     char label[32];
 
@@ -846,13 +846,13 @@ static SDL_bool GetAxisBindingString(SDL_GamepadAxis axis, int direction, const 
         SDL_snprintf(label, sizeof(label), ",+%s:", SDL_GetGamepadStringForAxis(axis));
     }
     if (GetBindingString(label, mapping, text, size)) {
-        return SDL_TRUE;
+        return true;
     }
 
     /* Get the binding for the whole axis and split it if necessary */
     SDL_snprintf(label, sizeof(label), ",%s:", SDL_GetGamepadStringForAxis(axis));
     if (!GetBindingString(label, mapping, text, size)) {
-        return SDL_FALSE;
+        return false;
     }
     if (axis != SDL_GAMEPAD_AXIS_LEFT_TRIGGER && axis != SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
         if (*text == 'a') {
@@ -872,10 +872,10 @@ static SDL_bool GetAxisBindingString(SDL_GamepadAxis axis, int direction, const 
             }
         }
     }
-    return SDL_TRUE;
+    return true;
 }
 
-void SetGamepadDisplayHighlight(GamepadDisplay *ctx, int element, SDL_bool pressed)
+void SetGamepadDisplayHighlight(GamepadDisplay *ctx, int element, bool pressed)
 {
     if (!ctx) {
         return;
@@ -1019,8 +1019,8 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     SDL_FRect dst, rect, highlight;
     Uint8 r, g, b, a;
     char *mapping;
-    SDL_bool has_accel;
-    SDL_bool has_gyro;
+    bool has_accel;
+    bool has_gyro;
 
     if (!ctx) {
         return;
@@ -1074,7 +1074,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
     for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
         SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
-        SDL_bool has_negative = (axis != SDL_GAMEPAD_AXIS_LEFT_TRIGGER && axis != SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
+        bool has_negative = (axis != SDL_GAMEPAD_AXIS_LEFT_TRIGGER && axis != SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
         Sint16 value;
 
         if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
@@ -1216,7 +1216,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
             int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, 0);
             for (i = 0; i < num_fingers; ++i) {
-                SDL_bool down;
+                bool down;
                 float finger_x, finger_y, finger_pressure;
 
                 if (!SDL_GetGamepadTouchpadFinger(gamepad, 0, i, &down, &finger_x, &finger_y, &finger_pressure)) {
@@ -1301,7 +1301,7 @@ struct GamepadTypeDisplay
     SDL_Renderer *renderer;
 
     int type_highlighted;
-    SDL_bool type_pressed;
+    bool type_pressed;
     int type_selected;
     SDL_GamepadType real_type;
 
@@ -1330,7 +1330,7 @@ void SetGamepadTypeDisplayArea(GamepadTypeDisplay *ctx, const SDL_FRect *area)
     SDL_copyp(&ctx->area, area);
 }
 
-void SetGamepadTypeDisplayHighlight(GamepadTypeDisplay *ctx, int type, SDL_bool pressed)
+void SetGamepadTypeDisplayHighlight(GamepadTypeDisplay *ctx, int type, bool pressed)
 {
     if (!ctx) {
         return;
@@ -1481,7 +1481,7 @@ struct JoystickDisplay
     SDL_FRect area;
 
     char *element_highlighted;
-    SDL_bool element_pressed;
+    bool element_pressed;
 };
 
 JoystickDisplay *CreateJoystickDisplay(SDL_Renderer *renderer)
@@ -1620,12 +1620,12 @@ char *GetJoystickDisplayElementAt(JoystickDisplay *ctx, SDL_Joystick *joystick, 
     return NULL;
 }
 
-void SetJoystickDisplayHighlight(JoystickDisplay *ctx, const char *element, SDL_bool pressed)
+void SetJoystickDisplayHighlight(JoystickDisplay *ctx, const char *element, bool pressed)
 {
     if (ctx->element_highlighted) {
         SDL_free(ctx->element_highlighted);
         ctx->element_highlighted = NULL;
-        ctx->element_pressed = SDL_FALSE;
+        ctx->element_pressed = false;
     }
 
     if (element) {
@@ -1682,10 +1682,10 @@ static void RenderJoystickAxisHighlight(JoystickDisplay *ctx, int axis, int dire
     }
 }
 
-static SDL_bool SetupJoystickHatHighlight(JoystickDisplay *ctx, int hat, int direction)
+static bool SetupJoystickHatHighlight(JoystickDisplay *ctx, int hat, int direction)
 {
     if (!ctx->element_highlighted || *ctx->element_highlighted != 'h') {
-        return SDL_FALSE;
+        return false;
     }
 
     if (SDL_atoi(ctx->element_highlighted + 1) == hat &&
@@ -1696,9 +1696,9 @@ static SDL_bool SetupJoystickHatHighlight(JoystickDisplay *ctx, int hat, int dir
         } else {
             SDL_SetTextureColorMod(ctx->button_texture, HIGHLIGHT_TEXTURE_MOD);
         }
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
@@ -1916,8 +1916,8 @@ struct GamepadButton
     float label_width;
     float label_height;
 
-    SDL_bool highlight;
-    SDL_bool pressed;
+    bool highlight;
+    bool pressed;
 };
 
 GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label)
@@ -1955,7 +1955,7 @@ void GetGamepadButtonArea(GamepadButton *ctx, SDL_FRect *area)
     SDL_copyp(area, &ctx->area);
 }
 
-void SetGamepadButtonHighlight(GamepadButton *ctx, SDL_bool highlight, SDL_bool pressed)
+void SetGamepadButtonHighlight(GamepadButton *ctx, bool highlight, bool pressed)
 {
     if (!ctx) {
         return;
@@ -1965,7 +1965,7 @@ void SetGamepadButtonHighlight(GamepadButton *ctx, SDL_bool highlight, SDL_bool 
     if (highlight) {
         ctx->pressed = pressed;
     } else {
-        ctx->pressed = SDL_FALSE;
+        ctx->pressed = false;
     }
 }
 
@@ -1987,12 +1987,12 @@ float GetGamepadButtonLabelHeight(GamepadButton *ctx)
     return ctx->label_height;
 }
 
-SDL_bool GamepadButtonContains(GamepadButton *ctx, float x, float y)
+bool GamepadButtonContains(GamepadButton *ctx, float x, float y)
 {
     SDL_FPoint point;
 
     if (!ctx) {
-        return SDL_FALSE;
+        return false;
     }
 
     point.x = x;
@@ -2111,14 +2111,14 @@ typedef struct
     char **values;
 } MappingParts;
 
-static SDL_bool AddMappingKeyValue(MappingParts *parts, char *key, char *value);
+static bool AddMappingKeyValue(MappingParts *parts, char *key, char *value);
 
-static SDL_bool AddMappingHalfAxisValue(MappingParts *parts, const char *key, const char *value, char sign)
+static bool AddMappingHalfAxisValue(MappingParts *parts, const char *key, const char *value, char sign)
 {
     char *new_key, *new_value;
 
     if (SDL_asprintf(&new_key, "%c%s", sign, key) < 0) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (*value && value[SDL_strlen(value) - 1] == '~') {
@@ -2132,7 +2132,7 @@ static SDL_bool AddMappingHalfAxisValue(MappingParts *parts, const char *key, co
 
     if (SDL_asprintf(&new_value, "%c%s", sign, value) < 0) {
         SDL_free(new_key);
-        return SDL_FALSE;
+        return false;
     }
     if (new_value[SDL_strlen(new_value) - 1] == '~') {
         new_value[SDL_strlen(new_value) - 1] = '\0';
@@ -2141,7 +2141,7 @@ static SDL_bool AddMappingHalfAxisValue(MappingParts *parts, const char *key, co
     return AddMappingKeyValue(parts, new_key, new_value);
 }
 
-static SDL_bool AddMappingKeyValue(MappingParts *parts, char *key, char *value)
+static bool AddMappingKeyValue(MappingParts *parts, char *key, char *value)
 {
     int axis;
     char **new_keys, **new_values;
@@ -2149,13 +2149,13 @@ static SDL_bool AddMappingKeyValue(MappingParts *parts, char *key, char *value)
     if (!key || !value) {
         SDL_free(key);
         SDL_free(value);
-        return SDL_FALSE;
+        return false;
     }
 
     /* Split axis values for easy binding purposes */
     for (axis = 0; axis < SDL_GAMEPAD_AXIS_LEFT_TRIGGER; ++axis) {
         if (SDL_strcmp(key, SDL_GetGamepadStringForAxis((SDL_GamepadAxis)axis)) == 0) {
-            SDL_bool result;
+            bool result;
 
             result = AddMappingHalfAxisValue(parts, key, value, '-') &&
                      AddMappingHalfAxisValue(parts, key, value, '+');
@@ -2167,20 +2167,20 @@ static SDL_bool AddMappingKeyValue(MappingParts *parts, char *key, char *value)
 
     new_keys = (char **)SDL_realloc(parts->keys, (parts->num_elements + 1) * sizeof(*new_keys));
     if (!new_keys) {
-        return SDL_FALSE;
+        return false;
     }
     parts->keys = new_keys;
 
     new_values = (char **)SDL_realloc(parts->values, (parts->num_elements + 1) * sizeof(*new_values));
     if (!new_values) {
-        return SDL_FALSE;
+        return false;
     }
     parts->values = new_values;
 
     new_keys[parts->num_elements] = key;
     new_values[parts->num_elements] = value;
     ++parts->num_elements;
-    return SDL_TRUE;
+    return true;
 }
 
 static void SplitMapping(const char *mapping, MappingParts *parts)
@@ -2271,7 +2271,7 @@ static void RemoveMappingValueAt(MappingParts *parts, int index)
 static void ConvertBAXYMapping(MappingParts *parts)
 {
     int i;
-    SDL_bool baxy_mapping = SDL_FALSE;
+    bool baxy_mapping = false;
 
     for (i = 0; i < parts->num_elements; ++i) {
         const char *key = parts->keys[i];
@@ -2279,7 +2279,7 @@ static void ConvertBAXYMapping(MappingParts *parts)
 
         if (SDL_strcmp(key, "hint") == 0 &&
             SDL_strcmp(value, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") == 0) {
-            baxy_mapping = SDL_TRUE;
+            baxy_mapping = true;
         }
     }
 
@@ -2317,7 +2317,7 @@ static void UpdateLegacyElements(MappingParts *parts)
     ConvertBAXYMapping(parts);
 }
 
-static SDL_bool CombineMappingAxes(MappingParts *parts)
+static bool CombineMappingAxes(MappingParts *parts)
 {
     int i, matching, axis;
 
@@ -2335,7 +2335,7 @@ static SDL_bool CombineMappingAxes(MappingParts *parts)
             if (SDL_strcmp(key + 1, SDL_GetGamepadStringForAxis((SDL_GamepadAxis)axis)) == 0) {
                 /* Look for a matching axis with the opposite sign */
                 if (SDL_asprintf(&matching_key, "%c%s", (*key == '-' ? '+' : '-'), key + 1) < 0) {
-                    return SDL_FALSE;
+                    return false;
                 }
                 matching = FindMappingKey(parts, matching_key);
                 if (matching >= 0) {
@@ -2362,7 +2362,7 @@ static SDL_bool CombineMappingAxes(MappingParts *parts)
             }
         }
     }
-    return SDL_TRUE;
+    return true;
 }
 
 typedef struct
@@ -2381,7 +2381,7 @@ static int SDLCALL SortMapping(const void *a, const void *b)
     return SDL_strcmp(keyA, keyB);
 }
 
-static void MoveSortedEntry(const char *key, MappingSortEntry *sort_order, int num_elements, SDL_bool front)
+static void MoveSortedEntry(const char *key, MappingSortEntry *sort_order, int num_elements, bool front)
 {
     int i;
 
@@ -2438,12 +2438,12 @@ static char *JoinMapping(MappingParts *parts)
         sort_order[i].index = i;
     }
     SDL_qsort(sort_order, parts->num_elements, sizeof(*sort_order), SortMapping);
-    MoveSortedEntry("type", sort_order, parts->num_elements, SDL_TRUE);
-    MoveSortedEntry("platform", sort_order, parts->num_elements, SDL_TRUE);
-    MoveSortedEntry("crc", sort_order, parts->num_elements, SDL_TRUE);
-    MoveSortedEntry("sdk>=", sort_order, parts->num_elements, SDL_FALSE);
-    MoveSortedEntry("sdk<=", sort_order, parts->num_elements, SDL_FALSE);
-    MoveSortedEntry("hint", sort_order, parts->num_elements, SDL_FALSE);
+    MoveSortedEntry("type", sort_order, parts->num_elements, true);
+    MoveSortedEntry("platform", sort_order, parts->num_elements, true);
+    MoveSortedEntry("crc", sort_order, parts->num_elements, true);
+    MoveSortedEntry("sdk>=", sort_order, parts->num_elements, false);
+    MoveSortedEntry("sdk<=", sort_order, parts->num_elements, false);
+    MoveSortedEntry("hint", sort_order, parts->num_elements, false);
 
     /* Move platform to the front */
 
@@ -2495,7 +2495,7 @@ static char *RecreateMapping(MappingParts *parts, char *mapping)
     return mapping;
 }
 
-static const char *GetLegacyKey(const char *key, SDL_bool baxy)
+static const char *GetLegacyKey(const char *key, bool baxy)
 {
     if (SDL_strcmp(key, SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_SOUTH)) == 0) {
         if (baxy) {
@@ -2532,24 +2532,24 @@ static const char *GetLegacyKey(const char *key, SDL_bool baxy)
     return key;
 }
 
-static SDL_bool MappingHasKey(const char *mapping, const char *key)
+static bool MappingHasKey(const char *mapping, const char *key)
 {
     int i;
     MappingParts parts;
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     SplitMapping(mapping, &parts);
     i = FindMappingKey(&parts, key);
     if (i < 0) {
-        SDL_bool baxy_mapping = SDL_FALSE;
+        bool baxy_mapping = false;
 
         if (mapping && SDL_strstr(mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
-            baxy_mapping = SDL_TRUE;
+            baxy_mapping = true;
         }
         i = FindMappingKey(&parts, GetLegacyKey(key, baxy_mapping));
     }
     if (i >= 0) {
-        result = SDL_TRUE;
+        result = true;
     }
     FreeMappingParts(&parts);
 
@@ -2565,10 +2565,10 @@ static char *GetMappingValue(const char *mapping, const char *key)
     SplitMapping(mapping, &parts);
     i = FindMappingKey(&parts, key);
     if (i < 0) {
-        SDL_bool baxy_mapping = SDL_FALSE;
+        bool baxy_mapping = false;
 
         if (mapping && SDL_strstr(mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
-            baxy_mapping = SDL_TRUE;
+            baxy_mapping = true;
         }
         i = FindMappingKey(&parts, GetLegacyKey(key, baxy_mapping));
     }
@@ -2589,7 +2589,7 @@ static char *SetMappingValue(char *mapping, const char *key, const char *value)
     char *new_value = NULL;
     char **new_keys = NULL;
     char **new_values = NULL;
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     if (!key) {
         return mapping;
@@ -2602,7 +2602,7 @@ static char *SetMappingValue(char *mapping, const char *key, const char *value)
         if (new_value) {
             SDL_free(parts.values[i]);
             parts.values[i] = new_value;
-            result = SDL_TRUE;
+            result = true;
         }
     } else {
         int count = parts.num_elements;
@@ -2620,7 +2620,7 @@ static char *SetMappingValue(char *mapping, const char *key, const char *value)
                         parts.num_elements = (count + 1);
                         parts.keys = new_keys;
                         parts.values = new_values;
-                        result = SDL_TRUE;
+                        result = true;
                     }
                 }
             }
@@ -2651,27 +2651,27 @@ static char *RemoveMappingValue(char *mapping, const char *key)
     return RecreateMapping(&parts, mapping);
 }
 
-SDL_bool MappingHasBindings(const char *mapping)
+bool MappingHasBindings(const char *mapping)
 {
     MappingParts parts;
     int i;
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     if (!mapping || !*mapping) {
-        return SDL_FALSE;
+        return false;
     }
 
     SplitMapping(mapping, &parts);
     for (i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; ++i) {
         if (FindMappingKey(&parts, SDL_GetGamepadStringForButton((SDL_GamepadButton)i)) >= 0) {
-            result = SDL_TRUE;
+            result = true;
             break;
         }
     }
     if (!result) {
         for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
             if (FindMappingKey(&parts, SDL_GetGamepadStringForAxis((SDL_GamepadAxis)i)) >= 0) {
-                result = SDL_TRUE;
+                result = true;
                 break;
             }
         }
@@ -2681,13 +2681,13 @@ SDL_bool MappingHasBindings(const char *mapping)
     return result;
 }
 
-SDL_bool MappingHasName(const char *mapping)
+bool MappingHasName(const char *mapping)
 {
     MappingParts parts;
-    SDL_bool result;
+    bool result;
 
     SplitMapping(mapping, &parts);
-    result = parts.name ? SDL_TRUE : SDL_FALSE;
+    result = parts.name ? true : false;
     FreeMappingParts(&parts);
     return result;
 }
@@ -2836,13 +2836,13 @@ static const char *GetElementKey(int element)
     }
 }
 
-SDL_bool MappingHasElement(const char *mapping, int element)
+bool MappingHasElement(const char *mapping, int element)
 {
     const char *key;
 
     key = GetElementKey(element);
     if (!key) {
-        return SDL_FALSE;
+        return false;
     }
     return MappingHasKey(mapping, key);
 }
@@ -2895,20 +2895,20 @@ int GetElementForBinding(char *mapping, const char *binding)
     return result;
 }
 
-SDL_bool MappingHasBinding(const char *mapping, const char *binding)
+bool MappingHasBinding(const char *mapping, const char *binding)
 {
     MappingParts parts;
     int i;
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     if (!binding) {
-        return SDL_FALSE;
+        return false;
     }
 
     SplitMapping(mapping, &parts);
     for (i = 0; i < parts.num_elements; ++i) {
         if (SDL_strcmp(binding, parts.values[i]) == 0) {
-            result = SDL_TRUE;
+            result = true;
             break;
         }
     }
@@ -2921,7 +2921,7 @@ char *ClearMappingBinding(char *mapping, const char *binding)
 {
     MappingParts parts;
     int i;
-    SDL_bool modified = SDL_FALSE;
+    bool modified = false;
 
     if (!binding) {
         return mapping;
@@ -2931,7 +2931,7 @@ char *ClearMappingBinding(char *mapping, const char *binding)
     for (i = parts.num_elements - 1; i >= 0; --i) {
         if (SDL_strcmp(binding, parts.values[i]) == 0) {
             RemoveMappingValueAt(&parts, i);
-            modified = SDL_TRUE;
+            modified = true;
         }
     }
     if (modified) {

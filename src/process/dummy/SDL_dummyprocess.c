@@ -30,12 +30,12 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     return SDL_Unsupported();
 }
 
-bool SDL_SYS_KillProcess(SDL_Process *process, SDL_bool force)
+bool SDL_SYS_KillProcess(SDL_Process *process, bool force)
 {
     return SDL_Unsupported();
 }
 
-bool SDL_SYS_WaitProcess(SDL_Process *process, SDL_bool block, int *exitcode)
+bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode)
 {
     return SDL_Unsupported();
 }

@@ -1443,7 +1443,7 @@ const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
     return result;
 }
 
-SDL_bool SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec, int *sample_frames)
+bool SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec, int *sample_frames)
 {
     if (!spec) {
         return SDL_InvalidParamError("spec");
@@ -1767,17 +1767,17 @@ static bool SetLogicalAudioDevicePauseState(SDL_AudioDeviceID devid, int value)
     return logdev ? true : false;  // ObtainLogicalAudioDevice will have set an error.
 }
 
-SDL_bool SDL_PauseAudioDevice(SDL_AudioDeviceID devid)
+bool SDL_PauseAudioDevice(SDL_AudioDeviceID devid)
 {
     return SetLogicalAudioDevicePauseState(devid, 1);
 }
 
-SDL_bool SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID devid)
+bool SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID devid)
 {
     return SetLogicalAudioDevicePauseState(devid, 0);
 }
 
-SDL_bool SDL_AudioDevicePaused(SDL_AudioDeviceID devid)
+bool SDL_AudioDevicePaused(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = NULL;
     SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
@@ -1798,7 +1798,7 @@ float SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid)
     return result;
 }
 
-SDL_bool SDL_SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain)
+bool SDL_SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain)
 {
     if (gain < 0.0f) {
         return SDL_InvalidParamError("gain");
@@ -1827,7 +1827,7 @@ SDL_bool SDL_SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain)
     return result;
 }
 
-SDL_bool SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallback callback, void *userdata)
+bool SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallback callback, void *userdata)
 {
     SDL_AudioDevice *device = NULL;
     SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
@@ -1862,7 +1862,7 @@ SDL_bool SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCa
     return result;
 }
 
-SDL_bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int num_streams)
+bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int num_streams)
 {
     const bool islogical = !(devid & (1<<1));
     SDL_AudioDevice *device = NULL;
@@ -1955,7 +1955,7 @@ SDL_bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams
     return result;
 }
 
-SDL_bool SDL_BindAudioStream(SDL_AudioDeviceID devid, SDL_AudioStream *stream)
+bool SDL_BindAudioStream(SDL_AudioDeviceID devid, SDL_AudioStream *stream)
 {
     return SDL_BindAudioStreams(devid, &stream, 1);
 }
@@ -2120,7 +2120,7 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
     return stream;
 }
 
-SDL_bool SDL_PauseAudioStreamDevice(SDL_AudioStream *stream)
+bool SDL_PauseAudioStreamDevice(SDL_AudioStream *stream)
 {
     SDL_AudioDeviceID devid = SDL_GetAudioStreamDevice(stream);
     if (!devid) {
@@ -2130,7 +2130,7 @@ SDL_bool SDL_PauseAudioStreamDevice(SDL_AudioStream *stream)
     return SDL_PauseAudioDevice(devid);
 }
 
-SDL_bool SDL_ResumeAudioStreamDevice(SDL_AudioStream *stream)
+bool SDL_ResumeAudioStreamDevice(SDL_AudioStream *stream)
 {
     SDL_AudioDeviceID devid = SDL_GetAudioStreamDevice(stream);
     if (!devid) {

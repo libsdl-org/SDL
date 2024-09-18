@@ -72,7 +72,7 @@ char *GetResourceFilename(const char *user_specified, const char *def)
  *
  * If height_out is non-NULL, set it to the texture height.
  */
-SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent, int *width_out, int *height_out)
+SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transparent, int *width_out, int *height_out)
 {
     SDL_Surface *temp = NULL;
     SDL_Texture *texture = NULL;
@@ -94,24 +94,24 @@ SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool tran
                 const Uint8 bpp = SDL_BITSPERPIXEL(temp->format);
                 const Uint8 mask = (1 << bpp) - 1;
                 if (SDL_PIXELORDER(temp->format) == SDL_BITMAPORDER_4321)
-                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, (*(Uint8 *)temp->pixels) & mask);
+                    SDL_SetSurfaceColorKey(temp, true, (*(Uint8 *)temp->pixels) & mask);
                 else
-                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, ((*(Uint8 *)temp->pixels) >> (8 - bpp)) & mask);
+                    SDL_SetSurfaceColorKey(temp, true, ((*(Uint8 *)temp->pixels) >> (8 - bpp)) & mask);
             } else {
                 switch (SDL_BITSPERPIXEL(temp->format)) {
                 case 15:
-                    SDL_SetSurfaceColorKey(temp, SDL_TRUE,
+                    SDL_SetSurfaceColorKey(temp, true,
                                     (*(Uint16 *)temp->pixels) & 0x00007FFF);
                     break;
                 case 16:
-                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint16 *)temp->pixels);
+                    SDL_SetSurfaceColorKey(temp, true, *(Uint16 *)temp->pixels);
                     break;
                 case 24:
-                    SDL_SetSurfaceColorKey(temp, SDL_TRUE,
+                    SDL_SetSurfaceColorKey(temp, true,
                                     (*(Uint32 *)temp->pixels) & 0x00FFFFFF);
                     break;
                 case 32:
-                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint32 *)temp->pixels);
+                    SDL_SetSurfaceColorKey(temp, true, *(Uint32 *)temp->pixels);
                     break;
                 }
             }

@@ -61,7 +61,7 @@ having SDL handle input and rendering, it needs to create a custom, roleless sur
 toplevel window.
 
 This is done by using `SDL_CreateWindowWithProperties()` and setting the
-`SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN` property to `SDL_TRUE`. Once the window has been
+`SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN` property to `true`. Once the window has been
 successfully created, the `wl_display` and `wl_surface` objects can then be retrieved from the
 `SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER` and `SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER` properties respectively.
 
@@ -69,10 +69,10 @@ Surfaces don't receive any size change notifications, so if an application chang
 that the surface size has changed by calling SDL_SetWindowSize() with the new dimensions.
 
 Custom surfaces will automatically handle scaling internally if the window was created with the
-`SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN` property set to `SDL_TRUE`. In this case, applications should
+`SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN` property set to `true`. In this case, applications should
 not manually attach viewports or change the surface scale value, as SDL will handle this internally. Calls
 to `SDL_SetWindowSize()` should use the logical size of the window, and `SDL_GetWindowSizeInPixels()` should be used to
-query the size of the backbuffer surface in pixels. If this property is not set or is `SDL_FALSE`, applications can
+query the size of the backbuffer surface in pixels. If this property is not set or is `false`, applications can
 attach their own viewports or change the surface scale manually, and the SDL backend will not interfere or change any
 values internally. In this case, calls to `SDL_SetWindowSize()` should pass the requested surface size in pixels, not
 the logical window size, as no scaling calculations will be done internally.
@@ -101,7 +101,7 @@ SDL receives no notification regarding size changes on external surfaces or topl
 needs to be resized, SDL must be informed by calling SDL_SetWindowSize() with the new dimensions.
 
 If desired, SDL can automatically handle the scaling for the surface by setting the
-`SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN` property to `SDL_TRUE`, however, if the surface being imported
+`SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN` property to `true`, however, if the surface being imported
 already has, or will have, a viewport/fractional scale manager attached to it by the application or an external toolkit,
 a protocol violation will result. Avoid setting this property if importing surfaces from toolkits such as Qt or GTK.
 
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
      */
     props = SDL_CreateProperties();
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, surface);
-    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_TRUE);
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 640);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 480);
     sdlWindow = SDL_CreateWindowWithProperties(props);

@@ -10,11 +10,11 @@ int main(int argc, char *argv[]) {
     SDLTest_CommonState *state;
     int i;
     const char *expect_environment = NULL;
-    SDL_bool expect_environment_match = SDL_FALSE;
-    SDL_bool print_arguments = SDL_FALSE;
-    SDL_bool print_environment = SDL_FALSE;
-    SDL_bool stdin_to_stdout = SDL_FALSE;
-    SDL_bool stdin_to_stderr = SDL_FALSE;
+    bool expect_environment_match = false;
+    bool print_arguments = false;
+    bool print_environment = false;
+    bool stdin_to_stdout = false;
+    bool stdin_to_stderr = false;
     int exit_code = 0;
 
     state = SDLTest_CommonCreateState(argv, 0);
@@ -22,10 +22,10 @@ int main(int argc, char *argv[]) {
     for (i = 1; i < argc;) {
         int consumed = SDLTest_CommonArg(state, i);
         if (SDL_strcmp(argv[i], "--print-arguments") == 0) {
-            print_arguments = SDL_TRUE;
+            print_arguments = true;
             consumed = 1;
         } else if (SDL_strcmp(argv[i], "--print-environment") == 0) {
-            print_environment = SDL_TRUE;
+            print_environment = true;
             consumed = 1;
         } else if (SDL_strcmp(argv[i], "--expect-env") == 0) {
             if (i + 1 < argc) {
@@ -33,10 +33,10 @@ int main(int argc, char *argv[]) {
                 consumed = 2;
             }
         } else if (SDL_strcmp(argv[i], "--stdin-to-stdout") == 0) {
-            stdin_to_stdout = SDL_TRUE;
+            stdin_to_stdout = true;
             consumed = 1;
         } else if (SDL_strcmp(argv[i], "--stdin-to-stderr") == 0) {
-            stdin_to_stderr = SDL_TRUE;
+            stdin_to_stderr = true;
             consumed = 1;
         } else if (SDL_strcmp(argv[i], "--stdout") == 0) {
             if (i + 1 < argc) {

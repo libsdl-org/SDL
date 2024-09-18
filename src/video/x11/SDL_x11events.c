@@ -304,7 +304,7 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
     Window junk_window;
     int x, y;
     unsigned int mask;
-    const SDL_bool *keyboardState;
+    const bool *keyboardState;
 
     X11_XQueryKeymap(display, keys);
 

@@ -31,7 +31,7 @@ static SDLTest_CommonState *state;
 static void DoWork(const int workticks)  /* "Work" */
 {
     const SDL_ThreadID tid = SDL_GetCurrentThreadID();
-    const SDL_bool is_reader = tid != mainthread;
+    const bool is_reader = tid != mainthread;
     const char *typestr = is_reader ? "Reader" : "Writer";
 
     SDL_Log("%s Thread %" SDL_PRIu64 ": ready to work\n", typestr, tid);

@@ -164,7 +164,7 @@ static void SDL_EVDEV_UpdateKeyboardMute(void)
     }
 }
 
-SDL_bool SDL_EVDEV_Init(void)
+bool SDL_EVDEV_Init(void)
 {
     if (!_this) {
         _this = (SDL_EVDEV_PrivateData *)SDL_calloc(1, sizeof(*_this));

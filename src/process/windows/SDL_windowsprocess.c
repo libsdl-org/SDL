@@ -441,7 +441,7 @@ done:
     return result;
 }
 
-bool SDL_SYS_KillProcess(SDL_Process *process, SDL_bool force)
+bool SDL_SYS_KillProcess(SDL_Process *process, bool force)
 {
     if (!TerminateProcess(process->internal->process_information.hProcess, 1)) {
         return WIN_SetError("TerminateProcess failed");
@@ -449,7 +449,7 @@ bool SDL_SYS_KillProcess(SDL_Process *process, SDL_bool force)
     return true;
 }
 
-bool SDL_SYS_WaitProcess(SDL_Process *process, SDL_bool block, int *exitcode)
+bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode)
 {
     DWORD result;
 

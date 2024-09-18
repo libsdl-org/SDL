@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     Uint64 start, now;
     Uint64 start_perf, now_perf;
     SDLTest_CommonState  *state;
-    SDL_bool run_interactive_tests = SDL_TRUE;
+    bool run_interactive_tests = true;
     int return_code = 0;
 
     /* Initialize test framework */
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
             if (SDL_strcmp(argv[i], "--no-interactive") == 0) {
-                run_interactive_tests = SDL_FALSE;
+                run_interactive_tests = false;
                 consumed = 1;
             } else if (desired < 0) {
                 char *endptr;

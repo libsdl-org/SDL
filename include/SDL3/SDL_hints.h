@@ -1730,7 +1730,7 @@ extern "C" {
  * - "0": HIDAPI driver is not used.
  * - "1": HIDAPI driver is used.
  *
- * This driver doesn't work with the dolphinbar, so the default is SDL_FALSE
+ * This driver doesn't work with the dolphinbar, so the default is false
  * for now.
  *
  * This hint should be set before enumerating controllers.
@@ -4049,7 +4049,7 @@ typedef enum SDL_HintPriority
  * \param name the hint to set.
  * \param value the value of the hint variable.
  * \param priority the SDL_HintPriority level for the hint.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -4060,7 +4060,7 @@ typedef enum SDL_HintPriority
  * \sa SDL_ResetHint
  * \sa SDL_SetHint
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority);
 
 /**
  * Set a hint with normal priority.
@@ -4071,7 +4071,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name, c
  *
  * \param name the hint to set.
  * \param value the value of the hint variable.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -4082,7 +4082,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name, c
  * \sa SDL_ResetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name, const char *value);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetHint(const char *name, const char *value);
 
 /**
  * Reset a hint to the default value.
@@ -4092,7 +4092,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name, const char *v
  * change.
  *
  * \param name the hint to set.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -4102,7 +4102,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name, const char *v
  * \sa SDL_SetHint
  * \sa SDL_ResetHints
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
+extern SDL_DECLSPEC bool SDLCALL SDL_ResetHint(const char *name);
 
 /**
  * Reset all hints to the default values.
@@ -4154,7 +4154,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetHint(const char *name);
  * \sa SDL_GetHint
  * \sa SDL_SetHint
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool default_value);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetHintBoolean(const char *name, bool default_value);
 
 /**
  * A callback used to send notifications of hint value changes.
@@ -4187,7 +4187,7 @@ typedef void(SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const 
  * \param callback An SDL_HintCallback function that will be called when the
  *                 hint value changes.
  * \param userdata a pointer to pass to the callback function.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -4196,7 +4196,7 @@ typedef void(SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const 
  *
  * \sa SDL_RemoveHintCallback
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata);
 
 /**
  * Remove a function watching a particular hint.

@@ -26,9 +26,9 @@ int main(int argc, char *argv[])
     SDL_Joystick *joystick = NULL;
     SDL_Haptic *haptic = NULL;
     SDL_JoystickID instance = 0;
-    SDL_bool keepGoing = SDL_TRUE;
+    bool keepGoing = true;
     int i;
-    SDL_bool enable_haptic = SDL_TRUE;
+    bool enable_haptic = true;
     Uint32 init_subsystems = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
     SDLTest_CommonState *state;
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
             if (SDL_strcasecmp(argv[i], "--nohaptic") == 0) {
-                enable_haptic = SDL_FALSE;
+                enable_haptic = false;
                 consumed = 1;
             }
         }
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_EVENT_QUIT:
-                keepGoing = SDL_FALSE;
+                keepGoing = false;
                 break;
             case SDL_EVENT_KEYBOARD_ADDED:
                 SDL_Log("Keyboard '%s' added  : %" SDL_PRIu32 "\n", SDL_GetKeyboardNameForID(event.kdevice.which), event.kdevice.which);
@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
                 }
                 if (event.jbutton.button == 0) {
                     SDL_Log("Exiting due to button press of button 0\n");
-                    keepGoing = SDL_FALSE;
+                    keepGoing = false;
                 }
                 break;
             case SDL_EVENT_JOYSTICK_BUTTON_UP:

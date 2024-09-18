@@ -273,34 +273,6 @@ void *alloca(size_t);
 /* @{ */
 
 /**
- * A boolean false.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_bool
- */
-#define SDL_FALSE false
-
-/**
- * A boolean true.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_bool
- */
-#define SDL_TRUE true
-
-/**
- * A boolean type: true or false.
- *
- * \since This datatype is available since SDL 3.0.0.
- *
- * \sa SDL_TRUE
- * \sa SDL_FALSE
- */
-typedef bool SDL_bool;
-
-/**
  * A signed 8-bit integer type.
  *
  * \since This macro is available since SDL 3.0.0.
@@ -570,7 +542,7 @@ typedef Sint64 SDL_Time;
 
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
-SDL_COMPILE_TIME_ASSERT(bool_size, sizeof(SDL_bool) == 1);
+SDL_COMPILE_TIME_ASSERT(bool_size, sizeof(bool) == 1);
 SDL_COMPILE_TIME_ASSERT(uint8_size, sizeof(Uint8) == 1);
 SDL_COMPILE_TIME_ASSERT(sint8_size, sizeof(Sint8) == 1);
 SDL_COMPILE_TIME_ASSERT(uint16_size, sizeof(Uint16) == 2);
@@ -908,7 +880,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_
  * \param calloc_func custom calloc function.
  * \param realloc_func custom realloc function.
  * \param free_func custom free function.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread, but one
@@ -920,7 +892,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_
  * \sa SDL_GetMemoryFunctions
  * \sa SDL_GetOriginalMemoryFunctions
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
+extern SDL_DECLSPEC bool SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                             SDL_calloc_func calloc_func,
                                                             SDL_realloc_func realloc_func,
                                                             SDL_free_func free_func);
@@ -1019,12 +991,12 @@ extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_GetEnvironment(void);
 /**
  * Create a set of environment variables
  *
- * \param populated SDL_TRUE to initialize it from the C runtime environment,
- *                  SDL_FALSE to create an empty environment.
+ * \param populated true to initialize it from the C runtime environment,
+ *                  false to create an empty environment.
  * \returns a pointer to the new environment or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety If `populated` is SDL_FALSE, it is safe to call this function
+ * \threadsafety If `populated` is false, it is safe to call this function
  *               from any thread, otherwise it is safe if no other threads are
  *               calling setenv() or unsetenv()
  *
@@ -1036,7 +1008,7 @@ extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_GetEnvironment(void);
  * \sa SDL_UnsetEnvironmentVariable
  * \sa SDL_DestroyEnvironment
  */
-extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_CreateEnvironment(SDL_bool populated);
+extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_CreateEnvironment(bool populated);
 
 /**
  * Get the value of a variable in the environment.
@@ -1085,10 +1057,10 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GetEnvironmentVariables(SDL_Environment 
  * \param env the environment to modify.
  * \param name the name of the variable to set.
  * \param value the value of the variable to set.
- * \param overwrite SDL_TRUE to overwrite the variable if it exists, SDL_FALSE
+ * \param overwrite true to overwrite the variable if it exists, false
  *                  to return success without setting the variable if it
  *                  already exists.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1101,14 +1073,14 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GetEnvironmentVariables(SDL_Environment 
  * \sa SDL_GetEnvironmentVariables
  * \sa SDL_UnsetEnvironmentVariable
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, SDL_bool overwrite);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, bool overwrite);
 
 /**
  * Clear a variable from the environment.
  *
  * \param env the environment to modify.
  * \param name the name of the variable to unset.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1122,7 +1094,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetEnvironmentVariable(SDL_Environment 
  * \sa SDL_SetEnvironmentVariable
  * \sa SDL_UnsetEnvironmentVariable
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name);
+extern SDL_DECLSPEC bool SDLCALL SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name);
 
 /**
  * Destroy a set of environment variables.
@@ -4033,28 +4005,28 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
 /**
  * Multiply two integers, checking for overflow.
  *
- * If `a * b` would overflow, return SDL_FALSE.
+ * If `a * b` would overflow, return false.
  *
- * Otherwise store `a * b` via ret and return SDL_TRUE.
+ * Otherwise store `a * b` via ret and return true.
  *
  * \param a the multiplicand.
  * \param b the multiplier.
  * \param ret on non-overflow output, stores the multiplication result. May
  *            not be NULL.
- * \returns SDL_FALSE on overflow, SDL_TRUE if result is multiplied without
+ * \returns false on overflow, true if result is multiplied without
  *          overflow.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE SDL_bool SDL_size_mul_check_overflow(size_t a, size_t b, size_t *ret)
+SDL_FORCE_INLINE bool SDL_size_mul_check_overflow(size_t a, size_t b, size_t *ret)
 {
     if (a != 0 && b > SDL_SIZE_MAX / a) {
-        return SDL_FALSE;
+        return false;
     }
     *ret = a * b;
-    return SDL_TRUE;
+    return true;
 }
 
 #ifndef SDL_WIKI_DOCUMENTATION_SECTION
@@ -4062,7 +4034,7 @@ SDL_FORCE_INLINE SDL_bool SDL_size_mul_check_overflow(size_t a, size_t b, size_t
 /* This needs to be wrapped in an inline rather than being a direct #define,
  * because __builtin_mul_overflow() is type-generic, but we want to be
  * consistent about interpreting a and b as size_t. */
-SDL_FORCE_INLINE SDL_bool SDL_size_mul_check_overflow_builtin(size_t a, size_t b, size_t *ret)
+SDL_FORCE_INLINE bool SDL_size_mul_check_overflow_builtin(size_t a, size_t b, size_t *ret)
 {
     return (__builtin_mul_overflow(a, b, ret) == 0);
 }
@@ -4081,27 +4053,27 @@ SDL_FORCE_INLINE SDL_bool SDL_size_mul_check_overflow_builtin(size_t a, size_t b
  * \param b the second addend.
  * \param ret on non-overflow output, stores the addition result. May not be
  *            NULL.
- * \returns SDL_FALSE on overflow, SDL_TRUE if result is added without
+ * \returns false on overflow, true if result is added without
  *          overflow.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE SDL_bool SDL_size_add_check_overflow(size_t a, size_t b, size_t *ret)
+SDL_FORCE_INLINE bool SDL_size_add_check_overflow(size_t a, size_t b, size_t *ret)
 {
     if (b > SDL_SIZE_MAX - a) {
-        return SDL_FALSE;
+        return false;
     }
     *ret = a + b;
-    return SDL_TRUE;
+    return true;
 }
 
 #ifndef SDL_WIKI_DOCUMENTATION_SECTION
 #if SDL_HAS_BUILTIN(__builtin_add_overflow)
 /* This needs to be wrapped in an inline rather than being a direct #define,
  * the same as the call to __builtin_mul_overflow() above. */
-SDL_FORCE_INLINE SDL_bool SDL_size_add_check_overflow_builtin(size_t a, size_t b, size_t *ret)
+SDL_FORCE_INLINE bool SDL_size_add_check_overflow_builtin(size_t a, size_t b, size_t *ret)
 {
     return (__builtin_add_overflow(a, b, ret) == 0);
 }

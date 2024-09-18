@@ -49,7 +49,7 @@ void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doe
     }
 }
 
-SDL_bool SDL_TryLockMutex(SDL_Mutex *mutex)
+bool SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
         return RecursiveLock_TryLock(&mutex->lock);

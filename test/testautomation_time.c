@@ -20,7 +20,7 @@ static int SDLCALL time_getRealtimeClock(void *arg)
 
     result = SDL_GetCurrentTime(&ticks);
     SDLTest_AssertPass("Call to SDL_GetRealtimeClockTicks()");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected SDL_TRUE, got: %i", result);
+    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
     return TEST_COMPLETED;
 }
@@ -36,9 +36,9 @@ static int SDLCALL time_dateTimeConversion(void *arg)
 
     ticks[0] = JAN_1_2000_NS;
 
-    result = SDL_TimeToDateTime(ticks[0], &dt, SDL_FALSE);
+    result = SDL_TimeToDateTime(ticks[0], &dt, false);
     SDLTest_AssertPass("Call to SDL_TimeToUTCDateTime()");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected SDL_TRUE, got: %i", result);
+    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
     SDLTest_AssertCheck(dt.year == 2000, "Check year value, expected 2000, got: %i", dt.year);
     SDLTest_AssertCheck(dt.month == 1, "Check month value, expected 1, got: %i", dt.month);
     SDLTest_AssertCheck(dt.day == 1, "Check day value, expected 1, got: %i", dt.day);
@@ -48,20 +48,20 @@ static int SDLCALL time_dateTimeConversion(void *arg)
 
     result = SDL_DateTimeToTime(&dt, &ticks[1]);
     SDLTest_AssertPass("Call to SDL_DateTimeToTime()");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected SDL_TRUE, got: %i", result);
+    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
     result = ticks[0] == ticks[1];
     SDLTest_AssertCheck(result, "Check that original and converted SDL_Time values match: ticks0 = %" SDL_PRIs64 ", ticks1 = %" SDL_PRIs64, ticks[0], ticks[1]);
 
     /* Local time unknown, so just verify success. */
-    result = SDL_TimeToDateTime(ticks[0], &dt, SDL_TRUE);
+    result = SDL_TimeToDateTime(ticks[0], &dt, true);
     SDLTest_AssertPass("Call to SDL_TimeToLocalDateTime()");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected SDL_TRUE, got: %i", result);
+    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
     /* Convert back and verify result. */
     result = SDL_DateTimeToTime(&dt, &ticks[1]);
     SDLTest_AssertPass("Call to SDL_DateTimeToTime()");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected SDL_TRUE, got: %i", result);
+    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
     result = ticks[0] == ticks[1];
     SDLTest_AssertCheck(result, "Check that original and converted SDL_Time values match: ticks0 = %" SDL_PRIs64 ", ticks1 = %" SDL_PRIs64, ticks[0], ticks[1]);
@@ -79,7 +79,7 @@ static int SDLCALL time_dateTimeConversion(void *arg)
 
     result = SDL_DateTimeToTime(&dt, &ticks[1]);
     SDLTest_AssertPass("Call to SDL_DateTimeToTime() (one day advanced)");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected SDL_TRUE, got: %i", result);
+    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
     result = (ticks[0] + (Sint64)SDL_SECONDS_TO_NS(86400)) == ticks[1];
     SDLTest_AssertCheck(result, "Check that the difference is exactly 86400 seconds, got: %" SDL_PRIs64, (Sint64)SDL_NS_TO_SECONDS(ticks[1] - ticks[0]));
@@ -90,12 +90,12 @@ static int SDLCALL time_dateTimeConversion(void *arg)
     dt.day = 1;
     result = SDL_DateTimeToTime(&dt, &ticks[0]);
     SDLTest_AssertPass("Call to SDL_DateTimeToTime() (year overflows an SDL_Time)");
-    SDLTest_AssertCheck(result == SDL_FALSE, "Check result value, expected SDL_FALSE, got: %i", result);
+    SDLTest_AssertCheck(result == false, "Check result value, expected false, got: %i", result);
 
     dt.year = 1601;
     result = SDL_DateTimeToTime(&dt, &ticks[0]);
     SDLTest_AssertPass("Call to SDL_DateTimeToTime() (year underflows an SDL_Time)");
-    SDLTest_AssertCheck(result == SDL_FALSE, "Check result value, expected SDL_FALSE, got: %i", result);
+    SDLTest_AssertCheck(result == false, "Check result value, expected false, got: %i", result);
 
     return TEST_COMPLETED;
 }
@@ -175,19 +175,19 @@ static int SDLCALL time_dateTimeUtilities(void *arg)
 
     result = SDL_GetDateTimeLocalePreferences(&dateFormat, &timeFormat);
     SDLTest_AssertPass("Call to SDL_GetDateTimeLocalePreferences(&dateFormat, &timeFormat)");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected SDL_TRUE, got: %i", result);
+    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
     result = SDL_GetDateTimeLocalePreferences(&dateFormat, NULL);
     SDLTest_AssertPass("Call to SDL_GetDateTimeLocalePreferences(&dateFormat, NULL)");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected SDL_TRUE, got: %i", result);
+    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
     result = SDL_GetDateTimeLocalePreferences(NULL, &timeFormat);
     SDLTest_AssertPass("Call to SDL_GetDateTimeLocalePreferences(NULL, &timeFormat)");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected SDL_TRUE, got: %i", result);
+    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
     result = SDL_GetDateTimeLocalePreferences(NULL, NULL);
     SDLTest_AssertPass("Call to SDL_GetDateTimeLocalePreferences(NULL, NULL)");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected SDL_TRUE, got: %i", result);
+    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
     return TEST_COMPLETED;
 }

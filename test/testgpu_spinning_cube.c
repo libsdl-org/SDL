@@ -398,8 +398,8 @@ Render(SDL_Window *window, const int windownum)
         color_target.store_op = SDL_GPU_STOREOP_RESOLVE;
         color_target.texture = winstate->tex_msaa;
         color_target.resolve_texture = winstate->tex_resolve;
-        color_target.cycle = SDL_TRUE;
-        color_target.cycle_resolve_texture = SDL_TRUE;
+        color_target.cycle = true;
+        color_target.cycle_resolve_texture = true;
     } else {
         color_target.load_op = SDL_GPU_LOADOP_CLEAR;
         color_target.store_op = SDL_GPU_STOREOP_STORE;
@@ -413,7 +413,7 @@ Render(SDL_Window *window, const int windownum)
     depth_target.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
     depth_target.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
     depth_target.texture = winstate->tex_depth;
-    depth_target.cycle = SDL_TRUE;
+    depth_target.cycle = true;
 
     /* Set up the bindings */
 
@@ -454,7 +454,7 @@ Render(SDL_Window *window, const int windownum)
 }
 
 static SDL_GPUShader*
-load_shader(SDL_bool is_vertex)
+load_shader(bool is_vertex)
 {
     SDL_GPUShaderCreateInfo createinfo;
     createinfo.num_samplers = 0;
@@ -512,7 +512,7 @@ init_render_state(int msaa)
 
     gpu_device = SDL_CreateGPUDevice(
         TESTGPU_SUPPORTED_FORMATS,
-        SDL_TRUE,
+        true,
         state->gpudriver
     );
     CHECK_CREATE(gpu_device, "GPU device");
@@ -528,9 +528,9 @@ init_render_state(int msaa)
 
     /* Create shaders */
 
-    vertex_shader = load_shader(SDL_TRUE);
+    vertex_shader = load_shader(true);
     CHECK_CREATE(vertex_shader, "Vertex Shader")
-    fragment_shader = load_shader(SDL_FALSE);
+    fragment_shader = load_shader(false);
     CHECK_CREATE(fragment_shader, "Fragment Shader")
 
     /* Create buffers */
@@ -556,7 +556,7 @@ init_render_state(int msaa)
     CHECK_CREATE(buf_transfer, "Vertex transfer buffer")
 
     /* We just need to upload the static data once. */
-    map = SDL_MapGPUTransferBuffer(gpu_device, buf_transfer, SDL_FALSE);
+    map = SDL_MapGPUTransferBuffer(gpu_device, buf_transfer, false);
     SDL_memcpy(map, vertex_data, sizeof(vertex_data));
     SDL_UnmapGPUTransferBuffer(gpu_device, buf_transfer);
 
@@ -567,7 +567,7 @@ init_render_state(int msaa)
     dst_region.buffer = render_state.buf_vertex;
     dst_region.offset = 0;
     dst_region.size = sizeof(vertex_data);
-    SDL_UploadToGPUBuffer(copy_pass, &buf_location, &dst_region, SDL_FALSE);
+    SDL_UploadToGPUBuffer(copy_pass, &buf_location, &dst_region, false);
     SDL_EndGPUCopyPass(copy_pass);
     SDL_SubmitGPUCommandBuffer(cmd);
 
@@ -592,10 +592,10 @@ init_render_state(int msaa)
     pipelinedesc.target_info.num_color_targets = 1;
     pipelinedesc.target_info.color_target_descriptions = &color_target_desc;
     pipelinedesc.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
-    pipelinedesc.target_info.has_depth_stencil_target = SDL_TRUE;
+    pipelinedesc.target_info.has_depth_stencil_target = true;
 
-    pipelinedesc.depth_stencil_state.enable_depth_test = SDL_TRUE;
-    pipelinedesc.depth_stencil_state.enable_depth_write = SDL_TRUE;
+    pipelinedesc.depth_stencil_state.enable_depth_test = true;
+    pipelinedesc.depth_stencil_state.enable_depth_write = true;
     pipelinedesc.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL;
 
     pipelinedesc.multisample_state.sample_count = render_state.sample_count;

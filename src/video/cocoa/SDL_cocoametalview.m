@@ -30,7 +30,7 @@
 
 #if defined(SDL_VIDEO_DRIVER_COCOA) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL))
 
-static SDL_bool SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
+static bool SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 {
     /* Update the drawable size when SDL receives a size changed event for
      * the window that contains the metal view. It would be nice to use

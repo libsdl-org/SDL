@@ -223,7 +223,7 @@ static int SDLCALL platform_testGetVersion(void *arg)
  */
 static int SDLCALL platform_testDefaultInit(void *arg)
 {
-    SDL_bool ret;
+    bool ret;
     int subsystem;
 
     subsystem = SDL_WasInit(0);
@@ -232,8 +232,8 @@ static int SDLCALL platform_testDefaultInit(void *arg)
                         subsystem);
 
     ret = SDL_Init(0);
-    SDLTest_AssertCheck(ret == SDL_TRUE,
-                        "SDL_Init(0): returned %i, expected SDL_TRUE, error: %s",
+    SDLTest_AssertCheck(ret == true,
+                        "SDL_Init(0): returned %i, expected true, error: %s",
                         ret,
                         SDL_GetError());
 
@@ -268,7 +268,7 @@ static int SDLCALL platform_testGetSetClearError(void *arg)
 
     result = SDL_SetError("%s", testError);
     SDLTest_AssertPass("SDL_SetError()");
-    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError: expected SDL_FALSE, got: %i", result);
+    SDLTest_AssertCheck(result == false, "SDL_SetError: expected false, got: %i", result);
     lastError = SDL_GetError();
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");
@@ -304,7 +304,7 @@ static int SDLCALL platform_testSetErrorEmptyInput(void *arg)
 
     result = SDL_SetError("%s", testError);
     SDLTest_AssertPass("SDL_SetError()");
-    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError: expected SDL_FALSE, got: %i", result);
+    SDLTest_AssertCheck(result == false, "SDL_SetError: expected false, got: %i", result);
     lastError = SDL_GetError();
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");
@@ -351,7 +351,7 @@ static int SDLCALL platform_testSetErrorInvalidInput(void *arg)
     /* Check for no-op */
     result = SDL_SetError("%s", invalidError);
     SDLTest_AssertPass("SDL_SetError()");
-    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError: expected SDL_FALSE, got: %i", result);
+    SDLTest_AssertCheck(result == false, "SDL_SetError: expected false, got: %i", result);
     lastError = SDL_GetError();
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");
@@ -365,12 +365,12 @@ static int SDLCALL platform_testSetErrorInvalidInput(void *arg)
     /* Set */
     result = SDL_SetError("%s", probeError);
     SDLTest_AssertPass("SDL_SetError('%s')", probeError);
-    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError: expected SDL_FALSE, got: %i", result);
+    SDLTest_AssertCheck(result == false, "SDL_SetError: expected false, got: %i", result);
 
     /* Check for no-op */
     result = SDL_SetError("%s", invalidError);
     SDLTest_AssertPass("SDL_SetError(NULL)");
-    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError: expected SDL_FALSE, got: %i", result);
+    SDLTest_AssertCheck(result == false, "SDL_SetError: expected false, got: %i", result);
     lastError = SDL_GetError();
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");
@@ -388,7 +388,7 @@ static int SDLCALL platform_testSetErrorInvalidInput(void *arg)
     /* Set and check */
     result = SDL_SetError("%s", probeError);
     SDLTest_AssertPass("SDL_SetError()");
-    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError: expected SDL_FALSE, got: %i", result);
+    SDLTest_AssertCheck(result == false, "SDL_SetError: expected false, got: %i", result);
     lastError = SDL_GetError();
     SDLTest_AssertCheck(lastError != NULL,
                         "SDL_GetError() != NULL");

@@ -54,9 +54,9 @@ extern int FONT_CHARACTER_SIZE;
  *  \param y The Y coordinate of the upper left corner of the character.
  *  \param c The character to draw.
  *
- *  \returns SDL_TRUE on success, SDL_FALSE on failure.
+ *  \returns true on success, false on failure.
  */
-SDL_bool SDLCALL SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c);
+bool SDLCALL SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c);
 
 /*
  *  Draw a UTF-8 string in the currently set font.
@@ -68,9 +68,9 @@ SDL_bool SDLCALL SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y,
  *  \param y The Y coordinate of the upper left corner of the string.
  *  \param s The string to draw.
  *
- *  \returns SDL_TRUE on success, SDL_FALSE on failure.
+ *  \returns true on success, false on failure.
  */
-SDL_bool SDLCALL SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s);
+bool SDLCALL SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s);
 
 /*
  *  Data used for multi-line text output

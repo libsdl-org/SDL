@@ -537,11 +537,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_report_descriptor(SDL_hid_device *de
 /**
  * Start or stop a BLE scan on iOS and tvOS to pair Steam Controllers.
  *
- * \param active SDL_TRUE to start the scan, SDL_FALSE to stop the scan.
+ * \param active true to start the scan, false to stop the scan.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_hid_ble_scan(SDL_bool active);
+extern SDL_DECLSPEC void SDLCALL SDL_hid_ble_scan(bool active);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

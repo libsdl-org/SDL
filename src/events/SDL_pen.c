@@ -142,7 +142,7 @@ const char *SDL_GetPenName(SDL_PenID instance_id)
     return result;
 }
 
-SDL_bool SDL_GetPenInfo(SDL_PenID instance_id, SDL_PenInfo *info)
+bool SDL_GetPenInfo(SDL_PenID instance_id, SDL_PenInfo *info)
 {
     SDL_LockRWLockForReading(pen_device_rwlock);
     const SDL_Pen *pen = FindPenByInstanceId(instance_id);

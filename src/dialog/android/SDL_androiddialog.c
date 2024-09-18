@@ -22,7 +22,7 @@
 #include "SDL_internal.h"
 #include "../../core/android/SDL_android.h"
 
-void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, SDL_bool allow_many)
+void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, bool allow_many)
 {
     if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, false, allow_many)) {
         // SDL_SetError is already called when it fails
@@ -38,7 +38,7 @@ void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userd
     }
 }
 
-void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, SDL_bool allow_many)
+void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, bool allow_many)
 {
     SDL_Unsupported();
     callback(userdata, NULL, -1);

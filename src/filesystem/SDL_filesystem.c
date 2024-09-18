@@ -25,7 +25,7 @@
 #include "SDL_sysfilesystem.h"
 #include "../stdlib/SDL_sysstdlib.h"
 
-SDL_bool SDL_RemovePath(const char *path)
+bool SDL_RemovePath(const char *path)
 {
     if (!path) {
         return SDL_InvalidParamError("path");
@@ -33,7 +33,7 @@ SDL_bool SDL_RemovePath(const char *path)
     return SDL_SYS_RemovePath(path);
 }
 
-SDL_bool SDL_RenamePath(const char *oldpath, const char *newpath)
+bool SDL_RenamePath(const char *oldpath, const char *newpath)
 {
     if (!oldpath) {
         return SDL_InvalidParamError("oldpath");
@@ -43,7 +43,7 @@ SDL_bool SDL_RenamePath(const char *oldpath, const char *newpath)
     return SDL_SYS_RenamePath(oldpath, newpath);
 }
 
-SDL_bool SDL_CopyFile(const char *oldpath, const char *newpath)
+bool SDL_CopyFile(const char *oldpath, const char *newpath)
 {
     if (!oldpath) {
         return SDL_InvalidParamError("oldpath");
@@ -53,7 +53,7 @@ SDL_bool SDL_CopyFile(const char *oldpath, const char *newpath)
     return SDL_SYS_CopyFile(oldpath, newpath);
 }
 
-SDL_bool SDL_CreateDirectory(const char *path)
+bool SDL_CreateDirectory(const char *path)
 {
     // TODO: Recursively create subdirectories
     if (!path) {
@@ -62,7 +62,7 @@ SDL_bool SDL_CreateDirectory(const char *path)
     return SDL_SYS_CreateDirectory(path);
 }
 
-SDL_bool SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata)
+bool SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata)
 {
     if (!path) {
         return SDL_InvalidParamError("path");
@@ -75,7 +75,7 @@ SDL_bool SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
     return true;
 }
 
-SDL_bool SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
+bool SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
     SDL_PathInfo dummy;
 
@@ -399,12 +399,12 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
     return result;
 }
 
-static SDL_bool GlobDirectoryGetPathInfo(const char *path, SDL_PathInfo *info, void *userdata)
+static bool GlobDirectoryGetPathInfo(const char *path, SDL_PathInfo *info, void *userdata)
 {
     return SDL_GetPathInfo(path, info);
 }
 
-static SDL_bool GlobDirectoryEnumerator(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata)
+static bool GlobDirectoryEnumerator(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata)
 {
     return SDL_EnumerateDirectory(path, cb, cbuserdata);
 }

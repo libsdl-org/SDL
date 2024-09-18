@@ -82,11 +82,11 @@ static SDL_Renderer *renderer;
 static SDL_AudioStream *audio;
 static SDL_Texture *video_texture;
 static Uint64 video_start;
-static SDL_bool software_only;
-static SDL_bool has_eglCreateImage;
+static bool software_only;
+static bool has_eglCreateImage;
 #ifdef HAVE_EGL
-static SDL_bool has_EGL_EXT_image_dma_buf_import;
-static SDL_bool has_EGL_EXT_image_dma_buf_import_modifiers;
+static bool has_EGL_EXT_image_dma_buf_import;
+static bool has_EGL_EXT_image_dma_buf_import_modifiers;
 static PFNGLACTIVETEXTUREARBPROC glActiveTextureARBFunc;
 static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOESFunc;
 #endif
@@ -102,14 +102,14 @@ struct SwsContextContainer
 };
 static const char *SWS_CONTEXT_CONTAINER_PROPERTY = "SWS_CONTEXT_CONTAINER";
 static int done;
-static SDL_bool verbose;
+static bool verbose;
 
-static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *driver)
+static bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *driver)
 {
     SDL_PropertiesID props;
-    SDL_bool useOpenGL = (driver && (SDL_strcmp(driver, "opengl") == 0 || SDL_strcmp(driver, "opengles2") == 0));
-    SDL_bool useEGL = (driver && SDL_strcmp(driver, "opengles2") == 0);
-    SDL_bool useVulkan = (driver && SDL_strcmp(driver, "vulkan") == 0);
+    bool useOpenGL = (driver && (SDL_strcmp(driver, "opengl") == 0 || SDL_strcmp(driver, "opengles2") == 0));
+    bool useEGL = (driver && SDL_strcmp(driver, "opengles2") == 0);
+    bool useVulkan = (driver && SDL_strcmp(driver, "vulkan") == 0);
     Uint32 flags = SDL_WINDOW_HIDDEN;
 
     if (useOpenGL) {
@@ -137,7 +137,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
     /* The window will be resized to the video size when it's loaded, in OpenVideoStream() */
     window = SDL_CreateWindow("testffmpeg", 1920, 1080, flags);
     if (!window) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (useVulkan) {
@@ -145,7 +145,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
         if (!vulkan_context) {
             SDL_DestroyWindow(window);
             window = NULL;
-            return SDL_FALSE;
+            return false;
         }
     }
 
@@ -155,7 +155,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
     if (useVulkan) {
         SetupVulkanRenderProperties(vulkan_context, props);
     }
-    if (SDL_GetBooleanProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false)) {
         /* Try to create an HDR capable renderer */
         SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB_LINEAR);
         renderer = SDL_CreateRendererWithProperties(props);
@@ -169,7 +169,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
     if (!renderer) {
         SDL_DestroyWindow(window);
         window = NULL;
-        return SDL_FALSE;
+        return false;
     }
 
     SDL_Log("Created renderer %s\n", SDL_GetRendererName(renderer));
@@ -178,25 +178,25 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
     if (useEGL) {
         const char *egl_extensions = eglQueryString(eglGetCurrentDisplay(), EGL_EXTENSIONS);
         if (!egl_extensions) {
-            return SDL_FALSE;
+            return false;
         }
 
         char *extensions = SDL_strdup(egl_extensions);
         if (!extensions) {
-            return SDL_FALSE;
+            return false;
         }
 
         char *saveptr, *token;
         token = SDL_strtok_r(extensions, " ", &saveptr);
         if (!token) {
             SDL_free(extensions);
-            return SDL_FALSE;
+            return false;
         }
         do {
             if (SDL_strcmp(token, "EGL_EXT_image_dma_buf_import") == 0) {
-                has_EGL_EXT_image_dma_buf_import = SDL_TRUE;
+                has_EGL_EXT_image_dma_buf_import = true;
             } else if (SDL_strcmp(token, "EGL_EXT_image_dma_buf_import_modifiers") == 0) {
-                has_EGL_EXT_image_dma_buf_import_modifiers = SDL_TRUE;
+                has_EGL_EXT_image_dma_buf_import_modifiers = true;
             }
         } while ((token = SDL_strtok_r(NULL, " ", &saveptr)) != NULL);
 
@@ -211,7 +211,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
         if (has_EGL_EXT_image_dma_buf_import &&
             glEGLImageTargetTexture2DOESFunc &&
             glActiveTextureARBFunc) {
-            has_eglCreateImage = SDL_TRUE;
+            has_eglCreateImage = true;
         }
     }
 #endif /* HAVE_EGL */
@@ -224,7 +224,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
     }
 #endif
 
-    return SDL_TRUE;
+    return true;
 }
 
 static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h)
@@ -233,10 +233,10 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
     SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_IO(src, SDL_TRUE);
+        surface = SDL_LoadBMP_IO(src, true);
         if (surface) {
             /* Treat white as transparent */
-            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapSurfaceRGB(surface, 255, 255, 255));
+            SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
 
             texture = SDL_CreateTextureFromSurface(r, surface);
             *w = surface->w;
@@ -331,32 +331,32 @@ static SDL_PixelFormat GetTextureFormat(enum AVPixelFormat format)
     }
 }
 
-static SDL_bool SupportedPixelFormat(enum AVPixelFormat format)
+static bool SupportedPixelFormat(enum AVPixelFormat format)
 {
     if (!software_only) {
         if (has_eglCreateImage &&
             (format == AV_PIX_FMT_VAAPI || format == AV_PIX_FMT_DRM_PRIME)) {
-            return SDL_TRUE;
+            return true;
         }
 #ifdef SDL_PLATFORM_APPLE
         if (format == AV_PIX_FMT_VIDEOTOOLBOX) {
-            return SDL_TRUE;
+            return true;
         }
 #endif
 #ifdef SDL_PLATFORM_WIN32
         if (d3d11_device && format == AV_PIX_FMT_D3D11) {
-            return SDL_TRUE;
+            return true;
         }
 #endif
         if (vulkan_context && format == AV_PIX_FMT_VULKAN) {
-            return SDL_TRUE;
+            return true;
         }
     }
 
     if (GetTextureFormat(format) != SDL_PIXELFORMAT_UNKNOWN) {
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 static enum AVPixelFormat GetSupportedPixelFormat(AVCodecContext *s, const enum AVPixelFormat *pix_fmts)
@@ -568,7 +568,7 @@ static void SDLCALL FreeSwsContextContainer(void *userdata, void *value)
     SDL_free(sws_container);
 }
 
-static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
+static bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
 {
     int texture_width = 0, texture_height = 0;
     SDL_PixelFormat texture_format = SDL_PIXELFORMAT_UNKNOWN;
@@ -596,7 +596,7 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
         *texture = SDL_CreateTextureWithProperties(renderer, props);
         SDL_DestroyProperties(props);
         if (!*texture) {
-            return SDL_FALSE;
+            return false;
         }
 
         if (frame_format == SDL_PIXELFORMAT_UNKNOWN || SDL_ISPIXELFORMAT_ALPHA(frame_format)) {
@@ -615,7 +615,7 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
         if (!sws_container) {
             sws_container = (struct SwsContextContainer *)SDL_calloc(1, sizeof(*sws_container));
             if (!sws_container) {
-                return SDL_FALSE;
+                return false;
             }
             SDL_SetPointerPropertyWithCleanup(props, SWS_CONTEXT_CONTAINER_PROPERTY, sws_container, FreeSwsContextContainer, NULL);
         }
@@ -629,7 +629,7 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
             }
         } else {
             SDL_SetError("Can't initialize the conversion context");
-            return SDL_FALSE;
+            return false;
         }
         break;
     }
@@ -652,12 +652,12 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
         }
         break;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 #ifdef HAVE_EGL
 
-static SDL_bool GetNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
+static bool GetNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
     AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx ? frame->hw_frames_ctx->data : NULL);
     const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
@@ -678,7 +678,7 @@ static SDL_bool GetNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
-        return SDL_FALSE;
+        return false;
     }
     SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_NONE);
     SDL_SetTextureScaleMode(*texture, SDL_SCALEMODE_LINEAR);
@@ -688,7 +688,7 @@ static SDL_bool GetNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     textures[1] = (GLuint)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_UV_NUMBER, 0);
     if (!textures[0] || !textures[1]) {
         SDL_SetError("Couldn't get NV12 OpenGL textures");
-        return SDL_FALSE;
+        return false;
     }
 
     /* import the frame into OpenGL */
@@ -733,7 +733,7 @@ static SDL_bool GetNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
             EGLImage image = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attr);
             if (image == EGL_NO_IMAGE) {
                 SDL_Log("Couldn't create image: %d\n", glGetError());
-                return SDL_FALSE;
+                return false;
             }
 
             glActiveTextureARBFunc(GL_TEXTURE0_ARB + image_index);
@@ -743,10 +743,10 @@ static SDL_bool GetNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
         }
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
-static SDL_bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
+static bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
     AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx ? frame->hw_frames_ctx->data : NULL);
     const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
@@ -766,7 +766,7 @@ static SDL_bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
-        return SDL_FALSE;
+        return false;
     }
     SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_NONE);
     SDL_SetTextureScaleMode(*texture, SDL_SCALEMODE_LINEAR);
@@ -775,7 +775,7 @@ static SDL_bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     textureID = (GLuint)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_NUMBER, 0);
     if (!textureID) {
         SDL_SetError("Couldn't get OpenGL texture");
-        return SDL_FALSE;
+        return false;
     }
     colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_COLORSPACE_NUMBER, SDL_COLORSPACE_UNKNOWN);
 
@@ -918,17 +918,17 @@ static SDL_bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     EGLImage image = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attr);
     if (image == EGL_NO_IMAGE) {
         SDL_Log("Couldn't create image: %d\n", glGetError());
-        return SDL_FALSE;
+        return false;
     }
 
     glActiveTextureARBFunc(GL_TEXTURE0_ARB);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, textureID);
     glEGLImageTargetTexture2DOESFunc(GL_TEXTURE_EXTERNAL_OES, image);
-    return SDL_TRUE;
+    return true;
 }
 #endif // HAVE_EGL
 
-static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
+static bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
 #ifdef HAVE_EGL
     const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
@@ -941,14 +941,14 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
         return GetOESTextureForDRMFrame(frame, texture);
     }
 #else
-    return SDL_FALSE;
+    return false;
 #endif
 }
 
-static SDL_bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
+static bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
 {
     AVFrame *drm_frame;
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     drm_frame = av_frame_alloc();
     if (drm_frame) {
@@ -963,7 +963,7 @@ static SDL_bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
     return result;
 }
 
-static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
+static bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
 {
 #ifdef SDL_PLATFORM_WIN32
     AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
@@ -985,24 +985,24 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
         *texture = SDL_CreateTextureWithProperties(renderer, props);
         SDL_DestroyProperties(props);
         if (!*texture) {
-            return SDL_FALSE;
+            return false;
         }
     }
 
     ID3D11Resource *dx11_resource = SDL_GetPointerProperty(SDL_GetTextureProperties(*texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_POINTER, NULL);
     if (!dx11_resource) {
         SDL_SetError("Couldn't get texture ID3D11Resource interface");
-        return SDL_FALSE;
+        return false;
     }
     ID3D11DeviceContext_CopySubresourceRegion(d3d11_context, dx11_resource, 0, 0, 0, 0, (ID3D11Resource *)pTexture, iSliceIndex, NULL);
 
-    return SDL_TRUE;
+    return true;
 #else
-    return SDL_FALSE;
+    return false;
 #endif
 }
 
-static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **texture)
+static bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **texture)
 {
 #ifdef SDL_PLATFORM_APPLE
     CVPixelBufferRef pPixelBuffer = (CVPixelBufferRef)frame->data[3];
@@ -1019,16 +1019,16 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 #else
-    return SDL_FALSE;
+    return false;
 #endif
 }
 
-static SDL_bool GetTextureForVulkanFrame(AVFrame *frame, SDL_Texture **texture)
+static bool GetTextureForVulkanFrame(AVFrame *frame, SDL_Texture **texture)
 {
     SDL_PropertiesID props;
 
@@ -1040,12 +1040,12 @@ static SDL_bool GetTextureForVulkanFrame(AVFrame *frame, SDL_Texture **texture)
     *texture = CreateVulkanVideoTexture(vulkan_context, frame, renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
-static SDL_bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
+static bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
 {
     switch (frame->format) {
     case AV_PIX_FMT_VAAPI:
@@ -1194,7 +1194,7 @@ static SDL_AudioFormat GetAudioFormat(enum AVSampleFormat format)
     }
 }
 
-static SDL_bool IsPlanarAudioFormat(enum AVSampleFormat format)
+static bool IsPlanarAudioFormat(enum AVSampleFormat format)
 {
     switch (format) {
     case AV_SAMPLE_FMT_U8P:
@@ -1203,9 +1203,9 @@ static SDL_bool IsPlanarAudioFormat(enum AVSampleFormat format)
     case AV_SAMPLE_FMT_FLTP:
     case AV_SAMPLE_FMT_DBLP:
     case AV_SAMPLE_FMT_S64P:
-        return SDL_TRUE;
+        return true;
     default:
-        return SDL_FALSE;
+        return false;
     }
 }
 
@@ -1311,8 +1311,8 @@ int main(int argc, char *argv[])
     int result;
     int return_code = -1;
     SDL_WindowFlags window_flags;
-    SDL_bool flushing = SDL_FALSE;
-    SDL_bool decoded = SDL_FALSE;
+    bool flushing = false;
+    bool decoded = false;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
@@ -1331,7 +1331,7 @@ int main(int argc, char *argv[])
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
             if (SDL_strcmp(argv[i], "--verbose") == 0) {
-                verbose = SDL_TRUE;
+                verbose = true;
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--sprites") == 0 && argv[i + 1]) {
                 num_sprites = SDL_atoi(argv[i + 1]);
@@ -1343,7 +1343,7 @@ int main(int argc, char *argv[])
                 video_codec_name = argv[i + 1];
                 consumed = 2;
             } else if (SDL_strcmp(argv[i], "--software") == 0) {
-                software_only = SDL_TRUE;
+                software_only = true;
                 consumed = 1;
             } else if (!file) {
                 /* We'll try to open this as a media file */
@@ -1520,7 +1520,7 @@ int main(int argc, char *argv[])
                 if (video_context) {
                     avcodec_flush_buffers(video_context);
                 }
-                flushing = SDL_TRUE;
+                flushing = true;
             } else {
                 if (pkt->stream_index == audio_stream) {
                     result = avcodec_send_packet(audio_context, pkt);
@@ -1537,11 +1537,11 @@ int main(int argc, char *argv[])
             }
         }
 
-        decoded = SDL_FALSE;
+        decoded = false;
         if (audio_context) {
             while (avcodec_receive_frame(audio_context, frame) >= 0) {
                 HandleAudioFrame(frame);
-                decoded = SDL_TRUE;
+                decoded = true;
             }
             if (flushing) {
                 /* Let SDL know we're done sending audio */
@@ -1557,7 +1557,7 @@ int main(int argc, char *argv[])
                 pts -= first_pts;
 
                 HandleVideoFrame(frame, pts);
-                decoded = SDL_TRUE;
+                decoded = true;
             }
         } else {
             /* Update video rendering */

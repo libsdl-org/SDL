@@ -472,7 +472,7 @@ SDL_SensorID SDL_GetSensorID(SDL_Sensor *sensor)
 /*
  * Get the current state of this sensor
  */
-SDL_bool SDL_GetSensorData(SDL_Sensor *sensor, float *data, int num_values)
+bool SDL_GetSensorData(SDL_Sensor *sensor, float *data, int num_values)
 {
     SDL_LockSensors();
     {

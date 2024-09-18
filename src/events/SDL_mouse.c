@@ -356,7 +356,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
     }
 }
 
-SDL_bool SDL_HasMouse(void)
+bool SDL_HasMouse(void)
 {
     return (SDL_mouse_count > 0);
 }
@@ -1305,7 +1305,7 @@ void SDL_WarpMouseInWindow(SDL_Window *window, float x, float y)
     SDL_PerformWarpMouseInWindow(window, x, y, mouse->warp_emulation_active);
 }
 
-SDL_bool SDL_WarpMouseGlobal(float x, float y)
+bool SDL_WarpMouseGlobal(float x, float y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1462,7 +1462,7 @@ bool SDL_UpdateMouseCapture(bool force_release)
     return true;
 }
 
-SDL_bool SDL_CaptureMouse(SDL_bool enabled)
+bool SDL_CaptureMouse(bool enabled)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1602,7 +1602,7 @@ SDL_Cursor *SDL_CreateSystemCursor(SDL_SystemCursor id)
    if this is desired for any reason.  This is used when setting
    the video mode and when the SDL window gains the mouse focus.
  */
-SDL_bool SDL_SetCursor(SDL_Cursor *cursor)
+bool SDL_SetCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1701,7 +1701,7 @@ void SDL_DestroyCursor(SDL_Cursor *cursor)
     }
 }
 
-SDL_bool SDL_ShowCursor(void)
+bool SDL_ShowCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1717,7 +1717,7 @@ SDL_bool SDL_ShowCursor(void)
     return true;
 }
 
-SDL_bool SDL_HideCursor(void)
+bool SDL_HideCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1728,7 +1728,7 @@ SDL_bool SDL_HideCursor(void)
     return true;
 }
 
-SDL_bool SDL_CursorVisible(void)
+bool SDL_CursorVisible(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 

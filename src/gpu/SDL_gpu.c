@@ -225,7 +225,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     }
 
     blit_pipeline_create_info.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    blit_pipeline_create_info.multisample_state.enable_mask = SDL_FALSE;
+    blit_pipeline_create_info.multisample_state.enable_mask = false;
 
     blit_pipeline_create_info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 
@@ -442,7 +442,7 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
 static void SDL_GPU_FillProperties(
     SDL_PropertiesID props,
     SDL_GPUShaderFormat format_flags,
-    SDL_bool debug_mode,
+    bool debug_mode,
     const char *name)
 {
     if (format_flags & SDL_GPU_SHADERFORMAT_PRIVATE) {
@@ -468,36 +468,36 @@ static void SDL_GPU_FillProperties(
 }
 #endif // SDL_GPU_DISABLED
 
-SDL_bool SDL_GPUSupportsShaderFormats(
+bool SDL_GPUSupportsShaderFormats(
     SDL_GPUShaderFormat format_flags,
     const char *name)
 {
 #ifndef SDL_GPU_DISABLED
     bool result;
     SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_GPU_FillProperties(props, format_flags, SDL_FALSE, name);
+    SDL_GPU_FillProperties(props, format_flags, false, name);
     result = SDL_GPUSupportsProperties(props);
     SDL_DestroyProperties(props);
     return result;
 #else
     SDL_SetError("SDL not built with GPU support");
-    return SDL_FALSE;
+    return false;
 #endif
 }
 
-SDL_bool SDL_GPUSupportsProperties(SDL_PropertiesID props)
+bool SDL_GPUSupportsProperties(SDL_PropertiesID props)
 {
 #ifndef SDL_GPU_DISABLED
     return (SDL_GPUSelectBackend(props) != NULL);
 #else
     SDL_SetError("SDL not built with GPU support");
-    return SDL_FALSE;
+    return false;
 #endif
 }
 
 SDL_GPUDevice *SDL_CreateGPUDevice(
     SDL_GPUShaderFormat format_flags,
-    SDL_bool debug_mode,
+    bool debug_mode,
     const char *name)
 {
 #ifndef SDL_GPU_DISABLED
@@ -641,7 +641,7 @@ Uint32 SDL_GPUTextureFormatTexelBlockSize(
     }
 }
 
-SDL_bool SDL_GPUTextureSupportsFormat(
+bool SDL_GPUTextureSupportsFormat(
     SDL_GPUDevice *device,
     SDL_GPUTextureFormat format,
     SDL_GPUTextureType type,
@@ -660,7 +660,7 @@ SDL_bool SDL_GPUTextureSupportsFormat(
         usage);
 }
 
-SDL_bool SDL_GPUTextureSupportsSampleCount(
+bool SDL_GPUTextureSupportsSampleCount(
     SDL_GPUDevice *device,
     SDL_GPUTextureFormat format,
     SDL_GPUSampleCount sample_count)
@@ -2074,7 +2074,7 @@ void SDL_EndGPUComputePass(
 void *SDL_MapGPUTransferBuffer(
     SDL_GPUDevice *device,
     SDL_GPUTransferBuffer *transfer_buffer,
-    SDL_bool cycle)
+    bool cycle)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     if (transfer_buffer == NULL) {
@@ -2132,7 +2132,7 @@ void SDL_UploadToGPUTexture(
     SDL_GPUCopyPass *copy_pass,
     const SDL_GPUTextureTransferInfo *source,
     const SDL_GPUTextureRegion *destination,
-    SDL_bool cycle)
+    bool cycle)
 {
     if (copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
@@ -2170,7 +2170,7 @@ void SDL_UploadToGPUBuffer(
     SDL_GPUCopyPass *copy_pass,
     const SDL_GPUTransferBufferLocation *source,
     const SDL_GPUBufferRegion *destination,
-    SDL_bool cycle)
+    bool cycle)
 {
     if (copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
@@ -2211,7 +2211,7 @@ void SDL_CopyGPUTextureToTexture(
     Uint32 w,
     Uint32 h,
     Uint32 d,
-    SDL_bool cycle)
+    bool cycle)
 {
     if (copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
@@ -2253,7 +2253,7 @@ void SDL_CopyGPUBufferToBuffer(
     const SDL_GPUBufferLocation *source,
     const SDL_GPUBufferLocation *destination,
     Uint32 size,
-    SDL_bool cycle)
+    bool cycle)
 {
     if (copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
@@ -2475,7 +2475,7 @@ void SDL_BlitGPUTexture(
 
 // Submission/Presentation
 
-SDL_bool SDL_WindowSupportsGPUSwapchainComposition(
+bool SDL_WindowSupportsGPUSwapchainComposition(
     SDL_GPUDevice *device,
     SDL_Window *window,
     SDL_GPUSwapchainComposition swapchain_composition)
@@ -2496,7 +2496,7 @@ SDL_bool SDL_WindowSupportsGPUSwapchainComposition(
         swapchain_composition);
 }
 
-SDL_bool SDL_WindowSupportsGPUPresentMode(
+bool SDL_WindowSupportsGPUPresentMode(
     SDL_GPUDevice *device,
     SDL_Window *window,
     SDL_GPUPresentMode present_mode)
@@ -2517,7 +2517,7 @@ SDL_bool SDL_WindowSupportsGPUPresentMode(
         present_mode);
 }
 
-SDL_bool SDL_ClaimWindowForGPUDevice(
+bool SDL_ClaimWindowForGPUDevice(
     SDL_GPUDevice *device,
     SDL_Window *window)
 {
@@ -2547,7 +2547,7 @@ void SDL_ReleaseWindowFromGPUDevice(
         window);
 }
 
-SDL_bool SDL_SetGPUSwapchainParameters(
+bool SDL_SetGPUSwapchainParameters(
     SDL_GPUDevice *device,
     SDL_Window *window,
     SDL_GPUSwapchainComposition swapchain_composition,
@@ -2686,7 +2686,7 @@ void SDL_WaitForGPUIdle(
 
 void SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
-    SDL_bool wait_all,
+    bool wait_all,
     SDL_GPUFence *const *fences,
     Uint32 num_fences)
 {
@@ -2703,7 +2703,7 @@ void SDL_WaitForGPUFences(
         num_fences);
 }
 
-SDL_bool SDL_QueryGPUFence(
+bool SDL_QueryGPUFence(
     SDL_GPUDevice *device,
     SDL_GPUFence *fence)
 {

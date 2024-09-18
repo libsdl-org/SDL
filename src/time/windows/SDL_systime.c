@@ -75,7 +75,7 @@ found_date:
     }
 }
 
-SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
+bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     FILETIME ft;
 
@@ -108,7 +108,7 @@ SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
     return true;
 }
 
-SDL_bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
+bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
 {
     FILETIME ft, local_ft;
     SYSTEMTIME utc_st, local_st;

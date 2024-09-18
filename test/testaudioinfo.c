@@ -14,7 +14,7 @@
 #include <SDL3/SDL_test.h>
 
 static void
-print_devices(SDL_bool recording)
+print_devices(bool recording)
 {
     SDL_AudioSpec spec;
     const char *typestr = (recording ? "recording" : "playback");
@@ -88,8 +88,8 @@ int main(int argc, char **argv)
 
     SDL_Log("Using audio driver: %s\n\n", SDL_GetCurrentAudioDriver());
 
-    print_devices(SDL_FALSE);
-    print_devices(SDL_TRUE);
+    print_devices(false);
+    print_devices(true);
 
     if (SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &frames)) {
         SDL_Log("Default Playback Device:\n");
