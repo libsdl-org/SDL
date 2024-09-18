@@ -1709,7 +1709,7 @@ static FORCEINLINE void* win32direct_mmap(size_t size) {
   return (ptr != 0)? ptr: MFAIL;
 }
 
-/* This function supports releasing coalesed segments */
+/* This function supports releasing coalesced segments */
 static FORCEINLINE int win32munmap(void* ptr, size_t size) {
   MEMORY_BASIC_INFORMATION minfo;
   char* cptr = (char*)ptr;
