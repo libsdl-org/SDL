@@ -194,7 +194,7 @@ static const char *MediaStatusStr(const media_status_t rc)
 {
     switch (rc) {
         case AMEDIA_OK: return "no error";
-        case AMEDIACODEC_ERROR_INSUFFICIENT_RESOURCE: return "insuffient resources";
+        case AMEDIACODEC_ERROR_INSUFFICIENT_RESOURCE: return "insufficient resources";
         case AMEDIACODEC_ERROR_RECLAIMED: return "reclaimed";
         case AMEDIA_ERROR_UNKNOWN: return "unknown error";
         case AMEDIA_ERROR_MALFORMED: return "malformed";

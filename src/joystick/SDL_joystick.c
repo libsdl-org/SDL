@@ -213,7 +213,7 @@ static Uint32 initial_blacklist_devices[] = {
     // Microsoft Nano Transceiver v2.0
     MAKE_VIDPID(0x045e, 0x0800),
 
-    MAKE_VIDPID(0x046d, 0xc30a), // Logitech, Inc. iTouch Composite keboard
+    MAKE_VIDPID(0x046d, 0xc30a), // Logitech, Inc. iTouch Composite keyboard
 
     MAKE_VIDPID(0x04d9, 0xa0df), // Tek Syndicate Mouse (E-Signal USB Gaming Mouse)
 

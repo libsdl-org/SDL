@@ -85,7 +85,7 @@ def main():
                     ignore_wiki_documentation = False
                 continue
 
-            # Discard wiki documentions blocks.
+            # Discard wiki documentations blocks.
             if line.startswith("#ifdef SDL_WIKI_DOCUMENTATION_SECTION"):
                 ignore_wiki_documentation = True
                 continue

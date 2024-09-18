@@ -617,7 +617,7 @@ static void UpdateWindowFullscreen(SDL_Window *window, bool fullscreen)
             SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_ENTER, false);
 
             /* Set the output for exclusive fullscreen windows when entering fullscreen from a
-             * compositor event, or if the fullscreen paramaters were changed between the initial
+             * compositor event, or if the fullscreen parameters were changed between the initial
              * fullscreen request and now, to ensure that the window is on the correct output,
              * as requested by the client.
              */

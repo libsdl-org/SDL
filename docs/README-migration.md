@@ -1827,9 +1827,9 @@ But if you're migrating your code which uses masks, you probably have a format i
 
 SDL_BlitSurface() and SDL_BlitSurfaceScaled() now have a const `dstrect` parameter and do not fill it in with the final destination rectangle.
 
-SDL_BlitSurfaceScaled() and SDL_BlitSurfaceUncheckedScaled() now take a scale paramater.
+SDL_BlitSurfaceScaled() and SDL_BlitSurfaceUncheckedScaled() now take a scale parameter.
 
-SDL_SoftStretch() now takes a scale paramater.
+SDL_SoftStretch() now takes a scale parameter.
 
 SDL_PixelFormat is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
 

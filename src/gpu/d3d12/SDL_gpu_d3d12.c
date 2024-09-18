@@ -888,7 +888,7 @@ struct D3D12UniformBuffer
     Uint32 currentBlockSize;
 };
 
-// Foward function declarations
+// Forward function declarations
 
 static void D3D12_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window);
 static void D3D12_Wait(SDL_GPURenderer *driverData);

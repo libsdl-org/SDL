@@ -2896,8 +2896,8 @@ SDL_bool SDL_SetWindowSize(SDL_Window *window, int w, int h)
         return SDL_InvalidParamError("h");
     }
 
-    // It is possible for the aspect ratio contraints to not satisfy the size constraints.
-    // The size constraints will override the aspect ratio contraints so we will apply the
+    // It is possible for the aspect ratio constraints to not satisfy the size constraints.
+    // The size constraints will override the aspect ratio constraints so we will apply the
     // the aspect ratio constraints first
     float new_aspect = w / (float)h;
     if (window->max_aspect > 0.0f && new_aspect > window->max_aspect) {
