@@ -159,7 +159,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime);
+extern SDL_DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, uint32_t *dwLowDateTime, uint32_t *dwHighDateTime);
 
 /**
  * Converts a Windows FILETIME (100-nanosecond intervals since January 1,
@@ -174,7 +174,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLow
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_Time SDLCALL SDL_TimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime);
+extern SDL_DECLSPEC SDL_Time SDLCALL SDL_TimeFromWindows(uint32_t dwLowDateTime, uint32_t dwHighDateTime);
 
 /**
  * Get the number of days in a month for a given year.

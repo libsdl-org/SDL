@@ -162,7 +162,7 @@ struct SDL_WindowData
     SDL_DisplayID last_displayID;
     int fullscreen_deadline_count;
     int maximized_deadline_count;
-    Uint64 last_focus_event_time_ns;
+    uint64_t last_focus_event_time_ns;
     bool floating;
     bool suspended;
     bool active;

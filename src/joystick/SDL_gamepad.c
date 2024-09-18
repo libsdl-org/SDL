@@ -121,8 +121,8 @@ struct SDL_Gamepad
     int num_bindings _guarded;
     SDL_GamepadBinding *bindings _guarded;
     SDL_GamepadBinding **last_match_axis _guarded;
-    Uint8 *last_hat_mask _guarded;
-    Uint64 guide_button_down _guarded;
+    uint8_t *last_hat_mask _guarded;
+    uint64_t guide_button_down _guarded;
 
     struct SDL_Gamepad *next _guarded; // pointer to next gamepad we have allocated
 };
@@ -153,8 +153,8 @@ static SDL_vidpid_list SDL_ignored_gamepads = {
 static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_GUID jGUID, const char *mappingString, bool *existing, SDL_GamepadMappingPriority priority);
 static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t *pGamepadMapping);
 static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id, bool create_mapping);
-static void SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadAxis axis, Sint16 value);
-static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, bool down);
+static void SDL_SendGamepadAxis(uint64_t timestamp, SDL_Gamepad *gamepad, SDL_GamepadAxis axis, int16_t value);
+static void SDL_SendGamepadButton(uint64_t timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, bool down);
 
 static bool HasSameOutput(SDL_GamepadBinding *a, SDL_GamepadBinding *b)
 {
@@ -169,7 +169,7 @@ static bool HasSameOutput(SDL_GamepadBinding *a, SDL_GamepadBinding *b)
     }
 }
 
-static void ResetOutput(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadBinding *bind)
+static void ResetOutput(uint64_t timestamp, SDL_Gamepad *gamepad, SDL_GamepadBinding *bind)
 {
     if (bind->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
         SDL_SendGamepadAxis(timestamp, gamepad, bind->output.axis.axis, 0);
@@ -178,7 +178,7 @@ static void ResetOutput(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadBindi
     }
 }
 
-static void HandleJoystickAxis(Uint64 timestamp, SDL_Gamepad *gamepad, int axis, int value)
+static void HandleJoystickAxis(uint64_t timestamp, SDL_Gamepad *gamepad, int axis, int value)
 {
     int i;
     SDL_GamepadBinding *last_match;
@@ -218,7 +218,7 @@ static void HandleJoystickAxis(Uint64 timestamp, SDL_Gamepad *gamepad, int axis,
                 float normalized_value = (float)(value - match->input.axis.axis_min) / (match->input.axis.axis_max - match->input.axis.axis_min);
                 value = match->output.axis.axis_min + (int)(normalized_value * (match->output.axis.axis_max - match->output.axis.axis_min));
             }
-            SDL_SendGamepadAxis(timestamp, gamepad, match->output.axis.axis, (Sint16)value);
+            SDL_SendGamepadAxis(timestamp, gamepad, match->output.axis.axis, (int16_t)value);
         } else {
             bool down;
             int threshold = match->input.axis.axis_min + (match->input.axis.axis_max - match->input.axis.axis_min) / 2;
@@ -233,7 +233,7 @@ static void HandleJoystickAxis(Uint64 timestamp, SDL_Gamepad *gamepad, int axis,
     gamepad->last_match_axis[axis] = match;
 }
 
-static void HandleJoystickButton(Uint64 timestamp, SDL_Gamepad *gamepad, int button, bool down)
+static void HandleJoystickButton(uint64_t timestamp, SDL_Gamepad *gamepad, int button, bool down)
 {
     int i;
 
@@ -245,7 +245,7 @@ static void HandleJoystickButton(Uint64 timestamp, SDL_Gamepad *gamepad, int but
             button == binding->input.button) {
             if (binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
                 int value = down ? binding->output.axis.axis_max : binding->output.axis.axis_min;
-                SDL_SendGamepadAxis(timestamp, gamepad, binding->output.axis.axis, (Sint16)value);
+                SDL_SendGamepadAxis(timestamp, gamepad, binding->output.axis.axis, (int16_t)value);
             } else {
                 SDL_SendGamepadButton(timestamp, gamepad, binding->output.button, down);
             }
@@ -254,10 +254,10 @@ static void HandleJoystickButton(Uint64 timestamp, SDL_Gamepad *gamepad, int but
     }
 }
 
-static void HandleJoystickHat(Uint64 timestamp, SDL_Gamepad *gamepad, int hat, Uint8 value)
+static void HandleJoystickHat(uint64_t timestamp, SDL_Gamepad *gamepad, int hat, uint8_t value)
 {
     int i;
-    Uint8 last_mask, changed_mask;
+    uint8_t last_mask, changed_mask;
 
     SDL_AssertJoysticksLocked();
 
@@ -269,7 +269,7 @@ static void HandleJoystickHat(Uint64 timestamp, SDL_Gamepad *gamepad, int hat, U
             if ((changed_mask & binding->input.hat.hat_mask) != 0) {
                 if (value & binding->input.hat.hat_mask) {
                     if (binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                        SDL_SendGamepadAxis(timestamp, gamepad, binding->output.axis.axis, (Sint16)binding->output.axis.axis_max);
+                        SDL_SendGamepadAxis(timestamp, gamepad, binding->output.axis.axis, (int16_t)binding->output.axis.axis_max);
                     } else {
                         SDL_SendGamepadButton(timestamp, gamepad, binding->output.button, true);
                     }
@@ -291,7 +291,7 @@ static void HandleJoystickHat(Uint64 timestamp, SDL_Gamepad *gamepad, int hat, U
 static void RecenterGamepad(SDL_Gamepad *gamepad)
 {
     int i;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     for (i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; ++i) {
         SDL_GamepadButton button = (SDL_GamepadButton)i;
@@ -453,7 +453,7 @@ static void AdjustSensorOrientation(SDL_Joystick *joystick, float *src, float *d
  * event delivery would lock the event queue and then from within the
  * event watcher function lock the joysticks.
  */
-void SDL_GamepadSensorWatcher(Uint64 timestamp, SDL_SensorID sensor, Uint64 sensor_timestamp, float *data, int num_values)
+void SDL_GamepadSensorWatcher(uint64_t timestamp, SDL_SensorID sensor, uint64_t sensor_timestamp, float *data, int num_values)
 {
     SDL_Gamepad *gamepad;
 
@@ -600,8 +600,8 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_GUID guid)
     int button_mask;
     int axis_mask;
 
-    button_mask = SDL_Swap16LE(*(Uint16 *)(&guid.data[sizeof(guid.data) - 4]));
-    axis_mask = SDL_Swap16LE(*(Uint16 *)(&guid.data[sizeof(guid.data) - 2]));
+    button_mask = SDL_Swap16LE(*(uint16_t *)(&guid.data[sizeof(guid.data) - 4]));
+    axis_mask = SDL_Swap16LE(*(uint16_t *)(&guid.data[sizeof(guid.data) - 2]));
     if (!button_mask && !axis_mask) {
         // Accelerometer, shouldn't have a gamepad mapping
         return NULL;
@@ -695,8 +695,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
 {
     bool existing;
     char mapping_string[1024];
-    Uint16 vendor;
-    Uint16 product;
+    uint16_t vendor;
+    uint16_t product;
 
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
 
@@ -871,7 +871,7 @@ static GamepadMapping_t *SDL_CreateMappingForWGIGamepad(SDL_GUID guid)
 static GamepadMapping_t *SDL_PrivateMatchGamepadMappingForGUID(SDL_GUID guid, bool match_version)
 {
     GamepadMapping_t *mapping, *best_match = NULL;
-    Uint16 crc = 0;
+    uint16_t crc = 0;
 
     SDL_AssertJoysticksLocked();
 
@@ -899,7 +899,7 @@ static GamepadMapping_t *SDL_PrivateMatchGamepadMappingForGUID(SDL_GUID guid, bo
         if (SDL_memcmp(&guid, &mapping_guid, sizeof(guid)) == 0) {
             const char *crc_string = SDL_strstr(mapping->mapping, SDL_GAMEPAD_CRC_FIELD);
             if (crc_string) {
-                Uint16 mapping_crc = (Uint16)SDL_strtol(crc_string + SDL_GAMEPAD_CRC_FIELD_SIZE, NULL, 16);
+                uint16_t mapping_crc = (uint16_t)SDL_strtol(crc_string + SDL_GAMEPAD_CRC_FIELD_SIZE, NULL, 16);
                 if (mapping_crc != crc) {
                     // This mapping specified a CRC and they don't match
                     continue;
@@ -1420,7 +1420,7 @@ static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t 
              binding->output.axis.axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)) {
             if (binding->input.axis.axis < gamepad->joystick->naxes) {
                 gamepad->joystick->axes[binding->input.axis.axis].value =
-                    gamepad->joystick->axes[binding->input.axis.axis].zero = (Sint16)binding->input.axis.axis_min;
+                    gamepad->joystick->axes[binding->input.axis.axis].zero = (int16_t)binding->input.axis.axis_min;
             }
         }
     }
@@ -1534,7 +1534,7 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_GUID jGUID, const char
     char *pchName;
     char *pchMapping;
     GamepadMapping_t *pGamepadMapping;
-    Uint16 crc;
+    uint16_t crc;
 
     SDL_AssertJoysticksLocked();
 
@@ -1586,7 +1586,7 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_GUID jGUID, const char
         // Make sure the GUID has the CRC, for matching purposes
         char *crc_string = SDL_strstr(pchMapping, SDL_GAMEPAD_CRC_FIELD);
         if (crc_string) {
-            crc = (Uint16)SDL_strtol(crc_string + SDL_GAMEPAD_CRC_FIELD_SIZE, NULL, 16);
+            crc = (uint16_t)SDL_strtol(crc_string + SDL_GAMEPAD_CRC_FIELD_SIZE, NULL, 16);
             if (crc) {
                 SDL_SetJoystickGUIDCRC(&jGUID, crc);
             }
@@ -2456,17 +2456,17 @@ SDL_GUID SDL_GetGamepadGUIDForID(SDL_JoystickID instance_id)
     return SDL_GetJoystickGUIDForID(instance_id);
 }
 
-Uint16 SDL_GetGamepadVendorForID(SDL_JoystickID instance_id)
+uint16_t SDL_GetGamepadVendorForID(SDL_JoystickID instance_id)
 {
     return SDL_GetJoystickVendorForID(instance_id);
 }
 
-Uint16 SDL_GetGamepadProductForID(SDL_JoystickID instance_id)
+uint16_t SDL_GetGamepadProductForID(SDL_JoystickID instance_id)
 {
     return SDL_GetJoystickProductForID(instance_id);
 }
 
-Uint16 SDL_GetGamepadProductVersionForID(SDL_JoystickID instance_id)
+uint16_t SDL_GetGamepadProductVersionForID(SDL_JoystickID instance_id)
 {
     return SDL_GetJoystickProductVersionForID(instance_id);
 }
@@ -2594,9 +2594,9 @@ bool SDL_IsGamepad(SDL_JoystickID instance_id)
  */
 bool SDL_ShouldIgnoreGamepad(const char *name, SDL_GUID guid)
 {
-    Uint16 vendor;
-    Uint16 product;
-    Uint16 version;
+    uint16_t vendor;
+    uint16_t product;
+    uint16_t version;
 
 #ifdef SDL_PLATFORM_LINUX
     if (SDL_endswith(name, " Motion Sensors")) {
@@ -2716,7 +2716,7 @@ SDL_Gamepad *SDL_OpenGamepad(SDL_JoystickID instance_id)
         }
     }
     if (gamepad->joystick->nhats) {
-        gamepad->last_hat_mask = (Uint8 *)SDL_calloc(gamepad->joystick->nhats, sizeof(*gamepad->last_hat_mask));
+        gamepad->last_hat_mask = (uint8_t *)SDL_calloc(gamepad->joystick->nhats, sizeof(*gamepad->last_hat_mask));
         if (!gamepad->last_hat_mask) {
             SDL_CloseJoystick(gamepad->joystick);
             SDL_free(gamepad->last_match_axis);
@@ -2777,9 +2777,9 @@ bool SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 /*
  * Get the current state of an axis control on a gamepad
  */
-Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
+int16_t SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
-    Sint16 result = true;
+    int16_t result = true;
 
     SDL_LockJoysticks();
     {
@@ -2827,7 +2827,7 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
                 }
                 // If the value is zero, there might be another binding that makes it non-zero
                 if (value != 0 && valid_output_range) {
-                    result = (Sint16)value;
+                    result = (int16_t)value;
                     break;
                 }
             }
@@ -3383,7 +3383,7 @@ bool SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index)
     return SDL_SetJoystickPlayerIndex(joystick, player_index);
 }
 
-Uint16 SDL_GetGamepadVendor(SDL_Gamepad *gamepad)
+uint16_t SDL_GetGamepadVendor(SDL_Gamepad *gamepad)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3393,7 +3393,7 @@ Uint16 SDL_GetGamepadVendor(SDL_Gamepad *gamepad)
     return SDL_GetJoystickVendor(joystick);
 }
 
-Uint16 SDL_GetGamepadProduct(SDL_Gamepad *gamepad)
+uint16_t SDL_GetGamepadProduct(SDL_Gamepad *gamepad)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3403,7 +3403,7 @@ Uint16 SDL_GetGamepadProduct(SDL_Gamepad *gamepad)
     return SDL_GetJoystickProduct(joystick);
 }
 
-Uint16 SDL_GetGamepadProductVersion(SDL_Gamepad *gamepad)
+uint16_t SDL_GetGamepadProductVersion(SDL_Gamepad *gamepad)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3413,7 +3413,7 @@ Uint16 SDL_GetGamepadProductVersion(SDL_Gamepad *gamepad)
     return SDL_GetJoystickProductVersion(joystick);
 }
 
-Uint16 SDL_GetGamepadFirmwareVersion(SDL_Gamepad *gamepad)
+uint16_t SDL_GetGamepadFirmwareVersion(SDL_Gamepad *gamepad)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3434,9 +3434,9 @@ const char * SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
 
 }
 
-Uint64 SDL_GetGamepadSteamHandle(SDL_Gamepad *gamepad)
+uint64_t SDL_GetGamepadSteamHandle(SDL_Gamepad *gamepad)
 {
-    Uint64 handle = 0;
+    uint64_t handle = 0;
 
     SDL_LockJoysticks();
     {
@@ -3562,7 +3562,7 @@ SDL_GamepadBinding **SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count)
         size_t elements_size = (gamepad->num_bindings * sizeof(SDL_GamepadBinding));
         bindings = (SDL_GamepadBinding **)SDL_malloc(pointers_size + elements_size);
         if (bindings) {
-            SDL_GamepadBinding *binding = (SDL_GamepadBinding *)((Uint8 *)bindings + pointers_size);
+            SDL_GamepadBinding *binding = (SDL_GamepadBinding *)((uint8_t *)bindings + pointers_size);
             int i;
             for (i = 0; i < gamepad->num_bindings; ++i, ++binding) {
                 bindings[i] = binding;
@@ -3580,7 +3580,7 @@ SDL_GamepadBinding **SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count)
     return bindings;
 }
 
-bool SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+bool SDL_RumbleGamepad(SDL_Gamepad *gamepad, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble, uint32_t duration_ms)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3590,7 +3590,7 @@ bool SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16
     return SDL_RumbleJoystick(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
 }
 
-bool SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
+bool SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, uint16_t left_rumble, uint16_t right_rumble, uint32_t duration_ms)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3600,7 +3600,7 @@ bool SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 
     return SDL_RumbleJoystickTriggers(joystick, left_rumble, right_rumble, duration_ms);
 }
 
-bool SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue)
+bool SDL_SetGamepadLED(SDL_Gamepad *gamepad, uint8_t red, uint8_t green, uint8_t blue)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3715,7 +3715,7 @@ void SDL_QuitGamepadMappings(void)
 /*
  * Event filter to transform joystick events into appropriate gamepad ones
  */
-static void SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadAxis axis, Sint16 value)
+static void SDL_SendGamepadAxis(uint64_t timestamp, SDL_Gamepad *gamepad, SDL_GamepadAxis axis, int16_t value)
 {
     SDL_AssertJoysticksLocked();
 
@@ -3731,7 +3731,7 @@ static void SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Game
     }
 }
 
-static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, bool down)
+static void SDL_SendGamepadButton(uint64_t timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, bool down)
 {
     SDL_Event event;
 
@@ -3748,7 +3748,7 @@ static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Ga
     }
 
     if (button == SDL_GAMEPAD_BUTTON_GUIDE) {
-        Uint64 now = SDL_GetTicks();
+        uint64_t now = SDL_GetTicks();
         if (down) {
             gamepad->guide_button_down = now;
 
@@ -3775,7 +3775,7 @@ static void SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Ga
     }
 }
 
-static const Uint32 SDL_gamepad_event_list[] = {
+static const uint32_t SDL_gamepad_event_list[] = {
     SDL_EVENT_GAMEPAD_AXIS_MOTION,
     SDL_EVENT_GAMEPAD_BUTTON_DOWN,
     SDL_EVENT_GAMEPAD_BUTTON_UP,

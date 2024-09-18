@@ -24,9 +24,9 @@ int main(int argc, char **argv)
     SDL_AudioSpec spec;
     SDL_AudioSpec cvtspec;
     SDL_AudioStream *stream = NULL;
-    Uint8 *dst_buf = NULL;
-    Uint32 len = 0;
-    Uint8 *data = NULL;
+    uint8_t *dst_buf = NULL;
+    uint32_t len = 0;
+    uint8_t *data = NULL;
     int bitsize = 0;
     int blockalign = 0;
     int avgbytes = 0;
@@ -129,11 +129,11 @@ int main(int argc, char **argv)
     SDL_WriteU32LE(io, 0x20746D66);                             /* fmt */
     SDL_WriteU32LE(io, 16);                                     /* chunk size */
     SDL_WriteU16LE(io, SDL_AUDIO_ISFLOAT(spec.format) ? 3 : 1); /* uncompressed */
-    SDL_WriteU16LE(io, (Uint16)cvtspec.channels);               /* channels */
+    SDL_WriteU16LE(io, (uint16_t)cvtspec.channels);               /* channels */
     SDL_WriteU32LE(io, cvtspec.freq);                           /* sample rate */
     SDL_WriteU32LE(io, avgbytes);                               /* average bytes per second */
-    SDL_WriteU16LE(io, (Uint16)blockalign);                     /* block align */
-    SDL_WriteU16LE(io, (Uint16)bitsize);                        /* significant bits per sample */
+    SDL_WriteU16LE(io, (uint16_t)blockalign);                     /* block align */
+    SDL_WriteU16LE(io, (uint16_t)bitsize);                        /* significant bits per sample */
     SDL_WriteU32LE(io, 0x61746164);                             /* data */
     SDL_WriteU32LE(io, dst_len);                                /* size */
     SDL_WriteIO(io, dst_buf, dst_len);

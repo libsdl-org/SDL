@@ -40,14 +40,14 @@ struct SDL_Cursor
 typedef struct
 {
     SDL_MouseID mouseID;
-    Uint32 buttonstate;
+    uint32_t buttonstate;
 } SDL_MouseInputSource;
 
 typedef struct
 {
     float last_x, last_y;
-    Uint64 last_timestamp;
-    Uint8 click_count;
+    uint64_t last_timestamp;
+    uint8_t click_count;
 } SDL_MouseClickState;
 
 typedef struct
@@ -97,7 +97,7 @@ typedef struct
     bool warp_emulation_hint;
     bool warp_emulation_active;
     bool warp_emulation_prohibited;
-    Uint64 last_center_warp_time_ns;
+    uint64_t last_center_warp_time_ns;
     int relative_mode_clip_interval;
     bool enable_normal_speed_scale;
     float normal_speed_scale;
@@ -106,13 +106,13 @@ typedef struct
     bool enable_relative_system_scale;
     int num_system_scale_values;
     float *system_scale_values;
-    Uint32 double_click_time;
+    uint32_t double_click_time;
     int double_click_radius;
     bool touch_mouse_events;
     bool mouse_touch_events;
     bool was_touch_mouse_events; // Was a touch-mouse event pending?
 #ifdef SDL_PLATFORM_VITA
-    Uint8 vita_touch_mouse_device;
+    uint8_t vita_touch_mouse_device;
 #endif
     bool auto_capture;
     bool capture_desired;
@@ -142,7 +142,7 @@ extern bool SDL_PreInitMouse(void);
 extern void SDL_PostInitMouse(void);
 
 // Return whether a device is actually a mouse
-extern bool SDL_IsMouse(Uint16 vendor, Uint16 product);
+extern bool SDL_IsMouse(uint16_t vendor, uint16_t product);
 
 // A mouse has been added to the system
 extern void SDL_AddMouse(SDL_MouseID mouseID, const char *name, bool send_event);
@@ -166,16 +166,16 @@ extern bool SDL_UpdateMouseCapture(bool force_release);
 extern bool SDL_SetMouseSystemScale(int num_values, const float *values);
 
 // Send a mouse motion event
-extern void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y);
+extern void SDL_SendMouseMotion(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y);
 
 // Send a mouse button event
-extern void SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 button, bool down);
+extern void SDL_SendMouseButton(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, uint8_t button, bool down);
 
 // Send a mouse button event with a click count
-extern void SDL_SendMouseButtonClicks(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 button, bool down, int clicks);
+extern void SDL_SendMouseButtonClicks(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, uint8_t button, bool down, int clicks);
 
 // Send a mouse wheel event
-extern void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction);
+extern void SDL_SendMouseWheel(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction);
 
 // Warp the mouse within the window, potentially overriding relative mode
 extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, bool ignore_relative_mode);

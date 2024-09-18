@@ -48,7 +48,7 @@ struct SDL_VideoData
     Display *request_display;
     pid_t pid;
     XIM im;
-    Uint64 screensaver_activity;
+    uint64_t screensaver_activity;
     int numwindows;
     SDL_WindowData **windowlist;
     int windowlistlength;
@@ -118,11 +118,11 @@ struct SDL_VideoData
 
     bool broken_pointer_grab; // true if XGrabPointer seems unreliable.
 
-    Uint64 last_mode_change_deadline;
+    uint64_t last_mode_change_deadline;
 
     bool global_mouse_changed;
     SDL_Point global_mouse_position;
-    Uint32 global_mouse_buttons;
+    uint32_t global_mouse_buttons;
 
     SDL_XInput2DeviceInfo *mouse_device_info;
     bool xinput_hierarchy_changed;

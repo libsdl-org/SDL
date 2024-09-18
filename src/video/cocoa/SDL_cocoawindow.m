@@ -923,7 +923,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         if (NSMouseInRect(point, windowRect, NO)) {
             int x = (int)SDL_roundf((point.x / (window->w - 1)) * (shape->w - 1));
             int y = (int)SDL_roundf(((window->h - point.y) / (window->h - 1)) * (shape->h - 1));
-            Uint8 a;
+            uint8_t a;
 
             if (!SDL_ReadSurfacePixel(shape, x, y, NULL, NULL, NULL, &a) || a == SDL_ALPHA_TRANSPARENT) {
                 ignoresMouseEvents = YES;
@@ -1538,7 +1538,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     return NO; // not a special area, carry on.
 }
 
-static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_Window *window, Uint8 button, bool down)
+static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_Window *window, uint8_t button, bool down)
 {
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     const int clicks = (int)[theEvent clickCount];
@@ -3162,7 +3162,7 @@ bool Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
         /* The timeout needs to be high enough that animated fullscreen
          * spaces transitions won't cause it to time out.
          */
-        Uint64 timeout = SDL_GetTicksNS() + SDL_MS_TO_NS(2000);
+        uint64_t timeout = SDL_GetTicksNS() + SDL_MS_TO_NS(2000);
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
         while (true) {
             SDL_PumpEvents();

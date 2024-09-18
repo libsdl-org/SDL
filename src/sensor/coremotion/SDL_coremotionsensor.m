@@ -137,7 +137,7 @@ static bool SDL_COREMOTION_SensorOpen(SDL_Sensor *sensor, int device_index)
 
 static void SDL_COREMOTION_SensorUpdate(SDL_Sensor *sensor)
 {
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     switch (sensor->type) {
     case SDL_SENSOR_ACCEL:

@@ -41,31 +41,31 @@ void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void 
     return dst;
 #else
     /* GCC 4.9.0 with -O3 will generate movaps instructions with the loop
-       using Uint32* pointers, so we need to make sure the pointers are
+       using uint32_t* pointers, so we need to make sure the pointers are
        aligned before we loop using them.
      */
     if (((uintptr_t)src & 0x3) || ((uintptr_t)dst & 0x3)) {
         // Do an unaligned byte copy
-        Uint8 *srcp1 = (Uint8 *)src;
-        Uint8 *dstp1 = (Uint8 *)dst;
+        uint8_t *srcp1 = (uint8_t *)src;
+        uint8_t *dstp1 = (uint8_t *)dst;
 
         while (len--) {
             *dstp1++ = *srcp1++;
         }
     } else {
         size_t left = (len % 4);
-        Uint32 *srcp4, *dstp4;
-        Uint8 *srcp1, *dstp1;
+        uint32_t *srcp4, *dstp4;
+        uint8_t *srcp1, *dstp1;
 
-        srcp4 = (Uint32 *)src;
-        dstp4 = (Uint32 *)dst;
+        srcp4 = (uint32_t *)src;
+        dstp4 = (uint32_t *)dst;
         len /= 4;
         while (len--) {
             *dstp4++ = *srcp4++;
         }
 
-        srcp1 = (Uint8 *)srcp4;
-        dstp1 = (Uint8 *)dstp4;
+        srcp1 = (uint8_t *)srcp4;
+        dstp1 = (uint8_t *)dstp4;
         switch (left) {
         case 3:
             *dstp1++ = *srcp1++;

@@ -62,7 +62,7 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspac
             SDL_SW_DestroyYUVTexture(swdata);
             return NULL;
         }
-        swdata->pixels = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), dst_size);
+        swdata->pixels = (uint8_t *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), dst_size);
         if (!swdata->pixels) {
             SDL_SW_DestroyYUVTexture(swdata);
             return NULL;
@@ -123,12 +123,12 @@ bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
             SDL_memcpy(swdata->pixels, pixels,
                        (size_t)(swdata->h * swdata->w) + 2 * ((swdata->h + 1) / 2) * ((swdata->w + 1) / 2));
         } else {
-            Uint8 *src, *dst;
+            uint8_t *src, *dst;
             int row;
             size_t length;
 
             // Copy the Y plane
-            src = (Uint8 *)pixels;
+            src = (uint8_t *)pixels;
             dst = swdata->pixels + rect->y * swdata->w + rect->x;
             length = rect->w;
             for (row = 0; row < rect->h; ++row) {
@@ -138,7 +138,7 @@ bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
             }
 
             // Copy the next plane
-            src = (Uint8 *)pixels + rect->h * pitch;
+            src = (uint8_t *)pixels + rect->h * pitch;
             dst = swdata->pixels + swdata->h * swdata->w;
             dst += rect->y / 2 * ((swdata->w + 1) / 2) + rect->x / 2;
             length = (rect->w + 1) / 2;
@@ -149,7 +149,7 @@ bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
             }
 
             // Copy the next plane
-            src = (Uint8 *)pixels + rect->h * pitch + ((rect->h + 1) / 2) * ((pitch + 1) / 2);
+            src = (uint8_t *)pixels + rect->h * pitch + ((rect->h + 1) / 2) * ((pitch + 1) / 2);
             dst = swdata->pixels + swdata->h * swdata->w +
                   ((swdata->h + 1) / 2) * ((swdata->w + 1) / 2);
             dst += rect->y / 2 * ((swdata->w + 1) / 2) + rect->x / 2;
@@ -165,11 +165,11 @@ bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
     case SDL_PIXELFORMAT_UYVY:
     case SDL_PIXELFORMAT_YVYU:
     {
-        Uint8 *src, *dst;
+        uint8_t *src, *dst;
         int row;
         size_t length;
 
-        src = (Uint8 *)pixels;
+        src = (uint8_t *)pixels;
         dst =
             swdata->planes[0] + rect->y * swdata->pitches[0] +
             rect->x * 2;
@@ -188,12 +188,12 @@ bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
                        (size_t)(swdata->h * swdata->w) + 2 * ((swdata->h + 1) / 2) * ((swdata->w + 1) / 2));
         } else {
 
-            Uint8 *src, *dst;
+            uint8_t *src, *dst;
             int row;
             size_t length;
 
             // Copy the Y plane
-            src = (Uint8 *)pixels;
+            src = (uint8_t *)pixels;
             dst = swdata->pixels + rect->y * swdata->w + rect->x;
             length = rect->w;
             for (row = 0; row < rect->h; ++row) {
@@ -203,7 +203,7 @@ bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
             }
 
             // Copy the next plane
-            src = (Uint8 *)pixels + rect->h * pitch;
+            src = (uint8_t *)pixels + rect->h * pitch;
             dst = swdata->pixels + swdata->h * swdata->w;
             dst += 2 * ((rect->y + 1) / 2) * ((swdata->w + 1) / 2) + 2 * (rect->x / 2);
             length = 2 * (((size_t)rect->w + 1) / 2);
@@ -221,12 +221,12 @@ bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
 }
 
 bool SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *Uplane, int Upitch,
-                                  const Uint8 *Vplane, int Vpitch)
+                                  const uint8_t *Yplane, int Ypitch,
+                                  const uint8_t *Uplane, int Upitch,
+                                  const uint8_t *Vplane, int Vpitch)
 {
-    const Uint8 *src;
-    Uint8 *dst;
+    const uint8_t *src;
+    uint8_t *dst;
     int row;
     size_t length;
 
@@ -275,11 +275,11 @@ bool SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *re
 }
 
 bool SDL_SW_UpdateNVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
-                                 const Uint8 *Yplane, int Ypitch,
-                                 const Uint8 *UVplane, int UVpitch)
+                                 const uint8_t *Yplane, int Ypitch,
+                                 const uint8_t *UVplane, int UVpitch)
 {
-    const Uint8 *src;
-    Uint8 *dst;
+    const uint8_t *src;
+    uint8_t *dst;
     int row;
     size_t length;
 

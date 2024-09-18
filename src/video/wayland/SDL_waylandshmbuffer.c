@@ -119,7 +119,7 @@ bool Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shm
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *data = vd->internal;
     struct wl_shm_pool *shm_pool;
-    const Uint32 SHM_FMT = WL_SHM_FORMAT_ARGB8888;
+    const uint32_t SHM_FMT = WL_SHM_FORMAT_ARGB8888;
 
     if (!shmBuffer) {
         return SDL_InvalidParamError("shmBuffer");

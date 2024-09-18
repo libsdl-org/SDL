@@ -137,7 +137,7 @@ static void PS2_JoystickDetect(void)
 {
 }
 
-static bool PS2_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool PS2_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers
     return false;
@@ -218,7 +218,7 @@ static bool PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 }
 
 // Rumble functionality
-static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool PS2_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     char actAlign[6];
     int res;
@@ -242,13 +242,13 @@ static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
 }
 
 // Rumble functionality
-static bool PS2_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
+static bool PS2_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left, uint16_t right)
 {
     return SDL_Unsupported();
 }
 
 // LED functionality
-static bool PS2_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool PS2_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }
@@ -280,7 +280,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
     int index = joystick->instance_id;
     struct JoyInfo *info = &joyInfo[index];
     int state = padGetState(info->port, info->slot);
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     if (state != PAD_STATE_DISCONN && state != PAD_STATE_EXECCMD && state != PAD_STATE_ERROR) {
         int ret = padRead(info->port, info->slot, &buttons); // port, slot, buttons

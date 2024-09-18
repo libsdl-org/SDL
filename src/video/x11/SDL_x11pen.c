@@ -98,9 +98,9 @@ static bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, char *d
     return (SDL_strcasestr(devicename, PEN_ERASER_NAME_TAG)) ? true : false;
 }
 
-// Read out an integer property and store into a preallocated Sint32 array, extending 8 and 16 bit values suitably.
+// Read out an integer property and store into a preallocated int32_t array, extending 8 and 16 bit values suitably.
 // Returns number of Sint32s written (<= max_words), or 0 on error.
-static size_t X11_XInput2PenGetIntProperty(SDL_VideoDevice *_this, int deviceid, Atom property, Sint32 *dest, size_t max_words)
+static size_t X11_XInput2PenGetIntProperty(SDL_VideoDevice *_this, int deviceid, Atom property, int32_t *dest, size_t max_words)
 {
     const SDL_VideoData *data = (SDL_VideoData *)_this->internal;
     Atom type_return;
@@ -128,17 +128,17 @@ static size_t X11_XInput2PenGetIntProperty(SDL_VideoDevice *_this, int deviceid,
         const int to_copy = SDL_min(max_words, num_items_return);
 
         if (format_return == 8) {
-            Sint8 *numdata = (Sint8 *)output;
+            int8_t *numdata = (int8_t *)output;
             for (k = 0; k < to_copy; ++k) {
                 dest[k] = numdata[k];
             }
         } else if (format_return == 16) {
-            Sint16 *numdata = (Sint16 *)output;
+            int16_t *numdata = (int16_t *)output;
             for (k = 0; k < to_copy; ++k) {
                 dest[k] = numdata[k];
             }
         } else {
-            SDL_memcpy(dest, output, sizeof(Sint32) * to_copy);
+            SDL_memcpy(dest, output, sizeof(int32_t) * to_copy);
         }
         X11_XFree(output);
         return to_copy;
@@ -148,10 +148,10 @@ static size_t X11_XInput2PenGetIntProperty(SDL_VideoDevice *_this, int deviceid,
 }
 
 // Identify Wacom devices (if true is returned) and extract their device type and serial IDs
-static bool X11_XInput2PenWacomDeviceID(SDL_VideoDevice *_this, int deviceid, Uint32 *wacom_devicetype_id, Uint32 *wacom_serial)
+static bool X11_XInput2PenWacomDeviceID(SDL_VideoDevice *_this, int deviceid, uint32_t *wacom_devicetype_id, uint32_t *wacom_serial)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->internal;
-    Sint32 serial_id_buf[3];
+    int32_t serial_id_buf[3];
     int result;
 
     if ((result = X11_XInput2PenGetIntProperty(_this, deviceid, data->pen_atom_wacom_serial_ids, serial_id_buf, 3)) == 3) {
@@ -217,7 +217,7 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
             total_buttons += button_classinfo->num_buttons;
         } else if (classinfo->type == XIValuatorClass) {
             const XIValuatorClassInfo *val_classinfo = (const XIValuatorClassInfo *)classinfo;
-            const Sint8 valuator_nr = val_classinfo->number;
+            const int8_t valuator_nr = val_classinfo->number;
             const Atom vname = val_classinfo->label;
             const float min = (float)val_classinfo->min;
             const float max = (float)val_classinfo->max;
@@ -251,8 +251,8 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
     SDL_assert(capabilities & SDL_PEN_CAPABILITY_PRESSURE);
 
     const bool is_eraser = X11_XInput2PenIsEraser(_this, dev->deviceid, dev->name);
-    Uint32 wacom_devicetype_id = 0;
-    Uint32 wacom_serial = 0;
+    uint32_t wacom_devicetype_id = 0;
+    uint32_t wacom_serial = 0;
     X11_XInput2PenWacomDeviceID(_this, dev->deviceid, &wacom_devicetype_id, &wacom_serial);
 
     SDL_PenInfo peninfo;

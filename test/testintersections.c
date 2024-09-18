@@ -71,8 +71,8 @@ static void DrawPoints(SDL_Renderer *renderer)
                 cycle_direction = -cycle_direction;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
-                               (Uint8)current_color, (Uint8)current_alpha);
+        SDL_SetRenderDrawColor(renderer, 255, (uint8_t)current_color,
+                               (uint8_t)current_color, (uint8_t)current_alpha);
 
         x = (float)SDL_rand(viewport.w);
         y = (float)SDL_rand(viewport.h);
@@ -282,8 +282,8 @@ static void loop(void *arg)
 int main(int argc, char *argv[])
 {
     int i;
-    Uint64 then, now;
-    Uint32 frames;
+    uint64_t then, now;
+    uint32_t frames;
     int done;
 
     /* Initialize parameters */

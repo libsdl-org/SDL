@@ -63,7 +63,7 @@ extern "C" {
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_PropertiesID;
+typedef uint32_t SDL_PropertiesID;
 
 /**
  * SDL property type
@@ -275,7 +275,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetStringProperty(SDL_PropertiesID props, c
  *
  * \sa SDL_GetNumberProperty
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 value);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, int64_t value);
 
 /**
  * Set a floating point property in a group of properties.
@@ -419,7 +419,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetStringProperty(SDL_PropertiesID 
  * \sa SDL_HasProperty
  * \sa SDL_SetNumberProperty
  */
-extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 default_value);
+extern SDL_DECLSPEC int64_t SDLCALL SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, int64_t default_value);
 
 /**
  * Get a floating point property from a group of properties.

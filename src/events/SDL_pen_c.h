@@ -26,7 +26,7 @@
 
 #include "SDL_mouse_c.h"
 
-typedef Uint32 SDL_PenCapabilityFlags;
+typedef uint32_t SDL_PenCapabilityFlags;
 #define SDL_PEN_CAPABILITY_PRESSURE  (1u << 0)  /**< Provides pressure information on SDL_PEN_AXIS_PRESSURE. */
 #define SDL_PEN_CAPABILITY_XTILT     (1u << 1)  /**< Provides horizontal tilt information on SDL_PEN_AXIS_XTILT. */
 #define SDL_PEN_CAPABILITY_YTILT     (1u << 2)  /**< Provides vertical tilt information on SDL_PEN_AXIS_YTILT. */
@@ -50,7 +50,7 @@ typedef struct SDL_PenInfo
 {
     SDL_PenCapabilityFlags capabilities;  /**< bitflags of device capabilities */
     float max_tilt;    /**< Physical maximum tilt angle, for XTILT and YTILT, or -1.0f if unknown.  Pens cannot typically tilt all the way to 90 degrees, so this value is usually less than 90.0. */
-    Uint32 wacom_id;   /**< For Wacom devices: wacom tool type ID, otherwise 0 (useful e.g. with libwacom) */
+    uint32_t wacom_id;   /**< For Wacom devices: wacom tool type ID, otherwise 0 (useful e.g. with libwacom) */
     int num_buttons; /**< Number of pen buttons (not counting the pen tip), or -1 if unknown. */
     SDL_PenSubtype subtype;  /**< type of pen device */
 } SDL_PenInfo;
@@ -58,25 +58,25 @@ typedef struct SDL_PenInfo
 // Backend calls this when a new pen device is hotplugged, plus once for each pen already connected at startup.
 // Note that name and info are copied but currently unused; this is placeholder for a potentially more robust API later.
 // Both are allowed to be NULL.
-extern SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, const SDL_PenInfo *info, void *handle);
+extern SDL_PenID SDL_AddPenDevice(uint64_t timestamp, const char *name, const SDL_PenInfo *info, void *handle);
 
 // Backend calls this when an existing pen device is disconnected during runtime. They must free their own stuff separately.
-extern void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id);
+extern void SDL_RemovePenDevice(uint64_t timestamp, SDL_PenID instance_id);
 
 // Backend can call this to remove all pens, probably during shutdown, with a callback to let them free their own handle.
 extern void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handle, void *userdata), void *userdata);
 
 // Backend calls this when a pen's button changes, to generate events and update state.
-extern void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, bool eraser, bool down);
+extern void SDL_SendPenTouch(uint64_t timestamp, SDL_PenID instance_id, const SDL_Window *window, bool eraser, bool down);
 
 // Backend calls this when a pen moves on the tablet, to generate events and update state.
-extern void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, float x, float y);
+extern void SDL_SendPenMotion(uint64_t timestamp, SDL_PenID instance_id, const SDL_Window *window, float x, float y);
 
 // Backend calls this when a pen's axis changes, to generate events and update state.
-extern void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, SDL_PenAxis axis, float value);
+extern void SDL_SendPenAxis(uint64_t timestamp, SDL_PenID instance_id, const SDL_Window *window, SDL_PenAxis axis, float value);
 
 // Backend calls this when a pen's button changes, to generate events and update state.
-extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 button, bool down);
+extern void SDL_SendPenButton(uint64_t timestamp, SDL_PenID instance_id, const SDL_Window *window, uint8_t button, bool down);
 
 // Backend can optionally use this to find the SDL_PenID for the `handle` that was passed to SDL_AddPenDevice.
 extern SDL_PenID SDL_FindPenByHandle(void *handle);

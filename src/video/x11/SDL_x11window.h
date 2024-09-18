@@ -62,9 +62,9 @@ struct SDL_WindowData
     bool xinput2_mouse_enabled;
     bool xinput2_keyboard_enabled;
     bool mouse_grabbed;
-    Uint64 last_focus_event_time;
+    uint64_t last_focus_event_time;
     PendingFocusEnum pending_focus;
-    Uint64 pending_focus_time;
+    uint64_t pending_focus_time;
     bool pending_move;
     SDL_Point pending_move_point;
     XConfigureEvent last_xconfigure;
@@ -73,7 +73,7 @@ struct SDL_WindowData
     Atom xdnd_req;
     Window xdnd_source;
     bool flashing_window;
-    Uint64 flash_cancel_time;
+    uint64_t flash_cancel_time;
     SDL_Window *keyboard_focus;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
@@ -106,7 +106,7 @@ struct SDL_WindowData
 };
 
 extern void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, SDL_WindowFlags flags);
-extern Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow);
+extern uint32_t X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow);
 
 extern bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern char *X11_GetWindowTitle(SDL_VideoDevice *_this, Window xwindow);

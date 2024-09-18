@@ -37,7 +37,7 @@ struct SDL_PrivateAudioData
     LPDIRECTSOUNDCAPTUREBUFFER capturebuf;
     int num_buffers;
     DWORD lastchunk;
-    Uint8 *locked_buf;
+    uint8_t *locked_buf;
 };
 
 #endif // SDL_directsound_h_

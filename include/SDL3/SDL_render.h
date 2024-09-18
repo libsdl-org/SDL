@@ -838,7 +838,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureSize(SDL_Texture *texture, float 
  * \sa SDL_SetTextureAlphaMod
  * \sa SDL_SetTextureColorModFloat
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetTextureColorMod(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetTextureColorMod(SDL_Texture *texture, uint8_t r, uint8_t g, uint8_t b);
 
 
 /**
@@ -885,7 +885,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetTextureColorModFloat(SDL_Texture *textur
  * \sa SDL_GetTextureColorModFloat
  * \sa SDL_SetTextureColorMod
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureColorMod(SDL_Texture *texture, Uint8 *r, Uint8 *g, Uint8 *b);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureColorMod(SDL_Texture *texture, uint8_t *r, uint8_t *g, uint8_t *b);
 
 /**
  * Get the additional color value multiplied into render copy operations.
@@ -927,7 +927,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureColorModFloat(SDL_Texture *textur
  * \sa SDL_SetTextureAlphaModFloat
  * \sa SDL_SetTextureColorMod
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetTextureAlphaMod(SDL_Texture *texture, Uint8 alpha);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetTextureAlphaMod(SDL_Texture *texture, uint8_t alpha);
 
 /**
  * Set an additional alpha value multiplied into render copy operations.
@@ -967,7 +967,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetTextureAlphaModFloat(SDL_Texture *textur
  * \sa SDL_GetTextureColorMod
  * \sa SDL_SetTextureAlphaMod
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureAlphaMod(SDL_Texture *texture, Uint8 *alpha);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureAlphaMod(SDL_Texture *texture, uint8_t *alpha);
 
 /**
  * Get the additional alpha value multiplied into render copy operations.
@@ -1110,9 +1110,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_UpdateTexture(SDL_Texture *texture, const S
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_UpdateYUVTexture(SDL_Texture *texture,
                                                  const SDL_Rect *rect,
-                                                 const Uint8 *Yplane, int Ypitch,
-                                                 const Uint8 *Uplane, int Upitch,
-                                                 const Uint8 *Vplane, int Vpitch);
+                                                 const uint8_t *Yplane, int Ypitch,
+                                                 const uint8_t *Uplane, int Upitch,
+                                                 const uint8_t *Vplane, int Vpitch);
 
 /**
  * Update a rectangle within a planar NV12 or NV21 texture with new pixels.
@@ -1140,8 +1140,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_UpdateYUVTexture(SDL_Texture *texture,
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_UpdateNVTexture(SDL_Texture *texture,
                                                  const SDL_Rect *rect,
-                                                 const Uint8 *Yplane, int Ypitch,
-                                                 const Uint8 *UVplane, int UVpitch);
+                                                 const uint8_t *Yplane, int Ypitch,
+                                                 const uint8_t *UVplane, int UVpitch);
 
 /**
  * Lock a portion of the texture for **write-only** pixel access.
@@ -1564,7 +1564,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderScale(SDL_Renderer *renderer, floa
  * \sa SDL_GetRenderDrawColor
  * \sa SDL_SetRenderDrawColorFloat
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderDrawColor(SDL_Renderer *renderer, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 /**
  * Set the color used for drawing operations (Rect, Line and Clear).
@@ -1609,7 +1609,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderDrawColorFloat(SDL_Renderer *rende
  * \sa SDL_GetRenderDrawColorFloat
  * \sa SDL_SetRenderDrawColor
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderDrawColor(SDL_Renderer *renderer, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderDrawColor(SDL_Renderer *renderer, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a);
 
 /**
  * Get the color used for drawing operations (Rect, Line and Clear).
@@ -2200,7 +2200,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetRenderMetalCommandEncoder(SDL_Renderer
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_AddVulkanRenderSemaphores(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore);
+extern SDL_DECLSPEC bool SDLCALL SDL_AddVulkanRenderSemaphores(SDL_Renderer *renderer, uint32_t wait_stage_mask, int64_t wait_semaphore, int64_t signal_semaphore);
 
 /**
  * Toggle VSync of the given renderer.

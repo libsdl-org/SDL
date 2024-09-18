@@ -45,7 +45,7 @@ bool WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL
 
     // Find out the format of the screen
     size = sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD);
-    info = (LPBITMAPINFO)SDL_small_alloc(Uint8, size, &isstack);
+    info = (LPBITMAPINFO)SDL_small_alloc(uint8_t, size, &isstack);
     if (!info) {
         return false;
     }
@@ -62,10 +62,10 @@ bool WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL
     *format = SDL_PIXELFORMAT_UNKNOWN;
     if (info->bmiHeader.biCompression == BI_BITFIELDS) {
         int bpp;
-        Uint32 *masks;
+        uint32_t *masks;
 
         bpp = info->bmiHeader.biPlanes * info->bmiHeader.biBitCount;
-        masks = (Uint32 *)((Uint8 *)info + info->bmiHeader.biSize);
+        masks = (uint32_t *)((uint8_t *)info + info->bmiHeader.biSize);
         *format = SDL_GetPixelFormatForMasks(bpp, masks[0], masks[1], masks[2], 0);
     }
     if (*format == SDL_PIXELFORMAT_UNKNOWN) {

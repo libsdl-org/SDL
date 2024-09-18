@@ -84,7 +84,7 @@ XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int sc
             int i;
             for (i = 0; i < out_count; i++) {
                 XVisualInfo *v = &egl_visualinfo[i];
-                Uint32 format = X11_GetPixelFormatFromVisualInfo(display, v);
+                uint32_t format = X11_GetPixelFormatFromVisualInfo(display, v);
                 if (SDL_ISPIXELFORMAT_ALPHA(format)) { // found!
                     // re-request it to have a copy that can be X11_XFree'ed later
                     vi_in.screen = screen;

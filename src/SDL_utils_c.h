@@ -28,7 +28,7 @@
 // Return the smallest power of 2 greater than or equal to 'x'
 extern int SDL_powerof2(int x);
 
-extern Uint32 SDL_CalculateGCD(Uint32 a, Uint32 b);
+extern uint32_t SDL_CalculateGCD(uint32_t a, uint32_t b);
 extern void SDL_CalculateFraction(float x, int *numerator, int *denominator);
 
 extern bool SDL_startswith(const char *string, const char *prefix);
@@ -80,7 +80,7 @@ typedef enum
 
 } SDL_ObjectType;
 
-extern Uint32 SDL_GetNextObjectID(void);
+extern uint32_t SDL_GetNextObjectID(void);
 extern void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid);
 extern bool SDL_ObjectValid(void *object, SDL_ObjectType type);
 extern void SDL_SetObjectsInvalid(void);

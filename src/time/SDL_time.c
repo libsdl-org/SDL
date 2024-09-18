@@ -30,7 +30,7 @@
 /* Given a calendar date, returns days since Jan 1 1970, and optionally
  * the day of the week [0-6, 0 is Sunday] and day of the year [0-365].
  */
-Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_of_year)
+int64_t SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_of_year)
 {
 
     year -= month <= 2;
@@ -38,7 +38,7 @@ Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_
     const unsigned yoe = (unsigned)(year - era * 400);                                  // [0, 399]
     const unsigned doy = (153 * (month > 2 ? month - 3 : month + 9) + 2) / 5 + day - 1; // [0, 365]
     const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;                         // [0, 146096]
-    const Sint64 z = (Sint64)(era) * 146097 + (Sint64)(doe)-719468;
+    const int64_t z = (int64_t)(era) * 146097 + (int64_t)(doe)-719468;
 
     if (day_of_week) {
         *day_of_week = (int)(z >= -4 ? (z + 4) % 7 : (z + 5) % 7 + 6);
@@ -164,8 +164,8 @@ static bool SDL_DateTimeIsValid(const SDL_DateTime *dt)
 
 bool SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
 {
-    static const Sint64 max_seconds = SDL_NS_TO_SECONDS(SDL_MAX_TIME) - 1;
-    static const Sint64 min_seconds = SDL_NS_TO_SECONDS(SDL_MIN_TIME) + 1;
+    static const int64_t max_seconds = SDL_NS_TO_SECONDS(SDL_MAX_TIME) - 1;
+    static const int64_t min_seconds = SDL_NS_TO_SECONDS(SDL_MIN_TIME) + 1;
     bool result = true;
 
     if (!dt) {
@@ -192,28 +192,28 @@ bool SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
 
 #define DELTA_EPOCH_1601_100NS (11644473600ll * 10000000ll) // [100 ns] (100 ns units between 1601-01-01 and 1970-01-01, 11644473600 seconds)
 
-void SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime)
+void SDL_TimeToWindows(SDL_Time ticks, uint32_t *dwLowDateTime, uint32_t *dwHighDateTime)
 {
     /* Convert nanoseconds to Win32 ticks.
      * SDL_Time has a range of roughly 292 years, so even SDL_MIN_TIME can't underflow the Win32 epoch.
      */
-    const Uint64 wtime = (Uint64)((ticks / 100) + DELTA_EPOCH_1601_100NS);
+    const uint64_t wtime = (uint64_t)((ticks / 100) + DELTA_EPOCH_1601_100NS);
 
     if (dwLowDateTime) {
-        *dwLowDateTime = (Uint32)wtime;
+        *dwLowDateTime = (uint32_t)wtime;
     }
 
     if (dwHighDateTime) {
-        *dwHighDateTime = (Uint32)(wtime >> 32);
+        *dwHighDateTime = (uint32_t)(wtime >> 32);
     }
 }
 
-SDL_Time SDL_TimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime)
+SDL_Time SDL_TimeFromWindows(uint32_t dwLowDateTime, uint32_t dwHighDateTime)
 {
-    static const Uint64 wintime_min = (Uint64)((SDL_MIN_TIME / 100) + DELTA_EPOCH_1601_100NS);
-    static const Uint64 wintime_max = (Uint64)((SDL_MAX_TIME / 100) + DELTA_EPOCH_1601_100NS);
+    static const uint64_t wintime_min = (uint64_t)((SDL_MIN_TIME / 100) + DELTA_EPOCH_1601_100NS);
+    static const uint64_t wintime_max = (uint64_t)((SDL_MAX_TIME / 100) + DELTA_EPOCH_1601_100NS);
 
-    Uint64 wtime = (((Uint64)dwHighDateTime << 32) | dwLowDateTime);
+    uint64_t wtime = (((uint64_t)dwHighDateTime << 32) | dwLowDateTime);
 
     // Clamp the windows time range to the SDL_Time min/max
     wtime = SDL_clamp(wtime, wintime_min, wintime_max);

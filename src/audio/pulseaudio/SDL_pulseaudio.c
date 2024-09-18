@@ -429,7 +429,7 @@ static bool PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
     return result;
 }
 
-static bool PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buffer_size)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
 
@@ -452,7 +452,7 @@ static bool PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, 
     return true;
 }
 
-static Uint8 *PULSEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *PULSEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     const size_t reqsize = (size_t) SDL_min(*buffer_size, h->bytes_requested);
@@ -460,7 +460,7 @@ static Uint8 *PULSEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     void *data = NULL;
     if (PULSEAUDIO_pa_stream_begin_write(h->stream, &data, &nbytes) == 0) {
         *buffer_size = (int) nbytes;
-        return (Uint8 *) data;
+        return (uint8_t *) data;
     }
 
     // don't know why this would fail, but we'll fall back just in case.
@@ -503,7 +503,7 @@ static bool PULSEAUDIO_WaitRecordingDevice(SDL_AudioDevice *device)
             } else {
                 // store this fragment's data for use with RecordDevice
                 //SDL_Log("PULSEAUDIO: recorded %d new bytes", (int) nbytes);
-                h->recordingbuf = (const Uint8 *)data;
+                h->recordingbuf = (const uint8_t *)data;
                 h->recordinglen = nbytes;
                 break;
             }
@@ -660,7 +660,7 @@ static bool PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     // Allocate mixing buffer
     if (!recording) {
-        h->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
+        h->mixbuf = (uint8_t *)SDL_malloc(device->buffer_size);
         if (!h->mixbuf) {
             return false;
         }

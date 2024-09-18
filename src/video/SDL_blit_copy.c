@@ -25,7 +25,7 @@
 
 #ifdef SDL_SSE_INTRINSICS
 // This assumes 16-byte aligned src and dst
-static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint8 *src, int len)
+static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(uint8_t *dst, const uint8_t *src, int len)
 {
     int i;
 
@@ -53,7 +53,7 @@ static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint
 void SDL_BlitCopy(SDL_BlitInfo *info)
 {
     bool overlap;
-    Uint8 *src, *dst;
+    uint8_t *src, *dst;
     int w, h;
     int srcskip, dstskip;
 

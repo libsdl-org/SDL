@@ -44,7 +44,7 @@
 bool Wayland_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
-    Uint32 i, extensionCount = 0;
+    uint32_t i, extensionCount = 0;
     bool hasSurfaceExtension = false;
     bool hasWaylandSurfaceExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
@@ -115,7 +115,7 @@ void Wayland_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const* const* Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
+char const* const* Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, uint32_t *count)
 {
     static const char *const extensionsForWayland[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
@@ -178,7 +178,7 @@ void Wayland_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 bool Wayland_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
                                                VkInstance instance,
                                                VkPhysicalDevice physicalDevice,
-                                               Uint32 queueFamilyIndex)
+                                               uint32_t queueFamilyIndex)
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;

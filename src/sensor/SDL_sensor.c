@@ -559,7 +559,7 @@ void SDL_QuitSensors(void)
 
 // These are global for SDL_syssensor.c and SDL_events.c
 
-void SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values)
+void SDL_SendSensorUpdate(uint64_t timestamp, SDL_Sensor *sensor, uint64_t sensor_timestamp, float *data, int num_values)
 {
     SDL_AssertSensorsLocked();
 

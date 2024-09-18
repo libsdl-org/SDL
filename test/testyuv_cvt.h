@@ -24,5 +24,5 @@ typedef enum
 extern void SetYUVConversionMode(YUV_CONVERSION_MODE mode);
 extern YUV_CONVERSION_MODE GetYUVConversionModeForResolution(int width, int height);
 extern SDL_Colorspace GetColorspaceForYUVConversionMode(YUV_CONVERSION_MODE mode);
-extern bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance);
-extern int CalculateYUVPitch(Uint32 format, int width);
+extern bool ConvertRGBtoYUV(uint32_t format, uint8_t *src, int pitch, uint8_t *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance);
+extern int CalculateYUVPitch(uint32_t format, int width);

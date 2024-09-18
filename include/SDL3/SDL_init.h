@@ -55,7 +55,7 @@ extern "C" {
  * \sa SDL_QuitSubSystem
  * \sa SDL_WasInit
  */
-typedef Uint32 SDL_InitFlags;
+typedef uint32_t SDL_InitFlags;
 
 #define SDL_INIT_AUDIO      0x00000010u /**< `SDL_INIT_AUDIO` implies `SDL_INIT_EVENTS` */
 #define SDL_INIT_VIDEO      0x00000020u /**< `SDL_INIT_VIDEO` implies `SDL_INIT_EVENTS` */

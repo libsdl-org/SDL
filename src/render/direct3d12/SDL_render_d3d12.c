@@ -144,7 +144,7 @@ typedef struct
     D3D12_CPU_DESCRIPTOR_HANDLE mainTextureResourceViewNV;
     SIZE_T mainSRVIndexNV;
 
-    Uint8 *pixels;
+    uint8_t *pixels;
     int pitch;
 #endif
     SDL_Rect lockedRect;
@@ -310,7 +310,7 @@ static SDL_PixelFormat D3D12_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
     }
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 output_colorspace)
+static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(uint32_t format, uint32_t output_colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
@@ -340,7 +340,7 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
     }
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uint32 colorspace)
+static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(uint32_t format, uint32_t colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
@@ -1811,8 +1811,8 @@ static void D3D12_DestroyTexture(SDL_Renderer *renderer,
 
 static bool D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Resource *texture, int plane, int x, int y, int w, int h, const void *pixels, int pitch, D3D12_RESOURCE_STATES *resourceState)
 {
-    const Uint8 *src;
-    Uint8 *dst;
+    const uint8_t *src;
+    uint8_t *dst;
     UINT length;
     HRESULT result;
     D3D12_RESOURCE_DESC textureDesc;
@@ -1890,7 +1890,7 @@ static bool D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Re
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Resource::Map [map staging texture]"), result);
     }
 
-    src = (const Uint8 *)pixels;
+    src = (const uint8_t *)pixels;
     dst = textureMemory;
     length = (UINT)RowLength;
     if (length == (UINT)pitch && length == RowPitch) {
@@ -1964,14 +1964,14 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 #if SDL_HAVE_YUV
     if (textureData->yuv) {
         // Skip to the correct offset into the next texture
-        srcPixels = (const void *)((const Uint8 *)srcPixels + rect->h * srcPitch);
+        srcPixels = (const void *)((const uint8_t *)srcPixels + rect->h * srcPitch);
 
         if (!D3D12_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureV : textureData->mainTextureU, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2, texture->format == SDL_PIXELFORMAT_YV12 ? &textureData->mainResourceStateV : &textureData->mainResourceStateU)) {
             return false;
         }
 
         // Skip to the correct offset into the next texture
-        srcPixels = (const void *)((const Uint8 *)srcPixels + ((rect->h + 1) / 2) * ((srcPitch + 1) / 2));
+        srcPixels = (const void *)((const uint8_t *)srcPixels + ((rect->h + 1) / 2) * ((srcPitch + 1) / 2));
         if (!D3D12_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureU : textureData->mainTextureV, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2, texture->format == SDL_PIXELFORMAT_YV12 ? &textureData->mainResourceStateU : &textureData->mainResourceStateV)) {
             return false;
         }
@@ -1979,7 +1979,7 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     if (textureData->nv12) {
         // Skip to the correct offset into the next texture
-        srcPixels = (const void *)((const Uint8 *)srcPixels + rect->h * srcPitch);
+        srcPixels = (const void *)((const uint8_t *)srcPixels + rect->h * srcPitch);
 
         if (texture->format == SDL_PIXELFORMAT_P010) {
             srcPitch = (srcPitch + 3) & ~3;
@@ -1997,9 +1997,9 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 #if SDL_HAVE_YUV
 static bool D3D12_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *Uplane, int Upitch,
-                                  const Uint8 *Vplane, int Vpitch)
+                                  const uint8_t *Yplane, int Ypitch,
+                                  const uint8_t *Uplane, int Upitch,
+                                  const uint8_t *Vplane, int Vpitch)
 {
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
     D3D12_TextureData *textureData = (D3D12_TextureData *)texture->internal;
@@ -2022,8 +2022,8 @@ static bool D3D12_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static bool D3D12_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const SDL_Rect *rect,
-                                 const Uint8 *Yplane, int Ypitch,
-                                 const Uint8 *UVplane, int UVpitch)
+                                 const uint8_t *Yplane, int Ypitch,
+                                 const uint8_t *UVplane, int UVpitch)
 {
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
     D3D12_TextureData *textureData = (D3D12_TextureData *)texture->internal;
@@ -2065,7 +2065,7 @@ static bool D3D12_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         // It's more efficient to upload directly...
         if (!textureData->pixels) {
             textureData->pitch = texture->w;
-            textureData->pixels = (Uint8 *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
+            textureData->pixels = (uint8_t *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
             if (!textureData->pixels) {
                 return false;
             }
@@ -2345,11 +2345,11 @@ static bool D3D12_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         int j;
         float *xy_;
         if (size_indices == 4) {
-            j = ((const Uint32 *)indices)[i];
+            j = ((const uint32_t *)indices)[i];
         } else if (size_indices == 2) {
-            j = ((const Uint16 *)indices)[i];
+            j = ((const uint16_t *)indices)[i];
         } else if (size_indices == 1) {
-            j = ((const Uint8 *)indices)[i];
+            j = ((const uint8_t *)indices)[i];
         } else {
             j = i;
         }
@@ -2911,7 +2911,7 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(D3D12_VertexPositionColor);
-            const D3D12_VertexPositionColor *verts = (D3D12_VertexPositionColor *)(((Uint8 *)vertices) + first);
+            const D3D12_VertexPositionColor *verts = (D3D12_VertexPositionColor *)(((uint8_t *)vertices) + first);
             D3D12_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, 0, NULL, NULL, NULL);
             D3D12_DrawPrimitives(renderer, D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, start, count);
             if (verts[0].pos.x != verts[count - 1].pos.x || verts[0].pos.y != verts[count - 1].pos.y) {

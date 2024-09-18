@@ -138,7 +138,7 @@ static bool SDL_EVDEV_device_added(const char *dev_path, int udev_class);
 static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_class, const char *dev_path);
 #endif // SDL_USE_LIBUDEV
 
-static Uint8 EVDEV_MouseButtons[] = {
+static uint8_t EVDEV_MouseButtons[] = {
     SDL_BUTTON_LEFT,   // BTN_LEFT        0x110
     SDL_BUTTON_RIGHT,  // BTN_RIGHT       0x111
     SDL_BUTTON_MIDDLE, // BTN_MIDDLE      0x112
@@ -774,8 +774,8 @@ static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
      *
      * this is the structure we're trying to emulate
      */
-    Uint32 *mt_req_code;
-    Sint32 *mt_req_values;
+    uint32_t *mt_req_code;
+    int32_t *mt_req_values;
     size_t mt_req_size;
 
     // TODO: sync devices other than touchscreen
@@ -791,7 +791,7 @@ static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
         return;
     }
 
-    mt_req_values = (Sint32 *)mt_req_code + 1;
+    mt_req_values = (int32_t *)mt_req_code + 1;
 
     *mt_req_code = ABS_MT_TRACKING_ID;
     ret = ioctl(item->fd, EVIOCGMTSLOTS(mt_req_size), mt_req_code);
@@ -1001,11 +1001,11 @@ static bool SDL_EVDEV_device_removed(const char *dev_path)
     return false;
 }
 
-Uint64 SDL_EVDEV_GetEventTimestamp(struct input_event *event)
+uint64_t SDL_EVDEV_GetEventTimestamp(struct input_event *event)
 {
-    static Uint64 timestamp_offset;
-    Uint64 timestamp;
-    Uint64 now = SDL_GetTicksNS();
+    static uint64_t timestamp_offset;
+    uint64_t timestamp;
+    uint64_t now = SDL_GetTicksNS();
 
     /* The kernel internally has nanosecond timestamps, but converts it
        to microseconds when delivering the events */

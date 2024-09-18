@@ -47,7 +47,7 @@ const char *defaultPaths[] = {
 bool UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
-    Uint32 extensionCount = 0;
+    uint32_t extensionCount = 0;
     bool hasSurfaceExtension = false;
     bool hasMetalSurfaceExtension = false;
     bool hasIOSSurfaceExtension = false;
@@ -130,7 +130,7 @@ bool UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         goto fail;
     }
 
-    for (Uint32 i = 0; i < extensionCount; i++) {
+    for (uint32_t i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = true;
         } else if (SDL_strcmp(VK_EXT_METAL_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
@@ -168,7 +168,7 @@ void UIKit_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 }
 
 char const* const* UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                            Uint32 *count)
+                                            uint32_t *count)
 {
     static const char *const extensionsForUIKit[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME

@@ -29,8 +29,8 @@
 struct SDL_PrivateAudioData
 {
     // Speaker data
-    Uint8 *mixbuf;
-    Uint32 nextbuf;
+    uint8_t *mixbuf;
+    uint32_t nextbuf;
     ndspWaveBuf waveBuf[NUM_BUFFERS];
     LightLock lock;
     CondVar cv;

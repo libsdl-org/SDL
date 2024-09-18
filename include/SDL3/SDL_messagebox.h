@@ -45,7 +45,7 @@ extern "C" {
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_MessageBoxFlags;
+typedef uint32_t SDL_MessageBoxFlags;
 
 #define SDL_MESSAGEBOX_ERROR                    0x00000010u /**< error dialog */
 #define SDL_MESSAGEBOX_WARNING                  0x00000020u /**< warning dialog */
@@ -58,7 +58,7 @@ typedef Uint32 SDL_MessageBoxFlags;
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_MessageBoxButtonFlags;
+typedef uint32_t SDL_MessageBoxButtonFlags;
 
 #define SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT 0x00000001u /**< Marks the default button when return is hit */
 #define SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT 0x00000002u /**< Marks the default button when escape is hit */
@@ -82,7 +82,7 @@ typedef struct SDL_MessageBoxButtonData
  */
 typedef struct SDL_MessageBoxColor
 {
-    Uint8 r, g, b;
+    uint8_t r, g, b;
 } SDL_MessageBoxColor;
 
 /**

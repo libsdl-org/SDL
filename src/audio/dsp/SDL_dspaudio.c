@@ -189,7 +189,7 @@ static bool DSP_OpenDevice(SDL_AudioDevice *device)
 
     // Allocate mixing buffer
     if (!device->recording) {
-        device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
+        device->hidden->mixbuf = (uint8_t *)SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
             return false;
         }
@@ -224,7 +224,7 @@ static bool DSP_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool DSP_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool DSP_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     if (write(h->audio_fd, buffer, buflen) == -1) {
@@ -237,7 +237,7 @@ static bool DSP_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
     return true;
 }
 
-static Uint8 *DSP_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *DSP_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     return device->hidden->mixbuf;
 }

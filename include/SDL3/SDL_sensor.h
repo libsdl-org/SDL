@@ -54,7 +54,7 @@ typedef struct SDL_Sensor SDL_Sensor;
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_SensorID;
+typedef uint32_t SDL_SensorID;
 
 /**
  * A constant to represent standard gravity for accelerometer sensors.

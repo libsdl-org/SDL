@@ -118,9 +118,9 @@ const char *SDL_Vulkan_GetResultString(VkResult result)
 
 VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties,
-    Uint32 *extensionCount)
+    uint32_t *extensionCount)
 {
-    Uint32 count = 0;
+    uint32_t count = 0;
     VkResult rc = vkEnumerateInstanceExtensionProperties(NULL, &count, NULL);
     VkExtensionProperties *result;
 

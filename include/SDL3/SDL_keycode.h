@@ -44,7 +44,7 @@
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_Keycode;
+typedef uint32_t SDL_Keycode;
 
 #define SDLK_SCANCODE_MASK          (1u<<30)
 #define SDL_SCANCODE_TO_KEYCODE(X)  (X | SDLK_SCANCODE_MASK)
@@ -303,7 +303,7 @@ typedef Uint32 SDL_Keycode;
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint16 SDL_Keymod;
+typedef uint16_t SDL_Keymod;
 
 #define SDL_KMOD_NONE   0x0000u /**< no modifier is applicable. */
 #define SDL_KMOD_LSHIFT 0x0001u /**< the left Shift key is down. */

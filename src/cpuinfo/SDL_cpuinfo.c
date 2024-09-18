@@ -885,24 +885,24 @@ int SDL_GetCPUCacheLineSize(void)
 
 #define SDL_CPUFEATURES_RESET_VALUE 0xFFFFFFFF
 
-static Uint32 SDL_CPUFeatures = SDL_CPUFEATURES_RESET_VALUE;
-static Uint32 SDL_SIMDAlignment = 0xFFFFFFFF;
+static uint32_t SDL_CPUFeatures = SDL_CPUFEATURES_RESET_VALUE;
+static uint32_t SDL_SIMDAlignment = 0xFFFFFFFF;
 
 static bool ref_string_equals(const char *ref, const char *test, const char *end_test) {
     size_t len_test = end_test - test;
     return SDL_strncmp(ref, test, len_test) == 0 && ref[len_test] == '\0' && (test[len_test] == '\0' || test[len_test] == ',');
 }
 
-static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
+static uint32_t SDLCALL SDL_CPUFeatureMaskFromHint(void)
 {
-    Uint32 result_mask = SDL_CPUFEATURES_RESET_VALUE;
+    uint32_t result_mask = SDL_CPUFEATURES_RESET_VALUE;
 
     const char *hint = SDL_GetHint(SDL_HINT_CPU_FEATURE_MASK);
 
     if (hint) {
         for (const char *spot = hint, *next; *spot; spot = next) {
             const char *end = SDL_strchr(spot, ',');
-            Uint32 spot_mask;
+            uint32_t spot_mask;
             bool add_spot_mask = true;
             if (end) {
                 next = end + 1;
@@ -962,7 +962,7 @@ static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
     return result_mask;
 }
 
-static Uint32 SDL_GetCPUFeatures(void)
+static uint32_t SDL_GetCPUFeatures(void)
 {
     if (SDL_CPUFeatures == SDL_CPUFEATURES_RESET_VALUE) {
         CPU_calcCPUIDFeatures();
@@ -1112,7 +1112,7 @@ int SDL_GetSystemRAM(void)
     if (!SDL_SystemRAM) {
 #if defined(HAVE_SYSCONF) && defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
         if (SDL_SystemRAM <= 0) {
-            SDL_SystemRAM = (int)((Sint64)sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
+            SDL_SystemRAM = (int)((int64_t)sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
         }
 #endif
 #ifdef HAVE_SYSCTLBYNAME
@@ -1130,7 +1130,7 @@ int SDL_GetSystemRAM(void)
             // (32-bit): very old BSD, might only report up to 2 GiB
             int mib[2] = { CTL_HW, HW_PHYSMEM };
 #endif // HW_PHYSMEM64
-            Uint64 memsize = 0;
+            uint64_t memsize = 0;
             size_t len = sizeof(memsize);
 
             if (sysctl(mib, 2, &memsize, &len, NULL, 0) == 0) {

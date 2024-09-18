@@ -230,7 +230,7 @@ typedef enum SDL_PathType
 typedef struct SDL_PathInfo
 {
     SDL_PathType type;      /**< the path type */
-    Uint64 size;            /**< the file size in bytes */
+    uint64_t size;            /**< the file size in bytes */
     SDL_Time create_time;   /**< the time when the path was created */
     SDL_Time modify_time;   /**< the last time the path was modified */
     SDL_Time access_time;   /**< the last time the path was read */
@@ -244,7 +244,7 @@ typedef struct SDL_PathInfo
  * \sa SDL_GlobDirectory
  * \sa SDL_GlobStorageDirectory
  */
-typedef Uint32 SDL_GlobFlags;
+typedef uint32_t SDL_GlobFlags;
 
 #define SDL_GLOB_CASEINSENSITIVE (1u << 0)
 

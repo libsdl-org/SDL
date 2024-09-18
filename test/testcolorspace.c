@@ -247,7 +247,7 @@ static void RenderDrawBackground(void)
 static SDL_Texture *CreateGrayTexture(void)
 {
     SDL_Texture *texture;
-    Uint8 pixels[4];
+    uint8_t pixels[4];
 
     /* Floating point textures are in the linear colorspace by default */
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, 1, 1);

@@ -110,7 +110,7 @@ void SDLTest_LogError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     SDL_LogMessage(SDL_LOG_CATEGORY_TEST, SDL_LOG_PRIORITY_ERROR, "%s: %s", SDLTest_TimestampToString(time(0)), logMessage);
 }
 
-static char nibble_to_char(Uint8 nibble)
+static char nibble_to_char(uint8_t nibble)
 {
     if (nibble < 0xa) {
         return '0' + nibble;
@@ -121,7 +121,7 @@ static char nibble_to_char(Uint8 nibble)
 
 void SDLTest_LogEscapedString(const char *prefix, const void *buffer, size_t size)
 {
-    const Uint8 *data = buffer;
+    const uint8_t *data = buffer;
     char logMessage[SDLTEST_MAX_LOGMESSAGE_LENGTH];
 
     if (data) {
@@ -134,7 +134,7 @@ void SDLTest_LogEscapedString(const char *prefix, const void *buffer, size_t siz
 
         logMessage[pos++] = '"';
         for (i = 0; i < size; i++) {
-            Uint8 c = data[i];
+            uint8_t c = data[i];
             size_t pos_start = pos;
             switch (c) {
             case '\0':

@@ -131,7 +131,7 @@ static void RefreshPhysicalDevices(void)
 
     if (AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &devlist_address, 0, NULL, &size) != kAudioHardwareNoError) {
         return;
-    } else if ((devs = (AudioDeviceID *) SDL_small_alloc(Uint8, size, &isstack)) == NULL) {
+    } else if ((devs = (AudioDeviceID *) SDL_small_alloc(uint8_t, size, &isstack)) == NULL) {
         return;
     } else if (AudioObjectGetPropertyData(kAudioObjectSystemObject, &devlist_address, 0, NULL, &size, devs) != kAudioHardwareNoError) {
         SDL_small_free(devs, isstack);
@@ -183,7 +183,7 @@ static void RefreshPhysicalDevices(void)
             SDL_AudioSpec spec;
             SDL_zero(spec);
             if (result == noErr) {
-                for (Uint32 j = 0; j < buflist->mNumberBuffers; j++) {
+                for (uint32_t j = 0; j < buflist->mNumberBuffers; j++) {
                     spec.channels += buflist->mBuffers[j].mNumberChannels;
                 }
             }
@@ -548,24 +548,24 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
 #endif
 
 
-static bool COREAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool COREAUDIO_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buffer_size)
 {
     AudioQueueBufferRef current_buffer = device->hidden->current_buffer;
     SDL_assert(current_buffer != NULL);  // should have been called from PlaybackBufferReadyCallback
-    SDL_assert(buffer == (Uint8 *) current_buffer->mAudioData);
+    SDL_assert(buffer == (uint8_t *) current_buffer->mAudioData);
     current_buffer->mAudioDataByteSize = current_buffer->mAudioDataBytesCapacity;
     device->hidden->current_buffer = NULL;
     AudioQueueEnqueueBuffer(device->hidden->audioQueue, current_buffer, 0, NULL);
     return true;
 }
 
-static Uint8 *COREAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *COREAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     AudioQueueBufferRef current_buffer = device->hidden->current_buffer;
     SDL_assert(current_buffer != NULL);  // should have been called from PlaybackBufferReadyCallback
     SDL_assert(current_buffer->mAudioData != NULL);
     *buffer_size = (int) current_buffer->mAudioDataBytesCapacity;
-    return (Uint8 *) current_buffer->mAudioData;
+    return (uint8_t *) current_buffer->mAudioData;
 }
 
 static void PlaybackBufferReadyCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)

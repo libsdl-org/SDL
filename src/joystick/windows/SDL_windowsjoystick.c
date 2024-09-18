@@ -58,7 +58,7 @@ static SDL_Condition *s_condJoystickThread = NULL;
 static SDL_Mutex *s_mutexJoyStickEnum = NULL;
 static SDL_Thread *s_joystickThread = NULL;
 static bool s_bJoystickThreadQuit = false;
-static Uint64 s_lastDeviceChange = 0;
+static uint64_t s_lastDeviceChange = 0;
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 
 JoyStick_DeviceData *SYS_Joystick; // array to hold joystick ID values
@@ -243,7 +243,7 @@ static int SDLCALL SDL_JoystickThread(void *_data)
             SDL_WaitConditionTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
             if (SDL_XINPUT_Enabled()) {
                 // scan for any change in XInput devices
-                Uint8 userId;
+                uint8_t userId;
                 for (userId = 0; userId < XUSER_MAX_COUNT; userId++) {
                     XINPUT_CAPABILITIES capabilities;
                     const DWORD result = XINPUTGETCAPABILITIES(userId, XINPUT_FLAG_GAMEPAD, &capabilities);
@@ -445,7 +445,7 @@ void WINDOWS_JoystickDetect(void)
     }
 }
 
-static bool WINDOWS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool WINDOWS_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     if (SDL_DINPUT_JoystickPresent(vendor_id, product_id, version)) {
         return true;
@@ -567,7 +567,7 @@ static bool WINDOWS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 }
 
-static bool WINDOWS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool WINDOWS_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     if (joystick->hwdata->bXInputDevice) {
         return SDL_XINPUT_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble);
@@ -576,12 +576,12 @@ static bool WINDOWS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_
     }
 }
 
-static bool WINDOWS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool WINDOWS_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static bool WINDOWS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool WINDOWS_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }

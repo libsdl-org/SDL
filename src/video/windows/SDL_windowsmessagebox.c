@@ -373,7 +373,7 @@ static bool AddDialogData(WIN_DialogData *dialog, const void *data, size_t size)
         return false;
     }
 
-    SDL_memcpy((Uint8 *)dialog->data + dialog->used, data, size);
+    SDL_memcpy((uint8_t *)dialog->data + dialog->used, data, size);
     dialog->used += size;
 
     return true;
@@ -476,7 +476,7 @@ static bool AddDialogStaticText(WIN_DialogData *dialog, int x, int y, int w, int
     return AddDialogControl(dialog, DLGITEMTYPESTATIC, style, 0, x, y, w, h, -1, text, 0);
 }
 
-static bool AddDialogStaticIcon(WIN_DialogData *dialog, int x, int y, int w, int h, Uint16 ordinal)
+static bool AddDialogStaticIcon(WIN_DialogData *dialog, int x, int y, int w, int h, uint16_t ordinal)
 {
     DWORD style = WS_VISIBLE | WS_CHILD | SS_ICON | WS_GROUP;
     return AddDialogControl(dialog, DLGITEMTYPESTATIC, style, 0, x, y, w, h, -2, NULL, ordinal);
@@ -684,8 +684,8 @@ static bool WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int 
     INT_PTR rc;
     char *ampescape = NULL;
     size_t ampescapesize = 0;
-    Uint16 defbuttoncount = 0;
-    Uint16 icon = 0;
+    uint16_t defbuttoncount = 0;
+    uint16_t icon = 0;
     bool result;
 
     HWND ParentWindow = NULL;
@@ -704,13 +704,13 @@ static bool WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int 
 
     switch (messageboxdata->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION)) {
     case SDL_MESSAGEBOX_ERROR:
-        icon = (Uint16)(size_t)IDI_ERROR;
+        icon = (uint16_t)(size_t)IDI_ERROR;
         break;
     case SDL_MESSAGEBOX_WARNING:
-        icon = (Uint16)(size_t)IDI_WARNING;
+        icon = (uint16_t)(size_t)IDI_WARNING;
         break;
     case SDL_MESSAGEBOX_INFORMATION:
-        icon = (Uint16)(size_t)IDI_INFORMATION;
+        icon = (uint16_t)(size_t)IDI_INFORMATION;
         break;
     }
 

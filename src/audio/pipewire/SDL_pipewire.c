@@ -201,7 +201,7 @@ struct node_object
 {
     struct spa_list link;
 
-    Uint32 id;
+    uint32_t id;
     int seq;
     bool persist;
 
@@ -224,7 +224,7 @@ struct io_node
 {
     struct spa_list link;
 
-    Uint32 id;
+    uint32_t id;
     bool recording;
     SDL_AudioSpec spec;
 
@@ -286,7 +286,7 @@ dup_found:
     return ret;
 }
 
-static void io_list_remove(Uint32 id)
+static void io_list_remove(uint32_t id)
 {
     struct io_node *n, *temp;
 
@@ -316,7 +316,7 @@ static void io_list_clear(void)
     }
 }
 
-static struct io_node *io_list_get_by_id(Uint32 id)
+static struct io_node *io_list_get_by_id(uint32_t id)
 {
     struct io_node *n, *temp;
     spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
@@ -345,7 +345,7 @@ static void pending_list_add(struct node_object *node)
     spa_list_append(&hotplug_pending_list, &node->link);
 }
 
-static void pending_list_remove(Uint32 id)
+static void pending_list_remove(uint32_t id)
 {
     struct node_object *node, *temp;
 
@@ -365,7 +365,7 @@ static void pending_list_clear(void)
     }
 }
 
-static void *node_object_new(Uint32 id, const char *type, Uint32 version, const void *funcs, const struct pw_core_events *core_events)
+static void *node_object_new(uint32_t id, const char *type, uint32_t version, const void *funcs, const struct pw_core_events *core_events)
 {
     struct pw_proxy *proxy;
     struct node_object *node;
@@ -462,11 +462,11 @@ static void hotplug_core_sync(struct node_object *node)
 }
 
 // Helpers for retrieving values from params
-static bool get_range_param(const struct spa_pod *param, Uint32 key, int *def, int *min, int *max)
+static bool get_range_param(const struct spa_pod *param, uint32_t key, int *def, int *min, int *max)
 {
     const struct spa_pod_prop *prop;
     struct spa_pod *value;
-    Uint32 n_values, choice;
+    uint32_t n_values, choice;
 
     prop = spa_pod_find_prop(param, NULL, key);
 
@@ -474,7 +474,7 @@ static bool get_range_param(const struct spa_pod *param, Uint32 key, int *def, i
         value = spa_pod_get_values(&prop->value, &n_values, &choice);
 
         if (n_values == 3 && choice == SPA_CHOICE_Range) {
-            Uint32 *v = SPA_POD_BODY(value);
+            uint32_t *v = SPA_POD_BODY(value);
 
             if (v) {
                 if (def) {
@@ -495,10 +495,10 @@ static bool get_range_param(const struct spa_pod *param, Uint32 key, int *def, i
     return false;
 }
 
-static bool get_int_param(const struct spa_pod *param, Uint32 key, int *val)
+static bool get_int_param(const struct spa_pod *param, uint32_t key, int *val)
 {
     const struct spa_pod_prop *prop;
-    Sint32 v;
+    int32_t v;
 
     prop = spa_pod_find_prop(param, NULL, key);
 
@@ -519,12 +519,12 @@ static void node_event_info(void *object, const struct pw_node_info *info)
     struct node_object *node = object;
     struct io_node *io = node->userdata;
     const char *prop_val;
-    Uint32 i;
+    uint32_t i;
 
     if (info) {
         prop_val = spa_dict_lookup(info->props, PW_KEY_AUDIO_CHANNELS);
         if (prop_val) {
-            io->spec.channels = (Uint8)SDL_atoi(prop_val);
+            io->spec.channels = (uint8_t)SDL_atoi(prop_val);
         }
 
         // Need to parse the parameters to get the sample rate
@@ -553,7 +553,7 @@ static void node_event_param(void *object, int seq, uint32_t id, uint32_t index,
     if (io->spec.channels == 0) {
         int channels;
         if (get_int_param(param, SPA_FORMAT_AUDIO_channels, &channels)) {
-            io->spec.channels = (Uint8)channels;
+            io->spec.channels = (uint8_t)channels;
         }
     }
 }
@@ -596,7 +596,7 @@ static void change_default_device(const char *path)
 }
 
 // Metadata node callback
-static int metadata_property(void *object, Uint32 subject, const char *key, const char *type, const char *value)
+static int metadata_property(void *object, uint32_t subject, const char *key, const char *type, const char *value)
 {
     struct node_object *node = object;
 
@@ -901,7 +901,7 @@ static void initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info
     }
 }
 
-static Uint8 *PIPEWIRE_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *PIPEWIRE_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     // See if a buffer is available. If this returns NULL, SDL_PlaybackAudioThreadIterate will return false, but since we own the thread, it won't kill playback.
     // !!! FIXME: It's not clear to me if this ever returns NULL or if this was just defensive coding.
@@ -919,10 +919,10 @@ static Uint8 *PIPEWIRE_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     }
 
     device->hidden->pw_buf = pw_buf;
-    return (Uint8 *) spa_buf->datas[0].data;
+    return (uint8_t *) spa_buf->datas[0].data;
 }
 
-static bool PIPEWIRE_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool PIPEWIRE_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buffer_size)
 {
     struct pw_stream *stream = device->hidden->stream;
     struct pw_buffer *pw_buf = device->hidden->pw_buf;
@@ -965,9 +965,9 @@ static int PIPEWIRE_RecordDevice(SDL_AudioDevice *device, void *buffer, int bufl
         return 0;
     }
 
-    const Uint8 *src = (const Uint8 *)spa_buf->datas[0].data;
-    const Uint32 offset = SPA_MIN(spa_buf->datas[0].chunk->offset, spa_buf->datas[0].maxsize);
-    const Uint32 size = SPA_MIN(spa_buf->datas[0].chunk->size, spa_buf->datas[0].maxsize - offset);
+    const uint8_t *src = (const uint8_t *)spa_buf->datas[0].data;
+    const uint32_t offset = SPA_MIN(spa_buf->datas[0].chunk->offset, spa_buf->datas[0].maxsize);
+    const uint32_t size = SPA_MIN(spa_buf->datas[0].chunk->size, spa_buf->datas[0].maxsize - offset);
     const int cpy = SDL_min(buflen, (int) size);
 
     SDL_assert(size <= buflen);  // We'll have to reengineer some stuff if this turns out to not be true.
@@ -1036,14 +1036,14 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     static const enum pw_stream_flags STREAM_FLAGS = PW_STREAM_FLAG_AUTOCONNECT | PW_STREAM_FLAG_MAP_BUFFERS;
 
     char thread_name[PW_THREAD_NAME_BUFFER_LENGTH];
-    Uint8 pod_buffer[PW_POD_BUFFER_LENGTH];
+    uint8_t pod_buffer[PW_POD_BUFFER_LENGTH];
     struct spa_pod_builder b = SPA_POD_BUILDER_INIT(pod_buffer, sizeof(pod_buffer));
     struct spa_audio_info_raw spa_info = { 0 };
     const struct spa_pod *params = NULL;
     struct SDL_PrivateAudioData *priv;
     struct pw_properties *props;
     const char *app_name, *icon_name, *app_id, *stream_name, *stream_role, *error;
-    Uint32 node_id = !device->handle ? PW_ID_ANY : PW_HANDLE_TO_ID(device->handle);
+    uint32_t node_id = !device->handle ? PW_ID_ANY : PW_HANDLE_TO_ID(device->handle);
     const bool recording = device->recording;
     int res;
 

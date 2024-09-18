@@ -468,7 +468,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * \sa SDL_SetAtomicU32
  * \sa SDL_AddAtomicU32
  */
-typedef struct SDL_AtomicU32 { Uint32 value; } SDL_AtomicU32;
+typedef struct SDL_AtomicU32 { uint32_t value; } SDL_AtomicU32;
 
 /**
  * Set an atomic variable to a new value if it is currently an old value.
@@ -488,7 +488,7 @@ typedef struct SDL_AtomicU32 { Uint32 value; } SDL_AtomicU32;
  * \sa SDL_GetAtomicU32
  * \sa SDL_SetAtomicU32
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval);
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, uint32_t oldval, uint32_t newval);
 
 /**
  * Set an atomic variable to a value.
@@ -508,7 +508,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, U
  *
  * \sa SDL_GetAtomicU32
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, uint32_t v);
 
 /**
  * Get the value of an atomic variable.
@@ -525,7 +525,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v);
  *
  * \sa SDL_SetAtomicU32
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
 
 /**
  * Set a pointer to a new value if it is currently an old value.

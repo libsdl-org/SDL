@@ -76,7 +76,7 @@ typedef enum SDL_CameraFrameResult
 typedef struct SurfaceList
 {
     SDL_Surface *surface;
-    Uint64 timestampNS;
+    uint64_t timestampNS;
     struct SurfaceList *next;
 } SurfaceList;
 
@@ -97,7 +97,7 @@ struct SDL_Camera
 
     // These are, initially, set from camera_driver, but we might swap them out with Zombie versions on disconnect/failure.
     bool (*WaitDevice)(SDL_Camera *device);
-    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS);
+    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS);
     void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame);
 
     // All supported formats/dimensions for this device.
@@ -122,10 +122,10 @@ struct SDL_Camera
     int drop_frames;
 
     // Backend timestamp of first acquired frame, so we can keep these meaningful regardless of epoch.
-    Uint64 base_timestamp;
+    uint64_t base_timestamp;
 
     // SDL timestamp of first acquired frame, so we can roughly convert to SDL ticks.
-    Uint64 adjust_timestamp;
+    uint64_t adjust_timestamp;
 
     // Pixel data flows from the driver into these, then gets converted for the app if necessary.
     SDL_Surface *acquire_surface;
@@ -140,7 +140,7 @@ struct SDL_Camera
     SurfaceList app_held_output_surfaces;
 
     // A fake video frame we allocate if the camera fails/disconnects.
-    Uint8 *zombie_pixels;
+    uint8_t *zombie_pixels;
 
     // non-zero if acquire_surface needs to be scaled for final output.
     int needs_scaling;  // -1: downscale, 0: no scaling, 1: upscale
@@ -171,7 +171,7 @@ typedef struct SDL_CameraDriverImpl
     bool (*OpenDevice)(SDL_Camera *device, const SDL_CameraSpec *spec);
     void (*CloseDevice)(SDL_Camera *device);
     bool (*WaitDevice)(SDL_Camera *device);
-    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS); // set frame->pixels, frame->pitch, and *timestampNS!
+    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS); // set frame->pixels, frame->pitch, and *timestampNS!
     void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame); // Reclaim frame->pixels and frame->pitch!
     void (*FreeDeviceHandle)(SDL_Camera *device); // SDL is done with this device; free the handle from SDL_AddCamera()
     void (*Deinitialize)(void);
@@ -181,7 +181,7 @@ typedef struct SDL_CameraDriverImpl
 
 typedef struct SDL_PendingCameraEvent
 {
-    Uint32 type;
+    uint32_t type;
     SDL_CameraID devid;
     struct SDL_PendingCameraEvent *next;
 } SDL_PendingCameraEvent;

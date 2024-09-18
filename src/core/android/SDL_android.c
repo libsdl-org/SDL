@@ -957,7 +957,7 @@ void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event)
     SDL_UnlockMutex(Android_LifecycleMutex);
 }
 
-bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS)
+bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, int64_t timeoutNS)
 {
     bool got_event = false;
 
@@ -1819,14 +1819,14 @@ size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SD
     return 0;
 }
 
-Sint64 Android_JNI_FileSize(void *userdata)
+int64_t Android_JNI_FileSize(void *userdata)
 {
-    return (Sint64) AAsset_getLength64((AAsset *)userdata);
+    return (int64_t) AAsset_getLength64((AAsset *)userdata);
 }
 
-Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence)
+int64_t Android_JNI_FileSeek(void *userdata, int64_t offset, SDL_IOWhence whence)
 {
-    return (Sint64) AAsset_seek64((AAsset *)userdata, offset, (int)whence);
+    return (int64_t) AAsset_seek64((AAsset *)userdata, offset, (int)whence);
 }
 
 bool Android_JNI_FileClose(void *userdata)
@@ -2029,7 +2029,7 @@ void Android_JNI_HapticStop(int device_id)
 // See SDLActivity.java for constants.
 #define COMMAND_SET_KEEP_SCREEN_ON 5
 
-bool SDL_SendAndroidMessage(Uint32 command, int param)
+bool SDL_SendAndroidMessage(uint32_t command, int param)
 {
     if (command < 0x8000) {
         return SDL_InvalidParamError("command");
@@ -2289,14 +2289,14 @@ const char *SDL_GetAndroidInternalStoragePath(void)
     return s_AndroidInternalFilesPath;
 }
 
-Uint32 SDL_GetAndroidExternalStorageState(void)
+uint32_t SDL_GetAndroidExternalStorageState(void)
 {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
     jmethodID mid;
     jclass cls;
     jstring stateString;
     const char *state_string;
-    Uint32 stateFlags;
+    uint32_t stateFlags;
 
     JNIEnv *env = Android_JNI_GetEnv();
     if (!LocalReferenceHolder_Init(&refs, env)) {

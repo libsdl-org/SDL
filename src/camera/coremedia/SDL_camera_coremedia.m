@@ -146,7 +146,7 @@ static bool COREMEDIA_WaitDevice(SDL_Camera *device)
     return true;  // this isn't used atm, since we run our own thread out of Grand Central Dispatch.
 }
 
-static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS)
 {
     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     SDLPrivateCameraData *hidden = (__bridge SDLPrivateCameraData *) device->hidden;
@@ -156,7 +156,7 @@ static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surf
 
     CMSampleTimingInfo timinginfo;
     if (CMSampleBufferGetSampleTimingInfo(sample_buffer, 0, &timinginfo) == noErr) {
-        *timestampNS = (Uint64) (CMTimeGetSeconds(timinginfo.presentationTimeStamp) * ((Float64) SDL_NS_PER_SECOND));
+        *timestampNS = (uint64_t) (CMTimeGetSeconds(timinginfo.presentationTimeStamp) * ((Float64) SDL_NS_PER_SECOND));
     } else {
         SDL_assert(!"this shouldn't happen, I think.");
         *timestampNS = 0;
@@ -205,7 +205,7 @@ static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surf
         if (frame->pixels == NULL) {
             result = SDL_CAMERA_FRAME_ERROR;
         } else {
-            Uint8 *dst = frame->pixels;
+            uint8_t *dst = frame->pixels;
             for (int i = 0; i < numPlanes; i++) {
                 const void *src = CVPixelBufferGetBaseAddressOfPlane(image, i);
                 size_t plane_height = CVPixelBufferGetHeightOfPlane(image, i);

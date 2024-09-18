@@ -60,7 +60,7 @@ int Android_SurfaceWidth = 0;
 int Android_SurfaceHeight = 0;
 static int Android_DeviceWidth = 0;
 static int Android_DeviceHeight = 0;
-static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; // Default SurfaceView format, in case this is queried before being filled
+static uint32_t Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; // Default SurfaceView format, in case this is queried before being filled
 float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
 static SDL_SystemTheme Android_SystemTheme;
@@ -204,9 +204,9 @@ void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int device
     Android_ScreenRate = rate;
 }
 
-static Uint32 format_to_pixelFormat(int format)
+static uint32_t format_to_pixelFormat(int format)
 {
-    Uint32 pf;
+    uint32_t pf;
     if (format == AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM) { // 1
         pf = SDL_PIXELFORMAT_RGBA8888;
     } else if (format == AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM) { // 2
@@ -232,8 +232,8 @@ static Uint32 format_to_pixelFormat(int format)
 
 void Android_SetFormat(int format_wanted, int format_got)
 {
-    Uint32 pf_wanted;
-    Uint32 pf_got;
+    uint32_t pf_wanted;
+    uint32_t pf_got;
 
     pf_wanted = format_to_pixelFormat(format_wanted);
     pf_got = format_to_pixelFormat(format_got);

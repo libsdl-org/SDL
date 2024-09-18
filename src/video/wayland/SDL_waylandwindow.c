@@ -2672,7 +2672,7 @@ bool Wayland_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float 
 
     if (wind->wp_alpha_modifier_surface_v1) {
         SetSurfaceOpaqueRegion(wind, !(window->flags & SDL_WINDOW_TRANSPARENT) && opacity == 1.0f);
-        wp_alpha_modifier_surface_v1_set_multiplier(wind->wp_alpha_modifier_surface_v1, (Uint32)((double)SDL_MAX_UINT32 * (double)opacity));
+        wp_alpha_modifier_surface_v1_set_multiplier(wind->wp_alpha_modifier_surface_v1, (uint32_t)((double)SDL_MAX_UINT32 * (double)opacity));
 
         return true;
     }

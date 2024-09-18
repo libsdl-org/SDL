@@ -80,7 +80,7 @@ typedef struct
     bool dirty;
     int w, h;
     DWORD usage;
-    Uint32 format;
+    uint32_t format;
     D3DFORMAT d3dfmt;
     IDirect3DTexture9 *texture;
     IDirect3DTexture9 *staging;
@@ -98,7 +98,7 @@ typedef struct
     bool yuv;
     D3D_TextureRep utexture;
     D3D_TextureRep vtexture;
-    Uint8 *pixels;
+    uint8_t *pixels;
     int pitch;
     SDL_Rect locked_rect;
 #endif
@@ -189,7 +189,7 @@ static bool D3D_SetError(const char *prefix, HRESULT result)
     return SDL_SetError("%s: %s", prefix, error);
 }
 
-static D3DFORMAT PixelFormatToD3DFMT(Uint32 format)
+static D3DFORMAT PixelFormatToD3DFMT(uint32_t format)
 {
     switch (format) {
     case SDL_PIXELFORMAT_RGB565:
@@ -414,7 +414,7 @@ static bool D3D_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMod
     return true;
 }
 
-static bool D3D_CreateTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, DWORD usage, Uint32 format, D3DFORMAT d3dfmt, int w, int h)
+static bool D3D_CreateTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, DWORD usage, uint32_t format, D3DFORMAT d3dfmt, int w, int h)
 {
     HRESULT result;
 
@@ -465,8 +465,8 @@ static bool D3D_UpdateTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *textu
 {
     RECT d3drect;
     D3DLOCKED_RECT locked;
-    const Uint8 *src;
-    Uint8 *dst;
+    const uint8_t *src;
+    uint8_t *dst;
     int row, length;
     HRESULT result;
 
@@ -484,8 +484,8 @@ static bool D3D_UpdateTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *textu
         return D3D_SetError("LockRect()", result);
     }
 
-    src = (const Uint8 *)pixels;
-    dst = (Uint8 *)locked.pBits;
+    src = (const uint8_t *)pixels;
+    dst = (uint8_t *)locked.pBits;
     length = w * SDL_BYTESPERPIXEL(texture->format);
     if (length == pitch && length == locked.Pitch) {
         SDL_memcpy(dst, src, (size_t)length * h);
@@ -611,14 +611,14 @@ static bool D3D_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 #if SDL_HAVE_YUV
     if (texturedata->yuv) {
         // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+        pixels = (const void *)((const uint8_t *)pixels + rect->h * pitch);
 
         if (!D3D_UpdateTextureRep(data->device, texture->format == SDL_PIXELFORMAT_YV12 ? &texturedata->vtexture : &texturedata->utexture, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, pixels, (pitch + 1) / 2)) {
             return false;
         }
 
         // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
+        pixels = (const void *)((const uint8_t *)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
         if (!D3D_UpdateTextureRep(data->device, texture->format == SDL_PIXELFORMAT_YV12 ? &texturedata->utexture : &texturedata->vtexture, rect->x / 2, (rect->y + 1) / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, pixels, (pitch + 1) / 2)) {
             return false;
         }
@@ -630,9 +630,9 @@ static bool D3D_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 #if SDL_HAVE_YUV
 static bool D3D_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                 const SDL_Rect *rect,
-                                const Uint8 *Yplane, int Ypitch,
-                                const Uint8 *Uplane, int Upitch,
-                                const Uint8 *Vplane, int Vpitch)
+                                const uint8_t *Yplane, int Ypitch,
+                                const uint8_t *Uplane, int Upitch,
+                                const uint8_t *Vplane, int Vpitch)
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->internal;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
@@ -671,7 +671,7 @@ static bool D3D_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         // It's more efficient to upload directly...
         if (!texturedata->pixels) {
             texturedata->pitch = texture->w;
-            texturedata->pixels = (Uint8 *)SDL_malloc((texture->h * texturedata->pitch * 3) / 2);
+            texturedata->pixels = (uint8_t *)SDL_malloc((texture->h * texturedata->pitch * 3) / 2);
             if (!texturedata->pixels) {
                 return false;
             }
@@ -863,11 +863,11 @@ static bool D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
         float *xy_;
         SDL_FColor *col_;
         if (size_indices == 4) {
-            j = ((const Uint32 *)indices)[i];
+            j = ((const uint32_t *)indices)[i];
         } else if (size_indices == 2) {
-            j = ((const Uint16 *)indices)[i];
+            j = ((const uint16_t *)indices)[i];
         } else if (size_indices == 1) {
-            j = ((const Uint8 *)indices)[i];
+            j = ((const uint8_t *)indices)[i];
         } else {
             j = i;
         }
@@ -1265,7 +1265,7 @@ static bool D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             if (vbo) {
                 IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_POINTLIST, (UINT)(first / sizeof(Vertex)), (UINT)count);
             } else {
-                const Vertex *verts = (Vertex *)(((Uint8 *)vertices) + first);
+                const Vertex *verts = (Vertex *)(((uint8_t *)vertices) + first);
                 IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_POINTLIST, (UINT)count, verts, sizeof(Vertex));
             }
             break;
@@ -1275,7 +1275,7 @@ static bool D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         {
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
-            const Vertex *verts = (Vertex *)(((Uint8 *)vertices) + first);
+            const Vertex *verts = (Vertex *)(((uint8_t *)vertices) + first);
 
             /* DirectX 9 has the same line rasterization semantics as GDI,
                so we need to close the endpoint of the line with a second draw call.
@@ -1315,7 +1315,7 @@ static bool D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             if (vbo) {
                 IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLELIST, (UINT)(first / sizeof(Vertex)), (UINT)count / 3);
             } else {
-                const Vertex *verts = (Vertex *)(((Uint8 *)vertices) + first);
+                const Vertex *verts = (Vertex *)(((uint8_t *)vertices) + first);
                 IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_TRIANGLELIST, (UINT)count / 3, verts, sizeof(Vertex));
             }
             break;

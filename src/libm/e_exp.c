@@ -99,7 +99,7 @@ P4   = -1.65339022054652515390e-06, /* 0xBEBBBD41, 0xC5D26BF1 */
 P5   =  4.13813679705723846039e-08; /* 0x3E663769, 0x72BEA4D0 */
 
 union {
-	Uint64 u64;
+	uint64_t u64;
 	double d;
 } inf_union = {
 	0x7ff0000000000000  /* Binary representation of a 64-bit infinite double (sign=0, exponent=2047, mantissa=0) */

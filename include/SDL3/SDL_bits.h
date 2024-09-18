@@ -41,7 +41,7 @@ extern "C" {
  */
 
 #if defined(__WATCOMC__) && defined(__386__)
-extern __inline int _SDL_bsr_watcom(Uint32);
+extern __inline int _SDL_bsr_watcom(uint32_t);
 #pragma aux _SDL_bsr_watcom = \
     "bsr eax, eax" \
     parm [eax] nomemory \
@@ -67,7 +67,7 @@ extern __inline int _SDL_bsr_watcom(Uint32);
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE int SDL_MostSignificantBitIndex32(Uint32 x)
+SDL_FORCE_INLINE int SDL_MostSignificantBitIndex32(uint32_t x)
 {
 #if defined(__GNUC__) && (__GNUC__ >= 4 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4))
     /* Count Leading Zeroes builtin in GCC.
@@ -93,7 +93,7 @@ SDL_FORCE_INLINE int SDL_MostSignificantBitIndex32(Uint32 x)
      * <seander@cs.stanford.edu>, released in the public domain.
      * http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog
      */
-    const Uint32 b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
+    const uint32_t b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
     const int    S[] = {1, 2, 4, 8, 16};
 
     int msbIndex = 0;
@@ -135,7 +135,7 @@ SDL_FORCE_INLINE int SDL_MostSignificantBitIndex32(Uint32 x)
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE bool SDL_HasExactlyOneBitSet32(Uint32 x)
+SDL_FORCE_INLINE bool SDL_HasExactlyOneBitSet32(uint32_t x)
 {
     if (x && !(x & (x - 1))) {
         return true;

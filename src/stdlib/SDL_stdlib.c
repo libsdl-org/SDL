@@ -532,7 +532,7 @@ int SDL_isblank(int x) { return ((x) == ' ') || ((x) == '\t'); }
 void *SDL_aligned_alloc(size_t alignment, size_t size)
 {
     size_t padding;
-    Uint8 *result = NULL;
+    uint8_t *result = NULL;
 
     if (alignment < sizeof(void*)) {
         alignment = sizeof(void*);
@@ -545,7 +545,7 @@ void *SDL_aligned_alloc(size_t alignment, size_t size)
         void *original = SDL_malloc(size);
         if (original) {
             // Make sure we have enough space to store the original pointer
-            result = (Uint8 *)original + sizeof(original);
+            result = (uint8_t *)original + sizeof(original);
 
             // Align the pointer we're going to return
             result += alignment - (((size_t)result) % alignment);
@@ -561,7 +561,7 @@ void SDL_aligned_free(void *mem)
 {
     if (mem) {
         void *original;
-        SDL_memcpy(&original, ((Uint8 *)mem - sizeof(original)), sizeof(original));
+        SDL_memcpy(&original, ((uint8_t *)mem - sizeof(original)), sizeof(original));
         SDL_free(original);
     }
 }

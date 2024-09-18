@@ -118,7 +118,7 @@ static bool ZombieWaitDevice(SDL_Camera *device)
     if (!SDL_GetAtomicInt(&device->shutdown)) {
         // !!! FIXME: this is bad for several reasons (uses double, could be precalculated, doesn't track elapsed time).
         const double duration = ((double) device->actual_spec.framerate_denominator / ((double) device->actual_spec.framerate_numerator));
-        SDL_Delay((Uint32) (duration * 1000.0));
+        SDL_Delay((uint32_t) (duration * 1000.0));
     }
     return true;
 }
@@ -145,20 +145,20 @@ static size_t GetFrameBufLen(const SDL_CameraSpec *spec)
     return wxh * SDL_BYTESPERPIXEL(fmt);
 }
 
-static SDL_CameraFrameResult ZombieAcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult ZombieAcquireFrame(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS)
 {
     const SDL_CameraSpec *spec = &device->actual_spec;
 
     if (!device->zombie_pixels) {
         // attempt to allocate and initialize a fake frame of pixels.
         const size_t buflen = GetFrameBufLen(&device->actual_spec);
-        device->zombie_pixels = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
+        device->zombie_pixels = (uint8_t *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
         if (!device->zombie_pixels) {
             *timestampNS = 0;
             return SDL_CAMERA_FRAME_SKIP; // oh well, say there isn't a frame yet, so we'll go back to waiting. Maybe allocation will succeed later...?
         }
 
-        Uint8 *dst = device->zombie_pixels;
+        uint8_t *dst = device->zombie_pixels;
         switch (spec->format) {
             // in YUV formats, the U and V values must be 128 to get a black frame. If set to zero, it'll be bright green.
             case SDL_PIXELFORMAT_YV12:
@@ -807,7 +807,7 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
     SDL_Surface *acquired = NULL;
     SDL_Surface *output_surface = NULL;
     SurfaceList *slist = NULL;
-    Uint64 timestampNS = 0;
+    uint64_t timestampNS = 0;
 
     // AcquireFrame SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitDevice instead!
     const SDL_CameraFrameResult rc = device->AcquireFrame(device, device->acquire_surface, &timestampNS);
@@ -961,7 +961,7 @@ static void ChooseBestCameraSpec(SDL_Camera *device, const SDL_CameraSpec *spec,
     // that.
 
     SDL_zerop(closest);
-    SDL_assert(((Uint32) SDL_PIXELFORMAT_UNKNOWN) == 0);  // since we SDL_zerop'd to this value.
+    SDL_assert(((uint32_t) SDL_PIXELFORMAT_UNKNOWN) == 0);  // since we SDL_zerop'd to this value.
 
     if (device->num_specs == 0) {  // device listed no specs! You get whatever you want!
         if (spec) {
@@ -1122,8 +1122,8 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
     if ((closest.width == device->spec.width) && (closest.height == device->spec.height)) {
         device->needs_scaling = 0;
     } else {
-        const Uint64 srcarea = ((Uint64) closest.width) * ((Uint64) closest.height);
-        const Uint64 dstarea = ((Uint64) device->spec.width) * ((Uint64) device->spec.height);
+        const uint64_t srcarea = ((uint64_t) closest.width) * ((uint64_t) closest.height);
+        const uint64_t dstarea = ((uint64_t) device->spec.width) * ((uint64_t) device->spec.height);
         if (dstarea <= srcarea) {
             device->needs_scaling = -1;  // downscaling (or changing to new aspect ratio with same area)
         } else {
@@ -1201,7 +1201,7 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
     return (SDL_Camera *) device;  // currently there's no separation between physical and logical device.
 }
 
-SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS)
+SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, uint64_t *timestampNS)
 {
     if (timestampNS) {
         *timestampNS = 0;
@@ -1391,10 +1391,10 @@ void SDL_QuitCamera(void)
 }
 
 
-static Uint32 HashCameraID(const void *key, void *data)
+static uint32_t HashCameraID(const void *key, void *data)
 {
     // The values are unique incrementing integers, starting at 1, so just return minus 1 to start with bucket zero.
-    return ((Uint32) ((uintptr_t) key)) - 1;
+    return ((uint32_t) ((uintptr_t) key)) - 1;
 }
 
 static bool MatchCameraID(const void *a, const void *b, void *data)
@@ -1537,7 +1537,7 @@ void SDL_UpdateCamera(void)
             SDL_Event event;
             SDL_zero(event);
             event.type = i->type;
-            event.cdevice.which = (Uint32) i->devid;
+            event.cdevice.which = (uint32_t) i->devid;
             SDL_PushEvent(&event);
         }
         SDL_free(i);

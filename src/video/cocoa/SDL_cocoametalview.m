@@ -74,7 +74,7 @@ static bool SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
 - (instancetype)initWithFrame:(NSRect)frame
                       highDPI:(BOOL)highDPI
-                     windowID:(Uint32)windowID
+                     windowID:(uint32_t)windowID
                        opaque:(BOOL)opaque
 {
     self = [super initWithFrame:frame];
@@ -137,7 +137,7 @@ SDL_MetalView Cocoa_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
         NSView *view = data.nswindow.contentView;
         BOOL highDPI = (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) != 0;
         BOOL opaque = (window->flags & SDL_WINDOW_TRANSPARENT) == 0;
-        Uint32 windowID = SDL_GetWindowID(window);
+        uint32_t windowID = SDL_GetWindowID(window);
         SDL3_cocoametalview *newview;
         SDL_MetalView metalview;
 

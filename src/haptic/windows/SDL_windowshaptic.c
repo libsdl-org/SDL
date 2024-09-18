@@ -290,7 +290,7 @@ bool SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effect
 /*
  * Runs an effect.
  */
-bool SDL_SYS_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, Uint32 iterations)
+bool SDL_SYS_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, uint32_t iterations)
 {
     return SDL_DINPUT_HapticRunEffect(haptic, effect, iterations);
 }

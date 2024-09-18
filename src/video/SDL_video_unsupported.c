@@ -24,7 +24,7 @@
 
 #if defined(SDL_PLATFORM_WINDOWS)
 
-bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+bool SDL_RegisterApp(const char *name, uint32_t style, void *hInst)
 {
     (void)name;
     (void)style;

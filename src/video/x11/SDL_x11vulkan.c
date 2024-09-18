@@ -48,12 +48,12 @@ bool X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     SDL_VideoData *videoData = _this->internal;
     VkExtensionProperties *extensions = NULL;
-    Uint32 extensionCount = 0;
+    uint32_t extensionCount = 0;
     bool hasSurfaceExtension = false;
     bool hasXlibSurfaceExtension = false;
     bool hasXCBSurfaceExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
-    Uint32 i;
+    uint32_t i;
     if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
     }
@@ -145,7 +145,7 @@ void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 }
 
 char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          Uint32 *count)
+                                          uint32_t *count)
 {
     SDL_VideoData *videoData = _this->internal;
     if (videoData->vulkan_xlib_xcb_library) {
@@ -237,7 +237,7 @@ void X11_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 bool X11_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
                                            VkInstance instance,
                                            VkPhysicalDevice physicalDevice,
-                                           Uint32 queueFamilyIndex)
+                                           uint32_t queueFamilyIndex)
 {
     SDL_VideoData *videoData = _this->internal;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;

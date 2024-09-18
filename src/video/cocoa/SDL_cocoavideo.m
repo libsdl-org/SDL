@@ -294,7 +294,7 @@ NSImage *Cocoa_CreateImage(SDL_Surface *surface)
         }
 
         // Copy the pixels
-        Uint8 *pixels = [imgrep bitmapData];
+        uint8_t *pixels = [imgrep bitmapData];
         SDL_memcpy(pixels, converted->pixels, (size_t)converted->h * converted->pitch);
         SDL_DestroySurface(converted);
 

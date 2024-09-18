@@ -18,7 +18,7 @@
 static SDL_HitTestResult SDLCALL ShapeHitTest(SDL_Window *window, const SDL_Point *area, void *userdata)
 {
     SDL_Surface *shape = (SDL_Surface *)userdata;
-    Uint8 r, g, b, a;
+    uint8_t r, g, b, a;
 
     if (SDL_ReadSurfacePixel(shape, area->x, area->y, &r, &g, &b, &a)) {
         if (a != SDL_ALPHA_TRANSPARENT) {
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 
     if (!SDL_ISPIXELFORMAT_ALPHA(shape->format)) {
         /* Set the colorkey to the top-left pixel */
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
 
         SDL_ReadSurfacePixel(shape, 0, 0, &r, &g, &b, &a);
         SDL_SetSurfaceColorKey(shape, 1, SDL_MapSurfaceRGBA(shape, r, g, b, a));

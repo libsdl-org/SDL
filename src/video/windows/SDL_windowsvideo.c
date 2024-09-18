@@ -86,7 +86,7 @@ static bool WIN_SuspendScreenSaver(SDL_VideoDevice *_this)
 #endif
 
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-extern void D3D12_XBOX_GetResolution(Uint32 *width, Uint32 *height);
+extern void D3D12_XBOX_GetResolution(uint32_t *width, uint32_t *height);
 #endif
 
 // Windows driver bootstrap functions

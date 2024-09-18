@@ -144,10 +144,10 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size
             if (itemData != nil) {
                 NSUInteger length = [itemData length];
                 *size = (size_t)length;
-                data = SDL_malloc(*size + sizeof(Uint32));
+                data = SDL_malloc(*size + sizeof(uint32_t));
                 if (data) {
                     [itemData getBytes: data length: length];
-                    SDL_memset((Uint8 *)data + length, 0, sizeof(Uint32));
+                    SDL_memset((uint8_t *)data + length, 0, sizeof(uint32_t));
                 }
                 break;
             }

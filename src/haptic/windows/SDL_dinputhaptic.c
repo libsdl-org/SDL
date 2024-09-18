@@ -508,7 +508,7 @@ void SDL_DINPUT_HapticQuit(void)
 /*
  * Converts an SDL trigger button to an DIEFFECT trigger button.
  */
-static DWORD DIGetTriggerButton(Uint16 button)
+static DWORD DIGetTriggerButton(uint16_t button)
 {
     DWORD dwTriggerButton;
 
@@ -1003,7 +1003,7 @@ err_update:
     return false;
 }
 
-bool SDL_DINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, Uint32 iterations)
+bool SDL_DINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, uint32_t iterations)
 {
     HRESULT ret;
     DWORD iter;
@@ -1195,7 +1195,7 @@ bool SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *eff
     return SDL_Unsupported();
 }
 
-bool SDL_DINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, Uint32 iterations)
+bool SDL_DINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, uint32_t iterations)
 {
     return SDL_Unsupported();
 }

@@ -52,7 +52,7 @@ struct SDLTest_TestSuiteRunner {
     {
         SDLTest_TestSuiteReference **testSuites;
         char *runSeed;
-        Uint64 execKey;
+        uint64_t execKey;
         char *filter;
         int testIterations;
         bool randomOrder;
@@ -62,7 +62,7 @@ struct SDLTest_TestSuiteRunner {
 };
 
 /* ! Timeout for single test case execution */
-static Uint32 SDLTest_TestCaseTimeout = 3600;
+static uint32_t SDLTest_TestCaseTimeout = 3600;
 
 static const char *common_harness_usage[] = {
     "[--iterations #]",
@@ -75,7 +75,7 @@ static const char *common_harness_usage[] = {
 
 char *SDLTest_GenerateRunSeed(char *buffer, int length)
 {
-    Uint64 randomContext = SDL_GetPerformanceCounter();
+    uint64_t randomContext = SDL_GetPerformanceCounter();
     int counter;
 
     if (!buffer) {
@@ -116,10 +116,10 @@ char *SDLTest_GenerateRunSeed(char *buffer, int length)
  * \returns The generated execution key to initialize the fuzzer with.
  *
  */
-static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName, const char *testName, int iteration)
+static uint64_t SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName, const char *testName, int iteration)
 {
     SDLTest_Md5Context md5Context;
-    Uint64 *keys;
+    uint64_t *keys;
     char iterationString[16];
     size_t runSeedLength;
     size_t suiteNameLength;
@@ -170,7 +170,7 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
     SDLTest_Md5Update(&md5Context, (unsigned char *)buffer, (unsigned int)entireStringLength);
     SDLTest_Md5Final(&md5Context);
     SDL_free(buffer);
-    keys = (Uint64 *)md5Context.digest;
+    keys = (uint64_t *)md5Context.digest;
 
     return keys[0];
 }
@@ -185,7 +185,7 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
  */
 static SDL_TimerID SDLTest_SetTestTimeout(int timeout, SDL_TimerCallback callback)
 {
-    Uint32 timeoutInMilliseconds;
+    uint32_t timeoutInMilliseconds;
     SDL_TimerID timerID;
 
     if (!callback) {
@@ -212,7 +212,7 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, SDL_TimerCallback callbac
 /**
  * Timeout handler. Aborts test run and exits harness process.
  */
-static Uint32 SDLCALL SDLTest_BailOut(void *userdata, SDL_TimerID timerID, Uint32 interval)
+static uint32_t SDLCALL SDLTest_BailOut(void *userdata, SDL_TimerID timerID, uint32_t interval)
 {
     SDLTest_LogError("TestCaseTimeout timer expired. Aborting test run.");
     exit(TEST_ABORTED); /* bail out from the test */
@@ -229,7 +229,7 @@ static Uint32 SDLCALL SDLTest_BailOut(void *userdata, SDL_TimerID timerID, Uint3
  *
  * \returns Test case result.
  */
-static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseReference *testCase, Uint64 execKey, bool forceTestRun)
+static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseReference *testCase, uint64_t execKey, bool forceTestRun)
 {
     SDL_TimerID timer = 0;
     int testCaseResult = 0;
@@ -375,7 +375,7 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
     const char *runSeed = NULL;
     const char *currentSuiteName;
     const char *currentTestName;
-    Uint64 execKey;
+    uint64_t execKey;
     float runStartSeconds;
     float suiteStartSeconds;
     float testStartSeconds;

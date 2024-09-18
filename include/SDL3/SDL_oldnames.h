@@ -597,6 +597,14 @@
 #define SDL_size_add_overflow SDL_size_add_check_overflow
 #define SDL_size_mul_overflow SDL_size_mul_check_overflow
 #define SDL_strtokr SDL_strtok_r
+#define Sint16 int16_t
+#define Sint32 int32_t
+#define Sint64 int64_t
+#define Sint8 int8_t
+#define Uint16 uint16_t
+#define Uint32 uint32_t
+#define Uint64 uint64_t
+#define Uint8 uint8_t
 
 /* ##SDL_surface.h */
 #define SDL_BlitScaled SDL_BlitSurfaceScaled
@@ -1234,6 +1242,14 @@
 #define SDL_size_add_overflow SDL_size_add_overflow_renamed_SDL_size_add_check_overflow
 #define SDL_size_mul_overflow SDL_size_mul_overflow_renamed_SDL_size_mul_check_overflow
 #define SDL_strtokr SDL_strtokr_renamed_SDL_strtok_r
+#define Sint16 Sint16_renamed_int16_t
+#define Sint32 Sint32_renamed_int32_t
+#define Sint64 Sint64_renamed_int64_t
+#define Sint8 Sint8_renamed_int8_t
+#define Uint16 Uint16_renamed_uint16_t
+#define Uint32 Uint32_renamed_uint32_t
+#define Uint64 Uint64_renamed_uint64_t
+#define Uint8 Uint8_renamed_uint8_t
 
 /* ##SDL_surface.h */
 #define SDL_BlitScaled SDL_BlitScaled_renamed_SDL_BlitSurfaceScaled

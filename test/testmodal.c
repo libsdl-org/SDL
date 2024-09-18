@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     SDL_Window *w1 = NULL, *w2 = NULL;
     SDL_Renderer *r1 = NULL, *r2 = NULL;
     SDLTest_CommonState *state = NULL;
-    Uint64 show_deadline = 0;
+    uint64_t show_deadline = 0;
     int i;
     int exit_code = 0;
 

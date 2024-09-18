@@ -660,10 +660,10 @@ void X11_Xinput2UngrabTouch(SDL_VideoDevice *_this, SDL_Window *window)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 
-static void AddDeviceID(Uint32 deviceID, Uint32 **list, int *count)
+static void AddDeviceID(uint32_t deviceID, uint32_t **list, int *count)
 {
     int new_count = (*count + 1);
-    Uint32 *new_list = (Uint32 *)SDL_realloc(*list, new_count * sizeof(*new_list));
+    uint32_t *new_list = (uint32_t *)SDL_realloc(*list, new_count * sizeof(*new_list));
     if (!new_list) {
         // Oh well, we'll drop this one
         return;
@@ -674,7 +674,7 @@ static void AddDeviceID(Uint32 deviceID, Uint32 **list, int *count)
     *list = new_list;
 }
 
-static bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
+static bool HasDeviceID(uint32_t deviceID, const uint32_t *list, int count)
 {
     for (int i = 0; i < count; ++i) {
         if (deviceID == list[i]) {
@@ -684,10 +684,10 @@ static bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
     return false;
 }
 
-static void AddDeviceID64(Uint64 deviceID, Uint64 **list, int *count)
+static void AddDeviceID64(uint64_t deviceID, uint64_t **list, int *count)
 {
     int new_count = (*count + 1);
-    Uint64 *new_list = (Uint64 *)SDL_realloc(*list, new_count * sizeof(*new_list));
+    uint64_t *new_list = (uint64_t *)SDL_realloc(*list, new_count * sizeof(*new_list));
     if (!new_list) {
         // Oh well, we'll drop this one
         return;
@@ -698,7 +698,7 @@ static void AddDeviceID64(Uint64 deviceID, Uint64 **list, int *count)
     *list = new_list;
 }
 
-static bool HasDeviceID64(Uint64 deviceID, const Uint64 *list, int count)
+static bool HasDeviceID64(uint64_t deviceID, const uint64_t *list, int count)
 {
     for (int i = 0; i < count; ++i) {
         if (deviceID == list[i]) {
@@ -725,9 +725,9 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
     int old_touch_count = 0;
-    Uint64 *old_touch_devices = NULL;
+    uint64_t *old_touch_devices = NULL;
     int new_touch_count = 0;
-    Uint64 *new_touch_devices = NULL;
+    uint64_t *new_touch_devices = NULL;
     bool send_event = !initial_check;
 
     SDL_assert(X11_Xinput2IsInitialized());
@@ -768,7 +768,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
         for (int j = 0; j < dev->num_classes; j++) {
-            Uint64 touchID;
+            uint64_t touchID;
             SDL_TouchDeviceType touchType;
             XIAnyClassInfo *class = dev->classes[j];
             XITouchClassInfo *t = (XITouchClassInfo *)class;
@@ -778,7 +778,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
                 continue;
             }
 
-            touchID = (Uint64)t->sourceid;
+            touchID = (uint64_t)t->sourceid;
             AddDeviceID64(touchID, &new_touch_devices, &new_touch_count);
             if (!HasDeviceID64(touchID, old_touch_devices, old_touch_count)) {
                 if (t->mode == XIDependentTouch) {

@@ -171,13 +171,13 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         return SDL_SetError("Can't stat: %s", strerror(errno));
     } else if (S_ISREG(statbuf.st_mode)) {
         info->type = SDL_PATHTYPE_FILE;
-        info->size = (Uint64) statbuf.st_size;
+        info->size = (uint64_t) statbuf.st_size;
     } else if (S_ISDIR(statbuf.st_mode)) {
         info->type = SDL_PATHTYPE_DIRECTORY;
         info->size = 0;
     } else {
         info->type = SDL_PATHTYPE_OTHER;
-        info->size = (Uint64) statbuf.st_size;
+        info->size = (uint64_t) statbuf.st_size;
     }
 
 #if defined(HAVE_ST_MTIM)

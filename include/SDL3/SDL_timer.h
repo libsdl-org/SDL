@@ -43,11 +43,11 @@ extern "C" {
 #define SDL_NS_PER_SECOND   1000000000LL
 #define SDL_NS_PER_MS       1000000
 #define SDL_NS_PER_US       1000
-#define SDL_SECONDS_TO_NS(S)    (((Uint64)(S)) * SDL_NS_PER_SECOND)
+#define SDL_SECONDS_TO_NS(S)    (((uint64_t)(S)) * SDL_NS_PER_SECOND)
 #define SDL_NS_TO_SECONDS(NS)   ((NS) / SDL_NS_PER_SECOND)
-#define SDL_MS_TO_NS(MS)        (((Uint64)(MS)) * SDL_NS_PER_MS)
+#define SDL_MS_TO_NS(MS)        (((uint64_t)(MS)) * SDL_NS_PER_MS)
 #define SDL_NS_TO_MS(NS)        ((NS) / SDL_NS_PER_MS)
-#define SDL_US_TO_NS(US)        (((Uint64)(US)) * SDL_NS_PER_US)
+#define SDL_US_TO_NS(US)        (((uint64_t)(US)) * SDL_NS_PER_US)
 #define SDL_NS_TO_US(NS)        ((NS) / SDL_NS_PER_US)
 
 /**
@@ -58,7 +58,7 @@ extern "C" {
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetTicks(void);
+extern SDL_DECLSPEC uint64_t SDLCALL SDL_GetTicks(void);
 
 /**
  * Get the number of nanoseconds since SDL library initialization.
@@ -68,7 +68,7 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetTicks(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetTicksNS(void);
+extern SDL_DECLSPEC uint64_t SDLCALL SDL_GetTicksNS(void);
 
 /**
  * Get the current value of the high resolution counter.
@@ -85,7 +85,7 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetTicksNS(void);
  *
  * \sa SDL_GetPerformanceFrequency
  */
-extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetPerformanceCounter(void);
+extern SDL_DECLSPEC uint64_t SDLCALL SDL_GetPerformanceCounter(void);
 
 /**
  * Get the count per second of the high resolution counter.
@@ -96,7 +96,7 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetPerformanceCounter(void);
  *
  * \sa SDL_GetPerformanceCounter
  */
-extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetPerformanceFrequency(void);
+extern SDL_DECLSPEC uint64_t SDLCALL SDL_GetPerformanceFrequency(void);
 
 /**
  * Wait a specified number of milliseconds before returning.
@@ -109,7 +109,7 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetPerformanceFrequency(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
+extern SDL_DECLSPEC void SDLCALL SDL_Delay(uint32_t ms);
 
 /**
  * Wait a specified number of nanoseconds before returning.
@@ -122,14 +122,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
+extern SDL_DECLSPEC void SDLCALL SDL_DelayNS(uint64_t ns);
 
 /**
  * Definition of the timer ID type.
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_TimerID;
+typedef uint32_t SDL_TimerID;
 
 /**
  * Function prototype for the millisecond timer callback function.
@@ -155,7 +155,7 @@ typedef Uint32 SDL_TimerID;
  *
  * \sa SDL_AddTimer
  */
-typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID, Uint32 interval);
+typedef uint32_t (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID, uint32_t interval);
 
 /**
  * Call a callback function at a future time.
@@ -191,7 +191,7 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID,
  * \sa SDL_AddTimerNS
  * \sa SDL_RemoveTimer
  */
-extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *userdata);
+extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(uint32_t interval, SDL_TimerCallback callback, void *userdata);
 
 /**
  * Function prototype for the nanosecond timer callback function.
@@ -217,7 +217,7 @@ extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval, SDL_TimerC
  *
  * \sa SDL_AddTimerNS
  */
-typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerID, Uint64 interval);
+typedef uint64_t (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerID, uint64_t interval);
 
 /**
  * Call a callback function at a future time.
@@ -253,7 +253,7 @@ typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerI
  * \sa SDL_AddTimer
  * \sa SDL_RemoveTimer
  */
-extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void *userdata);
+extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimerNS(uint64_t interval, SDL_NSTimerCallback callback, void *userdata);
 
 /**
  * Remove a timer created with SDL_AddTimer().

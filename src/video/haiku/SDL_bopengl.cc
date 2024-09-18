@@ -116,7 +116,7 @@ SDL_GLContext HAIKU_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window * window
         SDL_SetError("Context already creaded");
         return NULL;
     }
-    Uint32 gl_flags = BGL_RGB;
+    uint32_t gl_flags = BGL_RGB;
     if (_this->gl_config.alpha_size) {
         gl_flags |= BGL_ALPHA;
     }

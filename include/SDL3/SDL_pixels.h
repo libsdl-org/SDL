@@ -559,8 +559,8 @@ typedef enum SDL_ChromaLocation
 
 /* Colorspace definition */
 #define SDL_DEFINE_COLORSPACE(type, range, primaries, transfer, matrix, chroma) \
-    (((Uint32)(type) << 28) | ((Uint32)(range) << 24) | ((Uint32)(chroma) << 20) | \
-    ((Uint32)(primaries) << 10) | ((Uint32)(transfer) << 5) | ((Uint32)(matrix) << 0))
+    (((uint32_t)(type) << 28) | ((uint32_t)(range) << 24) | ((uint32_t)(chroma) << 20) | \
+    ((uint32_t)(primaries) << 10) | ((uint32_t)(transfer) << 5) | ((uint32_t)(matrix) << 0))
 
 #define SDL_COLORSPACETYPE(X)       (SDL_ColorType)(((X) >> 28) & 0x0F)
 #define SDL_COLORSPACERANGE(X)      (SDL_ColorRange)(((X) >> 24) & 0x0F)
@@ -698,10 +698,10 @@ typedef enum SDL_Colorspace
  */
 typedef struct SDL_Color
 {
-    Uint8 r;
-    Uint8 g;
-    Uint8 b;
-    Uint8 a;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
 } SDL_Color;
 
 /**
@@ -729,7 +729,7 @@ typedef struct SDL_Palette
 {
     int ncolors;        /**< number of elements in `colors`. */
     SDL_Color *colors;  /**< an array of colors, `ncolors` long. */
-    Uint32 version;     /**< internal use only, do not touch. */
+    uint32_t version;     /**< internal use only, do not touch. */
     int refcount;       /**< internal use only, do not touch. */
 } SDL_Palette;
 
@@ -741,21 +741,21 @@ typedef struct SDL_Palette
 typedef struct SDL_PixelFormatDetails
 {
     SDL_PixelFormat format;
-    Uint8 bits_per_pixel;
-    Uint8 bytes_per_pixel;
-    Uint8 padding[2];
-    Uint32 Rmask;
-    Uint32 Gmask;
-    Uint32 Bmask;
-    Uint32 Amask;
-    Uint8 Rbits;
-    Uint8 Gbits;
-    Uint8 Bbits;
-    Uint8 Abits;
-    Uint8 Rshift;
-    Uint8 Gshift;
-    Uint8 Bshift;
-    Uint8 Ashift;
+    uint8_t bits_per_pixel;
+    uint8_t bytes_per_pixel;
+    uint8_t padding[2];
+    uint32_t Rmask;
+    uint32_t Gmask;
+    uint32_t Bmask;
+    uint32_t Amask;
+    uint8_t Rbits;
+    uint8_t Gbits;
+    uint8_t Bbits;
+    uint8_t Abits;
+    uint8_t Rshift;
+    uint8_t Gshift;
+    uint8_t Bshift;
+    uint8_t Ashift;
 } SDL_PixelFormatDetails;
 
 /**
@@ -789,7 +789,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat 
  *
  * \sa SDL_GetPixelFormatForMasks
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, uint32_t *Rmask, uint32_t *Gmask, uint32_t *Bmask, uint32_t *Amask);
 
 /**
  * Convert a bpp value and RGBA masks to an enumerated pixel format.
@@ -811,7 +811,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetMasksForPixelFormat(SDL_PixelFormat form
  *
  * \sa SDL_GetMasksForPixelFormat
  */
-extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetPixelFormatForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
+extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetPixelFormatForMasks(int bpp, uint32_t Rmask, uint32_t Gmask, uint32_t Bmask, uint32_t Amask);
 
 /**
  * Create an SDL_PixelFormatDetails structure corresponding to a pixel format.
@@ -896,7 +896,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette *palette);
  *
  * If the pixel format bpp (color depth) is less than 32-bpp then the unused
  * upper bits of the return value can safely be ignored (e.g., with a 16-bpp
- * format the return value can be assigned to a Uint16, and similarly a Uint8
+ * format the return value can be assigned to a uint16_t, and similarly a uint8_t
  * for an 8-bpp format).
  *
  * \param format a pointer to SDL_PixelFormatDetails describing the pixel
@@ -917,7 +917,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette *palette);
  * \sa SDL_MapRGBA
  * \sa SDL_MapSurfaceRGB
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 r, Uint8 g, Uint8 b);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_MapRGB(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, uint8_t r, uint8_t g, uint8_t b);
 
 /**
  * Map an RGBA quadruple to a pixel value for a given pixel format.
@@ -934,7 +934,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormatDetails *form
  *
  * If the pixel format bpp (color depth) is less than 32-bpp then the unused
  * upper bits of the return value can safely be ignored (e.g., with a 16-bpp
- * format the return value can be assigned to a Uint16, and similarly a Uint8
+ * format the return value can be assigned to a uint16_t, and similarly a uint8_t
  * for an 8-bpp format).
  *
  * \param format a pointer to SDL_PixelFormatDetails describing the pixel
@@ -956,7 +956,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormatDetails *form
  * \sa SDL_MapRGB
  * \sa SDL_MapSurfaceRGBA
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 /**
  * Get RGB values from a pixel in the specified format.
@@ -984,7 +984,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *for
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
+extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(uint32_t pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, uint8_t *r, uint8_t *g, uint8_t *b);
 
 /**
  * Get RGBA values from a pixel in the specified format.
@@ -1016,7 +1016,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatD
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+extern SDL_DECLSPEC void SDLCALL SDL_GetRGBA(uint32_t pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a);
 
 
 /* Ends C function definitions when using C++ */

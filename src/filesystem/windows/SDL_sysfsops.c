@@ -194,10 +194,10 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         info->size = 0;
     } else if (winstat.dwFileAttributes & (FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_DEVICE)) {
         info->type = SDL_PATHTYPE_OTHER;
-        info->size = ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
+        info->size = ((((uint64_t) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
     } else {
         info->type = SDL_PATHTYPE_FILE;
-        info->size = ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
+        info->size = ((((uint64_t) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
     }
 
     info->create_time = SDL_TimeFromWindows(winstat.ftCreationTime.dwLowDateTime, winstat.ftCreationTime.dwHighDateTime);

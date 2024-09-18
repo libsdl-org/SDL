@@ -143,11 +143,11 @@ static SDL_Color MooseColors[84] = {
 /* *INDENT-ON* */ /* clang-format on */
 
 static SDLTest_CommonState *state;
-static Uint64 next_fps_check;
-static Uint32 frames;
-static const Uint32 fps_check_delay = 5000;
+static uint64_t next_fps_check;
+static uint32_t frames;
+static const uint32_t fps_check_delay = 5000;
 
-static Uint32 yuv_format = SDL_PIXELFORMAT_YV12;
+static uint32_t yuv_format = SDL_PIXELFORMAT_YV12;
 static SDL_Surface *MooseYUVSurfaces[MOOSEFRAMES_COUNT];
 static SDL_Texture *MooseTexture = NULL;
 static SDL_FRect displayrect;
@@ -157,7 +157,7 @@ static int paused = 0;
 static int done = 0;
 static int fpsdelay;
 static bool streaming = true;
-static Uint8 *RawMooseData = NULL;
+static uint8_t *RawMooseData = NULL;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -208,12 +208,12 @@ static void MoveSprites(SDL_Renderer *renderer)
                      rect.h = MOOSEPIC_H / 2;
                  }
                  SDL_UpdateNVTexture(MooseTexture, &rect,
-                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + rect.y * MooseYUVSurfaces[i]->pitch + rect.x, MooseYUVSurfaces[i]->pitch,
-                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE + (rect.y + 1) / 2 * MooseYUVSurfaces[i]->pitch + (rect.x + 1) / 2, MooseYUVSurfaces[i]->pitch);
+                                     (uint8_t *)MooseYUVSurfaces[i]->pixels + rect.y * MooseYUVSurfaces[i]->pitch + rect.x, MooseYUVSurfaces[i]->pitch,
+                                     (uint8_t *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE + (rect.y + 1) / 2 * MooseYUVSurfaces[i]->pitch + (rect.x + 1) / 2, MooseYUVSurfaces[i]->pitch);
 #else
                  SDL_UpdateNVTexture(MooseTexture, NULL,
                                      MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch,
-                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE, MooseYUVSurfaces[i]->pitch);
+                                     (uint8_t *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE, MooseYUVSurfaces[i]->pitch);
 #endif
              } else {
                  SDL_UpdateTexture(MooseTexture, NULL, MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch);
@@ -246,7 +246,7 @@ static void MoveSprites(SDL_Renderer *renderer)
 
 static void loop(void)
 {
-    Uint64 now;
+    uint64_t now;
     int i;
     SDL_Event event;
 
@@ -308,7 +308,7 @@ static void loop(void)
     now = SDL_GetTicks();
     if (now >= next_fps_check) {
         /* Print out some timing information */
-        const Uint64 then = next_fps_check - fps_check_delay;
+        const uint64_t then = next_fps_check - fps_check_delay;
         const double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
         next_fps_check = now + fps_check_delay;
@@ -432,7 +432,7 @@ int main(int argc, char **argv)
         quit(2);
     }
 
-    RawMooseData = (Uint8 *)SDL_malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
+    RawMooseData = (uint8_t *)SDL_malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
     if (!RawMooseData) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't allocate memory for movie !\n");
         quit(1);
@@ -488,8 +488,8 @@ int main(int argc, char **argv)
 
         /* Load Moose into a RGB SDL_Surface */
         {
-            Uint8 *rgb = mooseRGBSurface->pixels;
-            Uint8 *frame = RawMooseData + i * MOOSEFRAME_SIZE;
+            uint8_t *rgb = mooseRGBSurface->pixels;
+            uint8_t *frame = RawMooseData + i * MOOSEFRAME_SIZE;
             for (j = 0; j < MOOSEFRAME_SIZE; ++j) {
                 rgb[0] = MooseColors[frame[j]].r;
                 rgb[1] = MooseColors[frame[j]].g;

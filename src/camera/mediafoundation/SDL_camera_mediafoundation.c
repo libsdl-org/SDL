@@ -421,7 +421,7 @@ static void SDLCALL CleanupIMFMediaBuffer(void *userdata, void *value)
     SDL_free(objs);
 }
 
-static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS)
 {
     SDL_assert(device->hidden->current_sample != NULL);
     
@@ -522,7 +522,7 @@ static void MEDIAFOUNDATION_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 
 #else
 
-static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS)
 {
     SDL_assert(device->hidden->current_sample != NULL);
 

@@ -33,15 +33,15 @@
 #define SDL_HINT_STEAM_VIRTUAL_GAMEPAD_INFO_FILE    "SteamVirtualGamepadInfo"
 
 static char *SDL_steam_virtual_gamepad_info_file SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static Uint64 SDL_steam_virtual_gamepad_info_file_mtime SDL_GUARDED_BY(SDL_joystick_lock) = 0;
-static Uint64 SDL_steam_virtual_gamepad_info_check_time SDL_GUARDED_BY(SDL_joystick_lock) = 0;
+static uint64_t SDL_steam_virtual_gamepad_info_file_mtime SDL_GUARDED_BY(SDL_joystick_lock) = 0;
+static uint64_t SDL_steam_virtual_gamepad_info_check_time SDL_GUARDED_BY(SDL_joystick_lock) = 0;
 static SDL_SteamVirtualGamepadInfo **SDL_steam_virtual_gamepad_info SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static int SDL_steam_virtual_gamepad_info_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
 
 
-static Uint64 GetFileModificationTime(const char *file)
+static uint64_t GetFileModificationTime(const char *file)
 {
-    Uint64 modification_time = 0;
+    uint64_t modification_time = 0;
 
 #ifdef SDL_PLATFORM_WIN32
     WCHAR *wFile = WIN_UTF8ToStringW(file);
@@ -62,7 +62,7 @@ static Uint64 GetFileModificationTime(const char *file)
     struct stat sb;
 
     if (stat(file, &sb) == 0) {
-        modification_time = (Uint64)sb.st_mtime;
+        modification_time = (uint64_t)sb.st_mtime;
     }
 #endif
     return modification_time;
@@ -144,8 +144,8 @@ bool SDL_SteamVirtualGamepadEnabled(void)
 bool SDL_UpdateSteamVirtualGamepadInfo(void)
 {
     const int UPDATE_CHECK_INTERVAL_MS = 3000;
-    Uint64 now;
-    Uint64 mtime;
+    uint64_t now;
+    uint64_t mtime;
     char *data, *end, *next, *line, *value;
     size_t size;
     int slot, new_slot;
@@ -205,13 +205,13 @@ bool SDL_UpdateSteamVirtualGamepadInfo(void)
                     SDL_free(info.name);
                     info.name = SDL_strdup(value);
                 } else if (SDL_strcmp(line, "VID") == 0) {
-                    info.vendor_id = (Uint16)SDL_strtoul(value, NULL, 0);
+                    info.vendor_id = (uint16_t)SDL_strtoul(value, NULL, 0);
                 } else if (SDL_strcmp(line, "PID") == 0) {
-                    info.product_id = (Uint16)SDL_strtoul(value, NULL, 0);
+                    info.product_id = (uint16_t)SDL_strtoul(value, NULL, 0);
                 } else if (SDL_strcmp(line, "type") == 0) {
                     info.type = SDL_GetGamepadTypeFromString(value);
                 } else if (SDL_strcmp(line, "handle") == 0) {
-                    info.handle = (Uint64)SDL_strtoull(value, NULL, 0);
+                    info.handle = (uint64_t)SDL_strtoull(value, NULL, 0);
                 }
             }
         }

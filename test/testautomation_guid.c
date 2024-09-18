@@ -29,7 +29,7 @@
 static struct
 {
     char *str;
-    Uint64 upper, lower;
+    uint64_t upper, lower;
 } test_guids[NUM_TEST_GUIDS] = {
     { "0000000000000000"
       "ffffffffffffffff",
@@ -49,16 +49,16 @@ static struct
 };
 
 static void
-upper_lower_to_bytestring(Uint8 *out, Uint64 upper, Uint64 lower)
+upper_lower_to_bytestring(uint8_t *out, uint64_t upper, uint64_t lower)
 {
-    Uint64 values[2];
+    uint64_t values[2];
     int i, k;
 
     values[0] = upper;
     values[1] = lower;
 
     for (i = 0; i < 2; ++i) {
-        Uint64 v = values[i];
+        uint64_t v = values[i];
 
         for (k = 0; k < 8; ++k) {
             *out++ = v >> 56;
@@ -81,7 +81,7 @@ TestStringToGUID(void *arg)
 
     SDLTest_AssertPass("Call to SDL_StringToGUID");
     for (i = 0; i < NUM_TEST_GUIDS; ++i) {
-        Uint8 expected[16];
+        uint8_t expected[16];
         SDL_GUID guid;
 
         upper_lower_to_bytestring(expected,

@@ -77,7 +77,7 @@ void SDL_SetKeymapEntry(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod mo
         return;
     }
 
-    Uint32 key = ((Uint32)NormalizeModifierStateForKeymap(modstate) << 16) | scancode;
+    uint32_t key = ((uint32_t)NormalizeModifierStateForKeymap(modstate) << 16) | scancode;
     const void *value;
     if (SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
         // Changing the mapping, need to remove the existing entry from the keymap
@@ -93,7 +93,7 @@ SDL_Keycode SDL_GetKeymapKeycode(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_
 {
     SDL_Keycode keycode;
 
-    Uint32 key = ((Uint32)NormalizeModifierStateForKeymap(modstate) << 16) | scancode;
+    uint32_t key = ((uint32_t)NormalizeModifierStateForKeymap(modstate) << 16) | scancode;
     const void *value;
     if (keymap && SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
         keycode = (SDL_Keycode)(uintptr_t)value;
@@ -1043,27 +1043,27 @@ SDL_Keycode SDL_GetKeyFromName(const char *name)
     if (key >= 0xF0) {
         if (SDL_strlen(name) == 4) {
             int i = 0;
-            key = (Uint16)(name[i] & 0x07) << 18;
-            key |= (Uint16)(name[++i] & 0x3F) << 12;
-            key |= (Uint16)(name[++i] & 0x3F) << 6;
-            key |= (Uint16)(name[++i] & 0x3F);
+            key = (uint16_t)(name[i] & 0x07) << 18;
+            key |= (uint16_t)(name[++i] & 0x3F) << 12;
+            key |= (uint16_t)(name[++i] & 0x3F) << 6;
+            key |= (uint16_t)(name[++i] & 0x3F);
         } else {
             key = SDLK_UNKNOWN;
         }
     } else if (key >= 0xE0) {
         if (SDL_strlen(name) == 3) {
             int i = 0;
-            key = (Uint16)(name[i] & 0x0F) << 12;
-            key |= (Uint16)(name[++i] & 0x3F) << 6;
-            key |= (Uint16)(name[++i] & 0x3F);
+            key = (uint16_t)(name[i] & 0x0F) << 12;
+            key |= (uint16_t)(name[++i] & 0x3F) << 6;
+            key |= (uint16_t)(name[++i] & 0x3F);
         } else {
             key = SDLK_UNKNOWN;
         }
     } else if (key >= 0xC0) {
         if (SDL_strlen(name) == 2) {
             int i = 0;
-            key = (Uint16)(name[i] & 0x1F) << 6;
-            key |= (Uint16)(name[++i] & 0x3F);
+            key = (uint16_t)(name[i] & 0x1F) << 6;
+            key |= (uint16_t)(name[++i] & 0x3F);
         } else {
             key = SDLK_UNKNOWN;
         }

@@ -28,7 +28,7 @@
 struct SDL_PrivateAudioData
 {
     BSoundPlayer *audio_obj;
-    Uint8 *current_buffer;
+    uint8_t *current_buffer;
     int current_buffer_len;
 };
 

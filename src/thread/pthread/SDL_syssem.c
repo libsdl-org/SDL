@@ -39,7 +39,7 @@ struct SDL_Semaphore
 };
 
 // Create a semaphore, initialized with value
-SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(uint32_t initial_value)
 {
     SDL_Semaphore *sem = (SDL_Semaphore *)SDL_malloc(sizeof(SDL_Semaphore));
     if (sem) {
@@ -60,7 +60,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     }
 }
 
-bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, int64_t timeoutNS)
 {
 #ifdef HAVE_SEM_TIMEDWAIT
 #ifndef HAVE_CLOCK_GETTIME
@@ -68,7 +68,7 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 #endif
     struct timespec ts_timeout;
 #else
-    Uint64 stop_time;
+    uint64_t stop_time;
 #endif
 
     if (!sem) {
@@ -133,7 +133,7 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 #endif // HAVE_SEM_TIMEDWAIT
 }
 
-Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
+uint32_t SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     int ret = 0;
 
@@ -145,7 +145,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     if (ret < 0) {
         ret = 0;
     }
-    return (Uint32)ret;
+    return (uint32_t)ret;
 }
 
 void SDL_SignalSemaphore(SDL_Semaphore *sem)

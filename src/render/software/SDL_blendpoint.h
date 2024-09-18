@@ -24,7 +24,7 @@
 
 #include "SDL_internal.h"
 
-extern bool SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-extern bool SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+extern bool SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+extern bool SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count, SDL_BlendMode blendMode, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 #endif // SDL_blendpoint_h_

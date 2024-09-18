@@ -37,7 +37,7 @@ struct SDL_Semaphore
 };
 
 // Create a semaphore
-SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(uint32_t initial_value)
 {
     SDL_Semaphore *sem;
 
@@ -72,7 +72,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
  * If the timeout is 0 then just poll the semaphore; if it's -1, pass
  * NULL to sceKernelWaitSema() so that it waits indefinitely; and if the timeout
  * is specified, convert it to microseconds. */
-bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, int64_t timeoutNS)
 {
     SceUInt timeoutUS;
     SceUInt *pTimeout = NULL;
@@ -94,7 +94,7 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 }
 
 // Returns the current count of the semaphore
-Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
+uint32_t SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     SceKernelSemaInfo info;
     info.size = sizeof(info);

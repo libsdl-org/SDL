@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     int i, done;
     const SDL_DisplayMode *mode;
     SDL_Event event;
-    Uint32 then, now, frames;
+    uint32_t then, now, frames;
 
     /* Initialize parameters */
     fsaa = 0;

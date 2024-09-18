@@ -85,8 +85,8 @@ bool RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, 
         return SDL_SetError("Unable to create sprite: %s (%i)", error->errmess, error->errnum);
     }
 
-    internal->fb_sprite = (sprite_header *)(((Uint8 *)internal->fb_area) + internal->fb_area->start);
-    *pixels = ((Uint8 *)internal->fb_sprite) + internal->fb_sprite->image_offset;
+    internal->fb_sprite = (sprite_header *)(((uint8_t *)internal->fb_area) + internal->fb_area->start);
+    *pixels = ((uint8_t *)internal->fb_sprite) + internal->fb_sprite->image_offset;
 
     return true;
 }

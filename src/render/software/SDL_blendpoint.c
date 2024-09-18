@@ -25,8 +25,8 @@
 #include "SDL_draw.h"
 #include "SDL_blendpoint.h"
 
-static bool SDL_BlendPoint_RGB555(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
-                                 Uint8 g, Uint8 b, Uint8 a)
+static bool SDL_BlendPoint_RGB555(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, uint8_t r,
+                                 uint8_t g, uint8_t b, uint8_t a)
 {
     unsigned inva = 0xff - a;
 
@@ -54,8 +54,8 @@ static bool SDL_BlendPoint_RGB555(SDL_Surface *dst, int x, int y, SDL_BlendMode 
     return true;
 }
 
-static bool SDL_BlendPoint_RGB565(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
-                                 Uint8 g, Uint8 b, Uint8 a)
+static bool SDL_BlendPoint_RGB565(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, uint8_t r,
+                                 uint8_t g, uint8_t b, uint8_t a)
 {
     unsigned inva = 0xff - a;
 
@@ -83,8 +83,8 @@ static bool SDL_BlendPoint_RGB565(SDL_Surface *dst, int x, int y, SDL_BlendMode 
     return true;
 }
 
-static bool SDL_BlendPoint_XRGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
-                                 Uint8 g, Uint8 b, Uint8 a)
+static bool SDL_BlendPoint_XRGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, uint8_t r,
+                                 uint8_t g, uint8_t b, uint8_t a)
 {
     unsigned inva = 0xff - a;
 
@@ -113,7 +113,7 @@ static bool SDL_BlendPoint_XRGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMod
 }
 
 static bool SDL_BlendPoint_ARGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode,
-                                   Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+                                   uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     unsigned inva = 0xff - a;
 
@@ -141,8 +141,8 @@ static bool SDL_BlendPoint_ARGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMod
     return true;
 }
 
-static bool SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
-                              Uint8 g, Uint8 b, Uint8 a)
+static bool SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, uint8_t r,
+                              uint8_t g, uint8_t b, uint8_t a)
 {
     const SDL_PixelFormatDetails *fmt = dst->internal->format;
     unsigned inva = 0xff - a;
@@ -199,8 +199,8 @@ static bool SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode ble
     }
 }
 
-static bool SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
-                               Uint8 g, Uint8 b, Uint8 a)
+static bool SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, uint8_t r,
+                               uint8_t g, uint8_t b, uint8_t a)
 {
     const SDL_PixelFormatDetails *fmt = dst->internal->format;
     unsigned inva = 0xff - a;
@@ -234,7 +234,7 @@ static bool SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode bl
     }
 }
 
-bool SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+bool SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_BlendPoint(): dst");
@@ -293,13 +293,13 @@ bool SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uin
     }
 }
 
-bool SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+bool SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count, SDL_BlendMode blendMode, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     int minx, miny;
     int maxx, maxy;
     int i;
     int x, y;
-    bool (*func)(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
+    bool (*func)(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, uint8_t r, uint8_t g, uint8_t b, uint8_t a) = NULL;
     bool result = true;
 
     if (!SDL_SurfaceValid(dst)) {

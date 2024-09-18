@@ -185,8 +185,8 @@ int main(int argc, char *argv[])
 {
     int i;
     const char *icon = "icon.bmp";
-    Uint64 then, now;
-    Uint32 frames;
+    uint64_t then, now;
+    uint32_t frames;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);

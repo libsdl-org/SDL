@@ -56,7 +56,7 @@ static void MoveSprites(void)
     int window_w = WINDOW_WIDTH;
     int window_h = WINDOW_HEIGHT;
     SDL_Rect *position, *velocity;
-    Uint32 background = SDL_MapSurfaceRGB(window_surf, 0xA0, 0xA0, 0xA0);
+    uint32_t background = SDL_MapSurfaceRGB(window_surf, 0xA0, 0xA0, 0xA0);
     SDL_FillSurfaceRect(window_surf, NULL, background);
 
     /* Move the sprite, bounce at the wall, and draw */

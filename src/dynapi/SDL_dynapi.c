@@ -339,7 +339,7 @@ SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Critical, CRITICAL)
 
 /* we make this a static function so we can call the correct one without the
    system's dynamic linker resolving to the wrong version of this. */
-static Sint32 initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
+static int32_t initialize_jumptable(uint32_t apiver, void *table, uint32_t tablesize)
 {
     SDL_DYNAPI_jump_table *output_jump_table = (SDL_DYNAPI_jump_table *)table;
 
@@ -383,10 +383,10 @@ static Sint32 initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
 
 // Here's the exported entry point that fills in the jump table.
 // Use specific types when an "int" might suffice to keep this sane.
-typedef Sint32 (SDLCALL *SDL_DYNAPI_ENTRYFN)(Uint32 apiver, void *table, Uint32 tablesize);
-extern SDL_DECLSPEC Sint32 SDLCALL SDL_DYNAPI_entry(Uint32, void *, Uint32);
+typedef int32_t (SDLCALL *SDL_DYNAPI_ENTRYFN)(uint32_t apiver, void *table, uint32_t tablesize);
+extern SDL_DECLSPEC int32_t SDLCALL SDL_DYNAPI_entry(uint32_t, void *, uint32_t);
 
-Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
+int32_t SDL_DYNAPI_entry(uint32_t apiver, void *table, uint32_t tablesize)
 {
     return initialize_jumptable(apiver, table, tablesize);
 }
@@ -541,8 +541,8 @@ static void SDL_InitDynamicAPI(void)
 
 #include <SDL3/SDL.h>
 
-Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize);
-Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
+int32_t SDL_DYNAPI_entry(uint32_t apiver, void *table, uint32_t tablesize);
+int32_t SDL_DYNAPI_entry(uint32_t apiver, void *table, uint32_t tablesize)
 {
     (void)apiver;
     (void)table;

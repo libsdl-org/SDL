@@ -529,7 +529,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char *argv[]
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
+extern SDL_DECLSPEC bool SDLCALL SDL_RegisterApp(const char *name, uint32_t style, void *hInst);
 
 /**
  * Deregister the win32 window class from an SDL_RegisterApp call.

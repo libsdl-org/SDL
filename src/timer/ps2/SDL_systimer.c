@@ -29,17 +29,17 @@
 #include <sys/time.h>
 
 
-Uint64 SDL_GetPerformanceCounter(void)
+uint64_t SDL_GetPerformanceCounter(void)
 {
     return GetTimerSystemTime();
 }
 
-Uint64 SDL_GetPerformanceFrequency(void)
+uint64_t SDL_GetPerformanceFrequency(void)
 {
     return kBUSCLK;
 }
 
-void SDL_SYS_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(uint64_t ns)
 {
     struct timespec tv;
     tv.tv_sec = (ns / SDL_NS_PER_SECOND);

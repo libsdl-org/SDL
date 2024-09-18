@@ -35,11 +35,11 @@ typedef struct JoyStick_DeviceData
 {
     SDL_GUID guid;
     char *joystickname;
-    Uint8 send_add_event;
+    uint8_t send_add_event;
     SDL_JoystickID nInstanceID;
     bool bXInputDevice;
     BYTE SubType;
-    Uint8 XInputUserId;
+    uint8_t XInputUserId;
     DIDEVICEINSTANCE dxdevice;
     char path[MAX_PATH];
     int steam_virtual_gamepad_slot;
@@ -64,7 +64,7 @@ typedef struct input_t
     Type type;
 
     // SDL input offset:
-    Uint8 num;
+    uint8_t num;
 } input_t;
 
 // The private structure used to keep track of a joystick
@@ -87,7 +87,7 @@ struct joystick_hwdata
 
     bool bXInputDevice; // true if this device supports using the xinput API rather than DirectInput
     bool bXInputHaptic; // Supports force feedback via XInput.
-    Uint8 userid;           // XInput userid index for this joystick
+    uint8_t userid;           // XInput userid index for this joystick
     DWORD dwPacketNumber;
 };
 

@@ -18,11 +18,11 @@
 typedef struct Pen
 {
     SDL_PenID pen;
-    Uint8 r, g, b;
+    uint8_t r, g, b;
     float axes[SDL_PEN_AXIS_COUNT];
     float x;
     float y;
-    Uint32 buttons;
+    uint32_t buttons;
     bool eraser;
     bool touching;
     struct Pen *next;
@@ -83,9 +83,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     } else {
         const SDL_Rect rect = { 0, 0, 16, 16 };
-        Uint32 pixels[16 * 16];
+        uint32_t pixels[16 * 16];
         SDL_memset(pixels, 0xFF, sizeof (pixels));
-        SDL_UpdateTexture(white_pixel, &rect, pixels, 16 * sizeof (Uint32));
+        SDL_UpdateTexture(white_pixel, &rect, pixels, 16 * sizeof (uint32_t));
     }
 
     SDL_HideCursor();
@@ -118,9 +118,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
             SDL_Log("Pen %" SDL_PRIu32 " enters proximity!", event->pproximity.which);
             pen->pen = event->pproximity.which;
-            pen->r = (Uint8) SDL_rand(256);
-            pen->g = (Uint8) SDL_rand(256);
-            pen->b = (Uint8) SDL_rand(256);
+            pen->r = (uint8_t) SDL_rand(256);
+            pen->g = (uint8_t) SDL_rand(256);
+            pen->b = (uint8_t) SDL_rand(256);
             pen->x = 320.0f;
             pen->y = 240.0f;
             pen->next = pens.next;

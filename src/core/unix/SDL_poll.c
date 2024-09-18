@@ -32,7 +32,7 @@
 #endif
 #include <errno.h>
 
-int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
+int SDL_IOReady(int fd, int flags, int64_t timeoutNS)
 {
     int result;
 

@@ -29,7 +29,7 @@
 /* Given a calendar date, returns days since Jan 1 1970, and optionally
  * the day of the week (0-6, 0 is Sunday) and day of the year (0-365).
  */
-extern Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_of_year);
+extern int64_t SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_of_year);
 
 extern void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf);
 

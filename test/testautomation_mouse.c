@@ -14,7 +14,7 @@
 /* Test case functions */
 
 /* Helper to evaluate state returned from SDL_GetMouseState */
-static int mouseStateCheck(Uint32 state)
+static int mouseStateCheck(uint32_t state)
 {
     return (state == 0) ||
            (state == SDL_BUTTON(SDL_BUTTON_LEFT)) ||
@@ -156,8 +156,8 @@ static SDL_Cursor *initArrowCursor(const char *image[])
 {
     SDL_Cursor *cursor;
     int i, row, col;
-    Uint8 data[4 * 32];
-    Uint8 mask[4 * 32];
+    uint8_t data[4 * 32];
+    uint8_t mask[4 * 32];
 
     i = -1;
     for (row = 0; row < 32; ++row) {

@@ -13,7 +13,7 @@
 
 /* Range tests parameters */
 #define RANGE_TEST_ITERATIONS 10000000
-#define RANGE_TEST_STEP       ((Uint32)(SDL_MAX_UINT32 / RANGE_TEST_ITERATIONS))
+#define RANGE_TEST_STEP       ((uint32_t)(SDL_MAX_UINT32 / RANGE_TEST_ITERATIONS))
 
 /* Margin of error for imprecise tests */
 #define EPSILON 1.0E-10
@@ -74,7 +74,7 @@ static int
 helper_dtod(const char *func_name, d_to_d_func func,
             const d_to_d *cases, const size_t cases_size)
 {
-    Uint32 i;
+    uint32_t i;
     for (i = 0; i < cases_size; i++) {
         const double result = func(cases[i].input);
         SDLTest_AssertCheck(SDL_fabs(result - cases[i].expected) < FLT_EPSILON,
@@ -100,7 +100,7 @@ static int
 helper_dtod_inexact(const char *func_name, d_to_d_func func,
                     const d_to_d *cases, const size_t cases_size)
 {
-    Uint32 i;
+    uint32_t i;
     for (i = 0; i < cases_size; i++) {
         const double result = func(cases[i].input);
         double diff = result - cases[i].expected;
@@ -135,7 +135,7 @@ static int
 helper_ddtod(const char *func_name, dd_to_d_func func,
              const dd_to_d *cases, const size_t cases_size)
 {
-    Uint32 i;
+    uint32_t i;
     for (i = 0; i < cases_size; i++) {
         const double result = func(cases[i].x_input, cases[i].y_input);
         SDLTest_AssertCheck(result == cases[i].expected,
@@ -161,7 +161,7 @@ static int
 helper_ddtod_inexact(const char *func_name, dd_to_d_func func,
                      const dd_to_d *cases, const size_t cases_size)
 {
-    Uint32 i;
+    uint32_t i;
     for (i = 0; i < cases_size; i++) {
         const double result = func(cases[i].x_input, cases[i].y_input);
         double diff = result - cases[i].expected;
@@ -196,7 +196,7 @@ helper_ddtod_inexact(const char *func_name, dd_to_d_func func,
 static int
 helper_range(const char *func_name, d_to_d_func func)
 {
-    Uint32 i;
+    uint32_t i;
     double test_value = 0.0;
 
     SDLTest_AssertPass("%s: Testing a range of %u values with steps of %" SDL_PRIu32,
@@ -783,7 +783,7 @@ copysign_nanCases(void *args)
 static int SDLCALL
 copysign_rangeTest(void *args)
 {
-    Uint32 i;
+    uint32_t i;
     double test_value = 0.0;
 
     SDLTest_AssertPass("Copysign: Testing a range of %u values with steps of %" SDL_PRIu32,
@@ -986,7 +986,7 @@ fmod_regularCases(void *args)
 static int SDLCALL
 fmod_rangeTest(void *args)
 {
-    Uint32 i;
+    uint32_t i;
     double test_value = 0.0;
 
     SDLTest_AssertPass("Fmod: Testing a range of %u values with steps of %" SDL_PRIu32,
@@ -1717,7 +1717,7 @@ pow_powerOfTwo(void *args)
 static int SDLCALL
 pow_rangeTest(void *args)
 {
-    Uint32 i;
+    uint32_t i;
     double test_value = 0.0;
 
     SDLTest_AssertPass("Pow: Testing a range of %u values with steps of %" SDL_PRIu32,
@@ -2044,7 +2044,7 @@ cos_precisionTest(void *args)
 static int SDLCALL
 cos_rangeTest(void *args)
 {
-    Uint32 i;
+    uint32_t i;
     double test_value = 0.0;
 
     SDLTest_AssertPass("Cos: Testing a range of %u values with steps of %" SDL_PRIu32,
@@ -2162,7 +2162,7 @@ sin_precisionTest(void *args)
 static int SDLCALL
 sin_rangeTest(void *args)
 {
-    Uint32 i;
+    uint32_t i;
     double test_value = 0.0;
 
     SDLTest_AssertPass("Sin: Testing a range of %u values with steps of %" SDL_PRIu32,

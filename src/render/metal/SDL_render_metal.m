@@ -880,13 +880,13 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
 
             // Skip to the correct offset into the next texture
-            pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+            pixels = (const void *)((const uint8_t *)pixels + rect->h * pitch);
             if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Uslice, pixels, UVpitch)) {
                 return false;
             }
 
             // Skip to the correct offset into the next texture
-            pixels = (const void *)((const Uint8 *)pixels + UVrect.h * UVpitch);
+            pixels = (const void *)((const uint8_t *)pixels + UVrect.h * UVpitch);
             if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Vslice, pixels, UVpitch)) {
                 return false;
             }
@@ -897,7 +897,7 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             int UVpitch = 2 * ((pitch + 1) / 2);
 
             // Skip to the correct offset into the next texture
-            pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+            pixels = (const void *)((const uint8_t *)pixels + rect->h * pitch);
             if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, 0, pixels, UVpitch)) {
                 return false;
             }
@@ -912,9 +912,9 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 #if SDL_HAVE_YUV
 static bool METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *Uplane, int Upitch,
-                                  const Uint8 *Vplane, int Vpitch)
+                                  const uint8_t *Yplane, int Ypitch,
+                                  const uint8_t *Uplane, int Upitch,
+                                  const uint8_t *Vplane, int Vpitch)
 {
     @autoreleasepool {
         SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
@@ -945,8 +945,8 @@ static bool METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static bool METAL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const SDL_Rect *rect,
-                                 const Uint8 *Yplane, int Ypitch,
-                                 const Uint8 *UVplane, int UVpitch)
+                                 const uint8_t *Yplane, int Ypitch,
+                                 const uint8_t *UVplane, int UVpitch)
 {
     @autoreleasepool {
         SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
@@ -1254,11 +1254,11 @@ static bool METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         float *xy_;
         SDL_FColor col_;
         if (size_indices == 4) {
-            j = ((const Uint32 *)indices)[i];
+            j = ((const uint32_t *)indices)[i];
         } else if (size_indices == 2) {
-            j = ((const Uint16 *)indices)[i];
+            j = ((const uint16_t *)indices)[i];
         } else if (size_indices == 1) {
-            j = ((const Uint8 *)indices)[i];
+            j = ((const uint8_t *)indices)[i];
         } else {
             j = i;
         }
@@ -1695,7 +1695,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
         id<MTLTexture> mtltexture;
         MTLRegion mtlregion;
-        Uint32 format;
+        uint32_t format;
         SDL_Surface *surface;
 
         if (!METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil)) {

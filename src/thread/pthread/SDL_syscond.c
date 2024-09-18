@@ -78,7 +78,7 @@ void SDL_BroadcastCondition(SDL_Condition *cond)
     pthread_cond_broadcast(&cond->cond);
 }
 
-bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, int64_t timeoutNS)
 {
 #ifndef HAVE_CLOCK_GETTIME
     struct timeval delta;

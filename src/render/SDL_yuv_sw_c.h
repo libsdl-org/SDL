@@ -32,11 +32,11 @@ struct SDL_SW_YUVTexture
     SDL_Colorspace colorspace;
     SDL_PixelFormat target_format;
     int w, h;
-    Uint8 *pixels;
+    uint8_t *pixels;
 
     // These are just so we don't have to allocate them separately
     int pitches[3];
-    Uint8 *planes[3];
+    uint8_t *planes[3];
 
     // This is a temporary surface in case we have to stretch copy
     SDL_Surface *stretch;
@@ -49,12 +49,12 @@ extern SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Co
 extern bool SDL_SW_QueryYUVTexturePixels(SDL_SW_YUVTexture *swdata, void **pixels, int *pitch);
 extern bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect, const void *pixels, int pitch);
 extern bool SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
-                                         const Uint8 *Yplane, int Ypitch,
-                                         const Uint8 *Uplane, int Upitch,
-                                         const Uint8 *Vplane, int Vpitch);
+                                         const uint8_t *Yplane, int Ypitch,
+                                         const uint8_t *Uplane, int Upitch,
+                                         const uint8_t *Vplane, int Vpitch);
 extern bool SDL_SW_UpdateNVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
-                                         const Uint8 *Yplane, int Ypitch,
-                                         const Uint8 *UVplane, int UVpitch);
+                                         const uint8_t *Yplane, int Ypitch,
+                                         const uint8_t *UVplane, int UVpitch);
 extern bool SDL_SW_LockYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect, void **pixels, int *pitch);
 extern void SDL_SW_UnlockYUVTexture(SDL_SW_YUVTexture *swdata);
 extern bool SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect, SDL_PixelFormat target_format, int w, int h, void *pixels, int pitch);

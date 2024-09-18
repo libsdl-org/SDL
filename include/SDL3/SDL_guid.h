@@ -57,7 +57,7 @@ extern "C" {
  * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_GUID {
-    Uint8 data[16];
+    uint8_t data[16];
 } SDL_GUID;
 
 /* Function prototypes */

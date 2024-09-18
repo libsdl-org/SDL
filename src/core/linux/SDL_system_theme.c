@@ -46,7 +46,7 @@ static SystemThemeData system_theme_data;
 
 static bool DBus_ExtractThemeVariant(DBusMessageIter *iter, SDL_SystemTheme *theme) {
     SDL_DBusContext *dbus = system_theme_data.dbus;
-    Uint32 color_scheme;
+    uint32_t color_scheme;
     DBusMessageIter variant_iter;
 
     if (dbus->message_iter_get_arg_type(iter) != DBUS_TYPE_VARIANT)

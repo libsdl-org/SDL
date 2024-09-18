@@ -113,8 +113,8 @@ bool SDL_GetCurrentTime(SDL_Time *ticks)
     }
 
     // Returns milliseconds since the epoch.
-    const Uint64 ndsTicksMax = (SDL_MAX_TIME / SDL_NS_PER_MS) + DELTA_EPOCH_1900_OFFSET_MS;
-    const Uint64 ndsTicks = SDL_min(osGetTime(), ndsTicksMax);
+    const uint64_t ndsTicksMax = (SDL_MAX_TIME / SDL_NS_PER_MS) + DELTA_EPOCH_1900_OFFSET_MS;
+    const uint64_t ndsTicks = SDL_min(osGetTime(), ndsTicksMax);
 
     *ticks = SDL_MS_TO_NS(ndsTicks - DELTA_EPOCH_1900_OFFSET_MS);
 

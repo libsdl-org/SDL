@@ -53,7 +53,7 @@ typedef struct GL_FBOList GL_FBOList;
 
 struct GL_FBOList
 {
-    Uint32 w, h;
+    uint32_t w, h;
     GLuint FBO;
     GL_FBOList *next;
 };
@@ -300,7 +300,7 @@ static void APIENTRY GL_HandleDebugMessage(GLenum source, GLenum type, GLuint id
     }
 }
 
-static GL_FBOList *GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
+static GL_FBOList *GL_GetFBO(GL_RenderData *data, uint32_t w, uint32_t h)
 {
     GL_FBOList *result = data->framebuffers;
 
@@ -403,7 +403,7 @@ static bool GL_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode
     return true;
 }
 
-static bool convert_format(Uint32 pixel_format, GLint *internalFormat, GLenum *format, GLenum *type)
+static bool convert_format(uint32_t pixel_format, GLint *internalFormat, GLenum *format, GLenum *type)
 {
     switch (pixel_format) {
     case SDL_PIXELFORMAT_ARGB8888:
@@ -530,7 +530,7 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     }
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_NUMBER, data->texture);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_TARGET_NUMBER, (Sint64) textype);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_TARGET_NUMBER, (int64_t) textype);
     SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_OPENGL_TEX_W_FLOAT, data->texw);
     SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_OPENGL_TEX_H_FLOAT, data->texh);
 
@@ -693,7 +693,7 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, ((pitch + 1) / 2));
 
         // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+        pixels = (const void *)((const uint8_t *)pixels + rect->h * pitch);
         if (texture->format == SDL_PIXELFORMAT_YV12) {
             renderdata->glBindTexture(textype, data->vtexture);
         } else {
@@ -704,7 +704,7 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                     data->format, data->formattype, pixels);
 
         // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
+        pixels = (const void *)((const uint8_t *)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
         if (texture->format == SDL_PIXELFORMAT_YV12) {
             renderdata->glBindTexture(textype, data->utexture);
         } else {
@@ -719,7 +719,7 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, ((pitch + 1) / 2));
 
         // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+        pixels = (const void *)((const uint8_t *)pixels + rect->h * pitch);
         renderdata->glBindTexture(textype, data->utexture);
         renderdata->glTexSubImage2D(textype, 0, rect->x / 2, rect->y / 2,
                                     (rect->w + 1) / 2, (rect->h + 1) / 2,
@@ -732,9 +732,9 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 #if SDL_HAVE_YUV
 static bool GL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                const SDL_Rect *rect,
-                               const Uint8 *Yplane, int Ypitch,
-                               const Uint8 *Uplane, int Upitch,
-                               const Uint8 *Vplane, int Vpitch)
+                               const uint8_t *Yplane, int Ypitch,
+                               const uint8_t *Uplane, int Upitch,
+                               const uint8_t *Vplane, int Vpitch)
 {
     GL_RenderData *renderdata = (GL_RenderData *)renderer->internal;
     const GLenum textype = renderdata->textype;
@@ -768,8 +768,8 @@ static bool GL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static bool GL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                               const SDL_Rect *rect,
-                              const Uint8 *Yplane, int Ypitch,
-                              const Uint8 *UVplane, int UVpitch)
+                              const uint8_t *Yplane, int Ypitch,
+                              const uint8_t *UVplane, int UVpitch)
 {
     GL_RenderData *renderdata = (GL_RenderData *)renderer->internal;
     const GLenum textype = renderdata->textype;
@@ -803,7 +803,7 @@ static bool GL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     data->locked_rect = *rect;
     *pixels =
-        (void *)((Uint8 *)data->pixels + rect->y * data->pitch +
+        (void *)((uint8_t *)data->pixels + rect->y * data->pitch +
                  rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = data->pitch;
     return true;
@@ -817,7 +817,7 @@ static void GL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     rect = &data->locked_rect;
     pixels =
-        (void *)((Uint8 *)data->pixels + rect->y * data->pitch +
+        (void *)((uint8_t *)data->pixels + rect->y * data->pitch +
                  rect->x * SDL_BYTESPERPIXEL(texture->format));
     GL_UpdateTexture(renderer, texture, rect, pixels, data->pitch);
 }
@@ -980,11 +980,11 @@ static bool GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
         float *xy_;
         SDL_FColor *col_;
         if (size_indices == 4) {
-            j = ((const Uint32 *)indices)[i];
+            j = ((const uint32_t *)indices)[i];
         } else if (size_indices == 2) {
-            j = ((const Uint16 *)indices)[i];
+            j = ((const uint16_t *)indices)[i];
         } else if (size_indices == 1) {
-            j = ((const Uint8 *)indices)[i];
+            j = ((const uint8_t *)indices)[i];
         } else {
             j = i;
         }
@@ -1329,7 +1329,7 @@ static bool GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         {
             if (SetDrawState(data, cmd, SHADER_SOLID, NULL)) {
                 size_t count = cmd->data.draw.count;
-                const GLfloat *verts = (GLfloat *)(((Uint8 *)vertices) + cmd->data.draw.first);
+                const GLfloat *verts = (GLfloat *)(((uint8_t *)vertices) + cmd->data.draw.first);
 
                 // SetDrawState handles glEnableClientState.
                 data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 2, verts);
@@ -1397,7 +1397,7 @@ static bool GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             }
 
             if (ret) {
-                const GLfloat *verts = (GLfloat *)(((Uint8 *)vertices) + cmd->data.draw.first);
+                const GLfloat *verts = (GLfloat *)(((uint8_t *)vertices) + cmd->data.draw.first);
                 int op = GL_TRIANGLES; // SDL_RENDERCMD_GEOMETRY
                 if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
                     op = GL_POINTS;
@@ -1497,9 +1497,9 @@ static SDL_Surface *GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *
     if (!renderer->target) {
         bool isstack;
         int length = rect->w * SDL_BYTESPERPIXEL(format);
-        Uint8 *src = (Uint8 *)surface->pixels + (rect->h - 1) * surface->pitch;
-        Uint8 *dst = (Uint8 *)surface->pixels;
-        Uint8 *tmp = SDL_small_alloc(Uint8, length, &isstack);
+        uint8_t *src = (uint8_t *)surface->pixels + (rect->h - 1) * surface->pitch;
+        uint8_t *dst = (uint8_t *)surface->pixels;
+        uint8_t *tmp = SDL_small_alloc(uint8_t, length, &isstack);
         int rows = rect->h / 2;
         while (rows--) {
             SDL_memcpy(tmp, dst, length);

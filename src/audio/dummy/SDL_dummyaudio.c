@@ -43,7 +43,7 @@ static bool DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     if (!device->recording) {
-        device->hidden->mixbuf = (Uint8 *) SDL_malloc(device->buffer_size);
+        device->hidden->mixbuf = (uint8_t *) SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
             return false;
         }
@@ -55,7 +55,7 @@ static bool DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
     if (hint) {
         double scale = SDL_atof(hint);
         if (scale >= 0.0) {
-            device->hidden->io_delay = (Uint32)SDL_round(device->hidden->io_delay * scale);
+            device->hidden->io_delay = (uint32_t)SDL_round(device->hidden->io_delay * scale);
         }
     }
 
@@ -88,7 +88,7 @@ static void DUMMYAUDIO_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
-static Uint8 *DUMMYAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *DUMMYAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     return device->hidden->mixbuf;
 }

@@ -112,25 +112,25 @@
 #endif
 
 // Used to compare Windows message timestamps
-#define SDL_TICKS_PASSED(A, B) ((Sint32)((B) - (A)) <= 0)
+#define SDL_TICKS_PASSED(A, B) ((int32_t)((B) - (A)) <= 0)
 
 #ifdef _WIN64
-typedef Uint64 QWORD; // Needed for NEXTRAWINPUTBLOCK()
+typedef uint64_t QWORD; // Needed for NEXTRAWINPUTBLOCK()
 #endif
 
 static bool SDL_processing_messages;
 static DWORD message_tick;
-static Uint64 timestamp_offset;
+static uint64_t timestamp_offset;
 
 static void WIN_SetMessageTick(DWORD tick)
 {
     message_tick = tick;
 }
 
-static Uint64 WIN_GetEventTimestamp(void)
+static uint64_t WIN_GetEventTimestamp(void)
 {
-    const Uint64 TIMESTAMP_WRAP_OFFSET = SDL_MS_TO_NS(0x100000000LL);
-    Uint64 timestamp, now;
+    const uint64_t TIMESTAMP_WRAP_OFFSET = SDL_MS_TO_NS(0x100000000LL);
+    uint64_t timestamp, now;
 
     if (!SDL_processing_messages) {
         // message_tick isn't valid, just use the current time
@@ -145,7 +145,7 @@ static Uint64 WIN_GetEventTimestamp(void)
         //SDL_Log("Initializing timestamp offset\n");
         timestamp_offset = (now - timestamp);
         timestamp = now;
-    } else if ((Sint64)(now - timestamp - TIMESTAMP_WRAP_OFFSET) >= 0) {
+    } else if ((int64_t)(now - timestamp - TIMESTAMP_WRAP_OFFSET) >= 0) {
         // The windows message tick wrapped
         //SDL_Log("Adjusting timestamp offset for wrapping tick\n");
         timestamp_offset += TIMESTAMP_WRAP_OFFSET;
@@ -159,12 +159,12 @@ static Uint64 WIN_GetEventTimestamp(void)
     return timestamp;
 }
 
-static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam, Uint16 *rawcode, bool *virtual_key)
+static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam, uint16_t *rawcode, bool *virtual_key)
 {
     SDL_Scancode code;
-    Uint8 index;
-    Uint16 keyFlags = HIWORD(lParam);
-    Uint16 scanCode = LOBYTE(keyFlags);
+    uint8_t index;
+    uint16_t keyFlags = HIWORD(lParam);
+    uint16_t scanCode = LOBYTE(keyFlags);
 
     /* On-Screen Keyboard can send wrong scan codes with high-order bit set (key break code).
      * Strip high-order bit. */
@@ -180,7 +180,7 @@ static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam, U
             scanCode = 0xe046;
         }
     } else {
-        Uint16 vkCode = LOWORD(wParam);
+        uint16_t vkCode = LOWORD(wParam);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         /* Windows may not report scan codes for some buttons (multimedia buttons etc).
@@ -210,7 +210,7 @@ static bool WIN_ShouldIgnoreFocusClick(SDL_WindowData *data)
            !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, false);
 }
 
-static void WIN_CheckWParamMouseButton(Uint64 timestamp, bool bwParamMousePressed, Uint32 mouseFlags, bool bSwapButtons, SDL_WindowData *data, Uint8 button, SDL_MouseID mouseID)
+static void WIN_CheckWParamMouseButton(uint64_t timestamp, bool bwParamMousePressed, uint32_t mouseFlags, bool bSwapButtons, SDL_WindowData *data, uint8_t button, SDL_MouseID mouseID)
 {
     if (bSwapButtons) {
         if (button == SDL_BUTTON_LEFT) {
@@ -242,7 +242,7 @@ static void WIN_CheckWParamMouseButton(Uint64 timestamp, bool bwParamMousePresse
  * Some windows systems fail to send a WM_LBUTTONDOWN sometimes, but each mouse move contains the current button state also
  *  so this function reconciles our view of the world with the current buttons reported by windows
  */
-static void WIN_CheckWParamMouseButtons(Uint64 timestamp, WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
+static void WIN_CheckWParamMouseButtons(uint64_t timestamp, WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
 {
     if (wParam != data->mouse_button_flags) {
         SDL_MouseButtonFlags mouseFlags = SDL_GetMouseState(NULL, NULL);
@@ -258,10 +258,10 @@ static void WIN_CheckWParamMouseButtons(Uint64 timestamp, WPARAM wParam, SDL_Win
     }
 }
 
-static void WIN_CheckAsyncMouseRelease(Uint64 timestamp, SDL_WindowData *data)
+static void WIN_CheckAsyncMouseRelease(uint64_t timestamp, SDL_WindowData *data)
 {
     SDL_MouseID mouseID = SDL_GLOBAL_MOUSE_ID;
-    Uint32 mouseFlags;
+    uint32_t mouseFlags;
     SHORT keyState;
     bool swapButtons;
 
@@ -522,7 +522,7 @@ static bool WIN_SwapButtons(HANDLE hDevice)
     return GetSystemMetrics(SM_SWAPBUTTON) != 0;
 }
 
-static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
+static void WIN_HandleRawMouseInput(uint64_t timestamp, SDL_VideoData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
 {
     if (!data->raw_mouse_enabled) {
         return;
@@ -621,7 +621,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
     if (rawmouse->usButtonFlags) {
         static struct {
             USHORT usButtonFlags;
-            Uint8 button;
+            uint8_t button;
             bool down;
         } raw_buttons[] = {
             { RI_MOUSE_LEFT_BUTTON_DOWN, SDL_BUTTON_LEFT, true },
@@ -638,7 +638,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
 
         for (int i = 0; i < SDL_arraysize(raw_buttons); ++i) {
             if (rawmouse->usButtonFlags & raw_buttons[i].usButtonFlags) {
-                Uint8 button = raw_buttons[i].button;
+                uint8_t button = raw_buttons[i].button;
                 bool down = raw_buttons[i].down;
 
                 if (button == SDL_BUTTON_LEFT) {
@@ -678,7 +678,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
     }
 }
 
-static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWKEYBOARD *rawkeyboard)
+static void WIN_HandleRawKeyboardInput(uint64_t timestamp, SDL_VideoData *data, HANDLE hDevice, RAWKEYBOARD *rawkeyboard)
 {
     SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)hDevice;
 
@@ -721,7 +721,7 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
         data->pending_E1_key_sequence = false;
     } else {
         // The code is in the lower 7 bits, the high bit is set for the E0 prefix
-        Uint8 index = (Uint8)rawkeyboard->MakeCode;
+        uint8_t index = (uint8_t)rawkeyboard->MakeCode;
         if (rawkeyboard->Flags & RI_KEY_E0) {
             rawcode |= 0xE000;
             index |= 0x80;
@@ -743,7 +743,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
     SDL_VideoData *data = _this->internal;
     UINT size, i, count, total = 0;
     RAWINPUT *input;
-    Uint64 now;
+    uint64_t now;
 
     if (data->rawinput_offset == 0) {
         BOOL isWow64;
@@ -785,8 +785,8 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
 
     now = SDL_GetTicksNS();
     if (total > 0) {
-        Uint64 mouse_timestamp, mouse_increment;
-        Uint64 delta = (now - data->last_rawinput_poll);
+        uint64_t mouse_timestamp, mouse_increment;
+        uint64_t delta = (now - data->last_rawinput_poll);
         UINT total_mouse = 0;
         for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
             if (input->header.dwType == RIM_TYPEMOUSE) {
@@ -818,10 +818,10 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-static void AddDeviceID(Uint32 deviceID, Uint32 **list, int *count)
+static void AddDeviceID(uint32_t deviceID, uint32_t **list, int *count)
 {
     int new_count = (*count + 1);
-    Uint32 *new_list = (Uint32 *)SDL_realloc(*list, new_count * sizeof(*new_list));
+    uint32_t *new_list = (uint32_t *)SDL_realloc(*list, new_count * sizeof(*new_list));
     if (!new_list) {
         // Oh well, we'll drop this one
         return;
@@ -832,7 +832,7 @@ static void AddDeviceID(Uint32 deviceID, Uint32 **list, int *count)
     *list = new_list;
 }
 
-static bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
+static bool HasDeviceID(uint32_t deviceID, const uint32_t *list, int count)
 {
     for (int i = 0; i < count; ++i) {
         if (deviceID == list[i]) {
@@ -885,8 +885,8 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     bool send_event = !initial_check;
 
     // Check to see if anything has changed
-    static Uint64 s_last_device_change;
-    Uint64 last_device_change = WIN_GetLastDeviceNotification();
+    static uint64_t s_last_device_change;
+    uint64_t last_device_change = WIN_GetLastDeviceNotification();
     if (!initial_check && last_device_change == s_last_device_change) {
         return;
     }
@@ -954,8 +954,8 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
 
         switch (dwType) {
         case RIM_TYPEKEYBOARD:
-            if (SDL_IsKeyboard((Uint16)vendor, (Uint16)product, rdi.keyboard.dwNumberOfKeysTotal)) {
-                SDL_KeyboardID keyboardID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
+            if (SDL_IsKeyboard((uint16_t)vendor, (uint16_t)product, rdi.keyboard.dwNumberOfKeysTotal)) {
+                SDL_KeyboardID keyboardID = (uint32_t)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
                 if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
                     GetDeviceName(devinfo, instance, name, sizeof(name));
@@ -964,8 +964,8 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
             }
             break;
         case RIM_TYPEMOUSE:
-            if (SDL_IsMouse((Uint16)vendor, (Uint16)product)) {
-                SDL_MouseID mouseID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
+            if (SDL_IsMouse((uint16_t)vendor, (uint16_t)product)) {
+                SDL_MouseID mouseID = (uint32_t)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(mouseID, &new_mice, &new_mouse_count);
                 if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
                     GetDeviceName(devinfo, instance, name, sizeof(name));
@@ -1248,7 +1248,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
 
         bool virtual_key = false;
-        Uint16 rawcode = 0;
+        uint16_t rawcode = 0;
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam, &rawcode, &virtual_key);
 
         // Detect relevant keyboard shortcuts
@@ -1276,7 +1276,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
 
         bool virtual_key = false;
-        Uint16 rawcode = 0;
+        uint16_t rawcode = 0;
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam, &rawcode, &virtual_key);
         const bool *keyboardState = SDL_GetKeyboardState(NULL);
 
@@ -1296,7 +1296,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         } else {
             if (SDL_TextInputActive(data->window)) {
                 char text[5];
-                char *end = SDL_UCS4ToUTF8((Uint32)wParam, text);
+                char *end = SDL_UCS4ToUTF8((uint32_t)wParam, text);
                 *end = '\0';
                 SDL_SendKeyboardText(text);
             }
@@ -1701,7 +1701,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_SETCURSOR:
     {
-        Uint16 hittest;
+        uint16_t hittest;
 
         hittest = LOWORD(lParam);
         if (hittest == HTCLIENT) {
@@ -2104,7 +2104,7 @@ static void WIN_UpdateClipCursorForWindows(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
-    Uint64 now = SDL_GetTicks();
+    uint64_t now = SDL_GetTicks();
     const int CLIPCURSOR_UPDATE_INTERVAL_MS = SDL_GetMouse()->relative_mode_clip_interval;
 
     if (_this) {
@@ -2168,7 +2168,7 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
     g_WindowsMessageHookData = userdata;
 }
 
-int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
+int WIN_WaitEventTimeout(SDL_VideoDevice *_this, int64_t timeoutNS)
 {
     if (g_WindowsEnableMessageLoop) {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -2336,7 +2336,7 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
 
 static int app_registered = 0;
 LPTSTR SDL_Appname = NULL;
-Uint32 SDL_Appstyle = 0;
+uint32_t SDL_Appstyle = 0;
 HINSTANCE SDL_Instance = NULL;
 
 static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
@@ -2370,7 +2370,7 @@ static BOOL CALLBACK WIN_ResourceNameCallback(HMODULE hModule, LPCTSTR lpType, L
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 // Register the class for this application
-bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+bool SDL_RegisterApp(const char *name, uint32_t style, void *hInst)
 {
     WNDCLASSEX wcex;
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

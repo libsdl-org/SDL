@@ -100,7 +100,7 @@ a shared library of its own). If so, it loads that library and looks for and
 calls a single function:
 
 ```c
-Sint32 SDL_DYNAPI_entry(Uint32 version, void *table, Uint32 tablesize);
+int32_t SDL_DYNAPI_entry(uint32_t version, void *table, uint32_t tablesize);
 ```
 
 That function takes a version number (more on that in a moment), the address of

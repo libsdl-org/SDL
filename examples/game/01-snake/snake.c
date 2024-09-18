@@ -208,7 +208,7 @@ void snake_step(SnakeContext *ctx)
     }
 }
 
-static Uint32 sdl_timer_callback_(void *payload, SDL_TimerID timer_id, Uint32 interval)
+static uint32_t sdl_timer_callback_(void *payload, SDL_TimerID timer_id, uint32_t interval)
 {
     /* NOTE: snake_step is not called here directly for multithreaded concerns. */
     SDL_Event event;

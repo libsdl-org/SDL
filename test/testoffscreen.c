@@ -89,8 +89,8 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
 #ifndef SDL_PLATFORM_EMSCRIPTEN
-    Uint64 then, now;
-    Uint32 frames;
+    uint64_t then, now;
+    uint32_t frames;
 #endif
     SDLTest_CommonState *state;
 

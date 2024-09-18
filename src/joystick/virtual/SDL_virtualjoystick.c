@@ -111,7 +111,7 @@ static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
         hwdata->balls = NULL;
     }
     if (hwdata->touchpads) {
-        for (Uint16 i = 0; i < hwdata->desc.ntouchpads; ++i) {
+        for (uint16_t i = 0; i < hwdata->desc.ntouchpads; ++i) {
             SDL_free(hwdata->touchpads[i].fingers);
             hwdata->touchpads[i].fingers = NULL;
         }
@@ -231,11 +231,11 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         }
     }
 
-    hwdata->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, NULL, name, 'v', (Uint8)hwdata->desc.type);
+    hwdata->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, NULL, name, 'v', (uint8_t)hwdata->desc.type);
 
     // Allocate fields for different control-types
     if (hwdata->desc.naxes > 0) {
-        hwdata->axes = (Sint16 *)SDL_calloc(hwdata->desc.naxes, sizeof(*hwdata->axes));
+        hwdata->axes = (int16_t *)SDL_calloc(hwdata->desc.naxes, sizeof(*hwdata->axes));
         if (!hwdata->axes) {
             VIRTUAL_FreeHWData(hwdata);
             return 0;
@@ -257,7 +257,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         }
     }
     if (hwdata->desc.nhats > 0) {
-        hwdata->hats = (Uint8 *)SDL_calloc(hwdata->desc.nhats, sizeof(*hwdata->hats));
+        hwdata->hats = (uint8_t *)SDL_calloc(hwdata->desc.nhats, sizeof(*hwdata->hats));
         if (!hwdata->hats) {
             VIRTUAL_FreeHWData(hwdata);
             return 0;
@@ -281,7 +281,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
             VIRTUAL_FreeHWData(hwdata);
             return 0;
         }
-        for (Uint16 i = 0; i < hwdata->desc.ntouchpads; ++i) {
+        for (uint16_t i = 0; i < hwdata->desc.ntouchpads; ++i) {
             const SDL_VirtualJoystickTouchpadDesc *touchpad_desc = &desc->touchpads[i];
             hwdata->touchpads[i].nfingers = touchpad_desc->nfingers;
             hwdata->touchpads[i].fingers = (SDL_JoystickTouchpadFingerInfo *)SDL_calloc(touchpad_desc->nfingers, sizeof(*hwdata->touchpads[i].fingers));
@@ -302,7 +302,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
             VIRTUAL_FreeHWData(hwdata);
             return 0;
         }
-        for (Uint16 i = 0; i < hwdata->desc.nsensors; ++i) {
+        for (uint16_t i = 0; i < hwdata->desc.nsensors; ++i) {
             const SDL_VirtualJoystickSensorDesc *sensor_desc = &desc->sensors[i];
             hwdata->sensors[i].type = sensor_desc->type;
             hwdata->sensors[i].rate = sensor_desc->rate;
@@ -338,7 +338,7 @@ bool SDL_JoystickDetachVirtualInner(SDL_JoystickID instance_id)
     return true;
 }
 
-bool SDL_SetJoystickVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 value)
+bool SDL_SetJoystickVirtualAxisInner(SDL_Joystick *joystick, int axis, int16_t value)
 {
     joystick_hwdata *hwdata;
 
@@ -359,7 +359,7 @@ bool SDL_SetJoystickVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 va
     return true;
 }
 
-bool SDL_SetJoystickVirtualBallInner(SDL_Joystick *joystick, int ball, Sint16 xrel, Sint16 yrel)
+bool SDL_SetJoystickVirtualBallInner(SDL_Joystick *joystick, int ball, int16_t xrel, int16_t yrel)
 {
     joystick_hwdata *hwdata;
 
@@ -404,7 +404,7 @@ bool SDL_SetJoystickVirtualButtonInner(SDL_Joystick *joystick, int button, bool 
     return true;
 }
 
-bool SDL_SetJoystickVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
+bool SDL_SetJoystickVirtualHatInner(SDL_Joystick *joystick, int hat, uint8_t value)
 {
     joystick_hwdata *hwdata;
 
@@ -453,7 +453,7 @@ bool SDL_SetJoystickVirtualTouchpadInner(SDL_Joystick *joystick, int touchpad, i
     return true;
 }
 
-bool SDL_SendJoystickVirtualSensorDataInner(SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values)
+bool SDL_SendJoystickVirtualSensorDataInner(SDL_Joystick *joystick, SDL_SensorType type, uint64_t sensor_timestamp, const float *data, int num_values)
 {
     joystick_hwdata *hwdata;
 
@@ -505,7 +505,7 @@ static void VIRTUAL_JoystickDetect(void)
 {
 }
 
-static bool VIRTUAL_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool VIRTUAL_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers... or do we?
     return false;
@@ -580,11 +580,11 @@ static bool VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nhats = hwdata->desc.nhats;
     hwdata->joystick = joystick;
 
-    for (Uint16 i = 0; i < hwdata->desc.ntouchpads; ++i) {
+    for (uint16_t i = 0; i < hwdata->desc.ntouchpads; ++i) {
         const SDL_JoystickTouchpadInfo *touchpad = &hwdata->touchpads[i];
         SDL_PrivateJoystickAddTouchpad(joystick, touchpad->nfingers);
     }
-    for (Uint16 i = 0; i < hwdata->desc.nsensors; ++i) {
+    for (uint16_t i = 0; i < hwdata->desc.nsensors; ++i) {
         const SDL_JoystickSensorInfo *sensor = &hwdata->sensors[i];
         SDL_PrivateJoystickAddSensor(joystick, sensor->type, sensor->rate);
     }
@@ -601,7 +601,7 @@ static bool VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
     return true;
 }
 
-static bool VIRTUAL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool VIRTUAL_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     bool result;
 
@@ -621,7 +621,7 @@ static bool VIRTUAL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_
     return result;
 }
 
-static bool VIRTUAL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool VIRTUAL_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     bool result;
 
@@ -641,7 +641,7 @@ static bool VIRTUAL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_r
     return result;
 }
 
-static bool VIRTUAL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool VIRTUAL_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     bool result;
 
@@ -707,7 +707,7 @@ static bool VIRTUAL_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabl
 static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
 {
     joystick_hwdata *hwdata;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     SDL_AssertJoysticksLocked();
 
@@ -725,32 +725,32 @@ static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
     }
 
     if (hwdata->changes & AXES_CHANGED) {
-        for (Uint8 i = 0; i < hwdata->desc.naxes; ++i) {
+        for (uint8_t i = 0; i < hwdata->desc.naxes; ++i) {
             SDL_SendJoystickAxis(timestamp, joystick, i, hwdata->axes[i]);
         }
     }
     if (hwdata->changes & BALLS_CHANGED) {
-        for (Uint8 i = 0; i < hwdata->desc.nballs; ++i) {
+        for (uint8_t i = 0; i < hwdata->desc.nballs; ++i) {
             SDL_JoystickBallData *ball = &hwdata->balls[i];
             if (ball->dx || ball->dy) {
-                SDL_SendJoystickBall(timestamp, joystick, i, (Sint16)ball->dx, (Sint16)ball->dy);
+                SDL_SendJoystickBall(timestamp, joystick, i, (int16_t)ball->dx, (int16_t)ball->dy);
                 ball->dx = 0;
                 ball->dy = 0;
             }
         }
     }
     if (hwdata->changes & BUTTONS_CHANGED) {
-        for (Uint8 i = 0; i < hwdata->desc.nbuttons; ++i) {
+        for (uint8_t i = 0; i < hwdata->desc.nbuttons; ++i) {
             SDL_SendJoystickButton(timestamp, joystick, i, hwdata->buttons[i]);
         }
     }
     if (hwdata->changes & HATS_CHANGED) {
-        for (Uint8 i = 0; i < hwdata->desc.nhats; ++i) {
+        for (uint8_t i = 0; i < hwdata->desc.nhats; ++i) {
             SDL_SendJoystickHat(timestamp, joystick, i, hwdata->hats[i]);
         }
     }
     if (hwdata->changes & TOUCHPADS_CHANGED) {
-        for (Uint16 i = 0; i < hwdata->desc.ntouchpads; ++i) {
+        for (uint16_t i = 0; i < hwdata->desc.ntouchpads; ++i) {
             const SDL_JoystickTouchpadInfo *touchpad = &hwdata->touchpads[i];
             for (int j = 0; j < touchpad->nfingers; ++j) {
                 const SDL_JoystickTouchpadFingerInfo *finger = &touchpad->fingers[j];
@@ -793,8 +793,8 @@ static void VIRTUAL_JoystickQuit(void)
 static bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-    Uint8 current_button = 0;
-    Uint8 current_axis = 0;
+    uint8_t current_button = 0;
+    uint8_t current_axis = 0;
 
     if (!hwdata || hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMEPAD) {
         return false;

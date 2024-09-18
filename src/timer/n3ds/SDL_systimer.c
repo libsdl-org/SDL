@@ -25,17 +25,17 @@
 #include <3ds.h>
 
 
-Uint64 SDL_GetPerformanceCounter(void)
+uint64_t SDL_GetPerformanceCounter(void)
 {
     return svcGetSystemTick();
 }
 
-Uint64 SDL_GetPerformanceFrequency(void)
+uint64_t SDL_GetPerformanceFrequency(void)
 {
     return SYSCLOCK_ARM11;
 }
 
-void SDL_SYS_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(uint64_t ns)
 {
     svcSleepThread(ns);
 }

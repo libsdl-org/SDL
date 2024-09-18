@@ -141,7 +141,7 @@ static bool NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     const int written = write(h->audio_fd, buffer, buflen);
@@ -155,14 +155,14 @@ static bool NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer,
     return true;
 }
 
-static Uint8 *NETBSDAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *NETBSDAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     return device->hidden->mixbuf;
 }
 
 static int NETBSDAUDIO_RecordDevice(SDL_AudioDevice *device, void *vbuffer, int buflen)
 {
-    Uint8 *buffer = (Uint8 *)vbuffer;
+    uint8_t *buffer = (uint8_t *)vbuffer;
     const int br = read(device->hidden->audio_fd, buffer, buflen);
     if (br == -1) {
         // Non recoverable error has occurred. It should be reported!!!
@@ -292,7 +292,7 @@ static bool NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
     if (!recording) {
         // Allocate mixing buffer
         device->hidden->mixlen = device->buffer_size;
-        device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->hidden->mixlen);
+        device->hidden->mixbuf = (uint8_t *)SDL_malloc(device->hidden->mixlen);
         if (!device->hidden->mixbuf) {
             return false;
         }

@@ -31,7 +31,7 @@ static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name
 {
     const int callback_rate = newValue ? SDL_atoi(newValue) : 60;
     if (callback_rate > 0) {
-        callback_rate_increment = ((Uint64) 1000000000) / ((Uint64) callback_rate);
+        callback_rate_increment = ((uint64_t) 1000000000) / ((uint64_t) callback_rate);
     } else {
         callback_rate_increment = 0;
     }
@@ -43,7 +43,7 @@ int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, 
     if (rc == 0) {
         SDL_AddHintCallback(SDL_HINT_MAIN_CALLBACK_RATE, MainCallbackRateHintChanged, NULL);
 
-        Uint64 next_iteration = callback_rate_increment ? (SDL_GetTicksNS() + callback_rate_increment) : 0;
+        uint64_t next_iteration = callback_rate_increment ? (SDL_GetTicksNS() + callback_rate_increment) : 0;
 
         while ((rc = SDL_IterateMainCallbacks(true)) == SDL_APP_CONTINUE) {
             // !!! FIXME: this can be made more complicated if we decide to
@@ -63,7 +63,7 @@ int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, 
             if ((callback_rate_increment == 0) || SDL_HasWindows()) {
                 next_iteration = 0; // just clear the timer and run at the pace the video subsystem allows.
             } else {
-                const Uint64 now = SDL_GetTicksNS();
+                const uint64_t now = SDL_GetTicksNS();
                 if (next_iteration > now) { // Running faster than the limit, sleep a little.
                     SDL_DelayNS(next_iteration - now);
                 } else {

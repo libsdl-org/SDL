@@ -25,7 +25,7 @@
 #include "../events/SDL_clipboardevents_c.h"
 
 
-void SDL_CancelClipboardData(Uint32 sequence)
+void SDL_CancelClipboardData(uint32_t sequence)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t i;
@@ -152,10 +152,10 @@ void *SDL_GetInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type
         const void *provided_data = _this->clipboard_callback(_this->clipboard_userdata, mime_type, size);
         if (provided_data) {
             // Make a copy of it for the caller and guarantee null termination
-            data = SDL_malloc(*size + sizeof(Uint32));
+            data = SDL_malloc(*size + sizeof(uint32_t));
             if (data) {
                 SDL_memcpy(data, provided_data, *size);
-                SDL_memset((Uint8 *)data + *size, 0, sizeof(Uint32));
+                SDL_memset((uint8_t *)data + *size, 0, sizeof(uint32_t));
             }
         }
     }

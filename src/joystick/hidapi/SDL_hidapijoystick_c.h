@@ -70,17 +70,17 @@ typedef struct SDL_HIDAPI_Device
     char *manufacturer_string;
     char *product_string;
     char *path;
-    Uint16 vendor_id;
-    Uint16 product_id;
-    Uint16 version;
+    uint16_t vendor_id;
+    uint16_t product_id;
+    uint16_t version;
     char *serial;
     SDL_GUID guid;
     int interface_number; // Available on Windows and Linux
     int interface_class;
     int interface_subclass;
     int interface_protocol;
-    Uint16 usage_page; // Available on Windows and macOS
-    Uint16 usage;      // Available on Windows and macOS
+    uint16_t usage_page; // Available on Windows and macOS
+    uint16_t usage;      // Available on Windows and macOS
     bool is_bluetooth;
     SDL_JoystickType joystick_type;
     SDL_GamepadType type;
@@ -113,16 +113,16 @@ typedef struct SDL_HIDAPI_DeviceDriver
     void (*RegisterHints)(SDL_HintCallback callback, void *userdata);
     void (*UnregisterHints)(SDL_HintCallback callback, void *userdata);
     bool (*IsEnabled)(void);
-    bool (*IsSupportedDevice)(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
+    bool (*IsSupportedDevice)(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, uint16_t vendor_id, uint16_t product_id, uint16_t version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
     bool (*InitDevice)(SDL_HIDAPI_Device *device);
     int (*GetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id);
     void (*SetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index);
     bool (*UpdateDevice)(SDL_HIDAPI_Device *device);
     bool (*OpenJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
-    bool (*RumbleJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
-    bool (*RumbleJoystickTriggers)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
-    Uint32 (*GetJoystickCapabilities)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
-    bool (*SetJoystickLED)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
+    bool (*RumbleJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble);
+    bool (*RumbleJoystickTriggers)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble);
+    uint32_t (*GetJoystickCapabilities)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
+    bool (*SetJoystickLED)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue);
     bool (*SendJoystickEffect)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size);
     bool (*SetJoystickSensorsEnabled)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled);
     void (*CloseJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
@@ -155,7 +155,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
 extern bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);
 
 // Return true if a HID device is present and supported as a joystick
-extern bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
+extern bool HIDAPI_IsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name);
 
 // Return the type of a joystick if it's present and supported
 extern SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_GUID guid);
@@ -165,7 +165,7 @@ extern SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_GUID guid);
 
 extern void HIDAPI_UpdateDevices(void);
 extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);
-extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 vendor_id, Uint16 product_id);
+extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, uint16_t vendor_id, uint16_t product_id);
 extern void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial);
 extern bool HIDAPI_HasConnectedUSBDevice(const char *serial);
 extern void HIDAPI_DisconnectBluetoothDevice(const char *serial);
@@ -173,9 +173,9 @@ extern bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *
 extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID);
 extern void HIDAPI_UpdateDeviceProperties(SDL_HIDAPI_Device *device);
 
-extern void HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size);
+extern void HIDAPI_DumpPacket(const char *prefix, const uint8_t *data, int size);
 
-extern bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product);
+extern bool HIDAPI_SupportsPlaystationDetection(uint16_t vendor, uint16_t product);
 
 extern float HIDAPI_RemapVal(float val, float val_min, float val_max, float output_min, float output_max);
 

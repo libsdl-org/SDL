@@ -832,14 +832,14 @@ bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *
     BYTE *icon_bmp;
     int icon_len, mask_len, row_len, y;
     BITMAPINFOHEADER *bmi;
-    Uint8 *dst;
+    uint8_t *dst;
     bool isstack;
     bool result = true;
 
     // Create temporary buffer for ICONIMAGE structure
     SDL_COMPILE_TIME_ASSERT(WIN_SetWindowIcon_uses_BITMAPINFOHEADER_to_prepare_an_ICONIMAGE, sizeof(BITMAPINFOHEADER) == 40);
     mask_len = (icon->h * (icon->w + 7) / 8);
-    icon_len = sizeof(BITMAPINFOHEADER) + icon->h * icon->w * sizeof(Uint32) + mask_len;
+    icon_len = sizeof(BITMAPINFOHEADER) + icon->h * icon->w * sizeof(uint32_t) + mask_len;
     icon_bmp = SDL_small_alloc(BYTE, icon_len, &isstack);
 
     // Write the BITMAPINFO header
@@ -850,7 +850,7 @@ bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *
     bmi->biPlanes = SDL_Swap16LE(1);
     bmi->biBitCount = SDL_Swap16LE(32);
     bmi->biCompression = SDL_Swap32LE(BI_RGB);
-    bmi->biSizeImage = SDL_Swap32LE(icon->h * icon->w * sizeof(Uint32));
+    bmi->biSizeImage = SDL_Swap32LE(icon->h * icon->w * sizeof(uint32_t));
     bmi->biXPelsPerMeter = SDL_Swap32LE(0);
     bmi->biYPelsPerMeter = SDL_Swap32LE(0);
     bmi->biClrUsed = SDL_Swap32LE(0);
@@ -859,10 +859,10 @@ bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *
     // Write the pixels upside down into the bitmap buffer
     SDL_assert(icon->format == SDL_PIXELFORMAT_ARGB8888);
     dst = &icon_bmp[sizeof(BITMAPINFOHEADER)];
-    row_len = icon->w * sizeof(Uint32);
+    row_len = icon->w * sizeof(uint32_t);
     y = icon->h;
     while (y--) {
-        Uint8 *src = (Uint8 *)icon->pixels + y * icon->pitch;
+        uint8_t *src = (uint8_t *)icon->pixels + y * icon->pitch;
         SDL_memcpy(dst, src, row_len);
         dst += row_len;
     }
@@ -1891,9 +1891,9 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                              ". In Drop File for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
-                    char *text = (char *)SDL_malloc(bsize + sizeof(Uint32));
-                    SDL_memcpy((Uint8 *)text, buffer, bsize);
-                    SDL_memset((Uint8 *)text + bsize, 0, sizeof(Uint32));
+                    char *text = (char *)SDL_malloc(bsize + sizeof(uint32_t));
+                    SDL_memcpy((uint8_t *)text, buffer, bsize);
+                    SDL_memset((uint8_t *)text + bsize, 0, sizeof(uint32_t));
                     char *saveptr = NULL;
                     char *token = SDL_strtok_r(text, "\r\n", &saveptr);
                     while (token != NULL) {
@@ -1939,9 +1939,9 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                              ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
-                    char *text = (char *)SDL_malloc(bsize + sizeof(Uint32));
-                    SDL_memcpy((Uint8 *)text, buffer, bsize);
-                    SDL_memset((Uint8 *)text + bsize, 0, sizeof(Uint32));
+                    char *text = (char *)SDL_malloc(bsize + sizeof(uint32_t));
+                    SDL_memcpy((uint8_t *)text, buffer, bsize);
+                    SDL_memset((uint8_t *)text + bsize, 0, sizeof(uint32_t));
                     char *saveptr = NULL;
                     char *token = SDL_strtok_r(text, "\r\n", &saveptr);
                     while (token != NULL) {
@@ -1991,9 +1991,9 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                                      ". In Drop Text for StringToUTF8, format %08x '%s', memory (%lu) %p\n",
                                      fetc.cfFormat, format_mime, (unsigned long)lbuffer, buffer);
-                        char *text = (char *)SDL_malloc(lbuffer + sizeof(Uint32));
-                        SDL_memcpy((Uint8 *)text, buffer, lbuffer);
-                        SDL_memset((Uint8 *)text + lbuffer, 0, sizeof(Uint32));
+                        char *text = (char *)SDL_malloc(lbuffer + sizeof(uint32_t));
+                        SDL_memcpy((uint8_t *)text, buffer, lbuffer);
+                        SDL_memset((uint8_t *)text + lbuffer, 0, sizeof(uint32_t));
                         char *saveptr = NULL;
                         char *token = SDL_strtok_r(text, "\r\n", &saveptr);
                         while (token != NULL) {
@@ -2039,9 +2039,9 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                              ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
-                    char *text = (char *)SDL_malloc(bsize + sizeof(Uint32));
-                    SDL_memcpy((Uint8 *)text, buffer, bsize);
-                    SDL_memset((Uint8 *)text + bsize, 0, sizeof(Uint32));
+                    char *text = (char *)SDL_malloc(bsize + sizeof(uint32_t));
+                    SDL_memcpy((uint8_t *)text, buffer, bsize);
+                    SDL_memset((uint8_t *)text + bsize, 0, sizeof(uint32_t));
                     char *saveptr = NULL;
                     char *token = SDL_strtok_r(text, "\r\n", &saveptr);
                     while (token != NULL) {

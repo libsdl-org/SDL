@@ -113,7 +113,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
     FILETIME ft, local_ft;
     SYSTEMTIME utc_st, local_st;
     SYSTEMTIME *st = NULL;
-    Uint32 low, high;
+    uint32_t low, high;
 
     if (!dt) {
         return SDL_InvalidParamError("dt");

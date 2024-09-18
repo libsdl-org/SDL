@@ -636,7 +636,7 @@ XVisualInfo *X11_GL_GetVisual(SDL_VideoDevice *_this, Display *display, int scre
             // Return the first transparent Visual
             int i;
             for (i = 0; i < fbcount; i++) {
-                Uint32 format;
+                uint32_t format;
                 vinfo = _this->gl_data->glXGetVisualFromFBConfig(display, framebuffer_config[i]);
                 format = X11_GetPixelFormatFromVisualInfo(display, vinfo);
                 if (SDL_ISPIXELFORMAT_ALPHA(format)) { // found!

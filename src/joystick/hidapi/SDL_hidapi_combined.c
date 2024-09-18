@@ -39,7 +39,7 @@ static bool HIDAPI_DriverCombined_IsEnabled(void)
     return true;
 }
 
-static bool HIDAPI_DriverCombined_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static bool HIDAPI_DriverCombined_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, uint16_t vendor_id, uint16_t product_id, uint16_t version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     // This is always explicitly created for combined devices
     return false;
@@ -108,7 +108,7 @@ static bool HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     return true;
 }
 
-static bool HIDAPI_DriverCombined_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_DriverCombined_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     int i;
     bool result = false;
@@ -122,7 +122,7 @@ static bool HIDAPI_DriverCombined_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_
     return result;
 }
 
-static bool HIDAPI_DriverCombined_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_DriverCombined_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     int i;
     bool result = false;
@@ -136,10 +136,10 @@ static bool HIDAPI_DriverCombined_RumbleJoystickTriggers(SDL_HIDAPI_Device *devi
     return result;
 }
 
-static Uint32 HIDAPI_DriverCombined_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static uint32_t HIDAPI_DriverCombined_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     int i;
-    Uint32 caps = 0;
+    uint32_t caps = 0;
 
     for (i = 0; i < device->num_children; ++i) {
         SDL_HIDAPI_Device *child = device->children[i];
@@ -148,7 +148,7 @@ static Uint32 HIDAPI_DriverCombined_GetJoystickCapabilities(SDL_HIDAPI_Device *d
     return caps;
 }
 
-static bool HIDAPI_DriverCombined_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_DriverCombined_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     int i;
     bool result = false;

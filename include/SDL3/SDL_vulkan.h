@@ -158,7 +158,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *
  * \sa SDL_Vulkan_CreateSurface
  */
-extern SDL_DECLSPEC char const * const * SDLCALL SDL_Vulkan_GetInstanceExtensions(Uint32 *count);
+extern SDL_DECLSPEC char const * const * SDLCALL SDL_Vulkan_GetInstanceExtensions(uint32_t *count);
 
 /**
  * Create a Vulkan rendering surface for a window.
@@ -236,7 +236,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_DestroySurface(VkInstance instance,
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_GetPresentationSupport(VkInstance instance,
                                                                        VkPhysicalDevice physicalDevice,
-                                                                       Uint32 queueFamilyIndex);
+                                                                       uint32_t queueFamilyIndex);
 
 /* @} *//* Vulkan support functions */
 

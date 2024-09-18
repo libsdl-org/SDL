@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     bool keepGoing = true;
     int i;
     bool enable_haptic = true;
-    Uint32 init_subsystems = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
+    uint32_t init_subsystems = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */

@@ -30,7 +30,7 @@
 
 #define CHECK_CREATE(var, thing) { if (!(var)) { SDL_Log("Failed to create %s: %s\n", thing, SDL_GetError()); quit(2); } }
 
-static Uint32 frames = 0;
+static uint32_t frames = 0;
 
 typedef struct RenderState
 {
@@ -43,7 +43,7 @@ typedef struct WindowState
 {
     int angle_x, angle_y, angle_z;
     SDL_GPUTexture *tex_depth, *tex_msaa, *tex_resolve;
-    Uint32 prev_drawablew, prev_drawableh;
+    uint32_t prev_drawablew, prev_drawableh;
 } WindowState;
 
 static SDL_GPUDevice *gpu_device = NULL;
@@ -248,7 +248,7 @@ static const VertexData vertex_data[] = {
 };
 
 static SDL_GPUTexture*
-CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
+CreateDepthTexture(uint32_t drawablew, uint32_t drawableh)
 {
     SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
@@ -270,7 +270,7 @@ CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
 }
 
 static SDL_GPUTexture*
-CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
+CreateMSAATexture(uint32_t drawablew, uint32_t drawableh)
 {
     SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
@@ -296,7 +296,7 @@ CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
 }
 
 static SDL_GPUTexture *
-CreateResolveTexture(Uint32 drawablew, Uint32 drawableh)
+CreateResolveTexture(uint32_t drawablew, uint32_t drawableh)
 {
     SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
@@ -329,7 +329,7 @@ Render(SDL_Window *window, const int windownum)
     SDL_GPUColorTargetInfo color_target;
     SDL_GPUDepthStencilTargetInfo depth_target;
     float matrix_rotate[16], matrix_modelview[16], matrix_perspective[16], matrix_final[16];
-    Uint32 drawablew, drawableh;
+    uint32_t drawablew, drawableh;
     SDL_GPUCommandBuffer *cmd;
     SDL_GPURenderPass *pass;
     SDL_GPUBufferBinding vertex_binding;
@@ -503,7 +503,7 @@ init_render_state(int msaa)
     SDL_GPUTransferBufferCreateInfo transfer_buffer_desc;
     SDL_GPUGraphicsPipelineCreateInfo pipelinedesc;
     SDL_GPUColorTargetDescription color_target_desc;
-    Uint32 drawablew, drawableh;
+    uint32_t drawablew, drawableh;
     SDL_GPUVertexAttribute vertex_attributes[2];
     SDL_GPUVertexBufferDescription vertex_buffer_desc;
     SDL_GPUShader *vertex_shader;
@@ -687,7 +687,7 @@ main(int argc, char *argv[])
     int msaa;
     int i;
     const SDL_DisplayMode *mode;
-    Uint64 then, now;
+    uint64_t then, now;
 
     /* Initialize params */
     msaa = 0;

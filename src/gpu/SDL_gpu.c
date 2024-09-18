@@ -181,8 +181,8 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     SDL_GPUShader *blit_from_cube_shader,
     SDL_GPUShader *blit_from_cube_array_shader,
     BlitPipelineCacheEntry **blit_pipelines,
-    Uint32 *blit_pipeline_count,
-    Uint32 *blit_pipeline_capacity)
+    uint32_t *blit_pipeline_count,
+    uint32_t *blit_pipeline_capacity)
 {
     SDL_GPUGraphicsPipelineCreateInfo blit_pipeline_create_info;
     SDL_GPUColorTargetDescription color_target_desc;
@@ -193,7 +193,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
         return (*blit_pipelines)[source_texture_type].pipeline;
     }
 
-    for (Uint32 i = 0; i < *blit_pipeline_count; i += 1) {
+    for (uint32_t i = 0; i < *blit_pipeline_count; i += 1) {
         if ((*blit_pipelines)[i].type == source_texture_type && (*blit_pipelines)[i].format == destination_format) {
             return (*blit_pipelines)[i].pipeline;
         }
@@ -266,8 +266,8 @@ void SDL_GPU_BlitCommon(
     SDL_GPUShader *blit_from_cube_shader,
     SDL_GPUShader *blit_from_cube_array_shader,
     BlitPipelineCacheEntry **blit_pipelines,
-    Uint32 *blit_pipeline_count,
-    Uint32 *blit_pipeline_capacity)
+    uint32_t *blit_pipeline_count,
+    uint32_t *blit_pipeline_capacity)
 {
     CommandBufferCommonHeader *cmdbufHeader = (CommandBufferCommonHeader *)command_buffer;
     SDL_GPURenderPass *render_pass;
@@ -278,7 +278,7 @@ void SDL_GPU_BlitCommon(
     SDL_GPUViewport viewport;
     SDL_GPUTextureSamplerBinding texture_sampler_binding;
     BlitFragmentUniforms blit_fragment_uniforms;
-    Uint32 layer_divisor;
+    uint32_t layer_divisor;
 
     blit_pipeline = SDL_GPU_FetchBlitPipeline(
         cmdbufHeader->device,
@@ -373,7 +373,7 @@ void SDL_GPU_BlitCommon(
 #ifndef SDL_GPU_DISABLED
 static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
 {
-    Uint32 i;
+    uint32_t i;
     SDL_GPUShaderFormat format_flags = 0;
     const char *gpudriver;
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -579,7 +579,7 @@ SDL_GPUShaderFormat SDL_GetGPUShaderFormats(SDL_GPUDevice *device)
     return device->shader_formats;
 }
 
-Uint32 SDL_GPUTextureFormatTexelBlockSize(
+uint32_t SDL_GPUTextureFormatTexelBlockSize(
     SDL_GPUTextureFormat format)
 {
     switch (format) {
@@ -734,7 +734,7 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             SDL_assert_release(!"Color target descriptions array pointer cannot be NULL if num_color_targets is greater than zero!");
             return NULL;
         }
-        for (Uint32 i = 0; i < graphicsPipelineCreateInfo->target_info.num_color_targets; i += 1) {
+        for (uint32_t i = 0; i < graphicsPipelineCreateInfo->target_info.num_color_targets; i += 1) {
             CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format, NULL);
             if (IsDepthFormat(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format)) {
                 SDL_assert_release(!"Color target formats cannot be a depth format!");
@@ -773,12 +773,12 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             SDL_assert_release(!"The number of vertex attributes in a vertex input state must not exceed 16!");
             return NULL;
         }
-        Uint32 locations[MAX_VERTEX_ATTRIBUTES];
-        for (Uint32 i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes; i += 1) {
+        uint32_t locations[MAX_VERTEX_ATTRIBUTES];
+        for (uint32_t i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes; i += 1) {
             CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].format, NULL);
 
             locations[i] = graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].location;
-            for (Uint32 j = 0; j < i; j += 1) {
+            for (uint32_t j = 0; j < i; j += 1) {
                 if (locations[j] == locations[i]) {
                     SDL_assert_release(!"Each vertex attribute location in a vertex input state must be unique!");
                 }
@@ -855,8 +855,8 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
     if (device->debug_mode) {
         bool failed = false;
 
-        const Uint32 MAX_2D_DIMENSION = 16384;
-        const Uint32 MAX_3D_DIMENSION = 2048;
+        const uint32_t MAX_2D_DIMENSION = 16384;
+        const uint32_t MAX_3D_DIMENSION = 2048;
 
         // Common checks for all texture types
         CHECK_TEXTUREFORMAT_ENUM_INVALID(createinfo->format, NULL)
@@ -1250,9 +1250,9 @@ SDL_GPUCommandBuffer *SDL_AcquireGPUCommandBuffer(
 
 void SDL_PushGPUVertexUniformData(
     SDL_GPUCommandBuffer *command_buffer,
-    Uint32 slot_index,
+    uint32_t slot_index,
     const void *data,
-    Uint32 length)
+    uint32_t length)
 {
     if (command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
@@ -1276,9 +1276,9 @@ void SDL_PushGPUVertexUniformData(
 
 void SDL_PushGPUFragmentUniformData(
     SDL_GPUCommandBuffer *command_buffer,
-    Uint32 slot_index,
+    uint32_t slot_index,
     const void *data,
-    Uint32 length)
+    uint32_t length)
 {
     if (command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
@@ -1302,9 +1302,9 @@ void SDL_PushGPUFragmentUniformData(
 
 void SDL_PushGPUComputeUniformData(
     SDL_GPUCommandBuffer *command_buffer,
-    Uint32 slot_index,
+    uint32_t slot_index,
     const void *data,
-    Uint32 length)
+    uint32_t length)
 {
     if (command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
@@ -1331,7 +1331,7 @@ void SDL_PushGPUComputeUniformData(
 SDL_GPURenderPass *SDL_BeginGPURenderPass(
     SDL_GPUCommandBuffer *command_buffer,
     const SDL_GPUColorTargetInfo *color_target_infos,
-    Uint32 num_color_targets,
+    uint32_t num_color_targets,
     const SDL_GPUDepthStencilTargetInfo *depth_stencil_target_info)
 {
     CommandBufferCommonHeader *commandBufferHeader;
@@ -1354,7 +1354,7 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         CHECK_COMMAND_BUFFER_RETURN_NULL
         CHECK_ANY_PASS_IN_PROGRESS("Cannot begin render pass during another pass!", NULL)
 
-        for (Uint32 i = 0; i < num_color_targets; i += 1) {
+        for (uint32_t i = 0; i < num_color_targets; i += 1) {
             TextureCommonHeader *textureHeader = (TextureCommonHeader *)color_target_infos[i].texture;
 
             if (color_target_infos[i].cycle && color_target_infos[i].load_op == SDL_GPU_LOADOP_LOAD) {
@@ -1500,7 +1500,7 @@ void SDL_SetGPUBlendConstants(
 
 void SDL_SetGPUStencilReference(
     SDL_GPURenderPass *render_pass,
-    Uint8 reference)
+    uint8_t reference)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1518,9 +1518,9 @@ void SDL_SetGPUStencilReference(
 
 void SDL_BindGPUVertexBuffers(
     SDL_GPURenderPass *render_pass,
-    Uint32 first_binding,
+    uint32_t first_binding,
     const SDL_GPUBufferBinding *bindings,
-    Uint32 num_bindings)
+    uint32_t num_bindings)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1568,9 +1568,9 @@ void SDL_BindGPUIndexBuffer(
 
 void SDL_BindGPUVertexSamplers(
     SDL_GPURenderPass *render_pass,
-    Uint32 first_slot,
+    uint32_t first_slot,
     const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
-    Uint32 num_bindings)
+    uint32_t num_bindings)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1594,9 +1594,9 @@ void SDL_BindGPUVertexSamplers(
 
 void SDL_BindGPUVertexStorageTextures(
     SDL_GPURenderPass *render_pass,
-    Uint32 first_slot,
+    uint32_t first_slot,
     SDL_GPUTexture *const *storage_textures,
-    Uint32 num_bindings)
+    uint32_t num_bindings)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1620,9 +1620,9 @@ void SDL_BindGPUVertexStorageTextures(
 
 void SDL_BindGPUVertexStorageBuffers(
     SDL_GPURenderPass *render_pass,
-    Uint32 first_slot,
+    uint32_t first_slot,
     SDL_GPUBuffer *const *storage_buffers,
-    Uint32 num_bindings)
+    uint32_t num_bindings)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1646,9 +1646,9 @@ void SDL_BindGPUVertexStorageBuffers(
 
 void SDL_BindGPUFragmentSamplers(
     SDL_GPURenderPass *render_pass,
-    Uint32 first_slot,
+    uint32_t first_slot,
     const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
-    Uint32 num_bindings)
+    uint32_t num_bindings)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1672,9 +1672,9 @@ void SDL_BindGPUFragmentSamplers(
 
 void SDL_BindGPUFragmentStorageTextures(
     SDL_GPURenderPass *render_pass,
-    Uint32 first_slot,
+    uint32_t first_slot,
     SDL_GPUTexture *const *storage_textures,
-    Uint32 num_bindings)
+    uint32_t num_bindings)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1698,9 +1698,9 @@ void SDL_BindGPUFragmentStorageTextures(
 
 void SDL_BindGPUFragmentStorageBuffers(
     SDL_GPURenderPass *render_pass,
-    Uint32 first_slot,
+    uint32_t first_slot,
     SDL_GPUBuffer *const *storage_buffers,
-    Uint32 num_bindings)
+    uint32_t num_bindings)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1724,11 +1724,11 @@ void SDL_BindGPUFragmentStorageBuffers(
 
 void SDL_DrawGPUIndexedPrimitives(
     SDL_GPURenderPass *render_pass,
-    Uint32 num_indices,
-    Uint32 num_instances,
-    Uint32 first_index,
-    Sint32 vertex_offset,
-    Uint32 first_instance)
+    uint32_t num_indices,
+    uint32_t num_instances,
+    uint32_t first_index,
+    int32_t vertex_offset,
+    uint32_t first_instance)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1751,10 +1751,10 @@ void SDL_DrawGPUIndexedPrimitives(
 
 void SDL_DrawGPUPrimitives(
     SDL_GPURenderPass *render_pass,
-    Uint32 num_vertices,
-    Uint32 num_instances,
-    Uint32 first_vertex,
-    Uint32 first_instance)
+    uint32_t num_vertices,
+    uint32_t num_instances,
+    uint32_t first_vertex,
+    uint32_t first_instance)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1777,8 +1777,8 @@ void SDL_DrawGPUPrimitives(
 void SDL_DrawGPUPrimitivesIndirect(
     SDL_GPURenderPass *render_pass,
     SDL_GPUBuffer *buffer,
-    Uint32 offset,
-    Uint32 draw_count)
+    uint32_t offset,
+    uint32_t draw_count)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1804,8 +1804,8 @@ void SDL_DrawGPUPrimitivesIndirect(
 void SDL_DrawGPUIndexedPrimitivesIndirect(
     SDL_GPURenderPass *render_pass,
     SDL_GPUBuffer *buffer,
-    Uint32 offset,
-    Uint32 draw_count)
+    uint32_t offset,
+    uint32_t draw_count)
 {
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -1855,9 +1855,9 @@ void SDL_EndGPURenderPass(
 SDL_GPUComputePass *SDL_BeginGPUComputePass(
     SDL_GPUCommandBuffer *command_buffer,
     const SDL_GPUStorageTextureWriteOnlyBinding *storage_texture_bindings,
-    Uint32 num_storage_texture_bindings,
+    uint32_t num_storage_texture_bindings,
     const SDL_GPUStorageBufferWriteOnlyBinding *storage_buffer_bindings,
-    Uint32 num_storage_buffer_bindings)
+    uint32_t num_storage_buffer_bindings)
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
@@ -1927,9 +1927,9 @@ void SDL_BindGPUComputePipeline(
 
 void SDL_BindGPUComputeSamplers(
     SDL_GPUComputePass *compute_pass,
-    Uint32 first_slot,
+    uint32_t first_slot,
     const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
-    Uint32 num_bindings)
+    uint32_t num_bindings)
 {
     if (compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
@@ -1953,9 +1953,9 @@ void SDL_BindGPUComputeSamplers(
 
 void SDL_BindGPUComputeStorageTextures(
     SDL_GPUComputePass *compute_pass,
-    Uint32 first_slot,
+    uint32_t first_slot,
     SDL_GPUTexture *const *storage_textures,
-    Uint32 num_bindings)
+    uint32_t num_bindings)
 {
     if (compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
@@ -1979,9 +1979,9 @@ void SDL_BindGPUComputeStorageTextures(
 
 void SDL_BindGPUComputeStorageBuffers(
     SDL_GPUComputePass *compute_pass,
-    Uint32 first_slot,
+    uint32_t first_slot,
     SDL_GPUBuffer *const *storage_buffers,
-    Uint32 num_bindings)
+    uint32_t num_bindings)
 {
     if (compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
@@ -2005,9 +2005,9 @@ void SDL_BindGPUComputeStorageBuffers(
 
 void SDL_DispatchGPUCompute(
     SDL_GPUComputePass *compute_pass,
-    Uint32 groupcount_x,
-    Uint32 groupcount_y,
-    Uint32 groupcount_z)
+    uint32_t groupcount_x,
+    uint32_t groupcount_y,
+    uint32_t groupcount_z)
 {
     if (compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
@@ -2029,7 +2029,7 @@ void SDL_DispatchGPUCompute(
 void SDL_DispatchGPUComputeIndirect(
     SDL_GPUComputePass *compute_pass,
     SDL_GPUBuffer *buffer,
-    Uint32 offset)
+    uint32_t offset)
 {
     if (compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
@@ -2208,9 +2208,9 @@ void SDL_CopyGPUTextureToTexture(
     SDL_GPUCopyPass *copy_pass,
     const SDL_GPUTextureLocation *source,
     const SDL_GPUTextureLocation *destination,
-    Uint32 w,
-    Uint32 h,
-    Uint32 d,
+    uint32_t w,
+    uint32_t h,
+    uint32_t d,
     bool cycle)
 {
     if (copy_pass == NULL) {
@@ -2252,7 +2252,7 @@ void SDL_CopyGPUBufferToBuffer(
     SDL_GPUCopyPass *copy_pass,
     const SDL_GPUBufferLocation *source,
     const SDL_GPUBufferLocation *destination,
-    Uint32 size,
+    uint32_t size,
     bool cycle)
 {
     if (copy_pass == NULL) {
@@ -2589,8 +2589,8 @@ SDL_GPUTextureFormat SDL_GetGPUSwapchainTextureFormat(
 SDL_GPUTexture *SDL_AcquireGPUSwapchainTexture(
     SDL_GPUCommandBuffer *command_buffer,
     SDL_Window *window,
-    Uint32 *w,
-    Uint32 *h)
+    uint32_t *w,
+    uint32_t *h)
 {
     if (command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
@@ -2688,7 +2688,7 @@ void SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     bool wait_all,
     SDL_GPUFence *const *fences,
-    Uint32 num_fences)
+    uint32_t num_fences)
 {
     CHECK_DEVICE_MAGIC(device, );
     if (fences == NULL && num_fences > 0) {

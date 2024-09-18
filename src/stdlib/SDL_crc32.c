@@ -30,21 +30,21 @@
    There is code that relies on this in the joystick code
 */
 
-static Uint32 crc32_for_byte(Uint32 r)
+static uint32_t crc32_for_byte(uint32_t r)
 {
     int i;
     for (i = 0; i < 8; ++i) {
-        r = (r & 1 ? 0 : (Uint32)0xEDB88320L) ^ r >> 1;
+        r = (r & 1 ? 0 : (uint32_t)0xEDB88320L) ^ r >> 1;
     }
-    return r ^ (Uint32)0xFF000000L;
+    return r ^ (uint32_t)0xFF000000L;
 }
 
-Uint32 SDL_crc32(Uint32 crc, const void *data, size_t len)
+uint32_t SDL_crc32(uint32_t crc, const void *data, size_t len)
 {
     // As an optimization we can precalculate a 256 entry table for each byte
     size_t i;
     for (i = 0; i < len; ++i) {
-        crc = crc32_for_byte((Uint8)crc ^ ((const Uint8 *)data)[i]) ^ crc >> 8;
+        crc = crc32_for_byte((uint8_t)crc ^ ((const uint8_t *)data)[i]) ^ crc >> 8;
     }
     return crc;
 }

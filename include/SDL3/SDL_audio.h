@@ -108,7 +108,7 @@ extern "C" {
 #define SDL_AUDIO_MASK_SIGNED        (1u<<15)
 
 #define SDL_DEFINE_AUDIO_FORMAT(signed, bigendian, float, size) \
-    (((Uint16)(signed) << 15) | ((Uint16)(bigendian) << 12) | ((Uint16)(float) << 8) | ((size) & SDL_AUDIO_MASK_BITSIZE))
+    (((uint16_t)(signed) << 15) | ((uint16_t)(bigendian) << 12) | ((uint16_t)(float) << 8) | ((size) & SDL_AUDIO_MASK_BITSIZE))
 
 /**
  * Audio format.
@@ -277,7 +277,7 @@ typedef enum SDL_AudioFormat
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_AudioDeviceID;
+typedef uint32_t SDL_AudioDeviceID;
 
 /**
  * A value used to request a default playback audio device.
@@ -318,7 +318,7 @@ typedef struct SDL_AudioSpec
 /**
  * Calculate the size of each audio frame (in bytes) from an SDL_AudioSpec.
  *
- * This reports on the size of an audio sample frame: stereo Sint16 data (2
+ * This reports on the size of an audio sample frame: stereo int16_t data (2
  * channels of 2 bytes each) would be 4 bytes per frame, for example.
  *
  * \param x an SDL_AudioSpec to query.
@@ -523,7 +523,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceI
  * to the physical hardware in each chunk. This can be converted to
  * milliseconds of audio with the following equation:
  *
- * `ms = (int) ((((Sint64) frames) * 1000) / spec.freq);`
+ * `ms = (int) ((((int64_t) frames) * 1000) / spec.freq);`
  *
  * Buffer size is only important if you need low-level control over the audio
  * playback timing. Most apps do not need this.
@@ -1876,7 +1876,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioPostmixCallback(SDL_AudioDeviceID d
  * \sa SDL_free
  * \sa SDL_LoadWAV
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len);
+extern SDL_DECLSPEC bool SDLCALL SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio, SDL_AudioSpec *spec, uint8_t **audio_buf, uint32_t *audio_len);
 
 /**
  * Loads a WAV from a file path.
@@ -1912,7 +1912,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio,
  * \sa SDL_free
  * \sa SDL_LoadWAV_IO
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len);
+extern SDL_DECLSPEC bool SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec *spec, uint8_t **audio_buf, uint32_t *audio_len);
 
 /**
  * Mix audio data in a specified format.
@@ -1948,7 +1948,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec *sp
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_MixAudio(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format, Uint32 len, float volume);
+extern SDL_DECLSPEC bool SDLCALL SDL_MixAudio(uint8_t *dst, const uint8_t *src, SDL_AudioFormat format, uint32_t len, float volume);
 
 /**
  * Convert some audio data of one format to another format.
@@ -1978,7 +1978,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_MixAudio(Uint8 *dst, const Uint8 *src, SDL_
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const Uint8 *src_data, int src_len, const SDL_AudioSpec *dst_spec, Uint8 **dst_data, int *dst_len);
+extern SDL_DECLSPEC bool SDLCALL SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const uint8_t *src_data, int src_len, const SDL_AudioSpec *dst_spec, uint8_t **dst_data, int *dst_len);
 
 /**
  * Get the human readable name of an audio format.

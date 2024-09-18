@@ -59,14 +59,14 @@ static const char *s_defaultPaths[] = {
 bool OFFSCREEN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
-    Uint32 extensionCount = 0;
+    uint32_t extensionCount = 0;
     bool hasSurfaceExtension = false;
     bool hasHeadlessSurfaceExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
-    Uint32 i;
+    uint32_t i;
     const char **paths;
     const char *foundPath = NULL;
-    Uint32 numPaths;
+    uint32_t numPaths;
 
     if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
@@ -170,13 +170,13 @@ void OFFSCREEN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 }
 
 char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                                          Uint32 *count)
+                                                          uint32_t *count)
 {
 #if (HEADLESS_SURFACE_EXTENSION_REQUIRED_TO_LOAD == 0)
     VkExtensionProperties *enumerateExtensions = NULL;
-    Uint32 enumerateExtensionCount = 0;
+    uint32_t enumerateExtensionCount = 0;
     bool hasHeadlessSurfaceExtension = false;
-    Uint32 i;
+    uint32_t i;
 #endif
 
     static const char *const returnExtensions[] = { VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME };

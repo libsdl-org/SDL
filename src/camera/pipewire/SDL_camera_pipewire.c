@@ -555,7 +555,7 @@ static bool PIPEWIRECAMERA_WaitDevice(SDL_Camera *device)
     return true;
 }
 
-static SDL_CameraFrameResult PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS)
 {
     struct pw_buffer *b;
 

@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
             } else if (SDL_strcmp(argv[i], "--timeout") == 0) {
                 if (argv[i + 1]) {
                     char *endptr;
-                    timeout = (Uint64) SDL_strtol(argv[i + 1], &endptr, 0);
+                    timeout = (uint64_t) SDL_strtol(argv[i + 1], &endptr, 0);
                     if (endptr != argv[i + 1] && *endptr == '\0' && timeout > 0) {
                         consumed = 2;
                     }
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    while (!SDL_GetAtomicInt(&doterminate) && (SDL_GetTicks() < ((Uint64) timeout))) {
+    while (!SDL_GetAtomicInt(&doterminate) && (SDL_GetTicks() < ((uint64_t) timeout))) {
         DoWork(writerworktime);
     }
 

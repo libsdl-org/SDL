@@ -26,7 +26,7 @@
 
 #ifdef SDL_THREADS_DISABLED
 
-SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(uint32_t initial_value)
 {
     SDL_SetError("SDL not built with thread support");
     return NULL;
@@ -36,12 +36,12 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
 }
 
-bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, int64_t timeoutNS)
 {
     return true;
 }
 
-Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
+uint32_t SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     return 0;
 }
@@ -55,13 +55,13 @@ void SDL_SignalSemaphore(SDL_Semaphore *sem)
 
 struct SDL_Semaphore
 {
-    Uint32 count;
-    Uint32 waiters_count;
+    uint32_t count;
+    uint32_t waiters_count;
     SDL_Mutex *count_lock;
     SDL_Condition *count_nonzero;
 };
 
-SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(uint32_t initial_value)
 {
     SDL_Semaphore *sem;
 
@@ -103,7 +103,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     }
 }
 
-bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, int64_t timeoutNS)
 {
     bool result = false;
 
@@ -129,12 +129,12 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         result = true;
         SDL_UnlockMutex(sem->count_lock);
     } else {
-        Uint64 stop_time = SDL_GetTicksNS() + timeoutNS;
+        uint64_t stop_time = SDL_GetTicksNS() + timeoutNS;
 
         SDL_LockMutex(sem->count_lock);
         ++sem->waiters_count;
         while (sem->count == 0) {
-            Sint64 waitNS = (Sint64)(stop_time - SDL_GetTicksNS());
+            int64_t waitNS = (int64_t)(stop_time - SDL_GetTicksNS());
             if (waitNS > 0) {
                 SDL_WaitConditionTimeoutNS(sem->count_nonzero, sem->count_lock, waitNS);
             } else {
@@ -153,9 +153,9 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     return result;
 }
 
-Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
+uint32_t SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
-    Uint32 value;
+    uint32_t value;
 
     value = 0;
     if (sem) {

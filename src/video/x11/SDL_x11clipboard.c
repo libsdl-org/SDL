@@ -62,7 +62,7 @@ static Window GetWindow(SDL_VideoDevice *_this)
 }
 
 static bool SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_ClipboardDataCallback callback,
-                            void *userdata, const char **mime_types, size_t mime_count, Uint32 sequence)
+                            void *userdata, const char **mime_types, size_t mime_count, uint32_t sequence)
 {
     SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
@@ -102,10 +102,10 @@ static void *CloneDataBuffer(const void *buffer, const size_t len)
 {
     void *clone = NULL;
     if (len > 0 && buffer) {
-        clone = SDL_malloc(len + sizeof(Uint32));
+        clone = SDL_malloc(len + sizeof(uint32_t));
         if (clone) {
             SDL_memcpy(clone, buffer, len);
-            SDL_memset((Uint8 *)clone + len, 0, sizeof(Uint32));
+            SDL_memset((uint8_t *)clone + len, 0, sizeof(uint32_t));
         }
     }
     return clone;
@@ -119,10 +119,10 @@ static void *AppendDataBuffer(void *original_buffer, const size_t old_len, const
     void *resized_buffer;
 
     if (buffer_len > 0 && buffer) {
-        resized_buffer = SDL_realloc(original_buffer, old_len + buffer_len + sizeof(Uint32));
+        resized_buffer = SDL_realloc(original_buffer, old_len + buffer_len + sizeof(uint32_t));
         if (resized_buffer) {
-            SDL_memcpy((Uint8 *)resized_buffer + old_len, buffer, buffer_len);
-            SDL_memset((Uint8 *)resized_buffer + old_len + buffer_len, 0, sizeof(Uint32));
+            SDL_memcpy((uint8_t *)resized_buffer + old_len, buffer, buffer_len);
+            SDL_memset((uint8_t *)resized_buffer + old_len + buffer_len, 0, sizeof(uint32_t));
         }
 
         return resized_buffer;
@@ -133,8 +133,8 @@ static void *AppendDataBuffer(void *original_buffer, const size_t old_len, const
 
 static bool WaitForSelection(SDL_VideoDevice *_this, Atom selection_type, bool *flag)
 {
-    Uint64 waitStart;
-    Uint64 waitElapsed;
+    uint64_t waitStart;
+    uint64_t waitElapsed;
 
     waitStart = SDL_GetTicks();
     *flag = true;

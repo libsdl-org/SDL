@@ -33,11 +33,11 @@ struct SDL_PrivateAudioData
     pa_stream *stream;
 
     // Raw mixing buffer
-    Uint8 *mixbuf;
+    uint8_t *mixbuf;
 
     int bytes_requested; // bytes of data the hardware wants _now_.
 
-    const Uint8 *recordingbuf;
+    const uint8_t *recordingbuf;
     int recordinglen;
 };
 

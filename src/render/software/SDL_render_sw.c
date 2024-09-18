@@ -102,16 +102,16 @@ static bool SW_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
 static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     SDL_Surface *surface = SDL_CreateSurface(texture->w, texture->h, texture->format);
-    Uint8 r, g, b, a;
+    uint8_t r, g, b, a;
 
     if (!SDL_SurfaceValid(surface)) {
         return SDL_SetError("Cannot create surface");
     }
     texture->internal = surface;
-    r = (Uint8)SDL_roundf(SDL_clamp(texture->color.r, 0.0f, 1.0f) * 255.0f);
-    g = (Uint8)SDL_roundf(SDL_clamp(texture->color.g, 0.0f, 1.0f) * 255.0f);
-    b = (Uint8)SDL_roundf(SDL_clamp(texture->color.b, 0.0f, 1.0f) * 255.0f);
-    a = (Uint8)SDL_roundf(SDL_clamp(texture->color.a, 0.0f, 1.0f) * 255.0f);
+    r = (uint8_t)SDL_roundf(SDL_clamp(texture->color.r, 0.0f, 1.0f) * 255.0f);
+    g = (uint8_t)SDL_roundf(SDL_clamp(texture->color.g, 0.0f, 1.0f) * 255.0f);
+    b = (uint8_t)SDL_roundf(SDL_clamp(texture->color.b, 0.0f, 1.0f) * 255.0f);
+    a = (uint8_t)SDL_roundf(SDL_clamp(texture->color.a, 0.0f, 1.0f) * 255.0f);
     SDL_SetSurfaceColorMod(surface, r, g, b);
     SDL_SetSurfaceAlphaMod(surface, a);
     SDL_SetSurfaceBlendMode(surface, texture->blendMode);
@@ -130,7 +130,7 @@ static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                             const SDL_Rect *rect, const void *pixels, int pitch)
 {
     SDL_Surface *surface = (SDL_Surface *)texture->internal;
-    Uint8 *src, *dst;
+    uint8_t *src, *dst;
     int row;
     size_t length;
 
@@ -139,8 +139,8 @@ static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             return false;
         }
     }
-    src = (Uint8 *)pixels;
-    dst = (Uint8 *)surface->pixels +
+    src = (uint8_t *)pixels;
+    dst = (uint8_t *)surface->pixels +
           rect->y * surface->pitch +
           rect->x * surface->internal->format->bytes_per_pixel;
     length = (size_t)rect->w * surface->internal->format->bytes_per_pixel;
@@ -161,7 +161,7 @@ static bool SW_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     SDL_Surface *surface = (SDL_Surface *)texture->internal;
 
     *pixels =
-        (void *)((Uint8 *)surface->pixels + rect->y * surface->pitch +
+        (void *)((uint8_t *)surface->pixels + rect->y * surface->pitch +
                  rect->x * surface->internal->format->bytes_per_pixel);
     *pitch = surface->pitch;
     return true;
@@ -325,7 +325,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
     SDL_Surface *mask = NULL, *mask_rotated = NULL;
     bool result = true;
     SDL_BlendMode blendmode;
-    Uint8 alphaMod, rMod, gMod, bMod;
+    uint8_t alphaMod, rMod, gMod, bMod;
     int applyModulation = false;
     int blitRequired = false;
     int isOpaque = false;
@@ -557,11 +557,11 @@ static bool SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             SDL_FColor col_;
             float *uv_;
             if (size_indices == 4) {
-                j = ((const Uint32 *)indices)[i];
+                j = ((const uint32_t *)indices)[i];
             } else if (size_indices == 2) {
-                j = ((const Uint16 *)indices)[i];
+                j = ((const uint16_t *)indices)[i];
             } else if (size_indices == 1) {
-                j = ((const Uint8 *)indices)[i];
+                j = ((const uint8_t *)indices)[i];
             } else {
                 j = i;
             }
@@ -578,10 +578,10 @@ static bool SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             ptr->dst.y = (int)(xy_[1] * scale_y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
-            ptr->color.r = (Uint8)SDL_roundf(SDL_clamp(col_.r * color_scale, 0.0f, 1.0f) * 255.0f);
-            ptr->color.g = (Uint8)SDL_roundf(SDL_clamp(col_.g * color_scale, 0.0f, 1.0f) * 255.0f);
-            ptr->color.b = (Uint8)SDL_roundf(SDL_clamp(col_.b * color_scale, 0.0f, 1.0f) * 255.0f);
-            ptr->color.a = (Uint8)SDL_roundf(SDL_clamp(col_.a, 0.0f, 1.0f) * 255.0f);
+            ptr->color.r = (uint8_t)SDL_roundf(SDL_clamp(col_.r * color_scale, 0.0f, 1.0f) * 255.0f);
+            ptr->color.g = (uint8_t)SDL_roundf(SDL_clamp(col_.g * color_scale, 0.0f, 1.0f) * 255.0f);
+            ptr->color.b = (uint8_t)SDL_roundf(SDL_clamp(col_.b * color_scale, 0.0f, 1.0f) * 255.0f);
+            ptr->color.a = (uint8_t)SDL_roundf(SDL_clamp(col_.a, 0.0f, 1.0f) * 255.0f);
 
             ptr++;
         }
@@ -593,11 +593,11 @@ static bool SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             float *xy_;
             SDL_FColor col_;
             if (size_indices == 4) {
-                j = ((const Uint32 *)indices)[i];
+                j = ((const uint32_t *)indices)[i];
             } else if (size_indices == 2) {
-                j = ((const Uint16 *)indices)[i];
+                j = ((const uint16_t *)indices)[i];
             } else if (size_indices == 1) {
-                j = ((const Uint8 *)indices)[i];
+                j = ((const uint8_t *)indices)[i];
             } else {
                 j = i;
             }
@@ -609,10 +609,10 @@ static bool SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             ptr->dst.y = (int)(xy_[1] * scale_y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
-            ptr->color.r = (Uint8)SDL_roundf(SDL_clamp(col_.r * color_scale, 0.0f, 1.0f) * 255.0f);
-            ptr->color.g = (Uint8)SDL_roundf(SDL_clamp(col_.g * color_scale, 0.0f, 1.0f) * 255.0f);
-            ptr->color.b = (Uint8)SDL_roundf(SDL_clamp(col_.b * color_scale, 0.0f, 1.0f) * 255.0f);
-            ptr->color.a = (Uint8)SDL_roundf(SDL_clamp(col_.a, 0.0f, 1.0f) * 255.0f);
+            ptr->color.r = (uint8_t)SDL_roundf(SDL_clamp(col_.r * color_scale, 0.0f, 1.0f) * 255.0f);
+            ptr->color.g = (uint8_t)SDL_roundf(SDL_clamp(col_.g * color_scale, 0.0f, 1.0f) * 255.0f);
+            ptr->color.b = (uint8_t)SDL_roundf(SDL_clamp(col_.b * color_scale, 0.0f, 1.0f) * 255.0f);
+            ptr->color.a = (uint8_t)SDL_roundf(SDL_clamp(col_.a, 0.0f, 1.0f) * 255.0f);
 
             ptr++;
         }
@@ -622,10 +622,10 @@ static bool SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
 
 static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *drawstate)
 {
-    const Uint8 r = drawstate->color.r;
-    const Uint8 g = drawstate->color.g;
-    const Uint8 b = drawstate->color.b;
-    const Uint8 a = drawstate->color.a;
+    const uint8_t r = drawstate->color.r;
+    const uint8_t g = drawstate->color.g;
+    const uint8_t b = drawstate->color.b;
+    const uint8_t a = drawstate->color.a;
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SDL_Texture *texture = cmd->data.draw.texture;
     SDL_Surface *surface = (SDL_Surface *)texture->internal;
@@ -692,10 +692,10 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            drawstate.color.r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            drawstate.color.g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            drawstate.color.b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            drawstate.color.a = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
+            drawstate.color.r = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            drawstate.color.g = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            drawstate.color.b = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            drawstate.color.a = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
             break;
         }
 
@@ -715,10 +715,10 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
         case SDL_RENDERCMD_CLEAR:
         {
-            const Uint8 r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            const Uint8 g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            const Uint8 b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            const Uint8 a = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
+            const uint8_t r = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const uint8_t g = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const uint8_t b = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const uint8_t a = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
             // By definition the clear ignores the clip rect
             SDL_SetSurfaceClipRect(surface, NULL);
             SDL_FillSurfaceRect(surface, NULL, SDL_MapSurfaceRGBA(surface, r, g, b, a));
@@ -728,12 +728,12 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
         case SDL_RENDERCMD_DRAW_POINTS:
         {
-            const Uint8 r = drawstate.color.r;
-            const Uint8 g = drawstate.color.g;
-            const Uint8 b = drawstate.color.b;
-            const Uint8 a = drawstate.color.a;
+            const uint8_t r = drawstate.color.r;
+            const uint8_t g = drawstate.color.g;
+            const uint8_t b = drawstate.color.b;
+            const uint8_t a = drawstate.color.a;
             const int count = (int)cmd->data.draw.count;
-            SDL_Point *verts = (SDL_Point *)(((Uint8 *)vertices) + cmd->data.draw.first);
+            SDL_Point *verts = (SDL_Point *)(((uint8_t *)vertices) + cmd->data.draw.first);
             const SDL_BlendMode blend = cmd->data.draw.blend;
             SetDrawState(surface, &drawstate);
 
@@ -756,12 +756,12 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
         case SDL_RENDERCMD_DRAW_LINES:
         {
-            const Uint8 r = drawstate.color.r;
-            const Uint8 g = drawstate.color.g;
-            const Uint8 b = drawstate.color.b;
-            const Uint8 a = drawstate.color.a;
+            const uint8_t r = drawstate.color.r;
+            const uint8_t g = drawstate.color.g;
+            const uint8_t b = drawstate.color.b;
+            const uint8_t a = drawstate.color.a;
             const int count = (int)cmd->data.draw.count;
-            SDL_Point *verts = (SDL_Point *)(((Uint8 *)vertices) + cmd->data.draw.first);
+            SDL_Point *verts = (SDL_Point *)(((uint8_t *)vertices) + cmd->data.draw.first);
             const SDL_BlendMode blend = cmd->data.draw.blend;
             SetDrawState(surface, &drawstate);
 
@@ -784,12 +784,12 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
         case SDL_RENDERCMD_FILL_RECTS:
         {
-            const Uint8 r = drawstate.color.r;
-            const Uint8 g = drawstate.color.g;
-            const Uint8 b = drawstate.color.b;
-            const Uint8 a = drawstate.color.a;
+            const uint8_t r = drawstate.color.r;
+            const uint8_t g = drawstate.color.g;
+            const uint8_t b = drawstate.color.b;
+            const uint8_t a = drawstate.color.a;
             const int count = (int)cmd->data.draw.count;
-            SDL_Rect *verts = (SDL_Rect *)(((Uint8 *)vertices) + cmd->data.draw.first);
+            SDL_Rect *verts = (SDL_Rect *)(((uint8_t *)vertices) + cmd->data.draw.first);
             const SDL_BlendMode blend = cmd->data.draw.blend;
             SetDrawState(surface, &drawstate);
 
@@ -812,7 +812,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
         case SDL_RENDERCMD_COPY:
         {
-            SDL_Rect *verts = (SDL_Rect *)(((Uint8 *)vertices) + cmd->data.draw.first);
+            SDL_Rect *verts = (SDL_Rect *)(((uint8_t *)vertices) + cmd->data.draw.first);
             const SDL_Rect *srcrect = verts;
             SDL_Rect *dstrect = verts + 1;
             SDL_Texture *texture = cmd->data.draw.texture;
@@ -843,7 +843,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
                     if (tmp) {
                         SDL_Rect r;
                         SDL_BlendMode blendmode;
-                        Uint8 alphaMod, rMod, gMod, bMod;
+                        uint8_t alphaMod, rMod, gMod, bMod;
 
                         SDL_GetSurfaceBlendMode(src, &blendmode);
                         SDL_GetSurfaceAlphaMod(src, &alphaMod);
@@ -877,7 +877,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
         case SDL_RENDERCMD_COPY_EX:
         {
-            CopyExData *copydata = (CopyExData *)(((Uint8 *)vertices) + cmd->data.draw.first);
+            CopyExData *copydata = (CopyExData *)(((uint8_t *)vertices) + cmd->data.draw.first);
             SetDrawState(surface, &drawstate);
             PrepTextureForCopy(cmd, &drawstate);
 
@@ -896,7 +896,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         case SDL_RENDERCMD_GEOMETRY:
         {
             int i;
-            SDL_Rect *verts = (SDL_Rect *)(((Uint8 *)vertices) + cmd->data.draw.first);
+            SDL_Rect *verts = (SDL_Rect *)(((uint8_t *)vertices) + cmd->data.draw.first);
             const int count = (int)cmd->data.draw.count;
             SDL_Texture *texture = cmd->data.draw.texture;
             const SDL_BlendMode blend = cmd->data.draw.blend;
@@ -982,7 +982,7 @@ static SDL_Surface *SW_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *
         return NULL;
     }
 
-    pixels = (void *)((Uint8 *)surface->pixels +
+    pixels = (void *)((uint8_t *)surface->pixels +
                       rect->y * surface->pitch +
                       rect->x * surface->internal->format->bytes_per_pixel);
 

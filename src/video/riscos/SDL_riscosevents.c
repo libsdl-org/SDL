@@ -51,7 +51,7 @@ static SDL_Scancode SDL_RISCOS_translate_keycode(int keycode)
 void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
 {
     SDL_VideoData *internal = _this->internal;
-    Uint8 key = 2;
+    uint8_t key = 2;
     int i;
 
     // Check for key releases
@@ -97,7 +97,7 @@ void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
     }
 }
 
-static const Uint8 mouse_button_map[] = {
+static const uint8_t mouse_button_map[] = {
     SDL_BUTTON_RIGHT,
     SDL_BUTTON_MIDDLE,
     SDL_BUTTON_LEFT,

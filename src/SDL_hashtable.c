@@ -31,7 +31,7 @@ typedef struct SDL_HashItem
 struct SDL_HashTable
 {
     SDL_HashItem **table;
-    Uint32 table_len;
+    uint32_t table_len;
     int hash_shift;
     bool stackable;
     void *data;
@@ -40,7 +40,7 @@ struct SDL_HashTable
     SDL_HashTable_NukeFn nuke;
 };
 
-SDL_HashTable *SDL_CreateHashTable(void *data, const Uint32 num_buckets, const SDL_HashTable_HashFn hashfn,
+SDL_HashTable *SDL_CreateHashTable(void *data, const uint32_t num_buckets, const SDL_HashTable_HashFn hashfn,
                                    const SDL_HashTable_KeyMatchFn keymatchfn,
                                    const SDL_HashTable_NukeFn nukefn,
                                    const bool stackable)
@@ -75,10 +75,10 @@ SDL_HashTable *SDL_CreateHashTable(void *data, const Uint32 num_buckets, const S
     return table;
 }
 
-static SDL_INLINE Uint32 calc_hash(const SDL_HashTable *table, const void *key)
+static SDL_INLINE uint32_t calc_hash(const SDL_HashTable *table, const void *key)
 {
     // Mix the bits together, and use the highest bits as the bucket index.
-    const Uint32 BitMixer = 0x9E3779B1u;
+    const uint32_t BitMixer = 0x9E3779B1u;
     return (table->hash(key, table->data) * BitMixer) >> table->hash_shift;
 }
 
@@ -86,7 +86,7 @@ static SDL_INLINE Uint32 calc_hash(const SDL_HashTable *table, const void *key)
 bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value)
 {
     SDL_HashItem *item;
-    Uint32 hash;
+    uint32_t hash;
 
     if (!table) {
         return false;
@@ -114,7 +114,7 @@ bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *
 
 bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **_value)
 {
-    Uint32 hash;
+    uint32_t hash;
     void *data;
     SDL_HashItem *i;
 
@@ -139,7 +139,7 @@ bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void
 
 bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
 {
-    Uint32 hash;
+    uint32_t hash;
     SDL_HashItem *item = NULL;
     SDL_HashItem *prev = NULL;
     void *data;
@@ -200,7 +200,7 @@ bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, const 
 bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const void **_value, void **iter)
 {
     SDL_HashItem *item = (SDL_HashItem *) *iter;
-    Uint32 idx = 0;
+    uint32_t idx = 0;
 
     if (!table) {
         return false;
@@ -234,7 +234,7 @@ bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const v
 bool SDL_HashTableEmpty(SDL_HashTable *table)
 {
     if (table) {
-        Uint32 i;
+        uint32_t i;
 
         for (i = 0; i < table->table_len; i++) {
             SDL_HashItem *item = table->table[i];
@@ -250,7 +250,7 @@ void SDL_EmptyHashTable(SDL_HashTable *table)
 {
     if (table) {
         void *data = table->data;
-        Uint32 i;
+        uint32_t i;
 
         for (i = 0; i < table->table_len; i++) {
             SDL_HashItem *item = table->table[i];
@@ -277,16 +277,16 @@ void SDL_DestroyHashTable(SDL_HashTable *table)
 }
 
 // this is djb's xor hashing function.
-static SDL_INLINE Uint32 hash_string_djbxor(const char *str, size_t len)
+static SDL_INLINE uint32_t hash_string_djbxor(const char *str, size_t len)
 {
-    Uint32 hash = 5381;
+    uint32_t hash = 5381;
     while (len--) {
         hash = ((hash << 5) + hash) ^ *(str++);
     }
     return hash;
 }
 
-Uint32 SDL_HashString(const void *key, void *data)
+uint32_t SDL_HashString(const void *key, void *data)
 {
     const char *str = (const char *)key;
     return hash_string_djbxor(str, SDL_strlen(str));
@@ -308,11 +308,11 @@ bool SDL_KeyMatchString(const void *a, const void *b, void *data)
 }
 
 // We assume we can fit the ID in the key directly
-SDL_COMPILE_TIME_ASSERT(SDL_HashID_KeySize, sizeof(Uint32) <= sizeof(const void *));
+SDL_COMPILE_TIME_ASSERT(SDL_HashID_KeySize, sizeof(uint32_t) <= sizeof(const void *));
 
-Uint32 SDL_HashID(const void *key, void *unused)
+uint32_t SDL_HashID(const void *key, void *unused)
 {
-    return (Uint32)(uintptr_t)key;
+    return (uint32_t)(uintptr_t)key;
 }
 
 bool SDL_KeyMatchID(const void *a, const void *b, void *unused)

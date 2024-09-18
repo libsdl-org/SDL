@@ -143,7 +143,7 @@ static void VITA_JoystickDetect(void)
 {
 }
 
-static bool VITA_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool VITA_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers
     return false;
@@ -232,7 +232,7 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     static unsigned char old_lt[] = { 0, 0, 0, 0 };
     static unsigned char old_rt[] = { 0, 0, 0, 0 };
     SceCtrlData *pad = NULL;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     int index = (int)SDL_GetJoystickID(joystick) - 1;
 
@@ -324,7 +324,7 @@ static SDL_GUID VITA_JoystickGetDeviceGUID(int device_index)
     return SDL_CreateJoystickGUIDForName(name);
 }
 
-static bool VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool VITA_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     int index = (int)SDL_GetJoystickID(joystick) - 1;
     SceCtrlActuator act;
@@ -341,12 +341,12 @@ static bool VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rum
     return true;
 }
 
-static bool VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
+static bool VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left, uint16_t right)
 {
     return SDL_Unsupported();
 }
 
-static bool VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool VITA_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     int index = (int)SDL_GetJoystickID(joystick) - 1;
     if (index < 0 || index > 3) {

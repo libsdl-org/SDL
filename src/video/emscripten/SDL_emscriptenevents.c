@@ -294,7 +294,7 @@ static EM_BOOL Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEv
 static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    Uint8 sdl_button;
+    uint8_t sdl_button;
     bool sdl_button_state;
     double css_w, css_h;
     bool prevent_default = false; // needed for iframe implementation in Chrome-based browsers.

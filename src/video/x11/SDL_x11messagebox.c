@@ -56,9 +56,9 @@ static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = 
     { 205, 202, 53 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
 };
 
-#define SDL_MAKE_RGB(_r, _g, _b) (((Uint32)(_r) << 16) | \
-                                  ((Uint32)(_g) << 8) |  \
-                                  ((Uint32)(_b)))
+#define SDL_MAKE_RGB(_r, _g, _b) (((uint32_t)(_r) << 16) | \
+                                  ((uint32_t)(_g) << 8) |  \
+                                  ((uint32_t)(_b)))
 
 typedef struct SDL_MessageBoxButtonDataX11
 {
@@ -110,7 +110,7 @@ typedef struct SDL_MessageBoxDataX11
     const SDL_MessageBoxButtonData *buttondata;
     SDL_MessageBoxButtonDataX11 buttonpos[MAX_BUTTONS];
 
-    Uint32 color[SDL_MESSAGEBOX_COLOR_COUNT];
+    uint32_t color[SDL_MESSAGEBOX_COLOR_COUNT];
 
     const SDL_MessageBoxData *messageboxdata;
 } SDL_MessageBoxDataX11;
@@ -696,7 +696,7 @@ static bool X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
 
         case KeyRelease:
         {
-            Uint32 mask = 0;
+            uint32_t mask = 0;
             KeySym key = X11_XLookupKeysym(&e.xkey, 0);
 
             // If this is a key release for something we didn't get the key down for, then bail.

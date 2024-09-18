@@ -30,7 +30,7 @@ freely.
 
 static SDLTest_CommonState *state;
 static int num_menus;
-static Uint64 tooltip_timer;
+static uint64_t tooltip_timer;
 static int done;
 static const SDL_Color colors[] = {
     { 0x7F, 0x00, 0x00, 0xFF },

@@ -50,7 +50,7 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         "tr_TR",
     };
 
-    Sint32 language = SCE_SYSTEM_PARAM_LANG_ENGLISH_US;
+    int32_t language = SCE_SYSTEM_PARAM_LANG_ENGLISH_US;
     SceAppUtilInitParam initParam;
     SceAppUtilBootParam bootParam;
     SDL_zero(initParam);

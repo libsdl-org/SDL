@@ -72,7 +72,7 @@ bool SDL_BlitTriangle(SDL_Surface *src, const SDL_Point srcpoints[3], SDL_Surfac
     return SDL_SW_BlitTriangle(src, dst, points);
 }
 
-bool SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], Uint32 color)
+bool SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], uint32_t color)
 {
     int i;
     SDL_Point points_tmp[3];
@@ -88,9 +88,9 @@ bool SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], Uint32 color)
 #endif
 
 // cross product AB x AC
-static Sint64 cross_product(const SDL_Point *a, const SDL_Point *b, int c_x, int c_y)
+static int64_t cross_product(const SDL_Point *a, const SDL_Point *b, int c_x, int c_y)
 {
-    return ((Sint64)(b->x - a->x)) * ((Sint64)(c_y - a->y)) - ((Sint64)(b->y - a->y)) * ((Sint64)(c_x - a->x));
+    return ((int64_t)(b->x - a->x)) * ((int64_t)(c_y - a->y)) - ((int64_t)(b->y - a->y)) * ((int64_t)(c_x - a->x));
 }
 
 // check for top left rules
@@ -172,18 +172,18 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
         int x, y;                                                                  \
         for (y = 0; y < dstrect.h; y++) {                                          \
             /* y start */                                                          \
-            Sint64 w0 = w0_row;                                                    \
-            Sint64 w1 = w1_row;                                                    \
-            Sint64 w2 = w2_row;                                                    \
+            int64_t w0 = w0_row;                                                    \
+            int64_t w1 = w1_row;                                                    \
+            int64_t w2 = w2_row;                                                    \
             for (x = 0; x < dstrect.w; x++) {                                      \
                 /* In triangle */                                                  \
                 if (w0 + bias_w0 >= 0 && w1 + bias_w1 >= 0 && w2 + bias_w2 >= 0) { \
-                    Uint8 *dptr = (Uint8 *)dst_ptr + x * dstbpp;
+                    uint8_t *dptr = (uint8_t *)dst_ptr + x * dstbpp;
 
 // Use 64 bits precision to prevent overflow when interpolating color / texture with wide triangles
 #define TRIANGLE_GET_TEXTCOORD                                                          \
-    int srcx = (int)(((Sint64)w0 * s2s0_x + (Sint64)w1 * s2s1_x + s2_x_area.x) / area); \
-    int srcy = (int)(((Sint64)w0 * s2s0_y + (Sint64)w1 * s2s1_y + s2_x_area.y) / area); \
+    int srcx = (int)(((int64_t)w0 * s2s0_x + (int64_t)w1 * s2s1_x + s2_x_area.x) / area); \
+    int srcy = (int)(((int64_t)w0 * s2s0_y + (int64_t)w1 * s2s1_y + s2_x_area.y) / area); \
     if (texture_address_mode == SDL_TEXTURE_ADDRESS_WRAP) {                             \
         srcx %= src_surface->w;                                                         \
         if (srcx < 0) {                                                                 \
@@ -196,17 +196,17 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
     }
 
 #define TRIANGLE_GET_MAPPED_COLOR                                                      \
-    Uint8 r = (Uint8)(((Sint64)w0 * c0.r + (Sint64)w1 * c1.r + (Sint64)w2 * c2.r) / area); \
-    Uint8 g = (Uint8)(((Sint64)w0 * c0.g + (Sint64)w1 * c1.g + (Sint64)w2 * c2.g) / area); \
-    Uint8 b = (Uint8)(((Sint64)w0 * c0.b + (Sint64)w1 * c1.b + (Sint64)w2 * c2.b) / area); \
-    Uint8 a = (Uint8)(((Sint64)w0 * c0.a + (Sint64)w1 * c1.a + (Sint64)w2 * c2.a) / area); \
-    Uint32 color = SDL_MapRGBA(format, palette, r, g, b, a);
+    uint8_t r = (uint8_t)(((int64_t)w0 * c0.r + (int64_t)w1 * c1.r + (int64_t)w2 * c2.r) / area); \
+    uint8_t g = (uint8_t)(((int64_t)w0 * c0.g + (int64_t)w1 * c1.g + (int64_t)w2 * c2.g) / area); \
+    uint8_t b = (uint8_t)(((int64_t)w0 * c0.b + (int64_t)w1 * c1.b + (int64_t)w2 * c2.b) / area); \
+    uint8_t a = (uint8_t)(((int64_t)w0 * c0.a + (int64_t)w1 * c1.a + (int64_t)w2 * c2.a) / area); \
+    uint32_t color = SDL_MapRGBA(format, palette, r, g, b, a);
 
 #define TRIANGLE_GET_COLOR                                                             \
-    int r = (int)(((Sint64)w0 * c0.r + (Sint64)w1 * c1.r + (Sint64)w2 * c2.r) / area); \
-    int g = (int)(((Sint64)w0 * c0.g + (Sint64)w1 * c1.g + (Sint64)w2 * c2.g) / area); \
-    int b = (int)(((Sint64)w0 * c0.b + (Sint64)w1 * c1.b + (Sint64)w2 * c2.b) / area); \
-    int a = (int)(((Sint64)w0 * c0.a + (Sint64)w1 * c1.a + (Sint64)w2 * c2.a) / area);
+    int r = (int)(((int64_t)w0 * c0.r + (int64_t)w1 * c1.r + (int64_t)w2 * c2.r) / area); \
+    int g = (int)(((int64_t)w0 * c0.g + (int64_t)w1 * c1.g + (int64_t)w2 * c2.g) / area); \
+    int b = (int)(((int64_t)w0 * c0.b + (int64_t)w1 * c1.b + (int64_t)w2 * c2.b) / area); \
+    int a = (int)(((int64_t)w0 * c0.a + (int64_t)w1 * c1.a + (int64_t)w2 * c2.a) / area);
 
 #define TRIANGLE_END_LOOP \
     }                     \
@@ -231,14 +231,14 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
     SDL_Rect dstrect;
 
     int dstbpp;
-    Uint8 *dst_ptr;
+    uint8_t *dst_ptr;
     int dst_pitch;
 
-    Sint64 area;
+    int64_t area;
     int is_clockwise;
 
     int d2d1_y, d1d2_x, d0d2_y, d2d0_x, d1d0_y, d0d1_x;
-    Sint64 w0_row, w1_row, w2_row;
+    int64_t w0_row, w1_row, w2_row;
     int bias_w0, bias_w1, bias_w2;
 
     bool is_uniform;
@@ -303,20 +303,20 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
         }
 
         if (blend == SDL_BLENDMODE_MOD) {
-            Uint32 c = SDL_MapSurfaceRGBA(tmp, 255, 255, 255, 255);
+            uint32_t c = SDL_MapSurfaceRGBA(tmp, 255, 255, 255, 255);
             SDL_FillSurfaceRect(tmp, NULL, c);
         }
 
         SDL_SetSurfaceBlendMode(tmp, blend);
 
         dstbpp = tmp->internal->format->bytes_per_pixel;
-        dst_ptr = (Uint8 *)tmp->pixels;
+        dst_ptr = (uint8_t *)tmp->pixels;
         dst_pitch = tmp->pitch;
 
     } else {
         // Write directly to destination surface
         dstbpp = dst->internal->format->bytes_per_pixel;
-        dst_ptr = (Uint8 *)dst->pixels + dstrect.x * dstbpp + dstrect.y * dst->pitch;
+        dst_ptr = (uint8_t *)dst->pixels + dstrect.x * dstbpp + dstrect.y * dst->pitch;
         dst_pitch = dst->pitch;
     }
 
@@ -367,7 +367,7 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
     bias_w2 = (is_top_left(d0, d1, is_clockwise) ? 0 : -1);
 
     if (is_uniform) {
-        Uint32 color;
+        uint32_t color;
         if (tmp) {
             color = SDL_MapSurfaceRGBA(tmp, c0.r, c0.g, c0.b, c0.a);
         } else {
@@ -377,13 +377,13 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
         if (dstbpp == 4) {
             TRIANGLE_BEGIN_LOOP
             {
-                *(Uint32 *)dptr = color;
+                *(uint32_t *)dptr = color;
             }
             TRIANGLE_END_LOOP
         } else if (dstbpp == 3) {
             TRIANGLE_BEGIN_LOOP
             {
-                Uint8 *s = (Uint8 *)&color;
+                uint8_t *s = (uint8_t *)&color;
                 dptr[0] = s[0];
                 dptr[1] = s[1];
                 dptr[2] = s[2];
@@ -392,13 +392,13 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
         } else if (dstbpp == 2) {
             TRIANGLE_BEGIN_LOOP
             {
-                *(Uint16 *)dptr = (Uint16)color;
+                *(uint16_t *)dptr = (uint16_t)color;
             }
             TRIANGLE_END_LOOP
         } else if (dstbpp == 1) {
             TRIANGLE_BEGIN_LOOP
             {
-                *dptr = (Uint8)color;
+                *dptr = (uint8_t)color;
             }
             TRIANGLE_END_LOOP
         }
@@ -416,14 +416,14 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
             TRIANGLE_BEGIN_LOOP
             {
                 TRIANGLE_GET_MAPPED_COLOR
-                *(Uint32 *)dptr = color;
+                *(uint32_t *)dptr = color;
             }
             TRIANGLE_END_LOOP
         } else if (dstbpp == 3) {
             TRIANGLE_BEGIN_LOOP
             {
                 TRIANGLE_GET_MAPPED_COLOR
-                Uint8 *s = (Uint8 *)&color;
+                uint8_t *s = (uint8_t *)&color;
                 dptr[0] = s[0];
                 dptr[1] = s[1];
                 dptr[2] = s[2];
@@ -433,14 +433,14 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
             TRIANGLE_BEGIN_LOOP
             {
                 TRIANGLE_GET_MAPPED_COLOR
-                *(Uint16 *)dptr = (Uint16)color;
+                *(uint16_t *)dptr = (uint16_t)color;
             }
             TRIANGLE_END_LOOP
         } else if (dstbpp == 1) {
             TRIANGLE_BEGIN_LOOP
             {
                 TRIANGLE_GET_MAPPED_COLOR
-                *dptr = (Uint8)color;
+                *dptr = (uint8_t)color;
             }
             TRIANGLE_END_LOOP
         }
@@ -479,19 +479,19 @@ bool SDL_SW_BlitTriangle(
     SDL_Point s2_x_area;
 
     int dstbpp;
-    Uint8 *dst_ptr;
+    uint8_t *dst_ptr;
     int dst_pitch;
 
     const int *src_ptr;
     int src_pitch;
 
-    Sint64 area, tmp64;
+    int64_t area, tmp64;
     int is_clockwise;
 
     int d2d1_y, d1d2_x, d0d2_y, d2d0_x, d1d0_y, d0d1_x;
     int s2s0_x, s2s1_x, s2s0_y, s2s1_y;
 
-    Sint64 w0_row, w1_row, w2_row;
+    int64_t w0_row, w1_row, w2_row;
     int bias_w0, bias_w1, bias_w2;
 
     bool is_uniform;
@@ -585,7 +585,7 @@ bool SDL_SW_BlitTriangle(
 
     // Set destination pointer
     dstbpp = dst->internal->format->bytes_per_pixel;
-    dst_ptr = (Uint8 *)dst->pixels + dstrect.x * dstbpp + dstrect.y * dst->pitch;
+    dst_ptr = (uint8_t *)dst->pixels + dstrect.x * dstbpp + dstrect.y * dst->pitch;
     dst_pitch = dst->pitch;
 
     // Set source pointer
@@ -697,7 +697,7 @@ bool SDL_SW_BlitTriangle(
 
         // src
         tmp_info.src_surface = src_surface;
-        tmp_info.src = (Uint8 *)src_ptr;
+        tmp_info.src = (uint8_t *)src_ptr;
         tmp_info.src_pitch = src_pitch;
 
         // dst
@@ -725,15 +725,15 @@ bool SDL_SW_BlitTriangle(
         TRIANGLE_BEGIN_LOOP
         {
             TRIANGLE_GET_TEXTCOORD
-            Uint32 *sptr = (Uint32 *)((Uint8 *)src_ptr + srcy * src_pitch);
-            *(Uint32 *)dptr = sptr[srcx];
+            uint32_t *sptr = (uint32_t *)((uint8_t *)src_ptr + srcy * src_pitch);
+            *(uint32_t *)dptr = sptr[srcx];
         }
         TRIANGLE_END_LOOP
     } else if (dstbpp == 3) {
         TRIANGLE_BEGIN_LOOP
         {
             TRIANGLE_GET_TEXTCOORD
-            Uint8 *sptr = (Uint8 *)src_ptr + srcy * src_pitch;
+            uint8_t *sptr = (uint8_t *)src_ptr + srcy * src_pitch;
             dptr[0] = sptr[3 * srcx];
             dptr[1] = sptr[3 * srcx + 1];
             dptr[2] = sptr[3 * srcx + 2];
@@ -743,15 +743,15 @@ bool SDL_SW_BlitTriangle(
         TRIANGLE_BEGIN_LOOP
         {
             TRIANGLE_GET_TEXTCOORD
-            Uint16 *sptr = (Uint16 *)((Uint8 *)src_ptr + srcy * src_pitch);
-            *(Uint16 *)dptr = sptr[srcx];
+            uint16_t *sptr = (uint16_t *)((uint8_t *)src_ptr + srcy * src_pitch);
+            *(uint16_t *)dptr = sptr[srcx];
         }
         TRIANGLE_END_LOOP
     } else if (dstbpp == 1) {
         TRIANGLE_BEGIN_LOOP
         {
             TRIANGLE_GET_TEXTCOORD
-            Uint8 *sptr = (Uint8 *)src_ptr + srcy * src_pitch;
+            uint8_t *sptr = (uint8_t *)src_ptr + srcy * src_pitch;
             *dptr = sptr[srcx];
         }
         TRIANGLE_END_LOOP
@@ -792,24 +792,24 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
 {
     SDL_Surface *src_surface = info->src_surface;
     const int flags = info->flags;
-    Uint32 modulateR = info->r;
-    Uint32 modulateG = info->g;
-    Uint32 modulateB = info->b;
-    Uint32 modulateA = info->a;
-    Uint32 srcpixel;
-    Uint32 srcR, srcG, srcB, srcA;
-    Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    uint32_t modulateR = info->r;
+    uint32_t modulateG = info->g;
+    uint32_t modulateB = info->b;
+    uint32_t modulateA = info->a;
+    uint32_t srcpixel;
+    uint32_t srcR, srcG, srcB, srcA;
+    uint32_t dstpixel;
+    uint32_t dstR, dstG, dstB, dstA;
     const SDL_PixelFormatDetails *src_fmt = info->src_fmt;
     const SDL_PixelFormatDetails *dst_fmt = info->dst_fmt;
     int srcbpp = src_fmt->bytes_per_pixel;
     int dstbpp = dst_fmt->bytes_per_pixel;
     int srcfmt_val;
     int dstfmt_val;
-    Uint32 rgbmask = ~src_fmt->Amask;
-    Uint32 ckey = info->colorkey & rgbmask;
+    uint32_t rgbmask = ~src_fmt->Amask;
+    uint32_t ckey = info->colorkey & rgbmask;
 
-    Uint8 *dst_ptr = info->dst;
+    uint8_t *dst_ptr = info->dst;
     int dst_pitch = info->dst_pitch;
 
     srcfmt_val = detect_format(src_fmt);
@@ -817,8 +817,8 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
 
     TRIANGLE_BEGIN_LOOP
     {
-        Uint8 *src;
-        Uint8 *dst = dptr;
+        uint8_t *src;
+        uint8_t *dst = dptr;
         TRIANGLE_GET_TEXTCOORD
         src = (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
         if (FORMAT_HAS_ALPHA(srcfmt_val)) {
@@ -828,7 +828,7 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
             srcA = 0xFF;
         } else {
             // SDL_PIXELFORMAT_ARGB2101010
-            srcpixel = *((Uint32 *)(src));
+            srcpixel = *((uint32_t *)(src));
             RGBA_FROM_ARGB2101010(srcpixel, srcR, srcG, srcB, srcA);
         }
         if (flags & SDL_COPY_COLORKEY) {
@@ -849,7 +849,7 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                 dstA = 0xFF;
             } else {
                 // SDL_PIXELFORMAT_ARGB2101010
-                dstpixel = *((Uint32 *) (dst));
+                dstpixel = *((uint32_t *) (dst));
                 RGBA_FROM_ARGB2101010(dstpixel, dstR, dstG, dstB, dstA);
             }
         } else {
@@ -934,9 +934,9 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
             ASSEMBLE_RGB(dst, dstbpp, dst_fmt, dstR, dstG, dstB);
         } else {
             // SDL_PIXELFORMAT_ARGB2101010
-            Uint32 pixel;
+            uint32_t pixel;
             ARGB2101010_FROM_RGBA(pixel, dstR, dstG, dstB, dstA);
-            *(Uint32 *)dst = pixel;
+            *(uint32_t *)dst = pixel;
         }
     }
     TRIANGLE_END_LOOP

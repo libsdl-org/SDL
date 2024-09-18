@@ -41,7 +41,7 @@ enum
 typedef struct
 {
     bool rumble_supported;
-    Uint8 last_state[USB_PACKET_LENGTH];
+    uint8_t last_state[USB_PACKET_LENGTH];
 } SDL_DriverStadia_Context;
 
 static void HIDAPI_DriverStadia_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -59,7 +59,7 @@ static bool HIDAPI_DriverStadia_IsEnabled(void)
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STADIA, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static bool HIDAPI_DriverStadia_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static bool HIDAPI_DriverStadia_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, uint16_t vendor_id, uint16_t product_id, uint16_t version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return SDL_IsJoystickGoogleStadiaController(vendor_id, product_id);
 }
@@ -76,7 +76,7 @@ static bool HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
 
     // Check whether rumble is supported
     {
-        Uint8 rumble_packet[] = { 0x05, 0x00, 0x00, 0x00, 0x00 };
+        uint8_t rumble_packet[] = { 0x05, 0x00, 0x00, 0x00, 0x00 };
 
         if (SDL_hid_write(device->dev, rumble_packet, sizeof(rumble_packet)) >= 0) {
             ctx->rumble_supported = true;
@@ -113,12 +113,12 @@ static bool HIDAPI_DriverStadia_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     return true;
 }
 
-static bool HIDAPI_DriverStadia_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_DriverStadia_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     SDL_DriverStadia_Context *ctx = (SDL_DriverStadia_Context *)device->context;
 
     if (ctx->rumble_supported) {
-        Uint8 rumble_packet[] = { 0x05, 0x00, 0x00, 0x00, 0x00 };
+        uint8_t rumble_packet[] = { 0x05, 0x00, 0x00, 0x00, 0x00 };
 
 
         rumble_packet[1] = (low_frequency_rumble & 0xFF);
@@ -135,15 +135,15 @@ static bool HIDAPI_DriverStadia_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     }
 }
 
-static bool HIDAPI_DriverStadia_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_DriverStadia_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32 HIDAPI_DriverStadia_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static uint32_t HIDAPI_DriverStadia_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverStadia_Context *ctx = (SDL_DriverStadia_Context *)device->context;
-    Uint32 caps = 0;
+    uint32_t caps = 0;
 
     if (ctx->rumble_supported) {
         caps |= SDL_JOYSTICK_CAP_RUMBLE;
@@ -151,7 +151,7 @@ static Uint32 HIDAPI_DriverStadia_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     return caps;
 }
 
-static bool HIDAPI_DriverStadia_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_DriverStadia_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }
@@ -166,10 +166,10 @@ static bool HIDAPI_DriverStadia_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *dev
     return SDL_Unsupported();
 }
 
-static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverStadia_Context *ctx, Uint8 *data, int size)
+static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverStadia_Context *ctx, uint8_t *data, int size)
 {
-    Sint16 axis;
-    Uint64 timestamp = SDL_GetTicksNS();
+    int16_t axis;
+    uint64_t timestamp = SDL_GetTicksNS();
 
     // The format is the same but the original FW will send 10 bytes and January '21 FW update will send 11
     if (size < 10 || data[0] != 0x03) {
@@ -178,7 +178,7 @@ static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 
     if (ctx->last_state[1] != data[1]) {
-        Uint8 hat;
+        uint8_t hat;
 
         switch (data[1]) {
         case 0:
@@ -232,7 +232,7 @@ static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 
 #define READ_STICK_AXIS(offset) \
-    (data[offset] == 0x80 ? 0 : (Sint16)HIDAPI_RemapVal((float)((int)data[offset] - 0x80), 0x01 - 0x80, 0xff - 0x80, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    (data[offset] == 0x80 ? 0 : (int16_t)HIDAPI_RemapVal((float)((int)data[offset] - 0x80), 0x01 - 0x80, 0xff - 0x80, SDL_MIN_SINT16, SDL_MAX_SINT16))
     {
         axis = READ_STICK_AXIS(4);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
@@ -246,7 +246,7 @@ static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
 #undef READ_STICK_AXIS
 
 #define READ_TRIGGER_AXIS(offset) \
-    (Sint16)(((int)data[offset] * 257) - 32768)
+    (int16_t)(((int)data[offset] * 257) - 32768)
     {
         axis = READ_TRIGGER_AXIS(8);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
@@ -262,7 +262,7 @@ static bool HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverStadia_Context *ctx = (SDL_DriverStadia_Context *)device->context;
     SDL_Joystick *joystick = NULL;
-    Uint8 data[USB_PACKET_LENGTH];
+    uint8_t data[USB_PACKET_LENGTH];
     int size = 0;
 
     if (device->num_joysticks > 0) {

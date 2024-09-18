@@ -58,9 +58,9 @@ static const char *rtkit_dbus_path;
 static const char *rtkit_dbus_interface;
 
 static pthread_once_t rtkit_initialize_once = PTHREAD_ONCE_INIT;
-static Sint32 rtkit_min_nice_level = -20;
-static Sint32 rtkit_max_realtime_priority = 99;
-static Sint64 rtkit_max_rttime_usec = 200000;
+static int32_t rtkit_min_nice_level = -20;
+static int32_t rtkit_max_realtime_priority = 99;
+static int64_t rtkit_max_rttime_usec = 200000;
 
 /*
  * Checking that the RTTimeUSecMax property exists and is an int64 confirms that:
@@ -69,7 +69,7 @@ static Sint64 rtkit_max_rttime_usec = 200000;
  */
 static bool realtime_portal_supported(DBusConnection *conn)
 {
-    Sint64 res;
+    int64_t res;
     return SDL_DBus_QueryPropertyOnConnection(conn, XDG_PORTAL_DBUS_NODE, XDG_PORTAL_DBUS_PATH, XDG_PORTAL_DBUS_INTERFACE,
                                               "RTTimeUSecMax", DBUS_TYPE_INT64, &res);
 }
@@ -191,9 +191,9 @@ static bool rtkit_initialize_realtime_thread(void)
 static bool rtkit_setpriority_nice(pid_t thread, int nice_level)
 {
     DBusConnection *dbus_conn;
-    Uint64 pid = (Uint64)getpid();
-    Uint64 tid = (Uint64)thread;
-    Sint32 nice = (Sint32)nice_level;
+    uint64_t pid = (uint64_t)getpid();
+    uint64_t tid = (uint64_t)thread;
+    int32_t nice = (int32_t)nice_level;
 
     pthread_once(&rtkit_initialize_once, rtkit_initialize);
     dbus_conn = get_rtkit_dbus_connection();
@@ -214,9 +214,9 @@ static bool rtkit_setpriority_nice(pid_t thread, int nice_level)
 static bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 {
     DBusConnection *dbus_conn;
-    Uint64 pid = (Uint64)getpid();
-    Uint64 tid = (Uint64)thread;
-    Uint32 priority = (Uint32)rt_priority;
+    uint64_t pid = (uint64_t)getpid();
+    uint64_t tid = (uint64_t)thread;
+    uint32_t priority = (uint32_t)rt_priority;
 
     pthread_once(&rtkit_initialize_once, rtkit_initialize);
     dbus_conn = get_rtkit_dbus_connection();
@@ -249,7 +249,7 @@ static bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 #endif // threads
 
 // this is a public symbol, so it has to exist even if threads are disabled.
-bool SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
+bool SDL_SetLinuxThreadPriority(int64_t threadID, int priority)
 {
 #ifdef SDL_THREADS_DISABLED
     return SDL_Unsupported();
@@ -281,7 +281,7 @@ bool SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
 }
 
 // this is a public symbol, so it has to exist even if threads are disabled.
-bool SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
+bool SDL_SetLinuxThreadPriorityAndPolicy(int64_t threadID, int sdlPriority, int schedPolicy)
 {
 #ifdef SDL_THREADS_DISABLED
     return SDL_Unsupported();

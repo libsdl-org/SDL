@@ -293,7 +293,7 @@ static unsigned short const keysym_to_unicode_20a0_20ac[] = {
 };
 
 unsigned int
-SDL_KeySymToUcs4(Uint32 keysym)
+SDL_KeySymToUcs4(uint32_t keysym)
 {
     /* 'Unicode keysym' */
     if ((keysym & 0xff000000) == 0x01000000)

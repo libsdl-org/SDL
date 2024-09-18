@@ -97,9 +97,9 @@ static const SDL_UDEV_Symbols *usyms = NULL;
 static struct
 {
     bool m_bInitialized;
-    Uint32 m_unDeviceChangeCounter;
+    uint32_t m_unDeviceChangeCounter;
     bool m_bCanGetNotifications;
-    Uint64 m_unLastDetect;
+    uint64_t m_unLastDetect;
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
     SDL_ThreadID m_nThreadID;
@@ -369,8 +369,8 @@ static void HIDAPI_UpdateDiscovery(void)
     }
 
     if (!SDL_HIDAPI_discovery.m_bCanGetNotifications) {
-        const Uint32 SDL_HIDAPI_DETECT_INTERVAL_MS = 3000; // Update every 3 seconds
-        Uint64 now = SDL_GetTicks();
+        const uint32_t SDL_HIDAPI_DETECT_INTERVAL_MS = 3000; // Update every 3 seconds
+        uint64_t now = SDL_GetTicks();
         if (!SDL_HIDAPI_discovery.m_unLastDetect || now >= (SDL_HIDAPI_discovery.m_unLastDetect + SDL_HIDAPI_DETECT_INTERVAL_MS)) {
             ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
             SDL_HIDAPI_discovery.m_unLastDetect = now;
@@ -885,13 +885,13 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
  * quirk that requires direct access to the hardware.
  */
 static const struct {
-    Uint16 vendor;
-    Uint16 product;
+    uint16_t vendor;
+    uint16_t product;
 } SDL_libusb_whitelist[] = {
     { 0x057e, 0x0337 } // Nintendo WUP-028, Wii U/Switch GameCube Adapter
 };
 
-static bool IsInWhitelist(Uint16 vendor, Uint16 product)
+static bool IsInWhitelist(uint16_t vendor, uint16_t product)
 {
     int i;
     for (i = 0; i < SDL_arraysize(SDL_libusb_whitelist); i += 1) {
@@ -1091,7 +1091,7 @@ static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, cons
     }
 }
 
-bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage)
+bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, uint16_t vendor_id, uint16_t product_id, uint16_t usage_page, uint16_t usage)
 {
     // See if there are any devices we should skip in enumeration
     if (SDL_hidapi_only_controllers && usage_page) {
@@ -1298,9 +1298,9 @@ int SDL_hid_exit(void)
     return result;
 }
 
-Uint32 SDL_hid_device_change_count(void)
+uint32_t SDL_hid_device_change_count(void)
 {
-    Uint32 counter = 0;
+    uint32_t counter = 0;
 
 #ifndef SDL_HIDAPI_DISABLED
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() < 0) {

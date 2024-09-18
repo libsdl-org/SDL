@@ -31,12 +31,12 @@
 //  each EM_ASM section is ugly.
 /* *INDENT-OFF* */ // clang-format off
 
-static Uint8 *EMSCRIPTENAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *EMSCRIPTENAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     return device->hidden->mixbuf;
 }
 
-static bool EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buffer_size)
 {
     const int framelen = SDL_AUDIO_FRAMESIZE(device->spec);
     MAIN_THREAD_EM_ASM({
@@ -187,7 +187,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_UpdatedAudioDeviceFormat(device);
 
     if (!device->recording) {
-        device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
+        device->hidden->mixbuf = (uint8_t *)SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
             return false;
         }

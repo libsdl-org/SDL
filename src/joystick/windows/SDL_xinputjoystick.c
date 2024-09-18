@@ -56,7 +56,7 @@ bool SDL_XINPUT_JoystickInit(void)
     return true;
 }
 
-static const char *GetXInputName(const Uint8 userid, BYTE SubType)
+static const char *GetXInputName(const uint8_t userid, BYTE SubType)
 {
     static char name[32];
 
@@ -94,7 +94,7 @@ static const char *GetXInputName(const Uint8 userid, BYTE SubType)
     return name;
 }
 
-static bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
+static bool GetXInputDeviceInfo(uint8_t userid, uint16_t *pVID, uint16_t *pPID, uint16_t *pVersion)
 {
     SDL_XINPUT_CAPABILITIES_EX capabilities;
 
@@ -127,7 +127,7 @@ static bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16
     return true;
 }
 
-int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid)
+int SDL_XINPUT_GetSteamVirtualGamepadSlot(uint8_t userid)
 {
     SDL_XINPUT_CAPABILITIES_EX capabilities;
 
@@ -140,12 +140,12 @@ int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid)
     return -1;
 }
 
-static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
+static void AddXInputDevice(uint8_t userid, BYTE SubType, JoyStick_DeviceData **pContext)
 {
     const char *name = NULL;
-    Uint16 vendor = 0;
-    Uint16 product = 0;
-    Uint16 version = 0;
+    uint16_t vendor = 0;
+    uint16_t product = 0;
+    uint16_t version = 0;
     JoyStick_DeviceData *pPrevJoystick = NULL;
     JoyStick_DeviceData *pNewJoystick = *pContext;
 
@@ -226,7 +226,7 @@ void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 
     // iterate in reverse, so these are in the final list in ascending numeric order.
     for (iuserid = XUSER_MAX_COUNT - 1; iuserid >= 0; iuserid--) {
-        const Uint8 userid = (Uint8)iuserid;
+        const uint8_t userid = (uint8_t)iuserid;
         XINPUT_CAPABILITIES capabilities;
         if (XINPUTGETCAPABILITIES(userid, XINPUT_FLAG_GAMEPAD, &capabilities) == ERROR_SUCCESS) {
             AddXInputDevice(userid, capabilities.SubType, pContext);
@@ -234,7 +234,7 @@ void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
     }
 }
 
-bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
+bool SDL_XINPUT_JoystickPresent(uint16_t vendor, uint16_t product, uint16_t version)
 {
     int iuserid;
 
@@ -244,10 +244,10 @@ bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
 
     // iterate in reverse, so these are in the final list in ascending numeric order.
     for (iuserid = 0; iuserid < XUSER_MAX_COUNT; ++iuserid) {
-        const Uint8 userid = (Uint8)iuserid;
-        Uint16 slot_vendor;
-        Uint16 slot_product;
-        Uint16 slot_version;
+        const uint8_t userid = (uint8_t)iuserid;
+        uint16_t slot_vendor;
+        uint16_t slot_product;
+        uint16_t slot_version;
         if (GetXInputDeviceInfo(userid, &slot_vendor, &slot_product, &slot_version)) {
             if (vendor == slot_vendor && product == slot_product && version == slot_version) {
                 return true;
@@ -259,7 +259,7 @@ bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
 
 bool SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
 {
-    const Uint8 userId = joystickdevice->XInputUserId;
+    const uint8_t userId = joystickdevice->XInputUserId;
     XINPUT_CAPABILITIES capabilities;
     XINPUT_VIBRATION state;
 
@@ -332,9 +332,9 @@ static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE *pXIn
         XINPUT_GAMEPAD_GUIDE
     };
     WORD wButtons = pXInputState->Gamepad.wButtons;
-    Uint8 button;
-    Uint8 hat = SDL_HAT_CENTERED;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint8_t button;
+    uint8_t hat = SDL_HAT_CENTERED;
+    uint64_t timestamp = SDL_GetTicksNS();
 
     SDL_SendJoystickAxis(timestamp, joystick, 0, pXInputState->Gamepad.sThumbLX);
     SDL_SendJoystickAxis(timestamp, joystick, 1, ~pXInputState->Gamepad.sThumbLY);
@@ -343,7 +343,7 @@ static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE *pXIn
     SDL_SendJoystickAxis(timestamp, joystick, 4, ~pXInputState->Gamepad.sThumbRY);
     SDL_SendJoystickAxis(timestamp, joystick, 5, ((int)pXInputState->Gamepad.bRightTrigger * 257) - 32768);
 
-    for (button = 0; button < (Uint8)SDL_arraysize(s_XInputButtons); ++button) {
+    for (button = 0; button < (uint8_t)SDL_arraysize(s_XInputButtons); ++button) {
         bool down = ((wButtons & s_XInputButtons[button]) != 0);
         SDL_SendJoystickButton(timestamp, joystick, button, down);
     }
@@ -365,7 +365,7 @@ static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE *pXIn
     UpdateXInputJoystickBatteryInformation(joystick, pBatteryInformation);
 }
 
-bool SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+bool SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     XINPUT_VIBRATION XVibration;
 
@@ -448,7 +448,7 @@ void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
 }
 
-bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
+bool SDL_XINPUT_JoystickPresent(uint16_t vendor, uint16_t product, uint16_t version)
 {
     return false;
 }
@@ -458,7 +458,7 @@ bool SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joysti
     return SDL_Unsupported();
 }
 
-bool SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+bool SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     return SDL_Unsupported();
 }

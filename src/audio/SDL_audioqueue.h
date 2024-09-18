@@ -48,11 +48,11 @@ extern void SDL_PopAudioQueueHead(SDL_AudioQueue *queue);
 
 // Write data to the end of queue
 // REQUIRES: If the spec has changed, the last track must have been flushed
-extern bool SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const int *chmap, const Uint8 *data, size_t len);
+extern bool SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const int *chmap, const uint8_t *data, size_t len);
 
 // Create a track where the input data is owned by the caller
 extern SDL_AudioTrack *SDL_CreateAudioTrack(SDL_AudioQueue *queue,
-                                            const SDL_AudioSpec *spec, const int *chmap, Uint8 *data, size_t len, size_t capacity,
+                                            const SDL_AudioSpec *spec, const int *chmap, uint8_t *data, size_t len, size_t capacity,
                                             SDL_ReleaseAudioBufferCallback callback, void *userdata);
 
 // Add a track to the end of the queue
@@ -66,10 +66,10 @@ extern void *SDL_BeginAudioQueueIter(SDL_AudioQueue *queue);
 // REQUIRES: `*inout_iter != NULL` (a valid iterator)
 extern size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_AudioSpec *out_spec, int **out_chmap, bool *out_flushed);
 
-extern const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
-                                           Uint8 *dst, SDL_AudioFormat dst_format, int dst_channels, const int *dst_map,
+extern const uint8_t *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
+                                           uint8_t *dst, SDL_AudioFormat dst_format, int dst_channels, const int *dst_map,
                                            int past_frames, int present_frames, int future_frames,
-                                           Uint8 *scratch, float gain);
+                                           uint8_t *scratch, float gain);
 
 // Get the total number of bytes currently queued
 extern size_t SDL_GetAudioQueueQueued(SDL_AudioQueue *queue);

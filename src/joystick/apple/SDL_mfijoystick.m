@@ -337,9 +337,9 @@ static bool ElementAlreadyHandled(SDL_JoystickDeviceItem *device, NSString *elem
 
 static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
-    Uint16 vendor = 0;
-    Uint16 product = 0;
-    Uint8 subtype = 0;
+    uint16_t vendor = 0;
+    uint16_t product = 0;
+    uint8_t subtype = 0;
     const char *name = NULL;
 
     if (@available(macOS 11.3, iOS 14.5, tvOS 14.5, *)) {
@@ -644,7 +644,7 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         return false;
     }
 
-    Uint16 signature;
+    uint16_t signature;
     if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
         signature = 0;
         signature = SDL_crc16(signature, device->name, SDL_strlen(device->name));
@@ -879,7 +879,7 @@ static void IOS_JoystickDetect(void)
 {
 }
 
-static bool IOS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool IOS_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers through this method
     return false;
@@ -1025,9 +1025,9 @@ static bool IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 }
 
 #ifdef SDL_JOYSTICK_MFI
-static Uint8 IOS_MFIJoystickHatStateForDPad(GCControllerDirectionPad *dpad)
+static uint8_t IOS_MFIJoystickHatStateForDPad(GCControllerDirectionPad *dpad)
 {
-    Uint8 hat = 0;
+    uint8_t hat = 0;
 
     if (dpad.up.isPressed) {
         hat |= SDL_HAT_UP;
@@ -1055,9 +1055,9 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
     @autoreleasepool {
         SDL_JoystickDeviceItem *device = joystick->hwdata;
         GCController *controller = device->controller;
-        Uint8 hatstate = SDL_HAT_CENTERED;
+        uint8_t hatstate = SDL_HAT_CENTERED;
         int i;
-        Uint64 timestamp = SDL_GetTicksNS();
+        uint64_t timestamp = SDL_GetTicksNS();
 
 #if defined(DEBUG_CONTROLLER_STATE) && defined(ENABLE_PHYSICAL_INPUT_PROFILE)
         if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
@@ -1093,12 +1093,12 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
             int axis = 0;
             for (id key in device->axes) {
-                Sint16 value;
+                int16_t value;
                 GCControllerElement *element = elements[key];
                 if ([element isKindOfClass:[GCControllerAxisInput class]]) {
-                    value = (Sint16)([(GCControllerAxisInput *)element value] * 32767);
+                    value = (int16_t)([(GCControllerAxisInput *)element value] * 32767);
                 } else {
-                    value = (Sint16)([(GCControllerButtonInput *)element value] * 32767);
+                    value = (int16_t)([(GCControllerButtonInput *)element value] * 32767);
                 }
                 SDL_SendJoystickAxis(timestamp, joystick, axis++, value);
             }
@@ -1120,13 +1120,13 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
             // Axis order matches the XInput Windows mappings.
-            Sint16 axes[] = {
-                (Sint16)(gamepad.leftThumbstick.xAxis.value * 32767),
-                (Sint16)(gamepad.leftThumbstick.yAxis.value * -32767),
-                (Sint16)((gamepad.leftTrigger.value * 65535) - 32768),
-                (Sint16)(gamepad.rightThumbstick.xAxis.value * 32767),
-                (Sint16)(gamepad.rightThumbstick.yAxis.value * -32767),
-                (Sint16)((gamepad.rightTrigger.value * 65535) - 32768),
+            int16_t axes[] = {
+                (int16_t)(gamepad.leftThumbstick.xAxis.value * 32767),
+                (int16_t)(gamepad.leftThumbstick.yAxis.value * -32767),
+                (int16_t)((gamepad.leftTrigger.value * 65535) - 32768),
+                (int16_t)(gamepad.rightThumbstick.xAxis.value * 32767),
+                (int16_t)(gamepad.rightThumbstick.yAxis.value * -32767),
+                (int16_t)((gamepad.rightTrigger.value * 65535) - 32768),
             };
 
             // Button order matches the XInput Windows mappings.
@@ -1213,9 +1213,9 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         else if (controller.microGamepad) {
             GCMicroGamepad *gamepad = controller.microGamepad;
 
-            Sint16 axes[] = {
-                (Sint16)(gamepad.dpad.xAxis.value * 32767),
-                (Sint16)(gamepad.dpad.yAxis.value * -32767),
+            int16_t axes[] = {
+                (int16_t)(gamepad.dpad.xAxis.value * 32767),
+                (int16_t)(gamepad.dpad.yAxis.value * -32767),
             };
 
             for (i = 0; i < SDL_arraysize(axes); i++) {
@@ -1468,7 +1468,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
     return self;
 }
 
-- (bool)rumbleWithLowFrequency:(Uint16)low_frequency_rumble andHighFrequency:(Uint16)high_frequency_rumble
+- (bool)rumbleWithLowFrequency:(uint16_t)low_frequency_rumble andHighFrequency:(uint16_t)high_frequency_rumble
 {
     bool result = true;
 
@@ -1477,7 +1477,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
     return result;
 }
 
-- (bool)rumbleLeftTrigger:(Uint16)left_rumble andRightTrigger:(Uint16)right_rumble
+- (bool)rumbleLeftTrigger:(uint16_t)left_rumble andRightTrigger:(uint16_t)right_rumble
 {
     bool result = false;
 
@@ -1519,7 +1519,7 @@ static SDL3_RumbleContext *IOS_JoystickInitRumble(GCController *controller)
 
 #endif // ENABLE_MFI_RUMBLE
 
-static bool IOS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool IOS_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
 #ifdef ENABLE_MFI_RUMBLE
     SDL_JoystickDeviceItem *device = joystick->hwdata;
@@ -1548,7 +1548,7 @@ static bool IOS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
 #endif
 }
 
-static bool IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
 #ifdef ENABLE_MFI_RUMBLE
     SDL_JoystickDeviceItem *device = joystick->hwdata;
@@ -1577,7 +1577,7 @@ static bool IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumbl
 #endif
 }
 
-static bool IOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool IOS_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
 #ifdef ENABLE_MFI_LIGHT
     @autoreleasepool {

@@ -93,7 +93,7 @@ static void gsKit_flip(GSGLOBAL *gsGlobal)
     gsKit_setactive(gsGlobal);
 }
 
-static int PixelFormatToPS2PSM(Uint32 format)
+static int PixelFormatToPS2PSM(uint32_t format)
 {
     switch (format) {
     case SDL_PIXELFORMAT_ABGR1555:
@@ -156,7 +156,7 @@ static bool PS2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal;
 
     *pixels =
-        (void *)((Uint8 *)ps2_texture->Mem + rect->y * ps2_texture->Width * SDL_BYTESPERPIXEL(texture->format) +
+        (void *)((uint8_t *)ps2_texture->Mem + rect->y * ps2_texture->Width * SDL_BYTESPERPIXEL(texture->format) +
                  rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = ps2_texture->Width * SDL_BYTESPERPIXEL(texture->format);
     return true;
@@ -173,8 +173,8 @@ static void PS2_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 static bool PS2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                              const SDL_Rect *rect, const void *pixels, int pitch)
 {
-    const Uint8 *src;
-    Uint8 *dst;
+    const uint8_t *src;
+    uint8_t *dst;
     int row, length, dpitch;
     src = pixels;
 
@@ -282,11 +282,11 @@ static bool PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
             float *uv_;
             SDL_FColor *col_;
             if (size_indices == 4) {
-                j = ((const Uint32 *)indices)[i];
+                j = ((const uint32_t *)indices)[i];
             } else if (size_indices == 2) {
-                j = ((const Uint16 *)indices)[i];
+                j = ((const uint16_t *)indices)[i];
             } else if (size_indices == 1) {
-                j = ((const Uint8 *)indices)[i];
+                j = ((const uint8_t *)indices)[i];
             } else {
                 j = i;
             }
@@ -314,11 +314,11 @@ static bool PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
             float *xy_;
             SDL_FColor *col_;
             if (size_indices == 4) {
-                j = ((const Uint32 *)indices)[i];
+                j = ((const uint32_t *)indices)[i];
             } else if (size_indices == 2) {
-                j = ((const Uint16 *)indices)[i];
+                j = ((const uint16_t *)indices)[i];
             } else if (size_indices == 1) {
-                j = ((const Uint8 *)indices)[i];
+                j = ((const uint8_t *)indices)[i];
             } else {
                 j = i;
             }

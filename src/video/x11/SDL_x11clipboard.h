@@ -30,7 +30,7 @@ typedef struct X11_ClipboardData {
     void *userdata;
     const char **mime_types;
     size_t mime_count;
-    Uint32 sequence;
+    uint32_t sequence;
 } SDLX11_ClipboardData;
 
 extern const char **X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types);

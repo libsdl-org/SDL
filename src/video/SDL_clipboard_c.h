@@ -30,7 +30,7 @@
 extern bool SDL_IsTextMimeType(const char *mime_type);
 
 // Cancel the clipboard data callback, called internally for cleanup
-extern void SDL_CancelClipboardData(Uint32 sequence);
+extern void SDL_CancelClipboardData(uint32_t sequence);
 
 // Call the clipboard callback for application data
 extern void *SDL_GetInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *size);

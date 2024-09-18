@@ -28,8 +28,8 @@
 #endif
 
 static SDL_AudioSpec spec;
-static Uint8 *sound = NULL; /* Pointer to wave data */
-static Uint32 soundlen = 0; /* Length of wave data */
+static uint8_t *sound = NULL; /* Pointer to wave data */
+static uint32_t soundlen = 0; /* Length of wave data */
 
 static SDLTest_CommonState *state;
 

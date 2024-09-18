@@ -54,83 +54,83 @@ extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_l
 extern bool SDL_JoysticksOpened(void);
 
 // Function to determine whether a device is currently detected by this driver
-extern bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
+extern bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name);
 
 /* Function to standardize the name for a controller
    This should be freed with SDL_free() when no longer needed
  */
-extern char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name);
+extern char *SDL_CreateJoystickName(uint16_t vendor, uint16_t product, const char *vendor_name, const char *product_name);
 
 // Function to create a GUID for a joystick based on the VID/PID and name
-extern SDL_GUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version, const char *vendor_name, const char *product_name, Uint8 driver_signature, Uint8 driver_data);
+extern SDL_GUID SDL_CreateJoystickGUID(uint16_t bus, uint16_t vendor, uint16_t product, uint16_t version, const char *vendor_name, const char *product_name, uint8_t driver_signature, uint8_t driver_data);
 
 // Function to create a GUID for a joystick based on the name, with no VID/PID information
 extern SDL_GUID SDL_CreateJoystickGUIDForName(const char *name);
 
 // Function to set the vendor field of a joystick GUID
-extern void SDL_SetJoystickGUIDVendor(SDL_GUID *guid, Uint16 vendor);
+extern void SDL_SetJoystickGUIDVendor(SDL_GUID *guid, uint16_t vendor);
 
 // Function to set the product field of a joystick GUID
-extern void SDL_SetJoystickGUIDProduct(SDL_GUID *guid, Uint16 product);
+extern void SDL_SetJoystickGUIDProduct(SDL_GUID *guid, uint16_t product);
 
 // Function to set the version field of a joystick GUID
-extern void SDL_SetJoystickGUIDVersion(SDL_GUID *guid, Uint16 version);
+extern void SDL_SetJoystickGUIDVersion(SDL_GUID *guid, uint16_t version);
 
 // Function to set the CRC field of a joystick GUID
-extern void SDL_SetJoystickGUIDCRC(SDL_GUID *guid, Uint16 crc);
+extern void SDL_SetJoystickGUIDCRC(SDL_GUID *guid, uint16_t crc);
 
 // Function to return the type of a controller
-extern SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, bool forUI);
+extern SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(uint16_t vendor, uint16_t product, const char *name, bool forUI);
 extern SDL_GamepadType SDL_GetGamepadTypeFromGUID(SDL_GUID guid, const char *name);
 
 // Function to return whether a joystick GUID uses the version field
 extern bool SDL_JoystickGUIDUsesVersion(SDL_GUID guid);
 
 // Function to return whether a joystick is an Xbox One controller
-extern bool SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickXboxOne(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is an Xbox One Elite controller
-extern bool SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickXboxOneElite(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is an Xbox Series X controller
-extern bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickXboxSeriesX(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is an Xbox One controller connected via Bluetooth
-extern bool SDL_IsJoystickBluetoothXboxOne(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickBluetoothXboxOne(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is a PS4 controller
-extern bool SDL_IsJoystickPS4(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickPS4(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is a PS5 controller
-extern bool SDL_IsJoystickPS5(Uint16 vendor_id, Uint16 product_id);
-extern bool SDL_IsJoystickDualSenseEdge(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickPS5(uint16_t vendor_id, uint16_t product_id);
+extern bool SDL_IsJoystickDualSenseEdge(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is a Nintendo Switch Pro controller
-extern bool SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id);
-extern bool SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id);
-extern bool SDL_IsJoystickNintendoSwitchJoyCon(Uint16 vendor_id, Uint16 product_id);
-extern bool SDL_IsJoystickNintendoSwitchJoyConLeft(Uint16 vendor_id, Uint16 product_id);
-extern bool SDL_IsJoystickNintendoSwitchJoyConRight(Uint16 vendor_id, Uint16 product_id);
-extern bool SDL_IsJoystickNintendoSwitchJoyConGrip(Uint16 vendor_id, Uint16 product_id);
-extern bool SDL_IsJoystickNintendoSwitchJoyConPair(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickNintendoSwitchPro(uint16_t vendor_id, uint16_t product_id);
+extern bool SDL_IsJoystickNintendoSwitchProInputOnly(uint16_t vendor_id, uint16_t product_id);
+extern bool SDL_IsJoystickNintendoSwitchJoyCon(uint16_t vendor_id, uint16_t product_id);
+extern bool SDL_IsJoystickNintendoSwitchJoyConLeft(uint16_t vendor_id, uint16_t product_id);
+extern bool SDL_IsJoystickNintendoSwitchJoyConRight(uint16_t vendor_id, uint16_t product_id);
+extern bool SDL_IsJoystickNintendoSwitchJoyConGrip(uint16_t vendor_id, uint16_t product_id);
+extern bool SDL_IsJoystickNintendoSwitchJoyConPair(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is a Nintendo GameCube style controller
-extern bool SDL_IsJoystickGameCube(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickGameCube(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is an Amazon Luna controller
-extern bool SDL_IsJoystickAmazonLunaController(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickAmazonLunaController(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is a Google Stadia controller
-extern bool SDL_IsJoystickGoogleStadiaController(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickGoogleStadiaController(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is an NVIDIA SHIELD controller
-extern bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickNVIDIASHIELDController(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is a Steam Controller
-extern bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickSteamController(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick is a Steam Deck
-extern bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickSteamDeck(uint16_t vendor_id, uint16_t product_id);
 
 // Function to return whether a joystick guid comes from the XInput driver
 extern bool SDL_IsJoystickXInput(SDL_GUID guid);
@@ -161,12 +161,12 @@ extern void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id);
 extern bool SDL_IsJoystickBeingAdded(void);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id);
 extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
-extern void SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, Sint16 value);
-extern void SDL_SendJoystickBall(Uint64 timestamp, SDL_Joystick *joystick, Uint8 ball, Sint16 xrel, Sint16 yrel);
-extern void SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uint8 value);
-extern void SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 button, bool down);
-extern void SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touchpad, int finger, bool down, float x, float y, float pressure);
-extern void SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
+extern void SDL_SendJoystickAxis(uint64_t timestamp, SDL_Joystick *joystick, uint8_t axis, int16_t value);
+extern void SDL_SendJoystickBall(uint64_t timestamp, SDL_Joystick *joystick, uint8_t ball, int16_t xrel, int16_t yrel);
+extern void SDL_SendJoystickHat(uint64_t timestamp, SDL_Joystick *joystick, uint8_t hat, uint8_t value);
+extern void SDL_SendJoystickButton(uint64_t timestamp, SDL_Joystick *joystick, uint8_t button, bool down);
+extern void SDL_SendJoystickTouchpad(uint64_t timestamp, SDL_Joystick *joystick, int touchpad, int finger, bool down, float x, float y, float pressure);
+extern void SDL_SendJoystickSensor(uint64_t timestamp, SDL_Joystick *joystick, SDL_SensorType type, uint64_t sensor_timestamp, const float *data, int num_values);
 extern void SDL_SendJoystickPowerInfo(SDL_Joystick *joystick, SDL_PowerState state, int percent);
 
 // Function to get the Steam virtual gamepad info for a joystick
@@ -186,7 +186,7 @@ typedef enum
 typedef struct SDL_InputMapping
 {
     EMappingKind kind;
-    Uint8 target;
+    uint8_t target;
     bool axis_reversed;
     bool half_axis_positive;
     bool half_axis_negative;
@@ -238,22 +238,22 @@ typedef struct
     const char *included_hint_name;
     int num_included_entries;
     int max_included_entries;
-    Uint32 *included_entries;
+    uint32_t *included_entries;
 
     const char *excluded_hint_name;
     int num_excluded_entries;
     int max_excluded_entries;
-    Uint32 *excluded_entries;
+    uint32_t *excluded_entries;
 
     int num_initial_entries;
-    Uint32 *initial_entries;
+    uint32_t *initial_entries;
 
     bool initialized;
 } SDL_vidpid_list;
 
 extern void SDL_LoadVIDPIDList(SDL_vidpid_list *list);
 extern void SDL_LoadVIDPIDListFromHints(SDL_vidpid_list *list, const char *included_list, const char *excluded_list);
-extern bool SDL_VIDPIDInList(Uint16 vendor_id, Uint16 product_id, const SDL_vidpid_list *list);
+extern bool SDL_VIDPIDInList(uint16_t vendor_id, uint16_t product_id, const SDL_vidpid_list *list);
 extern void SDL_FreeVIDPIDList(SDL_vidpid_list *list);
 
 // Ends C function definitions when using C++

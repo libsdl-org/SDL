@@ -114,25 +114,25 @@ static SDL_Surface *load_image_file(const char *file)
     SDL_Surface *surface = SDL_LoadBMP(file);
     if (surface) {
         if (SDL_GetSurfacePalette(surface)) {
-            const Uint8 bpp = SDL_BITSPERPIXEL(surface->format);
-            const Uint8 mask = (1 << bpp) - 1;
+            const uint8_t bpp = SDL_BITSPERPIXEL(surface->format);
+            const uint8_t mask = (1 << bpp) - 1;
             if (SDL_PIXELORDER(surface->format) == SDL_BITMAPORDER_4321)
-                SDL_SetSurfaceColorKey(surface, 1, (*(Uint8 *)surface->pixels) & mask);
+                SDL_SetSurfaceColorKey(surface, 1, (*(uint8_t *)surface->pixels) & mask);
             else
-                SDL_SetSurfaceColorKey(surface, 1, ((*(Uint8 *)surface->pixels) >> (8 - bpp)) & mask);
+                SDL_SetSurfaceColorKey(surface, 1, ((*(uint8_t *)surface->pixels) >> (8 - bpp)) & mask);
         } else {
             switch (SDL_BITSPERPIXEL(surface->format)) {
             case 15:
-                SDL_SetSurfaceColorKey(surface, 1, (*(Uint16 *)surface->pixels) & 0x00007FFF);
+                SDL_SetSurfaceColorKey(surface, 1, (*(uint16_t *)surface->pixels) & 0x00007FFF);
                 break;
             case 16:
-                SDL_SetSurfaceColorKey(surface, 1, *(Uint16 *)surface->pixels);
+                SDL_SetSurfaceColorKey(surface, 1, *(uint16_t *)surface->pixels);
                 break;
             case 24:
-                SDL_SetSurfaceColorKey(surface, 1, (*(Uint32 *)surface->pixels) & 0x00FFFFFF);
+                SDL_SetSurfaceColorKey(surface, 1, (*(uint32_t *)surface->pixels) & 0x00FFFFFF);
                 break;
             case 32:
-                SDL_SetSurfaceColorKey(surface, 1, *(Uint32 *)surface->pixels);
+                SDL_SetSurfaceColorKey(surface, 1, *(uint32_t *)surface->pixels);
                 break;
             }
         }
@@ -182,8 +182,8 @@ static SDL_Cursor *init_color_cursor(const char *file)
 static SDL_Cursor *init_system_cursor(const char *image[])
 {
     int i, row, col;
-    Uint8 data[4 * 32];
-    Uint8 mask[4 * 32];
+    uint8_t data[4 * 32];
+    uint8_t mask[4 * 32];
     int hot_x = 0;
     int hot_y = 0;
 

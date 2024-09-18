@@ -710,7 +710,7 @@ static Bool isReparentNotify(Display *display, XEvent *ev, XPointer arg)
 static bool IsHighLatin1(const char *string, int length)
 {
     while (length-- > 0) {
-        Uint8 ch = (Uint8)*string;
+        uint8_t ch = (uint8_t)*string;
         if (ch >= 0x80) {
             return true;
         }
@@ -1531,7 +1531,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 SDL_Log(" }\n");
             } else if (real_type == XA_CARDINAL) {
                 if (real_format == 32) {
-                    Uint32 *values = (Uint32 *)propdata;
+                    uint32_t *values = (uint32_t *)propdata;
 
                     SDL_Log("{");
                     for (i = 0; i < items_read; i++) {
@@ -1539,7 +1539,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     }
                     SDL_Log(" }\n");
                 } else if (real_format == 16) {
-                    Uint16 *values = (Uint16 *)propdata;
+                    uint16_t *values = (uint16_t *)propdata;
 
                     SDL_Log("{");
                     for (i = 0; i < items_read; i++) {
@@ -1547,7 +1547,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     }
                     SDL_Log(" }\n");
                 } else if (real_format == 8) {
-                    Uint8 *values = (Uint8 *)propdata;
+                    uint8_t *values = (uint8_t *)propdata;
 
                     SDL_Log("{");
                     for (i = 0; i < items_read; i++) {
@@ -1821,7 +1821,7 @@ static void X11_HandleFocusChanges(SDL_VideoDevice *_this)
         for (i = 0; i < videodata->numwindows; ++i) {
             SDL_WindowData *data = videodata->windowlist[i];
             if (data && data->pending_focus != PENDING_FOCUS_NONE) {
-                Uint64 now = SDL_GetTicks();
+                uint64_t now = SDL_GetTicks();
                 if (now >= data->pending_focus_time) {
                     if (data->pending_focus == PENDING_FOCUS_IN) {
                         X11_DispatchFocusIn(_this, data);
@@ -1869,7 +1869,7 @@ void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
     X11_XFlush(req_display);
 }
 
-int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
+int X11_WaitEventTimeout(SDL_VideoDevice *_this, int64_t timeoutNS)
 {
     SDL_VideoData *videodata = _this->internal;
     Display *display;
@@ -1953,7 +1953,7 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
 
     // Update activity every 30 seconds to prevent screensaver
     if (_this->suspend_screensaver) {
-        Uint64 now = SDL_GetTicks();
+        uint64_t now = SDL_GetTicks();
         if (!data->screensaver_activity || now >= (data->screensaver_activity + 30000)) {
             X11_XResetScreenSaver(data->display);
 

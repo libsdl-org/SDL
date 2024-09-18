@@ -26,8 +26,8 @@
 #include "../SDL_hashtable.h"
 
 // Table to do pixel byte expansion
-extern const Uint8 *SDL_expand_byte[9];
-extern const Uint16 SDL_expand_byte_10[];
+extern const uint8_t *SDL_expand_byte[9];
+extern const uint16_t SDL_expand_byte_10[];
 
 // SDL blit copy flags
 #define SDL_COPY_MODULATE_COLOR         0x00000001
@@ -58,12 +58,12 @@ extern const Uint16 SDL_expand_byte_10[];
 typedef struct
 {
     SDL_Surface *src_surface;
-    Uint8 *src;
+    uint8_t *src;
     int src_w, src_h;
     int src_pitch;
     int src_skip;
     SDL_Surface *dst_surface;
-    Uint8 *dst;
+    uint8_t *dst;
     int dst_w, dst_h;
     int dst_pitch;
     int dst_skip;
@@ -71,11 +71,11 @@ typedef struct
     const SDL_Palette *src_pal;
     const SDL_PixelFormatDetails *dst_fmt;
     const SDL_Palette *dst_pal;
-    Uint8 *table;
+    uint8_t *table;
     SDL_HashTable *palette_map;
     int flags;
-    Uint32 colorkey;
-    Uint8 r, g, b, a;
+    uint32_t colorkey;
+    uint8_t r, g, b, a;
 } SDL_BlitInfo;
 
 typedef void (*SDL_BlitFunc)(SDL_BlitInfo *info);
@@ -101,8 +101,8 @@ typedef struct SDL_BlitMap
 
     /* the version count matches the destination; mismatch indicates
        an invalid mapping */
-    Uint32 dst_palette_version;
-    Uint32 src_palette_version;
+    uint32_t dst_palette_version;
+    uint32_t src_palette_version;
 } SDL_BlitMap;
 
 // Functions found in SDL_blit.c
@@ -155,16 +155,16 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
     do {                                                   \
         switch (bpp) {                                     \
         case 1:                                            \
-            Pixel = *((Uint8 *)(buf));                     \
+            Pixel = *((uint8_t *)(buf));                     \
             break;                                         \
                                                            \
         case 2:                                            \
-            Pixel = *((Uint16 *)(buf));                    \
+            Pixel = *((uint16_t *)(buf));                    \
             break;                                         \
                                                            \
         case 3:                                            \
         {                                                  \
-            Uint8 *B = (Uint8 *)(buf);                     \
+            uint8_t *B = (uint8_t *)(buf);                     \
             if (SDL_BYTEORDER == SDL_LIL_ENDIAN) {         \
                 Pixel = B[0] + (B[1] << 8) + (B[2] << 16); \
             } else {                                       \
@@ -173,7 +173,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         } break;                                           \
                                                            \
         case 4:                                            \
-            Pixel = *((Uint32 *)(buf));                    \
+            Pixel = *((uint32_t *)(buf));                    \
             break;                                         \
                                                            \
         default:                                           \
@@ -186,12 +186,12 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
     do {                                            \
         switch (bpp) {                              \
         case 1:                                     \
-            Pixel = *((Uint8 *)(buf));              \
+            Pixel = *((uint8_t *)(buf));              \
             RGB_FROM_PIXEL(Pixel, fmt, r, g, b);    \
             break;                                  \
                                                     \
         case 2:                                     \
-            Pixel = *((Uint16 *)(buf));             \
+            Pixel = *((uint16_t *)(buf));             \
             RGB_FROM_PIXEL(Pixel, fmt, r, g, b);    \
             break;                                  \
                                                     \
@@ -210,7 +210,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         } break;                                    \
                                                     \
         case 4:                                     \
-            Pixel = *((Uint32 *)(buf));             \
+            Pixel = *((uint32_t *)(buf));             \
             RGB_FROM_PIXEL(Pixel, fmt, r, g, b);    \
             break;                                  \
                                                     \
@@ -232,15 +232,15 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
     }
 #define RGB332_FROM_RGB(Pixel, r, g, b)                        \
     {                                                          \
-        Pixel = (Uint8)(((r >> 5) << 5) | ((g >> 5) << 2) | (b >> 6)); \
+        Pixel = (uint8_t)(((r >> 5) << 5) | ((g >> 5) << 2) | (b >> 6)); \
     }
 #define RGB565_FROM_RGB(Pixel, r, g, b)                        \
     {                                                          \
-        Pixel = (Uint16)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)); \
+        Pixel = (uint16_t)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)); \
     }
 #define RGB555_FROM_RGB(Pixel, r, g, b)                        \
     {                                                          \
-        Pixel = (Uint16)(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)); \
+        Pixel = (uint16_t)(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)); \
     }
 #define XRGB8888_FROM_RGB(Pixel, r, g, b)   \
     {                                     \
@@ -276,10 +276,10 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         g = SDL_clamp(g, 0.0f, 1.0f) * 1023.0f;       \
         b = SDL_clamp(b, 0.0f, 1.0f) * 1023.0f;       \
         a = SDL_clamp(a, 0.0f, 1.0f) * 3.0f;          \
-        Pixel = (((Uint32)SDL_roundf(a)) << 30) |     \
-                (((Uint32)SDL_roundf(r)) << 20) |     \
-                (((Uint32)SDL_roundf(g)) << 10) |     \
-                (Uint32)SDL_roundf(b);                \
+        Pixel = (((uint32_t)SDL_roundf(a)) << 30) |     \
+                (((uint32_t)SDL_roundf(r)) << 20) |     \
+                (((uint32_t)SDL_roundf(g)) << 10) |     \
+                (uint32_t)SDL_roundf(b);                \
     }
 #define ABGR2101010_FROM_RGBA(Pixel, r, g, b, a)       \
     {                                                  \
@@ -295,28 +295,28 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         g = SDL_clamp(g, 0.0f, 1.0f) * 1023.0f;       \
         b = SDL_clamp(b, 0.0f, 1.0f) * 1023.0f;       \
         a = SDL_clamp(a, 0.0f, 1.0f) * 3.0f;          \
-        Pixel = (((Uint32)SDL_roundf(a)) << 30) |     \
-                (((Uint32)SDL_roundf(b)) << 20) |     \
-                (((Uint32)SDL_roundf(g)) << 10) |     \
-                (Uint32)SDL_roundf(r);                \
+        Pixel = (((uint32_t)SDL_roundf(a)) << 30) |     \
+                (((uint32_t)SDL_roundf(b)) << 20) |     \
+                (((uint32_t)SDL_roundf(g)) << 10) |     \
+                (uint32_t)SDL_roundf(r);                \
     }
 #define ASSEMBLE_RGB(buf, bpp, fmt, r, g, b)        \
     {                                               \
         switch (bpp) {                              \
         case 1:                                     \
         {                                           \
-            Uint8 _pixel;                           \
+            uint8_t _pixel;                           \
                                                     \
             PIXEL_FROM_RGB(_pixel, fmt, r, g, b);   \
-            *((Uint8 *)(buf)) = _pixel;             \
+            *((uint8_t *)(buf)) = _pixel;             \
         } break;                                    \
                                                     \
         case 2:                                     \
         {                                           \
-            Uint16 _pixel;                          \
+            uint16_t _pixel;                          \
                                                     \
             PIXEL_FROM_RGB(_pixel, fmt, r, g, b);   \
-            *((Uint16 *)(buf)) = _pixel;            \
+            *((uint16_t *)(buf)) = _pixel;            \
         } break;                                    \
                                                     \
         case 3:                                     \
@@ -334,10 +334,10 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                                                     \
         case 4:                                     \
         {                                           \
-            Uint32 _pixel;                          \
+            uint32_t _pixel;                          \
                                                     \
             PIXEL_FROM_RGB(_pixel, fmt, r, g, b);   \
-            *((Uint32 *)(buf)) = _pixel;            \
+            *((uint32_t *)(buf)) = _pixel;            \
         } break;                                    \
         }                                           \
     }
@@ -417,12 +417,12 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
     do {                                                \
         switch (bpp) {                                  \
         case 1:                                         \
-            Pixel = *((Uint8 *)(buf));                  \
+            Pixel = *((uint8_t *)(buf));                  \
             RGBA_FROM_PIXEL(Pixel, fmt, r, g, b, a);    \
             break;                                      \
                                                         \
         case 2:                                         \
-            Pixel = *((Uint16 *)(buf));                 \
+            Pixel = *((uint16_t *)(buf));                 \
             RGBA_FROM_PIXEL(Pixel, fmt, r, g, b, a);    \
             break;                                      \
                                                         \
@@ -442,7 +442,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         } break;                                        \
                                                         \
         case 4:                                         \
-            Pixel = *((Uint32 *)(buf));                 \
+            Pixel = *((uint32_t *)(buf));                 \
             RGBA_FROM_PIXEL(Pixel, fmt, r, g, b, a);    \
             break;                                      \
                                                         \
@@ -467,18 +467,18 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         switch (bpp) {                                \
         case 1:                                       \
         {                                             \
-            Uint8 _pixel;                             \
+            uint8_t _pixel;                             \
                                                       \
             PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a); \
-            *((Uint8 *)(buf)) = _pixel;               \
+            *((uint8_t *)(buf)) = _pixel;               \
         } break;                                      \
                                                       \
         case 2:                                       \
         {                                             \
-            Uint16 _pixel;                            \
+            uint16_t _pixel;                            \
                                                       \
             PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a); \
-            *((Uint16 *)(buf)) = _pixel;              \
+            *((uint16_t *)(buf)) = _pixel;              \
         } break;                                      \
                                                       \
         case 3:                                       \
@@ -496,10 +496,10 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                                                       \
         case 4:                                       \
         {                                             \
-            Uint32 _pixel;                            \
+            uint32_t _pixel;                            \
                                                       \
             PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a); \
-            *((Uint32 *)(buf)) = _pixel;              \
+            *((uint32_t *)(buf)) = _pixel;              \
         } break;                                      \
         }                                             \
     }
@@ -507,7 +507,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 // Convert any 32-bit 4-bpp pixel to ARGB format
 #define PIXEL_TO_ARGB_PIXEL(src, srcfmt, dst)         \
     do {                                              \
-        Uint8 a, r, g, b;                         \
+        uint8_t a, r, g, b;                         \
         RGBA_FROM_PIXEL(src, srcfmt, r, g, b, a); \
         dst = a << 24 | r << 16 | g << 8 | b;     \
     } while (0)
@@ -515,7 +515,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 /* dC = ((sC * sA) + (dC * (255 - sA))) / 255 */
 #define ALPHA_BLEND_CHANNEL(sC, dC, sA)                  \
     do {                                                 \
-        Uint16 x;                                        \
+        uint16_t x;                                        \
         x = ((sC - dC) * sA) + ((dC << 8) - dC);         \
         x += 0x1U;                                       \
         x += x >> 8;                                     \
@@ -525,7 +525,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 /* out = (sC * dC) / 255 */
 #define MULT_DIV_255(sC, dC, out) \
     do {                          \
-        Uint16 x = sC * dC;       \
+        uint16_t x = sC * dC;       \
         x += 0x1U;                \
         x += x >> 8;              \
         out = x >> 8;             \
@@ -544,10 +544,10 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 #if defined(SIZE_MAX) && (SIZE_MAX == 0xffffffffffffffff)
 #define FACTOR_BLEND_8888(src, dst, factor)                        \
     do {                                                           \
-        Uint64 src64 = src;                                        \
+        uint64_t src64 = src;                                        \
         src64 = (src64 | (src64 << 24)) & 0x00FF00FF00FF00FF;      \
                                                                    \
-        Uint64 dst64 = dst;                                        \
+        uint64_t dst64 = dst;                                        \
         dst64 = (dst64 | (dst64 << 24)) & 0x00FF00FF00FF00FF;      \
                                                                    \
         dst64 = ((src64 - dst64) * factor) + (dst64 << 8) - dst64; \
@@ -555,23 +555,23 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         dst64 += (dst64 >> 8) & 0x00FF00FF00FF00FF;                \
         dst64 &= 0xFF00FF00FF00FF00;                               \
                                                                    \
-        dst = (Uint32)((dst64 >> 8) | (dst64 >> 32));              \
+        dst = (uint32_t)((dst64 >> 8) | (dst64 >> 32));              \
     } while (0)
 #else
 #define FACTOR_BLEND_8888(src, dst, factor)                               \
     do {                                                                  \
-        Uint32 src02 = src & 0x00FF00FF;                                  \
-        Uint32 dst02 = dst & 0x00FF00FF;                                  \
+        uint32_t src02 = src & 0x00FF00FF;                                  \
+        uint32_t dst02 = dst & 0x00FF00FF;                                  \
                                                                           \
-        Uint32 src13 = (src >> 8) & 0x00FF00FF;                           \
-        Uint32 dst13 = (dst >> 8) & 0x00FF00FF;                           \
+        uint32_t src13 = (src >> 8) & 0x00FF00FF;                           \
+        uint32_t dst13 = (dst >> 8) & 0x00FF00FF;                           \
                                                                           \
-        Uint32 res02 = ((src02 - dst02) * factor) + (dst02 << 8) - dst02; \
+        uint32_t res02 = ((src02 - dst02) * factor) + (dst02 << 8) - dst02; \
         res02 += 0x00010001;                                              \
         res02 += (res02 >> 8) & 0x00FF00FF;                               \
         res02 = (res02 >> 8) & 0x00FF00FF;                                \
                                                                           \
-        Uint32 res13 = ((src13 - dst13) * factor) + (dst13 << 8) - dst13; \
+        uint32_t res13 = ((src13 - dst13) * factor) + (dst13 << 8) - dst13; \
         res13 += 0x00010001;                                              \
         res13 += (res13 >> 8) & 0x00FF00FF;                               \
         res13 &= 0xFF00FF00;                                              \
@@ -582,16 +582,16 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 // Alpha blend two 8888 pixels with the same formats.
 #define ALPHA_BLEND_8888(src, dst, fmt)            \
     do {                                           \
-        Uint32 srcA = (src >> fmt->Ashift) & 0xFF; \
-        Uint32 tmp = src | fmt->Amask;             \
+        uint32_t srcA = (src >> fmt->Ashift) & 0xFF; \
+        uint32_t tmp = src | fmt->Amask;             \
         FACTOR_BLEND_8888(tmp, dst, srcA);         \
     } while (0)
 
 // Alpha blend two 8888 pixels with differing formats.
 #define ALPHA_BLEND_SWIZZLE_8888(src, dst, srcfmt, dstfmt)                  \
     do {                                                                    \
-        Uint32 srcA = (src >> srcfmt->Ashift) & 0xFF;                       \
-        Uint32 tmp = (((src >> srcfmt->Rshift) & 0xFF) << dstfmt->Rshift) | \
+        uint32_t srcA = (src >> srcfmt->Ashift) & 0xFF;                       \
+        uint32_t tmp = (((src >> srcfmt->Rshift) & 0xFF) << dstfmt->Rshift) | \
                      (((src >> srcfmt->Gshift) & 0xFF) << dstfmt->Gshift) | \
                      (((src >> srcfmt->Bshift) & 0xFF) << dstfmt->Bshift) | \
                      dstfmt->Amask;                                         \

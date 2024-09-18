@@ -49,7 +49,7 @@ void FreeRumbleEffectData(FFEFFECT *effect)
     SDL_free(effect);
 }
 
-FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
+FFEFFECT *CreateRumbleEffectData(int16_t magnitude)
 {
     FFEFFECT *effect;
     FFPERIODIC *periodic;
@@ -206,7 +206,7 @@ static bool GetHIDScaledCalibratedState(recDevice *pDevice, recElement *pElement
         if (readScale == 0) {
             result = true; // no scaling at all
         } else {
-            *pValue = (Sint32)(((*pValue - pElement->minReport) * deviceScale / readScale) + min);
+            *pValue = (int32_t)(((*pValue - pElement->minReport) * deviceScale / readScale) + min);
             result = true;
         }
     }
@@ -405,7 +405,7 @@ static void AddHIDElement(const void *value, void *parameter)
     }
 }
 
-static int GetSteamVirtualGamepadSlot(Uint16 vendor_id, Uint16 product_id, const char *product_string)
+static int GetSteamVirtualGamepadSlot(uint16_t vendor_id, uint16_t product_id, const char *product_string)
 {
     int slot = -1;
 
@@ -420,9 +420,9 @@ static int GetSteamVirtualGamepadSlot(Uint16 vendor_id, Uint16 product_id, const
 
 static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 {
-    Sint32 vendor = 0;
-    Sint32 product = 0;
-    Sint32 version = 0;
+    int32_t vendor = 0;
+    int32_t product = 0;
+    int32_t version = 0;
     char *name;
     char manufacturer_string[256];
     char product_string[256];
@@ -494,8 +494,8 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         return false;
     }
 
-    pDevice->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, (Uint16)vendor, (Uint16)product, (Uint16)version, manufacturer_string, product_string, 0, 0);
-    pDevice->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot((Uint16)vendor, (Uint16)product, product_string);
+    pDevice->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, (uint16_t)vendor, (uint16_t)product, (uint16_t)version, manufacturer_string, product_string, 0, 0);
+    pDevice->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot((uint16_t)vendor, (uint16_t)product, product_string);
 
     array = IOHIDDeviceCopyMatchingElements(hidDevice, NULL, kIOHIDOptionsTypeNone);
     if (array) {
@@ -711,7 +711,7 @@ static void DARWIN_JoystickDetect(void)
     }
 }
 
-static bool DARWIN_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool DARWIN_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers
     return false;
@@ -835,7 +835,7 @@ static const char *FFStrError(unsigned int err)
     }
 }
 
-static bool DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
+static bool DARWIN_JoystickInitRumble(recDevice *device, int16_t magnitude)
 {
     HRESULT result;
 
@@ -871,13 +871,13 @@ static bool DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
     return true;
 }
 
-static bool DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool DARWIN_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     HRESULT result;
     recDevice *device = joystick->hwdata;
 
     // Scale and average the two rumble strengths
-    Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
+    int16_t magnitude = (int16_t)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
 
     if (!device) {
         return SDL_SetError("Rumble failed, device disconnected");
@@ -910,12 +910,12 @@ static bool DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_r
     return true;
 }
 
-static bool DARWIN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool DARWIN_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static bool DARWIN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool DARWIN_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }
@@ -936,7 +936,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     recElement *element;
     SInt32 value, range;
     int i, goodRead = false;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     if (!device) {
         return;
@@ -978,7 +978,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     i = 0;
 
     while (element) {
-        Uint8 pos = 0;
+        uint8_t pos = 0;
 
         range = (element->max - element->min + 1);
         goodRead = GetHIDElementState(device, element, &value);

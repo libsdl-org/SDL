@@ -49,7 +49,7 @@ extern "C" {
  *
  * \sa SDL_ComposeCustomBlendMode
  */
-typedef Uint32 SDL_BlendMode;
+typedef uint32_t SDL_BlendMode;
 
 #define SDL_BLENDMODE_NONE                  0x00000000u /**< no blending: dstRGBA = srcRGBA */
 #define SDL_BLENDMODE_BLEND                 0x00000001u /**< alpha blending: dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA)), dstA = srcA + (dstA * (1-srcA)) */

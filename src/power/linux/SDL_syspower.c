@@ -532,8 +532,8 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
     SDL_PowerState st;
     int secs;
     int pct;
-    Uint32 ui32 = 0;
-    Sint64 si64 = 0;
+    uint32_t ui32 = 0;
+    int64_t si64 = 0;
     double d = 0.0;
 
     if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Type", DBUS_TYPE_UINT32, &ui32)) {

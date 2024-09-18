@@ -49,7 +49,7 @@ extern "C" {
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_SurfaceFlags;
+typedef uint32_t SDL_SurfaceFlags;
 
 #define SDL_SURFACE_PREALLOCATED    0x00000001u /**< Surface uses preallocated pixel memory */
 #define SDL_SURFACE_LOCK_NEEDED     0x00000002u /**< Surface needs to be locked to access pixels */
@@ -561,7 +561,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);
  * \sa SDL_SetSurfaceRLE
  * \sa SDL_SurfaceHasColorKey
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorKey(SDL_Surface *surface, bool enabled, Uint32 key);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorKey(SDL_Surface *surface, bool enabled, uint32_t key);
 
 /**
  * Returns whether the surface has a color key.
@@ -597,7 +597,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SurfaceHasColorKey(SDL_Surface *surface);
  * \sa SDL_SetSurfaceColorKey
  * \sa SDL_SurfaceHasColorKey
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceColorKey(SDL_Surface *surface, uint32_t *key);
 
 /**
  * Set an additional color value multiplied into blit operations.
@@ -620,7 +620,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceColorKey(SDL_Surface *surface, Ui
  * \sa SDL_GetSurfaceColorMod
  * \sa SDL_SetSurfaceAlphaMod
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorMod(SDL_Surface *surface, uint8_t r, uint8_t g, uint8_t b);
 
 
 /**
@@ -638,7 +638,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorMod(SDL_Surface *surface, Ui
  * \sa SDL_GetSurfaceAlphaMod
  * \sa SDL_SetSurfaceColorMod
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceColorMod(SDL_Surface *surface, Uint8 *r, Uint8 *g, Uint8 *b);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceColorMod(SDL_Surface *surface, uint8_t *r, uint8_t *g, uint8_t *b);
 
 /**
  * Set an additional alpha value used in blit operations.
@@ -658,7 +658,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceColorMod(SDL_Surface *surface, Ui
  * \sa SDL_GetSurfaceAlphaMod
  * \sa SDL_SetSurfaceColorMod
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface *surface, uint8_t alpha);
 
 /**
  * Get the additional alpha value used in blit operations.
@@ -673,7 +673,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Ui
  * \sa SDL_GetSurfaceColorMod
  * \sa SDL_SetSurfaceAlphaMod
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceAlphaMod(SDL_Surface *surface, Uint8 *alpha);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceAlphaMod(SDL_Surface *surface, uint8_t *alpha);
 
 /**
  * Set the blend mode used for blit operations.
@@ -978,7 +978,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ClearSurface(SDL_Surface *surface, float r,
  *
  * \sa SDL_FillSurfaceRects
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color);
+extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, uint32_t color);
 
 /**
  * Perform a fast fill of a set of rectangles with a specific color.
@@ -1003,7 +1003,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRect(SDL_Surface *dst, const SDL
  *
  * \sa SDL_FillSurfaceRect
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Uint32 color);
+extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, uint32_t color);
 
 /**
  * Performs a fast blit from the source surface to the destination surface.
@@ -1264,7 +1264,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SD
  *
  * If the pixel format bpp (color depth) is less than 32-bpp then the unused
  * upper bits of the return value can safely be ignored (e.g., with a 16-bpp
- * format the return value can be assigned to a Uint16, and similarly a Uint8
+ * format the return value can be assigned to a uint16_t, and similarly a uint8_t
  * for an 8-bpp format).
  *
  * \param surface the surface to use for the pixel format and palette.
@@ -1277,7 +1277,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SD
  *
  * \sa SDL_MapSurfaceRGBA
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_MapSurfaceRGB(SDL_Surface *surface, uint8_t r, uint8_t g, uint8_t b);
 
 /**
  * Map an RGBA quadruple to a pixel value for a surface.
@@ -1294,7 +1294,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8
  *
  * If the pixel format bpp (color depth) is less than 32-bpp then the unused
  * upper bits of the return value can safely be ignored (e.g., with a 16-bpp
- * format the return value can be assigned to a Uint16, and similarly a Uint8
+ * format the return value can be assigned to a uint16_t, and similarly a uint8_t
  * for an 8-bpp format).
  *
  * \param surface the surface to use for the pixel format and palette.
@@ -1308,7 +1308,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8
  *
  * \sa SDL_MapSurfaceRGB
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 /**
  * Retrieves a single pixel from a surface.
@@ -1335,7 +1335,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+extern SDL_DECLSPEC bool SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a);
 
 /**
  * Retrieves a single pixel from a surface.
@@ -1382,7 +1382,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadSurfacePixelFloat(SDL_Surface *surface,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+extern SDL_DECLSPEC bool SDLCALL SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 /**
  * Writes a single pixel to a surface.

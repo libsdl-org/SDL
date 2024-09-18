@@ -35,7 +35,7 @@
 extern bool SDL_InitKeyboard(void);
 
 // Return whether a device is actually a keyboard
-extern bool SDL_IsKeyboard(Uint16 vendor, Uint16 product, int num_keys);
+extern bool SDL_IsKeyboard(uint16_t vendor, uint16_t product, int num_keys);
 
 // A keyboard has been added to the system
 extern void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, bool send_event);
@@ -52,16 +52,16 @@ extern bool SDL_SetKeyboardFocus(SDL_Window *window);
 /* Send a character from an on-screen keyboard as scancode and modifier key events,
    currently assuming ASCII characters on a US keyboard layout
  */
-extern void SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch);
+extern void SDL_SendKeyboardUnicodeKey(uint64_t timestamp, uint32_t ch);
 
 // Send a keyboard key event
-extern bool SDL_SendKeyboardKey(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down);
-extern bool SDL_SendKeyboardKeyIgnoreModifiers(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down);
-extern bool SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode);
+extern bool SDL_SendKeyboardKey(uint64_t timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down);
+extern bool SDL_SendKeyboardKeyIgnoreModifiers(uint64_t timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down);
+extern bool SDL_SendKeyboardKeyAutoRelease(uint64_t timestamp, SDL_Scancode scancode);
 
 /* This is for platforms that don't know the keymap but can report scancode and keycode directly.
    Most platforms should prefer to optionally call SDL_SetKeymap and then use SDL_SendKeyboardKey. */
-extern bool SDL_SendKeyboardKeyAndKeycode(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, SDL_Keycode keycode, bool down);
+extern bool SDL_SendKeyboardKeyAndKeycode(uint64_t timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, SDL_Keycode keycode, bool down);
 
 // Release all the autorelease keys
 extern void SDL_ReleaseAutoReleaseKeys(void);

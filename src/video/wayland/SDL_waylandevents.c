@@ -157,11 +157,11 @@ static bool Wayland_SurfaceHasActiveTouches(struct wl_surface *surface)
     return false;
 }
 
-static Uint64 Wayland_GetEventTimestamp(Uint64 nsTimestamp)
+static uint64_t Wayland_GetEventTimestamp(uint64_t nsTimestamp)
 {
-    static Uint64 last;
-    static Uint64 timestamp_offset;
-    const Uint64 now = SDL_GetTicksNS();
+    static uint64_t last;
+    static uint64_t timestamp_offset;
+    const uint64_t now = SDL_GetTicksNS();
 
     if (nsTimestamp < last) {
         // 32-bit timer rollover, bump the offset
@@ -185,14 +185,14 @@ static Uint64 Wayland_GetEventTimestamp(Uint64 nsTimestamp)
 static void Wayland_input_timestamp_listener(void *data, struct zwp_input_timestamps_v1 *zwp_input_timestamps_v1,
                                              uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec)
 {
-    *((Uint64 *)data) = ((((Uint64)tv_sec_hi << 32) | (Uint64)tv_sec_lo) * SDL_NS_PER_SECOND) + tv_nsec;
+    *((uint64_t *)data) = ((((uint64_t)tv_sec_hi << 32) | (uint64_t)tv_sec_lo) * SDL_NS_PER_SECOND) + tv_nsec;
 }
 
 static const struct zwp_input_timestamps_v1_listener timestamp_listener = {
     Wayland_input_timestamp_listener
 };
 
-static Uint64 Wayland_GetKeyboardTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
+static uint64_t Wayland_GetKeyboardTimestamp(struct SDL_WaylandInput *input, uint32_t wl_timestamp_ms)
 {
     if (wl_timestamp_ms) {
         return Wayland_GetEventTimestamp(input->keyboard_timestamp_ns ? input->keyboard_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
@@ -201,7 +201,7 @@ static Uint64 Wayland_GetKeyboardTimestamp(struct SDL_WaylandInput *input, Uint3
     return 0;
 }
 
-static Uint64 Wayland_GetKeyboardTimestampRaw(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
+static uint64_t Wayland_GetKeyboardTimestampRaw(struct SDL_WaylandInput *input, uint32_t wl_timestamp_ms)
 {
     if (wl_timestamp_ms) {
         return input->keyboard_timestamp_ns ? input->keyboard_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms);
@@ -210,7 +210,7 @@ static Uint64 Wayland_GetKeyboardTimestampRaw(struct SDL_WaylandInput *input, Ui
     return 0;
 }
 
-static Uint64 Wayland_GetPointerTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
+static uint64_t Wayland_GetPointerTimestamp(struct SDL_WaylandInput *input, uint32_t wl_timestamp_ms)
 {
     if (wl_timestamp_ms) {
         return Wayland_GetEventTimestamp(input->pointer_timestamp_ns ? input->pointer_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
@@ -219,7 +219,7 @@ static Uint64 Wayland_GetPointerTimestamp(struct SDL_WaylandInput *input, Uint32
     return 0;
 }
 
-Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
+uint64_t Wayland_GetTouchTimestamp(struct SDL_WaylandInput *input, uint32_t wl_timestamp_ms)
 {
     if (wl_timestamp_ms) {
         return Wayland_GetEventTimestamp(input->touch_timestamp_ns ? input->touch_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
@@ -262,18 +262,18 @@ void Wayland_CreateCursorShapeDevice(struct SDL_WaylandInput *input)
 }
 
 // Returns true if a key repeat event was due
-static bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint64 elapsed)
+static bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, uint64_t elapsed)
 {
     bool ret = false;
     while (elapsed >= repeat_info->next_repeat_ns) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
-            const Uint64 timestamp = repeat_info->wl_press_time_ns + repeat_info->next_repeat_ns;
+            const uint64_t timestamp = repeat_info->wl_press_time_ns + repeat_info->next_repeat_ns;
             SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetEventTimestamp(timestamp), repeat_info->keyboard_id, repeat_info->key, repeat_info->scancode, true);
         }
         if (repeat_info->text[0]) {
             SDL_SendKeyboardText(repeat_info->text);
         }
-        repeat_info->next_repeat_ns += SDL_NS_PER_SECOND / (Uint64)repeat_info->repeat_rate;
+        repeat_info->next_repeat_ns += SDL_NS_PER_SECOND / (uint64_t)repeat_info->repeat_rate;
         ret = true;
     }
     return ret;
@@ -287,7 +287,7 @@ static void keyboard_repeat_clear(SDL_WaylandKeyboardRepeat *repeat_info)
     repeat_info->is_key_down = false;
 }
 
-static void keyboard_repeat_set(SDL_WaylandKeyboardRepeat *repeat_info, Uint32 keyboard_id, uint32_t key, Uint64 wl_press_time_ns,
+static void keyboard_repeat_set(SDL_WaylandKeyboardRepeat *repeat_info, uint32_t keyboard_id, uint32_t key, uint64_t wl_press_time_ns,
                                 uint32_t scancode, bool has_text, char text[8])
 {
     if (!repeat_info->is_initialized || !repeat_info->repeat_rate) {
@@ -373,7 +373,7 @@ static int dispatch_queued_events(SDL_VideoData *viddata)
     return rc >= 0 ? 1 : rc;
 }
 
-int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
+int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, int64_t timeoutNS)
 {
     SDL_VideoData *d = _this->internal;
     struct SDL_WaylandInput *input = d->input;
@@ -394,12 +394,12 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 
     // If key repeat is active, we'll need to cap our maximum wait time to handle repeats
     if (input && keyboard_repeat_is_set(&input->keyboard_repeat)) {
-        const Uint64 elapsed = SDL_GetTicksNS() - input->keyboard_repeat.sdl_press_time_ns;
+        const uint64_t elapsed = SDL_GetTicksNS() - input->keyboard_repeat.sdl_press_time_ns;
         if (keyboard_repeat_handle(&input->keyboard_repeat, elapsed)) {
             // A repeat key event was already due
             return 1;
         } else {
-            const Uint64 next_repeat_wait_time = (input->keyboard_repeat.next_repeat_ns - elapsed) + 1;
+            const uint64_t next_repeat_wait_time = (input->keyboard_repeat.next_repeat_ns - elapsed) + 1;
             if (timeoutNS >= 0) {
                 timeoutNS = SDL_min(timeoutNS, next_repeat_wait_time);
             } else {
@@ -424,7 +424,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 
             // If key repeat is active, we might have woken up to generate a key event
             if (key_repeat_active) {
-                const Uint64 elapsed = SDL_GetTicksNS() - input->keyboard_repeat.sdl_press_time_ns;
+                const uint64_t elapsed = SDL_GetTicksNS() - input->keyboard_repeat.sdl_press_time_ns;
                 if (keyboard_repeat_handle(&input->keyboard_repeat, elapsed)) {
                     return 1;
                 }
@@ -488,7 +488,7 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     err = WAYLAND_wl_display_dispatch_pending(d->display);
 
     if (input && keyboard_repeat_is_set(&input->keyboard_repeat)) {
-        const Uint64 elapsed = SDL_GetTicksNS() - input->keyboard_repeat.sdl_press_time_ns;
+        const uint64_t elapsed = SDL_GetTicksNS() - input->keyboard_repeat.sdl_press_time_ns;
         keyboard_repeat_handle(&input->keyboard_repeat, elapsed);
     }
 
@@ -1661,7 +1661,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     char text[8];
     bool has_text = false;
     bool handled_by_ime = false;
-    const Uint64 timestamp_raw_ns = Wayland_GetKeyboardTimestampRaw(input, time);
+    const uint64_t timestamp_raw_ns = Wayland_GetKeyboardTimestampRaw(input, time);
 
     Wayland_UpdateImplicitGrabSerial(input, serial);
 
@@ -2487,7 +2487,7 @@ typedef struct SDL_WaylandPenTool  // a stylus, etc, on a tablet.
     float y;
     bool frame_motion_set;
     float frame_axes[SDL_PEN_AXIS_COUNT];
-    Uint32 frame_axes_set;
+    uint32_t frame_axes_set;
     int frame_pen_down;
     int frame_buttons[3];
 } SDL_WaylandPenTool;
@@ -2678,7 +2678,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
         return;  // Not a pen we report on.
     }
 
-    const Uint64 timestamp = Wayland_GetEventTimestamp(SDL_MS_TO_NS(time));
+    const uint64_t timestamp = Wayland_GetEventTimestamp(SDL_MS_TO_NS(time));
     const SDL_PenID instance_id = sdltool->instance_id;
     const SDL_Window *window = sdltool->tool_focus;
 
@@ -2710,7 +2710,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     for (int i = 0; i < SDL_arraysize(sdltool->frame_buttons); i++) {
         const int state = sdltool->frame_buttons[i];
         if (state != -1) {
-            SDL_SendPenButton(timestamp, instance_id, window, (Uint8)(i + 1), (state != 0));
+            SDL_SendPenButton(timestamp, instance_id, window, (uint8_t)(i + 1), (state != 0));
             sdltool->frame_buttons[i] = -1;
         }
     }
@@ -2974,7 +2974,7 @@ static void relative_pointer_handle_relative_motion(void *data,
     double dy_unaccel;
 
     // Relative pointer event times are in microsecond granularity.
-    const Uint64 timestamp = SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo);
+    const uint64_t timestamp = SDL_US_TO_NS(((uint64_t)time_hi << 32) | (uint64_t)time_lo);
 
     dx_unaccel = wl_fixed_to_double(dx_unaccel_w);
     dy_unaccel = wl_fixed_to_double(dy_unaccel_w);
@@ -3244,7 +3244,7 @@ bool Wayland_input_ungrab_keyboard(SDL_Window *window)
     return true;
 }
 
-void Wayland_UpdateImplicitGrabSerial(struct SDL_WaylandInput *input, Uint32 serial)
+void Wayland_UpdateImplicitGrabSerial(struct SDL_WaylandInput *input, uint32_t serial)
 {
     if (serial > input->last_implicit_grab_serial) {
         input->last_implicit_grab_serial = serial;

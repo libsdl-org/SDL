@@ -58,7 +58,7 @@ static SDL_Color MooseColors[84] = {
 };
 /* *INDENT-ON* */ /* clang-format on */
 
-static Uint8 MooseFrames[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE];
+static uint8_t MooseFrames[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE];
 
 static SDL_Renderer *renderer;
 static int frame;
@@ -79,8 +79,8 @@ static void quit(int rc)
 static void UpdateTexture(SDL_Texture *texture)
 {
     SDL_Color *color;
-    Uint8 *src;
-    Uint32 *dst;
+    uint8_t *src;
+    uint32_t *dst;
     int row, col;
     void *pixels;
     int pitch;
@@ -91,7 +91,7 @@ static void UpdateTexture(SDL_Texture *texture)
     }
     src = MooseFrames[frame];
     for (row = 0; row < MOOSEPIC_H; ++row) {
-        dst = (Uint32 *)((Uint8 *)pixels + row * pitch);
+        dst = (uint32_t *)((uint8_t *)pixels + row * pitch);
         for (col = 0; col < MOOSEPIC_W; ++col) {
             color = &MooseColors[*src++];
             *dst++ = (0xFF000000 | (color->r << 16) | (color->g << 8) | color->b);

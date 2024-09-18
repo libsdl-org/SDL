@@ -61,7 +61,7 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
         DeleteObject(hbm);
         DeleteDC(hdc);
         if (bmi->bmiHeader.biCompression == BI_BITFIELDS) {
-            switch (*(Uint32 *)bmi->bmiColors) {
+            switch (*(uint32_t *)bmi->bmiColors) {
             case 0x00FF0000:
                 mode->format = SDL_PIXELFORMAT_XRGB8888;
                 break;

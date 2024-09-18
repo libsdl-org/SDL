@@ -49,7 +49,7 @@ const char *defaultPaths[] = {
 bool Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
-    Uint32 extensionCount = 0;
+    uint32_t extensionCount = 0;
     bool hasSurfaceExtension = false;
     bool hasMetalSurfaceExtension = false;
     bool hasMacOSSurfaceExtension = false;
@@ -126,7 +126,7 @@ bool Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     if (!extensions) {
         goto fail;
     }
-    for (Uint32 i = 0; i < extensionCount; i++) {
+    for (uint32_t i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = true;
         } else if (SDL_strcmp(VK_EXT_METAL_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
@@ -162,7 +162,7 @@ void Cocoa_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 }
 
 char const* const* Cocoa_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                            Uint32 *count)
+                                            uint32_t *count)
 {
     static const char *const extensionsForCocoa[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME

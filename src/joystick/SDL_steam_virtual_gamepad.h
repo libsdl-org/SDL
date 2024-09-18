@@ -22,10 +22,10 @@
 
 typedef struct SDL_SteamVirtualGamepadInfo
 {
-    Uint64 handle;
+    uint64_t handle;
     char *name;
-    Uint16 vendor_id;
-    Uint16 product_id;
+    uint16_t vendor_id;
+    uint16_t product_id;
     SDL_GamepadType type;
 } SDL_SteamVirtualGamepadInfo;
 

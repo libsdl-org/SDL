@@ -61,7 +61,7 @@ extern "C" {
 typedef struct SDL_StorageInterface
 {
     /* The version of this interface */
-    Uint32 version;
+    uint32_t version;
 
     /* Called when the storage is closed */
     bool (SDLCALL *close)(void *userdata);
@@ -76,10 +76,10 @@ typedef struct SDL_StorageInterface
     bool (SDLCALL *info)(void *userdata, const char *path, SDL_PathInfo *info);
 
     /* Read a file from storage, optional for write-only storage */
-    bool (SDLCALL *read_file)(void *userdata, const char *path, void *destination, Uint64 length);
+    bool (SDLCALL *read_file)(void *userdata, const char *path, void *destination, uint64_t length);
 
     /* Write a file to storage, optional for read-only storage */
-    bool (SDLCALL *write_file)(void *userdata, const char *path, const void *source, Uint64 length);
+    bool (SDLCALL *write_file)(void *userdata, const char *path, const void *source, uint64_t length);
 
     /* Create a directory, optional for read-only storage */
     bool (SDLCALL *mkdir)(void *userdata, const char *path);
@@ -94,7 +94,7 @@ typedef struct SDL_StorageInterface
     bool (SDLCALL *copy)(void *userdata, const char *oldpath, const char *newpath);
 
     /* Get the space remaining, optional for read-only storage */
-    Uint64 (SDLCALL *space_remaining)(void *userdata);
+    uint64_t (SDLCALL *space_remaining)(void *userdata);
 } SDL_StorageInterface;
 
 /* Check the size of SDL_StorageInterface
@@ -260,7 +260,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
  * \sa SDL_ReadStorageFile
  * \sa SDL_StorageReady
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, uint64_t *length);
 
 /**
  * Synchronously read a file from a storage container into a client-provided
@@ -279,7 +279,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetStorageFileSize(SDL_Storage *storage, co
  * \sa SDL_StorageReady
  * \sa SDL_WriteStorageFile
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destination, Uint64 length);
+extern SDL_DECLSPEC bool SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destination, uint64_t length);
 
 /**
  * Synchronously write a file from client memory into a storage container.
@@ -297,7 +297,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const
  * \sa SDL_ReadStorageFile
  * \sa SDL_StorageReady
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length);
+extern SDL_DECLSPEC bool SDLCALL SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, uint64_t length);
 
 /**
  * Create a directory in a writable storage container.
@@ -404,7 +404,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetStoragePathInfo(SDL_Storage *storage, co
  * \sa SDL_StorageReady
  * \sa SDL_WriteStorageFile
  */
-extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *storage);
+extern SDL_DECLSPEC uint64_t SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *storage);
 
 /**
  * Enumerate a directory tree, filtered by pattern, and return a list.

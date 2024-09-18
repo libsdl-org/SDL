@@ -82,9 +82,9 @@ static void CheckMonotonicTime(void)
     checked_monotonic_time = true;
 }
 
-Uint64 SDL_GetPerformanceCounter(void)
+uint64_t SDL_GetPerformanceCounter(void)
 {
-    Uint64 ticks;
+    uint64_t ticks;
 
     if (!checked_monotonic_time) {
         CheckMonotonicTime();
@@ -115,7 +115,7 @@ Uint64 SDL_GetPerformanceCounter(void)
     return ticks;
 }
 
-Uint64 SDL_GetPerformanceFrequency(void)
+uint64_t SDL_GetPerformanceFrequency(void)
 {
     if (!checked_monotonic_time) {
         CheckMonotonicTime();
@@ -125,7 +125,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
 #ifdef HAVE_CLOCK_GETTIME
         return SDL_NS_PER_SECOND;
 #elif defined(SDL_PLATFORM_APPLE)
-        Uint64 freq = mach_base_info.denom;
+        uint64_t freq = mach_base_info.denom;
         freq *= SDL_NS_PER_SECOND;
         freq /= mach_base_info.numer;
         return freq;
@@ -135,7 +135,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return SDL_US_PER_SECOND;
 }
 
-void SDL_SYS_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(uint64_t ns)
 {
     int was_error;
 
@@ -143,7 +143,7 @@ void SDL_SYS_DelayNS(Uint64 ns)
     struct timespec tv, remaining;
 #else
     struct timeval tv;
-    Uint64 then, now, elapsed;
+    uint64_t then, now, elapsed;
 #endif
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN

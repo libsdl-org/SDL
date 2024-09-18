@@ -74,7 +74,7 @@ static bool STEAM_GetStoragePathInfo(void *userdata, const char *path, SDL_PathI
     return true;
 }
 
-static bool STEAM_ReadStorageFile(void *userdata, const char *path, void *destination, Uint64 length)
+static bool STEAM_ReadStorageFile(void *userdata, const char *path, void *destination, uint64_t length)
 {
     bool result = false;
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
@@ -85,7 +85,7 @@ static bool STEAM_ReadStorageFile(void *userdata, const char *path, void *destin
     if (length > SDL_MAX_SINT32) {
         return SDL_SetError("SteamRemoteStorage only supports INT32_MAX read size");
     }
-    if (steam->SteamAPI_ISteamRemoteStorage_FileRead(steamremotestorage, path, destination, (Sint32) length) == length) {
+    if (steam->SteamAPI_ISteamRemoteStorage_FileRead(steamremotestorage, path, destination, (int32_t) length) == length) {
         result = true;
     } else {
         SDL_SetError("SteamAPI_ISteamRemoteStorage_FileRead() failed");
@@ -93,7 +93,7 @@ static bool STEAM_ReadStorageFile(void *userdata, const char *path, void *destin
     return result;
 }
 
-static bool STEAM_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
+static bool STEAM_WriteStorageFile(void *userdata, const char *path, const void *source, uint64_t length)
 {
     int result = false;
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
@@ -104,7 +104,7 @@ static bool STEAM_WriteStorageFile(void *userdata, const char *path, const void 
     if (length > SDL_MAX_SINT32) {
         return SDL_SetError("SteamRemoteStorage only supports INT32_MAX write size");
     }
-    if (steam->SteamAPI_ISteamRemoteStorage_FileWrite(steamremotestorage, path, source, (Sint32) length) == length) {
+    if (steam->SteamAPI_ISteamRemoteStorage_FileWrite(steamremotestorage, path, source, (int32_t) length) == length) {
         result = true;
     } else {
         SDL_SetError("SteamAPI_ISteamRemoteStorage_FileRead() failed");
@@ -112,9 +112,9 @@ static bool STEAM_WriteStorageFile(void *userdata, const char *path, const void 
     return result;
 }
 
-static Uint64 STEAM_GetStorageSpaceRemaining(void *userdata)
+static uint64_t STEAM_GetStorageSpaceRemaining(void *userdata)
 {
-    Uint64 total, remaining;
+    uint64_t total, remaining;
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
     void *steamremotestorage = steam->SteamAPI_SteamRemoteStorage_v016();
     if (steamremotestorage == NULL) {

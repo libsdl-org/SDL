@@ -672,7 +672,7 @@ VulkanVideoContext *CreateVulkanVideoContext(SDL_Window *window)
 void SetupVulkanRenderProperties(VulkanVideoContext *context, SDL_PropertiesID props)
 {
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER, context->instance);
-    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_SURFACE_NUMBER, (Sint64)context->surface);
+    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_SURFACE_NUMBER, (int64_t)context->surface);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_PHYSICAL_DEVICE_POINTER, context->physicalDevice);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_DEVICE_POINTER, context->device);
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER, context->presentQueueFamilyIndex);
@@ -841,7 +841,7 @@ int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_R
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION , "vkQueueSubmit(): %s", getVulkanResultString(result));
     }
 
-    SDL_AddVulkanRenderSemaphores(renderer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, (Sint64)context->waitSemaphores[context->commandBufferIndex], (Sint64)context->signalSemaphores[context->commandBufferIndex]);
+    SDL_AddVulkanRenderSemaphores(renderer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, (int64_t)context->waitSemaphores[context->commandBufferIndex], (int64_t)context->signalSemaphores[context->commandBufferIndex]);
 
     return 0;
 }
@@ -888,7 +888,7 @@ SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *fram
     AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
     AVVulkanFramesContext *vk = (AVVulkanFramesContext *)(frames->hwctx);
     AVVkFrame *pVkFrame = (AVVkFrame *)frame->data[0];
-    Uint32 format;
+    uint32_t format;
 
     switch (vk->format[0]) {
     case VK_FORMAT_G8B8G8R8_422_UNORM:
@@ -911,7 +911,7 @@ SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *fram
         break;
     }
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, format);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, (Sint64)pVkFrame->img[0]);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, (int64_t)pVkFrame->img[0]);
     return SDL_CreateTextureWithProperties(renderer, props);
 }
 

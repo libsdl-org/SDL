@@ -53,7 +53,7 @@
     (fourcc_mod_get_vendor(modifier) == DRM_FORMAT_MOD_VENDOR_##vendor)
 
 #define fourcc_mod_code(vendor, val) \
-    ((((Uint64)DRM_FORMAT_MOD_VENDOR_##vendor) << 56) | ((val) & 0x00ffffffffffffffULL))
+    ((((uint64_t)DRM_FORMAT_MOD_VENDOR_##vendor) << 56) | ((val) & 0x00ffffffffffffffULL))
 
 #define DRM_FORMAT_MOD_INVALID fourcc_mod_code(NONE, DRM_FORMAT_RESERVED)
 #define DRM_FORMAT_MOD_LINEAR  fourcc_mod_code(NONE, 0)
@@ -81,7 +81,7 @@ static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_AudioStream *audio;
 static SDL_Texture *video_texture;
-static Uint64 video_start;
+static uint64_t video_start;
 static bool software_only;
 static bool has_eglCreateImage;
 #ifdef HAVE_EGL
@@ -110,7 +110,7 @@ static bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *dr
     bool useOpenGL = (driver && (SDL_strcmp(driver, "opengl") == 0 || SDL_strcmp(driver, "opengles2") == 0));
     bool useEGL = (driver && SDL_strcmp(driver, "opengles2") == 0);
     bool useVulkan = (driver && SDL_strcmp(driver, "vulkan") == 0);
-    Uint32 flags = SDL_WINDOW_HIDDEN;
+    uint32_t flags = SDL_WINDOW_HIDDEN;
 
     if (useOpenGL) {
         if (useEGL) {
@@ -1214,15 +1214,15 @@ static void InterleaveAudio(AVFrame *frame, const SDL_AudioSpec *spec)
     int c, n;
     int samplesize = SDL_AUDIO_BYTESIZE(spec->format);
     int framesize = SDL_AUDIO_FRAMESIZE(*spec);
-    Uint8 *data = (Uint8 *)SDL_malloc(frame->nb_samples * framesize);
+    uint8_t *data = (uint8_t *)SDL_malloc(frame->nb_samples * framesize);
     if (!data) {
         return;
     }
 
     /* This could be optimized with SIMD and not allocating memory each time */
     for (c = 0; c < spec->channels; ++c) {
-        const Uint8 *src = frame->data[c];
-        Uint8 *dst = data + c * samplesize;
+        const uint8_t *src = frame->data[c];
+        uint8_t *dst = data + c * samplesize;
         for (n = frame->nb_samples; n--;) {
             SDL_memcpy(dst, src, samplesize);
             src += samplesize;

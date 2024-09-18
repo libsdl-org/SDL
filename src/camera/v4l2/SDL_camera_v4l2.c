@@ -121,7 +121,7 @@ static bool V4L2_WaitDevice(SDL_Camera *device)
     return false;
 }
 
-static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS)
 {
     const int fd = device->hidden->fd;
     const io_method io = device->hidden->io;
@@ -180,7 +180,7 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
             frame->pitch = device->hidden->driver_pitch;
             device->hidden->buffers[buf.index].available = 1;
 
-            *timestampNS = (((Uint64) buf.timestamp.tv_sec) * SDL_NS_PER_SECOND) + SDL_US_TO_NS(buf.timestamp.tv_usec);
+            *timestampNS = (((uint64_t) buf.timestamp.tv_sec) * SDL_NS_PER_SECOND) + SDL_US_TO_NS(buf.timestamp.tv_usec);
 
             #if DEBUG_CAMERA
             SDL_Log("CAMERA: debug mmap: image %d/%d  data[0]=%p", buf.index, device->hidden->nb_buffers, (void*)frame->pixels);
@@ -224,7 +224,7 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
             frame->pitch = device->hidden->driver_pitch;
             device->hidden->buffers[i].available = 1;
 
-            *timestampNS = (((Uint64) buf.timestamp.tv_sec) * SDL_NS_PER_SECOND) + SDL_US_TO_NS(buf.timestamp.tv_usec);
+            *timestampNS = (((uint64_t) buf.timestamp.tv_sec) * SDL_NS_PER_SECOND) + SDL_US_TO_NS(buf.timestamp.tv_usec);
 
             #if DEBUG_CAMERA
             SDL_Log("CAMERA: debug userptr: image %d/%d  data[0]=%p", buf.index, device->hidden->nb_buffers, (void*)frame->pixels);
@@ -398,7 +398,7 @@ static bool AllocBufferUserPtr(SDL_Camera *device, size_t buffer_size)
     return true;
 }
 
-static void format_v4l2_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
+static void format_v4l2_to_sdl(uint32_t fmt, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
     #define CASE(x, y, z)  case x: *format = y; *colorspace = z; return
@@ -414,7 +414,7 @@ static void format_v4l2_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspa
     *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
-static Uint32 format_sdl_to_v4l2(SDL_PixelFormat fmt)
+static uint32_t format_sdl_to_v4l2(SDL_PixelFormat fmt)
 {
     switch (fmt) {
         #define CASE(y, x)  case x: return y
@@ -538,7 +538,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: set SDL format %s", SDL_GetPixelFormatName(spec->format));
-    { const Uint32 f = fmt.fmt.pix.pixelformat; SDL_Log("CAMERA: set format V4L2_format=%d  %c%c%c%c", f, (f >> 0) & 0xff, (f >> 8) & 0xff, (f >> 16) & 0xff, (f >> 24) & 0xff); }
+    { const uint32_t f = fmt.fmt.pix.pixelformat; SDL_Log("CAMERA: set format V4L2_format=%d  %c%c%c%c", f, (f >> 0) & 0xff, (f >> 8) & 0xff, (f >> 16) & 0xff, (f >> 24) & 0xff); }
     #endif
 
     if (xioctl(fd, VIDIOC_S_FMT, &fmt) == -1) {
@@ -654,13 +654,13 @@ static bool FindV4L2CameraByBusInfoCallback(SDL_Camera *device, void *userdata)
     return (SDL_strcmp(handle->bus_info, (const char *) userdata) == 0);
 }
 
-static bool AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFormat sdlfmt, SDL_Colorspace colorspace, Uint32 v4l2fmt, int w, int h)
+static bool AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFormat sdlfmt, SDL_Colorspace colorspace, uint32_t v4l2fmt, int w, int h)
 {
     struct v4l2_frmivalenum frmivalenum;
     SDL_zero(frmivalenum);
     frmivalenum.pixel_format = v4l2fmt;
-    frmivalenum.width = (Uint32) w;
-    frmivalenum.height = (Uint32) h;
+    frmivalenum.width = (uint32_t) w;
+    frmivalenum.height = (uint32_t) h;
 
     while (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmivalenum) == 0) {
         if (frmivalenum.type == V4L2_FRMIVAL_TYPE_DISCRETE) {

@@ -73,7 +73,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    Uint64 timestampNS = 0;
+    uint64_t timestampNS = 0;
     SDL_Surface *frame = SDL_AcquireCameraFrame(camera, &timestampNS);
 
     if (frame != NULL) {

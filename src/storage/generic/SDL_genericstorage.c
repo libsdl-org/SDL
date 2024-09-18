@@ -70,7 +70,7 @@ static bool GENERIC_GetStoragePathInfo(void *userdata, const char *path, SDL_Pat
     return result;
 }
 
-static bool GENERIC_ReadStorageFile(void *userdata, const char *path, void *destination, Uint64 length)
+static bool GENERIC_ReadStorageFile(void *userdata, const char *path, void *destination, uint64_t length)
 {
     bool result = false;
 
@@ -93,7 +93,7 @@ static bool GENERIC_ReadStorageFile(void *userdata, const char *path, void *dest
     return result;
 }
 
-static bool GENERIC_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
+static bool GENERIC_WriteStorageFile(void *userdata, const char *path, const void *source, uint64_t length)
 {
     // TODO: Recursively create subdirectories with SDL_CreateDirectory
     bool result = false;
@@ -175,7 +175,7 @@ static bool GENERIC_CopyStorageFile(void *userdata, const char *oldpath, const c
     return result;
 }
 
-static Uint64 GENERIC_GetStorageSpaceRemaining(void *userdata)
+static uint64_t GENERIC_GetStorageSpaceRemaining(void *userdata)
 {
     // TODO: There's totally a way to query a folder root's quota...
     return SDL_MAX_UINT64;

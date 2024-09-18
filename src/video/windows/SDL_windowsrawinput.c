@@ -36,7 +36,7 @@
 typedef struct
 {
     bool done;
-    Uint32 flags;
+    uint32_t flags;
     HANDLE ready_event;
     HANDLE done_event;
     HANDLE thread;
@@ -133,7 +133,7 @@ static void CleanupRawInputThreadData(RawInputThreadData *data)
     }
 }
 
-static bool WIN_SetRawInputEnabled(SDL_VideoDevice *_this, Uint32 flags)
+static bool WIN_SetRawInputEnabled(SDL_VideoDevice *_this, uint32_t flags)
 {
     bool result = false;
 
@@ -184,7 +184,7 @@ done:
 static bool WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
-    Uint32 flags = 0;
+    uint32_t flags = 0;
     if (data->raw_mouse_enabled) {
         flags |= ENABLE_RAW_MOUSE_INPUT;
     }

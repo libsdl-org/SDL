@@ -148,7 +148,7 @@ HRESULT D3D12_XBOX_PresentFrame(ID3D12CommandQueue *commandQueue, UINT64 token, 
 }
 
 extern "C"
-void D3D12_XBOX_GetResolution(Uint32 *width, Uint32 *height)
+void D3D12_XBOX_GetResolution(uint32_t *width, uint32_t *height)
 {
     switch (XSystemGetDeviceType()) {
     case XSystemDeviceType::XboxScarlettLockhart:

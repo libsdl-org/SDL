@@ -30,7 +30,7 @@
 #ifndef SDL_PLATFORM_TVOS
 // turn off the battery monitor if it's been more than X ms since last check.
 static const int BATTERY_MONITORING_TIMEOUT = 3000;
-static Uint64 SDL_UIKitLastPowerInfoQuery = 0;
+static uint64_t SDL_UIKitLastPowerInfoQuery = 0;
 
 void SDL_UIKit_UpdateBatteryMonitoring(void)
 {

@@ -22,9 +22,9 @@
 static int test_sdl_delay_within_bounds(void) {
     const int testDelay = 100;
     const int marginOfError = 25;
-    Uint64 result;
-    Uint64 result2;
-    Sint64 difference;
+    uint64_t result;
+    uint64_t result2;
+    int64_t difference;
 
     SDLTest_ResetAssertSummary();
 
@@ -49,22 +49,22 @@ static int test_sdl_delay_within_bounds(void) {
 
 static int ticks = 0;
 
-static Uint32 SDLCALL
-ticktock(void *param, SDL_TimerID timerID, Uint32 interval)
+static uint32_t SDLCALL
+ticktock(void *param, SDL_TimerID timerID, uint32_t interval)
 {
     ++ticks;
     return interval;
 }
 
-static Uint64 SDLCALL
-ticktockNS(void *param, SDL_TimerID timerID, Uint64 interval)
+static uint64_t SDLCALL
+ticktockNS(void *param, SDL_TimerID timerID, uint64_t interval)
 {
     ++ticks;
     return interval;
 }
 
-static Uint32 SDLCALL
-callback(void *param, SDL_TimerID timerID, Uint32 interval)
+static uint32_t SDLCALL
+callback(void *param, SDL_TimerID timerID, uint32_t interval)
 {
     int value = (int)(uintptr_t)param;
     SDL_assert( value == 1 || value == 2 || value == 3 );
@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
     int i;
     int desired = -1;
     SDL_TimerID t1, t2, t3;
-    Uint64 start, now;
-    Uint64 start_perf, now_perf;
+    uint64_t start, now;
+    uint64_t start_perf, now_perf;
     SDLTest_CommonState  *state;
     bool run_interactive_tests = true;
     int return_code = 0;
@@ -180,9 +180,9 @@ int main(int argc, char *argv[])
 
     /* Check accuracy of precise delay */
     {
-        Uint64 desired_delay = SDL_NS_PER_SECOND / 60;
-        Uint64 actual_delay;
-        Uint64 total_overslept = 0;
+        uint64_t desired_delay = SDL_NS_PER_SECOND / 60;
+        uint64_t actual_delay;
+        uint64_t total_overslept = 0;
 
         start = SDL_GetTicksNS();
         SDL_DelayNS(1);

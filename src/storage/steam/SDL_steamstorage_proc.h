@@ -6,9 +6,9 @@ STEAM_PROC(bool, SteamAPI_ISteamRemoteStorage_IsCloudEnabledForApp, (void*))
 STEAM_PROC(bool, SteamAPI_ISteamRemoteStorage_BeginFileWriteBatch, (void*))
 STEAM_PROC(bool, SteamAPI_ISteamRemoteStorage_EndFileWriteBatch, (void*))
 
-STEAM_PROC(Sint32, SteamAPI_ISteamRemoteStorage_GetFileSize, (void*, const char*))
-STEAM_PROC(Sint32, SteamAPI_ISteamRemoteStorage_FileRead, (void*, const char*, void*, Sint32))
-STEAM_PROC(Sint32, SteamAPI_ISteamRemoteStorage_FileWrite, (void*, const char*, const void*, Sint32))
-STEAM_PROC(bool, SteamAPI_ISteamRemoteStorage_GetQuota, (void*, Uint64*, Uint64*))
+STEAM_PROC(int32_t, SteamAPI_ISteamRemoteStorage_GetFileSize, (void*, const char*))
+STEAM_PROC(int32_t, SteamAPI_ISteamRemoteStorage_FileRead, (void*, const char*, void*, int32_t))
+STEAM_PROC(int32_t, SteamAPI_ISteamRemoteStorage_FileWrite, (void*, const char*, const void*, int32_t))
+STEAM_PROC(bool, SteamAPI_ISteamRemoteStorage_GetQuota, (void*, uint64_t*, uint64_t*))
 
 #undef STEAM_PROC

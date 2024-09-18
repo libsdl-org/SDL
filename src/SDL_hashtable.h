@@ -25,12 +25,12 @@
 
 struct SDL_HashTable;
 typedef struct SDL_HashTable SDL_HashTable;
-typedef Uint32 (*SDL_HashTable_HashFn)(const void *key, void *data);
+typedef uint32_t (*SDL_HashTable_HashFn)(const void *key, void *data);
 typedef bool (*SDL_HashTable_KeyMatchFn)(const void *a, const void *b, void *data);
 typedef void (*SDL_HashTable_NukeFn)(const void *key, const void *value, void *data);
 
 extern SDL_HashTable *SDL_CreateHashTable(void *data,
-                                          const Uint32 num_buckets,
+                                          const uint32_t num_buckets,
                                           const SDL_HashTable_HashFn hashfn,
                                           const SDL_HashTable_KeyMatchFn keymatchfn,
                                           const SDL_HashTable_NukeFn nukefn,
@@ -49,10 +49,10 @@ extern bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key,
 // iterate all key/value pairs in a hash (stackable hashes can have duplicate keys with multiple values).
 extern bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const void **_value, void **iter);
 
-extern Uint32 SDL_HashString(const void *key, void *unused);
+extern uint32_t SDL_HashString(const void *key, void *unused);
 extern bool SDL_KeyMatchString(const void *a, const void *b, void *unused);
 
-extern Uint32 SDL_HashID(const void *key, void *unused);
+extern uint32_t SDL_HashID(const void *key, void *unused);
 extern bool SDL_KeyMatchID(const void *a, const void *b, void *unused);
 
 extern void SDL_NukeFreeKey(const void *key, const void *value, void *unused);

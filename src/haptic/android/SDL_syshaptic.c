@@ -193,7 +193,7 @@ bool SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
 }
 
 bool SDL_SYS_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                            Uint32 iterations)
+                            uint32_t iterations)
 {
     float large = effect->effect.leftright.large_magnitude / 32767.0f;
     float small = effect->effect.leftright.small_magnitude / 32767.0f;

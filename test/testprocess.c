@@ -139,7 +139,7 @@ static int SDLCALL process_testInheritedEnv(void *arg)
     };
     SDL_PropertiesID props;
     SDL_Process *process = NULL;
-    Sint64 pid;
+    int64_t pid;
     SDL_IOStream *process_stdout = NULL;
     char buffer[256];
     bool wait_result;
@@ -216,7 +216,7 @@ static int SDLCALL process_testNewEnv(void *arg)
     SDL_Environment *process_env;
     SDL_PropertiesID props;
     SDL_Process *process = NULL;
-    Sint64 pid;
+    int64_t pid;
     SDL_IOStream *process_stdout = NULL;
     char buffer[256];
     bool wait_result;
@@ -295,7 +295,7 @@ static int process_testStdinToStdout(void *arg)
     };
     SDL_PropertiesID props;
     SDL_Process *process = NULL;
-    Sint64 pid;
+    int64_t pid;
     SDL_IOStream *process_stdin = NULL;
     SDL_IOStream *process_stdout = NULL;
     const char *text_in = "Tests whether we can write to stdin and read from stdout\r\n{'succes': true, 'message': 'Success!'}\r\nYippie ka yee\r\nEOF";
@@ -333,7 +333,7 @@ static int process_testStdinToStdout(void *arg)
     SDLTest_AssertPass("About to write to process");
     amount_to_write = SDL_strlen(text_in);
     amount_written = SDL_WriteIO(process_stdin, text_in, amount_to_write);
-    SDLTest_AssertCheck(amount_written == amount_to_write, "SDL_WriteIO(subprocess.stdin) wrote %" SDL_PRIu64 " bytes, expected %" SDL_PRIu64, (Uint64)amount_written, (Uint64)amount_to_write);
+    SDLTest_AssertCheck(amount_written == amount_to_write, "SDL_WriteIO(subprocess.stdin) wrote %" SDL_PRIu64 " bytes, expected %" SDL_PRIu64, (uint64_t)amount_written, (uint64_t)amount_to_write);
     if (amount_to_write != amount_written) {
         goto failed;
     }

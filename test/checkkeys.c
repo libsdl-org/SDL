@@ -40,7 +40,7 @@ static SDLTest_CommonState *state;
 static TextWindowState *windowstates;
 static bool escape_pressed;
 static bool cursor_visible;
-static Uint64 last_cursor_change;
+static uint64_t last_cursor_change;
 static int done;
 
 static TextWindowState *GetTextWindowStateForWindowID(SDL_WindowID id)
@@ -309,7 +309,7 @@ static void DrawEditText(int i)
 static void loop(void)
 {
     SDL_Event event;
-    Uint64 now;
+    uint64_t now;
     int i;
     char line[1024];
 

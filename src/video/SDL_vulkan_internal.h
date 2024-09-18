@@ -57,7 +57,7 @@ extern const char *SDL_Vulkan_GetResultString(VkResult result);
 
 extern VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties,
-    Uint32 *extensionCount); // free returned list with SDL_free
+    uint32_t *extensionCount); // free returned list with SDL_free
 
 /* Create a surface directly from a display connected to a physical device
  * using the DisplayKHR extension.

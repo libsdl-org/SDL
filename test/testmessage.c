@@ -63,7 +63,7 @@ button_messagebox(void *eventNumber)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         if (eventNumber) {
             SDL_Event event;
-            event.type = (Uint32)(intptr_t)eventNumber;
+            event.type = (uint32_t)(intptr_t)eventNumber;
             SDL_PushEvent(&event);
             return 1;
         } else {
@@ -75,7 +75,7 @@ button_messagebox(void *eventNumber)
 
     if (eventNumber) {
         SDL_Event event;
-        event.type = (Uint32)(intptr_t)eventNumber;
+        event.type = (uint32_t)(intptr_t)eventNumber;
         SDL_PushEvent(&event);
     }
 
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
     {
         int status = 0;
         SDL_Event event;
-        Uint32 eventNumber = SDL_RegisterEvents(1);
+        uint32_t eventNumber = SDL_RegisterEvents(1);
         SDL_Thread *thread = SDL_CreateThread(&button_messagebox, "MessageBox", (void *)(uintptr_t)eventNumber);
 
         while (SDL_WaitEvent(&event)) {

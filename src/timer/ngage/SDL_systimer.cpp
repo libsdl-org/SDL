@@ -32,20 +32,20 @@ extern "C" {
 #endif
 
 
-Uint64 SDL_GetPerformanceCounter(void)
+uint64_t SDL_GetPerformanceCounter(void)
 {
     // FIXME: Need to account for 32-bit wrapping
-    return (Uint64)User::TickCount();
+    return (uint64_t)User::TickCount();
 }
 
-Uint64 SDL_GetPerformanceFrequency(void)
+uint64_t SDL_GetPerformanceFrequency(void)
 {
     return SDL_US_PER_SECOND;
 }
 
-void SDL_SYS_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(uint64_t ns)
 {
-    const Uint64 max_delay = 0x7fffffffLL * SDL_NS_PER_US;
+    const uint64_t max_delay = 0x7fffffffLL * SDL_NS_PER_US;
     if (ns > max_delay) {
         ns = max_delay;
     }

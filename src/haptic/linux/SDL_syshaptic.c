@@ -85,10 +85,10 @@ static int numhaptics = 0;
  * Test whether a device has haptic properties.
  * Returns available properties or 0 if there are none.
  */
-static Uint32 EV_IsHaptic(int fd)
+static uint32_t EV_IsHaptic(int fd)
 {
     unsigned long features[1 + FF_MAX / sizeof(unsigned long)];
-    Uint32 ret = 0;
+    uint32_t ret = 0;
 
     // Ask device for what it has.
     if (ioctl(fd, EVIOCGBIT(EV_FF, sizeof(features)), features) < 0) {
@@ -232,7 +232,7 @@ static bool MaybeAddDevice(const char *path)
 {
     struct stat sb;
     int fd;
-    Uint32 supported;
+    uint32_t supported;
     SDL_hapticlist_item *item;
 
     if (!path) {
@@ -635,9 +635,9 @@ void SDL_SYS_HapticQuit(void)
 /*
  * Converts an SDL button to a ff_trigger button.
  */
-static Uint16 SDL_SYS_ToButton(Uint16 button)
+static uint16_t SDL_SYS_ToButton(uint16_t button)
 {
-    Uint16 ff_button;
+    uint16_t ff_button;
 
     ff_button = 0;
 
@@ -655,14 +655,14 @@ static Uint16 SDL_SYS_ToButton(Uint16 button)
 /*
  * Initializes the ff_effect usable direction from a SDL_HapticDirection.
  */
-static bool SDL_SYS_ToDirection(Uint16 *dest, const SDL_HapticDirection *src)
+static bool SDL_SYS_ToDirection(uint16_t *dest, const SDL_HapticDirection *src)
 {
-    Uint32 tmp;
+    uint32_t tmp;
 
     switch (src->type) {
     case SDL_HAPTIC_POLAR:
         tmp = ((src->dir[0] % 36000) * 0x8000) / 18000; // convert to range [0,0xFFFF]
-        *dest = (Uint16)tmp;
+        *dest = (uint16_t)tmp;
         break;
 
     case SDL_HAPTIC_SPHERICAL:
@@ -676,7 +676,7 @@ static bool SDL_SYS_ToDirection(Uint16 *dest, const SDL_HapticDirection *src)
         */
         tmp = ((src->dir[0]) + 9000) % 36000; // Convert to polars
         tmp = (tmp * 0x8000) / 18000;         // convert to range [0,0xFFFF]
-        *dest = (Uint16)tmp;
+        *dest = (uint16_t)tmp;
         break;
 
     case SDL_HAPTIC_CARTESIAN:
@@ -696,9 +696,9 @@ static bool SDL_SYS_ToDirection(Uint16 *dest, const SDL_HapticDirection *src)
               --> add 45000 in total
               --> finally convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
             */
-            tmp = (((Sint32)(f * 18000.0 / SDL_PI_D)) + 45000) % 36000;
+            tmp = (((int32_t)(f * 18000.0 / SDL_PI_D)) + 45000) % 36000;
             tmp = (tmp * 0x8000) / 18000; // convert to range [0,0xFFFF]
-            *dest = (Uint16)tmp;
+            *dest = (uint16_t)tmp;
         }
         break;
     case SDL_HAPTIC_STEERING_AXIS:
@@ -795,7 +795,7 @@ static bool SDL_SYS_ToFFEffect(struct ff_effect *dest, const SDL_HapticEffect *s
         dest->u.periodic.magnitude = periodic->magnitude;
         dest->u.periodic.offset = periodic->offset;
         // Linux phase is defined in interval "[0x0000, 0x10000[", corresponds with "[0deg, 360deg[" phase shift.
-        dest->u.periodic.phase = ((Uint32)periodic->phase * 0x10000U) / 36000;
+        dest->u.periodic.phase = ((uint32_t)periodic->phase * 0x10000U) / 36000;
 
         // Envelope
         dest->u.periodic.envelope.attack_length =
@@ -984,7 +984,7 @@ bool SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
  * Runs an effect.
  */
 bool SDL_SYS_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                            Uint32 iterations)
+                            uint32_t iterations)
 {
     struct input_event run;
 

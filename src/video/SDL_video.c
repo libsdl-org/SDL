@@ -256,7 +256,7 @@ typedef struct
     int bytes_per_pixel;
 } SDL_WindowTextureData;
 
-static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
+static uint32_t SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
 {
 #if (defined(SDL_VIDEO_OPENGL) && defined(SDL_PLATFORM_MACOS)) || (defined(SDL_PLATFORM_IOS) && !TARGET_OS_MACCATALYST) || defined(SDL_PLATFORM_ANDROID)
     if (_this->GL_CreateContext) {
@@ -457,7 +457,7 @@ static bool SDL_UpdateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
 
     // Update a single rect that contains subrects for best DMA performance
     if (SDL_GetSpanEnclosingRect(w, h, numrects, rects, &rect)) {
-        src = (void *)((Uint8 *)data->pixels +
+        src = (void *)((uint8_t *)data->pixels +
                        rect.y * data->pitch +
                        rect.x * data->bytes_per_pixel);
         if (!SDL_UpdateTexture(data->texture, &rect, src, data->pitch)) {
@@ -762,7 +762,7 @@ static void SDL_FinalizeDisplayMode(SDL_DisplayMode *mode)
         if (mode->refresh_rate_denominator <= 0) {
             mode->refresh_rate_denominator = 1;
         }
-        mode->refresh_rate = ((100 * (Sint64)mode->refresh_rate_numerator) / mode->refresh_rate_denominator) / 100.0f;
+        mode->refresh_rate = ((100 * (int64_t)mode->refresh_rate_numerator) / mode->refresh_rate_denominator) / 100.0f;
     } else {
         SDL_CalculateFraction(mode->refresh_rate, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
         mode->refresh_rate = (int)(mode->refresh_rate * 100) / 100.0f;
@@ -1284,7 +1284,7 @@ SDL_DisplayMode **SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *co
     num_modes = display->num_fullscreen_modes;
     result = (SDL_DisplayMode **)SDL_malloc((num_modes + 1) * sizeof(*result) + num_modes * sizeof(**result));
     if (result) {
-        SDL_DisplayMode *modes = (SDL_DisplayMode *)((Uint8 *)result + ((num_modes + 1) * sizeof(*result)));
+        SDL_DisplayMode *modes = (SDL_DisplayMode *)((uint8_t *)result + ((num_modes + 1) * sizeof(*result)));
         SDL_memcpy(modes, display->fullscreen_modes, num_modes * sizeof(*modes));
         for (i = 0; i < num_modes; ++i) {
             result[i] = modes++;
@@ -5094,10 +5094,10 @@ bool SDL_GL_DestroyContext(SDL_GLContext context)
  * Utility function used by SDL_WM_SetIcon(); flags & 1 for color key, flags
  * & 2 for alpha channel.
  */
-static void CreateMaskFromColorKeyOrAlpha(SDL_Surface *icon, Uint8 *mask, int flags)
+static void CreateMaskFromColorKeyOrAlpha(SDL_Surface *icon, uint8_t *mask, int flags)
 {
     int x, y;
-    Uint32 colorkey;
+    uint32_t colorkey;
 #define SET_MASKBIT(icon, x, y, mask) \
     mask[(y * ((icon->w + 7) / 8)) + (x / 8)] &= ~(0x01 << (7 - (x % 8)))
 
@@ -5105,9 +5105,9 @@ static void CreateMaskFromColorKeyOrAlpha(SDL_Surface *icon, Uint8 *mask, int fl
     switch (SDL_BYTESPERPIXEL(icon->format)) {
     case 1:
         {
-            Uint8 *pixels;
+            uint8_t *pixels;
             for (y = 0; y < icon->h; ++y) {
-                pixels = (Uint8 *) icon->pixels + y * icon->pitch;
+                pixels = (uint8_t *) icon->pixels + y * icon->pitch;
                 for (x = 0; x < icon->w; ++x) {
                     if (*pixels++ == colorkey) {
                         SET_MASKBIT(icon, x, y, mask);
@@ -5119,9 +5119,9 @@ static void CreateMaskFromColorKeyOrAlpha(SDL_Surface *icon, Uint8 *mask, int fl
 
     case 2:
         {
-            Uint16 *pixels;
+            uint16_t *pixels;
             for (y = 0; y < icon->h; ++y) {
-                pixels = (Uint16 *) icon->pixels + y * icon->pitch / 2;
+                pixels = (uint16_t *) icon->pixels + y * icon->pitch / 2;
                 for (x = 0; x < icon->w; ++x) {
                     if ((flags & 1) && *pixels == colorkey) {
                         SET_MASKBIT(icon, x, y, mask);
@@ -5137,9 +5137,9 @@ static void CreateMaskFromColorKeyOrAlpha(SDL_Surface *icon, Uint8 *mask, int fl
 
     case 4:
         {
-            Uint32 *pixels;
+            uint32_t *pixels;
             for (y = 0; y < icon->h; ++y) {
-                pixels = (Uint32 *) icon->pixels + y * icon->pitch / 4;
+                pixels = (uint32_t *) icon->pixels + y * icon->pitch / 4;
                 for (x = 0; x < icon->w; ++x) {
                     if ((flags & 1) && *pixels == colorkey) {
                         SET_MASKBIT(icon, x, y, mask);
@@ -5158,14 +5158,14 @@ static void CreateMaskFromColorKeyOrAlpha(SDL_Surface *icon, Uint8 *mask, int fl
 /*
  * Sets the window manager icon for the display window.
  */
-void SDL_WM_SetIcon(SDL_Surface *icon, Uint8 *mask)
+void SDL_WM_SetIcon(SDL_Surface *icon, uint8_t *mask)
 {
     if (icon && _this->SetIcon) {
         // Generate a mask if necessary, and create the icon!
         if (mask == NULL) {
             int mask_len = icon->h * (icon->w + 7) / 8;
             int flags = 0;
-            mask = (Uint8 *) SDL_malloc(mask_len);
+            mask = (uint8_t *) SDL_malloc(mask_len);
             if (mask == NULL) {
                 return;
             }
@@ -5704,7 +5704,7 @@ void SDL_Vulkan_UnloadLibrary(void)
     }
 }
 
-char const* const* SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
+char const* const* SDL_Vulkan_GetInstanceExtensions(uint32_t *count)
 {
     return _this->Vulkan_GetInstanceExtensions(_this, count);
 }
@@ -5742,7 +5742,7 @@ void SDL_Vulkan_DestroySurface(VkInstance instance,
 
 bool SDL_Vulkan_GetPresentationSupport(VkInstance instance,
                                            VkPhysicalDevice physicalDevice,
-                                           Uint32 queueFamilyIndex)
+                                           uint32_t queueFamilyIndex)
 {
     if (!_this) {
         SDL_UninitializedVideo();

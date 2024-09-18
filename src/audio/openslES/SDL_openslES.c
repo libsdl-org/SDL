@@ -38,9 +38,9 @@
 
 struct SDL_PrivateAudioData
 {
-    Uint8 *mixbuff;
+    uint8_t *mixbuff;
     int next_buffer;
-    Uint8 *pmixbuff[NUM_BUFFERS];
+    uint8_t *pmixbuff[NUM_BUFFERS];
     SDL_Semaphore *playsem;
 };
 
@@ -345,7 +345,7 @@ static bool OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
     }
 
     // Create the sound buffers
-    audiodata->mixbuff = (Uint8 *)SDL_malloc(NUM_BUFFERS * device->buffer_size);
+    audiodata->mixbuff = (uint8_t *)SDL_malloc(NUM_BUFFERS * device->buffer_size);
     if (!audiodata->mixbuff) {
         LOGE("mixbuffer allocate - out of memory");
         goto failed;
@@ -592,7 +592,7 @@ static bool OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
     }
 
     // Create the sound buffers
-    audiodata->mixbuff = (Uint8 *)SDL_malloc(NUM_BUFFERS * device->buffer_size);
+    audiodata->mixbuff = (uint8_t *)SDL_malloc(NUM_BUFFERS * device->buffer_size);
     if (!audiodata->mixbuff) {
         LOGE("mixbuffer allocate - out of memory");
         goto failed;
@@ -662,7 +662,7 @@ static bool OPENSLES_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool OPENSLES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool OPENSLES_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *audiodata = device->hidden;
 
@@ -697,7 +697,7 @@ static bool OPENSLES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
 //
 // okay..
 
-static Uint8 *OPENSLES_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
+static uint8_t *OPENSLES_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
 {
     struct SDL_PrivateAudioData *audiodata = device->hidden;
 

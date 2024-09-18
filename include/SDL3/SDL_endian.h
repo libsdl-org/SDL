@@ -154,41 +154,41 @@ extern "C" {
 #pragma intrinsic(_byteswap_ushort)
 #define SDL_Swap16(x) _byteswap_ushort(x)
 #elif defined(__i386__) && !HAS_BROKEN_BSWAP
-SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
+SDL_FORCE_INLINE uint16_t SDL_Swap16(uint16_t x)
 {
   __asm__("xchgb %b0,%h0": "=q"(x):"0"(x));
     return x;
 }
 #elif defined(__x86_64__)
-SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
+SDL_FORCE_INLINE uint16_t SDL_Swap16(uint16_t x)
 {
   __asm__("xchgb %b0,%h0": "=Q"(x):"0"(x));
     return x;
 }
 #elif (defined(__powerpc__) || defined(__ppc__))
-SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
+SDL_FORCE_INLINE uint16_t SDL_Swap16(uint16_t x)
 {
     int result;
 
   __asm__("rlwimi %0,%2,8,16,23": "=&r"(result):"0"(x >> 8), "r"(x));
-    return (Uint16)result;
+    return (uint16_t)result;
 }
 #elif (defined(__m68k__) && !defined(__mcoldfire__))
-SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
+SDL_FORCE_INLINE uint16_t SDL_Swap16(uint16_t x)
 {
   __asm__("rorw #8,%0": "=d"(x): "0"(x):"cc");
     return x;
 }
 #elif defined(__WATCOMC__) && defined(__386__)
-extern __inline Uint16 SDL_Swap16(Uint16);
+extern __inline uint16_t SDL_Swap16(uint16_t);
 #pragma aux SDL_Swap16 = \
   "xchg al, ah" \
   parm   [ax]   \
   modify [ax];
 #else
-SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
+SDL_FORCE_INLINE uint16_t SDL_Swap16(uint16_t x)
 {
-    return SDL_static_cast(Uint16, ((x << 8) | (x >> 8)));
+    return SDL_static_cast(uint16_t, ((x << 8) | (x >> 8)));
 }
 #endif
 
@@ -199,21 +199,21 @@ SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
 #pragma intrinsic(_byteswap_ulong)
 #define SDL_Swap32(x) _byteswap_ulong(x)
 #elif defined(__i386__) && !HAS_BROKEN_BSWAP
-SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
+SDL_FORCE_INLINE uint32_t SDL_Swap32(uint32_t x)
 {
   __asm__("bswap %0": "=r"(x):"0"(x));
     return x;
 }
 #elif defined(__x86_64__)
-SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
+SDL_FORCE_INLINE uint32_t SDL_Swap32(uint32_t x)
 {
   __asm__("bswapl %0": "=r"(x):"0"(x));
     return x;
 }
 #elif (defined(__powerpc__) || defined(__ppc__))
-SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
+SDL_FORCE_INLINE uint32_t SDL_Swap32(uint32_t x)
 {
-    Uint32 result;
+    uint32_t result;
 
   __asm__("rlwimi %0,%2,24,16,23": "=&r"(result): "0" (x>>24),  "r"(x));
   __asm__("rlwimi %0,%2,8,8,15"  : "=&r"(result): "0" (result), "r"(x));
@@ -221,21 +221,21 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
     return result;
 }
 #elif (defined(__m68k__) && !defined(__mcoldfire__))
-SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
+SDL_FORCE_INLINE uint32_t SDL_Swap32(uint32_t x)
 {
   __asm__("rorw #8,%0\n\tswap %0\n\trorw #8,%0": "=d"(x): "0"(x):"cc");
     return x;
 }
 #elif defined(__WATCOMC__) && defined(__386__)
-extern __inline Uint32 SDL_Swap32(Uint32);
+extern __inline uint32_t SDL_Swap32(uint32_t);
 #pragma aux SDL_Swap32 = \
   "bswap eax"  \
   parm   [eax] \
   modify [eax];
 #else
-SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
+SDL_FORCE_INLINE uint32_t SDL_Swap32(uint32_t x)
 {
-    return SDL_static_cast(Uint32, ((x << 24) | ((x << 8) & 0x00FF0000) |
+    return SDL_static_cast(uint32_t, ((x << 24) | ((x << 8) & 0x00FF0000) |
                                     ((x >> 8) & 0x0000FF00) | (x >> 24)));
 }
 #endif
@@ -247,13 +247,13 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
 #pragma intrinsic(_byteswap_uint64)
 #define SDL_Swap64(x) _byteswap_uint64(x)
 #elif defined(__i386__) && !HAS_BROKEN_BSWAP
-SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
+SDL_FORCE_INLINE uint64_t SDL_Swap64(uint64_t x)
 {
     union {
         struct {
-            Uint32 a, b;
+            uint32_t a, b;
         } s;
-        Uint64 u;
+        uint64_t u;
     } v;
     v.u = x;
   __asm__("bswapl %0 ; bswapl %1 ; xchgl %0,%1"
@@ -262,13 +262,13 @@ SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
     return v.u;
 }
 #elif defined(__x86_64__)
-SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
+SDL_FORCE_INLINE uint64_t SDL_Swap64(uint64_t x)
 {
   __asm__("bswapq %0": "=r"(x):"0"(x));
     return x;
 }
 #elif defined(__WATCOMC__) && defined(__386__)
-extern __inline Uint64 SDL_Swap64(Uint64);
+extern __inline uint64_t SDL_Swap64(uint64_t);
 #pragma aux SDL_Swap64 = \
   "bswap eax"     \
   "bswap edx"     \
@@ -276,14 +276,14 @@ extern __inline Uint64 SDL_Swap64(Uint64);
   parm [eax edx]  \
   modify [eax edx];
 #else
-SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
+SDL_FORCE_INLINE uint64_t SDL_Swap64(uint64_t x)
 {
-    Uint32 hi, lo;
+    uint32_t hi, lo;
 
     /* Separate into high and low 32-bit values and swap them */
-    lo = SDL_static_cast(Uint32, x & 0xFFFFFFFF);
+    lo = SDL_static_cast(uint32_t, x & 0xFFFFFFFF);
     x >>= 32;
-    hi = SDL_static_cast(Uint32, x & 0xFFFFFFFF);
+    hi = SDL_static_cast(uint32_t, x & 0xFFFFFFFF);
     x = SDL_Swap32(lo);
     x <<= 32;
     x |= SDL_Swap32(hi);
@@ -315,7 +315,7 @@ SDL_FORCE_INLINE float SDL_SwapFloat(float x)
 {
     union {
         float f;
-        Uint32 ui32;
+        uint32_t ui32;
     } swapper;
     swapper.f = x;
     swapper.ui32 = SDL_Swap32(swapper.ui32);
@@ -350,7 +350,7 @@ SDL_FORCE_INLINE float SDL_SwapFloat(float x)
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
+SDL_FORCE_INLINE uint16_t SDL_Swap16(uint16_t x) { return x_but_byteswapped; }
 
 /**
  * Byte-swap an unsigned 32-bit number.
@@ -371,7 +371,7 @@ SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
+SDL_FORCE_INLINE uint32_t SDL_Swap32(uint32_t x) { return x_but_byteswapped; }
 
 /**
  * Byte-swap an unsigned 64-bit number.
@@ -392,7 +392,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
+SDL_FORCE_INLINE uint32_t SDL_Swap64(uint64_t x) { return x_but_byteswapped; }
 
 /**
  * Swap a 16-bit value from littleendian to native byte order.

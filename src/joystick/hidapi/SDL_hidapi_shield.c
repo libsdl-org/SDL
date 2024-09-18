@@ -66,30 +66,30 @@ typedef enum
 // This same report structure is used for both requests and responses
 typedef struct
 {
-    Uint8 report_id;
-    Uint8 cmd;
-    Uint8 seq_num;
-    Uint8 payload[HID_REPORT_SIZE - 3];
+    uint8_t report_id;
+    uint8_t cmd;
+    uint8_t seq_num;
+    uint8_t payload[HID_REPORT_SIZE - 3];
 } ShieldCommandReport_t;
 SDL_COMPILE_TIME_ASSERT(ShieldCommandReport_t, sizeof(ShieldCommandReport_t) == HID_REPORT_SIZE);
 
 typedef struct
 {
-    Uint8 seq_num;
+    uint8_t seq_num;
 
     bool has_charging;
-    Uint8 charging;
+    uint8_t charging;
     bool has_battery_level;
-    Uint8 battery_level;
-    Uint64 last_battery_query_time;
+    uint8_t battery_level;
+    uint64_t last_battery_query_time;
 
     bool rumble_report_pending;
     bool rumble_update_pending;
-    Uint8 left_motor_amplitude;
-    Uint8 right_motor_amplitude;
-    Uint64 last_rumble_time;
+    uint8_t left_motor_amplitude;
+    uint8_t right_motor_amplitude;
+    uint64_t last_rumble_time;
 
-    Uint8 last_state[USB_PACKET_LENGTH];
+    uint8_t last_state[USB_PACKET_LENGTH];
 } SDL_DriverShield_Context;
 
 static void HIDAPI_DriverShield_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -107,7 +107,7 @@ static bool HIDAPI_DriverShield_IsEnabled(void)
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_SHIELD, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static bool HIDAPI_DriverShield_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static bool HIDAPI_DriverShield_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, uint16_t vendor_id, uint16_t product_id, uint16_t version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return SDL_IsJoystickNVIDIASHIELDController(vendor_id, product_id);
 }
@@ -136,7 +136,7 @@ static void HIDAPI_DriverShield_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 {
 }
 
-static bool HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void *data, int size)
+static bool HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, uint8_t cmd, const void *data, int size)
 {
     SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
     ShieldCommandReport_t cmd_pkt;
@@ -161,7 +161,7 @@ static bool HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd
         SDL_memset(&cmd_pkt.payload[size], 0, sizeof(cmd_pkt.payload) - size);
     }
 
-    if (SDL_HIDAPI_SendRumbleAndUnlock(device, (Uint8 *)&cmd_pkt, sizeof(cmd_pkt)) != sizeof(cmd_pkt)) {
+    if (SDL_HIDAPI_SendRumbleAndUnlock(device, (uint8_t *)&cmd_pkt, sizeof(cmd_pkt)) != sizeof(cmd_pkt)) {
         return SDL_SetError("Couldn't send command packet");
     }
 
@@ -205,7 +205,7 @@ static bool HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 static bool HIDAPI_DriverShield_SendNextRumble(SDL_HIDAPI_Device *device)
 {
     SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
-    Uint8 rumble_data[3];
+    uint8_t rumble_data[3];
 
     if (!ctx->rumble_update_pending) {
         return true;
@@ -221,10 +221,10 @@ static bool HIDAPI_DriverShield_SendNextRumble(SDL_HIDAPI_Device *device)
     return HIDAPI_DriverShield_SendCommand(device, CMD_RUMBLE, rumble_data, sizeof(rumble_data));
 }
 
-static bool HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     if (device->product_id == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
-        Uint8 rumble_packet[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+        uint8_t rumble_packet[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
         rumble_packet[2] = (low_frequency_rumble >> 8);
         rumble_packet[4] = (high_frequency_rumble >> 8);
@@ -251,24 +251,24 @@ static bool HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     }
 }
 
-static bool HIDAPI_DriverShield_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_DriverShield_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32 HIDAPI_DriverShield_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static uint32_t HIDAPI_DriverShield_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
 }
 
-static bool HIDAPI_DriverShield_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_DriverShield_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
-    const Uint8 *data_bytes = (const Uint8 *)data;
+    const uint8_t *data_bytes = (const uint8_t *)data;
 
     if (size > 1) {
         // Single command byte followed by a variable length payload
@@ -286,12 +286,12 @@ static bool HIDAPI_DriverShield_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *dev
     return SDL_Unsupported();
 }
 
-static void HIDAPI_DriverShield_HandleStatePacketV103(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, Uint8 *data, int size)
+static void HIDAPI_DriverShield_HandleStatePacketV103(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, uint8_t *data, int size)
 {
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     if (ctx->last_state[3] != data[3]) {
-        Uint8 hat;
+        uint8_t hat;
 
         switch (data[3]) {
         case 0:
@@ -345,14 +345,14 @@ static void HIDAPI_DriverShield_HandleStatePacketV103(SDL_Joystick *joystick, SD
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SHIELD_SHARE, ((data[2] & 0x80) != 0));
     }
 
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, SDL_Swap16LE(*(Sint16 *)&data[4]) - 0x8000);
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, SDL_Swap16LE(*(Sint16 *)&data[6]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, SDL_Swap16LE(*(int16_t *)&data[4]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, SDL_Swap16LE(*(int16_t *)&data[6]) - 0x8000);
 
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, SDL_Swap16LE(*(Sint16 *)&data[8]) - 0x8000);
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, SDL_Swap16LE(*(Sint16 *)&data[10]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, SDL_Swap16LE(*(int16_t *)&data[8]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, SDL_Swap16LE(*(int16_t *)&data[10]) - 0x8000);
 
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, SDL_Swap16LE(*(Sint16 *)&data[12]) - 0x8000);
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, SDL_Swap16LE(*(Sint16 *)&data[14]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, SDL_Swap16LE(*(int16_t *)&data[12]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, SDL_Swap16LE(*(int16_t *)&data[14]) - 0x8000);
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
@@ -360,11 +360,11 @@ static void HIDAPI_DriverShield_HandleStatePacketV103(SDL_Joystick *joystick, SD
 #undef clamp
 #define clamp(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
-static void HIDAPI_DriverShield_HandleTouchPacketV103(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, const Uint8 *data, int size)
+static void HIDAPI_DriverShield_HandleTouchPacketV103(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, const uint8_t *data, int size)
 {
     bool touchpad_down;
     float touchpad_x, touchpad_y;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SHIELD_V103_TOUCHPAD, ((data[1] & 0x01) != 0));
 
@@ -375,16 +375,16 @@ static void HIDAPI_DriverShield_HandleTouchPacketV103(SDL_Joystick *joystick, SD
     SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0, touchpad_down, touchpad_x, touchpad_y, touchpad_down ? 1.0f : 0.0f);
 }
 
-static void HIDAPI_DriverShield_HandleStatePacketV104(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, Uint8 *data, int size)
+static void HIDAPI_DriverShield_HandleStatePacketV104(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, uint8_t *data, int size)
 {
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     if (size < 23) {
         return;
     }
 
     if (ctx->last_state[2] != data[2]) {
-        Uint8 hat;
+        uint8_t hat;
 
         switch (data[2]) {
         case 0:
@@ -433,14 +433,14 @@ static void HIDAPI_DriverShield_HandleStatePacketV104(SDL_Joystick *joystick, SD
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, ((data[4] & 0x01) != 0));
     }
 
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, SDL_Swap16LE(*(Sint16 *)&data[9]) - 0x8000);
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, SDL_Swap16LE(*(Sint16 *)&data[11]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, SDL_Swap16LE(*(int16_t *)&data[9]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, SDL_Swap16LE(*(int16_t *)&data[11]) - 0x8000);
 
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, SDL_Swap16LE(*(Sint16 *)&data[13]) - 0x8000);
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, SDL_Swap16LE(*(Sint16 *)&data[15]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, SDL_Swap16LE(*(int16_t *)&data[13]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, SDL_Swap16LE(*(int16_t *)&data[15]) - 0x8000);
 
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, SDL_Swap16LE(*(Sint16 *)&data[19]) - 0x8000);
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, SDL_Swap16LE(*(Sint16 *)&data[21]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, SDL_Swap16LE(*(int16_t *)&data[19]) - 0x8000);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, SDL_Swap16LE(*(int16_t *)&data[21]) - 0x8000);
 
     if (ctx->last_state[17] != data[17]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SHIELD_SHARE, ((data[17] & 0x01) != 0));
@@ -466,7 +466,7 @@ static bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
     SDL_Joystick *joystick = NULL;
-    Uint8 data[USB_PACKET_LENGTH];
+    uint8_t data[USB_PACKET_LENGTH];
     int size = 0;
     ShieldCommandReport_t *cmd_resp_report;
 

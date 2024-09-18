@@ -196,7 +196,7 @@ static SDL_Scancode button_to_scancode(int button)
 
 bool Android_OnPadDown(int device_id, int keycode)
 {
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
     if (button >= 0) {
@@ -216,7 +216,7 @@ bool Android_OnPadDown(int device_id, int keycode)
 
 bool Android_OnPadUp(int device_id, int keycode)
 {
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
     if (button >= 0) {
@@ -236,14 +236,14 @@ bool Android_OnPadUp(int device_id, int keycode)
 
 bool Android_OnJoy(int device_id, int axis, float value)
 {
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
     // Android gives joy info normalized as [-1.0, 1.0] or [0.0, 1.0]
     SDL_joylist_item *item;
 
     SDL_LockJoysticks();
     item = JoystickByDeviceId(device_id);
     if (item && item->joystick) {
-        SDL_SendJoystickAxis(timestamp, item->joystick, axis, (Sint16)(32767. * value));
+        SDL_SendJoystickAxis(timestamp, item->joystick, axis, (int16_t)(32767. * value));
     }
     SDL_UnlockJoysticks();
 
@@ -252,7 +252,7 @@ bool Android_OnJoy(int device_id, int axis, float value)
 
 bool Android_OnHat(int device_id, int hat_id, int x, int y)
 {
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
     const int DPAD_UP_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_UP);
     const int DPAD_DOWN_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN);
     const int DPAD_LEFT_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT);
@@ -345,7 +345,7 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
 
     // Update the GUID with capability bits
     {
-        Uint16 *guid16 = (Uint16 *)guid.data;
+        uint16_t *guid16 = (uint16_t *)guid.data;
         guid16[6] = SDL_Swap16LE(button_mask);
         guid16[7] = SDL_Swap16LE(axis_mask);
     }
@@ -466,15 +466,15 @@ static void ANDROID_JoystickDetect(void)
      * so we poll every three seconds
      * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
      */
-    static Uint64 timeout = 0;
-    Uint64 now = SDL_GetTicks();
+    static uint64_t timeout = 0;
+    uint64_t now = SDL_GetTicks();
     if (!timeout || now >= timeout) {
         timeout = now + 3000;
         Android_JNI_PollInputDevices();
     }
 }
 
-static bool ANDROID_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool ANDROID_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers
     return false;
@@ -580,7 +580,7 @@ static bool ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
     return true;
 }
 
-static bool ANDROID_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool ANDROID_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
     if (!item) {
@@ -596,12 +596,12 @@ static bool ANDROID_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_
     return true;
 }
 
-static bool ANDROID_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool ANDROID_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static bool ANDROID_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool ANDROID_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }

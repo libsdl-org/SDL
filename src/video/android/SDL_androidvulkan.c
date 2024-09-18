@@ -39,7 +39,7 @@
 bool Android_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
-    Uint32 i, extensionCount = 0;
+    uint32_t i, extensionCount = 0;
     bool hasSurfaceExtension = false;
     bool hasAndroidSurfaceExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
@@ -111,7 +111,7 @@ void Android_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 }
 
 char const* const* Android_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                              Uint32 *count)
+                                              uint32_t *count)
 {
     static const char *const extensionsForAndroid[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_ANDROID_SURFACE_EXTENSION_NAME

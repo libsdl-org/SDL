@@ -51,7 +51,7 @@ extern "C" {
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_DisplayID;
+typedef uint32_t SDL_DisplayID;
 
 /**
  * This is a unique ID for a window.
@@ -60,7 +60,7 @@ typedef Uint32 SDL_DisplayID;
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_WindowID;
+typedef uint32_t SDL_WindowID;
 
 /* Global video properties... */
 
@@ -155,7 +155,7 @@ typedef struct SDL_Window SDL_Window;
  *
  * \sa SDL_GetWindowFlags
  */
-typedef Uint64 SDL_WindowFlags;
+typedef uint64_t SDL_WindowFlags;
 
 #define SDL_WINDOW_FULLSCREEN           SDL_UINT64_C(0x0000000000000001)    /**< window is in fullscreen mode */
 #define SDL_WINDOW_OPENGL               SDL_UINT64_C(0x0000000000000002)    /**< window usable with OpenGL context */

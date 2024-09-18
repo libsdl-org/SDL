@@ -190,7 +190,7 @@ bool SDL_StorageReady(SDL_Storage *storage)
     return true;
 }
 
-bool SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length)
+bool SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, uint64_t *length)
 {
     SDL_PathInfo info;
 
@@ -207,7 +207,7 @@ bool SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *leng
     }
 }
 
-bool SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destination, Uint64 length)
+bool SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destination, uint64_t length)
 {
     CHECK_STORAGE_MAGIC()
 
@@ -222,7 +222,7 @@ bool SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destinati
     return storage->iface.read_file(storage->userdata, path, destination, length);
 }
 
-bool SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length)
+bool SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, uint64_t length)
 {
     CHECK_STORAGE_MAGIC()
 
@@ -340,7 +340,7 @@ bool SDL_GetStoragePathInfo(SDL_Storage *storage, const char *path, SDL_PathInfo
     return storage->iface.info(storage->userdata, path, info);
 }
 
-Uint64 SDL_GetStorageSpaceRemaining(SDL_Storage *storage)
+uint64_t SDL_GetStorageSpaceRemaining(SDL_Storage *storage)
 {
     CHECK_STORAGE_MAGIC_RET(0)
 

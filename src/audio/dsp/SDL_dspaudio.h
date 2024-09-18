@@ -31,7 +31,7 @@ struct SDL_PrivateAudioData
     int audio_fd;
 
     // Raw mixing buffer
-    Uint8 *mixbuf;
+    uint8_t *mixbuf;
 };
 
 #endif // SDL_dspaudio_h_

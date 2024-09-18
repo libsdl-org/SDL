@@ -57,12 +57,12 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
     */
     int pitch = surface->pitch;
     int height = surface->h;
-    Uint8 *start = (Uint8 *)surface->pixels;
-    Uint8 *end = start + (height * pitch);
-    Uint8 *bits = end - pitch, *spot;
+    uint8_t *start = (uint8_t *)surface->pixels;
+    uint8_t *end = start + (height * pitch);
+    uint8_t *bits = end - pitch, *spot;
     int ofs = 0;
-    Uint8 ch;
-    Uint8 needsPad;
+    uint8_t ch;
+    uint8_t needsPad;
 
 #define COPY_PIXEL(x)                \
     spot = &bits[ofs++];             \
@@ -79,7 +79,7 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
         | with two colour indexes to alternate between for the run
         */
         if (ch) {
-            Uint8 pixel;
+            uint8_t pixel;
             if (!SDL_ReadU8(src, &pixel)) {
                 return true;
             }
@@ -88,8 +88,8 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
                     COPY_PIXEL(pixel);
                 } while (--ch);
             } else { // 16-color bitmap, compressed
-                Uint8 pixel0 = pixel >> 4;
-                Uint8 pixel1 = pixel & 0x0F;
+                uint8_t pixel0 = pixel >> 4;
+                uint8_t pixel1 = pixel & 0x0F;
                 for (;;) {
                     COPY_PIXEL(pixel0); // even count, high nibble
                     if (!--ch) {
@@ -131,7 +131,7 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
                 if (isRle8) {
                     needsPad = (ch & 1);
                     do {
-                        Uint8 pixel;
+                        uint8_t pixel;
                         if (!SDL_ReadU8(src, &pixel)) {
                             return true;
                         }
@@ -140,7 +140,7 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
                 } else {
                     needsPad = (((ch + 1) >> 1) & 1); // (ch+1)>>1: bytes size
                     for (;;) {
-                        Uint8 pixel;
+                        uint8_t pixel;
                         if (!SDL_ReadU8(src, &pixel)) {
                             return true;
                         }
@@ -173,8 +173,8 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
 #else
     int alphaChannelOffset = 3;
 #endif
-    Uint8 *alpha = ((Uint8 *)surface->pixels) + alphaChannelOffset;
-    Uint8 *end = alpha + surface->h * surface->pitch;
+    uint8_t *alpha = ((uint8_t *)surface->pixels) + alphaChannelOffset;
+    uint8_t *end = alpha + surface->h * surface->pitch;
 
     while (alpha < end) {
         if (*alpha != 0) {
@@ -185,7 +185,7 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
     }
 
     if (!hasAlpha) {
-        alpha = ((Uint8 *)surface->pixels) + alphaChannelOffset;
+        alpha = ((uint8_t *)surface->pixels) + alphaChannelOffset;
         while (alpha < end) {
             *alpha = SDL_ALPHA_OPAQUE;
             alpha += 4;
@@ -196,15 +196,15 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
 SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
 {
     bool was_error = true;
-    Sint64 fp_offset = 0;
+    int64_t fp_offset = 0;
     int i, pad;
     SDL_Surface *surface;
-    Uint32 Rmask = 0;
-    Uint32 Gmask = 0;
-    Uint32 Bmask = 0;
-    Uint32 Amask = 0;
-    Uint8 *bits;
-    Uint8 *top, *end;
+    uint32_t Rmask = 0;
+    uint32_t Gmask = 0;
+    uint32_t Bmask = 0;
+    uint32_t Amask = 0;
+    uint8_t *bits;
+    uint8_t *top, *end;
     bool topDown;
     bool haveRGBMasks = false;
     bool haveAlphaMask = false;
@@ -212,23 +212,23 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
 
     // The Win32 BMP file header (14 bytes)
     char magic[2];
-    // Uint32 bfSize;
-    // Uint16 bfReserved1;
-    // Uint16 bfReserved2;
-    Uint32 bfOffBits;
+    // uint32_t bfSize;
+    // uint16_t bfReserved1;
+    // uint16_t bfReserved2;
+    uint32_t bfOffBits;
 
     // The Win32 BITMAPINFOHEADER struct (40 bytes)
-    Uint32 biSize;
-    Sint32 biWidth = 0;
-    Sint32 biHeight = 0;
-    // Uint16 biPlanes;
-    Uint16 biBitCount = 0;
-    Uint32 biCompression = 0;
-    // Uint32 biSizeImage;
-    // Sint32 biXPelsPerMeter;
-    // Sint32 biYPelsPerMeter;
-    Uint32 biClrUsed = 0;
-    // Uint32 biClrImportant;
+    uint32_t biSize;
+    int32_t biWidth = 0;
+    int32_t biHeight = 0;
+    // uint16_t biPlanes;
+    uint16_t biBitCount = 0;
+    uint32_t biCompression = 0;
+    // uint32_t biSizeImage;
+    // int32_t biXPelsPerMeter;
+    // int32_t biYPelsPerMeter;
+    uint32_t biClrUsed = 0;
+    // uint32_t biClrImportant;
 
     // Make sure we are passed a valid data source
     surface = NULL;
@@ -262,7 +262,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
         goto done;
     }
     if (biSize == 12) { // really old BITMAPCOREHEADER
-        Uint16 biWidth16, biHeight16;
+        uint16_t biWidth16, biHeight16;
         if (!SDL_ReadU16LE(src, &biWidth16) ||
             !SDL_ReadU16LE(src, &biHeight16) ||
             !SDL_ReadU16LE(src, NULL /* biPlanes */) ||
@@ -278,7 +278,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
         biClrUsed = 0;
         // biClrImportant = 0;
     } else if (biSize >= 40) { // some version of BITMAPINFOHEADER
-        Uint32 headerSize;
+        uint32_t headerSize;
         if (!SDL_ReadS32LE(src, &biWidth) ||
             !SDL_ReadS32LE(src, &biHeight) ||
             !SDL_ReadU16LE(src, NULL /* biPlanes */) ||
@@ -339,7 +339,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
         }
 
         // skip any header bytes we didn't handle...
-        headerSize = (Uint32)(SDL_TellIO(src) - (fp_offset + 14));
+        headerSize = (uint32_t)(SDL_TellIO(src) - (fp_offset + 14));
         if (biSize > headerSize) {
             if (SDL_SeekIO(src, (biSize - headerSize), SDL_IO_SEEK_CUR) < 0) {
                 goto done;
@@ -458,9 +458,9 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
             biClrUsed = 1 << biBitCount;
         }
 
-        if (biClrUsed > (Uint32)palette->ncolors) {
+        if (biClrUsed > (uint32_t)palette->ncolors) {
             biClrUsed = 1 << biBitCount; // try forcing it?
-            if (biClrUsed > (Uint32)palette->ncolors) {
+            if (biClrUsed > (uint32_t)palette->ncolors) {
                 SDL_SetError("Unsupported or incorrect biClrUsed field");
                 goto done;
             }
@@ -506,8 +506,8 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
         }
         goto done;
     }
-    top = (Uint8 *)surface->pixels;
-    end = (Uint8 *)surface->pixels + (surface->h * surface->pitch);
+    top = (uint8_t *)surface->pixels;
+    end = (uint8_t *)surface->pixels + (surface->h * surface->pitch);
     pad = ((surface->pitch % 4) ? (4 - (surface->pitch % 4)) : 0);
     if (topDown) {
         bits = top;
@@ -533,7 +533,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
         case 15:
         case 16:
         {
-            Uint16 *pix = (Uint16 *)bits;
+            uint16_t *pix = (uint16_t *)bits;
             for (i = 0; i < surface->w; i++) {
                 pix[i] = SDL_Swap16(pix[i]);
             }
@@ -542,7 +542,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
 
         case 32:
         {
-            Uint32 *pix = (Uint32 *)bits;
+            uint32_t *pix = (uint32_t *)bits;
             for (i = 0; i < surface->w; i++) {
                 pix[i] = SDL_Swap32(pix[i]);
             }
@@ -553,7 +553,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
 
         // Skip padding bytes, ugh
         if (pad) {
-            Uint8 padbyte;
+            uint8_t padbyte;
             for (i = 0; i < pad; ++i) {
                 if (!SDL_ReadU8(src, &padbyte)) {
                     goto done;
@@ -594,43 +594,43 @@ SDL_Surface *SDL_LoadBMP(const char *file)
 bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
 {
     bool was_error = true;
-    Sint64 fp_offset, new_offset;
+    int64_t fp_offset, new_offset;
     int i, pad;
     SDL_Surface *intermediate_surface;
-    Uint8 *bits;
+    uint8_t *bits;
     bool save32bit = false;
     bool saveLegacyBMP = false;
 
     // The Win32 BMP file header (14 bytes)
     char magic[2] = { 'B', 'M' };
-    Uint32 bfSize;
-    Uint16 bfReserved1;
-    Uint16 bfReserved2;
-    Uint32 bfOffBits;
+    uint32_t bfSize;
+    uint16_t bfReserved1;
+    uint16_t bfReserved2;
+    uint32_t bfOffBits;
 
     // The Win32 BITMAPINFOHEADER struct (40 bytes)
-    Uint32 biSize;
-    Sint32 biWidth;
-    Sint32 biHeight;
-    Uint16 biPlanes;
-    Uint16 biBitCount;
-    Uint32 biCompression;
-    Uint32 biSizeImage;
-    Sint32 biXPelsPerMeter;
-    Sint32 biYPelsPerMeter;
-    Uint32 biClrUsed;
-    Uint32 biClrImportant;
+    uint32_t biSize;
+    int32_t biWidth;
+    int32_t biHeight;
+    uint16_t biPlanes;
+    uint16_t biBitCount;
+    uint32_t biCompression;
+    uint32_t biSizeImage;
+    int32_t biXPelsPerMeter;
+    int32_t biYPelsPerMeter;
+    uint32_t biClrUsed;
+    uint32_t biClrImportant;
 
     // The additional header members from the Win32 BITMAPV4HEADER struct (108 bytes in total)
-    Uint32 bV4RedMask = 0;
-    Uint32 bV4GreenMask = 0;
-    Uint32 bV4BlueMask = 0;
-    Uint32 bV4AlphaMask = 0;
-    Uint32 bV4CSType = 0;
-    Sint32 bV4Endpoints[3 * 3] = { 0 };
-    Uint32 bV4GammaRed = 0;
-    Uint32 bV4GammaGreen = 0;
-    Uint32 bV4GammaBlue = 0;
+    uint32_t bV4RedMask = 0;
+    uint32_t bV4GreenMask = 0;
+    uint32_t bV4BlueMask = 0;
+    uint32_t bV4AlphaMask = 0;
+    uint32_t bV4CSType = 0;
+    int32_t bV4Endpoints[3 * 3] = { 0 };
+    uint32_t bV4GammaRed = 0;
+    uint32_t bV4GammaGreen = 0;
+    uint32_t bV4GammaBlue = 0;
 
     // Make sure we have somewhere to save
     intermediate_surface = NULL;
@@ -804,7 +804,7 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
         }
 
         // Write the bitmap offset
-        bfOffBits = (Uint32)(SDL_TellIO(dst) - fp_offset);
+        bfOffBits = (uint32_t)(SDL_TellIO(dst) - fp_offset);
         if (SDL_SeekIO(dst, fp_offset + 10, SDL_IO_SEEK_SET) < 0) {
             goto done;
         }
@@ -816,15 +816,15 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
         }
 
         // Write the bitmap image upside down
-        bits = (Uint8 *)intermediate_surface->pixels + (intermediate_surface->h * intermediate_surface->pitch);
+        bits = (uint8_t *)intermediate_surface->pixels + (intermediate_surface->h * intermediate_surface->pitch);
         pad = ((bw % 4) ? (4 - (bw % 4)) : 0);
-        while (bits > (Uint8 *)intermediate_surface->pixels) {
+        while (bits > (uint8_t *)intermediate_surface->pixels) {
             bits -= intermediate_surface->pitch;
             if (SDL_WriteIO(dst, bits, bw) != bw) {
                 goto done;
             }
             if (pad) {
-                const Uint8 padbyte = 0;
+                const uint8_t padbyte = 0;
                 for (i = 0; i < pad; ++i) {
                     if (!SDL_WriteU8(dst, padbyte)) {
                         goto done;
@@ -838,7 +838,7 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
         if (new_offset < 0) {
             goto done;
         }
-        bfSize = (Uint32)(new_offset - fp_offset);
+        bfSize = (uint32_t)(new_offset - fp_offset);
         if (SDL_SeekIO(dst, fp_offset + 2, SDL_IO_SEEK_SET) < 0) {
             goto done;
         }

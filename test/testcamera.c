@@ -27,7 +27,7 @@ static SDL_CameraID front_camera = 0;
 static SDL_CameraID back_camera = 0;
 
 /* For frequency logging */
-static Uint64 last_log_time = 0;
+static uint64_t last_log_time = 0;
 static int iterate_count = 0;
 static int frame_count = 0;
 
@@ -171,7 +171,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
 static int FlipCamera(void)
 {
-    static Uint64 last_flip = 0;
+    static uint64_t last_flip = 0;
     if ((SDL_GetTicks() - last_flip) < 3000) {  /* must wait at least 3 seconds between flips. */
         return SDL_APP_CONTINUE;
     }
@@ -263,7 +263,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 {
     iterate_count++;
 
-    Uint64 current_time = SDL_GetTicks();
+    uint64_t current_time = SDL_GetTicks();
 
     /* If a minute has passed, log the frequencies and reset the counters */
     if (current_time - last_log_time >= 60000) {
@@ -282,7 +282,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     int win_w, win_h;
     float tw, th;
     SDL_FRect d;
-    Uint64 timestampNS = 0;
+    uint64_t timestampNS = 0;
     SDL_Surface *frame_next = camera ? SDL_AcquireCameraFrame(camera, &timestampNS) : NULL;
 
     #if 0

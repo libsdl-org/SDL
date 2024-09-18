@@ -25,7 +25,7 @@
 #include "SDL_events_c.h"
 #include "SDL_categories_c.h"
 
-SDL_EventCategory SDL_GetEventCategory(Uint32 type)
+SDL_EventCategory SDL_GetEventCategory(uint32_t type)
 {
     if (type >= SDL_EVENT_USER && type <= SDL_EVENT_LAST) {
         return SDL_EVENTCATEGORY_USER;

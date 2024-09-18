@@ -32,7 +32,7 @@ struct SDL_DisplayData
     int x;
     int y;
 
-    Uint64 mode_switch_deadline_ns;
+    uint64_t mode_switch_deadline_ns;
 
     bool use_xrandr;
 

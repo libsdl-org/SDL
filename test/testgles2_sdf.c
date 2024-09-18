@@ -322,7 +322,7 @@ static void renderCopy_position(SDL_Rect *srcrect, SDL_Rect *dstrect)
 }
 
 static int done;
-static Uint32 frames;
+static uint32_t frames;
 static shader_data *datas;
 
 static void loop(void)
@@ -436,7 +436,7 @@ int main(int argc, char *argv[])
     int value;
     int i;
     const SDL_DisplayMode *mode;
-    Uint64 then, now;
+    uint64_t then, now;
     shader_data *data;
     char *path = NULL;
 

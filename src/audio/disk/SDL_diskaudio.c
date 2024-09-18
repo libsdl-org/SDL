@@ -36,7 +36,7 @@ static bool DISKAUDIO_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buffer_size)
 {
     const int written = (int)SDL_WriteIO(device->hidden->io, buffer, (size_t)buffer_size);
     if (written != buffer_size) { // If we couldn't write, assume fatal error for now
@@ -48,7 +48,7 @@ static bool DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
     return true;
 }
 
-static Uint8 *DISKAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *DISKAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     return device->hidden->mixbuf;
 }
@@ -61,7 +61,7 @@ static int DISKAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buf
     if (h->io) {
         const int br = (int)SDL_ReadIO(h->io, buffer, (size_t)buflen);
         buflen -= br;
-        buffer = ((Uint8 *)buffer) + br;
+        buffer = ((uint8_t *)buffer) + br;
         if (buflen > 0) { // EOF (or error, but whatever).
             SDL_CloseIO(h->io);
             h->io = NULL;
@@ -116,7 +116,7 @@ static bool DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     if (hint) {
         double scale = SDL_atof(hint);
         if (scale >= 0.0) {
-            device->hidden->io_delay = (Uint32)SDL_round(device->hidden->io_delay * scale);
+            device->hidden->io_delay = (uint32_t)SDL_round(device->hidden->io_delay * scale);
         }
     }
 
@@ -128,7 +128,7 @@ static bool DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     // Allocate mixing buffer
     if (!recording) {
-        device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
+        device->hidden->mixbuf = (uint8_t *)SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
             return false;
         }

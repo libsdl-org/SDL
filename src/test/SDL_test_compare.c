@@ -42,8 +42,8 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
     int sampleErrorX = 0, sampleErrorY = 0, sampleDist = 0;
     SDL_Color sampleReference = { 0, 0, 0, 0 };
     SDL_Color sampleActual = { 0, 0, 0, 0 };
-    Uint8 R, G, B, A;
-    Uint8 Rd, Gd, Bd, Ad;
+    uint8_t R, G, B, A;
+    uint8_t Rd, Gd, Bd, Ad;
     char imageFilename[FILENAME_SIZE];
     char referenceFilename[FILENAME_SIZE];
 
@@ -146,7 +146,7 @@ int SDLTest_CompareMemory(const void *actual, size_t size_actual, const void *re
     size_t i;
     struct {
         const char *header;
-        const Uint8 *data;
+        const uint8_t *data;
         size_t size;
     } columns[] = {
         {
@@ -162,7 +162,7 @@ int SDLTest_CompareMemory(const void *actual, size_t size_actual, const void *re
     };
     char line_buffer[16 + SDL_arraysize(columns) * (4 * WIDTH + 1) + (SDL_arraysize(columns) - 1) * 2 + 1];
 
-    SDLTest_AssertCheck(size_actual == size_reference, "Sizes of memory blocks must be equal (actual=%" SDL_PRIu64 " expected=%" SDL_PRIu64 ")", (Uint64)size_actual, (Uint64)size_reference);
+    SDLTest_AssertCheck(size_actual == size_reference, "Sizes of memory blocks must be equal (actual=%" SDL_PRIu64 " expected=%" SDL_PRIu64 ")", (uint64_t)size_actual, (uint64_t)size_reference);
     if (size_actual == size_reference) {
         int equals;
         equals = SDL_memcmp(actual, reference, size_max) == 0;
@@ -183,7 +183,7 @@ int SDLTest_CompareMemory(const void *actual, size_t size_actual, const void *re
         size_t pos = 0;
         size_t col;
 
-        pos += SDL_snprintf(line_buffer + pos, SDL_arraysize(line_buffer) - pos, "%016" SDL_PRIx64 , (Uint64)i);
+        pos += SDL_snprintf(line_buffer + pos, SDL_arraysize(line_buffer) - pos, "%016" SDL_PRIx64 , (uint64_t)i);
 
         for (col = 0; col < SDL_arraysize(columns); col++) {
             size_t j;

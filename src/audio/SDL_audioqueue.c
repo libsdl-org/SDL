@@ -43,7 +43,7 @@ struct SDL_AudioTrack
     void *userdata;
     SDL_ReleaseAudioBufferCallback callback;
 
-    Uint8 *data;
+    uint8_t *data;
     size_t head;
     size_t tail;
     size_t capacity;
@@ -56,7 +56,7 @@ struct SDL_AudioQueue
     SDL_AudioTrack *head;
     SDL_AudioTrack *tail;
 
-    Uint8 *history_buffer;
+    uint8_t *history_buffer;
     size_t history_length;
     size_t history_capacity;
 
@@ -230,7 +230,7 @@ void SDL_PopAudioQueueHead(SDL_AudioQueue *queue)
 
 SDL_AudioTrack *SDL_CreateAudioTrack(
     SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const int *chmap,
-    Uint8 *data, size_t len, size_t capacity,
+    uint8_t *data, size_t len, size_t capacity,
     SDL_ReleaseAudioBufferCallback callback, void *userdata)
 {
     SDL_AudioTrack *track = (SDL_AudioTrack *)AllocMemoryPoolBlock(&queue->track_pool);
@@ -268,7 +268,7 @@ static void SDLCALL FreeChunkedAudioBuffer(void *userdata, const void *buf, int 
 
 static SDL_AudioTrack *CreateChunkedAudioTrack(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const int *chmap)
 {
-    Uint8 *chunk = (Uint8 *)AllocMemoryPoolBlock(&queue->chunk_pool);
+    uint8_t *chunk = (uint8_t *)AllocMemoryPoolBlock(&queue->chunk_pool);
 
     if (!chunk) {
         return NULL;
@@ -305,7 +305,7 @@ void SDL_AddTrackToAudioQueue(SDL_AudioQueue *queue, SDL_AudioTrack *track)
     queue->tail = track;
 }
 
-static size_t WriteToAudioTrack(SDL_AudioTrack *track, const Uint8 *data, size_t len)
+static size_t WriteToAudioTrack(SDL_AudioTrack *track, const uint8_t *data, size_t len)
 {
     if (track->flushed || track->tail >= track->capacity) {
         return 0;
@@ -318,7 +318,7 @@ static size_t WriteToAudioTrack(SDL_AudioTrack *track, const Uint8 *data, size_t
     return len;
 }
 
-bool SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const int *chmap, const Uint8 *data, size_t len)
+bool SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const int *chmap, const uint8_t *data, size_t len)
 {
     if (len == 0) {
         return true;
@@ -407,7 +407,7 @@ size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_Audi
     return queued_bytes;
 }
 
-static const Uint8 *PeekIntoAudioQueuePast(SDL_AudioQueue *queue, Uint8 *data, size_t len)
+static const uint8_t *PeekIntoAudioQueuePast(SDL_AudioQueue *queue, uint8_t *data, size_t len)
 {
     SDL_AudioTrack *track = queue->head;
 
@@ -428,9 +428,9 @@ static const Uint8 *PeekIntoAudioQueuePast(SDL_AudioQueue *queue, Uint8 *data, s
 }
 
 static void UpdateAudioQueueHistory(SDL_AudioQueue *queue,
-                                    const Uint8 *data, size_t len)
+                                    const uint8_t *data, size_t len)
 {
-    Uint8 *history_buffer = queue->history_buffer;
+    uint8_t *history_buffer = queue->history_buffer;
     size_t history_bytes = queue->history_length;
 
     if (len >= history_bytes) {
@@ -442,12 +442,12 @@ static void UpdateAudioQueueHistory(SDL_AudioQueue *queue,
     }
 }
 
-static const Uint8 *ReadFromAudioQueue(SDL_AudioQueue *queue, Uint8 *data, size_t len)
+static const uint8_t *ReadFromAudioQueue(SDL_AudioQueue *queue, uint8_t *data, size_t len)
 {
     SDL_AudioTrack *track = queue->head;
 
     if (track->tail - track->head >= len) {
-        const Uint8 *ptr = &track->data[track->head];
+        const uint8_t *ptr = &track->data[track->head];
         track->head += len;
         return ptr;
     }
@@ -486,7 +486,7 @@ static const Uint8 *ReadFromAudioQueue(SDL_AudioQueue *queue, Uint8 *data, size_
     return data;
 }
 
-static const Uint8 *PeekIntoAudioQueueFuture(SDL_AudioQueue *queue, Uint8 *data, size_t len)
+static const uint8_t *PeekIntoAudioQueueFuture(SDL_AudioQueue *queue, uint8_t *data, size_t len)
 {
     SDL_AudioTrack *track = queue->head;
 
@@ -522,10 +522,10 @@ static const Uint8 *PeekIntoAudioQueueFuture(SDL_AudioQueue *queue, Uint8 *data,
     return data;
 }
 
-const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
-                                    Uint8 *dst, SDL_AudioFormat dst_format, int dst_channels, const int *dst_map,
+const uint8_t *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
+                                    uint8_t *dst, SDL_AudioFormat dst_format, int dst_channels, const int *dst_map,
                                     int past_frames, int present_frames, int future_frames,
-                                    Uint8 *scratch, float gain)
+                                    uint8_t *scratch, float gain)
 {
     SDL_AudioTrack *track = queue->head;
 
@@ -557,7 +557,7 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
 
     // Can we get all of the data straight from this track?
     if ((track->head >= src_past_bytes) && ((track->tail - track->head) >= (src_present_bytes + src_future_bytes))) {
-        const Uint8 *ptr = &track->data[track->head - src_past_bytes];
+        const uint8_t *ptr = &track->data[track->head - src_past_bytes];
         track->head += src_present_bytes;
 
         // Do we still need to copy/convert the data?
@@ -578,7 +578,7 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
         scratch = dst;
     }
 
-    Uint8 *ptr = dst;
+    uint8_t *ptr = dst;
 
     if (src_past_bytes) {
         ConvertAudio(past_frames, PeekIntoAudioQueuePast(queue, scratch, src_past_bytes), src_format, src_channels, src_map, dst, dst_format, dst_channels, dst_map, scratch, gain);
@@ -633,10 +633,10 @@ bool SDL_ResetAudioQueueHistory(SDL_AudioQueue *queue, int num_frames)
     }
 
     size_t length = num_frames * SDL_AUDIO_FRAMESIZE(track->spec);
-    Uint8 *history_buffer = queue->history_buffer;
+    uint8_t *history_buffer = queue->history_buffer;
 
     if (queue->history_capacity < length) {
-        history_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), length);
+        history_buffer = (uint8_t *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), length);
         if (!history_buffer) {
             return false;
         }

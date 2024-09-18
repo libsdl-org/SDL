@@ -70,20 +70,20 @@ static HANDLE WIN_ConvertBMPtoDIB(const void *bmp, size_t bmp_size)
 
     if (bmp && bmp_size > sizeof(BITMAPFILEHEADER) && ((BITMAPFILEHEADER *)bmp)->bfType == BFT_BITMAP) {
         BITMAPFILEHEADER *pbfh = (BITMAPFILEHEADER *)bmp;
-        BITMAPINFOHEADER *pbih = (BITMAPINFOHEADER *)((Uint8 *)bmp + sizeof(BITMAPFILEHEADER));
+        BITMAPINFOHEADER *pbih = (BITMAPINFOHEADER *)((uint8_t *)bmp + sizeof(BITMAPFILEHEADER));
         size_t bih_size = pbih->biSize + pbih->biClrUsed * sizeof(RGBQUAD);
         size_t pixels_size = pbih->biSizeImage;
 
         if (pbfh->bfOffBits >= (sizeof(BITMAPFILEHEADER) + bih_size) &&
             (pbfh->bfOffBits + pixels_size) <= bmp_size) {
-            const Uint8 *pixels = (const Uint8 *)bmp + pbfh->bfOffBits;
+            const uint8_t *pixels = (const uint8_t *)bmp + pbfh->bfOffBits;
             size_t dib_size = bih_size + pixels_size;
             hMem = GlobalAlloc(GMEM_MOVEABLE, dib_size);
             if (hMem) {
                 LPVOID dst = GlobalLock(hMem);
                 if (dst) {
                     SDL_memcpy(dst, pbih, bih_size);
-                    SDL_memcpy((Uint8 *)dst + bih_size, pixels, pixels_size);
+                    SDL_memcpy((uint8_t *)dst + bih_size, pixels, pixels_size);
                     GlobalUnlock(hMem);
                 } else {
                     WIN_SetError("GlobalLock()");
@@ -123,7 +123,7 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
                     pbfh->bfReserved1 = 0;
                     pbfh->bfReserved2 = 0;
                     pbfh->bfOffBits = (DWORD)(sizeof(BITMAPFILEHEADER) + bih_size);
-                    SDL_memcpy((Uint8 *)bmp + sizeof(BITMAPFILEHEADER), dib, dib_size);
+                    SDL_memcpy((uint8_t *)bmp + sizeof(BITMAPFILEHEADER), dib, dib_size);
                     *size = bmp_size;
                 }
             } else {

@@ -16,7 +16,7 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
 /* the current red color we're clearing to. */
-static Uint8 red = 0;
+static uint8_t red = 0;
 
 /* When fading up, this is 1, when fading down, it's -1. */
 static int fade_direction = 1;

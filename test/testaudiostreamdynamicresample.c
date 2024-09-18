@@ -29,13 +29,13 @@ static SDLTest_CommonState *state;
 
 static SDL_AudioSpec spec;
 static SDL_AudioStream *stream;
-static Uint8 *audio_buf = NULL;
-static Uint32 audio_len = 0;
+static uint8_t *audio_buf = NULL;
+static uint32_t audio_len = 0;
 
 static bool auto_loop = true;
 static bool auto_flush = false;
 
-static Uint64 last_get_callback = 0;
+static uint64_t last_get_callback = 0;
 static int last_get_amount_additional = 0;
 static int last_get_amount_total = 0;
 
@@ -104,7 +104,7 @@ static void draw_textf(SDL_Renderer* renderer, int x, int y, const char* fmt, ..
 
 static void queue_audio(void)
 {
-    Uint8* new_data = NULL;
+    uint8_t* new_data = NULL;
     int new_len = 0;
     bool result = true;
     SDL_AudioSpec new_spec;

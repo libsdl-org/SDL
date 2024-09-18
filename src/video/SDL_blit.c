@@ -64,17 +64,17 @@ static bool SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
         SDL_BlitInfo *info = &src->internal->map.info;
 
         // Set up the blit information
-        info->src = (Uint8 *)src->pixels +
-                    (Uint16)srcrect->y * src->pitch +
-                    (Uint16)srcrect->x * info->src_fmt->bytes_per_pixel;
+        info->src = (uint8_t *)src->pixels +
+                    (uint16_t)srcrect->y * src->pitch +
+                    (uint16_t)srcrect->x * info->src_fmt->bytes_per_pixel;
         info->src_w = srcrect->w;
         info->src_h = srcrect->h;
         info->src_pitch = src->pitch;
         info->src_skip =
             info->src_pitch - info->src_w * info->src_fmt->bytes_per_pixel;
         info->dst =
-            (Uint8 *)dst->pixels + (Uint16)dstrect->y * dst->pitch +
-            (Uint16)dstrect->x * info->dst_fmt->bytes_per_pixel;
+            (uint8_t *)dst->pixels + (uint16_t)dstrect->y * dst->pitch +
+            (uint16_t)dstrect->x * info->dst_fmt->bytes_per_pixel;
         info->dst_w = dstrect->w;
         info->dst_h = dstrect->h;
         info->dst_pitch = dst->pitch;

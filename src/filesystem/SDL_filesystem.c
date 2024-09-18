@@ -155,7 +155,7 @@ static bool WildcardMatch(const char *pattern, const char *str, bool *matched_to
 // Note that this will currently encode illegal codepoints: UTF-16 surrogates, 0xFFFE, and 0xFFFF.
 // and a codepoint > 0x10FFFF will fail the same as if there wasn't enough memory.
 // clean this up if you want to move this to SDL_string.c.
-static size_t EncodeCodepointToUtf8(char *ptr, Uint32 cp, size_t remaining)
+static size_t EncodeCodepointToUtf8(char *ptr, uint32_t cp, size_t remaining)
 {
     if (cp < 0x80) {  // fits in a single UTF-8 byte.
         if (remaining) {
@@ -197,11 +197,11 @@ static char *CaseFoldUtf8String(const char *fname)
         return NULL;
     }
 
-    Uint32 codepoint;
+    uint32_t codepoint;
     char *ptr = result;
     size_t remaining = allocation;
     while ((codepoint = SDL_StepUTF8(&fname, NULL)) != 0) {
-        Uint32 folded[3];
+        uint32_t folded[3];
         const int num_folded = SDL_CaseFoldUnicode(codepoint, folded);
         SDL_assert(num_folded > 0);
         SDL_assert(num_folded <= SDL_arraysize(folded));
@@ -377,11 +377,11 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
         result = (char **) SDL_malloc(buflen);
         if (result) {
             if (data.num_entries > 0) {
-                Sint64 iorc = SDL_SeekIO(data.string_stream, 0, SDL_IO_SEEK_SET);
+                int64_t iorc = SDL_SeekIO(data.string_stream, 0, SDL_IO_SEEK_SET);
                 SDL_assert(iorc == 0);  // this should never fail for a memory stream!
                 char *ptr = (char *) (result + (data.num_entries + 1));
                 iorc = SDL_ReadIO(data.string_stream, ptr, streamlen);
-                SDL_assert(iorc == (Sint64) streamlen);  // this should never fail for a memory stream!
+                SDL_assert(iorc == (int64_t) streamlen);  // this should never fail for a memory stream!
                 for (int i = 0; i < data.num_entries; i++) {
                     result[i] = ptr;
                     ptr += SDL_strlen(ptr) + 1;

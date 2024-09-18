@@ -105,9 +105,9 @@ TestRealWorld(int init_sem)
 static void
 TestWaitTimeout(void)
 {
-    Uint64 start_ticks;
-    Uint64 end_ticks;
-    Uint64 duration;
+    uint64_t start_ticks;
+    uint64_t end_ticks;
+    uint64_t duration;
     bool result;
 
     sem = SDL_CreateSemaphore(0);
@@ -134,9 +134,9 @@ TestWaitTimeout(void)
 static void
 TestOverheadUncontended(void)
 {
-    Uint64 start_ticks;
-    Uint64 end_ticks;
-    Uint64 duration;
+    uint64_t start_ticks;
+    uint64_t end_ticks;
+    uint64_t duration;
     int i, j;
 
     sem = SDL_CreateSemaphore(0);
@@ -186,9 +186,9 @@ ThreadFuncOverheadContended(void *data)
 static void
 TestOverheadContended(bool try_wait)
 {
-    Uint64 start_ticks;
-    Uint64 end_ticks;
-    Uint64 duration;
+    uint64_t start_ticks;
+    uint64_t end_ticks;
+    uint64_t duration;
     Thread_State thread_states[NUM_THREADS] = { { 0 } };
     char textBuffer[1024];
     int loop_count;

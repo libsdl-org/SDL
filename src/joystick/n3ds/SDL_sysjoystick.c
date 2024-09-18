@@ -54,10 +54,10 @@ static inline int Correct_Axis_Y(int Y) {
     return Correct_Axis_X(-Y);
 }
 
-static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick);
-static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick);
-static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick);
-static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick);
+static void UpdateN3DSPressedButtons(uint64_t timestamp, SDL_Joystick *joystick);
+static void UpdateN3DSReleasedButtons(uint64_t timestamp, SDL_Joystick *joystick);
+static void UpdateN3DSCircle(uint64_t timestamp, SDL_Joystick *joystick);
+static void UpdateN3DSCStick(uint64_t timestamp, SDL_Joystick *joystick);
 
 static bool N3DS_JoystickInit(void)
 {
@@ -103,7 +103,7 @@ static bool N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 
 static void N3DS_JoystickUpdate(SDL_Joystick *joystick)
 {
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     UpdateN3DSPressedButtons(timestamp, joystick);
     UpdateN3DSReleasedButtons(timestamp, joystick);
@@ -111,14 +111,14 @@ static void N3DS_JoystickUpdate(SDL_Joystick *joystick)
     UpdateN3DSCStick(timestamp, joystick);
 }
 
-static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick)
+static void UpdateN3DSPressedButtons(uint64_t timestamp, SDL_Joystick *joystick)
 {
     static u32 previous_state = 0;
     u32 updated_down;
     u32 current_state = hidKeysDown();
     updated_down = previous_state ^ current_state;
     if (updated_down) {
-        for (Uint8 i = 0; i < joystick->nbuttons; i++) {
+        for (uint8_t i = 0; i < joystick->nbuttons; i++) {
             if (current_state & BIT(i) & updated_down) {
                 SDL_SendJoystickButton(timestamp, joystick, i, true);
             }
@@ -127,14 +127,14 @@ static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick)
     previous_state = current_state;
 }
 
-static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick)
+static void UpdateN3DSReleasedButtons(uint64_t timestamp, SDL_Joystick *joystick)
 {
     static u32 previous_state = 0;
     u32 updated_up;
     u32 current_state = hidKeysUp();
     updated_up = previous_state ^ current_state;
     if (updated_up) {
-        for (Uint8 i = 0; i < joystick->nbuttons; i++) {
+        for (uint8_t i = 0; i < joystick->nbuttons; i++) {
             if (current_state & BIT(i) & updated_up) {
                 SDL_SendJoystickButton(timestamp, joystick, i, false);
             }
@@ -143,7 +143,7 @@ static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick)
     previous_state = current_state;
 }
 
-static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick)
+static void UpdateN3DSCircle(uint64_t timestamp, SDL_Joystick *joystick)
 {
     static circlePosition previous_state = { 0, 0 };
     circlePosition current_state;
@@ -161,7 +161,7 @@ static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick)
     previous_state = current_state;
 }
 
-static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick)
+static void UpdateN3DSCStick(uint64_t timestamp, SDL_Joystick *joystick)
 {
     static circlePosition previous_state = { 0, 0 };
     circlePosition current_state;
@@ -226,7 +226,7 @@ static void N3DS_JoystickDetect(void)
 {
 }
 
-static bool N3DS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool N3DS_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers
     return false;
@@ -251,17 +251,17 @@ static void N3DS_JoystickSetDevicePlayerIndex(int device_index, int player_index
 {
 }
 
-static bool N3DS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool N3DS_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static bool N3DS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool N3DS_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static bool N3DS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool N3DS_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }

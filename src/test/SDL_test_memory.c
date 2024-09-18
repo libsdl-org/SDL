@@ -59,7 +59,7 @@ typedef struct SDL_tracked_allocation
 {
     void *mem;
     size_t size;
-    Uint64 stack[MAXIMUM_TRACKED_STACK_DEPTH];
+    uint64_t stack[MAXIMUM_TRACKED_STACK_DEPTH];
     struct SDL_tracked_allocation *next;
 #ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
     char stack_names[MAXIMUM_TRACKED_STACK_DEPTH][256];
@@ -173,15 +173,15 @@ static void SDL_TrackAllocation(void *mem, size_t size)
     }
 #elif defined(SDL_PLATFORM_WIN32)
     {
-        Uint32 count;
+        uint32_t count;
         PVOID frames[63];
-        Uint32 i;
+        uint32_t i;
 
         count = CaptureStackBackTrace(1, SDL_arraysize(frames), frames, NULL);
 
         count = SDL_min(count, MAXIMUM_TRACKED_STACK_DEPTH);
         for (i = 0; i < count; i++) {
-            entry->stack[i] = (Uint64)(uintptr_t)frames[i];
+            entry->stack[i] = (uint64_t)(uintptr_t)frames[i];
         }
     }
 #endif /* HAVE_LIBUNWIND_H */
@@ -216,7 +216,7 @@ static void SDL_UntrackAllocation(void *mem)
 
 static void rand_fill_memory(void* ptr, size_t start, size_t end)
 {
-    Uint8* mem = (Uint8*) ptr;
+    uint8_t* mem = (uint8_t*) ptr;
     size_t i;
 
     if (!s_randfill_allocations)
@@ -358,7 +358,7 @@ void SDLTest_LogAllocations(void)
     char line[256], *tmp;
     SDL_tracked_allocation *entry;
     int index, count, stack_index;
-    Uint64 total_allocated;
+    uint64_t total_allocated;
 
     if (!SDL_malloc_orig) {
         return;
@@ -428,7 +428,7 @@ void SDLTest_LogAllocations(void)
                         }
                         dyn_dbghelp.pSymGetLineFromAddr64(GetCurrentProcess(), (DWORD64)entry->stack[stack_index], &lineColumn, &dbg_line);
                     }
-                    SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%I64x %s:%u", pSymbol->Name, dwDisplacement, dbg_line.FileName, (Uint32)dbg_line.LineNumber);
+                    SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%I64x %s:%u", pSymbol->Name, dwDisplacement, dbg_line.FileName, (uint32_t)dbg_line.LineNumber);
                 }
 #endif
                 (void)SDL_snprintf(line, sizeof(line), "\t0x%" SDL_PRIx64 ": %s\n", entry->stack[stack_index], stack_entry_description);

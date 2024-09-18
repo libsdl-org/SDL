@@ -45,7 +45,7 @@
 bool KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
-    Uint32 i, extensionCount = 0;
+    uint32_t i, extensionCount = 0;
     bool hasSurfaceExtension = false;
     bool hasDisplayExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
@@ -141,7 +141,7 @@ void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 // vkCreateInstance().
 /*********************************************************************/
 char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                             Uint32 *count)
+                                             uint32_t *count)
 {
     static const char *const extensionsForKMSDRM[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME

@@ -22,8 +22,8 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_AudioStream *stream = NULL;
-static Uint8 *wav_data = NULL;
-static Uint32 wav_data_len = 0;
+static uint8_t *wav_data = NULL;
+static uint32_t wav_data_len = 0;
 
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])

@@ -40,7 +40,7 @@ static bool EMSCRIPTENCAMERA_WaitDevice(SDL_Camera *device)
     return false;
 }
 
-static SDL_CameraFrameResult EMSCRIPTENCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult EMSCRIPTENCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS)
 {
     void *rgba = SDL_malloc(device->actual_spec.width * device->actual_spec.height * 4);
     if (!rgba) {

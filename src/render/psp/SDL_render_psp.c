@@ -562,8 +562,8 @@ static bool PSP_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                              const SDL_Rect *rect, const void *pixels, int pitch)
 {
     /*  PSP_TextureData *psp_texture = (PSP_TextureData *) texture->internal; */
-    const Uint8 *src;
-    Uint8 *dst;
+    const uint8_t *src;
+    uint8_t *dst;
     int row, length, dpitch;
     src = pixels;
 
@@ -589,7 +589,7 @@ static bool PSP_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     PSP_TextureData *psp_texture = (PSP_TextureData *)texture->internal;
 
     *pixels =
-        (void *)((Uint8 *)psp_texture->data + rect->y * psp_texture->pitch +
+        (void *)((uint8_t *)psp_texture->data + rect->y * psp_texture->pitch +
                  rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = psp_texture->pitch;
     return true;
@@ -667,11 +667,11 @@ static bool PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
             float *xy_;
             SDL_FColor *col_;
             if (size_indices == 4) {
-                j = ((const Uint32 *)indices)[i];
+                j = ((const uint32_t *)indices)[i];
             } else if (size_indices == 2) {
-                j = ((const Uint16 *)indices)[i];
+                j = ((const uint16_t *)indices)[i];
             } else if (size_indices == 1) {
-                j = ((const Uint8 *)indices)[i];
+                j = ((const uint8_t *)indices)[i];
             } else {
                 j = i;
             }
@@ -683,10 +683,10 @@ static bool PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
             verts->y = xy_[1] * scale_y;
             verts->z = 0;
 
-            verts->col.r = (Uint8)SDL_roundf(SDL_clamp(col_->r * color_scale, 0.0f, 1.0f) * 255.0f);
-            verts->col.g = (Uint8)SDL_roundf(SDL_clamp(col_->g * color_scale, 0.0f, 1.0f) * 255.0f);
-            verts->col.b = (Uint8)SDL_roundf(SDL_clamp(col_->b * color_scale, 0.0f, 1.0f) * 255.0f);
-            verts->col.a = (Uint8)SDL_roundf(SDL_clamp(col_->a, 0.0f, 1.0f) * 255.0f);
+            verts->col.r = (uint8_t)SDL_roundf(SDL_clamp(col_->r * color_scale, 0.0f, 1.0f) * 255.0f);
+            verts->col.g = (uint8_t)SDL_roundf(SDL_clamp(col_->g * color_scale, 0.0f, 1.0f) * 255.0f);
+            verts->col.b = (uint8_t)SDL_roundf(SDL_clamp(col_->b * color_scale, 0.0f, 1.0f) * 255.0f);
+            verts->col.a = (uint8_t)SDL_roundf(SDL_clamp(col_->a, 0.0f, 1.0f) * 255.0f);
 
             verts++;
         }
@@ -705,11 +705,11 @@ static bool PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
             float *uv_;
 
             if (size_indices == 4) {
-                j = ((const Uint32 *)indices)[i];
+                j = ((const uint32_t *)indices)[i];
             } else if (size_indices == 2) {
-                j = ((const Uint16 *)indices)[i];
+                j = ((const uint16_t *)indices)[i];
             } else if (size_indices == 1) {
-                j = ((const Uint8 *)indices)[i];
+                j = ((const uint8_t *)indices)[i];
             } else {
                 j = i;
             }
@@ -722,10 +722,10 @@ static bool PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
             verts->y = xy_[1] * scale_y;
             verts->z = 0;
 
-            verts->col.r = (Uint8)SDL_roundf(SDL_clamp(col_->r * color_scale, 0.0f, 1.0f) * 255.0f);
-            verts->col.g = (Uint8)SDL_roundf(SDL_clamp(col_->g * color_scale, 0.0f, 1.0f) * 255.0f);
-            verts->col.b = (Uint8)SDL_roundf(SDL_clamp(col_->b * color_scale, 0.0f, 1.0f) * 255.0f);
-            verts->col.a = (Uint8)SDL_roundf(SDL_clamp(col_->a, 0.0f, 1.0f) * 255.0f);
+            verts->col.r = (uint8_t)SDL_roundf(SDL_clamp(col_->r * color_scale, 0.0f, 1.0f) * 255.0f);
+            verts->col.g = (uint8_t)SDL_roundf(SDL_clamp(col_->g * color_scale, 0.0f, 1.0f) * 255.0f);
+            verts->col.b = (uint8_t)SDL_roundf(SDL_clamp(col_->b * color_scale, 0.0f, 1.0f) * 255.0f);
+            verts->col.a = (uint8_t)SDL_roundf(SDL_clamp(col_->a, 0.0f, 1.0f) * 255.0f);
 
             verts->u = uv_[0] * psp_texture->textureWidth;
             verts->v = uv_[1] * psp_texture->textureHeight;
@@ -1045,7 +1045,7 @@ static void PSP_InvalidateCachedState(SDL_Renderer *renderer)
 static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->internal;
-    Uint8 *gpumem = NULL;
+    uint8_t *gpumem = NULL;
     PSP_DrawStateCache drawstate;
 
     drawstate.color = 0;
@@ -1058,7 +1058,7 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
        I don't know what the limits on PSP hardware are. It might be useful to have
        rendering backends report a reasonable maximum, so the higher level can flush
        if we appear to be exceeding that. */
-    gpumem = (Uint8 *)sceGuGetMemory(vertsize);
+    gpumem = (uint8_t *)sceGuGetMemory(vertsize);
     if (!gpumem) {
         return SDL_SetError("Couldn't obtain a %d-byte vertex buffer!", (int)vertsize);
     }
@@ -1068,10 +1068,10 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            const Uint8 r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            const Uint8 g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            const Uint8 b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            const Uint8 a = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
+            const uint8_t r = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const uint8_t g = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const uint8_t b = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const uint8_t a = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
             drawstate.color = GU_RGBA(r, g, b, a);
             break;
         }
@@ -1100,10 +1100,10 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
         case SDL_RENDERCMD_CLEAR:
         {
-            const Uint8 r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            const Uint8 g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            const Uint8 b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
-            const Uint8 a = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
+            const uint8_t r = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const uint8_t g = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const uint8_t b = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const uint8_t a = (uint8_t)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
             sceGuClearColor(GU_RGBA(r, g, b, a));
             sceGuClearStencil(a);
             sceGuClear(GU_COLOR_BUFFER_BIT | GU_STENCIL_BUFFER_BIT);

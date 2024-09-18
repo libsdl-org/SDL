@@ -41,53 +41,53 @@ map to a single lowercase codepoint. */
 
 typedef struct CaseFoldMapping1_32
 {
-    Uint32 from;
-    Uint32 to0;
+    uint32_t from;
+    uint32_t to0;
 } CaseFoldMapping1_32;
 
 typedef struct CaseFoldMapping1_16
 {
-    Uint16 from;
-    Uint16 to0;
+    uint16_t from;
+    uint16_t to0;
 } CaseFoldMapping1_16;
 
 typedef struct CaseFoldMapping2_16
 {
-    Uint16 from;
-    Uint16 to0;
-    Uint16 to1;
+    uint16_t from;
+    uint16_t to0;
+    uint16_t to1;
 } CaseFoldMapping2_16;
 
 typedef struct CaseFoldMapping3_16
 {
-    Uint16 from;
-    Uint16 to0;
-    Uint16 to1;
-    Uint16 to2;
+    uint16_t from;
+    uint16_t to0;
+    uint16_t to1;
+    uint16_t to2;
 } CaseFoldMapping3_16;
 
 typedef struct CaseFoldHashBucket1_16
 {
     const CaseFoldMapping1_16 *list;
-    const Uint8 count;
+    const uint8_t count;
 } CaseFoldHashBucket1_16;
 
 typedef struct CaseFoldHashBucket1_32
 {
     const CaseFoldMapping1_32 *list;
-    const Uint8 count;
+    const uint8_t count;
 } CaseFoldHashBucket1_32;
 
 typedef struct CaseFoldHashBucket2_16
 {
     const CaseFoldMapping2_16 *list;
-    const Uint8 count;
+    const uint8_t count;
 } CaseFoldHashBucket2_16;
 
 typedef struct CaseFoldHashBucket3_16
 {
     const CaseFoldMapping3_16 *list;
-    const Uint8 count;
+    const uint8_t count;
 } CaseFoldHashBucket3_16;
 
 static const CaseFoldMapping1_16 case_fold1_16_000[] = {

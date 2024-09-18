@@ -19,7 +19,7 @@
 #define MAX_YUV_SURFACE_SIZE(W, H, P) ((H + 1) * ((W + 1) + P) * 4)
 
 /* Return true if the YUV format is packed pixels */
-static bool is_packed_yuv_format(Uint32 format)
+static bool is_packed_yuv_format(uint32_t format)
 {
     return format == SDL_PIXELFORMAT_YUY2 || format == SDL_PIXELFORMAT_UYVY || format == SDL_PIXELFORMAT_YVYU;
 }
@@ -31,13 +31,13 @@ static SDL_Surface *generate_test_pattern(int pattern_size)
 
     if (pattern) {
         int i, x, y;
-        Uint8 *p, c;
+        uint8_t *p, c;
         const int thickness = 2; /* Important so 2x2 blocks of color are the same, to avoid Cr/Cb interpolation over pixels */
 
         /* R, G, B in alternating horizontal bands */
         for (y = 0; y < pattern->h - (thickness - 1); y += thickness) {
             for (i = 0; i < thickness; ++i) {
-                p = (Uint8 *)pattern->pixels + (y + i) * pattern->pitch + ((y / thickness) % 3);
+                p = (uint8_t *)pattern->pixels + (y + i) * pattern->pitch + ((y / thickness) % 3);
                 for (x = 0; x < pattern->w; ++x) {
                     *p = 0xFF;
                     p += 3;
@@ -49,7 +49,7 @@ static SDL_Surface *generate_test_pattern(int pattern_size)
         c = 0xFF;
         for (x = 1 * thickness; x < pattern->w; x += 2 * thickness) {
             for (i = 0; i < thickness; ++i) {
-                p = (Uint8 *)pattern->pixels + (x + i) * 3;
+                p = (uint8_t *)pattern->pixels + (x + i) * 3;
                 for (y = 0; y < pattern->h; ++y) {
                     SDL_memset(p, c, 3);
                     p += pattern->pitch;
@@ -65,13 +65,13 @@ static SDL_Surface *generate_test_pattern(int pattern_size)
     return pattern;
 }
 
-static bool verify_yuv_data(Uint32 format, SDL_Colorspace colorspace, const Uint8 *yuv, int yuv_pitch, SDL_Surface *surface, int tolerance)
+static bool verify_yuv_data(uint32_t format, SDL_Colorspace colorspace, const uint8_t *yuv, int yuv_pitch, SDL_Surface *surface, int tolerance)
 {
     const int size = (surface->h * surface->pitch);
-    Uint8 *rgb;
+    uint8_t *rgb;
     bool result = false;
 
-    rgb = (Uint8 *)SDL_malloc(size);
+    rgb = (uint8_t *)SDL_malloc(size);
     if (!rgb) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory");
         return false;
@@ -81,8 +81,8 @@ static bool verify_yuv_data(Uint32 format, SDL_Colorspace colorspace, const Uint
         int x, y;
         result = true;
         for (y = 0; y < surface->h; ++y) {
-            const Uint8 *actual = rgb + y * surface->pitch;
-            const Uint8 *expected = (const Uint8 *)surface->pixels + y * surface->pitch;
+            const uint8_t *actual = rgb + y * surface->pitch;
+            const uint8_t *expected = (const uint8_t *)surface->pixels + y * surface->pitch;
             for (x = 0; x < surface->w; ++x) {
                 int deltaR = (int)actual[0] - expected[0];
                 int deltaG = (int)actual[1] - expected[1];
@@ -106,7 +106,7 @@ static bool verify_yuv_data(Uint32 format, SDL_Colorspace colorspace, const Uint
 
 static int run_automated_tests(int pattern_size, int extra_pitch)
 {
-    const Uint32 formats[] = {
+    const uint32_t formats[] = {
         SDL_PIXELFORMAT_YV12,
         SDL_PIXELFORMAT_IYUV,
         SDL_PIXELFORMAT_NV12,
@@ -118,8 +118,8 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
     int i, j;
     SDL_Surface *pattern = generate_test_pattern(pattern_size);
     const int yuv_len = MAX_YUV_SURFACE_SIZE(pattern->w, pattern->h, extra_pitch);
-    Uint8 *yuv1 = (Uint8 *)SDL_malloc(yuv_len);
-    Uint8 *yuv2 = (Uint8 *)SDL_malloc(yuv_len);
+    uint8_t *yuv1 = (uint8_t *)SDL_malloc(yuv_len);
+    uint8_t *yuv2 = (uint8_t *)SDL_malloc(yuv_len);
     int yuv1_pitch, yuv2_pitch;
     YUV_CONVERSION_MODE mode;
     SDL_Colorspace colorspace;
@@ -218,7 +218,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
         goto done;
     }
 
-    /* The pitch needs to be Uint16 aligned for P010 pixels */
+    /* The pitch needs to be uint16_t aligned for P010 pixels */
     yuv1_pitch = CalculateYUVPitch(SDL_PIXELFORMAT_P010, pattern->w) + ((extra_pitch + 1) & ~1);
     if (!SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, SDL_PIXELFORMAT_P010, colorspace, 0, yuv1, yuv1_pitch)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format), SDL_GetPixelFormatName(SDL_PIXELFORMAT_P010), SDL_GetError());
@@ -283,18 +283,18 @@ int main(int argc, char **argv)
     char title[128];
     YUV_CONVERSION_MODE yuv_mode;
     const char *yuv_mode_name;
-    Uint32 yuv_format = SDL_PIXELFORMAT_YV12;
+    uint32_t yuv_format = SDL_PIXELFORMAT_YV12;
     const char *yuv_format_name;
     SDL_Colorspace yuv_colorspace;
-    Uint32 rgb_format = SDL_PIXELFORMAT_RGBX8888;
+    uint32_t rgb_format = SDL_PIXELFORMAT_RGBX8888;
     SDL_Colorspace rgb_colorspace = SDL_COLORSPACE_SRGB;
     SDL_PropertiesID props;
     bool monochrome = false;
     int luminance = 100;
     int current = 0;
     int pitch;
-    Uint8 *raw_yuv;
-    Uint64 then, now;
+    uint8_t *raw_yuv;
+    uint64_t then, now;
     int i, iterations = 100;
     bool should_run_automated_tests = false;
     SDLTest_CommonState *state;

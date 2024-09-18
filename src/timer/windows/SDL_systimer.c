@@ -47,23 +47,23 @@ HANDLE SDL_GetWaitableTimer(void)
 }
 #endif // CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
 
-Uint64 SDL_GetPerformanceCounter(void)
+uint64_t SDL_GetPerformanceCounter(void)
 {
     LARGE_INTEGER counter;
     const BOOL rc = QueryPerformanceCounter(&counter);
     SDL_assert(rc != 0); // this should _never_ fail if you're on XP or later.
-    return (Uint64)counter.QuadPart;
+    return (uint64_t)counter.QuadPart;
 }
 
-Uint64 SDL_GetPerformanceFrequency(void)
+uint64_t SDL_GetPerformanceFrequency(void)
 {
     LARGE_INTEGER frequency;
     const BOOL rc = QueryPerformanceFrequency(&frequency);
     SDL_assert(rc != 0); // this should _never_ fail if you're on XP or later.
-    return (Uint64)frequency.QuadPart;
+    return (uint64_t)frequency.QuadPart;
 }
 
-void SDL_SYS_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(uint64_t ns)
 {
     /* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag was added in Windows 10 version 1803.
      *
@@ -82,7 +82,7 @@ void SDL_SYS_DelayNS(Uint64 ns)
 #endif
 
     {
-        const Uint64 max_delay = 0xffffffffLL * SDL_NS_PER_MS;
+        const uint64_t max_delay = 0xffffffffLL * SDL_NS_PER_MS;
         if (ns > max_delay) {
             ns = max_delay;
         }

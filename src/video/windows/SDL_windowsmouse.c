@@ -79,7 +79,7 @@ static SDL_Cursor *WIN_CreateDefaultCursor(void)
 static bool IsMonochromeSurface(SDL_Surface *surface)
 {
     int x, y;
-    Uint8 r, g, b, a;
+    uint8_t r, g, b, a;
 
     SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
 
@@ -140,20 +140,20 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, bool is_monochrome)
     bool isstack;
     void *pixels;
     int x, y;
-    Uint8 r, g, b, a;
-    Uint8 *dst;
+    uint8_t r, g, b, a;
+    uint8_t *dst;
     const int pitch = ((surface->w + 15) & ~15) / 8;
     const int size = pitch * surface->h;
     static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
 
     SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
 
-    pixels = SDL_small_alloc(Uint8, size * (is_monochrome ? 2 : 1), &isstack);
+    pixels = SDL_small_alloc(uint8_t, size * (is_monochrome ? 2 : 1), &isstack);
     if (!pixels) {
         return NULL;
     }
 
-    dst = (Uint8 *)pixels;
+    dst = (uint8_t *)pixels;
 
     // Make the mask completely transparent.
     SDL_memset(dst, 0xff, size);
@@ -560,8 +560,8 @@ static bool LoadFiveFixedPointFloats(const BYTE *bytes, float *values)
     int i;
 
     for (i = 0; i < 5; ++i) {
-        float fraction = (float)((Uint16)bytes[1] << 8 | bytes[0]) / 65535.0f;
-        float value = (float)(((Uint16)bytes[3] << 8) | bytes[2]) + fraction;
+        float fraction = (float)((uint16_t)bytes[1] << 8 | bytes[0]) / 65535.0f;
+        float value = (float)(((uint16_t)bytes[3] << 8) | bytes[2]) + fraction;
         *values++ = value;
         bytes += 8;
     }

@@ -236,7 +236,7 @@ static bool SetDIerror(const char *function, HRESULT code)
     return SDL_SetError("%s() DirectX error 0x%8.8lx", function, code);
 }
 
-static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *hidPath)
+static bool SDL_IsXInputDevice(uint16_t vendor_id, uint16_t product_id, const char *hidPath)
 {
 #if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
     SDL_GamepadType type;
@@ -314,7 +314,7 @@ static bool QueryDevicePath(LPDIRECTINPUTDEVICE8 device, char **device_path)
     return true;
 }
 
-static bool QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16 *vendor_id, Uint16 *product_id)
+static bool QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, uint16_t *vendor_id, uint16_t *product_id)
 {
     DIPROPDWORD dipdw;
 
@@ -349,7 +349,7 @@ void FreeRumbleEffectData(DIEFFECT *effect)
     SDL_free(effect);
 }
 
-DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
+DIEFFECT *CreateRumbleEffectData(int16_t magnitude)
 {
     DIEFFECT *effect;
     DIPERIODIC *periodic;
@@ -435,7 +435,7 @@ bool SDL_DINPUT_JoystickInit(void)
     return true;
 }
 
-static int GetSteamVirtualGamepadSlot(Uint16 vendor_id, Uint16 product_id, const char *device_path)
+static int GetSteamVirtualGamepadSlot(uint16_t vendor_id, uint16_t product_id, const char *device_path)
 {
     int slot = -1;
 
@@ -456,9 +456,9 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     }
     JoyStick_DeviceData *pNewJoystick = NULL;
     JoyStick_DeviceData *pPrevJoystick = NULL;
-    Uint16 vendor = 0;
-    Uint16 product = 0;
-    Uint16 version = 0;
+    uint16_t vendor = 0;
+    uint16_t product = 0;
+    uint16_t version = 0;
     char *hidPath = NULL;
     char *name = NULL;
     LPDIRECTINPUTDEVICE8 device = NULL;
@@ -550,8 +550,8 @@ void SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 // helper function for direct input, gets called for each connected joystick
 typedef struct
 {
-    Uint16 vendor;
-    Uint16 product;
+    uint16_t vendor;
+    uint16_t product;
     bool present;
 } Joystick_PresentData;
 
@@ -563,8 +563,8 @@ static BOOL CALLBACK EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInst
             goto err;      \
     }
     Joystick_PresentData *pData = (Joystick_PresentData *)pContext;
-    Uint16 vendor = 0;
-    Uint16 product = 0;
+    uint16_t vendor = 0;
+    uint16_t product = 0;
     LPDIRECTINPUTDEVICE8 device = NULL;
     BOOL result = DIENUM_CONTINUE;
 
@@ -588,7 +588,7 @@ err:
 #undef CHECK
 }
 
-bool SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 version_number)
+bool SDL_DINPUT_JoystickPresent(uint16_t vendor_id, uint16_t product_id, uint16_t version_number)
 {
     Joystick_PresentData data;
 
@@ -611,12 +611,12 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
 
     if (pDeviceObject->dwType & DIDFT_BUTTON) {
         in->type = BUTTON;
-        in->num = (Uint8)joystick->nbuttons;
+        in->num = (uint8_t)joystick->nbuttons;
         in->ofs = DIJOFS_BUTTON(in->num);
         joystick->nbuttons++;
     } else if (pDeviceObject->dwType & DIDFT_POV) {
         in->type = HAT;
-        in->num = (Uint8)joystick->nhats;
+        in->num = (uint8_t)joystick->nhats;
         in->ofs = DIJOFS_POV(in->num);
         joystick->nhats++;
     } else if (pDeviceObject->dwType & DIDFT_AXIS) {
@@ -624,7 +624,7 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
         DIPROPDWORD dilong;
 
         in->type = AXIS;
-        in->num = (Uint8)joystick->naxes;
+        in->num = (uint8_t)joystick->naxes;
         if (SDL_memcmp(&pDeviceObject->guidType, &GUID_XAxis, sizeof(pDeviceObject->guidType)) == 0) {
             in->ofs = DIJOFS_X;
         } else if (SDL_memcmp(&pDeviceObject->guidType, &GUID_YAxis, sizeof(pDeviceObject->guidType)) == 0) {
@@ -707,9 +707,9 @@ static int SDLCALL SortDevFunc(const void *a, const void *b)
 static void SortDevObjects(SDL_Joystick *joystick)
 {
     input_t *inputs = joystick->hwdata->Inputs;
-    Uint8 nButtons = 0;
-    Uint8 nHats = 0;
-    Uint8 nAxis = 0;
+    uint8_t nButtons = 0;
+    uint8_t nHats = 0;
+    uint8_t nAxis = 0;
     int n;
 
     SDL_qsort(inputs, joystick->hwdata->NumInputs, sizeof(input_t), SortDevFunc);
@@ -862,7 +862,7 @@ bool SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joysti
     return true;
 }
 
-static bool SDL_DINPUT_JoystickInitRumble(SDL_Joystick *joystick, Sint16 magnitude)
+static bool SDL_DINPUT_JoystickInitRumble(SDL_Joystick *joystick, int16_t magnitude)
 {
     HRESULT result;
 
@@ -897,12 +897,12 @@ static bool SDL_DINPUT_JoystickInitRumble(SDL_Joystick *joystick, Sint16 magnitu
     return true;
 }
 
-bool SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+bool SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     HRESULT result;
 
     // Scale and average the two rumble strengths
-    Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
+    int16_t magnitude = (int16_t)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
 
     if (!(joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK)) {
         return SDL_Unsupported();
@@ -942,9 +942,9 @@ bool SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     return true;
 }
 
-static Uint8 TranslatePOV(DWORD value)
+static uint8_t TranslatePOV(DWORD value)
 {
-    const Uint8 HAT_VALS[] = {
+    const uint8_t HAT_VALS[] = {
         SDL_HAT_UP,
         SDL_HAT_UP | SDL_HAT_RIGHT,
         SDL_HAT_RIGHT,
@@ -981,7 +981,7 @@ static void UpdateDINPUTJoystickState_Polled(SDL_Joystick *joystick)
     DIJOYSTATE2 state;
     HRESULT result;
     int i;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     result =
         IDirectInputDevice8_GetDeviceState(joystick->hwdata->InputDevice,
@@ -1005,28 +1005,28 @@ static void UpdateDINPUTJoystickState_Polled(SDL_Joystick *joystick)
         case AXIS:
             switch (in->ofs) {
             case DIJOFS_X:
-                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lX);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (int16_t)state.lX);
                 break;
             case DIJOFS_Y:
-                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lY);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (int16_t)state.lY);
                 break;
             case DIJOFS_Z:
-                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lZ);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (int16_t)state.lZ);
                 break;
             case DIJOFS_RX:
-                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lRx);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (int16_t)state.lRx);
                 break;
             case DIJOFS_RY:
-                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lRy);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (int16_t)state.lRy);
                 break;
             case DIJOFS_RZ:
-                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.lRz);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (int16_t)state.lRz);
                 break;
             case DIJOFS_SLIDER(0):
-                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.rglSlider[0]);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (int16_t)state.rglSlider[0]);
                 break;
             case DIJOFS_SLIDER(1):
-                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)state.rglSlider[1]);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (int16_t)state.rglSlider[1]);
                 break;
             }
             break;
@@ -1037,7 +1037,7 @@ static void UpdateDINPUTJoystickState_Polled(SDL_Joystick *joystick)
             break;
         case HAT:
         {
-            Uint8 pos = TranslatePOV(state.rgdwPOV[in->ofs - DIJOFS_POV(0)]);
+            uint8_t pos = TranslatePOV(state.rgdwPOV[in->ofs - DIJOFS_POV(0)]);
             SDL_SendJoystickHat(timestamp, joystick, in->num, pos);
             break;
         }
@@ -1051,7 +1051,7 @@ static void UpdateDINPUTJoystickState_Buffered(SDL_Joystick *joystick)
     HRESULT result;
     DWORD numevents;
     DIDEVICEOBJECTDATA evtbuf[INPUT_QSIZE];
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     numevents = INPUT_QSIZE;
     result =
@@ -1083,7 +1083,7 @@ static void UpdateDINPUTJoystickState_Buffered(SDL_Joystick *joystick)
 
             switch (in->type) {
             case AXIS:
-                SDL_SendJoystickAxis(timestamp, joystick, in->num, (Sint16)evtbuf[i].dwData);
+                SDL_SendJoystickAxis(timestamp, joystick, in->num, (int16_t)evtbuf[i].dwData);
                 break;
             case BUTTON:
                 SDL_SendJoystickButton(timestamp, joystick, in->num,
@@ -1091,7 +1091,7 @@ static void UpdateDINPUTJoystickState_Buffered(SDL_Joystick *joystick)
                 break;
             case HAT:
             {
-                Uint8 pos = TranslatePOV(evtbuf[i].dwData);
+                uint8_t pos = TranslatePOV(evtbuf[i].dwData);
                 SDL_SendJoystickHat(timestamp, joystick, in->num, pos);
             } break;
             }
@@ -1171,7 +1171,7 @@ void SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
 }
 
-bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
+bool SDL_DINPUT_JoystickPresent(uint16_t vendor, uint16_t product, uint16_t version)
 {
     return false;
 }
@@ -1181,7 +1181,7 @@ bool SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joysti
     return SDL_Unsupported();
 }
 
-bool SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+bool SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     return SDL_Unsupported();
 }

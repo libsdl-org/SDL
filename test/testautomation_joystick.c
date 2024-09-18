@@ -46,19 +46,19 @@ static int SDLCALL TestVirtualJoystick(void *arg)
                 SDLTest_AssertCheck(SDL_strcmp(dname, desc.name) == 0, "SDL_GetJoystickName() -> \"%s\" (expected \"%s\")", dname, desc.name);
             }
             {
-                Uint16 vendor_id = SDL_GetJoystickVendor(joystick);
+                uint16_t vendor_id = SDL_GetJoystickVendor(joystick);
                 SDLTest_AssertCheck(vendor_id == desc.vendor_id, "SDL_GetJoystickVendor() -> 0x%04x (expected 0x%04x)", vendor_id, desc.vendor_id);
             }
             {
-                Uint16 product_id = SDL_GetJoystickProduct(joystick);
+                uint16_t product_id = SDL_GetJoystickProduct(joystick);
                 SDLTest_AssertCheck(product_id == desc.product_id, "SDL_GetJoystickProduct() -> 0x%04x (expected 0x%04x)", product_id, desc.product_id);
             }
             {
-                Uint16 product_version = SDL_GetJoystickProductVersion(joystick);
+                uint16_t product_version = SDL_GetJoystickProductVersion(joystick);
                 SDLTest_AssertCheck(product_version == 0, "SDL_GetJoystickProductVersion() -> 0x%04x (expected 0x%04x)", product_version, 0);
             }
             {
-                Uint16 firmware_Version = SDL_GetJoystickFirmwareVersion(joystick);
+                uint16_t firmware_Version = SDL_GetJoystickFirmwareVersion(joystick);
                 SDLTest_AssertCheck(firmware_Version == 0, "SDL_GetJoystickFirmwareVersion() -> 0x%04x (expected 0x%04x)", firmware_Version, 0);
             }
             {
@@ -70,7 +70,7 @@ static int SDLCALL TestVirtualJoystick(void *arg)
                 SDLTest_AssertCheck(type == desc.type, "SDL_GetJoystickType() -> %d (expected %d)", type, desc.type);
             }
             {
-                Uint16 naxes = SDL_GetNumJoystickAxes(joystick);
+                uint16_t naxes = SDL_GetNumJoystickAxes(joystick);
                 SDLTest_AssertCheck(naxes == desc.naxes, "SDL_GetNumJoystickAxes() -> 0x%04x (expected 0x%04x)", naxes, desc.naxes);
             }
             {
@@ -102,11 +102,11 @@ static int SDLCALL TestVirtualJoystick(void *arg)
                     SDLTest_AssertCheck(name && SDL_strcmp(name, desc.name) == 0, "SDL_GetGamepadName() -> \"%s\" (expected \"%s\")", name, desc.name);
                 }
                 {
-                    Uint16 vendor_id = SDL_GetGamepadVendor(gamepad);
+                    uint16_t vendor_id = SDL_GetGamepadVendor(gamepad);
                     SDLTest_AssertCheck(vendor_id == desc.vendor_id, "SDL_GetGamepadVendor() -> 0x%04x (expected 0x%04x)", vendor_id, desc.vendor_id);
                 }
                 {
-                    Uint16 product_id = SDL_GetGamepadProduct(gamepad);
+                    uint16_t product_id = SDL_GetGamepadProduct(gamepad);
                     SDLTest_AssertCheck(product_id == desc.product_id, "SDL_GetGamepadProduct() -> 0x%04x (expected 0x%04x)", product_id, desc.product_id);
                 }
 

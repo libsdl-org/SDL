@@ -35,7 +35,7 @@
 
 extern bool WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-extern char const* const* WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count);
+extern char const* const* WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, uint32_t *count);
 extern bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                              SDL_Window *window,
                              VkInstance instance,
@@ -48,7 +48,7 @@ extern void WIN_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 bool WIN_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
                                            VkInstance instance,
                                            VkPhysicalDevice physicalDevice,
-                                           Uint32 queueFamilyIndex);
+                                           uint32_t queueFamilyIndex);
 
 #endif
 

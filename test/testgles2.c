@@ -536,7 +536,7 @@ Render(unsigned int width, unsigned int height, shader_data *data)
 }
 
 static int done;
-static Uint32 frames;
+static uint32_t frames;
 #ifndef SDL_PLATFORM_EMSCRIPTEN
 static thread_data *threads;
 #endif
@@ -671,7 +671,7 @@ int main(int argc, char *argv[])
     int value;
     int i;
     const SDL_DisplayMode *mode;
-    Uint64 then, now;
+    uint64_t then, now;
     shader_data *data;
 
     /* Initialize parameters */

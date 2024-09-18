@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     int i;
     int iteration;
     SDLTest_CommonState *state;
-    Uint64 seed = 0;
+    uint64_t seed = 0;
     int seed_seen = 0;
 
     /* Initialize test framework */
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
             if (!seed_seen) {
                 char *endptr = NULL;
 
-                seed = (Uint64)SDL_strtoull(argv[i], &endptr, 0);
+                seed = (uint64_t)SDL_strtoull(argv[i], &endptr, 0);
                 if (endptr != argv[i] && *endptr == '\0') {
                     seed_seen = 1;
                     consumed = 1;

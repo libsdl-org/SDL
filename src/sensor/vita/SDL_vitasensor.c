@@ -130,7 +130,7 @@ static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
 {
     int err = 0;
     SceMotionSensorState motionState[SCE_MOTION_MAX_NUM_STATES];
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     SDL_zero(motionState);
     err = sceMotionGetSensorState(motionState, SCE_MOTION_MAX_NUM_STATES);
@@ -146,7 +146,7 @@ static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
             sensor->hwdata->counter = motionState[i].counter;
 
             if (sensor->hwdata->last_tick > tick) {
-                SDL_COMPILE_TIME_ASSERT(tick, sizeof(tick) == sizeof(Uint32));
+                SDL_COMPILE_TIME_ASSERT(tick, sizeof(tick) == sizeof(uint32_t));
                 delta = (SDL_MAX_UINT32 - sensor->hwdata->last_tick + tick + 1);
             } else {
                 delta = (tick - sensor->hwdata->last_tick);

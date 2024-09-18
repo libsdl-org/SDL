@@ -41,7 +41,7 @@ typedef struct
 
 typedef struct SDL_WaylandUserdata
 {
-    Uint32 sequence;
+    uint32_t sequence;
     void *data;
 } SDL_WaylandUserdata;
 
@@ -113,7 +113,7 @@ extern ssize_t Wayland_primary_selection_source_send(SDL_WaylandPrimarySelection
 extern void Wayland_data_source_set_callback(SDL_WaylandDataSource *source,
                                             SDL_ClipboardDataCallback callback,
                                             void *userdata,
-                                            Uint32 sequence);
+                                            uint32_t sequence);
 extern void Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSource *source,
                                                           SDL_ClipboardDataCallback callback,
                                                           void *userdata);

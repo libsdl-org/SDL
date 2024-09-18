@@ -51,30 +51,30 @@ my %format_size = (
 );
 
 my %format_type = (
-    "XRGB8888" => "Uint32",
-    "XBGR8888" => "Uint32",
-    "ARGB8888" => "Uint32",
-    "RGBA8888" => "Uint32",
-    "ABGR8888" => "Uint32",
-    "BGRA8888" => "Uint32",
+    "XRGB8888" => "uint32_t",
+    "XBGR8888" => "uint32_t",
+    "ARGB8888" => "uint32_t",
+    "RGBA8888" => "uint32_t",
+    "ABGR8888" => "uint32_t",
+    "BGRA8888" => "uint32_t",
 );
 
 my %get_rgba_string_ignore_alpha = (
-    "XRGB8888" => "_R = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _B = (Uint8)_pixel;",
-    "XBGR8888" => "_B = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _R = (Uint8)_pixel;",
-    "ARGB8888" => "_R = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _B = (Uint8)_pixel;",
-    "RGBA8888" => "_R = (Uint8)(_pixel >> 24); _G = (Uint8)(_pixel >> 16); _B = (Uint8)(_pixel >> 8);",
-    "ABGR8888" => "_B = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _R = (Uint8)_pixel;",
-    "BGRA8888" => "_B = (Uint8)(_pixel >> 24); _G = (Uint8)(_pixel >> 16); _R = (Uint8)(_pixel >> 8);",
+    "XRGB8888" => "_R = (uint8_t)(_pixel >> 16); _G = (uint8_t)(_pixel >> 8); _B = (uint8_t)_pixel;",
+    "XBGR8888" => "_B = (uint8_t)(_pixel >> 16); _G = (uint8_t)(_pixel >> 8); _R = (uint8_t)_pixel;",
+    "ARGB8888" => "_R = (uint8_t)(_pixel >> 16); _G = (uint8_t)(_pixel >> 8); _B = (uint8_t)_pixel;",
+    "RGBA8888" => "_R = (uint8_t)(_pixel >> 24); _G = (uint8_t)(_pixel >> 16); _B = (uint8_t)(_pixel >> 8);",
+    "ABGR8888" => "_B = (uint8_t)(_pixel >> 16); _G = (uint8_t)(_pixel >> 8); _R = (uint8_t)_pixel;",
+    "BGRA8888" => "_B = (uint8_t)(_pixel >> 24); _G = (uint8_t)(_pixel >> 16); _R = (uint8_t)(_pixel >> 8);",
 );
 
 my %get_rgba_string = (
     "XRGB8888" => $get_rgba_string_ignore_alpha{"XRGB8888"},
     "XBGR8888" => $get_rgba_string_ignore_alpha{"XBGR8888"},
-    "ARGB8888" => $get_rgba_string_ignore_alpha{"ARGB8888"} . " _A = (Uint8)(_pixel >> 24);",
-    "RGBA8888" => $get_rgba_string_ignore_alpha{"RGBA8888"} . " _A = (Uint8)_pixel;",
-    "ABGR8888" => $get_rgba_string_ignore_alpha{"ABGR8888"} . " _A = (Uint8)(_pixel >> 24);",
-    "BGRA8888" => $get_rgba_string_ignore_alpha{"BGRA8888"} . " _A = (Uint8)_pixel;",
+    "ARGB8888" => $get_rgba_string_ignore_alpha{"ARGB8888"} . " _A = (uint8_t)(_pixel >> 24);",
+    "RGBA8888" => $get_rgba_string_ignore_alpha{"RGBA8888"} . " _A = (uint8_t)_pixel;",
+    "ABGR8888" => $get_rgba_string_ignore_alpha{"ABGR8888"} . " _A = (uint8_t)(_pixel >> 24);",
+    "BGRA8888" => $get_rgba_string_ignore_alpha{"BGRA8888"} . " _A = (uint8_t)_pixel;",
 );
 
 my %set_rgba_string = (
@@ -430,7 +430,7 @@ __EOF__
         } else {
             print FILE <<__EOF__;
                 {
-                    Uint32 tmp1, tmp2;
+                    uint32_t tmp1, tmp2;
 
                     MULT_DIV_255(${s}R, ${d}R, tmp1);
                     MULT_DIV_255(${d}R, (255 - ${s}A), tmp2);
@@ -492,93 +492,93 @@ __EOF__
     }
     if ( $modulate ) {
         print FILE <<__EOF__;
-    const Uint32 modulateR = info->r;
-    const Uint32 modulateG = info->g;
-    const Uint32 modulateB = info->b;
+    const uint32_t modulateR = info->r;
+    const uint32_t modulateG = info->g;
+    const uint32_t modulateB = info->b;
 __EOF__
         if (!$ignore_dst_alpha) {
             print FILE <<__EOF__;
-    const Uint32 modulateA = info->a;
+    const uint32_t modulateA = info->a;
 __EOF__
         }
     }
     if ( $blend ) {
         print FILE <<__EOF__;
-    Uint32 srcpixel;
+    uint32_t srcpixel;
 __EOF__
         if (!$ignore_dst_alpha && !$src_has_alpha) {
             if ($modulate){
                 $is_modulateA_done = 1;
                 print FILE <<__EOF__;
-    const Uint32 srcA = (flags & SDL_COPY_MODULATE_ALPHA) ? modulateA : 0xFF;
+    const uint32_t srcA = (flags & SDL_COPY_MODULATE_ALPHA) ? modulateA : 0xFF;
 __EOF__
             } else {
                 $A_is_const_FF = 1;
             }
             print FILE <<__EOF__;
-    Uint32 srcR, srcG, srcB;
+    uint32_t srcR, srcG, srcB;
 __EOF__
         } else {
             print FILE <<__EOF__;
-    Uint32 srcR, srcG, srcB, srcA;
+    uint32_t srcR, srcG, srcB, srcA;
 __EOF__
         }
         print FILE <<__EOF__;
-    Uint32 dstpixel;
+    uint32_t dstpixel;
 __EOF__
         if ($dst_has_alpha) {
             print FILE <<__EOF__;
-    Uint32 dstR, dstG, dstB, dstA;
+    uint32_t dstR, dstG, dstB, dstA;
 __EOF__
         } else {
             print FILE <<__EOF__;
-    Uint32 dstR, dstG, dstB;
+    uint32_t dstR, dstG, dstB;
 __EOF__
         }
     } elsif ( $modulate || $src ne $dst ) {
         print FILE <<__EOF__;
-    Uint32 pixel;
+    uint32_t pixel;
 __EOF__
         if ( !$ignore_dst_alpha && !$src_has_alpha ) {
             if ( $modulate ) {
                 $is_modulateA_done = 1;
                 print FILE <<__EOF__;
-    const Uint32 A = (flags & SDL_COPY_MODULATE_ALPHA) ? modulateA : 0xFF;
+    const uint32_t A = (flags & SDL_COPY_MODULATE_ALPHA) ? modulateA : 0xFF;
 __EOF__
             } else {
                 $A_is_const_FF = 1;
                 print FILE <<__EOF__;
-    const Uint32 A = 0xFF;
+    const uint32_t A = 0xFF;
 __EOF__
             }
             if ( !$matching_colors ) {
                 print FILE <<__EOF__;
-    Uint32 R, G, B;
+    uint32_t R, G, B;
 __EOF__
             }
         } elsif ( !$ignore_dst_alpha ) {
             if ( !$matching_colors ) {
                 print FILE <<__EOF__;
-    Uint32 R, G, B, A;
+    uint32_t R, G, B, A;
 __EOF__
             }
         } elsif ( !$matching_colors ) {
             print FILE <<__EOF__;
-    Uint32 R, G, B;
+    uint32_t R, G, B;
 __EOF__
         }
     }
     if ( $scale ) {
         print FILE <<__EOF__;
-    Uint64 srcy, srcx;
-    Uint64 posy, posx;
-    Uint64 incy, incx;
+    uint64_t srcy, srcx;
+    uint64_t posy, posx;
+    uint64_t incy, incx;
 __EOF__
 
     print FILE <<__EOF__;
 
-    incy = ((Uint64)info->src_h << 16) / info->dst_h;
-    incx = ((Uint64)info->src_w << 16) / info->dst_w;
+    incy = ((uint64_t)info->src_h << 16) / info->dst_h;
+    incx = ((uint64_t)info->src_w << 16) / info->dst_w;
     posy = incy / 2;
 
     while (info->dst_h--) {

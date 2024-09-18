@@ -91,27 +91,27 @@ SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transpar
         /* Set transparent pixel as the pixel at (0,0) */
         if (transparent) {
             if (SDL_GetSurfacePalette(temp)) {
-                const Uint8 bpp = SDL_BITSPERPIXEL(temp->format);
-                const Uint8 mask = (1 << bpp) - 1;
+                const uint8_t bpp = SDL_BITSPERPIXEL(temp->format);
+                const uint8_t mask = (1 << bpp) - 1;
                 if (SDL_PIXELORDER(temp->format) == SDL_BITMAPORDER_4321)
-                    SDL_SetSurfaceColorKey(temp, true, (*(Uint8 *)temp->pixels) & mask);
+                    SDL_SetSurfaceColorKey(temp, true, (*(uint8_t *)temp->pixels) & mask);
                 else
-                    SDL_SetSurfaceColorKey(temp, true, ((*(Uint8 *)temp->pixels) >> (8 - bpp)) & mask);
+                    SDL_SetSurfaceColorKey(temp, true, ((*(uint8_t *)temp->pixels) >> (8 - bpp)) & mask);
             } else {
                 switch (SDL_BITSPERPIXEL(temp->format)) {
                 case 15:
                     SDL_SetSurfaceColorKey(temp, true,
-                                    (*(Uint16 *)temp->pixels) & 0x00007FFF);
+                                    (*(uint16_t *)temp->pixels) & 0x00007FFF);
                     break;
                 case 16:
-                    SDL_SetSurfaceColorKey(temp, true, *(Uint16 *)temp->pixels);
+                    SDL_SetSurfaceColorKey(temp, true, *(uint16_t *)temp->pixels);
                     break;
                 case 24:
                     SDL_SetSurfaceColorKey(temp, true,
-                                    (*(Uint32 *)temp->pixels) & 0x00FFFFFF);
+                                    (*(uint32_t *)temp->pixels) & 0x00FFFFFF);
                     break;
                 case 32:
-                    SDL_SetSurfaceColorKey(temp, true, *(Uint32 *)temp->pixels);
+                    SDL_SetSurfaceColorKey(temp, true, *(uint32_t *)temp->pixels);
                     break;
                 }
             }

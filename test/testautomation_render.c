@@ -144,7 +144,7 @@ static int SDLCALL render_testPrimitives(void *arg)
     checkFailCount2 = 0;
     for (y = 0; y < 3; y++) {
         for (x = y % 2; x < TESTRENDER_SCREEN_W; x += 2) {
-            ret = SDL_SetRenderDrawColor(renderer, (Uint8)(x * y), (Uint8)(x * y / 2), (Uint8)(x * y / 3), SDL_ALPHA_OPAQUE);
+            ret = SDL_SetRenderDrawColor(renderer, (uint8_t)(x * y), (uint8_t)(x * y / 2), (uint8_t)(x * y / 3), SDL_ALPHA_OPAQUE);
             if (!ret) {
                 checkFailCount1++;
             }
@@ -216,7 +216,7 @@ static int SDLCALL render_testPrimitivesWithViewport(void *arg)
 
     surface = SDL_RenderReadPixels(renderer, NULL);
     if (surface) {
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
         CHECK_FUNC(SDL_ReadSurfacePixel, (surface, 0, 0, &r, &g, &b, &a));
         SDLTest_AssertCheck(r == 0xFF && g == 0xFF && b == 0xFF && a == 0xFF, "Validate diagonal line drawing with viewport, expected 0xFFFFFFFF, got 0x%.2x%.2x%.2x%.2x", r, g, b, a);
         SDL_DestroySurface(surface);
@@ -365,7 +365,7 @@ static int SDLCALL render_testBlitTiled(void *arg)
     return TEST_COMPLETED;
 }
 
-static const Uint8 COLOR_SEPARATION = 85;
+static const uint8_t COLOR_SEPARATION = 85;
 
 static void Fill9GridReferenceSurface(SDL_Surface *surface, int left_width, int right_width, int top_height, int bottom_height)
 {
@@ -452,7 +452,7 @@ static int SDLCALL render_testBlit9Grid(void *arg)
     SDLTest_AssertCheck(source != NULL, "Verify source surface is not NULL");
     for (y = 0; y < 3; ++y) {
         for (x = 0; x < 3; ++x) {
-            SDL_WriteSurfacePixel(source, x, y, (Uint8)((1 + x) * COLOR_SEPARATION), (Uint8)((1 + y) * COLOR_SEPARATION), 0, 255);
+            SDL_WriteSurfacePixel(source, x, y, (uint8_t)((1 + x) * COLOR_SEPARATION), (uint8_t)((1 + y) * COLOR_SEPARATION), 0, 255);
         }
     }
     texture = SDL_CreateTextureFromSurface(renderer, source);
@@ -521,35 +521,35 @@ static int SDLCALL render_testBlit9Grid(void *arg)
     /* Create complex source surface */
     source = SDL_CreateSurface(5, 5, SDL_PIXELFORMAT_RGBA32);
     SDLTest_AssertCheck(source != NULL, "Verify source surface is not NULL");
-    SDL_WriteSurfacePixel(source, 0, 0, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 1, 0, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 2, 0, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 3, 0, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 4, 0, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 0, 0, (uint8_t)((1) * COLOR_SEPARATION), (uint8_t)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 0, (uint8_t)((2) * COLOR_SEPARATION), (uint8_t)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 0, (uint8_t)((2) * COLOR_SEPARATION), (uint8_t)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 0, (uint8_t)((3) * COLOR_SEPARATION), (uint8_t)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 0, (uint8_t)((3) * COLOR_SEPARATION), (uint8_t)((1) * COLOR_SEPARATION), 0, 255);
 
-    SDL_WriteSurfacePixel(source, 0, 1, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 1, 1, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 2, 1, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 3, 1, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 4, 1, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 0, 1, (uint8_t)((1) * COLOR_SEPARATION), (uint8_t)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 1, (uint8_t)((2) * COLOR_SEPARATION), (uint8_t)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 1, (uint8_t)((2) * COLOR_SEPARATION), (uint8_t)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 1, (uint8_t)((3) * COLOR_SEPARATION), (uint8_t)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 1, (uint8_t)((3) * COLOR_SEPARATION), (uint8_t)((2) * COLOR_SEPARATION), 0, 255);
 
-    SDL_WriteSurfacePixel(source, 0, 2, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 1, 2, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 2, 2, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 3, 2, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 4, 2, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 0, 2, (uint8_t)((1) * COLOR_SEPARATION), (uint8_t)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 2, (uint8_t)((2) * COLOR_SEPARATION), (uint8_t)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 2, (uint8_t)((2) * COLOR_SEPARATION), (uint8_t)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 2, (uint8_t)((3) * COLOR_SEPARATION), (uint8_t)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 2, (uint8_t)((3) * COLOR_SEPARATION), (uint8_t)((2) * COLOR_SEPARATION), 0, 255);
 
-    SDL_WriteSurfacePixel(source, 0, 3, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 1, 3, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 2, 3, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 3, 3, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 4, 3, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 0, 3, (uint8_t)((1) * COLOR_SEPARATION), (uint8_t)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 3, (uint8_t)((2) * COLOR_SEPARATION), (uint8_t)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 3, (uint8_t)((2) * COLOR_SEPARATION), (uint8_t)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 3, (uint8_t)((3) * COLOR_SEPARATION), (uint8_t)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 3, (uint8_t)((3) * COLOR_SEPARATION), (uint8_t)((3) * COLOR_SEPARATION), 0, 255);
 
-    SDL_WriteSurfacePixel(source, 0, 4, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 1, 4, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 2, 4, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 3, 4, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
-    SDL_WriteSurfacePixel(source, 4, 4, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 0, 4, (uint8_t)((1) * COLOR_SEPARATION), (uint8_t)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 4, (uint8_t)((2) * COLOR_SEPARATION), (uint8_t)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 4, (uint8_t)((2) * COLOR_SEPARATION), (uint8_t)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 4, (uint8_t)((3) * COLOR_SEPARATION), (uint8_t)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 4, (uint8_t)((3) * COLOR_SEPARATION), (uint8_t)((3) * COLOR_SEPARATION), 0, 255);
 
     texture = SDL_CreateTextureFromSurface(renderer, source);
     SDLTest_AssertCheck(texture != NULL, "Verify source texture is not NULL");
@@ -659,7 +659,7 @@ static int SDLCALL render_testBlitColor(void *arg)
     for (j = 0; j <= nj; j += 4) {
         for (i = 0; i <= ni; i += 4) {
             /* Set color mod. */
-            ret = SDL_SetTextureColorMod(tface, (Uint8)((255 / nj) * j), (Uint8)((255 / ni) * i), (Uint8)((255 / nj) * j));
+            ret = SDL_SetTextureColorMod(tface, (uint8_t)((255 / nj) * j), (uint8_t)((255 / ni) * i), (uint8_t)((255 / nj) * j));
             if (!ret) {
                 checkFailCount1++;
             }
@@ -713,10 +713,10 @@ static void testBlendModeOperation(TestRenderOperation op, int mode, SDL_PixelFo
     SDL_Texture *src = NULL;
     SDL_Texture *dst;
     SDL_Surface *result;
-    Uint8 srcR = 10, srcG = 128, srcB = 240, srcA = 100;
-    Uint8 dstR = 128, dstG = 128, dstB = 128, dstA = 128;
-    Uint8 expectedR, expectedG, expectedB, expectedA;
-    Uint8 actualR, actualG, actualB, actualA;
+    uint8_t srcR = 10, srcG = 128, srcB = 240, srcA = 100;
+    uint8_t dstR = 128, dstG = 128, dstB = 128, dstA = 128;
+    uint8_t expectedR, expectedG, expectedB, expectedA;
+    uint8_t actualR, actualG, actualB, actualA;
     int deltaR, deltaG, deltaB, deltaA;
     const char *operation = "UNKNOWN";
     const char *mode_name = "UNKNOWN";
@@ -748,7 +748,7 @@ static void testBlendModeOperation(TestRenderOperation op, int mode, SDL_PixelFo
     SDLTest_AssertCheck(ret == true, "Verify result from SDL_RenderClear, expected: true, got: %i", ret);
 
     if (op == TEST_RENDER_COPY_XRGB || op == TEST_RENDER_COPY_ARGB) {
-        Uint8 pixels[4];
+        uint8_t pixels[4];
 
         /* Create src surface */
         src = SDL_CreateTexture(renderer, op == TEST_RENDER_COPY_XRGB ? SDL_PIXELFORMAT_RGBX32 : SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, 1, 1);
@@ -801,19 +801,19 @@ static void testBlendModeOperation(TestRenderOperation op, int mode, SDL_PixelFo
         mode_name = "color modulation";
         ret = SDL_SetTextureColorMod(src, srcR, srcG, srcB);
         SDLTest_AssertCheck(ret == true, "Validate results from calls to SDL_SetTextureColorMod, expected: true, got: %i", ret);
-        expectedR = (Uint8)SDL_roundf(SDL_clamp((FLOAT(srcR) * FLOAT(srcR)) * FLOAT(srcA) + FLOAT(dstR) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedG = (Uint8)SDL_roundf(SDL_clamp((FLOAT(srcG) * FLOAT(srcG)) * FLOAT(srcA) + FLOAT(dstG) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedB = (Uint8)SDL_roundf(SDL_clamp((FLOAT(srcB) * FLOAT(srcB)) * FLOAT(srcA) + FLOAT(dstB) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedA = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcA) + FLOAT(dstA) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedR = (uint8_t)SDL_roundf(SDL_clamp((FLOAT(srcR) * FLOAT(srcR)) * FLOAT(srcA) + FLOAT(dstR) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedG = (uint8_t)SDL_roundf(SDL_clamp((FLOAT(srcG) * FLOAT(srcG)) * FLOAT(srcA) + FLOAT(dstG) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedB = (uint8_t)SDL_roundf(SDL_clamp((FLOAT(srcB) * FLOAT(srcB)) * FLOAT(srcA) + FLOAT(dstB) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedA = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcA) + FLOAT(dstA) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
         break;
     case -2:
         mode_name = "alpha modulation";
         ret = SDL_SetTextureAlphaMod(src, srcA);
         SDLTest_AssertCheck(ret == true, "Validate results from calls to SDL_SetTextureAlphaMod, expected: true, got: %i", ret);
-        expectedR = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcR) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstR) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
-        expectedG = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcG) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstG) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
-        expectedB = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcB) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstB) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
-        expectedA = (Uint8)SDL_roundf(SDL_clamp((FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstA) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
+        expectedR = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcR) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstR) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
+        expectedG = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcG) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstG) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
+        expectedB = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcB) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstB) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
+        expectedA = (uint8_t)SDL_roundf(SDL_clamp((FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstA) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
         break;
     case SDL_BLENDMODE_NONE:
         mode_name = "SDL_BLENDMODE_NONE";
@@ -824,44 +824,44 @@ static void testBlendModeOperation(TestRenderOperation op, int mode, SDL_PixelFo
         break;
     case SDL_BLENDMODE_BLEND:
         mode_name = "SDL_BLENDMODE_BLEND";
-        expectedR = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcR) * FLOAT(srcA) + FLOAT(dstR) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedG = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcG) * FLOAT(srcA) + FLOAT(dstG) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedB = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcB) * FLOAT(srcA) + FLOAT(dstB) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedA = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcA) + FLOAT(dstA) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedR = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcR) * FLOAT(srcA) + FLOAT(dstR) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedG = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcG) * FLOAT(srcA) + FLOAT(dstG) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedB = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcB) * FLOAT(srcA) + FLOAT(dstB) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedA = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcA) + FLOAT(dstA) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
         break;
     case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
         mode_name = "SDL_BLENDMODE_BLEND_PREMULTIPLIED";
-        expectedR = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcR) + FLOAT(dstR) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedG = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcG) + FLOAT(dstG) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedB = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcB) + FLOAT(dstB) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedA = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcA) + FLOAT(dstA) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedR = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcR) + FLOAT(dstR) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedG = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcG) + FLOAT(dstG) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedB = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcB) + FLOAT(dstB) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedA = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcA) + FLOAT(dstA) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
         break;
     case SDL_BLENDMODE_ADD:
         mode_name = "SDL_BLENDMODE_ADD";
-        expectedR = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcR) * FLOAT(srcA) + FLOAT(dstR), 0.0f, 1.0f) * 255.0f);
-        expectedG = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcG) * FLOAT(srcA) + FLOAT(dstG), 0.0f, 1.0f) * 255.0f);
-        expectedB = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcB) * FLOAT(srcA) + FLOAT(dstB), 0.0f, 1.0f) * 255.0f);
+        expectedR = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcR) * FLOAT(srcA) + FLOAT(dstR), 0.0f, 1.0f) * 255.0f);
+        expectedG = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcG) * FLOAT(srcA) + FLOAT(dstG), 0.0f, 1.0f) * 255.0f);
+        expectedB = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcB) * FLOAT(srcA) + FLOAT(dstB), 0.0f, 1.0f) * 255.0f);
         expectedA = dstA;
         break;
     case SDL_BLENDMODE_ADD_PREMULTIPLIED:
         mode_name = "SDL_BLENDMODE_ADD_PREMULTIPLIED";
-        expectedR = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcR) + FLOAT(dstR), 0.0f, 1.0f) * 255.0f);
-        expectedG = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcG) + FLOAT(dstG), 0.0f, 1.0f) * 255.0f);
-        expectedB = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcB) + FLOAT(dstB), 0.0f, 1.0f) * 255.0f);
+        expectedR = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcR) + FLOAT(dstR), 0.0f, 1.0f) * 255.0f);
+        expectedG = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcG) + FLOAT(dstG), 0.0f, 1.0f) * 255.0f);
+        expectedB = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcB) + FLOAT(dstB), 0.0f, 1.0f) * 255.0f);
         expectedA = dstA;
         break;
     case SDL_BLENDMODE_MOD:
         mode_name = "SDL_BLENDMODE_MOD";
-        expectedR = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcR) * FLOAT(dstR), 0.0f, 1.0f) * 255.0f);
-        expectedG = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcG) * FLOAT(dstG), 0.0f, 1.0f) * 255.0f);
-        expectedB = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcB) * FLOAT(dstB), 0.0f, 1.0f) * 255.0f);
+        expectedR = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcR) * FLOAT(dstR), 0.0f, 1.0f) * 255.0f);
+        expectedG = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcG) * FLOAT(dstG), 0.0f, 1.0f) * 255.0f);
+        expectedB = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcB) * FLOAT(dstB), 0.0f, 1.0f) * 255.0f);
         expectedA = dstA;
         break;
     case SDL_BLENDMODE_MUL:
         mode_name = "SDL_BLENDMODE_MUL";
-        expectedR = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcR) * FLOAT(dstR) + FLOAT(dstR) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedG = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcG) * FLOAT(dstG) + FLOAT(dstG) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
-        expectedB = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcB) * FLOAT(dstB) + FLOAT(dstB) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedR = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcR) * FLOAT(dstR) + FLOAT(dstR) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedG = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcG) * FLOAT(dstG) + FLOAT(dstG) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
+        expectedB = (uint8_t)SDL_roundf(SDL_clamp(FLOAT(srcB) * FLOAT(dstB) + FLOAT(dstB) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
         expectedA = dstA;
         break;
     default:
@@ -1265,7 +1265,7 @@ static bool isSupported(int code)
 static bool hasDrawColor(void)
 {
     int ret, fail;
-    Uint8 r, g, b, a;
+    uint8_t r, g, b, a;
 
     fail = 0;
 

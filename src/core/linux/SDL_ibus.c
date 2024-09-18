@@ -57,9 +57,9 @@ static bool ibus_is_portal_interface = false;
 static char *ibus_addr_file = NULL;
 static int inotify_fd = -1, inotify_wd = -1;
 
-static Uint32 IBus_ModState(void)
+static uint32_t IBus_ModState(void)
 {
-    Uint32 ibus_mods = 0;
+    uint32_t ibus_mods = 0;
     SDL_Keymod sdl_mods = SDL_GetModState();
 
     // Not sure about MOD3, MOD4 and HYPER mappings
@@ -119,7 +119,7 @@ static bool IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, SDL_D
 }
 
 static bool IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
-                                           Uint32 *start_pos, Uint32 *end_pos)
+                                           uint32_t *start_pos, uint32_t *end_pos)
 {
     DBusMessageIter sub1, sub2, array;
 
@@ -147,23 +147,23 @@ static bool IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter *it
     while (dbus->message_iter_get_arg_type(&array) == DBUS_TYPE_VARIANT) {
         DBusMessageIter sub;
         if (IBus_EnterVariant(conn, &array, dbus, &sub, "IBusAttribute", sizeof("IBusAttribute"))) {
-            Uint32 type;
+            uint32_t type;
 
             dbus->message_iter_next(&sub);
             dbus->message_iter_next(&sub);
 
             // From here on, the structure looks like this:
-            // Uint32 type: 1=underline, 2=foreground, 3=background
-            // Uint32 value: for underline it's 0=NONE, 1=SINGLE, 2=DOUBLE,
+            // uint32_t type: 1=underline, 2=foreground, 3=background
+            // uint32_t value: for underline it's 0=NONE, 1=SINGLE, 2=DOUBLE,
             // 3=LOW,  4=ERROR
             // for foreground and background it's a color
-            // Uint32 start_index: starting position for the style (utf8-char)
-            // Uint32 end_index: end position for the style (utf8-char)
+            // uint32_t start_index: starting position for the style (utf8-char)
+            // uint32_t end_index: end position for the style (utf8-char)
 
             dbus->message_iter_get_basic(&sub, &type);
             // We only use the background type to determine the selection
             if (type == 3) {
-                Uint32 start = -1;
+                uint32_t start = -1;
                 dbus->message_iter_next(&sub);
                 dbus->message_iter_next(&sub);
                 if (dbus->message_iter_get_arg_type(&sub) == DBUS_TYPE_UINT32) {
@@ -204,7 +204,7 @@ static const char *IBus_GetVariantText(DBusConnection *conn, DBusMessageIter *it
 }
 
 static bool IBus_GetVariantCursorPos(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
-                                         Uint32 *pos)
+                                         uint32_t *pos)
 {
     dbus->message_iter_next(iter);
 
@@ -241,7 +241,7 @@ static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *
         text = IBus_GetVariantText(conn, &iter, dbus);
 
         if (text) {
-            Uint32 pos, start_pos, end_pos;
+            uint32_t pos, start_pos, end_pos;
             bool has_pos = false;
             bool has_dec_pos = false;
 
@@ -409,7 +409,7 @@ static void SDLCALL IBus_SetCapabilities(void *data, const char *name, const cha
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
     if (IBus_CheckConnection(dbus)) {
-        Uint32 caps = IBUS_CAP_FOCUS;
+        uint32_t caps = IBUS_CAP_FOCUS;
 
         if (hint && SDL_strstr(hint, "composition")) {
             caps |= IBUS_CAP_PREEDIT_TEXT;
@@ -660,14 +660,14 @@ void SDL_IBus_Reset(void)
     IBus_SimpleMessage("Reset");
 }
 
-bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
+bool SDL_IBus_ProcessKeyEvent(uint32_t keysym, uint32_t keycode, bool down)
 {
-    Uint32 result = 0;
+    uint32_t result = 0;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
     if (IBus_CheckConnection(dbus)) {
-        Uint32 mods = IBus_ModState();
-        Uint32 ibus_keycode = keycode - 8;
+        uint32_t mods = IBus_ModState();
+        uint32_t ibus_keycode = keycode - 8;
         if (!down) {
             mods |= (1 << 30); // IBUS_RELEASE_MASK
         }

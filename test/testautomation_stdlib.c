@@ -1153,7 +1153,7 @@ stdlib_iconv(void *arg)
                        || iconv_result == SDL_ICONV_EINVAL;
             if (inputs[i].expect_success) {
                 SDLTest_AssertCheck(!is_error, "result must NOT be an error code");
-                SDLTest_AssertCheck(count_written > 0 || inputs[i].expected[out_pos] == '\0', "%" SDL_PRIu64 " bytes have been written", (Uint64)count_written);
+                SDLTest_AssertCheck(count_written > 0 || inputs[i].expected[out_pos] == '\0', "%" SDL_PRIu64 " bytes have been written", (uint64_t)count_written);
                 SDLTest_AssertCheck(out_pos <= SDL_strlen(inputs[i].expected), "Data written by SDL_iconv cannot be longer then reference output");
                 SDLTest_CompareMemory(out_buffer, count_written, inputs[i].expected + out_pos, count_written);
             } else {
@@ -1179,7 +1179,7 @@ stdlib_iconv(void *arg)
         }
 
         SDLTest_AssertPass("About to call SDL_iconv_string(%s, %s, %s, %" SDL_PRIu64 ")",
-                           to_encoding_str, from_encoding_str, text_str, (Uint64)len_text);
+                           to_encoding_str, from_encoding_str, text_str, (uint64_t)len_text);
         output = SDL_iconv_string(inputs[i].to_encoding, inputs[i].from_encoding, inputs[i].text, len_text);
         if (inputs[i].expect_success) {
             SDLTest_AssertCheck(output != NULL, "result must NOT be NULL");

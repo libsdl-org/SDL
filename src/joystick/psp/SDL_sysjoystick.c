@@ -101,7 +101,7 @@ static void PSP_JoystickDetect(void)
 {
 }
 
-static bool PSP_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool PSP_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers
     return false;
@@ -164,17 +164,17 @@ static bool PSP_JoystickOpen(SDL_Joystick *joystick, int device_index)
     return true;
 }
 
-static bool PSP_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool PSP_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static bool PSP_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool PSP_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static bool PSP_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool PSP_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }
@@ -202,7 +202,7 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     unsigned char x, y;
     static enum PspCtrlButtons old_buttons = 0;
     static unsigned char old_x = 0, old_y = 0;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     if (sceCtrlPeekBufferPositive(&pad, 1) <= 0) {
         return;

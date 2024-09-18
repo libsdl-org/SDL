@@ -48,6 +48,11 @@ SDL headers should now be included as `#include <SDL3/SDL.h>`. Typically that's 
 rename_headers.py source_code_path
 ```
 
+We now use standard int and bool types in SDL3. We have provided a handy Python script [rename_types.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_types.py) to replace these:
+```sh
+rename_types.py source_code_path
+```
+
 Some macros are renamed and/or removed in SDL3. We have provided a handy Python script [rename_macros.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_macros.py) to replace these, and also add fixme comments on how to further improve the code:
 ```sh
 rename_macros.py source_code_path
@@ -112,7 +117,7 @@ SDL3's audio subsystem offers an enormous amount of power over SDL2, but if you 
 In SDL2, you might have done something like this to play audio...
 
 ```c
-    void SDLCALL MyAudioCallback(void *userdata, Uint8 * stream, int len)
+    void SDLCALL MyAudioCallback(void *userdata, uint8_t * stream, int len)
     {
         /* Calculate a little more audio here, maybe using `userdata`, write it to `stream` */
     }
@@ -140,7 +145,7 @@ In SDL2, you might have done something like this to play audio...
          * If you want to use the original callback, you could do something like this:
          */
         if (additional_amount > 0) {
-            Uint8 *data = SDL_stack_alloc(Uint8, additional_amount);
+            uint8_t *data = SDL_stack_alloc(uint8_t, additional_amount);
             if (data) {
                 MyAudioCallback(userdata, data, additional_amount);
                 SDL_PutAudioStreamData(stream, data, additional_amount);
@@ -212,7 +217,7 @@ SDL_GetAudioDeviceStatus() has been removed; there is now SDL_AudioDevicePaused(
 
 SDL_QueueAudio(), SDL_DequeueAudio, and SDL_ClearQueuedAudio and SDL_GetQueuedAudioSize() have been removed; an SDL_AudioStream bound to a device provides the exact same functionality.
 
-APIs that use channel counts used to use a Uint8 for the channel; now they use int.
+APIs that use channel counts used to use a uint8_t for the channel; now they use int.
 
 SDL_AudioSpec has been reduced; now it only holds format, channel, and sample rate. SDL_GetSilenceValueForFormat() can provide the information from the SDL_AudioSpec's `silence` field. The other SDL2 SDL_AudioSpec fields aren't relevant anymore.
 
@@ -235,14 +240,14 @@ Code that used to look like this:
     SDL_AudioCVT cvt;
     SDL_BuildAudioCVT(&cvt, src_format, src_channels, src_rate, dst_format, dst_channels, dst_rate);
     cvt.len = src_len;
-    cvt.buf = (Uint8 *) SDL_malloc(src_len * cvt.len_mult);
+    cvt.buf = (uint8_t *) SDL_malloc(src_len * cvt.len_mult);
     SDL_memcpy(cvt.buf, src_data, src_len);
     SDL_ConvertAudio(&cvt);
     do_something(cvt.buf, cvt.len_cvt);
 ```
 should be changed to:
 ```c
-    Uint8 *dst_data = NULL;
+    uint8_t *dst_data = NULL;
     int dst_len = 0;
     const SDL_AudioSpec src_spec = { src_format, src_channels, src_rate };
     const SDL_AudioSpec dst_spec = { dst_format, dst_channels, dst_rate };
@@ -259,14 +264,14 @@ If you need to convert U16 audio data to a still-supported format at runtime, th
 
 ```c
     /* this converts the buffer in-place. The buffer size does not change. */
-    Sint16 *audio_ui16_to_si16(Uint16 *buffer, const size_t num_samples)
+    int16_t *audio_ui16_to_si16(uint16_t *buffer, const size_t num_samples)
     {
         size_t i;
-        const Uint16 *src = buffer;
-        Sint16 *dst = (Sint16 *) buffer;
+        const uint16_t *src = buffer;
+        int16_t *dst = (int16_t *) buffer;
 
         for (i = 0; i < num_samples; i++) {
-            dst[i] = (Sint16) (src[i] ^ 0x8000);
+            dst[i] = (int16_t) (src[i] ^ 0x8000);
         }
 
         return dst;
@@ -577,7 +582,7 @@ SDL_CONTROLLER_TYPE_VIRTUAL has been removed, so virtual controllers can emulate
 
 SDL_CONTROLLER_TYPE_AMAZON_LUNA has been removed, and can be replaced with this code:
 ```c
-bool SDL_IsJoystickAmazonLunaController(Uint16 vendor_id, Uint16 product_id)
+bool SDL_IsJoystickAmazonLunaController(uint16_t vendor_id, uint16_t product_id)
 {
     return ((vendor_id == 0x1949 && product_id == 0x0419) ||
             (vendor_id == 0x0171 && product_id == 0x0419));
@@ -586,7 +591,7 @@ bool SDL_IsJoystickAmazonLunaController(Uint16 vendor_id, Uint16 product_id)
 
 SDL_CONTROLLER_TYPE_GOOGLE_STADIA has been removed, and can be replaced with this code:
 ```c
-bool SDL_IsJoystickGoogleStadiaController(Uint16 vendor_id, Uint16 product_id)
+bool SDL_IsJoystickGoogleStadiaController(uint16_t vendor_id, uint16_t product_id)
 {
     return (vendor_id == 0x18d1 && product_id == 0x9400);
 }
@@ -594,7 +599,7 @@ bool SDL_IsJoystickGoogleStadiaController(Uint16 vendor_id, Uint16 product_id)
 
 SDL_CONTROLLER_TYPE_NVIDIA_SHIELD has been removed, and can be replaced with this code:
 ```c
-bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_id)
+bool SDL_IsJoystickNVIDIASHIELDController(uint16_t vendor_id, uint16_t product_id)
 {
     return (vendor_id == 0x0955 && (product_id == 0x7210 || product_id == 0x7214));
 }
@@ -602,7 +607,7 @@ bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_id)
 
 The inputType and outputType fields of SDL_GamepadBinding have been renamed input_type and output_type.
 
-SDL_GetGamepadTouchpadFinger() takes a pointer to bool for the finger state instead of a pointer to Uint8.
+SDL_GetGamepadTouchpadFinger() takes a pointer to bool for the finger state instead of a pointer to uint8_t.
 
 The following enums have been renamed:
 * SDL_GameControllerAxis => SDL_GamepadAxis
@@ -902,7 +907,7 @@ The following symbols have been removed:
 
 ## SDL_joystick.h
 
-SDL_JoystickID has changed from Sint32 to Uint32, with an invalid ID being 0.
+SDL_JoystickID has changed from int32_t to uint32_t, with an invalid ID being 0.
 
 Rather than iterating over joysticks using device index, there is a new function SDL_GetJoysticks() to get the current list of joysticks, and new functions to get information about joysticks from their instance ID:
 ```c
@@ -1011,7 +1016,7 @@ The text input state hase been changed to be window-specific. SDL_StartTextInput
 
 SDL_GetDefaultKeyFromScancode(), SDL_GetKeyFromScancode(), and SDL_GetScancodeFromKey() take an SDL_Keymod parameter and use that to provide the correct result based on keyboard modifier state.
 
-SDL_GetKeyboardState() returns a pointer to bool instead of Uint8.
+SDL_GetKeyboardState() returns a pointer to bool instead of uint8_t.
 
 The following functions have been renamed:
 * SDL_IsScreenKeyboardShown() => SDL_ScreenKeyboardShown()
@@ -1026,7 +1031,7 @@ The following structures have been removed:
 
 ## SDL_keycode.h
 
-SDL_Keycode is now Uint32 and the SDLK_* constants are now defines instead of an enum, to more clearly reflect that they are a subset of the possible values of an SDL_Keycode.
+SDL_Keycode is now uint32_t and the SDLK_* constants are now defines instead of an enum, to more clearly reflect that they are a subset of the possible values of an SDL_Keycode.
 
 The following symbols have been removed:
 
@@ -1214,7 +1219,7 @@ The following symbols have been renamed:
 
 SDL_PixelFormat has been renamed SDL_PixelFormatDetails and just describes the pixel format, it does not include a palette for indexed pixel types.
 
-SDL_PixelFormatEnum has been renamed SDL_PixelFormat and is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
+SDL_PixelFormatEnum has been renamed SDL_PixelFormat and is used instead of uint32_t for API functions that refer to pixel format by enumerated value.
 
 SDL_MapRGB(), SDL_MapRGBA(), SDL_GetRGB(), and SDL_GetRGBA() take an optional palette parameter for indexed color lookups.
 
@@ -1517,7 +1522,7 @@ typedef struct IOStreamStdioFPData
     bool autoclose;
 } IOStreamStdioFPData;
 
-static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
+static int64_t SDLCALL stdio_seek(void *userdata, int64_t offset, int whence)
 {
     FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
     int stdiowhence;
@@ -1538,7 +1543,7 @@ static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
     }
 
     if (fseek(fp, (fseek_off_t)offset, stdiowhence) == 0) {
-        const Sint64 pos = ftell(fp);
+        const int64_t pos = ftell(fp);
         if (pos < 0) {
             SDL_SetError("Couldn't get stream offset");
             return -1;
@@ -1675,7 +1680,7 @@ The following symbols have been renamed:
 
 ## SDL_sensor.h
 
-SDL_SensorID has changed from Sint32 to Uint32, with an invalid ID being 0.
+SDL_SensorID has changed from int32_t to uint32_t, with an invalid ID being 0.
 
 Rather than iterating over sensors using device index, there is a new function SDL_GetSensors() to get the current list of sensors, and new functions to get information about sensors from their instance ID:
 ```c
@@ -1764,6 +1769,14 @@ The following symbols have been renamed:
 * SDL_FALSE => false
 * SDL_TRUE => true
 * SDL_bool => bool
+* Sint16 => int16_t
+* Sint32 => int32_t
+* Sint64 => int64_t
+* Sint8 => int8_t
+* Uint16 => uint16_t
+* Uint32 => uint32_t
+* Uint64 => uint64_t
+* Uint8 => uint8_t
 
 ## SDL_surface.h
 
@@ -1795,25 +1808,25 @@ SDL_CreateRGBSurfaceFrom() and SDL_CreateRGBSurfaceWithFormatFrom() have been co
 
 You can implement the old functions in your own code easily:
 ```c
-SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+SDL_Surface *SDL_CreateRGBSurface(uint32_t flags, int width, int height, int depth, uint32_t Rmask, uint32_t Gmask, uint32_t Bmask, uint32_t Amask)
 {
     return SDL_CreateSurface(width, height,
             SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask));
 }
 
-SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth, Uint32 format)
+SDL_Surface *SDL_CreateRGBSurfaceWithFormat(uint32_t flags, int width, int height, int depth, uint32_t format)
 {
     return SDL_CreateSurface(width, height, format);
 }
 
-SDL_Surface *SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+SDL_Surface *SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch, uint32_t Rmask, uint32_t Gmask, uint32_t Bmask, uint32_t Amask)
 {
     return SDL_CreateSurfaceFrom(width, height,
                                  SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask),
                                  pixels, pitch);
 }
 
-SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 format)
+SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, uint32_t format)
 {
     return SDL_CreateSurfaceFrom(width, height, format, pixels, pitch);
 }
@@ -1836,7 +1849,7 @@ SDL_BlitSurfaceScaled() and SDL_BlitSurfaceUncheckedScaled() now take a scale pa
 
 SDL_SoftStretch() now takes a scale parameter.
 
-SDL_PixelFormat is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
+SDL_PixelFormat is used instead of uint32_t for API functions that refer to pixel format by enumerated value.
 
 SDL_SetSurfaceColorKey() takes an bool to enable and disable colorkey. RLE acceleration isn't controlled by the parameter, you should use SDL_SetSurfaceRLE() to change that separately.
 
@@ -2034,7 +2047,7 @@ The following symbols have been renamed:
 
 SDL_GetTicks() now returns a 64-bit value. Instead of using the SDL_TICKS_PASSED macro, you can directly compare tick values, e.g.
 ```c
-Uint32 deadline = SDL_GetTicks() + 1000;
+uint32_t deadline = SDL_GetTicks() + 1000;
 ...
 if (SDL_TICKS_PASSED(SDL_GetTicks(), deadline)) {
     ...
@@ -2042,7 +2055,7 @@ if (SDL_TICKS_PASSED(SDL_GetTicks(), deadline)) {
 ```
 becomes:
 ```c
-Uint64 deadline = SDL_GetTicks() + 1000
+uint64_t deadline = SDL_GetTicks() + 1000
 ...
 if (SDL_GetTicks() >= deadline) {
     ...
@@ -2051,19 +2064,19 @@ if (SDL_GetTicks() >= deadline) {
 
 If you were using this macro for other things besides SDL ticks values, you can define it in your own code as:
 ```c
-#define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
+#define SDL_TICKS_PASSED(A, B)  ((int32_t)((B) - (A)) <= 0)
 ```
 
 The callback passed to SDL_AddTimer() has changed parameters to:
 ```c
-Uint32 SDLCALL TimerCallback(void *userdata, SDL_TimerID timerID, Uint32 interval);
+uint32_t SDLCALL TimerCallback(void *userdata, SDL_TimerID timerID, uint32_t interval);
 ````
 
 ## SDL_touch.h
 
 SDL_GetTouchName is replaced with SDL_GetTouchDeviceName(), which takes an SDL_TouchID instead of an index.
 
-SDL_TouchID and SDL_FingerID are now Uint64 with 0 being an invalid value.
+SDL_TouchID and SDL_FingerID are now uint64_t with 0 being an invalid value.
 
 Rather than iterating over touch devices using an index, there is a new function SDL_GetTouchDevices() to get the available devices.
 
@@ -2180,7 +2193,7 @@ SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be us
 
 The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported on Windows, Mac (Cocoa), X11, and Wayland. Creating windows with these flags must happen via the `SDL_CreatePopupWindow()` function. This function requires passing in the handle to a valid parent window for the popup, and the popup window is positioned relative to the parent.
 
-SDL_WindowFlags is used instead of Uint32 for API functions that refer to window flags, and has been extended to 64 bits.
+SDL_WindowFlags is used instead of uint32_t for API functions that refer to window flags, and has been extended to 64 bits.
 
 SDL_GetWindowOpacity() directly returns the opacity instead of using an out parameter.
 

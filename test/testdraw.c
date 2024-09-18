@@ -30,8 +30,8 @@ static int cycle_direction = 1;
 static int current_alpha = 255;
 static int current_color = 255;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
-static Uint64 next_fps_check;
-static Uint32 frames;
+static uint64_t next_fps_check;
+static uint32_t frames;
 static const int fps_check_delay = 5000;
 
 static int done;
@@ -69,8 +69,8 @@ static void DrawPoints(SDL_Renderer *renderer)
                 cycle_direction = -cycle_direction;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
-                               (Uint8)current_color, (Uint8)current_alpha);
+        SDL_SetRenderDrawColor(renderer, 255, (uint8_t)current_color,
+                               (uint8_t)current_color, (uint8_t)current_alpha);
 
         x = (float)SDL_rand(viewport.w);
         y = (float)SDL_rand(viewport.h);
@@ -111,8 +111,8 @@ static void DrawLines(SDL_Renderer *renderer)
                 cycle_direction = -cycle_direction;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
-                               (Uint8)current_color, (Uint8)current_alpha);
+        SDL_SetRenderDrawColor(renderer, 255, (uint8_t)current_color,
+                               (uint8_t)current_color, (uint8_t)current_alpha);
 
         if (i == 0) {
             SDL_RenderLine(renderer, 0.0f, 0.0f, (float)(viewport.w - 1), (float)(viewport.h - 1));
@@ -162,8 +162,8 @@ static void DrawRects(SDL_Renderer *renderer)
                 cycle_direction = -cycle_direction;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
-                               (Uint8)current_color, (Uint8)current_alpha);
+        SDL_SetRenderDrawColor(renderer, 255, (uint8_t)current_color,
+                               (uint8_t)current_color, (uint8_t)current_alpha);
 
         rect.w = (float)SDL_rand(viewport.h / 2);
         rect.h = (float)SDL_rand(viewport.h / 2);
@@ -175,7 +175,7 @@ static void DrawRects(SDL_Renderer *renderer)
 
 static void loop(void)
 {
-    Uint64 now;
+    uint64_t now;
     int i;
     SDL_Event event;
 
@@ -206,7 +206,7 @@ static void loop(void)
     now = SDL_GetTicks();
     if (now >= next_fps_check) {
         /* Print out some timing information */
-        const Uint64 then = next_fps_check - fps_check_delay;
+        const uint64_t then = next_fps_check - fps_check_delay;
         const double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
         next_fps_check = now + fps_check_delay;

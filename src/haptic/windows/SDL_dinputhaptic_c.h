@@ -37,7 +37,7 @@ extern void SDL_DINPUT_HapticClose(SDL_Haptic *haptic);
 extern void SDL_DINPUT_HapticQuit(void);
 extern bool SDL_DINPUT_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect, const SDL_HapticEffect *base);
 extern bool SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effect, const SDL_HapticEffect *data);
-extern bool SDL_DINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, Uint32 iterations);
+extern bool SDL_DINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, uint32_t iterations);
 extern bool SDL_DINPUT_HapticStopEffect(SDL_Haptic *haptic, struct haptic_effect *effect);
 extern void SDL_DINPUT_HapticDestroyEffect(SDL_Haptic *haptic, struct haptic_effect *effect);
 extern int SDL_DINPUT_HapticGetEffectStatus(SDL_Haptic *haptic, struct haptic_effect *effect);

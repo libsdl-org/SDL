@@ -160,7 +160,7 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const bool recording, const char *devn
 
         SDL_AudioSpec spec;
         SDL_zero(spec);
-        spec.channels = (Uint8)fmt->Format.nChannels;
+        spec.channels = (uint8_t)fmt->Format.nChannels;
         spec.freq = fmt->Format.nSamplesPerSec;
         spec.format = SDL_WaveFormatExToSDLFormat((WAVEFORMATEX *)fmt);
 
@@ -338,7 +338,7 @@ void SDL_IMMDevice_Quit(void)
 
 bool SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, bool recording)
 {
-    const Uint64 timeout = SDL_GetTicks() + 8000;  // intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep.
+    const uint64_t timeout = SDL_GetTicks() + 8000;  // intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep.
 
     SDL_assert(device != NULL);
     SDL_assert(immdevice != NULL);
@@ -348,10 +348,10 @@ bool SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, bool reco
 
     HRESULT ret;
     while ((ret = IMMDeviceEnumerator_GetDevice(enumerator, devid, immdevice)) == E_NOTFOUND) {
-        const Uint64 now = SDL_GetTicks();
+        const uint64_t now = SDL_GetTicks();
         if (timeout > now) {
-            const Uint64 ticksleft = timeout - now;
-            SDL_Delay((Uint32)SDL_min(ticksleft, 300));   // wait awhile and try again.
+            const uint64_t ticksleft = timeout - now;
+            SDL_Delay((uint32_t)SDL_min(ticksleft, 300));   // wait awhile and try again.
             continue;
         }
         break;

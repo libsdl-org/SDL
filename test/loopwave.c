@@ -26,8 +26,8 @@
 static struct
 {
     SDL_AudioSpec spec;
-    Uint8 *sound;    /* Pointer to wave data */
-    Uint32 soundlen; /* Length of wave data */
+    uint8_t *sound;    /* Pointer to wave data */
+    uint32_t soundlen; /* Length of wave data */
 } wave;
 
 static SDL_AudioStream *stream;

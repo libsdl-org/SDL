@@ -264,7 +264,7 @@ static bool DSOUND_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool DSOUND_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool DSOUND_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     // Unlock the buffer, allowing it to play
     SDL_assert(buflen == device->buffer_size);
@@ -274,7 +274,7 @@ static bool DSOUND_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int 
     return true;
 }
 
-static Uint8 *DSOUND_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *DSOUND_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     DWORD cursor = 0;
     DWORD junk = 0;

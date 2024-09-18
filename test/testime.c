@@ -64,7 +64,7 @@ typedef struct
     int cursor;
     int cursor_length;
     bool cursor_visible;
-    Uint64 last_cursor_change;
+    uint64_t last_cursor_change;
     char **candidates;
     int num_candidates;
     int selected_candidate;
@@ -124,15 +124,15 @@ static TTF_Font *font;
 #define UNIFONT_DRAW_SCALE        2.0f
 static struct UnifontGlyph
 {
-    Uint8 width;
-    Uint8 data[32];
+    uint8_t width;
+    uint8_t data[32];
 } * unifontGlyph;
 static SDL_Texture **unifontTexture;
-static Uint8 unifontTextureLoaded[UNIFONT_NUM_TEXTURES] = { 0 };
+static uint8_t unifontTextureLoaded[UNIFONT_NUM_TEXTURES] = { 0 };
 
 /* Unifont loading code start */
 
-static Uint8 dehex(char c)
+static uint8_t dehex(char c)
 {
     if (c >= '0' && c <= '9') {
         return c - '0';
@@ -144,16 +144,16 @@ static Uint8 dehex(char c)
     return 255;
 }
 
-static Uint8 dehex2(char c1, char c2)
+static uint8_t dehex2(char c1, char c2)
 {
     return (dehex(c1) << 4) | dehex(c2);
 }
 
-static Uint8 validate_hex(const char *cp, size_t len, Uint32 *np)
+static uint8_t validate_hex(const char *cp, size_t len, uint32_t *np)
 {
-    Uint32 n = 0;
+    uint32_t n = 0;
     for (; len > 0; cp++, len--) {
-        Uint8 c = dehex(*cp);
+        uint8_t c = dehex(*cp);
         if (c == 255) {
             return 0;
         }
@@ -167,8 +167,8 @@ static Uint8 validate_hex(const char *cp, size_t len, Uint32 *np)
 
 static int unifont_init(const char *fontname)
 {
-    Uint8 hexBuffer[65];
-    Uint32 numGlyphs = 0;
+    uint8_t hexBuffer[65];
+    uint32_t numGlyphs = 0;
     int lineNumber = 1;
     size_t bytesRead;
     SDL_IOStream *hexFile;
@@ -208,8 +208,8 @@ static int unifont_init(const char *fontname)
     do {
         int i, codepointHexSize;
         size_t bytesOverread;
-        Uint8 glyphWidth;
-        Uint32 codepoint;
+        uint8_t glyphWidth;
+        uint32_t codepoint;
 
         bytesRead = SDL_ReadIO(hexFile, hexBuffer, 9);
         if (numGlyphs > 0 && bytesRead == 0) {
@@ -290,13 +290,13 @@ static int unifont_init(const char *fontname)
     return 0;
 }
 
-static void unifont_make_rgba(const Uint8 *src, Uint8 *dst, Uint8 width)
+static void unifont_make_rgba(const uint8_t *src, uint8_t *dst, uint8_t width)
 {
     int i, j;
-    Uint8 *row = dst;
+    uint8_t *row = dst;
 
     for (i = 0; i < width * 2; i++) {
-        Uint8 data = src[i];
+        uint8_t data = src[i];
         for (j = 0; j < 8; j++) {
             if (data & 0x80) {
                 row[0] = textColor.r;
@@ -320,17 +320,17 @@ static void unifont_make_rgba(const Uint8 *src, Uint8 *dst, Uint8 width)
     }
 }
 
-static int unifont_load_texture(Uint32 textureID)
+static int unifont_load_texture(uint32_t textureID)
 {
     int i;
-    Uint8 *textureRGBA;
+    uint8_t *textureRGBA;
 
     if (textureID >= UNIFONT_NUM_TEXTURES) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Tried to load out of range texture %" SDL_PRIu32 "\n", textureID);
         return -1;
     }
 
-    textureRGBA = (Uint8 *)SDL_malloc(UNIFONT_TEXTURE_SIZE);
+    textureRGBA = (uint8_t *)SDL_malloc(UNIFONT_TEXTURE_SIZE);
     if (!textureRGBA) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d MiB for a texture.\n", UNIFONT_TEXTURE_SIZE / 1024 / 1024);
         return -1;
@@ -339,9 +339,9 @@ static int unifont_load_texture(Uint32 textureID)
 
     /* Copy the glyphs into memory in RGBA format. */
     for (i = 0; i < UNIFONT_GLYPHS_IN_TEXTURE; i++) {
-        Uint32 codepoint = UNIFONT_GLYPHS_IN_TEXTURE * textureID + i;
+        uint32_t codepoint = UNIFONT_GLYPHS_IN_TEXTURE * textureID + i;
         if (unifontGlyph[codepoint].width > 0) {
-            const Uint32 cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
+            const uint32_t cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
             const size_t offset = ((size_t)cInTex / UNIFONT_GLYPHS_IN_ROW) * UNIFONT_TEXTURE_PITCH * UNIFONT_GLYPH_AREA + (cInTex % UNIFONT_GLYPHS_IN_ROW) * UNIFONT_GLYPH_AREA * 4;
             unifont_make_rgba(unifontGlyph[codepoint].data, textureRGBA + offset, unifontGlyph[codepoint].width);
         }
@@ -371,7 +371,7 @@ static int unifont_load_texture(Uint32 textureID)
     return -1;
 }
 
-static int unifont_glyph_width(Uint32 codepoint)
+static int unifont_glyph_width(uint32_t codepoint)
 {
     if (codepoint > UNIFONT_MAX_CODEPOINT ||
         unifontGlyph[codepoint].width == 0) {
@@ -380,10 +380,10 @@ static int unifont_glyph_width(Uint32 codepoint)
     return unifontGlyph[codepoint].width;
 }
 
-static int unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *dst)
+static int unifont_draw_glyph(uint32_t codepoint, int rendererID, SDL_FRect *dst)
 {
     SDL_Texture *texture;
-    Uint32 textureID;
+    uint32_t textureID;
     SDL_FRect srcrect;
     srcrect.w = srcrect.h = (float)UNIFONT_GLYPH_SIZE;
 
@@ -400,7 +400,7 @@ static int unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *dst)
     }
     texture = unifontTexture[UNIFONT_NUM_TEXTURES * rendererID + textureID];
     if (texture) {
-        const Uint32 cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
+        const uint32_t cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
         srcrect.x = (float)(cInTex % UNIFONT_GLYPHS_IN_ROW * UNIFONT_GLYPH_AREA);
         srcrect.y = (float)(cInTex / UNIFONT_GLYPHS_IN_ROW * UNIFONT_GLYPH_AREA);
         SDL_RenderTexture(state->renderers[rendererID], texture, &srcrect, dst);
@@ -479,9 +479,9 @@ static char *utf8_advance(char *p, size_t distance)
 }
 #endif
 
-static Uint32 utf8_decode(const char *p, size_t len)
+static uint32_t utf8_decode(const char *p, size_t len)
 {
-    Uint32 codepoint = 0;
+    uint32_t codepoint = 0;
     size_t i = 0;
     if (!len) {
         return 0;
@@ -587,7 +587,7 @@ static void DrawCandidates(WindowState *ctx, SDL_FRect *cursorRect)
 #else
         if (ctx->horizontal_candidates) {
             const char *utext = ctx->candidates[i];
-            Uint32 codepoint;
+            uint32_t codepoint;
             size_t len;
             float advance = 0.0f;
 
@@ -602,7 +602,7 @@ static void DrawCandidates(WindowState *ctx, SDL_FRect *cursorRect)
             h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
         } else {
             const char *utext = ctx->candidates[i];
-            Uint32 codepoint;
+            uint32_t codepoint;
             size_t len;
             float advance = 0.0f;
 
@@ -654,7 +654,7 @@ static void DrawCandidates(WindowState *ctx, SDL_FRect *cursorRect)
 
         if (ctx->horizontal_candidates) {
             const char *utext = ctx->candidates[i];
-            Uint32 codepoint;
+            uint32_t codepoint;
             size_t len;
             float start;
 
@@ -679,7 +679,7 @@ static void DrawCandidates(WindowState *ctx, SDL_FRect *cursorRect)
             }
         } else {
             const char *utext = ctx->candidates[i];
-            Uint32 codepoint;
+            uint32_t codepoint;
             size_t len;
             float start;
 
@@ -876,7 +876,7 @@ static void RedrawWindow(WindowState *ctx)
         SDL_DestroyTexture(texture);
 #else
         char *utext = text;
-        Uint32 codepoint;
+        uint32_t codepoint;
         size_t len;
         SDL_FRect dstrect;
 
@@ -945,7 +945,7 @@ static void RedrawWindow(WindowState *ctx)
 #else
         int i = 0;
         char *utext = ctx->markedText;
-        Uint32 codepoint;
+        uint32_t codepoint;
         size_t len;
         SDL_FRect dstrect;
 
@@ -985,7 +985,7 @@ static void RedrawWindow(WindowState *ctx)
     }
 
     /* Draw the cursor */
-    Uint64 now = SDL_GetTicks();
+    uint64_t now = SDL_GetTicks();
     if ((now - ctx->last_cursor_change) >= CURSOR_BLINK_INTERVAL_MS) {
         ctx->cursor_visible = !ctx->cursor_visible;
         ctx->last_cursor_change = now;
@@ -1205,7 +1205,7 @@ int main(int argc, char *argv[])
                 SDL_Log("Keyboard: scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s\n",
                         event.key.scancode,
                         SDL_GetScancodeName(event.key.scancode),
-                        SDL_static_cast(Uint32, event.key.key),
+                        SDL_static_cast(uint32_t, event.key.key),
                         SDL_GetKeyName(event.key.key));
                 break;
             }

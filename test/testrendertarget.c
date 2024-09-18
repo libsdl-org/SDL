@@ -77,7 +77,7 @@ DrawComposite(DrawState *s)
 
         surface = SDL_RenderReadPixels(s->renderer, NULL);
         if (surface) {
-            Uint8 r, g, b, a;
+            uint8_t r, g, b, a;
             if (SDL_ReadSurfacePixel(surface, 0, 0, &r, &g, &b, &a)) {
                 SDL_Log("Blended pixel: 0x%.2x%.2x%.2x%.2x\n", r, g, b, a);
             }
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
 {
     int i;
     int frames;
-    Uint64 then, now;
+    uint64_t then, now;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);

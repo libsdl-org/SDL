@@ -21,8 +21,8 @@
 
 int main(int argc, char *argv[])
 {
-    Uint64 start;
-    Uint64 prequit;
+    uint64_t start;
+    uint64_t prequit;
     (void)argc;
     (void)argv;
     SDL_Init(0);

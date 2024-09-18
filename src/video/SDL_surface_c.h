@@ -28,7 +28,7 @@
 #include "../SDL_list.h"
 
 // Surface internal flags
-typedef Uint32 SDL_SurfaceDataFlags;
+typedef uint32_t SDL_SurfaceDataFlags;
 
 #define SDL_INTERNAL_SURFACE_DONTFREE   0x00000001u /**< Surface is referenced internally */
 #define SDL_INTERNAL_SURFACE_STACK      0x00000002u /**< Surface is allocated on the stack */

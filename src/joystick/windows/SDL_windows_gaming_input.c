@@ -107,7 +107,7 @@ DEFINE_GUID(IID___x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics, 0xeb
 extern bool SDL_XINPUT_Enabled(void);
 
 
-static bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
+static bool SDL_IsXInputDevice(uint16_t vendor, uint16_t product)
 {
 #if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
     PRAWINPUTDEVICELIST raw_devices = NULL;
@@ -355,7 +355,7 @@ static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FI
     return rc;
 }
 
-static int GetSteamVirtualGamepadSlot(__x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller, Uint16 vendor_id, Uint16 product_id)
+static int GetSteamVirtualGamepadSlot(__x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller, uint16_t vendor_id, uint16_t product_id)
 {
     int slot = -1;
 
@@ -400,10 +400,10 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     if (SUCCEEDED(hr)) {
         char *name = NULL;
         SDL_GUID guid = { 0 };
-        Uint16 bus = SDL_HARDWARE_BUS_USB;
-        Uint16 vendor = 0;
-        Uint16 product = 0;
-        Uint16 version = 0;
+        uint16_t bus = SDL_HARDWARE_BUS_USB;
+        uint16_t vendor = 0;
+        uint16_t product = 0;
+        uint16_t version = 0;
         SDL_JoystickType type = SDL_JOYSTICK_TYPE_UNKNOWN;
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController2 *controller2 = NULL;
         __x_ABI_CWindows_CGaming_CInput_CIGameController *game_controller = NULL;
@@ -460,7 +460,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                 type = GetGameControllerType(game_controller);
             }
 
-            guid = SDL_CreateJoystickGUID(bus, vendor, product, version, NULL, name, 'w', (Uint8)type);
+            guid = SDL_CreateJoystickGUID(bus, vendor, product, version, NULL, name, 'w', (uint8_t)type);
 
             if (SDL_ShouldIgnoreJoystick(name, guid)) {
                 ignore_joystick = true;
@@ -662,7 +662,7 @@ static void WGI_JoystickDetect(void)
 {
 }
 
-static bool WGI_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool WGI_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers
     return false;
@@ -745,7 +745,7 @@ static bool WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     return true;
 }
 
-static bool WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool WGI_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -766,7 +766,7 @@ static bool WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     }
 }
 
-static bool WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -787,7 +787,7 @@ static bool WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumbl
     }
 }
 
-static bool WGI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool WGI_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }
@@ -802,7 +802,7 @@ static bool WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
     return SDL_Unsupported();
 }
 
-static Uint8 ConvertHatValue(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition value)
+static uint8_t ConvertHatValue(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition value)
 {
     switch (value) {
     case GameControllerSwitchPosition_Up:
@@ -871,13 +871,13 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
             // FIXME: What units are the timestamp we get from GetCurrentReading()?
             timestamp = SDL_GetTicksNS();
             for (i = 0; i < nbuttons; ++i) {
-                SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, buttons[i]);
+                SDL_SendJoystickButton(timestamp, joystick, (uint8_t)i, buttons[i]);
             }
             for (i = 0; i < nhats; ++i) {
-                SDL_SendJoystickHat(timestamp, joystick, (Uint8)i, ConvertHatValue(hats[i]));
+                SDL_SendJoystickHat(timestamp, joystick, (uint8_t)i, ConvertHatValue(hats[i]));
             }
             for (i = 0; i < naxes; ++i) {
-                SDL_SendJoystickAxis(timestamp, joystick, (Uint8)i, (Sint16)((int)(axes[i] * 65535) - 32768));
+                SDL_SendJoystickAxis(timestamp, joystick, (uint8_t)i, (int16_t)((int)(axes[i] * 65535) - 32768));
             }
         }
     }

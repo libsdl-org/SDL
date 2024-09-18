@@ -677,7 +677,7 @@ static int SDLCALL video_getWindowId(void *arg)
     const char *title = "video_getWindowId Test Window";
     SDL_Window *window;
     SDL_Window *result;
-    Uint32 id, randomId;
+    uint32_t id, randomId;
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
@@ -699,7 +699,7 @@ static int SDLCALL video_getWindowId(void *arg)
     result = SDL_GetWindowFromID(randomId);
     SDLTest_AssertPass("Call to SDL_GetWindowID(%" SDL_PRIu32 "/random_large)", randomId);
 
-    /* Get window from 0 and Uint32 max ID, no result check */
+    /* Get window from 0 and uint32_t max ID, no result check */
     result = SDL_GetWindowFromID(0);
     SDLTest_AssertPass("Call to SDL_GetWindowID(0)");
     result = SDL_GetWindowFromID(UINT32_MAX);

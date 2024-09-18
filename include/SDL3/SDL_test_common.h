@@ -45,7 +45,7 @@
 #define DEFAULT_WINDOW_HEIGHT 480
 #endif
 
-typedef Uint32 SDLTest_VerboseFlags;
+typedef uint32_t SDLTest_VerboseFlags;
 #define VERBOSE_VIDEO   0x00000001
 #define VERBOSE_MODES   0x00000002
 #define VERBOSE_RENDER  0x00000004

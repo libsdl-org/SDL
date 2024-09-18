@@ -431,12 +431,12 @@ struct SDL_VideoData
     UINT rawinput_offset;
     UINT rawinput_size;
     UINT rawinput_count;
-    Uint64 last_rawinput_poll;
+    uint64_t last_rawinput_poll;
     SDL_Point last_raw_mouse_position;
     bool raw_mouse_enabled;
     bool raw_keyboard_enabled;
     bool pending_E1_key_sequence;
-    Uint32 raw_input_enabled;
+    uint32_t raw_input_enabled;
 
     WIN_GameInputData *gameinput_context;
 

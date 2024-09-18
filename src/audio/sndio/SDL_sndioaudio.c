@@ -174,7 +174,7 @@ static bool SNDIO_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool SNDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool SNDIO_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     // !!! FIXME: this should be non-blocking so we can check device->shutdown.
     // this is set to blocking, because we _have_ to send the entire buffer down, but hopefully WaitDevice took most of the delay time.
@@ -205,7 +205,7 @@ static void SNDIO_FlushRecording(SDL_AudioDevice *device)
     }
 }
 
-static Uint8 *SNDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *SNDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     return device->hidden->mixbuf;
 }
@@ -303,7 +303,7 @@ static bool SNDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_UpdatedAudioDeviceFormat(device);
 
     // Allocate mixing buffer
-    device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
+    device->hidden->mixbuf = (uint8_t *)SDL_malloc(device->buffer_size);
     if (!device->hidden->mixbuf) {
         return false;
     }

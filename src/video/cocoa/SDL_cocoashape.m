@@ -40,7 +40,7 @@ bool Cocoa_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Sur
             point.y >= 0.0f && point.y < window->h) {
             int x = (int)SDL_roundf((point.x / (window->w - 1)) * (shape->w - 1));
             int y = (int)SDL_roundf((point.y / (window->h - 1)) * (shape->h - 1));
-            Uint8 a;
+            uint8_t a;
 
             if (!SDL_ReadSurfacePixel(shape, x, y, NULL, NULL, NULL, &a) || a == SDL_ALPHA_TRANSPARENT) {
                 ignoresMouseEvents = YES;

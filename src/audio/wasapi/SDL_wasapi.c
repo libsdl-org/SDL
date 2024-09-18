@@ -419,7 +419,7 @@ static bool RecoverWasapiIfLost(SDL_AudioDevice *device)
     return device->hidden->device_lost ? RecoverWasapiDevice(device) : true;
 }
 
-static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     // get an endpoint buffer from WASAPI.
     BYTE *buffer = NULL;
@@ -437,10 +437,10 @@ static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
         }
     }
 
-    return (Uint8 *)buffer;
+    return (uint8_t *)buffer;
 }
 
-static bool WASAPI_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool WASAPI_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     if (device->hidden->render) { // definitely activated?
         // WasapiFailed() will mark the device for reacquisition or removal elsewhere.
@@ -601,7 +601,7 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
     device->hidden->waveformat = waveformat;
 
     SDL_AudioSpec newspec;
-    newspec.channels = (Uint8)waveformat->nChannels;
+    newspec.channels = (uint8_t)waveformat->nChannels;
 
     // Make sure we have a valid format that we can convert to whatever WASAPI wants.
     const SDL_AudioFormat wasapi_format = SDL_WaveFormatExToSDLFormat(waveformat);

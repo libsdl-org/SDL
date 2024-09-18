@@ -129,11 +129,11 @@ static bool HasValidDisplayModeFlags(CGDisplayModeRef vidmode)
     return true;
 }
 
-static Uint32 GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
+static uint32_t GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
 {
     // This API is deprecated in 10.11 with no good replacement (as of 10.15).
     CFStringRef fmt = CGDisplayModeCopyPixelEncoding(vidmode);
-    Uint32 pixelformat = SDL_PIXELFORMAT_UNKNOWN;
+    uint32_t pixelformat = SDL_PIXELFORMAT_UNKNOWN;
 
     if (CFStringCompare(fmt, CFSTR(IO32BitDirectPixels),
                         kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
@@ -163,7 +163,7 @@ static bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode, boo
     size_t pixelH = height;
     uint32_t ioflags = CGDisplayModeGetIOFlags(vidmode);
     float refreshrate = GetDisplayModeRefreshRate(vidmode, link);
-    Uint32 format = GetDisplayModePixelFormat(vidmode);
+    uint32_t format = GetDisplayModePixelFormat(vidmode);
     bool interlaced = (ioflags & kDisplayModeInterlacedFlag) != 0;
     CFMutableArrayRef modes;
 
@@ -195,7 +195,7 @@ static bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode, boo
         for (i = 0; i < modescount; i++) {
             size_t otherW, otherH, otherpixelW, otherpixelH;
             float otherrefresh;
-            Uint32 otherformat;
+            uint32_t otherformat;
             bool otherGUI;
             CGDisplayModeRef othermode = (CGDisplayModeRef)CFArrayGetValueAtIndex(modelist, i);
             uint32_t otherioflags = CGDisplayModeGetIOFlags(othermode);

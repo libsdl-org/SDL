@@ -78,7 +78,7 @@ static const char *video_usage[] = {
     NULL
 };
 
-/* !!! FIXME: Float32? Sint32? */
+/* !!! FIXME: Float32? int32_t? */
 static const char *audio_usage[] = {
     "[--audio driver]",
     "[--rate N]",
@@ -673,7 +673,7 @@ static int SDLCALL SDLTest_CommonStateParseAudioArguments(void *data, char **arg
         if (!argv[index]) {
             return -1;
         }
-        state->audio_channels = (Uint8) SDL_atoi(argv[index]);
+        state->audio_channels = (uint8_t) SDL_atoi(argv[index]);
         return 2;
     }
     return 0;
@@ -1034,7 +1034,7 @@ static void SDLTest_PrintButtonMask(char *text, size_t maxlen, SDL_MouseButtonFl
     int i;
     int count = 0;
     for (i = 1; i <= 32; ++i) {
-        const Uint32 flag = SDL_BUTTON(i);
+        const uint32_t flag = SDL_BUTTON(i);
         if ((flags & flag) == flag) {
             if (count > 0) {
                 SDL_snprintfcat(text, maxlen, " | ");
@@ -1045,7 +1045,7 @@ static void SDLTest_PrintButtonMask(char *text, size_t maxlen, SDL_MouseButtonFl
     }
 }
 
-static void SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
+static void SDLTest_PrintPixelFormat(char *text, size_t maxlen, uint32_t format)
 {
     const char *name = SDL_GetPixelFormatName(format);
     if (name) {
@@ -1141,7 +1141,7 @@ static SDL_Surface *SDLTest_LoadIcon(const char *file)
 
     if (icon->format == SDL_PIXELFORMAT_INDEX8) {
         /* Set the colorkey */
-        SDL_SetSurfaceColorKey(icon, 1, *((Uint8 *)icon->pixels));
+        SDL_SetSurfaceColorKey(icon, 1, *((uint8_t *)icon->pixels));
     }
 
     return icon;
@@ -1261,7 +1261,7 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
             SDL_DisplayMode **modes;
             const SDL_DisplayMode *mode;
             int bpp;
-            Uint32 Rmask, Gmask, Bmask, Amask;
+            uint32_t Rmask, Gmask, Bmask, Amask;
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
             int adapterIndex = 0;
             int outputIndex = 0;

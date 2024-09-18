@@ -27,7 +27,7 @@
 
 extern void SDL_UpdateLifecycleObserver(void);
 
-extern Uint64 UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp);
+extern uint64_t UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp);
 extern void UIKit_PumpEvents(SDL_VideoDevice *_this);
 
 extern void SDL_InitGCKeyboard(void);

@@ -50,7 +50,7 @@ typedef enum
 } SDL_AndroidLifecycleEvent;
 
 void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event);
-bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS);
+bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, int64_t timeoutNS);
 
 void Android_LockActivityMutex(void);
 void Android_UnlockActivityMutex(void);
@@ -81,8 +81,8 @@ extern bool Android_IsDeXMode(void);
 extern bool Android_IsChromebook(void);
 
 bool Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode);
-Sint64 Android_JNI_FileSize(void *userdata);
-Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence);
+int64_t Android_JNI_FileSize(void *userdata);
+int64_t Android_JNI_FileSeek(void *userdata, int64_t offset, SDL_IOWhence whence);
 size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOStatus *status);
 size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SDL_IOStatus *status);
 bool Android_JNI_FileClose(void *userdata);

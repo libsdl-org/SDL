@@ -27,14 +27,14 @@
 // start fallback scalar converters
 
 // This code requires that floats are in the IEEE-754 binary32 format
-SDL_COMPILE_TIME_ASSERT(float_bits, sizeof(float) == sizeof(Uint32));
+SDL_COMPILE_TIME_ASSERT(float_bits, sizeof(float) == sizeof(uint32_t));
 
 union float_bits {
-    Uint32 u32;
+    uint32_t u32;
     float f32;
 };
 
-static void SDL_Convert_S8_to_F32_Scalar(float *dst, const Sint8 *src, int num_samples)
+static void SDL_Convert_S8_to_F32_Scalar(float *dst, const int8_t *src, int num_samples)
 {
     int i;
 
@@ -44,12 +44,12 @@ static void SDL_Convert_S8_to_F32_Scalar(float *dst, const Sint8 *src, int num_s
         /* 1) Construct a float in the range [65536.0, 65538.0)
          * 2) Shift the float range to [-1.0, 1.0) */
         union float_bits x;
-        x.u32 = (Uint8)src[i] ^ 0x47800080u;
+        x.u32 = (uint8_t)src[i] ^ 0x47800080u;
         dst[i] = x.f32 - 65537.0f;
     }
 }
 
-static void SDL_Convert_U8_to_F32_Scalar(float *dst, const Uint8 *src, int num_samples)
+static void SDL_Convert_U8_to_F32_Scalar(float *dst, const uint8_t *src, int num_samples)
 {
     int i;
 
@@ -64,7 +64,7 @@ static void SDL_Convert_U8_to_F32_Scalar(float *dst, const Uint8 *src, int num_s
     }
 }
 
-static void SDL_Convert_S16_to_F32_Scalar(float *dst, const Sint16 *src, int num_samples)
+static void SDL_Convert_S16_to_F32_Scalar(float *dst, const int16_t *src, int num_samples)
 {
     int i;
 
@@ -74,12 +74,12 @@ static void SDL_Convert_S16_to_F32_Scalar(float *dst, const Sint16 *src, int num
         /* 1) Construct a float in the range [256.0, 258.0)
          * 2) Shift the float range to [-1.0, 1.0) */
         union float_bits x;
-        x.u32 = (Uint16)src[i] ^ 0x43808000u;
+        x.u32 = (uint16_t)src[i] ^ 0x43808000u;
         dst[i] = x.f32 - 257.0f;
     }
 }
 
-static void SDL_Convert_S32_to_F32_Scalar(float *dst, const Sint32 *src, int num_samples)
+static void SDL_Convert_S32_to_F32_Scalar(float *dst, const int32_t *src, int num_samples)
 {
     int i;
 
@@ -91,9 +91,9 @@ static void SDL_Convert_S32_to_F32_Scalar(float *dst, const Sint32 *src, int num
 }
 
 // Create a bit-mask based on the sign-bit. Should optimize to a single arithmetic-shift-right
-#define SIGNMASK(x) (Uint32)(0u - ((Uint32)(x) >> 31))
+#define SIGNMASK(x) (uint32_t)(0u - ((uint32_t)(x) >> 31))
 
-static void SDL_Convert_F32_to_S8_Scalar(Sint8 *dst, const float *src, int num_samples)
+static void SDL_Convert_F32_to_S8_Scalar(int8_t *dst, const float *src, int num_samples)
 {
     int i;
 
@@ -106,15 +106,15 @@ static void SDL_Convert_F32_to_S8_Scalar(Sint8 *dst, const float *src, int num_s
         union float_bits x;
         x.f32 = src[i] + 98304.0f;
 
-        Uint32 y = x.u32 - 0x47C00000u;
-        Uint32 z = 0x7Fu - (y ^ SIGNMASK(y));
+        uint32_t y = x.u32 - 0x47C00000u;
+        uint32_t z = 0x7Fu - (y ^ SIGNMASK(y));
         y = y ^ (z & SIGNMASK(z));
 
-        dst[i] = (Sint8)(y & 0xFF);
+        dst[i] = (int8_t)(y & 0xFF);
     }
 }
 
-static void SDL_Convert_F32_to_U8_Scalar(Uint8 *dst, const float *src, int num_samples)
+static void SDL_Convert_F32_to_U8_Scalar(uint8_t *dst, const float *src, int num_samples)
 {
     int i;
 
@@ -128,15 +128,15 @@ static void SDL_Convert_F32_to_U8_Scalar(Uint8 *dst, const float *src, int num_s
         union float_bits x;
         x.f32 = src[i] + 98304.0f;
 
-        Uint32 y = x.u32 - 0x47C00000u;
-        Uint32 z = 0x7Fu - (y ^ SIGNMASK(y));
+        uint32_t y = x.u32 - 0x47C00000u;
+        uint32_t z = 0x7Fu - (y ^ SIGNMASK(y));
         y = (y ^ 0x80u) ^ (z & SIGNMASK(z));
 
-        dst[i] = (Uint8)(y & 0xFF);
+        dst[i] = (uint8_t)(y & 0xFF);
     }
 }
 
-static void SDL_Convert_F32_to_S16_Scalar(Sint16 *dst, const float *src, int num_samples)
+static void SDL_Convert_F32_to_S16_Scalar(int16_t *dst, const float *src, int num_samples)
 {
     int i;
 
@@ -149,15 +149,15 @@ static void SDL_Convert_F32_to_S16_Scalar(Sint16 *dst, const float *src, int num
         union float_bits x;
         x.f32 = src[i] + 384.0f;
 
-        Uint32 y = x.u32 - 0x43C00000u;
-        Uint32 z = 0x7FFFu - (y ^ SIGNMASK(y));
+        uint32_t y = x.u32 - 0x43C00000u;
+        uint32_t z = 0x7FFFu - (y ^ SIGNMASK(y));
         y = y ^ (z & SIGNMASK(z));
 
-        dst[i] = (Sint16)(y & 0xFFFF);
+        dst[i] = (int16_t)(y & 0xFFFF);
     }
 }
 
-static void SDL_Convert_F32_to_S32_Scalar(Sint32 *dst, const float *src, int num_samples)
+static void SDL_Convert_F32_to_S32_Scalar(int32_t *dst, const float *src, int num_samples)
 {
     int i;
 
@@ -170,18 +170,18 @@ static void SDL_Convert_F32_to_S32_Scalar(Sint32 *dst, const float *src, int num
         union float_bits x;
         x.f32 = src[i];
 
-        Uint32 y = x.u32 + 0x0F800000u;
-        Uint32 z = y - 0xCF000000u;
+        uint32_t y = x.u32 + 0x0F800000u;
+        uint32_t z = y - 0xCF000000u;
         z &= SIGNMASK(y ^ z);
         x.u32 = y - z;
 
-        dst[i] = (Sint32)x.f32 ^ (Sint32)SIGNMASK(z);
+        dst[i] = (int32_t)x.f32 ^ (int32_t)SIGNMASK(z);
     }
 }
 
 #undef SIGNMASK
 
-static void SDL_Convert_Swap16_Scalar(Uint16* dst, const Uint16* src, int num_samples)
+static void SDL_Convert_Swap16_Scalar(uint16_t* dst, const uint16_t* src, int num_samples)
 {
     int i;
 
@@ -190,7 +190,7 @@ static void SDL_Convert_Swap16_Scalar(Uint16* dst, const Uint16* src, int num_sa
     }
 }
 
-static void SDL_Convert_Swap32_Scalar(Uint32* dst, const Uint32* src, int num_samples)
+static void SDL_Convert_Swap32_Scalar(uint32_t* dst, const uint32_t* src, int num_samples)
 {
     int i;
 
@@ -220,7 +220,7 @@ static void SDL_Convert_Swap32_Scalar(Uint32* dst, const Uint32* src, int num_sa
     while (i > 0)                         { --i;     CVT1  }
 
 #ifdef SDL_SSE2_INTRINSICS
-static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const Sint8 *src, int num_samples)
+static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const int8_t *src, int num_samples)
 {
     /* 1) Flip the sign bit to convert from S8 to U8 format
      * 2) Construct a float in the range [65536.0, 65538.0)
@@ -234,7 +234,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const S
     LOG_DEBUG_AUDIO_CONVERT("S8", "F32 (using SSE2)");
 
     CONVERT_16_REV({
-        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint8)src[i] ^ 0x47800080u)), offset));
+        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((uint8_t)src[i] ^ 0x47800080u)), offset));
     }, {
         const __m128i bytes = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i]), flipper);
 
@@ -253,7 +253,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const S
     })
 }
 
-static void SDL_TARGETING("sse2") SDL_Convert_U8_to_F32_SSE2(float *dst, const Uint8 *src, int num_samples)
+static void SDL_TARGETING("sse2") SDL_Convert_U8_to_F32_SSE2(float *dst, const uint8_t *src, int num_samples)
 {
     /* 1) Construct a float in the range [65536.0, 65538.0)
      * 2) Shift the float range to [-1.0, 1.0)
@@ -265,7 +265,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_U8_to_F32_SSE2(float *dst, const U
     LOG_DEBUG_AUDIO_CONVERT("U8", "F32 (using SSE2)");
 
     CONVERT_16_REV({
-        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint8)src[i] ^ 0x47800000u)), offset));
+        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((uint8_t)src[i] ^ 0x47800000u)), offset));
     }, {
         const __m128i bytes = _mm_loadu_si128((const __m128i *)&src[i]);
 
@@ -284,7 +284,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_U8_to_F32_SSE2(float *dst, const U
     })
 }
 
-static void SDL_TARGETING("sse2") SDL_Convert_S16_to_F32_SSE2(float *dst, const Sint16 *src, int num_samples)
+static void SDL_TARGETING("sse2") SDL_Convert_S16_to_F32_SSE2(float *dst, const int16_t *src, int num_samples)
 {
     /* 1) Flip the sign bit to convert from S16 to U16 format
      * 2) Construct a float in the range [256.0, 258.0)
@@ -297,7 +297,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S16_to_F32_SSE2(float *dst, const 
     LOG_DEBUG_AUDIO_CONVERT("S16", "F32 (using SSE2)");
 
     CONVERT_16_REV({
-        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint16)src[i] ^ 0x43808000u)), offset));
+        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((uint16_t)src[i] ^ 0x43808000u)), offset));
     }, {
         const __m128i shorts0 = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i]), flipper);
         const __m128i shorts1 = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i + 8]), flipper);
@@ -314,7 +314,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S16_to_F32_SSE2(float *dst, const 
     })
 }
 
-static void SDL_TARGETING("sse2") SDL_Convert_S32_to_F32_SSE2(float *dst, const Sint32 *src, int num_samples)
+static void SDL_TARGETING("sse2") SDL_Convert_S32_to_F32_SSE2(float *dst, const int32_t *src, int num_samples)
 {
     // dst[i] = f32(src[i]) / f32(0x80000000)
     const __m128 scaler = _mm_set1_ps(DIVBY2147483648);
@@ -341,7 +341,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S32_to_F32_SSE2(float *dst, const 
     })
 }
 
-static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S8_SSE2(Sint8 *dst, const float *src, int num_samples)
+static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S8_SSE2(int8_t *dst, const float *src, int num_samples)
 {
     /* 1) Shift the float range from [-1.0, 1.0] to [98303.0, 98305.0]
      * 2) Extract the lowest 16 bits and clamp to [-128, 127]
@@ -354,7 +354,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S8_SSE2(Sint8 *dst, const f
 
     CONVERT_16_FWD({
         const __m128i ints = _mm_castps_si128(_mm_add_ss(_mm_load_ss(&src[i]), offset));
-        dst[i] = (Sint8)(_mm_cvtsi128_si32(_mm_packs_epi16(ints, ints)) & 0xFF);
+        dst[i] = (int8_t)(_mm_cvtsi128_si32(_mm_packs_epi16(ints, ints)) & 0xFF);
     }, {
         const __m128 floats0 = _mm_loadu_ps(&src[i]);
         const __m128 floats1 = _mm_loadu_ps(&src[i + 4]);
@@ -375,7 +375,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S8_SSE2(Sint8 *dst, const f
     })
 }
 
-static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(Uint8 *dst, const float *src, int num_samples)
+static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(uint8_t *dst, const float *src, int num_samples)
 {
     /* 1) Shift the float range from [-1.0, 1.0] to [98304.0, 98306.0]
      * 2) Extract the lowest 16 bits and clamp to [0, 255]
@@ -388,7 +388,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(Uint8 *dst, const f
 
     CONVERT_16_FWD({
         const __m128i ints = _mm_castps_si128(_mm_add_ss(_mm_load_ss(&src[i]), offset));
-        dst[i] = (Uint8)(_mm_cvtsi128_si32(_mm_packus_epi16(ints, ints)) & 0xFF);
+        dst[i] = (uint8_t)(_mm_cvtsi128_si32(_mm_packus_epi16(ints, ints)) & 0xFF);
     }, {
         const __m128 floats0 = _mm_loadu_ps(&src[i]);
         const __m128 floats1 = _mm_loadu_ps(&src[i + 4]);
@@ -409,7 +409,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(Uint8 *dst, const f
     })
 }
 
-static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S16_SSE2(Sint16 *dst, const float *src, int num_samples)
+static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S16_SSE2(int16_t *dst, const float *src, int num_samples)
 {
     /* 1) Shift the float range from [-1.0, 1.0] to [256.0, 258.0]
      * 2) Shift the int range from [0x43800000, 0x43810000] to [-32768,32768]
@@ -422,7 +422,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S16_SSE2(Sint16 *dst, const
 
     CONVERT_16_FWD({
         const __m128i ints = _mm_sub_epi32(_mm_castps_si128(_mm_add_ss(_mm_load_ss(&src[i]), offset)), _mm_castps_si128(offset));
-        dst[i] = (Sint16)(_mm_cvtsi128_si32(_mm_packs_epi32(ints, ints)) & 0xFFFF);
+        dst[i] = (int16_t)(_mm_cvtsi128_si32(_mm_packs_epi32(ints, ints)) & 0xFFFF);
     }, {
         const __m128 floats0 = _mm_loadu_ps(&src[i]);
         const __m128 floats1 = _mm_loadu_ps(&src[i + 4]);
@@ -442,7 +442,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S16_SSE2(Sint16 *dst, const
     })
 }
 
-static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const float *src, int num_samples)
+static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(int32_t *dst, const float *src, int num_samples)
 {
     /* 1) Scale the float range from [-1.0, 1.0] to [-2147483648.0, 2147483648.0]
      * 2) Convert to integer (values too small/large become 0x80000000 = -2147483648)
@@ -456,7 +456,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
         const __m128 floats = _mm_load_ss(&src[i]);
         const __m128 values = _mm_mul_ss(floats, limit);
         const __m128i ints = _mm_xor_si128(_mm_cvttps_epi32(values), _mm_castps_si128(_mm_cmpge_ss(values, limit)));
-        dst[i] = (Sint32)_mm_cvtsi128_si32(ints);
+        dst[i] = (int32_t)_mm_cvtsi128_si32(ints);
     }, {
         const __m128 floats0 = _mm_loadu_ps(&src[i]);
         const __m128 floats1 = _mm_loadu_ps(&src[i + 4]);
@@ -483,7 +483,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
 
 // FIXME: SDL doesn't have SSSE3 detection, so use the next one up
 #ifdef SDL_SSE4_1_INTRINSICS
-static void SDL_TARGETING("ssse3") SDL_Convert_Swap16_SSSE3(Uint16* dst, const Uint16* src, int num_samples)
+static void SDL_TARGETING("ssse3") SDL_Convert_Swap16_SSSE3(uint16_t* dst, const uint16_t* src, int num_samples)
 {
     const __m128i shuffle = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
 
@@ -501,7 +501,7 @@ static void SDL_TARGETING("ssse3") SDL_Convert_Swap16_SSSE3(Uint16* dst, const U
     })
 }
 
-static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32* dst, const Uint32* src, int num_samples)
+static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(uint32_t* dst, const uint32_t* src, int num_samples)
 {
     const __m128i shuffle = _mm_set_epi8(12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3);
 
@@ -527,7 +527,7 @@ static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32* dst, const U
 #endif
 
 #ifdef SDL_NEON_INTRINSICS
-static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_samples)
+static void SDL_Convert_S8_to_F32_NEON(float *dst, const int8_t *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("S8", "F32 (using NEON)");
 
@@ -551,14 +551,14 @@ static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_sam
     })
 }
 
-static void SDL_Convert_U8_to_F32_NEON(float *dst, const Uint8 *src, int num_samples)
+static void SDL_Convert_U8_to_F32_NEON(float *dst, const uint8_t *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("U8", "F32 (using NEON)");
 
     uint8x16_t flipper = vdupq_n_u8(0x80);
 
     CONVERT_16_REV({
-        vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vdup_n_s32((Sint8)(src[i] ^ 0x80)), 7), 0);
+        vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vdup_n_s32((int8_t)(src[i] ^ 0x80)), 7), 0);
     }, {
         int8x16_t bytes = vreinterpretq_s8_u8(veorq_u8(vld1q_u8(&src[i]), flipper));
 
@@ -577,7 +577,7 @@ static void SDL_Convert_U8_to_F32_NEON(float *dst, const Uint8 *src, int num_sam
     })
 }
 
-static void SDL_Convert_S16_to_F32_NEON(float *dst, const Sint16 *src, int num_samples)
+static void SDL_Convert_S16_to_F32_NEON(float *dst, const int16_t *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("S16", "F32 (using NEON)");
 
@@ -599,7 +599,7 @@ static void SDL_Convert_S16_to_F32_NEON(float *dst, const Sint16 *src, int num_s
     })
 }
 
-static void SDL_Convert_S32_to_F32_NEON(float *dst, const Sint32 *src, int num_samples)
+static void SDL_Convert_S32_to_F32_NEON(float *dst, const int32_t *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("S32", "F32 (using NEON)");
 
@@ -623,7 +623,7 @@ static void SDL_Convert_S32_to_F32_NEON(float *dst, const Sint32 *src, int num_s
     })
 }
 
-static void SDL_Convert_F32_to_S8_NEON(Sint8 *dst, const float *src, int num_samples)
+static void SDL_Convert_F32_to_S8_NEON(int8_t *dst, const float *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("F32", "S8 (using NEON)");
 
@@ -649,7 +649,7 @@ static void SDL_Convert_F32_to_S8_NEON(Sint8 *dst, const float *src, int num_sam
     })
 }
 
-static void SDL_Convert_F32_to_U8_NEON(Uint8 *dst, const float *src, int num_samples)
+static void SDL_Convert_F32_to_U8_NEON(uint8_t *dst, const float *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("F32", "U8 (using NEON)");
 
@@ -681,7 +681,7 @@ static void SDL_Convert_F32_to_U8_NEON(Uint8 *dst, const float *src, int num_sam
     })
 }
 
-static void SDL_Convert_F32_to_S16_NEON(Sint16 *dst, const float *src, int num_samples)
+static void SDL_Convert_F32_to_S16_NEON(int16_t *dst, const float *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("F32", "S16 (using NEON)");
 
@@ -706,7 +706,7 @@ static void SDL_Convert_F32_to_S16_NEON(Sint16 *dst, const float *src, int num_s
     })
 }
 
-static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_samples)
+static void SDL_Convert_F32_to_S32_NEON(int32_t *dst, const float *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("F32", "S32 (using NEON)");
 
@@ -730,41 +730,41 @@ static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_s
     })
 }
 
-static void SDL_Convert_Swap16_NEON(Uint16* dst, const Uint16* src, int num_samples)
+static void SDL_Convert_Swap16_NEON(uint16_t* dst, const uint16_t* src, int num_samples)
 {
     CONVERT_16_FWD({
         dst[i] = SDL_Swap16(src[i]);
     }, {
-        uint8x16_t ints0 = vld1q_u8((const Uint8*)&src[i]);
-        uint8x16_t ints1 = vld1q_u8((const Uint8*)&src[i + 8]);
+        uint8x16_t ints0 = vld1q_u8((const uint8_t*)&src[i]);
+        uint8x16_t ints1 = vld1q_u8((const uint8_t*)&src[i + 8]);
 
         ints0 = vrev16q_u8(ints0);
         ints1 = vrev16q_u8(ints1);
 
-        vst1q_u8((Uint8*)&dst[i], ints0);
-        vst1q_u8((Uint8*)&dst[i + 8], ints1);
+        vst1q_u8((uint8_t*)&dst[i], ints0);
+        vst1q_u8((uint8_t*)&dst[i + 8], ints1);
     })
 }
 
-static void SDL_Convert_Swap32_NEON(Uint32* dst, const Uint32* src, int num_samples)
+static void SDL_Convert_Swap32_NEON(uint32_t* dst, const uint32_t* src, int num_samples)
 {
     CONVERT_16_FWD({
         dst[i] = SDL_Swap32(src[i]);
     }, {
-        uint8x16_t ints0 = vld1q_u8((const Uint8*)&src[i]);
-        uint8x16_t ints1 = vld1q_u8((const Uint8*)&src[i + 4]);
-        uint8x16_t ints2 = vld1q_u8((const Uint8*)&src[i + 8]);
-        uint8x16_t ints3 = vld1q_u8((const Uint8*)&src[i + 12]);
+        uint8x16_t ints0 = vld1q_u8((const uint8_t*)&src[i]);
+        uint8x16_t ints1 = vld1q_u8((const uint8_t*)&src[i + 4]);
+        uint8x16_t ints2 = vld1q_u8((const uint8_t*)&src[i + 8]);
+        uint8x16_t ints3 = vld1q_u8((const uint8_t*)&src[i + 12]);
 
         ints0 = vrev32q_u8(ints0);
         ints1 = vrev32q_u8(ints1);
         ints2 = vrev32q_u8(ints2);
         ints3 = vrev32q_u8(ints3);
 
-        vst1q_u8((Uint8*)&dst[i], ints0);
-        vst1q_u8((Uint8*)&dst[i + 4], ints1);
-        vst1q_u8((Uint8*)&dst[i + 8], ints2);
-        vst1q_u8((Uint8*)&dst[i + 12], ints3);
+        vst1q_u8((uint8_t*)&dst[i], ints0);
+        vst1q_u8((uint8_t*)&dst[i + 4], ints1);
+        vst1q_u8((uint8_t*)&dst[i + 8], ints2);
+        vst1q_u8((uint8_t*)&dst[i + 12], ints3);
     })
 }
 #endif
@@ -773,49 +773,49 @@ static void SDL_Convert_Swap32_NEON(Uint32* dst, const Uint32* src, int num_samp
 #undef CONVERT_16_REV
 
 // Function pointers set to a CPU-specific implementation.
-static void (*SDL_Convert_S8_to_F32)(float *dst, const Sint8 *src, int num_samples) = NULL;
-static void (*SDL_Convert_U8_to_F32)(float *dst, const Uint8 *src, int num_samples) = NULL;
-static void (*SDL_Convert_S16_to_F32)(float *dst, const Sint16 *src, int num_samples) = NULL;
-static void (*SDL_Convert_S32_to_F32)(float *dst, const Sint32 *src, int num_samples) = NULL;
-static void (*SDL_Convert_F32_to_S8)(Sint8 *dst, const float *src, int num_samples) = NULL;
-static void (*SDL_Convert_F32_to_U8)(Uint8 *dst, const float *src, int num_samples) = NULL;
-static void (*SDL_Convert_F32_to_S16)(Sint16 *dst, const float *src, int num_samples) = NULL;
-static void (*SDL_Convert_F32_to_S32)(Sint32 *dst, const float *src, int num_samples) = NULL;
+static void (*SDL_Convert_S8_to_F32)(float *dst, const int8_t *src, int num_samples) = NULL;
+static void (*SDL_Convert_U8_to_F32)(float *dst, const uint8_t *src, int num_samples) = NULL;
+static void (*SDL_Convert_S16_to_F32)(float *dst, const int16_t *src, int num_samples) = NULL;
+static void (*SDL_Convert_S32_to_F32)(float *dst, const int32_t *src, int num_samples) = NULL;
+static void (*SDL_Convert_F32_to_S8)(int8_t *dst, const float *src, int num_samples) = NULL;
+static void (*SDL_Convert_F32_to_U8)(uint8_t *dst, const float *src, int num_samples) = NULL;
+static void (*SDL_Convert_F32_to_S16)(int16_t *dst, const float *src, int num_samples) = NULL;
+static void (*SDL_Convert_F32_to_S32)(int32_t *dst, const float *src, int num_samples) = NULL;
 
-static void (*SDL_Convert_Swap16)(Uint16* dst, const Uint16* src, int num_samples) = NULL;
-static void (*SDL_Convert_Swap32)(Uint32* dst, const Uint32* src, int num_samples) = NULL;
+static void (*SDL_Convert_Swap16)(uint16_t* dst, const uint16_t* src, int num_samples) = NULL;
+static void (*SDL_Convert_Swap32)(uint32_t* dst, const uint32_t* src, int num_samples) = NULL;
 
 void ConvertAudioToFloat(float *dst, const void *src, int num_samples, SDL_AudioFormat src_fmt)
 {
     switch (src_fmt) {
         case SDL_AUDIO_S8:
-            SDL_Convert_S8_to_F32(dst, (const Sint8 *) src, num_samples);
+            SDL_Convert_S8_to_F32(dst, (const int8_t *) src, num_samples);
             break;
 
         case SDL_AUDIO_U8:
-            SDL_Convert_U8_to_F32(dst, (const Uint8 *) src, num_samples);
+            SDL_Convert_U8_to_F32(dst, (const uint8_t *) src, num_samples);
             break;
 
         case SDL_AUDIO_S16:
-            SDL_Convert_S16_to_F32(dst, (const Sint16 *) src, num_samples);
+            SDL_Convert_S16_to_F32(dst, (const int16_t *) src, num_samples);
             break;
 
         case SDL_AUDIO_S16 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_Swap16((Uint16*) dst, (const Uint16*) src, num_samples);
-            SDL_Convert_S16_to_F32(dst, (const Sint16 *) dst, num_samples);
+            SDL_Convert_Swap16((uint16_t*) dst, (const uint16_t*) src, num_samples);
+            SDL_Convert_S16_to_F32(dst, (const int16_t *) dst, num_samples);
             break;
 
         case SDL_AUDIO_S32:
-            SDL_Convert_S32_to_F32(dst, (const Sint32 *) src, num_samples);
+            SDL_Convert_S32_to_F32(dst, (const int32_t *) src, num_samples);
             break;
 
         case SDL_AUDIO_S32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples);
-            SDL_Convert_S32_to_F32(dst, (const Sint32 *) dst, num_samples);
+            SDL_Convert_Swap32((uint32_t*) dst, (const uint32_t*) src, num_samples);
+            SDL_Convert_S32_to_F32(dst, (const int32_t *) dst, num_samples);
             break;
 
         case SDL_AUDIO_F32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples);
+            SDL_Convert_Swap32((uint32_t*) dst, (const uint32_t*) src, num_samples);
             break;
 
         default: SDL_assert(!"Unexpected audio format!"); break;
@@ -826,33 +826,33 @@ void ConvertAudioFromFloat(void *dst, const float *src, int num_samples, SDL_Aud
 {
     switch (dst_fmt) {
         case SDL_AUDIO_S8:
-            SDL_Convert_F32_to_S8((Sint8 *) dst, src, num_samples);
+            SDL_Convert_F32_to_S8((int8_t *) dst, src, num_samples);
             break;
 
         case SDL_AUDIO_U8:
-            SDL_Convert_F32_to_U8((Uint8 *) dst, src, num_samples);
+            SDL_Convert_F32_to_U8((uint8_t *) dst, src, num_samples);
             break;
 
         case SDL_AUDIO_S16:
-            SDL_Convert_F32_to_S16((Sint16 *) dst, src, num_samples);
+            SDL_Convert_F32_to_S16((int16_t *) dst, src, num_samples);
             break;
 
         case SDL_AUDIO_S16 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_F32_to_S16((Sint16 *) dst, src, num_samples);
-            SDL_Convert_Swap16((Uint16*) dst, (const Uint16*) dst, num_samples);
+            SDL_Convert_F32_to_S16((int16_t *) dst, src, num_samples);
+            SDL_Convert_Swap16((uint16_t*) dst, (const uint16_t*) dst, num_samples);
             break;
 
         case SDL_AUDIO_S32:
-            SDL_Convert_F32_to_S32((Sint32 *) dst, src, num_samples);
+            SDL_Convert_F32_to_S32((int32_t *) dst, src, num_samples);
             break;
 
         case SDL_AUDIO_S32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_F32_to_S32((Sint32 *) dst, src, num_samples);
-            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) dst, num_samples);
+            SDL_Convert_F32_to_S32((int32_t *) dst, src, num_samples);
+            SDL_Convert_Swap32((uint32_t*) dst, (const uint32_t*) dst, num_samples);
             break;
 
         case SDL_AUDIO_F32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples);
+            SDL_Convert_Swap32((uint32_t*) dst, (const uint32_t*) src, num_samples);
             break;
 
         default: SDL_assert(!"Unexpected audio format!"); break;
@@ -862,8 +862,8 @@ void ConvertAudioFromFloat(void *dst, const float *src, int num_samples, SDL_Aud
 void ConvertAudioSwapEndian(void* dst, const void* src, int num_samples, int bitsize)
 {
     switch (bitsize) {
-        case 16: SDL_Convert_Swap16((Uint16*) dst, (const Uint16*) src, num_samples); break;
-        case 32: SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples); break;
+        case 16: SDL_Convert_Swap16((uint16_t*) dst, (const uint16_t*) src, num_samples); break;
+        case 32: SDL_Convert_Swap32((uint32_t*) dst, (const uint32_t*) src, num_samples); break;
         default: SDL_assert(!"Unexpected audio format!"); break;
     }
 }

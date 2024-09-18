@@ -47,8 +47,8 @@ typedef struct GPU_RenderData
     {
         SDL_GPUTexture *texture;
         SDL_GPUTextureFormat format;
-        Uint32 width;
-        Uint32 height;
+        uint32_t width;
+        uint32_t height;
     } backbuffer;
 
     struct
@@ -61,7 +61,7 @@ typedef struct GPU_RenderData
     {
         SDL_GPUTransferBuffer *transfer_buf;
         SDL_GPUBuffer *buffer;
-        Uint32 buffer_size;
+        uint32_t buffer_size;
     } vertices;
 
     struct
@@ -247,7 +247,7 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 {
     GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
     GPU_TextureData *data = (GPU_TextureData *)texture->internal;
-    const Uint32 texturebpp = SDL_BYTESPERPIXEL(texture->format);
+    const uint32_t texturebpp = SDL_BYTESPERPIXEL(texture->format);
 
     size_t row_size, data_size;
 
@@ -258,7 +258,7 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     SDL_GPUTransferBufferCreateInfo tbci;
     SDL_zero(tbci);
-    tbci.size = (Uint32)data_size;
+    tbci.size = (uint32_t)data_size;
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 
     SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(renderdata->device, &tbci);
@@ -267,14 +267,14 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return false;
     }
 
-    Uint8 *output = SDL_MapGPUTransferBuffer(renderdata->device, tbuf, false);
+    uint8_t *output = SDL_MapGPUTransferBuffer(renderdata->device, tbuf, false);
 
     if ((size_t)pitch == row_size) {
         memcpy(output, pixels, data_size);
     } else {
         // FIXME is negative pitch supposed to work?
         // If not, maybe use SDL_GPUTextureTransferInfo::pixels_per_row instead of this
-        const Uint8 *input = pixels;
+        const uint8_t *input = pixels;
 
         for (int i = 0; i < rect->h; ++i) {
             memcpy(output, input, row_size);
@@ -317,7 +317,7 @@ static bool GPU_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     data->locked_rect = *rect;
     *pixels =
-        (void *)((Uint8 *)data->pixels + rect->y * data->pitch +
+        (void *)((uint8_t *)data->pixels + rect->y * data->pitch +
                  rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = data->pitch;
     return true;
@@ -331,7 +331,7 @@ static void GPU_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     rect = &data->locked_rect;
     pixels =
-        (void *)((Uint8 *)data->pixels + rect->y * data->pitch +
+        (void *)((uint8_t *)data->pixels + rect->y * data->pitch +
                  rect->x * SDL_BYTESPERPIXEL(texture->format));
     GPU_UpdateTexture(renderer, texture, rect, pixels, data->pitch);
 }
@@ -412,11 +412,11 @@ static bool GPU_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
         float *xy_;
         SDL_FColor col_;
         if (size_indices == 4) {
-            j = ((const Uint32 *)indices)[i];
+            j = ((const uint32_t *)indices)[i];
         } else if (size_indices == 2) {
-            j = ((const Uint16 *)indices)[i];
+            j = ((const uint16_t *)indices)[i];
         } else if (size_indices == 1) {
-            j = ((const Uint8 *)indices)[i];
+            j = ((const uint8_t *)indices)[i];
         } else {
             j = i;
         }
@@ -520,8 +520,8 @@ static void SetViewportAndScissor(GPU_RenderData *data)
 
 static void Draw(
     GPU_RenderData *data, SDL_RenderCommand *cmd,
-    Uint32 num_verts,
-    Uint32 offset,
+    uint32_t num_verts,
+    uint32_t offset,
     SDL_GPUPrimitiveType prim)
 {
     if (!data->state.render_pass || data->state.color_attachment.load_op == SDL_GPU_LOADOP_CLEAR) {
@@ -603,7 +603,7 @@ static void ReleaseVertexBuffer(GPU_RenderData *data)
     data->vertices.buffer_size = 0;
 }
 
-static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
+static bool InitVertexBuffer(GPU_RenderData *data, uint32_t size)
 {
     SDL_GPUBufferCreateInfo bci;
     SDL_zero(bci);
@@ -638,7 +638,7 @@ static bool UploadVertices(GPU_RenderData *data, void *vertices, size_t vertsize
 
     if (vertsize > data->vertices.buffer_size) {
         ReleaseVertexBuffer(data);
-        if (!InitVertexBuffer(data, (Uint32)vertsize)) {
+        if (!InitVertexBuffer(data, (uint32_t)vertsize)) {
             return false;
         }
     }
@@ -660,7 +660,7 @@ static bool UploadVertices(GPU_RenderData *data, void *vertices, size_t vertsize
     SDL_GPUBufferRegion dst;
     SDL_zero(dst);
     dst.buffer = data->vertices.buffer;
-    dst.size = (Uint32)vertsize;
+    dst.size = (uint32_t)vertsize;
 
     SDL_UploadToGPUBuffer(pass, &src, &dst, true);
     SDL_EndGPUCopyPass(pass);
@@ -745,8 +745,8 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
         case SDL_RENDERCMD_DRAW_LINES:
         {
-            Uint32 count = (Uint32)cmd->data.draw.count;
-            Uint32 offset = (Uint32)cmd->data.draw.first;
+            uint32_t count = (uint32_t)cmd->data.draw.count;
+            uint32_t offset = (uint32_t)cmd->data.draw.first;
 
             if (count > 2) {
                 // joined lines cannot be grouped
@@ -767,7 +767,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                         break; // can't go any further on this draw call, different blendmode copy up next.
                     } else {
                         finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
-                        count += (Uint32)nextcmd->data.draw.count;
+                        count += (uint32_t)nextcmd->data.draw.count;
                     }
                     nextcmd = nextcmd->next;
                 }
@@ -788,8 +788,8 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             const SDL_RenderCommandType thiscmdtype = cmd->command;
             SDL_RenderCommand *finalcmd = cmd;
             SDL_RenderCommand *nextcmd = cmd->next;
-            Uint32 count = (Uint32)cmd->data.draw.count;
-            Uint32 offset = (Uint32)cmd->data.draw.first;
+            uint32_t count = (uint32_t)cmd->data.draw.count;
+            uint32_t offset = (uint32_t)cmd->data.draw.first;
 
             while (nextcmd) {
                 const SDL_RenderCommandType nextcmdtype = nextcmd->command;
@@ -800,7 +800,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                     break; // can't go any further on this draw call, different texture/blendmode copy up next.
                 } else {
                     finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
-                    count += (Uint32)nextcmd->data.draw.count;
+                    count += (uint32_t)nextcmd->data.draw.count;
                 }
                 nextcmd = nextcmd->next;
             }
@@ -856,7 +856,7 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
         }
     }
 
-    Uint32 bpp = SDL_BYTESPERPIXEL(pixfmt);
+    uint32_t bpp = SDL_BYTESPERPIXEL(pixfmt);
     size_t row_size, image_size;
 
     if (!SDL_size_mul_check_overflow(rect->w, bpp, &row_size) ||
@@ -873,7 +873,7 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
 
     SDL_GPUTransferBufferCreateInfo tbci;
     SDL_zero(tbci);
-    tbci.size = (Uint32)image_size;
+    tbci.size = (uint32_t)image_size;
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD;
 
     SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(data->device, &tbci);
@@ -912,8 +912,8 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     if ((size_t)surface->pitch == row_size) {
         memcpy(surface->pixels, mapped_tbuf, image_size);
     } else {
-        Uint8 *input = mapped_tbuf;
-        Uint8 *output = surface->pixels;
+        uint8_t *input = mapped_tbuf;
+        uint8_t *output = surface->pixels;
 
         for (int row = 0; row < rect->h; ++row) {
             memcpy(output, input, row_size);
@@ -928,7 +928,7 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     return surface;
 }
 
-static bool CreateBackbuffer(GPU_RenderData *data, Uint32 w, Uint32 h, SDL_GPUTextureFormat fmt)
+static bool CreateBackbuffer(GPU_RenderData *data, uint32_t w, uint32_t h, SDL_GPUTextureFormat fmt)
 {
     SDL_GPUTextureCreateInfo tci;
     SDL_zero(tci);
@@ -956,7 +956,7 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
 {
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
 
-    Uint32 swapchain_w, swapchain_h;
+    uint32_t swapchain_w, swapchain_h;
 
     SDL_GPUTexture *swapchain = SDL_AcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain_w, &swapchain_h);
 
@@ -1045,7 +1045,7 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
         data->state.command_buffer = NULL;
     }
 
-    for (Uint32 i = 0; i < sizeof(data->samplers) / sizeof(SDL_GPUSampler *); ++i) {
+    for (uint32_t i = 0; i < sizeof(data->samplers) / sizeof(SDL_GPUSampler *); ++i) {
         SDL_ReleaseGPUSampler(data->device, ((SDL_GPUSampler **)data->samplers)[i]);
     }
 
@@ -1132,7 +1132,7 @@ static bool InitSamplers(GPU_RenderData *data)
             SDL_GPUSamplerAddressMode address_mode;
             SDL_GPUFilter filter;
             SDL_GPUSamplerMipmapMode mipmap_mode;
-            Uint32 anisotropy;
+            uint32_t anisotropy;
         } gpu;
     } configs[] = {
         {
@@ -1153,7 +1153,7 @@ static bool InitSamplers(GPU_RenderData *data)
         },
     };
 
-    for (Uint32 i = 0; i < SDL_arraysize(configs); ++i) {
+    for (uint32_t i = 0; i < SDL_arraysize(configs); ++i) {
         SDL_GPUSamplerCreateInfo sci;
         SDL_zero(sci);
         sci.max_anisotropy = configs[i].gpu.anisotropy;

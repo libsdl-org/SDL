@@ -69,12 +69,12 @@ this should probably be removed at some point in the future.  --ryan. */
 // Predefined blend modes
 #define SDL_COMPOSE_BLENDMODE(srcColorFactor, dstColorFactor, colorOperation, \
                               srcAlphaFactor, dstAlphaFactor, alphaOperation) \
-    (SDL_BlendMode)(((Uint32)(colorOperation) << 0) |                         \
-                    ((Uint32)(srcColorFactor) << 4) |                         \
-                    ((Uint32)(dstColorFactor) << 8) |                         \
-                    ((Uint32)(alphaOperation) << 16) |                        \
-                    ((Uint32)(srcAlphaFactor) << 20) |                        \
-                    ((Uint32)(dstAlphaFactor) << 24))
+    (SDL_BlendMode)(((uint32_t)(colorOperation) << 0) |                         \
+                    ((uint32_t)(srcColorFactor) << 4) |                         \
+                    ((uint32_t)(dstColorFactor) << 8) |                         \
+                    ((uint32_t)(alphaOperation) << 16) |                        \
+                    ((uint32_t)(srcAlphaFactor) << 20) |                        \
+                    ((uint32_t)(dstAlphaFactor) << 24))
 
 #define SDL_BLENDMODE_NONE_FULL                                                              \
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ZERO, SDL_BLENDOPERATION_ADD, \
@@ -383,7 +383,7 @@ void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, 
 
     renderer->vertex_data_used += aligner + numbytes;
 
-    return ((Uint8 *)renderer->vertex_data) + aligned;
+    return ((uint8_t *)renderer->vertex_data) + aligned;
 }
 
 static SDL_RenderCommand *AllocateRenderCommand(SDL_Renderer *renderer)
@@ -1580,7 +1580,7 @@ static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, S
     }
 
     {
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
         SDL_BlendMode blendMode;
 
         SDL_GetSurfaceColorMod(surface, &r, &g, &b);
@@ -1773,7 +1773,7 @@ bool SDL_GetTextureSize(SDL_Texture *texture, float *w, float *h)
     return true;
 }
 
-bool SDL_SetTextureColorMod(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b)
+bool SDL_SetTextureColorMod(SDL_Texture *texture, uint8_t r, uint8_t g, uint8_t b)
 {
     const float fR = (float)r / 255.0f;
     const float fG = (float)g / 255.0f;
@@ -1795,7 +1795,7 @@ bool SDL_SetTextureColorModFloat(SDL_Texture *texture, float r, float g, float b
     return true;
 }
 
-bool SDL_GetTextureColorMod(SDL_Texture *texture, Uint8 *r, Uint8 *g, Uint8 *b)
+bool SDL_GetTextureColorMod(SDL_Texture *texture, uint8_t *r, uint8_t *g, uint8_t *b)
 {
     float fR = 1.0f, fG = 1.0f, fB = 1.0f;
 
@@ -1813,13 +1813,13 @@ bool SDL_GetTextureColorMod(SDL_Texture *texture, Uint8 *r, Uint8 *g, Uint8 *b)
     }
 
     if (r) {
-        *r = (Uint8)(fR * 255.0f);
+        *r = (uint8_t)(fR * 255.0f);
     }
     if (g) {
-        *g = (Uint8)(fG * 255.0f);
+        *g = (uint8_t)(fG * 255.0f);
     }
     if (b) {
-        *b = (Uint8)(fB * 255.0f);
+        *b = (uint8_t)(fB * 255.0f);
     }
     return true;
 }
@@ -1854,7 +1854,7 @@ bool SDL_GetTextureColorModFloat(SDL_Texture *texture, float *r, float *g, float
     return true;
 }
 
-bool SDL_SetTextureAlphaMod(SDL_Texture *texture, Uint8 alpha)
+bool SDL_SetTextureAlphaMod(SDL_Texture *texture, uint8_t alpha)
 {
     const float fA = (float)alpha / 255.0f;
 
@@ -1872,7 +1872,7 @@ bool SDL_SetTextureAlphaModFloat(SDL_Texture *texture, float alpha)
     return true;
 }
 
-bool SDL_GetTextureAlphaMod(SDL_Texture *texture, Uint8 *alpha)
+bool SDL_GetTextureAlphaMod(SDL_Texture *texture, uint8_t *alpha)
 {
     float fA = 1.0f;
 
@@ -1884,7 +1884,7 @@ bool SDL_GetTextureAlphaMod(SDL_Texture *texture, Uint8 *alpha)
     }
 
     if (alpha) {
-        *alpha = (Uint8)(fA * 255.0f);
+        *alpha = (uint8_t)(fA * 255.0f);
     }
     return true;
 }
@@ -2102,9 +2102,9 @@ bool SDL_UpdateTexture(SDL_Texture *texture, const SDL_Rect *rect, const void *p
 
 #if SDL_HAVE_YUV
 static bool SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rect,
-                                      const Uint8 *Yplane, int Ypitch,
-                                      const Uint8 *Uplane, int Upitch,
-                                      const Uint8 *Vplane, int Vpitch)
+                                      const uint8_t *Yplane, int Ypitch,
+                                      const uint8_t *Uplane, int Upitch,
+                                      const uint8_t *Vplane, int Vpitch)
 {
     SDL_Texture *native = texture->native;
     SDL_Rect full_rect;
@@ -2153,8 +2153,8 @@ static bool SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rec
 }
 
 static bool SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect,
-                                     const Uint8 *Yplane, int Ypitch,
-                                     const Uint8 *UVplane, int UVpitch)
+                                     const uint8_t *Yplane, int Ypitch,
+                                     const uint8_t *UVplane, int UVpitch)
 {
     SDL_Texture *native = texture->native;
     SDL_Rect full_rect;
@@ -2205,9 +2205,9 @@ static bool SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect
 #endif // SDL_HAVE_YUV
 
 bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
-                         const Uint8 *Yplane, int Ypitch,
-                         const Uint8 *Uplane, int Upitch,
-                         const Uint8 *Vplane, int Vpitch)
+                         const uint8_t *Yplane, int Ypitch,
+                         const uint8_t *Uplane, int Upitch,
+                         const uint8_t *Vplane, int Vpitch)
 {
 #if SDL_HAVE_YUV
     SDL_Renderer *renderer;
@@ -2272,8 +2272,8 @@ bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
 }
 
 bool SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
-                        const Uint8 *Yplane, int Ypitch,
-                        const Uint8 *UVplane, int UVpitch)
+                        const uint8_t *Yplane, int Ypitch,
+                        const uint8_t *UVplane, int UVpitch)
 {
 #if SDL_HAVE_YUV
     SDL_Renderer *renderer;
@@ -2343,7 +2343,7 @@ static bool SDL_LockTextureNative(SDL_Texture *texture, const SDL_Rect *rect,
                                  void **pixels, int *pitch)
 {
     texture->locked_rect = *rect;
-    *pixels = (void *)((Uint8 *)texture->pixels +
+    *pixels = (void *)((uint8_t *)texture->pixels +
                        rect->y * texture->pitch +
                        rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = texture->pitch;
@@ -2448,7 +2448,7 @@ static void SDL_UnlockTextureNative(SDL_Texture *texture)
     void *native_pixels = NULL;
     int native_pitch = 0;
     const SDL_Rect *rect = &texture->locked_rect;
-    const void *pixels = (void *)((Uint8 *)texture->pixels +
+    const void *pixels = (void *)((uint8_t *)texture->pixels +
                                   rect->y * texture->pitch +
                                   rect->x * SDL_BYTESPERPIXEL(texture->format));
     int pitch = texture->pitch;
@@ -3182,7 +3182,7 @@ bool SDL_GetRenderScale(SDL_Renderer *renderer, float *scaleX, float *scaleY)
     return true;
 }
 
-bool SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+bool SDL_SetRenderDrawColor(SDL_Renderer *renderer, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     const float fR = (float)r / 255.0f;
     const float fG = (float)g / 255.0f;
@@ -3203,7 +3203,7 @@ bool SDL_SetRenderDrawColorFloat(SDL_Renderer *renderer, float r, float g, float
     return true;
 }
 
-bool SDL_GetRenderDrawColor(SDL_Renderer *renderer, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
+bool SDL_GetRenderDrawColor(SDL_Renderer *renderer, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a)
 {
     float fR, fG, fB, fA;
 
@@ -3224,16 +3224,16 @@ bool SDL_GetRenderDrawColor(SDL_Renderer *renderer, Uint8 *r, Uint8 *g, Uint8 *b
     }
 
     if (r) {
-        *r = (Uint8)(fR * 255.0f);
+        *r = (uint8_t)(fR * 255.0f);
     }
     if (g) {
-        *g = (Uint8)(fG * 255.0f);
+        *g = (uint8_t)(fG * 255.0f);
     }
     if (b) {
-        *b = (Uint8)(fB * 255.0f);
+        *b = (uint8_t)(fB * 255.0f);
     }
     if (a) {
-        *a = (Uint8)(fA * 255.0f);
+        *a = (uint8_t)(fA * 255.0f);
     }
     return true;
 }
@@ -4530,17 +4530,17 @@ static bool SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
         int C2 = -1; // Last, vertex of previous triangle
 
         if (size_indices == 4) {
-            k0 = ((const Uint32 *)indices)[i];
-            k1 = ((const Uint32 *)indices)[i + 1];
-            k2 = ((const Uint32 *)indices)[i + 2];
+            k0 = ((const uint32_t *)indices)[i];
+            k1 = ((const uint32_t *)indices)[i + 1];
+            k2 = ((const uint32_t *)indices)[i + 2];
         } else if (size_indices == 2) {
-            k0 = ((const Uint16 *)indices)[i];
-            k1 = ((const Uint16 *)indices)[i + 1];
-            k2 = ((const Uint16 *)indices)[i + 2];
+            k0 = ((const uint16_t *)indices)[i];
+            k1 = ((const uint16_t *)indices)[i + 1];
+            k2 = ((const uint16_t *)indices)[i + 2];
         } else if (size_indices == 1) {
-            k0 = ((const Uint8 *)indices)[i];
-            k1 = ((const Uint8 *)indices)[i + 1];
-            k2 = ((const Uint8 *)indices)[i + 2];
+            k0 = ((const uint8_t *)indices)[i];
+            k1 = ((const uint8_t *)indices)[i + 1];
+            k2 = ((const uint8_t *)indices)[i + 2];
         } else {
             /* Vertices were not provided by indices. Maybe some are duplicated.
              * We try to indentificate the duplicates by comparing with the previous three vertices */
@@ -4879,11 +4879,11 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
         for (i = 0; i < num_indices; ++i) {
             int j;
             if (size_indices == 4) {
-                j = ((const Uint32 *)indices)[i];
+                j = ((const uint32_t *)indices)[i];
             } else if (size_indices == 2) {
-                j = ((const Uint16 *)indices)[i];
+                j = ((const uint16_t *)indices)[i];
             } else {
-                j = ((const Uint8 *)indices)[i];
+                j = ((const uint8_t *)indices)[i];
             }
             if (j < 0 || j >= num_vertices) {
                 return SDL_SetError("Values of 'indices' out of bounds");
@@ -4977,8 +4977,8 @@ static void SDL_RenderApplyWindowShape(SDL_Renderer *renderer)
 
 static void SDL_SimulateRenderVSync(SDL_Renderer *renderer)
 {
-    Uint64 now, elapsed;
-    const Uint64 interval = renderer->simulate_vsync_interval_ns;
+    uint64_t now, elapsed;
+    const uint64_t interval = renderer->simulate_vsync_interval_ns;
 
     if (!interval) {
         // We can't do sub-ns delay, so just return here
@@ -4988,7 +4988,7 @@ static void SDL_SimulateRenderVSync(SDL_Renderer *renderer)
     now = SDL_GetTicksNS();
     elapsed = (now - renderer->last_present);
     if (elapsed < interval) {
-        Uint64 duration = (interval - elapsed);
+        uint64_t duration = (interval - elapsed);
         SDL_DelayNS(duration);
         now = SDL_GetTicksNS();
     }
@@ -5227,7 +5227,7 @@ void *SDL_GetRenderMetalCommandEncoder(SDL_Renderer *renderer)
     return NULL;
 }
 
-bool SDL_AddVulkanRenderSemaphores(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore)
+bool SDL_AddVulkanRenderSemaphores(SDL_Renderer *renderer, uint32_t wait_stage_mask, int64_t wait_semaphore, int64_t signal_semaphore)
 {
     CHECK_RENDERER_MAGIC(renderer, false);
 
@@ -5302,37 +5302,37 @@ SDL_BlendMode SDL_ComposeCustomBlendMode(SDL_BlendFactor srcColorFactor, SDL_Ble
 SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode)
 {
     blendMode = SDL_GetLongBlendMode(blendMode);
-    return (SDL_BlendFactor)(((Uint32)blendMode >> 4) & 0xF);
+    return (SDL_BlendFactor)(((uint32_t)blendMode >> 4) & 0xF);
 }
 
 SDL_BlendFactor SDL_GetBlendModeDstColorFactor(SDL_BlendMode blendMode)
 {
     blendMode = SDL_GetLongBlendMode(blendMode);
-    return (SDL_BlendFactor)(((Uint32)blendMode >> 8) & 0xF);
+    return (SDL_BlendFactor)(((uint32_t)blendMode >> 8) & 0xF);
 }
 
 SDL_BlendOperation SDL_GetBlendModeColorOperation(SDL_BlendMode blendMode)
 {
     blendMode = SDL_GetLongBlendMode(blendMode);
-    return (SDL_BlendOperation)(((Uint32)blendMode >> 0) & 0xF);
+    return (SDL_BlendOperation)(((uint32_t)blendMode >> 0) & 0xF);
 }
 
 SDL_BlendFactor SDL_GetBlendModeSrcAlphaFactor(SDL_BlendMode blendMode)
 {
     blendMode = SDL_GetLongBlendMode(blendMode);
-    return (SDL_BlendFactor)(((Uint32)blendMode >> 20) & 0xF);
+    return (SDL_BlendFactor)(((uint32_t)blendMode >> 20) & 0xF);
 }
 
 SDL_BlendFactor SDL_GetBlendModeDstAlphaFactor(SDL_BlendMode blendMode)
 {
     blendMode = SDL_GetLongBlendMode(blendMode);
-    return (SDL_BlendFactor)(((Uint32)blendMode >> 24) & 0xF);
+    return (SDL_BlendFactor)(((uint32_t)blendMode >> 24) & 0xF);
 }
 
 SDL_BlendOperation SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode)
 {
     blendMode = SDL_GetLongBlendMode(blendMode);
-    return (SDL_BlendOperation)(((Uint32)blendMode >> 16) & 0xF);
+    return (SDL_BlendOperation)(((uint32_t)blendMode >> 16) & 0xF);
 }
 
 bool SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)

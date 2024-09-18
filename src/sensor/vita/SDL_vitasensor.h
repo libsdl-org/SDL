@@ -23,7 +23,7 @@
 // The private structure used to keep track of a sensor
 struct sensor_hwdata
 {
-    Uint32 counter;
+    uint32_t counter;
     unsigned int last_tick;
-    Uint64 sensor_timestamp;
+    uint64_t sensor_timestamp;
 };

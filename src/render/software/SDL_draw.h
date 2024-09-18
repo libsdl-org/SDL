@@ -31,16 +31,16 @@
 #define DRAW_FASTSETPIXEL(type) \
     *pixel = (type)color
 
-#define DRAW_FASTSETPIXEL1 DRAW_FASTSETPIXEL(Uint8)
-#define DRAW_FASTSETPIXEL2 DRAW_FASTSETPIXEL(Uint16)
-#define DRAW_FASTSETPIXEL4 DRAW_FASTSETPIXEL(Uint32)
+#define DRAW_FASTSETPIXEL1 DRAW_FASTSETPIXEL(uint8_t)
+#define DRAW_FASTSETPIXEL2 DRAW_FASTSETPIXEL(uint16_t)
+#define DRAW_FASTSETPIXEL4 DRAW_FASTSETPIXEL(uint32_t)
 
 #define DRAW_FASTSETPIXELXY(x, y, type, bpp, color) \
-    *(type *)((Uint8 *)dst->pixels + (y)*dst->pitch + (x)*bpp) = (type)color
+    *(type *)((uint8_t *)dst->pixels + (y)*dst->pitch + (x)*bpp) = (type)color
 
-#define DRAW_FASTSETPIXELXY1(x, y) DRAW_FASTSETPIXELXY(x, y, Uint8, 1, color)
-#define DRAW_FASTSETPIXELXY2(x, y) DRAW_FASTSETPIXELXY(x, y, Uint16, 2, color)
-#define DRAW_FASTSETPIXELXY4(x, y) DRAW_FASTSETPIXELXY(x, y, Uint32, 4, color)
+#define DRAW_FASTSETPIXELXY1(x, y) DRAW_FASTSETPIXELXY(x, y, uint8_t, 1, color)
+#define DRAW_FASTSETPIXELXY2(x, y) DRAW_FASTSETPIXELXY(x, y, uint16_t, 2, color)
+#define DRAW_FASTSETPIXELXY4(x, y) DRAW_FASTSETPIXELXY(x, y, uint32_t, 4, color)
 
 #define DRAW_SETPIXEL(setpixel)                  \
     do {                                         \
@@ -126,7 +126,7 @@
 
 #define DRAW_SETPIXELXY(x, y, type, bpp, op)                                     \
     do {                                                                         \
-        type *pixel = (type *)((Uint8 *)dst->pixels + (y)*dst->pitch + (x)*bpp); \
+        type *pixel = (type *)((uint8_t *)dst->pixels + (y)*dst->pitch + (x)*bpp); \
         op;                                                                      \
     } while (0)
 
@@ -158,22 +158,22 @@
                       RGB555_FROM_RGB(*pixel, sr, sg, sb))
 
 #define DRAW_SETPIXELXY_RGB555(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_RGB555)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_RGB555)
 
 #define DRAW_SETPIXELXY_BLEND_RGB555(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_RGB555)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_BLEND_RGB555)
 
 #define DRAW_SETPIXELXY_BLEND_CLAMPED_RGB555(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_CLAMPED_RGB555)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_BLEND_CLAMPED_RGB555)
 
 #define DRAW_SETPIXELXY_ADD_RGB555(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_ADD_RGB555)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_ADD_RGB555)
 
 #define DRAW_SETPIXELXY_MOD_RGB555(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_MOD_RGB555)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_MOD_RGB555)
 
 #define DRAW_SETPIXELXY_MUL_RGB555(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_MUL_RGB555)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_MUL_RGB555)
 
 /*
  * Define draw operators for RGB565
@@ -203,22 +203,22 @@
                       RGB565_FROM_RGB(*pixel, sr, sg, sb))
 
 #define DRAW_SETPIXELXY_RGB565(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_RGB565)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_RGB565)
 
 #define DRAW_SETPIXELXY_BLEND_RGB565(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_RGB565)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_BLEND_RGB565)
 
 #define DRAW_SETPIXELXY_BLEND_CLAMPED_RGB565(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_CLAMPED_RGB565)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_BLEND_CLAMPED_RGB565)
 
 #define DRAW_SETPIXELXY_ADD_RGB565(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_ADD_RGB565)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_ADD_RGB565)
 
 #define DRAW_SETPIXELXY_MOD_RGB565(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_MOD_RGB565)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_MOD_RGB565)
 
 #define DRAW_SETPIXELXY_MUL_RGB565(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_MUL_RGB565)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_MUL_RGB565)
 
 /*
  * Define draw operators for RGB888
@@ -248,22 +248,22 @@
                       XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
 #define DRAW_SETPIXELXY_XRGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_XRGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_XRGB8888)
 
 #define DRAW_SETPIXELXY_BLEND_XRGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_XRGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_BLEND_XRGB8888)
 
 #define DRAW_SETPIXELXY_BLEND_CLAMPED_XRGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_CLAMPED_XRGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_BLEND_CLAMPED_XRGB8888)
 
 #define DRAW_SETPIXELXY_ADD_XRGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_XRGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_ADD_XRGB8888)
 
 #define DRAW_SETPIXELXY_MOD_XRGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MOD_XRGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_MOD_XRGB8888)
 
 #define DRAW_SETPIXELXY_MUL_XRGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MUL_XRGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_MUL_XRGB8888)
 
 /*
  * Define draw operators for ARGB8888
@@ -293,22 +293,22 @@
                       ARGB8888_FROM_RGBA(*pixel, sr, sg, sb, sa))
 
 #define DRAW_SETPIXELXY_ARGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ARGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_ARGB8888)
 
 #define DRAW_SETPIXELXY_BLEND_ARGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_ARGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_BLEND_ARGB8888)
 
 #define DRAW_SETPIXELXY_BLEND_CLAMPED_ARGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_CLAMPED_ARGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_BLEND_CLAMPED_ARGB8888)
 
 #define DRAW_SETPIXELXY_ADD_ARGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_ARGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_ADD_ARGB8888)
 
 #define DRAW_SETPIXELXY_MOD_ARGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MOD_ARGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_MOD_ARGB8888)
 
 #define DRAW_SETPIXELXY_MUL_ARGB8888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MUL_ARGB8888)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_MUL_ARGB8888)
 
 /*
  * Define draw operators for general RGB
@@ -338,40 +338,40 @@
                       PIXEL_FROM_RGB(*pixel, fmt, sr, sg, sb))
 
 #define DRAW_SETPIXELXY2_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_RGB)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_RGB)
 
 #define DRAW_SETPIXELXY4_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_RGB)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_RGB)
 
 #define DRAW_SETPIXELXY2_BLEND_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_RGB)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_BLEND_RGB)
 
 #define DRAW_SETPIXELXY2_BLEND_CLAMPED_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_CLAMPED_RGB)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_BLEND_CLAMPED_RGB)
 
 #define DRAW_SETPIXELXY4_BLEND_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_RGB)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_BLEND_RGB)
 
 #define DRAW_SETPIXELXY4_BLEND_CLAMPED_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_CLAMPED_RGB)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_BLEND_CLAMPED_RGB)
 
 #define DRAW_SETPIXELXY2_ADD_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_ADD_RGB)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_ADD_RGB)
 
 #define DRAW_SETPIXELXY4_ADD_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_RGB)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_ADD_RGB)
 
 #define DRAW_SETPIXELXY2_MOD_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_MOD_RGB)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_MOD_RGB)
 
 #define DRAW_SETPIXELXY4_MOD_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MOD_RGB)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_MOD_RGB)
 
 #define DRAW_SETPIXELXY2_MUL_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_MUL_RGB)
+    DRAW_SETPIXELXY(x, y, uint16_t, 2, DRAW_SETPIXEL_MUL_RGB)
 
 #define DRAW_SETPIXELXY4_MUL_RGB(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MUL_RGB)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_MUL_RGB)
 
 /*
  * Define draw operators for general RGBA
@@ -401,22 +401,22 @@
                       PIXEL_FROM_RGBA(*pixel, fmt, sr, sg, sb, sa))
 
 #define DRAW_SETPIXELXY4_RGBA(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_RGBA)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_RGBA)
 
 #define DRAW_SETPIXELXY4_BLEND_RGBA(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_RGBA)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_BLEND_RGBA)
 
 #define DRAW_SETPIXELXY4_BLEND_CLAMPED_RGBA(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_CLAMPED_RGBA)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_BLEND_CLAMPED_RGBA)
 
 #define DRAW_SETPIXELXY4_ADD_RGBA(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_RGBA)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_ADD_RGBA)
 
 #define DRAW_SETPIXELXY4_MOD_RGBA(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MOD_RGBA)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_MOD_RGBA)
 
 #define DRAW_SETPIXELXY4_MUL_RGBA(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MUL_RGBA)
+    DRAW_SETPIXELXY(x, y, uint32_t, 4, DRAW_SETPIXEL_MUL_RGBA)
 
 /*
  * Define line drawing macro
@@ -566,8 +566,8 @@
 // Xiaolin Wu's line algorithm, based on Michael Abrash's implementation
 #define WULINE(x1, y1, x2, y2, opaque_op, blend_op, draw_end)                       \
     {                                                                               \
-        Uint16 ErrorAdj, ErrorAcc;                                                  \
-        Uint16 ErrorAccTemp, Weighting;                                             \
+        uint16_t ErrorAdj, ErrorAcc;                                                  \
+        uint16_t ErrorAccTemp, Weighting;                                             \
         int DeltaX, DeltaY, Temp, XDir;                                             \
         unsigned r, g, b, a, inva;                                                  \
                                                                                     \

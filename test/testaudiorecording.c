@@ -182,7 +182,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     /* Feed any new data we recorded to the output stream. It'll play when we unpause the device. */
     while (SDL_GetAudioStreamAvailable(stream_in) > 0) {
-        Uint8 buf[1024];
+        uint8_t buf[1024];
         const int br = SDL_GetAudioStreamData(stream_in, buf, sizeof(buf));
         if (br < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to read from input audio stream: %s\n", SDL_GetError());

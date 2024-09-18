@@ -155,11 +155,11 @@ static void loop(void)
 
 #ifdef TEST_WAITEVENTTIMEOUT
     /* Wait up to 20 ms for input, as a test */
-    Uint64 then = SDL_GetTicks();
+    uint64_t then = SDL_GetTicks();
     if (SDL_WaitEventTimeout(NULL, 20)) {
         SDL_Log("Got an event!\n");
     }
-    Uint64 now = SDL_GetTicks();
+    uint64_t now = SDL_GetTicks();
     SDL_Log("Waited %d ms for events\n", (int)(now - then));
 #endif
 

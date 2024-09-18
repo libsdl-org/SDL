@@ -27,11 +27,11 @@ typedef struct _SDL_ThreadBarrier
 {
     SDL_Mutex *mutex;
     SDL_Condition *cond;
-    Uint32 count;
-    Uint32 trip_count;
+    uint32_t count;
+    uint32_t trip_count;
 } SDL_ThreadBarrier;
 
-static int SDL_CreateThreadBarrier(SDL_ThreadBarrier *barrier, Uint32 count)
+static int SDL_CreateThreadBarrier(SDL_ThreadBarrier *barrier, uint32_t count)
 {
     SDL_assert(barrier != NULL);
     SDL_assert(count != 0);
@@ -76,7 +76,7 @@ static int SDL_WaitThreadBarrier(SDL_ThreadBarrier *barrier)
 
 #define HIDAPI_THREAD_TIMED_OUT 1
 
-typedef Uint64 hidapi_timespec;
+typedef uint64_t hidapi_timespec;
 
 typedef struct
 {
@@ -127,14 +127,14 @@ static void hidapi_thread_cond_wait(hidapi_thread_state *state)
 
 static int hidapi_thread_cond_timedwait(hidapi_thread_state *state, hidapi_timespec *ts)
 {
-    Sint64 timeout_ns;
-    Sint32 timeout_ms;
+    int64_t timeout_ns;
+    int32_t timeout_ms;
 
-    timeout_ns = (Sint64)(*ts - SDL_GetTicksNS());
+    timeout_ns = (int64_t)(*ts - SDL_GetTicksNS());
     if (timeout_ns <= 0) {
         timeout_ms = 0;
     } else {
-        timeout_ms = (Sint32)SDL_NS_TO_MS(timeout_ns);
+        timeout_ms = (int32_t)SDL_NS_TO_MS(timeout_ns);
     }
     if (SDL_WaitConditionTimeout(state->condition, state->mutex, timeout_ms)) {
         return 0;

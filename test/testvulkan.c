@@ -1097,8 +1097,8 @@ int main(int argc, char **argv)
     int done;
     const SDL_DisplayMode *mode;
     SDL_Event event;
-    Uint64 then, now;
-    Uint32 frames;
+    uint64_t then, now;
+    uint32_t frames;
     int dw, dh;
 
     /* Initialize test framework */

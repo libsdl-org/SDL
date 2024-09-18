@@ -29,20 +29,20 @@
 
 struct GPU_PipelineCacheKeyStruct
 {
-    Uint64 blend_mode : 28;
-    Uint64 frag_shader : 4;
-    Uint64 vert_shader : 4;
-    Uint64 attachment_format : 6;
-    Uint64 primitive_type : 3;
+    uint64_t blend_mode : 28;
+    uint64_t frag_shader : 4;
+    uint64_t vert_shader : 4;
+    uint64_t attachment_format : 6;
+    uint64_t primitive_type : 3;
 };
 
 typedef union GPU_PipelineCacheKey
 {
     struct GPU_PipelineCacheKeyStruct as_struct;
-    Uint64 as_uint64;
+    uint64_t as_uint64;
 } GPU_PipelineCacheKey;
 
-SDL_COMPILE_TIME_ASSERT(GPU_PipelineCacheKey_Size, sizeof(GPU_PipelineCacheKey) <= sizeof(Uint64));
+SDL_COMPILE_TIME_ASSERT(GPU_PipelineCacheKey_Size, sizeof(GPU_PipelineCacheKey) <= sizeof(uint64_t));
 
 typedef struct GPU_PipelineCacheEntry
 {
@@ -50,20 +50,20 @@ typedef struct GPU_PipelineCacheEntry
     SDL_GPUGraphicsPipeline *pipeline;
 } GPU_PipelineCacheEntry;
 
-static Uint32 HashPipelineCacheKey(const GPU_PipelineCacheKey *key)
+static uint32_t HashPipelineCacheKey(const GPU_PipelineCacheKey *key)
 {
-    Uint64 x = key->as_uint64;
+    uint64_t x = key->as_uint64;
     // 64-bit uint hash function stolen from taisei (which stole it from somewhere else)
     x = (x ^ (x >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
     x = (x ^ (x >> 27)) * UINT64_C(0x94d049bb133111eb);
     x = x ^ (x >> 31);
-    return (Uint32)(x & 0xffffffff);
+    return (uint32_t)(x & 0xffffffff);
 }
 
-static Uint32 HashPassthrough(const void *key, void *data)
+static uint32_t HashPassthrough(const void *key, void *data)
 {
     // double-cast to silence a clang warning
-    return (Uint32)(uintptr_t)key;
+    return (uint32_t)(uintptr_t)key;
 }
 
 static bool MatchPipelineCacheKey(const void *a, const void *b, void *data)
@@ -129,7 +129,7 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     SDL_GPUVertexBufferDescription vertex_buffer_desc;
     SDL_zero(vertex_buffer_desc);
 
-    Uint32 num_attribs = 0;
+    uint32_t num_attribs = 0;
     SDL_GPUVertexAttribute attribs[4];
     SDL_zero(attribs);
 

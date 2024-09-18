@@ -163,7 +163,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(int64_t threadID, int priority);
 
 /**
  * Sets the priority (not nice level) and scheduling policy for a thread.
@@ -179,7 +179,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(int64_t threadID, int sdlPriority, int schedPolicy);
 
 #endif /* SDL_PLATFORM_LINUX */
 
@@ -431,7 +431,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidInternalStoragePath(void)
  *
  * \sa SDL_GetAndroidExternalStoragePath
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_GetAndroidExternalStorageState(void);
 
 /**
  * Get the path used for external storage for this Android application.
@@ -551,7 +551,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowAndroidToast(const char *message, int d
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
+extern SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(uint32_t command, int param);
 
 #endif /* SDL_PLATFORM_ANDROID */
 

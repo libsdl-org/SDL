@@ -50,7 +50,7 @@
 typedef struct
 {
     void *address;
-    Uint8 wait_vblank;
+    uint8_t wait_vblank;
 } VITA_GXM_DisplayData;
 
 typedef struct clear_vertex

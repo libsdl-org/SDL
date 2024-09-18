@@ -77,10 +77,10 @@ bool SDL_GetCurrentTime(SDL_Time *ticks)
     if (!ret) {
         const u32 res = sceRtcGetTickResolution();
         const u32 div = SDL_NS_PER_SECOND / res;
-        const Uint64 epoch_offset = DELTA_EPOCH_0001_OFFSET * res;
+        const uint64_t epoch_offset = DELTA_EPOCH_0001_OFFSET * res;
 
-        const Uint64 scetime_min = (Uint64)((SDL_MIN_TIME / div) + epoch_offset);
-        const Uint64 scetime_max = (Uint64)((SDL_MAX_TIME / div) + epoch_offset);
+        const uint64_t scetime_min = (uint64_t)((SDL_MIN_TIME / div) + epoch_offset);
+        const uint64_t scetime_max = (uint64_t)((SDL_MAX_TIME / div) + epoch_offset);
 
         // Clamp to the valid SDL_Time range.
         sceTicks = SDL_clamp(sceTicks, scetime_min, scetime_max);
@@ -123,7 +123,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
             dt->minute = t.minute;
             dt->second = t.second;
             dt->nanosecond = ticks % SDL_NS_PER_SECOND;
-            dt->utc_offset = (int)(((Sint64)local - (Sint64)sceTicks) / (Sint64)res);
+            dt->utc_offset = (int)(((int64_t)local - (int64_t)sceTicks) / (int64_t)res);
 
             SDL_CivilToDays(dt->year, dt->month, dt->day, &dt->day_of_week, NULL);
 

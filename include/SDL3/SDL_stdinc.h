@@ -206,13 +206,13 @@ void *alloca(size_t);
 /* @} *//* Cast operators */
 
 /**
- * Define a four character code as a Uint32.
+ * Define a four character code as a uint32_t.
  *
  * \param A the first ASCII character.
  * \param B the second ASCII character.
  * \param C the third ASCII character.
  * \param D the fourth ASCII character.
- * \returns the four characters converted into a Uint32, one character
+ * \returns the four characters converted into a uint32_t, one character
  *          per-byte.
  *
  * \threadsafety It is safe to call this macro from any thread.
@@ -220,10 +220,10 @@ void *alloca(size_t);
  * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_FOURCC(A, B, C, D) \
-    ((SDL_static_cast(Uint32, SDL_static_cast(Uint8, (A))) << 0) | \
-     (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (B))) << 8) | \
-     (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (C))) << 16) | \
-     (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (D))) << 24))
+    ((SDL_static_cast(uint32_t, SDL_static_cast(uint8_t, (A))) << 0) | \
+     (SDL_static_cast(uint32_t, SDL_static_cast(uint8_t, (B))) << 8) | \
+     (SDL_static_cast(uint32_t, SDL_static_cast(uint8_t, (C))) << 16) | \
+     (SDL_static_cast(uint32_t, SDL_static_cast(uint8_t, (D))) << 24))
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
@@ -267,84 +267,20 @@ void *alloca(size_t);
 #define SDL_UINT64_C(c)  c ## ULL
 #endif
 
-/**
- *  \name Basic data types
- */
-/* @{ */
-
-/**
- * A signed 8-bit integer type.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-typedef int8_t Sint8;
-#define SDL_MAX_SINT8   ((Sint8)0x7F)           /* 127 */
-#define SDL_MIN_SINT8   ((Sint8)(~0x7F))        /* -128 */
-
-/**
- * An unsigned 8-bit integer type.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-typedef uint8_t Uint8;
-#define SDL_MAX_UINT8   ((Uint8)0xFF)           /* 255 */
-#define SDL_MIN_UINT8   ((Uint8)0x00)           /* 0 */
-
-/**
- * A signed 16-bit integer type.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-typedef int16_t Sint16;
-#define SDL_MAX_SINT16  ((Sint16)0x7FFF)        /* 32767 */
-#define SDL_MIN_SINT16  ((Sint16)(~0x7FFF))     /* -32768 */
-
-/**
- * An unsigned 16-bit integer type.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-typedef uint16_t Uint16;
-#define SDL_MAX_UINT16  ((Uint16)0xFFFF)        /* 65535 */
-#define SDL_MIN_UINT16  ((Uint16)0x0000)        /* 0 */
-
-/**
- * A signed 32-bit integer type.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-typedef int32_t Sint32;
-#define SDL_MAX_SINT32  ((Sint32)0x7FFFFFFF)    /* 2147483647 */
-#define SDL_MIN_SINT32  ((Sint32)(~0x7FFFFFFF)) /* -2147483648 */
-
-/**
- * An unsigned 32-bit integer type.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-typedef uint32_t Uint32;
-#define SDL_MAX_UINT32  ((Uint32)0xFFFFFFFFu)   /* 4294967295 */
-#define SDL_MIN_UINT32  ((Uint32)0x00000000)    /* 0 */
-
-/**
- * A signed 64-bit integer type.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_SINT64_C
- */
-typedef int64_t Sint64;
+#define SDL_MAX_SINT8   ((int8_t)0x7F)           /* 127 */
+#define SDL_MIN_SINT8   ((int8_t)(~0x7F))        /* -128 */
+#define SDL_MAX_UINT8   ((uint8_t)0xFF)           /* 255 */
+#define SDL_MIN_UINT8   ((uint8_t)0x00)           /* 0 */
+#define SDL_MAX_SINT16  ((int16_t)0x7FFF)        /* 32767 */
+#define SDL_MIN_SINT16  ((int16_t)(~0x7FFF))     /* -32768 */
+#define SDL_MAX_UINT16  ((uint16_t)0xFFFF)        /* 65535 */
+#define SDL_MIN_UINT16  ((uint16_t)0x0000)        /* 0 */
+#define SDL_MAX_SINT32  ((int32_t)0x7FFFFFFF)    /* 2147483647 */
+#define SDL_MIN_SINT32  ((int32_t)(~0x7FFFFFFF)) /* -2147483648 */
+#define SDL_MAX_UINT32  ((uint32_t)0xFFFFFFFFu)   /* 4294967295 */
+#define SDL_MIN_UINT32  ((uint32_t)0x00000000)    /* 0 */
 #define SDL_MAX_SINT64  SDL_SINT64_C(0x7FFFFFFFFFFFFFFF)   /* 9223372036854775807 */
 #define SDL_MIN_SINT64  ~SDL_SINT64_C(0x7FFFFFFFFFFFFFFF)  /* -9223372036854775808 */
-
-/**
- * An unsigned 64-bit integer type.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_UINT64_C
- */
-typedef uint64_t Uint64;
 #define SDL_MAX_UINT64  SDL_UINT64_C(0xFFFFFFFFFFFFFFFF)   /* 18446744073709551615 */
 #define SDL_MIN_UINT64  SDL_UINT64_C(0x0000000000000000)   /* 0 */
 
@@ -361,11 +297,9 @@ typedef uint64_t Uint64;
  * \sa SDL_MAX_SINT64
  * \sa SDL_MIN_SINT64
  */
-typedef Sint64 SDL_Time;
+typedef int64_t SDL_Time;
 #define SDL_MAX_TIME SDL_MAX_SINT64
 #define SDL_MIN_TIME SDL_MIN_SINT64
-
-/* @} *//* Basic data types */
 
 /**
  *  \name Floating-point constants
@@ -543,19 +477,11 @@ typedef Sint64 SDL_Time;
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
 SDL_COMPILE_TIME_ASSERT(bool_size, sizeof(bool) == 1);
-SDL_COMPILE_TIME_ASSERT(uint8_size, sizeof(Uint8) == 1);
-SDL_COMPILE_TIME_ASSERT(sint8_size, sizeof(Sint8) == 1);
-SDL_COMPILE_TIME_ASSERT(uint16_size, sizeof(Uint16) == 2);
-SDL_COMPILE_TIME_ASSERT(sint16_size, sizeof(Sint16) == 2);
-SDL_COMPILE_TIME_ASSERT(uint32_size, sizeof(Uint32) == 4);
-SDL_COMPILE_TIME_ASSERT(sint32_size, sizeof(Sint32) == 4);
-SDL_COMPILE_TIME_ASSERT(uint64_size, sizeof(Uint64) == 8);
-SDL_COMPILE_TIME_ASSERT(sint64_size, sizeof(Sint64) == 8);
-SDL_COMPILE_TIME_ASSERT(uint64_longlong, sizeof(Uint64) <= sizeof(unsigned long long));
+SDL_COMPILE_TIME_ASSERT(uint64_longlong, sizeof(uint64_t) <= sizeof(unsigned long long));
 SDL_COMPILE_TIME_ASSERT(size_t_longlong, sizeof(size_t) <= sizeof(unsigned long long));
 typedef struct SDL_alignment_test
 {
-    Uint8 a;
+    uint8_t a;
     void *b;
 } SDL_alignment_test;
 SDL_COMPILE_TIME_ASSERT(struct_alignment, sizeof(SDL_alignment_test) == (2 * sizeof(void *)));
@@ -1428,8 +1354,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_toupper(int x);
  */
 extern SDL_DECLSPEC int SDLCALL SDL_tolower(int x);
 
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_crc16(Uint16 crc, const void *data, size_t len);
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_crc32(Uint32 crc, const void *data, size_t len);
+extern SDL_DECLSPEC uint16_t SDLCALL SDL_crc16(uint16_t crc, const void *data, size_t len);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_crc32(uint32_t crc, const void *data, size_t len);
 
 /**
  * Copy non-overlapping memory.
@@ -1491,7 +1417,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, S
 #endif
 
 extern SDL_DECLSPEC void * SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len);
-extern SDL_DECLSPEC void * SDLCALL SDL_memset4(void *dst, Uint32 val, size_t dwords);
+extern SDL_DECLSPEC void * SDLCALL SDL_memset4(void *dst, uint32_t val, size_t dwords);
 
 /* Take advantage of compiler optimizations for memset */
 #ifndef SDL_SLOW_MEMSET
@@ -2270,7 +2196,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_strpbrk(const char *str, const char *brea
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_StepUTF8(const char **pstr, size_t *pslen);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_StepUTF8(const char **pstr, size_t *pslen);
 
 /**
  * Convert a single Unicode codepoint to UTF-8.
@@ -2299,7 +2225,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_StepUTF8(const char **pstr, size_t *pslen
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC char * SDLCALL SDL_UCS4ToUTF8(Uint32 codepoint, char *dst);
+extern SDL_DECLSPEC char * SDLCALL SDL_UCS4ToUTF8(uint32_t codepoint, char *dst);
 
 
 extern SDL_DECLSPEC int SDLCALL SDL_sscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, ...) SDL_SCANF_VARARG_FUNC(2);
@@ -2329,7 +2255,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STR
  * \sa SDL_rand_bits
  * \sa SDL_randf
  */
-extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
+extern SDL_DECLSPEC void SDLCALL SDL_srand(uint64_t seed);
 
 /**
  * Generate a pseudo-random number less than n for positive n
@@ -2341,8 +2267,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
  * Example: to simulate a d6 use `SDL_rand(6) + 1` The +1 converts 0..5 to
  * 1..6
  *
- * If you want to generate a pseudo-random number in the full range of Sint32,
- * you should use: (Sint32)SDL_rand_bits()
+ * If you want to generate a pseudo-random number in the full range of int32_t,
+ * you should use: (int32_t)SDL_rand_bits()
  *
  * If you want reproducible output, be sure to initialize with SDL_srand()
  * first.
@@ -2363,7 +2289,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
  * \sa SDL_srand
  * \sa SDL_randf
  */
-extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand(Sint32 n);
+extern SDL_DECLSPEC int32_t SDLCALL SDL_rand(int32_t n);
 
 /**
  * Generate a uniform pseudo-random floating point number less than 1.0
@@ -2409,7 +2335,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf(void);
  * \sa SDL_randf
  * \sa SDL_srand
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits(void);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_rand_bits(void);
 
 /**
  * Generate a pseudo-random number less than n for positive n
@@ -2421,8 +2347,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits(void);
  * Example: to simulate a d6 use `SDL_rand_r(state, 6) + 1` The +1 converts
  * 0..5 to 1..6
  *
- * If you want to generate a pseudo-random number in the full range of Sint32,
- * you should use: (Sint32)SDL_rand_bits_r(state)
+ * If you want to generate a pseudo-random number in the full range of int32_t,
+ * you should use: (int32_t)SDL_rand_bits_r(state)
  *
  * There are no guarantees as to the quality of the random sequence produced,
  * and this should not be used for security (cryptography, passwords) or where
@@ -2444,7 +2370,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits(void);
  * \sa SDL_rand_bits_r
  * \sa SDL_randf_r
  */
-extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand_r(Uint64 *state, Sint32 n);
+extern SDL_DECLSPEC int32_t SDLCALL SDL_rand_r(uint64_t *state, int32_t n);
 
 /**
  * Generate a uniform pseudo-random floating point number less than 1.0
@@ -2471,7 +2397,7 @@ extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand_r(Uint64 *state, Sint32 n);
  * \sa SDL_rand_r
  * \sa SDL_randf
  */
-extern SDL_DECLSPEC float SDLCALL SDL_randf_r(Uint64 *state);
+extern SDL_DECLSPEC float SDLCALL SDL_randf_r(uint64_t *state);
 
 /**
  * Generate 32 pseudo-random bits.
@@ -2496,7 +2422,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf_r(Uint64 *state);
  * \sa SDL_rand_r
  * \sa SDL_randf_r
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits_r(Uint64 *state);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_rand_bits_r(uint64_t *state);
 
 
 #ifndef SDL_PI_D
@@ -3930,8 +3856,8 @@ extern SDL_DECLSPEC char * SDLCALL SDL_iconv_string(const char *tocode,
 
 /* Some helper macros for common cases... */
 #define SDL_iconv_utf8_locale(S)    SDL_iconv_string("", "UTF-8", S, SDL_strlen(S)+1)
-#define SDL_iconv_utf8_ucs2(S)      (Uint16 *)SDL_iconv_string("UCS-2", "UTF-8", S, SDL_strlen(S)+1)
-#define SDL_iconv_utf8_ucs4(S)      (Uint32 *)SDL_iconv_string("UCS-4", "UTF-8", S, SDL_strlen(S)+1)
+#define SDL_iconv_utf8_ucs2(S)      (uint16_t *)SDL_iconv_string("UCS-2", "UTF-8", S, SDL_strlen(S)+1)
+#define SDL_iconv_utf8_ucs4(S)      (uint32_t *)SDL_iconv_string("UCS-4", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_wchar_utf8(S)     SDL_iconv_string("UTF-8", "WCHAR_T", (char *)S, (SDL_wcslen(S)+1)*sizeof(wchar_t))
 
 /* force builds using Clang's static analysis tools to use literal C runtime

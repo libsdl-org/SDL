@@ -89,7 +89,7 @@ extern "C"
     {
     }
 
-    static bool HAIKU_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+    static bool HAIKU_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
     {
         // We don't override any other drivers
         return false;
@@ -170,7 +170,7 @@ extern "C"
  */
     static void HAIKU_JoystickUpdate(SDL_Joystick *joystick)
     {
-        static const Uint8 hat_map[9] = {
+        static const uint8_t hat_map[9] = {
             SDL_HAT_CENTERED,
             SDL_HAT_UP,
             SDL_HAT_RIGHTUP,
@@ -187,7 +187,7 @@ extern "C"
         int16 *axes;
         uint8 *hats;
         uint32 buttons;
-        Uint64 timestamp = SDL_GetTicksNS();
+        uint64_t timestamp = SDL_GetTicksNS();
 
         // Set up data pointers
         stick = joystick->hwdata->stick;
@@ -253,13 +253,13 @@ extern "C"
         return SDL_CreateJoystickGUIDForName(name);
     }
 
-    static bool HAIKU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+    static bool HAIKU_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
     {
         return SDL_Unsupported();
     }
 
 
-    static bool HAIKU_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+    static bool HAIKU_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
     {
         return SDL_Unsupported();
     }
@@ -269,7 +269,7 @@ extern "C"
         return false;
     }
 
-    static bool HAIKU_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+    static bool HAIKU_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
     {
         return SDL_Unsupported();
     }

@@ -65,15 +65,15 @@ typedef struct
 typedef struct
 {
     struct wl_buffer *wl_buffer;
-    Uint32 duration;
+    uint32_t duration;
 } Wayland_SystemCursorFrame;
 
 typedef struct
 {
     Wayland_SystemCursorFrame *frames;
     struct wl_callback *frame_callback;
-    Uint64 last_frame_time_ms;
-    Uint32 total_duration;
+    uint64_t last_frame_time_ms;
+    uint32_t total_duration;
     int num_frames;
     int current_frame;
     SDL_SystemCursor id;
@@ -303,8 +303,8 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 {
     SDL_CursorData *c = (SDL_CursorData *)data;
 
-    const Uint64 now = SDL_GetTicks();
-    const Uint64 elapsed = (now - c->cursor_data.system.last_frame_time_ms) % c->cursor_data.system.total_duration;
+    const uint64_t now = SDL_GetTicks();
+    const uint64_t elapsed = (now - c->cursor_data.system.last_frame_time_ms) % c->cursor_data.system.total_duration;
     int next = c->cursor_data.system.current_frame;
 
     wl_callback_destroy(cb);
@@ -312,7 +312,7 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     wl_callback_add_listener(c->cursor_data.system.frame_callback, &cursor_frame_listener, data);
 
     // Calculate the next frame based on the elapsed duration.
-    for (Uint64 t = c->cursor_data.system.frames[next].duration; t <= elapsed; t += c->cursor_data.system.frames[next].duration) {
+    for (uint64_t t = c->cursor_data.system.frames[next].duration; t <= elapsed; t += c->cursor_data.system.frames[next].duration) {
         next = (next + 1) % c->cursor_data.system.num_frames;
 
         // Make sure we don't end up in an infinite loop if a cursor has frame durations of 0.
@@ -598,7 +598,7 @@ static void Wayland_FreeCursor(SDL_Cursor *cursor)
 
 static void Wayland_SetSystemCursorShape(struct SDL_WaylandInput *input, SDL_SystemCursor id)
 {
-    Uint32 shape;
+    uint32_t shape;
 
     switch (id) {
     case SDL_SYSTEM_CURSOR_DEFAULT:

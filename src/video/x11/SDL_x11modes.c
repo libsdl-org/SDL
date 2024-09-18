@@ -313,7 +313,7 @@ SDL_PixelFormat X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *
 {
     if (vinfo->class == DirectColor || vinfo->class == TrueColor) {
         int bpp;
-        Uint32 Rmask, Gmask, Bmask, Amask;
+        uint32_t Rmask, Gmask, Bmask, Amask;
 
         Rmask = vinfo->visual->red_mask;
         Gmask = vinfo->visual->green_mask;
@@ -543,7 +543,7 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
     RRCrtc output_crtc;
     XRRCrtcInfo *crtc;
     XVisualInfo vinfo;
-    Uint32 pixelformat;
+    uint32_t pixelformat;
     XPixmapFormatValues *pixmapformats;
     int scanline_pad;
     int i, n;
@@ -829,7 +829,7 @@ static bool X11_InitModes_StdXlib(SDL_VideoDevice *_this)
     SDL_DisplayData *displaydata;
     SDL_DisplayMode mode;
     XPixmapFormatValues *pixmapformats;
-    Uint32 pixelformat;
+    uint32_t pixelformat;
     XVisualInfo vinfo;
     SDL_VideoDisplay display;
 

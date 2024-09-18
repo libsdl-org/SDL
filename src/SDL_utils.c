@@ -39,7 +39,7 @@ int SDL_powerof2(int x)
 
     // This trick works for 32-bit values
     {
-        SDL_COMPILE_TIME_ASSERT(SDL_powerof2, sizeof(x) == sizeof(Uint32));
+        SDL_COMPILE_TIME_ASSERT(SDL_powerof2, sizeof(x) == sizeof(uint32_t));
     }
     value = x;
     value -= 1;
@@ -53,7 +53,7 @@ int SDL_powerof2(int x)
     return value;
 }
 
-Uint32 SDL_CalculateGCD(Uint32 a, Uint32 b)
+uint32_t SDL_CalculateGCD(uint32_t a, uint32_t b)
 {
     if (b == 0) {
         return a;
@@ -155,24 +155,24 @@ void SDL_SetInitialized(SDL_InitState *state, bool initialized)
     }
 }
 
-SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
+SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(uint32_t));
 
-Uint32 SDL_GetNextObjectID(void)
+uint32_t SDL_GetNextObjectID(void)
 {
     static SDL_AtomicInt last_id;
 
-    Uint32 id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
+    uint32_t id = (uint32_t)SDL_AtomicIncRef(&last_id) + 1;
     if (id == 0) {
-        id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
+        id = (uint32_t)SDL_AtomicIncRef(&last_id) + 1;
     }
     return id;
 }
 
 static SDL_HashTable *SDL_objects;
 
-static Uint32 SDL_HashObject(const void *key, void *unused)
+static uint32_t SDL_HashObject(const void *key, void *unused)
 {
-    return (Uint32)(uintptr_t)key;
+    return (uint32_t)(uintptr_t)key;
 }
 
 static bool SDL_KeyMatchObject(const void *a, const void *b, void *unused)

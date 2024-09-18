@@ -98,7 +98,7 @@ static void SDLCALL IOStreamTearDown(void *arg)
 static void testGenericIOStreamValidations(SDL_IOStream *rw, bool write)
 {
     char buf[sizeof(IOStreamHelloWorldTestString)];
-    Sint64 i;
+    int64_t i;
     size_t s;
     int seekPos = SDLTest_RandomIntegerInRange(4, 8);
 
@@ -108,7 +108,7 @@ static void testGenericIOStreamValidations(SDL_IOStream *rw, bool write)
     /* Set to start. */
     i = SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
     SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
-    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
+    SDLTest_AssertCheck(i == (int64_t)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
     /* Test write */
     s = SDL_WriteIO(rw, IOStreamHelloWorldTestString, sizeof(IOStreamHelloWorldTestString) - 1);
@@ -122,12 +122,12 @@ static void testGenericIOStreamValidations(SDL_IOStream *rw, bool write)
     /* Test seek to random position */
     i = SDL_SeekIO(rw, seekPos, SDL_IO_SEEK_SET);
     SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
-    SDLTest_AssertCheck(i == (Sint64)seekPos, "Verify seek to %i with SDL_SeekIO (SDL_IO_SEEK_SET), expected %i, got %" SDL_PRIs64, seekPos, seekPos, i);
+    SDLTest_AssertCheck(i == (int64_t)seekPos, "Verify seek to %i with SDL_SeekIO (SDL_IO_SEEK_SET), expected %i, got %" SDL_PRIs64, seekPos, seekPos, i);
 
     /* Test seek back to start */
     i = SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
     SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
-    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
+    SDLTest_AssertCheck(i == (int64_t)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
     /* Test read */
     s = SDL_ReadIO(rw, buf, sizeof(IOStreamHelloWorldTestString) - 1);
@@ -144,7 +144,7 @@ static void testGenericIOStreamValidations(SDL_IOStream *rw, bool write)
     /* Test seek back to start */
     i = SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
     SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
-    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
+    SDLTest_AssertCheck(i == (int64_t)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
     /* Test printf */
     s = SDL_IOprintf(rw, "%s", IOStreamHelloWorldTestString);
@@ -158,7 +158,7 @@ static void testGenericIOStreamValidations(SDL_IOStream *rw, bool write)
     /* Test seek back to start */
     i = SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
     SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
-    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
+    SDLTest_AssertCheck(i == (int64_t)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
     /* Test read */
     s = SDL_ReadIO(rw, buf, sizeof(IOStreamHelloWorldTestString) - 1);
@@ -176,7 +176,7 @@ static void testGenericIOStreamValidations(SDL_IOStream *rw, bool write)
     i = SDL_SeekIO(rw, -4, SDL_IO_SEEK_CUR);
     SDLTest_AssertPass("Call to SDL_SeekIO(...,-4,SDL_IO_SEEK_CUR) succeeded");
     SDLTest_AssertCheck(
-        i == (Sint64)(sizeof(IOStreamHelloWorldTestString) - 5),
+        i == (int64_t)(sizeof(IOStreamHelloWorldTestString) - 5),
         "Verify seek to -4 with SDL_SeekIO (SDL_IO_SEEK_CUR), expected %i, got %i",
         (int)(sizeof(IOStreamHelloWorldTestString) - 5),
         (int)i);
@@ -184,7 +184,7 @@ static void testGenericIOStreamValidations(SDL_IOStream *rw, bool write)
     i = SDL_SeekIO(rw, -1, SDL_IO_SEEK_END);
     SDLTest_AssertPass("Call to SDL_SeekIO(...,-1,SDL_IO_SEEK_END) succeeded");
     SDLTest_AssertCheck(
-        i == (Sint64)(sizeof(IOStreamHelloWorldTestString) - 2),
+        i == (int64_t)(sizeof(IOStreamHelloWorldTestString) - 2),
         "Verify seek to -1 with SDL_SeekIO (SDL_IO_SEEK_END), expected %i, got %i",
         (int)(sizeof(IOStreamHelloWorldTestString) - 2),
         (int)i);
@@ -193,7 +193,7 @@ static void testGenericIOStreamValidations(SDL_IOStream *rw, bool write)
     i = SDL_SeekIO(rw, 0, (SDL_IOWhence)999);
     SDLTest_AssertPass("Call to SDL_SeekIO(...,0,invalid_whence) succeeded");
     SDLTest_AssertCheck(
-        i == (Sint64)(-1),
+        i == (int64_t)(-1),
         "Verify seek with SDL_SeekIO (invalid_whence); expected: -1, got %i",
         (int)i);
 }
@@ -465,8 +465,8 @@ static int SDLCALL iostrm_testCompareRWFromMemWithRWFromFile(void *arg)
     char buffer_mem[27];
     size_t rv_file;
     size_t rv_mem;
-    Uint64 sv_file;
-    Uint64 sv_mem;
+    uint64_t sv_file;
+    uint64_t sv_mem;
     SDL_IOStream *iostrm_file;
     SDL_IOStream *iostrm_mem;
     int size;
@@ -526,20 +526,20 @@ static int SDLCALL iostrm_testCompareRWFromMemWithRWFromFile(void *arg)
 static int SDLCALL iostrm_testFileWriteReadEndian(void *arg)
 {
     SDL_IOStream *rw;
-    Sint64 result;
+    int64_t result;
     int mode;
-    Uint16 BE16value;
-    Uint32 BE32value;
-    Uint64 BE64value;
-    Uint16 LE16value;
-    Uint32 LE32value;
-    Uint64 LE64value;
-    Uint16 BE16test;
-    Uint32 BE32test;
-    Uint64 BE64test;
-    Uint16 LE16test;
-    Uint32 LE32test;
-    Uint64 LE64test;
+    uint16_t BE16value;
+    uint32_t BE32value;
+    uint64_t BE64value;
+    uint16_t LE16value;
+    uint32_t LE32value;
+    uint64_t LE64value;
+    uint16_t BE16test;
+    uint32_t BE32test;
+    uint64_t BE64test;
+    uint16_t LE16test;
+    uint32_t LE32test;
+    uint64_t LE64test;
     bool bresult;
     int cresult;
 

@@ -166,7 +166,7 @@ Thread B:
     SDL_SignalCondition(cond);
     SDL_UnlockMutex(lock);
  */
-bool SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+bool SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, int64_t timeoutNS)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     bool result = true;
@@ -219,7 +219,7 @@ bool SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, 
 }
 
 #ifndef SDL_THREAD_GENERIC_COND_SUFFIX
-bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, int64_t timeoutNS)
 {
     return SDL_WaitConditionTimeoutNS_generic(cond, mutex, timeoutNS);
 }

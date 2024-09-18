@@ -24,7 +24,7 @@
 
 #include "SDL_internal.h"
 
-extern bool SDL_DrawPoint(SDL_Surface *dst, int x, int y, Uint32 color);
-extern bool SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count, Uint32 color);
+extern bool SDL_DrawPoint(SDL_Surface *dst, int x, int y, uint32_t color);
+extern bool SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count, uint32_t color);
 
 #endif // SDL_drawpoint_h_

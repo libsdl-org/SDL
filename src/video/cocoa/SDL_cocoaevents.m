@@ -554,11 +554,11 @@ void Cocoa_RegisterApp(void)
     }
 }
 
-Uint64 Cocoa_GetEventTimestamp(NSTimeInterval nsTimestamp)
+uint64_t Cocoa_GetEventTimestamp(NSTimeInterval nsTimestamp)
 {
-    static Uint64 timestamp_offset;
-    Uint64 timestamp = (Uint64)(nsTimestamp * SDL_NS_PER_SECOND);
-    Uint64 now = SDL_GetTicksNS();
+    static uint64_t timestamp_offset;
+    uint64_t timestamp = (uint64_t)(nsTimestamp * SDL_NS_PER_SECOND);
+    uint64_t now = SDL_GetTicksNS();
 
     if (!timestamp_offset) {
         timestamp_offset = (now - timestamp);
@@ -601,7 +601,7 @@ int Cocoa_PumpEventsUntilDate(SDL_VideoDevice *_this, NSDate *expiration, bool a
     return 1;
 }
 
-int Cocoa_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
+int Cocoa_WaitEventTimeout(SDL_VideoDevice *_this, int64_t timeoutNS)
 {
     @autoreleasepool {
         if (timeoutNS > 0) {

@@ -43,7 +43,7 @@
 
 - (instancetype)initWithFrame:(NSRect)frame
                       highDPI:(BOOL)highDPI
-                     windowID:(Uint32)windowID
+                     windowID:(uint32_t)windowID
                        opaque:(BOOL)opaque;
 
 - (void)updateDrawableSize;
@@ -53,7 +53,7 @@
 @property(assign, readonly) NSInteger tag;
 
 @property(nonatomic) BOOL highDPI;
-@property(nonatomic) Uint32 sdlWindowID;
+@property(nonatomic) uint32_t sdlWindowID;
 
 @end
 

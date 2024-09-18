@@ -84,14 +84,14 @@ static char *GetAppName(void)
 static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
                        DBusMessage *msg,
                        char **ret,
-                       Sint32 *start_pos,
-                       Sint32 *end_pos)
+                       int32_t *start_pos,
+                       int32_t *end_pos)
 {
     char *text = NULL, *subtext;
     size_t text_bytes = 0;
     DBusMessageIter iter, array, sub;
-    Sint32 p_start_pos = -1;
-    Sint32 p_end_pos = -1;
+    int32_t p_start_pos = -1;
+    int32_t p_end_pos = -1;
 
     dbus->message_iter_init(msg, &iter);
     // Message type is a(si)i, we only need string part
@@ -113,7 +113,7 @@ static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
                 // Type is a bit field defined as follows:
                 // bit 3: Underline, bit 4: HighLight, bit 5: DontCommit,
                 // bit 6: Bold,      bit 7: Strike,    bit 8: Italic
-                Sint32 type;
+                int32_t type;
                 dbus->message_iter_get_basic(&sub, &type);
                 // We only consider highlight
                 if (type & (1 << 4)) {
@@ -163,9 +163,9 @@ static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
     return text_bytes;
 }
 
-static Sint32 Fcitx_GetPreeditCursorByte(SDL_DBusContext *dbus, DBusMessage *msg)
+static int32_t Fcitx_GetPreeditCursorByte(SDL_DBusContext *dbus, DBusMessage *msg)
 {
-    Sint32 byte = -1;
+    int32_t byte = -1;
     DBusMessageIter iter;
 
     dbus->message_iter_init(msg, &iter);
@@ -199,11 +199,11 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
     if (dbus->message_is_signal(msg, FCITX_IC_DBUS_INTERFACE, "UpdateFormattedPreedit")) {
         char *text = NULL;
-        Sint32 start_pos, end_pos;
+        int32_t start_pos, end_pos;
         size_t text_bytes = Fcitx_GetPreeditString(dbus, msg, &text, &start_pos, &end_pos);
         if (text_bytes) {
             if (start_pos == -1) {
-                Sint32 byte_pos = Fcitx_GetPreeditCursorByte(dbus, msg);
+                int32_t byte_pos = Fcitx_GetPreeditCursorByte(dbus, msg);
                 start_pos = byte_pos >= 0 ? SDL_utf8strnlen(text, byte_pos) : -1;
             }
             SDL_SendEditingText(text, start_pos, end_pos >= 0 ? end_pos - start_pos : -1);
@@ -233,7 +233,7 @@ static void SDLCALL Fcitx_SetCapabilities(void *data,
                                           const char *hint)
 {
     FcitxClient *client = (FcitxClient *)data;
-    Uint64 caps = 0;
+    uint64_t caps = 0;
     if (!client->ic_path) {
         return;
     }
@@ -311,9 +311,9 @@ static bool FcitxClientCreateIC(FcitxClient *client)
     return false;
 }
 
-static Uint32 Fcitx_ModState(void)
+static uint32_t Fcitx_ModState(void)
 {
-    Uint32 fcitx_mods = 0;
+    uint32_t fcitx_mods = 0;
     SDL_Keymod sdl_mods = SDL_GetModState();
 
     if (sdl_mods & SDL_KMOD_SHIFT) {
@@ -379,12 +379,12 @@ void SDL_Fcitx_Reset(void)
     FcitxClientICCallMethod(&fcitx_client, "Reset");
 }
 
-bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
+bool SDL_Fcitx_ProcessKeyEvent(uint32_t keysym, uint32_t keycode, bool down)
 {
-    Uint32 mod_state = Fcitx_ModState();
-    Uint32 handled = false;
-    Uint32 is_release = !down;
-    Uint32 event_time = 0;
+    uint32_t mod_state = Fcitx_ModState();
+    uint32_t handled = false;
+    uint32_t is_release = !down;
+    uint32_t event_time = 0;
 
     if (!fcitx_client.ic_path) {
         return false;

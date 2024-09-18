@@ -23,6 +23,6 @@
 #define SDL_keysym_to_scancode_c_h_
 
 // This function only correctly maps letters and numbers for keyboards in US QWERTY layout
-extern SDL_Scancode SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode);
+extern SDL_Scancode SDL_GetScancodeFromKeySym(uint32_t keysym, uint32_t keycode);
 
 #endif // SDL_keysym_to_scancode_c_h_

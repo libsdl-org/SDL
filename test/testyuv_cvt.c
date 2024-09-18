@@ -132,7 +132,7 @@ void ConvertRec709toRec2020(float *fR, float *fG, float *fB)
     *fB = matrix[2 * 3 + 0] * v[0] + matrix[2 * 3 + 1] * v[1] + matrix[2 * 3 + 2] * v[2];
 }
 
-static void RGBtoYUV(const Uint8 *rgb, int rgb_bits, int *yuv, int yuv_bits, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+static void RGBtoYUV(const uint8_t *rgb, int rgb_bits, int *yuv, int yuv_bits, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     /**
      * This formula is from Microsoft's documentation:
@@ -222,12 +222,12 @@ static void RGBtoYUV(const Uint8 *rgb, int rgb_bits, int *yuv, int yuv_bits, YUV
     }
 }
 
-static void ConvertRGBtoPlanar2x2(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+static void ConvertRGBtoPlanar2x2(uint32_t format, uint8_t *src, int pitch, uint8_t *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     int x, y;
     int yuv[4][3];
-    Uint8 *Y1, *Y2, *U, *V;
-    Uint8 *rgb1, *rgb2;
+    uint8_t *Y1, *Y2, *U, *V;
+    uint8_t *rgb1, *rgb2;
     int rgb_row_advance = (pitch - w * 3) + pitch;
     int UV_advance;
 
@@ -266,40 +266,40 @@ static void ConvertRGBtoPlanar2x2(Uint32 format, Uint8 *src, int pitch, Uint8 *o
         for (x = 0; x < (w - 1); x += 2) {
             RGBtoYUV(rgb1, 8, yuv[0], 8, mode, monochrome, luminance);
             rgb1 += 3;
-            *Y1++ = (Uint8)yuv[0][0];
+            *Y1++ = (uint8_t)yuv[0][0];
 
             RGBtoYUV(rgb1, 8, yuv[1], 8, mode, monochrome, luminance);
             rgb1 += 3;
-            *Y1++ = (Uint8)yuv[1][0];
+            *Y1++ = (uint8_t)yuv[1][0];
 
             RGBtoYUV(rgb2, 8, yuv[2], 8, mode, monochrome, luminance);
             rgb2 += 3;
-            *Y2++ = (Uint8)yuv[2][0];
+            *Y2++ = (uint8_t)yuv[2][0];
 
             RGBtoYUV(rgb2, 8, yuv[3], 8, mode, monochrome, luminance);
             rgb2 += 3;
-            *Y2++ = (Uint8)yuv[3][0];
+            *Y2++ = (uint8_t)yuv[3][0];
 
-            *U = (Uint8)SDL_floorf((yuv[0][1] + yuv[1][1] + yuv[2][1] + yuv[3][1]) / 4.0f + 0.5f);
+            *U = (uint8_t)SDL_floorf((yuv[0][1] + yuv[1][1] + yuv[2][1] + yuv[3][1]) / 4.0f + 0.5f);
             U += UV_advance;
 
-            *V = (Uint8)SDL_floorf((yuv[0][2] + yuv[1][2] + yuv[2][2] + yuv[3][2]) / 4.0f + 0.5f);
+            *V = (uint8_t)SDL_floorf((yuv[0][2] + yuv[1][2] + yuv[2][2] + yuv[3][2]) / 4.0f + 0.5f);
             V += UV_advance;
         }
         /* Last column */
         if (x == (w - 1)) {
             RGBtoYUV(rgb1, 8, yuv[0], 8, mode, monochrome, luminance);
             rgb1 += 3;
-            *Y1++ = (Uint8)yuv[0][0];
+            *Y1++ = (uint8_t)yuv[0][0];
 
             RGBtoYUV(rgb2, 8, yuv[2], 8, mode, monochrome, luminance);
             rgb2 += 3;
-            *Y2++ = (Uint8)yuv[2][0];
+            *Y2++ = (uint8_t)yuv[2][0];
 
-            *U = (Uint8)SDL_floorf((yuv[0][1] + yuv[2][1]) / 2.0f + 0.5f);
+            *U = (uint8_t)SDL_floorf((yuv[0][1] + yuv[2][1]) / 2.0f + 0.5f);
             U += UV_advance;
 
-            *V = (Uint8)SDL_floorf((yuv[0][2] + yuv[2][2]) / 2.0f + 0.5f);
+            *V = (uint8_t)SDL_floorf((yuv[0][2] + yuv[2][2]) / 2.0f + 0.5f);
             V += UV_advance;
         }
         Y1 += w;
@@ -312,50 +312,50 @@ static void ConvertRGBtoPlanar2x2(Uint32 format, Uint8 *src, int pitch, Uint8 *o
         for (x = 0; x < (w - 1); x += 2) {
             RGBtoYUV(rgb1, 8, yuv[0], 8, mode, monochrome, luminance);
             rgb1 += 3;
-            *Y1++ = (Uint8)yuv[0][0];
+            *Y1++ = (uint8_t)yuv[0][0];
 
             RGBtoYUV(rgb1, 8, yuv[1], 8, mode, monochrome, luminance);
             rgb1 += 3;
-            *Y1++ = (Uint8)yuv[1][0];
+            *Y1++ = (uint8_t)yuv[1][0];
 
-            *U = (Uint8)SDL_floorf((yuv[0][1] + yuv[1][1]) / 2.0f + 0.5f);
+            *U = (uint8_t)SDL_floorf((yuv[0][1] + yuv[1][1]) / 2.0f + 0.5f);
             U += UV_advance;
 
-            *V = (Uint8)SDL_floorf((yuv[0][2] + yuv[1][2]) / 2.0f + 0.5f);
+            *V = (uint8_t)SDL_floorf((yuv[0][2] + yuv[1][2]) / 2.0f + 0.5f);
             V += UV_advance;
         }
         /* Last column */
         if (x == (w - 1)) {
             RGBtoYUV(rgb1, 8, yuv[0], 8, mode, monochrome, luminance);
-            *Y1++ = (Uint8)yuv[0][0];
+            *Y1++ = (uint8_t)yuv[0][0];
 
-            *U = (Uint8)yuv[0][1];
+            *U = (uint8_t)yuv[0][1];
             U += UV_advance;
 
-            *V = (Uint8)yuv[0][2];
+            *V = (uint8_t)yuv[0][2];
             V += UV_advance;
         }
     }
 }
 
-static Uint16 Pack10to16(int v)
+static uint16_t Pack10to16(int v)
 {
-    return (Uint16)(v << 6);
+    return (uint16_t)(v << 6);
 }
 
-static void ConvertRGBtoPlanar2x2_P010(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+static void ConvertRGBtoPlanar2x2_P010(uint32_t format, uint8_t *src, int pitch, uint8_t *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     int x, y;
     int yuv[4][3];
-    Uint16 *Y1, *Y2, *U, *V;
-    Uint8 *rgb1, *rgb2;
+    uint16_t *Y1, *Y2, *U, *V;
+    uint8_t *rgb1, *rgb2;
     int rgb_row_advance = (pitch - w * 3) + pitch;
     int UV_advance;
 
     rgb1 = src;
     rgb2 = src + pitch;
 
-    Y1 = (Uint16 *)out;
+    Y1 = (uint16_t *)out;
     Y2 = Y1 + w;
     switch (format) {
     case SDL_PIXELFORMAT_P010:
@@ -444,12 +444,12 @@ static void ConvertRGBtoPlanar2x2_P010(Uint32 format, Uint8 *src, int pitch, Uin
     }
 }
 
-static void ConvertRGBtoPacked4(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+static void ConvertRGBtoPacked4(uint32_t format, uint8_t *src, int pitch, uint8_t *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     int x, y;
     int yuv[2][3];
-    Uint8 *Y1, *Y2, *U, *V;
-    Uint8 *rgb;
+    uint8_t *Y1, *Y2, *U, *V;
+    uint8_t *rgb;
     int rgb_row_advance = (pitch - w * 3);
 
     rgb = src;
@@ -482,39 +482,39 @@ static void ConvertRGBtoPacked4(Uint32 format, Uint8 *src, int pitch, Uint8 *out
         for (x = 0; x < (w - 1); x += 2) {
             RGBtoYUV(rgb, 8, yuv[0], 8, mode, monochrome, luminance);
             rgb += 3;
-            *Y1 = (Uint8)yuv[0][0];
+            *Y1 = (uint8_t)yuv[0][0];
             Y1 += 4;
 
             RGBtoYUV(rgb, 8, yuv[1], 8, mode, monochrome, luminance);
             rgb += 3;
-            *Y2 = (Uint8)yuv[1][0];
+            *Y2 = (uint8_t)yuv[1][0];
             Y2 += 4;
 
-            *U = (Uint8)SDL_floorf((yuv[0][1] + yuv[1][1]) / 2.0f + 0.5f);
+            *U = (uint8_t)SDL_floorf((yuv[0][1] + yuv[1][1]) / 2.0f + 0.5f);
             U += 4;
 
-            *V = (Uint8)SDL_floorf((yuv[0][2] + yuv[1][2]) / 2.0f + 0.5f);
+            *V = (uint8_t)SDL_floorf((yuv[0][2] + yuv[1][2]) / 2.0f + 0.5f);
             V += 4;
         }
         /* Last column */
         if (x == (w - 1)) {
             RGBtoYUV(rgb, 8, yuv[0], 8, mode, monochrome, luminance);
             rgb += 3;
-            *Y2 = *Y1 = (Uint8)yuv[0][0];
+            *Y2 = *Y1 = (uint8_t)yuv[0][0];
             Y1 += 4;
             Y2 += 4;
 
-            *U = (Uint8)yuv[0][1];
+            *U = (uint8_t)yuv[0][1];
             U += 4;
 
-            *V = (Uint8)yuv[0][2];
+            *V = (uint8_t)yuv[0][2];
             V += 4;
         }
         rgb += rgb_row_advance;
     }
 }
 
-bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+bool ConvertRGBtoYUV(uint32_t format, uint8_t *src, int pitch, uint8_t *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     switch (format) {
     case SDL_PIXELFORMAT_P010:
@@ -536,7 +536,7 @@ bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, in
     }
 }
 
-int CalculateYUVPitch(Uint32 format, int width)
+int CalculateYUVPitch(uint32_t format, int width)
 {
     switch (format) {
     case SDL_PIXELFORMAT_P010:

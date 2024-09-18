@@ -49,7 +49,7 @@ extern "C" {
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_MouseID;
+typedef uint32_t SDL_MouseID;
 
 /**
  * The structure used to identify an SDL cursor.
@@ -116,7 +116,7 @@ typedef enum SDL_MouseWheelDirection
  * \sa SDL_GetGlobalMouseState
  * \sa SDL_GetRelativeMouseState
  */
-typedef Uint32 SDL_MouseButtonFlags;
+typedef uint32_t SDL_MouseButtonFlags;
 
 #define SDL_BUTTON_LEFT     1
 #define SDL_BUTTON_MIDDLE   2
@@ -427,8 +427,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CaptureMouse(bool enabled);
  * \sa SDL_DestroyCursor
  * \sa SDL_SetCursor
  */
-extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 * data,
-                                                     const Uint8 * mask,
+extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const uint8_t * data,
+                                                     const uint8_t * mask,
                                                      int w, int h, int hot_x,
                                                      int hot_y);
 

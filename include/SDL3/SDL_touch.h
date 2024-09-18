@@ -38,8 +38,8 @@
 extern "C" {
 #endif
 
-typedef Uint64 SDL_TouchID;
-typedef Uint64 SDL_FingerID;
+typedef uint64_t SDL_TouchID;
+typedef uint64_t SDL_FingerID;
 
 typedef enum SDL_TouchDeviceType
 {

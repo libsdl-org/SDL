@@ -43,11 +43,11 @@
 #define ACCEL_RES_PER_G                 8192.0f
 #define BLUETOOTH_DISCONNECT_TIMEOUT_MS 500
 
-#define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
-#define LOAD32(A, B, C, D) ((((Uint32)(A)) << 0) |  \
-                            (((Uint32)(B)) << 8) |  \
-                            (((Uint32)(C)) << 16) | \
-                            (((Uint32)(D)) << 24))
+#define LOAD16(A, B)       (int16_t)((uint16_t)(A) | (((uint16_t)(B)) << 8))
+#define LOAD32(A, B, C, D) ((((uint32_t)(A)) << 0) |  \
+                            (((uint32_t)(B)) << 8) |  \
+                            (((uint32_t)(C)) << 16) | \
+                            (((uint32_t)(D)) << 24))
 
 enum
 {
@@ -77,118 +77,118 @@ typedef enum
 
 typedef struct
 {
-    Uint8 ucLeftJoystickX;
-    Uint8 ucLeftJoystickY;
-    Uint8 ucRightJoystickX;
-    Uint8 ucRightJoystickY;
-    Uint8 rgucButtonsHatAndCounter[3];
-    Uint8 ucTriggerLeft;
-    Uint8 ucTriggerRight;
+    uint8_t ucLeftJoystickX;
+    uint8_t ucLeftJoystickY;
+    uint8_t ucRightJoystickX;
+    uint8_t ucRightJoystickY;
+    uint8_t rgucButtonsHatAndCounter[3];
+    uint8_t ucTriggerLeft;
+    uint8_t ucTriggerRight;
 } PS5SimpleStatePacket_t;
 
 typedef struct
 {
-    Uint8 ucLeftJoystickX;        // 0
-    Uint8 ucLeftJoystickY;        // 1
-    Uint8 ucRightJoystickX;       // 2
-    Uint8 ucRightJoystickY;       // 3
-    Uint8 ucTriggerLeft;          // 4
-    Uint8 ucTriggerRight;         // 5
-    Uint8 ucCounter;              // 6
-    Uint8 rgucButtonsAndHat[4];   // 7
-    Uint8 rgucPacketSequence[4];  // 11 - 32 bit little endian
-    Uint8 rgucGyroX[2];           // 15
-    Uint8 rgucGyroY[2];           // 17
-    Uint8 rgucGyroZ[2];           // 19
-    Uint8 rgucAccelX[2];          // 21
-    Uint8 rgucAccelY[2];          // 23
-    Uint8 rgucAccelZ[2];          // 25
-    Uint8 rgucSensorTimestamp[4]; // 27 - 16/32 bit little endian
+    uint8_t ucLeftJoystickX;        // 0
+    uint8_t ucLeftJoystickY;        // 1
+    uint8_t ucRightJoystickX;       // 2
+    uint8_t ucRightJoystickY;       // 3
+    uint8_t ucTriggerLeft;          // 4
+    uint8_t ucTriggerRight;         // 5
+    uint8_t ucCounter;              // 6
+    uint8_t rgucButtonsAndHat[4];   // 7
+    uint8_t rgucPacketSequence[4];  // 11 - 32 bit little endian
+    uint8_t rgucGyroX[2];           // 15
+    uint8_t rgucGyroY[2];           // 17
+    uint8_t rgucGyroZ[2];           // 19
+    uint8_t rgucAccelX[2];          // 21
+    uint8_t rgucAccelY[2];          // 23
+    uint8_t rgucAccelZ[2];          // 25
+    uint8_t rgucSensorTimestamp[4]; // 27 - 16/32 bit little endian
 
 } PS5StatePacketCommon_t;
 
 typedef struct
 {
-    Uint8 ucLeftJoystickX;        // 0
-    Uint8 ucLeftJoystickY;        // 1
-    Uint8 ucRightJoystickX;       // 2
-    Uint8 ucRightJoystickY;       // 3
-    Uint8 ucTriggerLeft;          // 4
-    Uint8 ucTriggerRight;         // 5
-    Uint8 ucCounter;              // 6
-    Uint8 rgucButtonsAndHat[4];   // 7
-    Uint8 rgucPacketSequence[4];  // 11 - 32 bit little endian
-    Uint8 rgucGyroX[2];           // 15
-    Uint8 rgucGyroY[2];           // 17
-    Uint8 rgucGyroZ[2];           // 19
-    Uint8 rgucAccelX[2];          // 21
-    Uint8 rgucAccelY[2];          // 23
-    Uint8 rgucAccelZ[2];          // 25
-    Uint8 rgucSensorTimestamp[4]; // 27 - 32 bit little endian
-    Uint8 ucSensorTemp;           // 31
-    Uint8 ucTouchpadCounter1;     // 32 - high bit clear + counter
-    Uint8 rgucTouchpadData1[3];   // 33 - X/Y, 12 bits per axis
-    Uint8 ucTouchpadCounter2;     // 36 - high bit clear + counter
-    Uint8 rgucTouchpadData2[3];   // 37 - X/Y, 12 bits per axis
-    Uint8 rgucUnknown1[8];        // 40
-    Uint8 rgucTimer2[4];          // 48 - 32 bit little endian
-    Uint8 ucBatteryLevel;         // 52
-    Uint8 ucConnectState;         // 53 - 0x08 = USB, 0x01 = headphone
+    uint8_t ucLeftJoystickX;        // 0
+    uint8_t ucLeftJoystickY;        // 1
+    uint8_t ucRightJoystickX;       // 2
+    uint8_t ucRightJoystickY;       // 3
+    uint8_t ucTriggerLeft;          // 4
+    uint8_t ucTriggerRight;         // 5
+    uint8_t ucCounter;              // 6
+    uint8_t rgucButtonsAndHat[4];   // 7
+    uint8_t rgucPacketSequence[4];  // 11 - 32 bit little endian
+    uint8_t rgucGyroX[2];           // 15
+    uint8_t rgucGyroY[2];           // 17
+    uint8_t rgucGyroZ[2];           // 19
+    uint8_t rgucAccelX[2];          // 21
+    uint8_t rgucAccelY[2];          // 23
+    uint8_t rgucAccelZ[2];          // 25
+    uint8_t rgucSensorTimestamp[4]; // 27 - 32 bit little endian
+    uint8_t ucSensorTemp;           // 31
+    uint8_t ucTouchpadCounter1;     // 32 - high bit clear + counter
+    uint8_t rgucTouchpadData1[3];   // 33 - X/Y, 12 bits per axis
+    uint8_t ucTouchpadCounter2;     // 36 - high bit clear + counter
+    uint8_t rgucTouchpadData2[3];   // 37 - X/Y, 12 bits per axis
+    uint8_t rgucUnknown1[8];        // 40
+    uint8_t rgucTimer2[4];          // 48 - 32 bit little endian
+    uint8_t ucBatteryLevel;         // 52
+    uint8_t ucConnectState;         // 53 - 0x08 = USB, 0x01 = headphone
 
     // There's more unknown data at the end, and a 32-bit CRC on Bluetooth
 } PS5StatePacket_t;
 
 typedef struct
 {
-    Uint8 ucLeftJoystickX;        // 0
-    Uint8 ucLeftJoystickY;        // 1
-    Uint8 ucRightJoystickX;       // 2
-    Uint8 ucRightJoystickY;       // 3
-    Uint8 ucTriggerLeft;          // 4
-    Uint8 ucTriggerRight;         // 5
-    Uint8 ucCounter;              // 6
-    Uint8 rgucButtonsAndHat[4];   // 7
-    Uint8 rgucPacketSequence[4];  // 11 - 32 bit little endian
-    Uint8 rgucGyroX[2];           // 15
-    Uint8 rgucGyroY[2];           // 17
-    Uint8 rgucGyroZ[2];           // 19
-    Uint8 rgucAccelX[2];          // 21
-    Uint8 rgucAccelY[2];          // 23
-    Uint8 rgucAccelZ[2];          // 25
-    Uint8 rgucSensorTimestamp[2]; // 27 - 16 bit little endian
-    Uint8 ucBatteryLevel;         // 29
-    Uint8 ucUnknown;              // 30
-    Uint8 ucTouchpadCounter1;     // 31 - high bit clear + counter
-    Uint8 rgucTouchpadData1[3];   // 32 - X/Y, 12 bits per axis
-    Uint8 ucTouchpadCounter2;     // 35 - high bit clear + counter
-    Uint8 rgucTouchpadData2[3];   // 36 - X/Y, 12 bits per axis
+    uint8_t ucLeftJoystickX;        // 0
+    uint8_t ucLeftJoystickY;        // 1
+    uint8_t ucRightJoystickX;       // 2
+    uint8_t ucRightJoystickY;       // 3
+    uint8_t ucTriggerLeft;          // 4
+    uint8_t ucTriggerRight;         // 5
+    uint8_t ucCounter;              // 6
+    uint8_t rgucButtonsAndHat[4];   // 7
+    uint8_t rgucPacketSequence[4];  // 11 - 32 bit little endian
+    uint8_t rgucGyroX[2];           // 15
+    uint8_t rgucGyroY[2];           // 17
+    uint8_t rgucGyroZ[2];           // 19
+    uint8_t rgucAccelX[2];          // 21
+    uint8_t rgucAccelY[2];          // 23
+    uint8_t rgucAccelZ[2];          // 25
+    uint8_t rgucSensorTimestamp[2]; // 27 - 16 bit little endian
+    uint8_t ucBatteryLevel;         // 29
+    uint8_t ucUnknown;              // 30
+    uint8_t ucTouchpadCounter1;     // 31 - high bit clear + counter
+    uint8_t rgucTouchpadData1[3];   // 32 - X/Y, 12 bits per axis
+    uint8_t ucTouchpadCounter2;     // 35 - high bit clear + counter
+    uint8_t rgucTouchpadData2[3];   // 36 - X/Y, 12 bits per axis
 
     // There's more unknown data at the end, and a 32-bit CRC on Bluetooth
 } PS5StatePacketAlt_t;
 
 typedef struct
 {
-    Uint8 ucEnableBits1;              // 0
-    Uint8 ucEnableBits2;              // 1
-    Uint8 ucRumbleRight;              // 2
-    Uint8 ucRumbleLeft;               // 3
-    Uint8 ucHeadphoneVolume;          // 4
-    Uint8 ucSpeakerVolume;            // 5
-    Uint8 ucMicrophoneVolume;         // 6
-    Uint8 ucAudioEnableBits;          // 7
-    Uint8 ucMicLightMode;             // 8
-    Uint8 ucAudioMuteBits;            // 9
-    Uint8 rgucRightTriggerEffect[11]; // 10
-    Uint8 rgucLeftTriggerEffect[11];  // 21
-    Uint8 rgucUnknown1[6];            // 32
-    Uint8 ucEnableBits3;              // 38
-    Uint8 rgucUnknown2[2];            // 39
-    Uint8 ucLedAnim;                  // 41
-    Uint8 ucLedBrightness;            // 42
-    Uint8 ucPadLights;                // 43
-    Uint8 ucLedRed;                   // 44
-    Uint8 ucLedGreen;                 // 45
-    Uint8 ucLedBlue;                  // 46
+    uint8_t ucEnableBits1;              // 0
+    uint8_t ucEnableBits2;              // 1
+    uint8_t ucRumbleRight;              // 2
+    uint8_t ucRumbleLeft;               // 3
+    uint8_t ucHeadphoneVolume;          // 4
+    uint8_t ucSpeakerVolume;            // 5
+    uint8_t ucMicrophoneVolume;         // 6
+    uint8_t ucAudioEnableBits;          // 7
+    uint8_t ucMicLightMode;             // 8
+    uint8_t ucAudioMuteBits;            // 9
+    uint8_t rgucRightTriggerEffect[11]; // 10
+    uint8_t rgucLeftTriggerEffect[11];  // 21
+    uint8_t rgucUnknown1[6];            // 32
+    uint8_t ucEnableBits3;              // 38
+    uint8_t rgucUnknown2[2];            // 39
+    uint8_t ucLedAnim;                  // 41
+    uint8_t ucLedBrightness;            // 42
+    uint8_t ucPadLights;                // 43
+    uint8_t ucLedRed;                   // 44
+    uint8_t ucLedGreen;                 // 45
+    uint8_t ucLedBlue;                  // 46
 } DS5EffectsState_t;
 
 typedef enum
@@ -210,7 +210,7 @@ typedef enum
 
 typedef struct
 {
-    Sint16 bias;
+    int16_t bias;
     float sensitivity;
 } IMUCalibrationData;
 
@@ -249,26 +249,26 @@ typedef struct
     bool report_battery;
     bool hardware_calibration;
     IMUCalibrationData calibration[6];
-    Uint16 firmware_version;
-    Uint64 last_packet;
+    uint16_t firmware_version;
+    uint64_t last_packet;
     int player_index;
     bool player_lights;
-    Uint8 rumble_left;
-    Uint8 rumble_right;
+    uint8_t rumble_left;
+    uint8_t rumble_right;
     bool color_set;
-    Uint8 led_red;
-    Uint8 led_green;
-    Uint8 led_blue;
+    uint8_t led_red;
+    uint8_t led_green;
+    uint8_t led_blue;
     EDS5LEDResetState led_reset_state;
-    Uint64 sensor_ticks;
-    Uint32 last_tick;
+    uint64_t sensor_ticks;
+    uint32_t last_tick;
     union
     {
         PS5SimpleStatePacket_t simple;
         PS5StatePacketCommon_t state;
         PS5StatePacketAlt_t alt_state;
         PS5StatePacket_t full_state;
-        Uint8 data[64];
+        uint8_t data[64];
     } last_state;
 } SDL_DriverPS5_Context;
 
@@ -289,16 +289,16 @@ static bool HIDAPI_DriverPS5_IsEnabled(void)
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS5, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static int ReadFeatureReport(SDL_hid_device *dev, Uint8 report_id, Uint8 *report, size_t length)
+static int ReadFeatureReport(SDL_hid_device *dev, uint8_t report_id, uint8_t *report, size_t length)
 {
     SDL_memset(report, 0, length);
     report[0] = report_id;
     return SDL_hid_get_feature_report(dev, report, length);
 }
 
-static bool HIDAPI_DriverPS5_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static bool HIDAPI_DriverPS5_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, uint16_t vendor_id, uint16_t product_id, uint16_t version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    Uint8 data[USB_PACKET_LENGTH];
+    uint8_t data[USB_PACKET_LENGTH];
     int size;
 
     if (type == SDL_GAMEPAD_TYPE_PS5) {
@@ -327,7 +327,7 @@ static void SetLedsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
     /* This list is the same as what hid-sony.c uses in the Linux kernel.
        The first 4 values correspond to what the PS4 assigns.
     */
-    static const Uint8 colors[7][3] = {
+    static const uint8_t colors[7][3] = {
         { 0x00, 0x00, 0x40 }, // Blue
         { 0x40, 0x00, 0x00 }, // Red
         { 0x00, 0x40, 0x00 }, // Green
@@ -350,7 +350,7 @@ static void SetLedsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
 
 static void SetLightsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
 {
-    static const Uint8 lights[] = {
+    static const uint8_t lights[] = {
         0x04,
         0x0A,
         0x15,
@@ -370,7 +370,7 @@ static void SetLightsForPlayerIndex(DS5EffectsState_t *effects, int player_index
 static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS5_Context *ctx;
-    Uint8 data[USB_PACKET_LENGTH * 2];
+    uint8_t data[USB_PACKET_LENGTH * 2];
     int size;
     char serial[18];
     SDL_JoystickType joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
@@ -430,7 +430,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
            This will also enable enhanced reports over Bluetooth
         */
         if (ReadFeatureReport(device->dev, k_EPS5FeatureReportIdFirmwareInfo, data, USB_PACKET_LENGTH) >= 46) {
-            ctx->firmware_version = (Uint16)data[44] | ((Uint16)data[45] << 8);
+            ctx->firmware_version = (uint16_t)data[44] | ((uint16_t)data[45] << 8);
         }
     }
 
@@ -445,9 +445,9 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         // Third party controller capability request
         size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data));
         if (size == 48 && data[2] == 0x28) {
-            Uint8 capabilities = data[4];
-            Uint8 capabilities2 = data[20];
-            Uint8 device_type = data[5];
+            uint8_t capabilities = data[4];
+            uint8_t capabilities2 = data[20];
+            uint8_t device_type = data[5];
 
 #ifdef DEBUG_PS5_PROTOCOL
             HIDAPI_DumpPacket("PS5 capabilities: size = %d", data, size);
@@ -558,7 +558,7 @@ static void HIDAPI_DriverPS5_LoadCalibrationData(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     int i, size;
-    Uint8 data[USB_PACKET_LENGTH];
+    uint8_t data[USB_PACKET_LENGTH];
 
     size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCalibration, data, sizeof(data));
     if (size < 35) {
@@ -569,18 +569,18 @@ static void HIDAPI_DriverPS5_LoadCalibrationData(SDL_HIDAPI_Device *device)
     }
 
     {
-        Sint16 sGyroPitchBias, sGyroYawBias, sGyroRollBias;
-        Sint16 sGyroPitchPlus, sGyroPitchMinus;
-        Sint16 sGyroYawPlus, sGyroYawMinus;
-        Sint16 sGyroRollPlus, sGyroRollMinus;
-        Sint16 sGyroSpeedPlus, sGyroSpeedMinus;
+        int16_t sGyroPitchBias, sGyroYawBias, sGyroRollBias;
+        int16_t sGyroPitchPlus, sGyroPitchMinus;
+        int16_t sGyroYawPlus, sGyroYawMinus;
+        int16_t sGyroRollPlus, sGyroRollMinus;
+        int16_t sGyroSpeedPlus, sGyroSpeedMinus;
 
-        Sint16 sAccXPlus, sAccXMinus;
-        Sint16 sAccYPlus, sAccYMinus;
-        Sint16 sAccZPlus, sAccZMinus;
+        int16_t sAccXPlus, sAccXMinus;
+        int16_t sAccYPlus, sAccYMinus;
+        int16_t sAccZPlus, sAccZMinus;
 
         float flNumerator;
-        Sint16 sRange2g;
+        int16_t sRange2g;
 
 #ifdef DEBUG_PS5_CALIBRATION
         HIDAPI_DumpPacket("PS5 calibration packet: size = %d", data, size);
@@ -646,7 +646,7 @@ static void HIDAPI_DriverPS5_LoadCalibrationData(SDL_HIDAPI_Device *device)
     }
 }
 
-static float HIDAPI_DriverPS5_ApplyCalibrationData(SDL_DriverPS5_Context *ctx, int index, Sint16 value)
+static float HIDAPI_DriverPS5_ApplyCalibrationData(SDL_DriverPS5_Context *ctx, int index, int16_t value)
 {
     float result;
 
@@ -755,8 +755,8 @@ static void HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_DriverPS5_Context *ctx)
         const PS5StatePacketCommon_t *packet = &ctx->last_state.state;
 
         // Check the timer to make sure the Bluetooth connection LED animation is complete
-        const Uint32 connection_complete = 10200000;
-        Uint32 timestamp = LOAD32(packet->rgucSensorTimestamp[0],
+        const uint32_t connection_complete = 10200000;
+        uint32_t timestamp = LOAD32(packet->rgucSensorTimestamp[0],
                                   packet->rgucSensorTimestamp[1],
                                   packet->rgucSensorTimestamp[2],
                                   packet->rgucSensorTimestamp[3]);
@@ -783,7 +783,7 @@ static void HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
 
     if (ctx->enhanced_reports) {
         // This is just a dummy packet that should have no effect, since we don't set the CRC
-        Uint8 data[78];
+        uint8_t data[78];
 
         SDL_zeroa(data);
 
@@ -970,7 +970,7 @@ static bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     return true;
 }
 
-static bool HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
@@ -988,15 +988,15 @@ static bool HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     return HIDAPI_DriverPS5_UpdateEffects(ctx, k_EDS5EffectRumble, true);
 }
 
-static bool HIDAPI_DriverPS5_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_DriverPS5_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32 HIDAPI_DriverPS5_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static uint32_t HIDAPI_DriverPS5_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
-    Uint32 result = 0;
+    uint32_t result = 0;
 
     if (ctx->enhanced_mode_available) {
         if (ctx->lightbar_supported) {
@@ -1013,7 +1013,7 @@ static Uint32 HIDAPI_DriverPS5_GetJoystickCapabilities(SDL_HIDAPI_Device *device
     return result;
 }
 
-static bool HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
@@ -1031,9 +1031,9 @@ static bool HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joyst
 
 static bool HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *ctx, const void *effect, int size, bool application_usage)
 {
-    Uint8 data[78];
+    uint8_t data[78];
     int report_size, offset;
-    Uint8 *pending_data;
+    uint8_t *pending_data;
     int *pending_size;
     int maximum_size;
 
@@ -1072,8 +1072,8 @@ static bool HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *c
 
     if (ctx->device->is_bluetooth) {
         // Bluetooth reports need a CRC at the end of the packet (at least on Linux)
-        Uint8 ubHdr = 0xA2; // hidp header is part of the CRC calculation
-        Uint32 unCRC;
+        uint8_t ubHdr = 0xA2; // hidp header is part of the CRC calculation
+        uint32_t unCRC;
         unCRC = SDL_crc32(0, &ubHdr, 1);
         unCRC = SDL_crc32(unCRC, data, (size_t)(report_size - sizeof(unCRC)));
         SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
@@ -1129,13 +1129,13 @@ static bool HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device
     return true;
 }
 
-static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5SimpleStatePacket_t *packet, Uint64 timestamp)
+static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5SimpleStatePacket_t *packet, uint64_t timestamp)
 {
-    Sint16 axis;
+    int16_t axis;
 
     if (ctx->last_state.simple.rgucButtonsHatAndCounter[0] != packet->rgucButtonsHatAndCounter[0]) {
         {
-            Uint8 data = (packet->rgucButtonsHatAndCounter[0] >> 4);
+            uint8_t data = (packet->rgucButtonsHatAndCounter[0] >> 4);
 
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data & 0x01) != 0));
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data & 0x02) != 0));
@@ -1143,8 +1143,8 @@ static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data & 0x08) != 0));
         }
         {
-            Uint8 data = (packet->rgucButtonsHatAndCounter[0] & 0x0F);
-            Uint8 hat;
+            uint8_t data = (packet->rgucButtonsHatAndCounter[0] & 0x0F);
+            uint8_t hat;
 
             switch (data) {
             case 0:
@@ -1180,7 +1180,7 @@ static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL
     }
 
     if (ctx->last_state.simple.rgucButtonsHatAndCounter[1] != packet->rgucButtonsHatAndCounter[1]) {
-        Uint8 data = packet->rgucButtonsHatAndCounter[1];
+        uint8_t data = packet->rgucButtonsHatAndCounter[1];
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data & 0x02) != 0));
@@ -1191,7 +1191,7 @@ static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL
     }
 
     if (ctx->last_state.simple.rgucButtonsHatAndCounter[2] != packet->rgucButtonsHatAndCounter[2]) {
-        Uint8 data = (packet->rgucButtonsHatAndCounter[2] & 0x03);
+        uint8_t data = (packet->rgucButtonsHatAndCounter[2] & 0x03);
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS5_TOUCHPAD, ((data & 0x02) != 0));
@@ -1221,13 +1221,13 @@ static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL
     SDL_memcpy(&ctx->last_state.simple, packet, sizeof(ctx->last_state.simple));
 }
 
-static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacketCommon_t *packet, Uint64 timestamp)
+static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacketCommon_t *packet, uint64_t timestamp)
 {
-    Sint16 axis;
+    int16_t axis;
 
     if (ctx->last_state.state.rgucButtonsAndHat[0] != packet->rgucButtonsAndHat[0]) {
         {
-            Uint8 data = (packet->rgucButtonsAndHat[0] >> 4);
+            uint8_t data = (packet->rgucButtonsAndHat[0] >> 4);
 
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data & 0x01) != 0));
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data & 0x02) != 0));
@@ -1235,8 +1235,8 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data & 0x08) != 0));
         }
         {
-            Uint8 data = (packet->rgucButtonsAndHat[0] & 0x0F);
-            Uint8 hat;
+            uint8_t data = (packet->rgucButtonsAndHat[0] & 0x0F);
+            uint8_t hat;
 
             switch (data) {
             case 0:
@@ -1272,7 +1272,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
     }
 
     if (ctx->last_state.state.rgucButtonsAndHat[1] != packet->rgucButtonsAndHat[1]) {
-        Uint8 data = packet->rgucButtonsAndHat[1];
+        uint8_t data = packet->rgucButtonsAndHat[1];
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data & 0x02) != 0));
@@ -1283,7 +1283,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
     }
 
     if (ctx->last_state.state.rgucButtonsAndHat[2] != packet->rgucButtonsAndHat[2]) {
-        Uint8 data = packet->rgucButtonsAndHat[2];
+        uint8_t data = packet->rgucButtonsAndHat[2];
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS5_TOUCHPAD, ((data & 0x02) != 0));
@@ -1316,13 +1316,13 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
     if (ctx->report_sensors) {
-        Uint64 sensor_timestamp;
+        uint64_t sensor_timestamp;
         float data[3];
 
         if (ctx->use_alternate_report) {
             // 16-bit timestamp
-            Uint32 delta;
-            Uint16 tick = LOAD16(packet->rgucSensorTimestamp[0],
+            uint32_t delta;
+            uint16_t tick = LOAD16(packet->rgucSensorTimestamp[0],
                                  packet->rgucSensorTimestamp[1]);
             if (ctx->last_tick < tick) {
                 delta = (tick - ctx->last_tick);
@@ -1336,8 +1336,8 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
             sensor_timestamp = SDL_US_TO_NS(ctx->sensor_ticks);
         } else {
             // 32-bit timestamp
-            Uint32 delta;
-            Uint32 tick = LOAD32(packet->rgucSensorTimestamp[0],
+            uint32_t delta;
+            uint32_t tick = LOAD32(packet->rgucSensorTimestamp[0],
                                  packet->rgucSensorTimestamp[1],
                                  packet->rgucSensorTimestamp[2],
                                  packet->rgucSensorTimestamp[3]);
@@ -1365,7 +1365,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
     }
 }
 
-static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacket_t *packet, Uint64 timestamp)
+static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacket_t *packet, uint64_t timestamp)
 {
     static const float TOUCHPAD_SCALEX = 1.0f / 1920;
     static const float TOUCHPAD_SCALEY = 1.0f / 1070;
@@ -1387,8 +1387,8 @@ static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     if (ctx->report_battery) {
         SDL_PowerState state;
         int percent;
-        Uint8 status = (packet->ucBatteryLevel >> 4) & 0x0F;
-        Uint8 level = (packet->ucBatteryLevel & 0x0F);
+        uint8_t status = (packet->ucBatteryLevel >> 4) & 0x0F;
+        uint8_t level = (packet->ucBatteryLevel & 0x0F);
 
         switch (status) {
         case 0:
@@ -1414,7 +1414,7 @@ static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
 }
 
-static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacketAlt_t *packet, Uint64 timestamp)
+static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacketAlt_t *packet, uint64_t timestamp)
 {
     static const float TOUCHPAD_SCALEX = 1.0f / 1920;
     static const float TOUCHPAD_SCALEY = 1.0f / 1070;
@@ -1436,11 +1436,11 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
 }
 
-static bool VerifyCRC(Uint8 *data, int size)
+static bool VerifyCRC(uint8_t *data, int size)
 {
-    Uint8 ubHdr = 0xA1; // hidp header is part of the CRC calculation
-    Uint32 unCRC, unPacketCRC;
-    Uint8 *packetCRC = data + size - sizeof(unPacketCRC);
+    uint8_t ubHdr = 0xA1; // hidp header is part of the CRC calculation
+    uint32_t unCRC, unPacketCRC;
+    uint8_t *packetCRC = data + size - sizeof(unPacketCRC);
     unCRC = SDL_crc32(0, &ubHdr, 1);
     unCRC = SDL_crc32(unCRC, data, (size_t)(size - sizeof(unCRC)));
 
@@ -1451,7 +1451,7 @@ static bool VerifyCRC(Uint8 *data, int size)
     return (unCRC == unPacketCRC);
 }
 
-static bool HIDAPI_DriverPS5_IsPacketValid(SDL_DriverPS5_Context *ctx, Uint8 *data, int size)
+static bool HIDAPI_DriverPS5_IsPacketValid(SDL_DriverPS5_Context *ctx, uint8_t *data, int size)
 {
     switch (data[0]) {
     case k_EPS5ReportIdState:
@@ -1486,17 +1486,17 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     SDL_Joystick *joystick = NULL;
-    Uint8 data[USB_PACKET_LENGTH * 2];
+    uint8_t data[USB_PACKET_LENGTH * 2];
     int size;
     int packet_count = 0;
-    Uint64 now = SDL_GetTicks();
+    uint64_t now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
         joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     }
 
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
-        Uint64 timestamp = SDL_GetTicksNS();
+        uint64_t timestamp = SDL_GetTicksNS();
 
 #ifdef DEBUG_PS5_PROTOCOL
         HIDAPI_DumpPacket("PS5 packet: size = %d", data, size);

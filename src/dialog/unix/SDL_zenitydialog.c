@@ -40,7 +40,7 @@ typedef struct
     const char* filename;
     const SDL_DialogFileFilter *filters;
     int nfilters;
-    Uint32 flags;
+    uint32_t flags;
 } zenityArgs;
 
 #define CLEAR_AND_RETURN()                                                    \

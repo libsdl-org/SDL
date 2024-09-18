@@ -30,7 +30,7 @@ static int SDLCALL properties_testBasic(void *arg)
     SDL_PropertyType type;
     void *value;
     const char *value_string;
-    Sint64 value_number;
+    int64_t value_number;
     float value_float;
     bool value_bool;
     int i, result, count;

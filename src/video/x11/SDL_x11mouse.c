@@ -128,8 +128,8 @@ static Cursor X11_CreatePixmapCursor(SDL_Surface *surface, int hot_x, int hot_y)
     Display *display = GetDisplay();
     XColor fg, bg;
     Cursor cursor = None;
-    Uint32 *ptr;
-    Uint8 *data_bits, *mask_bits;
+    uint32_t *ptr;
+    uint8_t *data_bits, *mask_bits;
     Pixmap data_pixmap, mask_pixmap;
     int x, y;
     unsigned int rfg, gfg, bfg, rbg, gbg, bbg, fgBits, bgBits;
@@ -151,7 +151,7 @@ static Cursor X11_CreatePixmapCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
     rfg = gfg = bfg = rbg = gbg = bbg = fgBits = bgBits = 0;
     for (y = 0; y < surface->h; ++y) {
-        ptr = (Uint32 *)((Uint8 *)surface->pixels + y * surface->pitch);
+        ptr = (uint32_t *)((uint8_t *)surface->pixels + y * surface->pitch);
         for (x = 0; x < surface->w; ++x) {
             int alpha = (*ptr >> 24) & 0xff;
             int red = (*ptr >> 16) & 0xff;

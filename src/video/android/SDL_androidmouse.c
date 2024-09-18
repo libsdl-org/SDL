@@ -189,7 +189,7 @@ void Android_QuitMouse(void)
 }
 
 // Translate Android mouse button state to SDL mouse button
-static Uint8 TranslateButton(int state)
+static uint8_t TranslateButton(int state)
 {
     if (state & BUTTON_PRIMARY) {
         return SDL_BUTTON_LEFT;
@@ -209,7 +209,7 @@ static Uint8 TranslateButton(int state)
 void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y, bool relative)
 {
     int changes;
-    Uint8 button;
+    uint8_t button;
 
     if (!window) {
         return;

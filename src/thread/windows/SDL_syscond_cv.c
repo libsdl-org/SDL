@@ -27,7 +27,7 @@ typedef SDL_Condition *(*pfnSDL_CreateCondition)(void);
 typedef void (*pfnSDL_DestroyCondition)(SDL_Condition *);
 typedef void (*pfnSDL_SignalCondition)(SDL_Condition *);
 typedef void (*pfnSDL_BroadcastCondition)(SDL_Condition *);
-typedef bool (*pfnSDL_WaitConditionTimeoutNS)(SDL_Condition *, SDL_Mutex *, Sint64);
+typedef bool (*pfnSDL_WaitConditionTimeoutNS)(SDL_Condition *, SDL_Mutex *, int64_t);
 
 typedef struct SDL_cond_impl_t
 {
@@ -95,7 +95,7 @@ static void SDL_BroadcastCondition_cv(SDL_Condition *_cond)
     pWakeAllConditionVariable(&cond->cond);
 }
 
-static bool SDL_WaitConditionTimeoutNS_cv(SDL_Condition *_cond, SDL_Mutex *_mutex, Sint64 timeoutNS)
+static bool SDL_WaitConditionTimeoutNS_cv(SDL_Condition *_cond, SDL_Mutex *_mutex, int64_t timeoutNS)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
     DWORD timeout;
@@ -216,7 +216,7 @@ void SDL_BroadcastCondition(SDL_Condition *cond)
     SDL_cond_impl_active.Broadcast(cond);
 }
 
-bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, int64_t timeoutNS)
 {
     if (!cond || !mutex) {
         return true;

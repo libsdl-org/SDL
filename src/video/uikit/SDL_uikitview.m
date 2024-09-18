@@ -239,7 +239,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
                     for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
                         if (event.buttonMask & SDL_BUTTON(i)) {
-                            Uint8 button;
+                            uint8_t button;
 
                             switch (i) {
                             case 1:
@@ -252,7 +252,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                                 button = SDL_BUTTON_MIDDLE;
                                 break;
                             default:
-                                button = (Uint8)i;
+                                button = (uint8_t)i;
                                 break;
                             }
                             SDL_SendMouseButton(UIKit_GetEventTimestamp([event timestamp]), sdlwindow, SDL_GLOBAL_MOUSE_ID, button, true);
@@ -295,7 +295,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
                     for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
                         if (event.buttonMask & SDL_BUTTON(i)) {
-                            Uint8 button;
+                            uint8_t button;
 
                             switch (i) {
                             case 1:
@@ -308,7 +308,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                                 button = SDL_BUTTON_MIDDLE;
                                 break;
                             default:
-                                button = (Uint8)i;
+                                button = (uint8_t)i;
                                 break;
                             }
                             SDL_SendMouseButton(UIKit_GetEventTimestamp([event timestamp]), sdlwindow, SDL_GLOBAL_MOUSE_ID, button, false);

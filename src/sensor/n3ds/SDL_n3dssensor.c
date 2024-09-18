@@ -146,7 +146,7 @@ static void UpdateN3DSAccelerometer(SDL_Sensor *sensor)
     static accelVector previous_state = { 0, 0, 0 };
     accelVector current_state;
     float data[3];
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     hidAccelRead(&current_state);
     if (SDL_memcmp(&previous_state, &current_state, sizeof(accelVector)) != 0) {
@@ -163,7 +163,7 @@ static void UpdateN3DSGyroscope(SDL_Sensor *sensor)
     static angularRate previous_state = { 0, 0, 0 };
     angularRate current_state;
     float data[3];
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     hidGyroRead(&current_state);
     if (SDL_memcmp(&previous_state, &current_state, sizeof(angularRate)) != 0) {

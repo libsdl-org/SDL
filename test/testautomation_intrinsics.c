@@ -19,13 +19,13 @@
 
 /* Helper functions */
 
-static int allocate_random_int_arrays(Sint32 **dest, Sint32 **a, Sint32 **b, size_t *size) {
+static int allocate_random_int_arrays(int32_t **dest, int32_t **a, int32_t **b, size_t *size) {
     size_t i;
 
     *size = (size_t)SDLTest_RandomIntegerInRange(127, 999);
-    *dest = SDL_malloc(sizeof(Sint32) * *size);
-    *a = SDL_malloc(sizeof(Sint32) * *size);
-    *b = SDL_malloc(sizeof(Sint32) * *size);
+    *dest = SDL_malloc(sizeof(int32_t) * *size);
+    *a = SDL_malloc(sizeof(int32_t) * *size);
+    *b = SDL_malloc(sizeof(int32_t) * *size);
 
     if (!*dest || !*a || !*b) {
         SDLTest_AssertCheck(false, "SDL_malloc failed");
@@ -90,15 +90,15 @@ static void free_arrays(void *dest, void *a, void *b) {
 /**
  * Verify element-wise addition of 2 int arrays.
  */
-static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size, const char *desc) {
+static void verify_ints_addition(const int32_t *dest, const int32_t *a, const int32_t *b, size_t size, const char *desc) {
     size_t i;
     int all_good = 1;
 
     for (i = 0; i < size; ++i) {
-        Sint32 expected = a[i] + b[i];
+        int32_t expected = a[i] + b[i];
         if (dest[i] != expected) {
             SDLTest_AssertCheck(false, "%" SDL_PRIs32 " + %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
-                                a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
+                                a[i], b[i], dest[i], expected, (uint32_t)i, (uint32_t)size, desc);
             all_good = 0;
         }
     }
@@ -110,15 +110,15 @@ static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint
 /**
  * Verify element-wise multiplication of 2 int arrays.
  */
-static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size, const char *desc) {
+static void verify_ints_multiplication(const int32_t *dest, const int32_t *a, const int32_t *b, size_t size, const char *desc) {
     size_t i;
     int all_good = 1;
 
     for (i = 0; i < size; ++i) {
-        Sint32 expected = a[i] * b[i];
+        int32_t expected = a[i] * b[i];
         if (dest[i] != expected) {
             SDLTest_AssertCheck(false, "%" SDL_PRIs32 " * %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
-                                a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
+                                a[i], b[i], dest[i], expected, (uint32_t)i, (uint32_t)size, desc);
             all_good = 0;
         }
     }
@@ -139,7 +139,7 @@ static void verify_floats_addition(const float *dest, const float *a, const floa
         float abs_error = SDL_fabsf(dest[i] - expected);
         if (abs_error > 1.0e-5f) {
             SDLTest_AssertCheck(false, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
-                                a[i], b[i], dest[i], expected, abs_error, (Uint32) i, (Uint32) size, desc);
+                                a[i], b[i], dest[i], expected, abs_error, (uint32_t) i, (uint32_t) size, desc);
             all_good = 0;
         }
     }
@@ -160,7 +160,7 @@ static void verify_doubles_addition(const double *dest, const double *a, const d
         double abs_error = SDL_fabs(dest[i] - expected);
         if (abs_error > 1.0e-5) {
             SDLTest_AssertCheck(abs_error < 1.0e-5f, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
-                                a[i], b[i], dest[i], expected, abs_error, (Uint32) i, (Uint32) size, desc);
+                                a[i], b[i], dest[i], expected, abs_error, (uint32_t) i, (uint32_t) size, desc);
             all_good = false;
         }
     }
@@ -171,13 +171,13 @@ static void verify_doubles_addition(const double *dest, const double *a, const d
 
 /* Intrinsic kernels */
 
-static void kernel_ints_add_cpu(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+static void kernel_ints_add_cpu(int32_t *dest, const int32_t *a, const int32_t *b, size_t size) {
     for (; size; --size, ++dest, ++a, ++b) {
         *dest = *a + *b;
     }
 }
 
-static void kernel_ints_mul_cpu(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+static void kernel_ints_mul_cpu(int32_t *dest, const int32_t *a, const int32_t *b, size_t size) {
     for (; size; --size, ++dest, ++a, ++b) {
         *dest = *a * *b;
     }
@@ -196,7 +196,7 @@ static void kernel_doubles_add_cpu(double *dest, const double *a, const double *
 }
 
 #ifdef SDL_MMX_INTRINSICS
-SDL_TARGETING("mmx") static void kernel_ints_add_mmx(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+SDL_TARGETING("mmx") static void kernel_ints_add_mmx(int32_t *dest, const int32_t *a, const int32_t *b, size_t size) {
     for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
         *(__m64*)dest = _mm_add_pi32(*(__m64*)a, *(__m64*)b);
     }
@@ -230,7 +230,7 @@ SDL_TARGETING("sse2") static void kernel_doubles_add_sse2(double *dest, const do
 #endif
 
 #ifdef SDL_SSE3_INTRINSICS
-SDL_TARGETING("sse3") static void kernel_ints_add_sse3(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+SDL_TARGETING("sse3") static void kernel_ints_add_sse3(int32_t *dest, const int32_t *a, const int32_t *b, size_t size) {
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
         _mm_storeu_si128((__m128i*)dest, _mm_add_epi32(_mm_lddqu_si128((__m128i*)a), _mm_lddqu_si128((__m128i*)b)));
     }
@@ -241,7 +241,7 @@ SDL_TARGETING("sse3") static void kernel_ints_add_sse3(Sint32 *dest, const Sint3
 #endif
 
 #ifdef SDL_SSE4_1_INTRINSICS
-SDL_TARGETING("sse4.1") static void kernel_ints_mul_sse4_1(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+SDL_TARGETING("sse4.1") static void kernel_ints_mul_sse4_1(int32_t *dest, const int32_t *a, const int32_t *b, size_t size) {
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
         _mm_storeu_si128((__m128i*)dest, _mm_mullo_epi32(_mm_lddqu_si128((__m128i*)a), _mm_lddqu_si128((__m128i*)b)));
     }
@@ -252,31 +252,31 @@ SDL_TARGETING("sse4.1") static void kernel_ints_mul_sse4_1(Sint32 *dest, const S
 #endif
 
 #ifdef SDL_SSE4_2_INTRINSICS
-SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) {
-    Uint32 crc32c = ~0u;
+SDL_TARGETING("sse4.2") static uint32_t calculate_crc32c_sse4_2(const char *text) {
+    uint32_t crc32c = ~0u;
     size_t len = SDL_strlen(text);
 
 #if defined(__x86_64__) || defined(_M_X64)
     for (; len >= 8; len -= 8, text += 8) {
-        crc32c = (Uint32)_mm_crc32_u64(crc32c, *(Sint64*)text);
+        crc32c = (uint32_t)_mm_crc32_u64(crc32c, *(int64_t*)text);
     }
     if (len >= 4) {
-        crc32c = (Uint32)_mm_crc32_u32(crc32c, *(Sint32*)text);
+        crc32c = (uint32_t)_mm_crc32_u32(crc32c, *(int32_t*)text);
         len -= 4;
         text += 4;
     }
 #else
     for (; len >= 4; len -= 4, text += 4) {
-        crc32c = (Uint32)_mm_crc32_u32(crc32c, *(Sint32*)text);
+        crc32c = (uint32_t)_mm_crc32_u32(crc32c, *(int32_t*)text);
     }
 #endif
     if (len >= 2) {
-        crc32c = (Uint32)_mm_crc32_u16(crc32c, *(Sint16*)text);
+        crc32c = (uint32_t)_mm_crc32_u16(crc32c, *(int16_t*)text);
         len -= 2;
         text += 2;
     }
     if (len) {
-        crc32c = (Uint32)_mm_crc32_u8(crc32c, *text);
+        crc32c = (uint32_t)_mm_crc32_u8(crc32c, *text);
     }
     return ~crc32c;
 }
@@ -294,7 +294,7 @@ SDL_TARGETING("avx") static void kernel_floats_add_avx(float *dest, const float 
 #endif
 
 #ifdef SDL_AVX2_INTRINSICS
-SDL_TARGETING("avx2") static void kernel_ints_add_avx2(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+SDL_TARGETING("avx2") static void kernel_ints_add_avx2(int32_t *dest, const int32_t *a, const int32_t *b, size_t size) {
     for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
         _mm256_storeu_si256((__m256i*)dest, _mm256_add_epi32(_mm256_loadu_si256((__m256i*)a), _mm256_loadu_si256((__m256i*)b)));
     }
@@ -321,7 +321,7 @@ static int SDLCALL intrinsics_selftest(void *arg)
 {
     {
         size_t size;
-        Sint32 *dest, *a, *b;
+        int32_t *dest, *a, *b;
         if (allocate_random_int_arrays(&dest, &a, &b, &size) < 0) {
             return TEST_ABORTED;
         }
@@ -331,7 +331,7 @@ static int SDLCALL intrinsics_selftest(void *arg)
     }
     {
         size_t size;
-        Sint32 *dest, *a, *b;
+        int32_t *dest, *a, *b;
         if (allocate_random_int_arrays(&dest, &a, &b, &size) < 0) {
             return TEST_ABORTED;
         }
@@ -369,7 +369,7 @@ static int SDLCALL intrinsics_testMMX(void *arg)
 #ifdef SDL_MMX_INTRINSICS
         {
             size_t size;
-            Sint32 *dest, *a, *b;
+            int32_t *dest, *a, *b;
 
             SDLTest_AssertCheck(true, "Test executable uses MMX intrinsics.");
             if (allocate_random_int_arrays(&dest, &a, &b, &size) < 0) {
@@ -453,7 +453,7 @@ static int SDLCALL intrinsics_testSSE3(void *arg)
 #ifdef SDL_SSE3_INTRINSICS
         {
             size_t size;
-            Sint32 *dest, *a, *b;
+            int32_t *dest, *a, *b;
 
             SDLTest_AssertCheck(true, "Test executable uses SSE3 intrinsics.");
             if (allocate_random_int_arrays(&dest, &a, &b, &size) < 0) {
@@ -481,7 +481,7 @@ static int SDLCALL intrinsics_testSSE4_1(void *arg)
 #ifdef SDL_SSE4_1_INTRINSICS
         {
             size_t size;
-            Sint32 *dest, *a, *b;
+            int32_t *dest, *a, *b;
 
             SDLTest_AssertCheck(true, "Test executable uses SSE4.1 intrinsics.");
             if (allocate_random_int_arrays(&dest, &a, &b, &size) < 0) {
@@ -510,7 +510,7 @@ static int SDLCALL intrinsics_testSSE4_2(void *arg)
         {
             struct {
                 const char *input;
-                Uint32 crc32c;
+                uint32_t crc32c;
             } references[] = {
                 {"", 0x00000000},
                 {"Hello world", 0x72b51f78},
@@ -521,7 +521,7 @@ static int SDLCALL intrinsics_testSSE4_2(void *arg)
             SDLTest_AssertCheck(true, "Test executable uses SSE4.2 intrinsics.");
 
             for (i = 0; i < SDL_arraysize(references); ++i) {
-                Uint32 actual = calculate_crc32c_sse4_2(references[i].input);
+                uint32_t actual = calculate_crc32c_sse4_2(references[i].input);
                 SDLTest_AssertCheck(actual == references[i].crc32c, "CRC32-C(\"%s\")=0x%08x, got 0x%08x",
                                     references[i].input, references[i].crc32c, actual);
             }
@@ -572,7 +572,7 @@ static int SDLCALL intrinsics_testAVX2(void *arg)
 #ifdef SDL_AVX2_INTRINSICS
         {
             size_t size;
-            Sint32 *dest, *a, *b;
+            int32_t *dest, *a, *b;
 
             SDLTest_AssertCheck(true, "Test executable uses AVX2 intrinsics.");
             if (allocate_random_int_arrays(&dest, &a, &b, &size) < 0) {

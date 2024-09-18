@@ -91,7 +91,7 @@ struct SDL_Texture
     SDL_Rect locked_rect;
     SDL_Surface *locked_surface; /**< Locked region exposed as a SDL surface */
 
-    Uint32 last_command_generation; // last command queue generation this texture was in.
+    uint32_t last_command_generation; // last command queue generation this texture was in.
 
     SDL_PropertiesID props;
 
@@ -197,13 +197,13 @@ struct SDL_Renderer
 #if SDL_HAVE_YUV
     bool (*UpdateTextureYUV)(SDL_Renderer *renderer, SDL_Texture *texture,
                             const SDL_Rect *rect,
-                            const Uint8 *Yplane, int Ypitch,
-                            const Uint8 *Uplane, int Upitch,
-                            const Uint8 *Vplane, int Vpitch);
+                            const uint8_t *Yplane, int Ypitch,
+                            const uint8_t *Uplane, int Upitch,
+                            const uint8_t *Vplane, int Vpitch);
     bool (*UpdateTextureNV)(SDL_Renderer *renderer, SDL_Texture *texture,
                            const SDL_Rect *rect,
-                           const Uint8 *Yplane, int Ypitch,
-                           const Uint8 *UVplane, int UVpitch);
+                           const uint8_t *Yplane, int Ypitch,
+                           const uint8_t *UVplane, int UVpitch);
 #endif
     bool (*LockTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                        const SDL_Rect *rect, void **pixels, int *pitch);
@@ -221,7 +221,7 @@ struct SDL_Renderer
     void *(*GetMetalLayer)(SDL_Renderer *renderer);
     void *(*GetMetalCommandEncoder)(SDL_Renderer *renderer);
 
-    bool (*AddVulkanRenderSemaphores)(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore);
+    bool (*AddVulkanRenderSemaphores)(SDL_Renderer *renderer, uint32_t wait_stage_mask, int64_t wait_semaphore, int64_t signal_semaphore);
 
     // The current renderer info
     const char *name;
@@ -236,8 +236,8 @@ struct SDL_Renderer
     // Whether we should simulate vsync
     bool wanted_vsync;
     bool simulate_vsync;
-    Uint64 simulate_vsync_interval_ns;
-    Uint64 last_present;
+    uint64_t simulate_vsync_interval_ns;
+    uint64_t last_present;
 
     // Support for logical output coordinates
     SDL_Texture *logical_target;
@@ -276,7 +276,7 @@ struct SDL_Renderer
     SDL_RenderCommand *render_commands;
     SDL_RenderCommand *render_commands_tail;
     SDL_RenderCommand *render_commands_pool;
-    Uint32 render_command_generation;
+    uint32_t render_command_generation;
     SDL_FColor last_queued_color;
     float last_queued_color_scale;
     SDL_Rect last_queued_viewport;

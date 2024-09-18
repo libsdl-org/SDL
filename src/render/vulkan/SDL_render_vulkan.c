@@ -426,7 +426,7 @@ static VkDeviceSize VULKAN_GetBytesPerPixel(VkFormat vkFormat)
     }
 }
 
-static VkFormat SDLPixelFormatToVkTextureFormat(Uint32 format, Uint32 output_colorspace)
+static VkFormat SDLPixelFormatToVkTextureFormat(uint32_t format, uint32_t output_colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
@@ -1046,7 +1046,7 @@ static VkResult VULKAN_IssueBatch(VULKAN_RenderData *rendererData)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &rendererData->currentCommandBuffer;
     if (rendererData->waitRenderSemaphoreCount > 0) {
-        Uint32 additionalSemaphoreCount = (rendererData->currentImageAvailableSemaphore != VK_NULL_HANDLE) ? 1 : 0;
+        uint32_t additionalSemaphoreCount = (rendererData->currentImageAvailableSemaphore != VK_NULL_HANDLE) ? 1 : 0;
         submitInfo.waitSemaphoreCount = rendererData->waitRenderSemaphoreCount + additionalSemaphoreCount;
         if (additionalSemaphoreCount > 0) {
             rendererData->waitRenderSemaphores[rendererData->waitRenderSemaphoreCount] = rendererData->currentImageAvailableSemaphore;
@@ -1952,7 +1952,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
 
     SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_VULKAN_INSTANCE_POINTER, rendererData->instance);
-    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_VULKAN_SURFACE_NUMBER, (Sint64)rendererData->surface);
+    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_VULKAN_SURFACE_NUMBER, (int64_t)rendererData->surface);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_VULKAN_PHYSICAL_DEVICE_POINTER, rendererData->physicalDevice);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_VULKAN_DEVICE_POINTER, rendererData->device);
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_VULKAN_GRAPHICS_QUEUE_FAMILY_INDEX_NUMBER, rendererData->graphicsQueueFamilyIndex);
@@ -2658,7 +2658,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     }
 
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, (Sint64)textureData->mainImage.image);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, (int64_t)textureData->mainImage.image);
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         result = VULKAN_CreateFramebuffersAndRenderPasses(renderer,
@@ -2734,8 +2734,8 @@ static VkResult VULKAN_UpdateTextureInternal(VULKAN_RenderData *rendererData, Vk
     VkDeviceSize pixelSize = VULKAN_GetBytesPerPixel(format);
     VkDeviceSize length = w * pixelSize;
     VkDeviceSize uploadBufferSize = length * h;
-    const Uint8 *src;
-    Uint8 *dst;
+    const uint8_t *src;
+    uint8_t *dst;
     VkResult result;
     int planeCount = VULKAN_VkFormatGetNumPlanes(format);
 
@@ -2754,8 +2754,8 @@ static VkResult VULKAN_UpdateTextureInternal(VULKAN_RenderData *rendererData, Vk
         return result;
     }
 
-    src = (const Uint8 *)pixels;
-    dst = (Uint8 *)uploadBuffer->mappedBufferPtr;
+    src = (const uint8_t *)pixels;
+    dst = (uint8_t *)uploadBuffer->mappedBufferPtr;
     if (length == (VkDeviceSize)pitch) {
         SDL_memcpy(dst, src, (size_t)length * h);
     } else {
@@ -2837,18 +2837,18 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return false;
     }
 #if SDL_HAVE_YUV
-    Uint32 numPlanes = VULKAN_VkFormatGetNumPlanes(textureData->mainImage.format);
+    uint32_t numPlanes = VULKAN_VkFormatGetNumPlanes(textureData->mainImage.format);
     // Skip to the correct offset into the next texture
-    srcPixels = (const void *)((const Uint8 *)srcPixels + rect->h * srcPitch);
+    srcPixels = (const void *)((const uint8_t *)srcPixels + rect->h * srcPitch);
     // YUV data
     if (numPlanes == 3) {
-        for (Uint32 plane = 1; plane < numPlanes; plane++) {
+        for (uint32_t plane = 1; plane < numPlanes; plane++) {
             if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, plane, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2, &textureData->mainImage.imageLayout)) {
                 return false;
             }
 
             // Skip to the correct offset into the next texture
-            srcPixels = (const void *)((const Uint8 *)srcPixels + ((rect->h + 1) / 2) * ((srcPitch + 1) / 2));
+            srcPixels = (const void *)((const uint8_t *)srcPixels + ((rect->h + 1) / 2) * ((srcPitch + 1) / 2));
         }
     }
     // NV12/NV21 data
@@ -2871,9 +2871,9 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 #if SDL_HAVE_YUV
 static bool VULKAN_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *Uplane, int Upitch,
-                                  const Uint8 *Vplane, int Vpitch)
+                                  const uint8_t *Yplane, int Ypitch,
+                                  const uint8_t *Uplane, int Upitch,
+                                  const uint8_t *Vplane, int Vpitch)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
@@ -2896,8 +2896,8 @@ static bool VULKAN_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture
 
 static bool VULKAN_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const SDL_Rect *rect,
-                                 const Uint8 *Yplane, int Ypitch,
-                                 const Uint8 *UVplane, int UVpitch)
+                                 const uint8_t *Yplane, int Ypitch,
+                                 const uint8_t *UVplane, int UVpitch)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
@@ -3119,11 +3119,11 @@ static bool VULKAN_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         int j;
         float *xy_;
         if (size_indices == 4) {
-            j = ((const Uint32 *)indices)[i];
+            j = ((const uint32_t *)indices)[i];
         } else if (size_indices == 2) {
-            j = ((const Uint16 *)indices)[i];
+            j = ((const uint16_t *)indices)[i];
         } else if (size_indices == 1) {
-            j = ((const Uint8 *)indices)[i];
+            j = ((const uint8_t *)indices)[i];
         } else {
             j = i;
         }
@@ -3791,7 +3791,7 @@ static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cm
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(VULKAN_VertexPositionColor);
-            const VULKAN_VertexPositionColor *verts = (VULKAN_VertexPositionColor *)(((Uint8 *)vertices) + first);
+            const VULKAN_VertexPositionColor *verts = (VULKAN_VertexPositionColor *)(((uint8_t *)vertices) + first);
             VULKAN_SetDrawState(renderer, cmd, SHADER_SOLID, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, VK_NULL_HANDLE, VK_NULL_HANDLE, NULL, &stateCache);
             VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, start, count);
             if (verts[0].pos[0] != verts[count - 1].pos[0] || verts[0].pos[1] != verts[count - 1].pos[1]) {
@@ -3932,7 +3932,7 @@ static SDL_Surface* VULKAN_RenderReadPixels(SDL_Renderer *renderer, const SDL_Re
     return output;
 }
 
-static bool VULKAN_AddVulkanRenderSemaphores(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore)
+static bool VULKAN_AddVulkanRenderSemaphores(SDL_Renderer *renderer, uint32_t wait_stage_mask, int64_t wait_semaphore, int64_t signal_semaphore)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
 
@@ -4004,7 +4004,7 @@ static bool VULKAN_RenderPresent(SDL_Renderer *renderer)
         VkSubmitInfo submitInfo = { 0 };
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         if (rendererData->waitRenderSemaphoreCount > 0) {
-            Uint32 additionalSemaphoreCount = (rendererData->currentImageAvailableSemaphore != VK_NULL_HANDLE) ? 1 : 0;
+            uint32_t additionalSemaphoreCount = (rendererData->currentImageAvailableSemaphore != VK_NULL_HANDLE) ? 1 : 0;
             submitInfo.waitSemaphoreCount = rendererData->waitRenderSemaphoreCount + additionalSemaphoreCount;
             if (additionalSemaphoreCount > 0) {
                 rendererData->waitRenderSemaphores[rendererData->waitRenderSemaphoreCount] = rendererData->currentImageAvailableSemaphore;

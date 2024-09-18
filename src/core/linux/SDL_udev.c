@@ -219,7 +219,7 @@ bool SDL_UDEV_Scan(void)
     return true;
 }
 
-bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class)
+bool SDL_UDEV_GetProductInfo(const char *device_path, uint16_t *vendor, uint16_t *product, uint16_t *version, int *class)
 {
     struct stat statbuf;
     char type;
@@ -253,17 +253,17 @@ bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *pr
 
     val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
     if (val) {
-        *vendor = (Uint16)SDL_strtol(val, NULL, 16);
+        *vendor = (uint16_t)SDL_strtol(val, NULL, 16);
     }
 
     val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
     if (val) {
-        *product = (Uint16)SDL_strtol(val, NULL, 16);
+        *product = (uint16_t)SDL_strtol(val, NULL, 16);
     }
 
     val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
     if (val) {
-        *version = (Uint16)SDL_strtol(val, NULL, 16);
+        *version = (uint16_t)SDL_strtol(val, NULL, 16);
     }
 
     class_temp = device_class(dev);

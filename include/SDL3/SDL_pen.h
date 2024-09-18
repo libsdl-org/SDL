@@ -57,7 +57,7 @@ extern "C" {
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_PenID;
+typedef uint32_t SDL_PenID;
 
 
 /**
@@ -65,7 +65,7 @@ typedef Uint32 SDL_PenID;
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_PenInputFlags;
+typedef uint32_t SDL_PenInputFlags;
 
 #define SDL_PEN_INPUT_DOWN       (1u << 0)  /**< pen is pressed down */
 #define SDL_PEN_INPUT_BUTTON_1   (1u << 1)  /**< button 1 is pressed */

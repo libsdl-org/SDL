@@ -412,7 +412,7 @@ SDL_Thread *SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *nam
     SDL_SetPointerProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, (void *) fn);
     SDL_SetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, name);
     SDL_SetPointerProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, userdata);
-    SDL_SetNumberProperty(props, SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER, (Sint64) stacksize);
+    SDL_SetNumberProperty(props, SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER, (int64_t) stacksize);
     SDL_Thread *thread = SDL_CreateThreadWithProperties(props);
     SDL_DestroyProperties(props);
     return thread;
@@ -488,9 +488,9 @@ bool SDL_TryWaitSemaphore(SDL_Semaphore *sem)
     return SDL_WaitSemaphoreTimeoutNS(sem, 0);
 }
 
-bool SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sint32 timeoutMS)
+bool SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, int32_t timeoutMS)
 {
-    Sint64 timeoutNS;
+    int64_t timeoutNS;
 
     if (timeoutMS >= 0) {
         timeoutNS = SDL_MS_TO_NS(timeoutMS);
@@ -505,9 +505,9 @@ void SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex *mutex)
     SDL_WaitConditionTimeoutNS(cond, mutex, -1);
 }
 
-bool SDL_WaitConditionTimeout(SDL_Condition *cond, SDL_Mutex *mutex, Sint32 timeoutMS)
+bool SDL_WaitConditionTimeout(SDL_Condition *cond, SDL_Mutex *mutex, int32_t timeoutMS)
 {
-    Sint64 timeoutNS;
+    int64_t timeoutNS;
 
     if (timeoutMS >= 0) {
         timeoutNS = SDL_MS_TO_NS(timeoutMS);

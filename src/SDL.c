@@ -179,10 +179,10 @@ static bool SDL_MainIsReady = false;
 static bool SDL_MainIsReady = true;
 #endif
 static bool SDL_bInMainQuit = false;
-static Uint8 SDL_SubsystemRefCount[32];
+static uint8_t SDL_SubsystemRefCount[32];
 
 // Private helper to increment a subsystem's ref counter.
-static void SDL_IncrementSubsystemRefCount(Uint32 subsystem)
+static void SDL_IncrementSubsystemRefCount(uint32_t subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
@@ -192,7 +192,7 @@ static void SDL_IncrementSubsystemRefCount(Uint32 subsystem)
 }
 
 // Private helper to decrement a subsystem's ref counter.
-static void SDL_DecrementSubsystemRefCount(Uint32 subsystem)
+static void SDL_DecrementSubsystemRefCount(uint32_t subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] > 0)) {
@@ -205,7 +205,7 @@ static void SDL_DecrementSubsystemRefCount(Uint32 subsystem)
 }
 
 // Private helper to check if a system needs init.
-static bool SDL_ShouldInitSubsystem(Uint32 subsystem)
+static bool SDL_ShouldInitSubsystem(uint32_t subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
@@ -213,7 +213,7 @@ static bool SDL_ShouldInitSubsystem(Uint32 subsystem)
 }
 
 // Private helper to check if a system needs to be quit.
-static bool SDL_ShouldQuitSubsystem(Uint32 subsystem)
+static bool SDL_ShouldQuitSubsystem(uint32_t subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 0)) {
@@ -228,7 +228,7 @@ static bool SDL_ShouldQuitSubsystem(Uint32 subsystem)
 
 /* Private helper to either increment's existing ref counter,
  * or fully init a new subsystem. */
-static bool SDL_InitOrIncrementSubsystem(Uint32 subsystem)
+static bool SDL_InitOrIncrementSubsystem(uint32_t subsystem)
 {
     int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
@@ -266,7 +266,7 @@ static void SDL_QuitMainThread(void)
 
 bool SDL_InitSubSystem(SDL_InitFlags flags)
 {
-    Uint32 flags_initialized = 0;
+    uint32_t flags_initialized = 0;
 
     if (!SDL_MainIsReady) {
         return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
@@ -560,11 +560,11 @@ void SDL_QuitSubSystem(SDL_InitFlags flags)
     }
 }
 
-Uint32 SDL_WasInit(SDL_InitFlags flags)
+uint32_t SDL_WasInit(SDL_InitFlags flags)
 {
     int i;
     int num_subsystems = SDL_arraysize(SDL_SubsystemRefCount);
-    Uint32 initialized = 0;
+    uint32_t initialized = 0;
 
     // Fast path for checking one flag
     if (SDL_HasExactlyOneBitSet32(flags)) {

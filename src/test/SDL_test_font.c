@@ -3142,21 +3142,21 @@ static struct SDLTest_CharTextureCache *SDLTest_CharTextureCacheList;
 
 int FONT_CHARACTER_SIZE = 8;
 
-bool SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
+bool SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, uint32_t c)
 {
-    const Uint32 charWidth = FONT_CHARACTER_SIZE;
-    const Uint32 charHeight = FONT_CHARACTER_SIZE;
+    const uint32_t charWidth = FONT_CHARACTER_SIZE;
+    const uint32_t charHeight = FONT_CHARACTER_SIZE;
     SDL_FRect srect;
     SDL_FRect drect;
     bool result;
-    Uint32 ix, iy;
+    uint32_t ix, iy;
     const unsigned char *charpos;
-    Uint32 *curpos;
-    Uint8 *linepos;
-    Uint32 pitch;
+    uint32_t *curpos;
+    uint8_t *linepos;
+    uint32_t pitch;
     SDL_Surface *character;
-    Uint32 ci;
-    Uint8 r, g, b, a;
+    uint32_t ci;
+    uint8_t r, g, b, a;
     struct SDLTest_CharTextureCache *cache;
 
     /*
@@ -3209,14 +3209,14 @@ bool SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
         }
 
         charpos = SDLTest_FontData + ci * 8;
-        linepos = (Uint8 *)character->pixels;
+        linepos = (uint8_t *)character->pixels;
         pitch = character->pitch;
 
         /*
          * Drawing loop
          */
         for (iy = 0; iy < charWidth; iy++) {
-            curpos = (Uint32 *)linepos;
+            curpos = (uint32_t *)linepos;
             for (ix = 0; ix < charWidth; ix++) {
                 if ((*charpos) & (1 << ix)) {
                     *curpos = 0xffffffff;
@@ -3262,14 +3262,14 @@ bool SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
 /* Gets a unicode value from a UTF-8 encoded string
  * Outputs increment to advance the string */
 #define UNKNOWN_UNICODE 0xFFFD
-static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
+static uint32_t UTF8_getch(const char *src, size_t srclen, int *inc)
 {
-    const Uint8 *p = (const Uint8 *)src;
+    const uint8_t *p = (const uint8_t *)src;
     size_t left = 0;
     size_t save_srclen = srclen;
     bool overlong = false;
     bool underflow = false;
-    Uint32 ch = UNKNOWN_UNICODE;
+    uint32_t ch = UNKNOWN_UNICODE;
 
     if (srclen == 0) {
         return UNKNOWN_UNICODE;
@@ -3279,7 +3279,7 @@ static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
             if (p[0] == 0xFC && (p[1] & 0xFC) == 0x80) {
                 overlong = true;
             }
-            ch = (Uint32)(p[0] & 0x01);
+            ch = (uint32_t)(p[0] & 0x01);
             left = 5;
         }
     } else if (p[0] >= 0xF8) {
@@ -3287,7 +3287,7 @@ static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
             if (p[0] == 0xF8 && (p[1] & 0xF8) == 0x80) {
                 overlong = true;
             }
-            ch = (Uint32)(p[0] & 0x03);
+            ch = (uint32_t)(p[0] & 0x03);
             left = 4;
         }
     } else if (p[0] >= 0xF0) {
@@ -3295,7 +3295,7 @@ static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
             if (p[0] == 0xF0 && (p[1] & 0xF0) == 0x80) {
                 overlong = true;
             }
-            ch = (Uint32)(p[0] & 0x07);
+            ch = (uint32_t)(p[0] & 0x07);
             left = 3;
         }
     } else if (p[0] >= 0xE0) {
@@ -3303,7 +3303,7 @@ static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
             if (p[0] == 0xE0 && (p[1] & 0xE0) == 0x80) {
                 overlong = true;
             }
-            ch = (Uint32)(p[0] & 0x0F);
+            ch = (uint32_t)(p[0] & 0x0F);
             left = 2;
         }
     } else if (p[0] >= 0xC0) {
@@ -3311,12 +3311,12 @@ static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
             if ((p[0] & 0xDE) == 0xC0) {
                 overlong = true;
             }
-            ch = (Uint32)(p[0] & 0x1F);
+            ch = (uint32_t)(p[0] & 0x1F);
             left = 1;
         }
     } else {
         if (!(p[0] & 0x80)) {
-            ch = (Uint32)p[0];
+            ch = (uint32_t)p[0];
         }
     }
     --srclen;
@@ -3350,7 +3350,7 @@ static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
 
 bool SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s)
 {
-    const Uint32 charWidth = FONT_CHARACTER_SIZE;
+    const uint32_t charWidth = FONT_CHARACTER_SIZE;
     bool result = true;
     float curx = x;
     float cury = y;
@@ -3358,7 +3358,7 @@ bool SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s)
 
     while (len > 0 && result) {
         int advance = 0;
-        Uint32 ch = UTF8_getch(s, len, &advance);
+        uint32_t ch = UTF8_getch(s, len, &advance);
         result &= SDLTest_DrawCharacter(renderer, curx, cury, ch);
         curx += charWidth;
         s += advance;
@@ -3433,7 +3433,7 @@ void SDLTest_TextWindowAddTextWithLength(SDLTest_TextWindow *textwin, const char
 
     if (*text == '\b') {
         if (existing) {
-            while (existing > 1 && UTF8_IsTrailingByte((Uint8)textwin->lines[textwin->current][existing - 1])) {
+            while (existing > 1 && UTF8_IsTrailingByte((uint8_t)textwin->lines[textwin->current][existing - 1])) {
                 --existing;
             }
             --existing;

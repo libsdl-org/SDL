@@ -42,14 +42,14 @@ enum
 typedef struct SteamControllerStateInternal_t
 {
     // Controller Type for this Controller State
-    Uint32 eControllerType;
+    uint32_t eControllerType;
 
     // If packet num matches that on your prior call, then the controller state hasn't been changed since
     // your last call and there is no need to process it
-    Uint32 unPacketNum;
+    uint32_t unPacketNum;
 
     // bit flags for each of the buttons
-    Uint64 ulButtons;
+    uint64_t ulButtons;
 
     // Left pad coordinates
     short sLeftPadX;
@@ -939,7 +939,7 @@ typedef struct
 {
     bool report_sensors;
     uint32_t update_rate_in_us;
-    Uint64 sensor_timestamp;
+    uint64_t sensor_timestamp;
 
     SteamControllerPacketAssembler m_assembler;
     SteamControllerStateInternal_t m_state;
@@ -961,7 +961,7 @@ static bool HIDAPI_DriverSteam_IsEnabled(void)
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STEAM, false);
 }
 
-static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, uint16_t vendor_id, uint16_t product_id, uint16_t version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return SDL_IsJoystickSteamController(vendor_id, product_id);
 }
@@ -1031,24 +1031,24 @@ static bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     return true;
 }
 
-static bool HIDAPI_DriverSteam_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_DriverSteam_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     // You should use the full Steam Input API for rumble support
     return SDL_Unsupported();
 }
 
-static bool HIDAPI_DriverSteam_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_DriverSteam_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32 HIDAPI_DriverSteam_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static uint32_t HIDAPI_DriverSteam_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     // You should use the full Steam Input API for extended capabilities
     return 0;
 }
 
-static bool HIDAPI_DriverSteam_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_DriverSteam_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     // You should use the full Steam Input API for LED support
     return SDL_Unsupported();
@@ -1096,7 +1096,7 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
     for (;;) {
         uint8_t data[128];
         int r, nPacketLength;
-        const Uint8 *pPacket;
+        const uint8_t *pPacket;
 
         r = ReadSteamController(device->dev, data, sizeof(data));
         if (r == 0) {
@@ -1115,10 +1115,10 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
         pPacket = ctx->m_assembler.uBuffer;
 
         if (nPacketLength > 0 && UpdateSteamControllerState(pPacket, nPacketLength, &ctx->m_state)) {
-            Uint64 timestamp = SDL_GetTicksNS();
+            uint64_t timestamp = SDL_GetTicksNS();
 
             if (ctx->m_state.ulButtons != ctx->m_last_state.ulButtons) {
-                Uint8 hat = 0;
+                uint8_t hat = 0;
 
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH,
                                           ((ctx->m_state.ulButtons & STEAM_BUTTON_SOUTH_MASK) != 0));

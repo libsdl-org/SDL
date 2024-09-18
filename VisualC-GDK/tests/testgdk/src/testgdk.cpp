@@ -48,8 +48,8 @@ int done;
 static struct
 {
     SDL_AudioSpec spec;
-    Uint8 *sound;    /* Pointer to wave data */
-    Uint32 soundlen; /* Length of wave data */
+    uint8_t *sound;    /* Pointer to wave data */
+    uint32_t soundlen; /* Length of wave data */
     int soundpos;    /* Current play position */
 } wave;
 
@@ -228,8 +228,8 @@ DrawSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
             current_color = 255;
             cycle_direction = -cycle_direction;
         }
-        SDL_SetTextureColorMod(sprite, 255, (Uint8) current_color,
-                               (Uint8) current_color);
+        SDL_SetTextureColorMod(sprite, 255, (uint8_t) current_color,
+                               (uint8_t) current_color);
     }
     if (cycle_alpha) {
         current_alpha += cycle_direction;
@@ -241,7 +241,7 @@ DrawSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
             current_alpha = 255;
             cycle_direction = -cycle_direction;
         }
-        SDL_SetTextureAlphaMod(sprite, (Uint8) current_alpha);
+        SDL_SetTextureAlphaMod(sprite, (uint8_t) current_alpha);
     }
 
     /* Draw a gray background */

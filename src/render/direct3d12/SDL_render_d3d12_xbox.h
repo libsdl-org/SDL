@@ -34,7 +34,7 @@ extern HRESULT D3D12_XBOX_CreateDevice(ID3D12Device **device, bool createDebug);
 extern HRESULT D3D12_XBOX_CreateBackBufferTarget(ID3D12Device1 *device, int width, int height, void **resource);
 extern HRESULT D3D12_XBOX_StartFrame(ID3D12Device1 *device, UINT64 *outToken);
 extern HRESULT D3D12_XBOX_PresentFrame(ID3D12CommandQueue *commandQueue, UINT64 token, ID3D12Resource *renderTarget);
-extern void D3D12_XBOX_GetResolution(Uint32 *width, Uint32 *height);
+extern void D3D12_XBOX_GetResolution(uint32_t *width, uint32_t *height);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

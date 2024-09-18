@@ -102,7 +102,7 @@ static const char *g_AllFormatsVerbose[] = {
 };
 
 /* Definition of some invalid formats for negative tests */
-static Uint32 g_invalidPixelFormats[] = {
+static uint32_t g_invalidPixelFormats[] = {
     SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_1010102 + 1, 32, 4),
     SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_1010102 + 2, 32, 4)
 };
@@ -268,7 +268,7 @@ static int SDLCALL pixels_getPixelFormatDetails(void *arg)
     const char *error;
     int i;
     SDL_PixelFormat format;
-    Uint32 masks;
+    uint32_t masks;
     const SDL_PixelFormatDetails *result;
 
     /* Blank/unknown format */

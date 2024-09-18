@@ -31,7 +31,7 @@ typedef struct
     union {
         void *pointer_value;
         char *string_value;
-        Sint64 number_value;
+        int64_t number_value;
         float float_value;
         bool boolean_value;
     } value;
@@ -446,7 +446,7 @@ bool SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char 
     return SDL_PrivateSetProperty(props, name, property);
 }
 
-bool SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 value)
+bool SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, int64_t value)
 {
     SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
@@ -615,10 +615,10 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
     return value;
 }
 
-Sint64 SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 default_value)
+int64_t SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, int64_t default_value)
 {
     SDL_Properties *properties = NULL;
-    Sint64 value = default_value;
+    int64_t value = default_value;
 
     if (!props) {
         return value;
@@ -641,13 +641,13 @@ Sint64 SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 de
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
             switch (property->type) {
             case SDL_PROPERTY_TYPE_STRING:
-                value = (Sint64)SDL_strtoll(property->value.string_value, NULL, 0);
+                value = (int64_t)SDL_strtoll(property->value.string_value, NULL, 0);
                 break;
             case SDL_PROPERTY_TYPE_NUMBER:
                 value = property->value.number_value;
                 break;
             case SDL_PROPERTY_TYPE_FLOAT:
-                value = (Sint64)SDL_round((double)property->value.float_value);
+                value = (int64_t)SDL_round((double)property->value.float_value);
                 break;
             case SDL_PROPERTY_TYPE_BOOLEAN:
                 value = property->value.boolean_value;
@@ -806,7 +806,7 @@ static void SDLCALL SDL_DumpPropertiesCallback(void *userdata, SDL_PropertiesID 
         break;
     case SDL_PROPERTY_TYPE_NUMBER:
         {
-            Sint64 value = SDL_GetNumberProperty(props, name, 0);
+            int64_t value = SDL_GetNumberProperty(props, name, 0);
             SDL_Log("%s: %" SDL_PRIs64 " (%" SDL_PRIx64 ")\n", name, value, value);
         }
         break;

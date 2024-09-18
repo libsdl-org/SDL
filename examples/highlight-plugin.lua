@@ -44,8 +44,8 @@ function syntaxUpdate(desc)
     -- SDL keywords start with SDL_
     -- if this pattern applies to the token, we return the URL
     -- if we return nothing, the token is outputted as is
-    if ( (token == "Uint8") or (token == "Uint16") or (token == "Uint32") or (token == "Uint64") or
-         (token == "Sint8") or (token == "Sint16") or (token == "Sint32") or (token == "Sint64") or
+    if ( (token == "uint8_t") or (token == "uint16_t") or (token == "uint32_t") or (token == "uint64_t") or
+         (token == "int8_t") or (token == "int16_t") or (token == "int32_t") or (token == "int64_t") or
          (string.find(token, "SDL_") == 1) ) then
       return getURL(token)
     end

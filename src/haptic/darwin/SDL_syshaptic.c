@@ -427,7 +427,7 @@ static bool GetSupportedFeatures(SDL_Haptic *haptic)
     FFDeviceObjectReference device;
     FFCAPABILITIES features;
     unsigned int supported;
-    Uint32 val;
+    uint32_t val;
 
     device = haptic->hwdata->device;
 
@@ -480,7 +480,7 @@ static bool GetSupportedFeatures(SDL_Haptic *haptic)
     haptic->naxes = ((features.numFfAxes) > 3) ? 3 : features.numFfAxes;
     // Actually store the axes we want to use
     SDL_memcpy(haptic->hwdata->axes, features.ffAxes,
-               haptic->naxes * sizeof(Uint8));
+               haptic->naxes * sizeof(uint8_t));
 
     // Always supported features.
     supported |= SDL_HAPTIC_STATUS | SDL_HAPTIC_PAUSE;
@@ -691,7 +691,7 @@ void SDL_SYS_HapticQuit(void)
 /*
  * Converts an SDL trigger button to an FFEFFECT trigger button.
  */
-static DWORD FFGetTriggerButton(Uint16 button)
+static DWORD FFGetTriggerButton(uint16_t button)
 {
     DWORD dwTriggerButton;
 
@@ -1063,7 +1063,7 @@ static void SDL_SYS_HapticFreeFFEFFECT(FFEFFECT *effect, int type)
  * Gets the effect type from the generic SDL haptic effect wrapper.
  */
 CFUUIDRef
-SDL_SYS_HapticEffectType(Uint16 type)
+SDL_SYS_HapticEffectType(uint16_t type)
 {
     switch (type) {
     case SDL_HAPTIC_CONSTANT:
@@ -1202,10 +1202,10 @@ err_update:
  * Runs an effect.
  */
 bool SDL_SYS_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                            Uint32 iterations)
+                            uint32_t iterations)
 {
     HRESULT ret;
-    Uint32 iter;
+    uint32_t iter;
 
     // Check if it's infinite.
     if (iterations == SDL_HAPTIC_INFINITY) {
@@ -1285,7 +1285,7 @@ int SDL_SYS_HapticGetEffectStatus(SDL_Haptic *haptic,
 bool SDL_SYS_HapticSetGain(SDL_Haptic *haptic, int gain)
 {
     HRESULT ret;
-    Uint32 val;
+    uint32_t val;
 
     val = gain * 100; // macOS uses 0 to 10,000
     ret = FFDeviceSetForceFeedbackProperty(haptic->hwdata->device,
@@ -1303,7 +1303,7 @@ bool SDL_SYS_HapticSetGain(SDL_Haptic *haptic, int gain)
 bool SDL_SYS_HapticSetAutocenter(SDL_Haptic *haptic, int autocenter)
 {
     HRESULT ret;
-    Uint32 val;
+    uint32_t val;
 
     // macOS only has 0 (off) and 1 (on)
     if (autocenter == 0) {

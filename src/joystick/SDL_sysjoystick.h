@@ -35,9 +35,9 @@ extern "C" {
 
 typedef struct SDL_JoystickAxisInfo
 {
-    Sint16 initial_value;           // Initial axis state
-    Sint16 value;                   // Current axis state
-    Sint16 zero;                    // Zero point on the axis (-32768 for triggers)
+    int16_t initial_value;           // Initial axis state
+    int16_t value;                   // Current axis state
+    int16_t zero;                    // Zero point on the axis (-32768 for triggers)
     bool has_initial_value;     // Whether we've seen a value on the axis yet
     bool has_second_value;      // Whether we've seen a second value on the axis yet
     bool sent_initial_value;    // Whether we've sent the initial axis value
@@ -81,8 +81,8 @@ struct SDL_Joystick
     char *path _guarded;                 // Joystick path - system dependent
     char *serial _guarded;               // Joystick serial
     SDL_GUID guid _guarded;      // Joystick guid
-    Uint16 firmware_version _guarded;    // Firmware version, if available
-    Uint64 steam_handle _guarded;        // Steam controller API handle
+    uint16_t firmware_version _guarded;    // Firmware version, if available
+    uint64_t steam_handle _guarded;        // Steam controller API handle
 
     int naxes _guarded; // Number of axis controls on the joystick
     SDL_JoystickAxisInfo *axes _guarded;
@@ -91,7 +91,7 @@ struct SDL_Joystick
     SDL_JoystickBallData *balls _guarded; // Current ball motion deltas
 
     int nhats _guarded;   // Number of hats on the joystick
-    Uint8 *hats _guarded; // Current hat states
+    uint8_t *hats _guarded; // Current hat states
 
     int nbuttons _guarded;   // Number of buttons on the joystick
     bool *buttons _guarded; // Current button states
@@ -103,19 +103,19 @@ struct SDL_Joystick
     int nsensors_enabled _guarded;
     SDL_JoystickSensorInfo *sensors _guarded;
 
-    Uint16 low_frequency_rumble _guarded;
-    Uint16 high_frequency_rumble _guarded;
-    Uint64 rumble_expiration _guarded;
-    Uint64 rumble_resend _guarded;
+    uint16_t low_frequency_rumble _guarded;
+    uint16_t high_frequency_rumble _guarded;
+    uint64_t rumble_expiration _guarded;
+    uint64_t rumble_resend _guarded;
 
-    Uint16 left_trigger_rumble _guarded;
-    Uint16 right_trigger_rumble _guarded;
-    Uint64 trigger_rumble_expiration _guarded;
+    uint16_t left_trigger_rumble _guarded;
+    uint16_t right_trigger_rumble _guarded;
+    uint64_t trigger_rumble_expiration _guarded;
 
-    Uint8 led_red _guarded;
-    Uint8 led_green _guarded;
-    Uint8 led_blue _guarded;
-    Uint64 led_expiration _guarded;
+    uint8_t led_red _guarded;
+    uint8_t led_green _guarded;
+    uint8_t led_blue _guarded;
+    uint64_t led_expiration _guarded;
 
     bool attached _guarded;
     SDL_JoystickConnectionState connection_state _guarded;
@@ -130,7 +130,7 @@ struct SDL_Joystick
     SDL_Sensor *gyro _guarded;
     float sensor_transform[3][3] _guarded;
 
-    Uint64 update_complete _guarded;
+    uint64_t update_complete _guarded;
 
     struct SDL_JoystickDriver *driver _guarded;
 
@@ -151,8 +151,8 @@ struct SDL_Joystick
 #define SDL_HARDWARE_BUS_BLUETOOTH 0x05
 #define SDL_HARDWARE_BUS_VIRTUAL   0xFF
 
-// Macro to combine a USB vendor ID and product ID into a single Uint32 value
-#define MAKE_VIDPID(VID, PID) (((Uint32)(VID)) << 16 | (PID))
+// Macro to combine a USB vendor ID and product ID into a single uint32_t value
+#define MAKE_VIDPID(VID, PID) (((uint32_t)(VID)) << 16 | (PID))
 
 typedef struct SDL_JoystickDriver
 {
@@ -169,7 +169,7 @@ typedef struct SDL_JoystickDriver
     void (*Detect)(void);
 
     // Function to determine whether a device is currently detected by this driver
-    bool (*IsDevicePresent)(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
+    bool (*IsDevicePresent)(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name);
 
     // Function to get the device-dependent name of a joystick
     const char *(*GetDeviceName)(int device_index);
@@ -200,11 +200,11 @@ typedef struct SDL_JoystickDriver
     bool (*Open)(SDL_Joystick *joystick, int device_index);
 
     // Rumble functionality
-    bool (*Rumble)(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
-    bool (*RumbleTriggers)(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
+    bool (*Rumble)(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble);
+    bool (*RumbleTriggers)(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble);
 
     // LED functionality
-    bool (*SetLED)(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
+    bool (*SetLED)(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue);
 
     // General effects
     bool (*SendEffect)(SDL_Joystick *joystick, const void *data, int size);

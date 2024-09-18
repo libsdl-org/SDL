@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 {
     int i;
     int frames;
-    Uint64 then, now;
+    uint64_t then, now;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);

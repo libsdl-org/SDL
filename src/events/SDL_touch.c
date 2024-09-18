@@ -254,7 +254,7 @@ static void SDL_DelFinger(SDL_Touch *touch, SDL_FingerID fingerid)
     }
 }
 
-void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, bool down, float x, float y, float pressure)
+void SDL_SendTouch(uint64_t timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, bool down, float x, float y, float pressure)
 {
     SDL_Finger *finger;
     SDL_Mouse *mouse;
@@ -378,7 +378,7 @@ void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_
     }
 }
 
-void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window,
+void SDL_SendTouchMotion(uint64_t timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window,
                         float x, float y, float pressure)
 {
     SDL_Touch *touch;

@@ -31,16 +31,16 @@ void SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata)
 
 #ifndef SDL_PLATFORM_LINUX
 
-SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
-bool SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
+SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(int64_t threadID, int priority);
+bool SDL_SetLinuxThreadPriority(int64_t threadID, int priority)
 {
     (void)threadID;
     (void)priority;
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
-bool SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
+SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(int64_t threadID, int sdlPriority, int schedPolicy);
+bool SDL_SetLinuxThreadPriorityAndPolicy(int64_t threadID, int sdlPriority, int schedPolicy)
 {
     (void)threadID;
     (void)sdlPriority;
@@ -78,8 +78,8 @@ void SDL_GDKResumeGPU(SDL_GPUDevice *device)
 
 #if !defined(SDL_PLATFORM_WINDOWS)
 
-SDL_DECLSPEC bool SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
-bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+SDL_DECLSPEC bool SDLCALL SDL_RegisterApp(const char *name, uint32_t style, void *hInst);
+bool SDL_RegisterApp(const char *name, uint32_t style, void *hInst)
 {
     (void)name;
     (void)style;
@@ -133,8 +133,8 @@ const char* SDL_GetAndroidExternalStoragePath(void)
     return NULL;
 }
 
-SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
-Uint32 SDL_GetAndroidExternalStorageState(void)
+SDL_DECLSPEC uint32_t SDLCALL SDL_GetAndroidExternalStorageState(void);
+uint32_t SDL_GetAndroidExternalStorageState(void)
 {
     SDL_Unsupported();
     return 0;
@@ -163,8 +163,8 @@ bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPerm
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
-bool SDL_SendAndroidMessage(Uint32 command, int param)
+SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(uint32_t command, int param);
+bool SDL_SendAndroidMessage(uint32_t command, int param)
 {
     (void)command;
     (void)param;
@@ -209,8 +209,8 @@ bool SDL_IsDeXMode(void)
     return false;
 }
 
-SDL_DECLSPEC Sint32 SDLCALL JNI_OnLoad(void *vm, void *reserved);
-Sint32 JNI_OnLoad(void *vm, void *reserved)
+SDL_DECLSPEC int32_t SDLCALL JNI_OnLoad(void *vm, void *reserved);
+int32_t JNI_OnLoad(void *vm, void *reserved)
 {
     (void)vm;
     (void)reserved;

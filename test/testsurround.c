@@ -99,8 +99,8 @@ static bool is_lfe_channel(int channel_index, int channel_count)
 
 static void SDLCALL fill_buffer(void *userdata, SDL_AudioStream *stream, int len, int totallen)
 {
-    const int samples = len / sizeof(Sint16);
-    Sint16 *buffer = NULL;
+    const int samples = len / sizeof(int16_t);
+    int16_t *buffer = NULL;
     static int total_samples = 0;
     int i;
 
@@ -109,7 +109,7 @@ static void SDLCALL fill_buffer(void *userdata, SDL_AudioStream *stream, int len
         return;
     }
 
-    buffer = (Sint16 *) SDL_calloc(samples, sizeof(Sint16));
+    buffer = (int16_t *) SDL_calloc(samples, sizeof(int16_t));
     if (!buffer) {
         return;  /* oh well. */
     }
@@ -129,7 +129,7 @@ static void SDLCALL fill_buffer(void *userdata, SDL_AudioStream *stream, int len
             amplitude = MAX_AMPLITUDE;
         }
 
-        buffer[i] = (Sint16)(SDL_sin(6.283185f * sine_freq * time) * amplitude);
+        buffer[i] = (int16_t)(SDL_sin(6.283185f * sine_freq * time) * amplitude);
 
         /* Reset our state for next callback if this channel test is finished */
         if (total_samples == CHANNEL_TEST_TIME_SEC * SAMPLE_RATE_HZ) {
@@ -139,7 +139,7 @@ static void SDLCALL fill_buffer(void *userdata, SDL_AudioStream *stream, int len
         }
     }
 
-    SDL_PutAudioStreamData(stream, buffer, samples * sizeof (Sint16));
+    SDL_PutAudioStreamData(stream, buffer, samples * sizeof (int16_t));
 
     SDL_free(buffer);
 }

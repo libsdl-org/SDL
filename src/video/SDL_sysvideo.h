@@ -315,10 +315,10 @@ struct SDL_VideoDevice
      */
     bool (*Vulkan_LoadLibrary)(SDL_VideoDevice *_this, const char *path);
     void (*Vulkan_UnloadLibrary)(SDL_VideoDevice *_this);
-    char const* const* (*Vulkan_GetInstanceExtensions)(SDL_VideoDevice *_this, Uint32 *count);
+    char const* const* (*Vulkan_GetInstanceExtensions)(SDL_VideoDevice *_this, uint32_t *count);
     bool (*Vulkan_CreateSurface)(SDL_VideoDevice *_this, SDL_Window *window, VkInstance instance, const struct VkAllocationCallbacks *allocator, VkSurfaceKHR *surface);
     void (*Vulkan_DestroySurface)(SDL_VideoDevice *_this, VkInstance instance, VkSurfaceKHR surface, const struct VkAllocationCallbacks *allocator);
-    bool (*Vulkan_GetPresentationSupport)(SDL_VideoDevice *_this, VkInstance instance, VkPhysicalDevice physicalDevice, Uint32 queueFamilyIndex);
+    bool (*Vulkan_GetPresentationSupport)(SDL_VideoDevice *_this, VkInstance instance, VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex);
 
     /* * * */
     /*
@@ -332,7 +332,7 @@ struct SDL_VideoDevice
     /*
      * Event manager functions
      */
-    int (*WaitEventTimeout)(SDL_VideoDevice *_this, Sint64 timeoutNS);
+    int (*WaitEventTimeout)(SDL_VideoDevice *_this, int64_t timeoutNS);
     void (*SendWakeupEvent)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*PumpEvents)(SDL_VideoDevice *_this);
 
@@ -390,7 +390,7 @@ struct SDL_VideoDevice
     SDL_Rect desktop_bounds;
     SDL_Window *windows;
     SDL_Window *grabbed_window;
-    Uint32 clipboard_sequence;
+    uint32_t clipboard_sequence;
     SDL_ClipboardDataCallback clipboard_callback;
     SDL_ClipboardCleanupCallback clipboard_cleanup;
     void *clipboard_userdata;
@@ -398,7 +398,7 @@ struct SDL_VideoDevice
     size_t num_clipboard_mime_types;
     char *primary_selection_text;
     bool setting_display_mode;
-    Uint32 device_caps;
+    uint32_t device_caps;
     SDL_SystemTheme system_theme;
 
     /* * * */

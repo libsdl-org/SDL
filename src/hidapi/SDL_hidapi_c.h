@@ -22,7 +22,7 @@
 
 
 /* Return true if the HIDAPI should ignore a device during enumeration */
-extern bool SDL_HIDAPI_ShouldIgnoreDevice(int bus_type, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage);
+extern bool SDL_HIDAPI_ShouldIgnoreDevice(int bus_type, uint16_t vendor_id, uint16_t product_id, uint16_t usage_page, uint16_t usage);
 
 #ifdef SDL_JOYSTICK_HIDAPI
 #ifdef HAVE_LIBUSB

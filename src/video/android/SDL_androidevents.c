@@ -206,7 +206,7 @@ static void Android_HandleLifecycleEvent(SDL_AndroidLifecycleEvent event)
     }
 }
 
-static Sint64 GetLifecycleEventTimeout(bool paused, Sint64 timeoutNS)
+static int64_t GetLifecycleEventTimeout(bool paused, int64_t timeoutNS)
 {
     if (Android_Paused) {
         if (Android_BlockOnPause) {
@@ -218,7 +218,7 @@ static Sint64 GetLifecycleEventTimeout(bool paused, Sint64 timeoutNS)
     return timeoutNS;
 }
 
-void Android_PumpEvents(Sint64 timeoutNS)
+void Android_PumpEvents(int64_t timeoutNS)
 {
     SDL_AndroidLifecycleEvent event;
     bool paused = Android_Paused;

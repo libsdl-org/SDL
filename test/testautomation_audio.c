@@ -46,7 +46,7 @@ static int g_audio_testCallbackCounter;
 static int g_audio_testCallbackLength;
 
 /* Test callback function */
-static void SDLCALL audio_testCallback(void *userdata, Uint8 *stream, int len)
+static void SDLCALL audio_testCallback(void *userdata, uint8_t *stream, int len)
 {
     /* track that callback was called */
     g_audio_testCallbackCounter++;
@@ -475,7 +475,7 @@ static const char *g_invalidAudioFormatsVerbose[] = {
 };
 static const int g_numAudioFormats = SDL_arraysize(g_audioFormats);
 static const int g_numInvalidAudioFormats = SDL_arraysize(g_invalidAudioFormats);
-static Uint8 g_audioChannels[] = { 1, 2, 4, 6 };
+static uint8_t g_audioChannels[] = { 1, 2, 4, 6 };
 static const int g_numAudioChannels = SDL_arraysize(g_audioChannels);
 static int g_audioFrequencies[] = { 11025, 22050, 44100, 48000 };
 static const int g_numAudioFrequencies = SDL_arraysize(g_audioFrequencies);
@@ -795,7 +795,7 @@ static int SDLCALL audio_convertAudio(void *arg)
                     if (stream == NULL) {
                         SDLTest_LogError("%s", SDL_GetError());
                     } else {
-                        Uint8 *dst_buf = NULL, *src_buf = NULL;
+                        uint8_t *dst_buf = NULL, *src_buf = NULL;
                         int dst_len = 0, src_len = 0, real_dst_len = 0;
                         int l = 64, m;
                         int src_framesize, dst_framesize;
@@ -806,7 +806,7 @@ static int SDLCALL audio_convertAudio(void *arg)
 
                         src_len = l * src_framesize;
                         SDLTest_Log("Creating dummy sample buffer of %i length (%i bytes)", l, src_len);
-                        src_buf = (Uint8 *)SDL_malloc(src_len);
+                        src_buf = (uint8_t *)SDL_malloc(src_len);
                         SDLTest_AssertCheck(src_buf != NULL, "Check src data buffer to convert is not NULL");
                         if (src_buf == NULL) {
                             return TEST_ABORTED;
@@ -815,8 +815,8 @@ static int SDLCALL audio_convertAudio(void *arg)
                         src_silence = SDL_GetSilenceValueForFormat(spec1.format);
                         SDL_memset(src_buf, src_silence, src_len);
 
-                        dst_len = ((int)((((Sint64)l * spec2.freq) - 1) / spec1.freq) + 1) * dst_framesize;
-                        dst_buf = (Uint8 *)SDL_malloc(dst_len);
+                        dst_len = ((int)((((int64_t)l * spec2.freq) - 1) / spec1.freq) + 1) * dst_framesize;
+                        dst_buf = (uint8_t *)SDL_malloc(dst_len);
                         SDLTest_AssertCheck(dst_buf != NULL, "Check dst data buffer to convert is not NULL");
                         if (dst_buf == NULL) {
                             return TEST_ABORTED;
@@ -875,10 +875,10 @@ static int SDLCALL audio_openCloseAudioDeviceConnected(void *arg)
     return TEST_COMPLETED;  /* not a thing in SDL3. */
 }
 
-static double sine_wave_sample(const Sint64 idx, const Sint64 rate, const Sint64 freq, const double phase)
+static double sine_wave_sample(const int64_t idx, const int64_t rate, const int64_t freq, const double phase)
 {
   /* Using integer modulo to avoid precision loss caused by large floating
-   * point numbers. Sint64 is needed for the large integer multiplication.
+   * point numbers. int64_t is needed for the large integer multiplication.
    * The integers are assumed to be non-negative so that modulo is always
    * non-negative.
    *   sin(i / rate * freq * 2 * PI + phase)
@@ -909,7 +909,7 @@ static int put_audio_data_split(SDL_AudioStream* stream, const void* buf, int le
         return -1;
     }
 
-    buf = ((const Uint8*) buf) + n;
+    buf = ((const uint8_t*) buf) + n;
     len -= n;
   }
 
@@ -939,7 +939,7 @@ static int get_audio_data_split(SDL_AudioStream* stream, void* buf, int len) {
         return total ? total : -1;
     }
 
-    buf = ((Uint8*) buf) + ret;
+    buf = ((uint8_t*) buf) + ret;
     total += ret;
     len -= ret;
   }
@@ -972,7 +972,7 @@ static int convert_audio_chunks(SDL_AudioStream* stream, const void* src, int sr
 
         if (to_put)
         {
-            ret = put_audio_data_split(stream, (const Uint8*)(src) + total_in, to_put);
+            ret = put_audio_data_split(stream, (const uint8_t*)(src) + total_in, to_put);
 
             if (ret < 0) {
                 return total_out ? total_out : ret;
@@ -991,7 +991,7 @@ static int convert_audio_chunks(SDL_AudioStream* stream, const void* src, int sr
 
         if (to_get)
         {
-            ret = get_audio_data_split(stream, (Uint8*)(dst) + total_out, to_get);
+            ret = get_audio_data_split(stream, (uint8_t*)(dst) + total_out, to_get);
 
             if ((ret == 0) && (total_in == srclen)) {
                 ret = -1;
@@ -1052,8 +1052,8 @@ static int SDLCALL audio_resampleLoss(void *arg)
     const int max_target = len_target * 2;
 
     SDL_AudioSpec tmpspec1, tmpspec2;
-    Uint64 tick_beg = 0;
-    Uint64 tick_end = 0;
+    uint64_t tick_beg = 0;
+    uint64_t tick_end = 0;
     int i = 0;
     int j = 0;
     SDL_AudioStream *stream = NULL;
@@ -1215,8 +1215,8 @@ static int SDLCALL audio_convertAccuracy(void *arg)
 
     for (i = 0; i < SDL_arraysize(formats); ++i) {
         SDL_AudioSpec src_spec, tmp_spec;
-        Uint64 convert_begin, convert_end;
-        Uint8 *tmp_data, *dst_data;
+        uint64_t convert_begin, convert_end;
+        uint8_t *tmp_data, *dst_data;
         int tmp_len, dst_len;
         int ret;
 
@@ -1247,7 +1247,7 @@ static int SDLCALL audio_convertAccuracy(void *arg)
 
         tmp_data = NULL;
         tmp_len = 0;
-        ret = SDL_ConvertAudioSamples(&src_spec, (const Uint8*) src_data, src_len, &tmp_spec, &tmp_data, &tmp_len);
+        ret = SDL_ConvertAudioSamples(&src_spec, (const uint8_t*) src_data, src_len, &tmp_spec, &tmp_data, &tmp_len);
         SDLTest_AssertCheck(ret == true, "Expected SDL_ConvertAudioSamples(F32->%s) to succeed", format_name);
         if (!ret) {
             SDL_free(src_data);

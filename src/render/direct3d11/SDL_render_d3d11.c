@@ -137,7 +137,7 @@ typedef struct
     bool nv12;
     ID3D11ShaderResourceView *mainTextureResourceViewNV;
 
-    Uint8 *pixels;
+    uint8_t *pixels;
     int pitch;
     SDL_Rect locked_rect;
 #endif
@@ -243,7 +243,7 @@ SDL_PixelFormat D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
     }
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 output_colorspace)
+static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(uint32_t format, uint32_t output_colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
@@ -273,7 +273,7 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
     }
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uint32 colorspace)
+static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(uint32_t format, uint32_t colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
@@ -1385,8 +1385,8 @@ static void D3D11_DestroyTexture(SDL_Renderer *renderer,
 static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Texture2D *texture, int bpp, int x, int y, int w, int h, const void *pixels, int pitch)
 {
     ID3D11Texture2D *stagingTexture;
-    const Uint8 *src;
-    Uint8 *dst;
+    const uint8_t *src;
+    uint8_t *dst;
     int row;
     UINT length;
     HRESULT result;
@@ -1426,8 +1426,8 @@ static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Te
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11DeviceContext1::Map [map staging texture]"), result);
     }
 
-    src = (const Uint8 *)pixels;
-    dst = (Uint8 *)textureMemory.pData;
+    src = (const uint8_t *)pixels;
+    dst = (uint8_t *)textureMemory.pData;
     length = w * bpp;
     if (length == (UINT)pitch && length == textureMemory.RowPitch) {
         SDL_memcpy(dst, src, (size_t)length * h);
@@ -1456,7 +1456,7 @@ static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Te
             length = (length + 1) & ~1;
             pitch = (pitch + 1) & ~1;
         }
-        dst = (Uint8 *)textureMemory.pData + stagingTextureDesc.Height * textureMemory.RowPitch;
+        dst = (uint8_t *)textureMemory.pData + stagingTextureDesc.Height * textureMemory.RowPitch;
         for (row = 0; row < h; ++row) {
             SDL_memcpy(dst, src, length);
             src += pitch;
@@ -1488,14 +1488,14 @@ static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Te
 #if SDL_HAVE_YUV
 static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const SDL_Rect *rect,
-                                 const Uint8 *Yplane, int Ypitch,
-                                 const Uint8 *UVplane, int UVpitch);
+                                 const uint8_t *Yplane, int Ypitch,
+                                 const uint8_t *UVplane, int UVpitch);
 
 static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *Uplane, int Upitch,
-                                  const Uint8 *Vplane, int Vpitch);
+                                  const uint8_t *Yplane, int Ypitch,
+                                  const uint8_t *Uplane, int Upitch,
+                                  const uint8_t *Vplane, int Vpitch);
 #endif
 
 static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -1511,17 +1511,17 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 #if SDL_HAVE_YUV
     if (textureData->nv12) {
-        const Uint8 *Yplane = (const Uint8 *)srcPixels;
-        const Uint8 *UVplane = Yplane + rect->h * srcPitch;
+        const uint8_t *Yplane = (const uint8_t *)srcPixels;
+        const uint8_t *UVplane = Yplane + rect->h * srcPitch;
 
         return D3D11_UpdateTextureNV(renderer, texture, rect, Yplane, srcPitch, UVplane, srcPitch);
 
     } else if (textureData->yuv) {
         int Ypitch = srcPitch;
         int UVpitch = ((Ypitch + 1) / 2);
-        const Uint8 *Yplane = (const Uint8 *)srcPixels;
-        const Uint8 *Uplane = Yplane + rect->h * Ypitch;
-        const Uint8 *Vplane = Uplane + ((rect->h + 1) / 2) * UVpitch;
+        const uint8_t *Yplane = (const uint8_t *)srcPixels;
+        const uint8_t *Uplane = Yplane + rect->h * Ypitch;
+        const uint8_t *Vplane = Uplane + ((rect->h + 1) / 2) * UVpitch;
 
         if (texture->format == SDL_PIXELFORMAT_YV12) {
             return D3D11_UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Vplane, UVpitch, Uplane, UVpitch);
@@ -1540,9 +1540,9 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 #if SDL_HAVE_YUV
 static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *Uplane, int Upitch,
-                                  const Uint8 *Vplane, int Vpitch)
+                                  const uint8_t *Yplane, int Ypitch,
+                                  const uint8_t *Uplane, int Upitch,
+                                  const uint8_t *Vplane, int Vpitch)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
@@ -1565,14 +1565,14 @@ static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const SDL_Rect *rect,
-                                 const Uint8 *Yplane, int Ypitch,
-                                 const Uint8 *UVplane, int UVpitch)
+                                 const uint8_t *Yplane, int Ypitch,
+                                 const uint8_t *UVplane, int UVpitch)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
     ID3D11Texture2D *stagingTexture;
-    const Uint8 *src;
-    Uint8 *dst;
+    const uint8_t *src;
+    uint8_t *dst;
     int w, h, row;
     UINT length;
     HRESULT result;
@@ -1620,7 +1620,7 @@ static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 
     src = Yplane;
-    dst = (Uint8 *)textureMemory.pData;
+    dst = (uint8_t *)textureMemory.pData;
     length = w;
     if (length == (UINT)Ypitch && length == textureMemory.RowPitch) {
         SDL_memcpy(dst, src, (size_t)length * h);
@@ -1648,7 +1648,7 @@ static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
         length = (length + 1) & ~1;
         UVpitch = (UVpitch + 1) & ~1;
     }
-    dst = (Uint8 *)textureMemory.pData + stagingTextureDesc.Height * textureMemory.RowPitch;
+    dst = (uint8_t *)textureMemory.pData + stagingTextureDesc.Height * textureMemory.RowPitch;
     for (row = 0; row < h; ++row) {
         SDL_memcpy(dst, src, length);
         src += UVpitch;
@@ -1694,7 +1694,7 @@ static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         // It's more efficient to upload directly...
         if (!textureData->pixels) {
             textureData->pitch = texture->w;
-            textureData->pixels = (Uint8 *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
+            textureData->pixels = (uint8_t *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
             if (!textureData->pixels) {
                 return false;
             }
@@ -1885,11 +1885,11 @@ static bool D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         int j;
         float *xy_;
         if (size_indices == 4) {
-            j = ((const Uint32 *)indices)[i];
+            j = ((const uint32_t *)indices)[i];
         } else if (size_indices == 2) {
-            j = ((const Uint16 *)indices)[i];
+            j = ((const uint16_t *)indices)[i];
         } else if (size_indices == 1) {
-            j = ((const Uint8 *)indices)[i];
+            j = ((const uint8_t *)indices)[i];
         } else {
             j = i;
         }
@@ -2470,7 +2470,7 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(D3D11_VertexPositionColor);
-            const D3D11_VertexPositionColor *verts = (D3D11_VertexPositionColor *)(((Uint8 *)vertices) + first);
+            const D3D11_VertexPositionColor *verts = (D3D11_VertexPositionColor *)(((uint8_t *)vertices) + first);
             D3D11_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, 0, NULL, NULL, NULL);
             D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, start, count);
             if (verts[0].pos.x != verts[count - 1].pos.x || verts[0].pos.y != verts[count - 1].pos.y) {

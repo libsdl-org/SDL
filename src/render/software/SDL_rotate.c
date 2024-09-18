@@ -47,10 +47,10 @@ A 32 bit RGBA pixel.
 */
 typedef struct tColorRGBA
 {
-    Uint8 r;
-    Uint8 g;
-    Uint8 b;
-    Uint8 a;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
 } tColorRGBA;
 
 /**
@@ -58,7 +58,7 @@ A 8bit Y/palette pixel.
 */
 typedef struct tColorY
 {
-    Uint8 y;
+    uint8_t y;
 } tColorY;
 
 /**
@@ -76,9 +76,9 @@ to a situation where the program can segfault.
 /**
 Returns colorkey info for a surface
 */
-static Uint32 get_colorkey(SDL_Surface *src)
+static uint32_t get_colorkey(SDL_Surface *src)
 {
-    Uint32 key = 0;
+    uint32_t key = 0;
     if (SDL_SurfaceHasColorKey(src)) {
         SDL_GetSurfaceColorKey(src, &key);
     }
@@ -215,7 +215,7 @@ static void computeSourceIncrements90(SDL_Surface *src, int bpp, int angle, int 
 // Performs a relatively fast rotation/flip when the angle is a multiple of 90 degrees.
 #define TRANSFORM_SURFACE_90(pixelType)                                                                     \
     int dy, dincy = dst->pitch - dst->w * sizeof(pixelType), sincx, sincy, signx, signy;                    \
-    Uint8 *sp = (Uint8 *)src->pixels, *dp = (Uint8 *)dst->pixels, *de;                                      \
+    uint8_t *sp = (uint8_t *)src->pixels, *dp = (uint8_t *)dst->pixels, *de;                                      \
                                                                                                             \
     computeSourceIncrements90(src, sizeof(pixelType), angle, flipx, flipy, &sincx, &sincy, &signx, &signy); \
     if (signx < 0)                                                                                          \
@@ -311,7 +311,7 @@ static void transformSurfaceRGBA(SDL_Surface *src, SDL_Surface *dst, int isin, i
                 if ((dx > -1) && (dy > -1) && (dx < (src->w - 1)) && (dy < (src->h - 1))) {
                     int ex, ey;
                     int t1, t2;
-                    sp = (tColorRGBA *)((Uint8 *)src->pixels + src->pitch * dy) + dx;
+                    sp = (tColorRGBA *)((uint8_t *)src->pixels + src->pitch * dy) + dx;
                     c00 = *sp;
                     sp += 1;
                     c01 = *sp;
@@ -342,22 +342,22 @@ static void transformSurfaceRGBA(SDL_Surface *src, SDL_Surface *dst, int isin, i
                     ey = (sdy & 0xffff);
                     t1 = ((((c01.r - c00.r) * ex) >> 16) + c00.r) & 0xff;
                     t2 = ((((c11.r - c10.r) * ex) >> 16) + c10.r) & 0xff;
-                    pc->r = (Uint8)((((t2 - t1) * ey) >> 16) + t1);
+                    pc->r = (uint8_t)((((t2 - t1) * ey) >> 16) + t1);
                     t1 = ((((c01.g - c00.g) * ex) >> 16) + c00.g) & 0xff;
                     t2 = ((((c11.g - c10.g) * ex) >> 16) + c10.g) & 0xff;
-                    pc->g = (Uint8)((((t2 - t1) * ey) >> 16) + t1);
+                    pc->g = (uint8_t)((((t2 - t1) * ey) >> 16) + t1);
                     t1 = ((((c01.b - c00.b) * ex) >> 16) + c00.b) & 0xff;
                     t2 = ((((c11.b - c10.b) * ex) >> 16) + c10.b) & 0xff;
-                    pc->b = (Uint8)((((t2 - t1) * ey) >> 16) + t1);
+                    pc->b = (uint8_t)((((t2 - t1) * ey) >> 16) + t1);
                     t1 = ((((c01.a - c00.a) * ex) >> 16) + c00.a) & 0xff;
                     t2 = ((((c11.a - c10.a) * ex) >> 16) + c10.a) & 0xff;
-                    pc->a = (Uint8)((((t2 - t1) * ey) >> 16) + t1);
+                    pc->a = (uint8_t)((((t2 - t1) * ey) >> 16) + t1);
                 }
                 sdx += icos;
                 sdy += isin;
                 pc++;
             }
-            pc = (tColorRGBA *)((Uint8 *)pc + gap);
+            pc = (tColorRGBA *)((uint8_t *)pc + gap);
         }
     } else {
         int y;
@@ -377,13 +377,13 @@ static void transformSurfaceRGBA(SDL_Surface *src, SDL_Surface *dst, int isin, i
                     if (flipy) {
                         dy = sh - dy;
                     }
-                    *pc = *((tColorRGBA *)((Uint8 *)src->pixels + src->pitch * dy) + dx);
+                    *pc = *((tColorRGBA *)((uint8_t *)src->pixels + src->pitch * dy) + dx);
                 }
                 sdx += icos;
                 sdy += isin;
                 pc++;
             }
-            pc = (tColorRGBA *)((Uint8 *)pc + gap);
+            pc = (tColorRGBA *)((uint8_t *)pc + gap);
         }
     }
 }
@@ -491,7 +491,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     SDL_Surface *rz_dst;
     int is8bit, angle90;
     SDL_BlendMode blendmode;
-    Uint32 colorkey = 0;
+    uint32_t colorkey = 0;
     bool colorKeyAvailable = false;
     double sangleinv, cangleinv;
 

@@ -81,8 +81,8 @@ static int SDLCALL time_dateTimeConversion(void *arg)
     SDLTest_AssertPass("Call to SDL_DateTimeToTime() (one day advanced)");
     SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
-    result = (ticks[0] + (Sint64)SDL_SECONDS_TO_NS(86400)) == ticks[1];
-    SDLTest_AssertCheck(result, "Check that the difference is exactly 86400 seconds, got: %" SDL_PRIs64, (Sint64)SDL_NS_TO_SECONDS(ticks[1] - ticks[0]));
+    result = (ticks[0] + (int64_t)SDL_SECONDS_TO_NS(86400)) == ticks[1];
+    SDLTest_AssertCheck(result, "Check that the difference is exactly 86400 seconds, got: %" SDL_PRIs64, (int64_t)SDL_NS_TO_SECONDS(ticks[1] - ticks[0]));
 
     /* Check dates that overflow/underflow an SDL_Time */
     dt.year = 2400;
@@ -153,19 +153,19 @@ static int SDLCALL time_dateTimeUtilities(void *arg)
     SDLTest_AssertCheck(result == -1, "Check result value, expected -1, got: %i", result);
 
     /* Test Win32 time conversion */
-    Uint64 wintime = 11644473600LL * 10000000LL; /* The epoch */
-    SDL_Time ticks = SDL_TimeFromWindows((Uint32)(wintime & 0xFFFFFFFF), (Uint32)(wintime >> 32));
+    uint64_t wintime = 11644473600LL * 10000000LL; /* The epoch */
+    SDL_Time ticks = SDL_TimeFromWindows((uint32_t)(wintime & 0xFFFFFFFF), (uint32_t)(wintime >> 32));
     SDLTest_AssertPass("Call to SDL_TimeFromWindows()");
     SDLTest_AssertCheck(ticks == 0, "Check result value, expected 0, got: %" SDL_PRIs64, ticks);
 
     /* Out of range times should be clamped instead of rolling over */
     wintime = 0;
-    ticks = SDL_TimeFromWindows((Uint32)(wintime & 0xFFFFFFFF), (Uint32)(wintime >> 32));
+    ticks = SDL_TimeFromWindows((uint32_t)(wintime & 0xFFFFFFFF), (uint32_t)(wintime >> 32));
     SDLTest_AssertPass("Call to SDL_TimeFromWindows()");
     SDLTest_AssertCheck(ticks < 0 && ticks >= SDL_MIN_TIME, "Check result value, expected <0 && >=%" SDL_PRIs64 ", got: %" SDL_PRIs64, SDL_MIN_TIME, ticks);
 
     wintime = 0xFFFFFFFFFFFFFFFFULL;
-    ticks = SDL_TimeFromWindows((Uint32)(wintime & 0xFFFFFFFF), (Uint32)(wintime >> 32));
+    ticks = SDL_TimeFromWindows((uint32_t)(wintime & 0xFFFFFFFF), (uint32_t)(wintime >> 32));
     SDLTest_AssertPass("Call to SDL_TimeFromWindows()");
     SDLTest_AssertCheck(ticks > 0 && ticks <= SDL_MAX_TIME, "Check result value, expected >0 && <=%" SDL_PRIs64 ", got: %" SDL_PRIs64, SDL_MAX_TIME, ticks);
 

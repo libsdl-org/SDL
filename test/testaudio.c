@@ -71,8 +71,8 @@ struct Thing
         } logdev;
         struct {
             SDL_AudioSpec spec;
-            Uint8 *buf;
-            Uint32 buflen;
+            uint8_t *buf;
+            uint32_t buflen;
         } wav;
         struct {
             float startw;
@@ -83,8 +83,8 @@ struct Thing
         struct {
             SDL_AudioStream *stream;
             int total_bytes;
-            Uint64 next_level_update;
-            Uint8 levels[5];
+            uint64_t next_level_update;
+            uint8_t levels[5];
         } stream;
     } data;
 
@@ -92,15 +92,15 @@ struct Thing
     char *titlebar;
     SDL_FRect rect;
     float z;
-    Uint8 r, g, b, a;
+    uint8_t r, g, b, a;
     float progress;
     float meter;
     float scale;
-    Uint64 createticks;
+    uint64_t createticks;
     Texture *texture;
     const ThingType *can_be_dropped_onto;
 
-    void (*ontick)(Thing *thing, Uint64 now);
+    void (*ontick)(Thing *thing, uint64_t now);
     void (*ondrag)(Thing *thing, int button, float x, float y);
     void (*ondrop)(Thing *thing, int button, float x, float y);
     void (*ondraw)(Thing *thing, SDL_Renderer *renderer);
@@ -111,7 +111,7 @@ struct Thing
 };
 
 
-static Uint64 app_ready_ticks = 0;
+static uint64_t app_ready_ticks = 0;
 static SDLTest_CommonState *state = NULL;
 
 static Thing *things = NULL;
@@ -451,7 +451,7 @@ static void PoofThing_ondrag(Thing *thing, int button, float x, float y)
     dragging_thing = NULL;   /* refuse to be dragged. */
 }
 
-static void PoofThing_ontick(Thing *thing, Uint64 now)
+static void PoofThing_ontick(Thing *thing, uint64_t now)
 {
     const int lifetime = POOF_LIFETIME;
     const int elapsed = (int) (now - thing->createticks);
@@ -459,7 +459,7 @@ static void PoofThing_ontick(Thing *thing, Uint64 now)
         DestroyThing(thing);
     } else {
         const float pct = ((float) elapsed) / ((float) lifetime);
-        thing->a = (Uint8) (int) (255.0f - (pct * 255.0f));
+        thing->a = (uint8_t) (int) (255.0f - (pct * 255.0f));
         thing->scale = 1.0f - pct;  /* shrink to nothing! */
     }
 }
@@ -505,7 +505,7 @@ static void TrashThing(Thing *thing)
     DestroyThingInPoof(thing);
 }
 
-static void StreamThing_ontick(Thing *thing, Uint64 now)
+static void StreamThing_ontick(Thing *thing, uint64_t now)
 {
     if (!thing->line_connected_to) {
         return;
@@ -523,10 +523,10 @@ static void StreamThing_ontick(Thing *thing, Uint64 now)
     }
 
     if (thing->data.stream.next_level_update <= now) {
-        Uint64 perf = SDL_GetPerformanceCounter();
+        uint64_t perf = SDL_GetPerformanceCounter();
         int i;
         for (i = 0; i < SDL_arraysize(thing->data.stream.levels); i++) {
-            thing->data.stream.levels[i] = (Uint8) (perf % 6);
+            thing->data.stream.levels[i] = (uint8_t) (perf % 6);
             perf >>= 3;
         }
         thing->data.stream.next_level_update += 150;
@@ -598,7 +598,7 @@ static void StreamThing_ondraw(Thing *thing, SDL_Renderer *renderer)
     }
 }
 
-static Thing *CreateStreamThing(const SDL_AudioSpec *spec, const Uint8 *buf, const Uint32 buflen, const char *fname, const float x, const float y)
+static Thing *CreateStreamThing(const SDL_AudioSpec *spec, const uint8_t *buf, const uint32_t buflen, const char *fname, const float x, const float y)
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_LOGDEV, THING_LOGDEV_RECORDING, THING_NULL };
     Thing *thing = CreateThing(THING_STREAM, x, y, 0, -1, -1, soundboard_texture, fname);
@@ -642,8 +642,8 @@ static Thing *LoadWavThing(const char *fname, float x, float y)
     Thing *thing = NULL;
     char *path;
     SDL_AudioSpec spec;
-    Uint8 *buf = NULL;
-    Uint32 buflen = 0;
+    uint8_t *buf = NULL;
+    uint32_t buflen = 0;
 
     path = GetNearbyFilename(fname);
     if (path) {
@@ -841,7 +841,7 @@ static void UpdateVisualizer(SDL_Renderer *renderer, SDL_Texture *visualizer, co
     SDL_SetRenderTarget(renderer, NULL);
 }
 
-static void LogicalDeviceThing_ontick(Thing *thing, Uint64 now)
+static void LogicalDeviceThing_ontick(Thing *thing, uint64_t now)
 {
     const bool ismousedover = (thing == mouseover_thing);
 
@@ -959,7 +959,7 @@ static void PhysicalDeviceThing_ondrop(Thing *thing, int button, float x, float 
     }
 }
 
-static void PhysicalDeviceThing_ontick(Thing *thing, Uint64 now)
+static void PhysicalDeviceThing_ontick(Thing *thing, uint64_t now)
 {
     const int lifetime = POOF_LIFETIME;
     const int elapsed = (int) (now - thing->createticks);
@@ -969,7 +969,7 @@ static void PhysicalDeviceThing_ontick(Thing *thing, Uint64 now)
         thing->ontick = NULL;  /* no more ticking. */
     } else {
         const float pct = ((float) elapsed) / ((float) lifetime);
-        thing->a = (Uint8) (int) (pct * 255.0f);
+        thing->a = (uint8_t) (int) (pct * 255.0f);
         thing->scale = pct;  /* grow to normal size */
     }
 }
@@ -1028,7 +1028,7 @@ static void TickThings(void)
 {
     Thing *i;
     Thing *next;
-    const Uint64 now = SDL_GetTicks();
+    const uint64_t now = SDL_GetTicks();
     for (i = things; i; i = next) {
         next = i->next;  /* in case this deletes itself. */
         if (i->ontick) {

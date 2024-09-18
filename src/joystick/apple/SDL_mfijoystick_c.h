@@ -35,7 +35,7 @@ typedef struct joystick_hwdata
     GCController __unsafe_unretained *controller;
     void *rumble;
     int pause_button_index;
-    Uint64 pause_button_pressed;
+    uint64_t pause_button_pressed;
 
     char *name;
     SDL_Joystick *joystick;
@@ -45,7 +45,7 @@ typedef struct joystick_hwdata
     int naxes;
     int nbuttons;
     int nhats;
-    Uint32 button_mask;
+    uint32_t button_mask;
     bool is_xbox;
     bool is_ps4;
     bool is_ps5;

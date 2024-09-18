@@ -518,7 +518,7 @@ typedef struct SDL_Semaphore SDL_Semaphore;
  * \sa SDL_WaitSemaphore
  * \sa SDL_WaitSemaphoreTimeout
  */
-extern SDL_DECLSPEC SDL_Semaphore * SDLCALL SDL_CreateSemaphore(Uint32 initial_value);
+extern SDL_DECLSPEC SDL_Semaphore * SDLCALL SDL_CreateSemaphore(uint32_t initial_value);
 
 /**
  * Destroy a semaphore.
@@ -591,7 +591,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TryWaitSemaphore(SDL_Semaphore *sem);
  * \sa SDL_TryWaitSemaphore
  * \sa SDL_WaitSemaphore
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sint32 timeoutMS);
+extern SDL_DECLSPEC bool SDLCALL SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, int32_t timeoutMS);
 
 /**
  * Atomically increment a semaphore's value and wake waiting threads.
@@ -614,7 +614,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SignalSemaphore(SDL_Semaphore *sem);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetSemaphoreValue(SDL_Semaphore *sem);
+extern SDL_DECLSPEC uint32_t SDLCALL SDL_GetSemaphoreValue(SDL_Semaphore *sem);
 
 /* @} *//* Semaphore functions */
 
@@ -753,7 +753,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitCondition(SDL_Condition *cond, SDL_Mute
  * \sa SDL_WaitCondition
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WaitConditionTimeout(SDL_Condition *cond,
-                                                SDL_Mutex *mutex, Sint32 timeoutMS);
+                                                SDL_Mutex *mutex, int32_t timeoutMS);
 
 /* @} *//* Condition variable functions */
 

@@ -85,7 +85,7 @@ bool SDLCALL SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext);
  * \param crcContext         pointer to context variable
  * \param inBuf              input buffer to checksum
  * \param inLen              length of input buffer
- * \param crc32              pointer to Uint32 to store the final CRC into
+ * \param crc32              pointer to uint32_t to store the final CRC into
  *
  * \returns true on success or false on failure; call SDL_GetError()
  *          for more information.

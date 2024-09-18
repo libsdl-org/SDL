@@ -57,7 +57,7 @@ extern "C" {
  *
  * \sa SDL_GetCameras
  */
-typedef Uint32 SDL_CameraID;
+typedef uint32_t SDL_CameraID;
 
 /**
  * The opaque structure used to identify an opened SDL camera.
@@ -428,7 +428,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_Cam
  *
  * \sa SDL_ReleaseCameraFrame
  */
-extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS);
+extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_AcquireCameraFrame(SDL_Camera *camera, uint64_t *timestampNS);
 
 /**
  * Release a frame of video acquired from a camera.

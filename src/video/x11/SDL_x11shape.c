@@ -29,20 +29,20 @@
 
 
 #ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
-static Uint8 *GenerateShapeMask(SDL_Surface *shape)
+static uint8_t *GenerateShapeMask(SDL_Surface *shape)
 {
     int x, y;
     const size_t ppb = 8;
     const size_t bytes_per_scanline = (size_t)(shape->w + (ppb - 1)) / ppb;
-    const Uint8 *a;
-    Uint8 *mask;
-    Uint8 *mask_scanline;
-    Uint8 mask_value;
+    const uint8_t *a;
+    uint8_t *mask;
+    uint8_t *mask_scanline;
+    uint8_t mask_value;
 
-    mask = (Uint8 *)SDL_calloc(1, shape->h * bytes_per_scanline);
+    mask = (uint8_t *)SDL_calloc(1, shape->h * bytes_per_scanline);
     if (mask) {
         for (y = 0; y < shape->h; y++) {
-            a = (const Uint8 *)shape->pixels + y * shape->pitch;
+            a = (const uint8_t *)shape->pixels + y * shape->pitch;
             mask_scanline = mask + y * bytes_per_scanline;
             for (x = 0; x < shape->w; x++) {
                 mask_value = (*a == SDL_ALPHA_TRANSPARENT) ? 0 : 1;
@@ -65,7 +65,7 @@ bool X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
     // Generate a set of spans for the region
     if (shape) {
         SDL_Surface *stretched = NULL;
-        Uint8 *mask;
+        uint8_t *mask;
         Pixmap pixmap;
 
         if (shape->w != window->w || shape->h != window->h) {

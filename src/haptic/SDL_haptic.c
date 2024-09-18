@@ -356,7 +356,7 @@ int SDL_GetMaxHapticEffectsPlaying(SDL_Haptic *haptic)
     return haptic->nplaying;
 }
 
-Uint32 SDL_GetHapticFeatures(SDL_Haptic *haptic)
+uint32_t SDL_GetHapticFeatures(SDL_Haptic *haptic)
 {
     CHECK_HAPTIC_MAGIC(haptic, 0);
 
@@ -456,7 +456,7 @@ bool SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effect, const SDL_HapticEffe
     return true;
 }
 
-bool SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, Uint32 iterations)
+bool SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, uint32_t iterations)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -645,10 +645,10 @@ bool SDL_InitHapticRumble(SDL_Haptic *haptic)
     return false;
 }
 
-bool SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, Uint32 length)
+bool SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, uint32_t length)
 {
     SDL_HapticEffect *efx;
-    Sint16 magnitude;
+    int16_t magnitude;
 
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -662,7 +662,7 @@ bool SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, Uint32 length)
     } else if (strength < 0.0f) {
         strength = 0.0f;
     }
-    magnitude = (Sint16)(32767.0f * strength);
+    magnitude = (int16_t)(32767.0f * strength);
 
     efx = &haptic->rumble_effect;
     if (efx->type == SDL_HAPTIC_SINE) {

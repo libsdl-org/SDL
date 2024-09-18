@@ -28,7 +28,7 @@ static SDL_Rect viewport;
 static int done, j;
 static bool use_target = false;
 #ifdef SDL_PLATFORM_EMSCRIPTEN
-static Uint32 wait_start;
+static uint32_t wait_start;
 #endif
 static SDL_Texture *sprite;
 static int sprite_w, sprite_h;
@@ -158,8 +158,8 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     int i;
-    Uint64 then, now;
-    Uint32 frames;
+    uint64_t then, now;
+    uint32_t frames;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);

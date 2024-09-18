@@ -93,7 +93,7 @@ static bool VITAAUD_OpenDevice(SDL_AudioDevice *device)
        be a multiple of 64 bytes.  Our sample count is already a multiple of
        64, so spec->size should be a multiple of 64 as well. */
     mixlen = device->buffer_size * NUM_BUFFERS;
-    device->hidden->rawbuf = (Uint8 *)SDL_aligned_alloc(64, mixlen);
+    device->hidden->rawbuf = (uint8_t *)SDL_aligned_alloc(64, mixlen);
     if (!device->hidden->rawbuf) {
         return SDL_SetError("Couldn't allocate mixing buffer");
     }
@@ -128,7 +128,7 @@ static bool VITAAUD_OpenDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool VITAAUD_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool VITAAUD_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buffer_size)
 {
     return (sceAudioOutOutput(device->hidden->port, buffer) == 0);
 }
@@ -143,9 +143,9 @@ static bool VITAAUD_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static Uint8 *VITAAUD_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *VITAAUD_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    Uint8 *result = device->hidden->mixbufs[device->hidden->next_buffer];
+    uint8_t *result = device->hidden->mixbufs[device->hidden->next_buffer];
     device->hidden->next_buffer = (device->hidden->next_buffer + 1) % NUM_BUFFERS;
     return result;
 }
@@ -175,7 +175,7 @@ static bool VITAAUD_WaitRecordingDevice(SDL_AudioDevice *device)
 {
     // there's only a blocking call to obtain more data, so we'll just sleep as
     //  long as a buffer would run.
-    const Uint64 endticks = SDL_GetTicks() + ((device->sample_frames * 1000) / device->spec.freq);
+    const uint64_t endticks = SDL_GetTicks() + ((device->sample_frames * 1000) / device->spec.freq);
     while (!SDL_GetAtomicInt(&device->shutdown) && (SDL_GetTicks() < endticks)) {
         SDL_Delay(1);
     }

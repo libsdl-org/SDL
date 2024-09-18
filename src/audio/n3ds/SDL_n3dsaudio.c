@@ -79,7 +79,7 @@ static void AudioFrameFinished(void *vdevice)
 static bool N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     Result ndsp_init_res;
-    Uint8 *data_vaddr;
+    uint8_t *data_vaddr;
     float mix[12];
 
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
@@ -105,7 +105,7 @@ static bool N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
         device->spec.channels = 2;
     }
 
-    Uint32 format = 0;
+    uint32_t format = 0;
     SDL_AudioFormat test_format;
     const SDL_AudioFormat *closefmts = SDL_ClosestAudioFormats(device->spec.format);
     while ((test_format = *(closefmts++)) != 0) {
@@ -132,14 +132,14 @@ static bool N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("Mixing buffer is too large.");
     }
 
-    device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
+    device->hidden->mixbuf = (uint8_t *)SDL_malloc(device->buffer_size);
     if (!device->hidden->mixbuf) {
         return false;
     }
 
     SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
 
-    data_vaddr = (Uint8 *)linearAlloc(device->buffer_size * NUM_BUFFERS);
+    data_vaddr = (uint8_t *)linearAlloc(device->buffer_size * NUM_BUFFERS);
     if (!data_vaddr) {
         return SDL_OutOfMemory();
     }
@@ -176,7 +176,7 @@ static bool N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     contextLock(device);
 
@@ -211,7 +211,7 @@ static bool N3DSAUDIO_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static Uint8 *N3DSAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *N3DSAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     return device->hidden->mixbuf;
 }

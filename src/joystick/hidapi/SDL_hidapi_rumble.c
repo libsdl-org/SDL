@@ -31,7 +31,7 @@
 typedef struct SDL_HIDAPI_RumbleRequest
 {
     SDL_HIDAPI_Device *device;
-    Uint8 data[2 * USB_PACKET_LENGTH]; // need enough space for the biggest report: dualshock4 is 78 bytes
+    uint8_t data[2 * USB_PACKET_LENGTH]; // need enough space for the biggest report: dualshock4 is 78 bytes
     int size;
     SDL_HIDAPI_RumbleSentCallback callback;
     void *userdata;
@@ -178,7 +178,7 @@ bool SDL_HIDAPI_LockRumble(void)
     return true;
 }
 
-bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size)
+bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, uint8_t **data, int **size, int *maximum_size)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
     SDL_HIDAPI_RumbleRequest *request, *found;
@@ -198,12 +198,12 @@ bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, 
     return false;
 }
 
-int SDL_HIDAPI_SendRumbleAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size)
+int SDL_HIDAPI_SendRumbleAndUnlock(SDL_HIDAPI_Device *device, const uint8_t *data, int size)
 {
     return SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(device, data, size, NULL, NULL);
 }
 
-int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size, SDL_HIDAPI_RumbleSentCallback callback, void *userdata)
+int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const uint8_t *data, int size, SDL_HIDAPI_RumbleSentCallback callback, void *userdata)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
     SDL_HIDAPI_RumbleRequest *request;
@@ -247,9 +247,9 @@ void SDL_HIDAPI_UnlockRumble(void)
     SDL_UnlockMutex(SDL_HIDAPI_rumble_lock);
 }
 
-int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size)
+int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const uint8_t *data, int size)
 {
-    Uint8 *pending_data;
+    uint8_t *pending_data;
     int *pending_size;
     int maximum_size;
 

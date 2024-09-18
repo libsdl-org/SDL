@@ -52,10 +52,10 @@ static bool g_DidRegisterHints = false;
 static char *g_TitleText = NULL;
 static char *g_DescriptionText = NULL;
 static char *g_DefaultText = NULL;
-static const Sint32 g_DefaultTextInputScope = (Sint32)XGameUiTextEntryInputScope::Default;
-static Sint32 g_TextInputScope = g_DefaultTextInputScope;
-static const Sint32 g_DefaultMaxTextLength = 1024; // as per doc: maximum allowed amount on consoles
-static Sint32 g_MaxTextLength = g_DefaultMaxTextLength;
+static const int32_t g_DefaultTextInputScope = (int32_t)XGameUiTextEntryInputScope::Default;
+static int32_t g_TextInputScope = g_DefaultTextInputScope;
+static const int32_t g_DefaultMaxTextLength = 1024; // as per doc: maximum allowed amount on consoles
+static int32_t g_MaxTextLength = g_DefaultMaxTextLength;
 
 static void SDLCALL GDK_InternalHintCallback(
     void *userdata,
@@ -72,14 +72,14 @@ static void SDLCALL GDK_InternalHintCallback(
 
     if (userdata == &g_TextInputScope || userdata == &g_MaxTextLength) {
         // int32 hint
-        Sint32 intValue = (!newValue || newValue[0] == '\0') ? 0 : SDL_atoi(newValue);
+        int32_t intValue = (!newValue || newValue[0] == '\0') ? 0 : SDL_atoi(newValue);
         if (userdata == &g_MaxTextLength && intValue <= 0) {
             intValue = g_DefaultMaxTextLength;
         } else if (userdata == &g_TextInputScope && intValue < 0) {
             intValue = g_DefaultTextInputScope;
         }
 
-        *(Sint32 *)userdata = intValue;
+        *(int32_t *)userdata = intValue;
     } else {
         // string hint
         if (!newValue || newValue[0] == '\0') {
@@ -111,8 +111,8 @@ static bool GDK_InternalEnsureTaskQueue(void)
 static void CALLBACK GDK_InternalTextEntryCallback(XAsyncBlock *asyncBlock)
 {
     HRESULT hR = S_OK;
-    Uint32 resultSize = 0;
-    Uint32 resultUsed = 0;
+    uint32_t resultSize = 0;
+    uint32_t resultUsed = 0;
     char *resultBuffer = NULL;
 
     // The keyboard will be already hidden when we reach this code

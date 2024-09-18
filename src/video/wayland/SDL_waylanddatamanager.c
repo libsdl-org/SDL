@@ -68,7 +68,7 @@ static ssize_t write_pipe(int fd, const void *buffer, size_t total_length, size_
         bytes_written = SDL_SetError("Pipe select error");
     } else {
         if (length > 0) {
-            bytes_written = write(fd, (Uint8 *)buffer + *pos, SDL_min(length, PIPE_BUF));
+            bytes_written = write(fd, (uint8_t *)buffer + *pos, SDL_min(length, PIPE_BUF));
         }
 
         if (bytes_written > 0) {
@@ -110,7 +110,7 @@ static ssize_t read_pipe(int fd, void **buffer, size_t *total_length)
         pos = *total_length;
         *total_length += bytes_read;
 
-        new_buffer_length = *total_length + sizeof(Uint32);
+        new_buffer_length = *total_length + sizeof(uint32_t);
 
         if (!*buffer) {
             output_buffer = SDL_malloc(new_buffer_length);
@@ -121,8 +121,8 @@ static ssize_t read_pipe(int fd, void **buffer, size_t *total_length)
         if (!output_buffer) {
             bytes_read = -1;
         } else {
-            SDL_memcpy((Uint8 *)output_buffer + pos, temp, bytes_read);
-            SDL_memset((Uint8 *)output_buffer + (new_buffer_length - sizeof(Uint32)), 0, sizeof(Uint32));
+            SDL_memcpy((uint8_t *)output_buffer + pos, temp, bytes_read);
+            SDL_memset((uint8_t *)output_buffer + (new_buffer_length - sizeof(uint32_t)), 0, sizeof(uint32_t));
 
             *buffer = output_buffer;
         }
@@ -252,7 +252,7 @@ ssize_t Wayland_primary_selection_source_send(SDL_WaylandPrimarySelectionSource 
 void Wayland_data_source_set_callback(SDL_WaylandDataSource *source,
                                       SDL_ClipboardDataCallback callback,
                                       void *userdata,
-                                      Uint32 sequence)
+                                      uint32_t sequence)
 {
     if (source) {
         source->callback = callback;
@@ -276,10 +276,10 @@ static void *Wayland_clone_data_buffer(const void *buffer, size_t *len)
 {
     void *clone = NULL;
     if (*len > 0 && buffer) {
-        clone = SDL_malloc((*len)+sizeof(Uint32));
+        clone = SDL_malloc((*len)+sizeof(uint32_t));
         if (clone) {
             SDL_memcpy(clone, buffer, *len);
-            SDL_memset((Uint8 *)clone + *len, 0, sizeof(Uint32));
+            SDL_memset((uint8_t *)clone + *len, 0, sizeof(uint32_t));
         }
     }
     return clone;

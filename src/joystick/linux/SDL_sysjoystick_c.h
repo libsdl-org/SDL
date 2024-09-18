@@ -41,7 +41,7 @@ struct joystick_hwdata
     bool ff_rumble;
     bool ff_sine;
     struct ff_effect effect;
-    Uint32 effect_expiration;
+    uint32_t effect_expiration;
 
     // The current Linux joystick driver maps balls to two axes
     struct hwdata_ball
@@ -56,8 +56,8 @@ struct joystick_hwdata
     } *hats;
 
     // Support for the Linux 2.4 unified input interface
-    Uint8 key_map[KEY_MAX];
-    Uint8 abs_map[ABS_MAX];
+    uint8_t key_map[KEY_MAX];
+    uint8_t abs_map[ABS_MAX];
     bool has_key[KEY_MAX];
     bool has_abs[ABS_MAX];
     bool has_accelerometer;
@@ -65,8 +65,8 @@ struct joystick_hwdata
 
     // Support for the classic joystick interface
     bool classic;
-    Uint16 *key_pam;
-    Uint8 *abs_pam;
+    uint16_t *key_pam;
+    uint8_t *abs_pam;
 
     struct axis_correct
     {
@@ -88,8 +88,8 @@ struct joystick_hwdata
      * LINUX_JoystickUpdateupdate(), store them for the next one */
     float gyro_data[3];
     float accel_data[3];
-    Uint64 sensor_tick;
-    Sint32 last_tick;
+    uint64_t sensor_tick;
+    int32_t last_tick;
 
     bool report_sensor;
     bool fresh;

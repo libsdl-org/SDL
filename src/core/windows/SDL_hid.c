@@ -172,7 +172,7 @@ static HMODULE cfgmgr32_lib_handle;
 static CM_Register_NotificationFunc CM_Register_Notification;
 static CM_Unregister_NotificationFunc CM_Unregister_Notification;
 static HCMNOTIFICATION s_DeviceNotificationFuncHandle;
-static Uint64 s_LastDeviceNotification = 1;
+static uint64_t s_LastDeviceNotification = 1;
 
 static DWORD CALLBACK SDL_DeviceNotificationFunc(HCMNOTIFICATION hNotify, PVOID context, CM_NOTIFY_ACTION action, PCM_NOTIFY_EVENT_DATA eventData, DWORD event_data_size)
 {
@@ -210,7 +210,7 @@ void WIN_InitDeviceNotification(void)
     // FIXME: Should we log errors?
 }
 
-Uint64 WIN_GetLastDeviceNotification(void)
+uint64_t WIN_GetLastDeviceNotification(void)
 {
     return s_LastDeviceNotification;
 }
@@ -240,7 +240,7 @@ void WIN_InitDeviceNotification(void)
 {
 }
 
-Uint64 WIN_GetLastDeviceNotification( void )
+uint64_t WIN_GetLastDeviceNotification( void )
 {
     return 0;
 }

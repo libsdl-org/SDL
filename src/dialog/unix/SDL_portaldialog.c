@@ -324,7 +324,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
 
             SDL_snprintf(handle_str, len, "%s%s", WAYLAND_HANDLE_PREFIX, parent_handle);
         } else {
-            const Uint64 xid = (Uint64)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+            const uint64_t xid = (uint64_t)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
             if (xid) {
                 const size_t len = sizeof(X11_HANDLE_PREFIX) + 24; // A 64-bit number can be 20 characters max.
                 handle_str = SDL_malloc(len * sizeof(char));

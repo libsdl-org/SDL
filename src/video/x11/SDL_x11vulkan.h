@@ -32,7 +32,7 @@ typedef xcb_connection_t *(*PFN_XGetXCBConnection)(Display *dpy);
 
 extern bool X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-extern char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count);
+extern char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, uint32_t *count);
 extern bool X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                              SDL_Window *window,
                              VkInstance instance,
@@ -45,7 +45,7 @@ extern void X11_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 extern bool X11_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
                                            VkInstance instance,
                                            VkPhysicalDevice physicalDevice,
-                                           Uint32 queueFamilyIndex);
+                                           uint32_t queueFamilyIndex);
 
 #endif
 

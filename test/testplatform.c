@@ -48,27 +48,27 @@ static int TestTypes(bool verbose)
 {
     int error = 0;
 
-    if (badsize(sizeof(Uint8), 1)) {
+    if (badsize(sizeof(uint8_t), 1)) {
         if (verbose) {
-            SDL_Log("sizeof(Uint8) != 1, instead = %u\n", (unsigned int)sizeof(Uint8));
+            SDL_Log("sizeof(uint8_t) != 1, instead = %u\n", (unsigned int)sizeof(uint8_t));
         }
         ++error;
     }
-    if (badsize(sizeof(Uint16), 2)) {
+    if (badsize(sizeof(uint16_t), 2)) {
         if (verbose) {
-            SDL_Log("sizeof(Uint16) != 2, instead = %u\n", (unsigned int)sizeof(Uint16));
+            SDL_Log("sizeof(uint16_t) != 2, instead = %u\n", (unsigned int)sizeof(uint16_t));
         }
         ++error;
     }
-    if (badsize(sizeof(Uint32), 4)) {
+    if (badsize(sizeof(uint32_t), 4)) {
         if (verbose) {
-            SDL_Log("sizeof(Uint32) != 4, instead = %u\n", (unsigned int)sizeof(Uint32));
+            SDL_Log("sizeof(uint32_t) != 4, instead = %u\n", (unsigned int)sizeof(uint32_t));
         }
         ++error;
     }
-    if (badsize(sizeof(Uint64), 8)) {
+    if (badsize(sizeof(uint64_t), 8)) {
         if (verbose) {
-            SDL_Log("sizeof(Uint64) != 8, instead = %u\n", (unsigned int)sizeof(Uint64));
+            SDL_Log("sizeof(uint64_t) != 8, instead = %u\n", (unsigned int)sizeof(uint64_t));
         }
         ++error;
     }
@@ -82,19 +82,19 @@ static int TestTypes(bool verbose)
 static int TestEndian(bool verbose)
 {
     int error = 0;
-    Uint16 value = 0x1234;
+    uint16_t value = 0x1234;
     int real_byteorder;
     int real_floatwordorder = 0;
-    Uint16 value16 = 0xCDAB;
-    Uint16 swapped16 = 0xABCD;
-    Uint32 value32 = 0xEFBEADDE;
-    Uint32 swapped32 = 0xDEADBEEF;
-    Uint64 value64, swapped64;
+    uint16_t value16 = 0xCDAB;
+    uint16_t swapped16 = 0xABCD;
+    uint32_t value32 = 0xEFBEADDE;
+    uint32_t swapped32 = 0xDEADBEEF;
+    uint64_t value64, swapped64;
 
     union
     {
         double d;
-        Uint32 ui32[2];
+        uint32_t ui32[2];
     } value_double;
 
     value64 = 0xEFBEADDE;

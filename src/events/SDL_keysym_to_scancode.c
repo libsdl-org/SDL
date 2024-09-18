@@ -28,7 +28,7 @@
 
 /* *INDENT-OFF* */ // clang-format off
 static const struct {
-    Uint32       keysym;
+    uint32_t       keysym;
     SDL_Scancode scancode;
 } KeySymToSDLScancode[] = {
     { 0xFF9C, SDL_SCANCODE_KP_1 },  // XK_KP_End
@@ -58,7 +58,7 @@ static const struct {
 };
 
 // This is a mapping from X keysym to Linux keycode
-static const Uint32 LinuxKeycodeKeysyms[] = {
+static const uint32_t LinuxKeycodeKeysyms[] = {
     /*   0, 0x000 */    0x0, // NoSymbol
     /*   1, 0x001 */    0xFF1B, // Escape
     /*   2, 0x002 */    0x31, // 1
@@ -326,7 +326,7 @@ done
 #endif
 
 static const struct {
-    Uint32 keysym;
+    uint32_t keysym;
     int linux_keycode;
 } ExtendedLinuxKeycodeKeysyms[] = {
     { 0x1008FF2C, 0x0a2 },    // XF86XK_Eject
@@ -387,10 +387,10 @@ static const struct {
 };
 /* *INDENT-ON* */ // clang-format on
 
-SDL_Scancode SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode)
+SDL_Scancode SDL_GetScancodeFromKeySym(uint32_t keysym, uint32_t keycode)
 {
     int i;
-    Uint32 linux_keycode = 0;
+    uint32_t linux_keycode = 0;
 
     // First check our custom list
     for (i = 0; i < SDL_arraysize(KeySymToSDLScancode); ++i) {

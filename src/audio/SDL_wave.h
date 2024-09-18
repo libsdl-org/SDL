@@ -49,24 +49,24 @@
 // Stores the WAVE format information.
 typedef struct WaveFormat
 {
-    Uint16 formattag;     // Raw value of the first field in the fmt chunk data.
-    Uint16 encoding;      // Actual encoding, possibly from the extensible header.
-    Uint16 channels;      // Number of channels.
-    Uint32 frequency;     // Sampling rate in Hz.
-    Uint32 byterate;      // Average bytes per second.
-    Uint16 blockalign;    // Bytes per block.
-    Uint16 bitspersample; // Currently supported are 8, 16, 24, 32, and 4 for ADPCM.
+    uint16_t formattag;     // Raw value of the first field in the fmt chunk data.
+    uint16_t encoding;      // Actual encoding, possibly from the extensible header.
+    uint16_t channels;      // Number of channels.
+    uint32_t frequency;     // Sampling rate in Hz.
+    uint32_t byterate;      // Average bytes per second.
+    uint16_t blockalign;    // Bytes per block.
+    uint16_t bitspersample; // Currently supported are 8, 16, 24, 32, and 4 for ADPCM.
 
     /* Extra information size. Number of extra bytes starting at byte 18 in the
      * fmt chunk data. This is at least 22 for the extensible header.
      */
-    Uint16 extsize;
+    uint16_t extsize;
 
     // Extensible WAVE header fields
-    Uint16 validsamplebits;
-    Uint32 samplesperblock; // For compressed formats. Can be zero. Actually 16 bits in the header.
-    Uint32 channelmask;
-    Uint8 subformat[16]; // A format GUID.
+    uint16_t validsamplebits;
+    uint32_t samplesperblock; // For compressed formats. Can be zero. Actually 16 bits in the header.
+    uint32_t channelmask;
+    uint8_t subformat[16]; // A format GUID.
 } WaveFormat;
 
 // Stores information on the fact chunk.
@@ -78,7 +78,7 @@ typedef struct WaveFact
      * Set to 1 if the fact chunk is present and valid.
      * Set to 2 if samplelength is going to be used as the number of sample frames.
      */
-    Sint32 status;
+    int32_t status;
 
     /* Version 1 of the RIFF specification calls the field in the fact chunk
      * dwFileSize. The Standards Update then calls it dwSampleLength and specifies
@@ -88,16 +88,16 @@ typedef struct WaveFact
      * because a compressed block is usually decoded to a fixed number of
      * sample frames.
      */
-    Uint32 samplelength; // Raw sample length value from the fact chunk.
+    uint32_t samplelength; // Raw sample length value from the fact chunk.
 } WaveFact;
 
 // Generic struct for the chunks in the WAVE file.
 typedef struct WaveChunk
 {
-    Uint32 fourcc;   // FOURCC of the chunk.
-    Uint32 length;   // Size of the chunk data.
-    Sint64 position; // Position of the data in the stream.
-    Uint8 *data;     // When allocated, this points to the chunk data. length is used for the memory allocation size.
+    uint32_t fourcc;   // FOURCC of the chunk.
+    uint32_t length;   // Size of the chunk data.
+    int64_t position; // Position of the data in the stream.
+    uint8_t *data;     // When allocated, this points to the chunk data. length is used for the memory allocation size.
     size_t size;     // Number of bytes in data that could be read from the stream. Can be smaller than length.
 } WaveChunk;
 
@@ -141,7 +141,7 @@ typedef struct WaveFile
      * size of the data chunk or, if the appropriate hint is enabled, with the
      * sample length value from the fact chunk.
      */
-    Sint64 sampleframes;
+    int64_t sampleframes;
 
     void *decoderdata; // Some decoders require extra data for a state.
 

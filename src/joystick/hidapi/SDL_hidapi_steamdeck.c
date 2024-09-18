@@ -73,16 +73,16 @@ typedef enum
 
 typedef struct
 {
-    Uint32 update_rate_us;
-    Uint32 sensor_timestamp_us;
-    Uint64 last_button_state;
-    Uint8 watchdog_counter;
+    uint32_t update_rate_us;
+    uint32_t sensor_timestamp_us;
+    uint64_t last_button_state;
+    uint8_t watchdog_counter;
 } SDL_DriverSteamDeck_Context;
 
 static bool DisableDeckLizardMode(SDL_hid_device *dev)
 {
     int rc;
-    Uint8 buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
+    uint8_t buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
     FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
 
     msg->header.type = ID_CLEAR_DIGITAL_MAPPINGS;
@@ -118,7 +118,7 @@ static bool DisableDeckLizardMode(SDL_hid_device *dev)
 static bool FeedDeckLizardWatchdog(SDL_hid_device *dev)
 {
     int rc;
-    Uint8 buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
+    uint8_t buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
     FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
 
     msg->header.type = ID_CLEAR_DIGITAL_MAPPINGS;
@@ -149,10 +149,10 @@ static void HIDAPI_DriverSteamDeck_HandleState(SDL_HIDAPI_Device *device,
 {
     float values[3];
     SDL_DriverSteamDeck_Context *ctx = (SDL_DriverSteamDeck_Context *)device->context;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     if (pInReport->payload.deckState.ulButtons != ctx->last_button_state) {
-        Uint8 hat = 0;
+        uint8_t hat = 0;
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH,
                                ((pInReport->payload.deckState.ulButtonsL & STEAMDECK_LBUTTON_A) != 0));
@@ -257,9 +257,9 @@ static bool HIDAPI_DriverSteamDeck_IsSupportedDevice(
     SDL_HIDAPI_Device *device,
     const char *name,
     SDL_GamepadType type,
-    Uint16 vendor_id,
-    Uint16 product_id,
-    Uint16 version,
+    uint16_t vendor_id,
+    uint16_t product_id,
+    uint16_t version,
     int interface_number,
     int interface_class,
     int interface_subclass,
@@ -271,7 +271,7 @@ static bool HIDAPI_DriverSteamDeck_IsSupportedDevice(
 static bool HIDAPI_DriverSteamDeck_InitDevice(SDL_HIDAPI_Device *device)
 {
     int size;
-    Uint8 data[64];
+    uint8_t data[64];
     SDL_DriverSteamDeck_Context *ctx;
 
     ctx = (SDL_DriverSteamDeck_Context *)SDL_calloc(1, sizeof(*ctx));
@@ -369,10 +369,10 @@ static bool HIDAPI_DriverSteamDeck_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
     return true;
 }
 
-static bool HIDAPI_DriverSteamDeck_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool HIDAPI_DriverSteamDeck_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     int rc;
-    Uint8 buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
+    uint8_t buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
     FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
 
     msg->header.type = ID_TRIGGER_RUMBLE_CMD;
@@ -389,17 +389,17 @@ static bool HIDAPI_DriverSteamDeck_RumbleJoystick(SDL_HIDAPI_Device *device, SDL
     return true;
 }
 
-static bool HIDAPI_DriverSteamDeck_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool HIDAPI_DriverSteamDeck_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32 HIDAPI_DriverSteamDeck_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static uint32_t HIDAPI_DriverSteamDeck_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
 }
 
-static bool HIDAPI_DriverSteamDeck_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool HIDAPI_DriverSteamDeck_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }

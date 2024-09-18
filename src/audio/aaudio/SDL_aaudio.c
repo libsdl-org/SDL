@@ -36,7 +36,7 @@ struct SDL_PrivateAudioData
 {
     AAudioStream *stream;
     int num_buffers;
-    Uint8 *mixbuf;          // Raw mixing buffer
+    uint8_t *mixbuf;          // Raw mixing buffer
     size_t mixbuf_bytes;    // num_buffers * device->buffer_size
     size_t callback_bytes;
     size_t processed_bytes;
@@ -95,7 +95,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
     size_t old_buffer_index = hidden->callback_bytes / device->buffer_size;
 
     if (device->recording) {
-        const Uint8 *input = (const Uint8 *)audioData;
+        const uint8_t *input = (const uint8_t *)audioData;
         size_t available_bytes = hidden->mixbuf_bytes - (hidden->callback_bytes - hidden->processed_bytes);
         size_t size = SDL_min(available_bytes, callback_bytes);
         size_t offset = hidden->callback_bytes % hidden->mixbuf_bytes;
@@ -119,7 +119,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
             LOGI("Audio recording overflow, dropped %zu frames\n", (callback_bytes - size) / framesize);
         }
     } else {
-        Uint8 *output = (Uint8 *)audioData;
+        uint8_t *output = (uint8_t *)audioData;
         size_t available_bytes = (hidden->processed_bytes - hidden->callback_bytes);
         size_t size = SDL_min(available_bytes, callback_bytes);
         size_t offset = hidden->callback_bytes % hidden->mixbuf_bytes;
@@ -154,7 +154,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
     return AAUDIO_CALLBACK_RESULT_CONTINUE;
 }
 
-static Uint8 *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
+static uint8_t *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
     size_t offset = (hidden->processed_bytes % hidden->mixbuf_bytes);
@@ -213,7 +213,7 @@ static bool RecoverAAudioDevice(SDL_AudioDevice *device)
 }
 
 
-static bool AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool AAUDIO_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
 
@@ -357,7 +357,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     // Allocate a double buffered mixing buffer
     hidden->num_buffers = 2;
     hidden->mixbuf_bytes = (hidden->num_buffers * device->buffer_size);
-    hidden->mixbuf = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), hidden->mixbuf_bytes);
+    hidden->mixbuf = (uint8_t *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), hidden->mixbuf_bytes);
     if (!hidden->mixbuf) {
         return false;
     }

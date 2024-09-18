@@ -126,11 +126,11 @@ void SDL_SetiOSEventPump(bool enabled)
     SDL_UpdateLifecycleObserver();
 }
 
-Uint64 UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp)
+uint64_t UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp)
 {
-    static Uint64 timestamp_offset;
-    Uint64 timestamp = (Uint64)(nsTimestamp * SDL_NS_PER_SECOND);
-    Uint64 now = SDL_GetTicksNS();
+    static uint64_t timestamp_offset;
+    uint64_t timestamp = (uint64_t)(nsTimestamp * SDL_NS_PER_SECOND);
+    uint64_t now = SDL_GetTicksNS();
 
     if (!timestamp_offset) {
         timestamp_offset = (now - timestamp);
@@ -316,7 +316,7 @@ static bool SetGCMouseRelativeMode(bool enabled)
     return true;
 }
 
-static void OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button, BOOL pressed)
+static void OnGCMouseButtonChanged(SDL_MouseID mouseID, uint8_t button, BOOL pressed)
 {
     SDL_SendMouseButton(0, SDL_GetMouseFocus(), mouseID, button, pressed);
 }

@@ -46,7 +46,7 @@ static HRGN GenerateSpanListRegion(SDL_Surface *shape, int offset_x, int offset_
     int span_start = -1;
 
     for (y = 0; y < shape->h; ++y) {
-        const Uint8 *a = (const Uint8 *)shape->pixels + y * shape->pitch;
+        const uint8_t *a = (const uint8_t *)shape->pixels + y * shape->pitch;
         for (x = 0; x < shape->w; ++x) {
             if (*a == SDL_ALPHA_TRANSPARENT) {
                 if (span_start != -1) {

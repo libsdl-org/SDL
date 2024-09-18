@@ -56,7 +56,7 @@ extern int FONT_CHARACTER_SIZE;
  *
  *  \returns true on success, false on failure.
  */
-bool SDLCALL SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c);
+bool SDLCALL SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, uint32_t c);
 
 /*
  *  Draw a UTF-8 string in the currently set font.

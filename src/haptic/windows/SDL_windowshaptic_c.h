@@ -44,7 +44,7 @@ struct haptic_hwdata
     bool is_joystick; // Device is loaded as joystick.
     SDL_Thread *thread;
     SDL_Mutex *mutex;
-    Uint64 stopTicks;
+    uint64_t stopTicks;
     SDL_AtomicInt stopThread;
 };
 

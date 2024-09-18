@@ -19,17 +19,17 @@ static size_t
 widelen(char *data)
 {
     size_t len = 0;
-    Uint32 *p = (Uint32 *)data;
+    uint32_t *p = (uint32_t *)data;
     while (*p++) {
         ++len;
     }
     return len;
 }
 
-static char *get_next_line(Uint8 **fdataptr, size_t *fdatalen)
+static char *get_next_line(uint8_t **fdataptr, size_t *fdatalen)
 {
     char *result = (char *) *fdataptr;
-    Uint8 *ptr = *fdataptr;
+    uint8_t *ptr = *fdataptr;
     size_t len = *fdatalen;
 
     if (len == 0) {
@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
     int i;
     int errors = 0;
     SDLTest_CommonState *state;
-    Uint8 *fdata = NULL;
-    Uint8 *fdataptr = NULL;
+    uint8_t *fdata = NULL;
+    uint8_t *fdataptr = NULL;
     char *line = NULL;
     size_t fdatalen = 0;
 
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     }
 
     fname = GetResourceFilename(fname, "utf8.txt");
-    fdata = (Uint8 *) (fname ? SDL_LoadFile(fname, &fdatalen) : NULL);
+    fdata = (uint8_t *) (fname ? SDL_LoadFile(fname, &fdatalen) : NULL);
     if (!fdata) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load %s\n", fname);
         return 1;

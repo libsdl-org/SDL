@@ -72,7 +72,7 @@ static bool PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
        be a multiple of 64 bytes.  Our sample count is already a multiple of
        64, so spec->size should be a multiple of 64 as well. */
     const int mixlen = device->buffer_size * NUM_BUFFERS;
-    device->hidden->rawbuf = (Uint8 *)SDL_aligned_alloc(64, mixlen);
+    device->hidden->rawbuf = (uint8_t *)SDL_aligned_alloc(64, mixlen);
     if (!device->hidden->rawbuf) {
         return SDL_SetError("Couldn't allocate mixing buffer");
     }
@@ -85,7 +85,7 @@ static bool PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     // this returns number of bytes accepted or a negative error. We assume anything other than buflen is a fatal error.
     return (audsrv_play_audio((char *)buffer, buflen) == buflen);
@@ -97,9 +97,9 @@ static bool PS2AUDIO_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static Uint8 *PS2AUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *PS2AUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    Uint8 *buffer = device->hidden->mixbufs[device->hidden->next_buffer];
+    uint8_t *buffer = device->hidden->mixbufs[device->hidden->next_buffer];
     device->hidden->next_buffer = (device->hidden->next_buffer + 1) % NUM_BUFFERS;
     return buffer;
 }

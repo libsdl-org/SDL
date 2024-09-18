@@ -508,7 +508,7 @@ static void BSD_JoystickDetect(void)
 {
 }
 
-static bool BSD_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool BSD_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers
     return false;
@@ -566,7 +566,7 @@ static SDL_JoystickID BSD_JoystickGetDeviceInstanceID(int device_index)
     return GetJoystickByDevIndex(device_index)->device_instance;
 }
 
-static unsigned hatval_to_sdl(Sint32 hatval)
+static unsigned hatval_to_sdl(int32_t hatval)
 {
     static const unsigned hat_dir_map[8] = {
         SDL_HAT_UP, SDL_HAT_RIGHTUP, SDL_HAT_RIGHT, SDL_HAT_RIGHTDOWN,
@@ -608,11 +608,11 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
     struct hid_data *hdata;
     struct report *rep;
     int nbutton, naxe = -1;
-    Sint32 v;
+    int32_t v;
 #ifdef SDL_PLATFORM_OPENBSD
-    Sint32 dpad[4] = { 0, 0, 0, 0 };
+    int32_t dpad[4] = { 0, 0, 0, 0 };
 #endif
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
 #ifdef SUPPORT_JOY_GAMEPORT
     struct joystick gameport;
@@ -632,7 +632,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                     xmin--;
                     xmax++;
                 }
-                v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * ((Sint32)x - xmin)) / (xmax - xmin)) + SDL_JOYSTICK_AXIS_MIN;
+                v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * ((int32_t)x - xmin)) / (xmax - xmin)) + SDL_JOYSTICK_AXIS_MIN;
                 SDL_SendJoystickAxis(timestamp, joy, 0, v);
             }
             if (SDL_abs(y - gameport.y) > 8) {
@@ -647,7 +647,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                     ymin--;
                     ymax++;
                 }
-                v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * ((Sint32)y - ymin)) / (ymax - ymin)) + SDL_JOYSTICK_AXIS_MIN;
+                v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * ((int32_t)y - ymin)) / (ymax - ymin)) + SDL_JOYSTICK_AXIS_MIN;
                 SDL_SendJoystickAxis(timestamp, joy, 1, v);
             }
             SDL_SendJoystickButton(timestamp, joy, 0, (gameport.b1 != 0));
@@ -681,11 +681,11 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                     if (joyaxe >= 0) {
                         naxe = joy->hwdata->axis_map[joyaxe];
                         // scaleaxe
-                        v = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
+                        v = (int32_t)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * (v - hitem.logical_minimum)) / (hitem.logical_maximum - hitem.logical_minimum)) + SDL_JOYSTICK_AXIS_MIN;
                         SDL_SendJoystickAxis(timestamp, joy, naxe, v);
                     } else if (usage == HUG_HAT_SWITCH) {
-                        v = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
+                        v = (int32_t)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         SDL_SendJoystickHat(timestamp, joy, 0,
                                                hatval_to_sdl(v) -
                                                    hitem.logical_minimum);
@@ -696,16 +696,16 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                      */
                     switch (usage) {
                     case HUG_DPAD_UP:
-                        dpad[0] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
+                        dpad[0] = (int32_t)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         break;
                     case HUG_DPAD_DOWN:
-                        dpad[1] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
+                        dpad[1] = (int32_t)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         break;
                     case HUG_DPAD_RIGHT:
-                        dpad[2] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
+                        dpad[2] = (int32_t)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         break;
                     case HUG_DPAD_LEFT:
-                        dpad[3] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
+                        dpad[3] = (int32_t)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         break;
                     //default:
                         // no-op
@@ -718,7 +718,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                     break;
                 }
                 case HUP_BUTTON:
-                    v = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
+                    v = (int32_t)hid_get_data(REP_BUF_DATA(rep), &hitem);
                     nbutton = HID_USAGE(hitem.usage) - 1; // SDL buttons are zero-based
                     SDL_SendJoystickButton(timestamp, joy, nbutton, (v != 0));
                     break;
@@ -811,12 +811,12 @@ static void report_free(struct report *r)
     r->status = SREPORT_UNINIT;
 }
 
-static bool BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool BSD_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static bool BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
@@ -826,7 +826,7 @@ static bool BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *
     return false;
 }
 
-static bool BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool BSD_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }

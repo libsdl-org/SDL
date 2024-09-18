@@ -54,7 +54,7 @@ typedef struct GLES2_FBOList GLES2_FBOList;
 
 struct GLES2_FBOList
 {
-    Uint32 w, h;
+    uint32_t w, h;
     GLuint FBO;
     GLES2_FBOList *next;
 };
@@ -180,7 +180,7 @@ typedef struct GLES2_RenderData
     GLuint shader_id_cache[GLES2_SHADER_COUNT];
 
     GLES2_ProgramCache program_cache;
-    Uint8 clear_r, clear_g, clear_b, clear_a;
+    uint8_t clear_r, clear_g, clear_b, clear_a;
 
 #if USE_VERTEX_BUFFER_OBJECTS
     GLuint vertex_buffers[8];
@@ -282,7 +282,7 @@ static bool GLES2_LoadFunctions(GLES2_RenderData *data)
     return true;
 }
 
-static GLES2_FBOList *GLES2_GetFBO(GLES2_RenderData *data, Uint32 w, Uint32 h)
+static GLES2_FBOList *GLES2_GetFBO(GLES2_RenderData *data, uint32_t w, uint32_t h)
 {
     GLES2_FBOList *result = data->framebuffers;
     while ((result) && ((result->w != w) || (result->h != h))) {
@@ -574,7 +574,7 @@ static GLuint GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, G
     }
 
     // Cache
-    data->shader_id_cache[(Uint32)type] = id;
+    data->shader_id_cache[(uint32_t)type] = id;
 
     return id;
 }
@@ -668,7 +668,7 @@ static bool GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source
     }
 
     // Load the requested shaders
-    vertex = data->shader_id_cache[(Uint32)vtype];
+    vertex = data->shader_id_cache[(uint32_t)vtype];
     if (!vertex) {
         vertex = GLES2_CacheShader(data, vtype, GL_VERTEX_SHADER);
         if (!vertex) {
@@ -676,7 +676,7 @@ static bool GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source
         }
     }
 
-    fragment = data->shader_id_cache[(Uint32)ftype];
+    fragment = data->shader_id_cache[(uint32_t)ftype];
     if (!fragment) {
         fragment = GLES2_CacheShader(data, ftype, GL_FRAGMENT_SHADER);
         if (!fragment) {
@@ -853,11 +853,11 @@ static bool GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             SDL_FColor col_;
             float *uv_;
             if (size_indices == 4) {
-                j = ((const Uint32 *)indices)[i];
+                j = ((const uint32_t *)indices)[i];
             } else if (size_indices == 2) {
-                j = ((const Uint16 *)indices)[i];
+                j = ((const uint16_t *)indices)[i];
             } else if (size_indices == 1) {
-                j = ((const Uint8 *)indices)[i];
+                j = ((const uint8_t *)indices)[i];
             } else {
                 j = i;
             }
@@ -897,11 +897,11 @@ static bool GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             SDL_FColor col_;
 
             if (size_indices == 4) {
-                j = ((const Uint32 *)indices)[i];
+                j = ((const uint32_t *)indices)[i];
             } else if (size_indices == 2) {
-                j = ((const Uint16 *)indices)[i];
+                j = ((const uint16_t *)indices)[i];
             } else if (size_indices == 1) {
-                j = ((const Uint8 *)indices)[i];
+                j = ((const uint8_t *)indices)[i];
             } else {
                 j = i;
             }
@@ -988,7 +988,7 @@ static bool SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, c
     }
 
     if (texture) {
-        SDL_Vertex *verts = (SDL_Vertex *)(((Uint8 *)vertices) + cmd->data.draw.first);
+        SDL_Vertex *verts = (SDL_Vertex *)(((uint8_t *)vertices) + cmd->data.draw.first);
         data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, (const GLvoid *)&verts->tex_coord);
     }
 
@@ -1022,7 +1022,7 @@ static bool SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, c
 
     // all drawing commands use this
     {
-        SDL_VertexSolid *verts = (SDL_VertexSolid *)(((Uint8 *)vertices) + cmd->data.draw.first);
+        SDL_VertexSolid *verts = (SDL_VertexSolid *)(((uint8_t *)vertices) + cmd->data.draw.first);
         data->glVertexAttribPointer(GLES2_ATTRIBUTE_POSITION, 2, GL_FLOAT, GL_FALSE, stride, (const GLvoid *)&verts->position);
         data->glVertexAttribPointer(GLES2_ATTRIBUTE_COLOR, 4, GL_FLOAT, GL_TRUE /* Normalized */, stride, (const GLvoid *)&verts->color);
     }
@@ -1671,8 +1671,8 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
 static bool GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels, GLint pitch, GLint bpp)
 {
-    Uint8 *blob = NULL;
-    Uint8 *src;
+    uint8_t *blob = NULL;
+    uint8_t *src;
     size_t src_pitch;
     int y;
 
@@ -1682,9 +1682,9 @@ static bool GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xof
 
     // Reformat the texture data into a tightly packed array
     src_pitch = (size_t)width * bpp;
-    src = (Uint8 *)pixels;
+    src = (uint8_t *)pixels;
     if ((size_t)pitch != src_pitch) {
-        blob = (Uint8 *)SDL_malloc(src_pitch * height);
+        blob = (uint8_t *)SDL_malloc(src_pitch * height);
         if (!blob) {
             return false;
         }
@@ -1692,7 +1692,7 @@ static bool GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xof
         for (y = 0; y < height; ++y) {
             SDL_memcpy(src, pixels, src_pitch);
             src += src_pitch;
-            pixels = (Uint8 *)pixels + pitch;
+            pixels = (uint8_t *)pixels + pitch;
         }
         src = blob;
     }
@@ -1733,7 +1733,7 @@ static bool GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
 #if SDL_HAVE_YUV
     if (tdata->yuv) {
         // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+        pixels = (const void *)((const uint8_t *)pixels + rect->h * pitch);
         if (texture->format == SDL_PIXELFORMAT_YV12) {
             data->glBindTexture(tdata->texture_type, tdata->texture_v);
         } else {
@@ -1749,7 +1749,7 @@ static bool GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
                             pixels, (pitch + 1) / 2, 1);
 
         // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
+        pixels = (const void *)((const uint8_t *)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
         if (texture->format == SDL_PIXELFORMAT_YV12) {
             data->glBindTexture(tdata->texture_type, tdata->texture_u);
         } else {
@@ -1765,7 +1765,7 @@ static bool GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
                             pixels, (pitch + 1) / 2, 1);
     } else if (tdata->nv12) {
         // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+        pixels = (const void *)((const uint8_t *)pixels + rect->h * pitch);
         data->glBindTexture(tdata->texture_type, tdata->texture_u);
         GLES2_TexSubImage2D(data, tdata->texture_type,
                             rect->x / 2,
@@ -1784,9 +1784,9 @@ static bool GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
 #if SDL_HAVE_YUV
 static bool GLES2_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *Uplane, int Upitch,
-                                  const Uint8 *Vplane, int Vpitch)
+                                  const uint8_t *Yplane, int Ypitch,
+                                  const uint8_t *Uplane, int Upitch,
+                                  const uint8_t *Vplane, int Vpitch)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
     GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
@@ -1835,8 +1835,8 @@ static bool GLES2_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static bool GLES2_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const SDL_Rect *rect,
-                                 const Uint8 *Yplane, int Ypitch,
-                                 const Uint8 *UVplane, int UVpitch)
+                                 const uint8_t *Yplane, int Ypitch,
+                                 const uint8_t *UVplane, int UVpitch)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
     GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
@@ -1880,7 +1880,7 @@ static bool GLES2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, cons
     GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
 
     // Retrieve the buffer/pitch for the specified region
-    *pixels = (Uint8 *)tdata->pixel_data +
+    *pixels = (uint8_t *)tdata->pixel_data +
               (tdata->pitch * rect->y) +
               (rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = tdata->pitch;
@@ -2014,9 +2014,9 @@ static SDL_Surface *GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
     if (!renderer->target) {
         bool isstack;
         int length = rect->w * SDL_BYTESPERPIXEL(format);
-        Uint8 *src = (Uint8 *)surface->pixels + (rect->h - 1) * surface->pitch;
-        Uint8 *dst = (Uint8 *)surface->pixels;
-        Uint8 *tmp = SDL_small_alloc(Uint8, length, &isstack);
+        uint8_t *src = (uint8_t *)surface->pixels + (rect->h - 1) * surface->pitch;
+        uint8_t *dst = (uint8_t *)surface->pixels;
+        uint8_t *tmp = SDL_small_alloc(uint8_t, length, &isstack);
         int rows = rect->h / 2;
         while (rows--) {
             SDL_memcpy(tmp, dst, length);

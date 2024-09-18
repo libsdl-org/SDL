@@ -101,7 +101,7 @@ void WIN_UpdateKeymap(bool send_event)
     for (int m = 0; m < SDL_arraysize(mods); ++m) {
         for (int i = 0; i < SDL_arraysize(windows_scancode_table); i++) {
             int vk, sc, result;
-            Uint32 *ch = 0;
+            uint32_t *ch = 0;
 
             // Make sure this scancode is a valid character scancode
             scancode = windows_scancode_table[i];
@@ -140,7 +140,7 @@ void WIN_UpdateKeymap(bool send_event)
             buffer[SDL_abs(result)] = 0;
 
             // Convert UTF-16 to UTF-32 code points
-            ch = (Uint32 *)SDL_iconv_string("UTF-32LE", "UTF-16LE", (const char *)buffer, (SDL_abs(result) + 1) * sizeof(WCHAR));
+            ch = (uint32_t *)SDL_iconv_string("UTF-32LE", "UTF-16LE", (const char *)buffer, (SDL_abs(result) + 1) * sizeof(WCHAR));
             if (ch) {
                 /* Windows keyboard layouts can emit several UTF-32 code points on a single key press.
                  * Use <U+FFFD REPLACEMENT CHARACTER> since we cannot fit into single SDL_Keycode value in SDL keymap.
@@ -775,7 +775,7 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
 
     length = ImmGetCompositionStringW(himc, GCS_COMPATTR, NULL, 0);
     if (length > 0) {
-        Uint8 *attributes = (Uint8 *)SDL_malloc(length);
+        uint8_t *attributes = (uint8_t *)SDL_malloc(length);
         if (attributes) {
             int start = 0;
             int end = 0;

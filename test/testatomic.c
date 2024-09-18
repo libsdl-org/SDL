@@ -127,7 +127,7 @@ static int SDLCALL adder(void *junk)
 
 static void runAdder(void)
 {
-    Uint64 start, end;
+    uint64_t start, end;
     int i;
     SDL_Thread *threads[NThreads];
 
@@ -591,7 +591,7 @@ static void RunFIFOTest(bool lock_free)
     SDL_Thread *fifo_thread = NULL;
     WriterData writerData[NUM_WRITERS];
     ReaderData readerData[NUM_READERS];
-    Uint64 start, end;
+    uint64_t start, end;
     int i, j;
     int grand_total;
     char textBuffer[1024];

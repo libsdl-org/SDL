@@ -20,8 +20,8 @@
 
 static SDLTest_CommonState *state;
 static SDL_GPUDevice *gpu_device;
-static Uint64 then = 0;
-static Uint64 frames = 0;
+static uint64_t then = 0;
+static uint64_t frames = 0;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
@@ -74,7 +74,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-	Uint32 w, h;
+	uint32_t w, h;
 	SDL_GPUCommandBuffer *cmdbuf = SDL_AcquireGPUCommandBuffer(gpu_device);
 
 	if (cmdbuf == NULL) {
@@ -110,7 +110,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 void SDL_AppQuit(void *appstate)
 {
     /* Print out some timing information */
-    const Uint64 now = SDL_GetTicks();
+    const uint64_t now = SDL_GetTicks();
     if (now > then) {
         SDL_Log("%2.2f frames per second\n", ((double)frames * 1000) / (now - then));
     }

@@ -126,7 +126,7 @@ typedef struct
 {
     SDL_MouseID instance_id;
     bool active;
-    Uint8 button_state;
+    uint8_t button_state;
     SDL_FPoint position;
     int trail_head;
     int trail_length;
@@ -139,7 +139,7 @@ typedef struct
 {
     SDL_KeyboardID instance_id;
     bool active;
-    Uint8 button_state;
+    uint8_t button_state;
     SDL_FPoint position;
 } KeyboardState;
 
@@ -154,7 +154,7 @@ static SDL_Texture *CreateTexture(const char *image[], SDL_Renderer *renderer)
 
     surface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_INDEX8);
     for (row = 0; row < surface->h; ++row) {
-        SDL_memcpy((Uint8 *)surface->pixels + row * surface->pitch, image[4 + row], surface->w);
+        SDL_memcpy((uint8_t *)surface->pixels + row * surface->pitch, image[4 + row], surface->w);
     }
 
     palette = SDL_CreateSurfacePalette(surface);

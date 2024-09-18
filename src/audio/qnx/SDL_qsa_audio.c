@@ -110,7 +110,7 @@ static bool QSA_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool QSA_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     if (SDL_GetAtomicInt(&device->shutdown) || !device->hidden) {
         return true;
@@ -168,7 +168,7 @@ static bool QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
     return (towrite == 0);
 }
 
-static Uint8 *QSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *QSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     return device->hidden->pcm_buf;
 }
@@ -197,7 +197,7 @@ static bool QSA_OpenDevice(SDL_AudioDevice *device)
     }
 
     SDL_assert(device->handle != NULL);  // NULL used to mean "system default device" in SDL2; it does not mean that in SDL3.
-    const Uint32 sdlhandle = (Uint32) ((size_t) device->handle);
+    const uint32_t sdlhandle = (uint32_t) ((size_t) device->handle);
     const uint32_t cardno = (uint32_t) (sdlhandle & 0xFFFF);
     const uint32_t deviceno = (uint32_t) ((sdlhandle >> 16) & 0xFFFF);
     const bool recording = device->recording;
@@ -273,7 +273,7 @@ static bool QSA_OpenDevice(SDL_AudioDevice *device)
     // Calculate the final parameters for this audio specification
     SDL_UpdatedAudioDeviceFormat(device);
 
-    device->hidden->pcm_buf = (Uint8 *) SDL_malloc(device->buffer_size);
+    device->hidden->pcm_buf = (uint8_t *) SDL_malloc(device->buffer_size);
     if (device->hidden->pcm_buf == NULL) {
         return false;
     }
@@ -382,7 +382,7 @@ static void QSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevic
                         // !!! FIXME: I'm assuming each of these values are way less than 0xFFFF. Fix this if not.
                         SDL_assert(card <= 0xFFFF);
                         SDL_assert(deviceno <= 0xFFFF);
-                        const Uint32 sdlhandle = ((Uint32) card) | (((Uint32) deviceno) << 16);
+                        const uint32_t sdlhandle = ((uint32_t) card) | (((uint32_t) deviceno) << 16);
                         SDL_AddAudioDevice(recording, fullname, pspec, (void *) ((size_t) sdlhandle));
                     }
                 } else {
@@ -407,7 +407,7 @@ static void QSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevic
         // !!! FIXME: I'm assuming each of these values are way less than 0xFFFF. Fix this if not.
         SDL_assert(cardno <= 0xFFFF);
         SDL_assert(deviceno <= 0xFFFF);
-        const Uint32 sdlhandle = ((Uint32) card) | (((Uint32) deviceno) << 16);
+        const uint32_t sdlhandle = ((uint32_t) card) | (((uint32_t) deviceno) << 16);
         *default_playback = SDL_FindPhysicalAudioDeviceByHandle((void *) ((size_t) sdlhandle));
     }
 
@@ -416,7 +416,7 @@ static void QSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevic
         // !!! FIXME: I'm assuming each of these values are way less than 0xFFFF. Fix this if not.
         SDL_assert(cardno <= 0xFFFF);
         SDL_assert(deviceno <= 0xFFFF);
-        const Uint32 sdlhandle = ((Uint32) card) | (((Uint32) deviceno) << 16);
+        const uint32_t sdlhandle = ((uint32_t) card) | (((uint32_t) deviceno) << 16);
         *default_recording = SDL_FindPhysicalAudioDeviceByHandle((void *) ((size_t) sdlhandle));
     }
 }

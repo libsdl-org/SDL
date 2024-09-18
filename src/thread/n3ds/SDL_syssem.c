@@ -31,7 +31,7 @@ struct SDL_Semaphore
     LightSemaphore semaphore;
 };
 
-SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(uint32_t initial_value)
 {
     SDL_Semaphore *sem;
 
@@ -58,9 +58,9 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
     SDL_free(sem);
 }
 
-static bool WaitOnSemaphoreFor(SDL_Semaphore *sem, Sint64 timeoutNS)
+static bool WaitOnSemaphoreFor(SDL_Semaphore *sem, int64_t timeoutNS)
 {
-    Uint64 stop_time = SDL_GetTicksNS() + timeoutNS;
+    uint64_t stop_time = SDL_GetTicksNS() + timeoutNS;
     while (SDL_GetTicksNS() < stop_time) {
         if (LightSemaphore_TryAcquire(&sem->semaphore, 1) == 0) {
             return true;
@@ -74,7 +74,7 @@ static bool WaitOnSemaphoreFor(SDL_Semaphore *sem, Sint64 timeoutNS)
     return false;
 }
 
-bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
+bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, int64_t timeoutNS)
 {
     if (!sem) {
         return true;
@@ -92,7 +92,7 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     return WaitOnSemaphoreFor(sem, timeoutNS);
 }
 
-Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
+uint32_t SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     if (!sem) {
         return 0;

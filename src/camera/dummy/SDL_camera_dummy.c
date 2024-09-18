@@ -38,7 +38,7 @@ static bool DUMMYCAMERA_WaitDevice(SDL_Camera *device)
     return SDL_Unsupported();
 }
 
-static SDL_CameraFrameResult DUMMYCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult DUMMYCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS)
 {
     SDL_Unsupported();
     return SDL_CAMERA_FRAME_ERROR;

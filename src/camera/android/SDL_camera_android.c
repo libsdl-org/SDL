@@ -252,7 +252,7 @@ static void DestroyCameraManager(void)
     }
 }
 
-static void format_android_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
+static void format_android_to_sdl(uint32_t fmt, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
         #define CASE(x, y, z)  case x: *format = y; *colorspace = z; return
@@ -274,7 +274,7 @@ static void format_android_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Color
     *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
-static Uint32 format_sdl_to_android(SDL_PixelFormat fmt)
+static uint32_t format_sdl_to_android(SDL_PixelFormat fmt)
 {
     switch (fmt) {
         #define CASE(x, y)  case y: return x
@@ -294,7 +294,7 @@ static bool ANDROIDCAMERA_WaitDevice(SDL_Camera *device)
     return true;  // this isn't used atm, since we run our own thread via onImageAvailable callbacks.
 }
 
-static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, uint64_t *timestampNS)
 {
     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     media_status_t res;
@@ -313,7 +313,7 @@ static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_
 
     int64_t atimestamp = 0;
     if (pAImage_getTimestamp(image, &atimestamp) == AMEDIA_OK) {
-        *timestampNS = (Uint64) atimestamp;
+        *timestampNS = (uint64_t) atimestamp;
     } else {
         *timestampNS = 0;
     }
@@ -340,7 +340,7 @@ static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_
         result = SDL_CAMERA_FRAME_ERROR;
     } else {
         int32_t row_stride = 0;
-        Uint8 *dst = frame->pixels;
+        uint8_t *dst = frame->pixels;
         pAImage_getPlaneRowStride(image, 0, &row_stride);
         frame->pitch = (int) row_stride;  // this is what SDL3 currently expects, probably incorrectly.
 

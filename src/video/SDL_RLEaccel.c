@@ -111,13 +111,13 @@
 #define ALPHA_BLIT32_888(to, from, length, bpp, alpha)       \
     do {                                                     \
         int i;                                               \
-        Uint32 *src = (Uint32 *)(from);                      \
-        Uint32 *dst = (Uint32 *)(to);                        \
+        uint32_t *src = (uint32_t *)(from);                      \
+        uint32_t *dst = (uint32_t *)(to);                        \
         for (i = 0; i < (int)(length); i++) {                \
-            Uint32 s = *src++;                               \
-            Uint32 d = *dst;                                 \
-            Uint32 s1 = s & 0xff00ff;                        \
-            Uint32 d1 = d & 0xff00ff;                        \
+            uint32_t s = *src++;                               \
+            uint32_t d = *dst;                                 \
+            uint32_t s1 = s & 0xff00ff;                        \
+            uint32_t d1 = d & 0xff00ff;                        \
             d1 = (d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff; \
             s &= 0xff00;                                     \
             d &= 0xff00;                                     \
@@ -135,34 +135,34 @@
 #define ALPHA_BLIT16_565(to, from, length, bpp, alpha) \
     do {                                               \
         int i;                                         \
-        Uint16 *src = (Uint16 *)(from);                \
-        Uint16 *dst = (Uint16 *)(to);                  \
-        Uint32 ALPHA = alpha >> 3;                     \
+        uint16_t *src = (uint16_t *)(from);                \
+        uint16_t *dst = (uint16_t *)(to);                  \
+        uint32_t ALPHA = alpha >> 3;                     \
         for (i = 0; i < (int)(length); i++) {          \
-            Uint32 s = *src++;                         \
-            Uint32 d = *dst;                           \
+            uint32_t s = *src++;                         \
+            uint32_t d = *dst;                           \
             s = (s | s << 16) & 0x07e0f81f;            \
             d = (d | d << 16) & 0x07e0f81f;            \
             d += (s - d) * ALPHA >> 5;                 \
             d &= 0x07e0f81f;                           \
-            *dst++ = (Uint16)(d | d >> 16);            \
+            *dst++ = (uint16_t)(d | d >> 16);            \
         }                                              \
     } while (0)
 
 #define ALPHA_BLIT16_555(to, from, length, bpp, alpha) \
     do {                                               \
         int i;                                         \
-        Uint16 *src = (Uint16 *)(from);                \
-        Uint16 *dst = (Uint16 *)(to);                  \
-        Uint32 ALPHA = alpha >> 3;                     \
+        uint16_t *src = (uint16_t *)(from);                \
+        uint16_t *dst = (uint16_t *)(to);                  \
+        uint32_t ALPHA = alpha >> 3;                     \
         for (i = 0; i < (int)(length); i++) {          \
-            Uint32 s = *src++;                         \
-            Uint32 d = *dst;                           \
+            uint32_t s = *src++;                         \
+            uint32_t d = *dst;                           \
             s = (s | s << 16) & 0x03e07c1f;            \
             d = (d | d << 16) & 0x03e07c1f;            \
             d += (s - d) * ALPHA >> 5;                 \
             d &= 0x03e07c1f;                           \
-            *dst++ = (Uint16)(d | d >> 16);            \
+            *dst++ = (uint16_t)(d | d >> 16);            \
         }                                              \
     } while (0)
 
@@ -172,15 +172,15 @@
 #define ALPHA_BLIT_ANY(to, from, length, bpp, alpha)             \
     do {                                                         \
         int i;                                                   \
-        Uint8 *src = from;                                       \
-        Uint8 *dst = to;                                         \
+        uint8_t *src = from;                                       \
+        uint8_t *dst = to;                                         \
         for (i = 0; i < (int)(length); i++) {                    \
-            Uint32 s = 0, d = 0;                                         \
+            uint32_t s = 0, d = 0;                                         \
             unsigned rs, gs, bs, rd, gd, bd;                     \
             switch (bpp) {                                       \
             case 2:                                              \
-                s = *(Uint16 *)src;                              \
-                d = *(Uint16 *)dst;                              \
+                s = *(uint16_t *)src;                              \
+                d = *(uint16_t *)dst;                              \
                 break;                                           \
             case 3:                                              \
                 if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {           \
@@ -192,8 +192,8 @@
                 }                                                \
                 break;                                           \
             case 4:                                              \
-                s = *(Uint32 *)src;                              \
-                d = *(Uint32 *)dst;                              \
+                s = *(uint32_t *)src;                              \
+                d = *(uint32_t *)dst;                              \
                 break;                                           \
             }                                                    \
             RGB_FROM_PIXEL(s, fmt, rs, gs, bs);                  \
@@ -204,21 +204,21 @@
             PIXEL_FROM_RGB(d, fmt, rd, gd, bd);                  \
             switch (bpp) {                                       \
             case 2:                                              \
-                *(Uint16 *)dst = (Uint16)d;                      \
+                *(uint16_t *)dst = (uint16_t)d;                      \
                 break;                                           \
             case 3:                                              \
                 if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {           \
-                    dst[0] = (Uint8)(d >> 16);                   \
-                    dst[1] = (Uint8)(d >> 8);                    \
-                    dst[2] = (Uint8)(d);                         \
+                    dst[0] = (uint8_t)(d >> 16);                   \
+                    dst[1] = (uint8_t)(d >> 8);                    \
+                    dst[2] = (uint8_t)(d);                         \
                 } else {                                         \
-                    dst[0] = (Uint8)d;                           \
-                    dst[1] = (Uint8)(d >> 8);                    \
-                    dst[2] = (Uint8)(d >> 16);                   \
+                    dst[0] = (uint8_t)d;                           \
+                    dst[1] = (uint8_t)(d >> 8);                    \
+                    dst[2] = (uint8_t)(d >> 16);                   \
                 }                                                \
                 break;                                           \
             case 4:                                              \
-                *(Uint32 *)dst = d;                              \
+                *(uint32_t *)dst = d;                              \
                 break;                                           \
             }                                                    \
             src += bpp;                                          \
@@ -237,11 +237,11 @@
 #define ALPHA_BLIT32_888_50(to, from, length, bpp, alpha)                                 \
     do {                                                                                  \
         int i;                                                                            \
-        Uint32 *src = (Uint32 *)(from);                                                   \
-        Uint32 *dst = (Uint32 *)(to);                                                     \
+        uint32_t *src = (uint32_t *)(from);                                                   \
+        uint32_t *dst = (uint32_t *)(to);                                                     \
         for (i = 0; i < (int)(length); i++) {                                             \
-            Uint32 s = *src++;                                                            \
-            Uint32 d = *dst;                                                              \
+            uint32_t s = *src++;                                                            \
+            uint32_t d = *dst;                                                              \
             *dst++ = (((s & 0x00fefefe) + (d & 0x00fefefe)) >> 1) + (s & d & 0x00010101); \
         }                                                                                 \
     } while (0)
@@ -254,9 +254,9 @@
 // helper: blend a single 16 bit pixel at 50%
 #define BLEND16_50(dst, src, mask)                           \
     do {                                                     \
-        Uint32 s = *src++;                                   \
-        Uint32 d = *dst;                                     \
-        *dst++ = (Uint16)((((s & mask) + (d & mask)) >> 1) + \
+        uint32_t s = *src++;                                   \
+        uint32_t d = *dst;                                     \
+        *dst++ = (uint16_t)((((s & mask) + (d & mask)) >> 1) + \
                           (s & d & (~mask & 0xffff)));       \
     } while (0)
 
@@ -264,8 +264,8 @@
 #define ALPHA_BLIT16_50(to, from, length, bpp, alpha, mask)                                                                              \
     do {                                                                                                                                 \
         unsigned n = (length);                                                                                                           \
-        Uint16 *src = (Uint16 *)(from);                                                                                                  \
-        Uint16 *dst = (Uint16 *)(to);                                                                                                    \
+        uint16_t *src = (uint16_t *)(from);                                                                                                  \
+        uint16_t *dst = (uint16_t *)(to);                                                                                                    \
         if (((uintptr_t)src ^ (uintptr_t)dst) & 3) {                                                                                     \
             /* source and destination not in phase, blit one by one */                                                                   \
             while (n--)                                                                                                                  \
@@ -277,9 +277,9 @@
                 n--;                                                                                                                     \
             }                                                                                                                            \
             for (; n > 1; n -= 2) {                                                                                                      \
-                Uint32 s = *(Uint32 *)src;                                                                                               \
-                Uint32 d = *(Uint32 *)dst;                                                                                               \
-                *(Uint32 *)dst = ((s & (mask | mask << 16)) >> 1) + ((d & (mask | mask << 16)) >> 1) + (s & d & (~(mask | mask << 16))); \
+                uint32_t s = *(uint32_t *)src;                                                                                               \
+                uint32_t d = *(uint32_t *)dst;                                                                                               \
+                *(uint32_t *)dst = ((s & (mask | mask << 16)) >> 1) + ((d & (mask | mask << 16)) >> 1) + (s & d & (~(mask | mask << 16))); \
                 src += 2;                                                                                                                \
                 dst += 2;                                                                                                                \
             }                                                                                                                            \
@@ -299,16 +299,16 @@
         if (alpha == 255) {                                                                                                                           \
             switch (fmt->bytes_per_pixel) {                                                                                                             \
             case 1:                                                                                                                                   \
-                blitter(1, Uint8, OPAQUE_BLIT);                                                                                                       \
+                blitter(1, uint8_t, OPAQUE_BLIT);                                                                                                       \
                 break;                                                                                                                                \
             case 2:                                                                                                                                   \
-                blitter(2, Uint8, OPAQUE_BLIT);                                                                                                       \
+                blitter(2, uint8_t, OPAQUE_BLIT);                                                                                                       \
                 break;                                                                                                                                \
             case 3:                                                                                                                                   \
-                blitter(3, Uint8, OPAQUE_BLIT);                                                                                                       \
+                blitter(3, uint8_t, OPAQUE_BLIT);                                                                                                       \
                 break;                                                                                                                                \
             case 4:                                                                                                                                   \
-                blitter(4, Uint16, OPAQUE_BLIT);                                                                                                      \
+                blitter(4, uint16_t, OPAQUE_BLIT);                                                                                                      \
                 break;                                                                                                                                \
             }                                                                                                                                         \
         } else {                                                                                                                                      \
@@ -322,9 +322,9 @@
                 case 0xffff:                                                                                                                          \
                     if (fmt->Gmask == 0x07e0 || fmt->Rmask == 0x07e0 || fmt->Bmask == 0x07e0) {                                                       \
                         if (alpha == 128) {                                                                                                           \
-                            blitter(2, Uint8, ALPHA_BLIT16_565_50);                                                                                   \
+                            blitter(2, uint8_t, ALPHA_BLIT16_565_50);                                                                                   \
                         } else {                                                                                                                      \
-                            blitter(2, Uint8, ALPHA_BLIT16_565);                                                                                      \
+                            blitter(2, uint8_t, ALPHA_BLIT16_565);                                                                                      \
                         }                                                                                                                             \
                     } else {                                                                                                                          \
                         goto general16;                                                                                                               \
@@ -334,9 +334,9 @@
                 case 0x7fff:                                                                                                                          \
                     if (fmt->Gmask == 0x03e0 || fmt->Rmask == 0x03e0 || fmt->Bmask == 0x03e0) {                                                       \
                         if (alpha == 128) {                                                                                                           \
-                            blitter(2, Uint8, ALPHA_BLIT16_555_50);                                                                                   \
+                            blitter(2, uint8_t, ALPHA_BLIT16_555_50);                                                                                   \
                         } else {                                                                                                                      \
-                            blitter(2, Uint8, ALPHA_BLIT16_555);                                                                                      \
+                            blitter(2, uint8_t, ALPHA_BLIT16_555);                                                                                      \
                         }                                                                                                                             \
                         break;                                                                                                                        \
                     } else {                                                                                                                          \
@@ -346,23 +346,23 @@
                                                                                                                                                       \
                 default:                                                                                                                              \
                 general16:                                                                                                                            \
-                    blitter(2, Uint8, ALPHA_BLIT_ANY);                                                                                                \
+                    blitter(2, uint8_t, ALPHA_BLIT_ANY);                                                                                                \
                 }                                                                                                                                     \
                 break;                                                                                                                                \
                                                                                                                                                       \
             case 3:                                                                                                                                   \
-                blitter(3, Uint8, ALPHA_BLIT_ANY);                                                                                                    \
+                blitter(3, uint8_t, ALPHA_BLIT_ANY);                                                                                                    \
                 break;                                                                                                                                \
                                                                                                                                                       \
             case 4:                                                                                                                                   \
                 if ((fmt->Rmask | fmt->Gmask | fmt->Bmask) == 0x00ffffff && (fmt->Gmask == 0xff00 || fmt->Rmask == 0xff00 || fmt->Bmask == 0xff00)) { \
                     if (alpha == 128) {                                                                                                               \
-                        blitter(4, Uint16, ALPHA_BLIT32_888_50);                                                                                      \
+                        blitter(4, uint16_t, ALPHA_BLIT32_888_50);                                                                                      \
                     } else {                                                                                                                          \
-                        blitter(4, Uint16, ALPHA_BLIT32_888);                                                                                         \
+                        blitter(4, uint16_t, ALPHA_BLIT32_888);                                                                                         \
                     }                                                                                                                                 \
                 } else {                                                                                                                              \
-                    blitter(4, Uint16, ALPHA_BLIT_ANY);                                                                                               \
+                    blitter(4, uint16_t, ALPHA_BLIT_ANY);                                                                                               \
                 }                                                                                                                                     \
                 break;                                                                                                                                \
             }                                                                                                                                         \
@@ -431,8 +431,8 @@
         }                                                                  \
     } while (0)
 
-static void RLEClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
-                        Uint8 *dstbuf, const SDL_Rect *srcrect, unsigned alpha)
+static void RLEClipBlit(int w, uint8_t *srcbuf, SDL_Surface *surf_dst,
+                        uint8_t *dstbuf, const SDL_Rect *srcrect, unsigned alpha)
 {
     const SDL_PixelFormatDetails *fmt = surf_dst->internal->format;
 
@@ -445,8 +445,8 @@ static void RLEClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
 static bool SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
                                 SDL_Surface *surf_dst, const SDL_Rect *dstrect)
 {
-    Uint8 *dstbuf;
-    Uint8 *srcbuf;
+    uint8_t *dstbuf;
+    uint8_t *srcbuf;
     int x, y;
     int w = surf_src->w;
     unsigned alpha;
@@ -461,8 +461,8 @@ static bool SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
     // Set up the source and destination pointers
     x = dstrect->x;
     y = dstrect->y;
-    dstbuf = (Uint8 *)surf_dst->pixels + y * surf_dst->pitch + x * surf_src->internal->format->bytes_per_pixel;
-    srcbuf = (Uint8 *)surf_src->internal->map.data + sizeof(SDL_PixelFormat);
+    dstbuf = (uint8_t *)surf_dst->pixels + y * surf_dst->pitch + x * surf_src->internal->format->bytes_per_pixel;
+    srcbuf = (uint8_t *)surf_src->internal->map.data + sizeof(SDL_PixelFormat);
 
     {
         // skip lines at the top if necessary
@@ -490,16 +490,16 @@ static bool SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
 
             switch (surf_src->internal->format->bytes_per_pixel) {
             case 1:
-                RLESKIP(1, Uint8);
+                RLESKIP(1, uint8_t);
                 break;
             case 2:
-                RLESKIP(2, Uint8);
+                RLESKIP(2, uint8_t);
                 break;
             case 3:
-                RLESKIP(3, Uint8);
+                RLESKIP(3, uint8_t);
                 break;
             case 4:
-                RLESKIP(4, Uint16);
+                RLESKIP(4, uint16_t);
                 break;
             }
 
@@ -564,11 +564,11 @@ done:
  */
 #define BLIT_TRANSL_888(src, dst)                        \
     do {                                                 \
-        Uint32 s = src;                                  \
-        Uint32 d = dst;                                  \
+        uint32_t s = src;                                  \
+        uint32_t d = dst;                                  \
         unsigned alpha = s >> 24;                        \
-        Uint32 s1 = s & 0xff00ff;                        \
-        Uint32 d1 = d & 0xff00ff;                        \
+        uint32_t s1 = s & 0xff00ff;                        \
+        uint32_t d1 = d & 0xff00ff;                        \
         d1 = (d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff; \
         s &= 0xff00;                                     \
         d &= 0xff00;                                     \
@@ -582,31 +582,31 @@ done:
  */
 #define BLIT_TRANSL_565(src, dst)          \
     do {                                   \
-        Uint32 s = src;                    \
-        Uint32 d = dst;                    \
+        uint32_t s = src;                    \
+        uint32_t d = dst;                    \
         unsigned alpha = (s & 0x3e0) >> 5; \
         s &= 0x07e0f81f;                   \
         d = (d | d << 16) & 0x07e0f81f;    \
         d += (s - d) * alpha >> 5;         \
         d &= 0x07e0f81f;                   \
-        dst = (Uint16)(d | d >> 16);       \
+        dst = (uint16_t)(d | d >> 16);       \
     } while (0)
 
 #define BLIT_TRANSL_555(src, dst)          \
     do {                                   \
-        Uint32 s = src;                    \
-        Uint32 d = dst;                    \
+        uint32_t s = src;                    \
+        uint32_t d = dst;                    \
         unsigned alpha = (s & 0x3e0) >> 5; \
         s &= 0x03e07c1f;                   \
         d = (d | d << 16) & 0x03e07c1f;    \
         d += (s - d) * alpha >> 5;         \
         d &= 0x03e07c1f;                   \
-        dst = (Uint16)(d | d >> 16);       \
+        dst = (uint16_t)(d | d >> 16);       \
     } while (0)
 
 // blit a pixel-alpha RLE surface clipped at the right and/or left edges
-static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
-                             Uint8 *dstbuf, const SDL_Rect *srcrect)
+static void RLEAlphaClipBlit(int w, uint8_t *srcbuf, SDL_Surface *surf_dst,
+                             uint8_t *dstbuf, const SDL_Rect *srcrect)
 {
     const SDL_PixelFormatDetails *df = surf_dst->internal->format;
     /*
@@ -654,8 +654,8 @@ static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
             ofs = 0;                                                      \
             do {                                                          \
                 unsigned run;                                             \
-                ofs += ((Uint16 *)srcbuf)[0];                             \
-                run = ((Uint16 *)srcbuf)[1];                              \
+                ofs += ((uint16_t *)srcbuf)[0];                             \
+                run = ((uint16_t *)srcbuf)[1];                              \
                 srcbuf += 4;                                              \
                 if (run) {                                                \
                     /* clip to left and right borders */                  \
@@ -669,7 +669,7 @@ static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
                         crun = right - cofs;                              \
                     if (crun > 0) {                                       \
                         Ptype *dst = (Ptype *)dstbuf + cofs;              \
-                        Uint32 *src = (Uint32 *)srcbuf + (cofs - ofs);    \
+                        uint32_t *src = (uint32_t *)srcbuf + (cofs - ofs);    \
                         int i;                                            \
                         for (i = 0; i < crun; i++)                        \
                             do_blend(src[i], dst[i]);                     \
@@ -685,13 +685,13 @@ static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
     switch (df->bytes_per_pixel) {
     case 2:
         if (df->Gmask == 0x07e0 || df->Rmask == 0x07e0 || df->Bmask == 0x07e0) {
-            RLEALPHACLIPBLIT(Uint16, Uint8, BLIT_TRANSL_565);
+            RLEALPHACLIPBLIT(uint16_t, uint8_t, BLIT_TRANSL_565);
         } else {
-            RLEALPHACLIPBLIT(Uint16, Uint8, BLIT_TRANSL_555);
+            RLEALPHACLIPBLIT(uint16_t, uint8_t, BLIT_TRANSL_555);
         }
         break;
     case 4:
-        RLEALPHACLIPBLIT(Uint32, Uint16, BLIT_TRANSL_888);
+        RLEALPHACLIPBLIT(uint32_t, uint16_t, BLIT_TRANSL_888);
         break;
     }
 }
@@ -702,7 +702,7 @@ static bool SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcr
 {
     int x, y;
     int w = surf_src->w;
-    Uint8 *srcbuf, *dstbuf;
+    uint8_t *srcbuf, *dstbuf;
     const SDL_PixelFormatDetails *df = surf_dst->internal->format;
 
     // Lock the destination if necessary
@@ -714,8 +714,8 @@ static bool SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcr
 
     x = dstrect->x;
     y = dstrect->y;
-    dstbuf = (Uint8 *)surf_dst->pixels + y * surf_dst->pitch + x * df->bytes_per_pixel;
-    srcbuf = (Uint8 *)surf_src->internal->map.data + sizeof(SDL_PixelFormat);
+    dstbuf = (uint8_t *)surf_dst->pixels + y * surf_dst->pitch + x * df->bytes_per_pixel;
+    srcbuf = (uint8_t *)surf_src->internal->map.data + sizeof(SDL_PixelFormat);
 
     {
         // skip lines at the top if necessary
@@ -747,8 +747,8 @@ static bool SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcr
                     ofs = 0;
                     do {
                         int run;
-                        ofs += ((Uint16 *)srcbuf)[0];
-                        run = ((Uint16 *)srcbuf)[1];
+                        ofs += ((uint16_t *)srcbuf)[0];
+                        run = ((uint16_t *)srcbuf)[1];
                         srcbuf += 4 * (run + 1);
                         ofs += run;
                     } while (ofs < w);
@@ -760,8 +760,8 @@ static bool SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcr
                     ofs = 0;
                     do {
                         int run;
-                        ofs += ((Uint16 *)srcbuf)[0];
-                        run = ((Uint16 *)srcbuf)[1];
+                        ofs += ((uint16_t *)srcbuf)[0];
+                        run = ((uint16_t *)srcbuf)[1];
                         srcbuf += 4;
                         if (run) {
                             srcbuf += 4 * run;
@@ -811,14 +811,14 @@ static bool SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcr
             ofs = 0;                                                 \
             do {                                                     \
                 unsigned run;                                        \
-                ofs += ((Uint16 *)srcbuf)[0];                        \
-                run = ((Uint16 *)srcbuf)[1];                         \
+                ofs += ((uint16_t *)srcbuf)[0];                        \
+                run = ((uint16_t *)srcbuf)[1];                         \
                 srcbuf += 4;                                         \
                 if (run) {                                           \
                     Ptype *dst = (Ptype *)dstbuf + ofs;              \
                     unsigned i;                                      \
                     for (i = 0; i < run; i++) {                      \
-                        Uint32 src = *(Uint32 *)srcbuf;              \
+                        uint32_t src = *(uint32_t *)srcbuf;              \
                         do_blend(src, *dst);                         \
                         srcbuf += 4;                                 \
                         dst++;                                       \
@@ -833,13 +833,13 @@ static bool SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcr
         switch (df->bytes_per_pixel) {
         case 2:
             if (df->Gmask == 0x07e0 || df->Rmask == 0x07e0 || df->Bmask == 0x07e0) {
-                RLEALPHABLIT(Uint16, Uint8, BLIT_TRANSL_565);
+                RLEALPHABLIT(uint16_t, uint8_t, BLIT_TRANSL_565);
             } else {
-                RLEALPHABLIT(Uint16, Uint8, BLIT_TRANSL_555);
+                RLEALPHABLIT(uint16_t, uint8_t, BLIT_TRANSL_555);
             }
             break;
         case 4:
-            RLEALPHABLIT(Uint32, Uint16, BLIT_TRANSL_888);
+            RLEALPHABLIT(uint32_t, uint16_t, BLIT_TRANSL_888);
             break;
         }
     }
@@ -863,11 +863,11 @@ done:
  */
 
 // encode 32bpp rgb + a into 16bpp rgb, losing alpha
-static int copy_opaque_16(void *dst, const Uint32 *src, int n,
+static int copy_opaque_16(void *dst, const uint32_t *src, int n,
                           const SDL_PixelFormatDetails *sfmt, const SDL_PixelFormatDetails *dfmt)
 {
     int i;
-    Uint16 *d = (Uint16 *)dst;
+    uint16_t *d = (uint16_t *)dst;
     for (i = 0; i < n; i++) {
         unsigned r, g, b;
         RGB_FROM_PIXEL(*src, sfmt, r, g, b);
@@ -879,11 +879,11 @@ static int copy_opaque_16(void *dst, const Uint32 *src, int n,
 }
 
 // decode opaque pixels from 16bpp to 32bpp rgb + a
-static int uncopy_opaque_16(Uint32 *dst, const void *src, int n,
+static int uncopy_opaque_16(uint32_t *dst, const void *src, int n,
                             const SDL_PixelFormatDetails *sfmt, const SDL_PixelFormatDetails *dfmt)
 {
     int i;
-    const Uint16 *s = (const Uint16 *)src;
+    const uint16_t *s = (const uint16_t *)src;
     unsigned alpha = dfmt->Amask ? 255 : 0;
     for (i = 0; i < n; i++) {
         unsigned r, g, b;
@@ -896,14 +896,14 @@ static int uncopy_opaque_16(Uint32 *dst, const void *src, int n,
 }
 
 // encode 32bpp rgb + a into 32bpp G0RAB format for blitting into 565
-static int copy_transl_565(void *dst, const Uint32 *src, int n,
+static int copy_transl_565(void *dst, const uint32_t *src, int n,
                            const SDL_PixelFormatDetails *sfmt, const SDL_PixelFormatDetails *dfmt)
 {
     int i;
-    Uint32 *d = (Uint32 *)dst;
+    uint32_t *d = (uint32_t *)dst;
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
-        Uint16 pix;
+        uint16_t pix;
         RGBA_FROM_8888(*src, sfmt, r, g, b, a);
         PIXEL_FROM_RGB(pix, dfmt, r, g, b);
         *d = ((pix & 0x7e0) << 16) | (pix & 0xf81f) | ((a << 2) & 0x7e0);
@@ -914,14 +914,14 @@ static int copy_transl_565(void *dst, const Uint32 *src, int n,
 }
 
 // encode 32bpp rgb + a into 32bpp G0RAB format for blitting into 555
-static int copy_transl_555(void *dst, const Uint32 *src, int n,
+static int copy_transl_555(void *dst, const uint32_t *src, int n,
                            const SDL_PixelFormatDetails *sfmt, const SDL_PixelFormatDetails *dfmt)
 {
     int i;
-    Uint32 *d = (Uint32 *)dst;
+    uint32_t *d = (uint32_t *)dst;
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
-        Uint16 pix;
+        uint16_t pix;
         RGBA_FROM_8888(*src, sfmt, r, g, b, a);
         PIXEL_FROM_RGB(pix, dfmt, r, g, b);
         *d = ((pix & 0x3e0) << 16) | (pix & 0xfc1f) | ((a << 2) & 0x3e0);
@@ -932,14 +932,14 @@ static int copy_transl_555(void *dst, const Uint32 *src, int n,
 }
 
 // decode translucent pixels from 32bpp GORAB to 32bpp rgb + a
-static int uncopy_transl_16(Uint32 *dst, const void *src, int n,
+static int uncopy_transl_16(uint32_t *dst, const void *src, int n,
                             const SDL_PixelFormatDetails *sfmt, const SDL_PixelFormatDetails *dfmt)
 {
     int i;
-    const Uint32 *s = (const Uint32 *)src;
+    const uint32_t *s = (const uint32_t *)src;
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
-        Uint32 pix = *s++;
+        uint32_t pix = *s++;
         a = (pix & 0x3e0) >> 2;
         pix = (pix & ~0x3e0) | pix >> 16;
         RGB_FROM_PIXEL(pix, sfmt, r, g, b);
@@ -950,11 +950,11 @@ static int uncopy_transl_16(Uint32 *dst, const void *src, int n,
 }
 
 // encode 32bpp rgba into 32bpp rgba, keeping alpha (dual purpose)
-static int copy_32(void *dst, const Uint32 *src, int n,
+static int copy_32(void *dst, const uint32_t *src, int n,
                    const SDL_PixelFormatDetails *sfmt, const SDL_PixelFormatDetails *dfmt)
 {
     int i;
-    Uint32 *d = (Uint32 *)dst;
+    uint32_t *d = (uint32_t *)dst;
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
         RGBA_FROM_8888(*src, sfmt, r, g, b, a);
@@ -966,14 +966,14 @@ static int copy_32(void *dst, const Uint32 *src, int n,
 }
 
 // decode 32bpp rgba into 32bpp rgba, keeping alpha (dual purpose)
-static int uncopy_32(Uint32 *dst, const void *src, int n,
+static int uncopy_32(uint32_t *dst, const void *src, int n,
                      const SDL_PixelFormatDetails *sfmt, const SDL_PixelFormatDetails *dfmt)
 {
     int i;
-    const Uint32 *s = (const Uint32 *)src;
+    const uint32_t *s = (const uint32_t *)src;
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
-        Uint32 pixel = *s++;
+        uint32_t pixel = *s++;
         RGB_FROM_PIXEL(pixel, sfmt, r, g, b);
         a = pixel >> 24;
         PIXEL_FROM_RGBA(*dst, dfmt, r, g, b, a);
@@ -996,10 +996,10 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
     int max_opaque_run;
     int max_transl_run = 65535;
     unsigned masksum;
-    Uint8 *rlebuf, *dst;
-    int (*copy_opaque)(void *, const Uint32 *, int,
+    uint8_t *rlebuf, *dst;
+    int (*copy_opaque)(void *, const uint32_t *, int,
                        const SDL_PixelFormatDetails *, const SDL_PixelFormatDetails *);
-    int (*copy_transl)(void *, const Uint32 *, int,
+    int (*copy_transl)(void *, const uint32_t *, int,
                        const SDL_PixelFormatDetails *, const SDL_PixelFormatDetails *);
 
     dest = surface->internal->map.info.dst_surface;
@@ -1059,7 +1059,7 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
     }
 
     maxsize += sizeof(SDL_PixelFormat);
-    rlebuf = (Uint8 *)SDL_malloc(maxsize);
+    rlebuf = (uint8_t *)SDL_malloc(maxsize);
     if (!rlebuf) {
         return false;
     }
@@ -1072,24 +1072,24 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
         int x, y;
         int h = surface->h, w = surface->w;
         const SDL_PixelFormatDetails *sf = surface->internal->format;
-        Uint32 *src = (Uint32 *)surface->pixels;
-        Uint8 *lastline = dst; // end of last non-blank line
+        uint32_t *src = (uint32_t *)surface->pixels;
+        uint8_t *lastline = dst; // end of last non-blank line
 
         // opaque counts are 8 or 16 bits, depending on target depth
 #define ADD_OPAQUE_COUNTS(n, m)           \
     if (df->bytes_per_pixel == 4) {         \
-        ((Uint16 *)dst)[0] = (Uint16)n;   \
-        ((Uint16 *)dst)[1] = (Uint16)m;   \
+        ((uint16_t *)dst)[0] = (uint16_t)n;   \
+        ((uint16_t *)dst)[1] = (uint16_t)m;   \
         dst += 4;                         \
     } else {                              \
-        dst[0] = (Uint8)n;                \
-        dst[1] = (Uint8)m;                \
+        dst[0] = (uint8_t)n;                \
+        dst[1] = (uint8_t)m;                \
         dst += 2;                         \
     }
 
         // translucent counts are always 16 bit
 #define ADD_TRANSL_COUNTS(n, m) \
-    (((Uint16 *)dst)[0] = (Uint16)n, ((Uint16 *)dst)[1] = (Uint16)m, dst += 4)
+    (((uint16_t *)dst)[0] = (uint16_t)n, ((uint16_t *)dst)[1] = (uint16_t)m, dst += 4)
 
         for (y = 0; y < h; y++) {
             int runstart, skipstart;
@@ -1190,7 +1190,7 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
 
     // reallocate the buffer to release unused memory
     {
-        Uint8 *p = (Uint8 *)SDL_realloc(rlebuf, dst - rlebuf);
+        uint8_t *p = (uint8_t *)SDL_realloc(rlebuf, dst - rlebuf);
         if (!p) {
             p = rlebuf;
         }
@@ -1200,17 +1200,17 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
     return true;
 }
 
-static Uint32 getpix_8(const Uint8 *srcbuf)
+static uint32_t getpix_8(const uint8_t *srcbuf)
 {
     return *srcbuf;
 }
 
-static Uint32 getpix_16(const Uint8 *srcbuf)
+static uint32_t getpix_16(const uint8_t *srcbuf)
 {
-    return *(const Uint16 *)srcbuf;
+    return *(const uint16_t *)srcbuf;
 }
 
-static Uint32 getpix_24(const Uint8 *srcbuf)
+static uint32_t getpix_24(const uint8_t *srcbuf)
 {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     return srcbuf[0] + (srcbuf[1] << 8) + (srcbuf[2] << 16);
@@ -1219,12 +1219,12 @@ static Uint32 getpix_24(const Uint8 *srcbuf)
 #endif
 }
 
-static Uint32 getpix_32(const Uint8 *srcbuf)
+static uint32_t getpix_32(const uint8_t *srcbuf)
 {
-    return *(const Uint32 *)srcbuf;
+    return *(const uint32_t *)srcbuf;
 }
 
-typedef Uint32 (*getpix_func)(const Uint8 *);
+typedef uint32_t (*getpix_func)(const uint8_t *);
 
 static const getpix_func getpixes[4] = {
     getpix_8, getpix_16, getpix_24, getpix_32
@@ -1232,14 +1232,14 @@ static const getpix_func getpixes[4] = {
 
 static bool RLEColorkeySurface(SDL_Surface *surface)
 {
-    Uint8 *rlebuf, *dst;
+    uint8_t *rlebuf, *dst;
     int maxn;
     int y;
-    Uint8 *srcbuf, *lastline;
+    uint8_t *srcbuf, *lastline;
     int maxsize = 0;
     const int bpp = surface->internal->format->bytes_per_pixel;
     getpix_func getpix;
-    Uint32 ckey, rgbmask;
+    uint32_t ckey, rgbmask;
     int w, h;
 
     // calculate the worst case size for the compressed surface
@@ -1263,13 +1263,13 @@ static bool RLEColorkeySurface(SDL_Surface *surface)
         return false;
     }
 
-    rlebuf = (Uint8 *)SDL_malloc(maxsize);
+    rlebuf = (uint8_t *)SDL_malloc(maxsize);
     if (!rlebuf) {
         return false;
     }
 
     // Set up the conversion
-    srcbuf = (Uint8 *)surface->pixels;
+    srcbuf = (uint8_t *)surface->pixels;
     maxn = bpp == 4 ? 65535 : 255;
     dst = rlebuf;
     rgbmask = ~surface->internal->format->Amask;
@@ -1281,12 +1281,12 @@ static bool RLEColorkeySurface(SDL_Surface *surface)
 
 #define ADD_COUNTS(n, m)                \
     if (bpp == 4) {                     \
-        ((Uint16 *)dst)[0] = (Uint16)n; \
-        ((Uint16 *)dst)[1] = (Uint16)m; \
+        ((uint16_t *)dst)[0] = (uint16_t)n; \
+        ((uint16_t *)dst)[1] = (uint16_t)m; \
         dst += 4;                       \
     } else {                            \
-        dst[0] = (Uint8)n;              \
-        dst[1] = (Uint8)m;              \
+        dst[0] = (uint8_t)n;              \
+        dst[1] = (uint8_t)m;              \
         dst += 2;                       \
     }
 
@@ -1358,7 +1358,7 @@ static bool RLEColorkeySurface(SDL_Surface *surface)
     // reallocate the buffer to release unused memory
     {
         // If SDL_realloc returns NULL, the original block is left intact
-        Uint8 *p = (Uint8 *)SDL_realloc(rlebuf, dst - rlebuf);
+        uint8_t *p = (uint8_t *)SDL_realloc(rlebuf, dst - rlebuf);
         if (!p) {
             p = rlebuf;
         }
@@ -1437,13 +1437,13 @@ bool SDL_RLESurface(SDL_Surface *surface)
  */
 static bool UnRLEAlpha(SDL_Surface *surface)
 {
-    Uint8 *srcbuf;
-    Uint32 *dst;
+    uint8_t *srcbuf;
+    uint32_t *dst;
     const SDL_PixelFormatDetails *sf = surface->internal->format;
     const SDL_PixelFormatDetails *df = SDL_GetPixelFormatDetails(*(SDL_PixelFormat *)surface->internal->map.data);
-    int (*uncopy_opaque)(Uint32 *, const void *, int,
+    int (*uncopy_opaque)(uint32_t *, const void *, int,
                          const SDL_PixelFormatDetails *, const SDL_PixelFormatDetails *);
-    int (*uncopy_transl)(Uint32 *, const void *, int,
+    int (*uncopy_transl)(uint32_t *, const void *, int,
                          const SDL_PixelFormatDetails *, const SDL_PixelFormatDetails *);
     int w = surface->w;
     int bpp = df->bytes_per_pixel;
@@ -1468,8 +1468,8 @@ static bool UnRLEAlpha(SDL_Surface *surface)
     // fill background with transparent pixels
     SDL_memset(surface->pixels, 0, (size_t)surface->h * surface->pitch);
 
-    dst = (Uint32 *)surface->pixels;
-    srcbuf = (Uint8 *)surface->internal->map.data + sizeof(SDL_PixelFormat);
+    dst = (uint32_t *)surface->pixels;
+    srcbuf = (uint8_t *)surface->internal->map.data + sizeof(SDL_PixelFormat);
     for (;;) {
         // copy opaque pixels
         int ofs = 0;
@@ -1480,8 +1480,8 @@ static bool UnRLEAlpha(SDL_Surface *surface)
                 run = srcbuf[1];
                 srcbuf += 2;
             } else {
-                ofs += ((Uint16 *)srcbuf)[0];
-                run = ((Uint16 *)srcbuf)[1];
+                ofs += ((uint16_t *)srcbuf)[0];
+                run = ((uint16_t *)srcbuf)[1];
                 srcbuf += 4;
             }
             if (run) {
@@ -1501,8 +1501,8 @@ static bool UnRLEAlpha(SDL_Surface *surface)
         ofs = 0;
         do {
             unsigned run;
-            ofs += ((Uint16 *)srcbuf)[0];
-            run = ((Uint16 *)srcbuf)[1];
+            ofs += ((uint16_t *)srcbuf)[0];
+            run = ((uint16_t *)srcbuf)[1];
             srcbuf += 4;
             if (run) {
                 srcbuf += uncopy_transl(dst + ofs, srcbuf, run, df, sf);

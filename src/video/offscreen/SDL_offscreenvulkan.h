@@ -29,7 +29,7 @@
 
 extern bool OFFSCREEN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern void OFFSCREEN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-extern char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count);
+extern char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, uint32_t *count);
 extern bool OFFSCREEN_Vulkan_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, VkInstance instance, const struct VkAllocationCallbacks *allocator, VkSurfaceKHR *surface);
 extern void OFFSCREEN_Vulkan_DestroySurface(SDL_VideoDevice *_this, VkInstance instance, VkSurfaceKHR surface, const struct VkAllocationCallbacks *allocator);
 

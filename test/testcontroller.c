@@ -88,7 +88,7 @@ static int binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
 static int last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
 static bool binding_flow = false;
 static int binding_flow_direction = 0;
-static Uint64 binding_advance_time = 0;
+static uint64_t binding_advance_time = 0;
 static SDL_FRect title_area;
 static bool title_highlighted;
 static bool title_pressed;
@@ -169,27 +169,27 @@ static const char *GetSensorName(SDL_SensorType sensor)
 */
 typedef struct
 {
-    Uint8 ucEnableBits1;              /* 0 */
-    Uint8 ucEnableBits2;              /* 1 */
-    Uint8 ucRumbleRight;              /* 2 */
-    Uint8 ucRumbleLeft;               /* 3 */
-    Uint8 ucHeadphoneVolume;          /* 4 */
-    Uint8 ucSpeakerVolume;            /* 5 */
-    Uint8 ucMicrophoneVolume;         /* 6 */
-    Uint8 ucAudioEnableBits;          /* 7 */
-    Uint8 ucMicLightMode;             /* 8 */
-    Uint8 ucAudioMuteBits;            /* 9 */
-    Uint8 rgucRightTriggerEffect[11]; /* 10 */
-    Uint8 rgucLeftTriggerEffect[11];  /* 21 */
-    Uint8 rgucUnknown1[6];            /* 32 */
-    Uint8 ucLedFlags;                 /* 38 */
-    Uint8 rgucUnknown2[2];            /* 39 */
-    Uint8 ucLedAnim;                  /* 41 */
-    Uint8 ucLedBrightness;            /* 42 */
-    Uint8 ucPadLights;                /* 43 */
-    Uint8 ucLedRed;                   /* 44 */
-    Uint8 ucLedGreen;                 /* 45 */
-    Uint8 ucLedBlue;                  /* 46 */
+    uint8_t ucEnableBits1;              /* 0 */
+    uint8_t ucEnableBits2;              /* 1 */
+    uint8_t ucRumbleRight;              /* 2 */
+    uint8_t ucRumbleLeft;               /* 3 */
+    uint8_t ucHeadphoneVolume;          /* 4 */
+    uint8_t ucSpeakerVolume;            /* 5 */
+    uint8_t ucMicrophoneVolume;         /* 6 */
+    uint8_t ucAudioEnableBits;          /* 7 */
+    uint8_t ucMicLightMode;             /* 8 */
+    uint8_t ucAudioMuteBits;            /* 9 */
+    uint8_t rgucRightTriggerEffect[11]; /* 10 */
+    uint8_t rgucLeftTriggerEffect[11];  /* 21 */
+    uint8_t rgucUnknown1[6];            /* 32 */
+    uint8_t ucLedFlags;                 /* 38 */
+    uint8_t rgucUnknown2[2];            /* 39 */
+    uint8_t ucLedAnim;                  /* 41 */
+    uint8_t ucLedBrightness;            /* 42 */
+    uint8_t ucPadLights;                /* 43 */
+    uint8_t ucLedRed;                   /* 44 */
+    uint8_t ucLedGreen;                 /* 45 */
+    uint8_t ucLedBlue;                  /* 46 */
 } DS5EffectsState_t;
 
 static void CyclePS5AudioRoute(Controller *device)
@@ -234,7 +234,7 @@ static void CyclePS5TriggerEffect(Controller *device)
 {
     DS5EffectsState_t state;
 
-    Uint8 effects[3][11] = {
+    uint8_t effects[3][11] = {
         /* Clear trigger effect */
         { 0x05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         /* Constant resistance across entire trigger pull */
@@ -1002,7 +1002,7 @@ static void HandleGamepadRemapped(SDL_JoystickID id)
 static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
 {
     SDL_Gamepad *gamepad;
-    Uint16 firmware_version;
+    uint16_t firmware_version;
     SDL_SensorType sensors[] = {
         SDL_SENSOR_ACCEL,
         SDL_SENSOR_GYRO,
@@ -1095,12 +1095,12 @@ static void HandleGamepadRemoved(SDL_JoystickID id)
     }
 }
 
-static Uint16 ConvertAxisToRumble(Sint16 axisval)
+static uint16_t ConvertAxisToRumble(int16_t axisval)
 {
     /* Only start rumbling if the axis is past the halfway point */
-    const Sint16 half_axis = (Sint16)SDL_ceil(SDL_JOYSTICK_AXIS_MAX / 2.0f);
+    const int16_t half_axis = (int16_t)SDL_ceil(SDL_JOYSTICK_AXIS_MAX / 2.0f);
     if (axisval > half_axis) {
-        return (Uint16)(axisval - half_axis) * 4;
+        return (uint16_t)(axisval - half_axis) * 4;
     } else {
         return 0;
     }
@@ -1130,19 +1130,19 @@ static void SDLCALL VirtualGamepadSetPlayerIndex(void *userdata, int player_inde
     SDL_Log("Virtual Gamepad: player index set to %d\n", player_index);
 }
 
-static bool SDLCALL VirtualGamepadRumble(void *userdata, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool SDLCALL VirtualGamepadRumble(void *userdata, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     SDL_Log("Virtual Gamepad: rumble set to %d/%d\n", low_frequency_rumble, high_frequency_rumble);
     return true;
 }
 
-static bool SDLCALL VirtualGamepadRumbleTriggers(void *userdata, Uint16 left_rumble, Uint16 right_rumble)
+static bool SDLCALL VirtualGamepadRumbleTriggers(void *userdata, uint16_t left_rumble, uint16_t right_rumble)
 {
     SDL_Log("Virtual Gamepad: trigger rumble set to %d/%d\n", left_rumble, right_rumble);
     return true;
 }
 
-static bool SDLCALL VirtualGamepadSetLED(void *userdata, Uint8 red, Uint8 green, Uint8 blue)
+static bool SDLCALL VirtualGamepadSetLED(void *userdata, uint8_t red, uint8_t green, uint8_t blue)
 {
     SDL_Log("Virtual Gamepad: LED set to RGB %d,%d,%d\n", red, green, blue);
     return true;
@@ -1221,22 +1221,22 @@ static void VirtualGamepadMouseMotion(float x, float y)
             virtual_axis_active == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
             int range = (SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN);
             float distance = SDL_clamp((y - virtual_axis_start_y) / GetGamepadImageAxisHeight(image), 0.0f, 1.0f);
-            Sint16 value = (Sint16)(SDL_JOYSTICK_AXIS_MIN + (distance * range));
+            int16_t value = (int16_t)(SDL_JOYSTICK_AXIS_MIN + (distance * range));
             SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active, value);
         } else {
             float distanceX = SDL_clamp((x - virtual_axis_start_x) / GetGamepadImageAxisWidth(image), -1.0f, 1.0f);
             float distanceY = SDL_clamp((y - virtual_axis_start_y) / GetGamepadImageAxisHeight(image), -1.0f, 1.0f);
-            Sint16 valueX, valueY;
+            int16_t valueX, valueY;
 
             if (distanceX >= 0) {
-                valueX = (Sint16)(distanceX * SDL_JOYSTICK_AXIS_MAX);
+                valueX = (int16_t)(distanceX * SDL_JOYSTICK_AXIS_MAX);
             } else {
-                valueX = (Sint16)(distanceX * -SDL_JOYSTICK_AXIS_MIN);
+                valueX = (int16_t)(distanceX * -SDL_JOYSTICK_AXIS_MIN);
             }
             if (distanceY >= 0) {
-                valueY = (Sint16)(distanceY * SDL_JOYSTICK_AXIS_MAX);
+                valueY = (int16_t)(distanceY * SDL_JOYSTICK_AXIS_MAX);
             } else {
-                valueY = (Sint16)(distanceY * -SDL_JOYSTICK_AXIS_MIN);
+                valueY = (int16_t)(distanceY * -SDL_JOYSTICK_AXIS_MIN);
             }
             SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active, valueX);
             SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active + 1, valueY);
@@ -1340,7 +1340,7 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     float x, y;
 
     if (title_highlighted) {
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
 
         SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
 
@@ -1355,7 +1355,7 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     }
 
     if (type_highlighted) {
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
 
         SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
 
@@ -1395,7 +1395,7 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     SDLTest_DrawString(renderer, x, y, type);
 
     if (display_mode == CONTROLLER_MODE_TESTING) {
-        Uint64 steam_handle = SDL_GetGamepadSteamHandle(controller->gamepad);
+        uint64_t steam_handle = SDL_GetGamepadSteamHandle(controller->gamepad);
         if (steam_handle) {
             SDL_snprintf(text, SDL_arraysize(text), "Steam: 0x%.16" SDL_PRIx64, steam_handle);
             y = SCREEN_HEIGHT - 2 * (8.0f + FONT_LINE_HEIGHT);
@@ -1461,7 +1461,7 @@ static void DrawBindingTips(SDL_Renderer *renderer)
     if (binding_element == SDL_GAMEPAD_ELEMENT_INVALID) {
         SDLTest_DrawString(renderer, x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, y, text);
     } else {
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
         SDL_FRect rect;
         SDL_GamepadButton action_forward = SDL_GAMEPAD_BUTTON_SOUTH;
         bool bound_forward = MappingHasElement(controller->mapping, action_forward);
@@ -1517,24 +1517,24 @@ static void UpdateGamepadEffects(void)
 
     /* Update LED based on left thumbstick position */
     {
-        Sint16 x = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFTX);
-        Sint16 y = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFTY);
+        int16_t x = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFTX);
+        int16_t y = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFTY);
 
         if (!set_LED) {
             set_LED = (x < -8000 || x > 8000 || y > 8000);
         }
         if (set_LED) {
-            Uint8 r, g, b;
+            uint8_t r, g, b;
 
             if (x < 0) {
-                r = (Uint8)(((~x) * 255) / 32767);
+                r = (uint8_t)(((~x) * 255) / 32767);
                 b = 0;
             } else {
                 r = 0;
-                b = (Uint8)(((int)(x)*255) / 32767);
+                b = (uint8_t)(((int)(x)*255) / 32767);
             }
             if (y > 0) {
-                g = (Uint8)(((int)(y)*255) / 32767);
+                g = (uint8_t)(((int)(y)*255) / 32767);
             } else {
                 g = 0;
             }
@@ -1546,19 +1546,19 @@ static void UpdateGamepadEffects(void)
     if (controller->trigger_effect == 0) {
         /* Update rumble based on trigger state */
         {
-            Sint16 left = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER);
-            Sint16 right = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
-            Uint16 low_frequency_rumble = ConvertAxisToRumble(left);
-            Uint16 high_frequency_rumble = ConvertAxisToRumble(right);
+            int16_t left = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER);
+            int16_t right = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
+            uint16_t low_frequency_rumble = ConvertAxisToRumble(left);
+            uint16_t high_frequency_rumble = ConvertAxisToRumble(right);
             SDL_RumbleGamepad(controller->gamepad, low_frequency_rumble, high_frequency_rumble, 250);
         }
 
         /* Update trigger rumble based on thumbstick state */
         {
-            Sint16 left = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFTY);
-            Sint16 right = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_RIGHTY);
-            Uint16 left_rumble = ConvertAxisToRumble(~left);
-            Uint16 right_rumble = ConvertAxisToRumble(~right);
+            int16_t left = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_LEFTY);
+            int16_t right = SDL_GetGamepadAxis(controller->gamepad, SDL_GAMEPAD_AXIS_RIGHTY);
+            uint16_t left_rumble = ConvertAxisToRumble(~left);
+            uint16_t right_rumble = ConvertAxisToRumble(~right);
 
             SDL_RumbleGamepadTriggers(controller->gamepad, left_rumble, right_rumble, 250);
         }
@@ -1605,7 +1605,7 @@ static void loop(void *arg)
                 int nValue = event.jaxis.value;
                 int nCurrentDistance, nFarthestDistance;
                 if (!pAxisState->m_bMoving) {
-                    Sint16 nInitialValue;
+                    int16_t nInitialValue;
                     pAxisState->m_bMoving = SDL_GetJoystickAxisInitialState(controller->joystick, event.jaxis.axis, &nInitialValue);
                     pAxisState->m_nLastValue = nValue;
                     pAxisState->m_nStartingValue = nInitialValue;

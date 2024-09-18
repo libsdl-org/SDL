@@ -148,8 +148,8 @@ typedef struct SDL_AudioDriverImpl
     void (*ThreadInit)(SDL_AudioDevice *device);   // Called by audio thread at start
     void (*ThreadDeinit)(SDL_AudioDevice *device); // Called by audio thread at end
     bool (*WaitDevice)(SDL_AudioDevice *device);
-    bool (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen); // buffer and buflen are always from GetDeviceBuf, passed here for convenience.
-    Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
+    bool (*PlayDevice)(SDL_AudioDevice *device, const uint8_t *buffer, int buflen); // buffer and buflen are always from GetDeviceBuf, passed here for convenience.
+    uint8_t *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
     bool (*WaitRecordingDevice)(SDL_AudioDevice *device);
     int (*RecordDevice)(SDL_AudioDevice *device, void *buffer, int buflen);
     void (*FlushRecording)(SDL_AudioDevice *device);
@@ -168,7 +168,7 @@ typedef struct SDL_AudioDriverImpl
 
 typedef struct SDL_PendingAudioDeviceEvent
 {
-    Uint32 type;
+    uint32_t type;
     SDL_AudioDeviceID devid;
     struct SDL_PendingAudioDeviceEvent *next;
 } SDL_PendingAudioDeviceEvent;
@@ -217,9 +217,9 @@ struct SDL_AudioStream
     SDL_AudioSpec input_spec; // The spec of input data currently being processed
     int *input_chmap;
     int input_chmap_storage[SDL_MAX_CHANNELMAP_CHANNELS];  // !!! FIXME: this needs to grow if SDL ever supports more channels. But if it grows, we should probably be more clever about allocations.
-    Sint64 resample_offset;
+    int64_t resample_offset;
 
-    Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.
+    uint8_t *work_buffer;    // used for scratch space during data conversion/resampling.
     size_t work_buffer_allocation;
 
     bool simplified;  // true if created via SDL_OpenAudioDeviceStream
@@ -283,8 +283,8 @@ struct SDL_AudioDevice
 
     // These are, initially, set from current_audio, but we might swap them out with Zombie versions on disconnect/failure.
     bool (*WaitDevice)(SDL_AudioDevice *device);
-    bool (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen);
-    Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
+    bool (*PlayDevice)(SDL_AudioDevice *device, const uint8_t *buffer, int buflen);
+    uint8_t *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
     bool (*WaitRecordingDevice)(SDL_AudioDevice *device);
     int (*RecordDevice)(SDL_AudioDevice *device, void *buffer, int buflen);
     void (*FlushRecording)(SDL_AudioDevice *device);
@@ -326,8 +326,8 @@ struct SDL_AudioDevice
     bool simple_copy;
 
     // Scratch buffers used for mixing.
-    Uint8 *work_buffer;
-    Uint8 *mix_buffer;
+    uint8_t *work_buffer;
+    uint8_t *mix_buffer;
     float *postmix_buffer;
 
     // Size of work_buffer (and mix_buffer) in bytes.

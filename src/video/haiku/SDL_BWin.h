@@ -190,7 +190,7 @@ class SDL_BWin : public BWindow
 
     /* * * * * OpenGL functionality * * * * */
 #ifdef SDL_VIDEO_OPENGL
-    BGLView *CreateGLView(Uint32 gl_flags)
+    BGLView *CreateGLView(uint32_t gl_flags)
     {
         Lock();
         if (_SDL_GLView == NULL) {
@@ -484,7 +484,7 @@ class SDL_BWin : public BWindow
     {
         return _SDL_GLView;
     }
-    Uint32 GetGLType() { return _gl_type; }
+    uint32_t GetGLType() { return _gl_type; }
 #endif
 
     // Setter methods
@@ -717,7 +717,7 @@ class SDL_BWin : public BWindow
     SDL_BView *_SDL_View;
 #ifdef SDL_VIDEO_OPENGL
     BGLView *_SDL_GLView;
-    Uint32 _gl_type;
+    uint32_t _gl_type;
 #endif
 
     int32 _last_buttons;

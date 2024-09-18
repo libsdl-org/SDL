@@ -287,12 +287,12 @@ static bool ZombieWaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool ZombiePlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool ZombiePlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     return true;  // no-op, just throw the audio away.
 }
 
-static Uint8 *ZombieGetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *ZombieGetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     return device->work_buffer;
 }
@@ -771,7 +771,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 
 static void SDL_AudioThreadDeinit_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static bool SDL_AudioWaitDevice_Default(SDL_AudioDevice *device) { return true; /* no-op. */ }
-static bool SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size) { return true; /* no-op. */ }
+static bool SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, const uint8_t *buffer, int buffer_size) { return true; /* no-op. */ }
 static bool SDL_AudioWaitRecordingDevice_Default(SDL_AudioDevice *device) { return true; /* no-op. */ }
 static void SDL_AudioFlushRecording_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
@@ -796,7 +796,7 @@ static void SDL_AudioDetectDevices_Default(SDL_AudioDevice **default_playback, S
     }
 }
 
-static Uint8 *SDL_AudioGetDeviceBuf_Default(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *SDL_AudioGetDeviceBuf_Default(SDL_AudioDevice *device, int *buffer_size)
 {
     *buffer_size = 0;
     return NULL;
@@ -861,11 +861,11 @@ static SDL_AudioDevice *GetFirstAddedAudioDevice(const bool recording)
     return result;
 }
 
-static Uint32 HashAudioDeviceID(const void *key, void *data)
+static uint32_t HashAudioDeviceID(const void *key, void *data)
 {
     // shift right 2, to dump the first two bits, since these are flags
     //  (recording vs playback, logical vs physical) and the rest are unique incrementing integers.
-    return ((Uint32) ((uintptr_t) key)) >> 2;
+    return ((uint32_t) ((uintptr_t) key)) >> 2;
 }
 
 static bool MatchAudioDeviceID(const void *a, const void *b, void *data)
@@ -1074,7 +1074,7 @@ void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
 
 static void MixFloat32Audio(float *dst, const float *src, const int buffer_size)
 {
-    if (!SDL_MixAudio((Uint8 *) dst, (const Uint8 *) src, SDL_AUDIO_F32, buffer_size, 1.0f)) {
+    if (!SDL_MixAudio((uint8_t *) dst, (const uint8_t *) src, SDL_AUDIO_F32, buffer_size, 1.0f)) {
         SDL_assert(!"This shouldn't happen.");
     }
 }
@@ -1101,7 +1101,7 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
 
     bool failed = false;
     int buffer_size = device->buffer_size;
-    Uint8 *device_buffer = device->GetDeviceBuf(device, &buffer_size);
+    uint8_t *device_buffer = device->GetDeviceBuf(device, &buffer_size);
     if (buffer_size == 0) {
         // WASAPI (maybe others, later) does this to say "just abandon this iteration and try again next time."
     } else if (!device_buffer) {
@@ -1174,7 +1174,7 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
                 }
             }
 
-            if (((Uint8 *) final_mix_buffer) != device_buffer) {
+            if (((uint8_t *) final_mix_buffer) != device_buffer) {
                 // !!! FIXME: we can't promise the device buf is aligned/padded for SIMD.
                 //ConvertAudio(needed_samples / device->spec.channels, final_mix_buffer, SDL_AUDIO_F32, device->spec.channels, NULL, device_buffer, device->spec.format, device->spec.channels, NULL, NULL, 1.0f);
                 ConvertAudio(needed_samples / device->spec.channels, final_mix_buffer, SDL_AUDIO_F32, device->spec.channels, NULL, device->work_buffer, device->spec.format, device->spec.channels, NULL, NULL, 1.0f);
@@ -1665,14 +1665,14 @@ static bool OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec
     SDL_UpdatedAudioDeviceFormat(device);  // in case the backend changed things and forgot to call this.
 
     // Allocate a scratch audio buffer
-    device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
+    device->work_buffer = (uint8_t *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
     if (!device->work_buffer) {
         ClosePhysicalAudioDevice(device);
         return false;
     }
 
     if (device->spec.format != SDL_AUDIO_F32) {
-        device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
+        device->mix_buffer = (uint8_t *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
         if (!device->mix_buffer) {
             ClosePhysicalAudioDevice(device);
             return false;
@@ -2369,7 +2369,7 @@ bool SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SD
     SDL_UpdatedAudioDeviceFormat(device);
     if (device->work_buffer && (device->work_buffer_size > orig_work_buffer_size)) {
         SDL_aligned_free(device->work_buffer);
-        device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
+        device->work_buffer = (uint8_t *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
         if (!device->work_buffer) {
             kill_device = true;
         }
@@ -2385,7 +2385,7 @@ bool SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SD
         SDL_aligned_free(device->mix_buffer);
         device->mix_buffer = NULL;
         if (device->spec.format != SDL_AUDIO_F32) {
-            device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
+            device->mix_buffer = (uint8_t *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
             if (!device->mix_buffer) {
                 kill_device = true;
             }
@@ -2473,7 +2473,7 @@ void SDL_UpdateAudio(void)
             SDL_Event event;
             SDL_zero(event);
             event.type = i->type;
-            event.adevice.which = (Uint32) i->devid;
+            event.adevice.which = (uint32_t) i->devid;
             event.adevice.recording = ((i->devid & (1<<0)) == 0);  // bit #0 of devid is set for playback devices and unset for recording.
             SDL_PushEvent(&event);
         }

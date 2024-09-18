@@ -64,7 +64,7 @@ static GAMEINPUT_InternalList g_GameInputList = { NULL };
 static void *g_hGameInputDLL = NULL;
 static IGameInput *g_pGameInput = NULL;
 static GameInputCallbackToken g_GameInputCallbackToken = GAMEINPUT_INVALID_CALLBACK_TOKEN_VALUE;
-static Uint64 g_GameInputTimestampOffset;
+static uint64_t g_GameInputTimestampOffset;
 
 
 static bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
@@ -80,10 +80,10 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     GAMEINPUT_InternalDevice **devicelist = NULL;
     GAMEINPUT_InternalDevice *elem = NULL;
     const GameInputDeviceInfo *info = NULL;
-    Uint16 bus = SDL_HARDWARE_BUS_USB;
-    Uint16 vendor = 0;
-    Uint16 product = 0;
-    Uint16 version = 0;
+    uint16_t bus = SDL_HARDWARE_BUS_USB;
+    uint16_t vendor = 0;
+    uint16_t product = 0;
+    uint16_t version = 0;
     const char *manufacturer_string = NULL;
     const char *product_string = NULL;
     char tmp[4];
@@ -272,7 +272,7 @@ static bool GAMEINPUT_JoystickInit(void)
     }
 
     // Calculate the relative offset between SDL timestamps and GameInput timestamps
-    Uint64 now = SDL_GetTicksNS();
+    uint64_t now = SDL_GetTicksNS();
     uint64_t timestampUS = IGameInput_GetCurrentTimestamp(g_pGameInput);
     g_GameInputTimestampOffset = (SDL_NS_TO_US(now) - timestampUS);
 
@@ -313,7 +313,7 @@ static void GAMEINPUT_JoystickDetect(void)
     }
 }
 
-static bool GAMEINPUT_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool GAMEINPUT_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     SDL_AssertJoysticksLocked();
 
@@ -415,7 +415,7 @@ static void CALLBACK GAMEINPUT_InternalSystemButtonCallback(
 
     GameInputSystemButtons changedButtons = (previousButtons ^ currentButtons);
     if (changedButtons) {
-        Uint64 timestamp = SDL_US_TO_NS(timestampUS + g_GameInputTimestampOffset);
+        uint64_t timestamp = SDL_US_TO_NS(timestampUS + g_GameInputTimestampOffset);
 
         SDL_LockJoysticks();
         if (changedButtons & GameInputSystemButtonGuide) {
@@ -499,7 +499,7 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     return true;
 }
 
-static bool GAMEINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool GAMEINPUT_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     // don't check for caps here, since SetRumbleState doesn't return any result - we don't need to check it
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
@@ -510,7 +510,7 @@ static bool GAMEINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequenc
     return true;
 }
 
-static bool GAMEINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool GAMEINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     // don't check for caps here, since SetRumbleState doesn't return any result - we don't need to check it
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
@@ -521,7 +521,7 @@ static bool GAMEINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left
     return true;
 }
 
-static bool GAMEINPUT_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool GAMEINPUT_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }
@@ -543,7 +543,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
     IGameInputDevice *device = hwdata->devref->device;
     const GameInputDeviceInfo *info = hwdata->devref->info;
     IGameInputReading *reading = NULL;
-    Uint64 timestamp;
+    uint64_t timestamp;
     GameInputGamepadState state;
     HRESULT hR;
 
@@ -569,7 +569,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
             GameInputGamepadLeftShoulder,    // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
             GameInputGamepadRightShoulder,   // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
         };
-        Uint8 btnidx = 0, hat = 0;
+        uint8_t btnidx = 0, hat = 0;
 
         if (IGameInputReading_GetGamepadState(reading, &state)) {
             for (btnidx = 0; btnidx < SDL_arraysize(s_XInputButtons); ++btnidx) {
@@ -595,13 +595,13 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
             }
             SDL_SendJoystickHat(timestamp, joystick, 0, hat);
 
-#define CONVERT_AXIS(v) (Sint16)(((v) < 0.0f) ? ((v)*32768.0f) : ((v)*32767.0f))
+#define CONVERT_AXIS(v) (int16_t)(((v) < 0.0f) ? ((v)*32768.0f) : ((v)*32767.0f))
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, CONVERT_AXIS(state.leftThumbstickX));
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, CONVERT_AXIS(-state.leftThumbstickY));
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, CONVERT_AXIS(state.rightThumbstickX));
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, CONVERT_AXIS(-state.rightThumbstickY));
 #undef CONVERT_AXIS
-#define CONVERT_TRIGGER(v) (Sint16)((v)*65535.0f - 32768.0f)
+#define CONVERT_TRIGGER(v) (int16_t)((v)*65535.0f - 32768.0f)
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, CONVERT_TRIGGER(state.leftTrigger));
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, CONVERT_TRIGGER(state.rightTrigger));
 #undef CONVERT_TRIGGER
@@ -614,17 +614,17 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
             uint32_t i;
             uint32_t button_count = IGameInputReading_GetControllerButtonState(reading, info->controllerButtonCount, button_state);
             for (i = 0; i < button_count; ++i) {
-                SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, button_state[i]);
+                SDL_SendJoystickButton(timestamp, joystick, (uint8_t)i, button_state[i]);
             }
             SDL_stack_free(button_state);
         }
 
-#define CONVERT_AXIS(v) (Sint16)((v)*65535.0f - 32768.0f)
+#define CONVERT_AXIS(v) (int16_t)((v)*65535.0f - 32768.0f)
         if (axis_state) {
             uint32_t i;
             uint32_t axis_count = IGameInputReading_GetControllerAxisState(reading, info->controllerAxisCount, axis_state);
             for (i = 0; i < axis_count; ++i) {
-                SDL_SendJoystickAxis(timestamp, joystick, (Uint8)i, CONVERT_AXIS(axis_state[i]));
+                SDL_SendJoystickAxis(timestamp, joystick, (uint8_t)i, CONVERT_AXIS(axis_state[i]));
             }
             SDL_stack_free(axis_state);
         }

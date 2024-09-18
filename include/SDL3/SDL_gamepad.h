@@ -573,7 +573,7 @@ extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GetGamepadGUIDForID(SDL_JoystickID inst
  * \sa SDL_GetGamepadVendor
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadVendorForID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC uint16_t SDLCALL SDL_GetGamepadVendorForID(SDL_JoystickID instance_id);
 
 /**
  * Get the USB product ID of a gamepad, if available.
@@ -590,7 +590,7 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadVendorForID(SDL_JoystickID inst
  * \sa SDL_GetGamepadProduct
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductForID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC uint16_t SDLCALL SDL_GetGamepadProductForID(SDL_JoystickID instance_id);
 
 /**
  * Get the product version of a gamepad, if available.
@@ -607,7 +607,7 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductForID(SDL_JoystickID ins
  * \sa SDL_GetGamepadProductVersion
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductVersionForID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC uint16_t SDLCALL SDL_GetGamepadProductVersionForID(SDL_JoystickID instance_id);
 
 /**
  * Get the type of a gamepad.
@@ -836,7 +836,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad,
  *
  * \sa SDL_GetGamepadVendorForID
  */
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadVendor(SDL_Gamepad *gamepad);
+extern SDL_DECLSPEC uint16_t SDLCALL SDL_GetGamepadVendor(SDL_Gamepad *gamepad);
 
 /**
  * Get the USB product ID of an opened gamepad, if available.
@@ -850,7 +850,7 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadVendor(SDL_Gamepad *gamepad);
  *
  * \sa SDL_GetGamepadProductForID
  */
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProduct(SDL_Gamepad *gamepad);
+extern SDL_DECLSPEC uint16_t SDLCALL SDL_GetGamepadProduct(SDL_Gamepad *gamepad);
 
 /**
  * Get the product version of an opened gamepad, if available.
@@ -864,7 +864,7 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProduct(SDL_Gamepad *gamepad);
  *
  * \sa SDL_GetGamepadProductVersionForID
  */
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductVersion(SDL_Gamepad *gamepad);
+extern SDL_DECLSPEC uint16_t SDLCALL SDL_GetGamepadProductVersion(SDL_Gamepad *gamepad);
 
 /**
  * Get the firmware version of an opened gamepad, if available.
@@ -876,7 +876,7 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductVersion(SDL_Gamepad *gam
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadFirmwareVersion(SDL_Gamepad *gamepad);
+extern SDL_DECLSPEC uint16_t SDLCALL SDL_GetGamepadFirmwareVersion(SDL_Gamepad *gamepad);
 
 /**
  * Get the serial number of an opened gamepad, if available.
@@ -901,7 +901,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadSerial(SDL_Gamepad *gamep
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetGamepadSteamHandle(SDL_Gamepad *gamepad);
+extern SDL_DECLSPEC uint64_t SDLCALL SDL_GetGamepadSteamHandle(SDL_Gamepad *gamepad);
 
 /**
  * Get the connection state of a gamepad.
@@ -1129,7 +1129,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_Ga
  * \sa SDL_GamepadHasAxis
  * \sa SDL_GetGamepadButton
  */
-extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
+extern SDL_DECLSPEC int16_t SDLCALL SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
 
 /**
  * Convert a string into an SDL_GamepadButton enum.
@@ -1360,7 +1360,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
+extern SDL_DECLSPEC bool SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble, uint32_t duration_ms);
 
 /**
  * Start a rumble effect in the gamepad's triggers.
@@ -1388,7 +1388,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 
  *
  * \sa SDL_RumbleGamepad
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
+extern SDL_DECLSPEC bool SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, uint16_t left_rumble, uint16_t right_rumble, uint32_t duration_ms);
 
 /**
  * Update a gamepad's LED color.
@@ -1408,7 +1408,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGamepadLED(SDL_Gamepad *gamepad, uint8_t red, uint8_t green, uint8_t blue);
 
 /**
  * Send a gamepad specific effect packet.

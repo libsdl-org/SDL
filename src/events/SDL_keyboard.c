@@ -53,15 +53,15 @@ typedef struct SDL_Keyboard
     // Data common to all keyboards
     SDL_Window *focus;
     SDL_Keymod modstate;
-    Uint8 keysource[SDL_SCANCODE_COUNT];
+    uint8_t keysource[SDL_SCANCODE_COUNT];
     bool keystate[SDL_SCANCODE_COUNT];
     SDL_Keymap *keymap;
     bool french_numbers;
     bool latin_letters;
     bool thai_keyboard;
-    Uint32 keycode_options;
+    uint32_t keycode_options;
     bool autorelease_pending;
-    Uint64 hardware_timestamp;
+    uint64_t hardware_timestamp;
     int next_reserved_scancode;
 } SDL_Keyboard;
 
@@ -99,7 +99,7 @@ bool SDL_InitKeyboard(void)
     return true;
 }
 
-bool SDL_IsKeyboard(Uint16 vendor, Uint16 product, int num_keys)
+bool SDL_IsKeyboard(uint16_t vendor, uint16_t product, int num_keys)
 {
     const int REAL_KEYBOARD_KEY_COUNT = 50;
     if (num_keys > 0 && num_keys < REAL_KEYBOARD_KEY_COUNT) {
@@ -490,14 +490,14 @@ SDL_Scancode SDL_GetScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate)
     return SDL_GetKeymapScancode(keyboard->keymap, key, modstate);
 }
 
-static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down)
+static bool SDL_SendKeyboardKeyInternal(uint64_t timestamp, uint32_t flags, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     bool posted = false;
     SDL_Keycode keycode = SDLK_UNKNOWN;
-    Uint32 type;
+    uint32_t type;
     bool repeat = false;
-    const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
+    const uint8_t source = flags & KEYBOARD_SOURCE_MASK;
 
 #ifdef DEBUG_KEYBOARD
     printf("The '%s' key has been %s\n", SDL_GetScancodeName(scancode), down ? "pressed" : "released");
@@ -608,7 +608,7 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
         event.key.scancode = scancode;
         event.key.key = keycode;
         event.key.mod = keyboard->modstate;
-        event.key.raw = (Uint16)rawcode;
+        event.key.raw = (uint16_t)rawcode;
         event.key.down = down;
         event.key.repeat = repeat;
         event.key.windowID = keyboard->focus ? keyboard->focus->id : 0;
@@ -633,7 +633,7 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
     return posted;
 }
 
-void SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch)
+void SDL_SendKeyboardUnicodeKey(uint64_t timestamp, uint32_t ch)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Keymod modstate = SDL_KMOD_NONE;
@@ -660,12 +660,12 @@ void SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch)
     }
 }
 
-bool SDL_SendKeyboardKey(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down)
+bool SDL_SendKeyboardKey(uint64_t timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down)
 {
     return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE, keyboardID, rawcode, scancode, down);
 }
 
-bool SDL_SendKeyboardKeyAndKeycode(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, SDL_Keycode keycode, bool down)
+bool SDL_SendKeyboardKeyAndKeycode(uint64_t timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, SDL_Keycode keycode, bool down)
 {
     if (down) {
         // Make sure we have this keycode in our keymap
@@ -675,12 +675,12 @@ bool SDL_SendKeyboardKeyAndKeycode(Uint64 timestamp, SDL_KeyboardID keyboardID, 
     return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE, keyboardID, rawcode, scancode, down);
 }
 
-bool SDL_SendKeyboardKeyIgnoreModifiers(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down)
+bool SDL_SendKeyboardKeyIgnoreModifiers(uint64_t timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down)
 {
     return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE | KEYBOARD_IGNOREMODIFIERS, keyboardID, rawcode, scancode, down);
 }
 
-bool SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode)
+bool SDL_SendKeyboardKeyAutoRelease(uint64_t timestamp, SDL_Scancode scancode)
 {
     return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_AUTORELEASE, SDL_GLOBAL_KEYBOARD_ID, 0, scancode, false);
 }

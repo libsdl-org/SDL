@@ -433,8 +433,8 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
 
     for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
         const SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
-        const Sint16 deadzone = 8000; /* !!! FIXME: real deadzone */
-        const Sint16 value = SDL_GetGamepadAxis(gamepad, axis);
+        const int16_t deadzone = 8000; /* !!! FIXME: real deadzone */
+        const int16_t value = SDL_GetGamepadAxis(gamepad, axis);
         switch (i) {
         case SDL_GAMEPAD_AXIS_LEFTX:
             SetGamepadImageElement(ctx, SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_NEGATIVE, (value < -deadzone));
@@ -568,7 +568,7 @@ void RenderGamepadImage(GamepadImage *ctx)
     if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
         ctx->battery_state != SDL_POWERSTATE_NO_BATTERY &&
         ctx->battery_state != SDL_POWERSTATE_UNKNOWN) {
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
         SDL_FRect fill;
 
         dst.x = ctx->x + ctx->gamepad_width - ctx->battery_width;
@@ -619,7 +619,7 @@ void RenderGamepadImage(GamepadImage *ctx)
                 dst.y -= ctx->button_height / 2;
                 dst.w = ctx->button_width;
                 dst.h = ctx->button_height;
-                SDL_SetTextureAlphaMod(ctx->button_texture, (Uint8)(finger->pressure * SDL_ALPHA_OPAQUE));
+                SDL_SetTextureAlphaMod(ctx->button_texture, (uint8_t)(finger->pressure * SDL_ALPHA_OPAQUE));
                 SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
                 SDL_SetTextureAlphaMod(ctx->button_texture, SDL_ALPHA_OPAQUE);
             }
@@ -700,7 +700,7 @@ struct GamepadDisplay
 
     float accel_data[3];
     float gyro_data[3];
-    Uint64 last_sensor_update;
+    uint64_t last_sensor_update;
 
     ControllerDisplayMode display_mode;
     int element_highlighted;
@@ -989,7 +989,7 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
 static void RenderGamepadElementHighlight(GamepadDisplay *ctx, int element, const SDL_FRect *area)
 {
     if (element == ctx->element_highlighted || element == ctx->element_selected) {
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
 
         SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
 
@@ -1017,7 +1017,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     const float center = ctx->area.w / 2.0f;
     const float arrow_extent = 48.0f;
     SDL_FRect dst, rect, highlight;
-    Uint8 r, g, b, a;
+    uint8_t r, g, b, a;
     char *mapping;
     bool has_accel;
     bool has_gyro;
@@ -1075,7 +1075,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
         SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
         bool has_negative = (axis != SDL_GAMEPAD_AXIS_LEFT_TRIGGER && axis != SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
-        Sint16 value;
+        int16_t value;
 
         if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
             !SDL_GamepadHasAxis(gamepad, axis)) {
@@ -1251,7 +1251,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         has_gyro = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO);
         if (has_accel || has_gyro) {
             const int SENSOR_UPDATE_INTERVAL_MS = 100;
-            Uint64 now = SDL_GetTicks();
+            uint64_t now = SDL_GetTicks();
 
             if (now >= ctx->last_sensor_update + SENSOR_UPDATE_INTERVAL_MS) {
                 if (has_accel) {
@@ -1394,7 +1394,7 @@ int GetGamepadTypeDisplayAt(GamepadTypeDisplay *ctx, float x, float y)
 static void RenderGamepadTypeHighlight(GamepadTypeDisplay *ctx, int type, const SDL_FRect *area)
 {
     if (type == ctx->type_highlighted || type == ctx->type_selected) {
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
 
         SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
 
@@ -1641,7 +1641,7 @@ static void RenderJoystickButtonHighlight(JoystickDisplay *ctx, int button, cons
     }
 
     if (SDL_atoi(ctx->element_highlighted + 1) == button) {
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
 
         SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
 
@@ -1667,7 +1667,7 @@ static void RenderJoystickAxisHighlight(JoystickDisplay *ctx, int axis, int dire
     }
 
     if (SDL_atoi(ctx->element_highlighted + 2) == axis) {
-        Uint8 r, g, b, a;
+        uint8_t r, g, b, a;
 
         SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
 
@@ -1713,7 +1713,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
     const float center = 80.0f;
     const float arrow_extent = 48.0f;
     SDL_FRect dst, rect, highlight;
-    Uint8 r, g, b, a;
+    uint8_t r, g, b, a;
 
     if (!ctx) {
         return;
@@ -1738,7 +1738,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
             SDL_snprintf(text, sizeof(text), "%2d:", i);
             SDLTest_DrawString(ctx->renderer, x, y, text);
 
-            if (SDL_GetJoystickButton(joystick, (Uint8)i)) {
+            if (SDL_GetJoystickButton(joystick, (uint8_t)i)) {
                 SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
             } else {
                 SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
@@ -1762,7 +1762,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
         y += FONT_LINE_HEIGHT + 2;
 
         for (i = 0; i < naxes; ++i) {
-            Sint16 value = SDL_GetJoystickAxis(joystick, i);
+            int16_t value = SDL_GetJoystickAxis(joystick, i);
 
             SDL_snprintf(text, sizeof(text), "%d:", i);
             SDLTest_DrawString(ctx->renderer, x, y, text);
@@ -1840,7 +1840,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
         y += FONT_LINE_HEIGHT + 2 + 1.5f * ctx->button_height - FONT_CHARACTER_SIZE / 2;
 
         for (i = 0; i < nhats; ++i) {
-            Uint8 value = SDL_GetJoystickHat(joystick, i);
+            uint8_t value = SDL_GetJoystickHat(joystick, i);
 
             SDL_snprintf(text, sizeof(text), "%d:", i);
             SDLTest_DrawString(ctx->renderer, x, y, text);

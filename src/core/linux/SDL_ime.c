@@ -28,7 +28,7 @@ typedef bool (*SDL_IME_Init_t)(void);
 typedef void (*SDL_IME_Quit_t)(void);
 typedef void (*SDL_IME_SetFocus_t)(bool);
 typedef void (*SDL_IME_Reset_t)(void);
-typedef bool (*SDL_IME_ProcessKeyEvent_t)(Uint32, Uint32, bool down);
+typedef bool (*SDL_IME_ProcessKeyEvent_t)(uint32_t, uint32_t, bool down);
 typedef void (*SDL_IME_UpdateTextInputArea_t)(SDL_Window *window);
 typedef void (*SDL_IME_PumpEvents_t)(void);
 
@@ -126,7 +126,7 @@ void SDL_IME_Reset(void)
     }
 }
 
-bool SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
+bool SDL_IME_ProcessKeyEvent(uint32_t keysym, uint32_t keycode, bool down)
 {
     if (SDL_IME_ProcessKeyEvent_Real) {
         return SDL_IME_ProcessKeyEvent_Real(keysym, keycode, down);

@@ -41,11 +41,11 @@
     SDL_Rect _inputRect;
     int _pendingRawCode;
     SDL_Scancode _pendingScancode;
-    Uint64 _pendingTimestamp;
+    uint64_t _pendingTimestamp;
 }
 - (void)doCommandBySelector:(SEL)myselector;
 - (void)setInputRect:(const SDL_Rect *)rect;
-- (void)setPendingKey:(int)rawcode scancode:(SDL_Scancode)scancode timestamp:(Uint64)timestamp;
+- (void)setPendingKey:(int)rawcode scancode:(SDL_Scancode)scancode timestamp:(uint64_t)timestamp;
 - (void)sendPendingKey;
 - (void)clearPendingKey;
 @end
@@ -196,7 +196,7 @@
     return [NSArray array];
 }
 
-- (void)setPendingKey:(int)rawcode scancode:(SDL_Scancode)scancode timestamp:(Uint64)timestamp
+- (void)setPendingKey:(int)rawcode scancode:(SDL_Scancode)scancode timestamp:(uint64_t)timestamp
 {
     _pendingRawCode = rawcode;
     _pendingScancode = scancode;

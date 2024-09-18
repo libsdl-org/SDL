@@ -73,7 +73,7 @@ static Bool isConfigureNotify(Display *dpy, XEvent *ev, XPointer win)
 }
 static Bool X11_XIfEventTimeout(Display *display, XEvent *event_return, Bool (*predicate)(), XPointer arg, int timeoutMS)
 {
-    Uint64 start = SDL_GetTicks();
+    uint64_t start = SDL_GetTicks();
 
     while (!X11_XCheckIfEvent(display, event_return, predicate, arg)) {
         if (SDL_GetTicks() >= (start + timeoutMS)) {
@@ -234,7 +234,7 @@ static void X11_SetKeyboardFocus(SDL_Window *window)
     SDL_SetKeyboardFocus(window);
 }
 
-Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow)
+uint32_t X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow)
 {
     SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
@@ -635,15 +635,15 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
 
         // build the color table pixel values
         for (i = 0; i < ncolors; i++) {
-            Uint32 red = (rmax * i) / (ncolors - 1);
-            Uint32 green = (gmax * i) / (ncolors - 1);
-            Uint32 blue = (bmax * i) / (ncolors - 1);
+            uint32_t red = (rmax * i) / (ncolors - 1);
+            uint32_t green = (gmax * i) / (ncolors - 1);
+            uint32_t blue = (bmax * i) / (ncolors - 1);
 
-            Uint32 rbits = (rmask * i) / (ncolors - 1);
-            Uint32 gbits = (gmask * i) / (ncolors - 1);
-            Uint32 bbits = (bmask * i) / (ncolors - 1);
+            uint32_t rbits = (rmask * i) / (ncolors - 1);
+            uint32_t gbits = (gmask * i) / (ncolors - 1);
+            uint32_t bbits = (bmask * i) / (ncolors - 1);
 
-            Uint32 pix =
+            uint32_t pix =
                 (rbits << rshift) | (gbits << gshift) | (bbits << bshift);
 
             colorcells[i].pixel = pix;
@@ -898,12 +898,12 @@ static int X11_CatchAnyError(Display *d, XErrorEvent *e)
 
 /* Wait a brief time, or not, to see if the window manager decided to move/resize the window.
  * Send MOVED and RESIZED window events */
-static bool X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, Uint64 param_timeout)
+static bool X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, uint64_t param_timeout)
 {
     SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
     int (*prev_handler)(Display *, XErrorEvent *);
-    Uint64 timeout = 0;
+    uint64_t timeout = 0;
     bool force_exit = false;
     bool result = true;
 
@@ -979,7 +979,7 @@ bool X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *
         int x, y;
         int propsize;
         long *propdata;
-        Uint32 *src;
+        uint32_t *src;
         long *dst;
 
         // Set the _NET_WM_ICON property
@@ -999,7 +999,7 @@ bool X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *
         dst = &propdata[2];
 
         for (y = 0; y < icon->h; ++y) {
-            src = (Uint32 *)((Uint8 *)icon->pixels + y * icon->pitch);
+            src = (uint32_t *)((uint8_t *)icon->pixels + y * icon->pitch);
             for (x = 0; x < icon->w; ++x) {
                 *dst++ = *src++;
             }
@@ -1231,7 +1231,7 @@ bool X11_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opac
     if (opacity == 1.0f) {
         X11_XDeleteProperty(display, data->xwindow, _NET_WM_WINDOW_OPACITY);
     } else {
-        const Uint32 FullyOpaque = 0xFFFFFFFF;
+        const uint32_t FullyOpaque = 0xFFFFFFFF;
         const long alpha = (long)((double)opacity * (double)FullyOpaque);
         X11_XChangeProperty(display, data->xwindow, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
                             PropModeReplace, (unsigned char *)&alpha, 1);
@@ -1262,7 +1262,7 @@ bool X11_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
     SDL_VideoData *video_data = _this->internal;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = video_data->display;
-    Uint32 flags = window->flags;
+    uint32_t flags = window->flags;
     Atom _NET_WM_STATE = data->videodata->_NET_WM_STATE;
     Atom _NET_WM_STATE_MODAL = data->videodata->_NET_WM_STATE_MODAL;
 
@@ -2117,8 +2117,8 @@ void X11_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 
 bool X11_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    const Uint64 current_time = SDL_GetTicksNS();
-    Uint64 timeout = 0;
+    const uint64_t current_time = SDL_GetTicksNS();
+    uint64_t timeout = 0;
 
     // Allow time for any pending mode switches to complete.
     for (int i = 0; i < _this->num_displays; ++i) {

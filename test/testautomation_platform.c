@@ -31,17 +31,17 @@ static int SDLCALL platform_testTypes(void *arg)
 {
     int ret;
 
-    ret = compareSizeOfType(sizeof(Uint8), 1);
-    SDLTest_AssertCheck(ret == 0, "sizeof(Uint8) = %u, expected  1", (unsigned int)sizeof(Uint8));
+    ret = compareSizeOfType(sizeof(uint8_t), 1);
+    SDLTest_AssertCheck(ret == 0, "sizeof(uint8_t) = %u, expected  1", (unsigned int)sizeof(uint8_t));
 
-    ret = compareSizeOfType(sizeof(Uint16), 2);
-    SDLTest_AssertCheck(ret == 0, "sizeof(Uint16) = %u, expected 2", (unsigned int)sizeof(Uint16));
+    ret = compareSizeOfType(sizeof(uint16_t), 2);
+    SDLTest_AssertCheck(ret == 0, "sizeof(uint16_t) = %u, expected 2", (unsigned int)sizeof(uint16_t));
 
-    ret = compareSizeOfType(sizeof(Uint32), 4);
-    SDLTest_AssertCheck(ret == 0, "sizeof(Uint32) = %u, expected 4", (unsigned int)sizeof(Uint32));
+    ret = compareSizeOfType(sizeof(uint32_t), 4);
+    SDLTest_AssertCheck(ret == 0, "sizeof(uint32_t) = %u, expected 4", (unsigned int)sizeof(uint32_t));
 
-    ret = compareSizeOfType(sizeof(Uint64), 8);
-    SDLTest_AssertCheck(ret == 0, "sizeof(Uint64) = %u, expected 8", (unsigned int)sizeof(Uint64));
+    ret = compareSizeOfType(sizeof(uint64_t), 8);
+    SDLTest_AssertCheck(ret == 0, "sizeof(uint64_t) = %u, expected 8", (unsigned int)sizeof(uint64_t));
 
     return TEST_COMPLETED;
 }
@@ -53,19 +53,19 @@ static int SDLCALL platform_testEndianessAndSwap(void *arg)
 {
     int real_byteorder;
     int real_floatwordorder = 0;
-    Uint16 value = 0x1234;
-    Uint16 value16 = 0xCDAB;
-    Uint16 swapped16 = 0xABCD;
-    Uint32 value32 = 0xEFBEADDE;
-    Uint32 swapped32 = 0xDEADBEEF;
+    uint16_t value = 0x1234;
+    uint16_t value16 = 0xCDAB;
+    uint16_t swapped16 = 0xABCD;
+    uint32_t value32 = 0xEFBEADDE;
+    uint32_t swapped32 = 0xDEADBEEF;
 
     union
     {
         double d;
-        Uint32 ui32[2];
+        uint32_t ui32[2];
     } value_double;
 
-    Uint64 value64, swapped64;
+    uint64_t value64, swapped64;
     value64 = 0xEFBEADDE;
     value64 <<= 32;
     value64 |= 0xCDAB3412;

@@ -35,10 +35,10 @@ void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
     return memset(dst, c, len);
 #else
     size_t left;
-    Uint32 *dstp4;
-    Uint8 *dstp1 = (Uint8 *)dst;
-    Uint8 value1;
-    Uint32 value4;
+    uint32_t *dstp4;
+    uint8_t *dstp1 = (uint8_t *)dst;
+    uint8_t value1;
+    uint32_t value4;
 
     // The value used in memset() is a byte, passed as an int
     c &= 0xff;
@@ -46,7 +46,7 @@ void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
     /* The destination pointer needs to be aligned on a 4-byte boundary to
      * execute a 32-bit set. Set first bytes manually if needed until it is
      * aligned. */
-    value1 = (Uint8)c;
+    value1 = (uint8_t)c;
     while ((uintptr_t)dstp1 & 0x3) {
         if (len--) {
             *dstp1++ = value1;
@@ -55,15 +55,15 @@ void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
         }
     }
 
-    value4 = ((Uint32)c | ((Uint32)c << 8) | ((Uint32)c << 16) | ((Uint32)c << 24));
-    dstp4 = (Uint32 *)dstp1;
+    value4 = ((uint32_t)c | ((uint32_t)c << 8) | ((uint32_t)c << 16) | ((uint32_t)c << 24));
+    dstp4 = (uint32_t *)dstp1;
     left = (len % 4);
     len /= 4;
     while (len--) {
         *dstp4++ = value4;
     }
 
-    dstp1 = (Uint8 *)dstp4;
+    dstp1 = (uint8_t *)dstp4;
     switch (left) {
     case 3:
         *dstp1++ = value1;
@@ -80,7 +80,7 @@ void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
 }
 
 // Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent.
-void *SDL_memset4(void *dst, Uint32 val, size_t dwords)
+void *SDL_memset4(void *dst, uint32_t val, size_t dwords)
 {
 #if defined(__APPLE__) && defined(HAVE_STRING_H)
     memset_pattern4(dst, &val, dwords * 4);
@@ -90,12 +90,12 @@ void *SDL_memset4(void *dst, Uint32 val, size_t dwords)
         "cld \n\t"
         "rep ; stosl \n\t"
         : "=&D"(u0), "=&a"(u1), "=&c"(u2)
-        : "0"(dst), "1"(val), "2"(SDL_static_cast(Uint32, dwords))
+        : "0"(dst), "1"(val), "2"(SDL_static_cast(uint32_t, dwords))
         : "memory");
 #else
     size_t _n = (dwords + 3) / 4;
-    Uint32 *_p = SDL_static_cast(Uint32 *, dst);
-    Uint32 _val = (val);
+    uint32_t *_p = SDL_static_cast(uint32_t *, dst);
+    uint32_t _val = (val);
     if (dwords == 0) {
         return dst;
     }

@@ -25,17 +25,17 @@
 #include <kernel/OS.h>
 
 
-Uint64 SDL_GetPerformanceCounter(void)
+uint64_t SDL_GetPerformanceCounter(void)
 {
     return system_time();
 }
 
-Uint64 SDL_GetPerformanceFrequency(void)
+uint64_t SDL_GetPerformanceFrequency(void)
 {
     return SDL_US_PER_SECOND;
 }
 
-void SDL_SYS_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(uint64_t ns)
 {
     snooze((bigtime_t)SDL_NS_TO_US(ns));
 }

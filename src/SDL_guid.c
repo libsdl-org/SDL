@@ -71,7 +71,7 @@ SDL_GUID SDL_StringToGUID(const char *pchGUID)
     SDL_GUID guid;
     int maxoutputbytes = sizeof(guid);
     size_t len = SDL_strlen(pchGUID);
-    Uint8 *p;
+    uint8_t *p;
     size_t i;
 
     // Make sure it's even
@@ -79,8 +79,8 @@ SDL_GUID SDL_StringToGUID(const char *pchGUID)
 
     SDL_memset(&guid, 0x00, sizeof(guid));
 
-    p = (Uint8 *)&guid;
-    for (i = 0; (i < len) && ((p - (Uint8 *)&guid) < maxoutputbytes); i += 2, p++) {
+    p = (uint8_t *)&guid;
+    for (i = 0; (i < len) && ((p - (uint8_t *)&guid) < maxoutputbytes); i += 2, p++) {
         *p = (nibble((unsigned char)pchGUID[i]) << 4) | nibble((unsigned char)pchGUID[i + 1]);
     }
 

@@ -31,7 +31,7 @@ static void SDLCALL timerSetUp(void **arg)
  */
 static int SDLCALL timer_getPerformanceCounter(void *arg)
 {
-    Uint64 result;
+    uint64_t result;
 
     result = SDL_GetPerformanceCounter();
     SDLTest_AssertPass("Call to SDL_GetPerformanceCounter()");
@@ -45,7 +45,7 @@ static int SDLCALL timer_getPerformanceCounter(void *arg)
  */
 static int SDLCALL timer_getPerformanceFrequency(void *arg)
 {
-    Uint64 result;
+    uint64_t result;
 
     result = SDL_GetPerformanceFrequency();
     SDLTest_AssertPass("Call to SDL_GetPerformanceFrequency()");
@@ -61,9 +61,9 @@ static int SDLCALL timer_delayAndGetTicks(void *arg)
 {
     const int testDelay = 100;
     const int marginOfError = 25;
-    Uint64 result;
-    Uint64 result2;
-    Sint64 difference;
+    uint64_t result;
+    uint64_t result2;
+    int64_t difference;
 
     /* Zero delay */
     SDL_Delay(0);
@@ -100,7 +100,7 @@ static int SDLCALL timer_delayAndGetTicks(void *arg)
 #ifndef SDL_PLATFORM_EMSCRIPTEN
 
 /* Test callback */
-static Uint32 SDLCALL timerTestCallback(void *param, SDL_TimerID timerID, Uint32 interval)
+static uint32_t SDLCALL timerTestCallback(void *param, SDL_TimerID timerID, uint32_t interval)
 {
     g_timerCallbackCalled = 1;
 

@@ -48,7 +48,7 @@ static SDL_MouseInstance *SDL_mice;
 // for mapping mouse events to touch
 static bool track_mouse_down = false;
 
-static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y);
+static void SDL_PrivateSendMouseMotion(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y);
 
 static void SDLCALL SDL_MouseDoubleClickTimeChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -274,7 +274,7 @@ void SDL_PostInitMouse(void)
     }
 }
 
-bool SDL_IsMouse(Uint16 vendor, Uint16 product)
+bool SDL_IsMouse(uint16_t vendor, uint16_t product)
 {
     // Eventually we'll have a blacklist of devices that enumerate as mice but aren't really
     return true;
@@ -481,7 +481,7 @@ SDL_Window *SDL_GetMouseFocus(void)
 void SDL_ResetMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    Uint32 buttonState = SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, false);
+    uint32_t buttonState = SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, false);
     int i;
 
     for (i = 1; i <= sizeof(buttonState)*8; ++i) {
@@ -544,7 +544,7 @@ bool SDL_MousePositionInWindow(SDL_Window *window, float x, float y)
 }
 
 // Check to see if we need to synthesize focus events
-static bool SDL_UpdateMouseFocus(SDL_Window *window, float x, float y, Uint32 buttonstate, bool send_mouse_motion)
+static bool SDL_UpdateMouseFocus(SDL_Window *window, float x, float y, uint32_t buttonstate, bool send_mouse_motion)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     bool inWindow = SDL_MousePositionInWindow(window, x, y);
@@ -574,7 +574,7 @@ static bool SDL_UpdateMouseFocus(SDL_Window *window, float x, float y, Uint32 bu
     return true;
 }
 
-void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y)
+void SDL_SendMouseMotion(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y)
 {
     if (window && !relative) {
         SDL_Mouse *mouse = SDL_GetMouse();
@@ -732,7 +732,7 @@ static void ConstrainMousePosition(SDL_Mouse *mouse, SDL_Window *window, float *
     }
 }
 
-static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y)
+static void SDL_PrivateSendMouseMotion(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     float xrel = 0.0f;
@@ -863,7 +863,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
     }
 }
 
-static SDL_MouseInputSource *GetMouseInputSource(SDL_Mouse *mouse, SDL_MouseID mouseID, bool down, Uint8 button)
+static SDL_MouseInputSource *GetMouseInputSource(SDL_Mouse *mouse, SDL_MouseID mouseID, bool down, uint8_t button)
 {
     SDL_MouseInputSource *source, *match = NULL, *sources;
     int i;
@@ -904,7 +904,7 @@ static SDL_MouseInputSource *GetMouseInputSource(SDL_Mouse *mouse, SDL_MouseID m
     return NULL;
 }
 
-static SDL_MouseClickState *GetMouseClickState(SDL_Mouse *mouse, Uint8 button)
+static SDL_MouseClickState *GetMouseClickState(SDL_Mouse *mouse, uint8_t button)
 {
     if (button >= mouse->num_clickstates) {
         int i, count = button + 1;
@@ -922,11 +922,11 @@ static SDL_MouseClickState *GetMouseClickState(SDL_Mouse *mouse, Uint8 button)
     return &mouse->clickstate[button];
 }
 
-static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 button, bool down, int clicks)
+static void SDL_PrivateSendMouseButton(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, uint8_t button, bool down, int clicks)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    Uint32 type;
-    Uint32 buttonstate;
+    uint32_t type;
+    uint32_t buttonstate;
     SDL_MouseInputSource *source;
 
     if (!mouse->relative_mode && mouseID != SDL_TOUCH_MOUSEID) {
@@ -987,7 +987,7 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
         SDL_MouseClickState *clickstate = GetMouseClickState(mouse, button);
         if (clickstate) {
             if (down) {
-                Uint64 now = SDL_GetTicks();
+                uint64_t now = SDL_GetTicks();
 
                 if (now >= (clickstate->last_timestamp + mouse->double_click_time) ||
                     SDL_fabs((double)mouse->x - clickstate->last_x) > mouse->double_click_radius ||
@@ -1016,7 +1016,7 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
         event.button.which = source->mouseID;
         event.button.down = down;
         event.button.button = button;
-        event.button.clicks = (Uint8)SDL_min(clicks, 255);
+        event.button.clicks = (uint8_t)SDL_min(clicks, 255);
         event.button.x = mouse->x;
         event.button.y = mouse->y;
         SDL_PushEvent(&event);
@@ -1033,18 +1033,18 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
     }
 }
 
-void SDL_SendMouseButtonClicks(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 button, bool down, int clicks)
+void SDL_SendMouseButtonClicks(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, uint8_t button, bool down, int clicks)
 {
     clicks = SDL_max(clicks, 0);
     SDL_PrivateSendMouseButton(timestamp, window, mouseID, button, down, clicks);
 }
 
-void SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 button, bool down)
+void SDL_SendMouseButton(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, uint8_t button, bool down)
 {
     SDL_PrivateSendMouseButton(timestamp, window, mouseID, button, down, -1);
 }
 
-void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction)
+void SDL_SendMouseWheel(uint64_t timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1281,7 +1281,7 @@ static void SDL_MaybeEnableWarpEmulation(SDL_Window *window, float x, float y)
                 y >= SDL_floorf(cy) && y <= SDL_ceilf(cy)) {
 
                 // Require two consecutive warps to the center within a certain timespan to enter warp emulation mode.
-                const Uint64 now = SDL_GetTicksNS();
+                const uint64_t now = SDL_GetTicksNS();
                 if (now - mouse->last_center_warp_time_ns < WARP_EMULATION_THRESHOLD_NS) {
                     if (SDL_SetRelativeMouseMode(true)) {
                         mouse->warp_emulation_active = true;
@@ -1489,21 +1489,21 @@ bool SDL_CaptureMouse(bool enabled)
     return SDL_UpdateMouseCapture(false);
 }
 
-SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h, int hot_x, int hot_y)
+SDL_Cursor *SDL_CreateCursor(const uint8_t *data, const uint8_t *mask, int w, int h, int hot_x, int hot_y)
 {
     SDL_Surface *surface;
     SDL_Cursor *cursor;
     int x, y;
-    Uint32 *pixel;
-    Uint8 datab = 0, maskb = 0;
-    const Uint32 black = 0xFF000000;
-    const Uint32 white = 0xFFFFFFFF;
-    const Uint32 transparent = 0x00000000;
+    uint32_t *pixel;
+    uint8_t datab = 0, maskb = 0;
+    const uint32_t black = 0xFF000000;
+    const uint32_t white = 0xFFFFFFFF;
+    const uint32_t transparent = 0x00000000;
 #if defined(SDL_PLATFORM_WIN32)
     // Only Windows backend supports inverted pixels in mono cursors.
-    const Uint32 inverted = 0x00FFFFFF;
+    const uint32_t inverted = 0x00FFFFFF;
 #else
-    const Uint32 inverted = 0xFF000000;
+    const uint32_t inverted = 0xFF000000;
 #endif // defined(SDL_PLATFORM_WIN32)
 
     // Make sure the width is a multiple of 8
@@ -1515,7 +1515,7 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
         return NULL;
     }
     for (y = 0; y < h; ++y) {
-        pixel = (Uint32 *)((Uint8 *)surface->pixels + y * surface->pitch);
+        pixel = (uint32_t *)((uint8_t *)surface->pixels + y * surface->pitch);
         for (x = 0; x < w; ++x) {
             if ((x % 8) == 0) {
                 datab = *data++;

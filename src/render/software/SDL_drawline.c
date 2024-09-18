@@ -26,18 +26,18 @@
 #include "SDL_drawline.h"
 #include "SDL_drawpoint.h"
 
-static void SDL_DrawLine1(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color,
+static void SDL_DrawLine1(SDL_Surface *dst, int x1, int y1, int x2, int y2, uint32_t color,
                           bool draw_end)
 {
     if (y1 == y2) {
         int length;
         int pitch = (dst->pitch / dst->internal->format->bytes_per_pixel);
-        Uint8 *pixel;
+        uint8_t *pixel;
         if (x1 <= x2) {
-            pixel = (Uint8 *)dst->pixels + y1 * pitch + x1;
+            pixel = (uint8_t *)dst->pixels + y1 * pitch + x1;
             length = draw_end ? (x2 - x1 + 1) : (x2 - x1);
         } else {
-            pixel = (Uint8 *)dst->pixels + y1 * pitch + x2;
+            pixel = (uint8_t *)dst->pixels + y1 * pitch + x2;
             if (!draw_end) {
                 ++pixel;
             }
@@ -45,25 +45,25 @@ static void SDL_DrawLine1(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint
         }
         SDL_memset(pixel, color, length);
     } else if (x1 == x2) {
-        VLINE(Uint8, DRAW_FASTSETPIXEL1, draw_end);
+        VLINE(uint8_t, DRAW_FASTSETPIXEL1, draw_end);
     } else if (ABS(x1 - x2) == ABS(y1 - y2)) {
-        DLINE(Uint8, DRAW_FASTSETPIXEL1, draw_end);
+        DLINE(uint8_t, DRAW_FASTSETPIXEL1, draw_end);
     } else {
         BLINE(x1, y1, x2, y2, DRAW_FASTSETPIXELXY1, draw_end);
     }
 }
 
-static void SDL_DrawLine2(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color,
+static void SDL_DrawLine2(SDL_Surface *dst, int x1, int y1, int x2, int y2, uint32_t color,
                           bool draw_end)
 {
     if (y1 == y2) {
-        HLINE(Uint16, DRAW_FASTSETPIXEL2, draw_end);
+        HLINE(uint16_t, DRAW_FASTSETPIXEL2, draw_end);
     } else if (x1 == x2) {
-        VLINE(Uint16, DRAW_FASTSETPIXEL2, draw_end);
+        VLINE(uint16_t, DRAW_FASTSETPIXEL2, draw_end);
     } else if (ABS(x1 - x2) == ABS(y1 - y2)) {
-        DLINE(Uint16, DRAW_FASTSETPIXEL2, draw_end);
+        DLINE(uint16_t, DRAW_FASTSETPIXEL2, draw_end);
     } else {
-        Uint8 _r, _g, _b, _a;
+        uint8_t _r, _g, _b, _a;
         const SDL_PixelFormatDetails *fmt = dst->internal->format;
         SDL_GetRGBA(color, fmt, dst->internal->palette, &_r, &_g, &_b, &_a);
         if (fmt->Rmask == 0x7C00) {
@@ -82,17 +82,17 @@ static void SDL_DrawLine2(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint
     }
 }
 
-static void SDL_DrawLine4(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color,
+static void SDL_DrawLine4(SDL_Surface *dst, int x1, int y1, int x2, int y2, uint32_t color,
                           bool draw_end)
 {
     if (y1 == y2) {
-        HLINE(Uint32, DRAW_FASTSETPIXEL4, draw_end);
+        HLINE(uint32_t, DRAW_FASTSETPIXEL4, draw_end);
     } else if (x1 == x2) {
-        VLINE(Uint32, DRAW_FASTSETPIXEL4, draw_end);
+        VLINE(uint32_t, DRAW_FASTSETPIXEL4, draw_end);
     } else if (ABS(x1 - x2) == ABS(y1 - y2)) {
-        DLINE(Uint32, DRAW_FASTSETPIXEL4, draw_end);
+        DLINE(uint32_t, DRAW_FASTSETPIXEL4, draw_end);
     } else {
-        Uint8 _r, _g, _b, _a;
+        uint8_t _r, _g, _b, _a;
         const SDL_PixelFormatDetails *fmt = dst->internal->format;
         SDL_GetRGBA(color, fmt, dst->internal->palette, &_r, &_g, &_b, &_a);
         if (fmt->Rmask == 0x00FF0000) {
@@ -115,7 +115,7 @@ static void SDL_DrawLine4(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint
 
 typedef void (*DrawLineFunc)(SDL_Surface *dst,
                              int x1, int y1, int x2, int y2,
-                             Uint32 color, bool draw_end);
+                             uint32_t color, bool draw_end);
 
 static DrawLineFunc SDL_CalculateDrawLineFunc(const SDL_PixelFormatDetails *fmt)
 {
@@ -133,7 +133,7 @@ static DrawLineFunc SDL_CalculateDrawLineFunc(const SDL_PixelFormatDetails *fmt)
     return NULL;
 }
 
-bool SDL_DrawLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color)
+bool SDL_DrawLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, uint32_t color)
 {
     DrawLineFunc func;
 
@@ -156,7 +156,7 @@ bool SDL_DrawLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color
     return true;
 }
 
-bool SDL_DrawLines(SDL_Surface *dst, const SDL_Point *points, int count, Uint32 color)
+bool SDL_DrawLines(SDL_Surface *dst, const SDL_Point *points, int count, uint32_t color)
 {
     int i;
     int x1, y1;

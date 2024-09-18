@@ -262,7 +262,7 @@ static const int swizzle_alsa_channels_8[8] = { 0, 1, 6, 7, 2, 3, 4, 5 };
 // This function waits until it is possible to write a full sound buffer
 static bool ALSA_WaitDevice(SDL_AudioDevice *device)
 {
-    const int fulldelay = (int) ((((Uint64) device->sample_frames) * 1000) / device->spec.freq);
+    const int fulldelay = (int) ((((uint64_t) device->sample_frames) * 1000) / device->spec.freq);
     const int delay = SDL_max(fulldelay, 10);
 
     while (!SDL_GetAtomicInt(&device->shutdown)) {
@@ -287,10 +287,10 @@ static bool ALSA_WaitDevice(SDL_AudioDevice *device)
     return true;
 }
 
-static bool ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool ALSA_PlayDevice(SDL_AudioDevice *device, const uint8_t *buffer, int buflen)
 {
     SDL_assert(buffer == device->hidden->mixbuf);
-    Uint8 *sample_buf = (Uint8 *) buffer;  // !!! FIXME: deal with this without casting away constness
+    uint8_t *sample_buf = (uint8_t *) buffer;  // !!! FIXME: deal with this without casting away constness
     const int frame_size = SDL_AUDIO_FRAMESIZE(device->spec);
     snd_pcm_uframes_t frames_left = (snd_pcm_uframes_t) (buflen / frame_size);
 
@@ -316,7 +316,7 @@ static bool ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bu
     return true;
 }
 
-static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
+static uint8_t *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     snd_pcm_sframes_t rc = ALSA_snd_pcm_avail(device->hidden->pcm_handle);
     if (rc <= 0) {
@@ -604,7 +604,7 @@ static bool ALSA_OpenDevice(SDL_AudioDevice *device)
 
     // Allocate mixing buffer
     if (!recording) {
-        device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
+        device->hidden->mixbuf = (uint8_t *)SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
             return false;
         }
@@ -827,7 +827,7 @@ static int SDLCALL ALSA_HotplugThread(void *arg)
 
     while (!SDL_GetAtomicInt(&ALSA_hotplug_shutdown)) {
         // Block awhile before checking again, unless we're told to stop.
-        const Uint64 ticks = SDL_GetTicks() + 5000;
+        const uint64_t ticks = SDL_GetTicks() + 5000;
         while (!SDL_GetAtomicInt(&ALSA_hotplug_shutdown) && SDL_GetTicks() < ticks) {
             SDL_Delay(100);
         }

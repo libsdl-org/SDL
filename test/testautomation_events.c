@@ -51,7 +51,7 @@ static int SDLCALL events_pushPumpAndPollUserevent(void *arg)
     SDL_Event event_out;
     int result;
     int i;
-    Sint32 ref_code = SDLTest_RandomSint32();
+    int32_t ref_code = SDLTest_RandomSint32();
     SDL_Window *event_window;
 
     /* Flush all events */

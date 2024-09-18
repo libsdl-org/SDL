@@ -3699,3 +3699,35 @@ identifier func =~ "^(SDL_AddEventWatch|SDL_AddHintCallback|SDL_AddSurfaceAltern
 @@
 - SDL_FALSE
 + false
+@@
+@@
+- Sint8
++ int8_t
+@@
+@@
+- Uint8
++ uint8_t
+@@
+@@
+- Sint16
++ int16_t
+@@
+@@
+- Uint16
++ uint16_t
+@@
+@@
+- Sint32
++ int32_t
+@@
+@@
+- Uint32
++ uint32_t
+@@
+@@
+- Sint64
++ int64_t
+@@
+@@
+- Uint64
++ uint64_t

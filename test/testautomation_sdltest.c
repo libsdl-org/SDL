@@ -23,7 +23,7 @@ static int SDLCALL sdltest_generateRunSeed(void *arg)
 
     for (i = 1; i <= 10; i += 3) {
         result = SDLTest_GenerateRunSeed(buffer, (int)i);
-        SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed(<buf>, %" SDL_PRIu64 ")", (Uint64)i);
+        SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed(<buf>, %" SDL_PRIu64 ")", (uint64_t)i);
         SDLTest_AssertCheck(result != NULL, "Verify returned value is not NULL");
         if (result != NULL) {
             l = SDL_strlen(result);
@@ -50,7 +50,7 @@ static int SDLCALL sdltest_generateRunSeed(void *arg)
  */
 static int SDLCALL sdltest_getFuzzerInvocationCount(void *arg)
 {
-    Uint8 result;
+    uint8_t result;
     int fuzzerCount1, fuzzerCount2;
 
     fuzzerCount1 = SDLTest_GetFuzzerInvocationCount();
@@ -72,41 +72,41 @@ static int SDLCALL sdltest_getFuzzerInvocationCount(void *arg)
  */
 static int SDLCALL sdltest_randomNumber(void *arg)
 {
-    Sint64 result;
+    int64_t result;
     double dresult;
-    Uint64 umax;
-    Sint64 min, max;
+    uint64_t umax;
+    int64_t min, max;
 
-    result = (Sint64)SDLTest_RandomUint8();
+    result = (int64_t)SDLTest_RandomUint8();
     umax = (1 << 8) - 1;
     SDLTest_AssertPass("Call to SDLTest_RandomUint8");
-    SDLTest_AssertCheck(result >= 0 && result <= (Sint64)umax, "Verify result value, expected: [0,%" SDL_PRIu64 "], got: %" SDL_PRIs64, umax, result);
+    SDLTest_AssertCheck(result >= 0 && result <= (int64_t)umax, "Verify result value, expected: [0,%" SDL_PRIu64 "], got: %" SDL_PRIs64, umax, result);
 
-    result = (Sint64)SDLTest_RandomSint8();
+    result = (int64_t)SDLTest_RandomSint8();
     min = 0 - (1 << 7);
     max = (1 << 7) - 1;
     SDLTest_AssertPass("Call to SDLTest_RandomSint8");
     SDLTest_AssertCheck(result >= min && result <= max, "Verify result value, expected: [%" SDL_PRIs64 ",%" SDL_PRIs64 "], got: %" SDL_PRIs64, min, max, result);
 
-    result = (Sint64)SDLTest_RandomUint16();
+    result = (int64_t)SDLTest_RandomUint16();
     umax = (1 << 16) - 1;
     SDLTest_AssertPass("Call to SDLTest_RandomUint16");
-    SDLTest_AssertCheck(result >= 0 && result <= (Sint64)umax, "Verify result value, expected: [0,%" SDL_PRIu64 "], got: %" SDL_PRIs64, umax, result);
+    SDLTest_AssertCheck(result >= 0 && result <= (int64_t)umax, "Verify result value, expected: [0,%" SDL_PRIu64 "], got: %" SDL_PRIs64, umax, result);
 
-    result = (Sint64)SDLTest_RandomSint16();
+    result = (int64_t)SDLTest_RandomSint16();
     min = 0 - (1 << 15);
     max = (1 << 15) - 1;
     SDLTest_AssertPass("Call to SDLTest_RandomSint16");
     SDLTest_AssertCheck(result >= min && result <= max, "Verify result value, expected: [%" SDL_PRIs64 ",%" SDL_PRIs64 "], got: %" SDL_PRIs64, min, max, result);
 
-    result = (Sint64)SDLTest_RandomUint32();
-    umax = ((Uint64)1 << 32) - 1;
+    result = (int64_t)SDLTest_RandomUint32();
+    umax = ((uint64_t)1 << 32) - 1;
     SDLTest_AssertPass("Call to SDLTest_RandomUint32");
-    SDLTest_AssertCheck(result >= 0 && result <= (Sint64)umax, "Verify result value, expected: [0,%" SDL_PRIu64 "], got: %" SDL_PRIs64, umax, result);
+    SDLTest_AssertCheck(result >= 0 && result <= (int64_t)umax, "Verify result value, expected: [0,%" SDL_PRIu64 "], got: %" SDL_PRIs64, umax, result);
 
-    result = (Sint64)SDLTest_RandomSint32();
-    min = 0 - ((Sint64)1 << 31);
-    max = ((Sint64)1 << 31) - 1;
+    result = (int64_t)SDLTest_RandomSint32();
+    min = 0 - ((int64_t)1 << 31);
+    max = ((int64_t)1 << 31) - 1;
     SDLTest_AssertPass("Call to SDLTest_RandomSint32");
     SDLTest_AssertCheck(result >= min && result <= max, "Verify result value, expected: [%" SDL_PRIs64 ",%" SDL_PRIs64 "], got: %" SDL_PRIs64, min, max, result);
 
@@ -135,76 +135,76 @@ static int SDLCALL sdltest_randomNumber(void *arg)
 }
 
 /**
- * Calls to random boundary number generators for Uint8
+ * Calls to random boundary number generators for uint8_t
  */
 static int SDLCALL sdltest_randomBoundaryNumberUint8(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     const char *lastError;
-    Uint64 uresult;
+    uint64_t uresult;
 
     /* Clean error messages */
     SDL_ClearError();
     SDLTest_AssertPass("SDL_ClearError()");
 
     /* RandomUintXBoundaryValue(10, 10, true) returns 10 */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(10, 10, true);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(10, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10,
         "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 11, true) returns 10, 11 */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(10, 11, true);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(10, 11, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11,
         "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 12, true) returns 10, 11, 12 */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(10, 12, true);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(10, 12, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12,
         "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 13, true) returns 10, 11, 12, 13 */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(10, 13, true);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(10, 13, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12 || uresult == 13,
         "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 20, true) returns 10, 11, 19 or 20 */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(10, 20, true);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(10, 20, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
         "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(20, 10, true) returns 10, 11, 19 or 20 */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(20, 10, true);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(20, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
         "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(1, 20, false) returns 0, 21 */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(1, 20, false);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(1, 20, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0 || uresult == 21,
         "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(0, 99, false) returns 100 */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(0, 99, false);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(0, 99, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 100,
         "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(1, 0xff, false) returns 0 (no error) */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(1, 255, false);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(1, 255, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
@@ -214,7 +214,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint8(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomUintXBoundaryValue(0, 0xfe, false) returns 0xff (no error) */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(0, 254, false);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(0, 254, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0xff,
@@ -224,7 +224,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint8(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomUintXBoundaryValue(0, 0xff, false) returns 0 (sets error) */
-    uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(0, 255, false);
+    uresult = (uint64_t)SDLTest_RandomUint8BoundaryValue(0, 255, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
@@ -244,76 +244,76 @@ static int SDLCALL sdltest_randomBoundaryNumberUint8(void *arg)
 }
 
 /**
- * Calls to random boundary number generators for Uint16
+ * Calls to random boundary number generators for uint16_t
  */
 static int SDLCALL sdltest_randomBoundaryNumberUint16(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     const char *lastError;
-    Uint64 uresult;
+    uint64_t uresult;
 
     /* Clean error messages */
     SDL_ClearError();
     SDLTest_AssertPass("SDL_ClearError()");
 
     /* RandomUintXBoundaryValue(10, 10, true) returns 10 */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(10, 10, true);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(10, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10,
         "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 11, true) returns 10, 11 */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(10, 11, true);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(10, 11, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11,
         "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 12, true) returns 10, 11, 12 */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(10, 12, true);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(10, 12, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12,
         "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 13, true) returns 10, 11, 12, 13 */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(10, 13, true);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(10, 13, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12 || uresult == 13,
         "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 20, true) returns 10, 11, 19 or 20 */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(10, 20, true);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(10, 20, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
         "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(20, 10, true) returns 10, 11, 19 or 20 */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(20, 10, true);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(20, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
         "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(1, 20, false) returns 0, 21 */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(1, 20, false);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(1, 20, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0 || uresult == 21,
         "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(0, 99, false) returns 100 */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(0, 99, false);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(0, 99, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 100,
         "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(1, 0xffff, false) returns 0 (no error) */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(1, 0xffff, false);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(1, 0xffff, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
@@ -323,7 +323,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint16(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomUintXBoundaryValue(0, 0xfffe, false) returns 0xffff (no error) */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(0, 0xfffe, false);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(0, 0xfffe, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0xffff,
@@ -333,7 +333,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint16(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomUintXBoundaryValue(0, 0xffff, false) returns 0 (sets error) */
-    uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(0, 0xffff, false);
+    uresult = (uint64_t)SDLTest_RandomUint16BoundaryValue(0, 0xffff, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
@@ -353,76 +353,76 @@ static int SDLCALL sdltest_randomBoundaryNumberUint16(void *arg)
 }
 
 /**
- * Calls to random boundary number generators for Uint32
+ * Calls to random boundary number generators for uint32_t
  */
 static int SDLCALL sdltest_randomBoundaryNumberUint32(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     const char *lastError;
-    Uint64 uresult;
+    uint64_t uresult;
 
     /* Clean error messages */
     SDL_ClearError();
     SDLTest_AssertPass("SDL_ClearError()");
 
     /* RandomUintXBoundaryValue(10, 10, true) returns 10 */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(10, 10, true);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(10, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10,
         "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 11, true) returns 10, 11 */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(10, 11, true);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(10, 11, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11,
         "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 12, true) returns 10, 11, 12 */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(10, 12, true);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(10, 12, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12,
         "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 13, true) returns 10, 11, 12, 13 */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(10, 13, true);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(10, 13, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12 || uresult == 13,
         "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(10, 20, true) returns 10, 11, 19 or 20 */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(10, 20, true);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(10, 20, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
         "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(20, 10, true) returns 10, 11, 19 or 20 */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(20, 10, true);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(20, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
         "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(1, 20, false) returns 0, 21 */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(1, 20, false);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(1, 20, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0 || uresult == 21,
         "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(0, 99, false) returns 100 */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(0, 99, false);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(0, 99, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 100,
         "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIs64, uresult);
 
     /* RandomUintXBoundaryValue(1, 0xffffffff, false) returns 0 (no error) */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(1, 0xffffffff, false);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(1, 0xffffffff, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
@@ -432,7 +432,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint32(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomUintXBoundaryValue(0, 0xfffffffe, false) returns 0xffffffff (no error) */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(0, 0xfffffffe, false);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(0, 0xfffffffe, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0xffffffff,
@@ -442,7 +442,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint32(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomUintXBoundaryValue(0, 0xffffffff, false) returns 0 (sets error) */
-    uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(0, 0xffffffff, false);
+    uresult = (uint64_t)SDLTest_RandomUint32BoundaryValue(0, 0xffffffff, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
@@ -462,13 +462,13 @@ static int SDLCALL sdltest_randomBoundaryNumberUint32(void *arg)
 }
 
 /**
- * Calls to random boundary number generators for Uint64
+ * Calls to random boundary number generators for uint64_t
  */
 static int SDLCALL sdltest_randomBoundaryNumberUint64(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     const char *lastError;
-    Uint64 uresult;
+    uint64_t uresult;
 
     /* Clean error messages */
     SDL_ClearError();
@@ -571,76 +571,76 @@ static int SDLCALL sdltest_randomBoundaryNumberUint64(void *arg)
 }
 
 /**
- * Calls to random boundary number generators for Sint8
+ * Calls to random boundary number generators for int8_t
  */
 static int SDLCALL sdltest_randomBoundaryNumberSint8(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     const char *lastError;
-    Sint64 sresult;
+    int64_t sresult;
 
     /* Clean error messages */
     SDL_ClearError();
     SDLTest_AssertPass("SDL_ClearError()");
 
     /* RandomSintXBoundaryValue(10, 10, true) returns 10 */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(10, 10, true);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(10, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10,
         "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 11, true) returns 10, 11 */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(10, 11, true);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(10, 11, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11,
         "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 12, true) returns 10, 11, 12 */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(10, 12, true);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(10, 12, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 12,
         "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 13, true) returns 10, 11, 12, 13 */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(10, 13, true);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(10, 13, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 12 || sresult == 13,
         "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 20, true) returns 10, 11, 19 or 20 */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(10, 20, true);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(10, 20, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 19 || sresult == 20,
         "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(20, 10, true) returns 10, 11, 19 or 20 */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(20, 10, true);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(20, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 19 || sresult == 20,
         "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(1, 20, false) returns 0, 21 */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(1, 20, false);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(1, 20, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 0 || sresult == 21,
         "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(SCHAR_MIN, 99, false) returns 100 */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(SCHAR_MIN, 99, false);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(SCHAR_MIN, 99, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 100,
         "Validate result value for parameters (SCHAR_MIN,99,false); expected: 100, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(SCHAR_MIN + 1, SCHAR_MAX, false) returns SCHAR_MIN (no error) */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(SCHAR_MIN + 1, SCHAR_MAX, false);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(SCHAR_MIN + 1, SCHAR_MAX, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == SCHAR_MIN,
@@ -650,7 +650,7 @@ static int SDLCALL sdltest_randomBoundaryNumberSint8(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomSintXBoundaryValue(SCHAR_MIN, SCHAR_MAX - 1, false) returns SCHAR_MAX (no error) */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(SCHAR_MIN, SCHAR_MAX - 1, false);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(SCHAR_MIN, SCHAR_MAX - 1, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == SCHAR_MAX,
@@ -660,7 +660,7 @@ static int SDLCALL sdltest_randomBoundaryNumberSint8(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomSintXBoundaryValue(SCHAR_MIN, SCHAR_MAX, false) returns SCHAR_MIN (sets error) */
-    sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(SCHAR_MIN, SCHAR_MAX, false);
+    sresult = (int64_t)SDLTest_RandomSint8BoundaryValue(SCHAR_MIN, SCHAR_MAX, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint8BoundaryValue");
     SDLTest_AssertCheck(
         sresult == SCHAR_MIN,
@@ -680,76 +680,76 @@ static int SDLCALL sdltest_randomBoundaryNumberSint8(void *arg)
 }
 
 /**
- * Calls to random boundary number generators for Sint16
+ * Calls to random boundary number generators for int16_t
  */
 static int SDLCALL sdltest_randomBoundaryNumberSint16(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     const char *lastError;
-    Sint64 sresult;
+    int64_t sresult;
 
     /* Clean error messages */
     SDL_ClearError();
     SDLTest_AssertPass("SDL_ClearError()");
 
     /* RandomSintXBoundaryValue(10, 10, true) returns 10 */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(10, 10, true);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(10, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10,
         "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 11, true) returns 10, 11 */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(10, 11, true);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(10, 11, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11,
         "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 12, true) returns 10, 11, 12 */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(10, 12, true);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(10, 12, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 12,
         "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 13, true) returns 10, 11, 12, 13 */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(10, 13, true);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(10, 13, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 12 || sresult == 13,
         "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 20, true) returns 10, 11, 19 or 20 */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(10, 20, true);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(10, 20, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 19 || sresult == 20,
         "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(20, 10, true) returns 10, 11, 19 or 20 */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(20, 10, true);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(20, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 19 || sresult == 20,
         "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(1, 20, false) returns 0, 21 */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(1, 20, false);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(1, 20, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 0 || sresult == 21,
         "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(SHRT_MIN, 99, false) returns 100 */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(SHRT_MIN, 99, false);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(SHRT_MIN, 99, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 100,
         "Validate result value for parameters (SHRT_MIN,99,false); expected: 100, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(SHRT_MIN + 1, SHRT_MAX, false) returns SHRT_MIN (no error) */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(SHRT_MIN + 1, SHRT_MAX, false);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(SHRT_MIN + 1, SHRT_MAX, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == SHRT_MIN,
@@ -759,7 +759,7 @@ static int SDLCALL sdltest_randomBoundaryNumberSint16(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomSintXBoundaryValue(SHRT_MIN, SHRT_MAX - 1, false) returns SHRT_MAX (no error) */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(SHRT_MIN, SHRT_MAX - 1, false);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(SHRT_MIN, SHRT_MAX - 1, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == SHRT_MAX,
@@ -769,7 +769,7 @@ static int SDLCALL sdltest_randomBoundaryNumberSint16(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomSintXBoundaryValue(SHRT_MIN, SHRT_MAX, false) returns 0 (sets error) */
-    sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(SHRT_MIN, SHRT_MAX, false);
+    sresult = (int64_t)SDLTest_RandomSint16BoundaryValue(SHRT_MIN, SHRT_MAX, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint16BoundaryValue");
     SDLTest_AssertCheck(
         sresult == SHRT_MIN,
@@ -789,19 +789,19 @@ static int SDLCALL sdltest_randomBoundaryNumberSint16(void *arg)
 }
 
 /**
- * Calls to random boundary number generators for Sint32
+ * Calls to random boundary number generators for int32_t
  */
 static int SDLCALL sdltest_randomBoundaryNumberSint32(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     const char *lastError;
-    Sint64 sresult;
+    int64_t sresult;
 #if ((ULONG_MAX) == (UINT_MAX))
-    Sint32 long_min = LONG_MIN;
-    Sint32 long_max = LONG_MAX;
+    int32_t long_min = LONG_MIN;
+    int32_t long_max = LONG_MAX;
 #else
-    Sint32 long_min = INT_MIN;
-    Sint32 long_max = INT_MAX;
+    int32_t long_min = INT_MIN;
+    int32_t long_max = INT_MAX;
 #endif
 
     /* Clean error messages */
@@ -809,63 +809,63 @@ static int SDLCALL sdltest_randomBoundaryNumberSint32(void *arg)
     SDLTest_AssertPass("SDL_ClearError()");
 
     /* RandomSintXBoundaryValue(10, 10, true) returns 10 */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(10, 10, true);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(10, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10,
         "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 11, true) returns 10, 11 */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(10, 11, true);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(10, 11, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11,
         "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 12, true) returns 10, 11, 12 */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(10, 12, true);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(10, 12, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 12,
         "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 13, true) returns 10, 11, 12, 13 */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(10, 13, true);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(10, 13, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 12 || sresult == 13,
         "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(10, 20, true) returns 10, 11, 19 or 20 */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(10, 20, true);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(10, 20, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 19 || sresult == 20,
         "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(20, 10, true) returns 10, 11, 19 or 20 */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(20, 10, true);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(20, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 10 || sresult == 11 || sresult == 19 || sresult == 20,
         "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(1, 20, false) returns 0, 21 */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(1, 20, false);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(1, 20, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 0 || sresult == 21,
         "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(LONG_MIN, 99, false) returns 100 */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(long_min, 99, false);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(long_min, 99, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == 100,
         "Validate result value for parameters (LONG_MIN,99,false); expected: 100, got: %" SDL_PRIs64, sresult);
 
     /* RandomSintXBoundaryValue(LONG_MIN + 1, LONG_MAX, false) returns LONG_MIN (no error) */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(long_min + 1, long_max, false);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(long_min + 1, long_max, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == long_min,
@@ -875,7 +875,7 @@ static int SDLCALL sdltest_randomBoundaryNumberSint32(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomSintXBoundaryValue(LONG_MIN, LONG_MAX - 1, false) returns LONG_MAX (no error) */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(long_min, long_max - 1, false);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(long_min, long_max - 1, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == long_max,
@@ -885,7 +885,7 @@ static int SDLCALL sdltest_randomBoundaryNumberSint32(void *arg)
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
     /* RandomSintXBoundaryValue(LONG_MIN, LONG_MAX, false) returns 0 (sets error) */
-    sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(long_min, long_max, false);
+    sresult = (int64_t)SDLTest_RandomSint32BoundaryValue(long_min, long_max, false);
     SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
     SDLTest_AssertCheck(
         sresult == long_min,
@@ -905,13 +905,13 @@ static int SDLCALL sdltest_randomBoundaryNumberSint32(void *arg)
 }
 
 /**
- * Calls to random boundary number generators for Sint64
+ * Calls to random boundary number generators for int64_t
  */
 static int SDLCALL sdltest_randomBoundaryNumberSint64(void *arg)
 {
     const char *expectedError = "That operation is not supported";
     const char *lastError;
-    Sint64 sresult;
+    int64_t sresult;
 
     /* Clean error messages */
     SDL_ClearError();
@@ -1018,32 +1018,32 @@ static int SDLCALL sdltest_randomBoundaryNumberSint64(void *arg)
  */
 static int SDLCALL sdltest_randomIntegerInRange(void *arg)
 {
-    Sint32 min, max;
-    Sint32 result;
+    int32_t min, max;
+    int32_t result;
 #if ((ULONG_MAX) == (UINT_MAX))
-    Sint32 long_min = LONG_MIN;
-    Sint32 long_max = LONG_MAX;
+    int32_t long_min = LONG_MIN;
+    int32_t long_max = LONG_MAX;
 #else
-    Sint32 long_min = INT_MIN;
-    Sint32 long_max = INT_MAX;
+    int32_t long_min = INT_MIN;
+    int32_t long_max = INT_MAX;
 #endif
 
     /* Standard range */
-    min = (Sint32)SDLTest_RandomSint16();
-    max = min + (Sint32)SDLTest_RandomUint8() + 2;
+    min = (int32_t)SDLTest_RandomSint16();
+    max = min + (int32_t)SDLTest_RandomUint8() + 2;
     result = SDLTest_RandomIntegerInRange(min, max);
     SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(min,max)");
     SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
 
     /* One Range */
-    min = (Sint32)SDLTest_RandomSint16();
+    min = (int32_t)SDLTest_RandomSint16();
     max = min + 1;
     result = SDLTest_RandomIntegerInRange(min, max);
     SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(min,min+1)");
     SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
 
     /* Zero range */
-    min = (Sint32)SDLTest_RandomSint16();
+    min = (int32_t)SDLTest_RandomSint16();
     max = min;
     result = SDLTest_RandomIntegerInRange(min, max);
     SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(min,min)");
@@ -1057,8 +1057,8 @@ static int SDLCALL sdltest_randomIntegerInRange(void *arg)
     SDLTest_AssertCheck(result == 0, "Validated returned value; expected: 0, got: %" SDL_PRIs32, result);
 
     /* Swapped min-max */
-    min = (Sint32)SDLTest_RandomSint16();
-    max = min + (Sint32)SDLTest_RandomUint8() + 2;
+    min = (int32_t)SDLTest_RandomSint16();
+    max = min + (int32_t)SDLTest_RandomUint8() + 2;
     result = SDLTest_RandomIntegerInRange(max, min);
     SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(max,min)");
     SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
@@ -1066,14 +1066,14 @@ static int SDLCALL sdltest_randomIntegerInRange(void *arg)
 #if 0 /* This test correctly triggers an asan warning: runtime error: signed integer overflow: 2147483647 + 4239 cannot be represented in type 'int' */
     /* Range with min at integer limit */
     min = long_min;
-    max = long_max + (Sint32)SDLTest_RandomSint16();
+    max = long_max + (int32_t)SDLTest_RandomSint16();
     result = SDLTest_RandomIntegerInRange(min, max);
     SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(SINT32_MIN,...)");
     SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
 #endif
 
     /* Range with max at integer limit */
-    min = long_min - (Sint32)SDLTest_RandomSint16();
+    min = long_min - (int32_t)SDLTest_RandomSint16();
     max = long_max;
     result = SDLTest_RandomIntegerInRange(min, max);
     SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(...,SINT32_MAX)");
@@ -1238,35 +1238,35 @@ static const SDLTest_TestCaseReference sdltestTest2 = {
 };
 
 static const SDLTest_TestCaseReference sdltestTest3 = {
-    sdltest_randomBoundaryNumberUint8, "sdltest_randomBoundaryNumberUint8", "Calls to random boundary number generators for Uint8", TEST_ENABLED
+    sdltest_randomBoundaryNumberUint8, "sdltest_randomBoundaryNumberUint8", "Calls to random boundary number generators for uint8_t", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest4 = {
-    sdltest_randomBoundaryNumberUint16, "sdltest_randomBoundaryNumberUint16", "Calls to random boundary number generators for Uint16", TEST_ENABLED
+    sdltest_randomBoundaryNumberUint16, "sdltest_randomBoundaryNumberUint16", "Calls to random boundary number generators for uint16_t", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest5 = {
-    sdltest_randomBoundaryNumberUint32, "sdltest_randomBoundaryNumberUint32", "Calls to random boundary number generators for Uint32", TEST_ENABLED
+    sdltest_randomBoundaryNumberUint32, "sdltest_randomBoundaryNumberUint32", "Calls to random boundary number generators for uint32_t", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest6 = {
-    sdltest_randomBoundaryNumberUint64, "sdltest_randomBoundaryNumberUint64", "Calls to random boundary number generators for Uint64", TEST_ENABLED
+    sdltest_randomBoundaryNumberUint64, "sdltest_randomBoundaryNumberUint64", "Calls to random boundary number generators for uint64_t", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest7 = {
-    sdltest_randomBoundaryNumberSint8, "sdltest_randomBoundaryNumberSint8", "Calls to random boundary number generators for Sint8", TEST_ENABLED
+    sdltest_randomBoundaryNumberSint8, "sdltest_randomBoundaryNumberSint8", "Calls to random boundary number generators for int8_t", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest8 = {
-    sdltest_randomBoundaryNumberSint16, "sdltest_randomBoundaryNumberSint16", "Calls to random boundary number generators for Sint16", TEST_ENABLED
+    sdltest_randomBoundaryNumberSint16, "sdltest_randomBoundaryNumberSint16", "Calls to random boundary number generators for int16_t", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest9 = {
-    sdltest_randomBoundaryNumberSint32, "sdltest_randomBoundaryNumberSint32", "Calls to random boundary number generators for Sint32", TEST_ENABLED
+    sdltest_randomBoundaryNumberSint32, "sdltest_randomBoundaryNumberSint32", "Calls to random boundary number generators for int32_t", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest10 = {
-    sdltest_randomBoundaryNumberSint64, "sdltest_randomBoundaryNumberSint64", "Calls to random boundary number generators for Sint64", TEST_ENABLED
+    sdltest_randomBoundaryNumberSint64, "sdltest_randomBoundaryNumberSint64", "Calls to random boundary number generators for int64_t", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference sdltestTest11 = {

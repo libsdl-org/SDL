@@ -582,12 +582,12 @@ void SDL_SetupAudioResampler(void)
     }
 }
 
-Sint64 SDL_GetResampleRate(int src_rate, int dst_rate)
+int64_t SDL_GetResampleRate(int src_rate, int dst_rate)
 {
     SDL_assert(src_rate > 0);
     SDL_assert(dst_rate > 0);
 
-    Sint64 sample_rate = ((Sint64)src_rate << 32) / (Sint64)dst_rate;
+    int64_t sample_rate = ((int64_t)src_rate << 32) / (int64_t)dst_rate;
     SDL_assert(sample_rate > 0);
 
     return sample_rate;
@@ -600,7 +600,7 @@ int SDL_GetResamplerHistoryFrames(void)
     return RESAMPLER_MAX_PADDING_FRAMES;
 }
 
-int SDL_GetResamplerPaddingFrames(Sint64 resample_rate)
+int SDL_GetResamplerPaddingFrames(int64_t resample_rate)
 {
     // This must always be <= SDL_GetResamplerHistoryFrames()
 
@@ -608,7 +608,7 @@ int SDL_GetResamplerPaddingFrames(Sint64 resample_rate)
 }
 
 // These are not general purpose. They do not check for all possible underflow/overflow
-SDL_FORCE_INLINE bool ResamplerAdd(Sint64 a, Sint64 b, Sint64 *ret)
+SDL_FORCE_INLINE bool ResamplerAdd(int64_t a, int64_t b, int64_t *ret)
 {
     if ((b > 0) && (a > SDL_MAX_SINT64 - b)) {
         return false;
@@ -618,7 +618,7 @@ SDL_FORCE_INLINE bool ResamplerAdd(Sint64 a, Sint64 b, Sint64 *ret)
     return true;
 }
 
-SDL_FORCE_INLINE bool ResamplerMul(Sint64 a, Sint64 b, Sint64 *ret)
+SDL_FORCE_INLINE bool ResamplerMul(int64_t a, int64_t b, int64_t *ret)
 {
     if ((b > 0) && (a > SDL_MAX_SINT64 / b)) {
         return false;
@@ -628,36 +628,36 @@ SDL_FORCE_INLINE bool ResamplerMul(Sint64 a, Sint64 b, Sint64 *ret)
     return true;
 }
 
-Sint64 SDL_GetResamplerInputFrames(Sint64 output_frames, Sint64 resample_rate, Sint64 resample_offset)
+int64_t SDL_GetResamplerInputFrames(int64_t output_frames, int64_t resample_rate, int64_t resample_offset)
 {
     // Calculate the index of the last input frame, then add 1.
     // ((((output_frames - 1) * resample_rate) + resample_offset) >> 32) + 1
 
-    Sint64 output_offset;
+    int64_t output_offset;
     if (!ResamplerMul(output_frames, resample_rate, &output_offset) ||
         !ResamplerAdd(output_offset, -resample_rate + resample_offset + 0x100000000, &output_offset)) {
         output_offset = SDL_MAX_SINT64;
     }
 
-    Sint64 input_frames = (Sint64)(Sint32)(output_offset >> 32);
+    int64_t input_frames = (int64_t)(int32_t)(output_offset >> 32);
     input_frames = SDL_max(input_frames, 0);
 
     return input_frames;
 }
 
-Sint64 SDL_GetResamplerOutputFrames(Sint64 input_frames, Sint64 resample_rate, Sint64 *inout_resample_offset)
+int64_t SDL_GetResamplerOutputFrames(int64_t input_frames, int64_t resample_rate, int64_t *inout_resample_offset)
 {
-    Sint64 resample_offset = *inout_resample_offset;
+    int64_t resample_offset = *inout_resample_offset;
 
     // input_offset = (input_frames << 32) - resample_offset;
-    Sint64 input_offset;
+    int64_t input_offset;
     if (!ResamplerMul(input_frames, 0x100000000, &input_offset) ||
         !ResamplerAdd(input_offset, -resample_offset, &input_offset)) {
         input_offset = SDL_MAX_SINT64;
     }
 
     // output_frames = div_ceil(input_offset, resample_rate)
-    Sint64 output_frames = (input_offset > 0) ? ((input_offset + resample_rate * 3 / 4) / resample_rate) : 0;
+    int64_t output_frames = (input_offset > 0) ? ((input_offset + resample_rate * 3 / 4) / resample_rate) : 0;
 
     *inout_resample_offset = (output_frames * resample_rate) - input_offset;
 
@@ -665,10 +665,10 @@ Sint64 SDL_GetResamplerOutputFrames(Sint64 input_frames, Sint64 resample_rate, S
 }
 
 void SDL_ResampleAudio(int chans, const float *src, int inframes, float *dst, int outframes,
-                       Sint64 resample_rate, Sint64 *inout_resample_offset)
+                       int64_t resample_rate, int64_t *inout_resample_offset)
 {
     int i;
-    Sint64 srcpos = *inout_resample_offset;
+    int64_t srcpos = *inout_resample_offset;
     ResampleFrameFunc resample_frame = ResampleFrame[chans - 1];
 
     SDL_assert(resample_rate > 0);
@@ -676,8 +676,8 @@ void SDL_ResampleAudio(int chans, const float *src, int inframes, float *dst, in
     src -= (RESAMPLER_ZERO_CROSSINGS - 1) * chans;
 
     for (i = 0; i < outframes; ++i) {
-        int srcindex = (int)(Sint32)(srcpos >> 32);
-        Uint32 srcfraction = (Uint32)(srcpos & 0xFFFFFFFF);
+        int srcindex = (int)(int32_t)(srcpos >> 32);
+        uint32_t srcfraction = (uint32_t)(srcpos & 0xFFFFFFFF);
         srcpos += resample_rate;
 
         SDL_assert(srcindex >= -1 && srcindex < inframes);
@@ -691,5 +691,5 @@ void SDL_ResampleAudio(int chans, const float *src, int inframes, float *dst, in
         dst += chans;
     }
 
-    *inout_resample_offset = srcpos - ((Sint64)inframes << 32);
+    *inout_resample_offset = srcpos - ((int64_t)inframes << 32);
 }

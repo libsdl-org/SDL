@@ -22,10 +22,10 @@
 
 // This file contains portable random functions for SDL
 
-static Uint64 SDL_rand_state;
+static uint64_t SDL_rand_state;
 static bool SDL_rand_initialized = false;
 
-void SDL_srand(Uint64 seed)
+void SDL_srand(uint64_t seed)
 {
     if (!seed) {
         seed = SDL_GetPerformanceCounter();
@@ -34,7 +34,7 @@ void SDL_srand(Uint64 seed)
     SDL_rand_initialized = true;
 }
 
-Sint32 SDL_rand(Sint32 n)
+int32_t SDL_rand(int32_t n)
 {
     if (!SDL_rand_initialized) {
         SDL_srand(0);
@@ -52,7 +52,7 @@ float SDL_randf(void)
     return SDL_randf_r(&SDL_rand_state);
 }
 
-Uint32 SDL_rand_bits(void)
+uint32_t SDL_rand_bits(void)
 {
     if (!SDL_rand_initialized) {
         SDL_srand(0);
@@ -61,7 +61,7 @@ Uint32 SDL_rand_bits(void)
     return SDL_rand_bits_r(&SDL_rand_state);
 }
 
-Uint32 SDL_rand_bits_r(Uint64 *state)
+uint32_t SDL_rand_bits_r(uint64_t *state)
 {
     if (!state) {
         return 0;
@@ -85,10 +85,10 @@ Uint32 SDL_rand_bits_r(Uint64 *state)
     *state = *state * 0xff1cd035ul + 0x05;
 
     // Only return top 32 bits because they have a longer period
-    return (Uint32)(*state >> 32);
+    return (uint32_t)(*state >> 32);
 }
 
-Sint32 SDL_rand_r(Uint64 *state, Sint32 n)
+int32_t SDL_rand_r(uint64_t *state, int32_t n)
 {
     // Algorithm: get 32 bits from SDL_rand_bits() and treat it as a 0.32 bit
     // fixed point number. Multiply by the 31.0 bit n to get a 31.32 bit
@@ -103,11 +103,11 @@ Sint32 SDL_rand_r(Uint64 *state, Sint32 n)
     }
 
     // On 32-bit arch, the compiler will optimize to a single 32-bit multiply
-    Uint64 val = (Uint64)SDL_rand_bits_r(state) * n;
-    return (Sint32)(val >> 32);
+    uint64_t val = (uint64_t)SDL_rand_bits_r(state) * n;
+    return (int32_t)(val >> 32);
 }
 
-float SDL_randf_r(Uint64 *state)
+float SDL_randf_r(uint64_t *state)
 {
     // Note: its using 24 bits because float has 23 bits significand + 1 implicit bit
     return (SDL_rand_bits_r(state) >> (32 - 24)) * 0x1p-24f;

@@ -10,10 +10,10 @@
 #if RGB_FORMAT == RGB_FORMAT_RGB565
 
 #define PACK_PIXEL(rgb_ptr) \
-	*(Uint16 *)rgb_ptr = \
-		((((Uint16)clampU8(y_tmp+r_tmp)) << 8 ) & 0xF800) | \
-		((((Uint16)clampU8(y_tmp+g_tmp)) << 3) & 0x07E0) | \
-		(((Uint16)clampU8(y_tmp+b_tmp)) >> 3); \
+	*(uint16_t *)rgb_ptr = \
+		((((uint16_t)clampU8(y_tmp+r_tmp)) << 8 ) & 0xF800) | \
+		((((uint16_t)clampU8(y_tmp+g_tmp)) << 3) & 0x07E0) | \
+		(((uint16_t)clampU8(y_tmp+b_tmp)) >> 3); \
 	rgb_ptr += 2; \
 
 #elif RGB_FORMAT == RGB_FORMAT_RGB24
@@ -27,51 +27,51 @@
 #elif RGB_FORMAT == RGB_FORMAT_RGBA
 
 #define PACK_PIXEL(rgb_ptr) \
-	*(Uint32 *)rgb_ptr = \
-		(((Uint32)clampU8(y_tmp+r_tmp)) << 24) | \
-		(((Uint32)clampU8(y_tmp+g_tmp)) << 16) | \
-		(((Uint32)clampU8(y_tmp+b_tmp)) << 8) | \
+	*(uint32_t *)rgb_ptr = \
+		(((uint32_t)clampU8(y_tmp+r_tmp)) << 24) | \
+		(((uint32_t)clampU8(y_tmp+g_tmp)) << 16) | \
+		(((uint32_t)clampU8(y_tmp+b_tmp)) << 8) | \
 		0x000000FF; \
 	rgb_ptr += 4; \
 
 #elif RGB_FORMAT == RGB_FORMAT_BGRA
 
 #define PACK_PIXEL(rgb_ptr) \
-	*(Uint32 *)rgb_ptr = \
-		(((Uint32)clampU8(y_tmp+b_tmp)) << 24) | \
-		(((Uint32)clampU8(y_tmp+g_tmp)) << 16) | \
-		(((Uint32)clampU8(y_tmp+r_tmp)) << 8) | \
+	*(uint32_t *)rgb_ptr = \
+		(((uint32_t)clampU8(y_tmp+b_tmp)) << 24) | \
+		(((uint32_t)clampU8(y_tmp+g_tmp)) << 16) | \
+		(((uint32_t)clampU8(y_tmp+r_tmp)) << 8) | \
 		0x000000FF; \
 	rgb_ptr += 4; \
 
 #elif RGB_FORMAT == RGB_FORMAT_ARGB
 
 #define PACK_PIXEL(rgb_ptr) \
-	*(Uint32 *)rgb_ptr = \
+	*(uint32_t *)rgb_ptr = \
 		0xFF000000 | \
-		(((Uint32)clampU8(y_tmp+r_tmp)) << 16) | \
-		(((Uint32)clampU8(y_tmp+g_tmp)) << 8) | \
-		(((Uint32)clampU8(y_tmp+b_tmp)) << 0); \
+		(((uint32_t)clampU8(y_tmp+r_tmp)) << 16) | \
+		(((uint32_t)clampU8(y_tmp+g_tmp)) << 8) | \
+		(((uint32_t)clampU8(y_tmp+b_tmp)) << 0); \
 	rgb_ptr += 4; \
 
 #elif RGB_FORMAT == RGB_FORMAT_ABGR
 
 #define PACK_PIXEL(rgb_ptr) \
-	*(Uint32 *)rgb_ptr = \
+	*(uint32_t *)rgb_ptr = \
 		0xFF000000 | \
-		(((Uint32)clampU8(y_tmp+b_tmp)) << 16) | \
-		(((Uint32)clampU8(y_tmp+g_tmp)) << 8) | \
-		(((Uint32)clampU8(y_tmp+r_tmp)) << 0); \
+		(((uint32_t)clampU8(y_tmp+b_tmp)) << 16) | \
+		(((uint32_t)clampU8(y_tmp+g_tmp)) << 8) | \
+		(((uint32_t)clampU8(y_tmp+r_tmp)) << 0); \
 	rgb_ptr += 4; \
 
 #elif RGB_FORMAT == RGB_FORMAT_XBGR2101010
 
 #define PACK_PIXEL(rgb_ptr) \
-	*(Uint32 *)rgb_ptr = \
+	*(uint32_t *)rgb_ptr = \
 		0xC0000000 | \
-		(((Uint32)clamp10(y_tmp+b_tmp)) << 20) | \
-		(((Uint32)clamp10(y_tmp+g_tmp)) << 10) | \
-		(((Uint32)clamp10(y_tmp+r_tmp)) << 0); \
+		(((uint32_t)clamp10(y_tmp+b_tmp)) << 20) | \
+		(((uint32_t)clamp10(y_tmp+g_tmp)) << 10) | \
+		(((uint32_t)clamp10(y_tmp+r_tmp)) << 0); \
 	rgb_ptr += 4; \
 
 #else

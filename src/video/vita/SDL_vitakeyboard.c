@@ -32,10 +32,10 @@
 
 SceHidKeyboardReport k_reports[SCE_HID_MAX_REPORT];
 int keyboard_hid_handle = 0;
-Uint8 prev_keys[6] = { 0 };
-Uint8 prev_modifiers = 0;
-Uint8 locks = 0;
-Uint8 lock_key_down = 0;
+uint8_t prev_keys[6] = { 0 };
+uint8_t prev_modifiers = 0;
+uint8_t locks = 0;
+uint8_t lock_key_down = 0;
 
 void VITA_InitKeyboard(void)
 {
@@ -106,7 +106,7 @@ void VITA_PollKeyboard(void)
             }
 
             {
-                Uint8 changed_modifiers = k_reports[numReports - 1].modifiers[0] ^ prev_modifiers;
+                uint8_t changed_modifiers = k_reports[numReports - 1].modifiers[0] ^ prev_modifiers;
 
                 if (changed_modifiers & 0x01) {
                     if (prev_modifiers & 0x01) {

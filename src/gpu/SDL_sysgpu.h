@@ -56,7 +56,7 @@ typedef struct BlitFragmentUniforms
     float width;
     float height;
 
-    Uint32 mip_level;
+    uint32_t mip_level;
     float layer_or_depth;
 } BlitFragmentUniforms;
 
@@ -78,7 +78,7 @@ typedef struct BlitPipelineCacheEntry
 #define SDL_GPU_SWAPCHAINCOMPOSITION_MAX_ENUM_VALUE (SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048 + 1)
 #define SDL_GPU_PRESENTMODE_MAX_ENUM_VALUE          (SDL_GPU_PRESENTMODE_MAILBOX + 1)
 
-static inline Sint32 Texture_GetBlockSize(
+static inline int32_t Texture_GetBlockSize(
     SDL_GPUTextureFormat format)
 {
     switch (format) {
@@ -192,31 +192,31 @@ static inline bool IsIntegerFormat(
     }
 }
 
-static inline Uint32 IndexSize(SDL_GPUIndexElementSize size)
+static inline uint32_t IndexSize(SDL_GPUIndexElementSize size)
 {
     return (size == SDL_GPU_INDEXELEMENTSIZE_16BIT) ? 2 : 4;
 }
 
-static inline Uint32 BytesPerRow(
-    Sint32 width,
+static inline uint32_t BytesPerRow(
+    int32_t width,
     SDL_GPUTextureFormat format)
 {
-    Uint32 blocksPerRow = width;
-    Uint32 pixelRowsPerBlock = Texture_GetBlockSize(format);
+    uint32_t blocksPerRow = width;
+    uint32_t pixelRowsPerBlock = Texture_GetBlockSize(format);
 
     blocksPerRow = (width + pixelRowsPerBlock - 1) / pixelRowsPerBlock;
     return blocksPerRow * SDL_GPUTextureFormatTexelBlockSize(format);
 }
 
-static inline Sint32 BytesPerImage(
-    Uint32 width,
-    Uint32 height,
+static inline int32_t BytesPerImage(
+    uint32_t width,
+    uint32_t height,
     SDL_GPUTextureFormat format)
 {
-    Uint32 blocksPerRow = width;
-    Uint32 blocksPerColumn = height;
-    Uint32 pixelRowsPerBlock = Texture_GetBlockSize(format);
-    Uint32 pixelColumnsPerBlock = pixelRowsPerBlock;
+    uint32_t blocksPerRow = width;
+    uint32_t blocksPerColumn = height;
+    uint32_t pixelRowsPerBlock = Texture_GetBlockSize(format);
+    uint32_t pixelColumnsPerBlock = pixelRowsPerBlock;
 
     blocksPerRow = (width + pixelRowsPerBlock - 1) / pixelRowsPerBlock;
     blocksPerColumn = (height + pixelColumnsPerBlock - 1) / pixelColumnsPerBlock;
@@ -265,8 +265,8 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     SDL_GPUShader *blitFromCubeShader,
     SDL_GPUShader *blitFromCubeArrayShader,
     BlitPipelineCacheEntry **blitPipelines,
-    Uint32 *blitPipelineCount,
-    Uint32 *blitPipelineCapacity);
+    uint32_t *blitPipelineCount,
+    uint32_t *blitPipelineCapacity);
 
 void SDL_GPU_BlitCommon(
     SDL_GPUCommandBuffer *commandBuffer,
@@ -280,8 +280,8 @@ void SDL_GPU_BlitCommon(
     SDL_GPUShader *blitFromCubeShader,
     SDL_GPUShader *blitFromCubeArrayShader,
     BlitPipelineCacheEntry **blitPipelines,
-    Uint32 *blitPipelineCount,
-    Uint32 *blitPipelineCapacity);
+    uint32_t *blitPipelineCount,
+    uint32_t *blitPipelineCapacity);
 
 #ifdef __cplusplus
 }
@@ -322,12 +322,12 @@ struct SDL_GPUDevice
     SDL_GPUBuffer *(*CreateBuffer)(
         SDL_GPURenderer *driverData,
         SDL_GPUBufferUsageFlags usageFlags,
-        Uint32 size);
+        uint32_t size);
 
     SDL_GPUTransferBuffer *(*CreateTransferBuffer)(
         SDL_GPURenderer *driverData,
         SDL_GPUTransferBufferUsage usage,
-        Uint32 size);
+        uint32_t size);
 
     // Debug Naming
 
@@ -387,7 +387,7 @@ struct SDL_GPUDevice
     void (*BeginRenderPass)(
         SDL_GPUCommandBuffer *commandBuffer,
         const SDL_GPUColorTargetInfo *colorTargetInfos,
-        Uint32 numColorTargets,
+        uint32_t numColorTargets,
         const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo);
 
     void (*BindGraphicsPipeline)(
@@ -408,13 +408,13 @@ struct SDL_GPUDevice
 
     void (*SetStencilReference)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint8 reference);
+        uint8_t reference);
 
     void (*BindVertexBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
+        uint32_t firstSlot,
         const SDL_GPUBufferBinding *bindings,
-        Uint32 numBindings);
+        uint32_t numBindings);
 
     void (*BindIndexBuffer)(
         SDL_GPUCommandBuffer *commandBuffer,
@@ -423,78 +423,78 @@ struct SDL_GPUDevice
 
     void (*BindVertexSamplers)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
+        uint32_t firstSlot,
         const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
-        Uint32 numBindings);
+        uint32_t numBindings);
 
     void (*BindVertexStorageTextures)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
+        uint32_t firstSlot,
         SDL_GPUTexture *const *storageTextures,
-        Uint32 numBindings);
+        uint32_t numBindings);
 
     void (*BindVertexStorageBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
+        uint32_t firstSlot,
         SDL_GPUBuffer *const *storageBuffers,
-        Uint32 numBindings);
+        uint32_t numBindings);
 
     void (*BindFragmentSamplers)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
+        uint32_t firstSlot,
         const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
-        Uint32 numBindings);
+        uint32_t numBindings);
 
     void (*BindFragmentStorageTextures)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
+        uint32_t firstSlot,
         SDL_GPUTexture *const *storageTextures,
-        Uint32 numBindings);
+        uint32_t numBindings);
 
     void (*BindFragmentStorageBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
+        uint32_t firstSlot,
         SDL_GPUBuffer *const *storageBuffers,
-        Uint32 numBindings);
+        uint32_t numBindings);
 
     void (*PushVertexUniformData)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 slotIndex,
+        uint32_t slotIndex,
         const void *data,
-        Uint32 length);
+        uint32_t length);
 
     void (*PushFragmentUniformData)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 slotIndex,
+        uint32_t slotIndex,
         const void *data,
-        Uint32 length);
+        uint32_t length);
 
     void (*DrawIndexedPrimitives)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 numIndices,
-        Uint32 numInstances,
-        Uint32 firstIndex,
-        Sint32 vertexOffset,
-        Uint32 firstInstance);
+        uint32_t numIndices,
+        uint32_t numInstances,
+        uint32_t firstIndex,
+        int32_t vertexOffset,
+        uint32_t firstInstance);
 
     void (*DrawPrimitives)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 numVertices,
-        Uint32 numInstances,
-        Uint32 firstVertex,
-        Uint32 firstInstance);
+        uint32_t numVertices,
+        uint32_t numInstances,
+        uint32_t firstVertex,
+        uint32_t firstInstance);
 
     void (*DrawPrimitivesIndirect)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUBuffer *buffer,
-        Uint32 offset,
-        Uint32 drawCount);
+        uint32_t offset,
+        uint32_t drawCount);
 
     void (*DrawIndexedPrimitivesIndirect)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUBuffer *buffer,
-        Uint32 offset,
-        Uint32 drawCount);
+        uint32_t offset,
+        uint32_t drawCount);
 
     void (*EndRenderPass)(
         SDL_GPUCommandBuffer *commandBuffer);
@@ -504,9 +504,9 @@ struct SDL_GPUDevice
     void (*BeginComputePass)(
         SDL_GPUCommandBuffer *commandBuffer,
         const SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
-        Uint32 numStorageTextureBindings,
+        uint32_t numStorageTextureBindings,
         const SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
-        Uint32 numStorageBufferBindings);
+        uint32_t numStorageBufferBindings);
 
     void (*BindComputePipeline)(
         SDL_GPUCommandBuffer *commandBuffer,
@@ -514,38 +514,38 @@ struct SDL_GPUDevice
 
     void (*BindComputeSamplers)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
+        uint32_t firstSlot,
         const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
-        Uint32 numBindings);
+        uint32_t numBindings);
 
     void (*BindComputeStorageTextures)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
+        uint32_t firstSlot,
         SDL_GPUTexture *const *storageTextures,
-        Uint32 numBindings);
+        uint32_t numBindings);
 
     void (*BindComputeStorageBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstSlot,
+        uint32_t firstSlot,
         SDL_GPUBuffer *const *storageBuffers,
-        Uint32 numBindings);
+        uint32_t numBindings);
 
     void (*PushComputeUniformData)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 slotIndex,
+        uint32_t slotIndex,
         const void *data,
-        Uint32 length);
+        uint32_t length);
 
     void (*DispatchCompute)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 groupcountX,
-        Uint32 groupcountY,
-        Uint32 groupcountZ);
+        uint32_t groupcountX,
+        uint32_t groupcountY,
+        uint32_t groupcountZ);
 
     void (*DispatchComputeIndirect)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUBuffer *buffer,
-        Uint32 offset);
+        uint32_t offset);
 
     void (*EndComputePass)(
         SDL_GPUCommandBuffer *commandBuffer);
@@ -582,16 +582,16 @@ struct SDL_GPUDevice
         SDL_GPUCommandBuffer *commandBuffer,
         const SDL_GPUTextureLocation *source,
         const SDL_GPUTextureLocation *destination,
-        Uint32 w,
-        Uint32 h,
-        Uint32 d,
+        uint32_t w,
+        uint32_t h,
+        uint32_t d,
         bool cycle);
 
     void (*CopyBufferToBuffer)(
         SDL_GPUCommandBuffer *commandBuffer,
         const SDL_GPUBufferLocation *source,
         const SDL_GPUBufferLocation *destination,
-        Uint32 size,
+        uint32_t size,
         bool cycle);
 
     void (*GenerateMipmaps)(
@@ -651,8 +651,8 @@ struct SDL_GPUDevice
     SDL_GPUTexture *(*AcquireSwapchainTexture)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_Window *window,
-        Uint32 *w,
-        Uint32 *h);
+        uint32_t *w,
+        uint32_t *h);
 
     void (*Submit)(
         SDL_GPUCommandBuffer *commandBuffer);
@@ -667,7 +667,7 @@ struct SDL_GPUDevice
         SDL_GPURenderer *driverData,
         bool waitAll,
         SDL_GPUFence *const *fences,
-        Uint32 numFences);
+        uint32_t numFences);
 
     bool (*QueryFence)(
         SDL_GPURenderer *driverData,

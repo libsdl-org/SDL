@@ -41,7 +41,7 @@ typedef struct _Object
     struct _Object *next;
 
     float x1, y1, x2, y2;
-    Uint8 r, g, b;
+    uint8_t r, g, b;
 
     bool isRect;
 } Object;

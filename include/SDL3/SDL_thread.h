@@ -69,7 +69,7 @@ typedef struct SDL_Thread SDL_Thread;
  * \sa SDL_GetThreadID
  * \sa SDL_GetCurrentThreadID
  */
-typedef Uint64 SDL_ThreadID;
+typedef uint64_t SDL_ThreadID;
 
 /**
  * Thread local storage ID.

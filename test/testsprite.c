@@ -32,8 +32,8 @@ static SDL_FRect *positions;
 static SDL_FRect *velocities;
 static float sprite_w, sprite_h;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
-static Uint64 next_fps_check;
-static Uint32 frames;
+static uint64_t next_fps_check;
+static uint32_t frames;
 static const int fps_check_delay = 5000;
 static int use_rendergeometry = 0;
 static bool suspend_when_occluded;
@@ -96,8 +96,8 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
             current_color = 255;
             cycle_direction = -cycle_direction;
         }
-        SDL_SetTextureColorMod(sprite, 255, (Uint8)current_color,
-                               (Uint8)current_color);
+        SDL_SetTextureColorMod(sprite, 255, (uint8_t)current_color,
+                               (uint8_t)current_color);
     }
     if (cycle_alpha) {
         current_alpha += cycle_direction;
@@ -109,7 +109,7 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
             current_alpha = 255;
             cycle_direction = -cycle_direction;
         }
-        SDL_SetTextureAlphaMod(sprite, (Uint8)current_alpha);
+        SDL_SetTextureAlphaMod(sprite, (uint8_t)current_alpha);
     }
 
     /* Draw a gray background */
@@ -389,7 +389,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     SDL_Rect safe_area;
     int i;
-    Uint64 seed;
+    uint64_t seed;
     const char *icon = "icon.bmp";
 
     /* Initialize parameters */
@@ -524,7 +524,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_GetRenderSafeArea(state->renderers[0], &safe_area);
     if (iterations >= 0) {
         /* Deterministic seed - used for visual tests */
-        seed = (Uint64)iterations;
+        seed = (uint64_t)iterations;
     } else {
         /* Pseudo-random seed generated from the time */
         seed = SDL_GetPerformanceCounter();
@@ -558,7 +558,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    Uint64 now;
+    uint64_t now;
     int i;
     int active_windows = 0;
 
@@ -580,7 +580,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     now = SDL_GetTicks();
     if (now >= next_fps_check) {
         /* Print out some timing information */
-        const Uint64 then = next_fps_check - fps_check_delay;
+        const uint64_t then = next_fps_check - fps_check_delay;
         const double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
         next_fps_check = now + fps_check_delay;

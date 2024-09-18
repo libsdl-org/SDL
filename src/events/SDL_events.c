@@ -50,7 +50,7 @@
 #define EVENT_POLL_INTERVAL_NS SDL_MS_TO_NS(1)
 
 // Make sure the type in the SDL_Event aligns properly across the union
-SDL_COMPILE_TIME_ASSERT(SDL_Event_type, sizeof(Uint32) == sizeof(SDL_EventType));
+SDL_COMPILE_TIME_ASSERT(SDL_Event_type, sizeof(uint32_t) == sizeof(SDL_EventType));
 
 typedef struct SDL_EventWatcher
 {
@@ -66,15 +66,15 @@ static int SDL_event_watchers_count = 0;
 static bool SDL_event_watchers_dispatching = false;
 static bool SDL_event_watchers_removed = false;
 static SDL_AtomicInt SDL_sentinel_pending;
-static Uint32 SDL_last_event_id = 0;
+static uint32_t SDL_last_event_id = 0;
 
 typedef struct
 {
-    Uint32 bits[8];
+    uint32_t bits[8];
 } SDL_DisabledEventBlock;
 
 static SDL_DisabledEventBlock *SDL_disabled_events[256];
-static Uint32 SDL_userevents = SDL_EVENT_USER;
+static uint32_t SDL_userevents = SDL_EVENT_USER;
 
 typedef struct SDL_TemporaryMemory
 {
@@ -1029,7 +1029,7 @@ static void SDL_SendWakeupEvent(void)
 
 // Lock the event queue, take a peep at it, and unlock it
 static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAction action,
-                                  Uint32 minType, Uint32 maxType, bool include_sentinel)
+                                  uint32_t minType, uint32_t maxType, bool include_sentinel)
 {
     int i, used, sentinels_expected = 0;
 
@@ -1057,7 +1057,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
             }
         } else {
             SDL_EventEntry *entry, *next;
-            Uint32 type;
+            uint32_t type;
 
             for (entry = SDL_EventQ.head; entry && (events == NULL || used < numevents); entry = next) {
                 next = entry->next;
@@ -1098,30 +1098,30 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
     return used;
 }
 int SDL_PeepEvents(SDL_Event *events, int numevents, SDL_EventAction action,
-                   Uint32 minType, Uint32 maxType)
+                   uint32_t minType, uint32_t maxType)
 {
     return SDL_PeepEventsInternal(events, numevents, action, minType, maxType, false);
 }
 
-bool SDL_HasEvent(Uint32 type)
+bool SDL_HasEvent(uint32_t type)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type) > 0;
 }
 
-bool SDL_HasEvents(Uint32 minType, Uint32 maxType)
+bool SDL_HasEvents(uint32_t minType, uint32_t maxType)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, minType, maxType) > 0;
 }
 
-void SDL_FlushEvent(Uint32 type)
+void SDL_FlushEvent(uint32_t type)
 {
     SDL_FlushEvents(type, type);
 }
 
-void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
+void SDL_FlushEvents(uint32_t minType, uint32_t maxType)
 {
     SDL_EventEntry *entry, *next;
-    Uint32 type;
+    uint32_t type;
 
     // Make sure the events are current
 #if 0
@@ -1222,9 +1222,9 @@ bool SDL_PollEvent(SDL_Event *event)
 
 #ifndef SDL_PLATFORM_ANDROID
 
-static Sint64 SDL_events_get_polling_interval(void)
+static int64_t SDL_events_get_polling_interval(void)
 {
-    Sint64 poll_intervalNS = SDL_MAX_SINT64;
+    int64_t poll_intervalNS = SDL_MAX_SINT64;
 
 #ifndef SDL_JOYSTICK_DISABLED
     if (SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks) {
@@ -1248,10 +1248,10 @@ static Sint64 SDL_events_get_polling_interval(void)
     return poll_intervalNS;
 }
 
-static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeup_window, SDL_Event *event, Uint64 start, Sint64 timeoutNS)
+static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeup_window, SDL_Event *event, uint64_t start, int64_t timeoutNS)
 {
-    Sint64 loop_timeoutNS = timeoutNS;
-    Sint64 poll_intervalNS = SDL_events_get_polling_interval();
+    int64_t loop_timeoutNS = timeoutNS;
+    int64_t poll_intervalNS = SDL_events_get_polling_interval();
 
     for (;;) {
         int status;
@@ -1285,7 +1285,7 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
         }
         // No events found in the queue, call WaitEventTimeout to wait for an event.
         if (timeoutNS > 0) {
-            Sint64 elapsed = SDL_GetTicksNS() - start;
+            int64_t elapsed = SDL_GetTicksNS() - start;
             if (elapsed >= timeoutNS) {
                 // Set wakeup_window to NULL without holding the lock.
                 _this->wakeup_window = NULL;
@@ -1335,9 +1335,9 @@ bool SDL_WaitEvent(SDL_Event *event)
     return SDL_WaitEventTimeoutNS(event, -1);
 }
 
-bool SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
+bool SDL_WaitEventTimeout(SDL_Event *event, int32_t timeoutMS)
 {
-    Sint64 timeoutNS;
+    int64_t timeoutNS;
 
     if (timeoutMS > 0) {
         timeoutNS = SDL_MS_TO_NS(timeoutMS);
@@ -1347,9 +1347,9 @@ bool SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
     return SDL_WaitEventTimeoutNS(event, timeoutNS);
 }
 
-bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
+bool SDL_WaitEventTimeoutNS(SDL_Event *event, int64_t timeoutNS)
 {
-    Uint64 start, expiration;
+    uint64_t start, expiration;
     bool include_sentinel = (timeoutNS == 0);
     int result;
 
@@ -1407,9 +1407,9 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
             return true;
         }
 
-        Uint64 delay = -1;
+        uint64_t delay = -1;
         if (timeoutNS > 0) {
-            Uint64 now = SDL_GetTicksNS();
+            uint64_t now = SDL_GetTicksNS();
             if (now >= expiration) {
                 // Timeout expired and no events
                 return false;
@@ -1444,9 +1444,9 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
             return true;
         }
 
-        Uint64 delay = EVENT_POLL_INTERVAL_NS;
+        uint64_t delay = EVENT_POLL_INTERVAL_NS;
         if (timeoutNS > 0) {
-            Uint64 now = SDL_GetTicksNS();
+            uint64_t now = SDL_GetTicksNS();
             if (now >= expiration) {
                 // Timeout expired and no events
                 return false;
@@ -1628,11 +1628,11 @@ void SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
     SDL_UnlockMutex(SDL_EventQ.lock);
 }
 
-void SDL_SetEventEnabled(Uint32 type, bool enabled)
+void SDL_SetEventEnabled(uint32_t type, bool enabled)
 {
     bool current_state;
-    Uint8 hi = ((type >> 8) & 0xff);
-    Uint8 lo = (type & 0xff);
+    uint8_t hi = ((type >> 8) & 0xff);
+    uint8_t lo = (type & 0xff);
 
     if (SDL_disabled_events[hi] &&
         (SDL_disabled_events[hi]->bits[lo / 32] & (1 << (lo & 31)))) {
@@ -1688,10 +1688,10 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
     }
 }
 
-bool SDL_EventEnabled(Uint32 type)
+bool SDL_EventEnabled(uint32_t type)
 {
-    Uint8 hi = ((type >> 8) & 0xff);
-    Uint8 lo = (type & 0xff);
+    uint8_t hi = ((type >> 8) & 0xff);
+    uint8_t lo = (type & 0xff);
 
     if (SDL_disabled_events[hi] &&
         (SDL_disabled_events[hi]->bits[lo / 32] & (1 << (lo & 31)))) {
@@ -1701,9 +1701,9 @@ bool SDL_EventEnabled(Uint32 type)
     }
 }
 
-Uint32 SDL_RegisterEvents(int numevents)
+uint32_t SDL_RegisterEvents(int numevents)
 {
-    Uint32 event_base = 0;
+    uint32_t event_base = 0;
 
     if ((numevents > 0) && (SDL_userevents + numevents <= SDL_EVENT_LAST)) {
         event_base = SDL_userevents;

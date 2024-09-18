@@ -143,7 +143,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnStateChanged(ISensorEvents 
 static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *This, ISensor *pSensor, ISensorDataReport *pNewData)
 {
     int i;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     SDL_LockSensors();
     for (i = 0; i < SDL_num_sensors; ++i) {
@@ -153,7 +153,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                 PROPVARIANT valueX = { 0 }, valueY = { 0 }, valueZ = { 0 };
                 SYSTEMTIME sensor_systemtime;
                 FILETIME sensor_filetime;
-                Uint64 sensor_timestamp;
+                uint64_t sensor_timestamp;
 
 #ifdef DEBUG_SENSORS
                 SDL_Log("Sensor %s data updated\n", SDL_sensors[i].name);

@@ -257,7 +257,7 @@ static void EMSCRIPTEN_JoystickDetect(void)
 {
 }
 
-static bool EMSCRIPTEN_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool EMSCRIPTEN_JoystickIsDevicePresent(uint16_t vendor_id, uint16_t product_id, uint16_t version, const char *name)
 {
     // We don't override any other drivers
     return false;
@@ -326,7 +326,7 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
     EmscriptenGamepadEvent gamepadState;
     SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
     int i, result;
-    Uint64 timestamp = SDL_GetTicksNS();
+    uint64_t timestamp = SDL_GetTicksNS();
 
     emscripten_sample_gamepad_data();
 
@@ -349,7 +349,7 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                     if (item->axis[i] != gamepadState.axis[i]) {
                         // do we need to do conversion?
                         SDL_SendJoystickAxis(timestamp, item->joystick, i,
-                                                (Sint16)(32767. * gamepadState.axis[i]));
+                                                (int16_t)(32767. * gamepadState.axis[i]));
                     }
 
                     // store to compare in next update
@@ -378,12 +378,12 @@ static SDL_GUID EMSCRIPTEN_JoystickGetDeviceGUID(int device_index)
     return SDL_CreateJoystickGUIDForName(name);
 }
 
-static bool EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_rumble, uint16_t high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static bool EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rumble, uint16_t right_rumble)
 {
     return SDL_Unsupported();
 }
@@ -393,7 +393,7 @@ static bool EMSCRIPTEN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMa
     return false;
 }
 
-static bool EMSCRIPTEN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool EMSCRIPTEN_JoystickSetLED(SDL_Joystick *joystick, uint8_t red, uint8_t green, uint8_t blue)
 {
     return SDL_Unsupported();
 }
