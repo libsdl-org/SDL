@@ -34,12 +34,24 @@
 
 #include <SDL3/SDL_platform_defines.h>
 
+/* Most everything except Visual Studio 2013 and earlier has stdbool.h now */
+#if defined(_MSC_VER) && (_MSC_VER < 1910)
+#define SDL_DEFINE_STDBOOL
+#endif
+
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 #include <inttypes.h>
 #endif
 #include <stdarg.h>
 #ifndef __cplusplus
+#if defined(SDL_DEFINE_STDBOOL) && !defined(__bool_true_false_are_defined)
+#define __bool_true_false_are_defined 1
+#define bool  int8_t
+#define false 0
+#define true  1
+#else
 #include <stdbool.h>
+#endif
 #endif
 #include <stdint.h>
 #include <string.h>
