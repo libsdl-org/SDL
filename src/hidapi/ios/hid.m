@@ -403,7 +403,7 @@ typedef enum
 			NSLog( @"CoreBluetooth BLE hardware is powered on and ready" );
 
 			// at startup, if we have no already attached peripherals, do a 20s scan for new unpaired devices,
-			// otherwise callers should occaisionally do additional scans. we don't want to continuously be
+			// otherwise callers should occasionally do additional scans. we don't want to continuously be
 			// scanning because it drains battery, causes other nearby people to have a hard time pairing their
 			// Steam Controllers, and may also trigger firmware weirdness when a device attempts to start
 			// the pairing sequence multiple times concurrently
