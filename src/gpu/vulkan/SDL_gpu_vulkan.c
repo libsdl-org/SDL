@@ -2408,7 +2408,7 @@ static void VULKAN_INTERNAL_TrackUniformBuffer(
  *
  * This strategy imposes certain limitations on resource usage flags.
  * For example, a texture cannot have both the SAMPLER and GRAPHICS_STORAGE usage flags,
- * because then it is imposible for the backend to infer which default usage mode the texture should use.
+ * because then it is impossible for the backend to infer which default usage mode the texture should use.
  *
  * Sync hazards can be detected by setting VK_KHRONOS_VALIDATION_VALIDATE_SYNC=1 when using validation layers.
  */
