@@ -405,7 +405,7 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 				// Here the preferred usage is the last aliased usage in the sequence.
 
 				if (link_collection_nodes[collection_node_idx].IsAlias && (firstDelimiterNode == NULL)) {
-					// Alliased Collection (First node in link_collection_nodes -> Last entry in report descriptor output)
+					// Aliased Collection (First node in link_collection_nodes -> Last entry in report descriptor output)
 					firstDelimiterNode = main_item_list;
 					coll_begin_lookup[collection_node_idx] = rd_append_main_item_node(0, 0, rd_item_node_collection, 0, collection_node_idx, rd_delimiter_usage, 0, &main_item_list);
 					coll_begin_lookup[collection_node_idx] = rd_append_main_item_node(0, 0, rd_item_node_collection, 0, collection_node_idx, rd_delimiter_close, 0, &main_item_list);
@@ -431,7 +431,7 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 				collection_node_idx = coll_child_order[collection_node_idx][nextChild];
 												
 				if (link_collection_nodes[collection_node_idx].IsAlias && (firstDelimiterNode == NULL)) {
-					// Alliased Collection (First node in link_collection_nodes -> Last entry in report descriptor output)
+					// Aliased Collection (First node in link_collection_nodes -> Last entry in report descriptor output)
 					firstDelimiterNode = main_item_list;
 					coll_begin_lookup[collection_node_idx] = rd_append_main_item_node(0, 0, rd_item_node_collection, 0, collection_node_idx, rd_delimiter_usage, 0, &main_item_list);
 					coll_begin_lookup[collection_node_idx] = rd_append_main_item_node(0, 0, rd_item_node_collection, 0, collection_node_idx, rd_delimiter_close, 0, &main_item_list);
@@ -495,7 +495,7 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 			// Here the preferred usage is the last aliased usage in the sequence.
 
 			if (pp_data->caps[caps_idx].IsAlias && (firstDelimiterNode == NULL)) {
-				// Alliased Usage (First node in pp_data->caps -> Last entry in report descriptor output)
+				// Aliased Usage (First node in pp_data->caps -> Last entry in report descriptor output)
 				firstDelimiterNode = list_node;
 				rd_insert_main_item_node(first_bit, last_bit, rd_item_node_cap, caps_idx, pp_data->caps[caps_idx].LinkCollection, rd_delimiter_usage, pp_data->caps[caps_idx].ReportID, &list_node);
 				rd_insert_main_item_node(first_bit, last_bit, rd_item_node_cap, caps_idx, pp_data->caps[caps_idx].LinkCollection, rd_delimiter_close, pp_data->caps[caps_idx].ReportID, &list_node);
@@ -504,7 +504,7 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 				rd_insert_main_item_node(first_bit, last_bit, rd_item_node_cap, caps_idx, pp_data->caps[caps_idx].LinkCollection, rd_delimiter_usage, pp_data->caps[caps_idx].ReportID, &list_node);
 			}
 			else if (!pp_data->caps[caps_idx].IsAlias && (firstDelimiterNode != NULL)) {
-				// Alliased Collection (Last node in pp_data->caps -> First entry in report descriptor output)
+				// Aliased Collection (Last node in pp_data->caps -> First entry in report descriptor output)
 				rd_insert_main_item_node(first_bit, last_bit, rd_item_node_cap, caps_idx, pp_data->caps[caps_idx].LinkCollection, rd_delimiter_usage, pp_data->caps[caps_idx].ReportID, &list_node);
 				rd_insert_main_item_node(first_bit, last_bit, rd_item_node_cap, caps_idx, pp_data->caps[caps_idx].LinkCollection, rd_delimiter_open, pp_data->caps[caps_idx].ReportID, &list_node);
 				firstDelimiterNode = NULL;
