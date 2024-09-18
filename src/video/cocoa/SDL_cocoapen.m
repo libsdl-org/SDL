@@ -115,7 +115,7 @@ static void Cocoa_HandlePenProximityEvent(SDL_CocoaWindowData *_data, NSEvent *e
 
 static void Cocoa_HandlePenPointEvent(SDL_CocoaWindowData *_data, NSEvent *event)
 {
-    const Uint32 timestamp = Cocoa_GetEventTimestamp([event timestamp]);
+    const Uint64 timestamp = Cocoa_GetEventTimestamp([event timestamp]);
     Cocoa_PenHandle *handle = Cocoa_FindPenByDeviceID([event deviceID], [event pointingDeviceID]);
     if (!handle) {
         return;

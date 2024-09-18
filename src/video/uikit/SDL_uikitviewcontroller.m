@@ -404,7 +404,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, *)) {
+        if (@available(iOS 11.0, tvOS 11.0, *)) {
             textField.textContentType = UITextContentTypeUsername;
         } else {
             textField.textContentType = nil;
@@ -412,7 +412,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, *)) {
+        if (@available(iOS 11.0, tvOS 11.0, *)) {
             textField.textContentType = UITextContentTypePassword;
         } else {
             textField.textContentType = nil;
@@ -421,7 +421,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, *)) {
+        if (@available(iOS 11.0, tvOS 11.0, *)) {
             textField.textContentType = UITextContentTypePassword;
         } else {
             textField.textContentType = nil;
@@ -433,7 +433,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
         textField.keyboardType = UIKeyboardTypeNumberPad;
-        if (@available(iOS 12.0, *)) {
+        if (@available(iOS 12.0, tvOS 12.0, *)) {
             textField.textContentType = UITextContentTypeOneTimeCode;
         } else {
             textField.textContentType = nil;
@@ -442,7 +442,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE:
         textField.keyboardType = UIKeyboardTypeNumberPad;
-        if (@available(iOS 12.0, *)) {
+        if (@available(iOS 12.0, tvOS 12.0, *)) {
             textField.textContentType = UITextContentTypeOneTimeCode;
         } else {
             textField.textContentType = nil;

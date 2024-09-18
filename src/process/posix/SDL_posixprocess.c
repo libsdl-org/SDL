@@ -143,7 +143,7 @@ static bool AddFileDescriptorCloseActions(posix_spawn_file_actions_t *fa)
         }
         closedir(dir);
     } else {
-        for (int fd = sysconf(_SC_OPEN_MAX) - 1; fd > STDERR_FILENO; --fd) {
+        for (int fd = (int)(sysconf(_SC_OPEN_MAX) - 1); fd > STDERR_FILENO; --fd) {
             int flags = fcntl(fd, F_GETFD);
             if (flags < 0 || (flags & FD_CLOEXEC)) {
                 continue;
