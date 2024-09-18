@@ -220,7 +220,7 @@ static void HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_D
     }
 
 #define READ_STICK_AXIS(offset) \
-    (data[offset] == 0x7f ? 0 : (int16_t)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    (data[offset] == 0x7f ? 0 : (int16_t)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, INT16_MIN, INT16_MAX))
     {
         int16_t axis = READ_STICK_AXIS(4);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
@@ -234,7 +234,7 @@ static void HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_D
 #undef READ_STICK_AXIS
 
 #define READ_TRIGGER_AXIS(offset) \
-    (int16_t) HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16)
+    (int16_t) HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, INT16_MIN, INT16_MAX)
     {
         int16_t axis = READ_TRIGGER_AXIS(8);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
@@ -322,7 +322,7 @@ static void HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick,
     }
 
 #define READ_STICK_AXIS(offset) \
-    (data[offset] == 0x7f ? 0 : (int16_t)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    (data[offset] == 0x7f ? 0 : (int16_t)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, INT16_MIN, INT16_MAX))
     {
         int16_t axis = READ_STICK_AXIS(2);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
@@ -336,7 +336,7 @@ static void HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick,
 #undef READ_STICK_AXIS
 
 #define READ_TRIGGER_AXIS(offset) \
-    (int16_t) HIDAPI_RemapVal((float)((int)(((data[offset] | (data[offset + 1] << 8)) & 0x3ff) - 0x200)), 0x00 - 0x200, 0x3ff - 0x200, SDL_MIN_SINT16, SDL_MAX_SINT16)
+    (int16_t) HIDAPI_RemapVal((float)((int)(((data[offset] | (data[offset + 1] << 8)) & 0x3ff) - 0x200)), 0x00 - 0x200, 0x3ff - 0x200, INT16_MIN, INT16_MAX)
     {
         int16_t axis = READ_TRIGGER_AXIS(9);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);

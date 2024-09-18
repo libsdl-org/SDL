@@ -3450,8 +3450,8 @@ static void D3D11_BeginRenderPass(
     D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
     ID3D11RenderTargetView *rtvs[MAX_COLOR_TARGET_BINDINGS];
     ID3D11DepthStencilView *dsv = NULL;
-    uint32_t vpWidth = SDL_MAX_UINT32;
-    uint32_t vpHeight = SDL_MAX_UINT32;
+    uint32_t vpWidth = UINT32_MAX;
+    uint32_t vpHeight = UINT32_MAX;
     SDL_GPUViewport viewport;
     SDL_Rect scissorRect;
 

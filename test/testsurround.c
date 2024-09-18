@@ -21,7 +21,7 @@ static int active_channel;
 #define SAMPLE_RATE_HZ        48000
 #define QUICK_TEST_TIME_MSEC  100
 #define CHANNEL_TEST_TIME_SEC 5
-#define MAX_AMPLITUDE         SDL_MAX_SINT16
+#define MAX_AMPLITUDE         INT16_MAX
 
 #define SINE_FREQ_HZ     500
 #define LFE_SINE_FREQ_HZ 50

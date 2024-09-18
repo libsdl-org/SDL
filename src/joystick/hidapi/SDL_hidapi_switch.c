@@ -903,8 +903,8 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 
     for (stick = 0; stick < 2; ++stick) {
         for (axis = 0; axis < 2; ++axis) {
-            ctx->m_SimpleStickExtents[stick].axis[axis].sMin = (int16_t)(SDL_MIN_SINT16 * 0.5f);
-            ctx->m_SimpleStickExtents[stick].axis[axis].sMax = (int16_t)(SDL_MAX_SINT16 * 0.5f);
+            ctx->m_SimpleStickExtents[stick].axis[axis].sMin = (int16_t)(INT16_MIN * 0.5f);
+            ctx->m_SimpleStickExtents[stick].axis[axis].sMax = (int16_t)(INT16_MAX * 0.5f);
         }
     }
 
@@ -987,7 +987,7 @@ static int16_t ApplyStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, 
         ctx->m_StickExtents[nStick].axis[nAxis].sMin = sRawValue;
     }
 
-    return (int16_t)HIDAPI_RemapVal(sRawValue, ctx->m_StickExtents[nStick].axis[nAxis].sMin, ctx->m_StickExtents[nStick].axis[nAxis].sMax, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    return (int16_t)HIDAPI_RemapVal(sRawValue, ctx->m_StickExtents[nStick].axis[nAxis].sMin, ctx->m_StickExtents[nStick].axis[nAxis].sMax, INT16_MIN, INT16_MAX);
 }
 
 static int16_t ApplySimpleStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, int nAxis, int16_t sRawValue)
@@ -1004,7 +1004,7 @@ static int16_t ApplySimpleStickCalibration(SDL_DriverSwitch_Context *ctx, int nS
         ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin = sRawValue;
     }
 
-    return (int16_t)HIDAPI_RemapVal(sRawValue, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    return (int16_t)HIDAPI_RemapVal(sRawValue, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax, INT16_MIN, INT16_MAX);
 }
 
 static uint8_t RemapButton(SDL_DriverSwitch_Context *ctx, uint8_t button)
@@ -1778,22 +1778,22 @@ static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwi
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
 
     if (packet->rgucJoystickLeft[0] != ctx->m_lastInputOnlyState.rgucJoystickLeft[0]) {
-        axis = (int16_t)HIDAPI_RemapVal(packet->rgucJoystickLeft[0], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        axis = (int16_t)HIDAPI_RemapVal(packet->rgucJoystickLeft[0], 0, UINT8_MAX, INT16_MIN, INT16_MAX);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
     }
 
     if (packet->rgucJoystickLeft[1] != ctx->m_lastInputOnlyState.rgucJoystickLeft[1]) {
-        axis = (int16_t)HIDAPI_RemapVal(packet->rgucJoystickLeft[1], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        axis = (int16_t)HIDAPI_RemapVal(packet->rgucJoystickLeft[1], 0, UINT8_MAX, INT16_MIN, INT16_MAX);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
     }
 
     if (packet->rgucJoystickRight[0] != ctx->m_lastInputOnlyState.rgucJoystickRight[0]) {
-        axis = (int16_t)HIDAPI_RemapVal(packet->rgucJoystickRight[0], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        axis = (int16_t)HIDAPI_RemapVal(packet->rgucJoystickRight[0], 0, UINT8_MAX, INT16_MIN, INT16_MAX);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
     }
 
     if (packet->rgucJoystickRight[1] != ctx->m_lastInputOnlyState.rgucJoystickRight[1]) {
-        axis = (int16_t)HIDAPI_RemapVal(packet->rgucJoystickRight[1], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        axis = (int16_t)HIDAPI_RemapVal(packet->rgucJoystickRight[1], 0, UINT8_MAX, INT16_MIN, INT16_MAX);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
     }
 

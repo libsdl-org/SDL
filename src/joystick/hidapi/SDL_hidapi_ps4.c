@@ -1145,7 +1145,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         if (ctx->last_tick < tick) {
             delta = (tick - ctx->last_tick);
         } else {
-            delta = (SDL_MAX_UINT16 - ctx->last_tick + tick + 1);
+            delta = (UINT16_MAX - ctx->last_tick + tick + 1);
         }
         ctx->sensor_ticks += delta;
         ctx->last_tick = tick;

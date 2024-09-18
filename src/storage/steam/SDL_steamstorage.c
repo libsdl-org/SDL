@@ -82,7 +82,7 @@ static bool STEAM_ReadStorageFile(void *userdata, const char *path, void *destin
     if (steamremotestorage == NULL) {
         return SDL_SetError("SteamRemoteStorage unavailable");
     }
-    if (length > SDL_MAX_SINT32) {
+    if (length > INT32_MAX) {
         return SDL_SetError("SteamRemoteStorage only supports INT32_MAX read size");
     }
     if (steam->SteamAPI_ISteamRemoteStorage_FileRead(steamremotestorage, path, destination, (int32_t) length) == length) {
@@ -101,7 +101,7 @@ static bool STEAM_WriteStorageFile(void *userdata, const char *path, const void 
     if (steamremotestorage == NULL) {
         return SDL_SetError("SteamRemoteStorage unavailable");
     }
-    if (length > SDL_MAX_SINT32) {
+    if (length > INT32_MAX) {
         return SDL_SetError("SteamRemoteStorage only supports INT32_MAX write size");
     }
     if (steam->SteamAPI_ISteamRemoteStorage_FileWrite(steamremotestorage, path, source, (int32_t) length) == length) {

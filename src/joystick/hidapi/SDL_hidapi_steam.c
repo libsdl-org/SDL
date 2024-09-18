@@ -751,8 +751,8 @@ static void FormatStatePacketUntilGyro(SteamControllerStateInternal_t *pState, V
         nPadOffset = 0;
     }
 
-    pState->sLeftPadX = (short)clamp(nLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
-    pState->sLeftPadY = (short)clamp(nLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    pState->sLeftPadX = (short)clamp(nLeftPadX + nPadOffset, INT16_MIN, INT16_MAX);
+    pState->sLeftPadY = (short)clamp(nLeftPadY + nPadOffset, INT16_MIN, INT16_MAX);
 
     nPadOffset = 0;
     if (pState->ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK) {
@@ -761,11 +761,11 @@ static void FormatStatePacketUntilGyro(SteamControllerStateInternal_t *pState, V
         nPadOffset = 0;
     }
 
-    pState->sRightPadX = (short)clamp(nRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
-    pState->sRightPadY = (short)clamp(nRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    pState->sRightPadX = (short)clamp(nRightPadX + nPadOffset, INT16_MIN, INT16_MAX);
+    pState->sRightPadY = (short)clamp(nRightPadY + nPadOffset, INT16_MIN, INT16_MAX);
 
-    pState->sTriggerL = (unsigned short)RemapValClamped((float)((pStatePacket->ButtonTriggerData.Triggers.nLeft << 7) | pStatePacket->ButtonTriggerData.Triggers.nLeft), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16);
-    pState->sTriggerR = (unsigned short)RemapValClamped((float)((pStatePacket->ButtonTriggerData.Triggers.nRight << 7) | pStatePacket->ButtonTriggerData.Triggers.nRight), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16);
+    pState->sTriggerL = (unsigned short)RemapValClamped((float)((pStatePacket->ButtonTriggerData.Triggers.nLeft << 7) | pStatePacket->ButtonTriggerData.Triggers.nLeft), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, INT16_MAX);
+    pState->sTriggerR = (unsigned short)RemapValClamped((float)((pStatePacket->ButtonTriggerData.Triggers.nRight << 7) | pStatePacket->ButtonTriggerData.Triggers.nRight), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, INT16_MAX);
 }
 
 //---------------------------------------------------------------------------
@@ -785,8 +785,8 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
     }
     if (ucOptionDataMask & k_EBLEButtonChunk2) {
         // The middle 2 bytes of the button bits over the wire are triggers when over the wire and non-SC buttons in the internal controller state packet
-        pState->sTriggerL = (unsigned short)RemapValClamped((float)((pData[0] << 7) | pData[0]), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16);
-        pState->sTriggerR = (unsigned short)RemapValClamped((float)((pData[1] << 7) | pData[1]), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16);
+        pState->sTriggerL = (unsigned short)RemapValClamped((float)((pData[0] << 7) | pData[0]), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, INT16_MAX);
+        pState->sTriggerR = (unsigned short)RemapValClamped((float)((pData[1] << 7) | pData[1]), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, INT16_MAX);
         pData += 2;
     }
     if (ucOptionDataMask & k_EBLEButtonChunk3) {
@@ -813,8 +813,8 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
         }
 
         RotatePadShort(&pState->sLeftPadX, &pState->sLeftPadY, -flRotationAngle);
-        pState->sLeftPadX = (short)clamp(pState->sLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
-        pState->sLeftPadY = (short)clamp(pState->sLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        pState->sLeftPadX = (short)clamp(pState->sLeftPadX + nPadOffset, INT16_MIN, INT16_MAX);
+        pState->sLeftPadY = (short)clamp(pState->sLeftPadY + nPadOffset, INT16_MIN, INT16_MAX);
         pData += nLength;
     }
     if (ucOptionDataMask & k_EBLERightTrackpadChunk) {
@@ -830,8 +830,8 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
         }
 
         RotatePadShort(&pState->sRightPadX, &pState->sRightPadY, flRotationAngle);
-        pState->sRightPadX = (short)clamp(pState->sRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
-        pState->sRightPadY = (short)clamp(pState->sRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        pState->sRightPadX = (short)clamp(pState->sRightPadX + nPadOffset, INT16_MIN, INT16_MAX);
+        pState->sRightPadY = (short)clamp(pState->sRightPadY + nPadOffset, INT16_MIN, INT16_MAX);
         pData += nLength;
     }
     if (ucOptionDataMask & k_EBLEIMUAccelChunk) {

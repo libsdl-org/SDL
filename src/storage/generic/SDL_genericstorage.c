@@ -178,7 +178,7 @@ static bool GENERIC_CopyStorageFile(void *userdata, const char *oldpath, const c
 static uint64_t GENERIC_GetStorageSpaceRemaining(void *userdata)
 {
     // TODO: There's totally a way to query a folder root's quota...
-    return SDL_MAX_UINT64;
+    return UINT64_MAX;
 }
 
 static const SDL_StorageInterface GENERIC_title_iface = {

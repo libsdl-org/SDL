@@ -35,7 +35,7 @@ SDL_Semaphore *SDL_CreateSemaphore(uint32_t initial_value)
 {
     SDL_Semaphore *sem;
 
-    if (initial_value > SDL_MAX_SINT16) {
+    if (initial_value > INT16_MAX) {
         SDL_SetError("Initial semaphore value too high for this platform");
         return NULL;
     }
@@ -45,7 +45,7 @@ SDL_Semaphore *SDL_CreateSemaphore(uint32_t initial_value)
         return NULL;
     }
 
-    LightSemaphore_Init(&sem->semaphore, initial_value, SDL_MAX_SINT16);
+    LightSemaphore_Init(&sem->semaphore, initial_value, INT16_MAX);
 
     return sem;
 }

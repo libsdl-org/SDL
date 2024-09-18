@@ -375,9 +375,9 @@ bool SDL_SetJoystickVirtualBallInner(SDL_Joystick *joystick, int ball, int16_t x
     }
 
     hwdata->balls[ball].dx += xrel;
-    hwdata->balls[ball].dx = SDL_clamp(hwdata->balls[ball].dx, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    hwdata->balls[ball].dx = SDL_clamp(hwdata->balls[ball].dx, INT16_MIN, INT16_MAX);
     hwdata->balls[ball].dy += yrel;
-    hwdata->balls[ball].dy = SDL_clamp(hwdata->balls[ball].dy, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    hwdata->balls[ball].dy = SDL_clamp(hwdata->balls[ball].dy, INT16_MIN, INT16_MAX);
     hwdata->changes |= BALLS_CHANGED;
 
     return true;

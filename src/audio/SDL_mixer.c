@@ -114,8 +114,8 @@ bool SDL_MixAudio(uint8_t *dst, const uint8_t *src, SDL_AudioFormat format, uint
         int8_t *dst8, *src8;
         int8_t src_sample;
         int dst_sample;
-        const int max_audioval = SDL_MAX_SINT8;
-        const int min_audioval = SDL_MIN_SINT8;
+        const int max_audioval = INT8_MAX;
+        const int min_audioval = INT8_MIN;
 
         src8 = (int8_t *)src;
         dst8 = (int8_t *)dst;
@@ -138,8 +138,8 @@ bool SDL_MixAudio(uint8_t *dst, const uint8_t *src, SDL_AudioFormat format, uint
     {
         int16_t src1, src2;
         int dst_sample;
-        const int max_audioval = SDL_MAX_SINT16;
-        const int min_audioval = SDL_MIN_SINT16;
+        const int max_audioval = INT16_MAX;
+        const int min_audioval = INT16_MIN;
 
         len /= 2;
         while (len--) {
@@ -162,8 +162,8 @@ bool SDL_MixAudio(uint8_t *dst, const uint8_t *src, SDL_AudioFormat format, uint
     {
         int16_t src1, src2;
         int dst_sample;
-        const int max_audioval = SDL_MAX_SINT16;
-        const int min_audioval = SDL_MIN_SINT16;
+        const int max_audioval = INT16_MAX;
+        const int min_audioval = INT16_MIN;
 
         len /= 2;
         while (len--) {
@@ -188,8 +188,8 @@ bool SDL_MixAudio(uint8_t *dst, const uint8_t *src, SDL_AudioFormat format, uint
         uint32_t *dst32 = (uint32_t *)dst;
         int64_t src1, src2;
         int64_t dst_sample;
-        const int64_t max_audioval = SDL_MAX_SINT32;
-        const int64_t min_audioval = SDL_MIN_SINT32;
+        const int64_t max_audioval = INT32_MAX;
+        const int64_t min_audioval = INT32_MIN;
 
         len /= 4;
         while (len--) {
@@ -213,8 +213,8 @@ bool SDL_MixAudio(uint8_t *dst, const uint8_t *src, SDL_AudioFormat format, uint
         uint32_t *dst32 = (uint32_t *)dst;
         int64_t src1, src2;
         int64_t dst_sample;
-        const int64_t max_audioval = SDL_MAX_SINT32;
-        const int64_t min_audioval = SDL_MIN_SINT32;
+        const int64_t max_audioval = INT32_MAX;
+        const int64_t min_audioval = INT32_MIN;
 
         len /= 4;
         while (len--) {

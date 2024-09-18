@@ -1327,7 +1327,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
             if (ctx->last_tick < tick) {
                 delta = (tick - ctx->last_tick);
             } else {
-                delta = (SDL_MAX_UINT16 - ctx->last_tick + tick + 1);
+                delta = (UINT16_MAX - ctx->last_tick + tick + 1);
             }
             ctx->last_tick = tick;
             ctx->sensor_ticks += delta;
@@ -1344,7 +1344,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
             if (ctx->last_tick < tick) {
                 delta = (tick - ctx->last_tick);
             } else {
-                delta = (SDL_MAX_UINT32 - ctx->last_tick + tick + 1);
+                delta = (UINT32_MAX - ctx->last_tick + tick + 1);
             }
             ctx->last_tick = tick;
             ctx->sensor_ticks += delta;

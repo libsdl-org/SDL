@@ -147,7 +147,7 @@ static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
 
             if (sensor->hwdata->last_tick > tick) {
                 SDL_COMPILE_TIME_ASSERT(tick, sizeof(tick) == sizeof(uint32_t));
-                delta = (SDL_MAX_UINT32 - sensor->hwdata->last_tick + tick + 1);
+                delta = (UINT32_MAX - sensor->hwdata->last_tick + tick + 1);
             } else {
                 delta = (tick - sensor->hwdata->last_tick);
             }

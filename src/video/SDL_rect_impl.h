@@ -23,12 +23,12 @@
 
 static bool SDL_RECT_CAN_OVERFLOW(const RECTTYPE *rect)
 {
-    if (rect->x <= (SCALARTYPE)(SDL_MIN_SINT32 / 2) ||
-        rect->x >= (SCALARTYPE)(SDL_MAX_SINT32 / 2) ||
-        rect->y <= (SCALARTYPE)(SDL_MIN_SINT32 / 2) ||
-        rect->y >= (SCALARTYPE)(SDL_MAX_SINT32 / 2) ||
-        rect->w >= (SCALARTYPE)(SDL_MAX_SINT32 / 2) ||
-        rect->h >= (SCALARTYPE)(SDL_MAX_SINT32 / 2)) {
+    if (rect->x <= (SCALARTYPE)(INT32_MIN / 2) ||
+        rect->x >= (SCALARTYPE)(INT32_MAX / 2) ||
+        rect->y <= (SCALARTYPE)(INT32_MIN / 2) ||
+        rect->y >= (SCALARTYPE)(INT32_MAX / 2) ||
+        rect->w >= (SCALARTYPE)(INT32_MAX / 2) ||
+        rect->h >= (SCALARTYPE)(INT32_MAX / 2)) {
         return true;
     }
     return false;

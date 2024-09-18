@@ -655,9 +655,9 @@ static void surface_frame_done(void *data, struct wl_callback *cb, uint32_t time
      *      updated when using a viewport with an output region larger than the source region.
      */
     if (wl_compositor_get_version(wind->waylandData->compositor) >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
-        wl_surface_damage_buffer(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
+        wl_surface_damage_buffer(wind->surface, 0, 0, INT32_MAX, INT32_MAX);
     } else {
-        wl_surface_damage(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
+        wl_surface_damage(wind->surface, 0, 0, INT32_MAX, INT32_MAX);
     }
 
     if (wind->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_FRAME) {
@@ -2463,7 +2463,7 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
 
         if (c->wp_alpha_modifier_v1) {
             data->wp_alpha_modifier_surface_v1 = wp_alpha_modifier_v1_get_surface(c->wp_alpha_modifier_v1, data->surface);
-            wp_alpha_modifier_surface_v1_set_multiplier(data->wp_alpha_modifier_surface_v1, SDL_MAX_UINT32);
+            wp_alpha_modifier_surface_v1_set_multiplier(data->wp_alpha_modifier_surface_v1, UINT32_MAX);
         }
     }
 
@@ -2672,7 +2672,7 @@ bool Wayland_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float 
 
     if (wind->wp_alpha_modifier_surface_v1) {
         SetSurfaceOpaqueRegion(wind, !(window->flags & SDL_WINDOW_TRANSPARENT) && opacity == 1.0f);
-        wp_alpha_modifier_surface_v1_set_multiplier(wind->wp_alpha_modifier_surface_v1, (uint32_t)((double)SDL_MAX_UINT32 * (double)opacity));
+        wp_alpha_modifier_surface_v1_set_multiplier(wind->wp_alpha_modifier_surface_v1, (uint32_t)((double)UINT32_MAX * (double)opacity));
 
         return true;
     }

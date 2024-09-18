@@ -256,7 +256,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
         ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis] = v;                      \
     if (v > ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis])                      \
         ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis] = v;                      \
-    axis_value = (int16_t)HIDAPI_RemapVal(v, ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
+    axis_value = (int16_t)HIDAPI_RemapVal(v, ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], INT16_MIN, INT16_MAX); \
     SDL_SendJoystickAxis(                                                        \
         timestamp,                                                                  \
         joystick,                                                                   \
@@ -338,7 +338,7 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
         ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis] = curSlot[off];                   \
     if (curSlot[off] > ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis])                   \
         ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis] = curSlot[off];                   \
-    axis_value = (int16_t)HIDAPI_RemapVal(curSlot[off], ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
+    axis_value = (int16_t)HIDAPI_RemapVal(curSlot[off], ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], INT16_MIN, INT16_MAX); \
     SDL_SendJoystickAxis(                                                                \
         timestamp,                                                                          \
         joystick,                                                                           \

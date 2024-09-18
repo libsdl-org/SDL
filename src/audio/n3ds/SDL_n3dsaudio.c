@@ -128,7 +128,7 @@ static bool N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_UpdatedAudioDeviceFormat(device);
 
     // Allocate mixing buffer
-    if (device->buffer_size >= SDL_MAX_UINT32 / 2) {
+    if (device->buffer_size >= UINT32_MAX / 2) {
         return SDL_SetError("Mixing buffer is too large.");
     }
 

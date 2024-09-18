@@ -41,6 +41,9 @@
 #ifndef __cplusplus
 #include <stdbool.h>
 #endif
+#if defined __cplusplus && !defined(__STDC_LIMIT_MACROS)
+#define __STDC_LIMIT_MACROS 1
+#endif
 #include <stdint.h>
 #include <string.h>
 #include <wchar.h>
@@ -225,65 +228,6 @@ void *alloca(size_t);
      (SDL_static_cast(uint32_t, SDL_static_cast(uint8_t, (C))) << 16) | \
      (SDL_static_cast(uint32_t, SDL_static_cast(uint8_t, (D))) << 24))
 
-#ifdef SDL_WIKI_DOCUMENTATION_SECTION
-
-/**
- * Append the 64 bit integer suffix to a signed integer literal.
- *
- * This helps compilers that might believe a integer literal larger than
- * 0xFFFFFFFF is overflowing a 32-bit value. Use `SDL_SINT64_C(0xFFFFFFFF1)`
- * instead of `0xFFFFFFFF1` by itself.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_UINT64_C
- */
-#define SDL_SINT64_C(c)  c ## LL  /* or whatever the current compiler uses. */
-
-/**
- * Append the 64 bit integer suffix to an unsigned integer literal.
- *
- * This helps compilers that might believe a integer literal larger than
- * 0xFFFFFFFF is overflowing a 32-bit value. Use `SDL_UINT64_C(0xFFFFFFFF1)`
- * instead of `0xFFFFFFFF1` by itself.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_SINT64_C
- */
-#define SDL_UINT64_C(c)  c ## ULL /* or whatever the current compiler uses. */
-
-#elif defined(INT64_C)
-#define SDL_SINT64_C(c)  INT64_C(c)
-#define SDL_UINT64_C(c)  UINT64_C(c)
-#elif defined(_MSC_VER)
-#define SDL_SINT64_C(c)  c ## i64
-#define SDL_UINT64_C(c)  c ## ui64
-#elif defined(__LP64__) || defined(_LP64)
-#define SDL_SINT64_C(c)  c ## L
-#define SDL_UINT64_C(c)  c ## UL
-#else
-#define SDL_SINT64_C(c)  c ## LL
-#define SDL_UINT64_C(c)  c ## ULL
-#endif
-
-#define SDL_MAX_SINT8   ((int8_t)0x7F)           /* 127 */
-#define SDL_MIN_SINT8   ((int8_t)(~0x7F))        /* -128 */
-#define SDL_MAX_UINT8   ((uint8_t)0xFF)           /* 255 */
-#define SDL_MIN_UINT8   ((uint8_t)0x00)           /* 0 */
-#define SDL_MAX_SINT16  ((int16_t)0x7FFF)        /* 32767 */
-#define SDL_MIN_SINT16  ((int16_t)(~0x7FFF))     /* -32768 */
-#define SDL_MAX_UINT16  ((uint16_t)0xFFFF)        /* 65535 */
-#define SDL_MIN_UINT16  ((uint16_t)0x0000)        /* 0 */
-#define SDL_MAX_SINT32  ((int32_t)0x7FFFFFFF)    /* 2147483647 */
-#define SDL_MIN_SINT32  ((int32_t)(~0x7FFFFFFF)) /* -2147483648 */
-#define SDL_MAX_UINT32  ((uint32_t)0xFFFFFFFFu)   /* 4294967295 */
-#define SDL_MIN_UINT32  ((uint32_t)0x00000000)    /* 0 */
-#define SDL_MAX_SINT64  SDL_SINT64_C(0x7FFFFFFFFFFFFFFF)   /* 9223372036854775807 */
-#define SDL_MIN_SINT64  ~SDL_SINT64_C(0x7FFFFFFFFFFFFFFF)  /* -9223372036854775808 */
-#define SDL_MAX_UINT64  SDL_UINT64_C(0xFFFFFFFFFFFFFFFF)   /* 18446744073709551615 */
-#define SDL_MIN_UINT64  SDL_UINT64_C(0x0000000000000000)   /* 0 */
-
 /**
  * SDL times are signed, 64-bit integers representing nanoseconds since the
  * Unix epoch (Jan 1, 1970).
@@ -294,12 +238,12 @@ void *alloca(size_t);
  *
  * \since This macro is available since SDL 3.0.0.
  *
- * \sa SDL_MAX_SINT64
- * \sa SDL_MIN_SINT64
+ * \sa INT64_MAX
+ * \sa INT64_MIN
  */
 typedef int64_t SDL_Time;
-#define SDL_MAX_TIME SDL_MAX_SINT64
-#define SDL_MIN_TIME SDL_MIN_SINT64
+#define SDL_MAX_TIME INT64_MAX
+#define SDL_MIN_TIME INT64_MIN
 
 /**
  *  \name Floating-point constants
@@ -2325,7 +2269,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf(void);
  * libraries available with different characteristics and you should pick one
  * of those to meet any serious needs.
  *
- * \returns a random value in the range of [0-SDL_MAX_UINT32].
+ * \returns a random value in the range of [0-UINT32_MAX].
  *
  * \threadsafety All calls should be made from a single thread
  *
@@ -2412,7 +2356,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf_r(uint64_t *state);
  *
  * \param state a pointer to the current random number state, this may not be
  *              NULL.
- * \returns a random value in the range of [0-SDL_MAX_UINT32].
+ * \returns a random value in the range of [0-UINT32_MAX].
  *
  * \threadsafety This function is thread-safe, as long as the state pointer
  *               isn't shared between threads.

@@ -24,8 +24,7 @@
 #include <limits.h>
 #endif
 #ifndef INT_MAX
-// Make a lucky guess.
-#define INT_MAX SDL_MAX_SINT32
+#define INT_MAX (sizeof(int) == sizeof(int32_t) ? INT32_MAX : (SDL_assert(false), INT32_MAX))
 #endif
 #ifndef SIZE_MAX
 #define SIZE_MAX ((size_t)-1)
@@ -676,7 +675,7 @@ static bool MS_ADPCM_Decode(WaveFile *file, uint8_t **audio_buf, uint32_t *audio
     outputsize = (size_t)state.framestotal;
     if (SafeMult(&outputsize, state.framesize)) {
         return SDL_SetError("WAVE file too big");
-    } else if (outputsize > SDL_MAX_UINT32 || state.framestotal > SIZE_MAX) {
+    } else if (outputsize > UINT32_MAX || state.framestotal > SIZE_MAX) {
         return SDL_SetError("WAVE file too big");
     }
 
@@ -1067,7 +1066,7 @@ static bool IMA_ADPCM_Decode(WaveFile *file, uint8_t **audio_buf, uint32_t *audi
     outputsize = (size_t)state.framestotal;
     if (SafeMult(&outputsize, state.framesize)) {
         return SDL_SetError("WAVE file too big");
-    } else if (outputsize > SDL_MAX_UINT32 || state.framestotal > SIZE_MAX) {
+    } else if (outputsize > UINT32_MAX || state.framestotal > SIZE_MAX) {
         return SDL_SetError("WAVE file too big");
     }
 
@@ -1228,7 +1227,7 @@ static bool LAW_Decode(WaveFile *file, uint8_t **audio_buf, uint32_t *audio_len)
     expanded_len = sample_count;
     if (SafeMult(&expanded_len, sizeof(int16_t))) {
         return SDL_SetError("WAVE file too big");
-    } else if (expanded_len > SDL_MAX_UINT32 || file->sampleframes > SIZE_MAX) {
+    } else if (expanded_len > UINT32_MAX || file->sampleframes > SIZE_MAX) {
         return SDL_SetError("WAVE file too big");
     }
 
@@ -1359,7 +1358,7 @@ static bool PCM_ConvertSint24ToSint32(WaveFile *file, uint8_t **audio_buf, uint3
     expanded_len = sample_count;
     if (SafeMult(&expanded_len, sizeof(int32_t))) {
         return SDL_SetError("WAVE file too big");
-    } else if (expanded_len > SDL_MAX_UINT32 || file->sampleframes > SIZE_MAX) {
+    } else if (expanded_len > UINT32_MAX || file->sampleframes > SIZE_MAX) {
         return SDL_SetError("WAVE file too big");
     }
 
@@ -1423,7 +1422,7 @@ static bool PCM_Decode(WaveFile *file, uint8_t **audio_buf, uint32_t *audio_len)
     outputsize = (size_t)file->sampleframes;
     if (SafeMult(&outputsize, format->blockalign)) {
         return SDL_SetError("WAVE file too big");
-    } else if (outputsize > SDL_MAX_UINT32 || file->sampleframes > SIZE_MAX) {
+    } else if (outputsize > UINT32_MAX || file->sampleframes > SIZE_MAX) {
         return SDL_SetError("WAVE file too big");
     }
 
@@ -1512,7 +1511,7 @@ static int WaveNextChunk(SDL_IOStream *src, WaveChunk *chunk)
     WaveFreeChunkData(chunk);
 
     // Error on overflows.
-    if (SDL_MAX_SINT64 - chunk->length < chunk->position || SDL_MAX_SINT64 - 8 < nextposition) {
+    if (INT64_MAX - chunk->length < chunk->position || INT64_MAX - 8 < nextposition) {
         return -1;
     }
 
@@ -1606,7 +1605,7 @@ static bool WaveReadFormat(WaveFile *file)
     SDL_IOStream *fmtsrc;
     size_t fmtlen = chunk->size;
 
-    if (fmtlen > SDL_MAX_SINT32) {
+    if (fmtlen > INT32_MAX) {
         // Limit given by SDL_IOFromConstMem.
         return SDL_SetError("Data of WAVE fmt chunk too big");
     }
@@ -1792,7 +1791,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, uin
     if (hint) {
         unsigned int count;
         if (SDL_sscanf(hint, "%u", &count) == 1) {
-            chunkcountlimit = count <= SDL_MAX_UINT32 ? count : SDL_MAX_UINT32;
+            chunkcountlimit = count <= UINT32_MAX ? count : UINT32_MAX;
         }
     }
 
@@ -1832,12 +1831,12 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, uin
      */
     switch (file->riffhint) {
     case RiffSizeIgnore:
-        RIFFend = RIFFchunk.position + SDL_MAX_UINT32;
+        RIFFend = RIFFchunk.position + UINT32_MAX;
         break;
     default:
     case RiffSizeIgnoreZero:
         if (RIFFchunk.length == 0) {
-            RIFFend = RIFFchunk.position + SDL_MAX_UINT32;
+            RIFFend = RIFFchunk.position + UINT32_MAX;
             break;
         }
         SDL_FALLTHROUGH;
@@ -1846,7 +1845,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, uin
         RIFFlengthknown = true;
         break;
     case RiffSizeMaximum:
-        RIFFend = SDL_MAX_SINT64;
+        RIFFend = INT64_MAX;
         break;
     }
 
@@ -1941,7 +1940,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, uin
         if (chunk->fourcc != DATA && chunk->length > 0) {
             uint8_t tmp;
             uint64_t position = (uint64_t)chunk->position + chunk->length - 1;
-            if (position > SDL_MAX_SINT64 || SDL_SeekIO(src, (int64_t)position, SDL_IO_SEEK_SET) != (int64_t)position) {
+            if (position > INT64_MAX || SDL_SeekIO(src, (int64_t)position, SDL_IO_SEEK_SET) != (int64_t)position) {
                 return SDL_SetError("Could not seek to WAVE chunk data");
             } else if (!SDL_ReadU8(src, &tmp)) {
                 return SDL_SetError("RIFF size truncates chunk");

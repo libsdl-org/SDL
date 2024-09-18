@@ -13,7 +13,7 @@
 
 /* Range tests parameters */
 #define RANGE_TEST_ITERATIONS 10000000
-#define RANGE_TEST_STEP       ((uint32_t)(SDL_MAX_UINT32 / RANGE_TEST_ITERATIONS))
+#define RANGE_TEST_STEP       ((uint32_t)(UINT32_MAX / RANGE_TEST_ITERATIONS))
 
 /* Margin of error for imprecise tests */
 #define EPSILON 1.0E-10

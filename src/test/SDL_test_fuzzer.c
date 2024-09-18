@@ -143,7 +143,7 @@ int32_t SDLTest_RandomIntegerInRange(int32_t min, int32_t max)
     }
 
     int32_t range = (max - min);
-    SDL_assert(range < SDL_MAX_SINT32);
+    SDL_assert(range < INT32_MAX);
     return min + SDL_rand_r(&rndContext, range + 1);
 }
 

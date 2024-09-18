@@ -35,7 +35,7 @@
 SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
                         sizeof(int) == sizeof(int32_t) && sizeof(size_t) >= sizeof(int32_t));
 
-SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
+SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > INT32_MAX);
 
 // Public routines
 
@@ -1242,8 +1242,8 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
 {
     static const uint32_t complex_copy_flags = (SDL_COPY_MODULATE_MASK | SDL_COPY_BLEND_MASK | SDL_COPY_COLORKEY);
 
-    if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
-        dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
+    if (srcrect->w > UINT16_MAX || srcrect->h > UINT16_MAX ||
+        dstrect->w > UINT16_MAX || dstrect->h > UINT16_MAX) {
         return SDL_SetError("Size too large for scaling");
     }
 

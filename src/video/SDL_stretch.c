@@ -126,8 +126,8 @@ bool SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst
         return true;
     }
 
-    if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
-        dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
+    if (srcrect->w > UINT16_MAX || srcrect->h > UINT16_MAX ||
+        dstrect->w > UINT16_MAX || dstrect->h > UINT16_MAX) {
         return SDL_SetError("Size too large for scaling");
     }
 

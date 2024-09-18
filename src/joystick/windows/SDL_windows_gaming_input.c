@@ -753,8 +753,8 @@ static bool WGI_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequency_ru
         HRESULT hr;
 
         // Note: reusing partially filled vibration data struct
-        hwdata->vibration.LeftMotor = (DOUBLE)low_frequency_rumble / SDL_MAX_UINT16;
-        hwdata->vibration.RightMotor = (DOUBLE)high_frequency_rumble / SDL_MAX_UINT16;
+        hwdata->vibration.LeftMotor = (DOUBLE)low_frequency_rumble / UINT16_MAX;
+        hwdata->vibration.RightMotor = (DOUBLE)high_frequency_rumble / UINT16_MAX;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
         if (SUCCEEDED(hr)) {
             return true;
@@ -774,8 +774,8 @@ static bool WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t left_rum
         HRESULT hr;
 
         // Note: reusing partially filled vibration data struct
-        hwdata->vibration.LeftTrigger = (DOUBLE)left_rumble / SDL_MAX_UINT16;
-        hwdata->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
+        hwdata->vibration.LeftTrigger = (DOUBLE)left_rumble / UINT16_MAX;
+        hwdata->vibration.RightTrigger = (DOUBLE)right_rumble / UINT16_MAX;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
         if (SUCCEEDED(hr)) {
             return true;
@@ -830,11 +830,11 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     HRESULT hr;
-    UINT32 nbuttons = SDL_min(joystick->nbuttons, SDL_MAX_UINT8);
+    UINT32 nbuttons = SDL_min(joystick->nbuttons, UINT8_MAX);
     boolean *buttons = NULL;
-    UINT32 nhats = SDL_min(joystick->nhats, SDL_MAX_UINT8);
+    UINT32 nhats = SDL_min(joystick->nhats, UINT8_MAX);
     __x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition *hats = NULL;
-    UINT32 naxes = SDL_min(joystick->naxes, SDL_MAX_UINT8);
+    UINT32 naxes = SDL_min(joystick->naxes, UINT8_MAX);
     DOUBLE *axes = NULL;
     UINT64 timestamp;
 

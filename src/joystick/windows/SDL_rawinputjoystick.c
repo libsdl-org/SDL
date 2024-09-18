@@ -219,7 +219,7 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, uint64_t match_sta
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCH_TRIGGERS
     for (; ii < SDL_JOYSTICK_RAWINPUT_MATCH_COUNT; ii++) {
         state->match_axes[ii] = (SHORT)((match_state & (0x000F0000ull << (ii * 4))) >> (4 + ii * 4));
-        any_axes_data |= (state->match_axes[ii] != SDL_MIN_SINT16);
+        any_axes_data |= (state->match_axes[ii] != INT16_MIN);
     }
 #endif // SDL_JOYSTICK_RAWINPUT_MATCH_TRIGGERS
 
@@ -241,7 +241,7 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, uint64_t match_sta
 
     // Can only match trigger values if a single trigger has a value.
 #define XInputTriggersMatch(gamepad) (                                                          \
-    ((state->match_axes[4] == SDL_MIN_SINT16) && (state->match_axes[5] == SDL_MIN_SINT16)) ||   \
+    ((state->match_axes[4] == INT16_MIN) && (state->match_axes[5] == INT16_MIN)) ||   \
     ((gamepad.bLeftTrigger != 0) && (gamepad.bRightTrigger != 0)) ||                            \
     ((uint32_t)((((int)gamepad.bLeftTrigger * 257) - 32768) - state->match_axes[4]) <= 0x2fff) || \
     ((uint32_t)((((int)gamepad.bRightTrigger * 257) - 32768) - state->match_axes[5]) <= 0x2fff))
@@ -274,16 +274,16 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, uint64_t match_sta
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
     // Match axes by checking if the distance between the high 4 bits of axis and the 4 bits from match_state is 1 or less
 #define WindowsGamingInputAxesMatch(gamepad) (                                                                            \
-    (uint16_t)(((int16_t)(gamepad.LeftThumbstickX * SDL_MAX_SINT16) & 0xF000) - state->match_axes[0] + 0x1000) <= 0x2fff &&  \
-    (uint16_t)((~(int16_t)(gamepad.LeftThumbstickY * SDL_MAX_SINT16) & 0xF000) - state->match_axes[1] + 0x1000) <= 0x2fff && \
-    (uint16_t)(((int16_t)(gamepad.RightThumbstickX * SDL_MAX_SINT16) & 0xF000) - state->match_axes[2] + 0x1000) <= 0x2fff && \
-    (uint16_t)((~(int16_t)(gamepad.RightThumbstickY * SDL_MAX_SINT16) & 0xF000) - state->match_axes[3] + 0x1000) <= 0x2fff)
+    (uint16_t)(((int16_t)(gamepad.LeftThumbstickX * INT16_MAX) & 0xF000) - state->match_axes[0] + 0x1000) <= 0x2fff &&  \
+    (uint16_t)((~(int16_t)(gamepad.LeftThumbstickY * INT16_MAX) & 0xF000) - state->match_axes[1] + 0x1000) <= 0x2fff && \
+    (uint16_t)(((int16_t)(gamepad.RightThumbstickX * INT16_MAX) & 0xF000) - state->match_axes[2] + 0x1000) <= 0x2fff && \
+    (uint16_t)((~(int16_t)(gamepad.RightThumbstickY * INT16_MAX) & 0xF000) - state->match_axes[3] + 0x1000) <= 0x2fff)
 
 #define WindowsGamingInputTriggersMatch(gamepad) (                                                          \
-    ((state->match_axes[4] == SDL_MIN_SINT16) && (state->match_axes[5] == SDL_MIN_SINT16)) ||               \
+    ((state->match_axes[4] == INT16_MIN) && (state->match_axes[5] == INT16_MIN)) ||               \
     ((gamepad.LeftTrigger == 0.0f) && (gamepad.RightTrigger == 0.0f)) ||                                    \
-    ((uint16_t)((((int)(gamepad.LeftTrigger * SDL_MAX_UINT16)) - 32768) - state->match_axes[4]) <= 0x2fff) || \
-    ((uint16_t)((((int)(gamepad.RightTrigger * SDL_MAX_UINT16)) - 32768) - state->match_axes[5]) <= 0x2fff))
+    ((uint16_t)((((int)(gamepad.LeftTrigger * UINT16_MAX)) - 32768) - state->match_axes[4]) <= 0x2fff) || \
+    ((uint16_t)((((int)(gamepad.RightTrigger * UINT16_MAX)) - 32768) - state->match_axes[5]) <= 0x2fff))
 
     state->wgi_buttons =
         // Bitwise map .RLD UWVQ TS.K YXBA -> ..QT WVRL DUYX BAKS
@@ -1478,8 +1478,8 @@ static bool RAWINPUT_JoystickRumble(SDL_Joystick *joystick, uint16_t low_frequen
     if (!rumbled && ctx->wgi_correlated) {
         WindowsGamingInputGamepadState *gamepad_state = ctx->wgi_slot;
         HRESULT hr;
-        gamepad_state->vibration.LeftMotor = (DOUBLE)low_frequency_rumble / SDL_MAX_UINT16;
-        gamepad_state->vibration.RightMotor = (DOUBLE)high_frequency_rumble / SDL_MAX_UINT16;
+        gamepad_state->vibration.LeftMotor = (DOUBLE)low_frequency_rumble / UINT16_MAX;
+        gamepad_state->vibration.RightMotor = (DOUBLE)high_frequency_rumble / UINT16_MAX;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(gamepad_state->gamepad, gamepad_state->vibration);
         if (SUCCEEDED(hr)) {
             rumbled = true;
@@ -1505,8 +1505,8 @@ static bool RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t lef
     if (ctx->wgi_correlated) {
         WindowsGamingInputGamepadState *gamepad_state = ctx->wgi_slot;
         HRESULT hr;
-        gamepad_state->vibration.LeftTrigger = (DOUBLE)left_rumble / SDL_MAX_UINT16;
-        gamepad_state->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
+        gamepad_state->vibration.LeftTrigger = (DOUBLE)left_rumble / UINT16_MAX;
+        gamepad_state->vibration.RightTrigger = (DOUBLE)right_rumble / UINT16_MAX;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(gamepad_state->gamepad, gamepad_state->vibration);
         if (!SUCCEEDED(hr)) {
             return SDL_SetError("Setting vibration failed: 0x%lx\n", hr);
@@ -1708,8 +1708,8 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, uint8_t *data, in
             HIDP_DATA *item = GetData(ctx->trigger_hack_index, ctx->data, data_length);
             if (item) {
                 int16_t value = (int)(uint16_t)item->RawValue - 0x8000;
-                int16_t left_value = (value > 0) ? (value * 2 - 32767) : SDL_MIN_SINT16;
-                int16_t right_value = (value < 0) ? (-value * 2 - 32769) : SDL_MIN_SINT16;
+                int16_t left_value = (value > 0) ? (value * 2 - 32767) : INT16_MIN;
+                int16_t right_value = (value < 0) ? (-value * 2 - 32769) : INT16_MIN;
 
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCH_TRIGGERS
                 AddTriggerToMatchState(left_trigger, left_value);
@@ -2017,8 +2017,8 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                 SDL_SendJoystickButton(timestamp, joystick, (uint8_t)guide_button, down);
             }
             if (ctx->trigger_hack) {
-                SDL_SendJoystickAxis(timestamp, joystick, (uint8_t)left_trigger, (int16_t)(((int)(state->LeftTrigger * SDL_MAX_UINT16)) - 32768));
-                SDL_SendJoystickAxis(timestamp, joystick, (uint8_t)right_trigger, (int16_t)(((int)(state->RightTrigger * SDL_MAX_UINT16)) - 32768));
+                SDL_SendJoystickAxis(timestamp, joystick, (uint8_t)left_trigger, (int16_t)(((int)(state->LeftTrigger * UINT16_MAX)) - 32768));
+                SDL_SendJoystickAxis(timestamp, joystick, (uint8_t)right_trigger, (int16_t)(((int)(state->RightTrigger * UINT16_MAX)) - 32768));
             }
             has_trigger_data = true;
         }

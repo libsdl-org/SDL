@@ -897,7 +897,7 @@ static int64_t NextAudioStreamIter(SDL_AudioStream* stream, void** inout_iter,
             *out_flushed = false;
         }
 
-        return SDL_MAX_SINT32;
+        return INT32_MAX;
     }
 
     int64_t resample_offset = *inout_resample_offset;
@@ -939,8 +939,8 @@ static int64_t GetAudioStreamAvailableFrames(SDL_AudioStream* stream, int64_t* o
         output_frames += NextAudioStreamIter(stream, &iter, &resample_offset, NULL, NULL, NULL);
 
         // Already got loads of frames. Just clamp it to something reasonable
-        if (output_frames >= SDL_MAX_SINT32) {
-            output_frames = SDL_MAX_SINT32;
+        if (output_frames >= INT32_MAX) {
+            output_frames = INT32_MAX;
             break;
         }
     }

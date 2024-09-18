@@ -26,6 +26,22 @@ def main():
         "Uint32": "uint32_t",
         "Sint64": "int64_t",
         "Uint64": "uint64_t",
+        "SDL_MIN_SINT8": "INT8_MIN",
+        "SDL_MAX_SINT8": "INT8_MAX",
+        "SDL_MIN_UINT8": "0",
+        "SDL_MAX_UINT8": "UINT8_MAX",
+        "SDL_MIN_SINT16": "INT16_MIN",
+        "SDL_MAX_SINT16": "INT16_MAX",
+        "SDL_MIN_UINT16": "0",
+        "SDL_MAX_UINT16": "UINT16_MAX",
+        "SDL_MIN_SINT32": "INT32_MIN",
+        "SDL_MAX_SINT32": "INT32_MAX",
+        "SDL_MIN_UINT32": "0",
+        "SDL_MAX_UINT32": "UINT32_MAX",
+        "SDL_MIN_SINT64": "INT64_MIN",
+        "SDL_MAX_SINT64": "INT64_MAX",
+        "SDL_MIN_UINT64": "0",
+        "SDL_MAX_UINT64": "UINT64_MAX",
     }
     entries = args.args[0:]
 

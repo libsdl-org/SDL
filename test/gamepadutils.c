@@ -1140,7 +1140,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         dst.h = ctx->arrow_height;
 
         if (has_negative) {
-            if (value == SDL_MIN_SINT16) {
+            if (value == INT16_MIN) {
                 SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
             } else {
                 SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);
@@ -1160,7 +1160,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
         if (value < 0) {
             SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-            rect.w = ((float)value / SDL_MIN_SINT16) * arrow_extent;
+            rect.w = ((float)value / INT16_MIN) * arrow_extent;
             rect.x = dst.x + arrow_extent - rect.w;
             rect.y = dst.y + ctx->arrow_height * 0.25f;
             rect.h = ctx->arrow_height / 2.0f;
@@ -1181,7 +1181,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
         if (value > 0) {
             SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-            rect.w = ((float)value / SDL_MAX_SINT16) * arrow_extent;
+            rect.w = ((float)value / INT16_MAX) * arrow_extent;
             rect.x = dst.x;
             rect.y = dst.y + ctx->arrow_height * 0.25f;
             rect.h = ctx->arrow_height / 2.0f;
@@ -1200,7 +1200,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
         dst.x += arrow_extent;
 
-        if (value == SDL_MAX_SINT16) {
+        if (value == INT16_MAX) {
             SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
         } else {
             SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);
@@ -1781,7 +1781,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
             dst.w = ctx->arrow_width;
             dst.h = ctx->arrow_height;
 
-            if (value == SDL_MIN_SINT16) {
+            if (value == INT16_MIN) {
                 SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
             } else {
                 SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);
@@ -1800,7 +1800,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
             if (value < 0) {
                 SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-                rect.w = ((float)value / SDL_MIN_SINT16) * arrow_extent;
+                rect.w = ((float)value / INT16_MIN) * arrow_extent;
                 rect.x = dst.x + arrow_extent - rect.w;
                 rect.y = dst.y + ctx->arrow_height * 0.25f;
                 rect.h = ctx->arrow_height / 2.0f;
@@ -1811,7 +1811,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
             if (value > 0) {
                 SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-                rect.w = ((float)value / SDL_MAX_SINT16) * arrow_extent;
+                rect.w = ((float)value / INT16_MAX) * arrow_extent;
                 rect.x = dst.x;
                 rect.y = dst.y + ctx->arrow_height * 0.25f;
                 rect.h = ctx->arrow_height / 2.0f;
@@ -1820,7 +1820,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
             dst.x += arrow_extent;
 
-            if (value == SDL_MAX_SINT16) {
+            if (value == INT16_MAX) {
                 SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
             } else {
                 SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);

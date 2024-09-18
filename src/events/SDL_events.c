@@ -1224,7 +1224,7 @@ bool SDL_PollEvent(SDL_Event *event)
 
 static int64_t SDL_events_get_polling_interval(void)
 {
-    int64_t poll_intervalNS = SDL_MAX_SINT64;
+    int64_t poll_intervalNS = INT64_MAX;
 
 #ifndef SDL_JOYSTICK_DISABLED
     if (SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks) {
@@ -1294,7 +1294,7 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
             loop_timeoutNS = (timeoutNS - elapsed);
         }
         // Adjust the timeout for any polling requirements we currently have.
-        if (poll_intervalNS != SDL_MAX_SINT64) {
+        if (poll_intervalNS != INT64_MAX) {
             if (loop_timeoutNS >= 0) {
                 loop_timeoutNS = SDL_min(loop_timeoutNS, poll_intervalNS);
             } else {
@@ -1304,7 +1304,7 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
         status = _this->WaitEventTimeout(_this, loop_timeoutNS);
         // Set wakeup_window to NULL without holding the lock.
         _this->wakeup_window = NULL;
-        if (status == 0 && poll_intervalNS != SDL_MAX_SINT64 && loop_timeoutNS == poll_intervalNS) {
+        if (status == 0 && poll_intervalNS != INT64_MAX && loop_timeoutNS == poll_intervalNS) {
             // We may have woken up to poll. Try again
             continue;
         } else if (status <= 0) {

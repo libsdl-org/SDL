@@ -504,8 +504,8 @@ static bool GAMEINPUT_JoystickRumble(SDL_Joystick *joystick, uint16_t low_freque
     // don't check for caps here, since SetRumbleState doesn't return any result - we don't need to check it
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
     GameInputRumbleParams *params = &hwdata->rumbleParams;
-    params->lowFrequency = (float)low_frequency_rumble / (float)SDL_MAX_UINT16;
-    params->highFrequency = (float)high_frequency_rumble / (float)SDL_MAX_UINT16;
+    params->lowFrequency = (float)low_frequency_rumble / (float)UINT16_MAX;
+    params->highFrequency = (float)high_frequency_rumble / (float)UINT16_MAX;
     IGameInputDevice_SetRumbleState(hwdata->devref->device, params);
     return true;
 }
@@ -515,8 +515,8 @@ static bool GAMEINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, uint16_t le
     // don't check for caps here, since SetRumbleState doesn't return any result - we don't need to check it
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
     GameInputRumbleParams *params = &hwdata->rumbleParams;
-    params->leftTrigger = (float)left_rumble / (float)SDL_MAX_UINT16;
-    params->rightTrigger = (float)right_rumble / (float)SDL_MAX_UINT16;
+    params->leftTrigger = (float)left_rumble / (float)UINT16_MAX;
+    params->rightTrigger = (float)right_rumble / (float)UINT16_MAX;
     IGameInputDevice_SetRumbleState(hwdata->devref->device, params);
     return true;
 }

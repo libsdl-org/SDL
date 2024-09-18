@@ -595,7 +595,7 @@ void SDL_InitTicks(void)
                         SDL_TimerResolutionChanged, NULL);
 
     tick_freq = SDL_GetPerformanceFrequency();
-    SDL_assert(tick_freq > 0 && tick_freq <= (uint64_t)SDL_MAX_UINT32);
+    SDL_assert(tick_freq > 0 && tick_freq <= (uint64_t)UINT32_MAX);
 
     gcd = SDL_CalculateGCD(SDL_NS_PER_SECOND, (uint32_t)tick_freq);
     tick_numerator_ns = (SDL_NS_PER_SECOND / gcd);

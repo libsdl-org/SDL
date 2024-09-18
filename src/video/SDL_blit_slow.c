@@ -476,11 +476,11 @@ static void ReadFloatPixel(uint8_t *pixels, SlowBlitPixelAccess access, const SD
     case SlowBlitPixelAccess_Large:
         switch (SDL_PIXELTYPE(fmt->format)) {
         case SDL_PIXELTYPE_ARRAYU16:
-            v[0] = (float)(((uint16_t *)pixels)[0]) / SDL_MAX_UINT16;
-            v[1] = (float)(((uint16_t *)pixels)[1]) / SDL_MAX_UINT16;
-            v[2] = (float)(((uint16_t *)pixels)[2]) / SDL_MAX_UINT16;
+            v[0] = (float)(((uint16_t *)pixels)[0]) / UINT16_MAX;
+            v[1] = (float)(((uint16_t *)pixels)[1]) / UINT16_MAX;
+            v[2] = (float)(((uint16_t *)pixels)[2]) / UINT16_MAX;
             if (fmt->bytes_per_pixel == 8) {
-                v[3] = (float)(((uint16_t *)pixels)[3]) / SDL_MAX_UINT16;
+                v[3] = (float)(((uint16_t *)pixels)[3]) / UINT16_MAX;
             } else {
                 v[3] = 1.0f;
             }
@@ -697,11 +697,11 @@ static void WriteFloatPixel(uint8_t *pixels, SlowBlitPixelAccess access, const S
         }
         switch (SDL_PIXELTYPE(fmt->format)) {
         case SDL_PIXELTYPE_ARRAYU16:
-            ((uint16_t *)pixels)[0] = (uint16_t)SDL_roundf(SDL_clamp(v[0], 0.0f, 1.0f) * SDL_MAX_UINT16);
-            ((uint16_t *)pixels)[1] = (uint16_t)SDL_roundf(SDL_clamp(v[1], 0.0f, 1.0f) * SDL_MAX_UINT16);
-            ((uint16_t *)pixels)[2] = (uint16_t)SDL_roundf(SDL_clamp(v[2], 0.0f, 1.0f) * SDL_MAX_UINT16);
+            ((uint16_t *)pixels)[0] = (uint16_t)SDL_roundf(SDL_clamp(v[0], 0.0f, 1.0f) * UINT16_MAX);
+            ((uint16_t *)pixels)[1] = (uint16_t)SDL_roundf(SDL_clamp(v[1], 0.0f, 1.0f) * UINT16_MAX);
+            ((uint16_t *)pixels)[2] = (uint16_t)SDL_roundf(SDL_clamp(v[2], 0.0f, 1.0f) * UINT16_MAX);
             if (fmt->bytes_per_pixel == 8) {
-                ((uint16_t *)pixels)[3] = (uint16_t)SDL_roundf(SDL_clamp(v[3], 0.0f, 1.0f) * SDL_MAX_UINT16);
+                ((uint16_t *)pixels)[3] = (uint16_t)SDL_roundf(SDL_clamp(v[3], 0.0f, 1.0f) * UINT16_MAX);
             }
             break;
         case SDL_PIXELTYPE_ARRAYF16:

@@ -325,9 +325,9 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     c->cursor_data.system.current_frame = next;
     wl_surface_attach(c->surface, c->cursor_data.system.frames[next].wl_buffer, 0, 0);
     if (wl_surface_get_version(c->surface) >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
-        wl_surface_damage_buffer(c->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
+        wl_surface_damage_buffer(c->surface, 0, 0, INT32_MAX, INT32_MAX);
     } else {
-        wl_surface_damage(c->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
+        wl_surface_damage(c->surface, 0, 0, INT32_MAX, INT32_MAX);
     }
     wl_surface_commit(c->surface);
 }
@@ -746,9 +746,9 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
         }
 
         if (wl_surface_get_version(data->surface) >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
-            wl_surface_damage_buffer(data->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
+            wl_surface_damage_buffer(data->surface, 0, 0, INT32_MAX, INT32_MAX);
         } else {
-            wl_surface_damage(data->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
+            wl_surface_damage(data->surface, 0, 0, INT32_MAX, INT32_MAX);
         }
 
         wl_surface_commit(data->surface);

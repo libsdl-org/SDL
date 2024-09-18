@@ -1003,7 +1003,7 @@ static void D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
 
     cpuDescriptor->heap = NULL;
     cpuDescriptor->cpuHandle.ptr = 0;
-    cpuDescriptor->cpuHandleIndex = SDL_MAX_UINT32;
+    cpuDescriptor->cpuHandleIndex = UINT32_MAX;
 }
 
 static void D3D12_INTERNAL_DestroyBuffer(
@@ -2561,7 +2561,7 @@ static void D3D12_INTERNAL_AssignCpuDescriptorHandle(
         descriptorIndex = heap->currentDescriptorIndex;
         heap->currentDescriptorIndex += 1;
     } else {
-        cpuDescriptor->cpuHandleIndex = SDL_MAX_UINT32;
+        cpuDescriptor->cpuHandleIndex = UINT32_MAX;
         cpuDescriptor->cpuHandle.ptr = 0;
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Out of CPU descriptor handles, many bad things are going to happen!");
         SDL_UnlockMutex(renderer->stagingDescriptorHeapLock);
@@ -3885,8 +3885,8 @@ static void D3D12_BeginRenderPass(
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    uint32_t framebufferWidth = SDL_MAX_UINT32;
-    uint32_t framebufferHeight = SDL_MAX_UINT32;
+    uint32_t framebufferWidth = UINT32_MAX;
+    uint32_t framebufferHeight = UINT32_MAX;
 
     for (uint32_t i = 0; i < numColorTargets; i += 1) {
         D3D12TextureContainer *container = (D3D12TextureContainer *)colorTargetInfos[i].texture;
