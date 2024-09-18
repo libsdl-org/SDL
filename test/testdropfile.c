@@ -79,11 +79,14 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         const char *typestr = (event->type == SDL_EVENT_DROP_FILE) ? "File" : "Text";
         SDL_Log("%s dropped on window %u: %s at (%f, %f)", typestr, (unsigned int)event->drop.windowID, event->drop.data, event->drop.x, event->drop.y);
     } else if (event->type == SDL_EVENT_DROP_POSITION) {
+        const float w_x = event->drop.x;
+        const float w_y = event->drop.y;
+        SDL_ConvertEventToRenderCoordinates(SDL_GetRenderer(SDL_GetWindowFromEvent(event)), event);
         dialog->is_hover = SDL_TRUE;
         dialog->x = event->drop.x;
         dialog->y = event->drop.y;
         dialog->windowID = event->drop.windowID;
-        SDL_Log("Drop position on window %u at (%f, %f) data = %s", (unsigned int)event->drop.windowID, event->drop.x, event->drop.y, event->drop.data);
+        SDL_Log("Drop position on window %u at (%f, %f) data = %s", (unsigned int)event->drop.windowID, w_x, w_y, event->drop.data);
     }
 
     return SDLTest_CommonEventMainCallbacks(dialog->state, event);
