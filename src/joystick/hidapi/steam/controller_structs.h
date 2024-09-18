@@ -112,7 +112,7 @@ typedef struct {
 	int16_t dur_ms; 			// Duration of tone / rumble (if applicable) (neg = infinite)
 
 	uint16_t noise_intensity;
-	uint16_t lfo_freq; 			// Drives both tone and rumble geneators
+	uint16_t lfo_freq; 			// Drives both tone and rumble generators
 	uint8_t lfo_depth; 			// percentage, typically 100
 	uint8_t rand_tone_gain; 	// Randomize each LFO cycle's gain
 	uint8_t script_id; 			// Used w/ dBgain for scripted haptics
