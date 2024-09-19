@@ -1198,3 +1198,4 @@
 #define SDL_wcstol SDL_wcstol_REAL
 #define SDL_LogV SDL_LogV_REAL
 #define SDL_LogCriticalV SDL_LogCriticalV_REAL
+#define SDL_LogDebugV SDL_LogDebugV_REAL
