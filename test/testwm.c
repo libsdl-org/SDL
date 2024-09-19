@@ -165,6 +165,7 @@ static void loop(void)
 
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
+        SDL_ConvertEventToRenderCoordinates(SDL_GetRenderer(SDL_GetWindowFromEvent(&event)), &event);
 
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
             SDL_Window *window = SDL_GetWindowFromEvent(&event);
