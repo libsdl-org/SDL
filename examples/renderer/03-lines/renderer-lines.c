@@ -1,6 +1,6 @@
 /*
- * This example creates an SDL window and renderer, and then draws some lines,
- * rectangles and points to it every frame.
+ * This example creates an SDL window and renderer, and then draws some lines
+ * to it every frame.
  *
  * This code is public domain. Feel free to use it for any purpose!
  */
@@ -43,16 +43,41 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    const int num_lines = 5000;
     int i;
+
+    /* Lines (line segments, really) are drawn in terms of points: a set of
+       X and Y coordinates, one set for each end of the line.
+       (0, 0) is the top left of the window, and larger numbers go down
+       and to the right. This isn't how geometry works, but this is pretty
+       standard in 2D graphics. */
+    static const SDL_FPoint line_points[] = {
+        { 100, 354 }, { 220, 230 }, { 140, 230 }, { 320, 100 }, { 500, 230 },
+        { 420, 230 }, { 540, 354 }, { 400, 354 }, { 100, 354 }
+    };
 
     /* as you can see from this, rendering draws over whatever was drawn before it. */
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  /* black, full alpha */
     SDL_RenderClear(renderer);  /* start with a blank canvas. */
 
-    for (i = 0; i < num_lines; i++) {
+    /* You can draw lines, one at a time, like these brown ones... */
+    SDL_SetRenderDrawColor(renderer, 127, 49, 32, 255);
+    SDL_RenderLine(renderer, 240, 450, 400, 450);
+    SDL_RenderLine(renderer, 240, 356, 400, 356);
+    SDL_RenderLine(renderer, 240, 356, 240, 450);
+    SDL_RenderLine(renderer, 400, 356, 400, 450);
+
+    /* You can also draw a series of connected lines in a single batch... */
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    SDL_RenderLines(renderer, line_points, SDL_arraysize(line_points));
+
+    /* here's a bunch of lines drawn out from a center point in a circle. */
+    /* we randomize the color of each line, so it functions as animation. */
+    for (i = 0; i < 360; i++) {
+        const float size = 30.0f;
+        const float x = 320.0f;
+        const float y = 95.0f - (size / 2.0f);
         SDL_SetRenderDrawColor(renderer, SDL_rand(256), SDL_rand(256), SDL_rand(256), 255);
-        SDL_RenderLine(renderer, SDL_rand(640), SDL_rand(480), SDL_rand(640), SDL_rand(480));
+        SDL_RenderLine(renderer, x, y, x + SDL_sinf(i) * size, y + SDL_cosf(i) * size);
     }
 
     SDL_RenderPresent(renderer);  /* put it all on the screen! */
