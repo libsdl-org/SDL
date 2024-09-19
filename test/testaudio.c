@@ -1119,6 +1119,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     Thing *thing = NULL;
 
     saw_event = true;
+    SDL_ConvertEventToRenderCoordinates(SDL_GetRenderer(SDL_GetWindowFromEvent(event)), event);
 
     switch (event->type) {
         case SDL_EVENT_MOUSE_MOTION:

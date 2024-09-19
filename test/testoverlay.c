@@ -255,6 +255,7 @@ static void loop(void)
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
+        SDL_ConvertEventToRenderCoordinates(SDL_GetRenderer(SDL_GetWindowFromEvent(&event)), &event);
 
         switch (event.type) {
         case SDL_EVENT_WINDOW_RESIZED:

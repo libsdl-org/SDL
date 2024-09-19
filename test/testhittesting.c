@@ -33,16 +33,24 @@ static SDL_HitTestResult SDLCALL
 hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
 {
     int i;
-    int w, h;
+    int w, h, p_w;
+    SDL_Point adj_pt;
+    float scale;
+
+    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSizeInPixels(window, &p_w, NULL);
+
+    scale = (float)p_w / (float)w;
+
+    adj_pt.x = (int)SDL_floorf(pt->x * scale);
+    adj_pt.y = (int)SDL_floorf(pt->y * scale);
 
     for (i = 0; i < numareas; i++) {
-        if (SDL_PointInRect(pt, &areas[i])) {
+        if (SDL_PointInRect(&adj_pt, &areas[i])) {
             SDL_Log("HIT-TEST: DRAGGABLE\n");
             return SDL_HITTEST_DRAGGABLE;
         }
     }
-
-    SDL_GetWindowSize(window, &w, &h);
 
 #define REPORT_RESIZE_HIT(name)                  \
     {                                            \

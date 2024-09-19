@@ -184,6 +184,20 @@ static const char *AudioChansToStr(const int channels)
     return "?";
 }
 
+static void scale_mouse_coords(SDL_FPoint *p)
+{
+    SDL_Window *window = SDL_GetMouseFocus();
+    if (window) {
+        int w, p_w;
+        float scale;
+        SDL_GetWindowSize(window, &w, NULL);
+        SDL_GetWindowSizeInPixels(window, &p_w, NULL);
+        scale = (float)p_w / (float)w;
+        p->x *= scale;
+        p->y *= scale;
+    }
+}
+
 static void loop(void)
 {
     int i, j;
@@ -228,6 +242,7 @@ static void loop(void)
     }
 
     if (SDL_GetMouseState(&p.x, &p.y) & SDL_BUTTON_LMASK) {
+        scale_mouse_coords(&p);
         if (active_slider == -1) {
             for (i = 0; i < NUM_SLIDERS; ++i) {
                 if (SDL_PointInRectFloat(&p, &sliders[i].area)) {

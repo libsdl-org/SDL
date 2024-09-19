@@ -184,7 +184,7 @@ static void HandleMouseAdded(SDL_MouseID instance_id)
     SDL_Window *window = state->windows[0];
     int i, w = 0, h = 0;
 
-    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     for (i = 0; i < SDL_arraysize(mice); ++i) {
         MouseState *mouse_state = &mice[i];
@@ -237,7 +237,7 @@ static void HandleMouseMotion(SDL_MouseMotionEvent *event)
 
     ActivateMouse(event->which);
 
-    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     for (i = 0; i < SDL_arraysize(mice); ++i) {
         MouseState *mouse_state = &mice[i];
