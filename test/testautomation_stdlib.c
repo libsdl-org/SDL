@@ -714,15 +714,8 @@ static int SDLCALL stdlib_getsetenv(void *arg)
 #endif
 #endif
 
-#ifndef SDL_PLATFORM_WINDOWS
-#define FMT_PRILLd "%lld"
-#define FMT_PRILLu "%llu"
-#else
-/* make sure long long is 64 bits */
-SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8);
-#define FMT_PRILLd "%I64d"
-#define FMT_PRILLu "%I64u"
-#endif
+#define FMT_PRILLd "%" SDL_PRILLd
+#define FMT_PRILLu "%" SDL_PRILLu
 
 /**
  * Call to SDL_sscanf
