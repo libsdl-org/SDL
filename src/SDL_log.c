@@ -544,8 +544,13 @@ void SDL_LogError(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     va_list ap;
 
     va_start(ap, fmt);
-    SDL_LogMessageV(category, SDL_LOG_PRIORITY_ERROR, fmt, ap);
+    SDL_LogErrorV(category, fmt, ap);
     va_end(ap);
+}
+
+void SDL_LogErrorV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
+{
+    SDL_LogMessageV(category, SDL_LOG_PRIORITY_ERROR, fmt, ap);
 }
 
 void SDL_LogCritical(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
