@@ -494,8 +494,13 @@ void SDL_LogTrace(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     va_list ap;
 
     va_start(ap, fmt);
-    SDL_LogMessageV(category, SDL_LOG_PRIORITY_TRACE, fmt, ap);
+    SDL_LogTraceV(category, fmt, ap);
     va_end(ap);
+}
+
+void SDL_LogTraceV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
+{
+    SDL_LogMessageV(category, SDL_LOG_PRIORITY_TRACE, fmt, ap);
 }
 
 void SDL_LogVerbose(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
