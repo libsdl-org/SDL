@@ -97,8 +97,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
-
     renderer = state->renderers[0];
     if (!renderer) {
         /* SDL_Log("Couldn't create renderer: %s", SDL_GetError()); */
