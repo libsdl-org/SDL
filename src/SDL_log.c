@@ -480,8 +480,13 @@ void SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     va_list ap;
 
     va_start(ap, fmt);
-    SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, fmt, ap);
+    SDL_LogV(fmt, ap);
     va_end(ap);
+}
+
+void SDL_LogV(SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
+{
+    SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, fmt, ap);
 }
 
 void SDL_LogTrace(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)

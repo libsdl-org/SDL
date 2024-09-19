@@ -232,8 +232,32 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetLogPriorityPrefix(SDL_LogPriority priori
  * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
+ * \sa SDL_LogV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
+
+/**
+ * Log a message with SDL_LOG_CATEGORY_APPLICATION and SDL_LOG_PRIORITY_INFO.
+ *
+ * \param fmt a printf() style message format string..
+ * \param ap a variable argument list..
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_Log
+ * \sa SDL_LogCritical
+ * \sa SDL_LogDebug
+ * \sa SDL_LogError
+ * \sa SDL_LogInfo
+ * \sa SDL_LogMessage
+ * \sa SDL_LogMessageV
+ * \sa SDL_LogTrace
+ * \sa SDL_LogVerbose
+ * \sa SDL_LogWarn
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_LogV(SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(1);
 
 /**
  * Log a message with SDL_LOG_PRIORITY_TRACE.
