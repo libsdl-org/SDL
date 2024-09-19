@@ -28,24 +28,29 @@
    Also, this file gets included multiple times, don't add #pragma once, etc.
 */
 
-// direct jump magic can use these, the rest needs special code.
-#ifndef SDL_DYNAPI_PROC_NO_VARARGS
-SDL_DYNAPI_PROC(size_t,SDL_IOprintf,(SDL_IOStream *a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),return)
-SDL_DYNAPI_PROC(void,SDL_Log,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a),)
-SDL_DYNAPI_PROC(void,SDL_LogCritical,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
-SDL_DYNAPI_PROC(void,SDL_LogDebug,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
-SDL_DYNAPI_PROC(void,SDL_LogError,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
-SDL_DYNAPI_PROC(void,SDL_LogInfo,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
-SDL_DYNAPI_PROC(void,SDL_LogMessage,(int a, SDL_LogPriority b, SDL_PRINTF_FORMAT_STRING const char *c, ...),(a,b,c),)
-SDL_DYNAPI_PROC(void,SDL_LogTrace,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
-SDL_DYNAPI_PROC(void,SDL_LogVerbose,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
-SDL_DYNAPI_PROC(void,SDL_LogWarn,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),)
-SDL_DYNAPI_PROC(bool,SDL_SetError,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a),return)
-SDL_DYNAPI_PROC(int,SDL_asprintf,(char **a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),return)
-SDL_DYNAPI_PROC(int,SDL_snprintf,(SDL_OUT_Z_CAP(b) char *a, size_t b, SDL_PRINTF_FORMAT_STRING const char *c, ...),(a,b,c),return)
-SDL_DYNAPI_PROC(int,SDL_sscanf,(const char *a, SDL_SCANF_FORMAT_STRING const char *b, ...),(a,b),return)
-SDL_DYNAPI_PROC(int,SDL_swprintf,(SDL_OUT_Z_CAP(b) wchar_t *a, size_t b, SDL_PRINTF_FORMAT_STRING const wchar_t *c, ...),(a,b,c),return)
+#ifndef SDL_DYNAPI_VPROC
+#define SDL_DYNAPI_VPROC(rc, fn, params, args, forwardfn, last_arg, ret) SDL_DYNAPI_PROC(rc, fn, params, NO_ARGS, NO_RET)
 #endif
+
+#ifndef SDL_DYNAPI_VOID_VPROC
+#define SDL_DYNAPI_VOID_VPROC(rc, fn, params, args, forwardfn, last_arg, ret) SDL_DYNAPI_PROC(rc, fn, params, NO_ARGS, NO_RET)
+#endif
+
+SDL_DYNAPI_VPROC(size_t,SDL_IOprintf,(SDL_IOStream *a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b,ap),SDL_IOvprintf,b,return)
+SDL_DYNAPI_VOID_VPROC(void,SDL_Log,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a,ap),SDL_LogV,a,)
+SDL_DYNAPI_VOID_VPROC(void,SDL_LogCritical,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b,ap),SDL_LogCriticalV,b,)
+SDL_DYNAPI_VOID_VPROC(void,SDL_LogDebug,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b,ap),SDL_LogDebugV,b,)
+SDL_DYNAPI_VOID_VPROC(void,SDL_LogError,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b,ap),SDL_LogErrorV,b,)
+SDL_DYNAPI_VOID_VPROC(void,SDL_LogInfo,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b,ap),SDL_LogInfoV,b,)
+SDL_DYNAPI_VOID_VPROC(void,SDL_LogMessage,(int a, SDL_LogPriority b, SDL_PRINTF_FORMAT_STRING const char *c, ...),(a,b,c,ap),SDL_LogMessageV,c,)
+SDL_DYNAPI_VOID_VPROC(void,SDL_LogTrace,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b,ap),SDL_LogTraceV,b,)
+SDL_DYNAPI_VOID_VPROC(void,SDL_LogVerbose,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b,ap),SDL_LogVerboseV,b,)
+SDL_DYNAPI_VOID_VPROC(void,SDL_LogWarn,(int a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b,ap),SDL_LogWarnV,b,)
+SDL_DYNAPI_VPROC(bool,SDL_SetError,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a,ap),SDL_SetErrorV,a,return)
+SDL_DYNAPI_VPROC(int,SDL_asprintf,(char **a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b,ap),SDL_vasprintf,b,return)
+SDL_DYNAPI_VPROC(int,SDL_snprintf,(SDL_OUT_Z_CAP(b) char *a, size_t b, SDL_PRINTF_FORMAT_STRING const char *c, ...),(a,b,c,ap),SDL_vsnprintf,c,return)
+SDL_DYNAPI_VPROC(int,SDL_sscanf,(const char *a, SDL_SCANF_FORMAT_STRING const char *b, ...),(a,b,ap),SDL_vsscanf,b,return)
+SDL_DYNAPI_VPROC(int,SDL_swprintf,(SDL_OUT_Z_CAP(b) wchar_t *a, size_t b, SDL_PRINTF_FORMAT_STRING const wchar_t *c, ...),(a,b,c,ap),SDL_vswprintf,c,return)
 
 // New API symbols are added at the end
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_AcquireCameraFrame,(SDL_Camera *a, Uint64 *b),(a,b),return)

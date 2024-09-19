@@ -441,7 +441,7 @@ def check_comment():
 
 # Parse 'sdl_dynapi_procs_h' file to find existing functions
 def find_existing_procs():
-    reg = re.compile(r'SDL_DYNAPI_PROC\([^,]*,([^,]*),.*\)')
+    reg = re.compile(r'(?:SDL_DYNAPI_PROC|SDL_DYNAPI_VPROC|SDL_DYNAPI_VOID_VPROC)\([^,]*,([^,]*),.*\)')
     ret = []
     input = open(SDL_DYNAPI_PROCS_H)
 
@@ -479,91 +479,77 @@ def add_dyn_api(proc):
     func_ret = proc['retval']
     func_argtype = proc['parameter']
 
+    i = ord('a')
+    remove_last = False
+    decl_args = []
+    call_args = []
+    for i, argtype in enumerate(func_argtype):
+
+        # Special case, void has no parameter name
+        if argtype == "void":
+            assert len(decl_args) == 0
+            assert len(func_argtype) == 1
+            decl_args.append("void")
+            break
+
+        # Var name: a, b, c, ...
+        varname = chr(ord('a') + i)
+
+        decl_args.append(argtype.replace("REWRITE_NAME", varname))
+        if argtype == "...":
+            call_args.append("ap")
+        else:
+            call_args.append(varname)
+
+    macro_args = [
+        func_ret,
+        func_name,
+        "({})".format(",".join(decl_args)),
+        "({})".format(",".join(call_args)),
+    ]
+    if "..." in func_argtype:
+        if func_ret == "void":
+            macroname = "SDL_DYNAPI_VOID_VPROC"
+        else:
+            macroname = "SDL_DYNAPI_VPROC"
+        func_forward = f"{func_name}V"
+        last_arg = call_args[-1]
+        print(f"Assuming variadic function {func_name} forwards to {func_forward} accepting a va_list.")
+        macro_args.extend([
+            func_forward,
+            call_args[-1],
+        ])
+    else:
+        macroname = "SDL_DYNAPI_PROC"
+    macro_args.append("" if func_ret == "void" else "return")
 
     # File: SDL_dynapi_procs.h
     #
     # Add at last
     # SDL_DYNAPI_PROC(SDL_EGLConfig,SDL_EGL_GetCurrentConfig,(void),(),return)
-    f = open(SDL_DYNAPI_PROCS_H, "a", newline="")
-    dyn_proc = "SDL_DYNAPI_PROC(" + func_ret + "," + func_name + ",("
-
-    i = ord('a')
-    remove_last = False
-    for argtype in func_argtype:
-
-        # Special case, void has no parameter name
-        if argtype == "void":
-            dyn_proc += "void"
-            continue
-
-        # Var name: a, b, c, ...
-        varname = chr(i)
-        i += 1
-
-        tmp = argtype.replace("REWRITE_NAME", varname)
-        dyn_proc += tmp + ", "
-        remove_last = True
-
-    # remove last 2 char ', '
-    if remove_last:
-        dyn_proc = dyn_proc[:-1]
-        dyn_proc = dyn_proc[:-1]
-
-    dyn_proc += "),("
-
-    i = ord('a')
-    remove_last = False
-    for argtype in func_argtype:
-
-        # Special case, void has no parameter name
-        if argtype == "void":
-            continue
-
-        # Special case, '...' has no parameter name
-        if argtype == "...":
-            continue
-
-        # Var name: a, b, c, ...
-        varname = chr(i)
-        i += 1
-
-        dyn_proc += varname + ","
-        remove_last = True
-
-    # remove last char ','
-    if remove_last:
-        dyn_proc = dyn_proc[:-1]
-
-    dyn_proc += "),"
-
-    if func_ret != "void":
-        dyn_proc += "return"
-    dyn_proc += ")"
-    f.write(dyn_proc + "\n")
-    f.close()
+    # or SDL_DYNAPI_VPROC or SDL_DYNAPI_VOID_PROC
+    with SDL_DYNAPI_PROCS_H.open("a", newline="") as f:
+        f.write(f"{macroname}({','.join(macro_args)})\n")
 
     # File: SDL_dynapi_overrides.h
     #
     # Add at last
     # "#define SDL_DelayNS SDL_DelayNS_REAL
-    f = open(SDL_DYNAPI_OVERRIDES_H, "a", newline="")
-    f.write("#define " + func_name + " " + func_name + "_REAL\n")
-    f.close()
+    with SDL_DYNAPI_OVERRIDES_H.open("a", newline="") as f:
+        f.write(f"#define {func_name} {func_name}_REAL\n")
 
     # File: SDL_dynapi.sym
     #
     # Add before "extra symbols go here" line
-    input = open(SDL_DYNAPI_SYM)
-    new_input = []
-    for line in input:
-        if "extra symbols go here" in line:
-            new_input.append("    " + func_name + ";\n")
-        new_input.append(line)
-    input.close()
-    f = open(SDL_DYNAPI_SYM, 'w', newline='')
-    for line in new_input:
-        f.write(line)
-    f.close()
+    with SDL_DYNAPI_SYM.open() as f:
+        new_input = []
+        for line in f:
+            if "extra symbols go here" in line:
+                new_input.append("    " + func_name + ";\n")
+            new_input.append(line)
+    with SDL_DYNAPI_SYM.open('w', newline='') as f:
+        for line in new_input:
+            f.write(line)
 
 
 if __name__ == '__main__':
@@ -573,12 +559,6 @@ if __name__ == '__main__':
     parser.add_argument('--debug', help='add debug traces', action='store_true')
     args = parser.parse_args()
 
-    try:
-        main()
-    except Exception as e:
-        print(e)
-        exit(-1)
+    main()
 
     print("done!")
-    exit(0)
-
