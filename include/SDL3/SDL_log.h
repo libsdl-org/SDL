@@ -474,8 +474,33 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogInfoV(int category, SDL_PRINTF_FORMAT_ST
  * \sa SDL_LogMessageV
  * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
+ * \sa SDL_LogWarnV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogWarn(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
+
+/**
+ * Log a message with SDL_LOG_PRIORITY_WARN.
+ *
+ * \param category the category of the message.
+ * \param fmt a printf() style message format string.
+ * \param ap a variable argument list.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_Log
+ * \sa SDL_LogCritical
+ * \sa SDL_LogDebug
+ * \sa SDL_LogError
+ * \sa SDL_LogInfo
+ * \sa SDL_LogMessage
+ * \sa SDL_LogMessageV
+ * \sa SDL_LogTrace
+ * \sa SDL_LogVerbose
+ * \sa SDL_LogWarn
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_LogWarnV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
 /**
  * Log a message with SDL_LOG_PRIORITY_ERROR.
