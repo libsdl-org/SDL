@@ -1271,3 +1271,6 @@
 #define SDL_SetWindowProgressValue SDL_SetWindowProgressValue_REAL
 #define SDL_GetWindowProgressState SDL_GetWindowProgressState_REAL
 #define SDL_GetWindowProgressValue SDL_GetWindowProgressValue_REAL
+#define SDL_CreateSafeTempFile SDL_CreateSafeTempFile_REAL
+#define SDL_CreateUnsafeTempFile SDL_CreateUnsafeTempFile_REAL
+#define SDL_CreateTempFolder SDL_CreateTempFolder_REAL

@@ -26,8 +26,10 @@
 // System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
+#include "../../file/SDL_iostream_c.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>

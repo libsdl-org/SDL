@@ -1279,3 +1279,6 @@ SDL_DYNAPI_PROC(bool,SDL_SetWindowProgressState,(SDL_Window *a,SDL_ProgressState
 SDL_DYNAPI_PROC(bool,SDL_SetWindowProgressValue,(SDL_Window *a,float b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_ProgressState,SDL_GetWindowProgressState,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_GetWindowProgressValue,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(SDL_IOStream*,SDL_CreateSafeTempFile,(void),(),return)
+SDL_DYNAPI_PROC(char*,SDL_CreateUnsafeTempFile,(void),(),return)
+SDL_DYNAPI_PROC(char*,SDL_CreateTempFolder,(void),(),return)
