@@ -247,15 +247,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fm
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Log
- * \sa SDL_LogCritical
- * \sa SDL_LogDebug
- * \sa SDL_LogError
- * \sa SDL_LogInfo
- * \sa SDL_LogMessage
+ * \sa SDL_LogCriticalV
+ * \sa SDL_LogDebugV
+ * \sa SDL_LogErrorV
+ * \sa SDL_LogInfoV
  * \sa SDL_LogMessageV
- * \sa SDL_LogTrace
- * \sa SDL_LogVerbose
- * \sa SDL_LogWarn
+ * \sa SDL_LogTraceV
+ * \sa SDL_LogVerboseV
+ * \sa SDL_LogWarnV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogV(SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(1);
 
@@ -295,16 +294,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogTrace(int category, SDL_PRINTF_FORMAT_ST
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Log
- * \sa SDL_LogCritical
- * \sa SDL_LogDebug
- * \sa SDL_LogError
- * \sa SDL_LogInfo
- * \sa SDL_LogMessage
- * \sa SDL_LogMessageV
  * \sa SDL_LogTrace
- * \sa SDL_LogVerbose
- * \sa SDL_LogWarn
+ * \sa SDL_LogV
+ * \sa SDL_LogCriticalV
+ * \sa SDL_LogDebugV
+ * \sa SDL_LogErrorV
+ * \sa SDL_LogInfoV
+ * \sa SDL_LogMessageV
+ * \sa SDL_LogVerboseV
+ * \sa SDL_LogWarnV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogTraceV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
@@ -343,15 +341,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogVerbose(int category, SDL_PRINTF_FORMAT_
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Log
- * \sa SDL_LogCritical
- * \sa SDL_LogDebug
- * \sa SDL_LogError
- * \sa SDL_LogInfo
- * \sa SDL_LogMessage
- * \sa SDL_LogMessageV
  * \sa SDL_LogVerbose
- * \sa SDL_LogWarn
+ * \sa SDL_LogV
+ * \sa SDL_LogCriticalV
+ * \sa SDL_LogDebugV
+ * \sa SDL_LogErrorV
+ * \sa SDL_LogInfoV
+ * \sa SDL_LogMessageV
+ * \sa SDL_LogWarnV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogVerboseV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
@@ -391,16 +388,16 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogDebug(int category, SDL_PRINTF_FORMAT_ST
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Log
- * \sa SDL_LogCritical
  * \sa SDL_LogDebug
- * \sa SDL_LogError
- * \sa SDL_LogInfo
- * \sa SDL_LogMessage
+ * \sa SDL_LogV
+ * \sa SDL_LogCriticalV
+ * \sa SDL_LogDebugV
+ * \sa SDL_LogErrorV
+ * \sa SDL_LogInfoV
  * \sa SDL_LogMessageV
- * \sa SDL_LogTrace
- * \sa SDL_LogVerbose
- * \sa SDL_LogWarn
+ * \sa SDL_LogTraceV
+ * \sa SDL_LogVerboseV
+ * \sa SDL_LogWarnV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogDebugV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
@@ -440,16 +437,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogInfo(int category, SDL_PRINTF_FORMAT_STR
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Log
- * \sa SDL_LogCritical
- * \sa SDL_LogDebug
- * \sa SDL_LogError
  * \sa SDL_LogInfo
- * \sa SDL_LogMessage
+ * \sa SDL_LogV
+ * \sa SDL_LogCriticalV
+ * \sa SDL_LogDebugV
+ * \sa SDL_LogErrorV
  * \sa SDL_LogMessageV
- * \sa SDL_LogTrace
- * \sa SDL_LogVerbose
- * \sa SDL_LogWarn
+ * \sa SDL_LogTraceV
+ * \sa SDL_LogVerboseV
+ * \sa SDL_LogWarnV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogInfoV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
@@ -489,16 +485,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogWarn(int category, SDL_PRINTF_FORMAT_STR
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Log
- * \sa SDL_LogCritical
- * \sa SDL_LogDebug
- * \sa SDL_LogError
- * \sa SDL_LogInfo
- * \sa SDL_LogMessage
- * \sa SDL_LogMessageV
- * \sa SDL_LogTrace
- * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
+ * \sa SDL_LogV
+ * \sa SDL_LogCriticalV
+ * \sa SDL_LogDebugV
+ * \sa SDL_LogErrorV
+ * \sa SDL_LogInfoV
+ * \sa SDL_LogMessageV
+ * \sa SDL_LogTraceV
+ * \sa SDL_LogVerboseV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogWarnV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
@@ -538,16 +533,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogError(int category, SDL_PRINTF_FORMAT_ST
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Log
- * \sa SDL_LogCritical
- * \sa SDL_LogDebug
  * \sa SDL_LogError
- * \sa SDL_LogInfo
- * \sa SDL_LogMessage
+ * \sa SDL_LogV
+ * \sa SDL_LogCriticalV
+ * \sa SDL_LogDebugV
+ * \sa SDL_LogInfoV
  * \sa SDL_LogMessageV
- * \sa SDL_LogTrace
- * \sa SDL_LogVerbose
- * \sa SDL_LogWarn
+ * \sa SDL_LogTraceV
+ * \sa SDL_LogVerboseV
+ * \sa SDL_LogWarnV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogErrorV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
@@ -587,16 +581,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogCritical(int category, SDL_PRINTF_FORMAT
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Log
  * \sa SDL_LogCritical
- * \sa SDL_LogDebug
- * \sa SDL_LogError
- * \sa SDL_LogInfo
- * \sa SDL_LogMessage
+ * \sa SDL_LogV
+ * \sa SDL_LogDebugV
+ * \sa SDL_LogErrorV
+ * \sa SDL_LogInfoV
  * \sa SDL_LogMessageV
- * \sa SDL_LogTrace
- * \sa SDL_LogVerbose
- * \sa SDL_LogWarn
+ * \sa SDL_LogTraceV
+ * \sa SDL_LogVerboseV
+ * \sa SDL_LogWarnV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogCriticalV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
@@ -639,15 +632,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogMessage(int category,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Log
- * \sa SDL_LogCritical
- * \sa SDL_LogDebug
- * \sa SDL_LogError
- * \sa SDL_LogInfo
  * \sa SDL_LogMessage
- * \sa SDL_LogTrace
- * \sa SDL_LogVerbose
- * \sa SDL_LogWarn
+ * \sa SDL_LogV
+ * \sa SDL_LogCriticalV
+ * \sa SDL_LogDebugV
+ * \sa SDL_LogErrorV
+ * \sa SDL_LogInfoV
+ * \sa SDL_LogTraceV
+ * \sa SDL_LogVerboseV
+ * \sa SDL_LogWarnV
  */
 extern SDL_DECLSPEC void SDLCALL SDL_LogMessageV(int category,
                                              SDL_LogPriority priority,
