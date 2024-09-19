@@ -100,6 +100,25 @@ void *alloca(size_t);
 # define SDL_SIZE_MAX ((size_t) -1)
 #endif
 
+#ifndef SDL_COMPILE_TIME_ASSERT
+#if defined(__cplusplus)
+/* Keep C++ case alone: Some versions of gcc will define __STDC_VERSION__ even when compiling in C++ mode. */
+#if (__cplusplus >= 201103L)
+#define SDL_COMPILE_TIME_ASSERT(name, x)  static_assert(x, #x)
+#endif
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)
+#define SDL_COMPILE_TIME_ASSERT(name, x)  static_assert(x, #x)
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+#define SDL_COMPILE_TIME_ASSERT(name, x) _Static_assert(x, #x)
+#endif
+#endif /* !SDL_COMPILE_TIME_ASSERT */
+
+#ifndef SDL_COMPILE_TIME_ASSERT
+/* universal, but may trigger -Wunused-local-typedefs */
+#define SDL_COMPILE_TIME_ASSERT(name, x)               \
+       typedef int SDL_compile_time_assert_ ## name[(x) * 2 - 1]
+#endif
+
 /**
  * Check if the compiler supports a given builtin.
  * Supported by virtually all clang versions and recent gcc. Use this
@@ -408,7 +427,7 @@ typedef Sint64 SDL_Time;
 /* @} *//* Floating-point constants */
 
 /* Make sure we have macros for printing width-based integers.
- * <stdint.h> should define these but this is not true all platforms.
+ * <inttypes.h> should define these but this is not true all platforms.
  * (for example win32) */
 #ifndef SDL_PRIs64
 #if defined(SDL_PLATFORM_WINDOWS)
@@ -482,6 +501,25 @@ typedef Sint64 SDL_Time;
 #define SDL_PRIX32 "X"
 #endif
 #endif
+/* Specifically for the `long long` -- SDL-specific. */
+#ifndef SDL_PLATFORM_WINDOWS
+#define SDL_PRILL_PREFIX "ll"
+#else
+SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 for windows - make sure `long long` is 64 bits. */
+#define SDL_PRILL_PREFIX "I64"
+#endif
+#ifndef SDL_PRILLd
+#define SDL_PRILLd SDL_PRILL_PREFIX "d"
+#endif
+#ifndef SDL_PRILLu
+#define SDL_PRILLu SDL_PRILL_PREFIX "u"
+#endif
+#ifndef SDL_PRILLx
+#define SDL_PRILLx SDL_PRILL_PREFIX "x"
+#endif
+#ifndef SDL_PRILLX
+#define SDL_PRILLX SDL_PRILL_PREFIX "X"
+#endif
 
 /* Annotations to help code analysis tools */
 #ifdef SDL_DISABLE_ANALYZE_MACROS
@@ -538,25 +576,6 @@ typedef Sint64 SDL_Time;
 #define SDL_WPRINTF_VARARG_FUNCV( fmtargnumber )
 #endif
 #endif /* SDL_DISABLE_ANALYZE_MACROS */
-
-#ifndef SDL_COMPILE_TIME_ASSERT
-#if defined(__cplusplus)
-/* Keep C++ case alone: Some versions of gcc will define __STDC_VERSION__ even when compiling in C++ mode. */
-#if (__cplusplus >= 201103L)
-#define SDL_COMPILE_TIME_ASSERT(name, x)  static_assert(x, #x)
-#endif
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)
-#define SDL_COMPILE_TIME_ASSERT(name, x)  static_assert(x, #x)
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
-#define SDL_COMPILE_TIME_ASSERT(name, x) _Static_assert(x, #x)
-#endif
-#endif /* !SDL_COMPILE_TIME_ASSERT */
-
-#ifndef SDL_COMPILE_TIME_ASSERT
-/* universal, but may trigger -Wunused-local-typedefs */
-#define SDL_COMPILE_TIME_ASSERT(name, x)               \
-       typedef int SDL_compile_time_assert_ ## name[(x) * 2 - 1]
-#endif
 
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
