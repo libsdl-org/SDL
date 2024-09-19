@@ -1206,3 +1206,4 @@ SDL_DYNAPI_PROC(void,SDL_LogV,(SDL_PRINTF_FORMAT_STRING const char *a, va_list b
 SDL_DYNAPI_PROC(void,SDL_LogCriticalV,(int a, SDL_PRINTF_FORMAT_STRING const char *b, va_list c),(a,b,c),)
 SDL_DYNAPI_PROC(void,SDL_LogDebugV,(int a, SDL_PRINTF_FORMAT_STRING const char *b, va_list c),(a,b,c),)
 SDL_DYNAPI_PROC(void,SDL_LogErrorV,(int a, SDL_PRINTF_FORMAT_STRING const char *b, va_list c),(a,b,c),)
+SDL_DYNAPI_PROC(void,SDL_LogInfoV,(int a, SDL_PRINTF_FORMAT_STRING const char *b, va_list c),(a,b,c),)

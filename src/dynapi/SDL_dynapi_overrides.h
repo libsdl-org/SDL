@@ -1200,3 +1200,4 @@
 #define SDL_LogCriticalV SDL_LogCriticalV_REAL
 #define SDL_LogDebugV SDL_LogDebugV_REAL
 #define SDL_LogErrorV SDL_LogErrorV_REAL
+#define SDL_LogInfoV SDL_LogInfoV_REAL
