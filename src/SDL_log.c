@@ -508,8 +508,13 @@ void SDL_LogVerbose(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     va_list ap;
 
     va_start(ap, fmt);
-    SDL_LogMessageV(category, SDL_LOG_PRIORITY_VERBOSE, fmt, ap);
+    SDL_LogVerboseV(category, fmt, ap);
     va_end(ap);
+}
+
+void SDL_LogVerboseV(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
+{
+    SDL_LogMessageV(category, SDL_LOG_PRIORITY_VERBOSE, fmt, ap);
 }
 
 void SDL_LogDebug(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)

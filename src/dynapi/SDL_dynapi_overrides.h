@@ -1202,3 +1202,4 @@
 #define SDL_LogErrorV SDL_LogErrorV_REAL
 #define SDL_LogInfoV SDL_LogInfoV_REAL
 #define SDL_LogTraceV SDL_LogTraceV_REAL
+#define SDL_LogVerboseV SDL_LogVerboseV_REAL
