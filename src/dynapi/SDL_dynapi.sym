@@ -1179,6 +1179,7 @@ SDL3_0.0.0 {
     SDL_LogTraceV;
     SDL_LogVerboseV;
     SDL_LogWarnV;
+    SDL_SetErrorV;
     # extra symbols go here (don't modify this line)
   local: *;
 };
