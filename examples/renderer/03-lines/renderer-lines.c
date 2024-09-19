@@ -56,7 +56,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     };
 
     /* as you can see from this, rendering draws over whatever was drawn before it. */
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);  /* black, full alpha */
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);  /* grey, full alpha */
     SDL_RenderClear(renderer);  /* start with a blank canvas. */
 
     /* You can draw lines, one at a time, like these brown ones... */
