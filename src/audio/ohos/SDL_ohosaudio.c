@@ -30,15 +30,6 @@ static int OHOSAUDIO_OpenDevice(SDL_AudioDevice *this, void *handle, const char 
 {
     SDL_AudioFormat test_format;
 
-    SDL_assert((captureDevice == NULL) || !iscapture);
-    SDL_assert((audioDevice == NULL) || iscapture);
-
-    if (iscapture != 0) {
-        captureDevice = this;
-    } else {
-        audioDevice = this;
-    }
-
     this->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, (sizeof *this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
@@ -71,7 +62,7 @@ static int OHOSAUDIO_OpenDevice(SDL_AudioDevice *this, void *handle, const char 
 
 static void OHOSAUDIO_PlayDevice(SDL_AudioDevice *this)
 {
-    OHOSAUDIO_NATIVE_WriteAudioBuf();
+    OHOSAUDIO_NATIVE_WriteAudioBuf(this);
 }
 
 static Uint8* OHOSAUDIO_GetDeviceBuf(SDL_AudioDevice *this)
@@ -81,22 +72,20 @@ static Uint8* OHOSAUDIO_GetDeviceBuf(SDL_AudioDevice *this)
 
 static int OHOSAUDIO_CaptureFromDevice(SDL_AudioDevice *this, void *buffer, int buflen)
 {
-    return OHOSAUDIO_NATIVE_CaptureAudioBuffer(buffer, buflen);
+    return OHOSAUDIO_NATIVE_CaptureAudioBuffer(this, buffer, buflen);
 }
 
 static void OHOSAUDIO_FlushCapture(SDL_AudioDevice *this)
 {
-    OHOSAUDIO_NATIVE_FlushCapturedAudio();
+    OHOSAUDIO_NATIVE_FlushCapturedAudio(this);
 }
 
 static void OHOSAUDIO_CloseDevice(SDL_AudioDevice *this)
 {
-    OHOSAUDIO_NATIVE_CloseAudioDevice(this->iscapture);
+    OHOSAUDIO_NATIVE_CloseAudioDevice(this, this->iscapture);
     if (this->iscapture) {
-        SDL_assert(captureDevice == this);
         captureDevice = NULL;
     } else {
-        SDL_assert(audioDevice == this);
         audioDevice = NULL;
     }
     SDL_free(this->hidden);
@@ -104,7 +93,7 @@ static void OHOSAUDIO_CloseDevice(SDL_AudioDevice *this)
 
 static void OHOSAUDIO_PrepareClose(SDL_AudioDevice *this)
 {
-    OHOSAUDIO_NATIVE_PrepareClose();
+    OHOSAUDIO_NATIVE_PrepareClose(this);
 }
 
 static int OHOSAUDIO_Init(SDL_AudioDriverImpl * impl)
@@ -120,7 +109,7 @@ static int OHOSAUDIO_Init(SDL_AudioDriverImpl * impl)
 
     /* and the capabilities */
     impl->HasCaptureSupport = SDL_TRUE;
-    impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = 0; /*Supports opening multiple output devices.*/
     impl->OnlyHasDefaultCaptureDevice = 1;
 
     return 1;   /* this audio target is available. */

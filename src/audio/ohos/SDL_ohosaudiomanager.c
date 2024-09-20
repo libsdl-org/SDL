@@ -25,6 +25,7 @@
 
 #include "SDL_timer.h"
 #include "../SDL_sysaudio.h"
+#include "SDL_ohosaudio.h"
 #include "SDL_ohosaudiobuffer.h"
 #include "SDL_ohosaudiomanager.h"
 
@@ -35,19 +36,6 @@
  * Audio support
  */
 static int captureBufferLength = 0;
-
-static unsigned char *rendererBuffer = NULL;
-static int ohosFrameSize = -1;
-
-static OH_AudioStreamBuilder *builder = NULL;
-static OH_AudioStreamBuilder *builder2 = NULL;
-static OH_AudioCapturer *audioCapturer = NULL;
-static OH_AudioRenderer *audioRenderer = NULL;
-
-static SDL_atomic_t stateFlag;
-static SDL_atomic_t isShutDown;
-static SDL_mutex *audioPlayLock;
-static SDL_cond *full, *empty, *bufferCond;
 
 static OH_AudioStream_State gAudioRendorStatus;
 
@@ -86,58 +74,61 @@ static int32_t OHOSAUDIO_AudioCapturer_OnError(OH_AudioCapturer *capturer, void 
 static int32_t OHOSAUDIO_AudioRenderer_OnWriteData(OH_AudioRenderer *renderer, void *userData, void *buffer,
                                                    int32_t length)
 {
-    SDL_AudioDevice *device = NULL;
-    SDL_LockMutex(audioPlayLock);
-    if (frameSize == -1) {
-        rendererBuffer = SDL_malloc(length);
-        if (rendererBuffer == NULL) {
-            SDL_memset(buffer, 0, length);
-            SDL_UnlockMutex(audioPlayLock);
-            return -1;
-        }
-        frameSize = length;
-        SDL_memset(rendererBuffer, 0, length);
-        SDL_CondBroadcast(empty);
+    SDL_AudioDevice *device = (SDL_AudioDevice *)userData;
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
+    SDL_LockMutex(private->audioPlayLock);
+    if (private->ohosFrameSize == -1 && length > 0) {
+        private->ohosFrameSize = length;
+        SDL_CondBroadcast(private->bufferCond);
     }
-    while (SDL_AtomicGet(&stateFlag) == SDL_FALSE &&
-           SDL_AtomicGet(&isShutDown) == SDL_FALSE) {
-        SDL_CondWait(full, audioPlayLock);
+    while (SDL_AtomicGet(&private->stateFlag) == SDL_FALSE &&
+           SDL_AtomicGet(&private->isShutDown) == SDL_FALSE) {
+        SDL_CondWait(private->full, private->audioPlayLock);
     }
-    if (SDL_AtomicGet(&isShutDown) == SDL_FALSE && rendererBuffer != NULL) {
-        SDL_memcpy(buffer, rendererBuffer, ohosFrameSize);
-        SDL_AtomicSet(&stateFlag, SDL_FALSE);
-        SDL_CondBroadcast(empty);
+    if (SDL_AtomicGet(&private->isShutDown) == SDL_FALSE && private->rendererBuffer != NULL) {
+        SDL_memcpy(buffer, private->rendererBuffer, private->ohosFrameSize);
+        SDL_AtomicSet(&private->stateFlag, SDL_FALSE);
+        SDL_CondBroadcast(private->empty);
     } else {
         int value = 0;
-        device = (SDL_AudioDevice *)userData;
         if (device != NULL) {
             value = device->spec.silence;
         }
-        SDL_memset(buffer, value, ohosFrameSize);
+        SDL_memset(buffer, value, private->ohosFrameSize);
     }
-    SDL_UnlockMutex(audioPlayLock);
+    SDL_UnlockMutex(private->audioPlayLock);
     return 0;
 }
 
 void *OHOSAUDIO_NATIVE_GetAudioBuf(SDL_AudioDevice *device)
 {
-    SDL_LockMutex(audioPlayLock);
-    while ((rendererBuffer == NULL || SDL_AtomicGet(&stateFlag) == SDL_TRUE) &&
-           SDL_AtomicGet(&isShutDown) == SDL_FALSE) {
-        SDL_CondWait(empty, audioPlayLock);
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
+    SDL_LockMutex(private->audioPlayLock);
+    while ((private->rendererBuffer == NULL || SDL_AtomicGet(&private->stateFlag) == SDL_TRUE) &&
+           SDL_AtomicGet(&private->isShutDown) == SDL_FALSE) {
+        SDL_CondWait(private->empty, private->audioPlayLock);
     }
-    device->callbackspec.size = frameSize;
-    device->spec.size = frameSize;
-    SDL_UnlockMutex(audioPlayLock);
-    return rendererBuffer;
+    // go here, may is shut down state and ohos render start failed, just init buffer
+    // make sure shutdown normal
+    if (private->rendererBuffer == NULL) {
+        private->rendererBuffer = SDL_malloc(OHOS_RENDER_BUFFER_SHUTDOEN_LEN);
+        device->callbackspec.size = OHOS_RENDER_BUFFER_SHUTDOEN_LEN;
+        device->spec.size = OHOS_RENDER_BUFFER_SHUTDOEN_LEN;
+    } else {
+        device->callbackspec.size = private->ohosFrameSize;
+        device->spec.size = private->ohosFrameSize;
+    }
+    SDL_UnlockMutex(private->audioPlayLock);
+    return private->rendererBuffer;
 }
 
-void OHOSAUDIO_NATIVE_WriteAudioBuf(void)
+void OHOSAUDIO_NATIVE_WriteAudioBuf(SDL_AudioDevice *device)
 {
-    SDL_LockMutex(audioPlayLock);
-    SDL_AtomicSet(&stateFlag, SDL_TRUE);
-    SDL_CondBroadcast(full);
-    SDL_UnlockMutex(audioPlayLock);
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
+    SDL_LockMutex(private->audioPlayLock);
+    SDL_AtomicSet(&private->stateFlag, SDL_TRUE);
+    SDL_CondBroadcast(private->full);
+    SDL_UnlockMutex(private->audioPlayLock);
 }
 
 static int32_t OHOSAUDIO_AudioRenderer_OnStreamEvent(OH_AudioRenderer *renderer,
@@ -173,9 +164,10 @@ static int OHOSAUDIO_BitSampleFormat(SDL_AudioFormat bitSample)
     }
 }
 
-static int OHOSAUDIO_CreateBuilder(int iscapture)
+static int OHOSAUDIO_CreateBuilder(SDL_AudioDevice *device, int iscapture)
 {
     OH_AudioStream_Result iRet;
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
     if (iscapture != 0) {
         // Request recording permission
         if (OHOS_NAPI_RequestPermission("ohos.permission.MICROPHONE") != SDL_TRUE) {
@@ -183,9 +175,9 @@ static int OHOSAUDIO_CreateBuilder(int iscapture)
                 "request permission failed, iscapture=%{public}d", iscapture);
             return -1;
         }
-        iRet = OH_AudioStreamBuilder_Create(&builder2, AUDIOSTREAM_TYPE_CAPTURER);
+        iRet = OH_AudioStreamBuilder_Create(&private->builder, AUDIOSTREAM_TYPE_CAPTURER);
     } else {
-        iRet = OH_AudioStreamBuilder_Create(&builder, AUDIOSTREAM_TYPE_RENDERER);
+        iRet = OH_AudioStreamBuilder_Create(&private->builder, AUDIOSTREAM_TYPE_RENDERER);
     }
 
     if (AUDIOSTREAM_SUCCESS != iRet) {
@@ -241,27 +233,29 @@ static int OHOSAUDIO_InSetBuilder(OH_AudioStreamBuilder *pBuilder, SDL_AudioSpec
     return 0;
 }
 
-static int OHOSAUDIO_SetBuilder(int iscapture, SDL_AudioSpec *spec)
+static int OHOSAUDIO_SetBuilder(SDL_AudioDevice *device, int iscapture, SDL_AudioSpec *spec)
 {
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
     if (iscapture != 0) {
-        return OHOSAUDIO_InSetBuilder(builder2, spec);
+        return OHOSAUDIO_InSetBuilder(private->builder, spec);
     } else {
-        return OHOSAUDIO_InSetBuilder(builder, spec);
+        return OHOSAUDIO_InSetBuilder(private->builder, spec);
     }
 }
 
-static int OHOSAUDIO_SetCapturerInfo(int iscapture)
+static int OHOSAUDIO_SetCapturerInfo(SDL_AudioDevice *device, int iscapture)
 {
     OH_AudioStream_Result iRet;
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
     if (iscapture != 0) {
-        iRet = OH_AudioStreamBuilder_SetCapturerInfo(builder2, AUDIOSTREAM_SOURCE_TYPE_MIC);
+        iRet = OH_AudioStreamBuilder_SetCapturerInfo(private->builder, AUDIOSTREAM_SOURCE_TYPE_MIC);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
                 "SetCapturerInfo Failed, iscapture=%{public}d, Error=%{public}d.", iscapture, iRet);
             return -1;
         }
     } else {
-        iRet = OH_AudioStreamBuilder_SetRendererInfo(builder, AUDIOSTREAM_USAGE_MUSIC);
+        iRet = OH_AudioStreamBuilder_SetRendererInfo(private->builder, AUDIOSTREAM_USAGE_MUSIC);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
                 "SetRendererInfo Failed, iscapture=%{public}d, Error=%{public}d.", iscapture, iRet);
@@ -274,13 +268,14 @@ static int OHOSAUDIO_SetCapturerInfo(int iscapture)
 static int OHOSAUDIO_SetCapturerCallback(SDL_AudioDevice *device, int iscapture)
 {
     OH_AudioStream_Result iRet;
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
     if (iscapture != 0) {
         OH_AudioCapturer_Callbacks capturerCallbacks;
         capturerCallbacks.OH_AudioCapturer_OnReadData = OHOSAUDIO_AudioCapturer_OnReadData;
         capturerCallbacks.OH_AudioCapturer_OnStreamEvent = OHOSAUDIO_AudioCapturer_OnStreamEvent;
         capturerCallbacks.OH_AudioCapturer_OnInterruptEvent = OHOSAUDIO_AudioCapturer_OnInterruptEvent;
         capturerCallbacks.OH_AudioCapturer_OnError = OHOSAUDIO_AudioCapturer_OnError;
-        iRet = OH_AudioStreamBuilder_SetCapturerCallback(builder2, capturerCallbacks, NULL);
+        iRet = OH_AudioStreamBuilder_SetCapturerCallback(private->builder, capturerCallbacks, NULL);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
                 "SetCapturerCallback Failed, iscapture=%{public}d, Error=%{public}d.", iscapture, iRet);
@@ -292,7 +287,7 @@ static int OHOSAUDIO_SetCapturerCallback(SDL_AudioDevice *device, int iscapture)
         rendererCallbacks.OH_AudioRenderer_OnStreamEvent = OHOSAUDIO_AudioRenderer_OnStreamEvent;
         rendererCallbacks.OH_AudioRenderer_OnInterruptEvent = OHOSAUDIO_AudioRenderer_OnInterruptEvent;
         rendererCallbacks.OH_AudioRenderer_OnError = OHOSAUDIO_AudioRenderer_OnError;
-        iRet = OH_AudioStreamBuilder_SetRendererCallback(builder, rendererCallbacks, device);
+        iRet = OH_AudioStreamBuilder_SetRendererCallback(private->builder, rendererCallbacks, device);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
                 "SetRendererCallback Failed, iscapture=%{public}d, Error=%{public}d.", iscapture, iRet);
@@ -302,18 +297,19 @@ static int OHOSAUDIO_SetCapturerCallback(SDL_AudioDevice *device, int iscapture)
     return 0;
 }
 
-static int OHOSAUDIO_GenerateCapturer(int iscapture)
+static int OHOSAUDIO_GenerateCapturer(SDL_AudioDevice *device, int iscapture)
 {
     OH_AudioStream_Result iRet;
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
     if (iscapture != 0) {
-        iRet = OH_AudioStreamBuilder_GenerateCapturer(builder2, &audioCapturer);
+        iRet = OH_AudioStreamBuilder_GenerateCapturer(private->builder, &private->audioCapturer);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice",
                 "GenerateCapturer Failed, iscapture=%{public}d, Error=%{public}d.", iscapture, iRet);
             return -1;
         }
     } else {
-        iRet = OH_AudioStreamBuilder_GenerateRenderer(builder, &audioRenderer);
+        iRet = OH_AudioStreamBuilder_GenerateRenderer(private->builder, &private->audioRenderer);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice",
                 "GenerateObject Failed, iscapture=%{public}d, Error=%{public}d.", iscapture, iRet);
@@ -323,7 +319,7 @@ static int OHOSAUDIO_GenerateCapturer(int iscapture)
     return 0;
 }
 
-static int OHOSAUDIO_GetInfo(int iscapture, SDL_AudioSpec *spec)
+static int OHOSAUDIO_GetInfo(SDL_AudioDevice *device, int iscapture, SDL_AudioSpec *spec)
 {
     OH_AudioStream_State iStatus;
     OH_AudioStream_SourceType audioSourceType;
@@ -331,63 +327,54 @@ static int OHOSAUDIO_GetInfo(int iscapture, SDL_AudioSpec *spec)
     int audioFormat;
     int32_t audioSamplingRate = 0;
     int32_t audioChannelCount = 0;
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
     if (iscapture != 0) {
-        // Query the current input audio stream status
-        OH_AudioCapturer_GetCurrentState(audioCapturer, &iStatus);
+        OH_AudioCapturer_GetCurrentState(private->audioCapturer, &iStatus);
         if (AUDIOSTREAM_STATE_PREPARED != iStatus) {
             return -1;
         }
         
-        // Query the current input audio stream sampling rate
-        if (AUDIOSTREAM_SUCCESS != OH_AudioCapturer_GetSamplingRate(audioCapturer, &audioSamplingRate)) {
+        if (AUDIOSTREAM_SUCCESS != OH_AudioCapturer_GetSamplingRate(private->audioCapturer, &audioSamplingRate)) {
             return -1;
         }
         
-        // Query the current input audio channel number
-        if (AUDIOSTREAM_SUCCESS != OH_AudioCapturer_GetChannelCount(audioCapturer, &audioChannelCount)) {
+        if (AUDIOSTREAM_SUCCESS != OH_AudioCapturer_GetChannelCount(private->audioCapturer, &audioChannelCount)) {
             return -1;
         }
         
-        // Query the current input audio stream format
-        if (AUDIOSTREAM_SUCCESS != OH_AudioCapturer_GetSampleFormat(audioCapturer, &audioFormat)) {
+        if (AUDIOSTREAM_SUCCESS != OH_AudioCapturer_GetSampleFormat(private->audioCapturer, &audioFormat)) {
             return -1;
         }
         
-        if (AUDIOSTREAM_SUCCESS != OH_AudioCapturer_GetCapturerInfo(audioCapturer, &audioSourceType)) {
+        if (AUDIOSTREAM_SUCCESS != OH_AudioCapturer_GetCapturerInfo(private->audioCapturer, &audioSourceType)) {
             return -1;
         }
-        
-        OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice", "iStatus=%{public}d, SourceType=%{public}d,"\
-            " SamplingRate=%{public}d, ChannelCount=%{public}d.", iStatus, audioSourceType, spec->freq, spec->channels);
     } else {
-        // Query the current output audio stream status
-        OH_AudioRenderer_GetCurrentState(audioRenderer, &iStatus);
+        OH_AudioRenderer_GetCurrentState(private->audioRenderer, &iStatus);
         if (AUDIOSTREAM_STATE_PREPARED != iStatus) {
-            return -1;
-        }
-        // Query the current input audio stream sampling rate
-        if (AUDIOSTREAM_SUCCESS != OH_AudioRenderer_GetSamplingRate(audioRenderer, &audioSamplingRate)) {
-            return -1;
-        }
-        
-        // query the current input audio channel number
-        if (AUDIOSTREAM_SUCCESS != OH_AudioRenderer_GetChannelCount(audioRenderer, &audioChannelCount)) {
-            return -1;
-        }
-        
-        // query the current input audio stream format
-        if (AUDIOSTREAM_SUCCESS != OH_AudioRenderer_GetSampleFormat(audioRenderer, &audioFormat)) {
             return -1;
         }
 
-        if (AUDIOSTREAM_SUCCESS != OH_AudioRenderer_GetRendererInfo(audioRenderer, &audioUsage)) {
+        if (AUDIOSTREAM_SUCCESS != OH_AudioRenderer_GetSamplingRate(private->audioRenderer, &audioSamplingRate)) {
             return -1;
         }
         
-        OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice", "iStatus=%{public}d, ChannelCount=%{public}d,"\
-            " SamplingRate=%{public}d, Usage=%{public}d.", iStatus, spec->channels, spec->freq, audioUsage);
+        if (AUDIOSTREAM_SUCCESS != OH_AudioRenderer_GetChannelCount(private->audioRenderer, &audioChannelCount)) {
+            return -1;
+        }
+        
+        if (AUDIOSTREAM_SUCCESS != OH_AudioRenderer_GetSampleFormat(private->audioRenderer, &audioFormat)) {
+            return -1;
+        }
+
+        if (AUDIOSTREAM_SUCCESS != OH_AudioRenderer_GetRendererInfo(private->audioRenderer, &audioUsage)) {
+            return -1;
+        }
     }
-    
+
+    OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice", "Status=%{public}d, SamplingRate=%{public}d,"\
+        " ChannelCount=%{public}d, AudioFormat=%{public}d.", iStatus, spec->freq, spec->channels, audioFormat);
+
     spec->freq = audioSamplingRate;
     spec->channels = audioChannelCount;
     return audioFormat;
@@ -420,31 +407,33 @@ static int OHOSAUDIO_Format2Depth(SDL_AudioSpec *spec, int audioFormat)
     return audioFormatBitDepth;
 }
 
-static int OHOSAUDIO_WaitInitRenderBuffer(void)
+static int OHOSAUDIO_WaitInitRenderBuffer(SDL_AudioDevice *device)
 {
-    SDL_LockMutex(audioPlayLock);
-    while (ohosFrameSize == -1) {
-        SDL_CondWait(bufferCond, audioPlayLock);
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
+    SDL_LockMutex(private->audioPlayLock);
+    while (private->ohosFrameSize == -1) {
+        SDL_CondWait(private->bufferCond, private->audioPlayLock);
     }
-    SDL_free(rendererBuffer);
-    if (ohosFrameSize < 0) {
-        SDL_UnlockMutex(audioPlayLock);
+    SDL_free(private->rendererBuffer);
+    if (private->ohosFrameSize < 0) {
+        SDL_UnlockMutex(private->audioPlayLock);
         return -1;
     }
-    rendererBuffer = SDL_malloc(ohosFrameSize + 1);
-    if (rendererBuffer == NULL) {
-        SDL_UnlockMutex(audioPlayLock);
+    private->rendererBuffer = SDL_malloc(private->ohosFrameSize + 1);
+    if (private->rendererBuffer == NULL) {
+        SDL_UnlockMutex(private->audioPlayLock);
         return -1;
     }
-    SDL_memset(rendererBuffer, 0, ohosFrameSize);
-    SDL_CondBroadcast(empty);
-    SDL_UnlockMutex(audioPlayLock);
+    SDL_memset(private->rendererBuffer, 0, private->ohosFrameSize);
+    SDL_CondBroadcast(private->empty);
+    SDL_UnlockMutex(private->audioPlayLock);
     return 0;
 }
 
-static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBitDepth)
+static int OHOSAUDIO_Start(SDL_AudioDevice *device, int iscapture, SDL_AudioSpec *spec, int audioFormatBitDepth)
 {
     OH_AudioStream_Result iRet;
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
     if (iscapture != 0) {
         #define ADDITIONAL_BUFFER_FACTOR 2
         captureBufferLength = (spec->samples * spec->channels * audioFormatBitDepth) * ADDITIONAL_BUFFER_FACTOR;
@@ -452,31 +441,32 @@ static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBi
         OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice", "captureBufferLength=%{public}d.",
             captureBufferLength);
 
-        iRet = OH_AudioCapturer_Start(audioCapturer);
+        iRet = OH_AudioCapturer_Start(private->audioCapturer);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
                 "Capturer_Start Failed, iscapture=%{public}d, Error=%{public}d.", iscapture, iRet);
-            OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
+            OHOSAUDIO_NATIVE_CloseAudioDevice(device, iscapture);
             OHOS_AUDIOBUFFER_DeInitCapture();
             return -1;
         }
     } else {
-        SDL_AtomicSet(&stateFlag, SDL_FALSE);
-        audioPlayLock = SDL_CreateMutex();
-        empty = SDL_CreateCond();
-        full = SDL_CreateCond();
-        bufferCond = SDL_CreateCond();
-        SDL_AtomicSet(&isShutDown, SDL_FALSE);
-        SDL_AtomicSet(&stateFlag, SDL_FALSE);
-        iRet = OH_AudioRenderer_Start(audioRenderer);
+        SDL_AtomicSet(&private->stateFlag, SDL_FALSE);
+        private->audioPlayLock = SDL_CreateMutex();
+        private->empty = SDL_CreateCond();
+        private->full = SDL_CreateCond();
+        private->bufferCond = SDL_CreateCond();
+        private->ohosFrameSize = -1;
+        SDL_AtomicSet(&private->isShutDown, SDL_FALSE);
+        SDL_AtomicSet(&private->stateFlag, SDL_FALSE);
+        iRet = OH_AudioRenderer_Start(private->audioRenderer);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
                 "Renderer_Start Failed, Error=%{public}d.", iRet);
-            OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
+            OHOSAUDIO_NATIVE_CloseAudioDevice(device, iscapture);
             return -1;
         }
-        if (OHOSAUDIO_WaitInitRenderBuffer() < 0) {
-            OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
+        if (OHOSAUDIO_WaitInitRenderBuffer(device) < 0) {
+            OHOSAUDIO_NATIVE_CloseAudioDevice(device, iscapture);
             return -1;
         }
     }
@@ -492,48 +482,48 @@ int OHOSAUDIO_NATIVE_OpenAudioDevice(SDL_AudioDevice *device, int iscapture, SDL
     int audioFormatBitDepth = 0;
     OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "OpenDevice iscapture=%{public}d", iscapture);
     
-    if (OHOSAUDIO_CreateBuilder(iscapture) < 0) {
+    if (OHOSAUDIO_CreateBuilder(device, iscapture) < 0) {
         return -1;
     }
 
-    if (OHOSAUDIO_SetBuilder(iscapture, spec) < 0) {
-        OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
+    if (OHOSAUDIO_SetBuilder(device, iscapture, spec) < 0) {
+        OHOSAUDIO_NATIVE_CloseAudioDevice(device, iscapture);
         return -1;
     }
     
     // Set the scene
-    if (OHOSAUDIO_SetCapturerInfo(iscapture) < 0) {
-        OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
+    if (OHOSAUDIO_SetCapturerInfo(device, iscapture) < 0) {
+        OHOSAUDIO_NATIVE_CloseAudioDevice(device, iscapture);
         return -1;
     }
     
     // Set the callback for the audio stream
     if (OHOSAUDIO_SetCapturerCallback(device, iscapture) < 0) {
-        OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
+        OHOSAUDIO_NATIVE_CloseAudioDevice(device, iscapture);
         return -1;
     }
 
     // Constructing an audio stream
-    if (OHOSAUDIO_GenerateCapturer(iscapture) < 0) {
-        OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
+    if (OHOSAUDIO_GenerateCapturer(device, iscapture) < 0) {
+        OHOSAUDIO_NATIVE_CloseAudioDevice(device, iscapture);
         return -1;
     }
 
-    audioFormat = OHOSAUDIO_GetInfo(iscapture, spec);
+    audioFormat = OHOSAUDIO_GetInfo(device, iscapture, spec);
     if (audioFormat < 0) {
         OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "OHOSAUDIO_GetInfo run Failed");
-        OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
+        OHOSAUDIO_NATIVE_CloseAudioDevice(device, iscapture);
         return -1;
     }
     
     audioFormatBitDepth = OHOSAUDIO_Format2Depth(spec, audioFormat);
     if (audioFormatBitDepth < 0) {
         OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "Failed depth=%{public}d", audioFormatBitDepth);
-        OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
+        OHOSAUDIO_NATIVE_CloseAudioDevice(device, iscapture);
         return -1;
     }
 
-    if (OHOSAUDIO_Start(iscapture, spec, audioFormatBitDepth) < 0) {
+    if (OHOSAUDIO_Start(device, iscapture, spec, audioFormatBitDepth) < 0) {
         OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "OHOSAUDIO_Start run Failed");
         return -1;
     }
@@ -541,145 +531,145 @@ int OHOSAUDIO_NATIVE_OpenAudioDevice(SDL_AudioDevice *device, int iscapture, SDL
     return 0;
 }
 
-int OHOSAUDIO_NATIVE_CaptureAudioBuffer(void *buffer, int buflen)
+int OHOSAUDIO_NATIVE_CaptureAudioBuffer(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     OH_AudioStream_State iStatus;
-    OH_AudioCapturer_GetCurrentState(audioCapturer, &iStatus);
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
+    OH_AudioCapturer_GetCurrentState(private->audioCapturer, &iStatus);
     if (AUDIOSTREAM_STATE_PAUSED == iStatus) {
-        OH_AudioCapturer_Start(audioCapturer);
+        OH_AudioCapturer_Start(private->audioCapturer);
     }
     OHOS_AUDIOBUFFER_ReadCaptureBuffer(buffer, (unsigned int)buflen);
     return buflen;
 }
 
-void OHOSAUDIO_NATIVE_FlushCapturedAudio(void)
+void OHOSAUDIO_NATIVE_FlushCapturedAudio(SDL_AudioDevice *device)
 {
     OH_AudioStream_State iStatus;
-    OH_AudioCapturer_GetCurrentState(audioCapturer, &iStatus);
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
+    OH_AudioCapturer_GetCurrentState(private->audioCapturer, &iStatus);
     if (AUDIOSTREAM_STATE_RUNNING == iStatus) {
-        OH_AudioCapturer_Pause(audioCapturer);
+        OH_AudioCapturer_Pause(private->audioCapturer);
     }
     OHOS_AUDIOBUFFER_FlushBuffer();
 }
 
-static void OHOSAUDIO_DestroyBuilder(int iscapture)
+static void OHOSAUDIO_DestroyBuilder(SDL_AudioDevice *device, int iscapture)
 {
     OH_AudioStream_Result iRet;
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
     if (iscapture != 0) {
-        if (NULL == builder2) {
+        if (NULL == private->builder) {
             return;
         }
-        iRet = OH_AudioStreamBuilder_Destroy(builder2);
+        iRet = OH_AudioStreamBuilder_Destroy(private->builder);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice",
                 "SDL audio: OH_AudioStreamBuilder_Destroy error,error code = %{public}d", iRet);
         }
-        builder2 = NULL;
+        private->builder = NULL;
     } else {
-        if (NULL == builder) {
+        if (NULL == private->builder) {
             return;
         }
-        iRet = OH_AudioStreamBuilder_Destroy(builder);
+        iRet = OH_AudioStreamBuilder_Destroy(private->builder);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice",
                 "SDL audio: OH_AudioStreamBuilder_Destroy error,error code = %{public}d", iRet);
         }
-        builder = NULL;
+        private->builder = NULL;
     }
 }
 
-static OHOSAUDIO_NATIVE_CloseRender(void)
+static OHOSAUDIO_NATIVE_CloseRender(SDL_AudioDevice *device)
 {
     OH_AudioStream_Result iRet;
-    if (NULL != audioRenderer) {
-        iRet = OH_AudioRenderer_Stop(audioRenderer);
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
+    if (NULL != private->audioRenderer) {
+        iRet = OH_AudioRenderer_Stop(private->audioRenderer);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice",
                          "SDL audio: OH_AudioRenderer_Stop error,error code = %{public}d", iRet);
         }
-        SDL_CondBroadcast(full);
-        iRet = OH_AudioRenderer_Release(audioRenderer);
-        SDL_AtomicSet(&stateFlag, SDL_FALSE);
+        SDL_CondBroadcast(private->full);
+        iRet = OH_AudioRenderer_Release(private->audioRenderer);
+        SDL_AtomicSet(&private->stateFlag, SDL_FALSE);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice",
                          "SDL audio: OH_AudioRenderer_Release error,error code = %{public}d", iRet);
         }
-        audioRenderer = NULL;
+        private->audioRenderer = NULL;
     }
-    ohosFrameSize = -1;
-    if (rendererBuffer != NULL) {
-        SDL_free(rendererBuffer);
-        rendererBuffer = NULL;
-    }
-
-    if (bufferCond != NULL) {
-        SDL_DestroyCond(bufferCond);
-        bufferCond = NULL;
+    private->ohosFrameSize = -1;
+    if (private->rendererBuffer != NULL) {
+        SDL_free(private->rendererBuffer);
+        private->rendererBuffer = NULL;
     }
 
-    if (audioPlayLock != NULL) {
-        SDL_DestroyMutex(audioPlayLock);
-        audioPlayLock = NULL;
+    if (private->bufferCond != NULL) {
+        SDL_DestroyCond(private->bufferCond);
+        private->bufferCond = NULL;
     }
-    if (empty != NULL) {
-        SDL_DestroyCond(empty);
-        empty = NULL;
+
+    if (private->audioPlayLock != NULL) {
+        SDL_DestroyMutex(private->audioPlayLock);
+        private->audioPlayLock = NULL;
     }
-    if (full != NULL) {
-        SDL_DestroyCond(full);
-        full = NULL;
+    if (private->empty != NULL) {
+        SDL_DestroyCond(private->empty);
+        private->empty = NULL;
+    }
+    if (private->full != NULL) {
+        SDL_DestroyCond(private->full);
+        private->full = NULL;
     }
 }
 
-void OHOSAUDIO_NATIVE_PrepareClose(void)
+void OHOSAUDIO_NATIVE_PrepareClose(SDL_AudioDevice *device)
 {
-    SDL_LockMutex(audioPlayLock);
-    SDL_AtomicSet(&isShutDown, SDL_TRUE);
-    SDL_CondBroadcast(empty);
-    SDL_UnlockMutex(audioPlayLock);
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
+    SDL_LockMutex(private->audioPlayLock);
+    SDL_AtomicSet(&private->isShutDown, SDL_TRUE);
+    SDL_CondBroadcast(private->empty);
+    SDL_UnlockMutex(private->audioPlayLock);
 }
 
-void OHOSAUDIO_NATIVE_CloseAudioDevice(const int iscapture)
+void OHOSAUDIO_NATIVE_CloseAudioDevice(SDL_AudioDevice *device, const int iscapture)
 {
     OH_AudioStream_Result iRet;
+    struct SDL_PrivateAudioData *private = (struct SDL_PrivateAudioData *)device->hidden;
     OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice", "CloseDevice iscapture=%{public}d", iscapture);
     // Release the audio stream
     if (iscapture != 0) {
-        if (NULL != audioCapturer) {
+        if (NULL != private->audioCapturer) {
             // Stop recording
-            iRet = OH_AudioCapturer_Stop(audioCapturer);
+            iRet = OH_AudioCapturer_Stop(private->audioCapturer);
             if (AUDIOSTREAM_SUCCESS != iRet) {
                 OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice",
                     "SDL audio: OH_AudioCapturer_Stop error,error code = %{public}d", iRet);
             }
             // Releasing the recording instance
-            iRet = OH_AudioCapturer_Release(audioCapturer);
+            iRet = OH_AudioCapturer_Release(private->audioCapturer);
             if (AUDIOSTREAM_SUCCESS != iRet) {
                 OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice",
                     "SDL audio: OH_AudioCapturer_Release error,error code = %{public}d", iRet);
             }
-            audioCapturer = NULL;
+            private->audioCapturer = NULL;
         }
         OHOS_AUDIOBUFFER_DeInitCapture();
     } else {
-        OHOSAUDIO_NATIVE_CloseRender();
+        OHOSAUDIO_NATIVE_CloseRender(device);
     }
-    OHOSAUDIO_DestroyBuilder(iscapture);
+    OHOSAUDIO_DestroyBuilder(device, iscapture);
     OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice", "CloseDevice end iscapture=%{public}d", iscapture);
 }
 
 void OHOSAUDIO_PageResume(void)
 {
-    if (audioRenderer != NULL && gAudioRendorStatus == AUDIOSTREAM_STATE_RUNNING) {
-        OH_AudioRenderer_Start(audioRenderer);
-    }
 }
 
 void OHOSAUDIO_PagePause(void)
 {
-    if (audioRenderer != NULL) {
-        OH_AudioRenderer_GetCurrentState(audioRenderer, &gAudioRendorStatus);
-    }
 }
 
 #endif /* SDL_AUDIO_DRIVER_OHOS */

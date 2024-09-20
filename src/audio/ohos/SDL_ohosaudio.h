@@ -17,6 +17,11 @@
 
 #include "../../SDL_internal.h"
 #include "../SDL_sysaudio.h"
+#include "SDL.h"
+#include <hilog/log.h>
+#include <ohaudio/native_audiostreambuilder.h>
+#include <ohaudio/native_audiocapturer.h>
+#include <ohaudio/native_audiorenderer.h>
 
 #ifdef __cplusplus
 /* *INDENT-OFF* */
@@ -26,6 +31,17 @@ extern "C" {
 
 struct SDL_PrivateAudioData {
     /* Resume device if it was paused automatically */
+    OH_AudioStreamBuilder *builder;
+    OH_AudioCapturer *audioCapturer;
+    OH_AudioRenderer *audioRenderer;
+    unsigned char *rendererBuffer;
+    int ohosFrameSize;
+    SDL_atomic_t stateFlag;
+    SDL_atomic_t isShutDown;
+    SDL_mutex *audioPlayLock;
+    SDL_cond *full;
+    SDL_cond *empty;
+    SDL_cond *bufferCond;
     int resume;
 };
 

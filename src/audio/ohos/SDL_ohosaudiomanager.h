@@ -25,11 +25,11 @@ void OHOSAUDIO_PagePause(void);
 /* Audio support */
 extern int OHOSAUDIO_NATIVE_OpenAudioDevice(SDL_AudioDevice *device, int iscapture, SDL_AudioSpec *spec);
 extern void* OHOSAUDIO_NATIVE_GetAudioBuf(SDL_AudioDevice *device);
-extern void OHOSAUDIO_NATIVE_WriteAudioBuf(void);
-extern int OHOSAUDIO_NATIVE_CaptureAudioBuffer(void *buffer, int buflen);
-extern void OHOSAUDIO_NATIVE_FlushCapturedAudio(void);
-extern void OHOSAUDIO_NATIVE_CloseAudioDevice(const int iscapture);
-extern void OHOSAUDIO_NATIVE_PrepareClose(void);
+extern void OHOSAUDIO_NATIVE_WriteAudioBuf(SDL_AudioDevice *device);
+extern int OHOSAUDIO_NATIVE_CaptureAudioBuffer(SDL_AudioDevice *device, void *buffer, int buflen);
+extern void OHOSAUDIO_NATIVE_FlushCapturedAudio(SDL_AudioDevice *device);
+extern void OHOSAUDIO_NATIVE_CloseAudioDevice(SDL_AudioDevice *device, const int iscapture);
+extern void OHOSAUDIO_NATIVE_PrepareClose(SDL_AudioDevice *device);
 
 #endif /* SDL_OHOSAUDIOMANAGER_H */
 

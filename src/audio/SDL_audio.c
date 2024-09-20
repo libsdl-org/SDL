@@ -970,7 +970,6 @@ bool SDL_InitAudio(const char *driver_name)
                 driver_attempt = "pulseaudio";
             }
 
-<<<<<<< HEAD
             for (int i = 0; bootstrap[i]; ++i) {
                 if (!bootstrap[i]->is_preferred && SDL_strcasecmp(bootstrap[i]->name, driver_attempt) == 0) {
                     tried_to_init = true;
