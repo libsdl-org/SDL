@@ -3183,6 +3183,7 @@ static void VULKAN_INTERNAL_DestroyDescriptorSetCache(
         SDL_free(descriptorSetCache->pools[i].descriptorSets);
         SDL_free(descriptorSetCache->pools[i].descriptorPools);
     }
+    SDL_free(descriptorSetCache);
 }
 
 // Hashtable functions
@@ -9158,6 +9159,8 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
     VulkanCommandBuffer *commandBuffer =
         VULKAN_INTERNAL_GetInactiveCommandBufferFromPool(renderer, threadID);
 
+    commandBuffer->descriptorSetCache = VULKAN_INTERNAL_AcquireDescriptorSetCache(renderer);
+
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
     if (commandBuffer == NULL) {
@@ -9181,8 +9184,6 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
         commandBuffer->fragmentUniformBuffers[i] = NULL;
         commandBuffer->computeUniformBuffers[i] = NULL;
     }
-
-    commandBuffer->descriptorSetCache = VULKAN_INTERNAL_AcquireDescriptorSetCache(renderer);
 
     commandBuffer->needNewVertexResourceDescriptorSet = true;
     commandBuffer->needNewVertexUniformDescriptorSet = true;
@@ -9886,14 +9887,6 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
         commandBuffer->inFlightFence = NULL;
     }
 
-    // Release descriptor set cache
-
-    VULKAN_INTERNAL_ReturnDescriptorSetCacheToPool(
-        renderer,
-        commandBuffer->descriptorSetCache);
-
-    commandBuffer->descriptorSetCache = NULL;
-
     // Uniform buffers are now available
 
     SDL_LockMutex(renderer->acquireUniformBufferLock);
@@ -9964,6 +9957,14 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
 
     commandBuffer->commandPool->inactiveCommandBuffers[commandBuffer->commandPool->inactiveCommandBufferCount] = commandBuffer;
     commandBuffer->commandPool->inactiveCommandBufferCount += 1;
+
+    // Release descriptor set cache
+
+    VULKAN_INTERNAL_ReturnDescriptorSetCacheToPool(
+        renderer,
+        commandBuffer->descriptorSetCache);
+
+    commandBuffer->descriptorSetCache = NULL;
 
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
