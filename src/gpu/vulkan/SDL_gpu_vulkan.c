@@ -5097,6 +5097,9 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
         sets,
         dynamicOffsetCount,
         dynamicOffsets);
+
+    commandBuffer->needNewVertexUniformOffsets = false;
+    commandBuffer->needNewFragmentUniformOffsets = false;
 }
 
 static void VULKAN_DrawIndexedPrimitives(
