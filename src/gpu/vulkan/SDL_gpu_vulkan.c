@@ -2408,8 +2408,7 @@ static void VULKAN_INTERNAL_TrackUniformBuffer(
     VulkanCommandBuffer *commandBuffer,
     VulkanUniformBuffer *uniformBuffer)
 {
-    Uint32 i;
-    for (i = 0; i < commandBuffer->usedUniformBufferCount; i += 1) {
+    for (Sint32 i = commandBuffer->usedUniformBufferCount - 1; i >= 0; i -= 1) {
         if (commandBuffer->usedUniformBuffers[i] == uniformBuffer) {
             return;
         }
@@ -9879,8 +9878,6 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
     VulkanRenderer *renderer,
     VulkanCommandBuffer *commandBuffer)
 {
-    Uint32 i;
-
     if (commandBuffer->autoReleaseFence) {
         VULKAN_ReleaseFence(
             (SDL_GPURenderer *)renderer,
@@ -9901,7 +9898,7 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
 
     SDL_LockMutex(renderer->acquireUniformBufferLock);
 
-    for (i = 0; i < commandBuffer->usedUniformBufferCount; i += 1) {
+    for (Sint32 i = 0; i < commandBuffer->usedUniformBufferCount; i += 1) {
         VULKAN_INTERNAL_ReturnUniformBufferToPool(
             renderer,
             commandBuffer->usedUniformBuffers[i]);
@@ -9912,32 +9909,32 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
 
     // Decrement reference counts
 
-    for (i = 0; i < commandBuffer->usedBufferCount; i += 1) {
+    for (Sint32 i = 0; i < commandBuffer->usedBufferCount; i += 1) {
         (void)SDL_AtomicDecRef(&commandBuffer->usedBuffers[i]->referenceCount);
     }
     commandBuffer->usedBufferCount = 0;
 
-    for (i = 0; i < commandBuffer->usedTextureCount; i += 1) {
+    for (Sint32 i = 0; i < commandBuffer->usedTextureCount; i += 1) {
         (void)SDL_AtomicDecRef(&commandBuffer->usedTextures[i]->referenceCount);
     }
     commandBuffer->usedTextureCount = 0;
 
-    for (i = 0; i < commandBuffer->usedSamplerCount; i += 1) {
+    for (Sint32 i = 0; i < commandBuffer->usedSamplerCount; i += 1) {
         (void)SDL_AtomicDecRef(&commandBuffer->usedSamplers[i]->referenceCount);
     }
     commandBuffer->usedSamplerCount = 0;
 
-    for (i = 0; i < commandBuffer->usedGraphicsPipelineCount; i += 1) {
+    for (Sint32 i = 0; i < commandBuffer->usedGraphicsPipelineCount; i += 1) {
         (void)SDL_AtomicDecRef(&commandBuffer->usedGraphicsPipelines[i]->referenceCount);
     }
     commandBuffer->usedGraphicsPipelineCount = 0;
 
-    for (i = 0; i < commandBuffer->usedComputePipelineCount; i += 1) {
+    for (Sint32 i = 0; i < commandBuffer->usedComputePipelineCount; i += 1) {
         (void)SDL_AtomicDecRef(&commandBuffer->usedComputePipelines[i]->referenceCount);
     }
     commandBuffer->usedComputePipelineCount = 0;
 
-    for (i = 0; i < commandBuffer->usedFramebufferCount; i += 1) {
+    for (Sint32 i = 0; i < commandBuffer->usedFramebufferCount; i += 1) {
         (void)SDL_AtomicDecRef(&commandBuffer->usedFramebuffers[i]->referenceCount);
     }
     commandBuffer->usedFramebufferCount = 0;
@@ -9971,7 +9968,7 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
     // Remove this command buffer from the submitted list
-    for (i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
+    for (Uint32 i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
         if (renderer->submittedCommandBuffers[i] == commandBuffer) {
             renderer->submittedCommandBuffers[i] = renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount - 1];
             renderer->submittedCommandBufferCount -= 1;
