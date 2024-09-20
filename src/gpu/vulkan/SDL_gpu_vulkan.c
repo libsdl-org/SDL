@@ -1012,32 +1012,32 @@ typedef struct VulkanCommandBuffer
     // Track used resources
 
     VulkanBuffer **usedBuffers;
-    Uint32 usedBufferCount;
-    Uint32 usedBufferCapacity;
+    Sint32 usedBufferCount;
+    Sint32 usedBufferCapacity;
 
     VulkanTexture **usedTextures;
-    Uint32 usedTextureCount;
-    Uint32 usedTextureCapacity;
+    Sint32 usedTextureCount;
+    Sint32 usedTextureCapacity;
 
     VulkanSampler **usedSamplers;
-    Uint32 usedSamplerCount;
-    Uint32 usedSamplerCapacity;
+    Sint32 usedSamplerCount;
+    Sint32 usedSamplerCapacity;
 
     VulkanGraphicsPipeline **usedGraphicsPipelines;
-    Uint32 usedGraphicsPipelineCount;
-    Uint32 usedGraphicsPipelineCapacity;
+    Sint32 usedGraphicsPipelineCount;
+    Sint32 usedGraphicsPipelineCapacity;
 
     VulkanComputePipeline **usedComputePipelines;
-    Uint32 usedComputePipelineCount;
-    Uint32 usedComputePipelineCapacity;
+    Sint32 usedComputePipelineCount;
+    Sint32 usedComputePipelineCapacity;
 
     VulkanFramebuffer **usedFramebuffers;
-    Uint32 usedFramebufferCount;
-    Uint32 usedFramebufferCapacity;
+    Sint32 usedFramebufferCount;
+    Sint32 usedFramebufferCapacity;
 
     VulkanUniformBuffer **usedUniformBuffers;
-    Uint32 usedUniformBufferCount;
-    Uint32 usedUniformBufferCapacity;
+    Sint32 usedUniformBufferCount;
+    Sint32 usedUniformBufferCapacity;
 
     VulkanFenceHandle *inFlightFence;
     Uint8 autoReleaseFence;
@@ -2314,23 +2314,21 @@ static Uint8 VULKAN_INTERNAL_BindMemoryForBuffer(
     commandBuffer->array[commandBuffer->count] = resource;          \
     commandBuffer->count += 1;
 
-#define TRACK_RESOURCE(resource, type, array, count, capacity) \
-    Uint32 i;                                                  \
-                                                               \
-    for (i = 0; i < commandBuffer->count; i += 1) {            \
-        if (commandBuffer->array[i] == resource) {             \
-            return;                                            \
-        }                                                      \
-    }                                                          \
-                                                               \
-    if (commandBuffer->count == commandBuffer->capacity) {     \
-        commandBuffer->capacity += 1;                          \
-        commandBuffer->array = SDL_realloc(                    \
-            commandBuffer->array,                              \
-            commandBuffer->capacity * sizeof(type));           \
-    }                                                          \
-    commandBuffer->array[commandBuffer->count] = resource;     \
-    commandBuffer->count += 1;                                 \
+#define TRACK_RESOURCE(resource, type, array, count, capacity)  \
+    for (Sint32 i = commandBuffer->count - 1; i >= 0; i -= 1) { \
+        if (commandBuffer->array[i] == resource) {              \
+            return;                                             \
+        }                                                       \
+    }                                                           \
+                                                                \
+    if (commandBuffer->count == commandBuffer->capacity) {      \
+        commandBuffer->capacity += 1;                           \
+        commandBuffer->array = SDL_realloc(                     \
+            commandBuffer->array,                               \
+            commandBuffer->capacity * sizeof(type));            \
+    }                                                           \
+    commandBuffer->array[commandBuffer->count] = resource;      \
+    commandBuffer->count += 1;                                  \
     SDL_AtomicIncRef(&resource->referenceCount);
 
 static void VULKAN_INTERNAL_TrackBuffer(
