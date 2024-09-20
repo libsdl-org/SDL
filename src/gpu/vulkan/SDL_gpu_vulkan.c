@@ -735,14 +735,11 @@ typedef struct DescriptorSetLayoutHashTableKey
     Uint32 uniformBufferCount;
 } DescriptorSetLayoutHashTableKey;
 
-typedef struct DescriptorSetLayout DescriptorSetLayout;
-
 typedef struct DescriptorSetPool
 {
-    DescriptorSetLayout *parent;
-
-    // This is actually a pool of both descriptor sets and descriptors simultaneously.
-    VkDescriptorPool descriptorPool;
+    // It's a pool... of pools!!!
+    Uint32 poolCount;
+    VkDescriptorPool *descriptorPools;
 
     // We'll just manage the descriptor sets ourselves instead of freeing the sets
     VkDescriptorSet *descriptorSets;
@@ -750,16 +747,20 @@ typedef struct DescriptorSetPool
     Uint32 descriptorSetIndex;
 } DescriptorSetPool;
 
-struct DescriptorSetLayout
+// One cache per command buffer
+typedef struct DescriptorSetCache
 {
+    // Indexed by DescriptorSetLayoutID
+    // There's only a certain number of maximum layouts possible since we de-duplicate them.
+    DescriptorSetPool pools[(MAX_TEXTURE_SAMPLERS_PER_STAGE + 1) * (MAX_STORAGE_TEXTURES_PER_STAGE + 1) * (MAX_STORAGE_BUFFERS_PER_STAGE + 1)]; // pools are indexed by DescriptorSetLayoutID
+} DescriptorSetCache;
+
+typedef uint32_t DescriptorSetLayoutID;
+
+typedef struct DescriptorSetLayout
+{
+    DescriptorSetLayoutID ID;
     VkDescriptorSetLayout descriptorSetLayout;
-
-    SDL_Mutex *acquirePoolLock;
-
-    // A pool... of pools!!!
-    Uint32 poolCapacity;
-    Uint32 poolCount;
-    DescriptorSetPool **pools;
 
     // Category 1: read resources
     Uint32 samplerCount;
@@ -770,7 +771,7 @@ struct DescriptorSetLayout
     Uint32 writeStorageTextureCount;
     // Category 3: uniform buffers
     Uint32 uniformBufferCount;
-};
+} DescriptorSetLayout;
 
 typedef struct GraphicsPipelineResourceLayoutHashTableKey
 {
@@ -959,11 +960,7 @@ typedef struct VulkanCommandBuffer
 
     // Resource bind state
 
-    SDL_HashTable *boundDescriptorSetPoolHashTable;
-
-    Uint32 boundDescriptorSetPoolCapacity;
-    Uint32 boundDescriptorSetPoolCount;
-    DescriptorSetPool **boundDescriptorSetPools;
+    DescriptorSetCache *descriptorSetCache; // acquired when command buffer is acquired
 
     bool needNewVertexResourceDescriptorSet;
     bool needNewVertexUniformDescriptorSet;
@@ -1105,6 +1102,12 @@ struct VulkanRenderer
     VulkanUniformBuffer **uniformBufferPool;
     Uint32 uniformBufferPoolCount;
     Uint32 uniformBufferPoolCapacity;
+
+    DescriptorSetCache **descriptorSetCachePool;
+    Uint32 descriptorSetCachePoolCount;
+    Uint32 descriptorSetCachePoolCapacity;
+
+    SDL_AtomicInt layoutResourceID;
 
     Uint32 minUBOAlignment;
 
@@ -2985,8 +2988,6 @@ static void VULKAN_INTERNAL_DestroyCommandPool(
     for (i = 0; i < commandPool->inactiveCommandBufferCount; i += 1) {
         commandBuffer = commandPool->inactiveCommandBuffers[i];
 
-        SDL_DestroyHashTable(commandBuffer->boundDescriptorSetPoolHashTable);
-        SDL_free(commandBuffer->boundDescriptorSetPools);
         SDL_free(commandBuffer->presentDatas);
         SDL_free(commandBuffer->waitSemaphores);
         SDL_free(commandBuffer->signalSemaphores);
@@ -3013,18 +3014,6 @@ static void VULKAN_INTERNAL_DestroyDescriptorSetLayout(
         return;
     }
 
-    for (Uint32 i = 0; i < layout->poolCount; i += 1) {
-        DescriptorSetPool *pool = layout->pools[i];
-
-        renderer->vkDestroyDescriptorPool(
-            renderer->logicalDevice,
-            pool->descriptorPool,
-            NULL);
-
-        SDL_free(pool->descriptorSets);
-        SDL_free(pool);
-    }
-
     if (layout->descriptorSetLayout != VK_NULL_HANDLE) {
         renderer->vkDestroyDescriptorSetLayout(
             renderer->logicalDevice,
@@ -3032,8 +3021,6 @@ static void VULKAN_INTERNAL_DestroyDescriptorSetLayout(
             NULL);
     }
 
-    SDL_DestroyMutex(layout->acquirePoolLock);
-    SDL_free(layout->pools);
     SDL_free(layout);
 }
 
@@ -3184,31 +3171,23 @@ static void VULKAN_INTERNAL_DestroyComputePipelineResourceLayout(
     SDL_free(resourceLayout);
 }
 
+static void VULKAN_INTERNAL_DestroyDescriptorSetCache(
+    VulkanRenderer *renderer,
+    DescriptorSetCache *descriptorSetCache)
+{
+    for (Uint32 i = 0; i < SDL_arraysize(descriptorSetCache->pools); i += 1) {
+        for (Uint32 j = 0; j < descriptorSetCache->pools[i].poolCount; j += 1) {
+            renderer->vkDestroyDescriptorPool(
+                renderer->logicalDevice,
+                descriptorSetCache->pools[i].descriptorPools[j],
+                NULL);
+        }
+        SDL_free(descriptorSetCache->pools[i].descriptorSets);
+        SDL_free(descriptorSetCache->pools[i].descriptorPools);
+    }
+}
+
 // Hashtable functions
-
-static Uint32 VULKAN_INTERNAL_BoundDescriptorSetPoolHashFunction(const void *key, void *data)
-{
-    DescriptorSetLayout *layout = (DescriptorSetLayout *)key;
-
-    /* The algorithm for this hashing function
-     * is taken from Josh Bloch's "Effective Java".
-     * (https://stackoverflow.com/a/113600/12492383)
-     */
-    const Uint32 hashFactor = 31;
-    Uint32 result = 1;
-    result = result * hashFactor + (Uint32)(uintptr_t)layout;
-    return result;
-}
-
-static bool VULKAN_INTERNAL_BoundDescriptorSetPoolHashKeyMatch(const void *aKey, const void *bKey, void *data)
-{
-    return aKey == bKey;
-}
-
-static void VULKAN_INTERNAL_BoundDescriptorSetPoolHashNuke(const void *key, const void *value, void *data)
-{
-    // NO-OP
-}
 
 static Uint32 VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashFunction(const void *key, void *data)
 {
@@ -3522,10 +3501,10 @@ static bool VULKAN_INTERNAL_AllocateDescriptorSets(
     return true;
 }
 
-static DescriptorSetPool *VULKAN_INTERNAL_CreateDescriptorPool(
+static void VULKAN_INTERNAL_AllocateDescriptorsFromPool(
     VulkanRenderer *renderer,
-    DescriptorSetLayout *layout,
-    Uint32 descriptorSetPoolSize)
+    DescriptorSetLayout *descriptorSetLayout,
+    DescriptorSetPool *descriptorSetPool)
 {
     VkDescriptorPoolSize descriptorPoolSizes[
         MAX_TEXTURE_SAMPLERS_PER_STAGE +
@@ -3536,38 +3515,38 @@ static DescriptorSetPool *VULKAN_INTERNAL_CreateDescriptorPool(
     VkResult vulkanResult;
 
     // Category 1
-    for (Uint32 i = 0; i < layout->samplerCount; i += 1) {
+    for (Uint32 i = 0; i < descriptorSetLayout->samplerCount; i += 1) {
         descriptorPoolSizes[i].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorPoolSizes[i].descriptorCount = descriptorSetPoolSize;
+        descriptorPoolSizes[i].descriptorCount = DESCRIPTOR_POOL_SIZE;
     }
 
-    for (Uint32 i = layout->samplerCount; i < layout->samplerCount + layout->storageTextureCount; i += 1) {
+    for (Uint32 i = descriptorSetLayout->samplerCount; i < descriptorSetLayout->samplerCount + descriptorSetLayout->storageTextureCount; i += 1) {
         descriptorPoolSizes[i].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-        descriptorPoolSizes[i].descriptorCount = descriptorSetPoolSize;
+        descriptorPoolSizes[i].descriptorCount = DESCRIPTOR_POOL_SIZE;
     }
 
-    for (Uint32 i = layout->samplerCount + layout->storageTextureCount; i < layout->samplerCount + layout->storageTextureCount + layout->storageBufferCount; i += 1) {
+    for (Uint32 i = descriptorSetLayout->samplerCount + descriptorSetLayout->storageTextureCount; i < descriptorSetLayout->samplerCount + descriptorSetLayout->storageTextureCount + descriptorSetLayout->storageBufferCount; i += 1) {
         descriptorPoolSizes[i].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        descriptorPoolSizes[i].descriptorCount = descriptorSetPoolSize;
+        descriptorPoolSizes[i].descriptorCount = DESCRIPTOR_POOL_SIZE;
     }
 
     // Category 3
-    for (Uint32 i = 0; i < layout->uniformBufferCount; i += 1) {
+    for (Uint32 i = 0; i < descriptorSetLayout->uniformBufferCount; i += 1) {
         descriptorPoolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-        descriptorPoolSizes[i].descriptorCount = descriptorSetPoolSize;
+        descriptorPoolSizes[i].descriptorCount = DESCRIPTOR_POOL_SIZE;
     }
 
     descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     descriptorPoolInfo.pNext = NULL;
     descriptorPoolInfo.flags = 0;
-    descriptorPoolInfo.maxSets = descriptorSetPoolSize;
+    descriptorPoolInfo.maxSets = DESCRIPTOR_POOL_SIZE;
     descriptorPoolInfo.poolSizeCount =
-        layout->samplerCount +
-        layout->storageTextureCount +
-        layout->storageBufferCount +
-        layout->writeStorageTextureCount +
-        layout->writeStorageBufferCount +
-        layout->uniformBufferCount;
+        descriptorSetLayout->samplerCount +
+        descriptorSetLayout->storageTextureCount +
+        descriptorSetLayout->storageBufferCount +
+        descriptorSetLayout->writeStorageTextureCount +
+        descriptorSetLayout->writeStorageBufferCount +
+        descriptorSetLayout->uniformBufferCount;
     descriptorPoolInfo.pPoolSizes = descriptorPoolSizes;
 
     vulkanResult = renderer->vkCreateDescriptorPool(
@@ -3578,24 +3557,28 @@ static DescriptorSetPool *VULKAN_INTERNAL_CreateDescriptorPool(
 
     if (vulkanResult != VK_SUCCESS) {
         LogVulkanResultAsError("vkCreateDescriptorPool", vulkanResult);
-        return NULL;
+        return;
     }
 
-    DescriptorSetPool *descriptorSetPool = SDL_malloc(sizeof(DescriptorSetPool));
-    descriptorSetPool->parent = layout;
-    descriptorSetPool->descriptorPool = pool;
-    descriptorSetPool->descriptorSetCount = descriptorSetPoolSize;
-    descriptorSetPool->descriptorSetIndex = 0;
-    descriptorSetPool->descriptorSets = SDL_calloc(descriptorSetPoolSize, sizeof(VkDescriptorSet));
+    descriptorSetPool->poolCount += 1;
+    descriptorSetPool->descriptorPools = SDL_realloc(
+        descriptorSetPool->descriptorPools,
+        sizeof(VkDescriptorPool) * descriptorSetPool->poolCount);
+
+    descriptorSetPool->descriptorPools[descriptorSetPool->poolCount - 1] = pool;
+
+    descriptorSetPool->descriptorSets = SDL_realloc(
+        descriptorSetPool->descriptorSets,
+        sizeof(VkDescriptorSet) * descriptorSetPool->poolCount * DESCRIPTOR_POOL_SIZE);
 
     VULKAN_INTERNAL_AllocateDescriptorSets(
         renderer,
-        descriptorSetPool->descriptorPool,
-        layout->descriptorSetLayout,
-        descriptorSetPoolSize,
-        descriptorSetPool->descriptorSets);
+        pool,
+        descriptorSetLayout->descriptorSetLayout,
+        DESCRIPTOR_POOL_SIZE,
+        &descriptorSetPool->descriptorSets[descriptorSetPool->descriptorSetCount]);
 
-    return descriptorSetPool;
+    descriptorSetPool->descriptorSetCount += DESCRIPTOR_POOL_SIZE;
 }
 
 // NOTE: these categories should be mutually exclusive
@@ -3716,7 +3699,6 @@ static DescriptorSetLayout *VULKAN_INTERNAL_FetchDescriptorSetLayout(
     }
 
     layout = SDL_malloc(sizeof(DescriptorSetLayout));
-    layout->acquirePoolLock = SDL_CreateMutex();
     layout->descriptorSetLayout = descriptorSetLayout;
 
     layout->samplerCount = samplerCount;
@@ -3726,20 +3708,7 @@ static DescriptorSetLayout *VULKAN_INTERNAL_FetchDescriptorSetLayout(
     layout->writeStorageTextureCount = writeStorageTextureCount;
     layout->uniformBufferCount = uniformBufferCount;
 
-    layout->poolCapacity = 4;
-    layout->poolCount = 1;
-    layout->pools = SDL_malloc(sizeof(DescriptorSetPool *));
-
-    layout->pools[0] = VULKAN_INTERNAL_CreateDescriptorPool(
-        renderer,
-        layout,
-        DESCRIPTOR_POOL_SIZE);
-
-    if (layout->pools[0] == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create descriptor pool!");
-        VULKAN_INTERNAL_DestroyDescriptorSetLayout(renderer, layout);
-        return NULL;
-    }
+    layout->ID = SDL_AtomicIncRef(&renderer->layoutResourceID);
 
     DescriptorSetLayoutHashTableKey *allocedKey = SDL_malloc(sizeof(DescriptorSetLayoutHashTableKey));
     SDL_memcpy(allocedKey, &key, sizeof(DescriptorSetLayoutHashTableKey));
@@ -4739,6 +4708,13 @@ static void VULKAN_DestroyDevice(
     }
     SDL_free(renderer->uniformBufferPool);
 
+    for (Uint32 i = 0; i < renderer->descriptorSetCachePoolCount; i += 1) {
+        VULKAN_INTERNAL_DestroyDescriptorSetCache(
+            renderer,
+            renderer->descriptorSetCachePool[i]);
+    }
+    SDL_free(renderer->descriptorSetCachePool);
+
     for (Uint32 i = 0; i < renderer->fencePool.availableFenceCount; i += 1) {
         renderer->vkDestroyFence(
             renderer->logicalDevice,
@@ -4808,56 +4784,39 @@ static void VULKAN_DestroyDevice(
     SDL_Vulkan_UnloadLibrary();
 }
 
-static DescriptorSetPool *VULKAN_INTERNAL_AcquireDescriptorSetPool(
-    VulkanRenderer *renderer,
-    VulkanCommandBuffer *commandBuffer,
-    DescriptorSetLayout *descriptorSetLayout)
+static DescriptorSetCache *VULKAN_INTERNAL_AcquireDescriptorSetCache(
+    VulkanRenderer *renderer)
 {
-    DescriptorSetPool *pool;
+    DescriptorSetCache *cache;
 
-    if (descriptorSetLayout->poolCount == 0) {
-        pool = VULKAN_INTERNAL_CreateDescriptorPool(
-            renderer,
-            descriptorSetLayout,
-            DESCRIPTOR_POOL_SIZE);
+    if (renderer->descriptorSetCachePoolCount == 0) {
+        cache = SDL_malloc(sizeof(DescriptorSetCache));
+        SDL_zero(cache->pools);
     } else {
-        pool = descriptorSetLayout->pools[descriptorSetLayout->poolCount - 1];
-        descriptorSetLayout->poolCount -= 1;
+        cache = renderer->descriptorSetCachePool[renderer->descriptorSetCachePoolCount - 1];
+        renderer->descriptorSetCachePoolCount -= 1;
     }
 
-    pool->descriptorSetIndex = 0;
-
-    EXPAND_ARRAY_IF_NEEDED(
-        commandBuffer->boundDescriptorSetPools,
-        DescriptorSetPool *,
-        commandBuffer->boundDescriptorSetPoolCount + 1,
-        commandBuffer->boundDescriptorSetPoolCapacity,
-        commandBuffer->boundDescriptorSetPoolCapacity * 2)
-
-    commandBuffer->boundDescriptorSetPools[commandBuffer->boundDescriptorSetPoolCount] = pool;
-    commandBuffer->boundDescriptorSetPoolCount += 1;
-
-    return pool;
+    return cache;
 }
 
-static void VULKAN_INTERNAL_ReturnDescriptorSetPoolToLayout(
+static void VULKAN_INTERNAL_ReturnDescriptorSetCacheToPool(
     VulkanRenderer *renderer,
-    DescriptorSetPool *pool)
+    DescriptorSetCache *descriptorSetCache)
 {
-    DescriptorSetLayout *layout = pool->parent;
-
-    // return to pool
     EXPAND_ARRAY_IF_NEEDED(
-        layout->pools,
-        DescriptorSetPool *,
-        layout->poolCount + 1,
-        layout->poolCapacity,
-        layout->poolCapacity * 2)
+        renderer->descriptorSetCachePool,
+        DescriptorSetCache *,
+        renderer->descriptorSetCachePoolCount + 1,
+        renderer->descriptorSetCachePoolCapacity,
+        renderer->descriptorSetCachePoolCapacity * 2)
 
-    SDL_LockMutex(layout->acquirePoolLock);
-    layout->pools[layout->poolCount] = pool;
-    layout->poolCount += 1;
-    SDL_UnlockMutex(layout->acquirePoolLock);
+    renderer->descriptorSetCachePool[renderer->descriptorSetCachePoolCount] = descriptorSetCache;
+    renderer->descriptorSetCachePoolCount += 1;
+
+    for (Uint32 i = 0; i < SDL_arraysize(descriptorSetCache->pools); i += 1) {
+        descriptorSetCache->pools[i].descriptorSetIndex = 0;
+    }
 }
 
 static VkDescriptorSet VULKAN_INTERNAL_FetchDescriptorSet(
@@ -4865,37 +4824,17 @@ static VkDescriptorSet VULKAN_INTERNAL_FetchDescriptorSet(
     VulkanCommandBuffer *vulkanCommandBuffer,
     DescriptorSetLayout *descriptorSetLayout)
 {
-    VkDescriptorSet descriptorSet;
-    DescriptorSetPool *pool;
-
-    SDL_LockMutex(descriptorSetLayout->acquirePoolLock);
-
-    bool found = SDL_FindInHashTable(
-        vulkanCommandBuffer->boundDescriptorSetPoolHashTable,
-        (const void *)descriptorSetLayout,
-        (const void **)&pool);
-
-    if (!found) {
-        pool = VULKAN_INTERNAL_AcquireDescriptorSetPool(
-            renderer,
-            vulkanCommandBuffer,
-            descriptorSetLayout);
-    }
+    DescriptorSetPool *pool =
+        &vulkanCommandBuffer->descriptorSetCache->pools[descriptorSetLayout->ID];
 
     if (pool->descriptorSetIndex == pool->descriptorSetCount) {
-        SDL_RemoveFromHashTable(
-            vulkanCommandBuffer->boundDescriptorSetPoolHashTable,
-            (const void *)descriptorSetLayout);
-
-        pool = VULKAN_INTERNAL_AcquireDescriptorSetPool(
+        VULKAN_INTERNAL_AllocateDescriptorsFromPool(
             renderer,
-            vulkanCommandBuffer,
-            descriptorSetLayout);
+            descriptorSetLayout,
+            pool);
     }
 
-    SDL_UnlockMutex(descriptorSetLayout->acquirePoolLock);
-
-    descriptorSet = pool->descriptorSets[pool->descriptorSetIndex];
+    VkDescriptorSet descriptorSet = pool->descriptorSets[pool->descriptorSetIndex];
     pool->descriptorSetIndex += 1;
 
     return descriptorSet;
@@ -9053,18 +8992,6 @@ static void VULKAN_INTERNAL_AllocateCommandBuffers(
 
         // Resource bind tracking
 
-        commandBuffer->boundDescriptorSetPoolHashTable = SDL_CreateHashTable(
-            (void *)commandBuffer,
-            128,
-            VULKAN_INTERNAL_BoundDescriptorSetPoolHashFunction,
-            VULKAN_INTERNAL_BoundDescriptorSetPoolHashKeyMatch,
-            VULKAN_INTERNAL_BoundDescriptorSetPoolHashNuke,
-            false);
-
-        commandBuffer->boundDescriptorSetPoolCapacity = 4;
-        commandBuffer->boundDescriptorSetPoolCount = 0;
-        commandBuffer->boundDescriptorSetPools = SDL_calloc(commandBuffer->boundDescriptorSetPoolCapacity, sizeof(DescriptorSetPool *));
-
         commandBuffer->needNewVertexResourceDescriptorSet = true;
         commandBuffer->needNewVertexUniformDescriptorSet = true;
         commandBuffer->needNewVertexUniformOffsets = true;
@@ -9255,6 +9182,8 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
         commandBuffer->fragmentUniformBuffers[i] = NULL;
         commandBuffer->computeUniformBuffers[i] = NULL;
     }
+
+    commandBuffer->descriptorSetCache = VULKAN_INTERNAL_AcquireDescriptorSetCache(renderer);
 
     commandBuffer->needNewVertexResourceDescriptorSet = true;
     commandBuffer->needNewVertexUniformDescriptorSet = true;
@@ -9960,16 +9889,13 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
         commandBuffer->inFlightFence = NULL;
     }
 
-    // Release bound descriptor set pools
+    // Release descriptor set cache
 
-    SDL_EmptyHashTable(commandBuffer->boundDescriptorSetPoolHashTable);
+    VULKAN_INTERNAL_ReturnDescriptorSetCacheToPool(
+        renderer,
+        commandBuffer->descriptorSetCache);
 
-    for (i = 0; i < commandBuffer->boundDescriptorSetPoolCount; i += 1) {
-        VULKAN_INTERNAL_ReturnDescriptorSetPoolToLayout(
-            renderer,
-            commandBuffer->boundDescriptorSetPools[i]);
-    }
-    commandBuffer->boundDescriptorSetPoolCount = 0;
+    commandBuffer->descriptorSetCache = NULL;
 
     // Uniform buffers are now available
 
@@ -11401,6 +11327,12 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
             renderer,
             UNIFORM_BUFFER_SIZE);
     }
+
+    renderer->descriptorSetCachePoolCapacity = 8;
+    renderer->descriptorSetCachePoolCount = 0;
+    renderer->descriptorSetCachePool = SDL_calloc(renderer->descriptorSetCachePoolCapacity, sizeof(DescriptorSetCache *));
+
+    SDL_AtomicSet(&renderer->layoutResourceID, 0);
 
     // Device limits
 
