@@ -72,7 +72,8 @@ typedef struct
 {
     Wayland_SystemCursorFrame *frames;
     struct wl_callback *frame_callback;
-    Uint64 last_frame_time_ms;
+    Uint64 last_frame_callback_time_ms;
+    Uint64 current_frame_time_ms;
     Uint32 total_duration;
     int num_frames;
     int current_frame;
@@ -304,16 +305,20 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     SDL_CursorData *c = (SDL_CursorData *)data;
 
     const Uint64 now = SDL_GetTicks();
-    const Uint64 elapsed = (now - c->cursor_data.system.last_frame_time_ms) % c->cursor_data.system.total_duration;
+    const Uint64 elapsed = (now - c->cursor_data.system.last_frame_callback_time_ms) % c->cursor_data.system.total_duration;
+    Uint64 advance = 0;
     int next = c->cursor_data.system.current_frame;
 
     wl_callback_destroy(cb);
     c->cursor_data.system.frame_callback = wl_surface_frame(c->surface);
     wl_callback_add_listener(c->cursor_data.system.frame_callback, &cursor_frame_listener, data);
 
+    c->cursor_data.system.current_frame_time_ms += elapsed;
+
     // Calculate the next frame based on the elapsed duration.
-    for (Uint64 t = c->cursor_data.system.frames[next].duration; t <= elapsed; t += c->cursor_data.system.frames[next].duration) {
+    for (Uint64 t = c->cursor_data.system.frames[next].duration; t <= c->cursor_data.system.current_frame_time_ms; t += c->cursor_data.system.frames[next].duration) {
         next = (next + 1) % c->cursor_data.system.num_frames;
+        advance = t;
 
         // Make sure we don't end up in an infinite loop if a cursor has frame durations of 0.
         if (!c->cursor_data.system.frames[next].duration) {
@@ -321,7 +326,8 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
         }
     }
 
-    c->cursor_data.system.last_frame_time_ms = now;
+    c->cursor_data.system.current_frame_time_ms -= advance;
+    c->cursor_data.system.last_frame_callback_time_ms = now;
     c->cursor_data.system.current_frame = next;
     wl_surface_attach(c->surface, c->cursor_data.system.frames[next].wl_buffer, 0, 0);
     if (wl_surface_get_version(c->surface) >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
@@ -711,7 +717,8 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
 
             // If more than one frame is available, create a frame callback to run the animation.
             if (data->cursor_data.system.num_frames > 1) {
-                data->cursor_data.system.last_frame_time_ms = SDL_GetTicks();
+                data->cursor_data.system.last_frame_callback_time_ms = SDL_GetTicks();
+                data->cursor_data.system.current_frame_time_ms = 0;
                 data->cursor_data.system.current_frame = 0;
                 data->cursor_data.system.frame_callback = wl_surface_frame(data->surface);
                 wl_callback_add_listener(data->cursor_data.system.frame_callback, &cursor_frame_listener, data);
