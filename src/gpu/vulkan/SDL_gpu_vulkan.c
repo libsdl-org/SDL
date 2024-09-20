@@ -11332,7 +11332,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->descriptorSetCachePoolCount = 0;
     renderer->descriptorSetCachePool = SDL_calloc(renderer->descriptorSetCachePoolCapacity, sizeof(DescriptorSetCache *));
 
-    SDL_AtomicSet(&renderer->layoutResourceID, 0);
+    SDL_SetAtomicInt(&renderer->layoutResourceID, 0);
 
     // Device limits
 
