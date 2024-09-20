@@ -155,11 +155,11 @@ static const SDL_GPUBootstrap *backends[] = {
 #ifdef SDL_GPU_METAL
     &MetalDriver,
 #endif
-#ifdef SDL_GPU_D3D12
-    &D3D12Driver,
-#endif
 #ifdef SDL_GPU_VULKAN
     &VulkanDriver,
+#endif
+#ifdef SDL_GPU_D3D12
+    &D3D12Driver,
 #endif
 #ifdef SDL_GPU_D3D11
     &D3D11Driver,
