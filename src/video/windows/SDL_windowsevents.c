@@ -716,6 +716,7 @@ static SDL_bool SkipAltGrLeftControl(WPARAM wParam, LPARAM lParam)
         return SDL_FALSE;
     }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* Here is a trick: "Alt Gr" sends LCTRL, then RALT. We only
        want the RALT message, so we try to see if the next message
        is a RALT message. In that case, this is a false LCTRL! */
@@ -729,6 +730,7 @@ static SDL_bool SkipAltGrLeftControl(WPARAM wParam, LPARAM lParam)
             }
         }
     }
+#endif // !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     return SDL_FALSE;
 }
 
