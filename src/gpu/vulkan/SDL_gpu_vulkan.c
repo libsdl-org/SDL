@@ -721,6 +721,27 @@ typedef struct VulkanDescriptorInfo
     VkShaderStageFlagBits stageFlag;
 } VulkanDescriptorInfo;
 
+typedef struct DescriptorSetPool
+{
+    // It's a pool... of pools!!!
+    Uint32 poolCount;
+    VkDescriptorPool *descriptorPools;
+
+    // We'll just manage the descriptor sets ourselves instead of freeing the sets
+    VkDescriptorSet *descriptorSets;
+    Uint32 descriptorSetCount;
+    Uint32 descriptorSetIndex;
+} DescriptorSetPool;
+
+// A command buffer acquires a cache at command buffer acquisition time
+typedef struct DescriptorSetCache
+{
+    // Pools are indexed by DescriptorSetLayoutID which increases monotonically
+    // There's only a certain number of maximum layouts possible since we de-duplicate them.
+    DescriptorSetPool *pools;
+    Uint32 poolCount;
+} DescriptorSetCache;
+
 typedef struct DescriptorSetLayoutHashTableKey
 {
     VkShaderStageFlagBits shaderStage;
@@ -734,26 +755,6 @@ typedef struct DescriptorSetLayoutHashTableKey
     // Category 3: uniform buffers
     Uint32 uniformBufferCount;
 } DescriptorSetLayoutHashTableKey;
-
-typedef struct DescriptorSetPool
-{
-    // It's a pool... of pools!!!
-    Uint32 poolCount;
-    VkDescriptorPool *descriptorPools;
-
-    // We'll just manage the descriptor sets ourselves instead of freeing the sets
-    VkDescriptorSet *descriptorSets;
-    Uint32 descriptorSetCount;
-    Uint32 descriptorSetIndex;
-} DescriptorSetPool;
-
-// One cache per command buffer
-typedef struct DescriptorSetCache
-{
-    // Indexed by DescriptorSetLayoutID
-    // There's only a certain number of maximum layouts possible since we de-duplicate them.
-    DescriptorSetPool pools[(MAX_TEXTURE_SAMPLERS_PER_STAGE + 1) * (MAX_STORAGE_TEXTURES_PER_STAGE + 1) * (MAX_STORAGE_BUFFERS_PER_STAGE + 1)]; // pools are indexed by DescriptorSetLayoutID
-} DescriptorSetCache;
 
 typedef uint32_t DescriptorSetLayoutID;
 
@@ -3175,7 +3176,7 @@ static void VULKAN_INTERNAL_DestroyDescriptorSetCache(
     VulkanRenderer *renderer,
     DescriptorSetCache *descriptorSetCache)
 {
-    for (Uint32 i = 0; i < SDL_arraysize(descriptorSetCache->pools); i += 1) {
+    for (Uint32 i = 0; i < descriptorSetCache->poolCount; i += 1) {
         for (Uint32 j = 0; j < descriptorSetCache->pools[i].poolCount; j += 1) {
             renderer->vkDestroyDescriptorPool(
                 renderer->logicalDevice,
@@ -4791,7 +4792,8 @@ static DescriptorSetCache *VULKAN_INTERNAL_AcquireDescriptorSetCache(
 
     if (renderer->descriptorSetCachePoolCount == 0) {
         cache = SDL_malloc(sizeof(DescriptorSetCache));
-        SDL_zero(cache->pools);
+        cache->poolCount = 0;
+        cache->pools = NULL;
     } else {
         cache = renderer->descriptorSetCachePool[renderer->descriptorSetCachePoolCount - 1];
         renderer->descriptorSetCachePoolCount -= 1;
@@ -4814,7 +4816,7 @@ static void VULKAN_INTERNAL_ReturnDescriptorSetCacheToPool(
     renderer->descriptorSetCachePool[renderer->descriptorSetCachePoolCount] = descriptorSetCache;
     renderer->descriptorSetCachePoolCount += 1;
 
-    for (Uint32 i = 0; i < SDL_arraysize(descriptorSetCache->pools); i += 1) {
+    for (Uint32 i = 0; i < descriptorSetCache->poolCount; i += 1) {
         descriptorSetCache->pools[i].descriptorSetIndex = 0;
     }
 }
@@ -4824,6 +4826,19 @@ static VkDescriptorSet VULKAN_INTERNAL_FetchDescriptorSet(
     VulkanCommandBuffer *vulkanCommandBuffer,
     DescriptorSetLayout *descriptorSetLayout)
 {
+    // Grow the pool to meet the descriptor set layout ID
+    if (descriptorSetLayout->ID >= vulkanCommandBuffer->descriptorSetCache->poolCount) {
+        vulkanCommandBuffer->descriptorSetCache->pools = SDL_realloc(
+            vulkanCommandBuffer->descriptorSetCache->pools,
+            sizeof(DescriptorSetPool) * (descriptorSetLayout->ID + 1));
+
+        for (Uint32 i = vulkanCommandBuffer->descriptorSetCache->poolCount; i < descriptorSetLayout->ID + 1; i += 1) {
+            SDL_zero(vulkanCommandBuffer->descriptorSetCache->pools[i]);
+        }
+
+        vulkanCommandBuffer->descriptorSetCache->poolCount = descriptorSetLayout->ID + 1;
+    }
+
     DescriptorSetPool *pool =
         &vulkanCommandBuffer->descriptorSetCache->pools[descriptorSetLayout->ID];
 
