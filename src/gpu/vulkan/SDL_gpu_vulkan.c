@@ -3264,15 +3264,17 @@ static Uint32 VULKAN_INTERNAL_DescriptorSetLayoutHashFunction(const void *key, v
     Uint32 result = 1;
     result = result * hashFactor + hashTableKey->shaderStage;
     result = result * hashFactor + hashTableKey->samplerCount;
-    result = result * hashFactor + hashTableKey->storageBufferCount;
     result = result * hashFactor + hashTableKey->storageTextureCount;
+    result = result * hashFactor + hashTableKey->storageBufferCount;
+    result = result * hashFactor + hashTableKey->writeStorageTextureCount;
+    result = result * hashFactor + hashTableKey->writeStorageBufferCount;
     result = result * hashFactor + hashTableKey->uniformBufferCount;
     return result;
 }
 
 static bool VULKAN_INTERNAL_DescriptorSetLayoutHashKeyMatch(const void *aKey, const void *bKey, void *data)
 {
-    return SDL_memcmp(aKey, bKey, sizeof(DescriptorSetLayoutHashTableKey));
+    return SDL_memcmp(aKey, bKey, sizeof(DescriptorSetLayoutHashTableKey)) == 0;
 }
 
 static void VULKAN_INTERNAL_DescriptorSetLayoutHashNuke(const void *key, const void *value, void *data)
@@ -3510,7 +3512,10 @@ static void VULKAN_INTERNAL_AllocateDescriptorsFromPool(
     VkDescriptorPoolSize descriptorPoolSizes[
         MAX_TEXTURE_SAMPLERS_PER_STAGE +
         MAX_STORAGE_TEXTURES_PER_STAGE +
-        MAX_STORAGE_BUFFERS_PER_STAGE];
+        MAX_STORAGE_BUFFERS_PER_STAGE +
+        MAX_COMPUTE_WRITE_TEXTURES +
+        MAX_COMPUTE_WRITE_BUFFERS +
+        MAX_UNIFORM_BUFFERS_PER_STAGE];
     VkDescriptorPoolCreateInfo descriptorPoolInfo;
     VkDescriptorPool pool;
     VkResult vulkanResult;
@@ -3527,6 +3532,17 @@ static void VULKAN_INTERNAL_AllocateDescriptorsFromPool(
     }
 
     for (Uint32 i = descriptorSetLayout->samplerCount + descriptorSetLayout->storageTextureCount; i < descriptorSetLayout->samplerCount + descriptorSetLayout->storageTextureCount + descriptorSetLayout->storageBufferCount; i += 1) {
+        descriptorPoolSizes[i].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        descriptorPoolSizes[i].descriptorCount = DESCRIPTOR_POOL_SIZE;
+    }
+
+    // Category 2
+    for (Uint32 i = 0; i < descriptorSetLayout->writeStorageTextureCount; i += 1) {
+        descriptorPoolSizes[i].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+        descriptorPoolSizes[i].descriptorCount = DESCRIPTOR_POOL_SIZE;
+    }
+
+    for (Uint32 i = descriptorSetLayout->writeStorageTextureCount; i < descriptorSetLayout->writeStorageTextureCount + descriptorSetLayout->writeStorageBufferCount; i += 1) {
         descriptorPoolSizes[i].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         descriptorPoolSizes[i].descriptorCount = DESCRIPTOR_POOL_SIZE;
     }
@@ -4861,7 +4877,11 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
 {
     VulkanGraphicsPipelineResourceLayout *resourceLayout;
     DescriptorSetLayout *descriptorSetLayout;
-    VkWriteDescriptorSet writeDescriptorSets[(MAX_TEXTURE_SAMPLERS_PER_STAGE + MAX_STORAGE_TEXTURES_PER_STAGE + MAX_STORAGE_BUFFERS_PER_STAGE) * 2];
+    VkWriteDescriptorSet writeDescriptorSets[
+        (MAX_TEXTURE_SAMPLERS_PER_STAGE +
+        MAX_STORAGE_TEXTURES_PER_STAGE +
+        MAX_STORAGE_BUFFERS_PER_STAGE +
+        MAX_UNIFORM_BUFFERS_PER_STAGE) * 2];
     VkDescriptorBufferInfo bufferInfos[MAX_STORAGE_BUFFERS_PER_STAGE * 2];
     VkDescriptorImageInfo imageInfos[(MAX_TEXTURE_SAMPLERS_PER_STAGE + MAX_STORAGE_TEXTURES_PER_STAGE) * 2];
     Uint32 dynamicOffsets[MAX_UNIFORM_BUFFERS_PER_STAGE * 2];
@@ -4893,6 +4913,7 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
 
         for (Uint32 i = 0; i < resourceLayout->vertexSamplerCount; i += 1) {
             VkWriteDescriptorSet *currentWriteDescriptorSet = &writeDescriptorSets[writeCount];
+
             currentWriteDescriptorSet->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             currentWriteDescriptorSet->pNext = NULL;
             currentWriteDescriptorSet->descriptorCount = 1;
@@ -8000,15 +8021,30 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
     VulkanCommandBuffer *commandBuffer)
 {
     VulkanComputePipelineResourceLayout *resourceLayout;
-    VkWriteDescriptorSet *writeDescriptorSets;
-    VkWriteDescriptorSet *currentWriteDescriptorSet;
     DescriptorSetLayout *descriptorSetLayout;
-    VkDescriptorBufferInfo bufferInfos[MAX_STORAGE_BUFFERS_PER_STAGE]; // 8 is max for both read and write
-    VkDescriptorImageInfo imageInfos[MAX_TEXTURE_SAMPLERS_PER_STAGE + MAX_STORAGE_TEXTURES_PER_STAGE];
+    VkWriteDescriptorSet writeDescriptorSets[
+        MAX_TEXTURE_SAMPLERS_PER_STAGE +
+        MAX_STORAGE_TEXTURES_PER_STAGE +
+        MAX_STORAGE_BUFFERS_PER_STAGE +
+        MAX_COMPUTE_WRITE_TEXTURES +
+        MAX_COMPUTE_WRITE_BUFFERS +
+        MAX_UNIFORM_BUFFERS_PER_STAGE];
+    VkDescriptorBufferInfo bufferInfos[MAX_STORAGE_BUFFERS_PER_STAGE + MAX_COMPUTE_WRITE_BUFFERS + MAX_UNIFORM_BUFFERS_PER_STAGE];
+    VkDescriptorImageInfo imageInfos[MAX_TEXTURE_SAMPLERS_PER_STAGE + MAX_STORAGE_TEXTURES_PER_STAGE + MAX_COMPUTE_WRITE_TEXTURES];
     Uint32 dynamicOffsets[MAX_UNIFORM_BUFFERS_PER_STAGE];
+    Uint32 writeCount = 0;
     Uint32 bufferInfoCount = 0;
     Uint32 imageInfoCount = 0;
-    Uint32 i;
+    Uint32 dynamicOffsetCount = 0;
+
+    if (
+        !commandBuffer->needNewComputeReadOnlyDescriptorSet &&
+        !commandBuffer->needNewComputeWriteOnlyDescriptorSet &&
+        !commandBuffer->needNewComputeUniformDescriptorSet &&
+        !commandBuffer->needNewComputeUniformOffsets
+    ) {
+        return;
+    }
 
     resourceLayout = commandBuffer->currentComputePipeline->resourceLayout;
 
@@ -8020,14 +8056,9 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
             commandBuffer,
             descriptorSetLayout);
 
-        writeDescriptorSets = SDL_stack_alloc(
-            VkWriteDescriptorSet,
-            resourceLayout->numSamplers +
-                resourceLayout->numReadonlyStorageTextures +
-                resourceLayout->numReadonlyStorageBuffers);
+        for (Uint32 i = 0; i < resourceLayout->numSamplers; i += 1) {
+            VkWriteDescriptorSet *currentWriteDescriptorSet = &writeDescriptorSets[writeCount];
 
-        for (i = 0; i < resourceLayout->numSamplers; i += 1) {
-            currentWriteDescriptorSet = &writeDescriptorSets[i];
             currentWriteDescriptorSet->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             currentWriteDescriptorSet->pNext = NULL;
             currentWriteDescriptorSet->descriptorCount = 1;
@@ -8044,11 +8075,13 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             currentWriteDescriptorSet->pImageInfo = &imageInfos[imageInfoCount];
 
+            writeCount += 1;
             imageInfoCount += 1;
         }
 
-        for (i = 0; i < resourceLayout->numReadonlyStorageTextures; i += 1) {
-            currentWriteDescriptorSet = &writeDescriptorSets[i];
+        for (Uint32 i = 0; i < resourceLayout->numReadonlyStorageTextures; i += 1) {
+            VkWriteDescriptorSet *currentWriteDescriptorSet = &writeDescriptorSets[writeCount];
+
             currentWriteDescriptorSet->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             currentWriteDescriptorSet->pNext = NULL;
             currentWriteDescriptorSet->descriptorCount = 1;
@@ -8065,11 +8098,12 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             currentWriteDescriptorSet->pImageInfo = &imageInfos[imageInfoCount];
 
+            writeCount += 1;
             imageInfoCount += 1;
         }
 
-        for (i = 0; i < resourceLayout->numReadonlyStorageBuffers; i += 1) {
-            currentWriteDescriptorSet = &writeDescriptorSets[resourceLayout->numReadonlyStorageTextures + i];
+        for (Uint32 i = 0; i < resourceLayout->numReadonlyStorageBuffers; i += 1) {
+            VkWriteDescriptorSet *currentWriteDescriptorSet = &writeDescriptorSets[writeCount];
 
             currentWriteDescriptorSet->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             currentWriteDescriptorSet->pNext = NULL;
@@ -8087,29 +8121,9 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             currentWriteDescriptorSet->pBufferInfo = &bufferInfos[bufferInfoCount];
 
+            writeCount += 1;
             bufferInfoCount += 1;
         }
-
-        renderer->vkUpdateDescriptorSets(
-            renderer->logicalDevice,
-            resourceLayout->numSamplers + resourceLayout->numReadonlyStorageTextures + resourceLayout->numReadonlyStorageBuffers,
-            writeDescriptorSets,
-            0,
-            NULL);
-
-        renderer->vkCmdBindDescriptorSets(
-            commandBuffer->commandBuffer,
-            VK_PIPELINE_BIND_POINT_COMPUTE,
-            resourceLayout->pipelineLayout,
-            0,
-            1,
-            &commandBuffer->computeReadOnlyDescriptorSet,
-            0,
-            NULL);
-
-        SDL_stack_free(writeDescriptorSets);
-        bufferInfoCount = 0;
-        imageInfoCount = 0;
 
         commandBuffer->needNewComputeReadOnlyDescriptorSet = false;
     }
@@ -8122,13 +8136,8 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
             commandBuffer,
             descriptorSetLayout);
 
-        writeDescriptorSets = SDL_stack_alloc(
-            VkWriteDescriptorSet,
-            resourceLayout->numWriteonlyStorageTextures +
-                resourceLayout->numWriteonlyStorageBuffers);
-
-        for (i = 0; i < resourceLayout->numWriteonlyStorageTextures; i += 1) {
-            currentWriteDescriptorSet = &writeDescriptorSets[i];
+        for (Uint32 i = 0; i < resourceLayout->numWriteonlyStorageTextures; i += 1) {
+            VkWriteDescriptorSet *currentWriteDescriptorSet = &writeDescriptorSets[writeCount];
 
             currentWriteDescriptorSet->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             currentWriteDescriptorSet->pNext = NULL;
@@ -8146,11 +8155,12 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             currentWriteDescriptorSet->pImageInfo = &imageInfos[imageInfoCount];
 
+            writeCount += 1;
             imageInfoCount += 1;
         }
 
-        for (i = 0; i < resourceLayout->numWriteonlyStorageBuffers; i += 1) {
-            currentWriteDescriptorSet = &writeDescriptorSets[resourceLayout->numWriteonlyStorageTextures + i];
+        for (Uint32 i = 0; i < resourceLayout->numWriteonlyStorageBuffers; i += 1) {
+            VkWriteDescriptorSet *currentWriteDescriptorSet = &writeDescriptorSets[writeCount];
 
             currentWriteDescriptorSet->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             currentWriteDescriptorSet->pNext = NULL;
@@ -8168,29 +8178,9 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             currentWriteDescriptorSet->pBufferInfo = &bufferInfos[bufferInfoCount];
 
+            writeCount += 1;
             bufferInfoCount += 1;
         }
-
-        renderer->vkUpdateDescriptorSets(
-            renderer->logicalDevice,
-            resourceLayout->numWriteonlyStorageTextures + resourceLayout->numWriteonlyStorageBuffers,
-            writeDescriptorSets,
-            0,
-            NULL);
-
-        renderer->vkCmdBindDescriptorSets(
-            commandBuffer->commandBuffer,
-            VK_PIPELINE_BIND_POINT_COMPUTE,
-            resourceLayout->pipelineLayout,
-            1,
-            1,
-            &commandBuffer->computeWriteOnlyDescriptorSet,
-            0,
-            NULL);
-
-        SDL_stack_free(writeDescriptorSets);
-        bufferInfoCount = 0;
-        imageInfoCount = 0;
 
         commandBuffer->needNewComputeWriteOnlyDescriptorSet = false;
     }
@@ -8203,12 +8193,9 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
             commandBuffer,
             descriptorSetLayout);
 
-        writeDescriptorSets = SDL_stack_alloc(
-            VkWriteDescriptorSet,
-            resourceLayout->numUniformBuffers);
 
-        for (i = 0; i < resourceLayout->numUniformBuffers; i += 1) {
-            currentWriteDescriptorSet = &writeDescriptorSets[i];
+        for (Uint32 i = 0; i < resourceLayout->numUniformBuffers; i += 1) {
+            VkWriteDescriptorSet *currentWriteDescriptorSet = &writeDescriptorSets[writeCount];
 
             currentWriteDescriptorSet->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             currentWriteDescriptorSet->pNext = NULL;
@@ -8226,41 +8213,41 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             currentWriteDescriptorSet->pBufferInfo = &bufferInfos[bufferInfoCount];
 
+            writeCount += 1;
             bufferInfoCount += 1;
         }
 
-        renderer->vkUpdateDescriptorSets(
-            renderer->logicalDevice,
-            resourceLayout->numUniformBuffers,
-            writeDescriptorSets,
-            0,
-            NULL);
-
-        SDL_stack_free(writeDescriptorSets);
-        bufferInfoCount = 0;
-        imageInfoCount = 0;
-
         commandBuffer->needNewComputeUniformDescriptorSet = false;
-        commandBuffer->needNewComputeUniformOffsets = true;
     }
 
-    if (commandBuffer->needNewComputeUniformOffsets) {
-        for (i = 0; i < resourceLayout->numUniformBuffers; i += 1) {
-            dynamicOffsets[i] = commandBuffer->computeUniformBuffers[i]->drawOffset;
-        }
-
-        renderer->vkCmdBindDescriptorSets(
-            commandBuffer->commandBuffer,
-            VK_PIPELINE_BIND_POINT_COMPUTE,
-            resourceLayout->pipelineLayout,
-            2,
-            1,
-            &commandBuffer->computeUniformDescriptorSet,
-            resourceLayout->numUniformBuffers,
-            dynamicOffsets);
-
-        commandBuffer->needNewComputeUniformOffsets = false;
+    for (Uint32 i = 0; i < resourceLayout->numUniformBuffers; i += 1) {
+        dynamicOffsets[i] = commandBuffer->computeUniformBuffers[i]->drawOffset;
+        dynamicOffsetCount += 1;
     }
+
+    renderer->vkUpdateDescriptorSets(
+        renderer->logicalDevice,
+        writeCount,
+        writeDescriptorSets,
+        0,
+        NULL);
+
+    VkDescriptorSet sets[3];
+    sets[0] = commandBuffer->computeReadOnlyDescriptorSet;
+    sets[1] = commandBuffer->computeWriteOnlyDescriptorSet;
+    sets[2] = commandBuffer->computeUniformDescriptorSet;
+
+    renderer->vkCmdBindDescriptorSets(
+        commandBuffer->commandBuffer,
+        VK_PIPELINE_BIND_POINT_COMPUTE,
+        resourceLayout->pipelineLayout,
+        0,
+        3,
+        sets,
+        dynamicOffsetCount,
+        dynamicOffsets);
+
+    commandBuffer->needNewVertexUniformOffsets = false;
 }
 
 static void VULKAN_DispatchCompute(
