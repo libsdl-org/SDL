@@ -122,7 +122,12 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
 #else
 #ifdef SDL_PLATFORM_ANDROID
         // Make sure variables from the application manifest are available
-        Android_JNI_GetManifestEnvironmentVariables();
+        static bool initializing;
+        if (!initializing) {
+            initializing = true;
+            Android_JNI_GetManifestEnvironmentVariables();
+            initializing = false;
+        }
 #endif
         char **strings = environ;
         if (strings) {
