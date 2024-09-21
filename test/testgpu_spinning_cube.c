@@ -253,6 +253,7 @@ CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
     SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
 
+    SDL_INIT_INTERFACE(&createinfo);
     createinfo.type = SDL_GPU_TEXTURETYPE_2D;
     createinfo.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
     createinfo.width = drawablew;
@@ -261,7 +262,6 @@ CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
     createinfo.num_levels = 1;
     createinfo.sample_count = render_state.sample_count;
     createinfo.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
-    createinfo.props = 0;
 
     result = SDL_CreateGPUTexture(gpu_device, &createinfo);
     CHECK_CREATE(result, "Depth Texture")
@@ -279,6 +279,7 @@ CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
         return NULL;
     }
 
+    SDL_INIT_INTERFACE(&createinfo);
     createinfo.type = SDL_GPU_TEXTURETYPE_2D;
     createinfo.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
     createinfo.width = drawablew;
@@ -287,7 +288,6 @@ CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
     createinfo.num_levels = 1;
     createinfo.sample_count = render_state.sample_count;
     createinfo.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
-    createinfo.props = 0;
 
     result = SDL_CreateGPUTexture(gpu_device, &createinfo);
     CHECK_CREATE(result, "MSAA Texture")
@@ -305,6 +305,7 @@ CreateResolveTexture(Uint32 drawablew, Uint32 drawableh)
         return NULL;
     }
 
+    SDL_INIT_INTERFACE(&createinfo);
     createinfo.type = SDL_GPU_TEXTURETYPE_2D;
     createinfo.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
     createinfo.width = drawablew;
@@ -313,7 +314,6 @@ CreateResolveTexture(Uint32 drawablew, Uint32 drawableh)
     createinfo.num_levels = 1;
     createinfo.sample_count = SDL_GPU_SAMPLECOUNT_1;
     createinfo.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
-    createinfo.props = 0;
 
     result = SDL_CreateGPUTexture(gpu_device, &createinfo);
     CHECK_CREATE(result, "Resolve Texture")
@@ -457,11 +457,11 @@ static SDL_GPUShader*
 load_shader(bool is_vertex)
 {
     SDL_GPUShaderCreateInfo createinfo;
+    SDL_INIT_INTERFACE(&createinfo);
     createinfo.num_samplers = 0;
     createinfo.num_storage_buffers = 0;
     createinfo.num_storage_textures = 0;
     createinfo.num_uniform_buffers = is_vertex ? 1 : 0;
-    createinfo.props = 0;
 
     SDL_GPUShaderFormat format = SDL_GetGPUShaderFormats(gpu_device);
     if (format & SDL_GPU_SHADERFORMAT_DXBC) {
@@ -535,9 +535,9 @@ init_render_state(int msaa)
 
     /* Create buffers */
 
+    SDL_INIT_INTERFACE(&buffer_desc);
     buffer_desc.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
     buffer_desc.size = sizeof(vertex_data);
-    buffer_desc.props = 0;
     render_state.buf_vertex = SDL_CreateGPUBuffer(
         gpu_device,
         &buffer_desc
@@ -546,9 +546,9 @@ init_render_state(int msaa)
 
     SDL_SetGPUBufferName(gpu_device, render_state.buf_vertex, "космонавт");
 
+    SDL_INIT_INTERFACE(&transfer_buffer_desc);
     transfer_buffer_desc.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
     transfer_buffer_desc.size = sizeof(vertex_data);
-    transfer_buffer_desc.props = 0;
     buf_transfer = SDL_CreateGPUTransferBuffer(
         gpu_device,
         &transfer_buffer_desc
@@ -584,7 +584,7 @@ init_render_state(int msaa)
 
     /* Set up the graphics pipeline */
 
-    SDL_zero(pipelinedesc);
+    SDL_INIT_INTERFACE(&pipelinedesc);
     SDL_zero(color_target_desc);
 
     color_target_desc.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
@@ -624,8 +624,6 @@ init_render_state(int msaa)
     pipelinedesc.vertex_input_state.vertex_buffer_descriptions = &vertex_buffer_desc;
     pipelinedesc.vertex_input_state.num_vertex_attributes = 2;
     pipelinedesc.vertex_input_state.vertex_attributes = (SDL_GPUVertexAttribute*) &vertex_attributes;
-
-    pipelinedesc.props = 0;
 
     render_state.pipeline = SDL_CreateGPUGraphicsPipeline(gpu_device, &pipelinedesc);
     CHECK_CREATE(render_state.pipeline, "Render Pipeline")

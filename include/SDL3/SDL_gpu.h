@@ -1140,10 +1140,13 @@ typedef struct SDL_GPUIndirectDispatchCommand
  *
  * \since This function is available since SDL 3.0.0
  *
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_CreateGPUSampler
  */
 typedef struct SDL_GPUSamplerCreateInfo
 {
+    Uint32 version;                            /**< The version of this interface */
+
     SDL_GPUFilter min_filter;                  /**< The minification filter to apply to lookups. */
     SDL_GPUFilter mag_filter;                  /**< The magnification filter to apply to lookups. */
     SDL_GPUSamplerMipmapMode mipmap_mode;      /**< The mipmap filter to apply to lookups. */
@@ -1157,10 +1160,6 @@ typedef struct SDL_GPUSamplerCreateInfo
     float max_lod;                             /**< Clamps the maximum of the computed LOD value. */
     bool enable_anisotropy;                /**< true to enable anisotropic filtering. */
     bool enable_compare;                   /**< true to enable comparison against a reference value during lookups. */
-    Uint8 padding1;
-    Uint8 padding2;
-
-    SDL_PropertiesID props;                    /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUSamplerCreateInfo;
 
 /**
@@ -1267,10 +1266,13 @@ typedef struct SDL_GPUColorTargetBlendState
  *
  * \since This struct is available since SDL 3.0.0
  *
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_CreateGPUShader
  */
 typedef struct SDL_GPUShaderCreateInfo
 {
+    Uint32 version;               /**< The version of this interface */
+
     size_t code_size;             /**< The size in bytes of the code pointed to. */
     const Uint8 *code;            /**< A pointer to shader code. */
     const char *entrypoint;       /**< A pointer to a null-terminated UTF-8 string specifying the entry point function name for the shader. */
@@ -1280,8 +1282,6 @@ typedef struct SDL_GPUShaderCreateInfo
     Uint32 num_storage_textures;  /**< The number of storage textures defined in the shader. */
     Uint32 num_storage_buffers;   /**< The number of storage buffers defined in the shader. */
     Uint32 num_uniform_buffers;   /**< The number of uniform buffers defined in the shader. */
-
-    SDL_PropertiesID props;       /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUShaderCreateInfo;
 
 /**
@@ -1293,10 +1293,13 @@ typedef struct SDL_GPUShaderCreateInfo
  *
  * \since This struct is available since SDL 3.0.0
  *
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_CreateGPUTexture
  */
 typedef struct SDL_GPUTextureCreateInfo
 {
+    Uint32 version;                   /**< The version of this interface */
+
     SDL_GPUTextureType type;          /**< The base dimensionality of the texture. */
     SDL_GPUTextureFormat format;      /**< The pixel format of the texture. */
     SDL_GPUTextureUsageFlags usage;   /**< How the texture is intended to be used by the client. */
@@ -1305,8 +1308,6 @@ typedef struct SDL_GPUTextureCreateInfo
     Uint32 layer_count_or_depth;      /**< The layer count or depth of the texture. This value is treated as a layer count on 2D array textures, and as a depth value on 3D textures. */
     Uint32 num_levels;                /**< The number of mip levels in the texture. */
     SDL_GPUSampleCount sample_count;  /**< The number of samples per texel. Only applies if the texture is used as a render target. */
-
-    SDL_PropertiesID props;           /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUTextureCreateInfo;
 
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_R_FLOAT       "SDL.gpu.createtexture.d3d12.clear.r"
@@ -1324,14 +1325,15 @@ typedef struct SDL_GPUTextureCreateInfo
  *
  * \since This struct is available since SDL 3.0.0
  *
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_CreateGPUBuffer
  */
 typedef struct SDL_GPUBufferCreateInfo
 {
+    Uint32 version;                 /**< The version of this interface */
+
     SDL_GPUBufferUsageFlags usage;  /**< How the buffer is intended to be used by the client. */
     Uint32 size;                    /**< The size in bytes of the buffer. */
-
-    SDL_PropertiesID props;         /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUBufferCreateInfo;
 
 /**
@@ -1339,14 +1341,15 @@ typedef struct SDL_GPUBufferCreateInfo
  *
  * \since This struct is available since SDL 3.0.0
  *
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_CreateGPUTransferBuffer
  */
 typedef struct SDL_GPUTransferBufferCreateInfo
 {
+    Uint32 version;                    /**< The version of this interface */
+
     SDL_GPUTransferBufferUsage usage;  /**< How the transfer buffer is intended to be used by the client. */
     Uint32 size;                       /**< The size in bytes of the transfer buffer. */
-
-    SDL_PropertiesID props;            /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUTransferBufferCreateInfo;
 
 /* Pipeline state structures */
@@ -1452,10 +1455,13 @@ typedef struct SDL_GPUGraphicsPipelineTargetInfo
  *
  * \since This struct is available since SDL 3.0.0
  *
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_CreateGPUGraphicsPipeline
  */
 typedef struct SDL_GPUGraphicsPipelineCreateInfo
 {
+    Uint32 version;                                 /**< The version of this interface */
+
     SDL_GPUShader *vertex_shader;                   /**< The vertex shader used by the graphics pipeline. */
     SDL_GPUShader *fragment_shader;                 /**< The fragment shader used by the graphics pipeline. */
     SDL_GPUVertexInputState vertex_input_state;     /**< The vertex layout of the graphics pipeline. */
@@ -1464,8 +1470,6 @@ typedef struct SDL_GPUGraphicsPipelineCreateInfo
     SDL_GPUMultisampleState multisample_state;      /**< The multisample state of the graphics pipeline. */
     SDL_GPUDepthStencilState depth_stencil_state;   /**< The depth-stencil state of the graphics pipeline. */
     SDL_GPUGraphicsPipelineTargetInfo target_info;  /**< Formats and blend modes for the render targets of the graphics pipeline. */
-
-    SDL_PropertiesID props;                         /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUGraphicsPipelineCreateInfo;
 
 /**
@@ -1473,10 +1477,13 @@ typedef struct SDL_GPUGraphicsPipelineCreateInfo
  *
  * \since This struct is available since SDL 3.0.0
  *
+ * \sa SDL_INIT_INTERFACE
  * \sa SDL_CreateGPUComputePipeline
  */
 typedef struct SDL_GPUComputePipelineCreateInfo
 {
+    Uint32 version;                         /**< The version of this interface */
+
     size_t code_size;                       /**< The size in bytes of the compute shader code pointed to. */
     const Uint8 *code;                      /**< A pointer to compute shader code. */
     const char *entrypoint;                 /**< A pointer to a null-terminated UTF-8 string specifying the entry point function name for the shader. */
@@ -1490,8 +1497,6 @@ typedef struct SDL_GPUComputePipelineCreateInfo
     Uint32 threadcount_x;                   /**< The number of threads in the X dimension. This should match the value in the shader. */
     Uint32 threadcount_y;                   /**< The number of threads in the Y dimension. This should match the value in the shader. */
     Uint32 threadcount_z;                   /**< The number of threads in the Z dimension. This should match the value in the shader. */
-
-    SDL_PropertiesID props;                 /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUComputePipelineCreateInfo;
 
 /**

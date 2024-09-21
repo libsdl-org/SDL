@@ -688,6 +688,11 @@ SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
         SDL_InvalidParamError("createinfo");
         return NULL;
     }
+    if (createinfo->version < sizeof(*createinfo)) {
+        // Update this to handle older versions of this interface
+        SDL_SetError("Invalid createinfo, should be initialized with SDL_INIT_INTERFACE()");
+        return NULL;
+    }
 
     if (device->debug_mode) {
         if (createinfo->format == SDL_GPU_SHADERFORMAT_INVALID) {
@@ -726,6 +731,11 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
     CHECK_DEVICE_MAGIC(device, NULL);
     if (graphicsPipelineCreateInfo == NULL) {
         SDL_InvalidParamError("graphicsPipelineCreateInfo");
+        return NULL;
+    }
+    if (graphicsPipelineCreateInfo->version < sizeof(*graphicsPipelineCreateInfo)) {
+        // Update this to handle older versions of this interface
+        SDL_SetError("Invalid createinfo, should be initialized with SDL_INIT_INTERFACE()");
         return NULL;
     }
 
@@ -810,6 +820,11 @@ SDL_GPUSampler *SDL_CreateGPUSampler(
         SDL_InvalidParamError("createinfo");
         return NULL;
     }
+    if (createinfo->version < sizeof(*createinfo)) {
+        // Update this to handle older versions of this interface
+        SDL_SetError("Invalid createinfo, should be initialized with SDL_INIT_INTERFACE()");
+        return NULL;
+    }
 
     return device->CreateSampler(
         device->driverData,
@@ -823,6 +838,11 @@ SDL_GPUShader *SDL_CreateGPUShader(
     CHECK_DEVICE_MAGIC(device, NULL);
     if (createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
+        return NULL;
+    }
+    if (createinfo->version < sizeof(*createinfo)) {
+        // Update this to handle older versions of this interface
+        SDL_SetError("Invalid createinfo, should be initialized with SDL_INIT_INTERFACE()");
         return NULL;
     }
 
@@ -989,6 +1009,11 @@ SDL_GPUBuffer *SDL_CreateGPUBuffer(
         SDL_InvalidParamError("createinfo");
         return NULL;
     }
+    if (createinfo->version < sizeof(*createinfo)) {
+        // Update this to handle older versions of this interface
+        SDL_SetError("Invalid createinfo, should be initialized with SDL_INIT_INTERFACE()");
+        return NULL;
+    }
 
     return device->CreateBuffer(
         device->driverData,
@@ -1003,6 +1028,11 @@ SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
     CHECK_DEVICE_MAGIC(device, NULL);
     if (createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
+        return NULL;
+    }
+    if (createinfo->version < sizeof(*createinfo)) {
+        // Update this to handle older versions of this interface
+        SDL_SetError("Invalid createinfo, should be initialized with SDL_INIT_INTERFACE()");
         return NULL;
     }
 
