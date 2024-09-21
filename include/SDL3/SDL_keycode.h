@@ -123,7 +123,7 @@ typedef Uint32 SDL_Keycode;
 #define SDLK_RIGHTBRACE             0x0000007du /* '}' */
 #define SDLK_TILDE                  0x0000007eu /* '~' */
 #define SDLK_DELETE                 0x0000007fu /* '\x7F' */
-#define SDLK_PLUSMINUS              0x000000b1u /* '±' */
+#define SDLK_PLUSMINUS              0x000000b1u /* '\xB1' */
 #define SDLK_CAPSLOCK               0x40000039u /* SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CAPSLOCK) */
 #define SDLK_F1                     0x4000003au /* SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F1) */
 #define SDLK_F2                     0x4000003bu /* SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F2) */
