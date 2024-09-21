@@ -313,14 +313,6 @@ static NSUInteger SDLToMetal_SampleCount[] = {
     8  // SDL_GPU_SAMPLECOUNT_8
 };
 
-static MTLTextureType SDLToMetal_TextureType[] = {
-    MTLTextureType2D,       // SDL_GPU_TEXTURETYPE_2D
-    MTLTextureType2DArray,  // SDL_GPU_TEXTURETYPE_2D_ARRAY
-    MTLTextureType3D,       // SDL_GPU_TEXTURETYPE_3D
-    MTLTextureTypeCube,     // SDL_GPU_TEXTURETYPE_CUBE
-    MTLTextureTypeCubeArray // SDL_GPU_TEXTURETYPE_CUBE_ARRAY
-};
-
 static SDL_GPUTextureFormat SwapchainCompositionToFormat[] = {
     SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM,      // SDR
     SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB, // SDR_LINEAR
@@ -329,6 +321,24 @@ static SDL_GPUTextureFormat SwapchainCompositionToFormat[] = {
 };
 
 static CFStringRef SwapchainCompositionToColorSpace[4]; // initialized on device creation
+
+static MTLTextureType SDLToMetal_TextureType(SDL_GPUTextureType textureType, bool isMSAA)
+{
+    switch (textureType) {
+    case SDL_GPU_TEXTURETYPE_2D:
+        return isMSAA ? MTLTextureType2DMultisample : MTLTextureType2D;
+    case SDL_GPU_TEXTURETYPE_2D_ARRAY:
+        return MTLTextureType2DArray;
+    case SDL_GPU_TEXTURETYPE_3D:
+        return MTLTextureType3D;
+    case SDL_GPU_TEXTURETYPE_CUBE:
+        return MTLTextureTypeCube;
+    case SDL_GPU_TEXTURETYPE_CUBE_ARRAY:
+        return MTLTextureTypeCubeArray;
+    default:
+        return MTLTextureType2D;
+    }
+}
 
 static MTLColorWriteMask SDLToMetal_ColorWriteMask(
     SDL_GPUColorComponentFlags mask)
@@ -1323,7 +1333,7 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
     id<MTLTexture> texture;
     MetalTexture *metalTexture;
 
-    textureDescriptor.textureType = SDLToMetal_TextureType[createinfo->type];
+    textureDescriptor.textureType = SDLToMetal_TextureType(createinfo->type, createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1);
     textureDescriptor.pixelFormat = SDLToMetal_SurfaceFormat[createinfo->format];
     // This format isn't natively supported so let's swizzle!
     if (createinfo->format == SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM) {
@@ -2965,7 +2975,7 @@ static void METAL_BeginComputePass(
             METAL_INTERNAL_TrackTexture(metalCommandBuffer, texture);
 
             textureView = [texture->handle newTextureViewWithPixelFormat:SDLToMetal_SurfaceFormat[textureContainer->header.info.format]
-                                                             textureType:SDLToMetal_TextureType[textureContainer->header.info.type]
+                                                             textureType:SDLToMetal_TextureType(textureContainer->header.info.type, false)
                                                                   levels:NSMakeRange(storageTextureBindings[i].mip_level, 1)
                                                                   slices:NSMakeRange(storageTextureBindings[i].layer, 1)];
 
