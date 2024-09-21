@@ -2957,31 +2957,23 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
                     rtvDesc.Format = SDLToD3D12_TextureFormat[createinfo->format];
 
-                    if (isMultisample) {
-                        if (createinfo->type == SDL_GPU_TEXTURETYPE_2D) {
-                            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
-                        } else if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
-                            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMSARRAY;
-                            rtvDesc.Texture2DMSArray.FirstArraySlice = layerIndex;
-                            rtvDesc.Texture2DMSArray.ArraySize = 1;
-                        }
+                    if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+                        rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+                        rtvDesc.Texture2DArray.MipSlice = levelIndex;
+                        rtvDesc.Texture2DArray.FirstArraySlice = layerIndex;
+                        rtvDesc.Texture2DArray.ArraySize = 1;
+                        rtvDesc.Texture2DArray.PlaneSlice = 0;
+                    } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
+                        rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
+                        rtvDesc.Texture3D.MipSlice = levelIndex;
+                        rtvDesc.Texture3D.FirstWSlice = depthIndex;
+                        rtvDesc.Texture3D.WSize = 1;
+                    } else if (isMultisample) {
+                        rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
                     } else {
-                        if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
-                            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
-                            rtvDesc.Texture2DArray.MipSlice = levelIndex;
-                            rtvDesc.Texture2DArray.FirstArraySlice = layerIndex;
-                            rtvDesc.Texture2DArray.ArraySize = 1;
-                            rtvDesc.Texture2DArray.PlaneSlice = 0;
-                        } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
-                            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
-                            rtvDesc.Texture3D.MipSlice = levelIndex;
-                            rtvDesc.Texture3D.FirstWSlice = depthIndex;
-                            rtvDesc.Texture3D.WSize = 1;
-                        } else {
-                            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-                            rtvDesc.Texture2D.MipSlice = levelIndex;
-                            rtvDesc.Texture2D.PlaneSlice = 0;
-                        }
+                        rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+                        rtvDesc.Texture2D.MipSlice = levelIndex;
+                        rtvDesc.Texture2D.PlaneSlice = 0;
                     }
 
                     ID3D12Device_CreateRenderTargetView(
