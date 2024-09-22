@@ -10,17 +10,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-
 /* We will use this renderer to draw into this window every frame. */
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
-
-/* the current red color we're clearing to. */
-static Uint8 red = 0;
-
-/* When fading up, this is 1, when fading down, it's -1. */
-static int fade_direction = 1;
-
 
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -50,9 +42,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    /* since we're always fading red, we leave green and blue at zero.
-       alpha doesn't mean much here, so leave it at full (255, no transparency). */
-    SDL_SetRenderDrawColor(renderer, red, 0, 0, 255);
+    const double now = ((double)SDL_GetTicks()) / 1000.0;  /* convert from milliseconds to seconds. */
+    /* choose the color for the frame we will draw. The sine wave trick makes it fade between colors smoothly. */
+    const float red = (float) (0.5 + 0.5 * SDL_sin(now));
+    const float green = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 2 / 3));
+    const float blue = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 4 / 3));
+    SDL_SetRenderDrawColorFloat(renderer, red, green, blue, 1.0f);  /* new color, full alpha. */
 
     /* clear the window to the draw color. */
     SDL_RenderClear(renderer);
@@ -60,20 +55,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     /* put the newly-cleared rendering on the screen. */
     SDL_RenderPresent(renderer);
 
-    /* update the color for the next frame we will draw. */
-    if (fade_direction > 0) {
-        if (red == 255) {
-            fade_direction = -1;
-        } else {
-            red++;
-        }
-    } else if (fade_direction < 0) {
-        if (red == 0) {
-            fade_direction = 1;
-        } else {
-            red--;
-        }
-    }
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 
