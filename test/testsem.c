@@ -31,7 +31,7 @@ typedef struct Thread_State
 {
     SDL_Thread *thread;
     int number;
-    SDL_bool flag;
+    bool flag;
     int loop_count;
     int content_count;
 } Thread_State;
@@ -108,7 +108,7 @@ TestWaitTimeout(void)
     Uint64 start_ticks;
     Uint64 end_ticks;
     Uint64 duration;
-    SDL_bool result;
+    bool result;
 
     sem = SDL_CreateSemaphore(0);
     SDL_Log("Waiting 2 seconds on semaphore\n");
@@ -125,7 +125,7 @@ TestWaitTimeout(void)
 
     /* Check to make sure the return value indicates timed out */
     if (result) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_WaitSemaphoreTimeout returned: %d; expected: SDL_FALSE\n\n", result);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_WaitSemaphoreTimeout returned: %d; expected: false\n\n", result);
     }
 
     SDL_DestroySemaphore(sem);
@@ -184,7 +184,7 @@ ThreadFuncOverheadContended(void *data)
 }
 
 static void
-TestOverheadContended(SDL_bool try_wait)
+TestOverheadContended(bool try_wait)
 {
     Uint64 start_ticks;
     Uint64 end_ticks;
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
     int arg_count = 0;
     int i;
     int init_sem = 0;
-    SDL_bool enable_threads = SDL_TRUE;
+    bool enable_threads = true;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
@@ -265,9 +265,6 @@ int main(int argc, char **argv)
     if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -277,7 +274,7 @@ int main(int argc, char **argv)
         if (consumed == 0) {
             consumed = -1;
             if (SDL_strcasecmp(argv[i], "--no-threads") == 0) {
-                enable_threads = SDL_FALSE;
+                enable_threads = false;
                 consumed = 1;
             } else if (arg_count == 0) {
                 char *endptr;
@@ -320,9 +317,9 @@ int main(int argc, char **argv)
     TestOverheadUncontended();
 
     if (enable_threads) {
-        TestOverheadContended(SDL_FALSE);
+        TestOverheadContended(false);
 
-        TestOverheadContended(SDL_TRUE);
+        TestOverheadContended(true);
     }
 
     SDL_Quit();

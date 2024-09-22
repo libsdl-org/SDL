@@ -50,16 +50,13 @@ int main(int argc, char *argv[])
     SDL_Thread *thread;
     SDLTest_CommonState *state;
     int i;
-    SDL_bool enable_threads = SDL_TRUE;
+    bool enable_threads = true;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
     if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -69,7 +66,7 @@ int main(int argc, char *argv[])
         if (consumed == 0) {
             consumed = -1;
             if (SDL_strcasecmp(argv[i], "--no-threads") == 0) {
-                enable_threads = SDL_FALSE;
+                enable_threads = false;
                 consumed = 1;
             }
         }
@@ -93,7 +90,7 @@ int main(int argc, char *argv[])
     /* Set the error value for the main thread */
     SDL_SetError("No worries");
 
-    if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+    if (SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_TESTS_QUICK") != NULL) {
         SDL_Log("Not running slower tests");
         SDL_Quit();
         return 0;

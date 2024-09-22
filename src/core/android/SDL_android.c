@@ -558,7 +558,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, SDL_arraysize(SDLAudioManager_tab));
     register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
     register_methods(env, "org/libsdl/app/HIDDeviceManager", HIDDeviceManager_tab, SDL_arraysize(HIDDeviceManager_tab));
-    SDL_AtomicSet(&bAllowRecreateActivity, false);
+    SDL_SetAtomicInt(&bAllowRecreateActivity, false);
 
     return JNI_VERSION_1_4;
 }
@@ -761,16 +761,16 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter)(
 static void SDLCALL SDL_AllowRecreateActivityChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     if (SDL_GetStringBoolean(hint, false)) {
-        SDL_AtomicSet(&bAllowRecreateActivity, true);
+        SDL_SetAtomicInt(&bAllowRecreateActivity, true);
     } else {
-        SDL_AtomicSet(&bAllowRecreateActivity, false);
+        SDL_SetAtomicInt(&bAllowRecreateActivity, false);
     }
 }
 
 JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeAllowRecreateActivity)(
     JNIEnv *env, jclass jcls)
 {
-    return SDL_AtomicGet(&bAllowRecreateActivity);
+    return SDL_GetAtomicInt(&bAllowRecreateActivity);
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitMainThread)(
@@ -1524,7 +1524,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
     const char *utfname = (*env)->GetStringUTFChars(env, name, NULL);
     const char *utfvalue = (*env)->GetStringUTFChars(env, value, NULL);
 
-    SDL_setenv(utfname, utfvalue, 1);
+    // This is only called at startup, to initialize the environment
+    // Note that we call setenv() directly to avoid affecting SDL environments
+    setenv(utfname, utfvalue, 1);
 
     (*env)->ReleaseStringUTFChars(env, name, utfname);
     (*env)->ReleaseStringUTFChars(env, value, utfvalue);
@@ -1689,7 +1691,7 @@ static bool Android_JNI_ExceptionOccurred(bool silent)
     jthrowable exception;
 
     // Detect mismatch LocalReferenceHolder_Init/Cleanup
-    SDL_assert(SDL_AtomicGet(&s_active) > 0);
+    SDL_assert(SDL_GetAtomicInt(&s_active) > 0);
 
     exception = (*env)->ExceptionOccurred(env);
     if (exception != NULL) {
@@ -1828,7 +1830,7 @@ Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence)
     return (Sint64) AAsset_seek64((AAsset *)userdata, offset, (int)whence);
 }
 
-SDL_bool Android_JNI_FileClose(void *userdata)
+bool Android_JNI_FileClose(void *userdata)
 {
     AAsset_close((AAsset *)userdata);
     return true;
@@ -2028,7 +2030,7 @@ void Android_JNI_HapticStop(int device_id)
 // See SDLActivity.java for constants.
 #define COMMAND_SET_KEEP_SCREEN_ON 5
 
-SDL_bool SDL_SendAndroidMessage(Uint32 command, int param)
+bool SDL_SendAndroidMessage(Uint32 command, int param)
 {
     if (command < 0x8000) {
         return SDL_InvalidParamError("command");
@@ -2122,8 +2124,8 @@ bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *b
     }
 
     if (messageboxdata->colorScheme) {
-        colors = (*env)->NewIntArray(env, SDL_MESSAGEBOX_COLOR_MAX);
-        for (i = 0; i < SDL_MESSAGEBOX_COLOR_MAX; ++i) {
+        colors = (*env)->NewIntArray(env, SDL_MESSAGEBOX_COLOR_COUNT);
+        for (i = 0; i < SDL_MESSAGEBOX_COLOR_COUNT; ++i) {
             temp = (0xFFU << 24) |
                    (messageboxdata->colorScheme->colors[i].r << 16) |
                    (messageboxdata->colorScheme->colors[i].g << 8) |
@@ -2210,19 +2212,19 @@ bool SDL_IsAndroidTablet(void)
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsTablet);
 }
 
-SDL_bool SDL_IsAndroidTV(void)
+bool SDL_IsAndroidTV(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsAndroidTV);
 }
 
-SDL_bool SDL_IsChromebook(void)
+bool SDL_IsChromebook(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsChromebook);
 }
 
-SDL_bool SDL_IsDeXMode(void)
+bool SDL_IsDeXMode(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsDeXMode);
@@ -2419,7 +2421,7 @@ const char *SDL_GetAndroidCachePath(void)
     return s_AndroidCachePath;
 }
 
-SDL_bool SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
+bool SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
 {
     return Android_JNI_ShowToast(message, duration, gravity, xOffset, yOffset);
 }
@@ -2518,7 +2520,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-SDL_bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
+bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
 {
     if (!permission) {
         return SDL_InvalidParamError("permission");
@@ -2538,7 +2540,7 @@ SDL_bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroid
     }
 
     static SDL_AtomicInt next_request_code;
-    info->request_code = SDL_AtomicAdd(&next_request_code, 1);
+    info->request_code = SDL_AddAtomicInt(&next_request_code, 1);
 
     info->callback = cb;
     info->userdata = userdata;
@@ -2710,7 +2712,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 
         // Convert fileList to string
         size_t count = (*env)->GetArrayLength(env, fileList);
-        char **charFileList = SDL_calloc(sizeof(char*), count + 1);
+        char **charFileList = SDL_calloc(count + 1, sizeof(char*));
 
         if (charFileList == NULL) {
             mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, NULL, -1);
@@ -2797,7 +2799,7 @@ bool Android_JNI_OpenFileDialog(
 
     // Setup data
     static SDL_AtomicInt next_request_code;
-    mAndroidFileDialogData.request_code = SDL_AtomicAdd(&next_request_code, 1);
+    mAndroidFileDialogData.request_code = SDL_AddAtomicInt(&next_request_code, 1);
     mAndroidFileDialogData.userdata = userdata;
     mAndroidFileDialogData.callback = callback;
 
@@ -2807,7 +2809,7 @@ bool Android_JNI_OpenFileDialog(
     (*env)->DeleteLocalRef(env, filtersArray);
     if (!success) {
         mAndroidFileDialogData.callback = NULL;
-        SDL_AtomicAdd(&next_request_code, -1);
+        SDL_AddAtomicInt(&next_request_code, -1);
         SDL_SetError("Unspecified error in JNI");
 
         return false;

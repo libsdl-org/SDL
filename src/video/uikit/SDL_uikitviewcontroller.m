@@ -404,7 +404,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, *)) {
+        if (@available(iOS 11.0, tvOS 11.0, *)) {
             textField.textContentType = UITextContentTypeUsername;
         } else {
             textField.textContentType = nil;
@@ -412,7 +412,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, *)) {
+        if (@available(iOS 11.0, tvOS 11.0, *)) {
             textField.textContentType = UITextContentTypePassword;
         } else {
             textField.textContentType = nil;
@@ -421,7 +421,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, *)) {
+        if (@available(iOS 11.0, tvOS 11.0, *)) {
             textField.textContentType = UITextContentTypePassword;
         } else {
             textField.textContentType = nil;
@@ -433,7 +433,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
         textField.keyboardType = UIKeyboardTypeNumberPad;
-        if (@available(iOS 12.0, *)) {
+        if (@available(iOS 12.0, tvOS 12.0, *)) {
             textField.textContentType = UITextContentTypeOneTimeCode;
         } else {
             textField.textContentType = nil;
@@ -442,7 +442,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE:
         textField.keyboardType = UIKeyboardTypeNumberPad;
-        if (@available(iOS 12.0, *)) {
+        if (@available(iOS 12.0, tvOS 12.0, *)) {
             textField.textContentType = UITextContentTypeOneTimeCode;
         } else {
             textField.textContentType = nil;
@@ -575,8 +575,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
             size_t deleteLength = SDL_utf8strlen([[committedText substringFromIndex:matchLength] UTF8String]);
             while (deleteLength > 0) {
                 // Send distinct down and up events for each backspace action
-                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_BACKSPACE, SDL_PRESSED);
-                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_BACKSPACE, SDL_RELEASED);
+                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_BACKSPACE, true);
+                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_BACKSPACE, false);
                 --deleteLength;
             }
         }

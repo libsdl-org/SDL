@@ -620,35 +620,35 @@ static int CPU_haveAVX512F(void)
 }
 #endif
 
-static int SDL_CPUCount = 0;
+static int SDL_NumLogicalCPUCores = 0;
 
-int SDL_GetCPUCount(void)
+int SDL_GetNumLogicalCPUCores(void)
 {
-    if (!SDL_CPUCount) {
+    if (!SDL_NumLogicalCPUCores) {
 #if defined(HAVE_SYSCONF) && defined(_SC_NPROCESSORS_ONLN)
-        if (SDL_CPUCount <= 0) {
-            SDL_CPUCount = (int)sysconf(_SC_NPROCESSORS_ONLN);
+        if (SDL_NumLogicalCPUCores <= 0) {
+            SDL_NumLogicalCPUCores = (int)sysconf(_SC_NPROCESSORS_ONLN);
         }
 #endif
 #ifdef HAVE_SYSCTLBYNAME
-        if (SDL_CPUCount <= 0) {
-            size_t size = sizeof(SDL_CPUCount);
-            sysctlbyname("hw.ncpu", &SDL_CPUCount, &size, NULL, 0);
+        if (SDL_NumLogicalCPUCores <= 0) {
+            size_t size = sizeof(SDL_NumLogicalCPUCores);
+            sysctlbyname("hw.ncpu", &SDL_NumLogicalCPUCores, &size, NULL, 0);
         }
 #endif
 #if defined(SDL_PLATFORM_WINDOWS)
-        if (SDL_CPUCount <= 0) {
+        if (SDL_NumLogicalCPUCores <= 0) {
             SYSTEM_INFO info;
             GetSystemInfo(&info);
-            SDL_CPUCount = info.dwNumberOfProcessors;
+            SDL_NumLogicalCPUCores = info.dwNumberOfProcessors;
         }
 #endif
         // There has to be at least 1, right? :)
-        if (SDL_CPUCount <= 0) {
-            SDL_CPUCount = 1;
+        if (SDL_NumLogicalCPUCores <= 0) {
+            SDL_NumLogicalCPUCores = 1;
         }
     }
-    return SDL_CPUCount;
+    return SDL_NumLogicalCPUCores;
 }
 
 #ifdef __e2k__
@@ -1035,72 +1035,72 @@ void SDL_QuitCPUInfo(void) {
 
 #define CPU_FEATURE_AVAILABLE(f) ((SDL_GetCPUFeatures() & (f)) ? true : false)
 
-SDL_bool SDL_HasAltiVec(void)
+bool SDL_HasAltiVec(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_ALTIVEC);
 }
 
-SDL_bool SDL_HasMMX(void)
+bool SDL_HasMMX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_MMX);
 }
 
-SDL_bool SDL_HasSSE(void)
+bool SDL_HasSSE(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE);
 }
 
-SDL_bool SDL_HasSSE2(void)
+bool SDL_HasSSE2(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE2);
 }
 
-SDL_bool SDL_HasSSE3(void)
+bool SDL_HasSSE3(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE3);
 }
 
-SDL_bool SDL_HasSSE41(void)
+bool SDL_HasSSE41(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE41);
 }
 
-SDL_bool SDL_HasSSE42(void)
+bool SDL_HasSSE42(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE42);
 }
 
-SDL_bool SDL_HasAVX(void)
+bool SDL_HasAVX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX);
 }
 
-SDL_bool SDL_HasAVX2(void)
+bool SDL_HasAVX2(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX2);
 }
 
-SDL_bool SDL_HasAVX512F(void)
+bool SDL_HasAVX512F(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX512F);
 }
 
-SDL_bool SDL_HasARMSIMD(void)
+bool SDL_HasARMSIMD(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_ARM_SIMD);
 }
 
-SDL_bool SDL_HasNEON(void)
+bool SDL_HasNEON(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_NEON);
 }
 
-SDL_bool SDL_HasLSX(void)
+bool SDL_HasLSX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_LSX);
 }
 
-SDL_bool SDL_HasLASX(void)
+bool SDL_HasLASX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_LASX);
 }

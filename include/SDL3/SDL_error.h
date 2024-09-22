@@ -44,8 +44,8 @@ extern "C" {
  *
  * Calling this function will replace any previous error message that was set.
  *
- * This function always returns -1, since SDL frequently uses -1 to signify an
- * failing result, leading to this idiom:
+ * This function always returns false, since SDL frequently uses false to
+ * signify a failing result, leading to this idiom:
  *
  * ```c
  * if (error_code) {
@@ -56,25 +56,25 @@ extern "C" {
  * \param fmt a printf()-style message format string.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any.
- * \returns SDL_FALSE.
+ * \returns false.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ClearError
  * \sa SDL_GetError
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
 
 /**
  * Set an error indicating that memory allocation failed.
  *
  * This function does not do any memory allocation.
  *
- * \returns SDL_FALSE.
+ * \returns false.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_OutOfMemory(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_OutOfMemory(void);
 
 /**
  * Retrieve a message about the last error that occurred on the current
@@ -114,14 +114,14 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetError(void);
 /**
  * Clear any previous error message for this thread.
  *
- * \returns SDL_TRUE.
+ * \returns true.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetError
  * \sa SDL_SetError
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ClearError(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_ClearError(void);
 
 /**
  *  \name Internal error functions

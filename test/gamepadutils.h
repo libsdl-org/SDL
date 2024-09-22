@@ -26,7 +26,7 @@ enum
 
     /* ... SDL_GamepadButton ... */
 
-    SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_NEGATIVE = SDL_GAMEPAD_BUTTON_MAX,
+    SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_NEGATIVE = SDL_GAMEPAD_BUTTON_COUNT,
     SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_POSITIVE,
     SDL_GAMEPAD_ELEMENT_AXIS_LEFTY_NEGATIVE,
     SDL_GAMEPAD_ELEMENT_AXIS_LEFTY_POSITIVE,
@@ -55,7 +55,7 @@ extern GamepadImage *CreateGamepadImage(SDL_Renderer *renderer);
 extern void SetGamepadImagePosition(GamepadImage *ctx, float x, float y);
 extern void GetGamepadImageArea(GamepadImage *ctx, SDL_FRect *area);
 extern void GetGamepadTouchpadArea(GamepadImage *ctx, SDL_FRect *area);
-extern void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front);
+extern void SetGamepadImageShowingFront(GamepadImage *ctx, bool showing_front);
 extern SDL_GamepadType GetGamepadImageType(GamepadImage *ctx);
 extern void SetGamepadImageDisplayMode(GamepadImage *ctx, ControllerDisplayMode display_mode);
 extern float GetGamepadImageButtonWidth(GamepadImage *ctx);
@@ -65,7 +65,7 @@ extern float GetGamepadImageAxisHeight(GamepadImage *ctx);
 extern int GetGamepadImageElementAt(GamepadImage *ctx, float x, float y);
 
 extern void ClearGamepadImage(GamepadImage *ctx);
-extern void SetGamepadImageElement(GamepadImage *ctx, int element, SDL_bool active);
+extern void SetGamepadImageElement(GamepadImage *ctx, int element, bool active);
 
 extern void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad);
 extern void RenderGamepadImage(GamepadImage *ctx);
@@ -79,7 +79,7 @@ extern GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer);
 extern void SetGamepadDisplayDisplayMode(GamepadDisplay *ctx, ControllerDisplayMode display_mode);
 extern void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_FRect *area);
 extern int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float x, float y);
-extern void SetGamepadDisplayHighlight(GamepadDisplay *ctx, int element, SDL_bool pressed);
+extern void SetGamepadDisplayHighlight(GamepadDisplay *ctx, int element, bool pressed);
 extern void SetGamepadDisplaySelected(GamepadDisplay *ctx, int element);
 extern void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad);
 extern void DestroyGamepadDisplay(GamepadDisplay *ctx);
@@ -96,7 +96,7 @@ typedef struct GamepadTypeDisplay GamepadTypeDisplay;
 extern GamepadTypeDisplay *CreateGamepadTypeDisplay(SDL_Renderer *renderer);
 extern void SetGamepadTypeDisplayArea(GamepadTypeDisplay *ctx, const SDL_FRect *area);
 extern int GetGamepadTypeDisplayAt(GamepadTypeDisplay *ctx, float x, float y);
-extern void SetGamepadTypeDisplayHighlight(GamepadTypeDisplay *ctx, int type, SDL_bool pressed);
+extern void SetGamepadTypeDisplayHighlight(GamepadTypeDisplay *ctx, int type, bool pressed);
 extern void SetGamepadTypeDisplaySelected(GamepadTypeDisplay *ctx, int type);
 extern void SetGamepadTypeDisplayRealType(GamepadTypeDisplay *ctx, SDL_GamepadType type);
 extern void RenderGamepadTypeDisplay(GamepadTypeDisplay *ctx);
@@ -109,7 +109,7 @@ typedef struct JoystickDisplay JoystickDisplay;
 extern JoystickDisplay *CreateJoystickDisplay(SDL_Renderer *renderer);
 extern void SetJoystickDisplayArea(JoystickDisplay *ctx, const SDL_FRect *area);
 extern char *GetJoystickDisplayElementAt(JoystickDisplay *ctx, SDL_Joystick *joystick, float x, float y);
-extern void SetJoystickDisplayHighlight(JoystickDisplay *ctx, const char *element, SDL_bool pressed);
+extern void SetJoystickDisplayHighlight(JoystickDisplay *ctx, const char *element, bool pressed);
 extern void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick);
 extern void DestroyJoystickDisplay(JoystickDisplay *ctx);
 
@@ -120,20 +120,20 @@ typedef struct GamepadButton GamepadButton;
 extern GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label);
 extern void SetGamepadButtonArea(GamepadButton *ctx, const SDL_FRect *area);
 extern void GetGamepadButtonArea(GamepadButton *ctx, SDL_FRect *area);
-extern void SetGamepadButtonHighlight(GamepadButton *ctx, SDL_bool highlight, SDL_bool pressed);
+extern void SetGamepadButtonHighlight(GamepadButton *ctx, bool highlight, bool pressed);
 extern float GetGamepadButtonLabelWidth(GamepadButton *ctx);
 extern float GetGamepadButtonLabelHeight(GamepadButton *ctx);
-extern SDL_bool GamepadButtonContains(GamepadButton *ctx, float x, float y);
+extern bool GamepadButtonContains(GamepadButton *ctx, float x, float y);
 extern void RenderGamepadButton(GamepadButton *ctx);
 extern void DestroyGamepadButton(GamepadButton *ctx);
 
 /* Working with mappings and bindings */
 
 /* Return whether a mapping has any bindings */
-extern SDL_bool MappingHasBindings(const char *mapping);
+extern bool MappingHasBindings(const char *mapping);
 
 /* Return true if the mapping has a controller name */
-extern SDL_bool MappingHasName(const char *mapping);
+extern bool MappingHasName(const char *mapping);
 
 /* Return the name from a mapping, which should be freed using SDL_free(), or NULL if there is no name specified */
 extern char *GetMappingName(const char *mapping);
@@ -151,7 +151,7 @@ extern SDL_GamepadType GetMappingType(const char *mapping);
 extern char *SetMappingType(char *mapping, SDL_GamepadType type);
 
 /* Return true if a mapping has this element bound */
-extern SDL_bool MappingHasElement(const char *mapping, int element);
+extern bool MappingHasElement(const char *mapping, int element);
 
 /* Get the binding for an element, which should be freed using SDL_free(), or NULL if the element isn't bound */
 extern char *GetElementBinding(const char *mapping, int element);
@@ -163,7 +163,7 @@ extern char *SetElementBinding(char *mapping, int element, const char *binding);
 extern int GetElementForBinding(char *mapping, const char *binding);
 
 /* Return true if a mapping contains this binding */
-extern SDL_bool MappingHasBinding(const char *mapping, const char *binding);
+extern bool MappingHasBinding(const char *mapping, const char *binding);
 
 /* Clear any previous binding */
 extern char *ClearMappingBinding(char *mapping, const char *binding);

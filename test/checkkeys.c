@@ -38,8 +38,8 @@ typedef struct
 
 static SDLTest_CommonState *state;
 static TextWindowState *windowstates;
-static SDL_bool escape_pressed;
-static SDL_bool cursor_visible;
+static bool escape_pressed;
+static bool cursor_visible;
 static Uint64 last_cursor_change;
 static int done;
 
@@ -198,7 +198,7 @@ static void PrintKey(SDL_KeyboardEvent *event)
     if (event->key) {
         print_string(&spot, &left,
                      "Key %s:  raw 0x%.2x, scancode %d = %s, keycode 0x%08X = %s ",
-                     event->state ? "pressed " : "released",
+                     event->down ? "pressed " : "released",
                      event->raw,
                      event->scancode,
                      event->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(event->scancode),
@@ -209,7 +209,7 @@ static void PrintKey(SDL_KeyboardEvent *event)
                      event->raw,
                      event->scancode,
                      event->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(event->scancode),
-                     event->state ? "pressed " : "released");
+                     event->down ? "pressed " : "released");
     }
     print_modifiers(&spot, &left, event->mod);
     if (event->repeat) {
@@ -234,7 +234,7 @@ static void PrintText(const char *eventtype, const char *text)
 static void CountKeysDown(void)
 {
     int i, count = 0, max_keys = 0;
-    const Uint8 *keystate = SDL_GetKeyboardState(&max_keys);
+    const bool *keystate = SDL_GetKeyboardState(&max_keys);
 
     for (i = 0; i < max_keys; ++i) {
         if (keystate[i]) {
@@ -336,10 +336,10 @@ static void loop(void)
                     if (escape_pressed) {
                         done = 1;
                     } else {
-                        escape_pressed = SDL_TRUE;
+                        escape_pressed = true;
                     }
                 } else {
-                    escape_pressed = SDL_TRUE;
+                    escape_pressed = true;
                 }
             }
             CountKeysDown();
@@ -452,9 +452,6 @@ int main(int argc, char *argv[])
         return 1;
     }
     state->window_title = "CheckKeys Test";
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {

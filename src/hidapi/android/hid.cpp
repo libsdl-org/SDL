@@ -1030,25 +1030,25 @@ extern "C"
 {
 
 // !!! FIXME: make this non-blocking!
-static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, SDL_bool granted)
+static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, bool granted)
 {
-    SDL_AtomicSet((SDL_AtomicInt *) userdata, granted ? 1 : -1);
+    SDL_SetAtomicInt((SDL_AtomicInt *) userdata, granted ? 1 : -1);
 }
 
 static bool RequestBluetoothPermissions(const char *permission)
 {
     // !!! FIXME: make this non-blocking!
     SDL_AtomicInt permission_response;
-    SDL_AtomicSet(&permission_response, 0);
+    SDL_SetAtomicInt(&permission_response, 0);
     if (!SDL_RequestAndroidPermission(permission, RequestAndroidPermissionBlockingCallback, &permission_response)) {
         return false;
     }
 
-    while (SDL_AtomicGet(&permission_response) == 0) {
+    while (SDL_GetAtomicInt(&permission_response) == 0) {
         SDL_Delay(10);
     }
 
-    return SDL_AtomicGet(&permission_response) > 0;
+    return SDL_GetAtomicInt(&permission_response) > 0;
 }
 
 

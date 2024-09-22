@@ -55,6 +55,7 @@ extern bool SDL_KeyMatchString(const void *a, const void *b, void *unused);
 extern Uint32 SDL_HashID(const void *key, void *unused);
 extern bool SDL_KeyMatchID(const void *a, const void *b, void *unused);
 
+extern void SDL_NukeFreeKey(const void *key, const void *value, void *unused);
 extern void SDL_NukeFreeValue(const void *key, const void *value, void *unused);
 
 #endif // SDL_hashtable_h_

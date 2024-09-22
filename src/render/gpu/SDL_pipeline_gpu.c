@@ -119,15 +119,15 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     pci.vertex_shader = GPU_GetVertexShader(shaders, params->vert_shader);
     pci.fragment_shader = GPU_GetFragmentShader(shaders, params->frag_shader);
     pci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    pci.multisample_state.sample_mask = 0xFFFF;
+    pci.multisample_state.enable_mask = false;
     pci.primitive_type = params->primitive_type;
 
     pci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
     pci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
     pci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
 
-    SDL_GPUVertexBinding bind;
-    SDL_zero(bind);
+    SDL_GPUVertexBufferDescription vertex_buffer_desc;
+    SDL_zero(vertex_buffer_desc);
 
     Uint32 num_attribs = 0;
     SDL_GPUVertexAttribute attribs[4];
@@ -150,16 +150,16 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     // Position
     attribs[num_attribs].location = num_attribs;
     attribs[num_attribs].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
-    attribs[num_attribs].offset = bind.pitch;
-    bind.pitch += 2 * sizeof(float);
+    attribs[num_attribs].offset = vertex_buffer_desc.pitch;
+    vertex_buffer_desc.pitch += 2 * sizeof(float);
     num_attribs++;
 
     if (have_attr_color) {
         // Color
         attribs[num_attribs].location = num_attribs;
         attribs[num_attribs].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;
-        attribs[num_attribs].offset = bind.pitch;
-        bind.pitch += 4 * sizeof(float);
+        attribs[num_attribs].offset = vertex_buffer_desc.pitch;
+        vertex_buffer_desc.pitch += 4 * sizeof(float);
         num_attribs++;
     }
 
@@ -167,15 +167,15 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
         // UVs
         attribs[num_attribs].location = num_attribs;
         attribs[num_attribs].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
-        attribs[num_attribs].offset = bind.pitch;
-        bind.pitch += 2 * sizeof(float);
+        attribs[num_attribs].offset = vertex_buffer_desc.pitch;
+        vertex_buffer_desc.pitch += 2 * sizeof(float);
         num_attribs++;
     }
 
     pci.vertex_input_state.num_vertex_attributes = num_attribs;
     pci.vertex_input_state.vertex_attributes = attribs;
-    pci.vertex_input_state.num_vertex_bindings = 1;
-    pci.vertex_input_state.vertex_bindings = &bind;
+    pci.vertex_input_state.num_vertex_buffers = 1;
+    pci.vertex_input_state.vertex_buffer_descriptions = &vertex_buffer_desc;
 
     return SDL_CreateGPUGraphicsPipeline(device, &pci);
 }

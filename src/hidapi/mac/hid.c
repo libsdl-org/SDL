@@ -1572,7 +1572,7 @@ int HID_API_EXPORT_CALL hid_get_report_descriptor(hid_device *dev, unsigned char
 		}
 
 		memcpy(buf, descriptor_buf, copy_len);
-		return copy_len;
+		return (int)copy_len;
 	}
 	else {
 		register_device_error(dev, "Failed to get kIOHIDReportDescriptorKey property");

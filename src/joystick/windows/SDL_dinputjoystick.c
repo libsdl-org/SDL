@@ -1033,7 +1033,7 @@ static void UpdateDINPUTJoystickState_Polled(SDL_Joystick *joystick)
 
         case BUTTON:
             SDL_SendJoystickButton(timestamp, joystick, in->num,
-                                      (Uint8)(state.rgbButtons[in->ofs - DIJOFS_BUTTON0] ? SDL_PRESSED : SDL_RELEASED));
+                                      (state.rgbButtons[in->ofs - DIJOFS_BUTTON0] != 0));
             break;
         case HAT:
         {
@@ -1087,7 +1087,7 @@ static void UpdateDINPUTJoystickState_Buffered(SDL_Joystick *joystick)
                 break;
             case BUTTON:
                 SDL_SendJoystickButton(timestamp, joystick, in->num,
-                                          (Uint8)(evtbuf[i].dwData ? SDL_PRESSED : SDL_RELEASED));
+                                          (evtbuf[i].dwData != 0));
                 break;
             case HAT:
             {

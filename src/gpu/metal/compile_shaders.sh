@@ -4,7 +4,7 @@ set -x
 set -e
 cd `dirname "$0"`
 
-shadernames=(FullscreenVert BlitFrom2D BlitFrom2DArray BlitFrom3D BlitFromCube)
+shadernames=(FullscreenVert BlitFrom2D BlitFrom2DArray BlitFrom3D BlitFromCube BlitFromCubeArray)
 
 generate_shaders()
 {
@@ -14,7 +14,7 @@ generate_shaders()
         minversion=$4
 
         for shadername in "${shadernames[@]}"; do
-            xcrun -sdk $sdkplatform metal -c -std=$compileplatform-metal1.1 -m$sdkplatform-version-min=$minversion -Wall -O3 -D COMPILE_$shadername -o ./$shadername.air ./Metal_Blit.metal || exit $?
+            xcrun -sdk $sdkplatform metal -c -std=$compileplatform-metal2.0 -m$sdkplatform-version-min=$minversion -Wall -O3 -D COMPILE_$shadername -o ./$shadername.air ./Metal_Blit.metal || exit $?
             xcrun -sdk $sdkplatform metallib -o $shadername.metallib $shadername.air || exit $?
             xxd -i $shadername.metallib | perl -w -p -e 's/\Aunsigned /const unsigned /;' >./${shadername}_$fileplatform.h
             rm -f $shadername.air $shadername.metallib
@@ -22,10 +22,10 @@ generate_shaders()
 }
 
 generate_shaders macos macos macosx 10.11
-generate_shaders ios ios iphoneos 8.0
-generate_shaders iphonesimulator ios iphonesimulator 8.0
-generate_shaders tvos ios appletvos 9.0
-generate_shaders tvsimulator ios appletvsimulator 9.0
+generate_shaders ios ios iphoneos 11.0
+generate_shaders iphonesimulator ios iphonesimulator 11.0
+generate_shaders tvos ios appletvos 11.0
+generate_shaders tvsimulator ios appletvsimulator 11.0
 
 # Bundle together one mega-header
 catShaders()

@@ -105,8 +105,8 @@ struct SDL_DisplayData
     struct wl_output *output;
     struct zxdg_output_v1 *xdg_output;
     char *wl_output_name;
+    double scale_factor;
     uint32_t registry_id;
-    float scale_factor;
     int pixel_width, pixel_height;
     int x, y, screen_width, screen_height, refresh, transform;
     SDL_DisplayOrientation orientation;

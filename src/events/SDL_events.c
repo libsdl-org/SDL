@@ -379,7 +379,7 @@ static void SDLCALL SDL_EventLoggingChanged(void *userdata, const char *name, co
 static void SDL_LogEvent(const SDL_Event *event)
 {
     static const char *pen_axisnames[] = { "PRESSURE", "XTILT", "YTILT", "DISTANCE", "ROTATION", "SLIDER", "TANGENTIAL_PRESSURE" };
-    SDL_COMPILE_TIME_ASSERT(pen_axisnames_array_matches, SDL_arraysize(pen_axisnames) == SDL_PEN_NUM_AXES);
+    SDL_COMPILE_TIME_ASSERT(pen_axisnames_array_matches, SDL_arraysize(pen_axisnames) == SDL_PEN_AXIS_COUNT);
 
     char name[64];
     char details[128];
@@ -512,7 +512,7 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define PRINT_KEY_EVENT(event)                                                                                                              \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u state=%s repeat=%s scancode=%u keycode=%u mod=0x%x)", \
                        (uint)event->key.timestamp, (uint)event->key.windowID, (uint)event->key.which,                                       \
-                       event->key.state == SDL_PRESSED ? "pressed" : "released",                                                            \
+                       event->key.down ? "pressed" : "released",                                                            \
                        event->key.repeat ? "true" : "false",                                                                                \
                        (uint)event->key.scancode,                                                                                           \
                        (uint)event->key.key,                                                                                                \
@@ -562,7 +562,7 @@ static void SDL_LogEvent(const SDL_Event *event)
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u button=%u state=%s clicks=%u x=%g y=%g)", \
                        (uint)event->button.timestamp, (uint)event->button.windowID,                                             \
                        (uint)event->button.which, (uint)event->button.button,                                                   \
-                       event->button.state == SDL_PRESSED ? "pressed" : "released",                                             \
+                       event->button.down ? "pressed" : "released",                                             \
                        (uint)event->button.clicks, event->button.x, event->button.y)
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTON_DOWN)
         PRINT_MBUTTON_EVENT(event);
@@ -600,7 +600,7 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define PRINT_JBUTTON_EVENT(event)                                                              \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d button=%u state=%s)", \
                        (uint)event->jbutton.timestamp, (int)event->jbutton.which,               \
-                       (uint)event->jbutton.button, event->jbutton.state == SDL_PRESSED ? "pressed" : "released")
+                       (uint)event->jbutton.button, event->jbutton.down ? "pressed" : "released")
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_BUTTON_DOWN)
         PRINT_JBUTTON_EVENT(event);
         break;
@@ -636,7 +636,7 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define PRINT_CBUTTON_EVENT(event)                                                              \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d button=%u state=%s)", \
                        (uint)event->gbutton.timestamp, (int)event->gbutton.which,               \
-                       (uint)event->gbutton.button, event->gbutton.state == SDL_PRESSED ? "pressed" : "released")
+                       (uint)event->gbutton.button, event->gbutton.down ? "pressed" : "released")
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_BUTTON_DOWN)
         PRINT_CBUTTON_EVENT(event);
         break;
@@ -704,7 +704,7 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define PRINT_PTOUCH_EVENT(event)                                                                             \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u pen_state=%u x=%g y=%g eraser=%s state=%s)", \
                        (uint)event->ptouch.timestamp, (uint)event->ptouch.windowID, (uint)event->ptouch.which, (uint)event->ptouch.pen_state, event->ptouch.x, event->ptouch.y, \
-                       event->ptouch.eraser ? "yes" : "no", event->ptouch.state == SDL_PRESSED ? "down" : "up");
+                       event->ptouch.eraser ? "yes" : "no", event->ptouch.down ? "down" : "up");
         SDL_EVENT_CASE(SDL_EVENT_PEN_DOWN)
         PRINT_PTOUCH_EVENT(event);
         break;
@@ -738,7 +738,7 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define PRINT_PBUTTON_EVENT(event)                                                                                                               \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u pen_state=%u x=%g y=%g button=%u state=%s)", \
                        (uint)event->pbutton.timestamp, (uint)event->pbutton.windowID, (uint)event->pbutton.which, (uint)event->pbutton.pen_state, event->pbutton.x, event->pbutton.y, \
-                       (uint)event->pbutton.button, event->pbutton.state == SDL_PRESSED ? "down" : "up");
+                       (uint)event->pbutton.button, event->pbutton.down ? "down" : "up");
         SDL_EVENT_CASE(SDL_EVENT_PEN_BUTTON_DOWN)
         PRINT_PBUTTON_EVENT(event);
         break;
@@ -852,12 +852,12 @@ void SDL_StopEventLoop(void)
         entry = next;
     }
 
-    SDL_AtomicSet(&SDL_EventQ.count, 0);
+    SDL_SetAtomicInt(&SDL_EventQ.count, 0);
     SDL_EventQ.max_events_seen = 0;
     SDL_EventQ.head = NULL;
     SDL_EventQ.tail = NULL;
     SDL_EventQ.free = NULL;
-    SDL_AtomicSet(&SDL_sentinel_pending, 0);
+    SDL_SetAtomicInt(&SDL_sentinel_pending, 0);
 
     // Clear disabled event state
     for (i = 0; i < SDL_arraysize(SDL_disabled_events); ++i) {
@@ -921,7 +921,7 @@ bool SDL_StartEventLoop(void)
 static int SDL_AddEvent(SDL_Event *event)
 {
     SDL_EventEntry *entry;
-    const int initial_count = SDL_AtomicGet(&SDL_EventQ.count);
+    const int initial_count = SDL_GetAtomicInt(&SDL_EventQ.count);
     int final_count;
 
     if (initial_count >= SDL_MAX_QUEUED_EVENTS) {
@@ -945,7 +945,7 @@ static int SDL_AddEvent(SDL_Event *event)
 
     SDL_copyp(&entry->event, event);
     if (event->type == SDL_EVENT_POLL_SENTINEL) {
-        SDL_AtomicAdd(&SDL_sentinel_pending, 1);
+        SDL_AddAtomicInt(&SDL_sentinel_pending, 1);
     }
     entry->memory = NULL;
     SDL_TransferTemporaryMemoryToEvent(entry);
@@ -963,7 +963,7 @@ static int SDL_AddEvent(SDL_Event *event)
         entry->next = NULL;
     }
 
-    final_count = SDL_AtomicAdd(&SDL_EventQ.count, 1) + 1;
+    final_count = SDL_AddAtomicInt(&SDL_EventQ.count, 1) + 1;
     if (final_count > SDL_EventQ.max_events_seen) {
         SDL_EventQ.max_events_seen = final_count;
     }
@@ -995,13 +995,13 @@ static void SDL_CutEvent(SDL_EventEntry *entry)
     }
 
     if (entry->event.type == SDL_EVENT_POLL_SENTINEL) {
-        SDL_AtomicAdd(&SDL_sentinel_pending, -1);
+        SDL_AddAtomicInt(&SDL_sentinel_pending, -1);
     }
 
     entry->next = SDL_EventQ.free;
     SDL_EventQ.free = entry;
-    SDL_assert(SDL_AtomicGet(&SDL_EventQ.count) > 0);
-    SDL_AtomicAdd(&SDL_EventQ.count, -1);
+    SDL_assert(SDL_GetAtomicInt(&SDL_EventQ.count) > 0);
+    SDL_AddAtomicInt(&SDL_EventQ.count, -1);
 }
 
 static void SDL_SendWakeupEvent(void)
@@ -1079,7 +1079,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
                         if (events == NULL || action != SDL_GETEVENT) {
                             ++sentinels_expected;
                         }
-                        if (SDL_AtomicGet(&SDL_sentinel_pending) > sentinels_expected) {
+                        if (SDL_GetAtomicInt(&SDL_sentinel_pending) > sentinels_expected) {
                             // Skip it, there's another one pending
                             continue;
                         }
@@ -1103,12 +1103,12 @@ int SDL_PeepEvents(SDL_Event *events, int numevents, SDL_EventAction action,
     return SDL_PeepEventsInternal(events, numevents, action, minType, maxType, false);
 }
 
-SDL_bool SDL_HasEvent(Uint32 type)
+bool SDL_HasEvent(Uint32 type)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type) > 0;
 }
 
-SDL_bool SDL_HasEvents(Uint32 minType, Uint32 maxType)
+bool SDL_HasEvents(Uint32 minType, Uint32 maxType)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, minType, maxType) > 0;
 }
@@ -1198,7 +1198,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
         SDL_Event sentinel;
 
         // Make sure we don't already have a sentinel in the queue, and add one to the end
-        if (SDL_AtomicGet(&SDL_sentinel_pending) > 0) {
+        if (SDL_GetAtomicInt(&SDL_sentinel_pending) > 0) {
             SDL_PeepEventsInternal(&sentinel, 1, SDL_GETEVENT, SDL_EVENT_POLL_SENTINEL, SDL_EVENT_POLL_SENTINEL, true);
         }
 
@@ -1215,7 +1215,7 @@ void SDL_PumpEvents(void)
 
 // Public functions
 
-SDL_bool SDL_PollEvent(SDL_Event *event)
+bool SDL_PollEvent(SDL_Event *event)
 {
     return SDL_WaitEventTimeoutNS(event, 0);
 }
@@ -1330,12 +1330,12 @@ static SDL_Window *SDL_find_active_window(SDL_VideoDevice *_this)
 
 #endif // !SDL_PLATFORM_ANDROID
 
-SDL_bool SDL_WaitEvent(SDL_Event *event)
+bool SDL_WaitEvent(SDL_Event *event)
 {
     return SDL_WaitEventTimeoutNS(event, -1);
 }
 
-SDL_bool SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
+bool SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
 {
     Sint64 timeoutNS;
 
@@ -1347,7 +1347,7 @@ SDL_bool SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
     return SDL_WaitEventTimeoutNS(event, timeoutNS);
 }
 
-SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
+bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
 {
     Uint64 start, expiration;
     bool include_sentinel = (timeoutNS == 0);
@@ -1362,7 +1362,7 @@ SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
     }
 
     // If there isn't a poll sentinel event pending, pump events and add one
-    if (SDL_AtomicGet(&SDL_sentinel_pending) == 0) {
+    if (SDL_GetAtomicInt(&SDL_sentinel_pending) == 0) {
         SDL_PumpEventsInternal(true);
     }
 
@@ -1500,7 +1500,7 @@ static bool SDL_CallEventWatchers(SDL_Event *event)
     return true;
 }
 
-SDL_bool SDL_PushEvent(SDL_Event *event)
+bool SDL_PushEvent(SDL_Event *event)
 {
     if (!event->common.timestamp) {
         event->common.timestamp = SDL_GetTicksNS();
@@ -1543,7 +1543,7 @@ void SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
     SDL_UnlockMutex(SDL_event_watchers_lock);
 }
 
-SDL_bool SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata)
+bool SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata)
 {
     SDL_EventWatcher event_ok;
 
@@ -1562,7 +1562,7 @@ SDL_bool SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata)
     return event_ok.callback ? true : false;
 }
 
-SDL_bool SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
+bool SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
 {
     bool result = true;
 
@@ -1628,7 +1628,7 @@ void SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
     SDL_UnlockMutex(SDL_EventQ.lock);
 }
 
-void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
+void SDL_SetEventEnabled(Uint32 type, bool enabled)
 {
     bool current_state;
     Uint8 hi = ((type >> 8) & 0xff);
@@ -1641,7 +1641,7 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
         current_state = true;
     }
 
-    if ((enabled != SDL_FALSE) != current_state) {
+    if ((enabled != false) != current_state) {
         if (enabled) {
             SDL_assert(SDL_disabled_events[hi] != NULL);
             SDL_disabled_events[hi]->bits[lo / 32] &= ~(1 << (lo & 31));
@@ -1688,7 +1688,7 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
     }
 }
 
-SDL_bool SDL_EventEnabled(Uint32 type)
+bool SDL_EventEnabled(Uint32 type)
 {
     Uint8 hi = ((type >> 8) & 0xff);
     Uint8 lo = (type & 0xff);

@@ -107,7 +107,7 @@ static bool HIDAPI_DriverStadia_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 
     // Initialize the joystick capabilities
     joystick->nbuttons = SDL_GAMEPAD_NUM_STADIA_BUTTONS;
-    joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
     return true;
@@ -213,22 +213,22 @@ static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 
     if (ctx->last_state[2] != data[2]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, (data[2] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data[2] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (data[2] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, (data[2] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STADIA_CAPTURE, (data[2] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STADIA_GOOGLE_ASSISTANT, (data[2] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, ((data[2] & 0x40) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data[2] & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, ((data[2] & 0x20) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((data[2] & 0x80) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STADIA_CAPTURE, ((data[2] & 0x01) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STADIA_GOOGLE_ASSISTANT, ((data[2] & 0x02) != 0));
     }
 
     if (ctx->last_state[3] != data[3]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, (data[3] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, (data[3] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, (data[3] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (data[3] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (data[3] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data[3] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, (data[3] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data[3] & 0x40) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data[3] & 0x20) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data[3] & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data[3] & 0x08) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data[3] & 0x04) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[3] & 0x02) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((data[3] & 0x01) != 0));
     }
 
 #define READ_STICK_AXIS(offset) \

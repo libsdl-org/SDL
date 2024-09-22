@@ -106,7 +106,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
     }
 }
 
-SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
+bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     if (!ticks) {
         return SDL_InvalidParamError("ticks");
@@ -121,7 +121,7 @@ SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
     return true;
 }
 
-SDL_bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
+bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
 {
     if (!dt) {
         return SDL_InvalidParamError("dt");

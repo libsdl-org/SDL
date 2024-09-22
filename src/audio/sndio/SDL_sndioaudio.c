@@ -151,7 +151,7 @@ static bool SNDIO_WaitDevice(SDL_AudioDevice *device)
 {
     const bool recording = device->recording;
 
-    while (!SDL_AtomicGet(&device->shutdown)) {
+    while (!SDL_GetAtomicInt(&device->shutdown)) {
         if (SNDIO_sio_eof(device->hidden->dev)) {
             return false;
         }
@@ -200,7 +200,7 @@ static int SNDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 static void SNDIO_FlushRecording(SDL_AudioDevice *device)
 {
     char buf[512];
-    while (!SDL_AtomicGet(&device->shutdown) && (SNDIO_sio_read(device->hidden->dev, buf, sizeof(buf)) > 0)) {
+    while (!SDL_GetAtomicInt(&device->shutdown) && (SNDIO_sio_read(device->hidden->dev, buf, sizeof(buf)) > 0)) {
         // do nothing
     }
 }

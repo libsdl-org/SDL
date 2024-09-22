@@ -33,7 +33,7 @@ Uint64 next(Uint64 state[2]) {
     return result;
 }
 static Uint64 rngState[2] = {1, 2};
-Uint32 getRandomUint32() {
+Uint32 getRandomUint32(void) {
     return (Uint32)next(rngState);
 }
 /* ================= Test Case Helper Functions ================== */

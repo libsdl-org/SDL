@@ -354,7 +354,7 @@ static bool MEDIAFOUNDATION_WaitDevice(SDL_Camera *device)
     IMFSourceReader *srcreader = device->hidden->srcreader;
     IMFSample *sample = NULL;
 
-    while (!SDL_AtomicGet(&device->shutdown)) {
+    while (!SDL_GetAtomicInt(&device->shutdown)) {
         DWORD stream_flags = 0;
         const HRESULT ret = IMFSourceReader_ReadSample(srcreader, (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, NULL, &stream_flags, NULL, &sample);
         if (FAILED(ret)) {

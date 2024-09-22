@@ -82,7 +82,7 @@ static void AAUDIO_errorCallback(AAudioStream *stream, void *userData, aaudio_re
     // You MUST NOT close the audio stream from this callback, so we cannot call SDL_AudioDeviceDisconnected here.
     // Just flag the device so we can kill it in PlayDevice instead.
     SDL_AudioDevice *device = (SDL_AudioDevice *) userData;
-    SDL_AtomicSet(&device->hidden->error_callback_triggered, (int) error);  // AAUDIO_OK is zero, so !triggered means no error.
+    SDL_SetAtomicInt(&device->hidden->error_callback_triggered, (int) error);  // AAUDIO_OK is zero, so !triggered means no error.
     SDL_SignalSemaphore(device->hidden->semaphore);  // in case we're blocking in WaitDevice.
 }
 
@@ -163,7 +163,7 @@ static Uint8 *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
 
 static bool AAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
-    while (!SDL_AtomicGet(&device->shutdown)) {
+    while (!SDL_GetAtomicInt(&device->shutdown)) {
         // this semaphore won't fire when the app is in the background (AAUDIO_PauseDevices was called).
         if (SDL_WaitSemaphoreTimeout(device->hidden->semaphore, 100)) {
             return true;  // semaphore was signaled, let's go!
@@ -218,7 +218,7 @@ static bool AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int 
     struct SDL_PrivateAudioData *hidden = device->hidden;
 
     // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice. But make sure we didn't fail here.
-    const aaudio_result_t err = (aaudio_result_t) SDL_AtomicGet(&hidden->error_callback_triggered);
+    const aaudio_result_t err = (aaudio_result_t) SDL_GetAtomicInt(&hidden->error_callback_triggered);
     if (err) {
         SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "aaudio: Audio device triggered error %d (%s)", (int) err, ctx.AAudio_convertResultToText(err));
 
@@ -237,8 +237,8 @@ static int AAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen
     struct SDL_PrivateAudioData *hidden = device->hidden;
 
     // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice. But make sure we didn't fail here.
-    if (SDL_AtomicGet(&hidden->error_callback_triggered)) {
-        SDL_AtomicSet(&hidden->error_callback_triggered, 0);
+    if (SDL_GetAtomicInt(&hidden->error_callback_triggered)) {
+        SDL_SetAtomicInt(&hidden->error_callback_triggered, 0);
         return -1;
     }
 
@@ -279,7 +279,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     const bool recording = device->recording;
     aaudio_result_t res;
 
-    SDL_AtomicSet(&hidden->error_callback_triggered, 0);
+    SDL_SetAtomicInt(&hidden->error_callback_triggered, 0);
 
     AAudioStreamBuilder *builder = NULL;
     res = ctx.AAudio_createStreamBuilder(&builder);
@@ -386,9 +386,9 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
 }
 
 // !!! FIXME: make this non-blocking!
-static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, SDL_bool granted)
+static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, bool granted)
 {
-    SDL_AtomicSet((SDL_AtomicInt *) userdata, granted ? 1 : -1);
+    SDL_SetAtomicInt((SDL_AtomicInt *) userdata, granted ? 1 : -1);
 }
 
 static bool AAUDIO_OpenDevice(SDL_AudioDevice *device)
@@ -402,16 +402,16 @@ static bool AAUDIO_OpenDevice(SDL_AudioDevice *device)
     if (device->recording) {
         // !!! FIXME: make this non-blocking!
         SDL_AtomicInt permission_response;
-        SDL_AtomicSet(&permission_response, 0);
+        SDL_SetAtomicInt(&permission_response, 0);
         if (!SDL_RequestAndroidPermission("android.permission.RECORD_AUDIO", RequestAndroidPermissionBlockingCallback, &permission_response)) {
             return false;
         }
 
-        while (SDL_AtomicGet(&permission_response) == 0) {
+        while (SDL_GetAtomicInt(&permission_response) == 0) {
             SDL_Delay(10);
         }
 
-        if (SDL_AtomicGet(&permission_response) < 0) {
+        if (SDL_GetAtomicInt(&permission_response) < 0) {
             LOGI("This app doesn't have RECORD_AUDIO permission");
             return SDL_SetError("This app doesn't have RECORD_AUDIO permission");
         }

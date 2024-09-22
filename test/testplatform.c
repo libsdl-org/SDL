@@ -44,10 +44,16 @@ SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT64, SDL_MIN_SINT64 == ~INT64_C(0x7ffffffffff
 SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT64, SDL_MAX_UINT64 == UINT64_C(18446744073709551615));
 SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT64, SDL_MIN_UINT64 == 0);
 
-static int TestTypes(SDL_bool verbose)
+static int TestTypes(bool verbose)
 {
     int error = 0;
 
+    if (badsize(sizeof(bool), 1)) {
+        if (verbose) {
+            SDL_Log("sizeof(bool) != 1, instead = %u\n", (unsigned int)sizeof(bool));
+        }
+        ++error;
+    }
     if (badsize(sizeof(Uint8), 1)) {
         if (verbose) {
             SDL_Log("sizeof(Uint8) != 1, instead = %u\n", (unsigned int)sizeof(Uint8));
@@ -79,7 +85,7 @@ static int TestTypes(SDL_bool verbose)
     return error ? 1 : 0;
 }
 
-static int TestEndian(SDL_bool verbose)
+static int TestEndian(bool verbose)
 {
     int error = 0;
     Uint16 value = 0x1234;
@@ -360,7 +366,7 @@ static LL_Test LL_Tests[] = {
     { NULL, NULL, 0, 0, 0, 0 }
 };
 
-static int Test64Bit(SDL_bool verbose)
+static int Test64Bit(bool verbose)
 {
     LL_Test *t;
     int failed = 0;
@@ -386,10 +392,10 @@ static int Test64Bit(SDL_bool verbose)
     return failed ? 1 : 0;
 }
 
-static int TestCPUInfo(SDL_bool verbose)
+static int TestCPUInfo(bool verbose)
 {
     if (verbose) {
-        SDL_Log("CPU count: %d\n", SDL_GetCPUCount());
+        SDL_Log("Number of logical CPU cores: %d\n", SDL_GetNumLogicalCPUCores());
         SDL_Log("CPU cache line size: %d\n", SDL_GetCPUCacheLineSize());
         SDL_Log("AltiVec %s\n", SDL_HasAltiVec() ? "detected" : "not detected");
         SDL_Log("MMX %s\n", SDL_HasMMX() ? "detected" : "not detected");
@@ -410,7 +416,7 @@ static int TestCPUInfo(SDL_bool verbose)
     return 0;
 }
 
-static int TestAssertions(SDL_bool verbose)
+static int TestAssertions(bool verbose)
 {
     SDL_assert(1);
     SDL_assert_release(1);
@@ -441,7 +447,7 @@ static int TestAssertions(SDL_bool verbose)
 int main(int argc, char *argv[])
 {
     int i;
-    SDL_bool verbose = SDL_TRUE;
+    bool verbose = true;
     int status = 0;
     SDLTest_CommonState *state;
 
@@ -451,9 +457,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Parse commandline */
     for (i = 1; i < argc;) {
         int consumed;
@@ -461,7 +464,7 @@ int main(int argc, char *argv[])
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
             if (SDL_strcmp(argv[i], "-q") == 0) {
-                verbose = SDL_FALSE;
+                verbose = false;
                 consumed = 1;
             }
         }

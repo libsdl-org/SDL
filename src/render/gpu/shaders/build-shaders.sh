@@ -6,12 +6,15 @@ set -e
 
 which fxc &>/dev/null && HAVE_FXC=1 || HAVE_FXC=0
 which dxc &>/dev/null && HAVE_DXC=1 || HAVE_DXC=0
+which spirv-cross &>/dev/null && HAVE_SPIRV_CROSS=1 || HAVE_SPIRV_CROSS=0
 
 [ "$HAVE_FXC" != 0 ] || echo "fxc not in PATH; D3D11 shaders will not be rebuilt"
 [ "$HAVE_DXC" != 0 ] || echo "dxc not in PATH; D3D12 shaders will not be rebuilt"
+[ "$HAVE_SPIRV_CROSS" != 0 ] || echo "spirv-cross not in PATH; D3D11, D3D12, Metal shaders will not be rebuilt"
 
-USE_FXC=${USE_FXC:-HAVE_FXC}
-USE_DXC=${USE_DXC:-HAVE_DXC}
+USE_FXC=${USE_FXC:-$HAVE_FXC}
+USE_DXC=${USE_DXC:-$HAVE_DXC}
+USE_SPIRV_CROSS=${USE_SPIRV_CROSS:-$HAVE_SPIRV_CROSS}
 
 spirv_bundle="spir-v.h"
 dxbc50_bundle="dxbc50.h"
@@ -19,12 +22,15 @@ dxil60_bundle="dxil60.h"
 metal_bundle="metal.h"
 
 rm -f "$spirv_bundle"
-rm -f "$metal_bundle"
-[ "$USE_FXC" != 0 ] && rm -f "$dxbc50_bundle"
-[ "$USE_DXC" != 0 ] && rm -f "$dxil60_bundle"
+[ "$USE_SPIRV_CROSS" != 0 ] && rm -f "$metal_bundle"
+[ "$USE_SPIRV_CROSS" != 0 ] && [ "$USE_FXC" != 0 ] && rm -f "$dxbc50_bundle"
+[ "$USE_SPIRV_CROSS" != 0 ] && [ "$USE_DXC" != 0 ] && rm -f "$dxil60_bundle"
 
 make-header() {
-    xxd -i "$1" | sed -e 's/^unsigned /const unsigned /g' > "$1.h"
+    xxd -i "$1" | sed \
+        -e 's/^unsigned /const unsigned /g' \
+        -e 's,^const,static const,' \
+        > "$1.h"
 }
 
 compile-hlsl-dxbc() {
@@ -33,8 +39,14 @@ compile-hlsl-dxbc() {
     local output_basename="$3"
     local var_name="$(echo "$output_basename" | sed -e 's/\./_/g')"
 
-    fxc "$src" /E main /T $2 /Fh "$output_basename.h" || exit $?
-    sed -i "s/g_main/$var_name/;s/\r//g" "$output_basename.h"
+    fxc "$src" /E main /T $2 /Fh "$output_basename.tmp.h" || exit $?
+    sed \
+        -e "s/g_main/$var_name/;s/\r//g" \
+        -e 's,^const,static const,' \
+        -e 's,const unsigned,const signed,' \
+        < "$output_basename.tmp.h" \
+        > "$output_basename.h"
+    rm -f "$output_basename.tmp.h"
 }
 
 compile-hlsl-dxil() {
@@ -43,8 +55,13 @@ compile-hlsl-dxil() {
     local output_basename="$3"
     local var_name="$(echo "$output_basename" | sed -e 's/\./_/g')"
 
-    dxc "$src" -E main -T $2 -Fh "$output_basename.h" -O3 || exit $?
-    sed -i "s/g_main/$var_name/;s/\r//g" "$output_basename.h"
+    dxc "$src" -E main -T $2 -Fh "$output_basename.tmp.h" -O3 || exit $?
+    sed \
+        -e "s/g_main/$var_name/;s/\r//g" \
+        -e 's,^const,static const,' \
+        < "$output_basename.tmp.h" \
+        > "$output_basename.h"
+    rm -f "$output_basename.tmp.h"
 }
 
 for i in *.vert *.frag; do
@@ -59,6 +76,10 @@ for i in *.vert *.frag; do
 
     make-header "$spv"
     echo "#include \"$spv.h\"" >> "$spirv_bundle"
+
+    if [ "$USE_SPIRV_CROSS" = "0" ]; then
+        continue
+    fi
 
     spirv-cross "$spv" --hlsl --shader-model 50 --hlsl-enable-compat --output "$hlsl50"
     spirv-cross "$spv" --hlsl --shader-model 60 --hlsl-enable-compat --output "$hlsl60"
@@ -83,4 +104,3 @@ for i in *.vert *.frag; do
     make-header "$metal"
     echo "#include \"$metal.h\"" >> "$metal_bundle"
 done
-./fix-shaders.sh

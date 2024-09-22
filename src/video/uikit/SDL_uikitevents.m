@@ -119,7 +119,7 @@ void SDL_UpdateLifecycleObserver(void)
     [lifecycleObserver update];
 }
 
-void SDL_SetiOSEventPump(SDL_bool enabled)
+void SDL_SetiOSEventPump(bool enabled)
 {
     UIKit_EventPumpEnabled = enabled;
 
@@ -187,7 +187,7 @@ static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0
     SDL_AddKeyboard(keyboardID, NULL, true);
 
     keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed) {
-        SDL_SendKeyboardKey(0, keyboardID, 0, (SDL_Scancode)keyCode, pressed ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendKeyboardKey(0, keyboardID, 0, (SDL_Scancode)keyCode, pressed);
     };
 
     dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL);
@@ -318,7 +318,7 @@ static bool SetGCMouseRelativeMode(bool enabled)
 
 static void OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button, BOOL pressed)
 {
-    SDL_SendMouseButton(0, SDL_GetMouseFocus(), mouseID, pressed ? SDL_PRESSED : SDL_RELEASED, button);
+    SDL_SendMouseButton(0, SDL_GetMouseFocus(), mouseID, button, pressed);
 }
 
 static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))

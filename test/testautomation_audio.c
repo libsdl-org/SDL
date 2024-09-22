@@ -22,9 +22,9 @@
 static void SDLCALL audioSetUp(void **arg)
 {
     /* Start SDL audio subsystem */
-    SDL_bool ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
+    bool ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
     SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO)");
-    SDLTest_AssertCheck(ret == SDL_TRUE, "Check result from SDL_InitSubSystem(SDL_INIT_AUDIO)");
+    SDLTest_AssertCheck(ret == true, "Check result from SDL_InitSubSystem(SDL_INIT_AUDIO)");
     if (!ret) {
         SDLTest_LogError("%s", SDL_GetError());
     }
@@ -111,7 +111,7 @@ static int SDLCALL audio_initQuitAudio(void *arg)
         SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
         result = SDL_InitSubSystem(SDL_INIT_AUDIO);
         SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO) with driver='%s'", audioDriver);
-        SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value; expected: SDL_TRUE got: %d", result);
+        SDLTest_AssertCheck(result == true, "Validate result value; expected: true got: %d", result);
 
         /* Call Quit */
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -125,7 +125,7 @@ static int SDLCALL audio_initQuitAudio(void *arg)
     SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
     result = SDL_InitSubSystem(SDL_INIT_AUDIO);
     SDLTest_AssertPass("Call to SDL_AudioInit(NULL)");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value; expected: SDL_TRUE got: %d", result);
+    SDLTest_AssertCheck(result == true, "Validate result value; expected: true got: %d", result);
 
     /* Call Quit */
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -178,7 +178,7 @@ static int SDLCALL audio_initOpenCloseQuitAudio(void *arg)
             SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
             result = SDL_InitSubSystem(SDL_INIT_AUDIO);
             SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO) with driver='%s'", audioDriver);
-            SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value; expected: SDL_TRUE got: %d", result);
+            SDLTest_AssertCheck(result == true, "Validate result value; expected: true got: %d", result);
 
             /* Set spec */
             SDL_zero(desired);
@@ -269,7 +269,7 @@ static int SDLCALL audio_pauseUnpauseAudio(void *arg)
             SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
             result = SDL_InitSubSystem(SDL_INIT_AUDIO);
             SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO) with driver='%s'", audioDriver);
-            SDLTest_AssertCheck(result == SDL_TRUE, "Validate result value; expected: SDL_TRUE got: %d", result);
+            SDLTest_AssertCheck(result == true, "Validate result value; expected: true got: %d", result);
 
             /* Set spec */
             SDL_zero(desired);
@@ -1248,7 +1248,7 @@ static int SDLCALL audio_convertAccuracy(void *arg)
         tmp_data = NULL;
         tmp_len = 0;
         ret = SDL_ConvertAudioSamples(&src_spec, (const Uint8*) src_data, src_len, &tmp_spec, &tmp_data, &tmp_len);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Expected SDL_ConvertAudioSamples(F32->%s) to succeed", format_name);
+        SDLTest_AssertCheck(ret == true, "Expected SDL_ConvertAudioSamples(F32->%s) to succeed", format_name);
         if (!ret) {
             SDL_free(src_data);
             return TEST_ABORTED;
@@ -1257,7 +1257,7 @@ static int SDLCALL audio_convertAccuracy(void *arg)
         dst_data = NULL;
         dst_len = 0;
         ret = SDL_ConvertAudioSamples(&tmp_spec, tmp_data, tmp_len, &src_spec, &dst_data, &dst_len);
-        SDLTest_AssertCheck(ret == SDL_TRUE, "Expected SDL_ConvertAudioSamples(%s->F32) to succeed", format_name);
+        SDLTest_AssertCheck(ret == true, "Expected SDL_ConvertAudioSamples(%s->F32) to succeed", format_name);
         if (!ret) {
             SDL_free(tmp_data);
             SDL_free(src_data);
@@ -1366,7 +1366,7 @@ static int SDLCALL audio_formatChange(void *arg)
     }
 
     result = SDL_SetAudioStreamFormat(stream, &spec1, &spec3);
-    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_SetAudioStreamFormat(spec1, spec3) to succeed")) {
+    if (!SDLTest_AssertCheck(result == true, "Expected SDL_SetAudioStreamFormat(spec1, spec3) to succeed")) {
         goto cleanup;
     }
 
@@ -1376,27 +1376,27 @@ static int SDLCALL audio_formatChange(void *arg)
     }
 
     result = SDL_PutAudioStreamData(stream, buffer_1, length_1);
-    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_PutAudioStreamData(buffer_1) to succeed")) {
+    if (!SDLTest_AssertCheck(result == true, "Expected SDL_PutAudioStreamData(buffer_1) to succeed")) {
         goto cleanup;
     }
 
     result = SDL_FlushAudioStream(stream);
-    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_FlushAudioStream to succeed")) {
+    if (!SDLTest_AssertCheck(result == true, "Expected SDL_FlushAudioStream to succeed")) {
         goto cleanup;
     }
 
     result = SDL_SetAudioStreamFormat(stream, &spec2, &spec3);
-    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_SetAudioStreamFormat(spec2, spec3) to succeed")) {
+    if (!SDLTest_AssertCheck(result == true, "Expected SDL_SetAudioStreamFormat(spec2, spec3) to succeed")) {
         goto cleanup;
     }
 
     result = SDL_PutAudioStreamData(stream, buffer_2, length_2);
-    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_PutAudioStreamData(buffer_1) to succeed")) {
+    if (!SDLTest_AssertCheck(result == true, "Expected SDL_PutAudioStreamData(buffer_1) to succeed")) {
         goto cleanup;
     }
 
     result = SDL_FlushAudioStream(stream);
-    if (!SDLTest_AssertCheck(result == SDL_TRUE, "Expected SDL_FlushAudioStream to succeed")) {
+    if (!SDLTest_AssertCheck(result == true, "Expected SDL_FlushAudioStream to succeed")) {
         goto cleanup;
     }
 

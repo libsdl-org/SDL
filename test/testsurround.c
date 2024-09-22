@@ -87,12 +87,12 @@ get_channel_name(int channel_index, int channel_count)
     case 7:
         return "Side Right";
     }
-    SDLTest_AssertCheck(SDL_FALSE, "Invalid channel_index for channel_count:  channel_count=%d channel_index=%d", channel_count, channel_index);
+    SDLTest_AssertCheck(false, "Invalid channel_index for channel_count:  channel_count=%d channel_index=%d", channel_count, channel_index);
     SDL_assert(0);
     return NULL;
 }
 
-static SDL_bool is_lfe_channel(int channel_index, int channel_count)
+static bool is_lfe_channel(int channel_index, int channel_count)
 {
     return (channel_count == 3 && channel_index == 2) || (channel_count >= 6 && channel_index == 3);
 }
@@ -157,9 +157,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
         SDLTest_CommonQuit(state);
         return 1;
@@ -223,7 +220,7 @@ int main(int argc, char *argv[])
             SDL_Log("Playing %d Hz test tone on channel: %s\n", sine_freq, get_channel_name(j, total_channels));
 
             /* fill_buffer() will increment the active channel */
-            if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+            if (SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_TESTS_QUICK") != NULL) {
                 SDL_Delay(QUICK_TEST_TIME_MSEC);
             } else {
                 SDL_Delay(CHANNEL_TEST_TIME_SEC * 1000);

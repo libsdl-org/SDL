@@ -27,14 +27,14 @@
 */
 #include <SDL3/SDL_test.h>
 
-int SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext)
+bool SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext)
 {
     int i, j;
     CrcUint32 c;
 
     /* Sanity check context pointer */
     if (!crcContext) {
-        return -1;
+        return SDL_InvalidParamError("crcContext");
     }
 
     /*
@@ -61,35 +61,35 @@ int SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext)
     }
 #endif
 
-    return 0;
+    return true;
 }
 
 /* Complete CRC32 calculation on a memory block */
-int SDLTest_Crc32Calc(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32)
+bool SDLTest_Crc32Calc(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32)
 {
-    if (SDLTest_Crc32CalcStart(crcContext, crc32)) {
-        return -1;
+    if (!SDLTest_Crc32CalcStart(crcContext, crc32)) {
+        return false;
     }
 
-    if (SDLTest_Crc32CalcBuffer(crcContext, inBuf, inLen, crc32)) {
-        return -1;
+    if (!SDLTest_Crc32CalcBuffer(crcContext, inBuf, inLen, crc32)) {
+        return false;
     }
 
-    if (SDLTest_Crc32CalcEnd(crcContext, crc32)) {
-        return -1;
+    if (!SDLTest_Crc32CalcEnd(crcContext, crc32)) {
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 /* Start crc calculation */
 
-int SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
+bool SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
 {
     /* Sanity check pointers */
     if (!crcContext) {
         *crc32 = 0;
-        return -1;
+        return SDL_InvalidParamError("crcContext");
     }
 
     /*
@@ -97,17 +97,17 @@ int SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
      */
     *crc32 = 0xffffffff;
 
-    return 0;
+    return true;
 }
 
 /* Finish crc calculation */
 
-int SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
+bool SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
 {
     /* Sanity check pointers */
     if (!crcContext) {
         *crc32 = 0;
-        return -1;
+        return SDL_InvalidParamError("crcContext");
     }
 
     /*
@@ -115,23 +115,23 @@ int SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
      */
     *crc32 = (~(*crc32));
 
-    return 0;
+    return true;
 }
 
 /* Include memory block in crc */
 
-int SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32)
+bool SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32)
 {
     CrcUint8 *p;
     register CrcUint32 crc;
 
     if (!crcContext) {
         *crc32 = 0;
-        return -1;
+        return SDL_InvalidParamError("crcContext");
     }
 
     if (!inBuf) {
-        return -1;
+        return SDL_InvalidParamError("inBuf");
     }
 
     /*
@@ -147,14 +147,14 @@ int SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, C
     }
     *crc32 = crc;
 
-    return 0;
+    return true;
 }
 
-int SDLTest_Crc32Done(SDLTest_Crc32Context *crcContext)
+bool SDLTest_Crc32Done(SDLTest_Crc32Context *crcContext)
 {
     if (!crcContext) {
-        return -1;
+        return SDL_InvalidParamError("crcContext");
     }
 
-    return 0;
+    return true;
 }

@@ -23,7 +23,7 @@
 
 #include <SDL3/SDL_opengl.h>
 
-static SDL_bool shaders_supported;
+static bool shaders_supported;
 static int current_shader = 0;
 
 enum
@@ -128,7 +128,7 @@ static PFNGLSHADERSOURCEARBPROC pglShaderSourceARB;
 static PFNGLUNIFORM1IARBPROC pglUniform1iARB;
 static PFNGLUSEPROGRAMOBJECTARBPROC pglUseProgramObjectARB;
 
-static SDL_bool CompileShader(GLhandleARB shader, const char *source)
+static bool CompileShader(GLhandleARB shader, const char *source)
 {
     GLint status = 0;
 
@@ -148,13 +148,13 @@ static SDL_bool CompileShader(GLhandleARB shader, const char *source)
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to compile shader:\n%s\n%s", source, info);
             SDL_free(info);
         }
-        return SDL_FALSE;
+        return false;
     } else {
-        return SDL_TRUE;
+        return true;
     }
 }
 
-static SDL_bool LinkProgram(ShaderData *data)
+static bool LinkProgram(ShaderData *data)
 {
     GLint status = 0;
 
@@ -176,13 +176,13 @@ static SDL_bool LinkProgram(ShaderData *data)
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to link program:\n%s", info);
             SDL_free(info);
         }
-        return SDL_FALSE;
+        return false;
     } else {
-        return SDL_TRUE;
+        return true;
     }
 }
 
-static SDL_bool CompileShaderProgram(ShaderData *data)
+static bool CompileShaderProgram(ShaderData *data)
 {
     const int num_tmus_bound = 4;
     int i;
@@ -196,18 +196,18 @@ static SDL_bool CompileShaderProgram(ShaderData *data)
     /* Create the vertex shader */
     data->vert_shader = pglCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
     if (!CompileShader(data->vert_shader, data->vert_source)) {
-        return SDL_FALSE;
+        return false;
     }
 
     /* Create the fragment shader */
     data->frag_shader = pglCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
     if (!CompileShader(data->frag_shader, data->frag_source)) {
-        return SDL_FALSE;
+        return false;
     }
 
     /* ... and in the darkness bind them */
     if (!LinkProgram(data)) {
-        return SDL_FALSE;
+        return false;
     }
 
     /* Set up some uniform variables */
@@ -234,12 +234,12 @@ static void DestroyShaderProgram(ShaderData *data)
     }
 }
 
-static SDL_bool InitShaders(void)
+static bool InitShaders(void)
 {
     int i;
 
     /* Check for shader support */
-    shaders_supported = SDL_FALSE;
+    shaders_supported = false;
     if (SDL_GL_ExtensionSupported("GL_ARB_shader_objects") &&
         SDL_GL_ExtensionSupported("GL_ARB_shading_language_100") &&
         SDL_GL_ExtensionSupported("GL_ARB_vertex_shader") &&
@@ -268,24 +268,24 @@ static SDL_bool InitShaders(void)
             pglShaderSourceARB &&
             pglUniform1iARB &&
             pglUseProgramObjectARB) {
-            shaders_supported = SDL_TRUE;
+            shaders_supported = true;
         }
     }
 
     if (!shaders_supported) {
-        return SDL_FALSE;
+        return false;
     }
 
     /* Compile all the shaders */
     for (i = 0; i < NUM_SHADERS; ++i) {
         if (!CompileShaderProgram(&shaders[i])) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to compile shader!\n");
-            return SDL_FALSE;
+            return false;
         }
     }
 
     /* We're done! */
-    return SDL_TRUE;
+    return true;
 }
 
 static void QuitShaders(void)
@@ -457,9 +457,6 @@ int main(int argc, char **argv)
     if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {

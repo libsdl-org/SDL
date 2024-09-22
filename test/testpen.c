@@ -19,12 +19,12 @@ typedef struct Pen
 {
     SDL_PenID pen;
     Uint8 r, g, b;
-    float axes[SDL_PEN_NUM_AXES];
+    float axes[SDL_PEN_AXIS_COUNT];
     float x;
     float y;
     Uint32 buttons;
-    SDL_bool eraser;
-    SDL_bool touching;
+    bool eraser;
+    bool touching;
     struct Pen *next;
 } Pen;
 
@@ -45,9 +45,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!state) {
         return SDL_APP_FAILURE;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -153,7 +150,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             /*SDL_Log("Pen %" SDL_PRIu32 " down!", event->ptouch.which);*/
             pen = FindPen(event->ptouch.which);
             if (pen) {
-                pen->touching = SDL_TRUE;
+                pen->touching = true;
                 pen->eraser = (event->ptouch.eraser != 0);
             }
             return SDL_APP_CONTINUE;
@@ -162,7 +159,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             /*SDL_Log("Pen %" SDL_PRIu32 " up!", event->ptouch.which);*/
             pen = FindPen(event->ptouch.which);
             if (pen) {
-                pen->touching = SDL_FALSE;
+                pen->touching = false;
                 pen->axes[SDL_PEN_AXIS_PRESSURE] = 0.0f;
             }
             return SDL_APP_CONTINUE;

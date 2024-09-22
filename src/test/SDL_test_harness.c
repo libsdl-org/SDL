@@ -47,7 +47,7 @@
 /* Final result message format */
 #define SDLTEST_FINAL_RESULT_FORMAT COLOR_YELLOW ">>> %s '%s':" COLOR_END " %s\n"
 
-typedef struct SDLTest_TestSuiteRunner {
+struct SDLTest_TestSuiteRunner {
     struct
     {
         SDLTest_TestSuiteReference **testSuites;
@@ -55,14 +55,14 @@ typedef struct SDLTest_TestSuiteRunner {
         Uint64 execKey;
         char *filter;
         int testIterations;
-        SDL_bool randomOrder;
+        bool randomOrder;
     } user;
 
     SDLTest_ArgumentParser argparser;
-} SDLTest_TestSuiteRunner;
+};
 
 /* ! Timeout for single test case execution */
-static Uint32 SDLTest_TestCaseTimeout = 3600;;
+static Uint32 SDLTest_TestCaseTimeout = 3600;
 
 static const char *common_harness_usage[] = {
     "[--iterations #]",
@@ -178,14 +178,12 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
 /**
  * Set timeout handler for test.
  *
- * Note: SDL_Init(SDL_INIT_TIMER) will be called if it wasn't done so before.
- *
  * \param timeout Timeout interval in seconds.
  * \param callback Function that will be called after timeout has elapsed.
  *
  * \return Timer id or -1 on failure.
  */
-static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(void))
+static SDL_TimerID SDLTest_SetTestTimeout(int timeout, SDL_TimerCallback callback)
 {
     Uint32 timeoutInMilliseconds;
     SDL_TimerID timerID;
@@ -200,17 +198,9 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
         return 0;
     }
 
-    /* Init SDL timer if not initialized before */
-    if (!SDL_WasInit(SDL_INIT_TIMER)) {
-        if (!SDL_InitSubSystem(SDL_INIT_TIMER)) {
-            SDLTest_LogError("Failed to init timer subsystem: %s", SDL_GetError());
-            return 0;
-        }
-    }
-
     /* Set timer */
     timeoutInMilliseconds = timeout * 1000;
-    timerID = SDL_AddTimer(timeoutInMilliseconds, (SDL_TimerCallback)callback, 0x0);
+    timerID = SDL_AddTimer(timeoutInMilliseconds, callback, 0x0);
     if (timerID == 0) {
         SDLTest_LogError("Creation of SDL timer failed: %s", SDL_GetError());
         return 0;
@@ -222,13 +212,11 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
 /**
  * Timeout handler. Aborts test run and exits harness process.
  */
-#ifdef __WATCOMC__
-#pragma aux SDLTest_BailOut aborts;
-#endif
-static SDL_NORETURN void SDLCALL SDLTest_BailOut(void)
+static Uint32 SDLCALL SDLTest_BailOut(void *userdata, SDL_TimerID timerID, Uint32 interval)
 {
     SDLTest_LogError("TestCaseTimeout timer expired. Aborting test run.");
     exit(TEST_ABORTED); /* bail out from the test */
+    return 0;
 }
 
 /**
@@ -241,7 +229,7 @@ static SDL_NORETURN void SDLCALL SDLTest_BailOut(void)
  *
  * \returns Test case result.
  */
-static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseReference *testCase, Uint64 execKey, SDL_bool forceTestRun)
+static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseReference *testCase, Uint64 execKey, bool forceTestRun)
 {
     SDL_TimerID timer = 0;
     int testCaseResult = 0;
@@ -254,7 +242,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
         return TEST_RESULT_SETUP_FAILURE;
     }
 
-    if (!testCase->enabled && forceTestRun == SDL_FALSE) {
+    if (!testCase->enabled && forceTestRun == false) {
         SDLTest_Log(SDLTEST_FINAL_RESULT_FORMAT, "Test", testCase->name, "Skipped (Disabled)");
         return TEST_RESULT_SKIPPED;
     }
@@ -399,7 +387,7 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
     const char *suiteFilterName = NULL;
     int testFilter = 0;
     const char *testFilterName = NULL;
-    SDL_bool forceTestRun = SDL_FALSE;
+    bool forceTestRun = false;
     int testResult = 0;
     int runResult = 0;
     int totalTestFailedCount = 0;
@@ -517,7 +505,7 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
             return 2;
         }
 
-        runner->user.randomOrder = SDL_FALSE;
+        runner->user.randomOrder = false;
     }
 
     /* Number of test suites */
@@ -535,7 +523,7 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
 
     /* Mix the list of suites to run them in random order */
     {
-        /* Exclude last test "subsystemsTestSuite" which is said to interfer with other tests */
+        /* Exclude last test "subsystemsTestSuite" which is said to interfere with other tests */
         nbSuites--;
 
         if (runner->user.execKey != 0) {
@@ -652,7 +640,7 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
                     /* Override 'disabled' flag if we specified a test filter (i.e. force run for debugging) */
                     if (testFilter == 1 && !testCase->enabled) {
                         SDLTest_Log("Force run of disabled test since test filter was set");
-                        forceTestRun = SDL_TRUE;
+                        forceTestRun = true;
                     }
 
                     /* Take time - test start */
@@ -824,7 +812,7 @@ static int SDLCALL SDLTest_TestSuiteCommonArg(void *data, char **argv, int index
         }
     }
     else if (SDL_strcasecmp(argv[index], "--random-order") == 0) {
-        runner->user.randomOrder = SDL_TRUE;
+        runner->user.randomOrder = true;
         return 1;
     }
     return 0;

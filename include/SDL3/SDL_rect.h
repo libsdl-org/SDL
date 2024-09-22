@@ -146,16 +146,16 @@ SDL_FORCE_INLINE void SDL_RectToFRect(const SDL_Rect *rect, SDL_FRect *frect)
  *
  * \param p the point to test.
  * \param r the rectangle to test.
- * \returns SDL_TRUE if `p` is contained by `r`, SDL_FALSE otherwise.
+ * \returns true if `p` is contained by `r`, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE SDL_bool SDL_PointInRect(const SDL_Point *p, const SDL_Rect *r)
+SDL_FORCE_INLINE bool SDL_PointInRect(const SDL_Point *p, const SDL_Rect *r)
 {
     return ( p && r && (p->x >= r->x) && (p->x < (r->x + r->w)) &&
-             (p->y >= r->y) && (p->y < (r->y + r->h)) ) ? SDL_TRUE : SDL_FALSE;
+             (p->y >= r->y) && (p->y < (r->y + r->h)) ) ? true : false;
 }
 
 /**
@@ -170,15 +170,15 @@ SDL_FORCE_INLINE SDL_bool SDL_PointInRect(const SDL_Point *p, const SDL_Rect *r)
  * be able to find this function inside SDL itself).
  *
  * \param r the rectangle to test.
- * \returns SDL_TRUE if the rectangle is "empty", SDL_FALSE otherwise.
+ * \returns true if the rectangle is "empty", false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE SDL_bool SDL_RectEmpty(const SDL_Rect *r)
+SDL_FORCE_INLINE bool SDL_RectEmpty(const SDL_Rect *r)
 {
-    return ((!r) || (r->w <= 0) || (r->h <= 0)) ? SDL_TRUE : SDL_FALSE;
+    return ((!r) || (r->w <= 0) || (r->h <= 0)) ? true : false;
 }
 
 /**
@@ -194,26 +194,26 @@ SDL_FORCE_INLINE SDL_bool SDL_RectEmpty(const SDL_Rect *r)
  *
  * \param a the first rectangle to test.
  * \param b the second rectangle to test.
- * \returns SDL_TRUE if the rectangles are equal, SDL_FALSE otherwise.
+ * \returns true if the rectangles are equal, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE SDL_bool SDL_RectsEqual(const SDL_Rect *a, const SDL_Rect *b)
+SDL_FORCE_INLINE bool SDL_RectsEqual(const SDL_Rect *a, const SDL_Rect *b)
 {
     return (a && b && (a->x == b->x) && (a->y == b->y) &&
-            (a->w == b->w) && (a->h == b->h)) ? SDL_TRUE : SDL_FALSE;
+            (a->w == b->w) && (a->h == b->h)) ? true : false;
 }
 
 /**
  * Determine whether two rectangles intersect.
  *
- * If either pointer is NULL the function will return SDL_FALSE.
+ * If either pointer is NULL the function will return false.
  *
  * \param A an SDL_Rect structure representing the first rectangle.
  * \param B an SDL_Rect structure representing the second rectangle.
- * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
+ * \returns true if there is an intersection, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -221,24 +221,24 @@ SDL_FORCE_INLINE SDL_bool SDL_RectsEqual(const SDL_Rect *a, const SDL_Rect *b)
  *
  * \sa SDL_GetRectIntersection
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasRectIntersection(const SDL_Rect *A, const SDL_Rect *B);
+extern SDL_DECLSPEC bool SDLCALL SDL_HasRectIntersection(const SDL_Rect *A, const SDL_Rect *B);
 
 /**
  * Calculate the intersection of two rectangles.
  *
- * If `result` is NULL then this function will return SDL_FALSE.
+ * If `result` is NULL then this function will return false.
  *
  * \param A an SDL_Rect structure representing the first rectangle.
  * \param B an SDL_Rect structure representing the second rectangle.
  * \param result an SDL_Rect structure filled in with the intersection of
  *               rectangles `A` and `B`.
- * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
+ * \returns true if there is an intersection, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasRectIntersection
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectIntersection(const SDL_Rect *A, const SDL_Rect *B, SDL_Rect *result);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRectIntersection(const SDL_Rect *A, const SDL_Rect *B, SDL_Rect *result);
 
 /**
  * Calculate the union of two rectangles.
@@ -247,12 +247,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectIntersection(const SDL_Rect *A, 
  * \param B an SDL_Rect structure representing the second rectangle.
  * \param result an SDL_Rect structure filled in with the union of rectangles
  *               `A` and `B`.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectUnion(const SDL_Rect *A, const SDL_Rect *B, SDL_Rect *result);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRectUnion(const SDL_Rect *A, const SDL_Rect *B, SDL_Rect *result);
 
 /**
  * Calculate a minimal rectangle enclosing a set of points.
@@ -266,12 +266,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectUnion(const SDL_Rect *A, const S
  * \param clip an SDL_Rect used for clipping or NULL to enclose all points.
  * \param result an SDL_Rect structure filled in with the minimal enclosing
  *               rectangle.
- * \returns SDL_TRUE if any points were enclosed or SDL_FALSE if all the
- *          points were outside of the clipping rectangle.
+ * \returns true if any points were enclosed or false if all the points were
+ *          outside of the clipping rectangle.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectEnclosingPoints(const SDL_Point *points, int count, const SDL_Rect *clip, SDL_Rect *result);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRectEnclosingPoints(const SDL_Point *points, int count, const SDL_Rect *clip, SDL_Rect *result);
 
 /**
  * Calculate the intersection of a rectangle and line segment.
@@ -287,11 +287,11 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectEnclosingPoints(const SDL_Point 
  * \param Y1 a pointer to the starting Y-coordinate of the line.
  * \param X2 a pointer to the ending X-coordinate of the line.
  * \param Y2 a pointer to the ending Y-coordinate of the line.
- * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
+ * \returns true if there is an intersection, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectAndLineIntersection(const SDL_Rect *rect, int *X1, int *Y1, int *X2, int *Y2);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRectAndLineIntersection(const SDL_Rect *rect, int *X1, int *Y1, int *X2, int *Y2);
 
 
 /* SDL_FRect versions... */
@@ -311,16 +311,16 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectAndLineIntersection(const SDL_Re
  *
  * \param p the point to test.
  * \param r the rectangle to test.
- * \returns SDL_TRUE if `p` is contained by `r`, SDL_FALSE otherwise.
+ * \returns true if `p` is contained by `r`, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE SDL_bool SDL_PointInRectFloat(const SDL_FPoint *p, const SDL_FRect *r)
+SDL_FORCE_INLINE bool SDL_PointInRectFloat(const SDL_FPoint *p, const SDL_FRect *r)
 {
     return ( p && r && (p->x >= r->x) && (p->x <= (r->x + r->w)) &&
-             (p->y >= r->y) && (p->y <= (r->y + r->h)) ) ? SDL_TRUE : SDL_FALSE;
+             (p->y >= r->y) && (p->y <= (r->y + r->h)) ) ? true : false;
 }
 
 /**
@@ -335,15 +335,15 @@ SDL_FORCE_INLINE SDL_bool SDL_PointInRectFloat(const SDL_FPoint *p, const SDL_FR
  * be able to find this function inside SDL itself).
  *
  * \param r the rectangle to test.
- * \returns SDL_TRUE if the rectangle is "empty", SDL_FALSE otherwise.
+ * \returns true if the rectangle is "empty", false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE SDL_bool SDL_RectEmptyFloat(const SDL_FRect *r)
+SDL_FORCE_INLINE bool SDL_RectEmptyFloat(const SDL_FRect *r)
 {
-    return ((!r) || (r->w < 0.0f) || (r->h < 0.0f)) ? SDL_TRUE : SDL_FALSE;
+    return ((!r) || (r->w < 0.0f) || (r->h < 0.0f)) ? true : false;
 }
 
 /**
@@ -363,7 +363,7 @@ SDL_FORCE_INLINE SDL_bool SDL_RectEmptyFloat(const SDL_FRect *r)
  * \param a the first rectangle to test.
  * \param b the second rectangle to test.
  * \param epsilon the epsilon value for comparison.
- * \returns SDL_TRUE if the rectangles are equal, SDL_FALSE otherwise.
+ * \returns true if the rectangles are equal, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -371,14 +371,14 @@ SDL_FORCE_INLINE SDL_bool SDL_RectEmptyFloat(const SDL_FRect *r)
  *
  * \sa SDL_RectsEqualFloat
  */
-SDL_FORCE_INLINE SDL_bool SDL_RectsEqualEpsilon(const SDL_FRect *a, const SDL_FRect *b, const float epsilon)
+SDL_FORCE_INLINE bool SDL_RectsEqualEpsilon(const SDL_FRect *a, const SDL_FRect *b, const float epsilon)
 {
     return (a && b && ((a == b) ||
             ((SDL_fabsf(a->x - b->x) <= epsilon) &&
             (SDL_fabsf(a->y - b->y) <= epsilon) &&
             (SDL_fabsf(a->w - b->w) <= epsilon) &&
             (SDL_fabsf(a->h - b->h) <= epsilon))))
-            ? SDL_TRUE : SDL_FALSE;
+            ? true : false;
 }
 
 /**
@@ -398,7 +398,7 @@ SDL_FORCE_INLINE SDL_bool SDL_RectsEqualEpsilon(const SDL_FRect *a, const SDL_FR
  *
  * \param a the first rectangle to test.
  * \param b the second rectangle to test.
- * \returns SDL_TRUE if the rectangles are equal, SDL_FALSE otherwise.
+ * \returns true if the rectangles are equal, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -406,7 +406,7 @@ SDL_FORCE_INLINE SDL_bool SDL_RectsEqualEpsilon(const SDL_FRect *a, const SDL_FR
  *
  * \sa SDL_RectsEqualEpsilon
  */
-SDL_FORCE_INLINE SDL_bool SDL_RectsEqualFloat(const SDL_FRect *a, const SDL_FRect *b)
+SDL_FORCE_INLINE bool SDL_RectsEqualFloat(const SDL_FRect *a, const SDL_FRect *b)
 {
     return SDL_RectsEqualEpsilon(a, b, SDL_FLT_EPSILON);
 }
@@ -414,34 +414,34 @@ SDL_FORCE_INLINE SDL_bool SDL_RectsEqualFloat(const SDL_FRect *a, const SDL_FRec
 /**
  * Determine whether two rectangles intersect with float precision.
  *
- * If either pointer is NULL the function will return SDL_FALSE.
+ * If either pointer is NULL the function will return false.
  *
  * \param A an SDL_FRect structure representing the first rectangle.
  * \param B an SDL_FRect structure representing the second rectangle.
- * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
+ * \returns true if there is an intersection, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRectIntersection
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasRectIntersectionFloat(const SDL_FRect *A, const SDL_FRect *B);
+extern SDL_DECLSPEC bool SDLCALL SDL_HasRectIntersectionFloat(const SDL_FRect *A, const SDL_FRect *B);
 
 /**
  * Calculate the intersection of two rectangles with float precision.
  *
- * If `result` is NULL then this function will return SDL_FALSE.
+ * If `result` is NULL then this function will return false.
  *
  * \param A an SDL_FRect structure representing the first rectangle.
  * \param B an SDL_FRect structure representing the second rectangle.
  * \param result an SDL_FRect structure filled in with the intersection of
  *               rectangles `A` and `B`.
- * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
+ * \returns true if there is an intersection, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasRectIntersectionFloat
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectIntersectionFloat(const SDL_FRect *A, const SDL_FRect *B, SDL_FRect *result);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRectIntersectionFloat(const SDL_FRect *A, const SDL_FRect *B, SDL_FRect *result);
 
 /**
  * Calculate the union of two rectangles with float precision.
@@ -450,12 +450,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectIntersectionFloat(const SDL_FRec
  * \param B an SDL_FRect structure representing the second rectangle.
  * \param result an SDL_FRect structure filled in with the union of rectangles
  *               `A` and `B`.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectUnionFloat(const SDL_FRect *A, const SDL_FRect *B, SDL_FRect *result);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRectUnionFloat(const SDL_FRect *A, const SDL_FRect *B, SDL_FRect *result);
 
 /**
  * Calculate a minimal rectangle enclosing a set of points with float
@@ -470,12 +470,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectUnionFloat(const SDL_FRect *A, c
  * \param clip an SDL_FRect used for clipping or NULL to enclose all points.
  * \param result an SDL_FRect structure filled in with the minimal enclosing
  *               rectangle.
- * \returns SDL_TRUE if any points were enclosed or SDL_FALSE if all the
- *          points were outside of the clipping rectangle.
+ * \returns true if any points were enclosed or false if all the points were
+ *          outside of the clipping rectangle.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectEnclosingPointsFloat(const SDL_FPoint *points, int count, const SDL_FRect *clip, SDL_FRect *result);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRectEnclosingPointsFloat(const SDL_FPoint *points, int count, const SDL_FRect *clip, SDL_FRect *result);
 
 /**
  * Calculate the intersection of a rectangle and line segment with float
@@ -492,11 +492,11 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectEnclosingPointsFloat(const SDL_F
  * \param Y1 a pointer to the starting Y-coordinate of the line.
  * \param X2 a pointer to the ending X-coordinate of the line.
  * \param Y2 a pointer to the ending Y-coordinate of the line.
- * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
+ * \returns true if there is an intersection, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectAndLineIntersectionFloat(const SDL_FRect *rect, float *X1, float *Y1, float *X2, float *Y2);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRectAndLineIntersectionFloat(const SDL_FRect *rect, float *X1, float *Y1, float *X2, float *Y2);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

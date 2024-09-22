@@ -53,7 +53,7 @@ typedef struct
     SDL_Window *window;
     SDL_Renderer *renderer;
     int rendererID;
-    SDL_bool settings_visible;
+    bool settings_visible;
     SDL_Texture *settings_icon;
     SDL_FRect settings_rect;
     SDL_PropertiesID text_settings;
@@ -63,12 +63,12 @@ typedef struct
     char markedText[MAX_TEXT_LENGTH];
     int cursor;
     int cursor_length;
-    SDL_bool cursor_visible;
+    bool cursor_visible;
     Uint64 last_cursor_change;
     char **candidates;
     int num_candidates;
     int selected_candidate;
-    SDL_bool horizontal_candidates;
+    bool horizontal_candidates;
 } WindowState;
 
 static SDLTest_CommonState *state;
@@ -99,10 +99,10 @@ static const struct
     { "Capitalize words",       SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_WORDS },
     { "All caps",               SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_LETTERS },
     { "",                       NULL },
-    { "Auto-correct OFF",       SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, SDL_FALSE },
-    { "Auto-correct ON",        SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, SDL_TRUE },
-    { "Multiline OFF",          SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN, SDL_FALSE },
-    { "Multiline ON",           SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN, SDL_TRUE }
+    { "Auto-correct OFF",       SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, false },
+    { "Auto-correct ON",        SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, true },
+    { "Multiline OFF",          SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN, false },
+    { "Multiline ON",           SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN, true }
 };
 
 #ifdef HAVE_SDL_TTF
@@ -751,11 +751,11 @@ static void DrawSettingsButton(WindowState *ctx)
 static void ToggleSettings(WindowState *ctx)
 {
     if (ctx->settings_visible) {
-        ctx->settings_visible = SDL_FALSE;
+        ctx->settings_visible = false;
         SDL_StartTextInputWithProperties(ctx->window, ctx->text_settings);
     } else {
         SDL_StopTextInput(ctx->window);
-        ctx->settings_visible = SDL_TRUE;
+        ctx->settings_visible = true;
     }
 }
 
@@ -777,11 +777,11 @@ static int GetDefaultSetting(SDL_PropertiesID props, const char *setting)
     }
 
     if (SDL_strcmp(setting, SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN) == 0) {
-        return SDL_TRUE;
+        return true;
     }
 
     if (SDL_strcmp(setting, SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN) == 0) {
-        return SDL_TRUE;
+        return true;
     }
 
     SDL_assert(!"Unknown setting");
@@ -1027,8 +1027,8 @@ static void Redraw(void)
 
 int main(int argc, char *argv[])
 {
-    SDL_bool render_composition = SDL_FALSE;
-    SDL_bool render_candidates = SDL_FALSE;
+    bool render_composition = false;
+    bool render_candidates = false;
     int i, done;
     SDL_Event event;
     char *fontname = NULL;
@@ -1038,9 +1038,6 @@ int main(int argc, char *argv[])
     if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -1053,10 +1050,10 @@ int main(int argc, char *argv[])
                 consumed = 2;
             }
         } else if (SDL_strcmp(argv[i], "--render-composition") == 0) {
-            render_composition = SDL_TRUE;
+            render_composition = true;
             consumed = 1;
         } else if (SDL_strcmp(argv[i], "--render-candidates") == 0) {
-            render_candidates = SDL_TRUE;
+            render_candidates = true;
             consumed = 1;
         }
         if (consumed <= 0) {
@@ -1117,7 +1114,7 @@ int main(int argc, char *argv[])
         ctx->window = window;
         ctx->renderer = renderer;
         ctx->rendererID = i;
-        ctx->settings_icon = LoadTexture(renderer, "icon.bmp", SDL_TRUE, &icon_w, &icon_h);
+        ctx->settings_icon = LoadTexture(renderer, "icon.bmp", true, &icon_w, &icon_h);
         ctx->settings_rect.x = (float)WINDOW_WIDTH - icon_w - MARGIN;
         ctx->settings_rect.y = MARGIN;
         ctx->settings_rect.w = (float)icon_w;

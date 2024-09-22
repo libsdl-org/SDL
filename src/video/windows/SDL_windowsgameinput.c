@@ -22,6 +22,9 @@
 
 #include "SDL_windowsvideo.h"
 
+// GameInput currently has a bug with keys stuck on focus change, and crashes on initialization on some systems, so we'll disable it until these issues are fixed.
+#undef HAVE_GAMEINPUT_H
+
 #ifdef HAVE_GAMEINPUT_H
 
 #define COBJMACROS
@@ -287,7 +290,8 @@ static void GAMEINPUT_InitialMouseReading(WIN_GameInputData *data, SDL_Window *w
 
         for (int i = 0; i < MAX_GAMEINPUT_BUTTONS; ++i) {
             const GameInputMouseButtons mask = (1 << i);
-            SDL_SendMouseButton(timestamp, window, mouseID, (state.buttons & mask) ? SDL_PRESSED : SDL_RELEASED, GAMEINPUT_button_map[i]);
+            bool down = ((state.buttons & mask) != 0);
+            SDL_SendMouseButton(timestamp, window, mouseID, GAMEINPUT_button_map[i], down);
         }
     }
 }
@@ -315,7 +319,8 @@ static void GAMEINPUT_HandleMouseDelta(WIN_GameInputData *data, SDL_Window *wind
             for (int i = 0; i < MAX_GAMEINPUT_BUTTONS; ++i) {
                 const GameInputMouseButtons mask = (1 << i);
                 if (delta.buttons & mask) {
-                    SDL_SendMouseButton(timestamp, window, mouseID, (state.buttons & mask) ? SDL_PRESSED : SDL_RELEASED, GAMEINPUT_button_map[i]);
+                    bool down = ((state.buttons & mask) != 0);
+                    SDL_SendMouseButton(timestamp, window, mouseID, GAMEINPUT_button_map[i], down);
                 }
             }
         }
@@ -366,16 +371,16 @@ static void GAMEINPUT_InitialKeyboardReading(WIN_GameInputData *data, SDL_Window
 
     // Go through and send key up events for any key that's not held down
     int num_scancodes;
-    const Uint8 *keyboard_state = SDL_GetKeyboardState(&num_scancodes);
+    const bool *keyboard_state = SDL_GetKeyboardState(&num_scancodes);
     for (int i = 0; i < num_scancodes; ++i) {
         if (keyboard_state[i] && !KeysHaveScancode(keys, num_keys, (SDL_Scancode)i)) {
-            SDL_SendKeyboardKey(timestamp, keyboardID, keys[i].scanCode, (SDL_Scancode)i, SDL_RELEASED);
+            SDL_SendKeyboardKey(timestamp, keyboardID, keys[i].scanCode, (SDL_Scancode)i, false);
         }
     }
 
     // Go through and send key down events for any key that's held down
     for (uint32_t i = 0; i < num_keys; ++i) {
-        SDL_SendKeyboardKey(timestamp, keyboardID, keys[i].scanCode, GetScancodeFromKeyState(&keys[i]), SDL_PRESSED);
+        SDL_SendKeyboardKey(timestamp, keyboardID, keys[i].scanCode, GetScancodeFromKeyState(&keys[i]), true);
     }
 }
 
@@ -420,16 +425,16 @@ static void GAMEINPUT_HandleKeyboardDelta(WIN_GameInputData *data, SDL_Window *w
                 ++index_keys;
             } else {
                 // This key was released
-                SDL_SendKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), SDL_RELEASED);
+                SDL_SendKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), false);
                 ++index_last;
             }
         } else if (index_last < num_last) {
             // This key was released
-            SDL_SendKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), SDL_RELEASED);
+            SDL_SendKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), false);
             ++index_last;
         } else {
             // This key was pressed
-            SDL_SendKeyboardKey(timestamp, keyboardID, keys[index_keys].scanCode, GetScancodeFromKeyState(&keys[index_keys]), SDL_PRESSED);
+            SDL_SendKeyboardKey(timestamp, keyboardID, keys[index_keys].scanCode, GetScancodeFromKeyState(&keys[index_keys]), true);
             ++index_keys;
         }
     }

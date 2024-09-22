@@ -74,7 +74,11 @@ extern "C" {
  */
 #define SDL_ALPHA_TRANSPARENT_FLOAT 0.0f
 
-/** Pixel type. */
+/**
+ * Pixel type.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_PixelType
 {
     SDL_PIXELTYPE_UNKNOWN,
@@ -93,7 +97,11 @@ typedef enum SDL_PixelType
     SDL_PIXELTYPE_INDEX2
 } SDL_PixelType;
 
-/** Bitmap pixel order, high bit -> low bit. */
+/**
+ * Bitmap pixel order, high bit -> low bit.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_BitmapOrder
 {
     SDL_BITMAPORDER_NONE,
@@ -101,7 +109,11 @@ typedef enum SDL_BitmapOrder
     SDL_BITMAPORDER_1234
 } SDL_BitmapOrder;
 
-/** Packed component order, high bit -> low bit. */
+/**
+ * Packed component order, high bit -> low bit.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_PackedOrder
 {
     SDL_PACKEDORDER_NONE,
@@ -115,7 +127,11 @@ typedef enum SDL_PackedOrder
     SDL_PACKEDORDER_BGRA
 } SDL_PackedOrder;
 
-/** Array component order, low byte -> high byte. */
+/**
+ * Array component order, low byte -> high byte.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_ArrayOrder
 {
     SDL_ARRAYORDER_NONE,
@@ -127,7 +143,11 @@ typedef enum SDL_ArrayOrder
     SDL_ARRAYORDER_ABGR
 } SDL_ArrayOrder;
 
-/** Packed component layout. */
+/**
+ * Packed component layout.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_PackedLayout
 {
     SDL_PACKEDLAYOUT_NONE,
@@ -760,8 +780,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat 
  * \param Gmask a pointer filled in with the green mask for the format.
  * \param Bmask a pointer filled in with the blue mask for the format.
  * \param Amask a pointer filled in with the alpha mask for the format.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -769,7 +789,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat 
  *
  * \sa SDL_GetPixelFormatForMasks
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask);
 
 /**
  * Convert a bpp value and RGBA masks to an enumerated pixel format.
@@ -837,15 +857,15 @@ extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreatePalette(int ncolors);
  * \param colors an array of SDL_Color structures to copy into the palette.
  * \param firstcolor the index of the first palette entry to modify.
  * \param ncolors the number of entries to modify.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread, as long as
  *               the palette is not modified or destroyed in another thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int firstcolor, int ncolors);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int firstcolor, int ncolors);
 
 /**
  * Free a palette created with SDL_CreatePalette().

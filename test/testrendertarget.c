@@ -35,7 +35,7 @@ typedef struct
 
 static DrawState *drawstates;
 static int done;
-static SDL_bool test_composite = SDL_FALSE;
+static bool test_composite = false;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -48,7 +48,7 @@ quit(int rc)
     }
 }
 
-static SDL_bool
+static bool
 DrawComposite(DrawState *s)
 {
     SDL_Rect viewport;
@@ -56,7 +56,7 @@ DrawComposite(DrawState *s)
     SDL_Texture *target;
     SDL_Surface *surface;
 
-    static SDL_bool blend_tested = SDL_FALSE;
+    static bool blend_tested = false;
     if (!blend_tested) {
         SDL_Texture *A, *B;
 
@@ -86,7 +86,7 @@ DrawComposite(DrawState *s)
 
         SDL_DestroyTexture(A);
         SDL_DestroyTexture(B);
-        blend_tested = SDL_TRUE;
+        blend_tested = true;
     }
 
     SDL_GetRenderViewport(s->renderer, &viewport);
@@ -135,10 +135,10 @@ DrawComposite(DrawState *s)
 
     /* Update the screen! */
     SDL_RenderPresent(s->renderer);
-    return SDL_TRUE;
+    return true;
 }
 
-static SDL_bool
+static bool
 Draw(DrawState *s)
 {
     SDL_Rect viewport;
@@ -149,7 +149,7 @@ Draw(DrawState *s)
     target = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, viewport.w, viewport.h);
     if (!target) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create render target texture: %s\n", SDL_GetError());
-        return SDL_FALSE;
+        return false;
     }
     SDL_SetRenderTarget(s->renderer, target);
 
@@ -179,7 +179,7 @@ Draw(DrawState *s)
 
     /* Update the screen! */
     SDL_RenderPresent(s->renderer);
-    return SDL_TRUE;
+    return true;
 }
 
 static void loop(void)
@@ -224,9 +224,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     for (i = 1; i < argc;) {
         int consumed;
 
@@ -234,7 +231,7 @@ int main(int argc, char *argv[])
         if (consumed == 0) {
             consumed = -1;
             if (SDL_strcasecmp(argv[i], "--composite") == 0) {
-                test_composite = SDL_TRUE;
+                test_composite = true;
                 consumed = 1;
             }
         }
@@ -256,11 +253,11 @@ int main(int argc, char *argv[])
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
         if (test_composite) {
-            drawstate->sprite = LoadTexture(drawstate->renderer, "icon-alpha.bmp", SDL_TRUE, NULL, NULL);
+            drawstate->sprite = LoadTexture(drawstate->renderer, "icon-alpha.bmp", true, NULL, NULL);
         } else {
-            drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", SDL_TRUE, NULL, NULL);
+            drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", true, NULL, NULL);
         }
-        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", SDL_FALSE, NULL, NULL);
+        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", false, NULL, NULL);
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }

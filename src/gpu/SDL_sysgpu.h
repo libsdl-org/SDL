@@ -69,9 +69,14 @@ typedef struct BlitPipelineCacheEntry
 
 // Internal Helper Utilities
 
-#define SDL_GPU_TEXTUREFORMAT_MAX        (SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT + 1)
-#define SDL_GPU_SWAPCHAINCOMPOSITION_MAX (SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048 + 1)
-#define SDL_GPU_PRESENTMODE_MAX          (SDL_GPU_PRESENTMODE_MAILBOX + 1)
+#define SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE        (SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT + 1)
+#define SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE  (SDL_GPU_VERTEXELEMENTFORMAT_HALF4 + 1)
+#define SDL_GPU_COMPAREOP_MAX_ENUM_VALUE            (SDL_GPU_COMPAREOP_ALWAYS + 1)
+#define SDL_GPU_STENCILOP_MAX_ENUM_VALUE            (SDL_GPU_STENCILOP_DECREMENT_AND_WRAP + 1)
+#define SDL_GPU_BLENDOP_MAX_ENUM_VALUE              (SDL_GPU_BLENDOP_MAX + 1)
+#define SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE          (SDL_GPU_BLENDFACTOR_SRC_ALPHA_SATURATE + 1)
+#define SDL_GPU_SWAPCHAINCOMPOSITION_MAX_ENUM_VALUE (SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048 + 1)
+#define SDL_GPU_PRESENTMODE_MAX_ENUM_VALUE          (SDL_GPU_PRESENTMODE_MAILBOX + 1)
 
 static inline Sint32 Texture_GetBlockSize(
     SDL_GPUTextureFormat format)
@@ -227,7 +232,8 @@ static inline Sint32 BytesPerImage(
 #define MAX_COMPUTE_WRITE_TEXTURES     8
 #define MAX_COMPUTE_WRITE_BUFFERS      8
 #define UNIFORM_BUFFER_SIZE            32768
-#define MAX_BUFFER_BINDINGS            16
+#define MAX_VERTEX_BUFFERS             16
+#define MAX_VERTEX_ATTRIBUTES          16
 #define MAX_COLOR_TARGET_BINDINGS      4
 #define MAX_PRESENT_COUNT              16
 #define MAX_FRAMES_IN_FLIGHT           3
@@ -257,17 +263,14 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     SDL_GPUShader *blitFrom2DArrayShader,
     SDL_GPUShader *blitFrom3DShader,
     SDL_GPUShader *blitFromCubeShader,
+    SDL_GPUShader *blitFromCubeArrayShader,
     BlitPipelineCacheEntry **blitPipelines,
     Uint32 *blitPipelineCount,
     Uint32 *blitPipelineCapacity);
 
 void SDL_GPU_BlitCommon(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUBlitRegion *source,
-    const SDL_GPUBlitRegion *destination,
-    SDL_FlipMode flipMode,
-    SDL_GPUFilter filter,
-    bool cycle,
+    const SDL_GPUBlitInfo *info,
     SDL_GPUSampler *blitLinearSampler,
     SDL_GPUSampler *blitNearestSampler,
     SDL_GPUShader *blitVertexShader,
@@ -275,6 +278,7 @@ void SDL_GPU_BlitCommon(
     SDL_GPUShader *blitFrom2DArrayShader,
     SDL_GPUShader *blitFrom3DShader,
     SDL_GPUShader *blitFromCubeShader,
+    SDL_GPUShader *blitFromCubeArrayShader,
     BlitPipelineCacheEntry **blitPipelines,
     Uint32 *blitPipelineCount,
     Uint32 *blitPipelineCapacity);
@@ -408,7 +412,7 @@ struct SDL_GPUDevice
 
     void (*BindVertexBuffers)(
         SDL_GPUCommandBuffer *commandBuffer,
-        Uint32 firstBinding,
+        Uint32 firstSlot,
         const SDL_GPUBufferBinding *bindings,
         Uint32 numBindings);
 
@@ -484,15 +488,13 @@ struct SDL_GPUDevice
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUBuffer *buffer,
         Uint32 offset,
-        Uint32 drawCount,
-        Uint32 pitch);
+        Uint32 drawCount);
 
     void (*DrawIndexedPrimitivesIndirect)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUBuffer *buffer,
         Uint32 offset,
-        Uint32 drawCount,
-        Uint32 pitch);
+        Uint32 drawCount);
 
     void (*EndRenderPass)(
         SDL_GPUCommandBuffer *commandBuffer);
@@ -509,6 +511,12 @@ struct SDL_GPUDevice
     void (*BindComputePipeline)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUComputePipeline *computePipeline);
+
+    void (*BindComputeSamplers)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        Uint32 firstSlot,
+        const SDL_GPUTextureSamplerBinding *textureSamplerBindings,
+        Uint32 numBindings);
 
     void (*BindComputeStorageTextures)(
         SDL_GPUCommandBuffer *commandBuffer,
@@ -605,11 +613,7 @@ struct SDL_GPUDevice
 
     void (*Blit)(
         SDL_GPUCommandBuffer *commandBuffer,
-        const SDL_GPUBlitRegion *source,
-        const SDL_GPUBlitRegion *destination,
-        SDL_FlipMode flipMode,
-        SDL_GPUFilter filter,
-        bool cycle);
+        const SDL_GPUBlitInfo *info);
 
     // Submission/Presentation
 
@@ -689,12 +693,14 @@ struct SDL_GPUDevice
     // Opaque pointer for the Driver
     SDL_GPURenderer *driverData;
 
-    // Store this for SDL_GetGPUDriver()
-    SDL_GPUDriver backend;
+    // Store this for SDL_GetGPUDeviceDriver()
+    const char *backend;
+
+    // Store this for SDL_GetGPUShaderFormats()
+    SDL_GPUShaderFormat shader_formats;
 
     // Store this for SDL_gpu.c's debug layer
     bool debug_mode;
-    SDL_GPUShaderFormat shader_formats;
 };
 
 #define ASSIGN_DRIVER_FUNC(func, name) \
@@ -743,6 +749,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(EndRenderPass, name)                 \
     ASSIGN_DRIVER_FUNC(BeginComputePass, name)              \
     ASSIGN_DRIVER_FUNC(BindComputePipeline, name)           \
+    ASSIGN_DRIVER_FUNC(BindComputeSamplers, name)           \
     ASSIGN_DRIVER_FUNC(BindComputeStorageTextures, name)    \
     ASSIGN_DRIVER_FUNC(BindComputeStorageBuffers, name)     \
     ASSIGN_DRIVER_FUNC(PushComputeUniformData, name)        \
@@ -781,7 +788,6 @@ struct SDL_GPUDevice
 typedef struct SDL_GPUBootstrap
 {
     const char *name;
-    const SDL_GPUDriver backendflag;
     const SDL_GPUShaderFormat shader_formats;
     bool (*PrepareDriver)(SDL_VideoDevice *_this);
     SDL_GPUDevice *(*CreateDevice)(bool debug_mode, bool prefer_low_power, SDL_PropertiesID props);

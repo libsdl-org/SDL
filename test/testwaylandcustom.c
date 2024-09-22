@@ -35,10 +35,10 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
     SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_IO(src, SDL_TRUE);
+        surface = SDL_LoadBMP_IO(src, true);
         if (surface) {
             /* Treat white as transparent */
-            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapSurfaceRGB(surface, 255, 255, 255));
+            SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
 
             texture = SDL_CreateTextureFromSurface(r, surface);
             *w = surface->w;
@@ -205,11 +205,11 @@ int main(int argc, char **argv)
 
     /* Create a window with the custom surface role property set. */
     props = SDL_CreateProperties();
-    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, SDL_TRUE);   /* Roleless surface */
-    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_TRUE);                        /* OpenGL enabled */
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, true);   /* Roleless surface */
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);                        /* OpenGL enabled */
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, WINDOW_WIDTH);                       /* Default width */
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, WINDOW_HEIGHT);                     /* Default height */
-    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, SDL_TRUE);            /* Handle DPI scaling internally */
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, true);            /* Handle DPI scaling internally */
     SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Wayland custom surface role test"); /* Default title */
 
     window = SDL_CreateWindowWithProperties(props);

@@ -36,20 +36,37 @@ typedef struct SDL_Hint
     SDL_HintWatch *callbacks;
 } SDL_Hint;
 
-static SDL_PropertiesID SDL_hint_props = 0;
+static SDL_AtomicU32 SDL_hint_props;
 
-static SDL_PropertiesID GetHintProperties(bool create)
-{
-    if (!SDL_hint_props && create) {
-        SDL_hint_props = SDL_CreateProperties();
-    }
-    return SDL_hint_props;
-}
 
 void SDL_InitHints(void)
 {
-    // Just make sure the hint properties are created on the main thread
-    (void)GetHintProperties(true);
+}
+
+void SDL_QuitHints(void)
+{
+    SDL_PropertiesID props;
+    do {
+        props = SDL_GetAtomicU32(&SDL_hint_props);
+    } while (!SDL_CompareAndSwapAtomicU32(&SDL_hint_props, props, 0));
+
+    if (props) {
+        SDL_DestroyProperties(props);
+    }
+}
+
+static SDL_PropertiesID GetHintProperties(bool create)
+{
+    SDL_PropertiesID props = SDL_GetAtomicU32(&SDL_hint_props);
+    if (!props && create) {
+        props = SDL_CreateProperties();
+        if (!SDL_CompareAndSwapAtomicU32(&SDL_hint_props, 0, props)) {
+            // Somebody else created hint properties before us, just use those
+            SDL_DestroyProperties(props);
+            props = SDL_GetAtomicU32(&SDL_hint_props);
+        }
+    }
+    return props;
 }
 
 static void SDLCALL CleanupHintProperty(void *userdata, void *value)
@@ -66,7 +83,7 @@ static void SDLCALL CleanupHintProperty(void *userdata, void *value)
     SDL_free(hint);
 }
 
-SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
+bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
 {
     if (!name || !*name) {
         return SDL_InvalidParamError("name");
@@ -120,7 +137,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
     return result;
 }
 
-SDL_bool SDL_ResetHint(const char *name)
+bool SDL_ResetHint(const char *name)
 {
     if (!name || !*name) {
         return SDL_InvalidParamError("name");
@@ -185,7 +202,7 @@ void SDL_ResetHints(void)
     SDL_EnumerateProperties(GetHintProperties(false), ResetHintsCallback, NULL);
 }
 
-SDL_bool SDL_SetHint(const char *name, const char *value)
+bool SDL_SetHint(const char *name, const char *value)
 {
     return SDL_SetHintWithPriority(name, value, SDL_HINT_NORMAL);
 }
@@ -243,13 +260,13 @@ bool SDL_GetStringBoolean(const char *value, bool default_value)
     return true;
 }
 
-SDL_bool SDL_GetHintBoolean(const char *name, SDL_bool default_value)
+bool SDL_GetHintBoolean(const char *name, bool default_value)
 {
     const char *hint = SDL_GetHint(name);
     return SDL_GetStringBoolean(hint, default_value);
 }
 
-SDL_bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
+bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
     if (!name || !*name) {
         return SDL_InvalidParamError("name");
@@ -334,11 +351,5 @@ void SDL_RemoveHintCallback(const char *name, SDL_HintCallback callback, void *u
         }
     }
     SDL_UnlockProperties(hints);
-}
-
-void SDL_QuitHints(void)
-{
-    SDL_DestroyProperties(SDL_hint_props);
-    SDL_hint_props = 0;
 }
 

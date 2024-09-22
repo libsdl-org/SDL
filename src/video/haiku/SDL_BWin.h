@@ -337,13 +337,13 @@ class SDL_BWin : public BWindow
 
         case B_MOUSE_DOWN:
             if (msg->FindInt32("buttons", &buttons) == B_OK) {
-                _MouseButtonEvent(buttons, SDL_PRESSED);
+                _MouseButtonEvent(buttons, true);
             }
             break;
 
         case B_MOUSE_UP:
             if (msg->FindInt32("buttons", &buttons) == B_OK) {
-                _MouseButtonEvent(buttons, SDL_RELEASED);
+                _MouseButtonEvent(buttons, false);
             }
             break;
 
@@ -364,20 +364,20 @@ class SDL_BWin : public BWindow
                 i++;
             }
             if (msg->FindInt32("key", &key) == B_OK) {
-                _KeyEvent((SDL_Scancode)key, &bytes[0], i, SDL_PRESSED);
+                _KeyEvent((SDL_Scancode)key, &bytes[0], i, true);
             }
         } break;
 
         case B_UNMAPPED_KEY_DOWN: // modifier keys are unmapped
             if (msg->FindInt32("key", &key) == B_OK) {
-                _KeyEvent((SDL_Scancode)key, NULL, 0, SDL_PRESSED);
+                _KeyEvent((SDL_Scancode)key, NULL, 0, true);
             }
             break;
 
         case B_KEY_UP:
         case B_UNMAPPED_KEY_UP: // modifier keys are unmapped
             if (msg->FindInt32("key", &key) == B_OK) {
-                _KeyEvent(key, NULL, 0, SDL_RELEASED);
+                _KeyEvent(key, NULL, 0, false);
             }
             break;
 
@@ -532,28 +532,28 @@ class SDL_BWin : public BWindow
          if true:  SDL_SetCursor(NULL); */
     }
 
-    void _MouseButtonEvent(int32 buttons, Uint8 state)
+    void _MouseButtonEvent(int32 buttons, bool down)
     {
         int32 buttonStateChange = buttons ^ _last_buttons;
 
         if (buttonStateChange & B_PRIMARY_MOUSE_BUTTON) {
-            _SendMouseButton(SDL_BUTTON_LEFT, state);
+            _SendMouseButton(SDL_BUTTON_LEFT, down);
         }
         if (buttonStateChange & B_SECONDARY_MOUSE_BUTTON) {
-            _SendMouseButton(SDL_BUTTON_RIGHT, state);
+            _SendMouseButton(SDL_BUTTON_RIGHT, down);
         }
         if (buttonStateChange & B_TERTIARY_MOUSE_BUTTON) {
-            _SendMouseButton(SDL_BUTTON_MIDDLE, state);
+            _SendMouseButton(SDL_BUTTON_MIDDLE, down);
         }
 
         _last_buttons = buttons;
     }
 
-    void _SendMouseButton(int32 button, int32 state)
+    void _SendMouseButton(int32 button, bool down)
     {
         BMessage msg(BAPP_MOUSE_BUTTON);
         msg.AddInt32("button-id", button);
-        msg.AddInt32("button-state", state);
+        msg.AddBool("button-down", down);
         _PostWindowEvent(msg);
     }
 
@@ -566,15 +566,15 @@ class SDL_BWin : public BWindow
         _PostWindowEvent(msg);
     }
 
-    void _KeyEvent(int32 keyCode, const int8 *keyUtf8, const ssize_t &len, int32 keyState)
+    void _KeyEvent(int32 keyCode, const int8 *keyUtf8, const ssize_t &len, bool down)
     {
         // Create a message to pass along to the BeApp thread
         BMessage msg(BAPP_KEY);
-        msg.AddInt32("key-state", keyState);
         msg.AddInt32("key-scancode", keyCode);
         if (keyUtf8 != NULL) {
             msg.AddData("key-utf8", B_INT8_TYPE, (const void *)keyUtf8, len);
         }
+        msg.AddBool("key-down", down);
         SDL_Looper->PostMessage(&msg);
     }
 

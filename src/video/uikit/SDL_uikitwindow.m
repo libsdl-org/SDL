@@ -452,7 +452,7 @@ UIKit_GetSupportedOrientations(SDL_Window *window)
 }
 #endif // !SDL_PLATFORM_TVOS
 
-SDL_bool SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam)
+bool SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam)
 {
     if (!window || !window->internal) {
         return SDL_SetError("Invalid window");

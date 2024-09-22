@@ -344,7 +344,8 @@ static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE *pXIn
     SDL_SendJoystickAxis(timestamp, joystick, 5, ((int)pXInputState->Gamepad.bRightTrigger * 257) - 32768);
 
     for (button = 0; button < (Uint8)SDL_arraysize(s_XInputButtons); ++button) {
-        SDL_SendJoystickButton(timestamp, joystick, button, (wButtons & s_XInputButtons[button]) ? SDL_PRESSED : SDL_RELEASED);
+        bool down = ((wButtons & s_XInputButtons[button]) != 0);
+        SDL_SendJoystickButton(timestamp, joystick, button, down);
     }
 
     if (wButtons & XINPUT_GAMEPAD_DPAD_UP) {

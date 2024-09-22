@@ -2860,6 +2860,55 @@ if (SDL_DIALOG)
   endif()
 endif()
 
+sdl_sources("${SDL3_SOURCE_DIR}/src/process/SDL_process.c")
+if(WINDOWS)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/process/windows/*.c")
+  set(SDL_PROCESS_WINDOWS 1)
+  set(HAVE_SDL_PROCESS TRUE)
+else()
+  check_c_source_compiles("
+#include <spawn.h>
+#include <unistd.h>
+
+int main(void)
+{
+    int pipes[2];
+    int pid;
+
+    const char * args[] = {
+      \"/bin/false\",
+      NULL
+    };
+
+    const char * env[] = { NULL };
+
+    pipe(pipes);
+
+    posix_spawnattr_t attr;
+    posix_spawn_file_actions_t fa;
+
+    posix_spawnattr_init(&attr);
+    posix_spawn_file_actions_init(&fa);
+
+    posix_spawn_file_actions_addclose(&fa, pipes[0]);
+    posix_spawn_file_actions_adddup2(&fa, pipes[1], STDOUT_FILENO);
+
+    posix_spawn(&pid, args[0], &fa, &attr, (char * const *) args, (char * const *) env);
+    posix_spawnp(&pid, args[0], &fa, &attr, (char * const *) args, (char * const *) env);
+
+    posix_spawn_file_actions_destroy(&fa);
+    posix_spawnattr_destroy(&attr);
+
+    return 0;
+}
+" HAVE_POSIX_SPAWN)
+  if(HAVE_POSIX_SPAWN)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/process/posix/*.c")
+    set(SDL_PROCESS_POSIX 1)
+    set(HAVE_SDL_PROCESS TRUE)
+  endif()
+endif()
+
 # Platform-independent options
 
 if(SDL_VIDEO)
@@ -2948,6 +2997,10 @@ endif()
 if(NOT HAVE_SDL_DIALOG)
   set(SDL_DIALOG_DUMMY 1)
   sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/dummy/SDL_dummydialog.c)
+endif()
+if(NOT HAVE_SDL_PROCESS)
+  set(SDL_PROCESS_DUMMY 1)
+  sdl_glob_sources(${SDL3_SOURCE_DIR}/src/process/dummy/*.c)
 endif()
 if(NOT HAVE_CAMERA)
   set(SDL_CAMERA_DRIVER_DUMMY 1)

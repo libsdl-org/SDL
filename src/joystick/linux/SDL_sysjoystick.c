@@ -1894,13 +1894,13 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
     if (ioctl(joystick->hwdata->fd, EVIOCGKEY(sizeof(keyinfo)), keyinfo) >= 0) {
         for (i = 0; i < KEY_MAX; i++) {
             if (joystick->hwdata->has_key[i]) {
-                const Uint8 value = test_bit(i, keyinfo) ? SDL_PRESSED : SDL_RELEASED;
+                bool down = test_bit(i, keyinfo);
 #ifdef DEBUG_INPUT_EVENTS
                 SDL_Log("Joystick : Re-read Button %d (%d) val= %d\n",
-                        joystick->hwdata->key_map[i], i, value);
+                        joystick->hwdata->key_map[i], i, down);
 #endif
                 SDL_SendJoystickButton(timestamp, joystick,
-                                          joystick->hwdata->key_map[i], value);
+                                          joystick->hwdata->key_map[i], down);
             }
         }
     }
@@ -1982,7 +1982,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
 #endif
                 SDL_SendJoystickButton(SDL_EVDEV_GetEventTimestamp(event), joystick,
                                           joystick->hwdata->key_map[code],
-                                          event->value);
+                                          (event->value != 0));
                 break;
             case EV_ABS:
                 switch (code) {
@@ -2163,8 +2163,8 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
             case JS_EVENT_BUTTON:
                 code = joystick->hwdata->key_pam[events[i].number];
                 SDL_SendJoystickButton(timestamp, joystick,
-                                          joystick->hwdata->key_map[code],
-                                          events[i].value);
+                                       joystick->hwdata->key_map[code],
+                                       (events[i].value != 0));
                 break;
             case JS_EVENT_AXIS:
                 code = joystick->hwdata->abs_pam[events[i].number];
@@ -2335,7 +2335,7 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
 
     /* We temporarily open the device to check how it's configured. Make
        a fake SDL_Joystick object to do so. */
-    joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
+    joystick = (SDL_Joystick *)SDL_calloc(1, sizeof(*joystick));
     if (!joystick) {
         return false;
     }

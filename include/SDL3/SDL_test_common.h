@@ -88,7 +88,7 @@ typedef struct
     const char *window_title;
     const char *window_icon;
     SDL_WindowFlags window_flags;
-    SDL_bool flash_on_focus_loss;
+    bool flash_on_focus_loss;
     int window_x;
     int window_y;
     int window_w;
@@ -101,14 +101,14 @@ typedef struct
     float window_max_aspect;
     int logical_w;
     int logical_h;
-    SDL_bool auto_scale_content;
+    bool auto_scale_content;
     SDL_RendererLogicalPresentation logical_presentation;
     SDL_ScaleMode logical_scale_mode;
     float scale;
     int depth;
     float refresh_rate;
-    SDL_bool fill_usable_bounds;
-    SDL_bool fullscreen_exclusive;
+    bool fill_usable_bounds;
+    bool fullscreen_exclusive;
     SDL_DisplayMode fullscreen_mode;
     int num_windows;
     SDL_Window **windows;
@@ -117,7 +117,7 @@ typedef struct
     /* Renderer info */
     const char *renderdriver;
     int render_vsync;
-    SDL_bool skip_renderer;
+    bool skip_renderer;
     SDL_Renderer **renderers;
     SDL_Texture **targets;
 
@@ -153,7 +153,7 @@ typedef struct
 
     /* Mouse info */
     SDL_Rect confine;
-    SDL_bool hide_cursor;
+    bool hide_cursor;
 
     /* Options info */
     SDLTest_ArgumentParser common_argparser;
@@ -220,9 +220,9 @@ void SDLCALL SDLTest_CommonLogUsage(SDLTest_CommonState *state, const char *argv
  *
  * \param state The common state describing the test window to create.
  *
- * \returns SDL_TRUE if initialization succeeded, false otherwise
+ * \returns true if initialization succeeded, false otherwise
  */
-SDL_bool SDLCALL SDLTest_CommonInit(SDLTest_CommonState *state);
+bool SDLCALL SDLTest_CommonInit(SDLTest_CommonState *state);
 
 /**
  * Easy argument handling when test app doesn't need any custom args.
@@ -231,9 +231,9 @@ SDL_bool SDLCALL SDLTest_CommonInit(SDLTest_CommonState *state);
  * \param argc argc, as supplied to SDL_main
  * \param argv argv, as supplied to SDL_main
  *
- * \returns SDL_FALSE if app should quit, true otherwise.
+ * \returns false if app should quit, true otherwise.
  */
-SDL_bool SDLCALL SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv);
+bool SDLCALL SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv);
 
 /**
  * Print the details of an event.

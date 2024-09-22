@@ -86,7 +86,7 @@ void SDL_UnlockSensors(void)
 
     if (!SDL_sensors_initialized) {
         // NOTE: There's a small window here where another thread could lock the mutex after we've checked for pending locks
-        if (!SDL_sensors_locked && SDL_AtomicGet(&SDL_sensor_lock_pending) == 0) {
+        if (!SDL_sensors_locked && SDL_GetAtomicInt(&SDL_sensor_lock_pending) == 0) {
             last_unlock = true;
         }
     }
@@ -321,7 +321,7 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
     }
 
     // Create and initialize the sensor
-    sensor = (SDL_Sensor *)SDL_calloc(sizeof(*sensor), 1);
+    sensor = (SDL_Sensor *)SDL_calloc(1, sizeof(*sensor));
     if (!sensor) {
         SDL_UnlockSensors();
         return NULL;
@@ -472,7 +472,7 @@ SDL_SensorID SDL_GetSensorID(SDL_Sensor *sensor)
 /*
  * Get the current state of this sensor
  */
-SDL_bool SDL_GetSensorData(SDL_Sensor *sensor, float *data, int num_values)
+bool SDL_GetSensorData(SDL_Sensor *sensor, float *data, int num_values)
 {
     SDL_LockSensors();
     {

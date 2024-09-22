@@ -294,12 +294,17 @@ Uint32 SDL_HashString(const void *key, void *data)
 
 bool SDL_KeyMatchString(const void *a, const void *b, void *data)
 {
+    const char *a_string = (const char *)a;
+    const char *b_string = (const char *)b;
+
     if (a == b) {
         return true;  // same pointer, must match.
     } else if (!a || !b) {
         return false;  // one pointer is NULL (and first test shows they aren't the same pointer), must not match.
+    } else if (a_string[0] != b_string[0]) {
+        return false;  // we know they don't match
     }
-    return (SDL_strcmp((const char *)a, (const char *)b) == 0);  // Check against actual string contents.
+    return (SDL_strcmp(a_string, b_string) == 0);  // Check against actual string contents.
 }
 
 // We assume we can fit the ID in the key directly
@@ -316,6 +321,11 @@ bool SDL_KeyMatchID(const void *a, const void *b, void *unused)
         return true;
     }
     return false;
+}
+
+void SDL_NukeFreeKey(const void *key, const void *value, void *unused)
+{
+    SDL_free((void *)key);
 }
 
 void SDL_NukeFreeValue(const void *key, const void *value, void *unused)

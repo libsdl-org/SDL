@@ -76,7 +76,7 @@ static void SDL_InitDynamicAPI(void);
     }
 
 #define SDL_DYNAPI_VARARGS(_static, name, initcall)                                                                                       \
-    _static SDL_bool SDLCALL SDL_SetError##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                            \
+    _static bool SDLCALL SDL_SetError##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                            \
     {                                                                                                                                     \
         char buf[128], *str = buf;                                                                                                        \
         int result;                                                                                                                       \
@@ -100,7 +100,7 @@ static void SDL_InitDynamicAPI(void);
         if (str != buf) {                                                                                                                 \
             jump_table.SDL_free(str);                                                                                                     \
         }                                                                                                                                 \
-        return SDL_FALSE;                                                                                                                 \
+        return false;                                                                                                                 \
     }                                                                                                                                     \
     _static int SDLCALL SDL_sscanf##name(const char *buf, SDL_SCANF_FORMAT_STRING const char *fmt, ...)                                   \
     {                                                                                                                                     \
@@ -168,6 +168,7 @@ static void SDL_InitDynamicAPI(void);
         jump_table.SDL_LogMessageV(category, priority, fmt, ap);                                                                          \
         va_end(ap);                                                                                                                       \
     }                                                                                                                                     \
+    SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Trace, TRACE)                                                                   \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Verbose, VERBOSE)                                                                   \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Debug, DEBUG)                                                                       \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Info, INFO)                                                                         \
@@ -232,7 +233,7 @@ SDL_DYNAPI_VARARGS(, , )
 
 #define ENABLE_SDL_CALL_LOGGING 0
 #if ENABLE_SDL_CALL_LOGGING
-static SDL_bool SDLCALL SDL_SetError_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+static bool SDLCALL SDL_SetError_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     char buf[512]; // !!! FIXME: dynamic allocation
     va_list ap;
@@ -317,6 +318,7 @@ static void SDLCALL SDL_LogMessage_LOGSDLCALLS(int category, SDL_LogPriority pri
         SDL_LogMessageV_REAL(category, SDL_LOG_PRIORITY_##prio, fmt, ap);                                           \
         va_end(ap);                                                                                                 \
     }
+SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Trace, TRACE)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Verbose, VERBOSE)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Debug, DEBUG)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Info, INFO)
@@ -351,8 +353,8 @@ static Sint32 initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
 // Init our jump table first.
 #if ENABLE_SDL_CALL_LOGGING
     {
-        const char *env = SDL_getenv_REAL("SDL_DYNAPI_LOG_CALLS");
-        const SDL_bool log_calls = (env && SDL_atoi_REAL(env));
+        const char *env = SDL_getenv_unsafe_REAL("SDL_DYNAPI_LOG_CALLS");
+        const bool log_calls = (env && SDL_atoi_REAL(env));
         if (log_calls) {
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) jump_table.fn = fn##_LOGSDLCALLS;
 #include "SDL_dynapi_procs.h"
@@ -461,15 +463,15 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 static void SDL_InitDynamicAPILocked(void)
 {
-    const char *libname = SDL_getenv_REAL(SDL_DYNAMIC_API_ENVVAR);
+    const char *libname = SDL_getenv_unsafe_REAL(SDL_DYNAMIC_API_ENVVAR);
     SDL_DYNAPI_ENTRYFN entry = NULL; // funcs from here by default.
-    SDL_bool use_internal = SDL_TRUE;
+    bool use_internal = true;
 
     if (libname) {
         while (*libname && !entry) {
             // This is evil, but we're not making any permanent changes...
             char *ptr = (char *)libname;
-            while (SDL_TRUE) {
+            while (true) {
                 char ch = *ptr;
                 if ((ch == ',') || (ch == '\0')) {
                     *ptr = '\0';
@@ -493,7 +495,7 @@ static void SDL_InitDynamicAPILocked(void)
             dynapi_warn("Couldn't override SDL library. Using a newer SDL build might help. Please fix or remove the " SDL_DYNAMIC_API_ENVVAR " environment variable. Using the default SDL.");
             // Just fill in the function pointers from this library, later.
         } else {
-            use_internal = SDL_FALSE; // We overrode SDL! Don't use the internal version!
+            use_internal = false; // We overrode SDL! Don't use the internal version!
         }
     }
 
@@ -522,14 +524,14 @@ static void SDL_InitDynamicAPI(void)
      *  SDL_CreateThread() would also call this function before building the
      *  new thread).
      */
-    static SDL_bool already_initialized = SDL_FALSE;
+    static bool already_initialized = false;
 
     static SDL_SpinLock lock = 0;
     SDL_LockSpinlock_REAL(&lock);
 
     if (!already_initialized) {
         SDL_InitDynamicAPILocked();
-        already_initialized = SDL_TRUE;
+        already_initialized = true;
     }
 
     SDL_UnlockSpinlock_REAL(&lock);

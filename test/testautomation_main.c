@@ -101,13 +101,13 @@ main_testSetError(void *arg)
 
     SDLTest_AssertPass("SDL_SetError(NULL)");
     result = SDL_SetError(NULL);
-    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError(NULL) -> %d (expected %d)", result, SDL_FALSE);
+    SDLTest_AssertCheck(result == false, "SDL_SetError(NULL) -> %d (expected %d)", result, false);
     error = SDL_GetError();
     SDLTest_AssertCheck(SDL_strcmp(error, "") == 0, "SDL_GetError() -> \"%s\" (expected \"%s\")", error, "");
 
     SDLTest_AssertPass("SDL_SetError(\"\")");
     result = SDL_SetError("");
-    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError(\"\") -> %d (expected %d)", result, SDL_FALSE);
+    SDLTest_AssertCheck(result == false, "SDL_SetError(\"\") -> %d (expected %d)", result, false);
     error = SDL_GetError();
     SDLTest_AssertCheck(SDL_strcmp(error, "") == 0, "SDL_GetError() -> \"%s\" (expected \"%s\")", error, "");
 
@@ -118,7 +118,7 @@ main_testSetError(void *arg)
     error_input[i] = '\0';
     SDLTest_AssertPass("SDL_SetError(\"abc...\")");
     result = SDL_SetError("%s", error_input);
-    SDLTest_AssertCheck(result == SDL_FALSE, "SDL_SetError(\"abc...\") -> %d (expected %d)", result, SDL_FALSE);
+    SDLTest_AssertCheck(result == false, "SDL_SetError(\"abc...\") -> %d (expected %d)", result, false);
     error = SDL_GetError();
 
 #ifdef SDL_THREADS_DISABLED

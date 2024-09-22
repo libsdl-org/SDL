@@ -10,7 +10,6 @@
 /**
  * Call to SDL_strnlen
  */
-#undef SDL_strnlen
 static int SDLCALL stdlib_strnlen(void *arg)
 {
     size_t result;
@@ -38,7 +37,6 @@ static int SDLCALL stdlib_strnlen(void *arg)
 /**
  * Call to SDL_strlcpy
  */
-#undef SDL_strlcpy
 static int SDLCALL stdlib_strlcpy(void *arg)
 {
     size_t result;
@@ -135,7 +133,6 @@ static int SDLCALL stdlib_strstr(void *arg)
 /**
  * Call to SDL_snprintf
  */
-#undef SDL_snprintf
 static int SDLCALL stdlib_snprintf(void *arg)
 {
     int result;
@@ -381,7 +378,6 @@ static int SDLCALL stdlib_snprintf(void *arg)
 /**
  * Call to SDL_swprintf
  */
-#undef SDL_swprintf
 static int SDLCALL stdlib_swprintf(void *arg)
 {
     int result;
@@ -546,10 +542,11 @@ static int SDLCALL stdlib_swprintf(void *arg)
 #endif
 
 /**
- * Call to SDL_getenv and SDL_setenv
+ * Call to SDL_GetEnvironmentVariable() and SDL_SetEnvironmentVariable()
  */
 static int SDLCALL stdlib_getsetenv(void *arg)
 {
+    SDL_Environment *env = SDL_GetEnvironment();
     const int nameLen = 16;
     char name[17];
     int counter;
@@ -560,7 +557,7 @@ static int SDLCALL stdlib_getsetenv(void *arg)
     int overwrite;
     const char *text;
 
-    /* Create a random name. This tests SDL_getenv, since we need to */
+    /* Create a random name. This tests SDL_GetEnvironmentVariable, since we need to */
     /* make sure the variable is not set yet (it shouldn't). */
     do {
         for (counter = 0; counter < nameLen; counter++) {
@@ -568,8 +565,8 @@ static int SDLCALL stdlib_getsetenv(void *arg)
         }
         name[nameLen] = '\0';
 
-        text = SDL_getenv(name);
-        SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
+        text = SDL_GetEnvironmentVariable(env, name);
+        SDLTest_AssertPass("Call to SDL_GetEnvironmentVariable(env, '%s')", name);
         if (text) {
             SDLTest_Log("Expected: NULL, Got: '%s' (%i)", text, (int)SDL_strlen(text));
         }
@@ -582,13 +579,13 @@ static int SDLCALL stdlib_getsetenv(void *arg)
     /* Set value 1 without overwrite */
     overwrite = 0;
     expected = value1;
-    result = SDL_setenv(name, value1, overwrite);
-    SDLTest_AssertPass("Call to SDL_setenv('%s','%s', %i)", name, value1, overwrite);
-    SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+    result = SDL_SetEnvironmentVariable(env, name, value1, overwrite);
+    SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, '%s','%s', %i)", name, value1, overwrite);
+    SDLTest_AssertCheck(result == true, "Check result, expected: 1, got: %i", result);
 
     /* Check value */
-    text = SDL_getenv(name);
-    SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
+    text = SDL_GetEnvironmentVariable(env, name);
+    SDLTest_AssertPass("Call to SDL_GetEnvironmentVariable(env, '%s')", name);
     SDLTest_AssertCheck(text != NULL, "Verify returned text is not NULL");
     if (text != NULL) {
         SDLTest_AssertCheck(
@@ -601,13 +598,13 @@ static int SDLCALL stdlib_getsetenv(void *arg)
     /* Set value 2 with overwrite */
     overwrite = 1;
     expected = value2;
-    result = SDL_setenv(name, value2, overwrite);
-    SDLTest_AssertPass("Call to SDL_setenv('%s','%s', %i)", name, value2, overwrite);
-    SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+    result = SDL_SetEnvironmentVariable(env, name, value2, overwrite);
+    SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, '%s','%s', %i)", name, value2, overwrite);
+    SDLTest_AssertCheck(result == true, "Check result, expected: 1, got: %i", result);
 
     /* Check value */
-    text = SDL_getenv(name);
-    SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
+    text = SDL_GetEnvironmentVariable(env, name);
+    SDLTest_AssertPass("Call to SDL_GetEnvironmentVariable(env, '%s')", name);
     SDLTest_AssertCheck(text != NULL, "Verify returned text is not NULL");
     if (text != NULL) {
         SDLTest_AssertCheck(
@@ -620,13 +617,13 @@ static int SDLCALL stdlib_getsetenv(void *arg)
     /* Set value 1 without overwrite */
     overwrite = 0;
     expected = value2;
-    result = SDL_setenv(name, value1, overwrite);
-    SDLTest_AssertPass("Call to SDL_setenv('%s','%s', %i)", name, value1, overwrite);
-    SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+    result = SDL_SetEnvironmentVariable(env, name, value1, overwrite);
+    SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, '%s','%s', %i)", name, value1, overwrite);
+    SDLTest_AssertCheck(result == true, "Check result, expected: 1, got: %i", result);
 
     /* Check value */
-    text = SDL_getenv(name);
-    SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
+    text = SDL_GetEnvironmentVariable(env, name);
+    SDLTest_AssertPass("Call to SDL_GetEnvironmentVariable(env, '%s')", name);
     SDLTest_AssertCheck(text != NULL, "Verify returned text is not NULL");
     if (text != NULL) {
         SDLTest_AssertCheck(
@@ -639,13 +636,13 @@ static int SDLCALL stdlib_getsetenv(void *arg)
     /* Set value 1 with overwrite */
     overwrite = 1;
     expected = value1;
-    result = SDL_setenv(name, value1, overwrite);
-    SDLTest_AssertPass("Call to SDL_setenv('%s','%s', %i)", name, value1, overwrite);
-    SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+    result = SDL_SetEnvironmentVariable(env, name, value1, overwrite);
+    SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, '%s','%s', %i)", name, value1, overwrite);
+    SDLTest_AssertCheck(result == true, "Check result, expected: 1, got: %i", result);
 
     /* Check value */
-    text = SDL_getenv(name);
-    SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
+    text = SDL_GetEnvironmentVariable(env, name);
+    SDLTest_AssertPass("Call to SDL_GetEnvironmentVariable(env, '%s')", name);
     SDLTest_AssertCheck(text != NULL, "Verify returned text is not NULL");
     if (text != NULL) {
         SDLTest_AssertCheck(
@@ -656,48 +653,48 @@ static int SDLCALL stdlib_getsetenv(void *arg)
     }
 
     /* Verify setenv() with empty string vs unsetenv() */
-    result = SDL_setenv("FOO", "1", 1);
-    SDLTest_AssertPass("Call to SDL_setenv('FOO','1', 1)");
-    SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+    result = SDL_SetEnvironmentVariable(env, "FOO", "1", 1);
+    SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, 'FOO','1', 1)");
+    SDLTest_AssertCheck(result == true, "Check result, expected: 1, got: %i", result);
     expected = "1";
-    text = SDL_getenv("FOO");
-    SDLTest_AssertPass("Call to SDL_getenv('FOO')");
+    text = SDL_GetEnvironmentVariable(env, "FOO");
+    SDLTest_AssertPass("Call to SDL_GetEnvironmentVariable(env, 'FOO')");
     SDLTest_AssertCheck(text && SDL_strcmp(text, expected) == 0, "Verify returned text, expected: %s, got: %s", expected, text);
-    result = SDL_setenv("FOO", "", 1);
-    SDLTest_AssertPass("Call to SDL_setenv('FOO','', 1)");
-    SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+    result = SDL_SetEnvironmentVariable(env, "FOO", "", 1);
+    SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, 'FOO','', 1)");
+    SDLTest_AssertCheck(result == true, "Check result, expected: 1, got: %i", result);
     expected = "";
-    text = SDL_getenv("FOO");
-    SDLTest_AssertPass("Call to SDL_getenv('FOO')");
+    text = SDL_GetEnvironmentVariable(env, "FOO");
+    SDLTest_AssertPass("Call to SDL_GetEnvironmentVariable(env, 'FOO')");
     SDLTest_AssertCheck(text && SDL_strcmp(text, expected) == 0, "Verify returned text, expected: '%s', got: '%s'", expected, text);
-    result = SDL_unsetenv("FOO");
-    SDLTest_AssertPass("Call to SDL_unsetenv('FOO')");
-    SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
-    text = SDL_getenv("FOO");
-    SDLTest_AssertPass("Call to SDL_getenv('FOO')");
+    result = SDL_UnsetEnvironmentVariable(env, "FOO");
+    SDLTest_AssertPass("Call to SDL_UnsetEnvironmentVariable(env, 'FOO')");
+    SDLTest_AssertCheck(result == true, "Check result, expected: 1, got: %i", result);
+    text = SDL_GetEnvironmentVariable(env, "FOO");
+    SDLTest_AssertPass("Call to SDL_GetEnvironmentVariable(env, 'FOO')");
     SDLTest_AssertCheck(text == NULL, "Verify returned text, expected: (null), got: %s", text);
-    result = SDL_setenv("FOO", "0", 0);
-    SDLTest_AssertPass("Call to SDL_setenv('FOO','0', 0)");
-    SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+    result = SDL_SetEnvironmentVariable(env, "FOO", "0", 0);
+    SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, 'FOO','0', 0)");
+    SDLTest_AssertCheck(result == true, "Check result, expected: 1, got: %i", result);
     expected = "0";
-    text = SDL_getenv("FOO");
-    SDLTest_AssertPass("Call to SDL_getenv('FOO')");
+    text = SDL_GetEnvironmentVariable(env, "FOO");
+    SDLTest_AssertPass("Call to SDL_GetEnvironmentVariable(env, 'FOO')");
     SDLTest_AssertCheck(text && SDL_strcmp(text, expected) == 0, "Verify returned text, expected: %s, got: %s", expected, text);
 
     /* Negative cases */
     for (overwrite = 0; overwrite <= 1; overwrite++) {
-        result = SDL_setenv(NULL, value1, overwrite);
-        SDLTest_AssertPass("Call to SDL_setenv(NULL,'%s', %i)", value1, overwrite);
-        SDLTest_AssertCheck(result == -1, "Check result, expected: -1, got: %i", result);
-        result = SDL_setenv("", value1, overwrite);
-        SDLTest_AssertPass("Call to SDL_setenv('','%s', %i)", value1, overwrite);
-        SDLTest_AssertCheck(result == -1, "Check result, expected: -1, got: %i", result);
-        result = SDL_setenv("=", value1, overwrite);
-        SDLTest_AssertPass("Call to SDL_setenv('=','%s', %i)", value1, overwrite);
-        SDLTest_AssertCheck(result == -1, "Check result, expected: -1, got: %i", result);
-        result = SDL_setenv(name, NULL, overwrite);
-        SDLTest_AssertPass("Call to SDL_setenv('%s', NULL, %i)", name, overwrite);
-        SDLTest_AssertCheck(result == -1, "Check result, expected: -1, got: %i", result);
+        result = SDL_SetEnvironmentVariable(env, NULL, value1, overwrite);
+        SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, NULL,'%s', %i)", value1, overwrite);
+        SDLTest_AssertCheck(result == false, "Check result, expected: 0, got: %i", result);
+        result = SDL_SetEnvironmentVariable(env, "", value1, overwrite);
+        SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, '','%s', %i)", value1, overwrite);
+        SDLTest_AssertCheck(result == false, "Check result, expected: 0, got: %i", result);
+        result = SDL_SetEnvironmentVariable(env, "=", value1, overwrite);
+        SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, '=','%s', %i)", value1, overwrite);
+        SDLTest_AssertCheck(result == false, "Check result, expected: 0, got: %i", result);
+        result = SDL_SetEnvironmentVariable(env, name, NULL, overwrite);
+        SDLTest_AssertPass("Call to SDL_SetEnvironmentVariable(env, '%s', NULL, %i)", name, overwrite);
+        SDLTest_AssertCheck(result == false, "Check result, expected: 0, got: %i", result);
     }
 
     /* Clean up */
@@ -717,10 +714,12 @@ static int SDLCALL stdlib_getsetenv(void *arg)
 #endif
 #endif
 
+#define FMT_PRILLd "%" SDL_PRILLd
+#define FMT_PRILLu "%" SDL_PRILLu
+
 /**
  * Call to SDL_sscanf
  */
-#undef SDL_sscanf
 static int SDLCALL stdlib_sscanf(void *arg)
 {
     int output;
@@ -731,6 +730,7 @@ static int SDLCALL stdlib_sscanf(void *arg)
     long long_output, expected_long_output;
     long long long_long_output, expected_long_long_output;
     size_t size_output, expected_size_output;
+    void *ptr_output, *expected_ptr_output;
     char text[128], text2[128];
 
     expected_output = output = 123;
@@ -784,7 +784,7 @@ static int SDLCALL stdlib_sscanf(void *arg)
 
     SIZED_TEST_CASE(short, short, "%hd")
     SIZED_TEST_CASE(long, long, "%ld")
-    SIZED_TEST_CASE(long long, long_long, "%lld")
+    SIZED_TEST_CASE(long long, long_long, FMT_PRILLd)
 
     size_output = 123;
     expected_size_output = ~((size_t)0);
@@ -793,6 +793,15 @@ static int SDLCALL stdlib_sscanf(void *arg)
     result = SDL_sscanf(text, "%zu", &size_output);
     SDLTest_AssertPass("Call to SDL_sscanf(\"%s\", \"%%zu\", &output)", text);
     SDLTest_AssertCheck(expected_size_output == size_output, "Check output, expected: %zu, got: %zu", expected_size_output, size_output);
+    SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
+
+    ptr_output = (void *)123;
+    expected_ptr_output = (void *)0x1234567;
+    expected_result = 1;
+    result = SDL_snprintf(text, sizeof(text), "%p", expected_ptr_output);
+    result = SDL_sscanf(text, "%p", &ptr_output);
+    SDLTest_AssertPass("Call to SDL_sscanf(\"%s\", \"%%p\", &output)", text);
+    SDLTest_AssertCheck(expected_ptr_output == ptr_output, "Check output, expected: %p, got: %p", expected_ptr_output, ptr_output);
     SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
 
     expected_result = 1;
@@ -917,32 +926,32 @@ typedef struct
     size_t a;
     size_t b;
     size_t result;
-    SDL_bool status;
+    bool status;
 } overflow_test;
 
 static const overflow_test multiplications[] = {
-    { 1, 1, 1, SDL_TRUE },
-    { 0, 0, 0, SDL_TRUE },
-    { SDL_SIZE_MAX, 0, 0, SDL_TRUE },
-    { SDL_SIZE_MAX, 1, SDL_SIZE_MAX, SDL_TRUE },
-    { SDL_SIZE_MAX / 2, 2, SDL_SIZE_MAX - (SDL_SIZE_MAX % 2), SDL_TRUE },
-    { SDL_SIZE_MAX / 23, 23, SDL_SIZE_MAX - (SDL_SIZE_MAX % 23), SDL_TRUE },
+    { 1, 1, 1, true },
+    { 0, 0, 0, true },
+    { SDL_SIZE_MAX, 0, 0, true },
+    { SDL_SIZE_MAX, 1, SDL_SIZE_MAX, true },
+    { SDL_SIZE_MAX / 2, 2, SDL_SIZE_MAX - (SDL_SIZE_MAX % 2), true },
+    { SDL_SIZE_MAX / 23, 23, SDL_SIZE_MAX - (SDL_SIZE_MAX % 23), true },
 
-    { (SDL_SIZE_MAX / 2) + 1, 2, 0, SDL_FALSE },
-    { (SDL_SIZE_MAX / 23) + 42, 23, 0, SDL_FALSE },
-    { SDL_SIZE_MAX, SDL_SIZE_MAX, 0, SDL_FALSE },
+    { (SDL_SIZE_MAX / 2) + 1, 2, 0, false },
+    { (SDL_SIZE_MAX / 23) + 42, 23, 0, false },
+    { SDL_SIZE_MAX, SDL_SIZE_MAX, 0, false },
 };
 
 static const overflow_test additions[] = {
-    { 1, 1, 2, SDL_TRUE },
-    { 0, 0, 0, SDL_TRUE },
-    { SDL_SIZE_MAX, 0, SDL_SIZE_MAX, SDL_TRUE },
-    { SDL_SIZE_MAX - 1, 1, SDL_SIZE_MAX, SDL_TRUE },
-    { SDL_SIZE_MAX - 42, 23, SDL_SIZE_MAX - (42 - 23), SDL_TRUE },
+    { 1, 1, 2, true },
+    { 0, 0, 0, true },
+    { SDL_SIZE_MAX, 0, SDL_SIZE_MAX, true },
+    { SDL_SIZE_MAX - 1, 1, SDL_SIZE_MAX, true },
+    { SDL_SIZE_MAX - 42, 23, SDL_SIZE_MAX - (42 - 23), true },
 
-    { SDL_SIZE_MAX, 1, 0, SDL_FALSE },
-    { SDL_SIZE_MAX, 23, 0, SDL_FALSE },
-    { SDL_SIZE_MAX, SDL_SIZE_MAX, 0, SDL_FALSE },
+    { SDL_SIZE_MAX, 1, 0, false },
+    { SDL_SIZE_MAX, 23, 0, false },
+    { SDL_SIZE_MAX, SDL_SIZE_MAX, 0, false },
 };
 
 static int SDLCALL
@@ -1012,7 +1021,7 @@ stdlib_overflow(void *arg)
 
         for (i = 0; i < SDL_arraysize(additions); i++) {
             const overflow_test *t = &additions[i];
-            SDL_bool status;
+            bool status;
             size_t result = ~t->result;
 
             if (useBuiltin) {
@@ -1076,18 +1085,18 @@ static int SDLCALL
 stdlib_iconv(void *arg)
 {
     struct {
-        SDL_bool expect_success;
+        bool expect_success;
         const char *from_encoding;
         const char *text;
         const char *to_encoding;
         const char *expected;
     } inputs[] = {
-        { SDL_FALSE, "bogus-from-encoding", NULL,                           "bogus-to-encoding",   NULL },
-        { SDL_FALSE, "bogus-from-encoding", "hello world",                  "bogus-to-encoding",   NULL },
-        { SDL_FALSE, "bogus-from-encoding", "hello world",                  "ascii",               NULL },
-        { SDL_TRUE,  "utf-8",               NULL,                           "ascii",               "" },
-        { SDL_TRUE,  "utf-8",               "hello world",                  "ascii",               "hello world" },
-        { SDL_TRUE,  "utf-8",               "\xe2\x8c\xa8\xf0\x9f\x92\xbb", "utf-16le",            "\x28\x23\x3d\xd8\xbb\xdc\x00" },
+        { false, "bogus-from-encoding", NULL,                           "bogus-to-encoding",   NULL },
+        { false, "bogus-from-encoding", "hello world",                  "bogus-to-encoding",   NULL },
+        { false, "bogus-from-encoding", "hello world",                  "ascii",               NULL },
+        { true,  "utf-8",               NULL,                           "ascii",               "" },
+        { true,  "utf-8",               "hello world",                  "ascii",               "hello world" },
+        { true,  "utf-8",               "\xe2\x8c\xa8\xf0\x9f\x92\xbb", "utf-16le",            "\x28\x23\x3d\xd8\xbb\xdc\x00" },
     };
     SDL_iconv_t cd;
     size_t i;
@@ -1105,7 +1114,7 @@ stdlib_iconv(void *arg)
         char *output;
         size_t iconv_result;
         size_t out_len;
-        SDL_bool is_error;
+        bool is_error;
         size_t out_pos;
 
         SDLTest_AssertPass("case %d", (int)i);
@@ -1159,7 +1168,7 @@ stdlib_iconv(void *arg)
                 break;
             }
             if (count_read == 0) {
-                SDLTest_AssertCheck(SDL_FALSE, "SDL_iconv wrote data, but read no data");
+                SDLTest_AssertCheck(false, "SDL_iconv wrote data, but read no data");
                 break;
             }
         } while (!is_error && in_pos < len_text);
@@ -1228,6 +1237,151 @@ stdlib_strpbrk(void *arg)
     }
     return TEST_COMPLETED;
 }
+
+static int SDLCALL stdlib_wcstol(void *arg)
+{
+    const long long_max = (~0UL) >> 1;
+    const long long_min = ((~0UL) >> 1) + 1UL;
+
+#define WCSTOL_TEST_CASE(str, base, expected_result, expected_endp_offset) do {                             \
+        const wchar_t *s = str;                                                                             \
+        long r, expected_r = expected_result;                                                               \
+        wchar_t *ep, *expected_ep = (wchar_t *)s + expected_endp_offset;                                    \
+        r = SDL_wcstol(s, &ep, base);                                                                       \
+        SDLTest_AssertPass("Call to SDL_wcstol(" #str ", &endp, " #base ")");                               \
+        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: %ld, got: %ld", expected_r, r); \
+        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep); \
+    } while (0)
+
+    // infer decimal
+    WCSTOL_TEST_CASE(L"\t  123abcxyz", 0, 123, 6); // skip leading space
+    WCSTOL_TEST_CASE(L"+123abcxyz", 0, 123, 4);
+    WCSTOL_TEST_CASE(L"-123abcxyz", 0, -123, 4);
+    WCSTOL_TEST_CASE(L"99999999999999999999abcxyz", 0, long_max, 20);
+    WCSTOL_TEST_CASE(L"-99999999999999999999abcxyz", 0, long_min, 21);
+
+    // infer hexadecimal
+    WCSTOL_TEST_CASE(L"0x123abcxyz", 0, 0x123abc, 8);
+    WCSTOL_TEST_CASE(L"0X123ABCXYZ", 0, 0x123abc, 8); // uppercase X
+
+    // infer octal
+    WCSTOL_TEST_CASE(L"0123abcxyz", 0, 0123, 4);
+
+    // arbitrary bases
+    WCSTOL_TEST_CASE(L"00110011", 2, 51, 8);
+    WCSTOL_TEST_CASE(L"-uvwxyz", 32, -991, 3);
+    WCSTOL_TEST_CASE(L"ZzZzZzZzZzZzZ", 36, long_max, 13);
+
+    WCSTOL_TEST_CASE(L"-0", 10, 0, 2);
+    WCSTOL_TEST_CASE(L" - 1", 0, 0, 0); // invalid input
+
+    // values near the bounds of the type
+    if (sizeof(long) == 4) {
+        WCSTOL_TEST_CASE(L"2147483647", 10, 2147483647, 10);
+        WCSTOL_TEST_CASE(L"2147483648", 10, 2147483647, 10);
+        WCSTOL_TEST_CASE(L"-2147483648", 10, -2147483647L - 1, 11);
+        WCSTOL_TEST_CASE(L"-2147483649", 10, -2147483647L - 1, 11);
+        WCSTOL_TEST_CASE(L"-9999999999999999999999999999999999999999", 10, -2147483647L - 1, 41);
+    }
+
+#undef WCSTOL_TEST_CASE
+
+    return TEST_COMPLETED;
+}
+
+static int SDLCALL stdlib_strtox(void *arg)
+{
+    const unsigned long long ullong_max = ~0ULL;
+
+#define STRTOX_TEST_CASE(func_name, type, format_spec, str, base, expected_result, expected_endp_offset) do {                    \
+        const char *s = str;                                                                                                     \
+        type r, expected_r = expected_result;                                                                                    \
+        char *ep, *expected_ep = (char *)s + expected_endp_offset;                                                               \
+        r = func_name(s, &ep, base);                                                                                             \
+        SDLTest_AssertPass("Call to " #func_name "(" #str ", &endp, " #base ")");                                                \
+        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: " format_spec ", got: " format_spec, expected_r, r); \
+        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep);                      \
+    } while (0)
+
+    // infer decimal
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "\t  123abcxyz", 0, 123, 6); // skip leading space
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "+123abcxyz", 0, 123, 4);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "+123abcxyz", 0, 123, 4);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "-123abcxyz", 0, -123, 4);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "9999999999999999999999999999999999999999abcxyz", 0, ullong_max, 40);
+
+    // infer hexadecimal
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "0x123abcxyz", 0, 0x123abc, 8);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "0X123ABCXYZ", 0, 0x123abc, 8); // uppercase X
+
+    // infer octal
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "0123abcxyz", 0, 0123, 4);
+
+    // arbitrary bases
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "00110011", 2, 51, 8);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "-uvwxyz", 32, -991, 3);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "ZzZzZzZzZzZzZzZzZzZzZzZzZ", 36, ullong_max, 25);
+
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "-0", 10, 0, 2);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, " - 1", 0, 0, 0); // invalid input
+
+    // We know that SDL_strtol, SDL_strtoul and SDL_strtoll share the same code path as SDL_strtoull under the hood,
+    // so the most interesting test cases are those close to the bounds of the integer type.
+
+    // For simplicity, we only run long/long long tests when they are 32-bit/64-bit, respectively.
+    // Suppressing warnings would be difficult otherwise.
+    // Since the CI runs the tests against a variety of targets, this should be fine in practice.
+
+    if (sizeof(long) == 4) {
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "2147483647", 10, 2147483647, 10);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "2147483648", 10, 2147483647, 10);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-2147483648", 10, -2147483647L - 1, 11);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-2147483649", 10, -2147483647L - 1, 11);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-9999999999999999999999999999999999999999", 10, -2147483647L - 1, 41);
+
+        STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "4294967295", 10, 4294967295UL, 10);
+        STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "4294967296", 10, 4294967295UL, 10);
+        STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "-4294967295", 10, 1, 11);
+    }
+
+    if (sizeof(long long) == 8) {
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "9223372036854775807", 10, 9223372036854775807LL, 19);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "9223372036854775808", 10, 9223372036854775807LL, 19);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-9223372036854775808", 10, -9223372036854775807LL - 1, 20);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-9223372036854775809", 10, -9223372036854775807LL - 1, 20);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-9999999999999999999999999999999999999999", 10, -9223372036854775807LL - 1, 41);
+
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLd, "18446744073709551615", 10, 18446744073709551615ULL, 20);
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLd, "18446744073709551616", 10, 18446744073709551615ULL, 20);
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLd, "-18446744073709551615", 10, 1, 21);
+    }
+
+#undef STRTOX_TEST_CASE
+
+    return TEST_COMPLETED;
+}
+
+static int SDLCALL stdlib_strtod(void *arg)
+{
+#define STRTOD_TEST_CASE(str, expected_result, expected_endp_offset) do {                                   \
+        const char *s = str;                                                                                \
+        double r, expected_r = expected_result;                                                             \
+        char *ep, *expected_ep = (char *)s + expected_endp_offset;                                          \
+        r = SDL_strtod(s, &ep);                                                                             \
+        SDLTest_AssertPass("Call to SDL_strtod(" #str ", &endp)");                                          \
+        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: %f, got: %f", expected_r, r);   \
+        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep); \
+    } while (0)
+
+    STRTOD_TEST_CASE("\t  123.75abcxyz", 123.75, 9); // skip leading space
+    STRTOD_TEST_CASE("+999.555", 999.555, 8);
+    STRTOD_TEST_CASE("-999.555", -999.555, 8);
+
+#undef STRTOD_TEST_CASE
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Standard C routine test cases */
@@ -1252,7 +1406,7 @@ static const SDLTest_TestCaseReference stdlibTest_swprintf = {
 };
 
 static const SDLTest_TestCaseReference stdlibTest_getsetenv = {
-    stdlib_getsetenv, "stdlib_getsetenv", "Call to SDL_getenv and SDL_setenv", TEST_ENABLED
+    stdlib_getsetenv, "stdlib_getsetenv", "Call to SDL_GetEnvironmentVariable and SDL_SetEnvironmentVariable", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference stdlibTest_sscanf = {
@@ -1275,6 +1429,18 @@ static const SDLTest_TestCaseReference stdlibTest_strpbrk = {
     stdlib_strpbrk, "stdlib_strpbrk", "Calls to SDL_strpbrk", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference stdlibTest_wcstol = {
+    stdlib_wcstol, "stdlib_wcstol", "Calls to SDL_wcstol", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference stdlibTest_strtox = {
+    stdlib_strtox, "stdlib_strtox", "Calls to SDL_strtol, SDL_strtoul, SDL_strtoll and SDL_strtoull", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference stdlibTest_strtod = {
+    stdlib_strtod, "stdlib_strtod", "Calls to SDL_strtod", TEST_ENABLED
+};
+
 /* Sequence of Standard C routine test cases */
 static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest_strnlen,
@@ -1288,6 +1454,9 @@ static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTestOverflow,
     &stdlibTest_iconv,
     &stdlibTest_strpbrk,
+    &stdlibTest_wcstol,
+    &stdlibTest_strtox,
+    &stdlibTest_strtod,
     NULL
 };
 

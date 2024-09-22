@@ -16,7 +16,7 @@
 
 typedef struct {
     SDLTest_CommonState *state;
-    SDL_bool is_hover;
+    bool is_hover;
     float x;
     float y;
     unsigned int windowID;
@@ -33,9 +33,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!state) {
         return SDL_APP_FAILURE;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     for (i = 1; i < argc;) {
         int consumed;
@@ -57,7 +54,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!SDLTest_CommonInit(state)) {
         goto onerror;
     }
-    dialog = SDL_calloc(sizeof(dropfile_dialog), 1);
+    dialog = SDL_calloc(1, sizeof(dropfile_dialog));
     if (!dialog) {
         goto onerror;
     }
@@ -76,17 +73,20 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     if (event->type == SDL_EVENT_DROP_BEGIN) {
         SDL_Log("Drop beginning on window %u at (%f, %f)", (unsigned int)event->drop.windowID, event->drop.x, event->drop.y);
     } else if (event->type == SDL_EVENT_DROP_COMPLETE) {
-        dialog->is_hover = SDL_FALSE;
+        dialog->is_hover = false;
         SDL_Log("Drop complete on window %u at (%f, %f)", (unsigned int)event->drop.windowID, event->drop.x, event->drop.y);
     } else if ((event->type == SDL_EVENT_DROP_FILE) || (event->type == SDL_EVENT_DROP_TEXT)) {
         const char *typestr = (event->type == SDL_EVENT_DROP_FILE) ? "File" : "Text";
         SDL_Log("%s dropped on window %u: %s at (%f, %f)", typestr, (unsigned int)event->drop.windowID, event->drop.data, event->drop.x, event->drop.y);
     } else if (event->type == SDL_EVENT_DROP_POSITION) {
-        dialog->is_hover = SDL_TRUE;
+        const float w_x = event->drop.x;
+        const float w_y = event->drop.y;
+        SDL_ConvertEventToRenderCoordinates(SDL_GetRenderer(SDL_GetWindowFromEvent(event)), event);
+        dialog->is_hover = true;
         dialog->x = event->drop.x;
         dialog->y = event->drop.y;
         dialog->windowID = event->drop.windowID;
-        SDL_Log("Drop position on window %u at (%f, %f) data = %s", (unsigned int)event->drop.windowID, event->drop.x, event->drop.y, event->drop.data);
+        SDL_Log("Drop position on window %u at (%f, %f) data = %s", (unsigned int)event->drop.windowID, w_x, w_y, event->drop.data);
     }
 
     return SDLTest_CommonEventMainCallbacks(dialog->state, event);

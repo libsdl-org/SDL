@@ -167,7 +167,7 @@ SDL_Storage *SDL_OpenStorage(const SDL_StorageInterface *iface, void *userdata)
     return storage;
 }
 
-SDL_bool SDL_CloseStorage(SDL_Storage *storage)
+bool SDL_CloseStorage(SDL_Storage *storage)
 {
     bool result = true;
 
@@ -180,7 +180,7 @@ SDL_bool SDL_CloseStorage(SDL_Storage *storage)
     return result;
 }
 
-SDL_bool SDL_StorageReady(SDL_Storage *storage)
+bool SDL_StorageReady(SDL_Storage *storage)
 {
     CHECK_STORAGE_MAGIC_RET(false)
 
@@ -190,7 +190,7 @@ SDL_bool SDL_StorageReady(SDL_Storage *storage)
     return true;
 }
 
-SDL_bool SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length)
+bool SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length)
 {
     SDL_PathInfo info;
 
@@ -207,7 +207,7 @@ SDL_bool SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *
     }
 }
 
-SDL_bool SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destination, Uint64 length)
+bool SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destination, Uint64 length)
 {
     CHECK_STORAGE_MAGIC()
 
@@ -222,7 +222,7 @@ SDL_bool SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *desti
     return storage->iface.read_file(storage->userdata, path, destination, length);
 }
 
-SDL_bool SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length)
+bool SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length)
 {
     CHECK_STORAGE_MAGIC()
 
@@ -237,7 +237,7 @@ SDL_bool SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void
     return storage->iface.write_file(storage->userdata, path, source, length);
 }
 
-SDL_bool SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path)
+bool SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path)
 {
     CHECK_STORAGE_MAGIC()
 
@@ -252,7 +252,7 @@ SDL_bool SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path)
     return storage->iface.mkdir(storage->userdata, path);
 }
 
-SDL_bool SDL_EnumerateStorageDirectory(SDL_Storage *storage, const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata)
+bool SDL_EnumerateStorageDirectory(SDL_Storage *storage, const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata)
 {
     CHECK_STORAGE_MAGIC()
 
@@ -267,7 +267,7 @@ SDL_bool SDL_EnumerateStorageDirectory(SDL_Storage *storage, const char *path, S
     return storage->iface.enumerate(storage->userdata, path, callback, userdata);
 }
 
-SDL_bool SDL_RemoveStoragePath(SDL_Storage *storage, const char *path)
+bool SDL_RemoveStoragePath(SDL_Storage *storage, const char *path)
 {
     CHECK_STORAGE_MAGIC()
 
@@ -282,7 +282,7 @@ SDL_bool SDL_RemoveStoragePath(SDL_Storage *storage, const char *path)
     return storage->iface.remove(storage->userdata, path);
 }
 
-SDL_bool SDL_RenameStoragePath(SDL_Storage *storage, const char *oldpath, const char *newpath)
+bool SDL_RenameStoragePath(SDL_Storage *storage, const char *oldpath, const char *newpath)
 {
     CHECK_STORAGE_MAGIC()
 
@@ -300,7 +300,7 @@ SDL_bool SDL_RenameStoragePath(SDL_Storage *storage, const char *oldpath, const 
     return storage->iface.rename(storage->userdata, oldpath, newpath);
 }
 
-SDL_bool SDL_CopyStorageFile(SDL_Storage *storage, const char *oldpath, const char *newpath)
+bool SDL_CopyStorageFile(SDL_Storage *storage, const char *oldpath, const char *newpath)
 {
     CHECK_STORAGE_MAGIC()
 
@@ -318,7 +318,7 @@ SDL_bool SDL_CopyStorageFile(SDL_Storage *storage, const char *oldpath, const ch
     return storage->iface.copy(storage->userdata, oldpath, newpath);
 }
 
-SDL_bool SDL_GetStoragePathInfo(SDL_Storage *storage, const char *path, SDL_PathInfo *info)
+bool SDL_GetStoragePathInfo(SDL_Storage *storage, const char *path, SDL_PathInfo *info)
 {
     SDL_PathInfo dummy;
 
@@ -352,12 +352,12 @@ Uint64 SDL_GetStorageSpaceRemaining(SDL_Storage *storage)
     return storage->iface.space_remaining(storage->userdata);
 }
 
-static SDL_bool GlobStorageDirectoryGetPathInfo(const char *path, SDL_PathInfo *info, void *userdata)
+static bool GlobStorageDirectoryGetPathInfo(const char *path, SDL_PathInfo *info, void *userdata)
 {
     return SDL_GetStoragePathInfo((SDL_Storage *) userdata, path, info);
 }
 
-static SDL_bool GlobStorageDirectoryEnumerator(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata)
+static bool GlobStorageDirectoryEnumerator(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata)
 {
     return SDL_EnumerateStorageDirectory((SDL_Storage *) userdata, path, cb, cbuserdata);
 }

@@ -249,7 +249,7 @@ static unsigned int GetLegacySystemCursorShape(SDL_SystemCursor id)
         case SDL_SYSTEM_CURSOR_S_RESIZE: return XC_bottom_side;
         case SDL_SYSTEM_CURSOR_SW_RESIZE: return XC_bottom_left_corner;
         case SDL_SYSTEM_CURSOR_W_RESIZE: return XC_left_side;
-        case SDL_NUM_SYSTEM_CURSORS: break;  // so the compiler might notice if an enum value is missing here.
+        case SDL_SYSTEM_CURSOR_COUNT: break;  // so the compiler might notice if an enum value is missing here.
     }
 
     SDL_assert(0);

@@ -5,6 +5,7 @@ SDL3_0.0.0 {
     SDL_AcquireCameraFrame;
     SDL_AcquireGPUCommandBuffer;
     SDL_AcquireGPUSwapchainTexture;
+    SDL_AddAtomicInt;
     SDL_AddEventWatch;
     SDL_AddGamepadMapping;
     SDL_AddGamepadMappingsFromFile;
@@ -14,13 +15,6 @@ SDL3_0.0.0 {
     SDL_AddTimer;
     SDL_AddTimerNS;
     SDL_AddVulkanRenderSemaphores;
-    SDL_AtomicAdd;
-    SDL_AtomicCompareAndSwap;
-    SDL_AtomicCompareAndSwapPointer;
-    SDL_AtomicGet;
-    SDL_AtomicGetPointer;
-    SDL_AtomicSet;
-    SDL_AtomicSetPointer;
     SDL_AttachVirtualJoystick;
     SDL_AudioDevicePaused;
     SDL_BeginGPUComputePass;
@@ -29,6 +23,7 @@ SDL3_0.0.0 {
     SDL_BindAudioStream;
     SDL_BindAudioStreams;
     SDL_BindGPUComputePipeline;
+    SDL_BindGPUComputeSamplers;
     SDL_BindGPUComputeStorageBuffers;
     SDL_BindGPUComputeStorageTextures;
     SDL_BindGPUFragmentSamplers;
@@ -66,6 +61,9 @@ SDL3_0.0.0 {
     SDL_CloseJoystick;
     SDL_CloseSensor;
     SDL_CloseStorage;
+    SDL_CompareAndSwapAtomicInt;
+    SDL_CompareAndSwapAtomicPointer;
+    SDL_CompareAndSwapAtomicU32;
     SDL_ComposeCustomBlendMode;
     SDL_ConvertAudioSamples;
     SDL_ConvertEventToRenderCoordinates;
@@ -83,6 +81,7 @@ SDL3_0.0.0 {
     SDL_CreateCondition;
     SDL_CreateCursor;
     SDL_CreateDirectory;
+    SDL_CreateEnvironment;
     SDL_CreateGPUBuffer;
     SDL_CreateGPUComputePipeline;
     SDL_CreateGPUDevice;
@@ -96,6 +95,8 @@ SDL3_0.0.0 {
     SDL_CreateMutex;
     SDL_CreatePalette;
     SDL_CreatePopupWindow;
+    SDL_CreateProcess;
+    SDL_CreateProcessWithProperties;
     SDL_CreateProperties;
     SDL_CreateRWLock;
     SDL_CreateRenderer;
@@ -122,10 +123,12 @@ SDL3_0.0.0 {
     SDL_DestroyAudioStream;
     SDL_DestroyCondition;
     SDL_DestroyCursor;
+    SDL_DestroyEnvironment;
     SDL_DestroyGPUDevice;
     SDL_DestroyHapticEffect;
     SDL_DestroyMutex;
     SDL_DestroyPalette;
+    SDL_DestroyProcess;
     SDL_DestroyProperties;
     SDL_DestroyRWLock;
     SDL_DestroyRenderer;
@@ -168,6 +171,7 @@ SDL3_0.0.0 {
     SDL_FlushAudioStream;
     SDL_FlushEvent;
     SDL_FlushEvents;
+    SDL_FlushIO;
     SDL_FlushRenderer;
     SDL_GDKResumeGPU;
     SDL_GDKSuspendComplete;
@@ -187,6 +191,8 @@ SDL3_0.0.0 {
     SDL_GL_SetSwapInterval;
     SDL_GL_SwapWindow;
     SDL_GL_UnloadLibrary;
+    SDL_GPUSupportsProperties;
+    SDL_GPUSupportsShaderFormats;
     SDL_GPUTextureFormatTexelBlockSize;
     SDL_GPUTextureSupportsFormat;
     SDL_GPUTextureSupportsSampleCount;
@@ -208,6 +214,9 @@ SDL3_0.0.0 {
     SDL_GetAppMetadataProperty;
     SDL_GetAssertionHandler;
     SDL_GetAssertionReport;
+    SDL_GetAtomicInt;
+    SDL_GetAtomicPointer;
+    SDL_GetAtomicU32;
     SDL_GetAudioDeviceChannelMap;
     SDL_GetAudioDeviceFormat;
     SDL_GetAudioDeviceGain;
@@ -229,7 +238,6 @@ SDL3_0.0.0 {
     SDL_GetBasePath;
     SDL_GetBooleanProperty;
     SDL_GetCPUCacheLineSize;
-    SDL_GetCPUCount;
     SDL_GetCameraDriver;
     SDL_GetCameraFormat;
     SDL_GetCameraID;
@@ -269,13 +277,18 @@ SDL3_0.0.0 {
     SDL_GetDisplayProperties;
     SDL_GetDisplayUsableBounds;
     SDL_GetDisplays;
+    SDL_GetEnvironment;
+    SDL_GetEnvironmentVariable;
+    SDL_GetEnvironmentVariables;
     SDL_GetError;
     SDL_GetEventFilter;
     SDL_GetFloatProperty;
     SDL_GetFullscreenDisplayModes;
     SDL_GetGDKDefaultUser;
     SDL_GetGDKTaskQueue;
+    SDL_GetGPUDeviceDriver;
     SDL_GetGPUDriver;
+    SDL_GetGPUShaderFormats;
     SDL_GetGPUSwapchainTextureFormat;
     SDL_GetGamepadAppleSFSymbolsNameForAxis;
     SDL_GetGamepadAppleSFSymbolsNameForButton;
@@ -391,6 +404,7 @@ SDL3_0.0.0 {
     SDL_GetNumAllocations;
     SDL_GetNumAudioDrivers;
     SDL_GetNumCameraDrivers;
+    SDL_GetNumGPUDrivers;
     SDL_GetNumGamepadTouchpadFingers;
     SDL_GetNumGamepadTouchpads;
     SDL_GetNumHapticAxes;
@@ -398,6 +412,7 @@ SDL3_0.0.0 {
     SDL_GetNumJoystickBalls;
     SDL_GetNumJoystickButtons;
     SDL_GetNumJoystickHats;
+    SDL_GetNumLogicalCPUCores;
     SDL_GetNumRenderDrivers;
     SDL_GetNumVideoDrivers;
     SDL_GetNumberProperty;
@@ -415,6 +430,9 @@ SDL3_0.0.0 {
     SDL_GetPreferredLocales;
     SDL_GetPrimaryDisplay;
     SDL_GetPrimarySelectionText;
+    SDL_GetProcessInput;
+    SDL_GetProcessOutput;
+    SDL_GetProcessProperties;
     SDL_GetPropertyType;
     SDL_GetRGB;
     SDL_GetRGBA;
@@ -585,6 +603,7 @@ SDL3_0.0.0 {
     SDL_IsTablet;
     SDL_JoystickConnected;
     SDL_JoystickEventsEnabled;
+    SDL_KillProcess;
     SDL_LoadBMP;
     SDL_LoadBMP_IO;
     SDL_LoadFile;
@@ -610,6 +629,7 @@ SDL3_0.0.0 {
     SDL_LogInfo;
     SDL_LogMessage;
     SDL_LogMessageV;
+    SDL_LogTrace;
     SDL_LogVerbose;
     SDL_LogWarn;
     SDL_MapGPUTransferBuffer;
@@ -669,6 +689,7 @@ SDL3_0.0.0 {
     SDL_QuitSubSystem;
     SDL_RaiseWindow;
     SDL_ReadIO;
+    SDL_ReadProcess;
     SDL_ReadS16BE;
     SDL_ReadS16LE;
     SDL_ReadS32BE;
@@ -759,6 +780,9 @@ SDL3_0.0.0 {
     SDL_SetAppMetadata;
     SDL_SetAppMetadataProperty;
     SDL_SetAssertionHandler;
+    SDL_SetAtomicInt;
+    SDL_SetAtomicPointer;
+    SDL_SetAtomicU32;
     SDL_SetAudioDeviceGain;
     SDL_SetAudioPostmixCallback;
     SDL_SetAudioStreamFormat;
@@ -772,6 +796,7 @@ SDL3_0.0.0 {
     SDL_SetClipboardData;
     SDL_SetClipboardText;
     SDL_SetCursor;
+    SDL_SetEnvironmentVariable;
     SDL_SetError;
     SDL_SetEventEnabled;
     SDL_SetEventFilter;
@@ -920,6 +945,7 @@ SDL3_0.0.0 {
     SDL_UnlockTexture;
     SDL_UnmapGPUTransferBuffer;
     SDL_UnregisterApp;
+    SDL_UnsetEnvironmentVariable;
     SDL_UpdateGamepads;
     SDL_UpdateHapticEffect;
     SDL_UpdateJoysticks;
@@ -944,6 +970,7 @@ SDL3_0.0.0 {
     SDL_WaitEventTimeout;
     SDL_WaitForGPUFences;
     SDL_WaitForGPUIdle;
+    SDL_WaitProcess;
     SDL_WaitSemaphore;
     SDL_WaitSemaphoreTimeout;
     SDL_WaitThread;
@@ -1006,6 +1033,7 @@ SDL3_0.0.0 {
     SDL_fmodf;
     SDL_free;
     SDL_getenv;
+    SDL_getenv_unsafe;
     SDL_hid_ble_scan;
     SDL_hid_close;
     SDL_hid_device_change_count;
@@ -1080,7 +1108,7 @@ SDL3_0.0.0 {
     SDL_roundf;
     SDL_scalbn;
     SDL_scalbnf;
-    SDL_setenv;
+    SDL_setenv_unsafe;
     SDL_sin;
     SDL_sinf;
     SDL_snprintf;
@@ -1123,7 +1151,7 @@ SDL3_0.0.0 {
     SDL_uitoa;
     SDL_ulltoa;
     SDL_ultoa;
-    SDL_unsetenv;
+    SDL_unsetenv_unsafe;
     SDL_utf8strlcpy;
     SDL_utf8strlen;
     SDL_utf8strnlen;

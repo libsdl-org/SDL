@@ -227,9 +227,9 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     if (changed) {
         for (i = 0; i < SDL_arraysize(button_map); i++) {
             if (changed & button_map[i]) {
+                bool down = ((buttons & button_map[i]) != 0);
                 SDL_SendJoystickButton(timestamp,
-                    joystick, i,
-                    (buttons & button_map[i]) ? SDL_PRESSED : SDL_RELEASED);
+                    joystick, i, down);
             }
         }
     }

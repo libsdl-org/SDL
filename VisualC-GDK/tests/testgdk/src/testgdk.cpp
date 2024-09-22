@@ -35,8 +35,8 @@ extern "C" {
 static SDLTest_CommonState *state;
 static int num_sprites;
 static SDL_Texture **sprites;
-static SDL_bool cycle_color;
-static SDL_bool cycle_alpha;
+static bool cycle_color;
+static bool cycle_alpha;
 static int cycle_direction = 1;
 static int current_alpha = 0;
 static int current_color = 0;
@@ -193,7 +193,7 @@ LoadSprite(const char *file)
 
     for (i = 0; i < state->num_windows; ++i) {
         /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
-        sprites[i] = LoadTexture(state->renderers[i], file, SDL_TRUE, &sprite_w, &sprite_h);
+        sprites[i] = LoadTexture(state->renderers[i], file, true, &sprite_w, &sprite_h);
         if (!sprites[i]) {
             return -1;
         }
@@ -371,10 +371,10 @@ main(int argc, char *argv[])
                     }
                 }
             } else if (SDL_strcasecmp(argv[i], "--cyclecolor") == 0) {
-                cycle_color = SDL_TRUE;
+                cycle_color = true;
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
-                cycle_alpha = SDL_TRUE;
+                cycle_alpha = true;
                 consumed = 1;
             } else if (SDL_isdigit(*argv[i])) {
                 num_sprites = SDL_atoi(argv[i]);

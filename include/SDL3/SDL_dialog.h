@@ -28,6 +28,7 @@
 #ifndef SDL_dialog_h_
 #define SDL_dialog_h_
 
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_video.h>
 
@@ -150,7 +151,7 @@ typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * cons
  * \sa SDL_ShowSaveFileDialog
  * \sa SDL_ShowOpenFolderDialog
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, SDL_bool allow_many);
+extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, bool allow_many);
 
 /**
  * Displays a dialog that lets the user choose a new or existing file on their
@@ -253,7 +254,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  * \sa SDL_ShowOpenFileDialog
  * \sa SDL_ShowSaveFileDialog
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, SDL_bool allow_many);
+extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, bool allow_many);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
@@ -261,4 +262,4 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback
 #endif
 #include <SDL3/SDL_close_code.h>
 
-#endif /* SDL_joystick_h_ */
+#endif /* SDL_dialog_h_ */

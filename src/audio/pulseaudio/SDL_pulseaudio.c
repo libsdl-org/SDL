@@ -413,7 +413,7 @@ static bool PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
-    while (!SDL_AtomicGet(&device->shutdown) && (h->bytes_requested == 0)) {
+    while (!SDL_GetAtomicInt(&device->shutdown) && (h->bytes_requested == 0)) {
         //SDL_Log("PULSEAUDIO WAIT IN WAITDEVICE!");
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
 
@@ -486,7 +486,7 @@ static bool PULSEAUDIO_WaitRecordingDevice(SDL_AudioDevice *device)
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
-    while (!SDL_AtomicGet(&device->shutdown)) {
+    while (!SDL_GetAtomicInt(&device->shutdown)) {
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
         if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
             //SDL_Log("PULSEAUDIO DEVICE FAILURE IN WAITRECORDINGDEVICE!");
@@ -553,7 +553,7 @@ static void PULSEAUDIO_FlushRecording(SDL_AudioDevice *device)
         h->recordinglen = 0;
     }
 
-    while (!SDL_AtomicGet(&device->shutdown) && (PULSEAUDIO_pa_stream_readable_size(h->stream) > 0)) {
+    while (!SDL_GetAtomicInt(&device->shutdown) && (PULSEAUDIO_pa_stream_readable_size(h->stream) > 0)) {
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
         if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
             //SDL_Log("PULSEAUDIO DEVICE FAILURE IN FLUSHRECORDING!");
@@ -901,7 +901,7 @@ static int SDLCALL HotplugThread(void *data)
 
     SDL_SignalSemaphore((SDL_Semaphore *) data);
 
-    while (SDL_AtomicGet(&pulseaudio_hotplug_thread_active)) {
+    while (SDL_GetAtomicInt(&pulseaudio_hotplug_thread_active)) {
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
         if (op && PULSEAUDIO_pa_operation_get_state(op) != PA_OPERATION_RUNNING) {
             PULSEAUDIO_pa_operation_unref(op);
@@ -956,9 +956,14 @@ static void PULSEAUDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_Aud
     }
 
     // ok, we have a sane list, let's set up hotplug notifications now...
-    SDL_AtomicSet(&pulseaudio_hotplug_thread_active, 1);
-    pulseaudio_hotplug_thread = SDL_CreateThreadWithStackSize(HotplugThread, "PulseHotplug", 256 * 1024, ready_sem);  // !!! FIXME: this can probably survive in significantly less stack space.
-    SDL_WaitSemaphore(ready_sem);
+    SDL_SetAtomicInt(&pulseaudio_hotplug_thread_active, 1);
+    pulseaudio_hotplug_thread = SDL_CreateThread(HotplugThread, "PulseHotplug", ready_sem);
+    if (pulseaudio_hotplug_thread) {
+        SDL_WaitSemaphore(ready_sem);  // wait until the thread hits it's main loop.
+    } else {
+        SDL_SetAtomicInt(&pulseaudio_hotplug_thread_active, 0);  // thread failed to start, we'll go on without hotplug.
+    }
+
     SDL_DestroySemaphore(ready_sem);
 }
 
@@ -973,7 +978,7 @@ static void PULSEAUDIO_DeinitializeStart(void)
 {
     if (pulseaudio_hotplug_thread) {
         PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
-        SDL_AtomicSet(&pulseaudio_hotplug_thread_active, 0);
+        SDL_SetAtomicInt(&pulseaudio_hotplug_thread_active, 0);
         PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
         PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
         SDL_WaitThread(pulseaudio_hotplug_thread, NULL);

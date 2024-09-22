@@ -46,8 +46,8 @@ static bool ShouldDispatchImmediately(SDL_Event *event)
 
 static void SDL_DispatchMainCallbackEvent(SDL_Event *event)
 {
-    if (SDL_AtomicGet(&apprc) == SDL_APP_CONTINUE) { // if already quitting, don't send the event to the app.
-        SDL_AtomicCompareAndSwap(&apprc, SDL_APP_CONTINUE, SDL_main_event_callback(SDL_main_appstate, event));
+    if (SDL_GetAtomicInt(&apprc) == SDL_APP_CONTINUE) { // if already quitting, don't send the event to the app.
+        SDL_CompareAndSwapAtomicInt(&apprc, SDL_APP_CONTINUE, SDL_main_event_callback(SDL_main_appstate, event));
     }
 }
 
@@ -69,7 +69,7 @@ static void SDL_DispatchMainCallbackEvents(void)
     }
 }
 
-static SDL_bool SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *event)
+static bool SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *event)
 {
     if (ShouldDispatchImmediately(event)) {
         // Make sure any currently queued events are processed then dispatch this before continuing
@@ -94,23 +94,23 @@ SDL_AppResult SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func app
     SDL_main_iteration_callback = appiter;
     SDL_main_event_callback = appevent;
     SDL_main_quit_callback = appquit;
-    SDL_AtomicSet(&apprc, SDL_APP_CONTINUE);
+    SDL_SetAtomicInt(&apprc, SDL_APP_CONTINUE);
 
     const SDL_AppResult rc = appinit(&SDL_main_appstate, argc, argv);
-    if (SDL_AtomicCompareAndSwap(&apprc, SDL_APP_CONTINUE, rc) && (rc == SDL_APP_CONTINUE)) { // bounce if SDL_AppInit already said abort, otherwise...
+    if (SDL_CompareAndSwapAtomicInt(&apprc, SDL_APP_CONTINUE, rc) && (rc == SDL_APP_CONTINUE)) { // bounce if SDL_AppInit already said abort, otherwise...
         // make sure we definitely have events initialized, even if the app didn't do it.
         if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {
-            SDL_AtomicSet(&apprc, SDL_APP_FAILURE);
+            SDL_SetAtomicInt(&apprc, SDL_APP_FAILURE);
             return SDL_APP_FAILURE;
         }
 
         if (!SDL_AddEventWatch(SDL_MainCallbackEventWatcher, NULL)) {
-            SDL_AtomicSet(&apprc, SDL_APP_FAILURE);
+            SDL_SetAtomicInt(&apprc, SDL_APP_FAILURE);
             return SDL_APP_FAILURE;
         }
     }
 
-    return (SDL_AppResult)SDL_AtomicGet(&apprc);
+    return (SDL_AppResult)SDL_GetAtomicInt(&apprc);
 }
 
 SDL_AppResult SDL_IterateMainCallbacks(bool pump_events)
@@ -120,11 +120,11 @@ SDL_AppResult SDL_IterateMainCallbacks(bool pump_events)
     }
     SDL_DispatchMainCallbackEvents();
 
-    SDL_AppResult rc = (SDL_AppResult)SDL_AtomicGet(&apprc);
+    SDL_AppResult rc = (SDL_AppResult)SDL_GetAtomicInt(&apprc);
     if (rc == SDL_APP_CONTINUE) {
         rc = SDL_main_iteration_callback(SDL_main_appstate);
-        if (!SDL_AtomicCompareAndSwap(&apprc, SDL_APP_CONTINUE, rc)) {
-            rc = (SDL_AppResult)SDL_AtomicGet(&apprc); // something else already set a quit result, keep that.
+        if (!SDL_CompareAndSwapAtomicInt(&apprc, SDL_APP_CONTINUE, rc)) {
+            rc = (SDL_AppResult)SDL_GetAtomicInt(&apprc); // something else already set a quit result, keep that.
         }
     }
     return rc;

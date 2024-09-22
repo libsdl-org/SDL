@@ -39,6 +39,7 @@
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
 #define SDL_JOYSTICK_HIDAPI_SHIELD
+#define SDL_JOYSTICK_HIDAPI_STEAM_HORI
 
 // Joystick capability definitions
 #define SDL_JOYSTICK_CAP_MONO_LED       0x00000001
@@ -150,6 +151,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamHori;
 
 // Return true if a HID device is present and supported as a joystick of the given type
 extern bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);

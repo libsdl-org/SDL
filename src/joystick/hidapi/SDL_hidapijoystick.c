@@ -67,6 +67,9 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM
     &SDL_HIDAPI_DriverSteam,
 #endif
+#ifdef SDL_JOYSTICK_HIDAPI_STEAM_HORI
+    &SDL_HIDAPI_DriverSteamHori,
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI_STEAMDECK
     &SDL_HIDAPI_DriverSteamDeck,
 #endif
@@ -87,7 +90,7 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #endif
 };
 static int SDL_HIDAPI_numdrivers = 0;
-static SDL_SpinLock SDL_HIDAPI_spinlock;
+static SDL_AtomicInt SDL_HIDAPI_updating_devices;
 static bool SDL_HIDAPI_hints_changed = false;
 static Uint32 SDL_HIDAPI_change_count = 0;
 static SDL_HIDAPI_Device *SDL_HIDAPI_devices SDL_GUARDED_BY(SDL_joystick_lock);
@@ -1033,7 +1036,7 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             HIDAPI_CleanupDeviceDriver(device);
 
             // Make sure the rumble thread is done with this device
-            while (SDL_AtomicGet(&device->rumble_pending) > 0) {
+            while (SDL_GetAtomicInt(&device->rumble_pending) > 0) {
                 SDL_Delay(10);
             }
 
@@ -1243,6 +1246,16 @@ static bool HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id, SDL
     return false;
 }
 
+static bool HIDAPI_StartUpdatingDevices()
+{
+    return SDL_CompareAndSwapAtomicInt(&SDL_HIDAPI_updating_devices, false, true);
+}
+
+static void HIDAPI_FinishUpdatingDevices()
+{
+    SDL_SetAtomicInt(&SDL_HIDAPI_updating_devices, false);
+}
+
 bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type)
 {
     SDL_HIDAPI_Device *device;
@@ -1253,9 +1266,9 @@ bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type)
         return false;
     }
 
-    if (SDL_TryLockSpinlock(&SDL_HIDAPI_spinlock)) {
+    if (HIDAPI_StartUpdatingDevices()) {
         HIDAPI_UpdateDeviceList();
-        SDL_UnlockSpinlock(&SDL_HIDAPI_spinlock);
+        HIDAPI_FinishUpdatingDevices();
     }
 
     SDL_LockJoysticks();
@@ -1298,9 +1311,9 @@ bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version,
     }
 #endif // SDL_JOYSTICK_HIDAPI_XBOX360 || SDL_JOYSTICK_HIDAPI_XBOXONE
     if (supported) {
-        if (SDL_TryLockSpinlock(&SDL_HIDAPI_spinlock)) {
+        if (HIDAPI_StartUpdatingDevices()) {
             HIDAPI_UpdateDeviceList();
-            SDL_UnlockSpinlock(&SDL_HIDAPI_spinlock);
+            HIDAPI_FinishUpdatingDevices();
         }
     }
 
@@ -1360,13 +1373,13 @@ SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_GUID guid)
 
 static void HIDAPI_JoystickDetect(void)
 {
-    if (SDL_TryLockSpinlock(&SDL_HIDAPI_spinlock)) {
+    if (HIDAPI_StartUpdatingDevices()) {
         Uint32 count = SDL_hid_device_change_count();
         if (SDL_HIDAPI_change_count != count) {
             SDL_HIDAPI_change_count = count;
             HIDAPI_UpdateDeviceList();
         }
-        SDL_UnlockSpinlock(&SDL_HIDAPI_spinlock);
+        HIDAPI_FinishUpdatingDevices();
     }
 }
 
@@ -1379,7 +1392,7 @@ void HIDAPI_UpdateDevices(void)
     // Update the devices, which may change connected joysticks and send events
 
     // Prepare the existing device list
-    if (SDL_TryLockSpinlock(&SDL_HIDAPI_spinlock)) {
+    if (HIDAPI_StartUpdatingDevices()) {
         for (device = SDL_HIDAPI_devices; device; device = device->next) {
             if (device->parent) {
                 continue;
@@ -1393,7 +1406,7 @@ void HIDAPI_UpdateDevices(void)
                 }
             }
         }
-        SDL_UnlockSpinlock(&SDL_HIDAPI_spinlock);
+        HIDAPI_FinishUpdatingDevices();
     }
 }
 
@@ -1635,7 +1648,7 @@ static void HIDAPI_JoystickClose(SDL_Joystick *joystick) SDL_NO_THREAD_SAFETY_AN
             SDL_UnlockMutex(device->dev_lock);
         }
         for (i = 0; i < 3; ++i) {
-            if (SDL_AtomicGet(&device->rumble_pending) > 0) {
+            if (SDL_GetAtomicInt(&device->rumble_pending) > 0) {
                 SDL_Delay(10);
             }
         }

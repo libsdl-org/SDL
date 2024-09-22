@@ -51,7 +51,7 @@ typedef struct
 
     int dst_width;
     int dst_height;
-    float scale;
+    double scale;
 
     struct wl_list node;
 } Wayland_CachedCustomCursor;
@@ -72,7 +72,8 @@ typedef struct
 {
     Wayland_SystemCursorFrame *frames;
     struct wl_callback *frame_callback;
-    Uint64 last_frame_time_ms;
+    Uint64 last_frame_callback_time_ms;
+    Uint64 current_frame_time_ms;
     Uint32 total_duration;
     int num_frames;
     int current_frame;
@@ -304,16 +305,20 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     SDL_CursorData *c = (SDL_CursorData *)data;
 
     const Uint64 now = SDL_GetTicks();
-    const Uint64 elapsed = (now - c->cursor_data.system.last_frame_time_ms) % c->cursor_data.system.total_duration;
+    const Uint64 elapsed = (now - c->cursor_data.system.last_frame_callback_time_ms) % c->cursor_data.system.total_duration;
+    Uint64 advance = 0;
     int next = c->cursor_data.system.current_frame;
 
     wl_callback_destroy(cb);
     c->cursor_data.system.frame_callback = wl_surface_frame(c->surface);
     wl_callback_add_listener(c->cursor_data.system.frame_callback, &cursor_frame_listener, data);
 
+    c->cursor_data.system.current_frame_time_ms += elapsed;
+
     // Calculate the next frame based on the elapsed duration.
-    for (Uint64 t = c->cursor_data.system.frames[next].duration; t <= elapsed; t += c->cursor_data.system.frames[next].duration) {
+    for (Uint64 t = c->cursor_data.system.frames[next].duration; t <= c->cursor_data.system.current_frame_time_ms; t += c->cursor_data.system.frames[next].duration) {
         next = (next + 1) % c->cursor_data.system.num_frames;
+        advance = t;
 
         // Make sure we don't end up in an infinite loop if a cursor has frame durations of 0.
         if (!c->cursor_data.system.frames[next].duration) {
@@ -321,7 +326,8 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
         }
     }
 
-    c->cursor_data.system.last_frame_time_ms = now;
+    c->cursor_data.system.current_frame_time_ms -= advance;
+    c->cursor_data.system.last_frame_callback_time_ms = now;
     c->cursor_data.system.current_frame = next;
     wl_surface_attach(c->surface, c->cursor_data.system.frames[next].wl_buffer, 0, 0);
     if (wl_surface_get_version(c->surface) >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
@@ -332,7 +338,7 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     wl_surface_commit(c->surface);
 }
 
-static bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdata, float *scale)
+static bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdata, double *scale)
 {
     struct wl_cursor_theme *theme = NULL;
     struct wl_cursor *cursor;
@@ -357,9 +363,9 @@ static bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdat
     focus = SDL_GetMouse()->focus;
     if (focus) {
         // TODO: Use the fractional scale once GNOME supports viewports on cursor surfaces.
-        *scale = SDL_ceilf(focus->internal->windowed_scale_factor);
+        *scale = SDL_ceil(focus->internal->scale_factor);
     } else {
-        *scale = 1.0f;
+        *scale = 1.0;
     }
 
     size *= (int)*scale;
@@ -435,15 +441,15 @@ static Wayland_CachedCustomCursor *Wayland_GetCachedCustomCursor(SDL_Cursor *cur
     SDL_CursorData *data = cursor->internal;
     Wayland_CachedCustomCursor *cache;
     SDL_Window *focus = SDL_GetMouseFocus();
-    float scale = 1.0f;
+    double scale = 1.0;
 
     if (focus && SDL_SurfaceHasAlternateImages(data->cursor_data.custom.sdl_cursor_surface)) {
-        scale = focus->internal->windowed_scale_factor;
+        scale = focus->internal->scale_factor;
     }
 
     // Only use fractional scale values if viewports are available.
     if (!wd->viewporter) {
-        scale = SDL_ceilf(scale);
+        scale = SDL_ceil(scale);
     }
 
     // Is this cursor already cached at the target scale?
@@ -458,7 +464,7 @@ static Wayland_CachedCustomCursor *Wayland_GetCachedCustomCursor(SDL_Cursor *cur
         return NULL;
     }
 
-    SDL_Surface *surface = SDL_GetSurfaceImage(data->cursor_data.custom.sdl_cursor_surface, scale);
+    SDL_Surface *surface = SDL_GetSurfaceImage(data->cursor_data.custom.sdl_cursor_surface, (float)scale);
     if (!surface) {
         SDL_free(cache);
         return NULL;
@@ -675,7 +681,7 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
     SDL_VideoData *d = vd->internal;
     struct SDL_WaylandInput *input = d->input;
     struct wl_pointer *pointer = d->pointer;
-    float scale = 1.0f;
+    double scale = 1.0;
     int dst_width = 0;
     int dst_height = 0;
 
@@ -711,7 +717,8 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
 
             // If more than one frame is available, create a frame callback to run the animation.
             if (data->cursor_data.system.num_frames > 1) {
-                data->cursor_data.system.last_frame_time_ms = SDL_GetTicks();
+                data->cursor_data.system.last_frame_callback_time_ms = SDL_GetTicks();
+                data->cursor_data.system.current_frame_time_ms = 0;
                 data->cursor_data.system.current_frame = 0;
                 data->cursor_data.system.frame_callback = wl_surface_frame(data->surface);
                 wl_callback_add_listener(data->cursor_data.system.frame_callback, &cursor_frame_listener, data);
@@ -728,7 +735,7 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
         }
 
         // TODO: Make the viewport path the default in all cases once GNOME finally supports viewports on cursor surfaces.
-        if (SDL_ceilf(scale) != scale && d->viewporter) {
+        if (SDL_ceil(scale) != scale && d->viewporter) {
             if (!data->viewport) {
                 data->viewport = wp_viewporter_get_viewport(d->viewporter, data->surface);
             }

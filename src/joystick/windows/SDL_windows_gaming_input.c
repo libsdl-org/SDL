@@ -343,13 +343,13 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInter
 static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This)
 {
     RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
-    return SDL_AtomicAdd(&self->refcount, 1) + 1UL;
+    return SDL_AddAtomicInt(&self->refcount, 1) + 1UL;
 }
 
 static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This)
 {
     RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
-    int rc = SDL_AtomicAdd(&self->refcount, -1) - 1;
+    int rc = SDL_AddAtomicInt(&self->refcount, -1) - 1;
     // Should never free the static delegate objects
     SDL_assert(rc > 0);
     return rc;

@@ -52,7 +52,7 @@ typedef struct SDL_JoystickBallData
 
 typedef struct SDL_JoystickTouchpadFingerInfo
 {
-    Uint8 state;
+    bool down;
     float x;
     float y;
     float pressure;
@@ -94,7 +94,7 @@ struct SDL_Joystick
     Uint8 *hats _guarded; // Current hat states
 
     int nbuttons _guarded;   // Number of buttons on the joystick
-    Uint8 *buttons _guarded; // Current button states
+    bool *buttons _guarded; // Current button states
 
     int ntouchpads _guarded;                      // Number of touchpads on the joystick
     SDL_JoystickTouchpadInfo *touchpads _guarded; // Current touchpad states

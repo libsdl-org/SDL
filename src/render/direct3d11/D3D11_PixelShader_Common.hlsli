@@ -11,7 +11,7 @@ struct PixelShaderInput
     float4 color : COLOR0;
 };
 
-// These should mirror the definitions in SDL_render_d3d12.c
+// These should mirror the definitions in SDL_render_d3d11.c
 static const float TONEMAP_NONE = 0;
 static const float TONEMAP_LINEAR = 1;
 static const float TONEMAP_CHROME = 2;

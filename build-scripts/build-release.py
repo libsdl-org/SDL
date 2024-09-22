@@ -179,7 +179,7 @@ class Releaser:
                 continue
             mod_type, file_paths = line.split(maxsplit=1)
             assert current_time is not None
-            for file_path in file_paths.split():
+            for file_path in file_paths.split("\t"):
                 if file_path in set_paths and file_path not in path_times:
                     path_times[file_path] = current_time
         assert set(path_times.keys()) == set_paths
@@ -264,7 +264,7 @@ class Releaser:
             self.artifacts[f"src-tar-{comp}"] = tar_path
 
     def create_xcframework(self, configuration: str="Release") -> None:
-        dmg_in = self.root / f"Xcode/SDL/build/SDL3.dmg"
+        dmg_in = self.root / f"Xcode/SDL/build/{self.project}.dmg"
         dmg_in.unlink(missing_ok=True)
         self.executer.run(["xcodebuild", "-project", str(self.root / "Xcode/SDL/SDL.xcodeproj"), "-target", "SDL3.dmg", "-configuration", configuration])
         if self.dry:

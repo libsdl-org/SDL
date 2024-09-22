@@ -379,11 +379,11 @@ void SDL_Fcitx_Reset(void)
     FcitxClientICCallMethod(&fcitx_client, "Reset");
 }
 
-bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
+bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
 {
     Uint32 mod_state = Fcitx_ModState();
     Uint32 handled = false;
-    Uint32 is_release = (state == SDL_RELEASED);
+    Uint32 is_release = !down;
     Uint32 event_time = 0;
 
     if (!fcitx_client.ic_path) {

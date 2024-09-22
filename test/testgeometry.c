@@ -24,7 +24,7 @@
 #endif
 
 static SDLTest_CommonState *state;
-static SDL_bool use_texture = SDL_FALSE;
+static bool use_texture = false;
 static SDL_Texture **sprites;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 static float angle = 0.0f;
@@ -52,7 +52,7 @@ static int LoadSprite(const char *file)
 
     for (i = 0; i < state->num_windows; ++i) {
         /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
-        sprites[i] = LoadTexture(state->renderers[i], file, SDL_TRUE, &sprite_w, &sprite_h);
+        sprites[i] = LoadTexture(state->renderers[i], file, true, &sprite_w, &sprite_h);
         if (!sprites[i]) {
             return -1;
         }
@@ -194,9 +194,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     for (i = 1; i < argc;) {
         int consumed;
 
@@ -223,7 +220,7 @@ int main(int argc, char *argv[])
                     }
                 }
             } else if (SDL_strcasecmp(argv[i], "--use-texture") == 0) {
-                use_texture = SDL_TRUE;
+                use_texture = true;
                 consumed = 1;
             }
         }

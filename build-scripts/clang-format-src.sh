@@ -19,6 +19,7 @@ git checkout \
     stdlib/SDL_qsort.c \
     stdlib/SDL_strtokr.c \
     video/khronos \
+    video/x11/edid.h \
     video/x11/edid-parse.c \
     video/x11/xsettings-client.* \
     video/yuv2rgb

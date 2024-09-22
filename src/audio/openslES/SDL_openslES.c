@@ -229,9 +229,9 @@ static void OPENSLES_DestroyPCMRecorder(SDL_AudioDevice *device)
 }
 
 // !!! FIXME: make this non-blocking!
-static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, SDL_bool granted)
+static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, bool granted)
 {
-    SDL_AtomicSet((SDL_AtomicInt *) userdata, granted ? 1 : -1);
+    SDL_SetAtomicInt((SDL_AtomicInt *) userdata, granted ? 1 : -1);
 }
 
 static bool OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
@@ -250,16 +250,16 @@ static bool OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
     // !!! FIXME: make this non-blocking!
     {
         SDL_AtomicInt permission_response;
-        SDL_AtomicSet(&permission_response, 0);
+        SDL_SetAtomicInt(&permission_response, 0);
         if (!SDL_RequestAndroidPermission("android.permission.RECORD_AUDIO", RequestAndroidPermissionBlockingCallback, &permission_response)) {
             return false;
         }
 
-        while (SDL_AtomicGet(&permission_response) == 0) {
+        while (SDL_GetAtomicInt(&permission_response) == 0) {
             SDL_Delay(10);
         }
 
-        if (SDL_AtomicGet(&permission_response) < 0) {
+        if (SDL_GetAtomicInt(&permission_response) < 0) {
             LOGE("This app doesn't have RECORD_AUDIO permission");
             return SDL_SetError("This app doesn't have RECORD_AUDIO permission");
         }
@@ -652,7 +652,7 @@ static bool OPENSLES_WaitDevice(SDL_AudioDevice *device)
 
     LOGV("OPENSLES_WaitDevice()");
 
-    while (!SDL_AtomicGet(&device->shutdown)) {
+    while (!SDL_GetAtomicInt(&device->shutdown)) {
         // this semaphore won't fire when the app is in the background (OPENSLES_PauseDevices was called).
         if (SDL_WaitSemaphoreTimeout(audiodata->playsem, 100)) {
             return true;  // semaphore was signaled, let's go!

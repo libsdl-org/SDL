@@ -28,6 +28,7 @@
 #ifndef SDL_vulkan_h_
 #define SDL_vulkan_h_
 
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_video.h>
 
@@ -95,15 +96,15 @@ struct VkAllocationCallbacks;
  * library version.
  *
  * \param path the platform dependent Vulkan loader library name or NULL.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Vulkan_GetVkGetInstanceProcAddr
  * \sa SDL_Vulkan_UnloadLibrary
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
+extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
 
 /**
  * Get the address of the `vkGetInstanceProcAddr` function.
@@ -175,15 +176,15 @@ extern SDL_DECLSPEC char const * const * SDLCALL SDL_Vulkan_GetInstanceExtension
  *                  allocator that creates the surface. Can be NULL.
  * \param surface a pointer to a VkSurfaceKHR handle to output the newly
  *                created surface.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Vulkan_GetInstanceExtensions
  * \sa SDL_Vulkan_DestroySurface
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
+extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
                                                               VkInstance instance,
                                                               const struct VkAllocationCallbacks *allocator,
                                                               VkSurfaceKHR* surface);
@@ -226,14 +227,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_DestroySurface(VkInstance instance,
  * \param physicalDevice a valid Vulkan physical device handle.
  * \param queueFamilyIndex a valid queue family index for the given physical
  *                         device.
- * \returns SDL_TRUE if supported, SDL_FALSE if unsupported or an error
- *          occurred.
+ * \returns true if supported, false if unsupported or an error occurred.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Vulkan_GetInstanceExtensions
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetPresentationSupport(VkInstance instance,
+extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_GetPresentationSupport(VkInstance instance,
                                                                        VkPhysicalDevice physicalDevice,
                                                                        Uint32 queueFamilyIndex);
 

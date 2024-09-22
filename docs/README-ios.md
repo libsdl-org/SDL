@@ -139,7 +139,7 @@ void SDL_StartTextInput()
 void SDL_StopTextInput()
 	-- disables text events and hides the onscreen keyboard.
 
-SDL_bool SDL_TextInputActive()
+bool SDL_TextInputActive()
 	-- returns whether or not text events are enabled (and the onscreen keyboard is visible)
 
 
@@ -225,7 +225,7 @@ Game Center
 
 Game Center integration might require that you break up your main loop in order to yield control back to the system. In other words, instead of running an endless main loop, you run each frame in a callback function, using:
 
-    SDL_bool SDL_SetiOSAnimationCallback(SDL_Window * window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
+    bool SDL_SetiOSAnimationCallback(SDL_Window * window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
 
 This will set up the given function to be called back on the animation callback, and then you have to return from main() to let the Cocoa event loop run.
 

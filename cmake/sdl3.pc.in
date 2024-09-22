@@ -1,7 +1,7 @@
 prefix=@SDL_PKGCONFIG_PREFIX@
 exec_prefix=${prefix}
-libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
-includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=@LIBDIR_FOR_PKG_CONFIG@
+includedir=@INCLUDEDIR_FOR_PKG_CONFIG@
 
 Name: sdl3
 Description: Simple DirectMedia Layer is a cross-platform multimedia library designed to provide low level access to audio, keyboard, mouse, joystick, 3D hardware via OpenGL, and 2D video framebuffer.

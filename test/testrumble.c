@@ -48,9 +48,6 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     name = NULL;
     index = -1;
 
@@ -85,7 +82,7 @@ int main(int argc, char **argv)
     }
 
     /* Initialize the force feedbackness */
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC);
     haptics = SDL_GetHaptics(&num_haptics);
     SDL_Log("%d Haptic devices detected.\n", num_haptics);
     if (num_haptics == 0) {

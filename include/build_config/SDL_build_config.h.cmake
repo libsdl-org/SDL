@@ -263,6 +263,7 @@
 #cmakedefine SDL_VIDEO_DISABLED @SDL_VIDEO_DISABLED@
 #cmakedefine SDL_POWER_DISABLED @SDL_POWER_DISABLED@
 #cmakedefine SDL_CAMERA_DISABLED @SDL_CAMERA_DISABLED@
+#cmakedefine SDL_GPU_DISABLED @SDL_GPU_DISABLED@
 
 /* Enable various audio drivers */
 #cmakedefine SDL_AUDIO_DRIVER_ALSA @SDL_AUDIO_DRIVER_ALSA@
@@ -324,6 +325,11 @@
 #cmakedefine SDL_HAPTIC_ANDROID @SDL_HAPTIC_ANDROID@
 #cmakedefine SDL_LIBUSB_DYNAMIC @SDL_LIBUSB_DYNAMIC@
 #cmakedefine SDL_UDEV_DYNAMIC @SDL_UDEV_DYNAMIC@
+
+/* Enable various process implementations */
+#cmakedefine SDL_PROCESS_DUMMY @SDL_PROCESS_DUMMY@
+#cmakedefine SDL_PROCESS_POSIX @SDL_PROCESS_POSIX@
+#cmakedefine SDL_PROCESS_WINDOWS @SDL_PROCESS_WINDOWS@
 
 /* Enable various sensor drivers */
 #cmakedefine SDL_SENSOR_ANDROID @SDL_SENSOR_ANDROID@

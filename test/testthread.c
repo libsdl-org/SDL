@@ -62,7 +62,7 @@ ThreadFunc(void *data)
     SDL_SetTLS(&tls, "baby thread", NULL);
     SDL_Log("Started thread %s: My thread id is %" SDL_PRIu64 ", thread data = %s\n",
             (char *)data, SDL_GetCurrentThreadID(), (const char *)SDL_GetTLS(&tls));
-    while (SDL_AtomicGet(&alive)) {
+    while (SDL_GetAtomicInt(&alive)) {
         SDL_Log("Thread '%s' is alive!\n", (char *)data);
 
         if (testprio) {
@@ -83,7 +83,7 @@ killed(int sig)
 {
     SDL_Log("Killed with SIGTERM, waiting 5 seconds to exit\n");
     SDL_Delay(5 * 1000);
-    SDL_AtomicSet(&alive, 0);
+    SDL_SetAtomicInt(&alive, 0);
     SDL_WaitThread(thread, NULL);
     quit(0);
 }
@@ -97,9 +97,6 @@ int main(int argc, char *argv[])
     if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -127,7 +124,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+    if (SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_TESTS_QUICK") != NULL) {
         SDL_Log("Not running slower tests");
         SDL_Quit();
         return 0;
@@ -136,7 +133,7 @@ int main(int argc, char *argv[])
     SDL_SetTLS(&tls, "main thread", NULL);
     SDL_Log("Main thread data initially: %s\n", (const char *)SDL_GetTLS(&tls));
 
-    SDL_AtomicSet(&alive, 1);
+    SDL_SetAtomicInt(&alive, 1);
     thread = SDL_CreateThread(ThreadFunc, "One", "#1");
     if (!thread) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
@@ -144,12 +141,12 @@ int main(int argc, char *argv[])
     }
     SDL_Delay(5 * 1000);
     SDL_Log("Waiting for thread #1\n");
-    SDL_AtomicSet(&alive, 0);
+    SDL_SetAtomicInt(&alive, 0);
     SDL_WaitThread(thread, NULL);
 
     SDL_Log("Main thread data finally: %s\n", (const char *)SDL_GetTLS(&tls));
 
-    SDL_AtomicSet(&alive, 1);
+    SDL_SetAtomicInt(&alive, 1);
     (void)signal(SIGTERM, killed);
     thread = SDL_CreateThread(ThreadFunc, "Two", "#2");
     if (!thread) {

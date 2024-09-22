@@ -115,7 +115,7 @@ static void Cocoa_HandlePenProximityEvent(SDL_CocoaWindowData *_data, NSEvent *e
 
 static void Cocoa_HandlePenPointEvent(SDL_CocoaWindowData *_data, NSEvent *event)
 {
-    const Uint32 timestamp = Cocoa_GetEventTimestamp([event timestamp]);
+    const Uint64 timestamp = Cocoa_GetEventTimestamp([event timestamp]);
     Cocoa_PenHandle *handle = Cocoa_FindPenByDeviceID([event deviceID], [event pointingDeviceID]);
     if (!handle) {
         return;
@@ -128,10 +128,10 @@ static void Cocoa_HandlePenPointEvent(SDL_CocoaWindowData *_data, NSEvent *event
     const bool is_touching = (buttons & NSEventButtonMaskPenTip) != 0;
     SDL_Window *window = _data.window;
 
-    SDL_SendPenTouch(timestamp, pen, window, is_touching, handle->is_eraser ? 1 : 0);
+    SDL_SendPenTouch(timestamp, pen, window, handle->is_eraser, is_touching);
     SDL_SendPenMotion(timestamp, pen, window, (float) point.x, (float) (window->h - point.y));
-    SDL_SendPenButton(timestamp, pen, window, (buttons & NSEventButtonMaskPenLowerSide) ? SDL_PRESSED : SDL_RELEASED, 1);
-    SDL_SendPenButton(timestamp, pen, window, (buttons & NSEventButtonMaskPenUpperSide) ? SDL_PRESSED : SDL_RELEASED, 2);
+    SDL_SendPenButton(timestamp, pen, window, 1, ((buttons & NSEventButtonMaskPenLowerSide) != 0));
+    SDL_SendPenButton(timestamp, pen, window, 2, ((buttons & NSEventButtonMaskPenUpperSide) != 0));
     SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_PRESSURE, [event pressure]);
     SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_ROTATION, [event rotation]);
     SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_XTILT, ((float) tilt.x) * 90.0f);

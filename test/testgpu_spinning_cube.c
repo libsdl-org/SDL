@@ -42,7 +42,7 @@ typedef struct RenderState
 typedef struct WindowState
 {
     int angle_x, angle_y, angle_z;
-    SDL_GPUTexture *tex_depth, *tex_msaa;
+    SDL_GPUTexture *tex_depth, *tex_msaa, *tex_resolve;
     Uint32 prev_drawablew, prev_drawableh;
 } WindowState;
 
@@ -59,6 +59,7 @@ static void shutdownGPU(void)
             WindowState *winstate = &window_states[i];
             SDL_ReleaseGPUTexture(gpu_device, winstate->tex_depth);
             SDL_ReleaseGPUTexture(gpu_device, winstate->tex_msaa);
+            SDL_ReleaseGPUTexture(gpu_device, winstate->tex_resolve);
             SDL_ReleaseWindowFromGPUDevice(gpu_device, state->windows[i]);
         }
         SDL_free(window_states);
@@ -249,20 +250,20 @@ static const VertexData vertex_data[] = {
 static SDL_GPUTexture*
 CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
 {
-    SDL_GPUTextureCreateInfo depthtex_createinfo;
+    SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
 
-    depthtex_createinfo.type = SDL_GPU_TEXTURETYPE_2D;
-    depthtex_createinfo.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
-    depthtex_createinfo.width = drawablew;
-    depthtex_createinfo.height = drawableh;
-    depthtex_createinfo.layer_count_or_depth = 1;
-    depthtex_createinfo.num_levels = 1;
-    depthtex_createinfo.sample_count = render_state.sample_count;
-    depthtex_createinfo.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
-    depthtex_createinfo.props = 0;
+    createinfo.type = SDL_GPU_TEXTURETYPE_2D;
+    createinfo.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
+    createinfo.width = drawablew;
+    createinfo.height = drawableh;
+    createinfo.layer_count_or_depth = 1;
+    createinfo.num_levels = 1;
+    createinfo.sample_count = render_state.sample_count;
+    createinfo.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+    createinfo.props = 0;
 
-    result = SDL_CreateGPUTexture(gpu_device, &depthtex_createinfo);
+    result = SDL_CreateGPUTexture(gpu_device, &createinfo);
     CHECK_CREATE(result, "Depth Texture")
 
     return result;
@@ -271,25 +272,51 @@ CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
 static SDL_GPUTexture*
 CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
 {
-    SDL_GPUTextureCreateInfo msaatex_createinfo;
+    SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
 
     if (render_state.sample_count == SDL_GPU_SAMPLECOUNT_1) {
         return NULL;
     }
 
-    msaatex_createinfo.type = SDL_GPU_TEXTURETYPE_2D;
-    msaatex_createinfo.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
-    msaatex_createinfo.width = drawablew;
-    msaatex_createinfo.height = drawableh;
-    msaatex_createinfo.layer_count_or_depth = 1;
-    msaatex_createinfo.num_levels = 1;
-    msaatex_createinfo.sample_count = render_state.sample_count;
-    msaatex_createinfo.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
-    msaatex_createinfo.props = 0;
+    createinfo.type = SDL_GPU_TEXTURETYPE_2D;
+    createinfo.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
+    createinfo.width = drawablew;
+    createinfo.height = drawableh;
+    createinfo.layer_count_or_depth = 1;
+    createinfo.num_levels = 1;
+    createinfo.sample_count = render_state.sample_count;
+    createinfo.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    createinfo.props = 0;
 
-    result = SDL_CreateGPUTexture(gpu_device, &msaatex_createinfo);
+    result = SDL_CreateGPUTexture(gpu_device, &createinfo);
     CHECK_CREATE(result, "MSAA Texture")
+
+    return result;
+}
+
+static SDL_GPUTexture *
+CreateResolveTexture(Uint32 drawablew, Uint32 drawableh)
+{
+    SDL_GPUTextureCreateInfo createinfo;
+    SDL_GPUTexture *result;
+
+    if (render_state.sample_count == SDL_GPU_SAMPLECOUNT_1) {
+        return NULL;
+    }
+
+    createinfo.type = SDL_GPU_TEXTURETYPE_2D;
+    createinfo.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
+    createinfo.width = drawablew;
+    createinfo.height = drawableh;
+    createinfo.layer_count_or_depth = 1;
+    createinfo.num_levels = 1;
+    createinfo.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    createinfo.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
+    createinfo.props = 0;
+
+    result = SDL_CreateGPUTexture(gpu_device, &createinfo);
+    CHECK_CREATE(result, "Resolve Texture")
 
     return result;
 }
@@ -306,8 +333,7 @@ Render(SDL_Window *window, const int windownum)
     SDL_GPUCommandBuffer *cmd;
     SDL_GPURenderPass *pass;
     SDL_GPUBufferBinding vertex_binding;
-    SDL_GPUBlitRegion src_region;
-    SDL_GPUBlitRegion dst_region;
+    SDL_GPUBlitInfo blit_info;
 
     /* Acquire the swapchain texture */
 
@@ -355,8 +381,10 @@ Render(SDL_Window *window, const int windownum)
     if (winstate->prev_drawablew != drawablew || winstate->prev_drawableh != drawableh) {
         SDL_ReleaseGPUTexture(gpu_device, winstate->tex_depth);
         SDL_ReleaseGPUTexture(gpu_device, winstate->tex_msaa);
+        SDL_ReleaseGPUTexture(gpu_device, winstate->tex_resolve);
         winstate->tex_depth = CreateDepthTexture(drawablew, drawableh);
         winstate->tex_msaa = CreateMSAATexture(drawablew, drawableh);
+        winstate->tex_resolve = CreateResolveTexture(drawablew, drawableh);
     }
     winstate->prev_drawablew = drawablew;
     winstate->prev_drawableh = drawableh;
@@ -365,16 +393,27 @@ Render(SDL_Window *window, const int windownum)
 
     SDL_zero(color_target);
     color_target.clear_color.a = 1.0f;
-    color_target.load_op = SDL_GPU_LOADOP_CLEAR;
-    color_target.store_op = SDL_GPU_STOREOP_STORE;
-    color_target.texture = winstate->tex_msaa ? winstate->tex_msaa : swapchain;
+    if (winstate->tex_msaa) {
+        color_target.load_op = SDL_GPU_LOADOP_CLEAR;
+        color_target.store_op = SDL_GPU_STOREOP_RESOLVE;
+        color_target.texture = winstate->tex_msaa;
+        color_target.resolve_texture = winstate->tex_resolve;
+        color_target.cycle = true;
+        color_target.cycle_resolve_texture = true;
+    } else {
+        color_target.load_op = SDL_GPU_LOADOP_CLEAR;
+        color_target.store_op = SDL_GPU_STOREOP_STORE;
+        color_target.texture = swapchain;
+    }
 
     SDL_zero(depth_target);
-    depth_target.clear_value.depth = 1.0f;
+    depth_target.clear_depth = 1.0f;
     depth_target.load_op = SDL_GPU_LOADOP_CLEAR;
     depth_target.store_op = SDL_GPU_STOREOP_DONT_CARE;
+    depth_target.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
+    depth_target.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
     depth_target.texture = winstate->tex_depth;
-    depth_target.cycle = SDL_TRUE;
+    depth_target.cycle = true;
 
     /* Set up the bindings */
 
@@ -391,17 +430,21 @@ Render(SDL_Window *window, const int windownum)
     SDL_DrawGPUPrimitives(pass, 36, 1, 0, 0);
     SDL_EndGPURenderPass(pass);
 
-    /* Blit MSAA to swapchain, if needed */
+    /* Blit MSAA resolve target to swapchain, if needed */
     if (render_state.sample_count > SDL_GPU_SAMPLECOUNT_1) {
-        SDL_zero(src_region);
-        src_region.texture = winstate->tex_msaa;
-        src_region.w = drawablew;
-        src_region.h = drawableh;
+        SDL_zero(blit_info);
+        blit_info.source.texture = winstate->tex_resolve;
+        blit_info.source.w = drawablew;
+        blit_info.source.h = drawableh;
 
-        dst_region = src_region;
-        dst_region.texture = swapchain;
+        blit_info.destination.texture = swapchain;
+        blit_info.destination.w = drawablew;
+        blit_info.destination.h = drawableh;
 
-        SDL_BlitGPUTexture(cmd, &src_region, &dst_region, SDL_FLIP_NONE, SDL_GPU_FILTER_LINEAR, SDL_FALSE);
+        blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
+        blit_info.filter = SDL_GPU_FILTER_LINEAR;
+
+        SDL_BlitGPUTexture(cmd, &blit_info);
     }
 
     /* Submit the command buffer! */
@@ -411,7 +454,7 @@ Render(SDL_Window *window, const int windownum)
 }
 
 static SDL_GPUShader*
-load_shader(SDL_bool is_vertex)
+load_shader(bool is_vertex)
 {
     SDL_GPUShaderCreateInfo createinfo;
     createinfo.num_samplers = 0;
@@ -420,18 +463,18 @@ load_shader(SDL_bool is_vertex)
     createinfo.num_uniform_buffers = is_vertex ? 1 : 0;
     createinfo.props = 0;
 
-    SDL_GPUDriver backend = SDL_GetGPUDriver(gpu_device);
-    if (backend == SDL_GPU_DRIVER_D3D11) {
+    SDL_GPUShaderFormat format = SDL_GetGPUShaderFormats(gpu_device);
+    if (format & SDL_GPU_SHADERFORMAT_DXBC) {
         createinfo.format = SDL_GPU_SHADERFORMAT_DXBC;
         createinfo.code = is_vertex ? D3D11_CubeVert : D3D11_CubeFrag;
         createinfo.code_size = is_vertex ? SDL_arraysize(D3D11_CubeVert) : SDL_arraysize(D3D11_CubeFrag);
         createinfo.entrypoint = is_vertex ? "VSMain" : "PSMain";
-    } else if (backend == SDL_GPU_DRIVER_D3D12) {
+    } else if (format & SDL_GPU_SHADERFORMAT_DXIL) {
         createinfo.format = SDL_GPU_SHADERFORMAT_DXIL;
         createinfo.code = is_vertex ? D3D12_CubeVert : D3D12_CubeFrag;
         createinfo.code_size = is_vertex ? SDL_arraysize(D3D12_CubeVert) : SDL_arraysize(D3D12_CubeFrag);
         createinfo.entrypoint = is_vertex ? "VSMain" : "PSMain";
-    } else if (backend == SDL_GPU_DRIVER_METAL) {
+    } else if (format & SDL_GPU_SHADERFORMAT_METALLIB) {
         createinfo.format = SDL_GPU_SHADERFORMAT_METALLIB;
         createinfo.code = is_vertex ? cube_vert_metallib : cube_frag_metallib;
         createinfo.code_size = is_vertex ? cube_vert_metallib_len : cube_frag_metallib_len;
@@ -462,14 +505,14 @@ init_render_state(int msaa)
     SDL_GPUColorTargetDescription color_target_desc;
     Uint32 drawablew, drawableh;
     SDL_GPUVertexAttribute vertex_attributes[2];
-    SDL_GPUVertexBinding vertex_binding;
+    SDL_GPUVertexBufferDescription vertex_buffer_desc;
     SDL_GPUShader *vertex_shader;
     SDL_GPUShader *fragment_shader;
     int i;
 
     gpu_device = SDL_CreateGPUDevice(
         TESTGPU_SUPPORTED_FORMATS,
-        SDL_TRUE,
+        true,
         state->gpudriver
     );
     CHECK_CREATE(gpu_device, "GPU device");
@@ -485,9 +528,9 @@ init_render_state(int msaa)
 
     /* Create shaders */
 
-    vertex_shader = load_shader(SDL_TRUE);
+    vertex_shader = load_shader(true);
     CHECK_CREATE(vertex_shader, "Vertex Shader")
-    fragment_shader = load_shader(SDL_FALSE);
+    fragment_shader = load_shader(false);
     CHECK_CREATE(fragment_shader, "Fragment Shader")
 
     /* Create buffers */
@@ -513,7 +556,7 @@ init_render_state(int msaa)
     CHECK_CREATE(buf_transfer, "Vertex transfer buffer")
 
     /* We just need to upload the static data once. */
-    map = SDL_MapGPUTransferBuffer(gpu_device, buf_transfer, SDL_FALSE);
+    map = SDL_MapGPUTransferBuffer(gpu_device, buf_transfer, false);
     SDL_memcpy(map, vertex_data, sizeof(vertex_data));
     SDL_UnmapGPUTransferBuffer(gpu_device, buf_transfer);
 
@@ -524,7 +567,7 @@ init_render_state(int msaa)
     dst_region.buffer = render_state.buf_vertex;
     dst_region.offset = 0;
     dst_region.size = sizeof(vertex_data);
-    SDL_UploadToGPUBuffer(copy_pass, &buf_location, &dst_region, SDL_FALSE);
+    SDL_UploadToGPUBuffer(copy_pass, &buf_location, &dst_region, false);
     SDL_EndGPUCopyPass(copy_pass);
     SDL_SubmitGPUCommandBuffer(cmd);
 
@@ -542,52 +585,43 @@ init_render_state(int msaa)
     /* Set up the graphics pipeline */
 
     SDL_zero(pipelinedesc);
+    SDL_zero(color_target_desc);
 
     color_target_desc.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
-
-    color_target_desc.blend_state.enable_blend = 0;
-    color_target_desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-    color_target_desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-    color_target_desc.blend_state.color_write_mask = 0xF;
-    color_target_desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    color_target_desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
-    color_target_desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    color_target_desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
 
     pipelinedesc.target_info.num_color_targets = 1;
     pipelinedesc.target_info.color_target_descriptions = &color_target_desc;
     pipelinedesc.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
-    pipelinedesc.target_info.has_depth_stencil_target = SDL_TRUE;
+    pipelinedesc.target_info.has_depth_stencil_target = true;
 
-    pipelinedesc.depth_stencil_state.enable_depth_test = 1;
-    pipelinedesc.depth_stencil_state.enable_depth_write = 1;
+    pipelinedesc.depth_stencil_state.enable_depth_test = true;
+    pipelinedesc.depth_stencil_state.enable_depth_write = true;
     pipelinedesc.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL;
 
     pipelinedesc.multisample_state.sample_count = render_state.sample_count;
-    pipelinedesc.multisample_state.sample_mask = 0xF;
 
     pipelinedesc.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 
     pipelinedesc.vertex_shader = vertex_shader;
     pipelinedesc.fragment_shader = fragment_shader;
 
-    vertex_binding.index = 0;
-    vertex_binding.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
-    vertex_binding.instance_step_rate = 0;
-    vertex_binding.pitch = sizeof(VertexData);
+    vertex_buffer_desc.slot = 0;
+    vertex_buffer_desc.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+    vertex_buffer_desc.instance_step_rate = 0;
+    vertex_buffer_desc.pitch = sizeof(VertexData);
 
-    vertex_attributes[0].binding_index = 0;
+    vertex_attributes[0].buffer_slot = 0;
     vertex_attributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
     vertex_attributes[0].location = 0;
     vertex_attributes[0].offset = 0;
 
-    vertex_attributes[1].binding_index = 0;
+    vertex_attributes[1].buffer_slot = 0;
     vertex_attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
     vertex_attributes[1].location = 1;
     vertex_attributes[1].offset = sizeof(float) * 3;
 
-    pipelinedesc.vertex_input_state.num_vertex_bindings = 1;
-    pipelinedesc.vertex_input_state.vertex_bindings = &vertex_binding;
+    pipelinedesc.vertex_input_state.num_vertex_buffers = 1;
+    pipelinedesc.vertex_input_state.vertex_buffer_descriptions = &vertex_buffer_desc;
     pipelinedesc.vertex_input_state.num_vertex_attributes = 2;
     pipelinedesc.vertex_input_state.vertex_attributes = (SDL_GPUVertexAttribute*) &vertex_attributes;
 
@@ -615,6 +649,7 @@ init_render_state(int msaa)
         SDL_GetWindowSizeInPixels(state->windows[i], (int*) &drawablew, (int*) &drawableh);
         winstate->tex_depth = CreateDepthTexture(drawablew, drawableh);
         winstate->tex_msaa = CreateMSAATexture(drawablew, drawableh);
+        winstate->tex_resolve = CreateResolveTexture(drawablew, drawableh);
 
         /* make each window different */
         winstate->angle_x = (i * 10) % 360;
@@ -625,7 +660,7 @@ init_render_state(int msaa)
 
 static int done = 0;
 
-void loop()
+void loop(void)
 {
     SDL_Event event;
     int i;

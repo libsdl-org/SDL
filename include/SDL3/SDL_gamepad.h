@@ -58,9 +58,11 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
-#include <SDL3/SDL_joystick.h>
-#include <SDL3/SDL_properties.h>
+#include <SDL3/SDL_guid.h>
 #include <SDL3/SDL_iostream.h>
+#include <SDL3/SDL_joystick.h>
+#include <SDL3/SDL_power.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_sensor.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -98,7 +100,7 @@ typedef enum SDL_GamepadType
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
-    SDL_GAMEPAD_TYPE_MAX
+    SDL_GAMEPAD_TYPE_COUNT
 } SDL_GamepadType;
 
 /**
@@ -153,7 +155,7 @@ typedef enum SDL_GamepadButton
     SDL_GAMEPAD_BUTTON_MISC4,           /* Additional button */
     SDL_GAMEPAD_BUTTON_MISC5,           /* Additional button */
     SDL_GAMEPAD_BUTTON_MISC6,           /* Additional button */
-    SDL_GAMEPAD_BUTTON_MAX
+    SDL_GAMEPAD_BUTTON_COUNT
 } SDL_GamepadButton;
 
 /**
@@ -203,7 +205,7 @@ typedef enum SDL_GamepadAxis
     SDL_GAMEPAD_AXIS_RIGHTY,
     SDL_GAMEPAD_AXIS_LEFT_TRIGGER,
     SDL_GAMEPAD_AXIS_RIGHT_TRIGGER,
-    SDL_GAMEPAD_AXIS_MAX
+    SDL_GAMEPAD_AXIS_COUNT
 } SDL_GamepadAxis;
 
 /**
@@ -330,8 +332,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * constrained environment.
  *
  * \param src the data stream for the mappings to be added.
- * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
- *                even in the case of an error.
+ * \param closeio if true, calls SDL_CloseIO() on `src` before returning, even
+ *                in the case of an error.
  * \returns the number of mappings added or -1 on failure; call SDL_GetError()
  *          for more information.
  *
@@ -344,7 +346,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * \sa SDL_GetGamepadMapping
  * \sa SDL_GetGamepadMappingForGUID
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, SDL_bool closeio);
+extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, bool closeio);
 
 /**
  * Load a set of gamepad mappings from a file.
@@ -379,12 +381,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromFile(const char *file)
  *
  * This will generate gamepad events as needed if device mappings change.
  *
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ReloadGamepadMappings(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_ReloadGamepadMappings(void);
 
 /**
  * Get the current gamepad mappings.
@@ -442,26 +444,26 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetGamepadMapping(SDL_Gamepad *gamepad);
  * \param instance_id the joystick instance ID.
  * \param mapping the mapping to use for this device, or NULL to clear the
  *                mapping.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddGamepadMapping
  * \sa SDL_GetGamepadMapping
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping);
 
 /**
  * Return whether a gamepad is currently connected.
  *
- * \returns SDL_TRUE if a gamepad is connected, SDL_FALSE otherwise.
+ * \returns true if a gamepad is connected, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasGamepad(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_HasGamepad(void);
 
 /**
  * Get a list of currently connected gamepads.
@@ -483,15 +485,15 @@ extern SDL_DECLSPEC SDL_JoystickID * SDLCALL SDL_GetGamepads(int *count);
  * Check if the given joystick is supported by the gamepad interface.
  *
  * \param instance_id the joystick instance ID.
- * \returns SDL_TRUE if the given joystick is supported by the gamepad
- *          interface, SDL_FALSE if it isn't or it's an invalid index.
+ * \returns true if the given joystick is supported by the gamepad interface,
+ *          false if it isn't or it's an invalid index.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetJoysticks
  * \sa SDL_OpenGamepad
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsGamepad(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC bool SDLCALL SDL_IsGamepad(SDL_JoystickID instance_id);
 
 /**
  * Get the implementation dependent name of a gamepad.
@@ -813,14 +815,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetGamepadPlayerIndex(SDL_Gamepad *gamepad);
  * \param gamepad the gamepad object to adjust.
  * \param player_index player index to assign to this gamepad, or -1 to clear
  *                     the player index and turn off player LEDs.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetGamepadPlayerIndex
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, int player_index);
 
 /**
  * Get the USB vendor ID of an opened gamepad, if available.
@@ -938,12 +940,12 @@ extern SDL_DECLSPEC SDL_PowerState SDLCALL SDL_GetGamepadPowerInfo(SDL_Gamepad *
  *
  * \param gamepad a gamepad identifier previously returned by
  *                SDL_OpenGamepad().
- * \returns SDL_TRUE if the gamepad has been opened and is currently
- *          connected, or SDL_FALSE if not.
+ * \returns true if the gamepad has been opened and is currently connected, or
+ *          false if not.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadConnected(SDL_Gamepad *gamepad);
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadConnected(SDL_Gamepad *gamepad);
 
 /**
  * Get the underlying joystick from a gamepad.
@@ -978,7 +980,7 @@ extern SDL_DECLSPEC SDL_Joystick * SDLCALL SDL_GetGamepadJoystick(SDL_Gamepad *g
  * \sa SDL_GamepadEventsEnabled
  * \sa SDL_UpdateGamepads
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SetGamepadEventsEnabled(SDL_bool enabled);
+extern SDL_DECLSPEC void SDLCALL SDL_SetGamepadEventsEnabled(bool enabled);
 
 /**
  * Query the state of gamepad event processing.
@@ -986,14 +988,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGamepadEventsEnabled(SDL_bool enabled);
  * If gamepad events are disabled, you must call SDL_UpdateGamepads() yourself
  * and check the state of the gamepad when you want gamepad information.
  *
- * \returns SDL_TRUE if gamepad events are being processed, SDL_FALSE
- *          otherwise.
+ * \returns true if gamepad events are being processed, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetGamepadEventsEnabled
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadEventsEnabled(void);
 
 /**
  * Get the SDL joystick layer bindings for a gamepad.
@@ -1096,14 +1097,14 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadStringForAxis(SDL_Gamepad
  *
  * \param gamepad a gamepad.
  * \param axis an axis enum value (an SDL_GamepadAxis value).
- * \returns SDL_TRUE if the gamepad has this axis, SDL_FALSE otherwise.
+ * \returns true if the gamepad has this axis, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GamepadHasButton
  * \sa SDL_GetGamepadAxis
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
 
 /**
  * Get the current state of an axis control on a gamepad.
@@ -1169,28 +1170,27 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadStringForButton(SDL_Gamep
  *
  * \param gamepad a gamepad.
  * \param button a button enum value (an SDL_GamepadButton value).
- * \returns SDL_TRUE if the gamepad has this button, SDL_FALSE otherwise.
+ * \returns true if the gamepad has this button, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GamepadHasAxis
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
 
 /**
  * Get the current state of a button on a gamepad.
  *
  * \param gamepad a gamepad.
  * \param button a button index (one of the SDL_GamepadButton values).
- * \returns 1 for pressed state or 0 for not pressed state or failure; call
- *          SDL_GetError() for more information.
+ * \returns true if the button is pressed, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GamepadHasButton
  * \sa SDL_GetGamepadAxis
  */
-extern SDL_DECLSPEC Uint8 SDLCALL SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
 
 /**
  * Get the label of a button on a gamepad.
@@ -1251,27 +1251,28 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *ga
  * \param gamepad a gamepad.
  * \param touchpad a touchpad.
  * \param finger a finger.
- * \param state filled with state.
- * \param x filled with x position, normalized 0 to 1, with the origin in the
- *          upper left.
- * \param y filled with y position, normalized 0 to 1, with the origin in the
- *          upper left.
- * \param pressure filled with pressure value.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \param down a pointer filled with true if the finger is down, false
+ *             otherwise, may be NULL.
+ * \param x a pointer filled with the x position, normalized 0 to 1, with the
+ *          origin in the upper left, may be NULL.
+ * \param y a pointer filled with the y position, normalized 0 to 1, with the
+ *          origin in the upper left, may be NULL.
+ * \param pressure a pointer filled with pressure value, may be NULL.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetNumGamepadTouchpadFingers
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger, Uint8 *state, float *x, float *y, float *pressure);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger, bool *down, float *x, float *y, float *pressure);
 
 /**
  * Return whether a gamepad has a particular sensor.
  *
  * \param gamepad the gamepad to query.
  * \param type the type of sensor to query.
- * \returns SDL_TRUE if the sensor exists, SDL_FALSE otherwise.
+ * \returns true if the sensor exists, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1279,7 +1280,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetGamepadTouchpadFinger(SDL_Gamepad *g
  * \sa SDL_GetGamepadSensorDataRate
  * \sa SDL_SetGamepadSensorEnabled
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_SensorType type);
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_SensorType type);
 
 /**
  * Set whether data reporting for a gamepad sensor is enabled.
@@ -1287,28 +1288,28 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadHasSensor(SDL_Gamepad *gamepad, 
  * \param gamepad the gamepad to update.
  * \param type the type of sensor to enable/disable.
  * \param enabled whether data reporting should be enabled.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GamepadHasSensor
  * \sa SDL_GamepadSensorEnabled
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, SDL_bool enabled);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, bool enabled);
 
 /**
  * Query whether sensor data reporting is enabled for a gamepad.
  *
  * \param gamepad the gamepad to query.
  * \param type the type of sensor to query.
- * \returns SDL_TRUE if the sensor is enabled, SDL_FALSE otherwise.
+ * \returns true if the sensor is enabled, false otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetGamepadSensorEnabled
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type);
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type);
 
 /**
  * Get the data rate (number of events per second) of a gamepad sensor.
@@ -1331,12 +1332,12 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetGamepadSensorDataRate(SDL_Gamepad *game
  * \param type the type of sensor to query.
  * \param data a pointer filled with the current sensor state.
  * \param num_values the number of values to write to data.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values);
 
 /**
  * Start a rumble effect on a gamepad.
@@ -1353,12 +1354,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamep
  * \param high_frequency_rumble the intensity of the high frequency (right)
  *                              rumble motor, from 0 to 0xFFFF.
  * \param duration_ms the duration of the rumble effect, in milliseconds.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
+extern SDL_DECLSPEC bool SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 /**
  * Start a rumble effect in the gamepad's triggers.
@@ -1379,14 +1380,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uin
  * \param right_rumble the intensity of the right trigger rumble motor, from 0
  *                     to 0xFFFF.
  * \param duration_ms the duration of the rumble effect, in milliseconds.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_RumbleGamepad
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
+extern SDL_DECLSPEC bool SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
 
 /**
  * Update a gamepad's LED color.
@@ -1401,12 +1402,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *game
  * \param red the intensity of the red LED.
  * \param green the intensity of the green LED.
  * \param blue the intensity of the blue LED.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue);
 
 /**
  * Send a gamepad specific effect packet.
@@ -1414,12 +1415,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uin
  * \param gamepad the gamepad to affect.
  * \param data the data to send to the gamepad.
  * \param size the size of the data to send to the gamepad.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SendGamepadEffect(SDL_Gamepad *gamepad, const void *data, int size);
+extern SDL_DECLSPEC bool SDLCALL SDL_SendGamepadEffect(SDL_Gamepad *gamepad, const void *data, int size);
 
 /**
  * Close a gamepad previously opened with SDL_OpenGamepad().

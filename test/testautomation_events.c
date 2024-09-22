@@ -25,7 +25,7 @@ static int g_userdataValue2 = 2;
 #define MAX_ITERATIONS 100
 
 /* Event filter that sets some flags and optionally checks userdata */
-static SDL_bool SDLCALL events_sampleNullEventFilter(void *userdata, SDL_Event *event)
+static bool SDLCALL events_sampleNullEventFilter(void *userdata, SDL_Event *event)
 {
     g_eventFilterCalled = 1;
 
@@ -36,7 +36,7 @@ static SDL_bool SDLCALL events_sampleNullEventFilter(void *userdata, SDL_Event *
         }
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 /**

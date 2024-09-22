@@ -48,7 +48,7 @@
 static const char g_MessageBoxFontLatin1[] = "-*-*-medium-r-normal--0-120-*-*-p-0-iso8859-1";
 static const char g_MessageBoxFont[] = "-*-*-medium-r-normal--*-120-*-*-*-*-*-*";
 
-static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_MAX] = {
+static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = {
     { 56, 54, 53 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
     { 209, 207, 205 }, // SDL_MESSAGEBOX_COLOR_TEXT,
     { 140, 135, 129 }, // SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
@@ -110,7 +110,7 @@ typedef struct SDL_MessageBoxDataX11
     const SDL_MessageBoxButtonData *buttondata;
     SDL_MessageBoxButtonDataX11 buttonpos[MAX_BUTTONS];
 
-    Uint32 color[SDL_MESSAGEBOX_COLOR_MAX];
+    Uint32 color[SDL_MESSAGEBOX_COLOR_COUNT];
 
     const SDL_MessageBoxData *messageboxdata;
 } SDL_MessageBoxDataX11;
@@ -216,7 +216,7 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
     }
 
     // Convert our SDL_MessageBoxColor r,g,b values to packed RGB format.
-    for (i = 0; i < SDL_MESSAGEBOX_COLOR_MAX; i++) {
+    for (i = 0; i < SDL_MESSAGEBOX_COLOR_COUNT; i++) {
         data->color[i] = SDL_MAKE_RGB(colorhints[i].r, colorhints[i].g, colorhints[i].b);
     }
 

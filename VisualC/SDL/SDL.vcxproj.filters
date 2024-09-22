@@ -348,6 +348,9 @@
     <ClInclude Include="..\..\include\SDL3\SDL_power.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_process.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_properties.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -1226,6 +1229,9 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steam.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steam_hori.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steamdeck.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
@@ -1490,14 +1496,14 @@
     <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c">
       <Filter>render\direct3d11</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\render\sdlgpu\SDL_pipeline_gpu.c">
-      <Filter>render\sdlgpu</Filter>
+    <ClCompile Include="..\..\src\render\gpu\SDL_pipeline_gpu.c">
+      <Filter>render\gpu</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\render\sdlgpu\SDL_render_gpu.c">
-      <Filter>render\sdlgpu</Filter>
+    <ClCompile Include="..\..\src\render\gpu\SDL_render_gpu.c">
+      <Filter>render\gpu</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\render\sdlgpu\SDL_shaders_gpu.c">
-      <Filter>render\sdlgpu</Filter>
+    <ClCompile Include="..\..\src\render\gpu\SDL_shaders_gpu.c">
+      <Filter>render\gpu</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\render\opengl\SDL_render_gl.c">
       <Filter>render\opengl</Filter>
@@ -1538,10 +1544,16 @@
     <ClCompile Include="..\..\src\power\SDL_power.c">
       <Filter>power</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SDL_log.c" />
     <ClCompile Include="..\..\src\power\windows\SDL_syspower.c">
       <Filter>power\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\process\SDL_process.c">
+      <Filter>process</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\process\windows\SDL_windowsprocess.c">
+      <Filter>process\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL_log.c" />
     <ClCompile Include="..\..\src\render\direct3d12\SDL_render_d3d12.c">
       <Filter>render\direct3d12</Filter>
     </ClCompile>

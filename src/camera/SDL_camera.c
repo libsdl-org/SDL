@@ -115,8 +115,8 @@ bool SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormat format, SDL_
 //  loss notifications will get black frames but otherwise keep functioning.
 static bool ZombieWaitDevice(SDL_Camera *device)
 {
-    if (!SDL_AtomicGet(&device->shutdown)) {
-        // !!! FIXME: this is bad for several reasons (uses double, could be precalculated, doesn't track elasped time).
+    if (!SDL_GetAtomicInt(&device->shutdown)) {
+        // !!! FIXME: this is bad for several reasons (uses double, could be precalculated, doesn't track elapsed time).
         const double duration = ((double) device->actual_spec.framerate_denominator / ((double) device->actual_spec.framerate_numerator));
         SDL_Delay((Uint32) (duration * 1000.0));
     }
@@ -230,7 +230,7 @@ static void ClosePhysicalCamera(SDL_Camera *device)
         return;
     }
 
-    SDL_AtomicSet(&device->shutdown, 1);
+    SDL_SetAtomicInt(&device->shutdown, 1);
 
 // !!! FIXME: the close_cond stuff from audio might help the race condition here.
 
@@ -297,7 +297,7 @@ void UnrefPhysicalCamera(SDL_Camera *device)
         // take it out of the device list.
         SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
         if (SDL_RemoveFromHashTable(camera_driver.device_hash, (const void *) (uintptr_t) device->instance_id)) {
-            SDL_AtomicAdd(&camera_driver.device_count, -1);
+            SDL_AddAtomicInt(&camera_driver.device_count, -1);
         }
         SDL_UnlockRWLock(camera_driver.device_hash_lock);
         DestroyPhysicalCamera(device);  // ...and nuke it.
@@ -421,7 +421,7 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
     SDL_assert(handle != NULL);
 
     SDL_LockRWLockForReading(camera_driver.device_hash_lock);
-    const int shutting_down = SDL_AtomicGet(&camera_driver.shutting_down);
+    const int shutting_down = SDL_GetAtomicInt(&camera_driver.shutting_down);
     SDL_UnlockRWLock(camera_driver.device_hash_lock);
     if (shutting_down) {
         return NULL;  // we're shutting down, don't add any devices that are hotplugged at the last possible moment.
@@ -488,13 +488,13 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
     device->num_specs = num_specs;
     device->handle = handle;
     device->instance_id = SDL_GetNextObjectID();
-    SDL_AtomicSet(&device->shutdown, 0);
-    SDL_AtomicSet(&device->zombie, 0);
+    SDL_SetAtomicInt(&device->shutdown, 0);
+    SDL_SetAtomicInt(&device->zombie, 0);
     RefPhysicalCamera(device);
 
     SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
     if (SDL_InsertIntoHashTable(camera_driver.device_hash, (const void *) (uintptr_t) device->instance_id, device)) {
-        SDL_AtomicAdd(&camera_driver.device_count, 1);
+        SDL_AddAtomicInt(&camera_driver.device_count, 1);
     } else {
         SDL_DestroyMutex(device->lock);
         SDL_free(device->all_specs);
@@ -542,7 +542,7 @@ void SDL_CameraDisconnected(SDL_Camera *device)
 
     ObtainPhysicalCameraObj(device);
 
-    const bool first_disconnect = SDL_AtomicCompareAndSwap(&device->zombie, 0, 1);
+    const bool first_disconnect = SDL_CompareAndSwapAtomicInt(&device->zombie, 0, 1);
     if (first_disconnect) {   // if already disconnected this device, don't do it twice.
         // Swap in "Zombie" versions of the usual platform interfaces, so the device will keep
         // making progress until the app closes it. Otherwise, streams might continue to
@@ -650,7 +650,7 @@ void SDL_CloseCamera(SDL_Camera *camera)
     ClosePhysicalCamera(device);
 }
 
-SDL_bool SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
+bool SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
 {
     bool result;
 
@@ -713,7 +713,7 @@ SDL_CameraID *SDL_GetCameras(int *count)
     SDL_CameraID *result = NULL;
 
     SDL_LockRWLockForReading(camera_driver.device_hash_lock);
-    int num_devices = SDL_AtomicGet(&camera_driver.device_count);
+    int num_devices = SDL_GetAtomicInt(&camera_driver.device_count);
     result = (SDL_CameraID *) SDL_malloc((num_devices + 1) * sizeof (SDL_CameraID));
     if (!result) {
         num_devices = 0;
@@ -792,7 +792,7 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
 {
     SDL_LockMutex(device->lock);
 
-    if (SDL_AtomicGet(&device->shutdown)) {
+    if (SDL_GetAtomicInt(&device->shutdown)) {
         SDL_UnlockMutex(device->lock);
         return false;  // we're done, shut it down.
     }
@@ -1078,7 +1078,7 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
         return NULL;
     }
 
-    SDL_AtomicSet(&device->shutdown, 0);
+    SDL_SetAtomicInt(&device->shutdown, 0);
 
     // These start with the backend's implementation, but we might swap them out with zombie versions later.
     device->WaitDevice = camera_driver.impl.WaitDevice;
@@ -1360,12 +1360,12 @@ void SDL_QuitCamera(void)
     }
 
     SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
-    SDL_AtomicSet(&camera_driver.shutting_down, 1);
+    SDL_SetAtomicInt(&camera_driver.shutting_down, 1);
     SDL_HashTable *device_hash = camera_driver.device_hash;
     camera_driver.device_hash = NULL;
     SDL_PendingCameraEvent *pending_events = camera_driver.pending_events.next;
     camera_driver.pending_events.next = NULL;
-    SDL_AtomicSet(&camera_driver.device_count, 0);
+    SDL_SetAtomicInt(&camera_driver.device_count, 0);
     SDL_UnlockRWLock(camera_driver.device_hash_lock);
 
     SDL_PendingCameraEvent *pending_next = NULL;
@@ -1407,7 +1407,7 @@ static void NukeCameraHashItem(const void *key, const void *value, void *data)
     // no-op, keys and values in this hashtable are treated as Plain Old Data and don't get freed here.
 }
 
-SDL_bool SDL_CameraInit(const char *driver_name)
+bool SDL_CameraInit(const char *driver_name)
 {
     if (SDL_GetCurrentCameraDriver()) {
         SDL_QuitCamera(); // shutdown driver if already running.

@@ -96,7 +96,7 @@ typedef enum SDL_MessageBoxColorType
     SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
     SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
     SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
-    SDL_MESSAGEBOX_COLOR_MAX                    /**< Size of the colors array of SDL_MessageBoxColorScheme. */
+    SDL_MESSAGEBOX_COLOR_COUNT                    /**< Size of the colors array of SDL_MessageBoxColorScheme. */
 } SDL_MessageBoxColorType;
 
 /**
@@ -106,7 +106,7 @@ typedef enum SDL_MessageBoxColorType
  */
 typedef struct SDL_MessageBoxColorScheme
 {
-    SDL_MessageBoxColor colors[SDL_MESSAGEBOX_COLOR_MAX];
+    SDL_MessageBoxColor colors[SDL_MESSAGEBOX_COLOR_COUNT];
 } SDL_MessageBoxColorScheme;
 
 /**
@@ -154,14 +154,14 @@ typedef struct SDL_MessageBoxData
  *                       other options.
  * \param buttonid the pointer to which user id of hit button should be
  *                 copied.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ShowSimpleMessageBox
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+extern SDL_DECLSPEC bool SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
 /**
  * Display a simple modal message box.
@@ -196,14 +196,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData
  * \param title uTF-8 title text.
  * \param message uTF-8 message text.
  * \param window the parent window, or NULL for no parent.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ShowMessageBox
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags flags, const char *title, const char *message, SDL_Window *window);
+extern SDL_DECLSPEC bool SDLCALL SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags flags, const char *title, const char *message, SDL_Window *window);
 
 
 /* Ends C function definitions when using C++ */

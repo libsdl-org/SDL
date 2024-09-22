@@ -63,7 +63,7 @@ static Uint8 MooseFrames[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE];
 static SDL_Renderer *renderer;
 static int frame;
 static SDL_Texture *MooseTexture;
-static SDL_bool done = SDL_FALSE;
+static bool done = false;
 static SDLTest_CommonState *state;
 
 static void quit(int rc)
@@ -108,11 +108,11 @@ static void loop(void)
         switch (event.type) {
         case SDL_EVENT_KEY_DOWN:
             if (event.key.key == SDLK_ESCAPE) {
-                done = SDL_TRUE;
+                done = true;
             }
             break;
         case SDL_EVENT_QUIT:
-            done = SDL_TRUE;
+            done = true;
             break;
         default:
             break;
@@ -144,9 +144,6 @@ int main(int argc, char **argv)
     if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
         SDL_Quit();

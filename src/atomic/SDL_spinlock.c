@@ -57,7 +57,7 @@ extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 /* *INDENT-ON* */ // clang-format on
 
 // This function is where all the magic happens...
-SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
+bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
 {
 #if defined(HAVE_GCC_ATOMICS) || defined(HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
     return __sync_lock_test_and_set(lock, 1) == 0;
@@ -129,14 +129,14 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
 #elif defined(PS2)
     uint32_t oldintr;
     bool res = false;
-    // disable interuption
+    // disable interruption
     oldintr = DIntr();
 
     if (*lock == 0) {
         *lock = 1;
         res = true;
     }
-    // enable interuption
+    // enable interruption
     if (oldintr) {
         EIntr();
     }

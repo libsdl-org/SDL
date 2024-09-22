@@ -57,7 +57,7 @@ def main():
         i += 2
 
     regex = create_regex_from_replacements(replacements)
-    for dir in ["src", "test", "include", "docs", "cmake/test"]:
+    for dir in ["src", "test", "examples", "include", "docs", "cmake/test"]:
         replace_symbols_in_path(SDL_ROOT / dir, regex, replacements)
 
     # Replace the symbols in documentation

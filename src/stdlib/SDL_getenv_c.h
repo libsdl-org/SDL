@@ -20,4 +20,5 @@
 */
 #include "SDL_internal.h"
 
-extern void SDL_FreeEnvironmentMemory(void);
+extern bool SDL_InitEnvironment(void);
+extern void SDL_QuitEnvironment(void);

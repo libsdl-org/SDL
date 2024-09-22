@@ -1105,13 +1105,13 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
             int button = 0;
             for (id key in device->buttons) {
-                Uint8 value;
+                bool down;
                 if (button == device->pause_button_index) {
-                    value = (device->pause_button_pressed > 0);
+                    down = (device->pause_button_pressed > 0);
                 } else {
-                    value = buttons[key].isPressed;
+                    down = buttons[key].isPressed;
                 }
-                SDL_SendJoystickButton(timestamp, joystick, button++, value);
+                SDL_SendJoystickButton(timestamp, joystick, button++, down);
             }
         } else
 #endif
@@ -1130,7 +1130,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             };
 
             // Button order matches the XInput Windows mappings.
-            Uint8 *buttons = SDL_small_alloc(Uint8, joystick->nbuttons, &isstack);
+            bool *buttons = SDL_small_alloc(bool, joystick->nbuttons, &isstack);
             int button_count = 0;
 
             if (buttons == NULL) {
@@ -1186,7 +1186,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             GCGamepad *gamepad = controller.gamepad;
 
             // Button order matches the XInput Windows mappings.
-            Uint8 *buttons = SDL_small_alloc(Uint8, joystick->nbuttons, &isstack);
+            bool *buttons = SDL_small_alloc(bool, joystick->nbuttons, &isstack);
             int button_count = 0;
 
             if (buttons == NULL) {
@@ -1222,7 +1222,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 SDL_SendJoystickAxis(timestamp, joystick, i, axes[i]);
             }
 
-            Uint8 buttons[joystick->nbuttons];
+            bool buttons[joystick->nbuttons];
             int button_count = 0;
             buttons[button_count++] = gamepad.buttonA.isPressed;
             buttons[button_count++] = gamepad.buttonX.isPressed;
@@ -1253,16 +1253,16 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
                 dpad = controller.physicalInputProfile.dpads[GCInputDualShockTouchpadOne];
                 if (dpad.xAxis.value != 0.f || dpad.yAxis.value != 0.f) {
-                    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0, SDL_PRESSED, (1.0f + dpad.xAxis.value) * 0.5f, 1.0f - (1.0f + dpad.yAxis.value) * 0.5f, 1.0f);
+                    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0, true, (1.0f + dpad.xAxis.value) * 0.5f, 1.0f - (1.0f + dpad.yAxis.value) * 0.5f, 1.0f);
                 } else {
-                    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0, SDL_RELEASED, 0.0f, 0.0f, 1.0f);
+                    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0, false, 0.0f, 0.0f, 1.0f);
                 }
 
                 dpad = controller.physicalInputProfile.dpads[GCInputDualShockTouchpadTwo];
                 if (dpad.xAxis.value != 0.f || dpad.yAxis.value != 0.f) {
-                    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, SDL_PRESSED, (1.0f + dpad.xAxis.value) * 0.5f, 1.0f - (1.0f + dpad.yAxis.value) * 0.5f, 1.0f);
+                    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, true, (1.0f + dpad.xAxis.value) * 0.5f, 1.0f - (1.0f + dpad.yAxis.value) * 0.5f, 1.0f);
                 } else {
-                    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, SDL_RELEASED, 0.0f, 0.0f, 1.0f);
+                    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, false, 0.0f, 0.0f, 1.0f);
                 }
             }
         }

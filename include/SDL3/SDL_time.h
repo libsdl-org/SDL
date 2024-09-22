@@ -95,24 +95,24 @@ typedef enum SDL_TimeFormat
  *                   format, may be NULL.
  * \param timeFormat a pointer to the SDL_TimeFormat to hold the returned time
  *                   format, may be NULL.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat);
 
 /**
  * Gets the current value of the system realtime clock in nanoseconds since
  * Jan 1, 1970 in Universal Coordinated Time (UTC).
  *
  * \param ticks the SDL_Time to hold the returned tick count.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
 
 /**
  * Converts an SDL_Time in nanoseconds since the epoch to a calendar time in
@@ -123,12 +123,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
  * \param localTime the resulting SDL_DateTime will be expressed in local time
  *                  if true, otherwise it will be in Universal Coordinated
  *                  Time (UTC).
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime);
+extern SDL_DECLSPEC bool SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime);
 
 /**
  * Converts a calendar time to an SDL_Time in nanoseconds since the epoch.
@@ -138,12 +138,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_Date
  *
  * \param dt the source SDL_DateTime.
  * \param ticks the resulting SDL_Time.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks);
+extern SDL_DECLSPEC bool SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks);
 
 /**
  * Converts an SDL time into a Windows FILETIME (100-nanosecond intervals

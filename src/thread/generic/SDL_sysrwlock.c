@@ -74,8 +74,8 @@ SDL_RWLock *SDL_CreateRWLock_generic(void)
         return NULL;
     }
 
-    SDL_AtomicSet(&rwlock->reader_count, 0);
-    SDL_AtomicSet(&rwlock->writer_count, 0);
+    SDL_SetAtomicInt(&rwlock->reader_count, 0);
+    SDL_SetAtomicInt(&rwlock->writer_count, 0);
 #endif
 
     return rwlock;
@@ -98,8 +98,8 @@ void SDL_LockRWLockForReading_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_A
     if (rwlock) {
         // !!! FIXME: these don't have to be atomic, we always gate them behind a mutex.
         SDL_LockMutex(rwlock->lock);
-        SDL_assert(SDL_AtomicGet(&rwlock->writer_count) == 0);  // shouldn't be able to grab lock if there's a writer!
-        SDL_AtomicAdd(&rwlock->reader_count, 1);
+        SDL_assert(SDL_GetAtomicInt(&rwlock->writer_count) == 0);  // shouldn't be able to grab lock if there's a writer!
+        SDL_AddAtomicInt(&rwlock->reader_count, 1);
         SDL_UnlockMutex(rwlock->lock);   // other readers can attempt to share the lock.
     }
 #endif
@@ -110,12 +110,12 @@ void SDL_LockRWLockForWriting_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_A
 #ifndef SDL_THREADS_DISABLED
     if (rwlock) {
         SDL_LockMutex(rwlock->lock);
-        while (SDL_AtomicGet(&rwlock->reader_count) > 0) {  // while something is holding the shared lock, keep waiting.
+        while (SDL_GetAtomicInt(&rwlock->reader_count) > 0) {  // while something is holding the shared lock, keep waiting.
             SDL_WaitCondition(rwlock->condition, rwlock->lock);  // release the lock and wait for readers holding the shared lock to release it, regrab the lock.
         }
 
         // we hold the lock!
-        SDL_AtomicAdd(&rwlock->writer_count, 1);  // we let these be recursive, but the API doesn't require this. It _does_ trust you unlock correctly!
+        SDL_AddAtomicInt(&rwlock->writer_count, 1);  // we let these be recursive, but the API doesn't require this. It _does_ trust you unlock correctly!
     }
 #endif
 }
@@ -129,8 +129,8 @@ bool SDL_TryLockRWLockForReading_generic(SDL_RWLock *rwlock)
             return false;
         }
 
-        SDL_assert(SDL_AtomicGet(&rwlock->writer_count) == 0);  // shouldn't be able to grab lock if there's a writer!
-        SDL_AtomicAdd(&rwlock->reader_count, 1);
+        SDL_assert(SDL_GetAtomicInt(&rwlock->writer_count) == 0);  // shouldn't be able to grab lock if there's a writer!
+        SDL_AddAtomicInt(&rwlock->reader_count, 1);
         SDL_UnlockMutex(rwlock->lock);   // other readers can attempt to share the lock.
     }
 #endif
@@ -139,7 +139,7 @@ bool SDL_TryLockRWLockForReading_generic(SDL_RWLock *rwlock)
 }
 
 #ifndef SDL_THREAD_GENERIC_RWLOCK_SUFFIX
-SDL_bool SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
+bool SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
 {
     return SDL_TryLockRWLockForReading_generic(rwlock);
 }
@@ -153,13 +153,13 @@ bool SDL_TryLockRWLockForWriting_generic(SDL_RWLock *rwlock)
             return false;
         }
 
-        if (SDL_AtomicGet(&rwlock->reader_count) > 0) {  // a reader is using the shared lock, treat it as unavailable.
+        if (SDL_GetAtomicInt(&rwlock->reader_count) > 0) {  // a reader is using the shared lock, treat it as unavailable.
             SDL_UnlockMutex(rwlock->lock);
             return false;
         }
 
         // we hold the lock!
-        SDL_AtomicAdd(&rwlock->writer_count, 1);  // we let these be recursive, but the API doesn't require this. It _does_ trust you unlock correctly!
+        SDL_AddAtomicInt(&rwlock->writer_count, 1);  // we let these be recursive, but the API doesn't require this. It _does_ trust you unlock correctly!
     }
 #endif
 
@@ -167,7 +167,7 @@ bool SDL_TryLockRWLockForWriting_generic(SDL_RWLock *rwlock)
 }
 
 #ifndef SDL_THREAD_GENERIC_RWLOCK_SUFFIX
-SDL_bool SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
+bool SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
 {
     return SDL_TryLockRWLockForWriting_generic(rwlock);
 }
@@ -179,11 +179,11 @@ void SDL_UnlockRWLock_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS 
     if (rwlock) {
         SDL_LockMutex(rwlock->lock);  // recursive lock for writers, readers grab lock to make sure things are sane.
 
-        if (SDL_AtomicGet(&rwlock->reader_count) > 0) {  // we're a reader
-            SDL_AtomicAdd(&rwlock->reader_count, -1);
+        if (SDL_GetAtomicInt(&rwlock->reader_count) > 0) {  // we're a reader
+            SDL_AddAtomicInt(&rwlock->reader_count, -1);
             SDL_BroadcastCondition(rwlock->condition);  // alert any pending writers to attempt to try to grab the lock again.
-        } else if (SDL_AtomicGet(&rwlock->writer_count) > 0) {  // we're a writer
-            SDL_AtomicAdd(&rwlock->writer_count, -1);
+        } else if (SDL_GetAtomicInt(&rwlock->writer_count) > 0) {  // we're a writer
+            SDL_AddAtomicInt(&rwlock->writer_count, -1);
             SDL_UnlockMutex(rwlock->lock);  // recursive unlock.
         }
 

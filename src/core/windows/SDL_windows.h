@@ -36,7 +36,7 @@
 #endif
 #undef WINVER
 #undef _WIN32_WINNT
-#if SDL_VIDEO_RENDER_D3D12 || defined(HAVE_DXGI1_6_H)
+#if defined(SDL_VIDEO_RENDER_D3D12) || defined(HAVE_DXGI1_6_H)
 #define _WIN32_WINNT 0xA00 // For D3D12, 0xA00 is required
 #elif defined(HAVE_SHELLSCALINGAPI_H)
 #define _WIN32_WINNT 0x603 // For DPI support
@@ -161,7 +161,7 @@ extern BOOL WIN_IsRectEmpty(const RECT *rect);
 
 extern SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);
 
-// WideCharToMultiByte, but with some WinXP manangement.
+// WideCharToMultiByte, but with some WinXP management.
 extern int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCCH lpDefaultChar, LPBOOL lpUsedDefaultChar);
 
 // Ends C function definitions when using C++

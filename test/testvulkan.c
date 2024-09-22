@@ -180,12 +180,12 @@ static SDLTest_CommonState *state;
 static VulkanContext *vulkanContexts = NULL; /* an array of state->num_windows items */
 static VulkanContext *vulkanContext = NULL;  /* for the currently-rendering window */
 
-static void shutdownVulkan(SDL_bool doDestroySwapchain);
+static void shutdownVulkan(bool doDestroySwapchain);
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void quit(int rc)
 {
-    shutdownVulkan(SDL_TRUE);
+    shutdownVulkan(true);
     SDLTest_CommonQuit(state);
     /* Let 'main()' return normally */
     if (rc != 0) {
@@ -309,8 +309,8 @@ static void findPhysicalDevice(void)
         uint32_t queueFamiliesCount = 0;
         uint32_t queueFamilyIndex;
         uint32_t deviceExtensionCount = 0;
-        SDL_bool hasSwapchainExtension = SDL_FALSE;
-        SDL_bool supportsPresent;
+        bool hasSwapchainExtension = false;
+        bool supportsPresent;
         uint32_t i;
 
         VkPhysicalDevice physicalDevice = physicalDevices[physicalDeviceIndex];
@@ -422,7 +422,7 @@ static void findPhysicalDevice(void)
         }
         for (i = 0; i < deviceExtensionCount; i++) {
             if (SDL_strcmp(deviceExtensions[i].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0) {
-                hasSwapchainExtension = SDL_TRUE;
+                hasSwapchainExtension = true;
                 break;
             }
         }
@@ -626,7 +626,7 @@ static void getSwapchainImages(void)
     }
 }
 
-static SDL_bool createSwapchain(void)
+static bool createSwapchain(void)
 {
     uint32_t i;
     int w, h;
@@ -674,7 +674,7 @@ static SDL_bool createSwapchain(void)
                                                     vulkanContext->surfaceCapabilities.maxImageExtent.height);
 
     if (w == 0 || h == 0) {
-        return SDL_FALSE;
+        return false;
     }
 
     getSurfaceCaps();
@@ -712,7 +712,7 @@ static SDL_bool createSwapchain(void)
     }
 
     getSwapchainImages();
-    return SDL_TRUE;
+    return true;
 }
 
 static void destroySwapchain(void)
@@ -908,7 +908,7 @@ static void rerecordCommandBuffer(uint32_t frameIndex, const VkClearColorValue *
     }
 }
 
-static void destroySwapchainAndSwapchainSpecificStuff(SDL_bool doDestroySwapchain)
+static void destroySwapchainAndSwapchainSpecificStuff(bool doDestroySwapchain)
 {
     if (vkDeviceWaitIdle != NULL) {
         vkDeviceWaitIdle(vulkanContext->device);
@@ -921,18 +921,18 @@ static void destroySwapchainAndSwapchainSpecificStuff(SDL_bool doDestroySwapchai
     }
 }
 
-static SDL_bool createNewSwapchainAndSwapchainSpecificStuff(void)
+static bool createNewSwapchainAndSwapchainSpecificStuff(void)
 {
-    destroySwapchainAndSwapchainSpecificStuff(SDL_FALSE);
+    destroySwapchainAndSwapchainSpecificStuff(false);
     getSurfaceCaps();
     getSurfaceFormats();
     if (!createSwapchain()) {
-        return SDL_FALSE;
+        return false;
     }
     createCommandPool();
     createCommandBuffers();
     createFences();
-    return SDL_TRUE;
+    return true;
 }
 
 static void initVulkan(void)
@@ -963,7 +963,7 @@ static void initVulkan(void)
     }
 }
 
-static void shutdownVulkan(SDL_bool doDestroySwapchain)
+static void shutdownVulkan(bool doDestroySwapchain)
 {
     if (vulkanContexts) {
         int i;
@@ -1004,7 +1004,7 @@ static void shutdownVulkan(SDL_bool doDestroySwapchain)
     SDL_Vulkan_UnloadLibrary();
 }
 
-static SDL_bool render(void)
+static bool render(void)
 {
     uint32_t frameIndex;
     VkResult rc;
@@ -1016,7 +1016,7 @@ static SDL_bool render(void)
     int w, h;
 
     if (!vulkanContext->swapchain) {
-        SDL_bool result = createNewSwapchainAndSwapchainSpecificStuff();
+        bool result = createNewSwapchainAndSwapchainSpecificStuff();
         if (!result) {
             SDL_Delay(100);
         }
@@ -1089,7 +1089,7 @@ static SDL_bool render(void)
     if (w != (int)vulkanContext->swapchainSize.width || h != (int)vulkanContext->swapchainSize.height) {
         return createNewSwapchainAndSwapchainSpecificStuff();
     }
-    return SDL_TRUE;
+    return true;
 }
 
 int main(int argc, char **argv)
@@ -1106,9 +1106,6 @@ int main(int argc, char **argv)
     if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Set Vulkan parameters */
     state->window_flags |= SDL_WINDOW_VULKAN;
@@ -1143,7 +1140,7 @@ int main(int argc, char **argv)
              * by SDL.
              */
             if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-                destroySwapchainAndSwapchainSpecificStuff(SDL_TRUE);
+                destroySwapchainAndSwapchainSpecificStuff(true);
             }
             SDLTest_CommonEvent(state, &event, &done);
         }
@@ -1165,7 +1162,7 @@ int main(int argc, char **argv)
         SDL_Log("%2.2f frames per second\n", ((double)frames * 1000) / (now - then));
     }
 
-    shutdownVulkan(SDL_TRUE);
+    shutdownVulkan(true);
     SDLTest_CommonQuit(state);
     return 0;
 }

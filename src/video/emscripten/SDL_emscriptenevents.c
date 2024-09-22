@@ -295,8 +295,7 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
 {
     SDL_WindowData *window_data = userData;
     Uint8 sdl_button;
-    Uint8 sdl_button_state;
-    SDL_EventType sdl_event_type;
+    bool sdl_button_state;
     double css_w, css_h;
     bool prevent_default = false; // needed for iframe implementation in Chrome-based browsers.
 
@@ -318,14 +317,12 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
         if (SDL_GetMouse()->relative_mode && !window_data->has_pointer_lock) {
             emscripten_request_pointerlock(window_data->canvas_id, 0); // try to regrab lost pointer lock.
         }
-        sdl_button_state = SDL_PRESSED;
-        sdl_event_type = SDL_EVENT_MOUSE_BUTTON_DOWN;
+        sdl_button_state = true;
     } else {
-        sdl_button_state = SDL_RELEASED;
-        sdl_event_type = SDL_EVENT_MOUSE_BUTTON_UP;
-        prevent_default = SDL_EventEnabled(sdl_event_type);
+        sdl_button_state = false;
+        prevent_default = SDL_EventEnabled(SDL_EVENT_MOUSE_BUTTON_UP);
     }
-    SDL_SendMouseButton(0, window_data->window, SDL_DEFAULT_MOUSE_ID, sdl_button_state, sdl_button);
+    SDL_SendMouseButton(0, window_data->window, SDL_DEFAULT_MOUSE_ID, sdl_button, sdl_button_state);
 
     // Do not consume the event if the mouse is outside of the canvas.
     emscripten_get_element_css_size(window_data->canvas_id, &css_w, &css_h);
@@ -511,9 +508,9 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
     }
 
     if (keycode != SDLK_UNKNOWN) {
-        prevent_default = SDL_SendKeyboardKeyAndKeycode(0, SDL_DEFAULT_KEYBOARD_ID, 0, scancode, keycode, eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED);
+        prevent_default = SDL_SendKeyboardKeyAndKeycode(0, SDL_DEFAULT_KEYBOARD_ID, 0, scancode, keycode, (eventType == EMSCRIPTEN_EVENT_KEYDOWN));
     } else {
-        prevent_default = SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, scancode, eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED);
+        prevent_default = SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, scancode, (eventType == EMSCRIPTEN_EVENT_KEYDOWN));
     }
 
     /* if TEXTINPUT events are enabled we can't prevent keydown or we won't get keypress
@@ -681,13 +678,17 @@ static void Emscripten_UpdatePointerFromEvent(SDL_WindowData *window_data, const
         SDL_SendPenMotion(0, pen, window_data->window, mx, my);
 
         if (event->button == 0) {  // pen touch
-            SDL_SendPenTouch(0, pen, window_data->window, (event->buttons & 1) ? SDL_PRESSED : SDL_RELEASED, 0);
+            bool down = ((event->buttons & 1) != 0);
+            SDL_SendPenTouch(0, pen, window_data->window, false, down);
         } else if (event->button == 5) {  // eraser touch...? Not sure if this is right...
-            SDL_SendPenTouch(0, pen, window_data->window, (event->buttons & 32) ? SDL_PRESSED : SDL_RELEASED, 1);
+            bool down = ((event->buttons & 32) != 0);
+            SDL_SendPenTouch(0, pen, window_data->window, true, down);
         } else if (event->button == 1) {
-            SDL_SendPenButton(0, pen, window_data->window, (event->buttons & 4) ? SDL_PRESSED : SDL_RELEASED, 2);
+            bool down = ((event->buttons & 4) != 0);
+            SDL_SendPenButton(0, pen, window_data->window, 2, down);
         } else if (event->button == 2) {
-            SDL_SendPenButton(0, pen, window_data->window, (event->buttons & 2) ? SDL_PRESSED : SDL_RELEASED, 1);
+            bool down = ((event->buttons & 2) != 0);
+            SDL_SendPenButton(0, pen, window_data->window, 1, down);
         }
 
         SDL_SendPenAxis(0, pen, window_data->window, SDL_PEN_AXIS_PRESSURE, event->pressure);

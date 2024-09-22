@@ -90,7 +90,8 @@ void PSP_PumpEvents(SDL_VideoDevice *_this)
     if (changed) {
         for (i = 0; i < sizeof(keymap_psp) / sizeof(keymap_psp[0]); i++) {
             if (changed & keymap_psp[i].id) {
-                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, keymap_psp[i].id, keymap_psp[i].scancode, (keys & keymap_psp[i].id) ? SDL_PRESSED : SDL_RELEASED);
+                bool down = ((keys & keymap_psp[i].id) != 0);
+                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, keymap_psp[i].id, keymap_psp[i].scancode, down);
             }
         }
     }
@@ -105,11 +106,12 @@ void PSP_PumpEvents(SDL_VideoDevice *_this)
             if ((length % sizeof(SIrKeybScanCodeData)) == 0) {
                 count = length / sizeof(SIrKeybScanCodeData);
                 for (i = 0; i < count; i++) {
-                    unsigned char raw, pressed;
+                    unsigned char raw;
+                    bool down;
                     scanData = (SIrKeybScanCodeData *)buffer + i;
                     raw = scanData->raw;
-                    pressed = scanData->pressed;
-                    SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, raw, keymap[raw], pressed ? SDL_PRESSED : SDL_RELEASED);
+                    down = (scanData->pressed != 0);
+                    SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, raw, keymap[raw], down);
                 }
             }
         }

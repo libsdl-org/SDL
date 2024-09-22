@@ -304,7 +304,7 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
     Window junk_window;
     int x, y;
     unsigned int mask;
-    const Uint8 *keyboardState;
+    const bool *keyboardState;
 
     X11_XQueryKeymap(display, keys);
 
@@ -319,7 +319,7 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
     for (keycode = 0; keycode < SDL_arraysize(videodata->key_layout); ++keycode) {
         SDL_Scancode scancode = videodata->key_layout[keycode];
         bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
-        bool sdlKeyPressed = keyboardState[scancode] == SDL_PRESSED;
+        bool sdlKeyPressed = keyboardState[scancode];
 
         if (x11KeyPressed && !sdlKeyPressed) {
             // Only update modifier state for keys that are pressed in another application
@@ -333,13 +333,13 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             case SDLK_LGUI:
             case SDLK_RGUI:
             case SDLK_MODE:
-                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, SDL_PRESSED);
+                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
                 break;
             default:
                 break;
             }
         } else if (!x11KeyPressed && sdlKeyPressed) {
-            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, SDL_RELEASED);
+            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, false);
         }
     }
 }
@@ -802,9 +802,9 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
             videodata->filter_time = xevent->xkey.time;
 
             if (orig_event_type == KeyPress) {
-                SDL_SendKeyboardKey(0, keyboardID, orig_keycode, scancode, SDL_PRESSED);
+                SDL_SendKeyboardKey(0, keyboardID, orig_keycode, scancode, true);
             } else {
-                SDL_SendKeyboardKey(0, keyboardID, orig_keycode, scancode, SDL_RELEASED);
+                SDL_SendKeyboardKey(0, keyboardID, orig_keycode, scancode, false);
             }
 #endif
             return;
@@ -822,7 +822,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
 #endif
 
 #ifdef SDL_USE_IME
-        handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
+        handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress));
 #endif
     }
 
@@ -830,7 +830,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
         if (xevent->type == KeyPress) {
             // Don't send the key if it looks like a duplicate of a filtered key sent by an IME
             if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                SDL_SendKeyboardKey(0, keyboardID, keycode, videodata->key_layout[keycode], SDL_PRESSED);
+                SDL_SendKeyboardKey(0, keyboardID, keycode, videodata->key_layout[keycode], true);
             }
             if (*text) {
                 text[text_length] = '\0';
@@ -841,7 +841,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
                 // We're about to get a repeated key down, ignore the key up
                 return;
             }
-            SDL_SendKeyboardKey(0, keyboardID, keycode, videodata->key_layout[keycode], SDL_RELEASED);
+            SDL_SendKeyboardKey(0, keyboardID, keycode, videodata->key_layout[keycode], false);
         }
     }
 
@@ -881,7 +881,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
             windowdata->last_focus_event_time = 0;
         }
         if (!ignore_click) {
-            SDL_SendMouseButton(0, window, mouseID, SDL_PRESSED, button);
+            SDL_SendMouseButton(0, window, mouseID, button, true);
         }
     }
     X11_UpdateUserTime(windowdata, time);
@@ -902,7 +902,7 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
             // see explanation at case ButtonPress
             button -= (8 - SDL_BUTTON_X1);
         }
-        SDL_SendMouseButton(0, window, mouseID, SDL_RELEASED, button);
+        SDL_SendMouseButton(0, window, mouseID, button, false);
     }
 }
 

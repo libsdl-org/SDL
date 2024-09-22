@@ -967,10 +967,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     while (element) {
         goodRead = GetHIDElementState(device, element, &value);
         if (goodRead) {
-            if (value > 1) { // handle pressure-sensitive buttons
-                value = 1;
-            }
-            SDL_SendJoystickButton(timestamp, joystick, i, value);
+            SDL_SendJoystickButton(timestamp, joystick, i, (value != 0));
         }
 
         element = element->pNext;

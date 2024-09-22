@@ -448,7 +448,7 @@ SDL_PropertiesID SDL_GetAudioStreamProperties(SDL_AudioStream *stream)
     return stream->props;
 }
 
-SDL_bool SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata)
+bool SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -460,7 +460,7 @@ SDL_bool SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamC
     return true;
 }
 
-SDL_bool SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata)
+bool SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -472,7 +472,7 @@ SDL_bool SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamC
     return true;
 }
 
-SDL_bool SDL_LockAudioStream(SDL_AudioStream *stream)
+bool SDL_LockAudioStream(SDL_AudioStream *stream)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -481,7 +481,7 @@ SDL_bool SDL_LockAudioStream(SDL_AudioStream *stream)
     return true;
 }
 
-SDL_bool SDL_UnlockAudioStream(SDL_AudioStream *stream)
+bool SDL_UnlockAudioStream(SDL_AudioStream *stream)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -490,7 +490,7 @@ SDL_bool SDL_UnlockAudioStream(SDL_AudioStream *stream)
     return true;
 }
 
-SDL_bool SDL_GetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioSpec *src_spec, SDL_AudioSpec *dst_spec)
+bool SDL_GetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioSpec *src_spec, SDL_AudioSpec *dst_spec)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -514,7 +514,7 @@ SDL_bool SDL_GetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioSpec *src_sp
     return true;
 }
 
-SDL_bool SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec)
+bool SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -626,12 +626,12 @@ bool SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec
     return result;
 }
 
-SDL_bool SDL_SetAudioStreamInputChannelMap(SDL_AudioStream *stream, const int *chmap, int channels)
+bool SDL_SetAudioStreamInputChannelMap(SDL_AudioStream *stream, const int *chmap, int channels)
 {
     return SetAudioStreamChannelMap(stream, &stream->src_spec, &stream->src_chmap, chmap, channels, true);
 }
 
-SDL_bool SDL_SetAudioStreamOutputChannelMap(SDL_AudioStream *stream, const int *chmap, int channels)
+bool SDL_SetAudioStreamOutputChannelMap(SDL_AudioStream *stream, const int *chmap, int channels)
 {
     return SetAudioStreamChannelMap(stream, &stream->dst_spec, &stream->dst_chmap, chmap, channels, false);
 }
@@ -686,7 +686,7 @@ float SDL_GetAudioStreamFrequencyRatio(SDL_AudioStream *stream)
     return freq_ratio;
 }
 
-SDL_bool SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream *stream, float freq_ratio)
+bool SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream *stream, float freq_ratio)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -723,7 +723,7 @@ float SDL_GetAudioStreamGain(SDL_AudioStream *stream)
     return gain;
 }
 
-SDL_bool SDL_SetAudioStreamGain(SDL_AudioStream *stream, float gain)
+bool SDL_SetAudioStreamGain(SDL_AudioStream *stream, float gain)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -805,7 +805,7 @@ static void SDLCALL FreeAllocatedAudioBuffer(void *userdata, const void *buf, in
     SDL_free((void*) buf);
 }
 
-SDL_bool SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
+bool SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -841,7 +841,7 @@ SDL_bool SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int le
     return PutAudioStreamBuffer(stream, buf, len, NULL, NULL);
 }
 
-SDL_bool SDL_FlushAudioStream(SDL_AudioStream *stream)
+bool SDL_FlushAudioStream(SDL_AudioStream *stream)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -1013,7 +1013,7 @@ static bool GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int o
     // Calculate the number of input frames necessary for this request.
     // Because resampling happens "between" frames, The same number of output_frames
     // can require a different number of input_frames, depending on the resample_offset.
-    // Infact, input_frames can sometimes even be zero when upsampling.
+    // In fact, input_frames can sometimes even be zero when upsampling.
     const int input_frames = (int) SDL_GetResamplerInputFrames(output_frames, resample_rate, stream->resample_offset);
 
     const int padding_frames = SDL_GetResamplerPaddingFrames(resample_rate);
@@ -1254,7 +1254,7 @@ int SDL_GetAudioStreamQueued(SDL_AudioStream *stream)
     return (int) SDL_min(total, SDL_INT_MAX);
 }
 
-SDL_bool SDL_ClearAudioStream(SDL_AudioStream *stream)
+bool SDL_ClearAudioStream(SDL_AudioStream *stream)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -1303,7 +1303,7 @@ static void SDLCALL DontFreeThisAudioBuffer(void *userdata, const void *buf, int
     // We don't own the buffer, but know it will outlive the stream
 }
 
-SDL_bool SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const Uint8 *src_data, int src_len, const SDL_AudioSpec *dst_spec, Uint8 **dst_data, int *dst_len)
+bool SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const Uint8 *src_data, int src_len, const SDL_AudioSpec *dst_spec, Uint8 **dst_data, int *dst_len)
 {
     if (dst_data) {
         *dst_data = NULL;

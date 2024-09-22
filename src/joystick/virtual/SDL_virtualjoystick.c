@@ -99,7 +99,7 @@ static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
         hwdata->axes = NULL;
     }
     if (hwdata->buttons) {
-        SDL_free((void *)hwdata->buttons);
+        SDL_free(hwdata->buttons);
         hwdata->buttons = NULL;
     }
     if (hwdata->hats) {
@@ -218,7 +218,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
 
         // Find the trigger axes
         axis = 0;
-        for (i = 0; axis < hwdata->desc.naxes && i < SDL_GAMEPAD_AXIS_MAX; ++i) {
+        for (i = 0; axis < hwdata->desc.naxes && i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
             if (hwdata->desc.axis_mask & (1 << i)) {
                 if (i == SDL_GAMEPAD_AXIS_LEFT_TRIGGER) {
                     axis_triggerleft = axis;
@@ -250,7 +250,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         }
     }
     if (hwdata->desc.nbuttons > 0) {
-        hwdata->buttons = (Uint8 *)SDL_calloc(hwdata->desc.nbuttons, sizeof(*hwdata->buttons));
+        hwdata->buttons = (bool *)SDL_calloc(hwdata->desc.nbuttons, sizeof(*hwdata->buttons));
         if (!hwdata->buttons) {
             VIRTUAL_FreeHWData(hwdata);
             return 0;
@@ -383,7 +383,7 @@ bool SDL_SetJoystickVirtualBallInner(SDL_Joystick *joystick, int ball, Sint16 xr
     return true;
 }
 
-bool SDL_SetJoystickVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 value)
+bool SDL_SetJoystickVirtualButtonInner(SDL_Joystick *joystick, int button, bool down)
 {
     joystick_hwdata *hwdata;
 
@@ -398,7 +398,7 @@ bool SDL_SetJoystickVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8
         return SDL_SetError("Invalid button index");
     }
 
-    hwdata->buttons[button] = value;
+    hwdata->buttons[button] = down;
     hwdata->changes |= BUTTONS_CHANGED;
 
     return true;
@@ -425,7 +425,7 @@ bool SDL_SetJoystickVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value
     return true;
 }
 
-bool SDL_SetJoystickVirtualTouchpadInner(SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure)
+bool SDL_SetJoystickVirtualTouchpadInner(SDL_Joystick *joystick, int touchpad, int finger, bool down, float x, float y, float pressure)
 {
     joystick_hwdata *hwdata;
 
@@ -444,7 +444,7 @@ bool SDL_SetJoystickVirtualTouchpadInner(SDL_Joystick *joystick, int touchpad, i
     }
 
     SDL_JoystickTouchpadFingerInfo *info = &hwdata->touchpads[touchpad].fingers[finger];
-    info->state = state;
+    info->down = down;
     info->x = x;
     info->y = y;
     info->pressure = pressure;
@@ -754,7 +754,7 @@ static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
             const SDL_JoystickTouchpadInfo *touchpad = &hwdata->touchpads[i];
             for (int j = 0; j < touchpad->nfingers; ++j) {
                 const SDL_JoystickTouchpadFingerInfo *finger = &touchpad->fingers[j];
-                SDL_SendJoystickTouchpad(timestamp, joystick, i, j, finger->state, finger->x, finger->y, finger->pressure);
+                SDL_SendJoystickTouchpad(timestamp, joystick, i, j, finger->down, finger->x, finger->y, finger->pressure);
             }
         }
     }

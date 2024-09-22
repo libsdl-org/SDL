@@ -225,13 +225,3 @@
 #define SDL_ALLOC_SIZE2(p1, p2)
 #endif
 #endif /* SDL_ALLOC_SIZE2 not defined */
-
-#ifndef SDL_RESTRICT
-#if defined(__GNUC__)
-#define SDL_RESTRICT __restrict__
-#elif defined(_MSC_VER)
-#define SDL_RESTRICT __restrict
-#else
-#define SDL_RESTRICT
-#endif
-#endif

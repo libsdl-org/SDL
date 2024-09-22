@@ -164,7 +164,7 @@ static void SDL_EVDEV_UpdateKeyboardMute(void)
     }
 }
 
-SDL_bool SDL_EVDEV_Init(void)
+bool SDL_EVDEV_Init(void)
 {
     if (!_this) {
         _this = (SDL_EVDEV_PrivateData *)SDL_calloc(1, sizeof(*_this));
@@ -347,18 +347,14 @@ void SDL_EVDEV_Poll(void)
                 case EV_KEY:
                     if (event->code >= BTN_MOUSE && event->code < BTN_MOUSE + SDL_arraysize(EVDEV_MouseButtons)) {
                         mouse_button = event->code - BTN_MOUSE;
-                        if (event->value == 0) {
-                            SDL_SendMouseButton(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, SDL_RELEASED, EVDEV_MouseButtons[mouse_button]);
-                        } else if (event->value == 1) {
-                            SDL_SendMouseButton(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, SDL_PRESSED, EVDEV_MouseButtons[mouse_button]);
-                        }
+                        SDL_SendMouseButton(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, EVDEV_MouseButtons[mouse_button], (event->value != 0));
                         break;
                     }
 
                     /* BTN_TOUCH event value 1 indicates there is contact with
-                       a touchscreen or trackpad (earlist finger's current
+                       a touchscreen or trackpad (earliest finger's current
                        position is sent in EV_ABS ABS_X/ABS_Y, switching to
-                       next finger after earlist is released) */
+                       next finger after earliest is released) */
                     if (item->is_touchscreen && event->code == BTN_TOUCH) {
                         if (item->touchscreen_data->max_slots == 1) {
                             if (event->value) {
@@ -373,9 +369,9 @@ void SDL_EVDEV_Poll(void)
                     // Probably keyboard
                     scancode = SDL_EVDEV_translate_keycode(event->code);
                     if (event->value == 0) {
-                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, SDL_RELEASED);
+                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, false);
                     } else if (event->value == 1 || event->value == 2 /* key repeated */) {
-                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, SDL_PRESSED);
+                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, true);
                     }
                     SDL_EVDEV_kbd_keycode(_this->kbd, event->code, event->value);
                     break;

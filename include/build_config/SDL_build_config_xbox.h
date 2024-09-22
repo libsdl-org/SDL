@@ -172,6 +172,9 @@
 #define SDL_JOYSTICK_GAMEINPUT 1
 #define SDL_HAPTIC_DUMMY 1
 
+/* Enable various process implementations */
+#define SDL_PROCESS_DUMMY 1
+
 /* Enable the sensor driver */
 #ifdef HAVE_SENSORSAPI_H
 #define SDL_SENSOR_WINDOWS  1

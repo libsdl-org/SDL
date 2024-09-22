@@ -122,60 +122,61 @@ static bool LoadDBUSLibrary(void)
     return result;
 }
 
-static SDL_SpinLock spinlock_dbus_init = 0;
+static SDL_InitState dbus_init;
 
-// you must hold spinlock_dbus_init before calling this!
-static void SDL_DBus_Init_Spinlocked(void)
+void SDL_DBus_Init(void)
 {
     static bool is_dbus_available = true;
+
     if (!is_dbus_available) {
         return; // don't keep trying if this fails.
     }
 
-    if (!dbus.session_conn) {
-        DBusError err;
-
-        if (!LoadDBUSLibrary()) {
-            is_dbus_available = false; // can't load at all? Don't keep trying.
-            return;
-        }
-
-        if (!dbus.threads_init_default()) {
-            is_dbus_available = false;
-            return;
-        }
-
-        dbus.error_init(&err);
-        // session bus is required
-
-        dbus.session_conn = dbus.bus_get_private(DBUS_BUS_SESSION, &err);
-        if (dbus.error_is_set(&err)) {
-            dbus.error_free(&err);
-            SDL_DBus_Quit();
-            is_dbus_available = false;
-            return; // oh well
-        }
-        dbus.connection_set_exit_on_disconnect(dbus.session_conn, 0);
-
-        // system bus is optional
-        dbus.system_conn = dbus.bus_get_private(DBUS_BUS_SYSTEM, &err);
-        if (!dbus.error_is_set(&err)) {
-            dbus.connection_set_exit_on_disconnect(dbus.system_conn, 0);
-        }
-
-        dbus.error_free(&err);
+    if (!SDL_ShouldInit(&dbus_init)) {
+        return;
     }
-}
 
-void SDL_DBus_Init(void)
-{
-    SDL_LockSpinlock(&spinlock_dbus_init); // make sure two threads can't init at same time, since this can happen before SDL_Init.
-    SDL_DBus_Init_Spinlocked();
-    SDL_UnlockSpinlock(&spinlock_dbus_init);
+    if (!LoadDBUSLibrary()) {
+        goto error;
+    }
+
+    if (!dbus.threads_init_default()) {
+        goto error;
+    }
+
+    DBusError err;
+    dbus.error_init(&err);
+    // session bus is required
+
+    dbus.session_conn = dbus.bus_get_private(DBUS_BUS_SESSION, &err);
+    if (dbus.error_is_set(&err)) {
+        dbus.error_free(&err);
+        goto error;
+    }
+    dbus.connection_set_exit_on_disconnect(dbus.session_conn, 0);
+
+    // system bus is optional
+    dbus.system_conn = dbus.bus_get_private(DBUS_BUS_SYSTEM, &err);
+    if (!dbus.error_is_set(&err)) {
+        dbus.connection_set_exit_on_disconnect(dbus.system_conn, 0);
+    }
+
+    dbus.error_free(&err);
+    SDL_SetInitialized(&dbus_init, true);
+    return;
+
+error:
+    is_dbus_available = false;
+    SDL_SetInitialized(&dbus_init, true);
+    SDL_DBus_Quit();
 }
 
 void SDL_DBus_Quit(void)
 {
+    if (!SDL_ShouldQuit(&dbus_init)) {
+        return;
+    }
+
     if (dbus.system_conn) {
         dbus.connection_close(dbus.system_conn);
         dbus.connection_unref(dbus.system_conn);
@@ -193,8 +194,12 @@ void SDL_DBus_Quit(void)
 
     SDL_zero(dbus);
     UnloadDBUSLibrary();
-    SDL_free(inhibit_handle);
-    inhibit_handle = NULL;
+    if (inhibit_handle) {
+        SDL_free(inhibit_handle);
+        inhibit_handle = NULL;
+    }
+
+    SDL_SetInitialized(&dbus_init, false);
 }
 
 SDL_DBusContext *SDL_DBus_GetContext(void)

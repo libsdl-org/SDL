@@ -40,6 +40,8 @@ enum
 {
     StageClearBackground,
     StageDrawBackground,
+    StageTextureBackground,
+    StageTargetBackground,
     StageBlendDrawing,
     StageBlendTexture,
     StageGradientDrawing,
@@ -57,10 +59,10 @@ static void FreeRenderer(void)
 static void UpdateHDRState(void)
 {
     SDL_PropertiesID props;
-    SDL_bool HDR_enabled;
+    bool HDR_enabled;
 
     props = SDL_GetWindowProperties(window);
-    HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, SDL_FALSE);
+    HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
 
     SDL_Log("HDR %s\n", HDR_enabled ? "enabled" : "disabled");
 
@@ -142,11 +144,11 @@ static void PrevStage(void)
     }
 }
 
-static SDL_bool ReadPixel(int x, int y, SDL_Color *c)
+static bool ReadPixel(int x, int y, SDL_Color *c)
 {
     SDL_Surface *surface;
     SDL_Rect r;
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     r.x = x;
     r.y = y;
@@ -155,8 +157,11 @@ static SDL_bool ReadPixel(int x, int y, SDL_Color *c)
 
     surface = SDL_RenderReadPixels(renderer, &r);
     if (surface) {
+        /* Don't tonemap back to SDR, our source content was SDR */
+        SDL_SetStringProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING, "*=1");
+
         if (SDL_ReadSurfacePixel(surface, 0, 0, &c->r, &c->g, &c->b, &c->a)) {
-            result = SDL_TRUE;
+            result = true;
         } else {
             SDL_Log("Couldn't read pixel: %s\n", SDL_GetError());
         }
@@ -230,6 +235,93 @@ static void RenderDrawBackground(void)
     DrawText(x, y, "%s %s", renderer_name, colorspace_name);
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Draw 50%% Gray Background");
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Background color written: 0x808080, read: 0x%.2x%.2x%.2x", c.r, c.g, c.b);
+    y += TEXT_LINE_ADVANCE;
+    if (c.r != 128) {
+        DrawText(x, y, "Incorrect background color, unknown reason");
+        y += TEXT_LINE_ADVANCE;
+    }
+}
+
+static SDL_Texture *CreateGrayTexture(void)
+{
+    SDL_Texture *texture;
+    Uint8 pixels[4];
+
+    /* Floating point textures are in the linear colorspace by default */
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, 1, 1);
+    if (!texture) {
+        return NULL;
+    }
+
+    pixels[0] = 128;
+    pixels[1] = 128;
+    pixels[2] = 128;
+    pixels[3] = 255;
+    SDL_UpdateTexture(texture, NULL, pixels, sizeof(pixels));
+
+    return texture;
+}
+
+static void RenderTextureBackground(void)
+{
+    /* Fill the background with a 50% gray texture.
+     * This will be darker when using sRGB colors and lighter using linear colors
+     */
+    SDL_Texture *texture = CreateGrayTexture();
+    SDL_RenderTexture(renderer, texture, NULL, NULL);
+    SDL_DestroyTexture(texture);
+
+    /* Check the renderered pixels */
+    SDL_Color c;
+    if (!ReadPixel(0, 0, &c)) {
+        return;
+    }
+
+    float x = TEXT_START_X;
+    float y = TEXT_START_Y;
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Test: Fill 50%% Gray Texture");
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Background color written: 0x808080, read: 0x%.2x%.2x%.2x", c.r, c.g, c.b);
+    y += TEXT_LINE_ADVANCE;
+    if (c.r != 128) {
+        DrawText(x, y, "Incorrect background color, unknown reason");
+        y += TEXT_LINE_ADVANCE;
+    }
+}
+
+static void RenderTargetBackground(void)
+{
+    /* Fill the background with a 50% gray texture.
+     * This will be darker when using sRGB colors and lighter using linear colors
+     */
+    SDL_Texture *target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_Texture *texture = CreateGrayTexture();
+
+    /* Fill the render target with the gray texture */
+    SDL_SetRenderTarget(renderer, target);
+    SDL_RenderTexture(renderer, texture, NULL, NULL);
+    SDL_DestroyTexture(texture);
+
+    /* Fill the output with the render target */
+    SDL_SetRenderTarget(renderer, NULL);
+    SDL_RenderTexture(renderer, target, NULL, NULL);
+    SDL_DestroyTexture(target);
+
+    /* Check the renderered pixels */
+    SDL_Color c;
+    if (!ReadPixel(0, 0, &c)) {
+        return;
+    }
+
+    float x = TEXT_START_X;
+    float y = TEXT_START_Y;
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Test: Fill 50%% Gray Render Target");
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Background color written: 0x808080, read: 0x%.2x%.2x%.2x", c.r, c.g, c.b);
     y += TEXT_LINE_ADVANCE;
@@ -540,6 +632,12 @@ static void loop(void)
             break;
         case StageDrawBackground:
             RenderDrawBackground();
+            break;
+        case StageTextureBackground:
+            RenderTextureBackground();
+            break;
+        case StageTargetBackground:
+            RenderTargetBackground();
             break;
         case StageBlendDrawing:
             RenderBlendDrawing();

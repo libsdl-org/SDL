@@ -129,6 +129,9 @@ extern bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 produc
 // Function to return whether a joystick is a Steam Controller
 extern bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id);
 
+// Function to return whether a joystick is a HORI Steam controller
+extern bool SDL_IsJoystickHoriSteamController(Uint16 vendor_id, Uint16 product_id);
+
 // Function to return whether a joystick is a Steam Deck
 extern bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id);
 
@@ -164,8 +167,8 @@ extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
 extern void SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, Sint16 value);
 extern void SDL_SendJoystickBall(Uint64 timestamp, SDL_Joystick *joystick, Uint8 ball, Sint16 xrel, Sint16 yrel);
 extern void SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uint8 value);
-extern void SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 button, Uint8 state);
-extern void SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure);
+extern void SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 button, bool down);
+extern void SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touchpad, int finger, bool down, float x, float y, float pressure);
 extern void SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
 extern void SDL_SendJoystickPowerInfo(SDL_Joystick *joystick, SDL_PowerState state, int percent);
 

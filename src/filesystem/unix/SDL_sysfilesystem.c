@@ -368,12 +368,12 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
   int relative;
   size_t l;
 
-  home_dir = SDL_getenv ("HOME");
+  home_dir = SDL_getenv("HOME");
 
   if (!home_dir)
     goto error;
 
-  config_home = SDL_getenv ("XDG_CONFIG_HOME");
+  config_home = SDL_getenv("XDG_CONFIG_HOME");
   if (!config_home || config_home[0] == 0)
     {
       l = SDL_strlen (home_dir) + SDL_strlen ("/.config/user-dirs.dirs") + 1;

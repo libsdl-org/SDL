@@ -493,13 +493,13 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_QueryInterface(__FIE
 static ULONG STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CGamepad *This)
 {
     GamepadDelegate *self = (GamepadDelegate *)This;
-    return SDL_AtomicAdd(&self->refcount, 1) + 1UL;
+    return SDL_AddAtomicInt(&self->refcount, 1) + 1UL;
 }
 
 static ULONG STDMETHODCALLTYPE IEventHandler_CGamepadVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CGamepad *This)
 {
     GamepadDelegate *self = (GamepadDelegate *)This;
-    int rc = SDL_AtomicAdd(&self->refcount, -1) - 1;
+    int rc = SDL_AddAtomicInt(&self->refcount, -1) - 1;
     // Should never free the static delegate objects
     SDL_assert(rc > 0);
     return rc;
@@ -1093,7 +1093,7 @@ static void RAWINPUT_PostUpdate(void)
             if (ctx->guide_hack) {
                 int guide_button = joystick->nbuttons - 1;
 
-                SDL_SendJoystickButton(SDL_GetTicksNS(), guide_button_candidate.joystick, (Uint8)guide_button, SDL_PRESSED);
+                SDL_SendJoystickButton(SDL_GetTicksNS(), guide_button_candidate.joystick, (Uint8)guide_button, true);
             }
             guide_button_candidate.last_joystick = guide_button_candidate.joystick;
         }
@@ -1103,7 +1103,7 @@ static void RAWINPUT_PostUpdate(void)
         if (ctx->guide_hack) {
             int guide_button = joystick->nbuttons - 1;
 
-            SDL_SendJoystickButton(SDL_GetTicksNS(), joystick, (Uint8)guide_button, SDL_RELEASED);
+            SDL_SendJoystickButton(SDL_GetTicksNS(), joystick, (Uint8)guide_button, false);
         }
         guide_button_candidate.last_joystick = NULL;
     }
@@ -1591,12 +1591,12 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
     };
     Uint64 match_state = ctx->match_state;
     // Update match_state with button bit, then fall through
-#define SDL_SendJoystickButton(timestamp, joystick, button, state)                  \
+#define SDL_SendJoystickButton(timestamp, joystick, button, down)           \
     if (button < SDL_arraysize(button_map)) {                               \
         Uint64 button_bit = 1ull << button_map[button];                     \
-        match_state = (match_state & ~button_bit) | (button_bit * (state)); \
+        match_state = (match_state & ~button_bit) | (button_bit * (down));  \
     }                                                                       \
-    SDL_SendJoystickButton(timestamp, joystick, button, state)
+    SDL_SendJoystickButton(timestamp, joystick, button, down)
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
     // Grab high 4 bits of value, then fall through
 #define AddAxisToMatchState(axis, value)                                                                    \
@@ -1629,7 +1629,7 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
         }
     }
     for (i = 0; i < nbuttons; ++i) {
-        SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, (button_mask & (1 << i)) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, ((button_mask & (1 << i)) != 0));
     }
 
     for (i = 0; i < naxes; ++i) {
@@ -1786,7 +1786,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                 /* It gets left down if we were actually correlated incorrectly and it was released on the WindowsGamingInput
                   device but we didn't get a state packet. */
                 if (ctx->guide_hack) {
-                    SDL_SendJoystickButton(0, joystick, (Uint8)guide_button, SDL_RELEASED);
+                    SDL_SendJoystickButton(0, joystick, (Uint8)guide_button, false);
                 }
             }
         }
@@ -1882,7 +1882,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                     /* It gets left down if we were actually correlated incorrectly and it was released on the XInput
                       device but we didn't get a state packet. */
                     if (ctx->guide_hack) {
-                        SDL_SendJoystickButton(0, joystick, (Uint8)guide_button, SDL_RELEASED);
+                        SDL_SendJoystickButton(0, joystick, (Uint8)guide_button, false);
                     }
                 }
             }
@@ -1955,7 +1955,8 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
             }
 
             if (ctx->guide_hack) {
-                SDL_SendJoystickButton(timestamp, joystick, (Uint8)guide_button, (xinput_state[ctx->xinput_slot].state.Gamepad.wButtons & XINPUT_GAMEPAD_GUIDE) ? SDL_PRESSED : SDL_RELEASED);
+                bool down = ((xinput_state[ctx->xinput_slot].state.Gamepad.wButtons & XINPUT_GAMEPAD_GUIDE) != 0);
+                SDL_SendJoystickButton(timestamp, joystick, (Uint8)guide_button, down);
             }
             if (ctx->trigger_hack) {
                 SDL_SendJoystickAxis(timestamp, joystick, (Uint8)left_trigger, ((int)xinput_state[ctx->xinput_slot].state.Gamepad.bLeftTrigger * 257) - 32768);
@@ -2012,7 +2013,8 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
             }
 
             if (ctx->guide_hack) {
-                SDL_SendJoystickButton(timestamp, joystick, (Uint8)guide_button, (state->Buttons & GamepadButtons_GUIDE) ? SDL_PRESSED : SDL_RELEASED);
+                bool down = ((state->Buttons & GamepadButtons_GUIDE) != 0);
+                SDL_SendJoystickButton(timestamp, joystick, (Uint8)guide_button, down);
             }
             if (ctx->trigger_hack) {
                 SDL_SendJoystickAxis(timestamp, joystick, (Uint8)left_trigger, (Sint16)(((int)(state->LeftTrigger * SDL_MAX_UINT16)) - 32768));

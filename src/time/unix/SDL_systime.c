@@ -98,7 +98,7 @@ found_date:
 #endif
 }
 
-SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
+bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     if (!ticks) {
         return SDL_InvalidParamError("ticks");
@@ -150,7 +150,7 @@ SDL_bool SDL_GetCurrentTime(SDL_Time *ticks)
     return false;
 }
 
-SDL_bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
+bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
 {
 #if defined (HAVE_GMTIME_R) || defined(HAVE_LOCALTIME_R)
     struct tm tm_storage;

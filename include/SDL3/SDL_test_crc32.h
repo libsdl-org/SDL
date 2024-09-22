@@ -73,10 +73,11 @@ extern "C" {
  *
  * \param crcContext        pointer to context variable
  *
- * \returns 0 for OK, -1 on error
+ * \returns true on success or false on failure; call SDL_GetError()
+ *          for more information.
  *
  */
-int SDLCALL SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext);
+bool SDLCALL SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext);
 
 /*
  * calculate a crc32 from a data block
@@ -86,26 +87,28 @@ int SDLCALL SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext);
  * \param inLen              length of input buffer
  * \param crc32              pointer to Uint32 to store the final CRC into
  *
- * \returns 0 for OK, -1 on error
+ * \returns true on success or false on failure; call SDL_GetError()
+ *          for more information.
  *
  */
-int SDLCALL SDLTest_Crc32Calc(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32);
+bool SDLCALL SDLTest_Crc32Calc(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32);
 
 /* Same routine broken down into three steps */
-int SDLCALL SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32);
-int SDLCALL SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32);
-int SDLCALL SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32);
+bool SDLCALL SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32);
+bool SDLCALL SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32);
+bool SDLCALL SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32);
 
 /*
  * clean up CRC context
  *
  * \param crcContext        pointer to context variable
  *
- * \returns 0 for OK, -1 on error
+ * \returns true on success or false on failure; call SDL_GetError()
+ *          for more information.
  *
 */
 
-int SDLCALL SDLTest_Crc32Done(SDLTest_Crc32Context *crcContext);
+bool SDLCALL SDLTest_Crc32Done(SDLTest_Crc32Context *crcContext);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

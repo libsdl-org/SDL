@@ -426,7 +426,7 @@ int windows_folder_dialog_thread(void* ptr)
     return 0;
 }
 
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
+void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
 {
     winArgs *args;
     SDL_Thread *thread;
@@ -449,7 +449,7 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
     args->nfilters = nfilters;
     args->default_file = default_location;
     args->parent = window;
-    args->flags = (allow_many != SDL_FALSE) ? OFN_ALLOWMULTISELECT : 0;
+    args->flags = (allow_many != false) ? OFN_ALLOWMULTISELECT : 0;
     args->callback = callback;
     args->userdata = userdata;
 
@@ -501,7 +501,7 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
     SDL_DetachThread(thread);
 }
 
-void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many)
+void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many)
 {
     winFArgs *args;
     SDL_Thread *thread;

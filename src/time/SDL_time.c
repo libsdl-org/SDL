@@ -57,7 +57,7 @@ Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_
     return z;
 }
 
-SDL_bool SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat)
+bool SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat)
 {
     // Default to ISO 8061 date format, as it is unambiguous, and 24 hour time.
     if (dateFormat) {
@@ -162,7 +162,7 @@ static bool SDL_DateTimeIsValid(const SDL_DateTime *dt)
     return true;
 }
 
-SDL_bool SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
+bool SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
 {
     static const Sint64 max_seconds = SDL_NS_TO_SECONDS(SDL_MAX_TIME) - 1;
     static const Sint64 min_seconds = SDL_NS_TO_SECONDS(SDL_MIN_TIME) + 1;
@@ -195,7 +195,7 @@ SDL_bool SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
 void SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime)
 {
     /* Convert nanoseconds to Win32 ticks.
-     * SDL_Time has a range of roughly 292 years, so even SDL_MIN_TIME can't underflow thw Win32 epoch.
+     * SDL_Time has a range of roughly 292 years, so even SDL_MIN_TIME can't underflow the Win32 epoch.
      */
     const Uint64 wtime = (Uint64)((ticks / 100) + DELTA_EPOCH_1601_100NS);
 

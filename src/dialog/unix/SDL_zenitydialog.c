@@ -191,128 +191,95 @@ static void run_zenity(zenityArgs* arg_struct)
 {
     SDL_DialogFileCallback callback = arg_struct->callback;
     void* userdata = arg_struct->userdata;
-
-    int out[2];
-    pid_t process;
+    SDL_Process *process = NULL;
+    char **args = NULL;
+    SDL_Environment *env = NULL;
     int status = -1;
+    size_t bytes_read = 0;
+    char *container = NULL;
+    size_t narray = 1;
+    char **array = NULL;
+    bool result = false;
 
-    if (pipe(out) < 0) {
-        SDL_SetError("Could not create pipe: %s", strerror(errno));
-        callback(userdata, NULL, -1);
-        return;
-    }
-
-    /* Args are only needed in the forked process, but generating them early
-       allows catching the error messages in the main process */
-    char **args = generate_args(arg_struct);
-
+    args = generate_args(arg_struct);
     if (!args) {
-        // SDL_SetError will have been called already
-        callback(userdata, NULL, -1);
-        return;
+        goto done;
     }
 
-    process = fork();
+    env = SDL_CreateEnvironment(true);
+    if (!env) {
+        goto done;
+    }
 
-    if (process < 0) {
-        SDL_SetError("Could not fork process: %s", strerror(errno));
-        close(out[0]);
-        close(out[1]);
-        free_args(args);
-        callback(userdata, NULL, -1);
-        return;
-    } else if (process == 0){
-        dup2(out[1], STDOUT_FILENO);
-        close(STDERR_FILENO); // Hide errors from Zenity to stderr
-        close(out[0]);
-        close(out[1]);
+    /* Recent versions of Zenity have different exit codes, but picks up
+      different codes from the environment */
+    SDL_SetEnvironmentVariable(env, "ZENITY_OK", "0", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_CANCEL", "1", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_ESC", "1", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_EXTRA", "2", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_ERROR", "2", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_TIMEOUT", "2", true);
 
-        /* Recent versions of Zenity have different exit codes, but picks up
-          different codes from the environment */
-        SDL_setenv("ZENITY_OK", "0", 1);
-        SDL_setenv("ZENITY_CANCEL", "1", 1);
-        SDL_setenv("ZENITY_ESC", "1", 1);
-        SDL_setenv("ZENITY_EXTRA", "2", 1);
-        SDL_setenv("ZENITY_ERROR", "2", 1);
-        SDL_setenv("ZENITY_TIMEOUT", "2", 1);
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args);
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, env);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_NULL);
+    process = SDL_CreateProcessWithProperties(props);
+    SDL_DestroyProperties(props);
+    if (!process) {
+        goto done;
+    }
 
-        execv(args[0], args);
+    container = SDL_ReadProcess(process, &bytes_read, &status);
+    if (!container) {
+        goto done;
+    }
 
-        exit(errno + 128);
-    } else {
-        char readbuffer[2048];
-        size_t bytes_read = 0, bytes_last_read;
-        char *container = NULL;
-        close(out[1]);
-        free_args(args);
+    array = (char **)SDL_malloc((narray + 1) * sizeof(char *));
+    if (!array) {
+        goto done;
+    }
+    array[0] = container;
+    array[1] = NULL;
 
-        while ((bytes_last_read = read(out[0], readbuffer, sizeof(readbuffer)))) {
-            char *new_container = SDL_realloc(container, bytes_read + bytes_last_read);
-            if (!new_container) {
-                SDL_free(container);
-                close(out[0]);
-                callback(userdata, NULL, -1);
-                return;
-            }
-            container = new_container;
-            SDL_memcpy(container + bytes_read, readbuffer, bytes_last_read);
-            bytes_read += bytes_last_read;
-        }
-        close(out[0]);
-
-        if (waitpid(process, &status, 0) == -1) {
-            SDL_SetError("waitpid failed");
-            SDL_free(container);
-            callback(userdata, NULL, -1);
-            return;
-        }
-
-        if (WIFEXITED(status)) {
-            status = WEXITSTATUS(status);
-        }
-
-        size_t narray = 1;
-        char **array = (char **) SDL_malloc((narray + 1) * sizeof(char *));
-
-        if (!array) {
-            SDL_free(container);
-            callback(userdata, NULL, -1);
-            return;
-        }
-
-        array[0] = container;
-        array[1] = NULL;
-
-        for (int i = 0; i < bytes_read; i++) {
-            if (container[i] == '\n') {
-                container[i] = '\0';
-                // Reading from a process often leaves a trailing \n, so ignore the last one
-                if (i < bytes_read - 1) {
-                    array[narray] = container + i + 1;
-                    narray++;
-                    char **new_array = (char **) SDL_realloc(array, (narray + 1) * sizeof(char *));
-                    if (!new_array) {
-                        SDL_free(container);
-                        SDL_free(array);
-                        callback(userdata, NULL, -1);
-                        return;
-                    }
-                    array = new_array;
-                    array[narray] = NULL;
+    for (int i = 0; i < bytes_read; i++) {
+        if (container[i] == '\n') {
+            container[i] = '\0';
+            // Reading from a process often leaves a trailing \n, so ignore the last one
+            if (i < bytes_read - 1) {
+                array[narray] = container + i + 1;
+                narray++;
+                char **new_array = (char **) SDL_realloc(array, (narray + 1) * sizeof(char *));
+                if (!new_array) {
+                    goto done;
                 }
+                array = new_array;
+                array[narray] = NULL;
             }
         }
+    }
 
-        // 0 = the user chose one or more files, 1 = the user canceled the dialog
-        if (status == 0 || status == 1) {
-            callback(userdata, (const char * const*) array, -1);
-        } else {
-            SDL_SetError("Could not run zenity: exit code %d (may be zenity or execv+128)", status);
-            callback(userdata, NULL, -1);
-        }
+    // 0 = the user chose one or more files, 1 = the user canceled the dialog
+    if (status == 0 || status == 1) {
+        callback(userdata, (const char * const*)array, -1);
+    } else {
+        SDL_SetError("Could not run zenity: exit code %d", status);
+        callback(userdata, NULL, -1);
+    }
 
-        SDL_free(array);
-        SDL_free(container);
+    result = true;
+
+done:
+    SDL_free(array);
+    SDL_free(container);
+    free_args(args);
+    SDL_DestroyEnvironment(env);
+    SDL_DestroyProcess(process);
+
+    if (!result) {
+        callback(userdata, NULL, -1);
     }
 }
 
@@ -409,30 +376,21 @@ void SDL_Zenity_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* user
 
 bool SDL_Zenity_detect(void)
 {
-    pid_t process;
+    const char *args[] = {
+        "/usr/bin/env", "zenity", "--version", NULL
+    };
     int status = -1;
 
-    process = fork();
-
-    if (process < 0) {
-        SDL_SetError("Could not fork process: %s", strerror(errno));
-        return false;
-    } else if (process == 0){
-        // Disable output
-        close(STDERR_FILENO);
-        close(STDOUT_FILENO);
-        execl("/usr/bin/env", "/usr/bin/env", "zenity", "--version", NULL);
-        exit(errno + 128);
-    } else {
-        if (waitpid(process, &status, 0) == -1) {
-            SDL_SetError("waitpid failed");
-            return false;
-        }
-
-        if (WIFEXITED(status)) {
-            status = WEXITSTATUS(status);
-        }
-
-        return (status == 0);
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_NULL);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_NULL);
+    SDL_Process *process = SDL_CreateProcessWithProperties(props);
+    SDL_DestroyProperties(props);
+    if (process) {
+        SDL_WaitProcess(process, true, &status);
+        SDL_DestroyProcess(process);
     }
+    return (status == 0);
 }

@@ -40,8 +40,8 @@ typedef struct
     bool pc_mode;
     SDL_JoystickID joysticks[MAX_CONTROLLERS];
     Uint8 wireless[MAX_CONTROLLERS];
-    Uint8 min_axis[MAX_CONTROLLERS * SDL_GAMEPAD_AXIS_MAX];
-    Uint8 max_axis[MAX_CONTROLLERS * SDL_GAMEPAD_AXIS_MAX];
+    Uint8 min_axis[MAX_CONTROLLERS * SDL_GAMEPAD_AXIS_COUNT];
+    Uint8 max_axis[MAX_CONTROLLERS * SDL_GAMEPAD_AXIS_COUNT];
     Uint8 rumbleAllowed[MAX_CONTROLLERS];
     Uint8 rumble[1 + MAX_CONTROLLERS];
     // Without this variable, hid_write starts to lag a TON
@@ -83,12 +83,12 @@ static bool HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, c
 
 static void ResetAxisRange(SDL_DriverGameCube_Context *ctx, int joystick_index)
 {
-    SDL_memset(&ctx->min_axis[joystick_index * SDL_GAMEPAD_AXIS_MAX], 128 - 88, SDL_GAMEPAD_AXIS_MAX);
-    SDL_memset(&ctx->max_axis[joystick_index * SDL_GAMEPAD_AXIS_MAX], 128 + 88, SDL_GAMEPAD_AXIS_MAX);
+    SDL_memset(&ctx->min_axis[joystick_index * SDL_GAMEPAD_AXIS_COUNT], 128 - 88, SDL_GAMEPAD_AXIS_COUNT);
+    SDL_memset(&ctx->max_axis[joystick_index * SDL_GAMEPAD_AXIS_COUNT], 128 + 88, SDL_GAMEPAD_AXIS_COUNT);
 
     // Trigger axes may have a higher resting value
-    ctx->min_axis[joystick_index * SDL_GAMEPAD_AXIS_MAX + SDL_GAMEPAD_AXIS_LEFT_TRIGGER] = 40;
-    ctx->min_axis[joystick_index * SDL_GAMEPAD_AXIS_MAX + SDL_GAMEPAD_AXIS_RIGHT_TRIGGER] = 40;
+    ctx->min_axis[joystick_index * SDL_GAMEPAD_AXIS_COUNT + SDL_GAMEPAD_AXIS_LEFT_TRIGGER] = 40;
+    ctx->min_axis[joystick_index * SDL_GAMEPAD_AXIS_COUNT + SDL_GAMEPAD_AXIS_RIGHT_TRIGGER] = 40;
 }
 
 static void SDLCALL SDL_JoystickGameCubeRumbleBrakeHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -231,7 +231,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
         timestamp,                      \
         joystick,                       \
         button,                         \
-        (packet[off] & flag) ? SDL_PRESSED : SDL_RELEASED);
+        ((packet[off] & flag) != 0));
     READ_BUTTON(1, 0x02, 0) // A
     READ_BUTTON(1, 0x04, 1) // B
     READ_BUTTON(1, 0x08, 3) // Y
@@ -252,11 +252,11 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
 
 #define READ_AXIS(off, axis, invert)                                                \
     v = invert ? (0xff - packet[off]) : packet[off];                                \
-    if (v < ctx->min_axis[i * SDL_GAMEPAD_AXIS_MAX + axis])                      \
-        ctx->min_axis[i * SDL_GAMEPAD_AXIS_MAX + axis] = v;                      \
-    if (v > ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis])                      \
-        ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis] = v;                      \
-    axis_value = (Sint16)HIDAPI_RemapVal(v, ctx->min_axis[i * SDL_GAMEPAD_AXIS_MAX + axis], ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
+    if (v < ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis])                      \
+        ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis] = v;                      \
+    if (v > ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis])                      \
+        ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis] = v;                      \
+    axis_value = (Sint16)HIDAPI_RemapVal(v, ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
     SDL_SendJoystickAxis(                                                        \
         timestamp,                                                                  \
         joystick,                                                                   \
@@ -314,7 +314,7 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
         timestamp,                      \
         joystick,                       \
         button,                         \
-        (curSlot[off] & flag) ? SDL_PRESSED : SDL_RELEASED);
+        ((curSlot[off] & flag) != 0));
         READ_BUTTON(1, 0x01, 0) // A
         READ_BUTTON(1, 0x02, 1) // B
         READ_BUTTON(1, 0x04, 2) // X
@@ -334,11 +334,11 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
 #undef READ_BUTTON
 
 #define READ_AXIS(off, axis)                                                                \
-    if (curSlot[off] < ctx->min_axis[i * SDL_GAMEPAD_AXIS_MAX + axis])                   \
-        ctx->min_axis[i * SDL_GAMEPAD_AXIS_MAX + axis] = curSlot[off];                   \
-    if (curSlot[off] > ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis])                   \
-        ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis] = curSlot[off];                   \
-    axis_value = (Sint16)HIDAPI_RemapVal(curSlot[off], ctx->min_axis[i * SDL_GAMEPAD_AXIS_MAX + axis], ctx->max_axis[i * SDL_GAMEPAD_AXIS_MAX + axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
+    if (curSlot[off] < ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis])                   \
+        ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis] = curSlot[off];                   \
+    if (curSlot[off] > ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis])                   \
+        ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis] = curSlot[off];                   \
+    axis_value = (Sint16)HIDAPI_RemapVal(curSlot[off], ctx->min_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], ctx->max_axis[i * SDL_GAMEPAD_AXIS_COUNT + axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
     SDL_SendJoystickAxis(                                                                \
         timestamp,                                                                          \
         joystick,                                                                           \
@@ -391,7 +391,7 @@ static bool HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     for (i = 0; i < MAX_CONTROLLERS; i += 1) {
         if (joystick->instance_id == ctx->joysticks[i]) {
             joystick->nbuttons = 12;
-            joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+            joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
             if (ctx->wireless[i]) {
                 joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
             } else {

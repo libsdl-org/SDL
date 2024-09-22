@@ -23,122 +23,66 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
-#include <stdlib.h>   // fgets
-#include <stdio.h>    // FILE, STDOUT_FILENO, fdopen, fclose
-#include <unistd.h>   // pid_t, pipe, fork, close, dup2, execvp, _exit
-#include <sys/wait.h> // waitpid, WIFEXITED, WEXITSTATUS
-#include <string.h>   // strerr
-#include <errno.h>
-
 #include "SDL_waylandmessagebox.h"
 
 #define ZENITY_VERSION_LEN 32 // Number of bytes to read from zenity --version (including NUL)
 
 #define MAX_BUTTONS 8 // Maximum number of buttons supported
 
-static bool run_zenity(const char **args, int fd_pipe[2])
+static bool parse_zenity_version(const char *version, int *major, int *minor)
 {
-    int status;
-    pid_t pid1;
-
-    pid1 = fork();
-    if (pid1 == 0) { // child process
-        close(fd_pipe[0]); // no reading from pipe
-        // write stdout in pipe
-        if (dup2(fd_pipe[1], STDOUT_FILENO) == -1) {
-            _exit(128);
-        }
-        close(fd_pipe[1]);
-
-        /* const casting argv is fine:
-         * https://pubs.opengroup.org/onlinepubs/9699919799/functions/fexecve.html -> rational
-         */
-        execvp("zenity", (char **)args);
-        _exit(129);
-    } else if (pid1 < 0) { // fork() failed
-        return SDL_SetError("fork() failed: %s", strerror(errno));
-    } else { // parent process
-        if (waitpid(pid1, &status, 0) != pid1) {
-            return SDL_SetError("Waiting on zenity failed: %s", strerror(errno));
-        }
-
-        if (!WIFEXITED(status)) {
-            return SDL_SetError("zenity failed for some reason");
-        }
-
-        if (WEXITSTATUS(status) >= 128) {
-            return SDL_SetError("zenity reported error or failed to launch: %d", WEXITSTATUS(status));
-        }
-
-        return true; // success!
+    /* We expect the version string is in the form of MAJOR.MINOR.MICRO
+     * as described in meson.build. We'll ignore everything after that.
+     */
+    const char *version_ptr = version;
+    char *end_ptr = NULL;
+    int tmp = (int) SDL_strtol(version_ptr, &end_ptr, 10);
+    if (tmp == 0 && end_ptr == version_ptr) {
+        return SDL_SetError("failed to get zenity major version number");
     }
+    *major = tmp;
+
+    if (*end_ptr == '.') {
+        version_ptr = end_ptr + 1; // skip the dot
+        tmp = (int) SDL_strtol(version_ptr, &end_ptr, 10);
+        if (tmp == 0 && end_ptr == version_ptr) {
+            return SDL_SetError("failed to get zenity minor version number");
+        }
+        *minor = tmp;
+    } else {
+        *minor = 0;
+    }
+    return true;
 }
 
 static bool get_zenity_version(int *major, int *minor)
 {
-    int fd_pipe[2]; // fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe
     const char *argv[] = { "zenity", "--version", NULL };
+    bool result = false;
 
-    if (pipe(fd_pipe) != 0) { // create a pipe
-        return SDL_SetError("pipe() failed: %s", strerror(errno));
+    SDL_Process *process = SDL_CreateProcess(argv, true);
+    if (!process) {
+        return false;
     }
 
-    if (run_zenity(argv, fd_pipe) == 0) {
-        FILE *outputfp = NULL;
-        char version_str[ZENITY_VERSION_LEN];
-        char *version_ptr = NULL, *end_ptr = NULL;
-        int tmp;
-
-        close(fd_pipe[1]);
-        outputfp = fdopen(fd_pipe[0], "r");
-        if (!outputfp) {
-            close(fd_pipe[0]);
-            return SDL_SetError("failed to open pipe for reading: %s", strerror(errno));
-        }
-
-        version_ptr = fgets(version_str, ZENITY_VERSION_LEN, outputfp);
-        (void)fclose(outputfp); // will close underlying fd
-
-        if (!version_ptr) {
-            return SDL_SetError("failed to read zenity version string");
-        }
-
-        /* we expect the version string is in the form of MAJOR.MINOR.MICRO
-         * as described in meson.build. We'll ignore everything after that.
-         */
-        tmp = (int) SDL_strtol(version_ptr, &end_ptr, 10);
-        if (tmp == 0 && end_ptr == version_ptr) {
-            return SDL_SetError("failed to get zenity major version number");
-        }
-        *major = tmp;
-
-        if (*end_ptr == '.') {
-            version_ptr = end_ptr + 1; // skip the dot
-            tmp = (int) SDL_strtol(version_ptr, &end_ptr, 10);
-            if (tmp == 0 && end_ptr == version_ptr) {
-                return SDL_SetError("failed to get zenity minor version number");
-            }
-            *minor = tmp;
-        } else {
-            *minor = 0;
-        }
-
-        return true; // success
+    char *output = SDL_ReadProcess(process, NULL, NULL);
+    if (output) {
+        result = parse_zenity_version(output, major, minor);
+        SDL_free(output);
     }
+    SDL_DestroyProcess(process);
 
-    close(fd_pipe[0]);
-    close(fd_pipe[1]);
-    return false; // run_zenity should've called SDL_SetError()
+    return result;
 }
 
 bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
-    int fd_pipe[2]; // fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe
     int zenity_major = 0, zenity_minor = 0, output_len = 0;
     int argc = 5, i;
     const char *argv[5 + 2 /* icon name */ + 2 /* title */ + 2 /* message */ + 2 * MAX_BUTTONS + 1 /* NULL */] = {
         "zenity", "--question", "--switch", "--no-wrap", "--no-markup"
     };
+    SDL_Process *process;
 
     // Are we trying to connect to or are currently in a Wayland session?
     if (!SDL_getenv("WAYLAND_DISPLAY")) {
@@ -155,10 +99,6 @@ bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *butto
     // get zenity version so we know which arg to use
     if (!get_zenity_version(&zenity_major, &zenity_minor)) {
         return false; // get_zenity_version() calls SDL_SetError(), so message is already set
-    }
-
-    if (pipe(fd_pipe) != 0) { // create a pipe
-        return SDL_SetError("pipe() failed: %s", strerror(errno));
     }
 
     /* https://gitlab.gnome.org/GNOME/zenity/-/commit/c686bdb1b45e95acf010efd9ca0c75527fbb4dea
@@ -208,63 +148,46 @@ bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *butto
     }
     argv[argc] = NULL;
 
-    if (run_zenity(argv, fd_pipe)) {
-        FILE *outputfp = NULL;
-        char *output = NULL;
-        char *tmp = NULL;
-        close(fd_pipe[1]);
+    SDL_PropertiesID props = SDL_CreateProperties();
+    if (!props) {
+        return false;
+    }
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, argv);
+    // If buttonID is set we need to wait and read the results
+    if (buttonID) {
+        SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
+    } else {
+        SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_NULL);
+    }
+    process = SDL_CreateProcessWithProperties(props);
+    SDL_DestroyProperties(props);
+    if (!process) {
+        return false;
+    }
+    if (buttonID) {
+        char *output = SDL_ReadProcess(process, NULL, NULL);
+        if (output) {
+            // It likes to add a newline...
+            char *tmp = SDL_strrchr(output, '\n');
+            if (tmp) {
+                *tmp = '\0';
+            }
 
-        if (!buttonID) {
-            // if we don't need buttonID, we can return immediately
-            close(fd_pipe[0]);
-            return true; // success
-        }
-        *buttonID = -1;
-
-        output = SDL_malloc(output_len + 1);
-        if (!output) {
-            close(fd_pipe[0]);
-            return false;
-        }
-        output[0] = '\0';
-
-        outputfp = fdopen(fd_pipe[0], "r");
-        if (!outputfp) {
-            SDL_free(output);
-            close(fd_pipe[0]);
-            return SDL_SetError("Couldn't open pipe for reading: %s", strerror(errno));
-        }
-        tmp = fgets(output, output_len + 1, outputfp);
-        (void)fclose(outputfp);
-
-        if ((!tmp) || (*tmp == '\0') || (*tmp == '\n')) {
-            SDL_free(output);
-            return true; // User simply closed the dialog
-        }
-
-        // It likes to add a newline...
-        tmp = SDL_strrchr(output, '\n');
-        if (tmp) {
-            *tmp = '\0';
-        }
-
-        // Check which button got pressed
-        for (i = 0; i < messageboxdata->numbuttons; i += 1) {
-            if (messageboxdata->buttons[i].text) {
-                if (SDL_strcmp(output, messageboxdata->buttons[i].text) == 0) {
-                    *buttonID = messageboxdata->buttons[i].buttonID;
-                    break;
+            // Check which button got pressed
+            for (i = 0; i < messageboxdata->numbuttons; i += 1) {
+                if (messageboxdata->buttons[i].text) {
+                    if (SDL_strcmp(output, messageboxdata->buttons[i].text) == 0) {
+                        *buttonID = messageboxdata->buttons[i].buttonID;
+                        break;
+                    }
                 }
             }
+            SDL_free(output);
         }
-
-        SDL_free(output);
-        return true; // success!
     }
+    SDL_DestroyProcess(process);
 
-    close(fd_pipe[0]);
-    close(fd_pipe[1]);
-    return false; // run_zenity() calls SDL_SetError(), so message is already set
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_WAYLAND

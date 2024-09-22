@@ -24,7 +24,7 @@
 #include <limits.h>
 #endif
 #ifndef INT_MAX
-// Make a lucky guess.
+SDL_COMPILE_TIME_ASSERT(int_size, sizeof(int) == sizeof(Sint32));
 #define INT_MAX SDL_MAX_SINT32
 #endif
 #ifndef SIZE_MAX
@@ -2076,7 +2076,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
     return true;
 }
 
-SDL_bool SDL_LoadWAV_IO(SDL_IOStream *src, SDL_bool closeio, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+bool SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
 {
     bool result = false;
     WaveFile file;
@@ -2130,7 +2130,7 @@ done:
     return result;
 }
 
-SDL_bool SDL_LoadWAV(const char *path, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+bool SDL_LoadWAV(const char *path, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
 {
     return SDL_LoadWAV_IO(SDL_IOFromFile(path, "rb"), 1, spec, audio_buf, audio_len);
 }

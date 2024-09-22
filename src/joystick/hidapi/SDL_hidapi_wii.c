@@ -194,7 +194,7 @@ static int ReadInput(SDL_DriverWii_Context *ctx)
     int size;
 
     // Make sure we don't try to read at the same time a write is happening
-    if (SDL_AtomicGet(&ctx->device->rumble_pending) > 0) {
+    if (SDL_GetAtomicInt(&ctx->device->rumble_pending) > 0) {
         return 0;
     }
 
@@ -813,7 +813,7 @@ static bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
         // Maximum is Classic Controller + Wiimote
         joystick->nbuttons = k_eWiiButtons_Max;
     }
-    joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
 
     ctx->m_ulLastInput = SDL_GetTicks();
 
@@ -919,7 +919,7 @@ static void PostStickCalibrated(Uint64 timestamp, SDL_Joystick *joystick, StickC
  *`on` is the joystick value to be sent if a bit is on
  *`off` is the joystick value to be sent if a bit is off
  */
-static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, const Uint8 defs[][8], const Uint8 *data, int size, Uint8 on, Uint8 off)
+static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, const Uint8 defs[][8], const Uint8 *data, int size, bool on, bool off)
 {
     int i, j;
 
@@ -927,8 +927,8 @@ static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, const
         for (j = 0; j < 8; j++) {
             Uint8 button = defs[i][j];
             if (button != 0xFF) {
-                Uint8 state = (data[i] >> j) & 1 ? on : off;
-                SDL_SendJoystickButton(timestamp, joystick, button, state);
+                bool down = (data[i] >> j) & 1 ? on : off;
+                SDL_SendJoystickButton(timestamp, joystick, button, down);
             }
         }
     }
@@ -1035,7 +1035,7 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
     }
 
     // Buttons
-    PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucExtension + 8, 3, SDL_RELEASED, SDL_PRESSED);
+    PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucExtension + 8, 3, false, true);
 
     // Triggers
     zl = data->rgucExtension[9] & 0x80;
@@ -1063,9 +1063,9 @@ static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Jo
     }
 
     // Buttons
-    PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucExtension + 4, 2, SDL_RELEASED, SDL_PRESSED);
+    PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucExtension + 4, 2, false, true);
     if (ctx->m_ucMotionPlusMode == WII_MOTIONPLUS_MODE_GAMEPAD) {
-        PostPackedButtonData(ctx->timestamp, joystick, MP_FIXUP_DPAD_BUTTON_DEFS, data->rgucExtension, 2, SDL_RELEASED, SDL_PRESSED);
+        PostPackedButtonData(ctx->timestamp, joystick, MP_FIXUP_DPAD_BUTTON_DEFS, data->rgucExtension, 2, false, true);
     }
 
     // Triggers
@@ -1115,7 +1115,7 @@ static void HandleWiiRemoteButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *
         }
     };
     if (data->hasBaseButtons) {
-        PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucBaseButtons, 2, SDL_PRESSED, SDL_RELEASED);
+        PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucBaseButtons, 2, true, false);
     }
 }
 
@@ -1148,24 +1148,24 @@ static void HandleWiiRemoteButtonDataAsMainController(SDL_DriverWii_Context *ctx
         }
     };
     if (data->hasBaseButtons) {
-        PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucBaseButtons, 2, SDL_PRESSED, SDL_RELEASED);
+        PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucBaseButtons, 2, true, false);
     }
 }
 
 static void HandleNunchuckButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
 {
-    Uint8 c_button, z_button;
+    bool c_button, z_button;
 
     if (data->ucNExtensionBytes < 6) {
         return;
     }
 
     if (ctx->m_ucMotionPlusMode == WII_MOTIONPLUS_MODE_NUNCHUK) {
-        c_button = (data->rgucExtension[5] & 0x08) ? SDL_RELEASED : SDL_PRESSED;
-        z_button = (data->rgucExtension[5] & 0x04) ? SDL_RELEASED : SDL_PRESSED;
+        c_button = (data->rgucExtension[5] & 0x08) ? false : true;
+        z_button = (data->rgucExtension[5] & 0x04) ? false : true;
     } else {
-        c_button = (data->rgucExtension[5] & 0x02) ? SDL_RELEASED : SDL_PRESSED;
-        z_button = (data->rgucExtension[5] & 0x01) ? SDL_RELEASED : SDL_PRESSED;
+        c_button = (data->rgucExtension[5] & 0x02) ? false : true;
+        z_button = (data->rgucExtension[5] & 0x01) ? false : true;
     }
     SDL_SendJoystickButton(ctx->timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, c_button);
     SDL_SendJoystickAxis(ctx->timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, z_button ? SDL_JOYSTICK_AXIS_MAX : SDL_JOYSTICK_AXIS_MIN);

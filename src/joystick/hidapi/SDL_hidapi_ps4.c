@@ -863,7 +863,7 @@ static bool HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     if (ctx->touchpad_supported) {
         joystick->nbuttons += 1;
     }
-    joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL,
@@ -1010,7 +1010,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     static const float TOUCHPAD_SCALEX = 1.0f / 1920;
     static const float TOUCHPAD_SCALEY = 1.0f / 920; // This is noted as being 944 resolution, but 920 feels better
     Sint16 axis;
-    Uint8 touchpad_state;
+    bool touchpad_down;
     int touchpad_x, touchpad_y;
     Uint64 timestamp = SDL_GetTicksNS();
 
@@ -1018,10 +1018,10 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         {
             Uint8 data = (packet->rgucButtonsHatAndCounter[0] >> 4);
 
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data & 0x01) != 0));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data & 0x02) != 0));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data & 0x04) != 0));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data & 0x08) != 0));
         }
         {
             Uint8 hat;
@@ -1063,12 +1063,12 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     if (ctx->last_state.rgucButtonsHatAndCounter[1] != packet->rgucButtonsHatAndCounter[1]) {
         Uint8 data = packet->rgucButtonsHatAndCounter[1];
 
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, (data & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data & 0x01) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data & 0x02) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, ((data & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, ((data & 0x20) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((data & 0x40) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((data & 0x80) != 0));
     }
 
     /* Some fightsticks, ex: Victrix FS Pro will only this these digital trigger bits and not the analog values so this needs to run whenever the
@@ -1083,8 +1083,8 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     if (ctx->last_state.rgucButtonsHatAndCounter[2] != packet->rgucButtonsHatAndCounter[2]) {
         Uint8 data = (packet->rgucButtonsHatAndCounter[2] & 0x03);
 
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS4_TOUCHPAD, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data & 0x01) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS4_TOUCHPAD, ((data & 0x02) != 0));
     }
 
     axis = ((int)packet->ucTriggerLeft * 257) - 32768;
@@ -1124,15 +1124,15 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     }
 
     if (size > 9 && ctx->report_touchpad && ctx->enhanced_reports) {
-        touchpad_state = !(packet->ucTouchpadCounter1 & 0x80) ? SDL_PRESSED : SDL_RELEASED;
+        touchpad_down = ((packet->ucTouchpadCounter1 & 0x80) == 0);
         touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
         touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);
-        SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+        SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
 
-        touchpad_state = !(packet->ucTouchpadCounter2 & 0x80) ? SDL_PRESSED : SDL_RELEASED;
+        touchpad_down = ((packet->ucTouchpadCounter2 & 0x80) == 0);
         touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
         touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
-        SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+        SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
     }
 
     if (size > 9 && ctx->report_sensors) {

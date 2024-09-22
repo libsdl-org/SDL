@@ -21,7 +21,7 @@ static SDLTest_CommonState *state = NULL;
 static SDL_Camera *camera = NULL;
 static SDL_CameraSpec spec;
 static SDL_Texture *texture = NULL;
-static SDL_bool texture_updated = SDL_FALSE;
+static bool texture_updated = false;
 static SDL_Surface *frame_current = NULL;
 static SDL_CameraID front_camera = 0;
 static SDL_CameraID back_camera = 0;
@@ -58,9 +58,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!state) {
         return SDL_APP_FAILURE;
     }
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -99,8 +96,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_Log("Couldn't create window: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-
-    SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
 
     renderer = state->renderers[0];
     if (!renderer) {
@@ -305,7 +300,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
          * But in case of 0-copy, it's needed to have the frame while using the texture.
          */
          frame_current = frame_next;
-         texture_updated = SDL_FALSE;
+         texture_updated = false;
     }
 
     if (frame_current) {
@@ -339,7 +334,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         /* Update SDL_Texture with last video frame (only once per new frame) */
         if (frame_current && !texture_updated) {
             SDL_UpdateTexture(texture, NULL, frame_current->pixels, frame_current->pitch);
-            texture_updated = SDL_TRUE;
+            texture_updated = true;
         }
 
         SDL_GetTextureSize(texture, &tw, &th);

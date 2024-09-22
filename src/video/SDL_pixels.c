@@ -165,7 +165,7 @@ const char *SDL_GetPixelFormatName(SDL_PixelFormat format)
 }
 #undef CASE
 
-SDL_bool SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask)
+bool SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask, Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask)
 {
     Uint32 masks[4];
 
@@ -1035,7 +1035,7 @@ SDL_Palette *SDL_CreatePalette(int ncolors)
     return palette;
 }
 
-SDL_bool SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int firstcolor, int ncolors)
+bool SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int firstcolor, int ncolors)
 {
     bool result = true;
 
