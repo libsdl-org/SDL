@@ -502,11 +502,11 @@ typedef Sint64 SDL_Time;
 #endif
 #endif
 /* Specifically for the `long long` -- SDL-specific. */
-#ifndef SDL_PLATFORM_WINDOWS
-#define SDL_PRILL_PREFIX "ll"
-#else
+#ifdef SDL_PLATFORM_WINDOWS
 SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 for windows - make sure `long long` is 64 bits. */
 #define SDL_PRILL_PREFIX "I64"
+#else
+#define SDL_PRILL_PREFIX "ll"
 #endif
 #ifndef SDL_PRILLd
 #define SDL_PRILLd SDL_PRILL_PREFIX "d"
