@@ -84,6 +84,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     const float size = 200.0f + (200.0f * scale);
 
     SDL_Vertex vertices[4];
+    int i;
 
     /* as you can see from this, rendering draws over whatever was drawn before it. */
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  /* black, full alpha */
@@ -104,15 +105,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     vertices[2].position.y = (((float) WINDOW_HEIGHT) + size) / 2.0f;
     vertices[2].color.b = 1.0f;
     vertices[2].color.a = 1.0f;
-
-#if 0
-typedef struct SDL_Vertex
-{
-    SDL_FPoint position;        /**< Vertex position, in SDL_Renderer coordinates  */
-    SDL_FColor color;           /**< Vertex color */
-    SDL_FPoint tex_coord;       /**< Normalized texture coordinates, if needed */
-} SDL_Vertex;
-#endif
 
     SDL_RenderGeometry(renderer, NULL, vertices, 3, NULL, 0);
 
@@ -140,7 +132,7 @@ typedef struct SDL_Vertex
        using indices, to get the whole thing on the screen: */
 
     /* Let's just move this over so it doesn't overlap... */
-    for (int i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++) {
         vertices[i].position.x += 450;
     }
 
