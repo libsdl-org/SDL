@@ -93,8 +93,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     dst_rect.w = (float) texture_width;
     dst_rect.h = (float) texture_height;
     /* rotate it around the center of the texture; you can rotate it from a different point, too! */
-    center.x = texture_width / 2;
-    center.y = texture_height / 2;
+    center.x = texture_width / 2.0f;
+    center.y = texture_height / 2.0f;
     SDL_RenderTextureRotated(renderer, texture, NULL, &dst_rect, rotation, &center, SDL_FLIP_NONE);
 
     SDL_RenderPresent(renderer);  /* put it all on the screen! */
