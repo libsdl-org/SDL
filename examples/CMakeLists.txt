@@ -125,6 +125,7 @@ add_sdl_example_executable(renderer-primitives SOURCES renderer/02-primitives/re
 add_sdl_example_executable(renderer-lines SOURCES renderer/03-lines/renderer-lines.c)
 add_sdl_example_executable(renderer-points SOURCES renderer/04-points/renderer-points.c)
 add_sdl_example_executable(renderer-rectangles SOURCES renderer/05-rectangles/renderer-rectangles.c)
+add_sdl_example_executable(renderer-textures SOURCES renderer/06-textures/renderer-textures.c)
 add_sdl_example_executable(audio-simple-playback SOURCES audio/01-simple-playback/simple-playback.c)
 add_sdl_example_executable(audio-simple-playback-callback SOURCES audio/02-simple-playback-callback/simple-playback-callback.c)
 add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.wav)
