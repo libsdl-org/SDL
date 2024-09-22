@@ -451,6 +451,7 @@ SDL3_0.0.0 {
     SDL_GetRenderColorScale;
     SDL_GetRenderDrawBlendMode;
     SDL_GetRenderDrawColor;
+    SDL_GetRenderDrawColorRGBA;
     SDL_GetRenderDrawColorFloat;
     SDL_GetRenderDriver;
     SDL_GetRenderLogicalPresentation;
@@ -843,6 +844,7 @@ SDL3_0.0.0 {
     SDL_SetRenderColorScale;
     SDL_SetRenderDrawBlendMode;
     SDL_SetRenderDrawColor;
+    SDL_SetRenderDrawColorRGBA;
     SDL_SetRenderDrawColorFloat;
     SDL_SetRenderLogicalPresentation;
     SDL_SetRenderScale;

@@ -3192,6 +3192,16 @@ bool SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, U
     return SDL_SetRenderDrawColorFloat(renderer, fR, fG, fB, fA);
 }
 
+bool SDL_SetRenderDrawColorRGBA(SDL_Renderer *renderer, SDL_Color color)
+{
+    const float fR = (float)color.r / 255.0f;
+    const float fG = (float)color.g / 255.0f;
+    const float fB = (float)color.b / 255.0f;
+    const float fA = (float)color.a / 255.0f;
+
+    return SDL_SetRenderDrawColorFloat(renderer, fR, fG, fB, fA);
+}
+
 bool SDL_SetRenderDrawColorFloat(SDL_Renderer *renderer, float r, float g, float b, float a)
 {
     CHECK_RENDERER_MAGIC(renderer, false);
@@ -3234,6 +3244,23 @@ bool SDL_GetRenderDrawColor(SDL_Renderer *renderer, Uint8 *r, Uint8 *g, Uint8 *b
     }
     if (a) {
         *a = (Uint8)(fA * 255.0f);
+    }
+    return true;
+}
+
+bool SDL_GetRenderDrawColorRGBA(SDL_Renderer *renderer, SDL_Color *color)
+{
+    float fR, fG, fB, fA;
+
+    if (!SDL_GetRenderDrawColorFloat(renderer, &fR, &fG, &fB, &fA)) {
+        if (color) {
+            *color = (SDL_Color){0, 0, 0, 0};
+        }
+        return false;
+    }
+
+    if (color) {
+        *color = (SDL_Color){(Uint8)(fR * 255.0f), (Uint8)(fG * 255.0f), (Uint8)(fB * 255.0f), (Uint8)(fA * 255.0f)};
     }
     return true;
 }

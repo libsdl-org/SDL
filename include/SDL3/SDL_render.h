@@ -1563,8 +1563,28 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderScale(SDL_Renderer *renderer, floa
  *
  * \sa SDL_GetRenderDrawColor
  * \sa SDL_SetRenderDrawColorFloat
+ * \sa SDL_SetRenderDrawColorRGBA
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+/**
+ * Set the color used for drawing operations.
+ *
+ * Set the color for drawing or filling rectangles, lines, and points, and for
+ * SDL_RenderClear().
+ *
+ * \param renderer the rendering context.
+ * \param color the rgba values used to draw on the rendering target.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetRenderDrawColorRGBA
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_SetRenderDrawColorFloat
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderDrawColorRGBA(SDL_Renderer *renderer, SDL_Color color);
 
 /**
  * Set the color used for drawing operations (Rect, Line and Clear).
@@ -1585,6 +1605,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderDrawColor(SDL_Renderer *renderer, 
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRenderDrawColorFloat
+ * \sa SDL_SetRenderDrawColorRGBA
  * \sa SDL_SetRenderDrawColor
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderDrawColorFloat(SDL_Renderer *renderer, float r, float g, float b, float a);
@@ -1606,10 +1627,28 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderDrawColorFloat(SDL_Renderer *rende
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetRenderDrawColorFloat
  * \sa SDL_SetRenderDrawColor
+ * \sa SDL_GetRenderDrawColorFloat
+ * \sa SDL_GetRenderDrawColorRGBA
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderDrawColor(SDL_Renderer *renderer, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+
+/**
+ * Get the color used for drawing operations (Rect, Line and Clear).
+ *
+ * \param renderer the rendering context.
+ * \param color a pointer filled in with the rgba values used to draw on the
+ *          rendering target.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetRenderDrawColorRGBA
+ * \sa SDL_GetRenderDrawColor
+ * \sa SDL_GetRenderDrawColorFloat
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderDrawColorRGBA(SDL_Renderer *renderer, SDL_Color *color);
 
 /**
  * Get the color used for drawing operations (Rect, Line and Clear).
@@ -1629,6 +1668,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderDrawColor(SDL_Renderer *renderer, 
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetRenderDrawColorFloat
+ * \sa SDL_GetRenderDrawColorRGBA
  * \sa SDL_GetRenderDrawColor
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderDrawColorFloat(SDL_Renderer *renderer, float *r, float *g, float *b, float *a);
