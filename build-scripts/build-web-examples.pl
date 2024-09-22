@@ -168,6 +168,8 @@ sub handle_example_dir {
 sub handle_category_dir {
     my $category = shift;
 
+    # !!! FIXME: this needs to generate a preview page for all the examples things in the category.
+
     print("Category $category ...\n");
 
     do_mkdir("$output_dir/$category");
@@ -213,6 +215,7 @@ opendir(my $dh, $examples_dir) or die("Couldn't opendir '$examples_dir': $!\n");
 while (readdir($dh)) {
     next if ($_ eq '.') || ($_ eq '..');  # obviously skip current and parent entries.
     next if not -d "$examples_dir/$_";   # only care about subdirectories.
+    # !!! FIXME: this needs to generate a preview page for all the categories.
     handle_category_dir($_);
 }
 
