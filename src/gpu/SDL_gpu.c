@@ -562,7 +562,11 @@ const char * SDL_GetGPUDriver(int index)
         SDL_InvalidParamError("index");
         return NULL;
     }
+#ifndef SDL_GPU_DISABLED
     return backends[index]->name;
+#else
+    return NULL;
+#endif
 }
 
 const char * SDL_GetGPUDeviceDriver(SDL_GPUDevice *device)
