@@ -28,6 +28,73 @@
 
 #define WM_TRAYICON (WM_USER + 1)
 
+/* TODO: Move this somewhere where it can be re-used? */
+HICON CreateIconFromSurface(SDL_Surface *surface)
+{
+    SDL_Surface *s = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+    if (!s) {
+        return NULL;
+    }
+
+    BITMAPINFO bmpInfo;
+    ZeroMemory(&bmpInfo, sizeof(BITMAPINFO));
+    bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmpInfo.bmiHeader.biWidth = width;
+    bmpInfo.bmiHeader.biHeight = -height; /* Top-down bitmap */
+    bmpInfo.bmiHeader.biPlanes = 1;
+    bmpInfo.bmiHeader.biBitCount = 32;
+    bmpInfo.bmiHeader.biCompression = BI_RGB;
+
+    HDC hdc = GetDC(NULL);
+    void* pBits = NULL;
+    HBITMAP hBitmap = CreateDIBSection(hdc, &bmpInfo, DIB_RGB_COLORS, &pBits, NULL, 0);
+    if (!hBitmap) {
+        ReleaseDC(NULL, hdc);
+        SDL_FreeSurface(s);
+        return NULL;
+    }
+
+    memcpy(pBits, s->pixels, s->w * s->h * 4);
+
+    SDL_FreeSurface(s);
+
+    HBITMAP hMask = CreateBitmap(width, height, 1, 1, NULL);
+    if (!hMask) {
+        DeleteObject(hBitmap);
+        ReleaseDC(NULL, hdc);
+        return NULL;
+    }
+
+    HDC hdcMem = CreateCompatibleDC(hdc);
+    HGDIOBJ oldBitmap = SelectObject(hdcMem, hMask);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
+            BYTE alpha = pixel[3];
+            COLORREF maskColor = (alpha == 0) ? RGB(0, 0, 0) : RGB(255, 255, 255);
+            SetPixel(hdcMem, x, y, maskColor);
+        }
+    }
+
+    ICONINFO iconInfo;
+    iconInfo.fIcon = TRUE;
+    iconInfo.xHotspot = 0;
+    iconInfo.yHotspot = 0;
+    iconInfo.hbmMask = hMask;
+    iconInfo.hbmColor = hBitmap;
+
+    HICON hIcon = CreateIconIndirect(&iconInfo);
+
+    SelectObject(hdcMem, oldBitmap);
+    DeleteDC(hdcMem);
+    DeleteObject(hBitmap);
+    DeleteObject(hMask);
+    ReleaseDC(NULL, hdc);
+
+    return hIcon;
+}
+
 struct SDL_TrayMenu {
     SDL_Tray *tray;
     HMENU hMenu;
@@ -77,7 +144,7 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             break;
 
         case WM_COMMAND:
-            for (int i = 0; i < tray->nEntries; i++) {
+            for (size_t i = 0; i < tray->nEntries; i++) {
                 if (tray->entries[i]->id == LOWORD(wParam)) {
                     SDL_TrayEntry *entry = tray->entries[i];
                     if (entry->callback) {
@@ -92,72 +159,6 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
     return 0;
-}
-
-HICON CreateIconFromRGBA(int width, int height, const BYTE* rgbaData) {
-    // Create a BITMAPINFO structure
-    BITMAPINFO bmpInfo;
-    ZeroMemory(&bmpInfo, sizeof(BITMAPINFO));
-    bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmpInfo.bmiHeader.biWidth = width;
-    bmpInfo.bmiHeader.biHeight = -height; // Negative to indicate a top-down bitmap
-    bmpInfo.bmiHeader.biPlanes = 1;
-    bmpInfo.bmiHeader.biBitCount = 32; // 32 bits for RGBA
-    bmpInfo.bmiHeader.biCompression = BI_RGB;
-
-    // Create a DIB section
-    HDC hdc = GetDC(NULL);
-    void* pBits = NULL;
-    HBITMAP hBitmap = CreateDIBSection(hdc, &bmpInfo, DIB_RGB_COLORS, &pBits, NULL, 0);
-    if (!hBitmap) {
-        ReleaseDC(NULL, hdc);
-        return NULL; // Handle error
-    }
-
-    // Copy the RGBA data to the bitmap
-    memcpy(pBits, rgbaData, width * height * 4); // 4 bytes per pixel
-
-    // Create a mask bitmap (1 bit per pixel)
-    HBITMAP hMask = CreateBitmap(width, height, 1, 1, NULL);
-    if (!hMask) {
-        DeleteObject(hBitmap);
-        ReleaseDC(NULL, hdc);
-        return NULL; // Handle error
-    }
-
-    // Create a compatible DC for the mask
-    HDC hdcMem = CreateCompatibleDC(hdc);
-    HGDIOBJ oldBitmap = SelectObject(hdcMem, hMask);
-
-    // Create the mask based on the alpha channel
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
-            BYTE alpha = pixel[3]; // Alpha channel
-            // Set the mask pixel: 0 for transparent, 1 for opaque
-            COLORREF maskColor = (alpha == 0) ? RGB(0, 0, 0) : RGB(255, 255, 255);
-            SetPixel(hdcMem, x, y, maskColor);
-        }
-    }
-
-    // Create the icon using CreateIconIndirect
-    ICONINFO iconInfo;
-    iconInfo.fIcon = TRUE; // TRUE for icon, FALSE for cursor
-    iconInfo.xHotspot = 0; // Hotspot x
-    iconInfo.yHotspot = 0; // Hotspot y
-    iconInfo.hbmMask = hMask; // Mask bitmap
-    iconInfo.hbmColor = hBitmap; // Color bitmap
-
-    HICON hIcon = CreateIconIndirect(&iconInfo);
-
-    // Clean up
-    SelectObject(hdcMem, oldBitmap);
-    DeleteDC(hdcMem);
-    DeleteObject(hBitmap);
-    DeleteObject(hMask);
-    ReleaseDC(NULL, hdc);
-
-    return hIcon;
 }
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
@@ -199,15 +200,14 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     mbstowcs_s(NULL, tray->nid.szTip, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip), tooltip, _TRUNCATE);
 
     if (icon) {
-        SDL_Surface *iconfmt = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
-        if (!iconfmt) {
-            goto no_icon;
+        tray->nid.hIcon = CreateIconFromSurface(icon);
+
+        if (!tray->nid.hIcon) {
+            tray->nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
         }
 
-        tray->nid.hIcon = CreateIconFromRGBA(iconfmt->w, iconfmt->h, iconfmt->pixels);
         tray->icon = tray->nid.hIcon;
     } else {
-no_icon:
         tray->nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
         tray->icon = tray->nid.hIcon;
     }
@@ -226,10 +226,10 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
     }
 
     if (icon) {
-        SDL_Surface *iconfmt = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
-        if (!iconfmt) {
-            /* TODO: Ignore errors silently, as in SDL_CreateTray? */
-            return;
+        tray->nid.hIcon = CreateIconFromSurface(icon);
+
+        if (!tray->nid.hIcon) {
+            tray->nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
         }
 
         tray->nid.hIcon = CreateIconFromRGBA(iconfmt->w, iconfmt->h, iconfmt->pixels);
