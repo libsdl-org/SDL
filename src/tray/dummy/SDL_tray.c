@@ -60,23 +60,23 @@ void SDL_AppendTraySeparator(SDL_TrayMenu *menu)
     SDL_Unsupported();
 }
 
-void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, SDL_bool checked)
+void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
 {
     SDL_Unsupported();
 }
 
-SDL_bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
+bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 {
     SDL_Unsupported();
     return false;
 }
 
-void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, SDL_bool enabled)
+void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
 {
     SDL_Unsupported();
 }
 
-SDL_bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
+bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 {
     SDL_Unsupported();
     return false;

@@ -318,12 +318,12 @@ void SDL_AppendTraySeparator(SDL_TrayMenu *menu)
     AppendMenu(menu->hMenu, MF_SEPARATOR, 0, NULL);
 }
 
-void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, SDL_bool checked)
+void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
 {
     CheckMenuItem(entry->menu->hMenu, (UINT) entry->id, checked ? MF_CHECKED : MF_UNCHECKED);
 }
 
-SDL_bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
+bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 {
     MENUITEMINFO mii;
     mii.cbSize = sizeof(MENUITEMINFO);
@@ -334,12 +334,12 @@ SDL_bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
     return !!(mii.fState & MFS_CHECKED);
 }
 
-void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, SDL_bool enabled)
+void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
 {
     EnableMenuItem(entry->menu->hMenu, (UINT) entry->id, MF_BYCOMMAND | (enabled ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
 }
 
-SDL_bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
+bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 {
     MENUITEMINFO mii;
     mii.cbSize = sizeof(MENUITEMINFO);

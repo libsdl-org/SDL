@@ -221,7 +221,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_AppendTraySeparator(SDL_TrayMenu *menu);
  * \sa SDL_GetTrayEntryEnabled
  * \sa SDL_SetTrayEntryCallback
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, SDL_bool checked);
+extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked);
 
 /**
  * Gets whether or not an entry is checked.
@@ -240,7 +240,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, S
  * \sa SDL_GetTrayEntryEnabled
  * \sa SDL_SetTrayEntryCallback
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetTrayEntryChecked(SDL_TrayEntry *entry);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryChecked(SDL_TrayEntry *entry);
 
 /**
  * Sets whether or not an entry is enabled.
@@ -256,7 +256,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetTrayEntryChecked(SDL_TrayEntry *entr
  * \sa SDL_GetTrayEntryEnabled
  * \sa SDL_SetTrayEntryCallback
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, SDL_bool enabled);
+extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled);
 
 /**
  * Gets whether or not an entry is enabled.
@@ -272,7 +272,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, S
  * \sa SDL_SetTrayEntryEnabled
  * \sa SDL_SetTrayEntryCallback
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry);
 
 /**
  * Sets a callback to be invoked when the entry is selected.

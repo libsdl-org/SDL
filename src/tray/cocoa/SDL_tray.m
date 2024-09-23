@@ -237,22 +237,22 @@ void SDL_AppendTraySeparator(SDL_TrayMenu *menu)
     [menu->menu addItem:[NSMenuItem separatorItem]];
 }
 
-void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, SDL_bool checked)
+void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
 {
     [entry->item setState:(checked ? NSControlStateValueOn : NSControlStateValueOff)];
 }
 
-SDL_bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
+bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 {
     return entry->item.state == NSControlStateValueOn;
 }
 
-void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, SDL_bool enabled)
+void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
 {
     [entry->item setState:(enabled ? YES : NO)];
 }
 
-SDL_bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
+bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 {
     return entry->item.enabled;
 }

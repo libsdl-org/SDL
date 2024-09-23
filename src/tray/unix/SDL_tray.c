@@ -114,7 +114,7 @@ void (*app_indicator_set_menu)(AppIndicator *self, GtkMenu *menu);
 /* ------------------------------------------------------------------------- */
 #endif
 
-static SDL_bool gtk_is_init = SDL_FALSE;
+static bool gtk_is_init = false;
 
 static int main_gtk_thread(void *data)
 {
@@ -143,13 +143,13 @@ static void quit_gtk(void)
         libgdk = NULL;
     }
 
-    gtk_is_init = SDL_FALSE;
+    gtk_is_init = false;
 }
 
-static SDL_bool init_gtk(void)
+static bool init_gtk(void)
 {
     if (gtk_is_init) {
-        return SDL_TRUE;
+        return true;
     }
 
     libappindicator = dlopen("libayatana-appindicator3.so", RTLD_LAZY);
@@ -205,11 +205,11 @@ static SDL_bool init_gtk(void)
         return SDL_SetError("Could not init GTK");
     }
 
-    gtk_is_init = SDL_TRUE;
+    gtk_is_init = true;
 
     SDL_DetachThread(SDL_CreateThread(main_gtk_thread, "tray gtk", NULL));
 
-    return SDL_TRUE;
+    return true;
 }
 
 struct SDL_TrayMenu {
@@ -245,7 +245,7 @@ static void call_callback(GtkMenuItem *item, gpointer ptr)
 }
 
 /* TODO: Replace this with a safer alternative */
-static SDL_bool get_tmp_filename(char *buffer, size_t size)
+static bool get_tmp_filename(char *buffer, size_t size)
 {
     static int count = 0;
 
@@ -260,7 +260,7 @@ static SDL_bool get_tmp_filename(char *buffer, size_t size)
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
-    if (init_gtk() != SDL_TRUE) {
+    if (init_gtk() != true) {
         return NULL;
     }
 
@@ -362,23 +362,23 @@ void SDL_AppendTraySeparator(SDL_TrayMenu *menu)
     gtk_menu_shell_append(menu->menu, item);
 }
 
-void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, SDL_bool checked)
+void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
 {
     SDL_Unsupported();
 }
 
-SDL_bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
+bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 {
     SDL_Unsupported();
     return false;
 }
 
-void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, SDL_bool enabled)
+void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
 {
     SDL_Unsupported();
 }
 
-SDL_bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
+bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 {
     SDL_Unsupported();
     return false;
