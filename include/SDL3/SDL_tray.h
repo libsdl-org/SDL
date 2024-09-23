@@ -76,7 +76,10 @@ typedef void (*SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  * Create an icon to be placed in the operating system's tray, or equivalent.
  *
  * Many platforms advise not using a system tray unless persistence is a
- * necessary feature.
+ * necessary feature. Avoid needlessly creating a tray icon, as the user may
+ * feel like it clutters their interface.
+ *
+ * Using tray icons require the video subsystem.
  *
  * \param icon a surface to be used as icon. May be NULL.
  * \param tooltip a tooltip to be displayed when the mouse hovers the icon. Not
