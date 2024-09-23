@@ -263,7 +263,7 @@ static int SDLCALL properties_testCopy(void *arg)
 
     data = SDL_GetPointerProperty(b, "data", NULL);
     SDLTest_AssertCheck(data == &a,
-        "Checking data property, got %p, expected %p", data, &a);
+        "Checking data property, got %p, expected %p", data, (void *)&a);
 
     data = SDL_GetPointerProperty(b, "cleanup", NULL);
     SDLTest_AssertCheck(data == NULL,

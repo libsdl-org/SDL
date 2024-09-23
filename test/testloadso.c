@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
                          symname, SDL_GetError());
             result = 4;
         } else {
-            SDL_Log("Found %s in %s at %p\n", symname, libname, fn);
+            SDL_Log("Found %s in %s at %p\n", symname, libname, (void *)fn);
             if (hello) {
                 SDL_Log("Calling function...\n");
                 fn("     HELLO, WORLD!\n");

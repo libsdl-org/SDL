@@ -94,7 +94,7 @@ static int SDLCALL events_pushPumpAndPollUserevent(void *arg)
     SDLTest_AssertCheck((void *)&g_userdataValue1 == event_out.user.data1, "Check SDL_Event.user.data1, expected: %p, got: %p", (void *)&g_userdataValue1, event_out.user.data1);
     SDLTest_AssertCheck((void *)&g_userdataValue2 == event_out.user.data2, "Check SDL_Event.user.data2, expected: %p, got: %p", (void *)&g_userdataValue2, event_out.user.data2);
     event_window = SDL_GetWindowFromEvent(&event_out);
-    SDLTest_AssertCheck(NULL == SDL_GetWindowFromEvent(&event_out), "Check SDL_GetWindowFromEvent returns the window id from a user event, expected: NULL, got: %p", event_window);
+    SDLTest_AssertCheck(NULL == SDL_GetWindowFromEvent(&event_out), "Check SDL_GetWindowFromEvent returns the window id from a user event, expected: NULL, got: %p", (void *)event_window);
 
     /* Need to finish getting all events and sentinel, otherwise other tests that rely on event are in bad state */
     SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);

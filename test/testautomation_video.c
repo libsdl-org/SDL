@@ -320,7 +320,7 @@ static int SDLCALL video_getFullscreenDisplayModes(void *arg)
         for (i = 0; displays[i]; ++i) {
             modes = SDL_GetFullscreenDisplayModes(displays[i], &count);
             SDLTest_AssertPass("Call to SDL_GetFullscreenDisplayModes(%" SDL_PRIu32 ")", displays[i]);
-            SDLTest_AssertCheck(modes != NULL, "Validate returned value from function; expected != NULL; got: %p", modes);
+            SDLTest_AssertCheck(modes != NULL, "Validate returned value from function; expected != NULL; got: %p", (void *)modes);
             SDLTest_AssertCheck(count >= 0, "Validate number of modes; expected: >= 0; got: %d", count);
             SDL_free(modes);
         }
@@ -435,7 +435,7 @@ static int SDLCALL video_getWindowDisplayMode(void *arg)
     if (window != NULL) {
         mode = SDL_GetWindowFullscreenMode(window);
         SDLTest_AssertPass("Call to SDL_GetWindowFullscreenMode()");
-        SDLTest_AssertCheck(mode == NULL, "Validate result value; expected: NULL, got: %p", mode);
+        SDLTest_AssertCheck(mode == NULL, "Validate result value; expected: NULL, got: %p", (void *)mode);
     }
 
     /* Clean up */
@@ -475,7 +475,7 @@ static int SDLCALL video_getWindowDisplayModeNegative(void *arg)
     /* Call against invalid window */
     mode = SDL_GetWindowFullscreenMode(NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowFullscreenMode(window=NULL)");
-    SDLTest_AssertCheck(mode == NULL, "Validate result value; expected: NULL, got: %p", mode);
+    SDLTest_AssertCheck(mode == NULL, "Validate result value; expected: NULL, got: %p", (void *)mode);
     checkInvalidWindowError();
 
     return TEST_COMPLETED;

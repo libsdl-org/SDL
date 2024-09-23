@@ -1228,9 +1228,9 @@ stdlib_strpbrk(void *arg)
             SDLTest_AssertPass("About to call SDL_strpbrk(\"%s\", \"%s\")", input, test_cases[i].accept);
             result = SDL_strpbrk(input, test_cases[i].accept);
             if (test_cases[i].expected[j] < 0) {
-                SDLTest_AssertCheck(result == NULL, "Expected NULL, got %p", result);
+                SDLTest_AssertCheck(result == NULL, "Expected NULL, got %p", (void *)result);
             } else {
-                SDLTest_AssertCheck(result == test_cases[i].input + test_cases[i].expected[j], "Expected %p, got %p", test_cases[i].input + test_cases[i].expected[j], result);
+                SDLTest_AssertCheck(result == test_cases[i].input + test_cases[i].expected[j], "Expected %p, got %p", (void *)(test_cases[i].input + test_cases[i].expected[j]), (void *)result);
                 input = test_cases[i].input + test_cases[i].expected[j] + 1;
             }
         }
@@ -1243,14 +1243,14 @@ static int SDLCALL stdlib_wcstol(void *arg)
     const long long_max = (~0UL) >> 1;
     const long long_min = ((~0UL) >> 1) + 1UL;
 
-#define WCSTOL_TEST_CASE(str, base, expected_result, expected_endp_offset) do {                             \
-        const wchar_t *s = str;                                                                             \
-        long r, expected_r = expected_result;                                                               \
-        wchar_t *ep, *expected_ep = (wchar_t *)s + expected_endp_offset;                                    \
-        r = SDL_wcstol(s, &ep, base);                                                                       \
-        SDLTest_AssertPass("Call to SDL_wcstol(" #str ", &endp, " #base ")");                               \
-        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: %ld, got: %ld", expected_r, r); \
-        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep); \
+#define WCSTOL_TEST_CASE(str, base, expected_result, expected_endp_offset) do {                                             \
+        const wchar_t *s = str;                                                                                             \
+        long r, expected_r = expected_result;                                                                               \
+        wchar_t *ep, *expected_ep = (wchar_t *)s + expected_endp_offset;                                                    \
+        r = SDL_wcstol(s, &ep, base);                                                                                       \
+        SDLTest_AssertPass("Call to SDL_wcstol(" #str ", &endp, " #base ")");                                               \
+        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: %ld, got: %ld", expected_r, r);                 \
+        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", (void *)expected_ep, (void *)ep); \
     } while (0)
 
     // infer decimal
@@ -1300,7 +1300,7 @@ static int SDLCALL stdlib_strtox(void *arg)
         r = func_name(s, &ep, base);                                                                                             \
         SDLTest_AssertPass("Call to " #func_name "(" #str ", &endp, " #base ")");                                                \
         SDLTest_AssertCheck(r == expected_r, "Check result value, expected: " format_spec ", got: " format_spec, expected_r, r); \
-        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep);                      \
+        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", (void *)expected_ep, (void *)ep);      \
     } while (0)
 
     // infer decimal
@@ -1363,14 +1363,14 @@ static int SDLCALL stdlib_strtox(void *arg)
 
 static int SDLCALL stdlib_strtod(void *arg)
 {
-#define STRTOD_TEST_CASE(str, expected_result, expected_endp_offset) do {                                   \
-        const char *s = str;                                                                                \
-        double r, expected_r = expected_result;                                                             \
-        char *ep, *expected_ep = (char *)s + expected_endp_offset;                                          \
-        r = SDL_strtod(s, &ep);                                                                             \
-        SDLTest_AssertPass("Call to SDL_strtod(" #str ", &endp)");                                          \
-        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: %f, got: %f", expected_r, r);   \
-        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep); \
+#define STRTOD_TEST_CASE(str, expected_result, expected_endp_offset) do {                                                   \
+        const char *s = str;                                                                                                \
+        double r, expected_r = expected_result;                                                                             \
+        char *ep, *expected_ep = (char *)s + expected_endp_offset;                                                          \
+        r = SDL_strtod(s, &ep);                                                                                             \
+        SDLTest_AssertPass("Call to SDL_strtod(" #str ", &endp)");                                                          \
+        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: %f, got: %f", expected_r, r);                   \
+        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", (void *)expected_ep, (void *)ep); \
     } while (0)
 
     STRTOD_TEST_CASE("\t  123.75abcxyz", 123.75, 9); // skip leading space
