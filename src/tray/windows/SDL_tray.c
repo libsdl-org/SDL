@@ -360,7 +360,7 @@ void SDL_DestroyTray(SDL_Tray *tray)
 {
     Shell_NotifyIconW(NIM_DELETE, &tray->nid);
 
-    for (int i = 0; i < tray->nEntries; i++) {
+    for (size_t i = 0; i < tray->nEntries; i++) {
         if (tray->entries[i]->submenu.hMenu) {
             DestroyMenu(tray->entries[i]->submenu.hMenu);
         }

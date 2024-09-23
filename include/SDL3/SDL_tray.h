@@ -58,9 +58,9 @@ typedef enum SDL_TrayEntryFlags {
     SDL_TRAYENTRY_SUBMENU,
 
     /** Make the entry disabled. */
-    SDL_TRAYENTRY_DISABLED = (1 << 31),
+    SDL_TRAYENTRY_DISABLED = (1 << 30),
     /** Make the entry checked. This is valid only for checkboxes. */
-    SDL_TRAYENTRY_CHECKED = (1 << 30),
+    SDL_TRAYENTRY_CHECKED = (1 << 29),
 } SDL_TrayEntryFlags;
 
 /**
