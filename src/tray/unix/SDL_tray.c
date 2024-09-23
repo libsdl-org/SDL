@@ -23,7 +23,8 @@
 
 #include <dlfcn.h>
 
-#define TRAY_APPINDICATOR_ID "tray-id"
+/* getpid() */
+#include <unistd.h>
 
 #ifdef APPINDICATOR_HEADER
 #include APPINDICATOR_HEADER
@@ -31,7 +32,7 @@
 /* ------------------------------------------------------------------------- */
 /*                     BEGIN THIRD-PARTY HEADER CONTENT                      */
 /* ------------------------------------------------------------------------- */
-// Glib 2.0
+/* Glib 2.0 */
 
 typedef unsigned long gulong;
 typedef void* gpointer;
@@ -62,7 +63,7 @@ gulong (*g_signal_connect_data)(gpointer instance, const gchar *detailed_signal,
 #define FALSE 0
 #define TRUE 1
 
-// GTK 3.0
+/* GTK 3.0 */
 
 typedef struct _GtkMenu GtkMenu;
 typedef struct _GtkMenuItem GtkMenuItem;
@@ -88,7 +89,7 @@ void (*gtk_menu_shell_append)(GtkMenuShell *menu_shell, GtkWidget *child);
 #define GTK_CHECK_MENU_ITEM(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GTK_TYPE_CHECK_MENU_ITEM, GtkCheckMenuItem))
 #define GTK_MENU(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GTK_TYPE_MENU, GtkMenu))
 
-// AppIndicator
+/* AppIndicator */
 
 typedef enum {
     APP_INDICATOR_CATEGORY_APPLICATION_STATUS,
@@ -262,6 +263,16 @@ static bool get_tmp_filename(char *buffer, size_t size)
     return would_have_written > 0 && would_have_written < size - 1;
 }
 
+static const char *get_appindicator_id(void)
+{
+    static int count = 0;
+    static char buffer[256];
+
+    int would_have_written = SDL_snprintf(buffer, sizeof(buffer), "sdl-appindicator-%d-%d", getpid(), count++);
+
+    return would_have_written > 0 && would_have_written < size - 1;
+}
+
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     if (init_gtk() != true) {
@@ -280,7 +291,7 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     get_tmp_filename(icon_path, sizeof(icon_path));
     SDL_SaveBMP(icon, icon_path);
 
-    tray->indicator = app_indicator_new(TRAY_APPINDICATOR_ID, icon_path,
+    tray->indicator = app_indicator_new(get_appindicator_id(), icon_path,
                                         APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
 
     SDL_RemovePath(icon_path);
