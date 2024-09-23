@@ -231,6 +231,7 @@ struct SDL_TrayEntry {
 struct SDL_Tray {
     AppIndicator *indicator;
     SDL_TrayMenu menu;
+    char icon_path[256];
 
     size_t nEntries;
     SDL_TrayEntry **entries;
@@ -244,12 +245,8 @@ static void call_callback(GtkMenuItem *item, gpointer ptr)
     }
 }
 
-/* FIXME: AppIndicator requires dealing in filenames, which are inherently
- * subject to timing attacks.
- *
- * Can something be done by fetching a file descriptor from mkstemps() and
- * using a path like "/dev/fd/123"?
- */
+/* Since AppIndicator deals only in filenames, which are inherently subject to
+   timing attacks, don't bother generating a secure filename. */
 static bool get_tmp_filename(char *buffer, size_t size)
 {
     static int count = 0;
@@ -258,7 +255,7 @@ static bool get_tmp_filename(char *buffer, size_t size)
         return SDL_SetError("Can't create temporary file for icon: size %ld < 64", size);
     }
 
-    int would_have_written = SDL_snprintf(buffer, size, "/tmp/sdl_appindicator_icon_%d.bmp", count++);
+    int would_have_written = SDL_snprintf(buffer, size, "/tmp/sdl_appindicator_icon_%d_%d.bmp", getpid(), count++);
 
     return would_have_written > 0 && would_have_written < size - 1;
 }
@@ -270,7 +267,12 @@ static const char *get_appindicator_id(void)
 
     int would_have_written = SDL_snprintf(buffer, sizeof(buffer), "sdl-appindicator-%d-%d", getpid(), count++);
 
-    return would_have_written > 0 && would_have_written < size - 1;
+    if (would_have_written <= 0 || would_have_written >= sizeof(buffer) - 1) {
+        SDL_SetError("Couldn't fit %d bytes in buffer of size %ld", would_have_written, sizeof(buffer));
+        return NULL;
+    }
+
+    return buffer;
 }
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
@@ -287,14 +289,11 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
     SDL_memset((void *) tray, 0, sizeof(*tray));
 
-    char icon_path[256];
-    get_tmp_filename(icon_path, sizeof(icon_path));
-    SDL_SaveBMP(icon, icon_path);
+    get_tmp_filename(tray->icon_path, sizeof(tray->icon_path));
+    SDL_SaveBMP(icon, tray->icon_path);
 
-    tray->indicator = app_indicator_new(get_appindicator_id(), icon_path,
+    tray->indicator = app_indicator_new(get_appindicator_id(), tray->icon_path,
                                         APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
-
-    SDL_RemovePath(icon_path);
 
     app_indicator_set_status(tray->indicator, APP_INDICATOR_STATUS_ACTIVE);
 
@@ -304,11 +303,8 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
 {
     if (icon) {
-        char icon_path[256];
-        get_tmp_filename(icon_path, sizeof(icon_path));
         SDL_SaveBMP(icon, tray->icon_path);
         app_indicator_set_icon(tray->indicator, tray->icon_path);
-        SDL_RemovePath(icon_path);
     } else {
         app_indicator_set_icon(tray->indicator, NULL);
     }
@@ -419,6 +415,9 @@ void SDL_DestroyTray(SDL_Tray *tray)
     for (int i = 0; i < tray->nEntries; i++) {
         SDL_free(tray->entries[i]);
     }
+
+    /* The icon file must exist for the whole lifetime of the indicator. */
+    SDL_RemovePath(tray->icon_path);
 
     SDL_free(tray->entries);
 
