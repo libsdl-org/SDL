@@ -232,7 +232,6 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
             tray->nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
         }
 
-        tray->nid.hIcon = CreateIconFromRGBA(iconfmt->w, iconfmt->h, iconfmt->pixels);
         tray->icon = tray->nid.hIcon;
     } else {
         tray->nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
