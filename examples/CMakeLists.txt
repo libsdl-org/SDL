@@ -130,6 +130,7 @@ add_sdl_example_executable(renderer-streaming-textures SOURCES renderer/07-strea
 add_sdl_example_executable(renderer-rotating-textures SOURCES renderer/08-rotating-textures/rotating-textures.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.bmp)
 add_sdl_example_executable(renderer-scaling-textures SOURCES renderer/09-scaling-textures/scaling-textures.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.bmp)
 add_sdl_example_executable(renderer-geometry SOURCES renderer/10-geometry/geometry.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.bmp)
+add_sdl_example_executable(renderer-color-mods SOURCES renderer/11-color-mods/color-mods.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.bmp)
 add_sdl_example_executable(audio-simple-playback SOURCES audio/01-simple-playback/simple-playback.c)
 add_sdl_example_executable(audio-simple-playback-callback SOURCES audio/02-simple-playback-callback/simple-playback-callback.c)
 add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.wav)
