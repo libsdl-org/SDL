@@ -230,7 +230,6 @@ struct SDL_TrayEntry {
 struct SDL_Tray {
     AppIndicator *indicator;
     SDL_TrayMenu menu;
-    char icon_path[256];
 
     size_t nEntries;
     SDL_TrayEntry **entries;
@@ -244,7 +243,12 @@ static void call_callback(GtkMenuItem *item, gpointer ptr)
     }
 }
 
-/* TODO: Replace this with a safer alternative */
+/* FIXME: AppIndicator requires dealing in filenames, which are inherently
+ * subject to timing attacks.
+ *
+ * Can something be done by fetching a file descriptor from mkstemps() and
+ * using a path like "/dev/fd/123"?
+ */
 static bool get_tmp_filename(char *buffer, size_t size)
 {
     static int count = 0;
@@ -272,11 +276,15 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
     SDL_memset((void *) tray, 0, sizeof(*tray));
 
-    get_tmp_filename(tray->icon_path, sizeof(tray->icon_path));
-    SDL_SaveBMP(icon, tray->icon_path);
+    char icon_path[256];
+    get_tmp_filename(icon_path, sizeof(icon_path));
+    SDL_SaveBMP(icon, icon_path);
 
-    tray->indicator = app_indicator_new(TRAY_APPINDICATOR_ID, tray->icon_path,
+    tray->indicator = app_indicator_new(TRAY_APPINDICATOR_ID, icon_path,
                                         APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
+
+    SDL_RemovePath(icon_path);
+
     app_indicator_set_status(tray->indicator, APP_INDICATOR_STATUS_ACTIVE);
 
     return tray;
@@ -285,8 +293,11 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
 {
     if (icon) {
+        char icon_path[256];
+        get_tmp_filename(icon_path, sizeof(icon_path));
         SDL_SaveBMP(icon, tray->icon_path);
         app_indicator_set_icon(tray->indicator, tray->icon_path);
+        SDL_RemovePath(icon_path);
     } else {
         app_indicator_set_icon(tray->indicator, NULL);
     }
