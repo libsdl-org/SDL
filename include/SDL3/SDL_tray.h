@@ -49,7 +49,7 @@ typedef struct SDL_TrayEntry SDL_TrayEntry;
  * the time a tray entry is created. Other flags are optional; zero or more of
  * those can be OR'ed together with the mandatory flag.
  */
-typedef enum {
+typedef enum SDL_TrayEntryFlags {
     /** Make the entry a simple button. This is a mandatory flag. */
     SDL_TRAYENTRY_BUTTON = 0,
     /** Make the entry a checkbox. This is a mandatory flag. */
@@ -102,8 +102,6 @@ extern SDL_DECLSPEC SDL_Tray *SDLCALL SDL_CreateTray(SDL_Surface *icon, const ch
  *
  * \sa SDL_CreateTray
  * \sa SDL_SetTrayTooltip
- * \sa SDL_CreateTrayMenu
- * \sa SDL_DestroyTray
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon);
 
@@ -117,8 +115,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *ic
  *
  * \sa SDL_CreateTray
  * \sa SDL_SetTrayIcon
- * \sa SDL_CreateTrayMenu
- * \sa SDL_DestroyTray
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip);
 
@@ -164,6 +160,12 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTrayMenu(SDL_Tray *tray);
  * \sa SDL_AppendTraySeparator
  */
 extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTraySubmenu(SDL_TrayEntry *entry);
+
+/*
+extern SDL_DECLSPEC void SDLCALL SDL_RemoveEntry(SDL_TrayEntry *entry);
+extern SDL_DECLSPEC void SDLCALL SDL_RemoveEntryAt(SDL_TrayMenu *menu, int pos);
+extern SDL_DECLSPEC SDL_TrayEntry **SDLCALL SDL_GetEntries(SDL_TrayMenu *menu, int *size);
+*/
 
 /**
  * Create a menu item (entry) and append it to the given menu.

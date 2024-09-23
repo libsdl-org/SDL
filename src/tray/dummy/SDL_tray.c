@@ -27,6 +27,16 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     return NULL;
 }
 
+void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
+{
+    SDL_Unsupported();
+}
+
+void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
+{
+    SDL_Unsupported();
+}
+
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 {
     SDL_Unsupported();
