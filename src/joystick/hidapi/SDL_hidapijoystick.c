@@ -1246,12 +1246,12 @@ static bool HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id, SDL
     return false;
 }
 
-static bool HIDAPI_StartUpdatingDevices()
+static bool HIDAPI_StartUpdatingDevices(void)
 {
     return SDL_CompareAndSwapAtomicInt(&SDL_HIDAPI_updating_devices, false, true);
 }
 
-static void HIDAPI_FinishUpdatingDevices()
+static void HIDAPI_FinishUpdatingDevices(void)
 {
     SDL_SetAtomicInt(&SDL_HIDAPI_updating_devices, false);
 }
