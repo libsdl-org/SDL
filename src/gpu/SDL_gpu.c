@@ -234,7 +234,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
         &blit_pipeline_create_info);
 
     if (pipeline == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create graphics pipeline for blit");
+        SDL_SetError("Failed to create GPU pipeline for blit");
         return NULL;
     }
 
@@ -294,10 +294,7 @@ void SDL_GPU_BlitCommon(
         blit_pipeline_count,
         blit_pipeline_capacity);
 
-    if (blit_pipeline == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not fetch blit pipeline");
-        return;
-    }
+    SDL_assert(blit_pipeline != NULL);
 
     color_target_info.load_op = info->load_op;
     color_target_info.clear_color = info->clear_color;
@@ -412,7 +409,7 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
         for (i = 0; backends[i]; i += 1) {
             if (SDL_strcasecmp(gpudriver, backends[i]->name) == 0) {
                 if (!(backends[i]->shader_formats & format_flags)) {
-                    SDL_LogError(SDL_LOG_CATEGORY_GPU, "Required shader format for backend %s not provided!", gpudriver);
+                    SDL_SetError("Required shader format for backend %s not provided!", gpudriver);
                     return NULL;
                 }
                 if (backends[i]->PrepareDriver(_this)) {
@@ -421,7 +418,7 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
             }
         }
 
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "SDL_HINT_GPU_DRIVER %s unsupported!", gpudriver);
+        SDL_SetError("SDL_HINT_GPU_DRIVER %s unsupported!", gpudriver);
         return NULL;
     }
 
@@ -435,7 +432,7 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
         }
     }
 
-    SDL_LogError(SDL_LOG_CATEGORY_GPU, "No supported SDL_GPU backend found!");
+    SDL_SetError("No supported SDL_GPU backend found!");
     return NULL;
 }
 
