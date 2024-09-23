@@ -530,6 +530,19 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display,
 /* _this is a SDL_VideoDevice *                                              */
 /*****************************************************************************/
 
+static SDL_bool KMSDRM_DropMaster(_THIS)
+{
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+
+    /* Check if we have DRM master to begin with */
+    if (KMSDRM_drmAuthMagic(viddata->drm_fd, 0) == -EACCES) {
+        /* Nope, nothing to do then */
+        return SDL_TRUE;
+    }
+
+    return KMSDRM_drmDropMaster(viddata->drm_fd) < 0 ? SDL_FALSE : SDL_TRUE;
+}
+
 /* Deinitializes the driverdata of the SDL Displays in the SDL display list. */
 static void KMSDRM_DeinitDisplays(_THIS)
 {
@@ -992,7 +1005,7 @@ static int KMSDRM_InitDisplays(_THIS)
     /* Vulkan requires DRM master on its own FD to work, so try to drop master
        on our FD. This will only work without root on kernels v5.8 and later.
        If it doesn't work, just close the FD and we'll reopen it later. */
-    if (KMSDRM_drmDropMaster(viddata->drm_fd) < 0) {
+    if (!KMSDRM_DropMaster(_this)) {
         close(viddata->drm_fd);
         viddata->drm_fd = -1;
     }
@@ -1057,8 +1070,9 @@ static void KMSDRM_GBMDeinit(_THIS, SDL_DisplayData *dispdata)
         viddata->gbm_dev = NULL;
     }
 
-    /* Finally close DRM FD. May be reopen on next non-vulkan window creation. */
-    if (viddata->drm_fd >= 0) {
+    /* Finally drop DRM master if possible, otherwise close DRM FD.
+       May be reopened on next non-vulkan window creation. */
+    if (viddata->drm_fd >= 0 && !KMSDRM_DropMaster(_this)) {
         close(viddata->drm_fd);
         viddata->drm_fd = -1;
     }
