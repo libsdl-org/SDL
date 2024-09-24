@@ -534,9 +534,23 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display, 
 /* _this is a SDL_VideoDevice *                                              */
 /*****************************************************************************/
 
+static bool KMSDRM_DropMaster(SDL_VideoDevice *_this)
+{
+    SDL_VideoData *viddata = _this->internal;
+
+    /* Check if we have DRM master to begin with */
+    if (KMSDRM_drmAuthMagic(viddata->drm_fd, 0) == -EACCES) {
+        /* Nope, nothing to do then */
+        return true;
+    }
+
+    return KMSDRM_drmDropMaster(viddata->drm_fd) == 0;
+}
+
 // Deinitializes the internal of the SDL Displays in the SDL display list.
 static void KMSDRM_DeinitDisplays(SDL_VideoDevice *_this)
 {
+    SDL_VideoData *viddata = _this->internal;
     SDL_DisplayID *displays;
     SDL_DisplayData *dispdata;
     int i;
@@ -562,6 +576,11 @@ static void KMSDRM_DeinitDisplays(SDL_VideoDevice *_this)
             }
         }
         SDL_free(displays);
+    }
+
+    if (viddata->drm_fd >= 0) {
+        close(viddata->drm_fd);
+        viddata->drm_fd = -1;
     }
 }
 
@@ -999,8 +1018,6 @@ cleanup:
 
 /* Initializes the list of SDL displays: we build a new display for each
    connecter connector we find.
-   Inoffeensive for VK compatibility, except we must leave the drm_fd
-   closed when we get to the end of this function.
    This is to be called early, in VideoInit(), because it gets us
    the videomode information, which SDL needs immediately after VideoInit(). */
 static bool KMSDRM_InitDisplays(SDL_VideoDevice *_this)
@@ -1071,10 +1088,13 @@ static bool KMSDRM_InitDisplays(SDL_VideoDevice *_this)
     // Block for Vulkan compatibility.
     /***********************************/
 
-    /* THIS IS FOR VULKAN! Leave the FD closed, so VK can work.
-       Will reopen this in CreateWindow, but only if requested a non-VK window. */
-    close(viddata->drm_fd);
-    viddata->drm_fd = -1;
+    /* Vulkan requires DRM master on its own FD to work, so try to drop master
+       on our FD. This will only work without root on kernels v5.8 and later.
+       If it doesn't work, just close the FD and we'll reopen it later. */
+    if (!KMSDRM_DropMaster(_this)) {
+        close(viddata->drm_fd);
+        viddata->drm_fd = -1;
+    }
 
 cleanup:
     if (resources) {
@@ -1102,10 +1122,15 @@ static bool KMSDRM_GBMInit(SDL_VideoDevice *_this, SDL_DisplayData *dispdata)
     SDL_VideoData *viddata = _this->internal;
     bool result = true;
 
-    // Reopen the FD!
-    viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
+    // Reopen the FD if we weren't able to drop master on the original one
+    if (viddata->drm_fd < 0) {
+        viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
+        if (viddata->drm_fd < 0) {
+            return SDL_SetError("Could not reopen %s", viddata->devpath);
+        }
+    }
 
-    // Set the FD we just opened as current DRM master.
+    // Set the FD as current DRM master.
     KMSDRM_drmSetMaster(viddata->drm_fd);
 
     // Create the GBM device.
@@ -1131,8 +1156,9 @@ static void KMSDRM_GBMDeinit(SDL_VideoDevice *_this, SDL_DisplayData *dispdata)
         viddata->gbm_dev = NULL;
     }
 
-    // Finally close DRM FD. May be reopen on next non-vulkan window creation.
-    if (viddata->drm_fd >= 0) {
+    /* Finally drop DRM master if possible, otherwise close DRM FD.
+       May be reopened on next non-vulkan window creation. */
+    if (viddata->drm_fd >= 0 && !KMSDRM_DropMaster(_this)) {
         close(viddata->drm_fd);
         viddata->drm_fd = -1;
     }
