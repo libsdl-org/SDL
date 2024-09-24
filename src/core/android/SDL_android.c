@@ -2564,7 +2564,7 @@ bool Android_JNI_ShowToast(const char *message, int duration, int gravity, int x
     bool result;
     JNIEnv *env = Android_JNI_GetEnv();
     jstring jmessage = (*env)->NewStringUTF(env, message);
-    result = (*env)->CallStaticIntMethod(env, mActivityClass, midShowToast, jmessage, duration, gravity, xOffset, yOffset);
+    result = (*env)->CallStaticBooleanMethod(env, mActivityClass, midShowToast, jmessage, duration, gravity, xOffset, yOffset);
     (*env)->DeleteLocalRef(env, jmessage);
     return result;
 }
@@ -2632,7 +2632,7 @@ bool Android_JNI_OpenURL(const char *url)
     bool result;
     JNIEnv *env = Android_JNI_GetEnv();
     jstring jurl = (*env)->NewStringUTF(env, url);
-    result = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenURL, jurl);
+    result = (*env)->CallStaticBooleanMethod(env, mActivityClass, midOpenURL, jurl);
     (*env)->DeleteLocalRef(env, jurl);
     return result;
 }
