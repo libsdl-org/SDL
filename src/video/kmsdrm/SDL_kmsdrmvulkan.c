@@ -192,7 +192,7 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     VkDisplayPlaneAlphaFlagBitsKHR alpha_mode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
 
     VkResult result;
-    bool ret = -1;
+    bool ret = false;
     bool valid_gpu = false;
     bool mode_found = false;
     bool plane_supports_display = false;
@@ -485,7 +485,7 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         goto clean;
     }
 
-    ret = 0;  // success!
+    ret = true;  // success!
 
 clean:
     if (physical_devices) {
