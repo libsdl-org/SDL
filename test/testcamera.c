@@ -285,7 +285,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     #if 0
     if (frame_next) {
-        SDL_Log("frame: %p  at %" SDL_PRIu64, (void*)frame_next->pixels, timestampNS);
+        SDL_Log("frame: %p  at %" SDL_PRIu64, frame_next->pixels, timestampNS);
     }
     #endif
 
