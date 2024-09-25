@@ -347,6 +347,16 @@ jobs:
         if: ${{ matrix.platform.xcode-sdk != '' }}
         run: |
           xcodebuild -project Xcode/SDL/SDL.xcodeproj -target SDL3 -configuration Release -sdk ${{ matrix.platform.xcode-sdk }} clean build
+      - name: 'Setup Python'
+        uses: 'actions/setup-python@main'
+        if: ${{ matrix.platform.check-sources }}
+        with:
+          python-version: '3.x'
+      - name: 'Check Sources'
+        if: ${{ matrix.platform.check-sources }}
+        run: |
+          set -e
+          build-scripts/test-versioning.sh
       - name: 'Upload binary package'
         uses: actions/upload-artifact@v4
         if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}
