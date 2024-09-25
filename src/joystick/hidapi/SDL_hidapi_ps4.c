@@ -1208,6 +1208,7 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
             if (SDL_TICKS_PASSED(now, ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
                 /* Send an empty output report to tickle the Bluetooth stack */
                 HIDAPI_DriverPS4_TickleBluetooth(device);
+                ctx->last_packet = now;
             }
         } else {
             /* Reconnect the Bluetooth device once the USB device is gone */
