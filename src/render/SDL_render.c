@@ -2932,7 +2932,9 @@ bool SDL_SetRenderViewport(SDL_Renderer *renderer, const SDL_Rect *rect)
     CHECK_RENDERER_MAGIC(renderer, false);
 
     if (rect) {
-        // !!! FIXME: fail if rect->w or rect->h are negative (we use this to mean "the whole viewport").
+        if ((rect->w < 0) || (rect->h < 0)) {
+            return SDL_SetError("rect has a negative size");
+        }
         SDL_copyp(&renderer->view->viewport, rect);
     } else {
         renderer->view->viewport.x = 0;
