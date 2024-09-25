@@ -1400,11 +1400,19 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ConvertEventToRenderCoordinates(SDL_Rendere
 /**
  * Set the drawing area for rendering on the current target.
  *
+ * Drawing will clip to this area (separately from any clipping done with
+ * SDL_SetRenderClipRect), and the top left of the area will become
+ * coordinate (0, 0) for future drawing commands.
+ *
+ * The area's width and height must be >= 0.
+ *
  * \param renderer the rendering context.
  * \param rect the SDL_Rect structure representing the drawing area, or NULL
  *             to set the viewport to the entire target.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety You may only call this function from the main thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
