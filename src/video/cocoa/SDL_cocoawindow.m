@@ -300,7 +300,7 @@
                              ". [SDL] In performDragOperation, desiredType '%s', "
                              "Submitting DropText as (%lu) '%s'\n",
                              [[desiredType description] UTF8String],
-                             strlen(token), token);
+                             SDL_strlen(token), token);
                 if (!SDL_SendDropText(sdlwindow, token)) {
                     SDL_free(buffer);
                     return NO;

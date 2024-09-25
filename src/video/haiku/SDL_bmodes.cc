@@ -255,7 +255,7 @@ bool HAIKU_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
             SDL_AddFullscreenDisplayMode(display, &mode);
         }
     }
-    free(bmodes); // This should not be SDL_free()
+    free(bmodes); // This should NOT be SDL_free()
     return true;
 }
 
@@ -289,7 +289,7 @@ bool HAIKU_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL
         return SDL_SetError("Bad video mode");
     }
 
-    free(bmode_list); // This should not be SDL_free()
+    free(bmode_list); // This should NOT be SDL_free()
 
 #ifdef SDL_VIDEO_OPENGL
     /* FIXME: Is there some way to reboot the OpenGL context?  This doesn't
