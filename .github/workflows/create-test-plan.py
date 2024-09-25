@@ -216,6 +216,7 @@ class JobDetails:
     cpactions_setup_cmd: str = ""
     cpactions_install_cmd: str = ""
     setup_vita_gles_type: str = ""
+    check_sources: bool = False
 
     def to_workflow(self, enable_artifacts: bool) -> dict[str, str|bool]:
         data = {
@@ -278,6 +279,7 @@ class JobDetails:
             "cpactions-install-cmd": self.cpactions_install_cmd,
             "setup-vita-gles-type": self.setup_vita_gles_type,
             "setup-gdk-folder": self.setup_gdk_folder,
+            "check-sources": self.check_sources,
         }
         return {k: v for k, v in data.items() if v != ""}
 
@@ -693,6 +695,9 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     job.cpactions_install_cmd = "sudo -E pkgin -y install cmake dbus pkgconf ninja-build pulseaudio libxkbcommon wayland wayland-protocols libinotify libusb1"
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
+
+    if "ubuntu" in spec.name.lower():
+        job.check_sources = True
 
     if not build_parallel:
         job.cmake_build_arguments.append("-j1")
