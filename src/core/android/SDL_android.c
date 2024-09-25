@@ -1526,7 +1526,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
 
     // This is only called at startup, to initialize the environment
     // Note that we call setenv() directly to avoid affecting SDL environments
-    setenv(utfname, utfvalue, 1);
+    setenv(utfname, utfvalue, 1); // This should NOT be SDL_setenv()
 
     (*env)->ReleaseStringUTFChars(env, name, utfname);
     (*env)->ReleaseStringUTFChars(env, value, utfvalue);
