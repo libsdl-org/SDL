@@ -149,7 +149,7 @@ words = [
     'wcsstr' ]
 
 
-reg_comment_remove_content = re.compile('\/\*.*\*/')
+reg_comment_remove_content = re.compile(r'\/\*.*\*/')
 reg_comment_remove_content2 = re.compile('".*"')
 reg_comment_remove_content3 = re.compile(':strlen')
 reg_comment_remove_content4 = re.compile('->free')
@@ -165,7 +165,9 @@ def find_symbols_in_file(file, regex):
         "src/video/khronos",
         "include/SDL3",
         "build-scripts/gen_audio_resampler_filter.c",
-        "build-scripts/gen_audio_channel_conversion.c" ]
+        "build-scripts/gen_audio_channel_conversion.c",
+        "test/win32/sdlprocdump.c",
+    ]
 
     filename = pathlib.Path(file)
 
@@ -199,6 +201,8 @@ def find_symbols_in_file(file, regex):
                     continue
                 if parsing_comment:
                     continue
+                if "//" in l:
+                    l = l[:l.find("//")]
 
                 if regex.match(l):
 
@@ -243,7 +247,7 @@ def main():
     for w in words:
         str += w + "|"
     str = str[:-1]
-    str += ")\("
+    str += r")\("
     regex = re.compile(str)
     find_symbols_in_dir(SDL_ROOT, regex)
 
