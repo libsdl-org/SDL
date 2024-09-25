@@ -138,9 +138,9 @@ typedef struct SDL_Texture SDL_Texture;
  *
  * \returns the number of built in render drivers.
  *
- * \since This function is available since SDL 3.0.0.
- *
  * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRenderer
  * \sa SDL_GetRenderDriver
@@ -163,9 +163,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumRenderDrivers(void);
  * \returns the name of the rendering driver at the requested index, or NULL
  *          if an invalid index was specified.
  *
- * \since This function is available since SDL 3.0.0.
- *
  * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetNumRenderDrivers
  */
@@ -184,9 +184,9 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetRenderDriver(int index);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
- *
  * \threadsafety You may only call this function from the main thread.
+ *
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRenderer
  * \sa SDL_CreateWindow
