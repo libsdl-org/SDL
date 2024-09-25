@@ -1401,8 +1401,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ConvertEventToRenderCoordinates(SDL_Rendere
  * Set the drawing area for rendering on the current target.
  *
  * Drawing will clip to this area (separately from any clipping done with
- * SDL_SetRenderClipRect), and the top left of the area will become
- * coordinate (0, 0) for future drawing commands.
+ * SDL_SetRenderClipRect), and the top left of the area will become coordinate
+ * (0, 0) for future drawing commands.
  *
  * The area's width and height must be >= 0.
  *
@@ -2065,8 +2065,8 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_RenderReadPixels(SDL_Renderer *ren
  * should not be done; you are only required to change back the rendering
  * target to default via `SDL_SetRenderTarget(renderer, NULL)` afterwards, as
  * textures by themselves do not have a concept of backbuffers. Calling
- * SDL_RenderPresent while rendering to a texture will still update the
- * screen with any current drawing that has been done _to the window itself_.
+ * SDL_RenderPresent while rendering to a texture will still update the screen
+ * with any current drawing that has been done _to the window itself_.
  *
  * \param renderer the rendering context.
  * \returns true on success or false on failure; call SDL_GetError() for more
