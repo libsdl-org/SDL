@@ -56,14 +56,20 @@
 
 // Macros
 
-#define ERROR_CHECK(msg)                                     \
+#define ERROR_LOG(msg)                                       \
     if (FAILED(res)) {                                       \
         D3D12_INTERNAL_LogError(renderer->device, msg, res); \
     }
 
-#define ERROR_CHECK_RETURN(msg, ret)                         \
+#define ERROR_LOG_RETURN(msg, ret)                           \
     if (FAILED(res)) {                                       \
         D3D12_INTERNAL_LogError(renderer->device, msg, res); \
+        return ret;                                          \
+    }
+
+#define ERROR_SET_RETURN(msg, ret)                           \
+    if (FAILED(res)) {                                       \
+        D3D12_INTERNAL_SetError(renderer->device, msg, res); \
         return ret;                                          \
     }
 
@@ -916,6 +922,57 @@ typedef HRESULT (D3DAPI* PFN_D3D12_XBOX_CREATE_DEVICE)(_In_opt_ IGraphicsUnknown
 #endif
 
 // Logging
+
+static void D3D12_INTERNAL_SetError(
+    ID3D12Device *device,
+    const char *msg,
+    HRESULT res)
+{
+    #define MAX_ERROR_LEN 1024 // FIXME: Arbitrary!
+
+    // Buffer for text, ensure space for \0 terminator after buffer
+    char wszMsgBuff[MAX_ERROR_LEN + 1];
+    DWORD dwChars; // Number of chars returned.
+
+    if (res == DXGI_ERROR_DEVICE_REMOVED) {
+        if (device) {
+            res = ID3D12Device_GetDeviceRemovedReason(device);
+        }
+    }
+
+    // Try to get the message from the system errors.
+    dwChars = FormatMessageA(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        res,
+        0,
+        wszMsgBuff,
+        MAX_ERROR_LEN,
+        NULL);
+
+    // No message? Screw it, just post the code.
+    if (dwChars == 0) {
+        SDL_SetError("%s! Error Code: " HRESULT_FMT, msg, res);
+        return;
+    }
+
+    // Ensure valid range
+    dwChars = SDL_min(dwChars, MAX_ERROR_LEN);
+
+    // Trim whitespace from tail of message
+    while (dwChars > 0) {
+        if (wszMsgBuff[dwChars - 1] <= ' ') {
+            dwChars--;
+        } else {
+            break;
+        }
+    }
+
+    // Ensure null-terminated string
+    wszMsgBuff[dwChars] = '\0';
+
+    SDL_SetError("%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, res);
+}
 
 static void
 D3D12_INTERNAL_LogError(
@@ -2100,7 +2157,7 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
 
     if (FAILED(res)) {
         if (errorBlob) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create RootSignature");
+            SDL_SetError("Failed to create RootSignature");
             ID3D10Blob_Release(errorBlob);
         }
         D3D12_INTERNAL_DestroyGraphicsRootSignature(d3d12GraphicsRootSignature);
@@ -2354,7 +2411,7 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
         createinfo);
 
     if (rootSignature == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not create root signature!");
+        SDL_SetError("Could not create root signature!");
         SDL_free(bytecode);
         return NULL;
     }
@@ -2375,7 +2432,7 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
         (void **)&pipelineState);
 
     if (FAILED(res)) {
-        D3D12_INTERNAL_LogError(renderer->device, "Could not create compute pipeline state", res);
+        D3D12_INTERNAL_SetError(renderer->device, "Could not create compute pipeline state", res);
         SDL_free(bytecode);
         return NULL;
     }
@@ -2640,7 +2697,7 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
         fragShader);
 
     if (rootSignature == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not create root signature!");
+        SDL_SetError("Could not create root signature!");
         D3D12_INTERNAL_DestroyGraphicsPipeline(pipeline);
         return NULL;
     }
@@ -2655,7 +2712,7 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
         D3D_GUID(D3D_IID_ID3D12PipelineState),
         (void **)&pipelineState);
     if (FAILED(res)) {
-        D3D12_INTERNAL_LogError(renderer->device, "Could not create graphics pipeline state", res);
+        D3D12_INTERNAL_SetError(renderer->device, "Could not create graphics pipeline state", res);
         D3D12_INTERNAL_DestroyGraphicsPipeline(pipeline);
         return NULL;
     }
@@ -3160,7 +3217,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
         }
         heapFlags = D3D12_HEAP_FLAG_NONE;
     } else {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Unrecognized buffer type!");
+        SDL_SetError("Unrecognized buffer type!");
         return NULL;
     }
 
@@ -4111,7 +4168,7 @@ static D3D12UniformBuffer *D3D12_INTERNAL_AcquireUniformBufferFromPool(
         0,
         NULL,
         (void **)&uniformBuffer->buffer->mapPointer);
-    ERROR_CHECK_RETURN("Failed to map buffer pool!", NULL);
+    ERROR_LOG_RETURN("Failed to map buffer pool!", NULL);
 
     D3D12_INTERNAL_TrackUniformBuffer(commandBuffer, uniformBuffer);
 
@@ -5991,7 +6048,7 @@ static bool D3D12_SupportsSwapchainComposition(
 
     D3D12WindowData *windowData = D3D12_INTERNAL_FetchWindowData(window);
     if (windowData == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Must claim window before querying swapchain composition support!");
+        SDL_SetError("Must claim window before querying swapchain composition support!");
         return false;
     }
 
@@ -6161,7 +6218,7 @@ static bool D3D12_INTERNAL_InitializeSwapchainTexture(
         index,
         D3D_GUID(D3D_IID_ID3D12Resource),
         (void **)&swapchainTexture);
-    ERROR_CHECK_RETURN("Could not get buffer from swapchain!", 0);
+    ERROR_LOG_RETURN("Could not get buffer from swapchain!", 0);
 
     pTexture = (D3D12Texture *)SDL_calloc(1, sizeof(D3D12Texture));
     if (!pTexture) {
@@ -6293,7 +6350,7 @@ static bool D3D12_INTERNAL_ResizeSwapchainIfNeeded(
             h,
             DXGI_FORMAT_UNKNOWN, // Keep the old format
             renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
-        ERROR_CHECK_RETURN("Could not resize swapchain buffers", 0)
+        ERROR_LOG_RETURN("Could not resize swapchain buffers", 0)
 
         // Create texture object for the swapchain
         for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
@@ -6402,14 +6459,14 @@ static bool D3D12_INTERNAL_CreateSwapchain(
         &fullscreenDesc,
         NULL,
         &swapchain);
-    ERROR_CHECK_RETURN("Could not create swapchain", 0);
+    ERROR_LOG_RETURN("Could not create swapchain", 0);
 
     res = IDXGISwapChain1_QueryInterface(
         swapchain,
         D3D_GUID(D3D_IID_IDXGISwapChain3),
         (void **)&swapchain3);
     IDXGISwapChain1_Release(swapchain);
-    ERROR_CHECK_RETURN("Could not create IDXGISwapChain3", 0);
+    ERROR_LOG_RETURN("Could not create IDXGISwapChain3", 0);
 
     if (swapchainComposition != SDL_GPU_SWAPCHAINCOMPOSITION_SDR) {
         // Support already verified if we hit this block
@@ -6526,7 +6583,7 @@ static bool D3D12_ClaimWindow(
 
             return true;
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create swapchain, failed to claim window!");
+            SDL_SetError("Could not create swapchain, failed to claim window!");
             SDL_free(windowData);
             return false;
         }
@@ -6585,17 +6642,17 @@ static bool D3D12_SetSwapchainParameters(
     D3D12WindowData *windowData = D3D12_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot set swapchain parameters on unclaimed window!");
+        SDL_SetError("Cannot set swapchain parameters on unclaimed window!");
         return false;
     }
 
     if (!D3D12_SupportsSwapchainComposition(driverData, window, swapchainComposition)) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Swapchain composition not supported!");
+        SDL_SetError("Swapchain composition not supported!");
         return false;
     }
 
     if (!D3D12_SupportsPresentMode(driverData, window, presentMode)) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Present mode not supported!");
+        SDL_SetError("Present mode not supported!");
         return false;
     }
 
@@ -6626,7 +6683,7 @@ static SDL_GPUTextureFormat D3D12_GetSwapchainTextureFormat(
     D3D12WindowData *windowData = D3D12_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot get swapchain format, window has not been claimed!");
+        SDL_SetError("Cannot get swapchain format, window has not been claimed!");
         return SDL_GPU_TEXTUREFORMAT_INVALID;
     }
 
@@ -6822,7 +6879,7 @@ static SDL_GPUCommandBuffer *D3D12_AcquireCommandBuffer(
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
     if (commandBuffer == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to acquire command buffer!");
+        SDL_SetError("Failed to acquire command buffer!");
         return NULL;
     }
 
@@ -6831,7 +6888,7 @@ static SDL_GPUCommandBuffer *D3D12_AcquireCommandBuffer(
         D3D12_INTERNAL_AcquireDescriptorHeapFromPool(commandBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     if (!commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to acquire descriptor heap!");
+        SDL_SetError("Failed to acquire descriptor heap!");
         D3D12_INTERNAL_DestroyCommandBuffer(commandBuffer);
         return NULL;
     }
@@ -6840,7 +6897,7 @@ static SDL_GPUCommandBuffer *D3D12_AcquireCommandBuffer(
         D3D12_INTERNAL_AcquireDescriptorHeapFromPool(commandBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 
     if (!commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER]) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to acquire descriptor heap!");
+        SDL_SetError("Failed to acquire descriptor heap!");
         D3D12_INTERNAL_DestroyCommandBuffer(commandBuffer);
         return NULL;
     }
@@ -6909,7 +6966,7 @@ static SDL_GPUTexture *D3D12_AcquireSwapchainTexture(
     res = D3D12_INTERNAL_ResizeSwapchainIfNeeded(
         renderer,
         windowData);
-    ERROR_CHECK_RETURN("Could not resize swapchain", NULL);
+    ERROR_SET_RETURN("Could not resize swapchain", NULL);
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
         if (windowData->present_mode == SDL_GPU_PRESENTMODE_VSYNC) {
@@ -6952,7 +7009,7 @@ static SDL_GPUTexture *D3D12_AcquireSwapchainTexture(
         swapchainIndex,
         D3D_GUID(D3D_IID_ID3D12Resource),
         (void **)&windowData->textureContainers[swapchainIndex].activeTexture->resource);
-    ERROR_CHECK_RETURN("Could not acquire swapchain!", NULL);
+    ERROR_SET_RETURN("Could not acquire swapchain!", NULL);
 #endif
 
     // Send the dimensions to the out parameters.
@@ -7115,13 +7172,13 @@ static void D3D12_INTERNAL_CleanCommandBuffer(
     commandBuffer->textureDownloadCount = 0;
 
     res = ID3D12CommandAllocator_Reset(commandBuffer->commandAllocator);
-    ERROR_CHECK("Could not reset command allocator")
+    ERROR_LOG("Could not reset command allocator")
 
     res = ID3D12GraphicsCommandList_Reset(
         commandBuffer->graphicsCommandList,
         commandBuffer->commandAllocator,
         NULL);
-    ERROR_CHECK("Could not reset graphicsCommandList")
+    ERROR_LOG("Could not reset graphicsCommandList")
 
     // Return descriptor heaps to pool
     D3D12_INTERNAL_ReturnDescriptorHeapToPool(
@@ -7259,13 +7316,13 @@ static void D3D12_Submit(
 
     // Notify the command buffer that we have completed recording
     res = ID3D12GraphicsCommandList_Close(d3d12CommandBuffer->graphicsCommandList);
-    ERROR_CHECK("Failed to close command list!");
+    ERROR_LOG("Failed to close command list!");
 
     res = ID3D12GraphicsCommandList_QueryInterface(
         d3d12CommandBuffer->graphicsCommandList,
         D3D_GUID(D3D_IID_ID3D12CommandList),
         (void **)&commandLists[0]);
-    ERROR_CHECK("Failed to convert command list!")
+    ERROR_LOG("Failed to convert command list!")
 
     // Submit the command list to the queue
     ID3D12CommandQueue_ExecuteCommandLists(
@@ -7286,7 +7343,7 @@ static void D3D12_Submit(
         renderer->commandQueue,
         d3d12CommandBuffer->inFlightFence->handle,
         D3D12_FENCE_SIGNAL_VALUE);
-    ERROR_CHECK("Failed to enqueue fence signal!");
+    ERROR_LOG("Failed to enqueue fence signal!");
 
     // Mark the command buffer as submitted
     if (renderer->submittedCommandBufferCount + 1 >= renderer->submittedCommandBufferCapacity) {
@@ -7377,7 +7434,7 @@ static void D3D12_Wait(
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
     D3D12Fence *fence = D3D12_INTERNAL_AcquireFence(renderer);
     if (!fence) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to acquire fence.");
+        SDL_SetError("Failed to acquire fence.");
         return;
     }
     HRESULT res;
@@ -7397,7 +7454,7 @@ static void D3D12_Wait(
                 fence->handle,
                 D3D12_FENCE_SIGNAL_VALUE,
                 fence->event);
-            ERROR_CHECK_RETURN("Setting fence event failed", )
+            ERROR_LOG_RETURN("Setting fence event failed", )
 
             WaitForSingleObject(fence->event, INFINITE);
         }
@@ -7437,7 +7494,7 @@ static void D3D12_WaitForFences(
             fence->handle,
             D3D12_FENCE_SIGNAL_VALUE,
             fence->event);
-        ERROR_CHECK_RETURN("Setting fence event failed", )
+        ERROR_LOG_RETURN("Setting fence event failed", )
 
         events[i] = fence->event;
     }
@@ -7872,7 +7929,7 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *rende
         D3D_GUID(D3D_IID_ID3D12InfoQueue),
         (void **)&infoQueue);
     if (FAILED(res)) {
-        ERROR_CHECK_RETURN("Failed to convert ID3D12Device to ID3D12InfoQueue", );
+        ERROR_LOG_RETURN("Failed to convert ID3D12Device to ID3D12InfoQueue", );
     }
 
     SDL_zero(filter);
@@ -7922,7 +7979,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     // Load the DXGI library
     renderer->dxgi_dll = SDL_LoadObject(DXGI_DLL);
     if (renderer->dxgi_dll == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not find " DXGI_DLL);
+        SDL_SetError("Could not find " DXGI_DLL);
         D3D12_INTERNAL_DestroyRenderer(renderer);
         return NULL;
     }
@@ -7939,7 +7996,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         renderer->dxgi_dll,
         CREATE_DXGI_FACTORY1_FUNC);
     if (CreateDXGIFactoryFunc == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not load function: " CREATE_DXGI_FACTORY1_FUNC);
+        SDL_SetError("Could not load function: " CREATE_DXGI_FACTORY1_FUNC);
         D3D12_INTERNAL_DestroyRenderer(renderer);
         return NULL;
     }
@@ -7950,7 +8007,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         (void **)&factory1);
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
-        ERROR_CHECK_RETURN("Could not create DXGIFactory", NULL);
+        ERROR_SET_RETURN("Could not create DXGIFactory", NULL);
     }
 
     // Check for DXGI 1.4 support
@@ -7960,7 +8017,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         (void **)&renderer->factory);
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
-        ERROR_CHECK_RETURN("DXGI1.4 support not found, required for DX12", NULL);
+        ERROR_SET_RETURN("DXGI1.4 support not found, required for DX12", NULL);
     }
     IDXGIFactory1_Release(factory1);
 
@@ -8003,14 +8060,14 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
-        ERROR_CHECK_RETURN("Could not find adapter for D3D12Device", NULL);
+        ERROR_SET_RETURN("Could not find adapter for D3D12Device", NULL);
     }
 
     // Get information about the selected adapter. Used for logging info.
     res = IDXGIAdapter1_GetDesc1(renderer->adapter, &adapterDesc);
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
-        ERROR_CHECK_RETURN("Could not get adapter description", NULL);
+        ERROR_SET_RETURN("Could not get adapter description", NULL);
     }
 
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: D3D12");
@@ -8020,7 +8077,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     // Load the D3D library
     renderer->d3d12_dll = SDL_LoadObject(D3D12_DLL);
     if (renderer->d3d12_dll == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not find " D3D12_DLL);
+        SDL_SetError("Could not find " D3D12_DLL);
         D3D12_INTERNAL_DestroyRenderer(renderer);
         return NULL;
     }
@@ -8031,7 +8088,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         renderer->d3d12_dll,
         "D3D12XboxCreateDevice");
     if (D3D12XboxCreateDeviceFunc == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not load function: D3D12XboxCreateDevice");
+        SDL_SetError("Could not load function: D3D12XboxCreateDevice");
         D3D12_INTERNAL_DestroyRenderer(renderer);
         return NULL;
     }
@@ -8040,7 +8097,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         renderer->d3d12_dll,
         D3D12_CREATE_DEVICE_FUNC);
     if (D3D12CreateDeviceFunc == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not load function: " D3D12_CREATE_DEVICE_FUNC);
+        SDL_SetError("Could not load function: " D3D12_CREATE_DEVICE_FUNC);
         D3D12_INTERNAL_DestroyRenderer(renderer);
         return NULL;
     }
@@ -8050,7 +8107,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         renderer->d3d12_dll,
         D3D12_SERIALIZE_ROOT_SIGNATURE_FUNC);
     if (renderer->D3D12SerializeRootSignature_func == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not load function: " D3D12_SERIALIZE_ROOT_SIGNATURE_FUNC);
+        SDL_SetError("Could not load function: " D3D12_SERIALIZE_ROOT_SIGNATURE_FUNC);
         D3D12_INTERNAL_DestroyRenderer(renderer);
         return NULL;
     }
@@ -8119,7 +8176,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
-        ERROR_CHECK_RETURN("Could not create D3D12Device", NULL);
+        ERROR_SET_RETURN("Could not create D3D12Device", NULL);
     }
 
     // Initialize the D3D12 debug info queue, if applicable
@@ -8137,7 +8194,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         sizeof(D3D12_FEATURE_DATA_ARCHITECTURE));
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
-        ERROR_CHECK_RETURN("Could not get device architecture", NULL);
+        ERROR_SET_RETURN("Could not get device architecture", NULL);
     }
 
     renderer->UMA = (bool)architecture.UMA;
@@ -8179,7 +8236,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
         if (FAILED(res)) {
             D3D12_INTERNAL_DestroyRenderer(renderer);
-            ERROR_CHECK_RETURN("Could not create D3D12CommandQueue", NULL);
+            ERROR_SET_RETURN("Could not create D3D12CommandQueue", NULL);
         }
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
         s_CommandQueue = renderer->commandQueue;
@@ -8206,7 +8263,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         (void **)&renderer->indirectDrawCommandSignature);
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
-        ERROR_CHECK_RETURN("Could not create indirect draw command signature", NULL)
+        ERROR_SET_RETURN("Could not create indirect draw command signature", NULL)
     }
 
     indirectArgumentDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
@@ -8221,7 +8278,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         (void **)&renderer->indirectIndexedDrawCommandSignature);
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
-        ERROR_CHECK_RETURN("Could not create indirect indexed draw command signature", NULL)
+        ERROR_SET_RETURN("Could not create indirect indexed draw command signature", NULL)
     }
 
     indirectArgumentDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
@@ -8236,7 +8293,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         (void **)&renderer->indirectDispatchCommandSignature);
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
-        ERROR_CHECK_RETURN("Could not create indirect dispatch command signature", NULL)
+        ERROR_SET_RETURN("Could not create indirect dispatch command signature", NULL)
     }
 
     // Initialize pools

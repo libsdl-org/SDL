@@ -973,8 +973,7 @@ static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
 
         handle = [renderer->device newComputePipelineStateWithFunction:libraryFunction.function error:&error];
         if (error != NULL) {
-            SDL_LogError(
-                SDL_LOG_CATEGORY_GPU,
+            SDL_SetError(
                 "Creating compute pipeline failed: %s", [[error description] UTF8String]);
             return NULL;
         }
@@ -1108,8 +1107,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
 
         pipelineState = [renderer->device newRenderPipelineStateWithDescriptor:pipelineDescriptor error:&error];
         if (error != NULL) {
-            SDL_LogError(
-                SDL_LOG_CATEGORY_GPU,
+            SDL_SetError(
                 "Creating render pipeline failed: %s", [[error description] UTF8String]);
             return NULL;
         }
@@ -1284,7 +1282,7 @@ static SDL_GPUSampler *METAL_CreateSampler(
 
         sampler = [renderer->device newSamplerStateWithDescriptor:samplerDesc];
         if (sampler == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create sampler");
+            SDL_SetError("Failed to create sampler");
             return NULL;
         }
 
@@ -1411,7 +1409,7 @@ static SDL_GPUTexture *METAL_CreateTexture(
             createinfo);
 
         if (texture == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create texture!");
+            SDL_SetError("Failed to create texture!");
             return NULL;
         }
 
@@ -3526,7 +3524,7 @@ static bool METAL_ClaimWindow(
 
                 return true;
             } else {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not create swapchain, failed to claim window!");
+                SDL_SetError("Could not create swapchain, failed to claim window!");
                 SDL_free(windowData);
                 return false;
             }
@@ -3619,7 +3617,7 @@ static SDL_GPUTextureFormat METAL_GetSwapchainTextureFormat(
     MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot get swapchain format, window has not been claimed!");
+        SDL_SetError("Cannot get swapchain format, window has not been claimed!");
         return SDL_GPU_TEXTUREFORMAT_INVALID;
     }
 
@@ -3637,17 +3635,17 @@ static bool METAL_SetSwapchainParameters(
         CGColorSpaceRef colorspace;
 
         if (windowData == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot set swapchain parameters, window has not been claimed!");
+            SDL_SetError("Cannot set swapchain parameters, window has not been claimed!");
             return false;
         }
 
         if (!METAL_SupportsSwapchainComposition(driverData, window, swapchainComposition)) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Swapchain composition not supported!");
+            SDL_SetError("Swapchain composition not supported!");
             return false;
         }
 
         if (!METAL_SupportsPresentMode(driverData, window, presentMode)) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Present mode not supported!");
+            SDL_SetError("Present mode not supported!");
             return false;
         }
 
