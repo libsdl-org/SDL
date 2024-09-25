@@ -1553,6 +1553,7 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
             if (now >= (ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
                 // Send an empty output report to tickle the Bluetooth stack
                 HIDAPI_DriverPS5_TickleBluetooth(device);
+                ctx->last_packet = now;
             }
         } else {
             // Reconnect the Bluetooth device once the USB device is gone
