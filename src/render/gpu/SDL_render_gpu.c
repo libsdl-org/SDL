@@ -270,14 +270,14 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     Uint8 *output = SDL_MapGPUTransferBuffer(renderdata->device, tbuf, false);
 
     if ((size_t)pitch == row_size) {
-        memcpy(output, pixels, data_size);
+        SDL_memcpy(output, pixels, data_size);
     } else {
         // FIXME is negative pitch supposed to work?
         // If not, maybe use SDL_GPUTextureTransferInfo::pixels_per_row instead of this
         const Uint8 *input = pixels;
 
         for (int i = 0; i < rect->h; ++i) {
-            memcpy(output, input, row_size);
+            SDL_memcpy(output, input, row_size);
             output += row_size;
             input += pitch;
         }
@@ -644,7 +644,7 @@ static bool UploadVertices(GPU_RenderData *data, void *vertices, size_t vertsize
     }
 
     void *staging_buf = SDL_MapGPUTransferBuffer(data->device, data->vertices.transfer_buf, true);
-    memcpy(staging_buf, vertices, vertsize);
+    SDL_memcpy(staging_buf, vertices, vertsize);
     SDL_UnmapGPUTransferBuffer(data->device, data->vertices.transfer_buf);
 
     SDL_GPUCopyPass *pass = SDL_BeginGPUCopyPass(data->state.command_buffer);
@@ -910,13 +910,13 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     void *mapped_tbuf = SDL_MapGPUTransferBuffer(data->device, tbuf, false);
 
     if ((size_t)surface->pitch == row_size) {
-        memcpy(surface->pixels, mapped_tbuf, image_size);
+        SDL_memcpy(surface->pixels, mapped_tbuf, image_size);
     } else {
         Uint8 *input = mapped_tbuf;
         Uint8 *output = surface->pixels;
 
         for (int row = 0; row < rect->h; ++row) {
-            memcpy(output, input, row_size);
+            SDL_memcpy(output, input, row_size);
             output += surface->pitch;
             input += row_size;
         }
