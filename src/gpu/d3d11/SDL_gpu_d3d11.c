@@ -831,7 +831,7 @@ static void D3D11_INTERNAL_SetError(
 
     // No message? Screw it, just post the code.
     if (dwChars == 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: " HRESULT_FMT, msg, res);
+        SDL_SetError("%s! Error Code: " HRESULT_FMT, msg, res);
         return;
     }
 
@@ -850,7 +850,7 @@ static void D3D11_INTERNAL_SetError(
     // Ensure null-terminated string
     wszMsgBuff[dwChars] = '\0';
 
-    SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, res);
+    SDL_SetError("%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, res);
 }
 
 static void D3D11_INTERNAL_LogError(
@@ -885,7 +885,7 @@ static void D3D11_INTERNAL_LogError(
 
     // No message? Screw it, just post the code.
     if (dwChars == 0) {
-        SDL_SetError("%s! Error Code: " HRESULT_FMT, msg, res);
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: " HRESULT_FMT, msg, res);
         return;
     }
 
@@ -904,7 +904,7 @@ static void D3D11_INTERNAL_LogError(
     // Ensure null-terminated string
     wszMsgBuff[dwChars] = '\0';
 
-    SDL_SetError("%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, res);
+    SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, res);
 }
 
 // Helper Functions

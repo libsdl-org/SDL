@@ -1214,16 +1214,16 @@ static inline void LogVulkanResultAsError(
     }
 }
 
-#define ERROR_LOG_RETURN(res, fn, ret)                    \
-    if (res != VK_SUCCESS) {                              \
-        SDL_SetError("%s %s", #fn, VkErrorMessages(res)); \
-        return ret;                                       \
-    }
-
-#define ERROR_SET_RETURN(res, fn, ret)                                          \
+#define ERROR_LOG_RETURN(res, fn, ret)                                          \
     if (res != VK_SUCCESS) {                                                    \
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s %s", #fn, VkErrorMessages(res)); \
         return ret;                                                             \
+    }
+
+#define ERROR_SET_RETURN(res, fn, ret)                    \
+    if (res != VK_SUCCESS) {                              \
+        SDL_SetError("%s %s", #fn, VkErrorMessages(res)); \
+        return ret;                                       \
     }
 
 // Utility
