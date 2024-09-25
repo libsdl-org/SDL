@@ -4949,9 +4949,9 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
 
     CHECK_RENDERER_MAGIC(renderer, false);
 
-    // !!! FIXME: fail if using a render target? Or just implicitly set the render target to NULL now?
-    if (renderer->view != &renderer->main_view) {
-        return SDL_SetError("Cannot present a render target");
+    SDL_Texture *target = renderer->target;
+    if (target) {
+        SDL_SetRenderTarget(renderer, NULL);
     }
 
     SDL_RenderLogicalPresentation(renderer);
@@ -4970,6 +4970,10 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
 #endif
     if (!renderer->RenderPresent(renderer)) {
         presented = false;
+    }
+
+    if (target) {
+        SDL_SetRenderTarget(renderer, target);
     }
 
     if (renderer->simulate_vsync ||
