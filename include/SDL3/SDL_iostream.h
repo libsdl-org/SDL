@@ -147,8 +147,11 @@ typedef struct SDL_IOStreamInterface
     /**
      *  Close and free any allocated resources.
      *
+     *  This does not guarantee file writes will sync to physical media; they
+     *  can be in the system's file cache, waiting to go to disk.
+     *
      *  The SDL_IOStream is still destroyed even if this fails, so clean up anything
-     *  even if flushing to disk returns an error.
+     *  even if flushing buffers, etc, returns an error.
      *
      *  \return true if successful or false on write error when flushing data.
      */
@@ -406,8 +409,17 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_OpenIO(const SDL_IOStreamInterfac
  * returns true on success, or false if the stream failed to flush to its
  * output (e.g. to disk).
  *
- * Note that if this fails to flush the stream to disk, this function reports
- * an error, but the SDL_IOStream is still invalid once this function returns.
+ * Note that if this fails to flush the stream for any reason, this function
+ * reports an error, but the SDL_IOStream is still invalid once this function
+ * returns.
+ *
+ * This call flushes any buffered writes to the operating system, but there
+ * are no guarantees that those writes have gone to physical media; they might
+ * be in the OS's file cache, waiting to go to disk later. If it's absolutely
+ * crucial that writes go to disk immediately, so they are definitely stored
+ * even if the power fails before the file cache would have caught up, one
+ * should call SDL_FlushIO() before closing. Note that flushing takes time and
+ * makes the system and your app operate less efficiently, so do so sparingly.
  *
  * \param context SDL_IOStream structure to close.
  * \returns true on success or false on failure; call SDL_GetError() for more

@@ -151,7 +151,7 @@ bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
         return false;
     }
 
-    const BOOL rc = CopyFileW(woldpath, wnewpath, TRUE);
+    const BOOL rc = CopyFileExW(woldpath, wnewpath, NULL, NULL, NULL, COPY_FILE_ALLOW_DECRYPTED_DESTINATION|COPY_FILE_NO_BUFFERING);
     SDL_free(wnewpath);
     SDL_free(woldpath);
     if (!rc) {

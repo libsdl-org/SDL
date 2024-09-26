@@ -121,7 +121,12 @@ bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
     SDL_CloseIO(input);
     input = NULL;
 
+    if (!SDL_FlushIO(output)) {
+        goto done;
+    }
+
     if (!SDL_CloseIO(output)) {
+        output = NULL;  // it's gone, even if it failed.
         goto done;
     }
     output = NULL;
