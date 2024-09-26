@@ -272,6 +272,10 @@ typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char
  * callback, called once for each directory entry, until all results have been
  * provided or the callback returns <= 0.
  *
+ * This will return false if there was a system problem in general, or if a
+ * callback returns -1. A successful return means a callback returned 1 to
+ * halt enumeration, or all directory entries were enumerated.
+ *
  * \param path the path of the directory to enumerate.
  * \param callback a function that is called for each entry in the directory.
  * \param userdata a pointer that is passed to `callback`.
