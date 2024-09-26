@@ -825,7 +825,10 @@ typedef enum SDL_InitStatus
  *    }
  * ```
  *
- * Note that this doesn't protect any resources created during initialization, or guarantee that nobody is using those resources during cleanup. You should use other mechanisms to protect those, if that's a concern for your code.
+ * Note that this doesn't protect any resources created during initialization,
+ * or guarantee that nobody is using those resources during cleanup. You
+ * should use other mechanisms to protect those, if that's a concern for your
+ * code.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -839,9 +842,13 @@ typedef struct SDL_InitState
 /**
  * Return whether initialization should be done.
  *
- * This function checks the passed in state and if initialization should be done, sets the status to `SDL_INIT_STATUS_INITIALIZING` and returns true. If another thread is already modifying this state, it will wait until that's done before returning.
+ * This function checks the passed in state and if initialization should be
+ * done, sets the status to `SDL_INIT_STATUS_INITIALIZING` and returns true.
+ * If another thread is already modifying this state, it will wait until
+ * that's done before returning.
  *
- * If this function returns true, the calling code must call SDL_SetInitialized() to complete the initialization.
+ * If this function returns true, the calling code must call
+ * SDL_SetInitialized() to complete the initialization.
  *
  * \param state the initialization state to check.
  * \returns true if initialization needs to be done, false otherwise.
@@ -858,9 +865,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShouldInit(SDL_InitState *state);
 /**
  * Return whether cleanup should be done.
  *
- * This function checks the passed in state and if cleanup should be done, sets the status to `SDL_INIT_STATUS_UNINITIALIZING` and returns true.
+ * This function checks the passed in state and if cleanup should be done,
+ * sets the status to `SDL_INIT_STATUS_UNINITIALIZING` and returns true.
  *
- * If this function returns true, the calling code must call SDL_SetInitialized() to complete the cleanup.
+ * If this function returns true, the calling code must call
+ * SDL_SetInitialized() to complete the cleanup.
  *
  * \param state the initialization state to check.
  * \returns true if cleanup needs to be done, false otherwise.
@@ -877,7 +886,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShouldQuit(SDL_InitState *state);
 /**
  * Finish an initialization state transition.
  *
- * This function sets the status of the passed in state to `SDL_INIT_STATUS_INITIALIZED` or `SDL_INIT_STATUS_UNINITIALIZED` and allows any threads waiting for the status to proceed.
+ * This function sets the status of the passed in state to
+ * `SDL_INIT_STATUS_INITIALIZED` or `SDL_INIT_STATUS_UNINITIALIZED` and allows
+ * any threads waiting for the status to proceed.
  *
  * \param state the initialization state to check.
  * \param initialized the new initialization state.
