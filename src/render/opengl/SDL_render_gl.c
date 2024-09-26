@@ -1247,7 +1247,7 @@ static bool GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             const float g = cmd->data.color.color.g * cmd->data.color.color_scale;
             const float b = cmd->data.color.color.b * cmd->data.color.color_scale;
             const float a = cmd->data.color.color.a;
-            if (data->drawstate.clear_color_dirty ||
+            if (data->drawstate.color_dirty ||
                 (r != data->drawstate.color.r) ||
                 (g != data->drawstate.color.g) ||
                 (b != data->drawstate.color.b) ||
