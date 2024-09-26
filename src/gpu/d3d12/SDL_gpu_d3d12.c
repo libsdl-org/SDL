@@ -7418,6 +7418,7 @@ static bool D3D12_Wait(
             DWORD waitResult = WaitForSingleObject(fence->event, INFINITE);
             if (waitResult == WAIT_FAILED) {
                 SDL_SetError("Wait failed"); // TODO: is there a better way to report this?
+                SDL_UnlockMutex(renderer->submitLock);
                 return false;
             }
         }
@@ -7474,6 +7475,7 @@ static bool D3D12_WaitForFences(
 
     if (waitResult == WAIT_FAILED) {
         SDL_SetError("Wait failed"); // TODO: is there a better way to report this?
+        SDL_UnlockMutex(renderer->submitLock);
         return false;
     }
 
