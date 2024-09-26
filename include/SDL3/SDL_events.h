@@ -1011,7 +1011,7 @@ typedef enum SDL_EventAction
  *   event queue.
  * - `SDL_PEEKEVENT`: `numevents` events at the front of the event queue,
  *   within the specified minimum and maximum type, will be returned to the
- *   caller and will _not_ be removed from the queue.
+ *   caller and will _not_ be removed from the queue. If you pass NULL for `events`, then `numevents` is ignored and the total number of matching events will be returned.
  * - `SDL_GETEVENT`: up to `numevents` events at the front of the event queue,
  *   within the specified minimum and maximum type, will be returned to the
  *   caller and will be removed from the queue.

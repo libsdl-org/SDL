@@ -1105,12 +1105,28 @@ int SDL_PeepEvents(SDL_Event *events, int numevents, SDL_EventAction action,
 
 bool SDL_HasEvent(Uint32 type)
 {
-    return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type) > 0;
+    return SDL_HasEvents(type, type);
 }
 
 bool SDL_HasEvents(Uint32 minType, Uint32 maxType)
 {
-    return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, minType, maxType) > 0;
+    bool found = false;
+
+    SDL_LockMutex(SDL_EventQ.lock);
+    {
+        if (SDL_EventQ.active) {
+            for (SDL_EventEntry *entry = SDL_EventQ.head; entry; entry = entry->next) {
+                const Uint32 type = entry->event.type;
+                if (minType <= type && type <= maxType) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+    }
+    SDL_UnlockMutex(SDL_EventQ.lock);
+
+    return found;
 }
 
 void SDL_FlushEvent(Uint32 type)
