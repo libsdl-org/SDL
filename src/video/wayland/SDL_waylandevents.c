@@ -932,6 +932,28 @@ static void touch_handler_frame(void *data, struct wl_touch *touch)
 
 static void touch_handler_cancel(void *data, struct wl_touch *touch)
 {
+	struct SDL_WaylandTouchPoint *tp;
+	while ((tp = touch_points.head)) {
+		wl_fixed_t fx = 0, fy = 0;
+		struct wl_surface *surface = NULL;
+		int id = tp->id;
+
+		touch_del(id, &fx, &fy, &surface);
+
+		if (surface) {
+			SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
+
+			if (window_data) {
+				const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
+				const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
+				const float x = dblx / window_data->sdlwindow->w;
+				const float y = dbly / window_data->sdlwindow->h;
+
+				SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id,
+					      window_data->sdlwindow, SDL_FALSE, x, y, 1.0f);
+			}
+		}
+	}
 }
 
 static const struct wl_touch_listener touch_listener = {
