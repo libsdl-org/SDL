@@ -28,10 +28,9 @@
 
 #include "../SDL_sysfilesystem.h"
 
-int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
+bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-    SDL_Unsupported();
-    return -1;
+    return SDL_Unsupported();
 }
 
 bool SDL_SYS_RemovePath(const char *path)

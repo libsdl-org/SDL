@@ -29,7 +29,7 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysfilesystem.h"
 
-int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
+bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     int result = 1;
     if (*path == '\0') {  // if empty (completely at the root), we need to enumerate drive letters.
@@ -88,7 +88,7 @@ int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enumer
         FindClose(dir);
     }
 
-    return result;
+    return (result >= 0);
 }
 
 bool SDL_SYS_RemovePath(const char *path)
