@@ -1624,20 +1624,6 @@ typedef struct SDL_GPUBlitInfo {
     Uint8 padding3;
 } SDL_GPUBlitInfo;
 
-/**
- * A structure containing swapchain info, to be filled in by SDL_AcquireGPUSwapchainTexture.
- *
- * \since This struct is available since SDL 3.0.0
- *
- * \sa SDL_AcquireGPUSwapchainTexture
- */
-typedef struct SDL_GPUSwapchainTextureInfo {
-    SDL_GPUTexture *texture;
-    Uint32 width;
-    Uint32 height;
-    SDL_GPUTextureFormat format;
-} SDL_GPUSwapchainTextureInfo;
-
 /* Binding structs */
 
 /**
@@ -2316,7 +2302,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUGraphicsPipeline(
  * acquired on.
  *
  * \param device a GPU context.
- * \returns a command buffer.
+ * \returns a command buffer, or NULL on failure.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2460,7 +2446,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUComputeUniformData(
  * \param depth_stencil_target_info a texture subresource with corresponding
  *                                  clear value and load/store ops, may be
  *                                  NULL.
- * \returns a render pass handle, or NULL on failure.
+ * \returns a render pass handle.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2827,7 +2813,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPURenderPass(
  *                                structs.
  * \param num_storage_buffer_bindings the number of storage buffers to bind
  *                                    from the array.
- * \returns a compute pass handle, or NULL on failure.
+ * \returns a compute pass handle.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -3013,7 +2999,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnmapGPUTransferBuffer(
  * or compute pass before ending the copy pass.
  *
  * \param command_buffer a command buffer.
- * \returns a copy pass handle, or NULL on failure.
+ * \returns a copy pass handle.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -3298,6 +3284,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPUSwapchainParameters(
 
 /**
  * Obtains the texture format of the swapchain for the given window.
+ * Note that this format can change if the swapchain parameters change.
  *
  * \param device a GPU context.
  * \param window an SDL_Window that has been claimed.
@@ -3315,15 +3302,15 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * When a swapchain texture is acquired on a command buffer, it will
  * automatically be submitted for presentation when the command buffer is
  * submitted. The swapchain texture should only be referenced by the command
- * buffer used to acquire it. May return false under certain conditions. This
- * is not necessarily an error. This texture is managed by the implementation
- * and must not be freed by the user. You MUST NOT call this function from any
+ * buffer used to acquire it. The swapchain texture handle can be NULL under certain conditions. This
+ * is not necessarily an error. If this function returns false then there is an error. This texture is managed by the implementation
+ * and must not be freed by the user. The texture dimensions will be the height and width of the claimed window. You MUST NOT call this function from any
  * thread other than the one that created the window.
  *
  * \param command_buffer a command buffer.
  * \param window a window that has been claimed.
- * \param swapchainInfo a pointer filled in with swapchain texture info
- * \returns true on success, false on failure.
+ * \param swapchainTexture a pointer filled in with a swapchain texture handle
+ * \returns true on success, false on error.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -3334,7 +3321,7 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
 extern SDL_DECLSPEC bool SDLCALL SDL_AcquireGPUSwapchainTexture(
     SDL_GPUCommandBuffer *command_buffer,
     SDL_Window *window,
-    SDL_GPUSwapchainTextureInfo *info);
+    SDL_GPUTexture **swapchainTexture);
 
 /**
  * Submits a command buffer so its commands can be processed on the GPU.

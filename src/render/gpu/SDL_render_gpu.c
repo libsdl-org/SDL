@@ -958,7 +958,12 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
 
     Uint32 swapchain_w, swapchain_h;
 
-    SDL_GPUTexture *swapchain = SDL_AcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain_w, &swapchain_h);
+    SDL_GPUTexture *swapchain;
+    bool result = SDL_AcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain);
+
+    if (!result) {
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, SDL_GetError());
+    }
 
     if (swapchain == NULL) {
         goto submit;
