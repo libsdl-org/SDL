@@ -67,6 +67,7 @@ typedef struct
             } roleobj;
             SDL_bool initial_configure_seen;
         } xdg;
+        struct wl_shell_surface *wl;
     } shell_surface;
     enum
     {
