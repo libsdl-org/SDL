@@ -2607,20 +2607,20 @@ bool SDL_AcquireGPUSwapchainTexture(
 {
     if (command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
-        return NULL;
+        return false;
     }
     if (window == NULL) {
         SDL_InvalidParamError("window");
-        return NULL;
+        return false;
     }
     if (swapchainTexture == NULL) {
         SDL_InvalidParamError("swapchainTexture");
-        return NULL;
+        return false;
     }
 
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
-        CHECK_COMMAND_BUFFER_RETURN_NULL
-        CHECK_ANY_PASS_IN_PROGRESS("Cannot acquire a swapchain texture during a pass!", NULL)
+        CHECK_COMMAND_BUFFER_RETURN_FALSE
+        CHECK_ANY_PASS_IN_PROGRESS("Cannot acquire a swapchain texture during a pass!", false)
     }
 
     return COMMAND_BUFFER_DEVICE->AcquireSwapchainTexture(
