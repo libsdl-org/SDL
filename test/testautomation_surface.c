@@ -822,6 +822,27 @@ static int SDLCALL surface_testLoadFailure(void *arg)
 }
 
 /**
+ * Tests blitting from a zero sized source rectangle
+ */
+static int SDLCALL surface_testBlitZeroSource(void *arg)
+{
+    SDL_Surface *src = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA8888);
+    SDL_Surface *dst = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA8888);
+    SDL_Rect srcrect = { 0, 0, 0, 0 };
+    int ret;
+
+    SDLTest_AssertPass("Call to SDL_BlitSurfaceScaled() with zero sized source rectangle");
+    SDL_FillSurfaceRect(src, NULL, SDL_MapSurfaceRGB(src, 255, 255, 255));
+    SDL_BlitSurfaceScaled(src, &srcrect, dst, NULL, SDL_SCALEMODE_NEAREST);
+    ret = SDLTest_CompareSurfaces(dst, src, 0);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+    SDL_DestroySurface(src);
+    SDL_DestroySurface(dst);
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Tests some blitting routines.
  */
 static int SDLCALL surface_testBlit(void *arg)
@@ -1465,6 +1486,10 @@ static const SDLTest_TestCaseReference surfaceTestSaveLoadBitmap = {
     surface_testSaveLoadBitmap, "surface_testSaveLoadBitmap", "Tests sprite saving and loading.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTestBlitZeroSource = {
+    surface_testBlitZeroSource, "surface_testBlitZeroSource", "Tests blitting from a zero sized source rectangle", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference surfaceTestBlit = {
     surface_testBlit, "surface_testBlit", "Tests basic blitting.", TEST_ENABLED
 };
@@ -1552,6 +1577,7 @@ static const SDLTest_TestCaseReference surfaceTestPremultiplyAlpha = {
 /* Sequence of Surface test cases */
 static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestSaveLoadBitmap,
+    &surfaceTestBlitZeroSource,
     &surfaceTestBlit,
     &surfaceTestBlitTiled,
     &surfaceTestBlit9Grid,
