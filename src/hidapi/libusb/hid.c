@@ -250,7 +250,7 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 				/* Can't ever happen since size_code is & 0x3 */
 				data_len = 0;
 				break;
-			};
+			}
 			key_size = 1;
 		}
 
