@@ -464,18 +464,19 @@ typedef enum SDL_GPUTextureFormat
  * A texture must have at least one usage flag. Note that some usage flag
  * combinations are invalid.
  *
- * \since This enum is available since SDL 3.0.0
+ * \since This datatype is available since SDL 3.0.0
  *
  * \sa SDL_CreateGPUTexture
  */
 typedef Uint32 SDL_GPUTextureUsageFlags;
 
-#define SDL_GPU_TEXTUREUSAGE_SAMPLER               (1u << 0) /**< Texture supports sampling. */
-#define SDL_GPU_TEXTUREUSAGE_COLOR_TARGET          (1u << 1) /**< Texture is a color render target. */
-#define SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET  (1u << 2) /**< Texture is a depth stencil target. */
-#define SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< Texture supports storage reads in graphics stages. */
-#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< Texture supports storage reads in the compute stage. */
-#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< Texture supports storage writes in the compute stage. */
+#define SDL_GPU_TEXTUREUSAGE_SAMPLER                                 (1u << 0) /**< Texture supports sampling. */
+#define SDL_GPU_TEXTUREUSAGE_COLOR_TARGET                            (1u << 1) /**< Texture is a color render target. */
+#define SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET                    (1u << 2) /**< Texture is a depth stencil target. */
+#define SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ                   (1u << 3) /**< Texture supports storage reads in graphics stages. */
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ                    (1u << 4) /**< Texture supports storage reads in the compute stage. */
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE                   (1u << 5) /**< Texture supports storage writes in the compute stage. */
+#define SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE (1u << 6) /**< Texture supports reads and writes in the same compute shader. This is NOT equivalent to READ | WRITE. */
 
 /**
  * Specifies the type of a texture.
@@ -536,18 +537,18 @@ typedef enum SDL_GPUCubeMapFace
  * A buffer must have at least one usage flag. Note that some usage flag
  * combinations are invalid.
  *
- * \since This enum is available since SDL 3.0.0
+ * \since This datatype is available since SDL 3.0.0
  *
  * \sa SDL_CreateGPUBuffer
  */
 typedef Uint32 SDL_GPUBufferUsageFlags;
 
-#define SDL_GPU_BUFFERUSAGE_VERTEX                (1u << 0) /**< Buffer is a vertex buffer. */
-#define SDL_GPU_BUFFERUSAGE_INDEX                 (1u << 1) /**< Buffer is an index buffer. */
-#define SDL_GPU_BUFFERUSAGE_INDIRECT              (1u << 2) /**< Buffer is an indirect buffer. */
-#define SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ (1u << 3) /**< Buffer supports storage reads in graphics stages. */
-#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ  (1u << 4) /**< Buffer supports storage reads in the compute stage. */
-#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE (1u << 5) /**< Buffer supports storage writes in the compute stage. */
+#define SDL_GPU_BUFFERUSAGE_VERTEX                                  (1u << 0) /**< Buffer is a vertex buffer. */
+#define SDL_GPU_BUFFERUSAGE_INDEX                                   (1u << 1) /**< Buffer is an index buffer. */
+#define SDL_GPU_BUFFERUSAGE_INDIRECT                                (1u << 2) /**< Buffer is an indirect buffer. */
+#define SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ                   (1u << 3) /**< Buffer supports storage reads in graphics stages. */
+#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ                    (1u << 4) /**< Buffer supports storage reads in the compute stage. */
+#define SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE                   (1u << 5) /**< Buffer supports storage writes in the compute stage. */
 
 /**
  * Specifies how a transfer buffer is intended to be used by the client.
@@ -811,7 +812,7 @@ typedef enum SDL_GPUBlendFactor
 /**
  * Specifies which color components are written in a graphics pipeline.
  *
- * \since This enum is available since SDL 3.0.0
+ * \since This datatype is available since SDL 3.0.0
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1489,8 +1490,8 @@ typedef struct SDL_GPUComputePipelineCreateInfo
     Uint32 num_samplers;                    /**< The number of samplers defined in the shader. */
     Uint32 num_readonly_storage_textures;   /**< The number of readonly storage textures defined in the shader. */
     Uint32 num_readonly_storage_buffers;    /**< The number of readonly storage buffers defined in the shader. */
-    Uint32 num_writeonly_storage_textures;  /**< The number of writeonly storage textures defined in the shader. */
-    Uint32 num_writeonly_storage_buffers;   /**< The number of writeonly storage buffers defined in the shader. */
+    Uint32 num_readwrite_storage_textures;  /**< The number of read-write storage textures defined in the shader. */
+    Uint32 num_readwrite_storage_buffers;   /**< The number of read-write storage buffers defined in the shader. */
     Uint32 num_uniform_buffers;             /**< The number of uniform buffers defined in the shader. */
     Uint32 threadcount_x;                   /**< The number of threads in the X dimension. This should match the value in the shader. */
     Uint32 threadcount_y;                   /**< The number of threads in the Y dimension. This should match the value in the shader. */
@@ -1667,14 +1668,14 @@ typedef struct SDL_GPUTextureSamplerBinding
  *
  * \sa SDL_BeginGPUComputePass
  */
-typedef struct SDL_GPUStorageBufferWriteOnlyBinding
+typedef struct SDL_GPUStorageBufferReadWriteBinding
 {
     SDL_GPUBuffer *buffer;  /**< The buffer to bind. Must have been created with SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE. */
     bool cycle;         /**< true cycles the buffer if it is already bound. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
-} SDL_GPUStorageBufferWriteOnlyBinding;
+} SDL_GPUStorageBufferReadWriteBinding;
 
 /**
  * A structure specifying parameters related to binding textures in a compute
@@ -1684,7 +1685,7 @@ typedef struct SDL_GPUStorageBufferWriteOnlyBinding
  *
  * \sa SDL_BeginGPUComputePass
  */
-typedef struct SDL_GPUStorageTextureWriteOnlyBinding
+typedef struct SDL_GPUStorageTextureReadWriteBinding
 {
     SDL_GPUTexture *texture;  /**< The texture to bind. Must have been created with SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE. */
     Uint32 mip_level;         /**< The mip level index to bind. */
@@ -1693,7 +1694,7 @@ typedef struct SDL_GPUStorageTextureWriteOnlyBinding
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
-} SDL_GPUStorageTextureWriteOnlyBinding;
+} SDL_GPUStorageTextureReadWriteBinding;
 
 /* Functions */
 
@@ -2807,15 +2808,17 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPURenderPass(
  * Begins a compute pass on a command buffer.
  *
  * A compute pass is defined by a set of texture subresources and buffers that
- * will be written to by compute pipelines. These textures and buffers must
- * have been created with the COMPUTE_STORAGE_WRITE bit. All operations
+ * may be written to by compute pipelines. These textures and buffers must
+ * have been created with the COMPUTE_STORAGE_WRITE bit or the COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE bit. All operations
  * related to compute pipelines must take place inside of a compute pass. You
  * must not begin another compute pass, or a render pass or copy pass before
  * ending the compute pass.
  *
- * A VERY IMPORTANT NOTE Textures and buffers bound as write-only MUST NOT be
- * read from during the compute pass. Doing so will result in undefined
- * behavior. If your compute work requires reading the output from a previous
+ * A VERY IMPORTANT NOTE - Reads and writes in compute shaders are NOT implicitly synchronized.
+ * This means you may cause data races by both reading and writing a resource in a compute pass.
+ * Reading and writing a texture in the same compute shader is only supported by specific texture formats.
+ * Make sure you check the format support!
+ * If your compute work requires reading the completed output from a previous
  * dispatch, you MUST end the current compute pass and begin a new one before
  * you can safely access the data.
  *
@@ -2836,9 +2839,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPURenderPass(
  */
 extern SDL_DECLSPEC SDL_GPUComputePass *SDLCALL SDL_BeginGPUComputePass(
     SDL_GPUCommandBuffer *command_buffer,
-    const SDL_GPUStorageTextureWriteOnlyBinding *storage_texture_bindings,
+    const SDL_GPUStorageTextureReadWriteBinding *storage_texture_bindings,
     Uint32 num_storage_texture_bindings,
-    const SDL_GPUStorageBufferWriteOnlyBinding *storage_buffer_bindings,
+    const SDL_GPUStorageBufferReadWriteBinding *storage_buffer_bindings,
     Uint32 num_storage_buffer_bindings);
 
 /**

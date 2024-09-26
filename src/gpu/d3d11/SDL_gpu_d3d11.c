@@ -529,9 +529,9 @@ typedef struct D3D11ComputePipeline
 
     Uint32 numSamplers;
     Uint32 numReadonlyStorageTextures;
-    Uint32 numWriteonlyStorageTextures;
+    Uint32 numReadWriteStorageTextures;
     Uint32 numReadonlyStorageBuffers;
-    Uint32 numWriteonlyStorageBuffers;
+    Uint32 numReadWriteStorageBuffers;
     Uint32 numUniformBuffers;
 } D3D11ComputePipeline;
 
@@ -687,8 +687,8 @@ typedef struct D3D11CommandBuffer
     D3D11Sampler *computeSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     D3D11Texture *computeReadOnlyStorageTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
     D3D11Buffer *computeReadOnlyStorageBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
-    D3D11TextureSubresource *computeWriteOnlyStorageTextureSubresources[MAX_COMPUTE_WRITE_TEXTURES];
-    D3D11Buffer *computeWriteOnlyStorageBuffers[MAX_COMPUTE_WRITE_BUFFERS];
+    D3D11TextureSubresource *computeReadWriteStorageTextureSubresources[MAX_COMPUTE_WRITE_TEXTURES];
+    D3D11Buffer *computeReadWriteStorageBuffers[MAX_COMPUTE_WRITE_BUFFERS];
 
     // Uniform buffers
     D3D11UniformBuffer *vertexUniformBuffers[MAX_UNIFORM_BUFFERS_PER_STAGE];
@@ -1524,9 +1524,9 @@ static SDL_GPUComputePipeline *D3D11_CreateComputePipeline(
     pipeline->computeShader = shader;
     pipeline->numSamplers = createinfo->num_samplers;
     pipeline->numReadonlyStorageTextures = createinfo->num_readonly_storage_textures;
-    pipeline->numWriteonlyStorageTextures = createinfo->num_writeonly_storage_textures;
+    pipeline->numReadWriteStorageTextures = createinfo->num_readwrite_storage_textures;
     pipeline->numReadonlyStorageBuffers = createinfo->num_readonly_storage_buffers;
-    pipeline->numWriteonlyStorageBuffers = createinfo->num_writeonly_storage_buffers;
+    pipeline->numReadWriteStorageBuffers = createinfo->num_readwrite_storage_buffers;
     pipeline->numUniformBuffers = createinfo->num_uniform_buffers;
     // thread counts are ignored in d3d11
 
@@ -3224,8 +3224,8 @@ static SDL_GPUCommandBuffer *D3D11_AcquireCommandBuffer(
     SDL_zeroa(commandBuffer->computeSamplerTextures);
     SDL_zeroa(commandBuffer->computeReadOnlyStorageTextures);
     SDL_zeroa(commandBuffer->computeReadOnlyStorageBuffers);
-    SDL_zeroa(commandBuffer->computeWriteOnlyStorageTextureSubresources);
-    SDL_zeroa(commandBuffer->computeWriteOnlyStorageBuffers);
+    SDL_zeroa(commandBuffer->computeReadWriteStorageTextureSubresources);
+    SDL_zeroa(commandBuffer->computeReadWriteStorageBuffers);
 
     bool acquireFenceResult = D3D11_INTERNAL_AcquireFence(commandBuffer);
     commandBuffer->autoReleaseFence = 1;
@@ -4284,9 +4284,9 @@ static void D3D11_Blit(
 
 static void D3D11_BeginComputePass(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
+    const SDL_GPUStorageTextureReadWriteBinding *storageTextureBindings,
     Uint32 numStorageTextureBindings,
-    const SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
+    const SDL_GPUStorageBufferReadWriteBinding *storageBufferBindings,
     Uint32 numStorageBufferBindings)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -4310,7 +4310,7 @@ static void D3D11_BeginComputePass(
             d3d11CommandBuffer,
             textureSubresource->parent);
 
-        d3d11CommandBuffer->computeWriteOnlyStorageTextureSubresources[i] = textureSubresource;
+        d3d11CommandBuffer->computeReadWriteStorageTextureSubresources[i] = textureSubresource;
     }
 
     for (Uint32 i = 0; i < numStorageBufferBindings; i += 1) {
@@ -4325,15 +4325,15 @@ static void D3D11_BeginComputePass(
             d3d11CommandBuffer,
             buffer);
 
-        d3d11CommandBuffer->computeWriteOnlyStorageBuffers[i] = buffer;
+        d3d11CommandBuffer->computeReadWriteStorageBuffers[i] = buffer;
     }
 
     for (Uint32 i = 0; i < numStorageTextureBindings; i += 1) {
-        uavs[i] = d3d11CommandBuffer->computeWriteOnlyStorageTextureSubresources[i]->uav;
+        uavs[i] = d3d11CommandBuffer->computeReadWriteStorageTextureSubresources[i]->uav;
     }
 
     for (Uint32 i = 0; i < numStorageBufferBindings; i += 1) {
-        uavs[numStorageTextureBindings + i] = d3d11CommandBuffer->computeWriteOnlyStorageBuffers[i]->uav;
+        uavs[numStorageTextureBindings + i] = d3d11CommandBuffer->computeReadWriteStorageBuffers[i]->uav;
     }
 
     ID3D11DeviceContext_CSSetUnorderedAccessViews(
@@ -4622,8 +4622,8 @@ static void D3D11_EndComputePass(
     SDL_zeroa(d3d11CommandBuffer->computeSamplerTextures);
     SDL_zeroa(d3d11CommandBuffer->computeReadOnlyStorageTextures);
     SDL_zeroa(d3d11CommandBuffer->computeReadOnlyStorageBuffers);
-    SDL_zeroa(d3d11CommandBuffer->computeWriteOnlyStorageTextureSubresources);
-    SDL_zeroa(d3d11CommandBuffer->computeWriteOnlyStorageBuffers);
+    SDL_zeroa(d3d11CommandBuffer->computeReadWriteStorageTextureSubresources);
+    SDL_zeroa(d3d11CommandBuffer->computeReadWriteStorageBuffers);
 }
 
 // Fence Cleanup
@@ -5763,6 +5763,7 @@ static bool D3D11_SupportsTextureFormat(
     DXGI_FORMAT dxgiFormat = SDLToD3D11_TextureFormat[format];
     DXGI_FORMAT typelessFormat = D3D11_INTERNAL_GetTypelessFormat(dxgiFormat);
     UINT formatSupport, sampleableFormatSupport;
+    D3D11_FEATURE_DATA_FORMAT_SUPPORT2 formatSupport2 = { dxgiFormat, 0 };
     HRESULT res;
 
     res = ID3D11Device_CheckFormatSupport(
@@ -5784,6 +5785,19 @@ static bool D3D11_SupportsTextureFormat(
             &sampleableFormatSupport);
         if (SUCCEEDED(res)) {
             formatSupport |= sampleableFormatSupport;
+        }
+    }
+
+    // Checks for SIMULTANEOUS_READ_WRITE support
+    if (usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE) {
+        res = ID3D11Device_CheckFeatureSupport(
+            renderer->device,
+            D3D11_FEATURE_FORMAT_SUPPORT2,
+            &formatSupport2,
+            sizeof(formatSupport2));
+        if (FAILED(res)) {
+            // Format is apparently unknown
+            return false;
         }
     }
 
@@ -5813,6 +5827,9 @@ static bool D3D11_SupportsTextureFormat(
     }
     if ((usage & (SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) && !(formatSupport & D3D11_FORMAT_SUPPORT_TYPED_UNORDERED_ACCESS_VIEW))) {
         // TYPED_UNORDERED_ACCESS_VIEW implies support for typed UAV stores
+        return false;
+    }
+    if ((usage & (SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE) && !(formatSupport2.OutFormatSupport2 & D3D11_FORMAT_SUPPORT2_UAV_TYPED_LOAD))) {
         return false;
     }
     if ((usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) && !(formatSupport & D3D11_FORMAT_SUPPORT_RENDER_TARGET)) {

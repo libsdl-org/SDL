@@ -732,10 +732,10 @@ struct D3D12CommandBuffer
     D3D12Sampler *computeSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     D3D12Texture *computeReadOnlyStorageTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
     D3D12Buffer *computeReadOnlyStorageBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
-    D3D12TextureSubresource *computeWriteOnlyStorageTextureSubresources[MAX_COMPUTE_WRITE_TEXTURES];
-    Uint32 computeWriteOnlyStorageTextureSubresourceCount;
-    D3D12Buffer *computeWriteOnlyStorageBuffers[MAX_COMPUTE_WRITE_BUFFERS];
-    Uint32 computeWriteOnlyStorageBufferCount;
+    D3D12TextureSubresource *computeReadWriteStorageTextureSubresources[MAX_COMPUTE_WRITE_TEXTURES];
+    Uint32 computeReadWriteStorageTextureSubresourceCount;
+    D3D12Buffer *computeReadWriteStorageBuffers[MAX_COMPUTE_WRITE_BUFFERS];
+    Uint32 computeReadWriteStorageBufferCount;
     D3D12UniformBuffer *computeUniformBuffers[MAX_UNIFORM_BUFFERS_PER_STAGE];
 
     // Resource tracking
@@ -825,8 +825,8 @@ typedef struct D3D12ComputeRootSignature
     Sint32 samplerTextureRootIndex;
     Sint32 readOnlyStorageTextureRootIndex;
     Sint32 readOnlyStorageBufferRootIndex;
-    Sint32 writeOnlyStorageTextureRootIndex;
-    Sint32 writeOnlyStorageBufferRootIndex;
+    Sint32 readWriteStorageTextureRootIndex;
+    Sint32 readWriteStorageBufferRootIndex;
     Sint32 uniformBufferRootIndex[MAX_UNIFORM_BUFFERS_PER_STAGE];
 } D3D12ComputeRootSignature;
 
@@ -838,8 +838,8 @@ struct D3D12ComputePipeline
     Uint32 numSamplers;
     Uint32 numReadOnlyStorageTextures;
     Uint32 numReadOnlyStorageBuffers;
-    Uint32 numWriteOnlyStorageTextures;
-    Uint32 numWriteOnlyStorageBuffers;
+    Uint32 numReadWriteStorageTextures;
+    Uint32 numReadWriteStorageBuffers;
     Uint32 numUniformBuffers;
 
     SDL_AtomicInt referenceCount;
@@ -2174,8 +2174,8 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
     d3d12ComputeRootSignature->samplerTextureRootIndex = -1;
     d3d12ComputeRootSignature->readOnlyStorageTextureRootIndex = -1;
     d3d12ComputeRootSignature->readOnlyStorageBufferRootIndex = -1;
-    d3d12ComputeRootSignature->writeOnlyStorageTextureRootIndex = -1;
-    d3d12ComputeRootSignature->writeOnlyStorageBufferRootIndex = -1;
+    d3d12ComputeRootSignature->readWriteStorageTextureRootIndex = -1;
+    d3d12ComputeRootSignature->readWriteStorageBufferRootIndex = -1;
 
     for (Uint32 i = 0; i < MAX_UNIFORM_BUFFERS_PER_STAGE; i += 1) {
         d3d12ComputeRootSignature->uniformBufferRootIndex[i] = -1;
@@ -2251,9 +2251,9 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
         parameterCount += 1;
     }
 
-    if (createInfo->num_writeonly_storage_textures) {
+    if (createInfo->num_readwrite_storage_textures) {
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-        descriptorRange.NumDescriptors = createInfo->num_writeonly_storage_textures;
+        descriptorRange.NumDescriptors = createInfo->num_readwrite_storage_textures;
         descriptorRange.BaseShaderRegister = 0;
         descriptorRange.RegisterSpace = 1;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -2264,15 +2264,15 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
         rootParameter.DescriptorTable.pDescriptorRanges = &descriptorRanges[rangeCount];
         rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // ALL is used for compute
         rootParameters[parameterCount] = rootParameter;
-        d3d12ComputeRootSignature->writeOnlyStorageTextureRootIndex = parameterCount;
+        d3d12ComputeRootSignature->readWriteStorageTextureRootIndex = parameterCount;
         rangeCount += 1;
         parameterCount += 1;
     }
 
-    if (createInfo->num_writeonly_storage_buffers) {
+    if (createInfo->num_readwrite_storage_buffers) {
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-        descriptorRange.NumDescriptors = createInfo->num_writeonly_storage_buffers;
-        descriptorRange.BaseShaderRegister = createInfo->num_writeonly_storage_textures;
+        descriptorRange.NumDescriptors = createInfo->num_readwrite_storage_buffers;
+        descriptorRange.BaseShaderRegister = createInfo->num_readwrite_storage_textures;
         descriptorRange.RegisterSpace = 1;
         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
         descriptorRanges[rangeCount] = descriptorRange;
@@ -2282,7 +2282,7 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
         rootParameter.DescriptorTable.pDescriptorRanges = &descriptorRanges[rangeCount];
         rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // ALL is used for compute
         rootParameters[parameterCount] = rootParameter;
-        d3d12ComputeRootSignature->writeOnlyStorageBufferRootIndex = parameterCount;
+        d3d12ComputeRootSignature->readWriteStorageBufferRootIndex = parameterCount;
         rangeCount += 1;
         parameterCount += 1;
     }
@@ -2409,8 +2409,8 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     computePipeline->numSamplers = createinfo->num_samplers;
     computePipeline->numReadOnlyStorageTextures = createinfo->num_readonly_storage_textures;
     computePipeline->numReadOnlyStorageBuffers = createinfo->num_readonly_storage_buffers;
-    computePipeline->numWriteOnlyStorageTextures = createinfo->num_writeonly_storage_textures;
-    computePipeline->numWriteOnlyStorageBuffers = createinfo->num_writeonly_storage_buffers;
+    computePipeline->numReadWriteStorageTextures = createinfo->num_readwrite_storage_textures;
+    computePipeline->numReadWriteStorageBuffers = createinfo->num_readwrite_storage_buffers;
     computePipeline->numUniformBuffers = createinfo->num_uniform_buffers;
     SDL_SetAtomicInt(&computePipeline->referenceCount, 0);
 
@@ -4877,15 +4877,15 @@ static void D3D12_EndRenderPass(
 
 static void D3D12_BeginComputePass(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
+    const SDL_GPUStorageTextureReadWriteBinding *storageTextureBindings,
     Uint32 numStorageTextureBindings,
-    const SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
+    const SDL_GPUStorageBufferReadWriteBinding *storageBufferBindings,
     Uint32 numStorageBufferBindings)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresourceCount = numStorageTextureBindings;
-    d3d12CommandBuffer->computeWriteOnlyStorageBufferCount = numStorageBufferBindings;
+    d3d12CommandBuffer->computeReadWriteStorageTextureSubresourceCount = numStorageTextureBindings;
+    d3d12CommandBuffer->computeReadWriteStorageBufferCount = numStorageBufferBindings;
 
     /* Write-only resources will be actually bound in BindComputePipeline
      * after the root signature is set.
@@ -4906,7 +4906,7 @@ static void D3D12_BeginComputePass(
                 storageTextureBindings[i].cycle,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-            d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresources[i] = subresource;
+            d3d12CommandBuffer->computeReadWriteStorageTextureSubresources[i] = subresource;
 
             D3D12_INTERNAL_TrackTexture(
                 d3d12CommandBuffer,
@@ -4926,7 +4926,7 @@ static void D3D12_BeginComputePass(
                 storageBufferBindings[i].cycle,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-            d3d12CommandBuffer->computeWriteOnlyStorageBuffers[i] = buffer;
+            d3d12CommandBuffer->computeReadWriteStorageBuffers[i] = buffer;
 
             D3D12_INTERNAL_TrackBuffer(
                 d3d12CommandBuffer,
@@ -4972,39 +4972,39 @@ static void D3D12_BindComputePipeline(
     D3D12_INTERNAL_TrackComputePipeline(d3d12CommandBuffer, pipeline);
 
     // Bind write-only resources after setting root signature
-    if (pipeline->numWriteOnlyStorageTextures > 0) {
-        for (Uint32 i = 0; i < pipeline->numWriteOnlyStorageTextures; i += 1) {
-            cpuHandles[i] = d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresources[i]->uavHandle.cpuHandle;
+    if (pipeline->numReadWriteStorageTextures > 0) {
+        for (Uint32 i = 0; i < pipeline->numReadWriteStorageTextures; i += 1) {
+            cpuHandles[i] = d3d12CommandBuffer->computeReadWriteStorageTextureSubresources[i]->uavHandle.cpuHandle;
         }
 
         D3D12_INTERNAL_WriteGPUDescriptors(
             d3d12CommandBuffer,
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             cpuHandles,
-            d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresourceCount,
+            d3d12CommandBuffer->computeReadWriteStorageTextureSubresourceCount,
             &gpuDescriptorHandle);
 
         ID3D12GraphicsCommandList_SetComputeRootDescriptorTable(
             d3d12CommandBuffer->graphicsCommandList,
-            d3d12CommandBuffer->currentComputePipeline->rootSignature->writeOnlyStorageTextureRootIndex,
+            d3d12CommandBuffer->currentComputePipeline->rootSignature->readWriteStorageTextureRootIndex,
             gpuDescriptorHandle);
     }
 
-    if (pipeline->numWriteOnlyStorageBuffers > 0) {
-        for (Uint32 i = 0; i < pipeline->numWriteOnlyStorageBuffers; i += 1) {
-            cpuHandles[i] = d3d12CommandBuffer->computeWriteOnlyStorageBuffers[i]->uavDescriptor.cpuHandle;
+    if (pipeline->numReadWriteStorageBuffers > 0) {
+        for (Uint32 i = 0; i < pipeline->numReadWriteStorageBuffers; i += 1) {
+            cpuHandles[i] = d3d12CommandBuffer->computeReadWriteStorageBuffers[i]->uavDescriptor.cpuHandle;
         }
 
         D3D12_INTERNAL_WriteGPUDescriptors(
             d3d12CommandBuffer,
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             cpuHandles,
-            d3d12CommandBuffer->computeWriteOnlyStorageBufferCount,
+            d3d12CommandBuffer->computeReadWriteStorageBufferCount,
             &gpuDescriptorHandle);
 
         ID3D12GraphicsCommandList_SetComputeRootDescriptorTable(
             d3d12CommandBuffer->graphicsCommandList,
-            d3d12CommandBuffer->currentComputePipeline->rootSignature->writeOnlyStorageBufferRootIndex,
+            d3d12CommandBuffer->currentComputePipeline->rootSignature->readWriteStorageBufferRootIndex,
             gpuDescriptorHandle);
     }
 }
@@ -5257,29 +5257,29 @@ static void D3D12_EndComputePass(
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
-    for (Uint32 i = 0; i < d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresourceCount; i += 1) {
-        if (d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresources[i]) {
+    for (Uint32 i = 0; i < d3d12CommandBuffer->computeReadWriteStorageTextureSubresourceCount; i += 1) {
+        if (d3d12CommandBuffer->computeReadWriteStorageTextureSubresources[i]) {
             D3D12_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
                 d3d12CommandBuffer,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresources[i]);
+                d3d12CommandBuffer->computeReadWriteStorageTextureSubresources[i]);
 
-            d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresources[i] = NULL;
+            d3d12CommandBuffer->computeReadWriteStorageTextureSubresources[i] = NULL;
         }
     }
-    d3d12CommandBuffer->computeWriteOnlyStorageTextureSubresourceCount = 0;
+    d3d12CommandBuffer->computeReadWriteStorageTextureSubresourceCount = 0;
 
-    for (Uint32 i = 0; i < d3d12CommandBuffer->computeWriteOnlyStorageBufferCount; i += 1) {
-        if (d3d12CommandBuffer->computeWriteOnlyStorageBuffers[i]) {
+    for (Uint32 i = 0; i < d3d12CommandBuffer->computeReadWriteStorageBufferCount; i += 1) {
+        if (d3d12CommandBuffer->computeReadWriteStorageBuffers[i]) {
             D3D12_INTERNAL_BufferTransitionToDefaultUsage(
                 d3d12CommandBuffer,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                d3d12CommandBuffer->computeWriteOnlyStorageBuffers[i]);
+                d3d12CommandBuffer->computeReadWriteStorageBuffers[i]);
 
-            d3d12CommandBuffer->computeWriteOnlyStorageBuffers[i] = NULL;
+            d3d12CommandBuffer->computeReadWriteStorageBuffers[i] = NULL;
         }
     }
-    d3d12CommandBuffer->computeWriteOnlyStorageBufferCount = 0;
+    d3d12CommandBuffer->computeReadWriteStorageBufferCount = 0;
 
     for (Uint32 i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i += 1) {
         if (d3d12CommandBuffer->computeReadOnlyStorageTextures[i]) {
@@ -6881,8 +6881,8 @@ static SDL_GPUCommandBuffer *D3D12_AcquireCommandBuffer(
     SDL_zeroa(commandBuffer->computeSamplers);
     SDL_zeroa(commandBuffer->computeReadOnlyStorageTextures);
     SDL_zeroa(commandBuffer->computeReadOnlyStorageBuffers);
-    SDL_zeroa(commandBuffer->computeWriteOnlyStorageTextureSubresources);
-    SDL_zeroa(commandBuffer->computeWriteOnlyStorageBuffers);
+    SDL_zeroa(commandBuffer->computeReadWriteStorageTextureSubresources);
+    SDL_zeroa(commandBuffer->computeReadWriteStorageBuffers);
     SDL_zeroa(commandBuffer->computeUniformBuffers);
 
     commandBuffer->autoReleaseFence = true;
@@ -7553,6 +7553,9 @@ static bool D3D12_SupportsTextureFormat(
         return false;
     }
     if ((usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) && !(formatSupport.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_STORE)) {
+        return false;
+    }
+    if ((usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE) && !(formatSupport.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD)) {
         return false;
     }
     if ((usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) && !(formatSupport.Support1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET)) {

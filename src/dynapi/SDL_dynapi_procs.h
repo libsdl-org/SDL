@@ -63,7 +63,7 @@ SDL_DYNAPI_PROC(SDL_TimerID,SDL_AddTimerNS,(Uint64 a, SDL_NSTimerCallback b, voi
 SDL_DYNAPI_PROC(bool,SDL_AddVulkanRenderSemaphores,(SDL_Renderer *a, Uint32 b, Sint64 c, Sint64 d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(SDL_JoystickID,SDL_AttachVirtualJoystick,(const SDL_VirtualJoystickDesc *a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_AudioDevicePaused,(SDL_AudioDeviceID a),(a),return)
-SDL_DYNAPI_PROC(SDL_GPUComputePass*,SDL_BeginGPUComputePass,(SDL_GPUCommandBuffer *a, const SDL_GPUStorageTextureWriteOnlyBinding *b, Uint32 c, const SDL_GPUStorageBufferWriteOnlyBinding *d, Uint32 e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(SDL_GPUComputePass*,SDL_BeginGPUComputePass,(SDL_GPUCommandBuffer *a, const SDL_GPUStorageTextureReadWriteBinding *b, Uint32 c, const SDL_GPUStorageBufferReadWriteBinding *d, Uint32 e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(SDL_GPUCopyPass*,SDL_BeginGPUCopyPass,(SDL_GPUCommandBuffer *a),(a),return)
 SDL_DYNAPI_PROC(SDL_GPURenderPass*,SDL_BeginGPURenderPass,(SDL_GPUCommandBuffer *a, const SDL_GPUColorTargetInfo *b, Uint32 c, const SDL_GPUDepthStencilTargetInfo *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(bool,SDL_BindAudioStream,(SDL_AudioDeviceID a, SDL_AudioStream *b),(a,b),return)

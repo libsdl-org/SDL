@@ -705,11 +705,11 @@ SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
             SDL_assert_release(!"Incompatible shader format for GPU backend");
             return NULL;
         }
-        if (createinfo->num_writeonly_storage_textures > MAX_COMPUTE_WRITE_TEXTURES) {
+        if (createinfo->num_readwrite_storage_textures > MAX_COMPUTE_WRITE_TEXTURES) {
             SDL_assert_release(!"Compute pipeline write-only texture count cannot be higher than 8!");
             return NULL;
         }
-        if (createinfo->num_writeonly_storage_buffers > MAX_COMPUTE_WRITE_BUFFERS) {
+        if (createinfo->num_readwrite_storage_buffers > MAX_COMPUTE_WRITE_BUFFERS) {
             SDL_assert_release(!"Compute pipeline write-only buffer count cannot be higher than 8!");
             return NULL;
         }
@@ -1868,9 +1868,9 @@ void SDL_EndGPURenderPass(
 
 SDL_GPUComputePass *SDL_BeginGPUComputePass(
     SDL_GPUCommandBuffer *command_buffer,
-    const SDL_GPUStorageTextureWriteOnlyBinding *storage_texture_bindings,
+    const SDL_GPUStorageTextureReadWriteBinding *storage_texture_bindings,
     Uint32 num_storage_texture_bindings,
-    const SDL_GPUStorageBufferWriteOnlyBinding *storage_buffer_bindings,
+    const SDL_GPUStorageBufferReadWriteBinding *storage_buffer_bindings,
     Uint32 num_storage_buffer_bindings)
 {
     CommandBufferCommonHeader *commandBufferHeader;
@@ -1898,6 +1898,16 @@ SDL_GPUComputePass *SDL_BeginGPUComputePass(
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
         CHECK_COMMAND_BUFFER_RETURN_NULL
         CHECK_ANY_PASS_IN_PROGRESS("Cannot begin compute pass during another pass!", NULL)
+
+        for (Uint32 i = 0; i < num_storage_texture_bindings; i += 1) {
+            TextureCommonHeader *header = (TextureCommonHeader *)storage_texture_bindings[i].texture;
+            if (!(header->info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) && !(header->info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE)) {
+                SDL_assert_release(!"Texture must be created with COMPUTE_STORAGE_WRITE or COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE flag");
+                return NULL;
+            }
+        }
+
+        // TODO: validate buffer usage?
     }
 
     COMMAND_BUFFER_DEVICE->BeginComputePass(
