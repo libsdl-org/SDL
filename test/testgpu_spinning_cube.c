@@ -339,11 +339,11 @@ Render(SDL_Window *window, const int windownum)
 
     cmd = SDL_AcquireGPUCommandBuffer(gpu_device);
     if (!cmd) {
-        SDL_Log(SDL_GetError());
+        SDL_Log("Failed to acquire command buffer :%s", SDL_GetError());
         quit(2);
     }
     if (!SDL_AcquireGPUSwapchainTexture(cmd, state->windows[windownum], &swapchainTexture)) {
-        SDL_Log(SDL_GetError());
+        SDL_Log("Failed to acquire swapchain texture: %s", SDL_GetError());
         quit(2);
     }
 
