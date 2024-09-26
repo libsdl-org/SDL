@@ -390,7 +390,6 @@ static SDL_RenderCommand *AllocateRenderCommand(SDL_Renderer *renderer)
 {
     SDL_RenderCommand *result = NULL;
 
-    // !!! FIXME: are there threading limitations in SDL's render API? If not, we need to mutex this.
     result = renderer->render_commands_pool;
     if (result) {
         renderer->render_commands_pool = result->next;
