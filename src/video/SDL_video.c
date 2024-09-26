@@ -5048,13 +5048,13 @@ bool SDL_GL_GetSwapInterval(int *interval)
     *interval = 0;
 
     if (!_this) {
-        return SDL_SetError("no video driver");;
+        return SDL_SetError("no video driver");
     } else if (SDL_GL_GetCurrentContext() == NULL) {
-        return SDL_SetError("no current context");;
+        return SDL_SetError("no current context");
     } else if (_this->GL_GetSwapInterval) {
         return _this->GL_GetSwapInterval(_this, interval);
     } else {
-        return SDL_SetError("not implemented");;
+        return SDL_SetError("not implemented");
     }
 }
 

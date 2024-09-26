@@ -1588,7 +1588,7 @@ static void PrepareAudioFormat(bool recording, SDL_AudioSpec *spec)
     }
 
     if (spec->channels == 0) {
-        spec->channels = recording ? DEFAULT_AUDIO_RECORDING_CHANNELS : DEFAULT_AUDIO_PLAYBACK_CHANNELS;;
+        spec->channels = recording ? DEFAULT_AUDIO_RECORDING_CHANNELS : DEFAULT_AUDIO_PLAYBACK_CHANNELS;
 
         const char *hint = SDL_GetHint(SDL_HINT_AUDIO_CHANNELS);
         if (hint) {

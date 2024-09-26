@@ -252,7 +252,7 @@ static int get_hid_item_size(const __u8 *report_descriptor, __u32 size, unsigned
 		*data_len = 0;
 		*key_size = 0;
 		break;
-	};
+	}
 
 	/* malformed report */
 	return 0;
