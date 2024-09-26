@@ -956,8 +956,6 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
 {
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
 
-    Uint32 swapchain_w, swapchain_h;
-
     SDL_GPUTexture *swapchain;
     bool result = SDL_AcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain);
 
@@ -971,6 +969,9 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
 
     SDL_GPUTextureFormat swapchain_fmt = SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window);
 
+    int window_w, window_h;
+    SDL_GetWindowSizeInPixels(renderer->window, &window_w, &window_h);
+
     SDL_GPUBlitInfo blit_info;
     SDL_zero(blit_info);
 
@@ -978,16 +979,16 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
     blit_info.source.w = data->backbuffer.width;
     blit_info.source.h = data->backbuffer.height;
     blit_info.destination.texture = swapchain;
-    blit_info.destination.w = swapchain_w;
-    blit_info.destination.h = swapchain_h;
+    blit_info.destination.w = window_w;
+    blit_info.destination.h = window_h;
     blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
     blit_info.filter = SDL_GPU_FILTER_LINEAR;
 
     SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
 
-    if (swapchain_w != data->backbuffer.width || swapchain_h != data->backbuffer.height || swapchain_fmt != data->backbuffer.format) {
+    if (window_w != data->backbuffer.width || window_h != data->backbuffer.height || swapchain_fmt != data->backbuffer.format) {
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
-        CreateBackbuffer(data, swapchain_w, swapchain_h, swapchain_fmt);
+        CreateBackbuffer(data, window_w, window_h, swapchain_fmt);
     }
 
 // *** FIXME ***

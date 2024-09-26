@@ -353,7 +353,7 @@ Render(SDL_Window *window, const int windownum)
         return;
     }
 
-    SDL_GetWindowSize(window, &drawablew, &drawableh);
+    SDL_GetWindowSizeInPixels(window, &drawablew, &drawableh);
 
     /*
     * Do some rotation with Euler angles. It is not a fixed axis as
