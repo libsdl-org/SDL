@@ -960,7 +960,7 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
     bool result = SDL_AcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain);
 
     if (!result) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to acquire swapchain texture: %s", SDL_GetError());
     }
 
     if (swapchain == NULL) {
