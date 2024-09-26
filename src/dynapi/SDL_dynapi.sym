@@ -817,6 +817,7 @@ SDL3_0.0.0 {
     SDL_SetHapticGain;
     SDL_SetHint;
     SDL_SetHintWithPriority;
+    SDL_SetInitialized;
     SDL_SetJoystickEventsEnabled;
     SDL_SetJoystickLED;
     SDL_SetJoystickPlayerIndex;
@@ -895,6 +896,8 @@ SDL3_0.0.0 {
     SDL_SetX11EventHook;
     SDL_SetiOSAnimationCallback;
     SDL_SetiOSEventPump;
+    SDL_ShouldInit;
+    SDL_ShouldQuit;
     SDL_ShowAndroidToast;
     SDL_ShowCursor;
     SDL_ShowMessageBox;
