@@ -83,23 +83,18 @@ bool SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
 bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
 {
     char *buffer = NULL;
-    char *tmppath = NULL;
     SDL_IOStream *input = NULL;
     SDL_IOStream *output = NULL;
     const size_t maxlen = 4096;
     size_t len;
     bool result = false;
 
-    if (SDL_asprintf(&tmppath, "%s.tmp", newpath) < 0) {
-        goto done;
-    }
-
     input = SDL_IOFromFile(oldpath, "rb");
     if (!input) {
         goto done;
     }
 
-    output = SDL_IOFromFile(tmppath, "wb");
+    output = SDL_IOFromFile(newpath, "wb");
     if (!output) {
         goto done;
     }
@@ -125,28 +120,16 @@ bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
         goto done;
     }
 
-    if (!SDL_CloseIO(output)) {
-        output = NULL;  // it's gone, even if it failed.
-        goto done;
-    }
-    output = NULL;
-
-    if (!SDL_RenamePath(tmppath, newpath)) {
-        SDL_RemovePath(tmppath);
-        goto done;
-    }
-
-    result = true;
+    result = SDL_CloseIO(output);
+    output = NULL;  // it's gone, even if it failed.
 
 done:
     if (output) {
         SDL_CloseIO(output);
-        SDL_RemovePath(tmppath);
     }
     if (input) {
         SDL_CloseIO(input);
     }
-    SDL_free(tmppath);
     SDL_free(buffer);
 
     return result;
