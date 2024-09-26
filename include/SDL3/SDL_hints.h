@@ -2234,7 +2234,7 @@ extern "C" {
  *   (default)
  * - "1": The application may remain in the background when launched.
  *
- * This hint should be set before applicationDidFinishLaunching() is called.
+ * This hint needs to be set before SDL_Init().
  *
  * \since This hint is available since SDL 3.0.0.
  */
@@ -2288,7 +2288,7 @@ extern "C" {
  * - "0": The mouse wheel events will have no momentum. (default)
  * - "1": The mouse wheel events will have momentum.
  *
- * This hint should be set before applicationDidFinishLaunching() is called.
+ * This hint needs to be set before SDL_Init().
  *
  * \since This hint is available since SDL 3.0.0.
  */
