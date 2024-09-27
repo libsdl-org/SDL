@@ -309,6 +309,9 @@ typedef enum SDL_GPUIndexElementSize
  * a format is supported before using it. However, there are a few guaranteed
  * formats.
  *
+ * FIXME: Check universal support for 32-bit component formats
+ * FIXME: Check universal support for SIMULTANEOUS_READ_WRITE
+ *
  * For SAMPLER usage, the following formats are universally supported:
  *
  * - R8G8B8A8_UNORM
@@ -435,6 +438,9 @@ typedef enum SDL_GPUTextureFormat
     SDL_GPU_TEXTUREFORMAT_R16_UINT,
     SDL_GPU_TEXTUREFORMAT_R16G16_UINT,
     SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT,
+    SDL_GPU_TEXTUREFORMAT_R32_UINT,
+    SDL_GPU_TEXTUREFORMAT_R32G32_UINT,
+    SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT,
     /* Signed Integer Color Formats */
     SDL_GPU_TEXTUREFORMAT_R8_INT,
     SDL_GPU_TEXTUREFORMAT_R8G8_INT,
@@ -442,6 +448,9 @@ typedef enum SDL_GPUTextureFormat
     SDL_GPU_TEXTUREFORMAT_R16_INT,
     SDL_GPU_TEXTUREFORMAT_R16G16_INT,
     SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT,
+    SDL_GPU_TEXTUREFORMAT_R32_INT,
+    SDL_GPU_TEXTUREFORMAT_R32G32_INT,
+    SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT,
     /* SRGB Unsigned Normalized Color Formats */
     SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB,
     SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB,
