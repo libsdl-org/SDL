@@ -100,6 +100,7 @@ bool SDL_SYS_RemovePath(const char *path)
 
     WIN32_FILE_ATTRIBUTE_DATA info;
     if (!GetFileAttributesExW(wpath, GetFileExInfoStandard, &info)) {
+        SDL_free(wpath);
         if (GetLastError() == ERROR_FILE_NOT_FOUND) {
             // Note that ERROR_PATH_NOT_FOUND means a parent dir is missing, and we consider that an error.
             return true;  // thing is already gone, call it a success.
