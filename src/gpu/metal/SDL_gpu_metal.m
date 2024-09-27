@@ -3572,8 +3572,6 @@ static void METAL_ReleaseWindow(
 static bool METAL_AcquireSwapchainTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
-    Uint32 *w,
-    Uint32 *h,
     SDL_GPUTexture **texture)
 {
     @autoreleasepool {
@@ -3596,10 +3594,6 @@ static bool METAL_AcquireSwapchainTexture(
         windowData->textureContainer.header.info.width = (Uint32)drawableSize.width;
         windowData->textureContainer.header.info.height = (Uint32)drawableSize.height;
 
-        // Send the dimensions to the out parameters.
-        *w = (Uint32)drawableSize.width;
-        *h = (Uint32)drawableSize.height;
-
         // Set up presentation
         if (metalCommandBuffer->windowDataCount == metalCommandBuffer->windowDataCapacity) {
             metalCommandBuffer->windowDataCapacity += 1;
@@ -3611,7 +3605,7 @@ static bool METAL_AcquireSwapchainTexture(
         metalCommandBuffer->windowDataCount += 1;
 
         // Return the swapchain texture
-        *texture = &windowData->textureContainer;
+        *texture = (SDL_GPUTexture *)&windowData->textureContainer;
         return true;
     }
 }
