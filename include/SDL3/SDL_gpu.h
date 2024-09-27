@@ -1671,7 +1671,7 @@ typedef struct SDL_GPUTextureSamplerBinding
 typedef struct SDL_GPUStorageBufferReadWriteBinding
 {
     SDL_GPUBuffer *buffer;  /**< The buffer to bind. Must have been created with SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE. */
-    bool cycle;         /**< true cycles the buffer if it is already bound. */
+    bool cycle;             /**< true cycles the buffer if it is already bound. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
@@ -1687,10 +1687,10 @@ typedef struct SDL_GPUStorageBufferReadWriteBinding
  */
 typedef struct SDL_GPUStorageTextureReadWriteBinding
 {
-    SDL_GPUTexture *texture;  /**< The texture to bind. Must have been created with SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE. */
+    SDL_GPUTexture *texture;  /**< The texture to bind. Must have been created with SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE or SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE. */
     Uint32 mip_level;         /**< The mip level index to bind. */
     Uint32 layer;             /**< The layer index to bind. */
-    bool cycle;           /**< true cycles the texture if it is already bound. */
+    bool cycle;               /**< true cycles the texture if it is already bound. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
@@ -2809,7 +2809,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPURenderPass(
  *
  * A compute pass is defined by a set of texture subresources and buffers that
  * may be written to by compute pipelines. These textures and buffers must
- * have been created with the COMPUTE_STORAGE_WRITE bit or the COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE bit. All operations
+ * have been created with the COMPUTE_STORAGE_WRITE bit or the COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE bit.
+ * If you do not create a texture with COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE, you must not read from the texture in the compute pass.
+ * All operations
  * related to compute pipelines must take place inside of a compute pass. You
  * must not begin another compute pass, or a render pass or copy pass before
  * ending the compute pass.
