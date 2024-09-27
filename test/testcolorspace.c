@@ -126,10 +126,6 @@ static void PrevRenderer(void)
 
 static void NextStage(void)
 {
-    if (StageCount <= 0) {
-        return;
-    }
-
     ++stage_index;
     if (stage_index == StageCount) {
         stage_index = 0;
