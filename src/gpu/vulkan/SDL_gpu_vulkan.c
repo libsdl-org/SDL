@@ -9315,7 +9315,7 @@ static bool VULKAN_SupportsSwapchainComposition(
     bool result = false;
 
     if (windowData == NULL || windowData->swapchainData == NULL) {
-        SET_STRING_ERROR_AND_RETURN("Must claim window before querying swapchain composition support!", NULL)
+        SET_STRING_ERROR_AND_RETURN("Must claim window before querying swapchain composition support!", false)
     }
 
     surface = windowData->swapchainData->surface;
