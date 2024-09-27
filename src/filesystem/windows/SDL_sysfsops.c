@@ -167,7 +167,16 @@ bool SDL_SYS_CreateDirectory(const char *path)
         return false;
     }
 
-    const DWORD rc = CreateDirectoryW(wpath, NULL);
+    DWORD rc = CreateDirectoryW(wpath, NULL);
+    if (!rc && (GetLastError() == ERROR_ALREADY_EXISTS)) {
+        WIN32_FILE_ATTRIBUTE_DATA winstat;
+        if (GetFileAttributesExW(wpath, GetFileExInfoStandard, &winstat)) {
+            if (winstat.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                rc = 1;  // exists and is already a directory: cool.
+            }
+        }
+    }
+
     SDL_free(wpath);
     if (!rc) {
         return WIN_SetError("Couldn't create directory");
