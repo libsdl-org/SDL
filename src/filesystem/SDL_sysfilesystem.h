@@ -34,6 +34,10 @@ extern bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath);
 extern bool SDL_SYS_CreateDirectory(const char *path);
 extern bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info);
 
+extern SDL_MemoryMappedFile *SDL_SYS_MemoryMapFile(const char *file, size_t offset);
+extern bool SDL_SYS_UnmapMemoryFile(SDL_MemoryMappedFile *mmfile);
+extern void *SDL_SYS_GetMemoryMappedData(const SDL_MemoryMappedFile *mmfile, size_t *datasize);
+
 typedef bool (*SDL_GlobEnumeratorFunc)(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata);
 typedef bool (*SDL_GlobGetPathInfoFunc)(const char *path, SDL_PathInfo *info, void *userdata);
 extern char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata);
