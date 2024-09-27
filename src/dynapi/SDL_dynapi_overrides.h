@@ -273,6 +273,7 @@
 #define SDL_GetCameraSupportedFormats SDL_GetCameraSupportedFormats_REAL
 #define SDL_GetCameras SDL_GetCameras_REAL
 #define SDL_GetClipboardData SDL_GetClipboardData_REAL
+#define SDL_GetClipboardMimeTypes SDL_GetClipboardMimeTypes_REAL
 #define SDL_GetClipboardText SDL_GetClipboardText_REAL
 #define SDL_GetClosestFullscreenDisplayMode SDL_GetClosestFullscreenDisplayMode_REAL
 #define SDL_GetCurrentAudioDriver SDL_GetCurrentAudioDriver_REAL
@@ -1033,7 +1034,7 @@
 #define SDL_aligned_free SDL_aligned_free_REAL
 #define SDL_asin SDL_asin_REAL
 #define SDL_asinf SDL_asinf_REAL
-#define SDL_asprintf    SDL_asprintf_REAL
+#define SDL_asprintf SDL_asprintf_REAL
 #define SDL_atan SDL_atan_REAL
 #define SDL_atan2 SDL_atan2_REAL
 #define SDL_atan2f SDL_atan2f_REAL

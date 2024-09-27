@@ -43,6 +43,20 @@ extern "C" {
 /* Function prototypes */
 
 /**
+ *  Retrieve the list of mime types available in the clipboard.
+ *
+ * \param num_mime_types a pointer filled with the number of mime types. May be NULL.
+ * \returns a null terminated array of strings with mime types, or NULL on
+ *          failure; call SDL_GetError() for more information. This should be
+ *          freed with SDL_free() when it is no longer needed.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetClipboardData
+ */
+extern SDL_DECLSPEC char ** SDLCALL SDL_GetClipboardMimeTypes(size_t *num_mime_types);
+
+/**
  * Put UTF-8 text into the clipboard.
  *
  * \param text the text to store in the clipboard.

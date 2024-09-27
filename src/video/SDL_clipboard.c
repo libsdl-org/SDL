@@ -53,6 +53,46 @@ void SDL_CancelClipboardData(Uint32 sequence)
     _this->clipboard_userdata = NULL;
 }
 
+char **SDL_GetClipboardMimeTypes(size_t *num_mime_types)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (!_this) {
+        SDL_SetError("Video subsystem must be initialized to query clipboard mime types");
+        return NULL;
+    }
+
+    size_t allocSize = sizeof(char *);
+    for (size_t i = 0; i < _this->num_clipboard_mime_types; i++) {
+        allocSize += strlen(_this->clipboard_mime_types[i]) + 1 + sizeof(char *);
+    }
+
+    char *ret = SDL_malloc(allocSize);
+    if (!ret)
+        return NULL;
+
+    char **pointers = (char **)ret;
+    ret += (_this->num_clipboard_mime_types + 1) * sizeof(char *);
+
+    for (size_t i = 0; i < _this->num_clipboard_mime_types; i++) {
+        pointers[i] = ret;
+
+        char *mime_type = _this->clipboard_mime_types[i];
+        /* copy the whole string including the terminating null char */
+        char c;
+        do {
+            c = *mime_type;
+            *ret = c;
+            ret++;
+            mime_type++;
+        } while (c != 0);
+    }
+
+    pointers[_this->num_clipboard_mime_types] = NULL;
+    if (num_mime_types)
+        *num_mime_types = _this->num_clipboard_mime_types;
+    return pointers;
+}
+
 bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
