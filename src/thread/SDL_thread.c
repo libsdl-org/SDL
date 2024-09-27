@@ -533,9 +533,14 @@ bool SDL_ShouldInit(SDL_InitState *state)
 
 bool SDL_ShouldQuit(SDL_InitState *state)
 {
-    if (SDL_CompareAndSwapAtomicInt(&state->status, SDL_INIT_STATUS_INITIALIZED, SDL_INIT_STATUS_UNINITIALIZING)) {
-        state->thread = SDL_GetCurrentThreadID();
-        return true;
+    while (SDL_GetAtomicInt(&state->status) != SDL_INIT_STATUS_UNINITIALIZED) {
+        if (SDL_CompareAndSwapAtomicInt(&state->status, SDL_INIT_STATUS_INITIALIZED, SDL_INIT_STATUS_UNINITIALIZING)) {
+            state->thread = SDL_GetCurrentThreadID();
+            return true;
+        }
+
+        // Wait for the other thread to complete transition
+        SDL_Delay(1);
     }
     return false;
 }
