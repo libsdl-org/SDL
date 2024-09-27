@@ -22,6 +22,8 @@
 
 #if defined(SDL_PLATFORM_WINDOWS)
 #include "../core/windows/SDL_windows.h"
+#else
+#include <unistd.h>
 #endif
 
 #ifdef HAVE_STDIO_H
@@ -31,6 +33,10 @@
 #endif
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
+#endif
+
+#ifdef SDL_PLATFORM_APPLE
+#include <fcntl.h>
 #endif
 
 #include "SDL_iostream_c.h"
@@ -277,6 +283,15 @@ static size_t SDLCALL windows_file_write(void *userdata, const void *ptr, size_t
     return bytes;
 }
 
+static bool SDLCALL windows_file_flush(void *userdata, SDL_IOStatus *status)
+{
+    IOStreamWindowsData *iodata = (IOStreamWindowsData *) userdata;
+    if (!FlushFileBuffers(iodata->h)) {
+        return WIN_SetError("Error flushing datastream");
+    }
+    return true;
+}
+
 static bool SDLCALL windows_file_close(void *userdata)
 {
     IOStreamWindowsData *iodata = (IOStreamWindowsData *) userdata;
@@ -309,6 +324,7 @@ SDL_IOStream *SDL_IOFromHandle(HANDLE handle, const char *mode, bool autoclose)
     }
     iface.read = windows_file_read;
     iface.write = windows_file_write;
+    iface.flush = windows_file_flush;
     iface.close = windows_file_close;
 
     iodata->h = handle;
@@ -343,6 +359,7 @@ typedef struct IOStreamStdioData
 {
     FILE *fp;
     bool autoclose;
+    bool regular_file;
 } IOStreamStdioData;
 
 #ifdef HAVE_FOPEN64
@@ -464,6 +481,19 @@ static bool SDLCALL stdio_flush(void *userdata, SDL_IOStatus *status)
             return SDL_SetError("Error flushing datastream: %s", strerror(errno));
         }
     }
+
+    #if defined(SDL_PLATFORM_APPLE)  // Apple doesn't have fdatasync (rather, the symbol exists as an incompatible system call).
+    if (fcntl(fileno(iodata->fp), F_FULLFSYNC) == -1) {
+        return SDL_SetError("Error flushing datastream: %s", strerror(errno));
+    }
+    #elif defined(_POSIX_SYNCHRONIZED_IO)  // POSIX defines this if fdatasync() exists, so we don't need a CMake test.
+        #ifndef SDL_PLATFORM_RISCOS  // !!! FIXME: however, RISCOS doesn't have the symbol...maybe we need to link to an extra library or something?
+        if (iodata->regular_file && (fdatasync(fileno(iodata->fp)) == -1)) {
+            return SDL_SetError("Error flushing datastream: %s", strerror(errno));
+        }
+        #endif
+    #endif
+
     return true;
 }
 
@@ -501,6 +531,9 @@ SDL_IOStream *SDL_IOFromFP(FILE *fp, bool autoclose)
 
     iodata->fp = fp;
     iodata->autoclose = autoclose;
+
+    struct stat st;
+    iodata->regular_file = ((fstat(fileno(fp), &st) == 0) && S_ISREG(st.st_mode));
 
     SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
     if (!iostr) {
