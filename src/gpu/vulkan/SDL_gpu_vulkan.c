@@ -10826,6 +10826,7 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     VkQueueFamilyProperties *queueProps;
     bool supportsPresent;
     VkPhysicalDeviceProperties deviceProperties;
+    VkPhysicalDeviceFeatures deviceFeatures;
     Uint32 i;
 
     const Uint8 *devicePriority = renderer->preferLowPower ? DEVICE_PRIORITY_LOWPOWER : DEVICE_PRIORITY_HIGHPERFORMANCE;
@@ -10849,6 +10850,16 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
          * run a query and reset the rank to avoid overwrites
          */
         *deviceRank = 0;
+        return 0;
+    }
+
+    renderer->vkGetPhysicalDeviceFeatures(
+        physicalDevice,
+        &deviceFeatures);
+    if (!deviceFeatures.independentBlend ||
+        !deviceFeatures.imageCubeArray ||
+        !deviceFeatures.depthClamp ||
+        !deviceFeatures.shaderClipDistance) {
         return 0;
     }
 
