@@ -128,12 +128,18 @@ static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
     MTLPixelFormatR16Uint,         // R16_UINT
     MTLPixelFormatRG16Uint,        // R16G16_UINT
     MTLPixelFormatRGBA16Uint,      // R16G16B16A16_UINT
+    MTLPixelFormatR32Uint,         // R32_UINT
+    MTLPixelFormatRG32Uint,        // R32G32_UINT
+    MTLPixelFormatRGBA32Uint,      // R32G32B32A32_UINT
     MTLPixelFormatR8Sint,          // R8_UINT
     MTLPixelFormatRG8Sint,         // R8G8_UINT
     MTLPixelFormatRGBA8Sint,       // R8G8B8A8_UINT
     MTLPixelFormatR16Sint,         // R16_UINT
     MTLPixelFormatRG16Sint,        // R16G16_UINT
     MTLPixelFormatRGBA16Sint,      // R16G16B16A16_UINT
+    MTLPixelFormatR32Sint,         // R32_INT
+    MTLPixelFormatRG32Sint,        // R32G32_INT
+    MTLPixelFormatRGBA32Sint,      // R32G32B32A32_INT
     MTLPixelFormatRGBA8Unorm_sRGB, // R8G8B8A8_UNORM_SRGB
     MTLPixelFormatBGRA8Unorm_sRGB, // B8G8R8A8_UNORM_SRGB
 #ifdef SDL_PLATFORM_MACOS
