@@ -4048,7 +4048,7 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
  *
  * \param a the multiplicand.
  * \param b the multiplier.
- * \param ret on non-overflow output, stores the multiplication result. May
+ * \param ret on non-overflow output, stores the multiplication result, may
  *            not be NULL.
  * \returns false on overflow, true if result is multiplied without overflow.
  *
@@ -4087,7 +4087,7 @@ SDL_FORCE_INLINE bool SDL_size_mul_check_overflow_builtin(size_t a, size_t b, si
  *
  * \param a the first addend.
  * \param b the second addend.
- * \param ret on non-overflow output, stores the addition result. May not be
+ * \param ret on non-overflow output, stores the addition result, may not be
  *            NULL.
  * \returns false on overflow, true if result is added without overflow.
  *
