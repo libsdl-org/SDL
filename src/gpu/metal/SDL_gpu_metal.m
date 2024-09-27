@@ -59,7 +59,7 @@
 
 // Forward Declarations
 
-static void METAL_Wait(SDL_GPURenderer *driverData);
+static bool METAL_Wait(SDL_GPURenderer *driverData);
 static void METAL_ReleaseWindow(
     SDL_GPURenderer *driverData,
     SDL_Window *window);
