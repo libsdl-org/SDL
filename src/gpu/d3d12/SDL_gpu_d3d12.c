@@ -2447,7 +2447,7 @@ static bool D3D12_INTERNAL_ConvertRasterizerState(SDL_GPURasterizerState rasteri
         desc->SlopeScaledDepthBias = 0.0f;
     }
 
-    desc->DepthClipEnable = TRUE;
+    desc->DepthClipEnable = rasterizerState.enable_depth_clip;
     desc->MultisampleEnable = FALSE;
     desc->AntialiasedLineEnable = FALSE;
     desc->ForcedSampleCount = 0;

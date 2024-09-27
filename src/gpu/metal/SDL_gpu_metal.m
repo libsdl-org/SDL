@@ -368,6 +368,16 @@ static MTLColorWriteMask SDLToMetal_ColorWriteMask(
     return result;
 }
 
+static MTLDepthClipMode SDLToMetal_DepthClipMode(
+    bool enableDepthClip
+) {
+    if (enableDepthClip) {
+        return MTLDepthClipModeClip;
+    } else {
+        return MTLDepthClipModeClamp;
+    }
+}
+
 // Structs
 
 typedef struct MetalTexture
@@ -2311,6 +2321,7 @@ static void METAL_BindGraphicsPipeline(
         [metalCommandBuffer->renderEncoder setTriangleFillMode:SDLToMetal_PolygonMode[metalGraphicsPipeline->rasterizerState.fill_mode]];
         [metalCommandBuffer->renderEncoder setCullMode:SDLToMetal_CullMode[metalGraphicsPipeline->rasterizerState.cull_mode]];
         [metalCommandBuffer->renderEncoder setFrontFacingWinding:SDLToMetal_FrontFace[metalGraphicsPipeline->rasterizerState.front_face]];
+        [metalCommandBuffer->renderEncoder setDepthClipMode:SDLToMetal_DepthClipMode(metalGraphicsPipeline->rasterizerState.enable_depth_clip)];
         [metalCommandBuffer->renderEncoder
             setDepthBias:((rast->enable_depth_bias) ? rast->depth_bias_constant_factor : 0)
               slopeScale:((rast->enable_depth_bias) ? rast->depth_bias_slope_factor : 0)
