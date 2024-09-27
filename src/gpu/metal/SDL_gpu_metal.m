@@ -3598,6 +3598,8 @@ static bool METAL_AcquireSwapchainTexture(
         MetalWindowData *windowData;
         CGSize drawableSize;
 
+        *texture = NULL;
+
         windowData = METAL_INTERNAL_FetchWindowData(window);
         if (windowData == NULL) {
             SET_STRING_ERROR_AND_RETURN("Window is not claimed by this SDL_GpuDevice", false);
