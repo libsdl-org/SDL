@@ -453,9 +453,9 @@ typedef struct MetalComputePipeline
     id<MTLComputePipelineState> handle;
     Uint32 numSamplers;
     Uint32 numReadonlyStorageTextures;
-    Uint32 numWriteonlyStorageTextures;
+    Uint32 numReadWriteStorageTextures;
     Uint32 numReadonlyStorageBuffers;
-    Uint32 numWriteonlyStorageBuffers;
+    Uint32 numReadWriteStorageBuffers;
     Uint32 numUniformBuffers;
     Uint32 threadcountX;
     Uint32 threadcountY;
@@ -548,8 +548,8 @@ typedef struct MetalCommandBuffer
     id<MTLSamplerState> computeSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     id<MTLTexture> computeReadOnlyTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
     id<MTLBuffer> computeReadOnlyBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
-    id<MTLTexture> computeWriteOnlyTextures[MAX_COMPUTE_WRITE_TEXTURES];
-    id<MTLBuffer> computeWriteOnlyBuffers[MAX_COMPUTE_WRITE_BUFFERS];
+    id<MTLTexture> computeReadWriteTextures[MAX_COMPUTE_WRITE_TEXTURES];
+    id<MTLBuffer> computeReadWriteBuffers[MAX_COMPUTE_WRITE_BUFFERS];
 
     // Uniform buffers
     MetalUniformBuffer *vertexUniformBuffers[MAX_UNIFORM_BUFFERS_PER_STAGE];
@@ -999,9 +999,9 @@ static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
         pipeline->handle = handle;
         pipeline->numSamplers = createinfo->num_samplers;
         pipeline->numReadonlyStorageTextures = createinfo->num_readonly_storage_textures;
-        pipeline->numWriteonlyStorageTextures = createinfo->num_writeonly_storage_textures;
+        pipeline->numReadWriteStorageTextures = createinfo->num_readwrite_storage_textures;
         pipeline->numReadonlyStorageBuffers = createinfo->num_readonly_storage_buffers;
-        pipeline->numWriteonlyStorageBuffers = createinfo->num_writeonly_storage_buffers;
+        pipeline->numReadWriteStorageBuffers = createinfo->num_readwrite_storage_buffers;
         pipeline->numUniformBuffers = createinfo->num_uniform_buffers;
         pipeline->threadcountX = createinfo->threadcount_x;
         pipeline->threadcountY = createinfo->threadcount_y;
@@ -1380,7 +1380,8 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
                              SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
         textureDescriptor.usage |= MTLTextureUsageShaderRead;
     }
-    if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
+    if (createinfo->usage & (SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE |
+                             SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE)) {
         textureDescriptor.usage |= MTLTextureUsageShaderWrite;
     }
 
@@ -2653,11 +2654,11 @@ static void METAL_INTERNAL_BindComputeResources(
         }
 
         // Bind write-only textures
-        if (computePipeline->numWriteonlyStorageTextures > 0) {
-            [commandBuffer->computeEncoder setTextures:commandBuffer->computeWriteOnlyTextures
+        if (computePipeline->numReadWriteStorageTextures > 0) {
+            [commandBuffer->computeEncoder setTextures:commandBuffer->computeReadWriteTextures
                                              withRange:NSMakeRange(
                                                            computePipeline->numSamplers + computePipeline->numReadonlyStorageTextures,
-                                                           computePipeline->numWriteonlyStorageTextures)];
+                                                           computePipeline->numReadWriteStorageTextures)];
         }
         commandBuffer->needComputeTextureBind = false;
     }
@@ -2671,13 +2672,13 @@ static void METAL_INTERNAL_BindComputeResources(
                                                                   computePipeline->numReadonlyStorageBuffers)];
         }
         // Bind write-only buffers
-        if (computePipeline->numWriteonlyStorageBuffers > 0) {
-            [commandBuffer->computeEncoder setBuffers:commandBuffer->computeWriteOnlyBuffers
+        if (computePipeline->numReadWriteStorageBuffers > 0) {
+            [commandBuffer->computeEncoder setBuffers:commandBuffer->computeReadWriteBuffers
                                               offsets:offsets
                                             withRange:NSMakeRange(
                                                           computePipeline->numUniformBuffers +
                                                               computePipeline->numReadonlyStorageBuffers,
-                                                          computePipeline->numWriteonlyStorageBuffers)];
+                                                          computePipeline->numReadWriteStorageBuffers)];
         }
         commandBuffer->needComputeBufferBind = false;
     }
@@ -2960,9 +2961,9 @@ static void METAL_Blit(
 
 static void METAL_BeginComputePass(
     SDL_GPUCommandBuffer *commandBuffer,
-    const SDL_GPUStorageTextureWriteOnlyBinding *storageTextureBindings,
+    const SDL_GPUStorageTextureReadWriteBinding *storageTextureBindings,
     Uint32 numStorageTextureBindings,
-    const SDL_GPUStorageBufferWriteOnlyBinding *storageBufferBindings,
+    const SDL_GPUStorageBufferReadWriteBinding *storageBufferBindings,
     Uint32 numStorageBufferBindings)
 {
     @autoreleasepool {
@@ -2990,7 +2991,7 @@ static void METAL_BeginComputePass(
                                                                   levels:NSMakeRange(storageTextureBindings[i].mip_level, 1)
                                                                   slices:NSMakeRange(storageTextureBindings[i].layer, 1)];
 
-            metalCommandBuffer->computeWriteOnlyTextures[i] = textureView;
+            metalCommandBuffer->computeReadWriteTextures[i] = textureView;
             metalCommandBuffer->needComputeTextureBind = true;
         }
 
@@ -3006,7 +3007,7 @@ static void METAL_BeginComputePass(
                 metalCommandBuffer,
                 buffer);
 
-            metalCommandBuffer->computeWriteOnlyBuffers[i] = buffer->handle;
+            metalCommandBuffer->computeReadWriteBuffers[i] = buffer->handle;
             metalCommandBuffer->needComputeBufferBind = true;
         }
     }
@@ -3182,10 +3183,10 @@ static void METAL_EndComputePass(
             metalCommandBuffer->computeSamplerTextures[i] = nil;
         }
         for (Uint32 i = 0; i < MAX_COMPUTE_WRITE_TEXTURES; i += 1) {
-            metalCommandBuffer->computeWriteOnlyTextures[i] = nil;
+            metalCommandBuffer->computeReadWriteTextures[i] = nil;
         }
         for (Uint32 i = 0; i < MAX_COMPUTE_WRITE_BUFFERS; i += 1) {
-            metalCommandBuffer->computeWriteOnlyBuffers[i] = nil;
+            metalCommandBuffer->computeReadWriteBuffers[i] = nil;
         }
         for (Uint32 i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i += 1) {
             metalCommandBuffer->computeReadOnlyTextures[i] = nil;
@@ -3282,10 +3283,10 @@ static void METAL_INTERNAL_CleanCommandBuffer(
         commandBuffer->computeReadOnlyBuffers[i] = nil;
     }
     for (i = 0; i < MAX_COMPUTE_WRITE_TEXTURES; i += 1) {
-        commandBuffer->computeWriteOnlyTextures[i] = nil;
+        commandBuffer->computeReadWriteTextures[i] = nil;
     }
     for (i = 0; i < MAX_COMPUTE_WRITE_BUFFERS; i += 1) {
-        commandBuffer->computeWriteOnlyBuffers[i] = nil;
+        commandBuffer->computeReadWriteBuffers[i] = nil;
     }
 
     // The fence is now available (unless SubmitAndAcquireFence was called)
@@ -3780,6 +3781,7 @@ static bool METAL_Wait(
 
 // Format Info
 
+// FIXME: Check simultaneous read-write support
 static bool METAL_SupportsTextureFormat(
     SDL_GPURenderer *driverData,
     SDL_GPUTextureFormat format,
