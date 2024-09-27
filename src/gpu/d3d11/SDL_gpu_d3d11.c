@@ -1356,7 +1356,7 @@ static ID3D11RasterizerState *D3D11_INTERNAL_FetchRasterizerState(
     rasterizerDesc.CullMode = SDLToD3D11_CullMode[rasterizerState.cull_mode];
     rasterizerDesc.DepthBias = SDL_lroundf(rasterizerState.depth_bias_constant_factor);
     rasterizerDesc.DepthBiasClamp = rasterizerState.depth_bias_clamp;
-    rasterizerDesc.DepthClipEnable = TRUE;
+    rasterizerDesc.DepthClipEnable = rasterizerState.enable_depth_clip;
     rasterizerDesc.FillMode = (rasterizerState.fill_mode == SDL_GPU_FILLMODE_FILL) ? D3D11_FILL_SOLID : D3D11_FILL_WIREFRAME;
     rasterizerDesc.FrontCounterClockwise = (rasterizerState.front_face == SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE);
     rasterizerDesc.MultisampleEnable = TRUE; // only applies to MSAA render targets

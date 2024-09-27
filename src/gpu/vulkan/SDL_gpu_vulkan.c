@@ -6175,7 +6175,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizationStateCreateInfo.pNext = NULL;
     rasterizationStateCreateInfo.flags = 0;
-    rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+    rasterizationStateCreateInfo.depthClampEnable = !createinfo->rasterizer_state.enable_depth_clip;
     rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
     rasterizationStateCreateInfo.polygonMode = SDLToVK_PolygonMode(
         renderer,
@@ -11030,6 +11030,7 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     desiredDeviceFeatures.independentBlend = VK_TRUE;
     desiredDeviceFeatures.samplerAnisotropy = VK_TRUE;
     desiredDeviceFeatures.imageCubeArray = VK_TRUE;
+    desiredDeviceFeatures.depthClamp = VK_TRUE;
 
     if (haveDeviceFeatures.fillModeNonSolid) {
         desiredDeviceFeatures.fillModeNonSolid = VK_TRUE;
