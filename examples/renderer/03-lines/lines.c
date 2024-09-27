@@ -26,8 +26,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    SDL_srand(0);  /* seed the random number generator */
-
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 

@@ -1389,6 +1389,8 @@ SDL_Vertex has been changed to use floating point colors, in the range of [0..1]
 
 SDL_RenderReadPixels() returns a surface instead of filling in preallocated memory.
 
+SDL_RenderSetLogicalSize() (now called SDL_SetRenderLogicalPresentation()) in SDL2 would modify the scaling and viewport state. In SDL3, logical presentation maintains its state separately, so the app can use its own viewport and scaling while also setting a logical size.
+
 The following functions have been renamed:
 * SDL_GetRendererOutputSize() => SDL_GetCurrentRenderOutputSize(), returns bool
 * SDL_RenderCopy() => SDL_RenderTexture(), returns bool

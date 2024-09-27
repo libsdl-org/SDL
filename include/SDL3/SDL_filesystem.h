@@ -272,6 +272,10 @@ typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char
  * callback, called once for each directory entry, until all results have been
  * provided or the callback returns <= 0.
  *
+ * This will return false if there was a system problem in general, or if a
+ * callback returns -1. A successful return means a callback returned 1 to
+ * halt enumeration, or all directory entries were enumerated.
+ *
  * \param path the path of the directory to enumerate.
  * \param callback a function that is called for each entry in the directory.
  * \param userdata a pointer that is passed to `callback`.
@@ -285,7 +289,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_EnumerateDirectory(const char *path, SDL_En
 /**
  * Remove a file or an empty directory.
  *
- * \param path the path of the directory to enumerate.
+ * Directories that are not empty will fail; this function will not recursely
+ * delete directory trees.
+ *
+ * \param path the path to remove from the filesystem.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -295,6 +302,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RemovePath(const char *path);
 
 /**
  * Rename a file or directory.
+ *
+ * If the file at `newpath` already exists, it will replaced.
+ *
+ * Note that this will not copy files across filesystems/drives/volumes, as
+ * that is a much more complicated (and possibly time-consuming) operation.
+ *
+ * Which is to say, if this function fails, SDL_CopyFile() to a temporary file
+ * in the same directory as `newpath`, then SDL_RenamePath() from the
+ * temporary file to `newpath` and SDL_RemovePath() on `oldpath` might work
+ * for files. Renaming a non-empty directory across filesystems is
+ * dramatically more complex, however.
  *
  * \param oldpath the old path.
  * \param newpath the new path.
@@ -307,6 +325,34 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenamePath(const char *oldpath, const char 
 
 /**
  * Copy a file.
+ *
+ * If the file at `newpath` already exists, it will be overwritten with the
+ * contents of the file at `oldpath`.
+ *
+ * This function will block until the copy is complete, which might be a
+ * significant time for large files on slow disks. On some platforms, the copy
+ * can be handed off to the OS itself, but on others SDL might just open both
+ * paths, and read from one and write to the other.
+ *
+ * Note that this is not an atomic operation! If something tries to read from
+ * `newpath` while the copy is in progress, it will see an incomplete copy of
+ * the data, and if the calling thread terminates (or the power goes out)
+ * during the copy, `oldpath`'s previous contents will be gone, replaced with
+ * an incomplete copy of the data. To avoid this risk, it is recommended that
+ * the app copy to a temporary file in the same directory as `newpath`, and if
+ * the copy is successful, use SDL_RenamePath() to replace `newpath` with the
+ * temporary file. This will ensure that reads of `newpath` will either see a
+ * complete copy of the data, or it will see the pre-copy state of `newpath`.
+ *
+ * This function attempts to synchronize the newly-copied data to disk before
+ * returning, if the platform allows it, so that the renaming trick will not
+ * have a problem in a system crash or power failure, where the file could be
+ * renamed but the contents never made it from the system file cache to the
+ * physical disk.
+ *
+ * If the copy fails for any reason, the state of `newpath` is undefined. It
+ * might be half a copy, it might be the untouched data of what was already
+ * there, or it might be a zero-byte file, etc.
  *
  * \param oldpath the old path.
  * \param newpath the new path.

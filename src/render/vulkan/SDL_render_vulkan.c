@@ -688,7 +688,7 @@ static VkResult VULKAN_AllocateBuffer(VULKAN_RenderData *rendererData, VkDeviceS
     if (!VULKAN_FindMemoryTypeIndex(rendererData, memoryRequirements.memoryTypeBits, requiredMemoryProps, desiredMemoryProps, &memoryTypeIndex)) {
         VULKAN_DestroyBuffer(rendererData, bufferOut);
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "VULKAN_FindMemoryTypeIndex failed.\n");
-        return VK_ERROR_UNKNOWN;;
+        return VK_ERROR_UNKNOWN;
     }
 
     VkMemoryAllocateInfo memoryAllocateInfo = { 0 };

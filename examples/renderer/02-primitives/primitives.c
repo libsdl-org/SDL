@@ -29,8 +29,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    SDL_srand(0);  /* seed the random number generator */
-
     /* set up some random points */
     for (i = 0; i < SDL_arraysize(points); i++) {
         points[i].x = (SDL_randf() * 440.0f) + 100.0f;

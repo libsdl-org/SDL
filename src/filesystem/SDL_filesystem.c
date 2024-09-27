@@ -69,10 +69,7 @@ bool SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cal
     } else if (!callback) {
         return SDL_InvalidParamError("callback");
     }
-    if (SDL_SYS_EnumerateDirectory(path, path, callback, userdata) < 0) {
-        return false;
-    }
-    return true;
+    return SDL_SYS_EnumerateDirectory(path, path, callback, userdata);
 }
 
 bool SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
