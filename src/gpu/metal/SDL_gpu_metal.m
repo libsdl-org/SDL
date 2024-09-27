@@ -3345,7 +3345,7 @@ static void METAL_INTERNAL_PerformPendingDestroys(
 
 // Fences
 
-static void METAL_WaitForFences(
+static bool METAL_WaitForFences(
     SDL_GPURenderer *driverData,
     bool waitAll,
     SDL_GPUFence *const *fences,
@@ -3374,6 +3374,8 @@ static void METAL_WaitForFences(
         }
 
         METAL_INTERNAL_PerformPendingDestroys(renderer);
+
+        return true;
     }
 }
 
@@ -3544,6 +3546,7 @@ static void METAL_ReleaseWindow(
         MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
 
         if (windowData == NULL) {
+            SDL_SetError("Window is not claimed by this SDL_GpuDevice");
             return;
         }
 
@@ -3566,11 +3569,12 @@ static void METAL_ReleaseWindow(
     }
 }
 
-static SDL_GPUTexture *METAL_AcquireSwapchainTexture(
+static bool METAL_AcquireSwapchainTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
     Uint32 *w,
-    Uint32 *h)
+    Uint32 *h,
+    SDL_GPUTexture **texture)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -3579,7 +3583,8 @@ static SDL_GPUTexture *METAL_AcquireSwapchainTexture(
 
         windowData = METAL_INTERNAL_FetchWindowData(window);
         if (windowData == NULL) {
-            return NULL;
+            SDL_SetError("Window is not claimed by this SDL_GpuDevice");
+            return false;
         }
 
         // Get the drawable and its underlying texture
@@ -3606,7 +3611,8 @@ static SDL_GPUTexture *METAL_AcquireSwapchainTexture(
         metalCommandBuffer->windowDataCount += 1;
 
         // Return the swapchain texture
-        return (SDL_GPUTexture *)&windowData->textureContainer;
+        *texture = &windowData->textureContainer;
+        return true;
     }
 }
 
@@ -3673,7 +3679,7 @@ static bool METAL_SetSwapchainParameters(
 
 // Submission
 
-static void METAL_Submit(
+static bool METAL_Submit(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     @autoreleasepool {
@@ -3720,6 +3726,8 @@ static void METAL_Submit(
         METAL_INTERNAL_PerformPendingDestroys(renderer);
 
         SDL_UnlockMutex(renderer->submitLock);
+
+        return true;
     }
 }
 
@@ -3735,7 +3743,7 @@ static SDL_GPUFence *METAL_SubmitAndAcquireFence(
     return (SDL_GPUFence *)fence;
 }
 
-static void METAL_Wait(
+static bool METAL_Wait(
     SDL_GPURenderer *driverData)
 {
     @autoreleasepool {
@@ -3762,6 +3770,8 @@ static void METAL_Wait(
         METAL_INTERNAL_PerformPendingDestroys(renderer);
 
         SDL_UnlockMutex(renderer->submitLock);
+
+        return true;
     }
 }
 
