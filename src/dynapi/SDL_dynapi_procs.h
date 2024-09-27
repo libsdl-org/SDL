@@ -294,6 +294,7 @@ SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetCameraProperties,(SDL_Camera *a),(a),ret
 SDL_DYNAPI_PROC(SDL_CameraSpec**,SDL_GetCameraSupportedFormats,(SDL_CameraID a, int *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_CameraID*,SDL_GetCameras,(int *a),(a),return)
 SDL_DYNAPI_PROC(void*,SDL_GetClipboardData,(const char *a, size_t *b),(a,b),return)
+SDL_DYNAPI_PROC(char **,SDL_GetClipboardMimeTypes,(size_t *a),(a),return)
 SDL_DYNAPI_PROC(char*,SDL_GetClipboardText,(void),(),return)
 SDL_DYNAPI_PROC(bool,SDL_GetClosestFullscreenDisplayMode,(SDL_DisplayID a, int b, int c, float d, bool e, SDL_DisplayMode *f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetCurrentAudioDriver,(void),(),return)

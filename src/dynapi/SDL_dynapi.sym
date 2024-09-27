@@ -248,6 +248,7 @@ SDL3_0.0.0 {
     SDL_GetCameraSupportedFormats;
     SDL_GetCameras;
     SDL_GetClipboardData;
+    SDL_GetClipboardMimeTypes;
     SDL_GetClipboardText;
     SDL_GetClosestFullscreenDisplayMode;
     SDL_GetCurrentAudioDriver;
