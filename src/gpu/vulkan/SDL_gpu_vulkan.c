@@ -6297,7 +6297,6 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
         SDL_stack_free(divisorDescriptions);
         SDL_free(graphicsPipeline);
         SET_STRING_ERROR_AND_RETURN("Failed to initialize pipeline resource layout!", NULL);
-        return NULL;
     }
 
     // Pipeline
@@ -11241,7 +11240,6 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         SDL_free(renderer);
         SDL_Vulkan_UnloadLibrary();
         SET_STRING_ERROR_AND_RETURN("Failed to create logical device!", NULL)
-        return NULL;
     }
 
     // FIXME: just move this into this function
