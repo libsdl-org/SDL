@@ -39,8 +39,8 @@ HICON CreateIconFromSurface(SDL_Surface *surface)
     BITMAPINFO bmpInfo;
     ZeroMemory(&bmpInfo, sizeof(BITMAPINFO));
     bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmpInfo.bmiHeader.biWidth = width;
-    bmpInfo.bmiHeader.biHeight = -height; /* Top-down bitmap */
+    bmpInfo.bmiHeader.biWidth = s->w;
+    bmpInfo.bmiHeader.biHeight = -s->h; /* Top-down bitmap */
     bmpInfo.bmiHeader.biPlanes = 1;
     bmpInfo.bmiHeader.biBitCount = 32;
     bmpInfo.bmiHeader.biCompression = BI_RGB;
@@ -50,15 +50,15 @@ HICON CreateIconFromSurface(SDL_Surface *surface)
     HBITMAP hBitmap = CreateDIBSection(hdc, &bmpInfo, DIB_RGB_COLORS, &pBits, NULL, 0);
     if (!hBitmap) {
         ReleaseDC(NULL, hdc);
-        SDL_FreeSurface(s);
+        SDL_DestroySurface(s);
         return NULL;
     }
 
     memcpy(pBits, s->pixels, s->w * s->h * 4);
 
-    SDL_FreeSurface(s);
+    SDL_DestroySurface(s);
 
-    HBITMAP hMask = CreateBitmap(width, height, 1, 1, NULL);
+    HBITMAP hMask = CreateBitmap(s->w, s->h, 1, 1, NULL);
     if (!hMask) {
         DeleteObject(hBitmap);
         ReleaseDC(NULL, hdc);
@@ -68,9 +68,9 @@ HICON CreateIconFromSurface(SDL_Surface *surface)
     HDC hdcMem = CreateCompatibleDC(hdc);
     HGDIOBJ oldBitmap = SelectObject(hdcMem, hMask);
 
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
+    for (int y = 0; y < s->h; y++) {
+        for (int x = 0; x < s->w; x++) {
+            BYTE* pixel = (BYTE*)pBits + (y * s->w + x) * 4;
             BYTE alpha = pixel[3];
             COLORREF maskColor = (alpha == 0) ? RGB(0, 0, 0) : RGB(255, 255, 255);
             SetPixel(hdcMem, x, y, maskColor);
