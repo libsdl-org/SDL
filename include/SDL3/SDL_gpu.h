@@ -464,6 +464,11 @@ typedef enum SDL_GPUTextureFormat
  * A texture must have at least one usage flag. Note that some usage flag
  * combinations are invalid.
  *
+ * With regards to compute storage usage, READ | WRITE means that you can have shader A that only writes into the texture and shader B that only reads from the texture and bind the same texture to either shader respectively.
+ * SIMULTANEOUS means that you can do reads and writes within the same shader or compute pass. It also implies that atomic ops can be used, since those are read-modify-write operations.
+ * If you use SIMULTANEOUS, you are responsible for avoiding data races, as there is no data synchronization within a compute pass.
+ * Note that SIMULTANEOUS usage is only supported by a limited number of texture formats.
+ *
  * \since This datatype is available since SDL 3.0.0
  *
  * \sa SDL_CreateGPUTexture
@@ -536,6 +541,9 @@ typedef enum SDL_GPUCubeMapFace
  *
  * A buffer must have at least one usage flag. Note that some usage flag
  * combinations are invalid.
+ *
+ * Unlike textures, READ | WRITE can be used for simultaneous read-write usage.
+ * The same data synchronization concerns as textures apply.
  *
  * \since This datatype is available since SDL 3.0.0
  *
@@ -2816,13 +2824,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPURenderPass(
  * must not begin another compute pass, or a render pass or copy pass before
  * ending the compute pass.
  *
- * A VERY IMPORTANT NOTE - Reads and writes in compute shaders are NOT implicitly synchronized.
- * This means you may cause data races by both reading and writing a resource in a compute pass.
- * Reading and writing a texture in the same compute shader is only supported by specific texture formats.
- * Make sure you check the format support!
- * If your compute work requires reading the completed output from a previous
+ * A VERY IMPORTANT NOTE - Reads and writes in compute passes are NOT implicitly synchronized.
+ * This means you may cause data races by both reading and writing a resource region in a compute pass,
+ * or by writing multiple times to a resource region.
+ * If your compute work depends on reading the completed output from a previous
  * dispatch, you MUST end the current compute pass and begin a new one before
- * you can safely access the data.
+ * you can safely access the data. Otherwise you will receive unexpected results.
+ * Reading and writing a texture in the same compute pass is only supported by specific texture formats.
+ * Make sure you check the format support!
  *
  * \param command_buffer a command buffer.
  * \param storage_texture_bindings an array of writeable storage texture
