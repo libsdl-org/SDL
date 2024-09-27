@@ -921,8 +921,9 @@ static ID3D12CommandQueue *s_CommandQueue;
 #endif
 
 #if defined(SDL_PLATFORM_XBOXONE)
-// This is not defined in d3d12_x.h.
+// These are not defined in d3d12_x.h.
 typedef HRESULT (D3DAPI* PFN_D3D12_XBOX_CREATE_DEVICE)(_In_opt_ IGraphicsUnknown*, _In_ const D3D12XBOX_CREATE_DEVICE_PARAMETERS*, _In_ REFIID, _Outptr_opt_ void**);
+#define D3D12_STANDARD_MULTISAMPLE_PATTERN DXGI_STANDARD_MULTISAMPLE_QUALITY_PATTERN
 #endif
 
 // Logging
@@ -6094,6 +6095,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
             renderer->blitFrom2DArrayShader,
             renderer->blitFrom3DShader,
             renderer->blitFromCubeShader,
+            renderer->blitFromCubeArrayShader,
             &renderer->blitPipelines,
             &renderer->blitPipelineCount,
             &renderer->blitPipelineCapacity);
@@ -8117,7 +8119,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
             IID_GRAPHICS_PPV_ARGS(&renderer->device));
         if (FAILED(res)) {
             D3D12_INTERNAL_DestroyRenderer(renderer);
-            ERROR_CHECK_RETURN("Could not create D3D12Device", NULL);
+            CHECK_D3D12_ERROR_AND_RETURN("Could not create D3D12Device", NULL);
         }
 
         res = renderer->device->SetFrameIntervalX(
@@ -8127,7 +8129,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
             D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
         if (FAILED(res)) {
             D3D12_INTERNAL_DestroyRenderer(renderer);
-            ERROR_CHECK_RETURN("Could not get set frame interval", NULL);
+            CHECK_D3D12_ERROR_AND_RETURN("Could not get set frame interval", NULL);
         }
 
         res = renderer->device->ScheduleFrameEventX(
@@ -8137,7 +8139,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
             D3D12XBOX_SCHEDULE_FRAME_EVENT_FLAG_NONE);
         if (FAILED(res)) {
             D3D12_INTERNAL_DestroyRenderer(renderer);
-            ERROR_CHECK_RETURN("Could not schedule frame events", NULL);
+            CHECK_D3D12_ERROR_AND_RETURN("Could not schedule frame events", NULL);
         }
 
         s_Device = renderer->device;
