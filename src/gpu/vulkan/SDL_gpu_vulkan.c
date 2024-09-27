@@ -893,6 +893,8 @@ typedef struct RenderPassHashTableKey
 {
     RenderPassColorTargetDescription colorTargetDescriptions[MAX_COLOR_TARGET_BINDINGS];
     Uint32 numColorTargets;
+    VkFormat resolveTargetFormats[MAX_COLOR_TARGET_BINDINGS];
+    Uint32 numResolveTargets;
     RenderPassDepthStencilTargetDescription depthStencilTargetDescription;
     VkSampleCountFlagBits sampleCount;
 } RenderPassHashTableKey;
@@ -906,6 +908,8 @@ typedef struct FramebufferHashTableKey
 {
     VkImageView colorAttachmentViews[MAX_COLOR_TARGET_BINDINGS];
     Uint32 numColorTargets;
+    VkImageView resolveAttachmentViews[MAX_COLOR_TARGET_BINDINGS];
+    Uint32 numResolveAttachments;
     VkImageView depthStencilAttachmentView;
     Uint32 width;
     Uint32 height;
@@ -2879,6 +2883,11 @@ static void VULKAN_INTERNAL_RemoveFramebuffersContainingView(
                 remove = true;
             }
         }
+        for (Uint32 i = 0; i < key->numResolveAttachments; i += 1) {
+            if (key->resolveAttachmentViews[i] == view) {
+                remove = true;
+            }
+        }
         if (key->depthStencilAttachmentView == view) {
             remove = true;
         }
@@ -3334,6 +3343,10 @@ static Uint32 VULKAN_INTERNAL_RenderPassHashFunction(
         result = result * hashFactor + hashTableKey->colorTargetDescriptions[i].format;
     }
 
+    for (Uint32 i = 0; i < hashTableKey->numResolveTargets; i += 1) {
+        result = result * hashFactor + hashTableKey->resolveTargetFormats[i];
+    }
+
     result = result * hashFactor + hashTableKey->depthStencilTargetDescription.loadOp;
     result = result * hashFactor + hashTableKey->depthStencilTargetDescription.storeOp;
     result = result * hashFactor + hashTableKey->depthStencilTargetDescription.stencilLoadOp;
@@ -3357,6 +3370,10 @@ static bool VULKAN_INTERNAL_RenderPassHashKeyMatch(
         return 0;
     }
 
+    if (a->numResolveTargets != b->numResolveTargets) {
+        return 0;
+    }
+
     if (a->sampleCount != b->sampleCount) {
         return 0;
     }
@@ -3371,6 +3388,12 @@ static bool VULKAN_INTERNAL_RenderPassHashKeyMatch(
         }
 
         if (a->colorTargetDescriptions[i].storeOp != b->colorTargetDescriptions[i].storeOp) {
+            return 0;
+        }
+    }
+
+    for (Uint32 i = 0; i < a->numResolveTargets; i += 1) {
+        if (a->resolveTargetFormats[i] != b->resolveTargetFormats[i]) {
             return 0;
         }
     }
@@ -3426,6 +3449,9 @@ static Uint32 VULKAN_INTERNAL_FramebufferHashFunction(
     for (Uint32 i = 0; i < hashTableKey->numColorTargets; i += 1) {
         result = result * hashFactor + (Uint32)(uintptr_t)hashTableKey->colorAttachmentViews[i];
     }
+    for (Uint32 i = 0; i < hashTableKey->numResolveAttachments; i += 1) {
+        result = result * hashFactor + (Uint32)(uintptr_t)hashTableKey->resolveAttachmentViews[i];
+    }
 
     result = result * hashFactor + (Uint32)(uintptr_t)hashTableKey->depthStencilAttachmentView;
     result = result * hashFactor + hashTableKey->width;
@@ -3446,8 +3472,18 @@ static bool VULKAN_INTERNAL_FramebufferHashKeyMatch(
         return 0;
     }
 
+    if (a->numResolveAttachments != b->numResolveAttachments) {
+        return 0;
+    }
+
     for (Uint32 i = 0; i < a->numColorTargets; i += 1) {
         if (a->colorAttachmentViews[i] != b->colorAttachmentViews[i]) {
+            return 0;
+        }
+    }
+
+    for (Uint32 i = 0; i < a->numResolveAttachments; i += 1) {
+        if (a->resolveAttachmentViews[i] != b->resolveAttachmentViews[i]) {
             return 0;
         }
     }
@@ -6835,10 +6871,17 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
     RenderPassHashTableKey key;
     Uint32 i;
 
+    SDL_zero(key);
+
     for (i = 0; i < numColorTargets; i += 1) {
         key.colorTargetDescriptions[i].format = SDLToVK_TextureFormat[((VulkanTextureContainer *)colorTargetInfos[i].texture)->header.info.format];
         key.colorTargetDescriptions[i].loadOp = colorTargetInfos[i].load_op;
         key.colorTargetDescriptions[i].storeOp = colorTargetInfos[i].store_op;
+
+        if (colorTargetInfos[i].resolve_texture != NULL) {
+            key.resolveTargetFormats[key.numResolveTargets] = SDLToVK_TextureFormat[((VulkanTextureContainer *)colorTargetInfos[i].resolve_texture)->header.info.format];
+            key.numResolveTargets += 1;
+        }
     }
 
     key.sampleCount = VK_SAMPLE_COUNT_1_BIT;
@@ -6921,9 +6964,8 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     Uint32 attachmentCount = 0;
     Uint32 i;
 
-    for (i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1) {
-        key.colorAttachmentViews[i] = VK_NULL_HANDLE;
-    }
+    SDL_zero(imageViewAttachments);
+    SDL_zero(key);
 
     key.numColorTargets = numColorTargets;
 
@@ -6937,6 +6979,17 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
         Uint32 rtvIndex =
             container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
         key.colorAttachmentViews[i] = subresource->renderTargetViews[rtvIndex];
+
+        if (colorTargetInfos[i].resolve_texture != NULL) {
+            VulkanTextureContainer *resolveTextureContainer = (VulkanTextureContainer *)colorTargetInfos[i].resolve_texture;
+            VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
+                resolveTextureContainer,
+                colorTargetInfos[i].layer_or_depth_plane,
+                colorTargetInfos[i].mip_level);
+
+            key.resolveAttachmentViews[key.numResolveAttachments] = resolveSubresource->renderTargetViews[0];
+            key.numResolveAttachments += 1;
+        }
     }
 
     if (depthStencilTargetInfo == NULL) {
