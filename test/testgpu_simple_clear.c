@@ -74,7 +74,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-	Uint32 w, h;
 	SDL_GPUCommandBuffer *cmdbuf = SDL_AcquireGPUCommandBuffer(gpu_device);
 
 	if (cmdbuf == NULL) {
@@ -82,7 +81,11 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         return SDL_APP_FAILURE;
 	}
 
-	SDL_GPUTexture *swapchainTexture = SDL_AcquireGPUSwapchainTexture(cmdbuf, state->windows[0], &w, &h);
+    SDL_GPUTexture *swapchainTexture;
+	if (!SDL_AcquireGPUSwapchainTexture(cmdbuf, state->windows[0], &swapchainTexture)) {
+        SDL_Log("SDL_AcquireGPUSwapchainTexture failed: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
 	if (swapchainTexture != NULL) {
         const double currentTime = (double)SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency();
         SDL_GPURenderPass *renderPass;

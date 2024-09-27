@@ -28,16 +28,22 @@
         return retval;                      \
     }
 
-#define CHECK_COMMAND_BUFFER                                       \
+#define CHECK_COMMAND_BUFFER                                        \
     if (((CommandBufferCommonHeader *)command_buffer)->submitted) { \
-        SDL_assert_release(!"Command buffer already submitted!");  \
-        return;                                                    \
+        SDL_assert_release(!"Command buffer already submitted!");   \
+        return;                                                     \
     }
 
-#define CHECK_COMMAND_BUFFER_RETURN_NULL                           \
+#define CHECK_COMMAND_BUFFER_RETURN_FALSE                           \
     if (((CommandBufferCommonHeader *)command_buffer)->submitted) { \
-        SDL_assert_release(!"Command buffer already submitted!");  \
-        return NULL;                                               \
+        SDL_assert_release(!"Command buffer already submitted!");   \
+        return false;                                               \
+    }
+
+#define CHECK_COMMAND_BUFFER_RETURN_NULL                            \
+    if (((CommandBufferCommonHeader *)command_buffer)->submitted) { \
+        SDL_assert_release(!"Command buffer already submitted!");   \
+        return NULL;                                                \
     }
 
 #define CHECK_ANY_PASS_IN_PROGRESS(msg, retval)                                 \
@@ -2594,65 +2600,59 @@ SDL_GPUTextureFormat SDL_GetGPUSwapchainTextureFormat(
         window);
 }
 
-SDL_GPUTexture *SDL_AcquireGPUSwapchainTexture(
+bool SDL_AcquireGPUSwapchainTexture(
     SDL_GPUCommandBuffer *command_buffer,
     SDL_Window *window,
-    Uint32 *w,
-    Uint32 *h)
+    SDL_GPUTexture **swapchainTexture)
 {
     if (command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
-        return NULL;
+        return false;
     }
     if (window == NULL) {
         SDL_InvalidParamError("window");
-        return NULL;
+        return false;
     }
-    if (w == NULL) {
-        SDL_InvalidParamError("w");
-        return NULL;
-    }
-    if (h == NULL) {
-        SDL_InvalidParamError("h");
-        return NULL;
+    if (swapchainTexture == NULL) {
+        SDL_InvalidParamError("swapchainTexture");
+        return false;
     }
 
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
-        CHECK_COMMAND_BUFFER_RETURN_NULL
-        CHECK_ANY_PASS_IN_PROGRESS("Cannot acquire a swapchain texture during a pass!", NULL)
+        CHECK_COMMAND_BUFFER_RETURN_FALSE
+        CHECK_ANY_PASS_IN_PROGRESS("Cannot acquire a swapchain texture during a pass!", false)
     }
 
     return COMMAND_BUFFER_DEVICE->AcquireSwapchainTexture(
         command_buffer,
         window,
-        w,
-        h);
+        swapchainTexture);
 }
 
-void SDL_SubmitGPUCommandBuffer(
+bool SDL_SubmitGPUCommandBuffer(
     SDL_GPUCommandBuffer *command_buffer)
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
 
     if (command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
-        return;
+        return false;
     }
 
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
-        CHECK_COMMAND_BUFFER
+        CHECK_COMMAND_BUFFER_RETURN_FALSE
         if (
             commandBufferHeader->render_pass.in_progress ||
             commandBufferHeader->compute_pass.in_progress ||
             commandBufferHeader->copy_pass.in_progress) {
             SDL_assert_release(!"Cannot submit command buffer while a pass is in progress!");
-            return;
+            return false;
         }
     }
 
     commandBufferHeader->submitted = true;
 
-    COMMAND_BUFFER_DEVICE->Submit(
+    return COMMAND_BUFFER_DEVICE->Submit(
         command_buffer);
 }
 
@@ -2683,28 +2683,28 @@ SDL_GPUFence *SDL_SubmitGPUCommandBufferAndAcquireFence(
         command_buffer);
 }
 
-void SDL_WaitForGPUIdle(
+bool SDL_WaitForGPUIdle(
     SDL_GPUDevice *device)
 {
-    CHECK_DEVICE_MAGIC(device, );
+    CHECK_DEVICE_MAGIC(device, false);
 
-    device->Wait(
+    return device->Wait(
         device->driverData);
 }
 
-void SDL_WaitForGPUFences(
+bool SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     bool wait_all,
     SDL_GPUFence *const *fences,
     Uint32 num_fences)
 {
-    CHECK_DEVICE_MAGIC(device, );
+    CHECK_DEVICE_MAGIC(device, false);
     if (fences == NULL && num_fences > 0) {
         SDL_InvalidParamError("fences");
-        return;
+        return false;
     }
 
-    device->WaitForFences(
+    return device->WaitForFences(
         device->driverData,
         wait_all,
         fences,

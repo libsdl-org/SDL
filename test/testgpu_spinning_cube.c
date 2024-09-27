@@ -325,26 +325,35 @@ static void
 Render(SDL_Window *window, const int windownum)
 {
     WindowState *winstate = &window_states[windownum];
-    SDL_GPUTexture *swapchain;
+    SDL_GPUTexture *swapchainTexture;
     SDL_GPUColorTargetInfo color_target;
     SDL_GPUDepthStencilTargetInfo depth_target;
     float matrix_rotate[16], matrix_modelview[16], matrix_perspective[16], matrix_final[16];
-    Uint32 drawablew, drawableh;
     SDL_GPUCommandBuffer *cmd;
     SDL_GPURenderPass *pass;
     SDL_GPUBufferBinding vertex_binding;
     SDL_GPUBlitInfo blit_info;
+    int drawablew, drawableh;
 
     /* Acquire the swapchain texture */
 
     cmd = SDL_AcquireGPUCommandBuffer(gpu_device);
-    swapchain = SDL_AcquireGPUSwapchainTexture(cmd, state->windows[windownum], &drawablew, &drawableh);
+    if (!cmd) {
+        SDL_Log("Failed to acquire command buffer :%s", SDL_GetError());
+        quit(2);
+    }
+    if (!SDL_AcquireGPUSwapchainTexture(cmd, state->windows[windownum], &swapchainTexture)) {
+        SDL_Log("Failed to acquire swapchain texture: %s", SDL_GetError());
+        quit(2);
+    }
 
-    if (!swapchain) {
+    if (swapchainTexture == NULL) {
         /* No swapchain was acquired, probably too many frames in flight */
         SDL_SubmitGPUCommandBuffer(cmd);
         return;
     }
+
+    SDL_GetWindowSizeInPixels(window, &drawablew, &drawableh);
 
     /*
     * Do some rotation with Euler angles. It is not a fixed axis as
@@ -403,7 +412,7 @@ Render(SDL_Window *window, const int windownum)
     } else {
         color_target.load_op = SDL_GPU_LOADOP_CLEAR;
         color_target.store_op = SDL_GPU_STOREOP_STORE;
-        color_target.texture = swapchain;
+        color_target.texture = swapchainTexture;
     }
 
     SDL_zero(depth_target);
@@ -437,7 +446,7 @@ Render(SDL_Window *window, const int windownum)
         blit_info.source.w = drawablew;
         blit_info.source.h = drawableh;
 
-        blit_info.destination.texture = swapchain;
+        blit_info.destination.texture = swapchainTexture;
         blit_info.destination.w = drawablew;
         blit_info.destination.h = drawableh;
 

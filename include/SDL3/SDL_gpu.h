@@ -877,15 +877,15 @@ typedef enum SDL_GPUSamplerAddressMode
  * - VSYNC: Waits for vblank before presenting. No tearing is possible. If
  *   there is a pending image to present, the new image is enqueued for
  *   presentation. Disallows tearing at the cost of visual latency. When using
- *   this present mode, AcquireSwapchainTexture will block if too many frames
+ *   this present mode, AcquireGPUSwapchainTexture will block if too many frames
  *   are in flight.
  * - IMMEDIATE: Immediately presents. Lowest latency option, but tearing may
- *   occur. When using this mode, AcquireSwapchainTexture will return NULL if
+ *   occur. When using this mode, AcquireGPUSwapchainTexture will return NULL if
  *   too many frames are in flight.
  * - MAILBOX: Waits for vblank before presenting. No tearing is possible. If
  *   there is a pending image to present, the pending image is replaced by the
  *   new image. Similar to VSYNC, but with reduced visual latency. When using
- *   this mode, AcquireSwapchainTexture will return NULL if too many frames
+ *   this mode, AcquireGPUSwapchainTexture will return NULL if too many frames
  *   are in flight.
  *
  * \since This enum is available since SDL 3.0.0
@@ -1623,6 +1623,7 @@ typedef struct SDL_GPUBlitInfo {
     Uint8 padding2;
     Uint8 padding3;
 } SDL_GPUBlitInfo;
+
 /* Binding structs */
 
 /**
@@ -1731,7 +1732,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsProperties(
  * \param debug_mode enable debug mode properties and validations.
  * \param name the preferred GPU driver, or NULL to let SDL pick the optimal
  *             driver.
- * \returns a GPU context on success or NULL on failure.
+ * \returns a GPU context on success or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1778,7 +1779,7 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  *   use for all vertex semantics, default is "TEXCOORD".
  *
  * \param props the properties to use.
- * \returns a GPU context on success or NULL on failure.
+ * \returns a GPU context on success or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1904,7 +1905,7 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the compute pipeline to
  *                   create.
- * \returns a compute pipeline object on success, or NULL on failure.
+ * \returns a compute pipeline object on success, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1921,7 +1922,7 @@ extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the graphics pipeline to
  *                   create.
- * \returns a graphics pipeline object on success, or NULL on failure.
+ * \returns a graphics pipeline object on success, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1939,7 +1940,7 @@ extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeli
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the sampler to create.
- * \returns a sampler object on success, or NULL on failure.
+ * \returns a sampler object on success, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2008,7 +2009,7 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the shader to create.
- * \returns a shader object on success, or NULL on failure.
+ * \returns a shader object on success, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2034,7 +2035,7 @@ extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the texture to create.
- * \returns a texture object on success, or NULL on failure.
+ * \returns a texture object on success, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2064,7 +2065,7 @@ extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the buffer to create.
- * \returns a buffer object on success, or NULL on failure.
+ * \returns a buffer object on success, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2093,7 +2094,7 @@ extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the transfer buffer to
  *                   create.
- * \returns a transfer buffer on success, or NULL on failure.
+ * \returns a transfer buffer on success, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2301,7 +2302,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUGraphicsPipeline(
  * acquired on.
  *
  * \param device a GPU context.
- * \returns a command buffer.
+ * \returns a command buffer, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2967,7 +2968,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPUComputePass(
  * \param device a GPU context.
  * \param transfer_buffer a transfer buffer.
  * \param cycle if true, cycles the transfer buffer if it is already bound.
- * \returns the address of the mapped transfer buffer memory.
+ * \returns the address of the mapped transfer buffer memory, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -3183,7 +3184,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BlitGPUTexture(
  * \param device a GPU context.
  * \param window an SDL_Window.
  * \param swapchain_composition the swapchain composition to check.
- * \returns true if supported, false if unsupported (or on error).
+ * \returns true if supported, false if unsupported.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -3202,7 +3203,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WindowSupportsGPUSwapchainComposition(
  * \param device a GPU context.
  * \param window an SDL_Window.
  * \param present_mode the presentation mode to check.
- * \returns true if supported, false if unsupported (or on error).
+ * \returns true if supported, false if unsupported.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -3226,7 +3227,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WindowSupportsGPUPresentMode(
  *
  * \param device a GPU context.
  * \param window an SDL_Window.
- * \returns true on success, otherwise false.
+ * \returns true on success, or false on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -3283,6 +3284,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPUSwapchainParameters(
 
 /**
  * Obtains the texture format of the swapchain for the given window.
+ * Note that this format can change if the swapchain parameters change.
  *
  * \param device a GPU context.
  * \param window an SDL_Window that has been claimed.
@@ -3300,16 +3302,15 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * When a swapchain texture is acquired on a command buffer, it will
  * automatically be submitted for presentation when the command buffer is
  * submitted. The swapchain texture should only be referenced by the command
- * buffer used to acquire it. May return NULL under certain conditions. This
- * is not necessarily an error. This texture is managed by the implementation
- * and must not be freed by the user. You MUST NOT call this function from any
+ * buffer used to acquire it. The swapchain texture handle can be NULL under certain conditions. This
+ * is not necessarily an error. If this function returns false then there is an error. This texture is managed by the implementation
+ * and must not be freed by the user. The texture dimensions will be the height and width of the claimed window. You MUST NOT call this function from any
  * thread other than the one that created the window.
  *
  * \param command_buffer a command buffer.
  * \param window a window that has been claimed.
- * \param w a pointer filled in with the swapchain width.
- * \param h a pointer filled in with the swapchain height.
- * \returns a swapchain texture.
+ * \param swapchainTexture a pointer filled in with a swapchain texture handle
+ * \returns true on success, false on error.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -3317,11 +3318,10 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * \sa SDL_SubmitGPUCommandBuffer
  * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  */
-extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_AcquireGPUSwapchainTexture(
+extern SDL_DECLSPEC bool SDLCALL SDL_AcquireGPUSwapchainTexture(
     SDL_GPUCommandBuffer *command_buffer,
     SDL_Window *window,
-    Uint32 *w,
-    Uint32 *h);
+    SDL_GPUTexture **swapchainTexture);
 
 /**
  * Submits a command buffer so its commands can be processed on the GPU.
@@ -3334,6 +3334,7 @@ extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_AcquireGPUSwapchainTexture(
  * command in a subsequent submission begins executing.
  *
  * \param command_buffer a command buffer.
+ * \returns true on success, false on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -3341,7 +3342,7 @@ extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_AcquireGPUSwapchainTexture(
  * \sa SDL_AcquireGPUSwapchainTexture
  * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SubmitGPUCommandBuffer(
+extern SDL_DECLSPEC bool SDLCALL SDL_SubmitGPUCommandBuffer(
     SDL_GPUCommandBuffer *command_buffer);
 
 /**
@@ -3357,7 +3358,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SubmitGPUCommandBuffer(
  * command in a subsequent submission begins executing.
  *
  * \param command_buffer a command buffer.
- * \returns a fence associated with the command buffer.
+ * \returns a fence associated with the command buffer, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -3373,12 +3374,13 @@ extern SDL_DECLSPEC SDL_GPUFence *SDLCALL SDL_SubmitGPUCommandBufferAndAcquireFe
  * Blocks the thread until the GPU is completely idle.
  *
  * \param device a GPU context.
+ * \returns true on success, false on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_WaitForGPUFences
  */
-extern SDL_DECLSPEC void SDLCALL SDL_WaitForGPUIdle(
+extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUIdle(
     SDL_GPUDevice *device);
 
 /**
@@ -3389,13 +3391,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitForGPUIdle(
  *                 fences to be signaled.
  * \param fences an array of fences to wait on.
  * \param num_fences the number of fences in the fences array.
+ * \returns true on success, false on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  * \sa SDL_WaitForGPUIdle
  */
-extern SDL_DECLSPEC void SDLCALL SDL_WaitForGPUFences(
+extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     bool wait_all,
     SDL_GPUFence *const *fences,

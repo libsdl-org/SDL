@@ -53,13 +53,22 @@
     commandBuffer->count += 1;                                 \
     SDL_AtomicIncRef(&resource->referenceCount);
 
+#define SET_ERROR_AND_RETURN(fmt, msg, ret)           \
+    if (renderer->debugMode) {                        \
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, fmt, msg); \
+    }                                                 \
+    SDL_SetError(fmt, msg);                           \
+    return ret;                                       \
+
+#define SET_STRING_ERROR_AND_RETURN(msg, ret) SET_ERROR_AND_RETURN("%s", msg, ret)
+
 // Blit Shaders
 
 #include "Metal_Blit.h"
 
 // Forward Declarations
 
-static void METAL_Wait(SDL_GPURenderer *driverData);
+static bool METAL_Wait(SDL_GPURenderer *driverData);
 static void METAL_ReleaseWindow(
     SDL_GPURenderer *driverData,
     SDL_Window *window);
@@ -574,7 +583,7 @@ struct MetalRenderer
     id<MTLDevice> device;
     id<MTLCommandQueue> queue;
 
-    bool debug_mode;
+    bool debugMode;
 
     MetalWindowData **claimedWindows;
     Uint32 claimedWindowCount;
@@ -973,9 +982,7 @@ static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
 
         handle = [renderer->device newComputePipelineStateWithFunction:libraryFunction.function error:&error];
         if (error != NULL) {
-            SDL_SetError(
-                "Creating compute pipeline failed: %s", [[error description] UTF8String]);
-            return NULL;
+            SET_ERROR_AND_RETURN("Creating compute pipeline failed: %s", [[error description] UTF8String], NULL);
         }
 
         pipeline = SDL_calloc(1, sizeof(MetalComputePipeline));
@@ -1107,9 +1114,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
 
         pipelineState = [renderer->device newRenderPipelineStateWithDescriptor:pipelineDescriptor error:&error];
         if (error != NULL) {
-            SDL_SetError(
-                "Creating render pipeline failed: %s", [[error description] UTF8String]);
-            return NULL;
+            SET_ERROR_AND_RETURN("Creating render pipeline failed: %s", [[error description] UTF8String], NULL);
         }
 
         Uint32 sampleMask = createinfo->multisample_state.enable_mask ?
@@ -1146,7 +1151,7 @@ static void METAL_SetBufferName(
         MetalBufferContainer *container = (MetalBufferContainer *)buffer;
         size_t textLength = SDL_strlen(text) + 1;
 
-        if (renderer->debug_mode) {
+        if (renderer->debugMode) {
             container->debugName = SDL_realloc(
                 container->debugName,
                 textLength);
@@ -1173,7 +1178,7 @@ static void METAL_SetTextureName(
         MetalTextureContainer *container = (MetalTextureContainer *)texture;
         size_t textLength = SDL_strlen(text) + 1;
 
-        if (renderer->debug_mode) {
+        if (renderer->debugMode) {
             container->debugName = SDL_realloc(
                 container->debugName,
                 textLength);
@@ -1282,8 +1287,7 @@ static SDL_GPUSampler *METAL_CreateSampler(
 
         sampler = [renderer->device newSamplerStateWithDescriptor:samplerDesc];
         if (sampler == NULL) {
-            SDL_SetError("Failed to create sampler");
-            return NULL;
+            SET_STRING_ERROR_AND_RETURN("Failed to create sampler", NULL);
         }
 
         metalSampler = (MetalSampler *)SDL_calloc(1, sizeof(MetalSampler));
@@ -1341,8 +1345,7 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
                                                                       MTLTextureSwizzleRed,
                                                                       MTLTextureSwizzleAlpha);
         } else {
-            SDL_SetError("SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM is not supported");
-            return NULL;
+            SET_STRING_ERROR_AND_RETURN("SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM is not supported", NULL);
         }
     }
 
@@ -1409,8 +1412,7 @@ static SDL_GPUTexture *METAL_CreateTexture(
             createinfo);
 
         if (texture == NULL) {
-            SDL_SetError("Failed to create texture!");
-            return NULL;
+            SET_STRING_ERROR_AND_RETURN("Failed to create texture", NULL);
         }
 
         container = SDL_calloc(1, sizeof(MetalTextureContainer));
@@ -1459,7 +1461,7 @@ static MetalTexture *METAL_INTERNAL_PrepareTextureForWrite(
 
         container->activeTexture = container->textures[container->textureCount - 1];
 
-        if (renderer->debug_mode && container->debugName != NULL) {
+        if (renderer->debugMode && container->debugName != NULL) {
             container->activeTexture->handle.label = @(container->debugName);
         }
     }
@@ -1623,7 +1625,7 @@ static MetalBuffer *METAL_INTERNAL_PrepareBufferForWrite(
 
         container->activeBuffer = container->buffers[container->bufferCount - 1];
 
-        if (renderer->debug_mode && container->debugName != NULL) {
+        if (renderer->debugMode && container->debugName != NULL) {
             container->activeBuffer->handle.label = @(container->debugName);
         }
     }
@@ -3345,7 +3347,7 @@ static void METAL_INTERNAL_PerformPendingDestroys(
 
 // Fences
 
-static void METAL_WaitForFences(
+static bool METAL_WaitForFences(
     SDL_GPURenderer *driverData,
     bool waitAll,
     SDL_GPUFence *const *fences,
@@ -3374,6 +3376,8 @@ static void METAL_WaitForFences(
         }
 
         METAL_INTERNAL_PerformPendingDestroys(renderer);
+
+        return true;
     }
 }
 
@@ -3524,9 +3528,8 @@ static bool METAL_ClaimWindow(
 
                 return true;
             } else {
-                SDL_SetError("Could not create swapchain, failed to claim window!");
                 SDL_free(windowData);
-                return false;
+                SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window", false);
             }
         } else {
             SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Window already claimed!");
@@ -3544,7 +3547,7 @@ static void METAL_ReleaseWindow(
         MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
 
         if (windowData == NULL) {
-            return;
+            SET_STRING_ERROR_AND_RETURN("Window is not claimed by this SDL_GpuDevice", );
         }
 
         METAL_Wait(driverData);
@@ -3566,20 +3569,20 @@ static void METAL_ReleaseWindow(
     }
 }
 
-static SDL_GPUTexture *METAL_AcquireSwapchainTexture(
+static bool METAL_AcquireSwapchainTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
-    Uint32 *w,
-    Uint32 *h)
+    SDL_GPUTexture **texture)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+        MetalRenderer *renderer = metalCommandBuffer->renderer;
         MetalWindowData *windowData;
         CGSize drawableSize;
 
         windowData = METAL_INTERNAL_FetchWindowData(window);
         if (windowData == NULL) {
-            return NULL;
+            SET_STRING_ERROR_AND_RETURN("Window is not claimed by this SDL_GpuDevice", false);
         }
 
         // Get the drawable and its underlying texture
@@ -3590,10 +3593,6 @@ static SDL_GPUTexture *METAL_AcquireSwapchainTexture(
         drawableSize = windowData->layer.drawableSize;
         windowData->textureContainer.header.info.width = (Uint32)drawableSize.width;
         windowData->textureContainer.header.info.height = (Uint32)drawableSize.height;
-
-        // Send the dimensions to the out parameters.
-        *w = (Uint32)drawableSize.width;
-        *h = (Uint32)drawableSize.height;
 
         // Set up presentation
         if (metalCommandBuffer->windowDataCount == metalCommandBuffer->windowDataCapacity) {
@@ -3606,7 +3605,8 @@ static SDL_GPUTexture *METAL_AcquireSwapchainTexture(
         metalCommandBuffer->windowDataCount += 1;
 
         // Return the swapchain texture
-        return (SDL_GPUTexture *)&windowData->textureContainer;
+        *texture = (SDL_GPUTexture *)&windowData->textureContainer;
+        return true;
     }
 }
 
@@ -3614,11 +3614,11 @@ static SDL_GPUTextureFormat METAL_GetSwapchainTextureFormat(
     SDL_GPURenderer *driverData,
     SDL_Window *window)
 {
+    MetalRenderer *renderer = (MetalRenderer *)driverData;
     MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        SDL_SetError("Cannot get swapchain format, window has not been claimed!");
-        return SDL_GPU_TEXTUREFORMAT_INVALID;
+        SET_STRING_ERROR_AND_RETURN("Cannot get swapchain format, window has not been claimed", SDL_GPU_TEXTUREFORMAT_INVALID);
     }
 
     return windowData->textureContainer.header.info.format;
@@ -3631,22 +3631,20 @@ static bool METAL_SetSwapchainParameters(
     SDL_GPUPresentMode presentMode)
 {
     @autoreleasepool {
+        MetalRenderer *renderer = (MetalRenderer *)driverData;
         MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
         CGColorSpaceRef colorspace;
 
         if (windowData == NULL) {
-            SDL_SetError("Cannot set swapchain parameters, window has not been claimed!");
-            return false;
+            SET_STRING_ERROR_AND_RETURN("Cannot set swapchain parameters, window has not been claimed!", false);
         }
 
         if (!METAL_SupportsSwapchainComposition(driverData, window, swapchainComposition)) {
-            SDL_SetError("Swapchain composition not supported!");
-            return false;
+            SET_STRING_ERROR_AND_RETURN("Swapchain composition not supported", false);
         }
 
         if (!METAL_SupportsPresentMode(driverData, window, presentMode)) {
-            SDL_SetError("Present mode not supported!");
-            return false;
+            SET_STRING_ERROR_AND_RETURN("Present mode not supported", false);
         }
 
         METAL_Wait(driverData);
@@ -3673,7 +3671,7 @@ static bool METAL_SetSwapchainParameters(
 
 // Submission
 
-static void METAL_Submit(
+static bool METAL_Submit(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     @autoreleasepool {
@@ -3720,6 +3718,8 @@ static void METAL_Submit(
         METAL_INTERNAL_PerformPendingDestroys(renderer);
 
         SDL_UnlockMutex(renderer->submitLock);
+
+        return true;
     }
 }
 
@@ -3735,7 +3735,7 @@ static SDL_GPUFence *METAL_SubmitAndAcquireFence(
     return (SDL_GPUFence *)fence;
 }
 
-static void METAL_Wait(
+static bool METAL_Wait(
     SDL_GPURenderer *driverData)
 {
     @autoreleasepool {
@@ -3762,6 +3762,8 @@ static void METAL_Wait(
         METAL_INTERNAL_PerformPendingDestroys(renderer);
 
         SDL_UnlockMutex(renderer->submitLock);
+
+        return true;
     }
 }
 
@@ -4039,7 +4041,7 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
             [renderer->device.name UTF8String]);
 
         // Remember debug mode
-        renderer->debug_mode = debugMode;
+        renderer->debugMode = debugMode;
 
         // Set up colorspace array
         SwapchainCompositionToColorSpace[0] = kCGColorSpaceSRGB;
