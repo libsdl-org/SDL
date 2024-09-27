@@ -5613,7 +5613,7 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
                 }
             }
 
-            if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
+            if ((createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) || (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE)) {
                 if (!VULKAN_INTERNAL_CreateSubresourceView(
                     renderer,
                     createinfo,

@@ -1521,13 +1521,17 @@ static void D3D12_INTERNAL_TextureSubresourceBarrier(
     D3D12_RESOURCE_STATES destinationState,
     D3D12TextureSubresource *textureSubresource)
 {
+    bool needsUAVBarrier =
+        (textureSubresource->parent->container->header.info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) ||
+        (textureSubresource->parent->container->header.info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE);
+
     D3D12_INTERNAL_ResourceBarrier(
         commandBuffer,
         sourceState,
         destinationState,
         textureSubresource->parent->resource,
         textureSubresource->index,
-        textureSubresource->parent->container->header.info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE);
+        needsUAVBarrier);
 }
 
 static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultTextureResourceState(
@@ -1546,6 +1550,8 @@ static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultTextureResourceState(
     } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ) {
         return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
     } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
+        return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+    } else if (usageFlags & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE) {
         return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Texture has no default usage mode!");
@@ -2792,6 +2798,9 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     D3D12_RESOURCE_STATES initialState = (D3D12_RESOURCE_STATES)0;
     D3D12_CLEAR_VALUE clearValue;
     bool useClearValue = false;
+    bool needsUAV =
+        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) ||
+        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE);
     HRESULT res;
 
     texture = (D3D12Texture *)SDL_calloc(1, sizeof(D3D12Texture));
@@ -2819,7 +2828,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8, 0);
     }
 
-    if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
+    if (needsUAV) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     }
 
@@ -3025,7 +3034,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             }
 
             // Create subresource UAV if necessary
-            if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
+            if (needsUAV) {
                 D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 
                 D3D12_INTERNAL_AssignCpuDescriptorHandle(
@@ -4887,16 +4896,13 @@ static void D3D12_BeginComputePass(
     d3d12CommandBuffer->computeReadWriteStorageTextureSubresourceCount = numStorageTextureBindings;
     d3d12CommandBuffer->computeReadWriteStorageBufferCount = numStorageBufferBindings;
 
-    /* Write-only resources will be actually bound in BindComputePipeline
+    /* Read-write resources will be actually bound in BindComputePipeline
      * after the root signature is set.
      * We also have to scan to see which barriers we actually need because depth slices aren't separate subresources
      */
     if (numStorageTextureBindings > 0) {
         for (Uint32 i = 0; i < numStorageTextureBindings; i += 1) {
             D3D12TextureContainer *container = (D3D12TextureContainer *)storageTextureBindings[i].texture;
-            if (!(container->header.info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempted to bind read-only texture as compute write texture");
-            }
 
             D3D12TextureSubresource *subresource = D3D12_INTERNAL_PrepareTextureSubresourceForWrite(
                 d3d12CommandBuffer,
@@ -4917,9 +4923,7 @@ static void D3D12_BeginComputePass(
     if (numStorageBufferBindings > 0) {
         for (Uint32 i = 0; i < numStorageBufferBindings; i += 1) {
             D3D12BufferContainer *container = (D3D12BufferContainer *)storageBufferBindings[i].buffer;
-            if (!(container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempted to bind read-only texture as compute write texture");
-            }
+
             D3D12Buffer *buffer = D3D12_INTERNAL_PrepareBufferForWrite(
                 d3d12CommandBuffer,
                 container,

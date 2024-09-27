@@ -1891,7 +1891,8 @@ static D3D11Texture *D3D11_INTERNAL_CreateTexture(
         (createInfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
         (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ);
     needSubresourceUAV =
-        (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE);
+        (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) ||
+        (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE);
     isMultisample = createInfo->sample_count > SDL_GPU_SAMPLECOUNT_1;
     isStaging = createInfo->usage == 0;
     isMippable =
