@@ -43,9 +43,10 @@ extern "C" {
 /* Function prototypes */
 
 /**
- *  Retrieve the list of mime types available in the clipboard.
+ * Retrieve the list of mime types available in the clipboard.
  *
- * \param num_mime_types a pointer filled with the number of mime types. May be NULL.
+ * \param num_mime_types a pointer filled with the number of mime types. May
+ *                       be NULL.
  * \returns a null terminated array of strings with mime types, or NULL on
  *          failure; call SDL_GetError() for more information. This should be
  *          freed with SDL_free() when it is no longer needed.
