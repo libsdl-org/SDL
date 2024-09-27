@@ -207,5 +207,77 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     return true;
 }
 
+/* define the internal SDL_MemoryMappedFile structure */
+struct SDL_MemoryMappedFile {
+    void *addr;
+    size_t size;
+    HANDLE file_handle, map_handle;
+};
+
+SDL_MemoryMappedFile *SDL_SYS_MemoryMapFile(const char *file, size_t offset) {
+    HANDLE fileHandle, mapHandle;
+    size_t size;
+    void *addr;
+    SDL_MemoryMappedFile *mmfile;
+
+    file_handle = CreateFile(file, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (file_handle == INVALID_HANDLE_VALUE) {
+        WIN_SetError("Can't open");
+        return NULL;
+    }
+    size = GetFileLength(file_handle);
+    if (offset >= size) {
+        CloseHandle(file_handle);
+        SDL_SetError("Can't use offset");
+        return NULL;
+    }
+    map_handle = CreateFileMapping(file_handle, NULL, PAGE_READONLY, 0, 0, NULL);
+    if (map_handle == NULL) {
+        CloseHandle(file_handle);
+        WIN_SetError("Can't create map");
+        return NULL;
+    }
+    addr = MapViewOfFile(map_handle, FILE_MAP_READ, 0, offset, 0);
+    if (addr == NULL) {
+        CloseHandle(map_handle);
+        CloseHandle(file_handle);
+        WIN_SetError("Can't crate view");
+        return NULL;
+    }
+    mmfile = SDL_malloc(sizeof(SDL_MemoryMappedFile));
+    if (mmfile == NULL) {
+        CloseHandle(map_handle);
+        CloseHandle(file_handle);
+        SDL_SetError("Can't allocate SDL_MemoryMappedFile");
+        return NULL;
+    }
+    mmfile->addr = addr;
+    mmfile->size = size - offset;
+    mmfile->file_handle = file_handle;
+    mmfile->map_handle = map_handle;
+    return mmfile;
+}
+
+bool SDL_UnmapMemoryFile(SDL_MemoryMappedFile *mmfile) {
+    if (mmfile->addr != NULL) {
+        UnmapViewOfFile(mmfile->addr);
+    }
+    if (mmfile->map_handle != NULL) {
+        CloseHandle(mmfile->map_handle);
+    }
+    if (mmfile->file_handle != INVALID_FILE_HANDLE) {
+        CloseHandle(mmfile->file_handle);
+    }
+    SDL_free(mmfile);
+    return true;
+}
+
+void *SDL_GetMemoryMappedData(const SDL_MemoryMappedFile *mmfile, size_t *datasize) {
+    if (datasize != NULL) {
+        *datasize = mmfile->size;
+    }
+    return mmfile->addr;
+}
+
 #endif // SDL_FSOPS_WINDOWS
 
