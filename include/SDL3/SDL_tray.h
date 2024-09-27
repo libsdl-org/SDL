@@ -70,7 +70,7 @@ typedef enum SDL_TrayEntryFlags {
  *                 it will be invoked.
  * \param entry the tray entry that was selected.
  */
-typedef void (*SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
+typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
 
 /**
  * Create an icon to be placed in the operating system's tray, or equivalent.

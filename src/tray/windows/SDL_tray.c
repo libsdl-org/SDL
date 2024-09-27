@@ -37,8 +37,8 @@ HICON CreateIconFromSurface(SDL_Surface *surface)
     }
 
     /* The dimensions will be needed after s is freed */
-    const unsigned int width = s->w;
-    const unsigned int height = s->h;
+    const int width = s->w;
+    const int height = s->h;
 
     BITMAPINFO bmpInfo;
     ZeroMemory(&bmpInfo, sizeof(BITMAPINFO));
