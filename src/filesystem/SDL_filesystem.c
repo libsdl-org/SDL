@@ -55,11 +55,60 @@ bool SDL_CopyFile(const char *oldpath, const char *newpath)
 
 bool SDL_CreateDirectory(const char *path)
 {
-    // TODO: Recursively create subdirectories
     if (!path) {
         return SDL_InvalidParamError("path");
     }
-    return SDL_SYS_CreateDirectory(path);
+
+    bool retval = SDL_SYS_CreateDirectory(path);
+    if (!retval && *path) {  // maybe we're missing parent directories?
+        char *parents = SDL_strdup(path);
+        if (!parents) {
+            return false;  // oh well.
+        }
+
+        // in case there was a separator at the end of the path and it was
+        // upsetting something, chop it off.
+        const size_t slen = SDL_strlen(parents);
+        #ifdef SDL_PLATFORM_WINDOWS
+        if ((parents[slen - 1] == '/') || (parents[slen - 1] == '\\'))
+        #else
+        if (parents[slen - 1] == '/')
+        #endif
+        {
+            parents[slen - 1] = '\0';
+            retval = SDL_SYS_CreateDirectory(parents);
+        }
+
+        if (!retval) {
+            for (char *ptr = parents; *ptr; ptr++) {
+                const char ch = *ptr;
+                #ifdef SDL_PLATFORM_WINDOWS
+                const bool issep = (ch == '/') || (ch == '\\');
+                if (issep && ((ptr - parents) == 2) && (parents[1] == ':')) {
+                    continue;  // it's just the drive letter, skip it.
+                }
+                #else
+                const bool issep = (ch == '/');
+                #endif
+
+                if (issep) {
+                    *ptr = '\0';
+                    // (this does not fail if the path already exists as a directory.)
+                    retval = SDL_SYS_CreateDirectory(parents);
+                    if (!retval) {  // still failing when making parents? Give up.
+                        break;
+                    }
+                    *ptr = ch;
+                }
+            }
+
+            // last chance: did it work this time?
+            retval = SDL_SYS_CreateDirectory(parents);
+        }
+
+        SDL_free(parents);
+    }
+    return retval;
 }
 
 bool SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata)
