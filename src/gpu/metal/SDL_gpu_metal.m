@@ -3781,6 +3781,7 @@ static bool METAL_Wait(
 
 // Format Info
 
+// FIXME: Check simultaneous read-write support
 static bool METAL_SupportsTextureFormat(
     SDL_GPURenderer *driverData,
     SDL_GPUTextureFormat format,
