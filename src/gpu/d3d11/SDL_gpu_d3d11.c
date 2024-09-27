@@ -5836,6 +5836,7 @@ static bool D3D11_SupportsTextureFormat(
         // TYPED_UNORDERED_ACCESS_VIEW implies support for typed UAV stores
         return false;
     }
+    #define D3D11_FORMAT_SUPPORT2_UAV_TYPED_LOAD 0x40 /* for old toolchains */
     if ((usage & (SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE) && !(formatSupport2.OutFormatSupport2 & D3D11_FORMAT_SUPPORT2_UAV_TYPED_LOAD))) {
         return false;
     }
