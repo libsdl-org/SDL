@@ -126,7 +126,7 @@ JOB_SPECS = {
     "android-mk": JobSpec(name="Android (Android.mk)",                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.Android,     artifact=None,                     no_cmake=True, android_mk=True, ),
     "android-gradle": JobSpec(name="Android (Gradle)",                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.Android,     artifact=None,                     no_cmake=True, android_gradle=True, ),
     "emscripten": JobSpec(name="Emscripten",                                os=JobOs.UbuntuLatest,  platform=SdlPlatform.Emscripten,  artifact="SDL-emscripten", ),
-    "haiku": JobSpec(name="Haiku",                                          os=JobOs.UbuntuLatest,  platform=SdlPlatform.Haiku,       artifact="SDL-haiku-x64",          container="haiku/cross-compiler:x86_64-r1beta4", ),
+    "haiku": JobSpec(name="Haiku",                                          os=JobOs.UbuntuLatest,  platform=SdlPlatform.Haiku,       artifact="SDL-haiku-x64",          container="haiku/cross-compiler:x86_64-r1beta5", ),
     "loongarch64": JobSpec(name="LoongArch64",                              os=JobOs.UbuntuLatest,  platform=SdlPlatform.LoongArch64, artifact="SDL-loongarch64", ),
     "n3ds": JobSpec(name="Nintendo 3DS",                                    os=JobOs.UbuntuLatest,  platform=SdlPlatform.N3ds,        artifact="SDL-n3ds",               container="devkitpro/devkitarm:latest", ),
     "ppc64": JobSpec(name="PowerPC64",                                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.PowerPC64,   artifact="SDL-ppc64le",            container="dockcross/linux-ppc64le:latest", ),
