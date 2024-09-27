@@ -249,7 +249,12 @@ typedef Uint32 SDL_GlobFlags;
 #define SDL_GLOB_CASEINSENSITIVE (1u << 0)
 
 /**
- * Create a directory.
+ * Create a directory, and any missing parent directories.
+ *
+ * This reports success if `path` already exists as a directory.
+ *
+ * If parent directories are missing, it will also create them. Note that
+ * if this fails, it will not remove any parent directories it already made.
  *
  * \param path the path of the directory to create.
  * \returns true on success or false on failure; call SDL_GetError() for more
