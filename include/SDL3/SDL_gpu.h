@@ -309,8 +309,8 @@ typedef enum SDL_GPUIndexElementSize
  * a format is supported before using it. However, there are a few guaranteed
  * formats.
  *
- * FIXME: Check universal support for 32-bit component formats
- * FIXME: Check universal support for SIMULTANEOUS_READ_WRITE
+ * FIXME: Check universal support for 32-bit component formats FIXME: Check
+ * universal support for SIMULTANEOUS_READ_WRITE
  *
  * For SAMPLER usage, the following formats are universally supported:
  *
