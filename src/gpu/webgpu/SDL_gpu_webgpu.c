@@ -155,6 +155,7 @@ typedef struct WebGPUTextureContainer WebGPUTextureContainer;
 
 typedef struct WebGPUShader
 {
+    char *wgslSource;
     uint32_t *spirv;
     size_t spirvSize;
     WGPUShaderModule shaderModule;
@@ -260,7 +261,7 @@ typedef struct WebGPUGraphicsPipeline
 {
     WGPURenderPipeline pipeline;
     SDL_GPUPrimitiveType primitiveType;
-    WebGPUPipelineResourceLayout resourceLayout;
+    WebGPUPipelineResourceLayout *resourceLayout;
     WebGPUShader *vertexShader;
     WebGPUShader *fragmentShader;
     WGPURenderPipelineDescriptor pipelineDesc;
@@ -1240,6 +1241,11 @@ SDL_GPUCommandBuffer *WebGPU_AcquireCommandBuffer(SDL_GPURenderer *driverData)
     WebGPUCommandBuffer *commandBuffer = SDL_malloc(sizeof(WebGPUCommandBuffer));
     memset(commandBuffer, '\0', sizeof(WebGPUCommandBuffer));
     commandBuffer->renderer = renderer;
+    int width, height;
+    width = renderer->claimedWindows[0]->window->w;
+    height = renderer->claimedWindows[0]->window->h;
+    commandBuffer->currentViewport = (WebGPUViewport){0, 0, width, height, 0.0, 1.0};
+    commandBuffer->currentScissor = (WebGPURect){0, 0, width, height};
 
     WGPUCommandEncoderDescriptor commandEncoderDesc = {
         .label = "SDL_GPU Command Encoder",
@@ -1626,20 +1632,17 @@ static SDL_GPUShader *WebGPU_CreateShader(
 
     printf("WGSL: %s", wgsl);
 
-    SDL_free((void *)wgsl);
-
-    WGPUShaderModuleSPIRVDescriptor spirv_desc = {
+    WGPUShaderModuleWGSLDescriptor wgsl_desc = {
         .chain = {
+            .sType = WGPUSType_ShaderModuleWGSLDescriptor,
             .next = NULL,
-            .sType = WGPUSType_ShaderModuleSPIRVDescriptor,
         },
-        .code = (uint32_t *)shaderCreateInfo->code,
-        .codeSize = shaderCreateInfo->codeSize,
+        .code = wgsl,
     };
 
     WGPUShaderModuleDescriptor shader_desc = {
-        .nextInChain = (WGPUChainedStruct *)&spirv_desc,
-        .label = "SDL_GPU WebGPU SPIRV Shader",
+        .nextInChain = (WGPUChainedStruct *)&wgsl_desc,
+        .label = "SDL_GPU WebGPU WGSL Cross-Compiled Shader",
     };
 
     // Create a WebGPUShader object to cast to SDL_GPUShader *
@@ -1647,6 +1650,8 @@ static SDL_GPUShader *WebGPU_CreateShader(
     shader->spirv = SDL_malloc(shaderCreateInfo->codeSize);
     SDL_memcpy(shader->spirv, shaderCreateInfo->code, shaderCreateInfo->codeSize);
     shader->spirvSize = shaderCreateInfo->codeSize;
+    shader->wgslSource = SDL_malloc(SDL_strlen(wgsl) + 1);
+    SDL_strlcpy((char *)shader->wgslSource, wgsl, SDL_strlen(wgsl) + 1);
     shader->entryPointName = SDL_malloc(entryPointNameLength);
     SDL_utf8strlcpy((char *)shader->entryPointName, shaderCreateInfo->entryPointName, entryPointNameLength);
     shader->samplerCount = shaderCreateInfo->samplerCount;
@@ -1754,20 +1759,19 @@ static SDL_GPUGraphicsPipeline *WebGPU_CreateGraphicsPipeline(
     WGPUVertexState vertexState = {
         .module = wgpuDeviceCreateShaderModule(renderer->device, &(WGPUShaderModuleDescriptor){
                                                                      .label = "SDL_GPU WebGPU Vertex Shader",
-                                                                     .nextInChain = (void *)&(WGPUShaderModuleSPIRVDescriptor){
+                                                                     .nextInChain = (void *)&(WGPUShaderModuleWGSLDescriptor){
                                                                          .chain = {
                                                                              .next = NULL,
-                                                                             .sType = WGPUSType_ShaderModuleSPIRVDescriptor,
+                                                                             .sType = WGPUSType_ShaderModuleWGSLDescriptor,
                                                                          },
-                                                                         .code = vertShader->spirv,
-                                                                         .codeSize = vertShader->spirvSize,
+                                                                         .code = vertShader->wgslSource,
                                                                      },
                                                                  }),
         .entryPoint = "main",
-        .bufferCount = pipelineCreateInfo->vertexInputState.vertexBindingCount,
+        .bufferCount = 0,
         .buffers = NULL, // TODO: Create an array of WGPUVertexBufferLayout for each vertex binding.
-        .constantCount = pipelineCreateInfo->vertexInputState.vertexAttributeCount,
-        .constants = NULL, // TODO: Create an array of WGPUConstantEntries for each vertex attribute.
+        /*.constantCount = pipelineCreateInfo->vertexInputState.vertexAttributeCount,*/
+        /*.constants = NULL, // TODO: Create an array of WGPUConstantEntries for each vertex attribute.*/
     };
 
     // Build the color targets for the render pipeline
@@ -1790,6 +1794,7 @@ static SDL_GPUGraphicsPipeline *WebGPU_CreateGraphicsPipeline(
                 },
             },
             .writeMask = SDLToWGPUColorWriteMask(blendState.colorWriteMask),
+            /*.writeMask = WGPUColorWriteMask_All,*/
         };
     }
 
@@ -1799,6 +1804,7 @@ static SDL_GPUGraphicsPipeline *WebGPU_CreateGraphicsPipeline(
         .entryPoint = "main",
         .constantCount = 0,
         .constants = NULL,
+        /*.targetCount = 1,*/
         .targetCount = pipelineCreateInfo->attachmentInfo.colorAttachmentCount,
         .targets = colorTargets,
     };
@@ -1824,14 +1830,14 @@ static SDL_GPUGraphicsPipeline *WebGPU_CreateGraphicsPipeline(
         .vertex = vertexState,
         .primitive = {
             .topology = SDLToWGPUPrimitiveTopology(pipelineCreateInfo->primitiveType),
-            .stripIndexFormat = SDL_GPU_INDEXELEMENTSIZE_32BIT ? WGPUIndexFormat_Uint32 : WGPUIndexFormat_Uint16,
+            .stripIndexFormat = WGPUIndexFormat_Undefined,
             .frontFace = SDLToWGPUFrontFace(pipelineCreateInfo->rasterizerState.frontFace),
             .cullMode = SDLToWGPUCullMode(pipelineCreateInfo->rasterizerState.cullMode),
         },
         // Needs to be set up
         .depthStencil = pipelineCreateInfo->attachmentInfo.hasDepthStencilAttachment ? &depthStencil : NULL,
         .multisample = {
-            .count = pipelineCreateInfo->multisampleState.sampleCount,
+            .count = pipelineCreateInfo->multisampleState.sampleCount == 0 ? 1 : pipelineCreateInfo->multisampleState.sampleCount,
             .mask = pipelineCreateInfo->multisampleState.sampleMask,
             .alphaToCoverageEnabled = false,
         },
@@ -1846,6 +1852,7 @@ static SDL_GPUGraphicsPipeline *WebGPU_CreateGraphicsPipeline(
     pipeline->vertexShader = vertShader;
     pipeline->fragmentShader = fragShader;
     pipeline->primitiveType = pipelineCreateInfo->primitiveType;
+    pipeline->resourceLayout = resourceLayout;
 
     SDL_AtomicSet(&pipeline->referenceCount, 1);
 
@@ -1877,7 +1884,7 @@ static void WebGPU_INTERNAL_CreateOrUpdateBindGroup(
     uint32_t bindGroupIndex)
 {
     WebGPUBindGroup *bindGroup = &commandBuffer->currentResources.bindGroups[bindGroupIndex];
-    WebGPUBindGroupLayout *layout = &pipeline->resourceLayout.bindGroupLayouts[bindGroupIndex];
+    WebGPUBindGroupLayout *layout = &pipeline->resourceLayout->bindGroupLayouts[bindGroupIndex];
 
     WGPUBindGroupEntry *entries = SDL_malloc(sizeof(WGPUBindGroupEntry) * layout->entryCount);
 
@@ -1931,12 +1938,54 @@ static void WebGPU_INTERNAL_CreateOrUpdateBindGroup(
     SDL_free(entries);
 }
 
+void WebGPU_SetViewport(SDL_GPUCommandBuffer *renderPass, SDL_GPUViewport *viewport)
+{
+    if (renderPass == NULL) {
+        return;
+    }
+
+    WebGPUCommandBuffer *commandBuffer = (WebGPUCommandBuffer *)renderPass;
+
+    commandBuffer->currentViewport = (WebGPUViewport){
+        .x = viewport->x,
+        .y = viewport->y,
+        .width = viewport->w,
+        .height = viewport->h,
+        .minDepth = viewport->minDepth,
+        .maxDepth = viewport->maxDepth,
+    };
+
+    SDL_Log("Viewport: x: %.2f, y: %.2f, w: %.2f, h: %.2f", commandBuffer->currentViewport.x, commandBuffer->currentViewport.y, commandBuffer->currentViewport.width, commandBuffer->currentViewport.height);
+
+    // Set the viewport
+    wgpuRenderPassEncoderSetViewport(commandBuffer->renderPassEncoder, viewport->x, viewport->y, viewport->w, viewport->h, viewport->minDepth, viewport->maxDepth);
+}
+
+void WebGPU_SetScissorRect(SDL_GPUCommandBuffer *renderPass, SDL_Rect *scissorRect)
+{
+    if (renderPass == NULL) {
+        return;
+    }
+
+    WebGPUCommandBuffer *commandBuffer = (WebGPUCommandBuffer *)renderPass;
+
+    commandBuffer->currentScissor = (WebGPURect){
+        .x = scissorRect->x,
+        .y = scissorRect->y,
+        .width = scissorRect->w,
+        .height = scissorRect->h,
+    };
+
+    SDL_Log("Scissor rect: x: %u, y: %u, w: %u, h: %u", commandBuffer->currentScissor.x, commandBuffer->currentScissor.y, commandBuffer->currentScissor.width, commandBuffer->currentScissor.height);
+
+    wgpuRenderPassEncoderSetScissorRect(commandBuffer->renderPassEncoder, scissorRect->x, scissorRect->y, scissorRect->w, scissorRect->h);
+}
+
 static void WebGPU_BindGraphicsPipeline(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUGraphicsPipeline *graphicsPipeline)
 {
     WebGPUCommandBuffer *webgpuCommandBuffer = (WebGPUCommandBuffer *)commandBuffer;
-    WebGPURenderer *renderer = (WebGPURenderer *)webgpuCommandBuffer->renderer;
     WebGPUGraphicsPipeline *pipeline = (WebGPUGraphicsPipeline *)graphicsPipeline;
 
     // Bind the pipeline
@@ -1948,39 +1997,19 @@ static void WebGPU_BindGraphicsPipeline(
     // Track the pipeline (you may need to implement this function)
     WebGPU_INTERNAL_TrackGraphicsPipeline(webgpuCommandBuffer, pipeline);
 
-    // Set viewport and scissor
-    WebGPUViewport viewport = {
-        .x = webgpuCommandBuffer->currentViewport.x,
-        .y = webgpuCommandBuffer->currentViewport.y,
-        .width = webgpuCommandBuffer->currentViewport.width,
-        .height = webgpuCommandBuffer->currentViewport.height,
-        .minDepth = webgpuCommandBuffer->currentViewport.minDepth,
-        .maxDepth = webgpuCommandBuffer->currentViewport.maxDepth
-    };
-    wgpuRenderPassEncoderSetViewport(webgpuCommandBuffer->renderPassEncoder,
-                                     viewport.x, viewport.y, viewport.width, viewport.height, viewport.minDepth, viewport.maxDepth);
-
-    WebGPURect scissorRect = {
-        .x = webgpuCommandBuffer->currentScissor.x,
-        .y = webgpuCommandBuffer->currentScissor.y,
-        .width = webgpuCommandBuffer->currentScissor.width,
-        .height = webgpuCommandBuffer->currentScissor.height,
-    };
-    wgpuRenderPassEncoderSetScissorRect(webgpuCommandBuffer->renderPassEncoder,
-                                        scissorRect.x, scissorRect.y, scissorRect.width, scissorRect.height);
-
-    // Bind resources based on the pipeline's resource layout
-    for (uint32_t i = 0; i < pipeline->resourceLayout.bindGroupLayoutCount; i++) {
-        WebGPUBindGroup *bindGroup = &webgpuCommandBuffer->currentResources.bindGroups[i];
-
-        // Check if we need to create or update the bind group
-        if (bindGroup->bindGroup == NULL || webgpuCommandBuffer->resourcesDirty) {
-            WebGPU_INTERNAL_CreateOrUpdateBindGroup(webgpuCommandBuffer, pipeline, i);
-        }
-
-        // Set the bind group
-        wgpuRenderPassEncoderSetBindGroup(webgpuCommandBuffer->renderPassEncoder, i, bindGroup->bindGroup, 0, NULL);
-    }
+    // TODO: For now, this is commenrted out as it has some issues that need to be resolved
+    /*// Bind resources based on the pipeline's resource layout*/
+    /*for (uint32_t i = 0; i < pipeline->resourceLayout->bindGroupLayoutCount; i++) {*/
+    /*    WebGPUBindGroup *bindGroup = &webgpuCommandBuffer->currentResources.bindGroups[i];*/
+    /**/
+    /*    // Check if we need to create or update the bind group*/
+    /*    if (bindGroup->bindGroup == NULL || webgpuCommandBuffer->resourcesDirty) {*/
+    /*        WebGPU_INTERNAL_CreateOrUpdateBindGroup(webgpuCommandBuffer, pipeline, i);*/
+    /*    }*/
+    /**/
+    /*    // Set the bind group*/
+    /*    wgpuRenderPassEncoderSetBindGroup(webgpuCommandBuffer->renderPassEncoder, i, bindGroup->bindGroup, 0, NULL);*/
+    /*}*/
 
     // Mark resources as clean
     webgpuCommandBuffer->resourcesDirty = false;
@@ -1996,6 +2025,7 @@ static void WebGPU_DrawPrimitives(
     WebGPUCommandBuffer *wgpuCommandBuffer = (WebGPUCommandBuffer *)commandBuffer;
 
     // TODO: I need to implement some kind of descriptor set system to ensure that we can bind all necessary data before proceeding with the RenderPass. Too tired to do this on a plane.
+    wgpuDevicePushErrorScope(wgpuCommandBuffer->renderer->device, WGPUErrorFilter_Validation);
 
     wgpuRenderPassEncoderDraw(wgpuCommandBuffer->renderPassEncoder, vertexCount, instanceCount, firstVertex, firstInstance);
 
@@ -2074,7 +2104,6 @@ static SDL_GPUDevice *WebGPU_CreateDevice(SDL_bool debug, bool preferLowPower, S
 
     result = (SDL_GPUDevice *)SDL_malloc(sizeof(SDL_GPUDevice));
 
-
     // Initialize Tint for SPIRV to WGSL conversion
     tint_initialize();
 
@@ -2104,6 +2133,9 @@ static SDL_GPUDevice *WebGPU_CreateDevice(SDL_bool debug, bool preferLowPower, S
     result->DrawPrimitives = WebGPU_DrawPrimitives;
 
     // TODO END
+
+    result->SetScissor = WebGPU_SetScissorRect;
+    result->SetViewport = WebGPU_SetViewport;
 
     result->Submit = WebGPU_Submit;
     result->BeginRenderPass = WebGPU_BeginRenderPass;

@@ -1517,8 +1517,6 @@ elseif(EMSCRIPTEN)
 
       add_subdirectory("${SDL3_SOURCE_DIR}/SPIRV-Cross" EXCLUDE_FROM_ALL)
 
-      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.c")
-
       # We must link against libspirv-cross for Shader reflection
       set(SPIRV_CROSS_LIBRARIES
           ${SPIRV_CROSS_EMSC}/libspirv-cross-c.a
@@ -2996,7 +2994,7 @@ if(SDL_GPU)
     set(SDL_GPU_VULKAN 1)
     set(HAVE_SDL_GPU TRUE)
   endif()
-  if(SDL_RENDER_WEBGPU)
+  if(SDL_RENDER_WEBGPU AND EMSCRIPTEN)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.c")
     set(SDL_GPU_WEBGPU 1)
     set(HAVE_SDL_GPU TRUE)
