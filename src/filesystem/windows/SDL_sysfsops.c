@@ -31,11 +31,11 @@
 
 bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-    int result = 1;
+    SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
     if (*path == '\0') {  // if empty (completely at the root), we need to enumerate drive letters.
         const DWORD drives = GetLogicalDrives();
         char name[3] = { 0, ':', '\0' };
-        for (int i = 'A'; (result == 1) && (i <= 'Z'); i++) {
+        for (int i = 'A'; (result == SDL_ENUM_CONTINUE) && (i <= 'Z'); i++) {
             if (drives & (1 << (i - 'A'))) {
                 name[0] = (char) i;
                 result = cb(userdata, dirname, name);
@@ -78,17 +78,17 @@ bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enume
 
             char *utf8fn = WIN_StringToUTF8W(fn);
             if (!utf8fn) {
-                result = -1;
+                result = SDL_ENUM_FAILURE;
             } else {
                 result = cb(userdata, dirname, utf8fn);
                 SDL_free(utf8fn);
             }
-        } while ((result == 1) && (FindNextFileW(dir, &entw) != 0));
+        } while ((result == SDL_ENUM_CONTINUE) && (FindNextFileW(dir, &entw) != 0));
 
         FindClose(dir);
     }
 
-    return (result >= 0);
+    return (result != SDL_ENUM_FAILURE);
 }
 
 bool SDL_SYS_RemovePath(const char *path)

@@ -36,7 +36,7 @@
 
 bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-    int result = 1;
+    SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
 
     DIR *dir = opendir(path);
     if (!dir) {
@@ -45,7 +45,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enume
     }
 
     struct dirent *ent;
-    while ((result == 1) && ((ent = readdir(dir)) != NULL))
+    while ((result == SDL_ENUM_CONTINUE) && ((ent = readdir(dir)) != NULL))
     {
         const char *name = ent->d_name;
         if ((SDL_strcmp(name, ".") == 0) || (SDL_strcmp(name, "..") == 0)) {
@@ -56,7 +56,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enume
 
     closedir(dir);
 
-    return (result >= 0);
+    return (result != SDL_ENUM_FAILURE);
 }
 
 bool SDL_SYS_RemovePath(const char *path)

@@ -290,7 +290,7 @@ typedef struct GlobDirCallbackData
     SDL_IOStream *string_stream;
 } GlobDirCallbackData;
 
-static int SDLCALL GlobDirectoryCallback(void *userdata, const char *dirname, const char *fname)
+static SDL_EnumerationResult SDLCALL GlobDirectoryCallback(void *userdata, const char *dirname, const char *fname)
 {
     SDL_assert(userdata != NULL);
     SDL_assert(dirname != NULL);
@@ -305,14 +305,14 @@ static int SDLCALL GlobDirectoryCallback(void *userdata, const char *dirname, co
 
     char *fullpath = NULL;
     if (SDL_asprintf(&fullpath, "%s/%s", dirname, fname) < 0) {
-        return -1;
+        return SDL_ENUM_FAILURE;
     }
 
     char *folded = NULL;
     if (data->flags & SDL_GLOB_CASEINSENSITIVE) {
         folded = CaseFoldUtf8String(fullpath);
         if (!folded) {
-            return -1;
+            return SDL_ENUM_FAILURE;
         }
     }
 
@@ -326,18 +326,18 @@ static int SDLCALL GlobDirectoryCallback(void *userdata, const char *dirname, co
         const size_t slen = SDL_strlen(subpath) + 1;
         if (SDL_WriteIO(data->string_stream, subpath, slen) != slen) {
             SDL_free(fullpath);
-            return -1;  // stop enumerating, return failure to the app.
+            return SDL_ENUM_FAILURE;  // stop enumerating, return failure to the app.
         }
         data->num_entries++;
     }
 
-    int result = 1;  // keep enumerating by default.
+    SDL_EnumerationResult result = SDL_ENUM_CONTINUE;  // keep enumerating by default.
     if (matched_to_dir) {
         SDL_PathInfo info;
         if (data->getpathinfo(fullpath, &info, data->fsuserdata) && (info.type == SDL_PATHTYPE_DIRECTORY)) {
             //SDL_Log("GlobDirectoryCallback: Descending into subdir '%s'", fname);
             if (!data->enumerator(fullpath, GlobDirectoryCallback, data, data->fsuserdata)) {
-                result = -1;
+                result = SDL_ENUM_FAILURE;
             }
         }
     }

@@ -264,11 +264,42 @@ typedef Uint32 SDL_GlobFlags;
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_CreateDirectory(const char *path);
 
-/* Callback for directory enumeration. Return 1 to keep enumerating,
-   0 to stop enumerating (no error), -1 to stop enumerating and
-   report an error. `dirname` is the directory being enumerated,
-   `fname` is the enumerated entry. */
-typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char *dirname, const char *fname);
+/**
+ * Possible results from an enumeration callback.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ *
+ * \sa SDL_EnumerateDirectoryCallback
+ */
+typedef enum SDL_EnumerationResult
+{
+    SDL_ENUM_CONTINUE,   /**< Value that requests that enumeration continue. */
+    SDL_ENUM_SUCCESS,    /**< Value that requests that enumeration stop, successfully. */
+    SDL_ENUM_FAILURE     /**< Value that requests that enumeration stop, as a failure. */
+} SDL_EnumerationResult;
+
+/**
+ * Callback for directory enumeration.
+ *
+ * Enumeration of directory entries will continue until either all entries
+ * have been provided to the callback, or the callback has requested a stop
+ * through its return value.
+ *
+ * Returning SDL_ENUM_CONTINUE will let enumeration proceed, calling the
+ * callback with further entries. SDL_ENUM_SUCCESS and SDL_ENUM_FAILURE will
+ * terminate the enumeration early, and dictate the return value of the
+ * enumeration function itself.
+ *
+ * \param userdata an app-controlled pointer that is passed to the callback.
+ * \param dirname the directory that is being enumerated.
+ * \param fname the next entry in the enumeration.
+ * \returns how the enumeration should proceed.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_EnumerateDirectory
+ */
+typedef SDL_EnumerationResult (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char *dirname, const char *fname);
 
 /**
  * Enumerate a directory through a callback function.
