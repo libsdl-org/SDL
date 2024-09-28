@@ -381,82 +381,6 @@ static const SDL_GPUBootstrap *SDL_GPUSelectBackend(SDL_PropertiesID props)
 {
     Uint32 i;
     SDL_GPUShaderFormat format_flags = 0;
-
-    // Environment/Properties override...
-    if (gpudriver != NULL) {
-        for (i = 0; backends[i]; i += 1) {
-            if (SDL_strcasecmp(gpudriver, backends[i]->Name) == 0) {
-                if (!(backends[i]->shaderFormats & formatFlags)) {
-                    SDL_LogError(SDL_LOG_CATEGORY_GPU, "Required shader format for backend %s not provided!", gpudriver);
-                    return SDL_GPU_DRIVER_INVALID;
-                }
-                if (backends[i]->PrepareDriver(_this)) {
-                    return backends[i]->backendflag;
-                }
-            }
-        }
-
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "SDL_HINT_GPU_DRIVER %s unsupported!", gpudriver);
-        return SDL_GPU_DRIVER_INVALID;
-    }
-
-    SDL_LogError(SDL_LOG_CATEGORY_GPU, "No GPU driver hint set. Trying all available backends...");
-    for (i = 0; backends[i]; i += 1) {
-        if ((backends[i]->shaderFormats & formatFlags) == 0) {
-            // Don't select a backend which doesn't support the app's shaders.
-            continue;
-        }
-        if (backends[i]->PrepareDriver(_this)) {
-            return backends[i]->backendflag;
-        }
-    }
-
-    SDL_LogError(SDL_LOG_CATEGORY_GPU, "No supported SDL_GPU backend found!");
-    return SDL_GPU_DRIVER_INVALID;
-}
-
-SDL_GPUDevice *SDL_CreateGPUDevice(
-    SDL_GPUShaderFormat formatFlags,
-    SDL_bool debugMode,
-    const char *name)
-{
-    SDL_GPUDevice *result;
-#ifdef __EMSCRIPTEN__
-    SDL_SetHint(SDL_HINT_GPU_DRIVER, "webgpu");
-#endif
-    SDL_PropertiesID props = SDL_CreateProperties();
-    if (formatFlags & SDL_GPU_SHADERFORMAT_PRIVATE) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, true);
-    }
-    if (formatFlags & SDL_GPU_SHADERFORMAT_SPIRV) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, true);
-    }
-    if (formatFlags & SDL_GPU_SHADERFORMAT_DXBC) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL, true);
-    }
-    if (formatFlags & SDL_GPU_SHADERFORMAT_DXIL) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL, true);
-    }
-    if (formatFlags & SDL_GPU_SHADERFORMAT_MSL) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL, true);
-    }
-    if (formatFlags & SDL_GPU_SHADERFORMAT_METALLIB) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, true);
-    }
-    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, debugMode);
-    SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);
-    result = SDL_CreateGPUDeviceWithProperties(props);
-    SDL_DestroyProperties(props);
-    SDL_Log("SDL_CreateGPUDevice: %s", result ? "success" : "failure");
-    return result;
-}
-
-SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
-{
-    SDL_GPUShaderFormat formatFlags = 0;
-    bool debugMode;
-    bool preferLowPower;
-
     const char *gpudriver;
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -483,38 +407,37 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
     if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, false)) {
         format_flags |= SDL_GPU_SHADERFORMAT_METALLIB;
     }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADER_WGSL_BOOL, false)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_WGSL_BOOL, false)) {
         format_flags |= SDL_GPU_SHADERFORMAT_WGSL;
     }
 
     gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);
     if (gpudriver == NULL) {
-#ifdef __EMSCRIPTEN__
-        gpudriver = SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, "webgpu");
-#else
-        gpudriver = SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, NULL);
-#endif
+        gpudriver = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, NULL);
     }
-
-    selectedBackend = SDL_GPUSelectBackend(_this, gpudriver, formatFlags);
-    if (selectedBackend != SDL_GPU_DRIVER_INVALID) {
+    // Environment/Properties override...
+    if (gpudriver != NULL) {
         for (i = 0; backends[i]; i += 1) {
-            if (backends[i]->backendflag == selectedBackend) {
-                result = backends[i]->CreateDevice(debugMode, preferLowPower, props);
-                if (result != NULL) {
-                    result->backend = backends[i]->backendflag;
-                    result->shaderFormats = backends[i]->shaderFormats;
-                    result->debugMode = debugMode;
-                    break;
+            if (SDL_strcasecmp(gpudriver, backends[i]->name) == 0) {
+                if (!(backends[i]->shader_formats & format_flags)) {
+                    SDL_LogError(SDL_LOG_CATEGORY_GPU, "Required shader format for backend %s not provided!", gpudriver);
+                    return NULL;
+                }
+                if (backends[i]->PrepareDriver(_this)) {
+                    return backends[i];
                 }
             }
         }
 
-        SDL_SetError("SDL_HINT_GPU_DRIVER %s unsupported!", gpudriver);
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "SDL_HINT_GPU_DRIVER %s unsupported!", gpudriver);
         return NULL;
     }
 
-    for (size_t i = 0; backends[i]; i += 1) {
+    SDL_LogError(SDL_LOG_CATEGORY_GPU, "No GPU driver hint set. Trying all available backends...");
+    for (i = 0; backends[i]; i += 1) {
+        SDL_Log("%s\n", backends[i]->name);
+        SDL_Log("Expected Flags: %u", format_flags);
+        SDL_Log("Backend Flags: %u", backends[i]->shader_formats);
         if ((backends[i]->shader_formats & format_flags) == 0) {
             // Don't select a backend which doesn't support the app's shaders.
             continue;
@@ -524,32 +447,145 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
         }
     }
 
-    SDL_SetError("No supported SDL_GPU backend found!");
+    SDL_LogError(SDL_LOG_CATEGORY_GPU, "No supported SDL_GPU backend found!");
     return NULL;
 }
 
+/*SDL_GPUDevice *SDL_CreateGPUDevice(*/
+/*    SDL_GPUShaderFormat formatFlags,*/
+/*    bool debugMode,*/
+/*    const char *name)*/
+/*{*/
+/*    SDL_GPUDevice *result;*/
+/*#ifdef __EMSCRIPTEN__*/
+/*    SDL_SetHint(SDL_HINT_GPU_DRIVER, "webgpu");*/
+/*#endif*/
+/*    SDL_PropertiesID props = SDL_CreateProperties();*/
+/*    if (formatFlags & SDL_GPU_SHADERFORMAT_PRIVATE) {*/
+/*        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, true);*/
+/*    }*/
+/*    if (formatFlags & SDL_GPU_SHADERFORMAT_SPIRV) {*/
+/*        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, true);*/
+/*    }*/
+/*    if (formatFlags & SDL_GPU_SHADERFORMAT_DXBC) {*/
+/*        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL, true);*/
+/*    }*/
+/*    if (formatFlags & SDL_GPU_SHADERFORMAT_DXIL) {*/
+/*        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL, true);*/
+/*    }*/
+/*    if (formatFlags & SDL_GPU_SHADERFORMAT_MSL) {*/
+/*        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL, true);*/
+/*    }*/
+/*    if (formatFlags & SDL_GPU_SHADERFORMAT_METALLIB) {*/
+/*        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, true);*/
+/*    }*/
+/*    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, debugMode);*/
+/*    SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);*/
+/*    result = SDL_CreateGPUDeviceWithProperties(props);*/
+/*    SDL_DestroyProperties(props);*/
+/*    SDL_Log("SDL_CreateGPUDevice: %s", result ? "success" : "failure");*/
+/*    return result;*/
+/*}*/
+
+/*SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)*/
+/*{*/
+/*    SDL_GPUShaderFormat formatFlags = 0;*/
+/*    bool debugMode;*/
+/*    bool preferLowPower;*/
+/**/
+/*    const char *gpudriver;*/
+/*    SDL_VideoDevice *_this = SDL_GetVideoDevice();*/
+/**/
+/*    if (_this == NULL) {*/
+/*        SDL_SetError("Video subsystem not initialized");*/
+/*        return NULL;*/
+/*    }*/
+/**/
+/*    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, false)) {*/
+/*        formatFlags |= SDL_GPU_SHADERFORMAT_PRIVATE;*/
+/*    }*/
+/*    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, false)) {*/
+/*        formatFlags |= SDL_GPU_SHADERFORMAT_SPIRV;*/
+/*    }*/
+/*    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL, false)) {*/
+/*        formatFlags |= SDL_GPU_SHADERFORMAT_DXBC;*/
+/*    }*/
+/*    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL, false)) {*/
+/*        formatFlags |= SDL_GPU_SHADERFORMAT_DXIL;*/
+/*    }*/
+/*    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL, false)) {*/
+/*        formatFlags |= SDL_GPU_SHADERFORMAT_MSL;*/
+/*    }*/
+/*    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, false)) {*/
+/*        formatFlags |= SDL_GPU_SHADERFORMAT_METALLIB;*/
+/*    }*/
+/*    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_WGSL_BOOL, false)) {*/
+/*        formatFlags |= SDL_GPU_SHADERFORMAT_WGSL;*/
+/*    }*/
+/**/
+/*    gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);*/
+/*    if (gpudriver == NULL) {*/
+/*#ifdef __EMSCRIPTEN__*/
+/*        gpudriver = SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, "webgpu");*/
+/*#else*/
+/*        gpudriver = SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, NULL);*/
+/*#endif*/
+/*    }*/
+/**/
+/*    selectedBackend = SDL_GPUSelectBackend(props);*/
+/*    if (selectedBackend != SDL_GPU_DRIVER_INVALID) {*/
+/*        for (size_t i = 0; backends[i]; i += 1) {*/
+/*            if (backends[i]->backendflag == selectedBackend) {*/
+/*                result = backends[i]->CreateDevice(debugMode, preferLowPower, props);*/
+/*                if (result != NULL) {*/
+/*                    result->backend = backends[i]->backendflag;*/
+/*                    result->shaderFormats = backends[i]->shaderFormats;*/
+/*                    result->debugMode = debugMode;*/
+/*                    break;*/
+/*                }*/
+/*            }*/
+/*        }*/
+/**/
+/*        SDL_SetError("SDL_HINT_GPU_DRIVER %s unsupported!", gpudriver);*/
+/*        return NULL;*/
+/*    }*/
+/**/
+/*    for (size_t i = 0; backends[i]; i += 1) {*/
+/*        if ((backends[i]->shader_formats & formatFlags) == 0) {*/
+/*            // Don't select a backend which doesn't support the app's shaders.*/
+/*            continue;*/
+/*        }*/
+/*        if (backends[i]->PrepareDriver(_this)) {*/
+/*            return backends[i];*/
+/*        }*/
+/*    }*/
+/**/
+/*    SDL_SetError("No supported SDL_GPU backend found!");*/
+/*    return NULL;*/
+/*}*/
+
 static void SDL_GPU_FillProperties(
     SDL_PropertiesID props,
-    SDL_GPUShaderFormat format_flags,
+    SDL_GPUShaderFormat formatFlags,
     bool debug_mode,
     const char *name)
 {
-    if (format_flags & SDL_GPU_SHADERFORMAT_PRIVATE) {
+    if (formatFlags & SDL_GPU_SHADERFORMAT_PRIVATE) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOL, true);
     }
-    if (format_flags & SDL_GPU_SHADERFORMAT_SPIRV) {
+    if (formatFlags & SDL_GPU_SHADERFORMAT_SPIRV) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL, true);
     }
-    if (format_flags & SDL_GPU_SHADERFORMAT_DXBC) {
+    if (formatFlags & SDL_GPU_SHADERFORMAT_DXBC) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL, true);
     }
-    if (format_flags & SDL_GPU_SHADERFORMAT_DXIL) {
+    if (formatFlags & SDL_GPU_SHADERFORMAT_DXIL) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL, true);
     }
-    if (format_flags & SDL_GPU_SHADERFORMAT_MSL) {
+    if (formatFlags & SDL_GPU_SHADERFORMAT_MSL) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL, true);
     }
-    if (format_flags & SDL_GPU_SHADERFORMAT_METALLIB) {
+    if (formatFlags & SDL_GPU_SHADERFORMAT_METALLIB) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL, true);
     }
     SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL, debug_mode);
@@ -558,13 +594,13 @@ static void SDL_GPU_FillProperties(
 #endif // SDL_GPU_DISABLED
 
 bool SDL_GPUSupportsShaderFormats(
-    SDL_GPUShaderFormat format_flags,
+    SDL_GPUShaderFormat formatFlags,
     const char *name)
 {
 #ifndef SDL_GPU_DISABLED
     bool result;
     SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_GPU_FillProperties(props, format_flags, false, name);
+    SDL_GPU_FillProperties(props, formatFlags, false, name);
     result = SDL_GPUSupportsProperties(props);
     SDL_DestroyProperties(props);
     return result;
@@ -585,14 +621,19 @@ bool SDL_GPUSupportsProperties(SDL_PropertiesID props)
 }
 
 SDL_GPUDevice *SDL_CreateGPUDevice(
-    SDL_GPUShaderFormat format_flags,
+    SDL_GPUShaderFormat formatFlags,
     bool debug_mode,
     const char *name)
 {
 #ifndef SDL_GPU_DISABLED
     SDL_GPUDevice *result;
     SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_GPU_FillProperties(props, format_flags, debug_mode, name);
+
+#ifdef __EMSCRIPTEN__
+    SDL_SetHint(SDL_HINT_GPU_DRIVER, "webgpu");
+#endif
+
+    SDL_GPU_FillProperties(props, formatFlags, debug_mode, name);
     result = SDL_CreateGPUDeviceWithProperties(props);
     SDL_DestroyProperties(props);
     return result;
