@@ -578,7 +578,7 @@ static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
         /* The surface is only necessary if the cursor shape manager is not present.
          *
          * Note that we can't actually set any other cursor properties, as this
-         * is output-specific. See wayland_get_system_cursor for the rest!
+         * is window-specific. See Wayland_GetSystemCursor for the rest!
          */
         if (!data->cursor_shape_manager) {
             cdata->surface = wl_compositor_create_surface(data->compositor);
@@ -1013,7 +1013,12 @@ void Wayland_InitMouse(void)
     }
 
 #ifdef SDL_USE_LIBDBUS
-    Wayland_DBusInitCursorProperties(d);
+    /* The DBus cursor properties are only needed when manually loading themes and cursors.
+     * If the cursor shape protocol is present, the compositor will handle it internally.
+     */
+    if (!d->cursor_shape_manager) {
+        Wayland_DBusInitCursorProperties(d);
+    }
 #endif
 
     SDL_SetDefaultCursor(Wayland_CreateDefaultCursor());
