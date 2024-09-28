@@ -47,18 +47,20 @@
 #include <inttypes.h>
 #endif
 #include <stdarg.h>
+
 #ifndef __cplusplus
-#ifdef SDL_DEFINE_STDBOOL
-#ifndef __bool_true_false_are_defined
-#define __bool_true_false_are_defined 1
-#define bool  uint8_t
-#define false 0
-#define true  1
+# if defined(SDL_DEFINE_STDBOOL) && defined(__STDC_VERSION__) && __STDC_VERSION__ < 202311L
+#  ifndef __bool_true_false_are_defined
+#   define __bool_true_false_are_defined 1
+#   define bool  uint8_t
+#   define false 0
+#   define true  1
+#  endif
+# else
+#  include <stdbool.h>
+# endif
 #endif
-#else
-#include <stdbool.h>
-#endif
-#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <wchar.h>
