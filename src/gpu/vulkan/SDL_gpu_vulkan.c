@@ -4493,35 +4493,6 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         &drawableWidth,
         &drawableHeight);
 
-    if (drawableWidth < (Sint32)swapchainSupportDetails.capabilities.minImageExtent.width ||
-        drawableWidth > (Sint32)swapchainSupportDetails.capabilities.maxImageExtent.width ||
-        drawableHeight < (Sint32)swapchainSupportDetails.capabilities.minImageExtent.height ||
-        drawableHeight > (Sint32)swapchainSupportDetails.capabilities.maxImageExtent.height) {
-        if (swapchainSupportDetails.capabilities.currentExtent.width != SDL_MAX_UINT32) {
-            drawableWidth = VULKAN_INTERNAL_clamp(
-                drawableWidth,
-                (Sint32)swapchainSupportDetails.capabilities.minImageExtent.width,
-                (Sint32)swapchainSupportDetails.capabilities.maxImageExtent.width);
-            drawableHeight = VULKAN_INTERNAL_clamp(
-                drawableHeight,
-                (Sint32)swapchainSupportDetails.capabilities.minImageExtent.height,
-                (Sint32)swapchainSupportDetails.capabilities.maxImageExtent.height);
-        } else {
-            renderer->vkDestroySurfaceKHR(
-                renderer->instance,
-                swapchainData->surface,
-                NULL);
-            if (swapchainSupportDetails.formatsLength > 0) {
-                SDL_free(swapchainSupportDetails.formats);
-            }
-            if (swapchainSupportDetails.presentModesLength > 0) {
-                SDL_free(swapchainSupportDetails.presentModes);
-            }
-            SDL_free(swapchainData);
-            SET_STRING_ERROR_AND_RETURN("No fallback swapchain size available!", false);
-        }
-    }
-
     swapchainData->imageCount = MAX_FRAMES_IN_FLIGHT;
 
     if (swapchainSupportDetails.capabilities.maxImageCount > 0 &&
