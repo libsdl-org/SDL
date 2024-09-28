@@ -1791,8 +1791,7 @@ static SDL_GPUGraphicsPipeline *WebGPU_CreateGraphicsPipeline(
                     .operation = SDLToWGPUBlendOperation(blendState.alpha_blend_op),
                 },
             },
-            /*.writeMask = SDLToWGPUColorWriteMask(blendState.enable_color_write_mask),*/
-            .writeMask = WGPUColorWriteMask_All,
+            .writeMask = SDLToWGPUColorWriteMask(blendState.color_write_mask),
         };
     }
 
