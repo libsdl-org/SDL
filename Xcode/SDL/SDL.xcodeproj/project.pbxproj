@@ -62,6 +62,7 @@
 		566E26D8246274CC00718109 /* SDL_locale.c in Sources */ = {isa = PBXBuildFile; fileRef = 566E26CD246274CB00718109 /* SDL_locale.c */; };
 		566E26E1246274CC00718109 /* SDL_syslocale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26CE246274CC00718109 /* SDL_syslocale.h */; };
 		56A2373329F9C113003CCA5F /* SDL_sysrwlock.c in Sources */ = {isa = PBXBuildFile; fileRef = 56A2373229F9C113003CCA5F /* SDL_sysrwlock.c */; };
+		6312C66D2B42341400A7BB00 /* SDL_murmur3.c in Sources */ = {isa = PBXBuildFile; fileRef = 6312C66C2B42341400A7BB00 /* SDL_murmur3.c */; };
 		63134A222A7902CF0021E9A6 /* SDL_pen.h in Headers */ = {isa = PBXBuildFile; fileRef = 63134A212A7902CF0021E9A6 /* SDL_pen.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		63134A252A7902FD0021E9A6 /* SDL_pen_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 63134A232A7902FD0021E9A6 /* SDL_pen_c.h */; };
 		63134A262A7902FD0021E9A6 /* SDL_pen.c in Sources */ = {isa = PBXBuildFile; fileRef = 63134A242A7902FD0021E9A6 /* SDL_pen.c */; };
@@ -606,6 +607,7 @@
 		566E26CD246274CB00718109 /* SDL_locale.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_locale.c; path = locale/SDL_locale.c; sourceTree = "<group>"; };
 		566E26CE246274CC00718109 /* SDL_syslocale.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_syslocale.h; path = locale/SDL_syslocale.h; sourceTree = "<group>"; };
 		56A2373229F9C113003CCA5F /* SDL_sysrwlock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysrwlock.c; sourceTree = "<group>"; };
+		6312C66C2B42341400A7BB00 /* SDL_murmur3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_murmur3.c; sourceTree = "<group>"; };
 		63134A212A7902CF0021E9A6 /* SDL_pen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_pen.h; path = SDL3/SDL_pen.h; sourceTree = "<group>"; };
 		63134A232A7902FD0021E9A6 /* SDL_pen_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_pen_c.h; sourceTree = "<group>"; };
 		63134A242A7902FD0021E9A6 /* SDL_pen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_pen.c; sourceTree = "<group>"; };
@@ -2097,6 +2099,7 @@
 		A7D8A8D223E2514000DCD162 /* stdlib */ = {
 			isa = PBXGroup;
 			children = (
+				6312C66C2B42341400A7BB00 /* SDL_murmur3.c */,
 				F3973FA128A59BDD00B84553 /* SDL_crc16.c */,
 				F395BF6425633B2400942BFF /* SDL_crc32.c */,
 				F310138A2C1F2CB700FBE946 /* SDL_getenv_c.h */,
@@ -3054,6 +3057,7 @@
 				000095FA1BDE436CF3AF0000 /* SDL_time.c in Sources */,
 				0000140640E77F73F1DF0000 /* SDL_dialog_utils.c in Sources */,
 				0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */,
+				6312C66D2B42341400A7BB00 /* SDL_murmur3.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

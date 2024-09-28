@@ -1131,6 +1131,7 @@ SDL_DYNAPI_PROC(void*,SDL_memset,(SDL_OUT_BYTECAP(c) void *a, int b, size_t c),(
 SDL_DYNAPI_PROC(void*,SDL_memset4,(void *a, Uint32 b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(double,SDL_modf,(double a, double *b),(a,b),return)
 SDL_DYNAPI_PROC(float,SDL_modff,(float a, float *b),(a,b),return)
+SDL_DYNAPI_PROC(Uint32,SDL_murmur3_32,(const void *a, size_t b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(double,SDL_pow,(double a, double b),(a,b),return)
 SDL_DYNAPI_PROC(float,SDL_powf,(float a, float b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_qsort,(void *a, size_t b, size_t c, SDL_CompareCallback d),(a,b,c,d),)
