@@ -555,6 +555,7 @@ typedef struct D3D12WindowData
     D3D12TextureContainer textureContainers[MAX_FRAMES_IN_FLIGHT];
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
     bool needsSwapchainRecreate;
+    SDL_Mutex *lock;
 } D3D12WindowData;
 
 typedef struct D3D12PresentData
@@ -5979,7 +5980,9 @@ static bool D3D12_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
     D3D12WindowData *data;
     if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         data = D3D12_INTERNAL_FetchWindowData(w);
+        SDL_LockMutex(data->lock);
         data->needsSwapchainRecreate = true;
+        SDL_UnlockMutex(data->lock);
     }
 
     return true;
@@ -6527,12 +6530,12 @@ static bool D3D12_ClaimWindow(
             return false;
         }
         windowData->window = window;
+        windowData->lock = SDL_CreateMutex();
 
         if (D3D12_INTERNAL_CreateSwapchain(renderer, windowData, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
 
             SDL_LockMutex(renderer->windowLock);
-
             if (renderer->claimedWindowCount >= renderer->claimedWindowCapacity) {
                 renderer->claimedWindowCapacity *= 2;
                 renderer->claimedWindows = (D3D12WindowData **)SDL_realloc(
@@ -6541,10 +6544,9 @@ static bool D3D12_ClaimWindow(
             }
             renderer->claimedWindows[renderer->claimedWindowCount] = windowData;
             renderer->claimedWindowCount += 1;
+            SDL_UnlockMutex(renderer->windowLock);
 
             SDL_AddEventWatch(D3D12_INTERNAL_OnWindowResize, window);
-
-            SDL_UnlockMutex(renderer->windowLock);
 
             return true;
         } else {
@@ -6592,6 +6594,7 @@ static void D3D12_ReleaseWindow(
     }
     SDL_UnlockMutex(renderer->windowLock);
 
+    SDL_DestroyMutex(windowData->lock);
     SDL_free(windowData);
     SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
     SDL_RemoveEventWatch(D3D12_INTERNAL_OnWindowResize, window);
@@ -6925,9 +6928,11 @@ static bool D3D12_AcquireSwapchainTexture(
     }
 
     if (windowData->needsSwapchainRecreate) {
-        if (!D3D12_INTERNAL_ResizeSwapchain(
-            renderer,
-            windowData)) {
+        SDL_LockMutex(windowData->lock);
+        bool resizeSuccess = D3D12_INTERNAL_ResizeSwapchain(renderer, windowData);
+        SDL_UnlockMutex(windowData->lock);
+
+        if (!resizeSuccess) {
             return false;
         }
     }
