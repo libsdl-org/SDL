@@ -423,33 +423,31 @@ static bool Wayland_GetSystemCursor(SDL_VideoData *vdata, SDL_CursorData *cdata,
     }
 
     *scale = SDL_ceil(scale_factor) == scale_factor ? (int)scale_factor : 0;
-    *dst_size = theme_size;
 
-    // Calculate the hotspot offset if the cursor is being scaled.
-    if (scaled_size == cursor->images[0]->width) {
-        // If the theme has an exact size match, just divide by the scale.
-        *hot_x = (int)SDL_lround(cursor->images[0]->hotspot_x / scale_factor);
-        *hot_y = (int)SDL_lround(cursor->images[0]->hotspot_y / scale_factor);
-    } else {
+    if (scaled_size != cursor->images[0]->width) {
+        /* If the cursor size isn't an exact match for the target size, use a viewport
+         * to avoid a possible "Buffer size is not divisible by scale" protocol error.
+         *
+         * If viewports are unavailable, find an integer scale that works.
+         */
         if (vdata->viewporter) {
-            // Use a viewport if no exact size match is found to avoid a potential "buffer size is not divisible by scale" protocol error.
+            // A scale of 0 indicates that a viewport set to the destination size should be used.
             *scale = 0;
-
-            // Map the hotspot coordinates from the source to destination sizes.
-            const double hotspot_scale = (double)theme_size / (double)cursor->images[0]->width;
-            *hot_x = (int)SDL_lround(hotspot_scale * cursor->images[0]->hotspot_x);
-            *hot_y = (int)SDL_lround(hotspot_scale * cursor->images[0]->hotspot_y);
         } else {
-            // No exact match, and viewports are unsupported. Find a safe integer scale.
             for (; *scale > 1; --*scale) {
                 if (cursor->images[0]->width % *scale == 0) {
                     break;
                 }
             }
-            *hot_x = cursor->images[0]->hotspot_x / *scale;
-            *hot_y = cursor->images[0]->hotspot_y / *scale;
+            // Set the scale factor to the new value for the hotspot calculations.
+            scale_factor = *scale;
         }
     }
+
+    *dst_size = (int)SDL_lround(cursor->images[0]->width / scale_factor);
+
+    *hot_x = (int)SDL_lround(cursor->images[0]->hotspot_x / scale_factor);
+    *hot_y = (int)SDL_lround(cursor->images[0]->hotspot_y / scale_factor);
 
     return true;
 }
