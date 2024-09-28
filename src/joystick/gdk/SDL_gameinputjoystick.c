@@ -25,7 +25,6 @@
 #include "../SDL_sysjoystick.h"
 #include "../usb_ids.h"
 
-#include <stdbool.h>
 #define COBJMACROS
 #include <gameinput.h>
 

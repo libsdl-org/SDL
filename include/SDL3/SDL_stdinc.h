@@ -34,34 +34,27 @@
 
 #include <SDL3/SDL_platform_defines.h>
 
-/* Most everything except Visual Studio 2013 and earlier has stdbool.h now */
-#if defined(_MSC_VER) && (_MSC_VER < 1910)
-#define SDL_DEFINE_STDBOOL
-#endif
-/* gcc-2.95 had non-standard stdbool.h */
-#if defined(__GNUC__) && (__GNUC__ < 3)
-#define SDL_DEFINE_STDBOOL
-#endif
-
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-#include <inttypes.h>
-#endif
 #include <stdarg.h>
-#ifndef __cplusplus
-#ifdef SDL_DEFINE_STDBOOL
-#ifndef __bool_true_false_are_defined
-#define __bool_true_false_are_defined 1
-#define bool  uint8_t
-#define false 0
-#define true  1
-#endif
-#else
-#include <stdbool.h>
-#endif
-#endif
 #include <stdint.h>
 #include <string.h>
 #include <wchar.h>
+
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
+    defined(SDL_INCLUDE_INTTYPES_H)
+#include <inttypes.h>
+#endif
+
+#ifndef __cplusplus
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
+    defined(SDL_INCLUDE_STDBOOL_H)
+#include <stdbool.h>
+#elif !defined(__bool_true_false_are_defined) && !defined(bool)
+#define bool  unsigned char
+#define false 0
+#define true  1
+#define __bool_true_false_are_defined 1
+#endif
+#endif /* !__cplusplus */
 
 #ifndef SDL_DISABLE_ALLOCA
 # ifndef alloca
