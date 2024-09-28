@@ -488,8 +488,16 @@ static bool SDLCALL stdio_flush(void *userdata, SDL_IOStatus *status)
     }
     #elif defined(_POSIX_SYNCHRONIZED_IO)  // POSIX defines this if fdatasync() exists, so we don't need a CMake test.
         #ifndef SDL_PLATFORM_RISCOS  // !!! FIXME: however, RISCOS doesn't have the symbol...maybe we need to link to an extra library or something?
-        if (iodata->regular_file && (fdatasync(fileno(iodata->fp)) == -1)) {
-            return SDL_SetError("Error flushing datastream: %s", strerror(errno));
+        if (iodata->regular_file) {
+            int sync_result;
+#ifdef SDL_PLATFORM_HAIKU
+            sync_result = fsync(fileno(iodata->fp));
+#else
+            sync_result = fdatasync(fileno(iodata->fp));
+#endif
+            if (sync_result == -1) {
+                return SDL_SetError("Error flushing datastream: %s", strerror(errno));
+            }
         }
         #endif
     #endif
