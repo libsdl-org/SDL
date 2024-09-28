@@ -15,7 +15,7 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-static int SDLCALL enum_callback(void *userdata, const char *origdir, const char *fname)
+static SDL_EnumerationResult SDLCALL enum_callback(void *userdata, const char *origdir, const char *fname)
 {
     SDL_PathInfo info;
     char *fullpath = NULL;
@@ -29,7 +29,7 @@ static int SDLCALL enum_callback(void *userdata, const char *origdir, const char
 
     if (SDL_asprintf(&fullpath, "%s%s%s", origdir, *origdir ? pathsep : "", fname) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
-        return -1;
+        return SDL_ENUM_FAILURE;
     }
 
     if (!SDL_GetPathInfo(fullpath, &info)) {
@@ -54,7 +54,7 @@ static int SDLCALL enum_callback(void *userdata, const char *origdir, const char
     }
 
     SDL_free(fullpath);
-    return 1;  /* keep going */
+    return SDL_ENUM_CONTINUE;  /* keep going */
 }
 
 
