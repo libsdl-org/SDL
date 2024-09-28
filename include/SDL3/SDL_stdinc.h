@@ -1460,6 +1460,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_tolower(int x);
 
 extern SDL_DECLSPEC Uint16 SDLCALL SDL_crc16(Uint16 crc, const void *data, size_t len);
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_crc32(Uint32 crc, const void *data, size_t len);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_murmur3_32(const void *data, size_t len, Uint32 seed);
 
 /**
  * Copy non-overlapping memory.

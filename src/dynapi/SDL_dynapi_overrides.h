@@ -1122,6 +1122,7 @@
 #define SDL_memset4 SDL_memset4_REAL
 #define SDL_modf SDL_modf_REAL
 #define SDL_modff SDL_modff_REAL
+#define SDL_murmur3_32 SDL_murmur3_32_REAL
 #define SDL_pow SDL_pow_REAL
 #define SDL_powf SDL_powf_REAL
 #define SDL_qsort SDL_qsort_REAL

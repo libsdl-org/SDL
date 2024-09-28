@@ -1097,6 +1097,7 @@ SDL3_0.0.0 {
     SDL_memset;
     SDL_modf;
     SDL_modff;
+    SDL_murmur3_32;
     SDL_pow;
     SDL_powf;
     SDL_qsort;
