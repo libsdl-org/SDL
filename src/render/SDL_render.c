@@ -2699,8 +2699,6 @@ bool SDL_GetRenderLogicalPresentationRect(SDL_Renderer *renderer, SDL_FRect *rec
 
     if (rect) {
         if (renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_DISABLED) {
-            int output_w = 0, output_h = 0;
-
             rect->x = 0.0f;
             rect->y = 0.0f;
             rect->w = (float)renderer->output_pixel_w;
