@@ -314,23 +314,32 @@ bool SDL_InsertIntoHashTable(SDL_HashTable *restrict table, const void *key, con
         return false;
     }
 
-    return insert_item(&new_item, table->table, table->hash_mask, &table->max_probe_len);
+    // This never returns NULL
+    insert_item(&new_item, table->table, table->hash_mask, &table->max_probe_len);
+    return true;
 }
 
-bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **_value)
+bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **value)
 {
     Uint32 hash;
     SDL_HashItem *i;
 
     if (!table) {
+        if (value) {
+            *value = NULL;
+        }
         return false;
     }
 
     hash = calc_hash(table, key);
     i = find_first_item(table, key, hash);
-    *_value = i ? i->value : NULL;
-
-    return i;
+    if (i) {
+        if (value) {
+            *value = i->value;
+        }
+        return true;
+    }
+    return false;
 }
 
 bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
