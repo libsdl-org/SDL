@@ -2564,6 +2564,10 @@ static void UpdateLogicalPresentation(SDL_Renderer *renderer)
 
     int iwidth, iheight;
     SDL_GetRenderOutputSize(renderer, &iwidth, &iheight);
+
+    renderer->window_pixel_w = iwidth;
+    renderer->window_pixel_h = iheight;
+
     const float output_w = (float)iwidth;
     const float output_h = (float)iheight;
     const float logical_w = renderer->logical_w;
