@@ -1282,7 +1282,7 @@ int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *
 		length = dev->output_report_length;
 	}
 
-	res = WriteFile(dev->device_handle, buf, (DWORD) length, NULL, &dev->write_ol);
+	res = WriteFile(dev->device_handle, buf, (DWORD) length, &bytes_written, &dev->write_ol);
 
 	if (!res) {
 		if (GetLastError() != ERROR_IO_PENDING) {
@@ -1291,6 +1291,9 @@ int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *
 			goto end_of_function;
 		}
 		overlapped = TRUE;
+	} else {
+		/* WriteFile() succeeded synchronously. */
+		function_result = bytes_written;
 	}
 
 	if (overlapped) {
