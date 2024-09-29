@@ -3263,7 +3263,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WindowSupportsGPUPresentMode(
  * Claims a window, creating a swapchain structure for it.
  *
  * This must be called before SDL_AcquireGPUSwapchainTexture is called using
- * the window.
+ * the window. You should only call this function from the thread that created the window.
  *
  * The swapchain will be created with SDL_GPU_SWAPCHAINCOMPOSITION_SDR and
  * SDL_GPU_PRESENTMODE_VSYNC. If you want to have different swapchain
