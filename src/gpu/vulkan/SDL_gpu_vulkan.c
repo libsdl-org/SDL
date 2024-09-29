@@ -696,7 +696,7 @@ typedef struct WindowData
     SDL_GPUSwapchainComposition swapchainComposition;
     SDL_GPUPresentMode presentMode;
     VulkanSwapchainData *swapchainData;
-    SDL_AtomicInt needsSwapchainRecreate;
+    bool needsSwapchainRecreate;
 } WindowData;
 
 typedef struct SwapchainSupportDetails
@@ -4671,7 +4671,7 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
     }
 
     windowData->swapchainData = swapchainData;
-    SDL_SetAtomicInt(&windowData->needsSwapchainRecreate, false);
+    windowData->needsSwapchainRecreate = false;
 
     return true;
 }
@@ -9331,7 +9331,7 @@ static bool VULKAN_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
     WindowData *data;
     if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         data = VULKAN_INTERNAL_FetchWindowData(w);
-        SDL_SetAtomicInt(&data->needsSwapchainRecreate, true);
+        data->needsSwapchainRecreate = true;
     }
 
     return true;
@@ -9595,7 +9595,7 @@ static bool VULKAN_AcquireSwapchainTexture(
     }
 
     // If window data marked as needing swapchain recreate, try to recreate
-    if (SDL_GetAtomicInt(&windowData->needsSwapchainRecreate)) {
+    if (windowData->needsSwapchainRecreate) {
         if (!VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData)) {
             return false;
         }

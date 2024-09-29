@@ -482,7 +482,7 @@ typedef struct D3D11WindowData
     DXGI_COLOR_SPACE_TYPE swapchainColorSpace;
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
     Uint32 frameCounter;
-    SDL_AtomicInt needsSwapchainRecreate;
+    bool needsSwapchainRecreate;
 } D3D11WindowData;
 
 typedef struct D3D11Shader
@@ -5028,7 +5028,7 @@ static bool D3D11_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
     D3D11WindowData *data;
     if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         data = D3D11_INTERNAL_FetchWindowData(w);
-        SDL_SetAtomicInt(&data->needsSwapchainRecreate, true);
+        data->needsSwapchainRecreate = true;
     }
 
     return true;
@@ -5288,7 +5288,7 @@ static bool D3D11_INTERNAL_ResizeSwapchain(
 
     windowData->textureContainer.header.info.width = w;
     windowData->textureContainer.header.info.height = h;
-    SDL_SetAtomicInt(&windowData->needsSwapchainRecreate, !result);
+    windowData->needsSwapchainRecreate = !result;
     return result;
 }
 
@@ -5483,7 +5483,7 @@ static bool D3D11_AcquireSwapchainTexture(
         SET_STRING_ERROR_AND_RETURN("Cannot acquire a swapchain texture from an unclaimed window!", false)
     }
 
-    if (SDL_GetAtomicInt(&windowData->needsSwapchainRecreate)) {
+    if (windowData->needsSwapchainRecreate) {
         if (!D3D11_INTERNAL_ResizeSwapchain(renderer, windowData)) {
             return false;
         }

@@ -554,7 +554,7 @@ typedef struct D3D12WindowData
 
     D3D12TextureContainer textureContainers[MAX_FRAMES_IN_FLIGHT];
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
-    SDL_AtomicInt needsSwapchainRecreate;
+    bool needsSwapchainRecreate;
 } D3D12WindowData;
 
 typedef struct D3D12PresentData
@@ -5979,7 +5979,7 @@ static bool D3D12_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
     D3D12WindowData *data;
     if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         data = D3D12_INTERNAL_FetchWindowData(w);
-        SDL_SetAtomicInt(&data->needsSwapchainRecreate, true);
+        data->needsSwapchainRecreate = true;
     }
 
     return true;
@@ -6331,7 +6331,7 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
         }
     }
 
-    SDL_SetAtomicInt(&windowData->needsSwapchainRecreate, false);
+    windowData->needsSwapchainRecreate = false;
     return true;
 }
 
@@ -6922,7 +6922,7 @@ static bool D3D12_AcquireSwapchainTexture(
         SET_STRING_ERROR_AND_RETURN("Cannot acquire swapchain texture from an unclaimed window!", false)
     }
 
-    if (SDL_GetAtomicInt(&windowData->needsSwapchainRecreate)) {
+    if (windowData->needsSwapchainRecreate) {
         if (!D3D12_INTERNAL_ResizeSwapchain(renderer, windowData)) {
             return false;
         }
