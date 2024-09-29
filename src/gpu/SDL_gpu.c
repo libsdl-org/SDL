@@ -516,6 +516,37 @@ SDL_GPUDevice *SDL_CreateGPUDevice(
 #endif // SDL_GPU_DISABLED
 }
 
+bool SDL_CreateXRGPUDeviceWithProperties(
+    SDL_GPUDevice **device,
+    XrInstance *instance,
+    XrSystemId *systemId,
+    SDL_PropertiesID props)
+{
+#ifndef SDL_GPU_DISABLED
+    bool debug_mode;
+    bool preferLowPower;
+    const SDL_GPUBootstrap *selectedBackend;
+
+    /* TODO: make the backend selection actually take the available OpenXR instance extensions into account */
+    selectedBackend = SDL_GPUSelectBackend(props);
+    if (selectedBackend != NULL) {
+        debug_mode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, true);
+        preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
+
+        if (selectedBackend->CreateXrDevice(device, instance, systemId, debug_mode, preferLowPower, props)) {
+            (*device)->backend = selectedBackend->name;
+            (*device)->shader_formats = selectedBackend->shader_formats;
+            (*device)->debug_mode = debug_mode;
+            return true;
+        }
+    }
+    return false;
+#else
+    SDL_SetError("SDL not built with GPU support");
+    return false;
+#endif // SDL_GPU_DISABLED
+}
+
 SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
 {
 #ifndef SDL_GPU_DISABLED
@@ -548,6 +579,17 @@ void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
     CHECK_DEVICE_MAGIC(device, );
 
     device->DestroyDevice(device);
+}
+
+XrResult SDL_DestroyGPUXRSwapchain(SDL_GPUDevice *device, XrSwapchain swapchain, SDL_GPUTexture **swapchainImages)
+{
+#ifdef HAVE_GPU_OPENXR
+    CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
+
+    return device->DestroyXRSwapchain(device->driverData, swapchain, swapchainImages);
+#else
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif
 }
 
 int SDL_GetNumGPUDrivers(void)
@@ -2962,4 +3004,27 @@ Uint32 SDL_CalculateGPUTextureFormatSize(
     Uint32 blocksPerRow = (width + blockWidth - 1) / blockWidth;
     Uint32 blocksPerColumn = (height + blockHeight - 1) / blockHeight;
     return depth_or_layer_count * blocksPerRow * blocksPerColumn * SDL_GPUTextureFormatTexelBlockSize(format);
+}
+
+XrResult SDL_CreateGPUXRSession(
+    SDL_GPUDevice *device,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+    CHECK_DEVICE_MAGIC(device, XR_NULL_HANDLE);
+    
+    return device->CreateXRSession(device->driverData, createinfo, session);
+}
+
+XrResult SDL_CreateGPUXRSwapchain(
+    SDL_GPUDevice *device,
+    XrSession session,
+    const XrSwapchainCreateInfo *createinfo,
+    SDL_GPUTextureFormat *textureFormat,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+    CHECK_DEVICE_MAGIC(device, XR_NULL_HANDLE);
+
+    return device->CreateXRSwapchain(device->driverData, session, createinfo, textureFormat, swapchain, textures);
 }

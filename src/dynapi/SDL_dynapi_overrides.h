@@ -1259,3 +1259,7 @@
 #define SDL_ClickTrayEntry SDL_ClickTrayEntry_REAL
 #define SDL_UpdateTrays SDL_UpdateTrays_REAL
 #define SDL_StretchSurface SDL_StretchSurface_REAL
+#define SDL_CreateXRGPUDeviceWithProperties SDL_CreateXRGPUDeviceWithProperties_REAL
+#define SDL_CreateGPUXRSession SDL_CreateGPUXRSession_REAL
+#define SDL_CreateGPUXRSwapchain SDL_CreateGPUXRSwapchain_REAL
+#define SDL_DestroyGPUXRSwapchain SDL_DestroyGPUXRSwapchain_REAL
