@@ -999,7 +999,9 @@ submit:
     SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
 #endif
 
-    if (renderer->output_pixel_w != data->backbuffer.width || renderer->output_pixel_h != data->backbuffer.height) {
+    if (renderer->output_pixel_w == 0 || renderer->output_pixel_h == 0) {
+        SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "Oh no, the window size is 0 for some reason!");
+    } else if (renderer->output_pixel_w != data->backbuffer.width || renderer->output_pixel_h != data->backbuffer.height) {
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
         CreateBackbuffer(data, renderer->output_pixel_w, renderer->output_pixel_h, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
     }
