@@ -696,8 +696,7 @@ typedef struct WindowData
     SDL_GPUSwapchainComposition swapchainComposition;
     SDL_GPUPresentMode presentMode;
     VulkanSwapchainData *swapchainData;
-    bool needsSwapchainRecreate;
-    SDL_Mutex *lock;
+    SDL_AtomicInt needsSwapchainRecreate;
 } WindowData;
 
 typedef struct SwapchainSupportDetails
@@ -4672,7 +4671,7 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
     }
 
     windowData->swapchainData = swapchainData;
-    windowData->needsSwapchainRecreate = false;
+    SDL_SetAtomicInt(&windowData->needsSwapchainRecreate, false);
 
     return true;
 }
@@ -9332,9 +9331,7 @@ static bool VULKAN_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
     WindowData *data;
     if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         data = VULKAN_INTERNAL_FetchWindowData(w);
-        SDL_LockMutex(data->lock);
-        data->needsSwapchainRecreate = true;
-        SDL_UnlockMutex(data->lock);
+        SDL_SetAtomicInt(&data->needsSwapchainRecreate, true);
     }
 
     return true;
@@ -9432,7 +9429,6 @@ static bool VULKAN_ClaimWindow(
         windowData->window = window;
         windowData->presentMode = SDL_GPU_PRESENTMODE_VSYNC;
         windowData->swapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
-        windowData->lock = SDL_CreateMutex();
 
         if (VULKAN_INTERNAL_CreateSwapchain(renderer, windowData)) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
@@ -9500,7 +9496,6 @@ static void VULKAN_ReleaseWindow(
     }
     SDL_UnlockMutex(renderer->windowLock);
 
-    SDL_DestroyMutex(windowData->lock);
     SDL_free(windowData);
 
     SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
@@ -9600,12 +9595,8 @@ static bool VULKAN_AcquireSwapchainTexture(
     }
 
     // If window data marked as needing swapchain recreate, try to recreate
-    if (windowData->needsSwapchainRecreate) {
-        SDL_LockMutex(windowData->lock);
-        bool recreateSuccess = VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
-        SDL_UnlockMutex(windowData->lock);
-
-        if (!recreateSuccess) {
+    if (SDL_GetAtomicInt(&windowData->needsSwapchainRecreate)) {
+        if (!VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData)) {
             return false;
         }
 

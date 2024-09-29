@@ -482,8 +482,7 @@ typedef struct D3D11WindowData
     DXGI_COLOR_SPACE_TYPE swapchainColorSpace;
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
     Uint32 frameCounter;
-    bool needsSwapchainRecreate;
-    SDL_Mutex *lock;
+    SDL_AtomicInt needsSwapchainRecreate;
 } D3D11WindowData;
 
 typedef struct D3D11Shader
@@ -5029,9 +5028,7 @@ static bool D3D11_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
     D3D11WindowData *data;
     if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         data = D3D11_INTERNAL_FetchWindowData(w);
-        SDL_LockMutex(data->lock);
-        data->needsSwapchainRecreate = true;
-        SDL_UnlockMutex(data->lock);
+        SDL_SetAtomicInt(&data->needsSwapchainRecreate, true);
     }
 
     return true;
@@ -5291,7 +5288,7 @@ static bool D3D11_INTERNAL_ResizeSwapchain(
 
     windowData->textureContainer.header.info.width = w;
     windowData->textureContainer.header.info.height = h;
-    windowData->needsSwapchainRecreate = !result;
+    SDL_SetAtomicInt(&windowData->needsSwapchainRecreate, !result);
     return result;
 }
 
@@ -5379,7 +5376,6 @@ static bool D3D11_ClaimWindow(
     if (windowData == NULL) {
         windowData = (D3D11WindowData *)SDL_calloc(1, sizeof(D3D11WindowData));
         windowData->window = window;
-        windowData->lock = SDL_CreateMutex();
 
         if (D3D11_INTERNAL_CreateSwapchain(renderer, windowData, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
@@ -5464,7 +5460,6 @@ static void D3D11_ReleaseWindow(
     }
     SDL_UnlockMutex(renderer->windowLock);
 
-    SDL_DestroyMutex(windowData->lock);
     SDL_free(windowData);
 
     SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
@@ -5488,12 +5483,8 @@ static bool D3D11_AcquireSwapchainTexture(
         SET_STRING_ERROR_AND_RETURN("Cannot acquire a swapchain texture from an unclaimed window!", false)
     }
 
-    if (windowData->needsSwapchainRecreate) {
-        SDL_LockMutex(windowData->lock);
-        bool resizeSuccess = D3D11_INTERNAL_ResizeSwapchain(renderer, windowData);
-        SDL_UnlockMutex(windowData->lock);
-
-        if (!resizeSuccess) {
+    if (SDL_GetAtomicInt(&windowData->needsSwapchainRecreate)) {
+        if (!D3D11_INTERNAL_ResizeSwapchain(renderer, windowData)) {
             return false;
         }
     }
