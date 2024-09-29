@@ -976,16 +976,16 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
     blit_info.source.w = data->backbuffer.width;
     blit_info.source.h = data->backbuffer.height;
     blit_info.destination.texture = swapchain;
-    blit_info.destination.w = renderer->window_pixel_w;
-    blit_info.destination.h = renderer->window_pixel_h;
+    blit_info.destination.w = renderer->output_pixel_w;
+    blit_info.destination.h = renderer->output_pixel_h;
     blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
     blit_info.filter = SDL_GPU_FILTER_LINEAR;
 
     SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
 
-    if (renderer->window_pixel_w != data->backbuffer.width || renderer->window_pixel_h != data->backbuffer.height || swapchain_fmt != data->backbuffer.format) {
+    if (renderer->output_pixel_w != data->backbuffer.width || renderer->output_pixel_h != data->backbuffer.height || swapchain_fmt != data->backbuffer.format) {
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
-        CreateBackbuffer(data, renderer->window_pixel_w, renderer->window_pixel_h, swapchain_fmt);
+        CreateBackbuffer(data, renderer->output_pixel_w, renderer->output_pixel_h, swapchain_fmt);
     }
 
 // *** FIXME ***

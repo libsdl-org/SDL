@@ -735,7 +735,9 @@ static void UpdateMainViewDimensions(SDL_Renderer *renderer)
     if (renderer->window) {
         SDL_GetWindowSize(renderer->window, &window_w, &window_h);
     }
-    SDL_GetRenderOutputSize(renderer, &renderer->main_view.pixel_w, &renderer->main_view.pixel_h);
+    SDL_GetRenderOutputSize(renderer, &renderer->output_pixel_w, &renderer->output_pixel_h);
+    renderer->main_view.pixel_w = renderer->output_pixel_w;
+    renderer->main_view.pixel_h = renderer->output_pixel_h;
     if (window_w > 0 && window_h > 0) {
         renderer->dpi_scale.x = (float)renderer->main_view.pixel_w / window_w;
         renderer->dpi_scale.y = (float)renderer->main_view.pixel_h / window_h;
@@ -2565,9 +2567,6 @@ static void UpdateLogicalPresentation(SDL_Renderer *renderer)
     int iwidth, iheight;
     SDL_GetRenderOutputSize(renderer, &iwidth, &iheight);
 
-    renderer->window_pixel_w = iwidth;
-    renderer->window_pixel_h = iheight;
-
     const float output_w = (float)iwidth;
     const float output_h = (float)iheight;
     const float logical_w = renderer->logical_w;
@@ -2702,14 +2701,10 @@ bool SDL_GetRenderLogicalPresentationRect(SDL_Renderer *renderer, SDL_FRect *rec
         if (renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_DISABLED) {
             int output_w = 0, output_h = 0;
 
-            if (!SDL_GetRenderOutputSize(renderer, &output_w, &output_h)) {
-                return false;
-            }
-
             rect->x = 0.0f;
             rect->y = 0.0f;
-            rect->w = (float)output_w;
-            rect->h = (float)output_h;
+            rect->w = (float)renderer->output_pixel_w;
+            rect->h = (float)renderer->output_pixel_h;
         } else {
             SDL_copyp(rect, &renderer->logical_dst_rect);
         }

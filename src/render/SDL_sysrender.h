@@ -250,8 +250,8 @@ struct SDL_Renderer
     SDL_RenderViewState *view;
     SDL_RenderViewState main_view;
 
-    // Cache the window size in pixels
-    int window_pixel_w, window_pixel_h;
+    // Cache the output size in pixels
+    int output_pixel_w, output_pixel_h;
 
     // The window pixel to point coordinate scale
     SDL_FPoint dpi_scale;
