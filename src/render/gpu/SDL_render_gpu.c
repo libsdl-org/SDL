@@ -967,8 +967,6 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
         goto submit;
     }
 
-    SDL_GPUTextureFormat swapchain_fmt = SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window);
-
     SDL_GPUBlitInfo blit_info;
     SDL_zero(blit_info);
 
@@ -982,11 +980,6 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
     blit_info.filter = SDL_GPU_FILTER_LINEAR;
 
     SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
-
-    if (renderer->output_pixel_w != data->backbuffer.width || renderer->output_pixel_h != data->backbuffer.height || swapchain_fmt != data->backbuffer.format) {
-        SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
-        CreateBackbuffer(data, renderer->output_pixel_w, renderer->output_pixel_h, swapchain_fmt);
-    }
 
 // *** FIXME ***
 // This is going to block if there is ever a frame in flight.
@@ -1005,6 +998,11 @@ submit:
 #else
     SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
 #endif
+
+    if (renderer->output_pixel_w != data->backbuffer.width || renderer->output_pixel_h != data->backbuffer.height) {
+        SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
+        CreateBackbuffer(data, renderer->output_pixel_w, renderer->output_pixel_h, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
+    }
 
     data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
 
