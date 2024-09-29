@@ -24,6 +24,8 @@
 #ifndef SDL_GPU_DRIVER_H
 #define SDL_GPU_DRIVER_H
 
+#include <SDL3/SDL_openxr.h>
+
 // Common Structs
 
 typedef struct Pass
@@ -449,6 +451,11 @@ struct SDL_GPUDevice
 
     void (*DestroyDevice)(SDL_GPUDevice *device);
 
+    XrResult (*DestroyXRSwapchain)(
+        SDL_GPURenderer *device, 
+        XrSwapchain swapchain, 
+        SDL_GPUTexture **swapchainImages);
+
     // State Creation
 
     SDL_GPUComputePipeline *(*CreateComputePipeline)(
@@ -482,6 +489,19 @@ struct SDL_GPUDevice
         SDL_GPUTransferBufferUsage usage,
         Uint32 size,
         const char *debugName);
+
+    XrResult (*CreateXRSession)(
+        SDL_GPURenderer *driverData,
+        const XrSessionCreateInfo *createinfo,
+        XrSession *session);
+
+    XrResult (*CreateXRSwapchain)(
+        SDL_GPURenderer *driverData,
+        XrSession session,
+        const XrSwapchainCreateInfo *createinfo,
+        SDL_GPUTextureFormat *textureFormat,
+        XrSwapchain *swapchain,
+        SDL_GPUTexture ***textures);
 
     // Debug Naming
 
@@ -880,6 +900,7 @@ struct SDL_GPUDevice
     result->func = name##_##func;
 #define ASSIGN_DRIVER(name)                                 \
     ASSIGN_DRIVER_FUNC(DestroyDevice, name)                 \
+    ASSIGN_DRIVER_FUNC(DestroyXRSwapchain, name)            \
     ASSIGN_DRIVER_FUNC(CreateComputePipeline, name)         \
     ASSIGN_DRIVER_FUNC(CreateGraphicsPipeline, name)        \
     ASSIGN_DRIVER_FUNC(CreateSampler, name)                 \
@@ -887,6 +908,8 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(CreateTexture, name)                 \
     ASSIGN_DRIVER_FUNC(CreateBuffer, name)                  \
     ASSIGN_DRIVER_FUNC(CreateTransferBuffer, name)          \
+    ASSIGN_DRIVER_FUNC(CreateXRSession, name)               \
+    ASSIGN_DRIVER_FUNC(CreateXRSwapchain, name)             \
     ASSIGN_DRIVER_FUNC(SetBufferName, name)                 \
     ASSIGN_DRIVER_FUNC(SetTextureName, name)                \
     ASSIGN_DRIVER_FUNC(InsertDebugLabel, name)              \
@@ -968,6 +991,7 @@ typedef struct SDL_GPUBootstrap
     const SDL_GPUShaderFormat shader_formats;
     bool (*PrepareDriver)(SDL_VideoDevice *_this);
     SDL_GPUDevice *(*CreateDevice)(bool debug_mode, bool prefer_low_power, SDL_PropertiesID props);
+    bool (*CreateXrDevice)(SDL_GPUDevice **gpu_device, XrInstance *xrInstance, XrSystemId *xrSystemId, bool debug_mode, bool prefer_low_power, SDL_PropertiesID props);
 } SDL_GPUBootstrap;
 
 #ifdef __cplusplus
