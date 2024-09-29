@@ -493,6 +493,16 @@ static SDL_INLINE Uint32 hash_string_djbxor(const char *str, size_t len)
     return hash;
 }
 
+Uint32 SDL_HashPointer(const void *key, void *unused)
+{
+    return SDL_murmur3_32(&key, sizeof(key), 0);
+}
+
+bool SDL_KeyMatchPointer(const void *a, const void *b, void *unused)
+{
+    return (a == b);
+}
+
 Uint32 SDL_HashString(const void *key, void *data)
 {
     const char *str = (const char *)key;
@@ -524,10 +534,7 @@ Uint32 SDL_HashID(const void *key, void *unused)
 
 bool SDL_KeyMatchID(const void *a, const void *b, void *unused)
 {
-    if (a == b) {
-        return true;
-    }
-    return false;
+    return (a == b);
 }
 
 void SDL_NukeFreeKey(const void *key, const void *value, void *unused)

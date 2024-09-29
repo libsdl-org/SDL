@@ -49,6 +49,9 @@ extern bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key,
 // iterate all key/value pairs in a hash (stackable hashes can have duplicate keys with multiple values).
 extern bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const void **_value, void **iter);
 
+extern Uint32 SDL_HashPointer(const void *key, void *unused);
+extern bool SDL_KeyMatchPointer(const void *a, const void *b, void *unused);
+
 extern Uint32 SDL_HashString(const void *key, void *unused);
 extern bool SDL_KeyMatchString(const void *a, const void *b, void *unused);
 
