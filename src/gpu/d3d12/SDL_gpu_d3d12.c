@@ -5977,7 +5977,7 @@ static bool D3D12_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
 {
     SDL_Window *w = (SDL_Window *)userdata;
     D3D12WindowData *data;
-    if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+    if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED && e->window.windowID == SDL_GetWindowID(w)) {
         data = D3D12_INTERNAL_FetchWindowData(w);
         data->needsSwapchainRecreate = true;
     }
