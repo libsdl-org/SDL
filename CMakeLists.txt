@@ -393,6 +393,7 @@ set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors
 set_option(SDL_CCACHE              "Use Ccache to speed up build" OFF)
 set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
 set_option(SDL_GPU_DXVK            "Build SDL_GPU with DXVK support" OFF)
+set_option(SDL_GPU_OPENXR          "Build SDL_GPU with OpenXR support" OFF)
 
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
@@ -3029,6 +3030,28 @@ if(SDL_GPU)
   if(SDL_RENDER_GPU)
     set(SDL_VIDEO_RENDER_GPU 1)
     set(HAVE_RENDER_GPU TRUE)
+  endif()
+  if(SDL_GPU_OPENXR)
+    # TODO: actually do this header detection correctly
+    set(HAVE_OPENXR_H TRUE)
+    # TODO: im not sure what the optimal way to do this is...
+    if(WIN32)
+    set(SDL_GPU_OPENXR_DYNAMIC "openxr_loader.dll")
+    elseif(APPLE)
+    set(SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.dylib")
+    else()
+    set(SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so.1")
+    endif()
+      # if(PKG_CONFIG_FOUND)
+      #   # pkg_search_module(OPENXR_LOADER openxr_loader)
+      #   # if(OPENXR_LOADER_FOUND)
+      #     # sdl_include_directories(PRIVATE SYSTEM ${OPENXR_LOADER_INCLUDE_DIRS})
+      #   # endif()
+      # endif()
+    # endif()
+
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/xr/*.c")
+    set(HAVE_GPU_OPENXR 1)
   endif()
 endif()
 

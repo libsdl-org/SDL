@@ -435,6 +435,8 @@
 #cmakedefine SDL_GPU_D3D12 1
 #cmakedefine SDL_GPU_VULKAN 1
 #cmakedefine SDL_GPU_METAL 1
+#cmakedefine HAVE_GPU_OPENXR @HAVE_GPU_OPENXR@
+#cmakedefine SDL_GPU_OPENXR_DYNAMIC "@SDL_GPU_OPENXR_DYNAMIC@"
 
 /* Enable system power support */
 #cmakedefine SDL_POWER_ANDROID 1
