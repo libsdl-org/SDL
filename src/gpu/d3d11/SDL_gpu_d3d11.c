@@ -482,6 +482,7 @@ typedef struct D3D11WindowData
     DXGI_COLOR_SPACE_TYPE swapchainColorSpace;
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
     Uint32 frameCounter;
+    bool needsSwapchainRecreate;
 } D3D11WindowData;
 
 typedef struct D3D11Shader
@@ -5021,6 +5022,18 @@ static D3D11WindowData *D3D11_INTERNAL_FetchWindowData(
     return (D3D11WindowData *)SDL_GetPointerProperty(properties, WINDOW_PROPERTY_DATA, NULL);
 }
 
+static bool D3D11_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
+{
+    SDL_Window *w = (SDL_Window *)userdata;
+    D3D11WindowData *data;
+    if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED && e->window.windowID == SDL_GetWindowID(w)) {
+        data = D3D11_INTERNAL_FetchWindowData(w);
+        data->needsSwapchainRecreate = true;
+    }
+
+    return true;
+}
+
 static bool D3D11_INTERNAL_InitializeSwapchainTexture(
     D3D11Renderer *renderer,
     IDXGISwapChain *swapchain,
@@ -5089,7 +5102,6 @@ static bool D3D11_INTERNAL_CreateSwapchain(
     SDL_GPUPresentMode presentMode)
 {
     HWND dxgiHandle;
-    int width, height;
     Uint32 i;
     DXGI_SWAP_CHAIN_DESC swapchainDesc;
     DXGI_FORMAT swapchainFormat;
@@ -5104,9 +5116,6 @@ static bool D3D11_INTERNAL_CreateSwapchain(
 #else
     dxgiHandle = (HWND)windowData->window;
 #endif
-
-    // Get the window size
-    SDL_GetWindowSize(windowData->window, &width, &height);
 
     swapchainFormat = SwapchainCompositionToTextureFormat[swapchainComposition];
 
@@ -5216,6 +5225,10 @@ static bool D3D11_INTERNAL_CreateSwapchain(
         return false;
     }
 
+    int w, h;
+    SDL_SyncWindow(windowData->window);
+    SDL_GetWindowSizeInPixels(windowData->window, &w, &h);
+
     // Initialize dummy container, width/height will be filled out in AcquireSwapchainTexture
     SDL_zerop(&windowData->textureContainer);
     windowData->textureContainer.textures = SDL_calloc(1, sizeof(D3D11Texture *));
@@ -5231,6 +5244,8 @@ static bool D3D11_INTERNAL_CreateSwapchain(
     windowData->textureContainer.header.info.num_levels = 1;
     windowData->textureContainer.header.info.sample_count = SDL_GPU_SAMPLECOUNT_1;
     windowData->textureContainer.header.info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    windowData->textureContainer.header.info.width = w;
+    windowData->textureContainer.header.info.height = h;
 
     windowData->texture.container = &windowData->textureContainer;
     windowData->texture.containerIndex = 0;
@@ -5240,32 +5255,41 @@ static bool D3D11_INTERNAL_CreateSwapchain(
 
 static bool D3D11_INTERNAL_ResizeSwapchain(
     D3D11Renderer *renderer,
-    D3D11WindowData *windowData,
-    Sint32 width,
-    Sint32 height)
+    D3D11WindowData *windowData)
 {
+    D3D11_Wait((SDL_GPURenderer *)renderer);
+
     // Release the old RTV
     ID3D11RenderTargetView_Release(windowData->texture.subresources[0].colorTargetViews[0]);
     SDL_free(windowData->texture.subresources[0].colorTargetViews);
     SDL_free(windowData->texture.subresources);
 
+    int w, h;
+    SDL_SyncWindow(windowData->window);
+    SDL_GetWindowSizeInPixels(windowData->window, &w, &h);
+
     // Resize the swapchain
     HRESULT res = IDXGISwapChain_ResizeBuffers(
         windowData->swapchain,
         0, // Keep buffer count the same
-        width,
-        height,
+        w,
+        h,
         DXGI_FORMAT_UNKNOWN, // Keep the old format
         renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
     CHECK_D3D11_ERROR_AND_RETURN("Could not resize swapchain buffers", false);
 
     // Create the texture object for the swapchain
-    return D3D11_INTERNAL_InitializeSwapchainTexture(
+    bool result = D3D11_INTERNAL_InitializeSwapchainTexture(
         renderer,
         windowData->swapchain,
         windowData->swapchainFormat,
         (windowData->swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR) ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : windowData->swapchainFormat,
         &windowData->texture);
+
+    windowData->textureContainer.header.info.width = w;
+    windowData->textureContainer.header.info.height = h;
+    windowData->needsSwapchainRecreate = !result;
+    return result;
 }
 
 static bool D3D11_SupportsSwapchainComposition(
@@ -5350,14 +5374,13 @@ static bool D3D11_ClaimWindow(
     D3D11WindowData *windowData = D3D11_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        windowData = (D3D11WindowData *)SDL_malloc(sizeof(D3D11WindowData));
+        windowData = (D3D11WindowData *)SDL_calloc(1, sizeof(D3D11WindowData));
         windowData->window = window;
 
         if (D3D11_INTERNAL_CreateSwapchain(renderer, windowData, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
 
             SDL_LockMutex(renderer->windowLock);
-
             if (renderer->claimedWindowCount >= renderer->claimedWindowCapacity) {
                 renderer->claimedWindowCapacity *= 2;
                 renderer->claimedWindows = SDL_realloc(
@@ -5366,8 +5389,9 @@ static bool D3D11_ClaimWindow(
             }
             renderer->claimedWindows[renderer->claimedWindowCount] = windowData;
             renderer->claimedWindowCount += 1;
-
             SDL_UnlockMutex(renderer->windowLock);
+
+            SDL_AddEventWatch(D3D11_INTERNAL_OnWindowResize, window);
 
             return true;
         } else {
@@ -5439,6 +5463,7 @@ static void D3D11_ReleaseWindow(
     SDL_free(windowData);
 
     SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
+    SDL_RemoveEventWatch(D3D11_INTERNAL_OnWindowResize, window);
 }
 
 static bool D3D11_AcquireSwapchainTexture(
@@ -5449,8 +5474,6 @@ static bool D3D11_AcquireSwapchainTexture(
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
     D3D11WindowData *windowData;
-    DXGI_SWAP_CHAIN_DESC swapchainDesc;
-    int windowW, windowH;
     HRESULT res;
 
     *swapchainTexture = NULL;
@@ -5460,16 +5483,8 @@ static bool D3D11_AcquireSwapchainTexture(
         SET_STRING_ERROR_AND_RETURN("Cannot acquire a swapchain texture from an unclaimed window!", false)
     }
 
-    // Check for window size changes and resize the swapchain if needed.
-    IDXGISwapChain_GetDesc(windowData->swapchain, &swapchainDesc);
-    SDL_GetWindowSize(window, &windowW, &windowH);
-
-    if ((UINT)windowW != swapchainDesc.BufferDesc.Width || (UINT)windowH != swapchainDesc.BufferDesc.Height) {
-        if (!D3D11_INTERNAL_ResizeSwapchain(
-            renderer,
-            windowData,
-            windowW,
-            windowH)) {
+    if (windowData->needsSwapchainRecreate) {
+        if (!D3D11_INTERNAL_ResizeSwapchain(renderer, windowData)) {
             return false;
         }
     }
@@ -5510,10 +5525,6 @@ static bool D3D11_AcquireSwapchainTexture(
         &D3D_IID_ID3D11Texture2D,
         (void **)&windowData->texture.handle);
     CHECK_D3D11_ERROR_AND_RETURN("Could not acquire swapchain!", false);
-
-    // Update the texture container dimensions
-    windowData->textureContainer.header.info.width = windowW;
-    windowData->textureContainer.header.info.height = windowH;
 
     // Set up presentation
     if (d3d11CommandBuffer->windowDataCount == d3d11CommandBuffer->windowDataCapacity) {

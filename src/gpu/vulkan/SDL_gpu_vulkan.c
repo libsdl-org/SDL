@@ -1159,6 +1159,7 @@ struct VulkanRenderer
     SDL_Mutex *acquireUniformBufferLock;
     SDL_Mutex *renderPassFetchLock;
     SDL_Mutex *framebufferFetchLock;
+    SDL_Mutex *windowLock;
 
     Uint8 defragInProgress;
 
@@ -4493,35 +4494,6 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         &drawableWidth,
         &drawableHeight);
 
-    if (drawableWidth < (Sint32)swapchainSupportDetails.capabilities.minImageExtent.width ||
-        drawableWidth > (Sint32)swapchainSupportDetails.capabilities.maxImageExtent.width ||
-        drawableHeight < (Sint32)swapchainSupportDetails.capabilities.minImageExtent.height ||
-        drawableHeight > (Sint32)swapchainSupportDetails.capabilities.maxImageExtent.height) {
-        if (swapchainSupportDetails.capabilities.currentExtent.width != SDL_MAX_UINT32) {
-            drawableWidth = VULKAN_INTERNAL_clamp(
-                drawableWidth,
-                (Sint32)swapchainSupportDetails.capabilities.minImageExtent.width,
-                (Sint32)swapchainSupportDetails.capabilities.maxImageExtent.width);
-            drawableHeight = VULKAN_INTERNAL_clamp(
-                drawableHeight,
-                (Sint32)swapchainSupportDetails.capabilities.minImageExtent.height,
-                (Sint32)swapchainSupportDetails.capabilities.maxImageExtent.height);
-        } else {
-            renderer->vkDestroySurfaceKHR(
-                renderer->instance,
-                swapchainData->surface,
-                NULL);
-            if (swapchainSupportDetails.formatsLength > 0) {
-                SDL_free(swapchainSupportDetails.formats);
-            }
-            if (swapchainSupportDetails.presentModesLength > 0) {
-                SDL_free(swapchainSupportDetails.presentModes);
-            }
-            SDL_free(swapchainData);
-            SET_STRING_ERROR_AND_RETURN("No fallback swapchain size available!", false);
-        }
-    }
-
     swapchainData->imageCount = MAX_FRAMES_IN_FLIGHT;
 
     if (swapchainSupportDetails.capabilities.maxImageCount > 0 &&
@@ -4833,6 +4805,7 @@ static void VULKAN_DestroyDevice(
     SDL_DestroyMutex(renderer->acquireUniformBufferLock);
     SDL_DestroyMutex(renderer->renderPassFetchLock);
     SDL_DestroyMutex(renderer->framebufferFetchLock);
+    SDL_DestroyMutex(renderer->windowLock);
 
     renderer->vkDestroyDevice(renderer->logicalDevice, NULL);
     renderer->vkDestroyInstance(renderer->instance, NULL);
@@ -9356,7 +9329,7 @@ static bool VULKAN_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
 {
     SDL_Window *w = (SDL_Window *)userdata;
     WindowData *data;
-    if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+    if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED && e->window.windowID == SDL_GetWindowID(w)) {
         data = VULKAN_INTERNAL_FetchWindowData(w);
         data->needsSwapchainRecreate = true;
     }
@@ -9460,6 +9433,7 @@ static bool VULKAN_ClaimWindow(
         if (VULKAN_INTERNAL_CreateSwapchain(renderer, windowData)) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
 
+            SDL_LockMutex(renderer->windowLock);
             if (renderer->claimedWindowCount >= renderer->claimedWindowCapacity) {
                 renderer->claimedWindowCapacity *= 2;
                 renderer->claimedWindows = SDL_realloc(
@@ -9469,6 +9443,7 @@ static bool VULKAN_ClaimWindow(
 
             renderer->claimedWindows[renderer->claimedWindowCount] = windowData;
             renderer->claimedWindowCount += 1;
+            SDL_UnlockMutex(renderer->windowLock);
 
             SDL_AddEventWatch(VULKAN_INTERNAL_OnWindowResize, window);
 
@@ -9511,6 +9486,7 @@ static void VULKAN_ReleaseWindow(
             windowData);
     }
 
+    SDL_LockMutex(renderer->windowLock);
     for (i = 0; i < renderer->claimedWindowCount; i += 1) {
         if (renderer->claimedWindows[i]->window == window) {
             renderer->claimedWindows[i] = renderer->claimedWindows[renderer->claimedWindowCount - 1];
@@ -9518,6 +9494,7 @@ static void VULKAN_ReleaseWindow(
             break;
         }
     }
+    SDL_UnlockMutex(renderer->windowLock);
 
     SDL_free(windowData);
 
@@ -9619,7 +9596,10 @@ static bool VULKAN_AcquireSwapchainTexture(
 
     // If window data marked as needing swapchain recreate, try to recreate
     if (windowData->needsSwapchainRecreate) {
-        VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
+        if (!VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData)) {
+            return false;
+        }
+
         swapchainData = windowData->swapchainData;
 
         if (swapchainData == NULL) {
@@ -11340,6 +11320,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->acquireUniformBufferLock = SDL_CreateMutex();
     renderer->renderPassFetchLock = SDL_CreateMutex();
     renderer->framebufferFetchLock = SDL_CreateMutex();
+    renderer->windowLock = SDL_CreateMutex();
 
     /*
      * Create submitted command buffer list

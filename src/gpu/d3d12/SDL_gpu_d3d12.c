@@ -544,7 +544,6 @@ typedef struct D3D12WindowData
     SDL_Window *window;
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     D3D12XBOX_FRAME_PIPELINE_TOKEN frameToken;
-    Uint32 swapchainWidth, swapchainHeight;
 #else
     IDXGISwapChain3 *swapchain;
 #endif
@@ -555,6 +554,7 @@ typedef struct D3D12WindowData
 
     D3D12TextureContainer textureContainers[MAX_FRAMES_IN_FLIGHT];
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
+    bool needsSwapchainRecreate;
 } D3D12WindowData;
 
 typedef struct D3D12PresentData
@@ -5973,6 +5973,18 @@ static D3D12WindowData *D3D12_INTERNAL_FetchWindowData(
     return (D3D12WindowData *)SDL_GetPointerProperty(properties, WINDOW_PROPERTY_DATA, NULL);
 }
 
+static bool D3D12_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
+{
+    SDL_Window *w = (SDL_Window *)userdata;
+    D3D12WindowData *data;
+    if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED && e->window.windowID == SDL_GetWindowID(w)) {
+        data = D3D12_INTERNAL_FetchWindowData(w);
+        data->needsSwapchainRecreate = true;
+    }
+
+    return true;
+}
+
 static bool D3D12_SupportsSwapchainComposition(
     SDL_GPURenderer *driverData,
     SDL_Window *window,
@@ -6063,7 +6075,8 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     D3D12Texture *texture;
 
     // Get the swapchain size
-    SDL_GetWindowSize(windowData->window, &width, &height);
+    SDL_SyncWindow(windowData->window);
+    SDL_GetWindowSizeInPixels(windowData->window, &width, &height);
 
     // Create the swapchain textures
     SDL_zero(createInfo);
@@ -6091,8 +6104,6 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     windowData->swapchainComposition = swapchain_composition;
     windowData->swapchainColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
     windowData->frameCounter = 0;
-    windowData->swapchainWidth = width;
-    windowData->swapchainHeight = height;
 
     // Precache blit pipelines for the swapchain format
     for (Uint32 i = 0; i < 5; i += 1) {
@@ -6126,35 +6137,31 @@ static void D3D12_INTERNAL_DestroySwapchain(
     }
 }
 
-static bool D3D12_INTERNAL_ResizeSwapchainIfNeeded(
+static bool D3D12_INTERNAL_ResizeSwapchain(
     D3D12Renderer *renderer,
     D3D12WindowData *windowData)
 {
-    int w, h;
-    SDL_GetWindowSize(windowData->window, &w, &h);
+    // Wait so we don't release in-flight views
+    D3D12_Wait((SDL_GPURenderer *)renderer);
 
-    if (w != windowData->swapchainWidth || h != windowData->swapchainHeight) {
-        // Wait so we don't release in-flight views
-        D3D12_Wait((SDL_GPURenderer *)renderer);
+    // Present a black screen
+    renderer->commandQueue->PresentX(0, NULL, NULL);
 
-        // Present a black screen
-        renderer->commandQueue->PresentX(0, NULL, NULL);
-
-        // Clean up the previous swapchain textures
-        for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
-            D3D12_INTERNAL_DestroyTexture(
-                renderer,
-                windowData->textureContainers[i].activeTexture);
-        }
-
-        // Create a new swapchain
-        D3D12_INTERNAL_CreateSwapchain(
+    // Clean up the previous swapchain textures
+    for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+        D3D12_INTERNAL_DestroyTexture(
             renderer,
-            windowData,
-            windowData->swapchainComposition,
-            windowData->present_mode);
+            windowData->textureContainers[i].activeTexture);
     }
 
+    // Create a new swapchain
+    D3D12_INTERNAL_CreateSwapchain(
+        renderer,
+        windowData,
+        windowData->swapchainComposition,
+        windowData->present_mode);
+
+    windowData->needsSwapchainRecreate = false;
     return true;
 }
 #else
@@ -6273,58 +6280,58 @@ static bool D3D12_INTERNAL_InitializeSwapchainTexture(
     return true;
 }
 
-static bool D3D12_INTERNAL_ResizeSwapchainIfNeeded(
+static bool D3D12_INTERNAL_ResizeSwapchain(
     D3D12Renderer *renderer,
     D3D12WindowData *windowData)
 {
-    DXGI_SWAP_CHAIN_DESC swapchainDesc;
+    // Wait so we don't release in-flight views
+    D3D12_Wait((SDL_GPURenderer *)renderer);
+
+    // Release views and clean up
+    for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+        D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+            renderer,
+            &windowData->textureContainers[i].activeTexture->srvHandle);
+        D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+            renderer,
+            &windowData->textureContainers[i].activeTexture->subresources[0].rtvHandles[0]);
+
+        SDL_free(windowData->textureContainers[i].activeTexture->subresources[0].rtvHandles);
+        SDL_free(windowData->textureContainers[i].activeTexture->subresources);
+        SDL_free(windowData->textureContainers[i].activeTexture);
+        SDL_free(windowData->textureContainers[i].textures);
+    }
+
     int w, h;
+    SDL_SyncWindow(windowData->window);
+    SDL_GetWindowSizeInPixels(
+        windowData->window,
+        &w,
+        &h);
 
-    IDXGISwapChain_GetDesc(windowData->swapchain, &swapchainDesc);
-    SDL_GetWindowSize(windowData->window, &w, &h);
+    // Resize the swapchain
+    HRESULT res = IDXGISwapChain_ResizeBuffers(
+        windowData->swapchain,
+        0, // Keep buffer count the same
+        w,
+        h,
+        DXGI_FORMAT_UNKNOWN, // Keep the old format
+        renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+    CHECK_D3D12_ERROR_AND_RETURN("Could not resize swapchain buffers", false)
 
-    if ((UINT)w != swapchainDesc.BufferDesc.Width || (UINT)h != swapchainDesc.BufferDesc.Height) {
-        // Wait so we don't release in-flight views
-        D3D12_Wait((SDL_GPURenderer *)renderer);
-
-        // Release views and clean up
-        for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
-            D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+    // Create texture object for the swapchain
+    for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+        if (!D3D12_INTERNAL_InitializeSwapchainTexture(
                 renderer,
-                &windowData->textureContainers[i].activeTexture->srvHandle);
-            D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
-                renderer,
-                &windowData->textureContainers[i].activeTexture->subresources[0].rtvHandles[0]);
-
-            SDL_free(windowData->textureContainers[i].activeTexture->subresources[0].rtvHandles);
-            SDL_free(windowData->textureContainers[i].activeTexture->subresources);
-            SDL_free(windowData->textureContainers[i].activeTexture);
-            SDL_free(windowData->textureContainers[i].textures);
-        }
-
-        // Resize the swapchain
-        HRESULT res = IDXGISwapChain_ResizeBuffers(
-            windowData->swapchain,
-            0, // Keep buffer count the same
-            w,
-            h,
-            DXGI_FORMAT_UNKNOWN, // Keep the old format
-            renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
-        CHECK_D3D12_ERROR_AND_RETURN("Could not resize swapchain buffers", false)
-
-        // Create texture object for the swapchain
-        for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
-            if (!D3D12_INTERNAL_InitializeSwapchainTexture(
-                    renderer,
-                    windowData->swapchain,
-                    windowData->swapchainComposition,
-                    i,
-                    &windowData->textureContainers[i])) {
-                return false;
-            }
+                windowData->swapchain,
+                windowData->swapchainComposition,
+                i,
+                &windowData->textureContainers[i])) {
+            return false;
         }
     }
 
+    windowData->needsSwapchainRecreate = false;
     return true;
 }
 
@@ -6358,7 +6365,6 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     SDL_GPUPresentMode presentMode)
 {
     HWND dxgiHandle;
-    int width, height;
     DXGI_SWAP_CHAIN_DESC1 swapchainDesc;
     DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullscreenDesc;
     DXGI_FORMAT swapchainFormat;
@@ -6373,9 +6379,6 @@ static bool D3D12_INTERNAL_CreateSwapchain(
 #else
     dxgiHandle = (HWND)windowData->window;
 #endif
-
-    // Get the window size
-    SDL_GetWindowSize(windowData->window, &width, &height);
 
     swapchainFormat = SwapchainCompositionToTextureFormat[swapchainComposition];
 
@@ -6529,7 +6532,6 @@ static bool D3D12_ClaimWindow(
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
 
             SDL_LockMutex(renderer->windowLock);
-
             if (renderer->claimedWindowCount >= renderer->claimedWindowCapacity) {
                 renderer->claimedWindowCapacity *= 2;
                 renderer->claimedWindows = (D3D12WindowData **)SDL_realloc(
@@ -6538,8 +6540,9 @@ static bool D3D12_ClaimWindow(
             }
             renderer->claimedWindows[renderer->claimedWindowCount] = windowData;
             renderer->claimedWindowCount += 1;
-
             SDL_UnlockMutex(renderer->windowLock);
+
+            SDL_AddEventWatch(D3D12_INTERNAL_OnWindowResize, window);
 
             return true;
         } else {
@@ -6589,6 +6592,7 @@ static void D3D12_ReleaseWindow(
 
     SDL_free(windowData);
     SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
+    SDL_RemoveEventWatch(D3D12_INTERNAL_OnWindowResize, window);
 }
 
 static bool D3D12_SetSwapchainParameters(
@@ -6918,10 +6922,11 @@ static bool D3D12_AcquireSwapchainTexture(
         SET_STRING_ERROR_AND_RETURN("Cannot acquire swapchain texture from an unclaimed window!", false)
     }
 
-    res = D3D12_INTERNAL_ResizeSwapchainIfNeeded(
-        renderer,
-        windowData);
-    CHECK_D3D12_ERROR_AND_RETURN("Could not resize swapchain", false);
+    if (windowData->needsSwapchainRecreate) {
+        if (!D3D12_INTERNAL_ResizeSwapchain(renderer, windowData)) {
+            return false;
+        }
+    }
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
         if (windowData->present_mode == SDL_GPU_PRESENTMODE_VSYNC) {
@@ -6932,7 +6937,7 @@ static bool D3D12_AcquireSwapchainTexture(
                 &windowData->inFlightFences[windowData->frameCounter],
                 1)) {
                 return false;
-                }
+            }
         } else {
             if (!D3D12_QueryFence(
                     (SDL_GPURenderer *)renderer,
