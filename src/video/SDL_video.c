@@ -3511,7 +3511,7 @@ bool SDL_SetWindowOpacity(SDL_Window *window, float opacity)
     }
 
     result = _this->SetWindowOpacity(_this, window, opacity);
-    if (result == 0) {
+    if (result) {
         window->opacity = opacity;
     }
 
