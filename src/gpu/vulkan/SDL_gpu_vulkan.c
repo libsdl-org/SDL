@@ -3127,12 +3127,14 @@ static void VULKAN_INTERNAL_DestroySwapchain(
     windowData->imageCount = 0;
 
     SDL_free(windowData->textureContainers);
+    windowData->textureContainers = NULL;
 
     if (windowData->swapchain) {
         renderer->vkDestroySwapchainKHR(
             renderer->logicalDevice,
             windowData->swapchain,
             NULL);
+        windowData->swapchain = VK_NULL_HANDLE;
     }
 
     if (windowData->surface) {
@@ -3140,6 +3142,7 @@ static void VULKAN_INTERNAL_DestroySwapchain(
             renderer->instance,
             windowData->surface,
             NULL);
+        windowData->surface = VK_NULL_HANDLE;
     }
 
     for (i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
@@ -3148,6 +3151,7 @@ static void VULKAN_INTERNAL_DestroySwapchain(
                 renderer->logicalDevice,
                 windowData->imageAvailableSemaphore[i],
                 NULL);
+            windowData->imageAvailableSemaphore[i] = VK_NULL_HANDLE;
         }
 
         if (windowData->renderFinishedSemaphore[i]) {
@@ -3155,6 +3159,7 @@ static void VULKAN_INTERNAL_DestroySwapchain(
                 renderer->logicalDevice,
                 windowData->renderFinishedSemaphore[i],
                 NULL);
+            windowData->renderFinishedSemaphore[i] = VK_NULL_HANDLE;
         }
     }
 }
