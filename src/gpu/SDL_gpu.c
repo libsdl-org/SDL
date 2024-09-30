@@ -2613,7 +2613,9 @@ SDL_GPUTextureFormat SDL_GetGPUSwapchainTextureFormat(
 bool SDL_AcquireGPUSwapchainTexture(
     SDL_GPUCommandBuffer *command_buffer,
     SDL_Window *window,
-    SDL_GPUTexture **swapchainTexture)
+    SDL_GPUTexture **swapchain_texture,
+    Uint32 *swapchain_texture_width,
+    Uint32 *swapchain_texture_height)
 {
     if (command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
@@ -2623,8 +2625,8 @@ bool SDL_AcquireGPUSwapchainTexture(
         SDL_InvalidParamError("window");
         return false;
     }
-    if (swapchainTexture == NULL) {
-        SDL_InvalidParamError("swapchainTexture");
+    if (swapchain_texture == NULL) {
+        SDL_InvalidParamError("swapchain_texture");
         return false;
     }
 
@@ -2636,7 +2638,9 @@ bool SDL_AcquireGPUSwapchainTexture(
     return COMMAND_BUFFER_DEVICE->AcquireSwapchainTexture(
         command_buffer,
         window,
-        swapchainTexture);
+        swapchain_texture,
+        swapchain_texture_width,
+        swapchain_texture_height);
 }
 
 bool SDL_SubmitGPUCommandBuffer(
