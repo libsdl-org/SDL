@@ -190,7 +190,7 @@ to SDL_EVENT_QUIT, etc.
 Finally:
 
 ```c
-void SDL_AppQuit(void *appstate);
+void SDL_AppQuit(void *appstate, SDL_AppResult result);
 ```
 
 This is called once before terminating the app--assuming the app isn't being
@@ -201,3 +201,6 @@ from main(), so atexit handles will run, if your platform supports that.
 
 If you set `*appstate` during SDL_AppInit, this is where you should free that
 data, as this pointer will not be provided to your app again.
+
+The SDL_AppResult value that terminated the app is provided here, in case
+it's useful to know if this was a successful or failing run of the app.

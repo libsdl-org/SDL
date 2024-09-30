@@ -25,7 +25,7 @@
 bool SDL_HasMainCallbacks(void);
 SDL_AppResult SDL_InitMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func _appiter, SDL_AppEvent_func _appevent, SDL_AppQuit_func _appquit);
 SDL_AppResult SDL_IterateMainCallbacks(bool pump_events);
-void SDL_QuitMainCallbacks(void);
+void SDL_QuitMainCallbacks(SDL_AppResult result);
 
 #endif // SDL_main_callbacks_h_
 

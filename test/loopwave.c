@@ -127,7 +127,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     return fillerup();
 }
 
-void SDL_AppQuit(void *appstate)
+void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     SDL_DestroyAudioStream(stream);
     SDL_free(wave.sound);

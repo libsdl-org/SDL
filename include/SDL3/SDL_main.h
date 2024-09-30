@@ -372,6 +372,7 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_E
  * resources to it should be cleaned up here.
  *
  * \param appstate an optional pointer, provided by the app in SDL_AppInit.
+ * \param result the result code that terminated the app (success or failure).
  *
  * \threadsafety This function is not thread safe.
  *
@@ -379,7 +380,7 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_E
  *
  * \sa SDL_AppInit
  */
-extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void *appstate);
+extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void *appstate, SDL_AppResult result);
 
 #endif  /* SDL_MAIN_USE_CALLBACKS */
 

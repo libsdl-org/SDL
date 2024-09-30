@@ -96,7 +96,7 @@ typedef enum SDL_AppResult
 typedef SDL_AppResult (SDLCALL *SDL_AppInit_func)(void **appstate, int argc, char *argv[]);
 typedef SDL_AppResult (SDLCALL *SDL_AppIterate_func)(void *appstate);
 typedef SDL_AppResult (SDLCALL *SDL_AppEvent_func)(void *appstate, SDL_Event *event);
-typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
+typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate, SDL_AppResult result);
 
 /**
  * Initialize the SDL library.
