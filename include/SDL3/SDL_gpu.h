@@ -3316,7 +3316,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseWindowFromGPUDevice(
  * \param window an SDL_Window that has been claimed.
  * \param swapchain_composition the desired composition of the swapchain.
  * \param present_mode the desired present mode for the swapchain.
- * \returns true if successful, false on error; call SDL_GetError() for more information.
+ * \returns true if successful, false on error; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -3350,22 +3351,24 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * When a swapchain texture is acquired on a command buffer, it will
  * automatically be submitted for presentation when the command buffer is
  * submitted. The swapchain texture should only be referenced by the command
- * buffer used to acquire it. The swapchain texture handle can be filled in with NULL under
- * certain conditions. This is not necessarily an error. If this function
- * returns false then there is an error.
+ * buffer used to acquire it. The swapchain texture handle can be filled in
+ * with NULL under certain conditions. This is not necessarily an error. If
+ * this function returns false then there is an error.
  *
- * The swapchain texture is managed by
- * the implementation and must not be freed by the user. You MUST NOT
- * call this function from any thread other than the one that created the
- * window.
+ * The swapchain texture is managed by the implementation and must not be
+ * freed by the user. You MUST NOT call this function from any thread other
+ * than the one that created the window.
  *
  * \param command_buffer a command buffer.
  * \param window a window that has been claimed.
  * \param swapchain_texture a pointer filled in with a swapchain texture
- *                         handle.
- * \param swapchain_texture_width a pointer filled in with the swapchain texture width, may be NULL.
- * \param swapchain_texture_height a pointer filled in with the swapchain texture height, may be NULL.
- * \returns true on success, false on error; call SDL_GetError() for more information.
+ *                          handle.
+ * \param swapchain_texture_width a pointer filled in with the swapchain
+ *                                texture width, may be NULL.
+ * \param swapchain_texture_height a pointer filled in with the swapchain
+ *                                 texture height, may be NULL.
+ * \returns true on success, false on error; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
