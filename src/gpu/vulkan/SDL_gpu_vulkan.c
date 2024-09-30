@@ -4412,6 +4412,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             renderer->instance,
             windowData->surface,
             NULL);
+        windowData->surface = VK_NULL_HANDLE;
         if (swapchainSupportDetails.formatsLength > 0) {
             SDL_free(swapchainSupportDetails.formats);
         }
@@ -4454,6 +4455,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             renderer->instance,
             windowData->surface,
             NULL);
+        windowData->surface = VK_NULL_HANDLE;
 
         if (swapchainSupportDetails.formatsLength > 0) {
             SDL_free(swapchainSupportDetails.formats);
@@ -4479,6 +4481,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             renderer->instance,
             windowData->surface,
             NULL);
+        windowData->surface = VK_NULL_HANDLE;
         if (swapchainSupportDetails.formatsLength > 0) {
             SDL_free(swapchainSupportDetails.formats);
         }
@@ -4558,6 +4561,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             renderer->instance,
             windowData->surface,
             NULL);
+        windowData->surface = VK_NULL_HANDLE;
         CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSwapchainKHR, false)
     }
 
@@ -4576,6 +4580,12 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             renderer->instance,
             windowData->surface,
             NULL);
+        renderer->vkDestroySwapchainKHR(
+            renderer->logicalDevice,
+            windowData->swapchain,
+            NULL);
+        windowData->surface = VK_NULL_HANDLE;
+        windowData->swapchain = VK_NULL_HANDLE;
         return false;
     }
 
@@ -4633,6 +4643,16 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             windowData->format,
             windowData->swapchainSwizzle,
             &windowData->textureContainers[i].activeTexture->subresources[0].renderTargetViews[0])) {
+            renderer->vkDestroySurfaceKHR(
+                renderer->instance,
+                windowData->surface,
+                NULL);
+            renderer->vkDestroySwapchainKHR(
+                renderer->logicalDevice,
+                windowData->swapchain,
+                NULL);
+            windowData->surface = VK_NULL_HANDLE;
+            windowData->swapchain = VK_NULL_HANDLE;
             return false;
         }
     }
@@ -4651,6 +4671,16 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             &windowData->imageAvailableSemaphore[i]);
 
         if (vulkanResult != VK_SUCCESS) {
+            renderer->vkDestroySurfaceKHR(
+                renderer->instance,
+                windowData->surface,
+                NULL);
+            renderer->vkDestroySwapchainKHR(
+                renderer->logicalDevice,
+                windowData->swapchain,
+                NULL);
+            windowData->surface = VK_NULL_HANDLE;
+            windowData->swapchain = VK_NULL_HANDLE;
             CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSemaphore, false)
         }
 
@@ -4661,6 +4691,16 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             &windowData->renderFinishedSemaphore[i]);
 
         if (vulkanResult != VK_SUCCESS) {
+            renderer->vkDestroySurfaceKHR(
+                renderer->instance,
+                windowData->surface,
+                NULL);
+            renderer->vkDestroySwapchainKHR(
+                renderer->logicalDevice,
+                windowData->swapchain,
+                NULL);
+            windowData->surface = VK_NULL_HANDLE;
+            windowData->swapchain = VK_NULL_HANDLE;
             CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSemaphore, false)
         }
 
@@ -9515,6 +9555,7 @@ static Uint32 VULKAN_INTERNAL_RecreateSwapchain(
             VULKAN_ReleaseFence(
                 (SDL_GPURenderer *)renderer,
                 windowData->inFlightFences[i]);
+            windowData->inFlightFences[i] = NULL;
         }
     }
 
@@ -9557,6 +9598,12 @@ static bool VULKAN_AcquireSwapchainTexture(
             return false;
         } else if (recreateSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
             // Edge case, texture is filled in with NULL but not an error
+            if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
+                VULKAN_ReleaseFence(
+                    (SDL_GPURenderer *)renderer,
+                    windowData->inFlightFences[windowData->frameCounter]);
+                windowData->inFlightFences[windowData->frameCounter] = NULL;
+            }
             return true;
         }
     }
@@ -10188,17 +10235,16 @@ static bool VULKAN_Submit(
         presentData->windowData->frameCounter =
             (presentData->windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
 
-        if (presentResult != VK_SUCCESS) {
-            if (presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
-                presentData->windowData->needsSwapchainRecreate = true;
-            } else {
-                CHECK_VULKAN_ERROR_AND_RETURN(presentResult, vkQueuePresentKHR, false)
-            }
-        } else {
+        if (presentResult == VK_SUCCESS || presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
             // If presenting, the swapchain is using the in-flight fence
             presentData->windowData->inFlightFences[presentData->windowData->frameCounter] = (SDL_GPUFence*)vulkanCommandBuffer->inFlightFence;
-
             (void)SDL_AtomicIncRef(&vulkanCommandBuffer->inFlightFence->referenceCount);
+
+            if (presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
+                presentData->windowData->needsSwapchainRecreate = true;
+            }
+        } else {
+            CHECK_VULKAN_ERROR_AND_RETURN(presentResult, vkQueuePresentKHR, false)
         }
     }
 
