@@ -2212,7 +2212,7 @@ bool SDL_IsAndroidTablet(void)
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsTablet);
 }
 
-bool SDL_IsAndroidTV(void)
+bool SDL_IsTV(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsAndroidTV);

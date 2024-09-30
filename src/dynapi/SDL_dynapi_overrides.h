@@ -619,7 +619,6 @@
 #define SDL_InitHapticRumble SDL_InitHapticRumble_REAL
 #define SDL_InitSubSystem SDL_InitSubSystem_REAL
 #define SDL_InsertGPUDebugLabel SDL_InsertGPUDebugLabel_REAL
-#define SDL_IsAndroidTV SDL_IsAndroidTV_REAL
 #define SDL_IsChromebook    SDL_IsChromebook_REAL
 #define SDL_IsDeXMode   SDL_IsDeXMode_REAL
 #define SDL_IsGamepad SDL_IsGamepad_REAL
@@ -627,6 +626,7 @@
 #define SDL_IsJoystickVirtual SDL_IsJoystickVirtual_REAL
 #define SDL_IsMouseHaptic SDL_IsMouseHaptic_REAL
 #define SDL_IsTablet SDL_IsTablet_REAL
+#define SDL_IsTV SDL_IsTV_REAL
 #define SDL_JoystickConnected SDL_JoystickConnected_REAL
 #define SDL_JoystickEventsEnabled SDL_JoystickEventsEnabled_REAL
 #define SDL_KillProcess SDL_KillProcess_REAL

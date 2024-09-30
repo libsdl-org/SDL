@@ -297,7 +297,7 @@ void SDL_NSLog(const char *prefix, const char *text)
 #endif // SDL_VIDEO_DRIVER_COCOA
 
 /*
- * iOS Tablet detection
+ * iOS Tablet, etc, detection
  *
  * This doesn't really have anything to do with the interfaces of the SDL video
  * subsystem, but we need to stuff this into an Objective-C source code file.
@@ -305,6 +305,11 @@ void SDL_NSLog(const char *prefix, const char *text)
 bool SDL_IsIPad(void)
 {
     return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad);
+}
+
+bool SDL_IsAppleTV(void)
+{
+    return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomTV);
 }
 
 #endif // SDL_VIDEO_DRIVER_UIKIT
