@@ -1000,7 +1000,7 @@ submit:
     SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
 #endif
 
-    if (swapchain_texture_width != data->backbuffer.width || swapchain_texture_height != data->backbuffer.height) {
+    if (swapchain != NULL && (swapchain_texture_width != data->backbuffer.width || swapchain_texture_height != data->backbuffer.height)) {
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
         CreateBackbuffer(data, swapchain_texture_width, swapchain_texture_height, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
     }
