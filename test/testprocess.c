@@ -455,7 +455,7 @@ static int process_testStdinToStdout(void *arg)
     total_written = 0;
     total_read = 0;
     for (iteration_count = 0; true; iteration_count++) {
-        int log_this_iteration = (iteration_count % 32) == 32;
+        int log_this_iteration = (iteration_count % 32) == 0;
         char local_buffer[16 * 4094];
         size_t amount_read;
         SDL_IOStatus io_status;
