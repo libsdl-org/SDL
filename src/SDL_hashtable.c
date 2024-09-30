@@ -495,25 +495,29 @@ static SDL_INLINE Uint32 hash_string_djbxor(const char *str, size_t len)
 
 Uint32 SDL_HashPointer(const void *key, void *unused)
 {
+    (void)unused;
     return SDL_murmur3_32(&key, sizeof(key), 0);
 }
 
 bool SDL_KeyMatchPointer(const void *a, const void *b, void *unused)
 {
+    (void)unused;
     return (a == b);
 }
 
-Uint32 SDL_HashString(const void *key, void *data)
+Uint32 SDL_HashString(const void *key, void *unused)
 {
+    (void)unused;
     const char *str = (const char *)key;
     return hash_string_djbxor(str, SDL_strlen(str));
 }
 
-bool SDL_KeyMatchString(const void *a, const void *b, void *data)
+bool SDL_KeyMatchString(const void *a, const void *b, void *unused)
 {
     const char *a_string = (const char *)a;
     const char *b_string = (const char *)b;
 
+    (void)unused;
     if (a == b) {
         return true; // same pointer, must match.
     } else if (!a || !b) {
@@ -529,20 +533,26 @@ SDL_COMPILE_TIME_ASSERT(SDL_HashID_KeySize, sizeof(Uint32) <= sizeof(const void 
 
 Uint32 SDL_HashID(const void *key, void *unused)
 {
+    (void)unused;
     return (Uint32)(uintptr_t)key;
 }
 
 bool SDL_KeyMatchID(const void *a, const void *b, void *unused)
 {
+    (void)unused;
     return (a == b);
 }
 
 void SDL_NukeFreeKey(const void *key, const void *value, void *unused)
 {
+    (void)value;
+    (void)unused;
     SDL_free((void *)key);
 }
 
 void SDL_NukeFreeValue(const void *key, const void *value, void *unused)
 {
+    (void)key;
+    (void)unused;
     SDL_free((void *)value);
 }
