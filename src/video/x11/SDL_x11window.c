@@ -129,16 +129,16 @@ void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, SDL_WindowFlags f
     SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
     // !!! FIXME: just dereference videodata below instead of copying to locals.
-    Atom _NET_WM_STATE = videodata->_NET_WM_STATE;
-    // Atom _NET_WM_STATE_HIDDEN = videodata->_NET_WM_STATE_HIDDEN;
-    Atom _NET_WM_STATE_FOCUSED = videodata->_NET_WM_STATE_FOCUSED;
-    Atom _NET_WM_STATE_MAXIMIZED_VERT = videodata->_NET_WM_STATE_MAXIMIZED_VERT;
-    Atom _NET_WM_STATE_MAXIMIZED_HORZ = videodata->_NET_WM_STATE_MAXIMIZED_HORZ;
-    Atom _NET_WM_STATE_FULLSCREEN = videodata->_NET_WM_STATE_FULLSCREEN;
-    Atom _NET_WM_STATE_ABOVE = videodata->_NET_WM_STATE_ABOVE;
-    Atom _NET_WM_STATE_SKIP_TASKBAR = videodata->_NET_WM_STATE_SKIP_TASKBAR;
-    Atom _NET_WM_STATE_SKIP_PAGER = videodata->_NET_WM_STATE_SKIP_PAGER;
-    Atom _NET_WM_STATE_MODAL = videodata->_NET_WM_STATE_MODAL;
+    Atom _NET_WM_STATE = videodata->atoms._NET_WM_STATE;
+    // Atom _NET_WM_STATE_HIDDEN = videodata->atoms._NET_WM_STATE_HIDDEN;
+    Atom _NET_WM_STATE_FOCUSED = videodata->atoms._NET_WM_STATE_FOCUSED;
+    Atom _NET_WM_STATE_MAXIMIZED_VERT = videodata->atoms._NET_WM_STATE_MAXIMIZED_VERT;
+    Atom _NET_WM_STATE_MAXIMIZED_HORZ = videodata->atoms._NET_WM_STATE_MAXIMIZED_HORZ;
+    Atom _NET_WM_STATE_FULLSCREEN = videodata->atoms._NET_WM_STATE_FULLSCREEN;
+    Atom _NET_WM_STATE_ABOVE = videodata->atoms._NET_WM_STATE_ABOVE;
+    Atom _NET_WM_STATE_SKIP_TASKBAR = videodata->atoms._NET_WM_STATE_SKIP_TASKBAR;
+    Atom _NET_WM_STATE_SKIP_PAGER = videodata->atoms._NET_WM_STATE_SKIP_PAGER;
+    Atom _NET_WM_STATE_MODAL = videodata->atoms._NET_WM_STATE_MODAL;
     Atom atoms[16];
     int count = 0;
 
@@ -238,12 +238,12 @@ Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwin
 {
     SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
-    Atom _NET_WM_STATE = videodata->_NET_WM_STATE;
-    Atom _NET_WM_STATE_HIDDEN = videodata->_NET_WM_STATE_HIDDEN;
-    Atom _NET_WM_STATE_FOCUSED = videodata->_NET_WM_STATE_FOCUSED;
-    Atom _NET_WM_STATE_MAXIMIZED_VERT = videodata->_NET_WM_STATE_MAXIMIZED_VERT;
-    Atom _NET_WM_STATE_MAXIMIZED_HORZ = videodata->_NET_WM_STATE_MAXIMIZED_HORZ;
-    Atom _NET_WM_STATE_FULLSCREEN = videodata->_NET_WM_STATE_FULLSCREEN;
+    Atom _NET_WM_STATE = videodata->atoms._NET_WM_STATE;
+    Atom _NET_WM_STATE_HIDDEN = videodata->atoms._NET_WM_STATE_HIDDEN;
+    Atom _NET_WM_STATE_FOCUSED = videodata->atoms._NET_WM_STATE_FOCUSED;
+    Atom _NET_WM_STATE_MAXIMIZED_VERT = videodata->atoms._NET_WM_STATE_MAXIMIZED_VERT;
+    Atom _NET_WM_STATE_MAXIMIZED_HORZ = videodata->atoms._NET_WM_STATE_MAXIMIZED_HORZ;
+    Atom _NET_WM_STATE_FULLSCREEN = videodata->atoms._NET_WM_STATE_FULLSCREEN;
     Atom actualType;
     int actualFormat;
     unsigned long i, numItems, bytesAfter;
@@ -773,12 +773,12 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         Atom protocols[3];
         int proto_count = 0;
 
-        protocols[proto_count++] = data->WM_DELETE_WINDOW; // Allow window to be deleted by the WM
-        protocols[proto_count++] = data->WM_TAKE_FOCUS;    // Since we will want to set input focus explicitly
+        protocols[proto_count++] = data->atoms.WM_DELETE_WINDOW; // Allow window to be deleted by the WM
+        protocols[proto_count++] = data->atoms.WM_TAKE_FOCUS;    // Since we will want to set input focus explicitly
 
         // Default to using ping if there is no hint
         if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_NET_WM_PING, true)) {
-            protocols[proto_count++] = data->_NET_WM_PING; // Respond so WM knows we're alive
+            protocols[proto_count++] = data->atoms._NET_WM_PING; // Respond so WM knows we're alive
         }
 
         SDL_assert(proto_count <= sizeof(protocols) / sizeof(protocols[0]));
@@ -855,8 +855,8 @@ char *X11_GetWindowTitle(SDL_VideoDevice *_this, Window xwindow)
     unsigned char *propdata;
     char *title = NULL;
 
-    status = X11_XGetWindowProperty(display, xwindow, data->_NET_WM_NAME,
-                                    0L, 8192L, False, data->UTF8_STRING, &real_type, &real_format,
+    status = X11_XGetWindowProperty(display, xwindow, data->atoms._NET_WM_NAME,
+                                    0L, 8192L, False, data->atoms.UTF8_STRING, &real_type, &real_format,
                                     &items_read, &items_left, &propdata);
     if (status == Success && propdata) {
         title = SDL_strdup(SDL_static_cast(char *, propdata));
@@ -971,7 +971,7 @@ bool X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *
 {
     SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
-    Atom _NET_WM_ICON = data->videodata->_NET_WM_ICON;
+    Atom _NET_WM_ICON = data->videodata->atoms._NET_WM_ICON;
     int (*prevHandler)(Display *, XErrorEvent *) = NULL;
     bool result = true;
 
@@ -1226,7 +1226,7 @@ bool X11_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opac
 {
     SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
-    Atom _NET_WM_WINDOW_OPACITY = data->videodata->_NET_WM_WINDOW_OPACITY;
+    Atom _NET_WM_WINDOW_OPACITY = data->videodata->atoms._NET_WM_WINDOW_OPACITY;
 
     if (opacity == 1.0f) {
         X11_XDeleteProperty(display, data->xwindow, _NET_WM_WINDOW_OPACITY);
@@ -1250,7 +1250,7 @@ bool X11_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window 
     if (parent_data) {
         X11_XSetTransientForHint(display, data->xwindow, parent_data->xwindow);
     } else {
-        X11_XDeleteProperty(display, data->xwindow, video_data->WM_TRANSIENT_FOR);
+        X11_XDeleteProperty(display, data->xwindow, video_data->atoms.WM_TRANSIENT_FOR);
     }
 
     return true;
@@ -1263,14 +1263,14 @@ bool X11_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = video_data->display;
     Uint32 flags = window->flags;
-    Atom _NET_WM_STATE = data->videodata->_NET_WM_STATE;
-    Atom _NET_WM_STATE_MODAL = data->videodata->_NET_WM_STATE_MODAL;
+    Atom _NET_WM_STATE = data->videodata->atoms._NET_WM_STATE;
+    Atom _NET_WM_STATE_MODAL = data->videodata->atoms._NET_WM_STATE_MODAL;
 
     if (modal) {
         flags |= SDL_WINDOW_MODAL;
     } else {
         flags &= ~SDL_WINDOW_MODAL;
-        X11_XDeleteProperty(display, data->xwindow, video_data->WM_TRANSIENT_FOR);
+        X11_XDeleteProperty(display, data->xwindow, video_data->atoms.WM_TRANSIENT_FOR);
     }
 
     if (X11_IsWindowMapped(_this, window)) {
@@ -1363,8 +1363,8 @@ void X11_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, bool o
     SDL_WindowData *data = window->internal;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = data->videodata->display;
-    Atom _NET_WM_STATE = data->videodata->_NET_WM_STATE;
-    Atom _NET_WM_STATE_ABOVE = data->videodata->_NET_WM_STATE_ABOVE;
+    Atom _NET_WM_STATE = data->videodata->atoms._NET_WM_STATE;
+    Atom _NET_WM_STATE_ABOVE = data->videodata->atoms._NET_WM_STATE_ABOVE;
 
     if (X11_IsWindowMapped(_this, window)) {
         XEvent e;
@@ -1504,7 +1504,7 @@ static bool X11_SetWindowActive(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data = window->internal;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = data->videodata->display;
-    Atom _NET_ACTIVE_WINDOW = data->videodata->_NET_ACTIVE_WINDOW;
+    Atom _NET_ACTIVE_WINDOW = data->videodata->atoms._NET_ACTIVE_WINDOW;
 
     if (X11_IsWindowMapped(_this, window)) {
         XEvent e;
@@ -1548,9 +1548,9 @@ static bool X11_SetWindowMaximized(SDL_VideoDevice *_this, SDL_Window *window, b
     SDL_WindowData *data = window->internal;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = data->videodata->display;
-    Atom _NET_WM_STATE = data->videodata->_NET_WM_STATE;
-    Atom _NET_WM_STATE_MAXIMIZED_VERT = data->videodata->_NET_WM_STATE_MAXIMIZED_VERT;
-    Atom _NET_WM_STATE_MAXIMIZED_HORZ = data->videodata->_NET_WM_STATE_MAXIMIZED_HORZ;
+    Atom _NET_WM_STATE = data->videodata->atoms._NET_WM_STATE;
+    Atom _NET_WM_STATE_MAXIMIZED_VERT = data->videodata->atoms._NET_WM_STATE_MAXIMIZED_VERT;
+    Atom _NET_WM_STATE_MAXIMIZED_HORZ = data->videodata->atoms._NET_WM_STATE_MAXIMIZED_HORZ;
 
     if (!maximized && window->flags & SDL_WINDOW_FULLSCREEN) {
         /* Fullscreen windows are maximized on some window managers,
@@ -1654,8 +1654,8 @@ static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this,
     SDL_WindowData *data = window->internal;
     SDL_DisplayData *displaydata = _display->internal;
     Display *display = data->videodata->display;
-    Atom _NET_WM_STATE = data->videodata->_NET_WM_STATE;
-    Atom _NET_WM_STATE_FULLSCREEN = data->videodata->_NET_WM_STATE_FULLSCREEN;
+    Atom _NET_WM_STATE = data->videodata->atoms._NET_WM_STATE;
+    Atom _NET_WM_STATE_FULLSCREEN = data->videodata->atoms._NET_WM_STATE_FULLSCREEN;
 
     if (X11_IsWindowMapped(_this, window)) {
         XEvent e;
@@ -1737,8 +1737,8 @@ static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this,
             } else {
                 e.xclient.data.l[0] = _NET_WM_STATE_REMOVE;
             }
-            e.xclient.data.l[1] = data->videodata->_NET_WM_STATE_MAXIMIZED_VERT;
-            e.xclient.data.l[2] = data->videodata->_NET_WM_STATE_MAXIMIZED_HORZ;
+            e.xclient.data.l[1] = data->videodata->atoms._NET_WM_STATE_MAXIMIZED_VERT;
+            e.xclient.data.l[2] = data->videodata->atoms._NET_WM_STATE_MAXIMIZED_HORZ;
             e.xclient.data.l[3] = 0l;
             X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
                            SubstructureNotifyMask | SubstructureRedirectMask, &e);
