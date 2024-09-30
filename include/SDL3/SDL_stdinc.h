@@ -1207,12 +1207,223 @@ extern SDL_DECLSPEC int SDLCALL SDL_setenv_unsafe(const char *name, const char *
  */
 extern SDL_DECLSPEC int SDLCALL SDL_unsetenv_unsafe(const char *name);
 
+/**
+ * A callback used with SDL sorting and binary search functions.
+ *
+ * \param a a pointer to the first element being compared.
+ * \param b a pointer to the second element being compared.
+ * \returns -1 if `a` should be sorted before `b`, 1 if `b` should be sorted before `a`, 0 if they are equal. If two elements are equal, their order in the sorted array is undefined.
+ *
+ * \since This callback is available since SDL 3.0.0.
+ *
+ * \sa SDL_bsearch
+ * \sa SDL_qsort
+ */
 typedef int (SDLCALL *SDL_CompareCallback)(const void *a, const void *b);
+
+/**
+ * Sort an array.
+ *
+ * For example:
+ * ```c
+ * typedef struct {
+ *     int key;
+ *     const char *string;
+ * } data;
+ *
+ * int SDLCALL compare(const void *a, const void *b)
+ * {
+ *     const data *A = (const data *)a;
+ *     const data *B = (const data *)b;
+ *
+ *     if (A->n < B->n) {
+ *         return -1;
+ *     } else if (B->n < A->n) {
+ *         return 1;
+ *     } else {
+ *         return 0;
+ *     }
+ * }
+ *
+ * data values[] = {
+ *     { 3, "third" }, { 1, "first" }, { 2, "second" }
+ * };
+ *
+ * SDL_qsort(values, SDL_arraysize(values), sizeof(values[0]), compare);
+ * ```
+ *
+ * \param base a pointer to the start of the array.
+ * \param nmemb the number of elements in the array.
+ * \param size the size of the elements in the array.
+ * \param compare a function used to compare elements in the array.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_bsearch
+ * \sa SDL_qsort_r
+ */
 extern SDL_DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, SDL_CompareCallback compare);
+
+/**
+ * Perform a binary search on a previously sorted array.
+ *
+ * For example:
+ * ```c
+ * typedef struct {
+ *     int key;
+ *     const char *string;
+ * } data;
+ *
+ * int SDLCALL compare(const void *a, const void *b)
+ * {
+ *     const data *A = (const data *)a;
+ *     const data *B = (const data *)b;
+ *
+ *     if (A->n < B->n) {
+ *         return -1;
+ *     } else if (B->n < A->n) {
+ *         return 1;
+ *     } else {
+ *         return 0;
+ *     }
+ * }
+ *
+ * data values[] = {
+ *     { 1, "first" }, { 2, "second" }, { 3, "third" }
+ * };
+ * data key = { 2, NULL };
+ *
+ * data *result = SDL_bsearch(&key, values, SDL_arraysize(values), sizeof(values[0]), compare);
+ * ```
+ *
+ * \param key a pointer to a key equal to the element being searched for.
+ * \param base a pointer to the start of the array.
+ * \param nmemb the number of elements in the array.
+ * \param size the size of the elements in the array.
+ * \param compare a function used to compare elements in the array.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_bsearch_r
+ * \sa SDL_qsort
+ */
 extern SDL_DECLSPEC void * SDLCALL SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, SDL_CompareCallback compare);
 
+/**
+ * A callback used with SDL sorting and binary search functions.
+ *
+ * \param userdata the `userdata` pointer passed to the sort function.
+ * \param a a pointer to the first element being compared.
+ * \param b a pointer to the second element being compared.
+ * \returns -1 if `a` should be sorted before `b`, 1 if `b` should be sorted before `a`, 0 if they are equal. If two elements are equal, their order in the sorted array is undefined.
+ *
+ * \since This callback is available since SDL 3.0.0.
+ *
+ * \sa SDL_qsort_r
+ * \sa SDL_bsearch_r
+ */
 typedef int (SDLCALL *SDL_CompareCallback_r)(void *userdata, const void *a, const void *b);
+
+/**
+ * Sort an array, passing a userdata pointer to the compare function.
+ *
+ * For example:
+ * ```c
+ * typedef enum {
+ *     sort_increasing,
+ *     sort_decreasing,
+ * } sort_method;
+ *
+ * typedef struct {
+ *     int key;
+ *     const char *string;
+ * } data;
+ *
+ * int SDLCALL compare(const void *userdata, const void *a, const void *b)
+ * {
+ *     sort_method method = (sort_method)(uintptr_t)userdata;
+ *     const data *A = (const data *)a;
+ *     const data *B = (const data *)b;
+ *
+ *     if (A->n < B->n) {
+ *         return (method == sort_increasing) ? -1 : 1;
+ *     } else if (B->n < A->n) {
+ *         return (method == sort_increasing) ? 1 : -1;
+ *     } else {
+ *         return 0;
+ *     }
+ * }
+ *
+ * data values[] = {
+ *     { 3, "third" }, { 1, "first" }, { 2, "second" }
+ * };
+ *
+ * SDL_qsort_r(values, SDL_arraysize(values), sizeof(values[0]), compare, (const void *)(uintptr_t)sort_increasing);
+ * ```
+ *
+ * \param base a pointer to the start of the array.
+ * \param nmemb the number of elements in the array.
+ * \param size the size of the elements in the array.
+ * \param compare a function used to compare elements in the array.
+ * \param userdata a pointer to pass to the compare function.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_bsearch_r
+ * \sa SDL_qsort
+ */
 extern SDL_DECLSPEC void SDLCALL SDL_qsort_r(void *base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void *userdata);
+
+/**
+ * Perform a binary search on a previously sorted array, passing a userdata pointer to the compare function.
+ *
+ * For example:
+ * ```c
+ * typedef enum {
+ *     sort_increasing,
+ *     sort_decreasing,
+ * } sort_method;
+ *
+ * typedef struct {
+ *     int key;
+ *     const char *string;
+ * } data;
+ *
+ * int SDLCALL compare(const void *userdata, const void *a, const void *b)
+ * {
+ *     sort_method method = (sort_method)(uintptr_t)userdata;
+ *     const data *A = (const data *)a;
+ *     const data *B = (const data *)b;
+ *
+ *     if (A->n < B->n) {
+ *         return (method == sort_increasing) ? -1 : 1;
+ *     } else if (B->n < A->n) {
+ *         return (method == sort_increasing) ? 1 : -1;
+ *     } else {
+ *         return 0;
+ *     }
+ * }
+ *
+ * data values[] = {
+ *     { 1, "first" }, { 2, "second" }, { 3, "third" }
+ * };
+ * data key = { 2, NULL };
+ *
+ * data *result = SDL_bsearch_r(&key, values, SDL_arraysize(values), sizeof(values[0]), compare, (const void *)(uintptr_t)sort_increasing);
+ * ```
+ *
+ * \param key a pointer to a key equal to the element being searched for.
+ * \param base a pointer to the start of the array.
+ * \param nmemb the number of elements in the array.
+ * \param size the size of the elements in the array.
+ * \param compare a function used to compare elements in the array.
+ * \param userdata a pointer to pass to the compare function.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_bsearch
+ * \sa SDL_qsort_r
+ */
 extern SDL_DECLSPEC void * SDLCALL SDL_bsearch_r(const void *key, const void *base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void *userdata);
 
 extern SDL_DECLSPEC int SDLCALL SDL_abs(int x);
