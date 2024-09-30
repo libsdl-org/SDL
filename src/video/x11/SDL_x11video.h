@@ -94,6 +94,9 @@ struct SDL_VideoData
     Atom _SDL_WAKEUP;
     Atom UTF8_STRING;
     Atom PRIMARY;
+    Atom CLIPBOARD;
+    Atom INCR;
+    Atom SDL_SELECTION;
     Atom XdndEnter;
     Atom XdndPosition;
     Atom XdndStatus;

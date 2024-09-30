@@ -989,16 +989,13 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         xevent->type == X11_GetXFixesSelectionNotifyEvent()) {
         XFixesSelectionNotifyEvent *ev = (XFixesSelectionNotifyEvent *)xevent;
 
-        // !!! FIXME: cache atoms
-        Atom XA_CLIPBOARD = X11_XInternAtom(display, "CLIPBOARD", 0);
-
 #ifdef DEBUG_XEVENTS
         SDL_Log("window CLIPBOARD: XFixesSelectionNotify (selection = %s)\n",
                X11_XGetAtomName(display, ev->selection));
 #endif
 
         if (ev->selection == XA_PRIMARY ||
-            (XA_CLIPBOARD != None && ev->selection == XA_CLIPBOARD)) {
+            (videodata->CLIPBOARD != None && ev->selection == videodata->CLIPBOARD)) {
             SDL_SendClipboardUpdate();
             return;
         }

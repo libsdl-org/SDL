@@ -174,7 +174,6 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
     unsigned char *src = NULL;
     bool incr_success = false;
     Atom XA_MIME = X11_XInternAtom(display, mime_type, False);
-    Atom XA_INCR = X11_XInternAtom(display, "INCR", False);
 
     *length = 0;
 
@@ -199,7 +198,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
     } else {
         // Request that the selection owner copy the data to our window
         owner = window;
-        selection = X11_XInternAtom(display, "SDL_SELECTION", False);
+        selection = videodata->SDL_SELECTION;
         X11_XConvertSelection(display, selection_type, XA_MIME, selection, owner,
                               CurrentTime);
 
@@ -213,7 +212,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
             if (seln_type == XA_MIME) {
                 *length = (size_t)count;
                 data = CloneDataBuffer(src, count);
-            } else if (seln_type == XA_INCR) {
+            } else if (seln_type == videodata->INCR) {
                 while (1) {
                     // Only delete the property after being done with the previous "chunk".
                     X11_XDeleteProperty(display, owner, selection);
@@ -268,23 +267,13 @@ const char **X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types
 bool X11_SetClipboardData(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->internal;
-    Atom XA_CLIPBOARD = X11_XInternAtom(videodata->display, "CLIPBOARD", 0);
-    if (XA_CLIPBOARD == None) {
-        return SDL_SetError("Couldn't access X clipboard");
-    }
-    return SetSelectionData(_this, XA_CLIPBOARD, _this->clipboard_callback, _this->clipboard_userdata, (const char **)_this->clipboard_mime_types, _this->num_clipboard_mime_types, _this->clipboard_sequence);
+    return SetSelectionData(_this, videodata->CLIPBOARD, _this->clipboard_callback, _this->clipboard_userdata, (const char **)_this->clipboard_mime_types, _this->num_clipboard_mime_types, _this->clipboard_sequence);
 }
 
 void *X11_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length)
 {
     SDL_VideoData *videodata = _this->internal;
-    Atom XA_CLIPBOARD = X11_XInternAtom(videodata->display, "CLIPBOARD", 0);
-    if (XA_CLIPBOARD == None) {
-        SDL_SetError("Couldn't access X clipboard");
-        *length = 0;
-        return NULL;
-    }
-    return GetSelectionData(_this, XA_CLIPBOARD, mime_type, length);
+    return GetSelectionData(_this, videodata->CLIPBOARD, mime_type, length);
 }
 
 bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
