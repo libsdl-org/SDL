@@ -4503,7 +4503,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
         windowData->imageCount = swapchainSupportDetails.capabilities.minImageCount;
     }
 
-    if (windowData->presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+    if (windowData->presentMode == SDL_GPU_PRESENTMODE_MAILBOX) {
         /* Required for proper triple-buffering.
          * Note that this is below the above maxImageCount check!
          * If the driver advertises MAILBOX but does not support 3 swap
@@ -9564,7 +9564,7 @@ static bool VULKAN_AcquireSwapchainTexture(
     }
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
-        if (windowData->presentMode == VK_PRESENT_MODE_FIFO_KHR) {
+        if (windowData->presentMode == SDL_GPU_PRESENTMODE_VSYNC) {
             // In VSYNC mode, block until the least recent presented frame is done
             if (!VULKAN_WaitForFences(
                 (SDL_GPURenderer *)renderer,
