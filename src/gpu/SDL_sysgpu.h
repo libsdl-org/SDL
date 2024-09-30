@@ -651,7 +651,9 @@ struct SDL_GPUDevice
     bool (*AcquireSwapchainTexture)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_Window *window,
-        SDL_GPUTexture **swapchainTexture);
+        SDL_GPUTexture **swapchainTexture,
+        Uint32 *swapchainTextureWidth,
+        Uint32 *swapchainTextureHeight);
 
     bool (*Submit)(
         SDL_GPUCommandBuffer *commandBuffer);

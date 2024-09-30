@@ -333,7 +333,7 @@ Render(SDL_Window *window, const int windownum)
     SDL_GPURenderPass *pass;
     SDL_GPUBufferBinding vertex_binding;
     SDL_GPUBlitInfo blit_info;
-    int drawablew, drawableh;
+    Uint32 drawablew, drawableh;
 
     /* Acquire the swapchain texture */
 
@@ -342,7 +342,7 @@ Render(SDL_Window *window, const int windownum)
         SDL_Log("Failed to acquire command buffer :%s", SDL_GetError());
         quit(2);
     }
-    if (!SDL_AcquireGPUSwapchainTexture(cmd, state->windows[windownum], &swapchainTexture)) {
+    if (!SDL_AcquireGPUSwapchainTexture(cmd, state->windows[windownum], &swapchainTexture, &drawablew, &drawableh)) {
         SDL_Log("Failed to acquire swapchain texture: %s", SDL_GetError());
         quit(2);
     }
@@ -352,8 +352,6 @@ Render(SDL_Window *window, const int windownum)
         SDL_SubmitGPUCommandBuffer(cmd);
         return;
     }
-
-    SDL_GetWindowSizeInPixels(window, &drawablew, &drawableh);
 
     /*
     * Do some rotation with Euler angles. It is not a fixed axis as

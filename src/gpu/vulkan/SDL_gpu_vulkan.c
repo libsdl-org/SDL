@@ -665,8 +665,13 @@ typedef struct VulkanFramebuffer
     SDL_AtomicInt referenceCount;
 } VulkanFramebuffer;
 
-typedef struct VulkanSwapchainData
+typedef struct WindowData
 {
+    SDL_Window *window;
+    SDL_GPUSwapchainComposition swapchainComposition;
+    SDL_GPUPresentMode presentMode;
+    bool needsSwapchainRecreate;
+
     // Window surface
     VkSurfaceKHR surface;
 
@@ -675,12 +680,13 @@ typedef struct VulkanSwapchainData
     VkFormat format;
     VkColorSpaceKHR colorSpace;
     VkComponentMapping swapchainSwizzle;
-    VkPresentModeKHR presentMode;
     bool usingFallbackFormat;
 
     // Swapchain images
     VulkanTextureContainer *textureContainers; // use containers so that swapchain textures can use the same API as other textures
     Uint32 imageCount;
+    Uint32 width;
+    Uint32 height;
 
     // Synchronization primitives
     VkSemaphore imageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
@@ -688,15 +694,6 @@ typedef struct VulkanSwapchainData
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
 
     Uint32 frameCounter;
-} VulkanSwapchainData;
-
-typedef struct WindowData
-{
-    SDL_Window *window;
-    SDL_GPUSwapchainComposition swapchainComposition;
-    SDL_GPUPresentMode presentMode;
-    VulkanSwapchainData *swapchainData;
-    bool needsSwapchainRecreate;
 } WindowData;
 
 typedef struct SwapchainSupportDetails
@@ -1863,7 +1860,7 @@ static Uint8 VULKAN_INTERNAL_BindImageMemory(
 
     SDL_UnlockMutex(usedRegion->allocation->memoryLock);
 
-    CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkBindBufferMemory, 0)
+    CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkBindImageMemory, 0)
 
     return 1;
 }
@@ -3110,57 +3107,61 @@ static void VULKAN_INTERNAL_DestroySwapchain(
     WindowData *windowData)
 {
     Uint32 i;
-    VulkanSwapchainData *swapchainData;
 
     if (windowData == NULL) {
         return;
     }
 
-    swapchainData = windowData->swapchainData;
-
-    if (swapchainData == NULL) {
-        return;
-    }
-
-    for (i = 0; i < swapchainData->imageCount; i += 1) {
+    for (i = 0; i < windowData->imageCount; i += 1) {
         VULKAN_INTERNAL_RemoveFramebuffersContainingView(
             renderer,
-            swapchainData->textureContainers[i].activeTexture->subresources[0].renderTargetViews[0]);
+            windowData->textureContainers[i].activeTexture->subresources[0].renderTargetViews[0]);
         renderer->vkDestroyImageView(
             renderer->logicalDevice,
-            swapchainData->textureContainers[i].activeTexture->subresources[0].renderTargetViews[0],
+            windowData->textureContainers[i].activeTexture->subresources[0].renderTargetViews[0],
             NULL);
-        SDL_free(swapchainData->textureContainers[i].activeTexture->subresources[0].renderTargetViews);
-        SDL_free(swapchainData->textureContainers[i].activeTexture->subresources);
-        SDL_free(swapchainData->textureContainers[i].activeTexture);
+        SDL_free(windowData->textureContainers[i].activeTexture->subresources[0].renderTargetViews);
+        SDL_free(windowData->textureContainers[i].activeTexture->subresources);
+        SDL_free(windowData->textureContainers[i].activeTexture);
+    }
+    windowData->imageCount = 0;
+
+    SDL_free(windowData->textureContainers);
+    windowData->textureContainers = NULL;
+
+    if (windowData->swapchain) {
+        renderer->vkDestroySwapchainKHR(
+            renderer->logicalDevice,
+            windowData->swapchain,
+            NULL);
+        windowData->swapchain = VK_NULL_HANDLE;
     }
 
-    SDL_free(swapchainData->textureContainers);
-
-    renderer->vkDestroySwapchainKHR(
-        renderer->logicalDevice,
-        swapchainData->swapchain,
-        NULL);
-
-    renderer->vkDestroySurfaceKHR(
-        renderer->instance,
-        swapchainData->surface,
-        NULL);
+    if (windowData->surface) {
+        renderer->vkDestroySurfaceKHR(
+            renderer->instance,
+            windowData->surface,
+            NULL);
+        windowData->surface = VK_NULL_HANDLE;
+    }
 
     for (i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
-        renderer->vkDestroySemaphore(
-            renderer->logicalDevice,
-            swapchainData->imageAvailableSemaphore[i],
-            NULL);
+        if (windowData->imageAvailableSemaphore[i]) {
+            renderer->vkDestroySemaphore(
+                renderer->logicalDevice,
+                windowData->imageAvailableSemaphore[i],
+                NULL);
+            windowData->imageAvailableSemaphore[i] = VK_NULL_HANDLE;
+        }
 
-        renderer->vkDestroySemaphore(
-            renderer->logicalDevice,
-            swapchainData->renderFinishedSemaphore[i],
-            NULL);
+        if (windowData->renderFinishedSemaphore[i]) {
+            renderer->vkDestroySemaphore(
+                renderer->logicalDevice,
+                windowData->renderFinishedSemaphore[i],
+                NULL);
+            windowData->renderFinishedSemaphore[i] = VK_NULL_HANDLE;
+        }
     }
-
-    windowData->swapchainData = NULL;
-    SDL_free(swapchainData);
 }
 
 static void VULKAN_INTERNAL_DestroyGraphicsPipelineResourceLayout(
@@ -4360,12 +4361,21 @@ static bool VULKAN_INTERNAL_VerifySwapPresentMode(
     return false;
 }
 
-static bool VULKAN_INTERNAL_CreateSwapchain(
+/* It would be nice if VULKAN_INTERNAL_CreateSwapchain could return a bool.
+ * Unfortunately, some Win32 NVIDIA drivers are stupid
+ * and will return surface extents of (0, 0)
+ * in certain edge cases, and the swapchain extents are not allowed to be 0.
+ * In this case, the client probably still wants to claim the window
+ * or recreate the swapchain, so we should return 2 to indicate retry.
+ * -cosmonaut
+ */
+#define VULKAN_INTERNAL_TRY_AGAIN 2
+
+static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     VulkanRenderer *renderer,
     WindowData *windowData)
 {
     VkResult vulkanResult;
-    VulkanSwapchainData *swapchainData;
     VkSwapchainCreateInfoKHR swapchainCreateInfo;
     VkImage *swapchainImages;
     VkSemaphoreCreateInfo semaphoreCreateInfo;
@@ -4377,18 +4387,15 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
 
     SDL_assert(_this && _this->Vulkan_CreateSurface);
 
-    swapchainData = SDL_malloc(sizeof(VulkanSwapchainData));
-    swapchainData->frameCounter = 0;
+    windowData->frameCounter = 0;
 
     // Each swapchain must have its own surface.
-
     if (!_this->Vulkan_CreateSurface(
             _this,
             windowData->window,
             renderer->instance,
             NULL, // FIXME: VAllocationCallbacks
-            &swapchainData->surface)) {
-        SDL_free(swapchainData);
+            &windowData->surface)) {
         SDL_LogError(
             SDL_LOG_CATEGORY_GPU,
             "Vulkan_CreateSurface failed: %s",
@@ -4399,11 +4406,11 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
     if (!VULKAN_INTERNAL_QuerySwapchainSupport(
             renderer,
             renderer->physicalDevice,
-            swapchainData->surface,
+            windowData->surface,
             &swapchainSupportDetails)) {
         renderer->vkDestroySurfaceKHR(
             renderer->instance,
-            swapchainData->surface,
+            windowData->surface,
             NULL);
         if (swapchainSupportDetails.formatsLength > 0) {
             SDL_free(swapchainSupportDetails.formats);
@@ -4411,61 +4418,41 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         if (swapchainSupportDetails.presentModesLength > 0) {
             SDL_free(swapchainSupportDetails.presentModes);
         }
-        SDL_free(swapchainData);
-        return false;
-    }
-
-    if (swapchainSupportDetails.capabilities.currentExtent.width == 0 ||
-        swapchainSupportDetails.capabilities.currentExtent.height == 0) {
-        // Not an error, just minimize behavior!
-        renderer->vkDestroySurfaceKHR(
-            renderer->instance,
-            swapchainData->surface,
-            NULL);
-        if (swapchainSupportDetails.formatsLength > 0) {
-            SDL_free(swapchainSupportDetails.formats);
-        }
-        if (swapchainSupportDetails.presentModesLength > 0) {
-            SDL_free(swapchainSupportDetails.presentModes);
-        }
-        SDL_free(swapchainData);
         return false;
     }
 
     // Verify that we can use the requested composition and present mode
-
-    swapchainData->format = SwapchainCompositionToFormat[windowData->swapchainComposition];
-    swapchainData->colorSpace = SwapchainCompositionToColorSpace[windowData->swapchainComposition];
-    swapchainData->swapchainSwizzle = SwapchainCompositionSwizzle[windowData->swapchainComposition];
-    swapchainData->usingFallbackFormat = false;
+    windowData->format = SwapchainCompositionToFormat[windowData->swapchainComposition];
+    windowData->colorSpace = SwapchainCompositionToColorSpace[windowData->swapchainComposition];
+    windowData->swapchainSwizzle = SwapchainCompositionSwizzle[windowData->swapchainComposition];
+    windowData->usingFallbackFormat = false;
 
     hasValidSwapchainComposition = VULKAN_INTERNAL_VerifySwapSurfaceFormat(
-        swapchainData->format,
-        swapchainData->colorSpace,
+        windowData->format,
+        windowData->colorSpace,
         swapchainSupportDetails.formats,
         swapchainSupportDetails.formatsLength);
 
     if (!hasValidSwapchainComposition) {
         // Let's try again with the fallback format...
-        swapchainData->format = SwapchainCompositionToFallbackFormat[windowData->swapchainComposition];
-        swapchainData->usingFallbackFormat = true;
+        windowData->format = SwapchainCompositionToFallbackFormat[windowData->swapchainComposition];
+        windowData->usingFallbackFormat = true;
         hasValidSwapchainComposition = VULKAN_INTERNAL_VerifySwapSurfaceFormat(
-            swapchainData->format,
-            swapchainData->colorSpace,
+            windowData->format,
+            windowData->colorSpace,
             swapchainSupportDetails.formats,
             swapchainSupportDetails.formatsLength);
     }
 
-    swapchainData->presentMode = SDLToVK_PresentMode[windowData->presentMode];
     hasValidPresentMode = VULKAN_INTERNAL_VerifySwapPresentMode(
-        swapchainData->presentMode,
+        SDLToVK_PresentMode[windowData->presentMode],
         swapchainSupportDetails.presentModes,
         swapchainSupportDetails.presentModesLength);
 
     if (!hasValidSwapchainComposition || !hasValidPresentMode) {
         renderer->vkDestroySurfaceKHR(
             renderer->instance,
-            swapchainData->surface,
+            windowData->surface,
             NULL);
 
         if (swapchainSupportDetails.formatsLength > 0) {
@@ -4475,8 +4462,6 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         if (swapchainSupportDetails.presentModesLength > 0) {
             SDL_free(swapchainSupportDetails.presentModes);
         }
-
-        SDL_free(swapchainData);
 
         if (!hasValidSwapchainComposition) {
             SET_STRING_ERROR_AND_RETURN("Device does not support requested swapchain composition!", false);
@@ -4487,6 +4472,22 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         return false;
     }
 
+    // NVIDIA + Win32 can return 0 extent when the window is minimized. Try again!
+    if (swapchainSupportDetails.capabilities.currentExtent.width == 0 ||
+        swapchainSupportDetails.capabilities.currentExtent.height == 0) {
+        renderer->vkDestroySurfaceKHR(
+            renderer->instance,
+            windowData->surface,
+            NULL);
+        if (swapchainSupportDetails.formatsLength > 0) {
+            SDL_free(swapchainSupportDetails.formats);
+        }
+        if (swapchainSupportDetails.presentModesLength > 0) {
+            SDL_free(swapchainSupportDetails.presentModes);
+        }
+        return VULKAN_INTERNAL_TRY_AGAIN;
+    }
+
     // Sync now to be sure that our swapchain size is correct
     SDL_SyncWindow(windowData->window);
     SDL_GetWindowSizeInPixels(
@@ -4494,34 +4495,36 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         &drawableWidth,
         &drawableHeight);
 
-    swapchainData->imageCount = MAX_FRAMES_IN_FLIGHT;
+    windowData->imageCount = MAX_FRAMES_IN_FLIGHT;
+    windowData->width = drawableWidth;
+    windowData->height = drawableHeight;
 
     if (swapchainSupportDetails.capabilities.maxImageCount > 0 &&
-        swapchainData->imageCount > swapchainSupportDetails.capabilities.maxImageCount) {
-        swapchainData->imageCount = swapchainSupportDetails.capabilities.maxImageCount;
+        windowData->imageCount > swapchainSupportDetails.capabilities.maxImageCount) {
+        windowData->imageCount = swapchainSupportDetails.capabilities.maxImageCount;
     }
 
-    if (swapchainData->imageCount < swapchainSupportDetails.capabilities.minImageCount) {
-        swapchainData->imageCount = swapchainSupportDetails.capabilities.minImageCount;
+    if (windowData->imageCount < swapchainSupportDetails.capabilities.minImageCount) {
+        windowData->imageCount = swapchainSupportDetails.capabilities.minImageCount;
     }
 
-    if (swapchainData->presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+    if (windowData->presentMode == SDL_GPU_PRESENTMODE_MAILBOX) {
         /* Required for proper triple-buffering.
          * Note that this is below the above maxImageCount check!
          * If the driver advertises MAILBOX but does not support 3 swap
          * images, it's not real mailbox support, so let it fail hard.
          * -flibit
          */
-        swapchainData->imageCount = SDL_max(swapchainData->imageCount, 3);
+        windowData->imageCount = SDL_max(windowData->imageCount, 3);
     }
 
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchainCreateInfo.pNext = NULL;
     swapchainCreateInfo.flags = 0;
-    swapchainCreateInfo.surface = swapchainData->surface;
-    swapchainCreateInfo.minImageCount = swapchainData->imageCount;
-    swapchainCreateInfo.imageFormat = swapchainData->format;
-    swapchainCreateInfo.imageColorSpace = swapchainData->colorSpace;
+    swapchainCreateInfo.surface = windowData->surface;
+    swapchainCreateInfo.minImageCount = windowData->imageCount;
+    swapchainCreateInfo.imageFormat = windowData->format;
+    swapchainCreateInfo.imageColorSpace = windowData->colorSpace;
     swapchainCreateInfo.imageExtent.width = drawableWidth;
     swapchainCreateInfo.imageExtent.height = drawableHeight;
     swapchainCreateInfo.imageArrayLayers = 1;
@@ -4533,7 +4536,7 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
     swapchainCreateInfo.pQueueFamilyIndices = NULL;
     swapchainCreateInfo.preTransform = swapchainSupportDetails.capabilities.currentTransform;
     swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    swapchainCreateInfo.presentMode = swapchainData->presentMode;
+    swapchainCreateInfo.presentMode = SDLToVK_PresentMode[windowData->presentMode];
     swapchainCreateInfo.clipped = VK_TRUE;
     swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
@@ -4541,7 +4544,7 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
         renderer->logicalDevice,
         &swapchainCreateInfo,
         NULL,
-        &swapchainData->swapchain);
+        &windowData->swapchain);
 
     if (swapchainSupportDetails.formatsLength > 0) {
         SDL_free(swapchainSupportDetails.formats);
@@ -4553,87 +4556,83 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
     if (vulkanResult != VK_SUCCESS) {
         renderer->vkDestroySurfaceKHR(
             renderer->instance,
-            swapchainData->surface,
+            windowData->surface,
             NULL);
-        SDL_free(swapchainData);
         CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSwapchainKHR, false)
     }
 
-    renderer->vkGetSwapchainImagesKHR(
+    vulkanResult = renderer->vkGetSwapchainImagesKHR(
         renderer->logicalDevice,
-        swapchainData->swapchain,
-        &swapchainData->imageCount,
+        windowData->swapchain,
+        &windowData->imageCount,
         NULL);
     CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkGetSwapchainImagesKHR, false)
 
-    swapchainData->textureContainers = SDL_malloc(
-        sizeof(VulkanTextureContainer) * swapchainData->imageCount);
+    windowData->textureContainers = SDL_malloc(
+        sizeof(VulkanTextureContainer) * windowData->imageCount);
 
-    if (!swapchainData->textureContainers) {
+    if (!windowData->textureContainers) {
         renderer->vkDestroySurfaceKHR(
             renderer->instance,
-            swapchainData->surface,
+            windowData->surface,
             NULL);
-        SDL_free(swapchainData);
         return false;
     }
 
-    swapchainImages = SDL_stack_alloc(VkImage, swapchainData->imageCount);
+    swapchainImages = SDL_stack_alloc(VkImage, windowData->imageCount);
 
     vulkanResult = renderer->vkGetSwapchainImagesKHR(
         renderer->logicalDevice,
-        swapchainData->swapchain,
-        &swapchainData->imageCount,
+        windowData->swapchain,
+        &windowData->imageCount,
         swapchainImages);
     CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkGetSwapchainImagesKHR, false)
 
-    for (i = 0; i < swapchainData->imageCount; i += 1) {
+    for (i = 0; i < windowData->imageCount; i += 1) {
 
         // Initialize dummy container
-        SDL_zero(swapchainData->textureContainers[i]);
-        swapchainData->textureContainers[i].canBeCycled = false;
-        swapchainData->textureContainers[i].header.info.width = drawableWidth;
-        swapchainData->textureContainers[i].header.info.height = drawableHeight;
-        swapchainData->textureContainers[i].header.info.layer_count_or_depth = 1;
-        swapchainData->textureContainers[i].header.info.format = SwapchainCompositionToSDLFormat(
+        SDL_zero(windowData->textureContainers[i]);
+        windowData->textureContainers[i].canBeCycled = false;
+        windowData->textureContainers[i].header.info.width = drawableWidth;
+        windowData->textureContainers[i].header.info.height = drawableHeight;
+        windowData->textureContainers[i].header.info.layer_count_or_depth = 1;
+        windowData->textureContainers[i].header.info.format = SwapchainCompositionToSDLFormat(
             windowData->swapchainComposition,
-            swapchainData->usingFallbackFormat);
-        swapchainData->textureContainers[i].header.info.type = SDL_GPU_TEXTURETYPE_2D;
-        swapchainData->textureContainers[i].header.info.num_levels = 1;
-        swapchainData->textureContainers[i].header.info.sample_count = SDL_GPU_SAMPLECOUNT_1;
-        swapchainData->textureContainers[i].header.info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+            windowData->usingFallbackFormat);
+        windowData->textureContainers[i].header.info.type = SDL_GPU_TEXTURETYPE_2D;
+        windowData->textureContainers[i].header.info.num_levels = 1;
+        windowData->textureContainers[i].header.info.sample_count = SDL_GPU_SAMPLECOUNT_1;
+        windowData->textureContainers[i].header.info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
 
-        swapchainData->textureContainers[i].activeTexture = SDL_malloc(sizeof(VulkanTexture));
-        swapchainData->textureContainers[i].activeTexture->image = swapchainImages[i];
+        windowData->textureContainers[i].activeTexture = SDL_malloc(sizeof(VulkanTexture));
+        windowData->textureContainers[i].activeTexture->image = swapchainImages[i];
 
         // Swapchain memory is managed by the driver
-        swapchainData->textureContainers[i].activeTexture->usedRegion = NULL;
+        windowData->textureContainers[i].activeTexture->usedRegion = NULL;
 
-        swapchainData->textureContainers[i].activeTexture->swizzle = swapchainData->swapchainSwizzle;
-        swapchainData->textureContainers[i].activeTexture->aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
-        swapchainData->textureContainers[i].activeTexture->depth = 1;
-        swapchainData->textureContainers[i].activeTexture->usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
-        swapchainData->textureContainers[i].activeTexture->container = &swapchainData->textureContainers[i];
-        SDL_SetAtomicInt(&swapchainData->textureContainers[i].activeTexture->referenceCount, 0);
+        windowData->textureContainers[i].activeTexture->swizzle = windowData->swapchainSwizzle;
+        windowData->textureContainers[i].activeTexture->aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+        windowData->textureContainers[i].activeTexture->depth = 1;
+        windowData->textureContainers[i].activeTexture->usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+        windowData->textureContainers[i].activeTexture->container = &windowData->textureContainers[i];
+        SDL_SetAtomicInt(&windowData->textureContainers[i].activeTexture->referenceCount, 0);
 
         // Create slice
-        swapchainData->textureContainers[i].activeTexture->subresourceCount = 1;
-        swapchainData->textureContainers[i].activeTexture->subresources = SDL_malloc(sizeof(VulkanTextureSubresource));
-        swapchainData->textureContainers[i].activeTexture->subresources[0].parent = swapchainData->textureContainers[i].activeTexture;
-        swapchainData->textureContainers[i].activeTexture->subresources[0].layer = 0;
-        swapchainData->textureContainers[i].activeTexture->subresources[0].level = 0;
-        swapchainData->textureContainers[i].activeTexture->subresources[0].transitioned = true;
-        swapchainData->textureContainers[i].activeTexture->subresources[0].renderTargetViews = SDL_malloc(sizeof(VkImageView));
-        // TODO: ERROR CHECK
+        windowData->textureContainers[i].activeTexture->subresourceCount = 1;
+        windowData->textureContainers[i].activeTexture->subresources = SDL_malloc(sizeof(VulkanTextureSubresource));
+        windowData->textureContainers[i].activeTexture->subresources[0].parent = windowData->textureContainers[i].activeTexture;
+        windowData->textureContainers[i].activeTexture->subresources[0].layer = 0;
+        windowData->textureContainers[i].activeTexture->subresources[0].level = 0;
+        windowData->textureContainers[i].activeTexture->subresources[0].transitioned = true;
+        windowData->textureContainers[i].activeTexture->subresources[0].renderTargetViews = SDL_malloc(sizeof(VkImageView));
         if (!VULKAN_INTERNAL_CreateRenderTargetView(
             renderer,
-            swapchainData->textureContainers[i].activeTexture,
+            windowData->textureContainers[i].activeTexture,
             0,
             0,
-            swapchainData->format,
-            swapchainData->swapchainSwizzle,
-            &swapchainData->textureContainers[i].activeTexture->subresources[0].renderTargetViews[0])) {
-            SDL_free(swapchainData);
+            windowData->format,
+            windowData->swapchainSwizzle,
+            &windowData->textureContainers[i].activeTexture->subresources[0].renderTargetViews[0])) {
             return false;
         }
     }
@@ -4649,10 +4648,9 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
             renderer->logicalDevice,
             &semaphoreCreateInfo,
             NULL,
-            &swapchainData->imageAvailableSemaphore[i]);
+            &windowData->imageAvailableSemaphore[i]);
 
         if (vulkanResult != VK_SUCCESS) {
-            SDL_free(swapchainData);
             CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSemaphore, false)
         }
 
@@ -4660,19 +4658,16 @@ static bool VULKAN_INTERNAL_CreateSwapchain(
             renderer->logicalDevice,
             &semaphoreCreateInfo,
             NULL,
-            &swapchainData->renderFinishedSemaphore[i]);
+            &windowData->renderFinishedSemaphore[i]);
 
         if (vulkanResult != VK_SUCCESS) {
-            SDL_free(swapchainData);
             CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSemaphore, false)
         }
 
-        swapchainData->inFlightFences[i] = NULL;
+        windowData->inFlightFences[i] = NULL;
     }
 
-    windowData->swapchainData = swapchainData;
     windowData->needsSwapchainRecreate = false;
-
     return true;
 }
 
@@ -9348,11 +9343,11 @@ static bool VULKAN_SupportsSwapchainComposition(
     SwapchainSupportDetails supportDetails;
     bool result = false;
 
-    if (windowData == NULL || windowData->swapchainData == NULL) {
+    if (windowData == NULL) {
         SET_STRING_ERROR_AND_RETURN("Must claim window before querying swapchain composition support!", false)
     }
 
-    surface = windowData->swapchainData->surface;
+    surface = windowData->surface;
 
     if (VULKAN_INTERNAL_QuerySwapchainSupport(
             renderer,
@@ -9393,11 +9388,11 @@ static bool VULKAN_SupportsPresentMode(
     SwapchainSupportDetails supportDetails;
     bool result = false;
 
-    if (windowData == NULL || windowData->swapchainData == NULL) {
+    if (windowData == NULL) {
         SET_STRING_ERROR_AND_RETURN("Must claim window before querying present mode support!", false)
     }
 
-    surface = windowData->swapchainData->surface;
+    surface = windowData->surface;
 
     if (VULKAN_INTERNAL_QuerySwapchainSupport(
             renderer,
@@ -9425,12 +9420,13 @@ static bool VULKAN_ClaimWindow(
     WindowData *windowData = VULKAN_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        windowData = SDL_malloc(sizeof(WindowData));
+        windowData = SDL_calloc(1, sizeof(WindowData));
         windowData->window = window;
         windowData->presentMode = SDL_GPU_PRESENTMODE_VSYNC;
         windowData->swapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
 
-        if (VULKAN_INTERNAL_CreateSwapchain(renderer, windowData)) {
+        Uint32 createSwapchainResult = VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
+        if (createSwapchainResult == 1) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
 
             SDL_LockMutex(renderer->windowLock);
@@ -9447,14 +9443,17 @@ static bool VULKAN_ClaimWindow(
 
             SDL_AddEventWatch(VULKAN_INTERNAL_OnWindowResize, window);
 
-            return 1;
+            return true;
+        } else if (createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
+            windowData->needsSwapchainRecreate = true;
+            return true;
         } else {
             SDL_free(windowData);
-            SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window!", 0);
+            return false;
         }
     } else {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Window already claimed!");
-        return 0;
+        return false;
     }
 }
 
@@ -9470,21 +9469,20 @@ static void VULKAN_ReleaseWindow(
         return;
     }
 
-    if (windowData->swapchainData != NULL) {
-        VULKAN_Wait(driverData);
+    VULKAN_Wait(driverData);
 
-        for (i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
-            if (windowData->swapchainData->inFlightFences[i] != NULL) {
-                VULKAN_ReleaseFence(
-                    driverData,
-                    windowData->swapchainData->inFlightFences[i]);
-            }
+    for (i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+        if (windowData->inFlightFences[i] != NULL) {
+            VULKAN_ReleaseFence(
+                driverData,
+                windowData->inFlightFences[i]);
         }
-
-        VULKAN_INTERNAL_DestroySwapchain(
-            (VulkanRenderer *)driverData,
-            windowData);
     }
+
+    VULKAN_INTERNAL_DestroySwapchain(
+        (VulkanRenderer *)driverData,
+        windowData);
+
 
     SDL_LockMutex(renderer->windowLock);
     for (i = 0; i < renderer->claimedWindowCount; i += 1) {
@@ -9502,23 +9500,21 @@ static void VULKAN_ReleaseWindow(
     SDL_RemoveEventWatch(VULKAN_INTERNAL_OnWindowResize, window);
 }
 
-static bool VULKAN_INTERNAL_RecreateSwapchain(
+static Uint32 VULKAN_INTERNAL_RecreateSwapchain(
     VulkanRenderer *renderer,
     WindowData *windowData)
 {
     Uint32 i;
 
-    if (windowData->swapchainData != NULL) {
-        if (!VULKAN_Wait((SDL_GPURenderer *)renderer)) {
-            return false;
-        }
+    if (!VULKAN_Wait((SDL_GPURenderer *)renderer)) {
+        return false;
+    }
 
-        for (i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
-            if (windowData->swapchainData->inFlightFences[i] != NULL) {
-                VULKAN_ReleaseFence(
-                    (SDL_GPURenderer *)renderer,
-                    windowData->swapchainData->inFlightFences[i]);
-            }
+    for (i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+        if (windowData->inFlightFences[i] != NULL) {
+            VULKAN_ReleaseFence(
+                (SDL_GPURenderer *)renderer,
+                windowData->inFlightFences[i]);
         }
     }
 
@@ -9529,56 +9525,63 @@ static bool VULKAN_INTERNAL_RecreateSwapchain(
 static bool VULKAN_AcquireSwapchainTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
-    SDL_GPUTexture **swapchainTexture)
+    SDL_GPUTexture **swapchainTexture,
+    Uint32 *swapchainTextureWidth,
+    Uint32 *swapchainTextureHeight)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
     Uint32 swapchainImageIndex;
     WindowData *windowData;
-    VulkanSwapchainData *swapchainData;
     VkResult acquireResult = VK_SUCCESS;
     VulkanTextureContainer *swapchainTextureContainer = NULL;
     VulkanPresentData *presentData;
 
     *swapchainTexture = NULL;
+    if (swapchainTextureWidth) {
+        *swapchainTextureWidth = 0;
+    }
+    if (swapchainTextureHeight) {
+        *swapchainTextureHeight = 0;
+    }
 
     windowData = VULKAN_INTERNAL_FetchWindowData(window);
     if (windowData == NULL) {
         SET_STRING_ERROR_AND_RETURN("Cannot acquire a swapchain texture from an unclaimed window!", false)
     }
 
-    swapchainData = windowData->swapchainData;
-
-    // Window is claimed but swapchain is invalid!
-    if (swapchainData == NULL) {
-        if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) {
-            // Window is minimized, don't bother
-            return true;
-        }
-
-        // Let's try to recreate
-        VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
-        swapchainData = windowData->swapchainData;
-
-        if (swapchainData == NULL) {
+    // If window data marked as needing swapchain recreate, try to recreate
+    if (windowData->needsSwapchainRecreate) {
+        Uint32 recreateSwapchainResult = VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
+        if (!recreateSwapchainResult) {
             return false;
+        } else if (recreateSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
+            // Edge case, texture is filled in with NULL but not an error
+            return true;
         }
     }
 
-    if (swapchainData->inFlightFences[swapchainData->frameCounter] != NULL) {
-        if (swapchainData->presentMode == VK_PRESENT_MODE_FIFO_KHR) {
+    if (swapchainTextureWidth) {
+        *swapchainTextureWidth = windowData->width;
+    }
+    if (swapchainTextureHeight) {
+        *swapchainTextureHeight = windowData->height;
+    }
+
+    if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
+        if (windowData->presentMode == SDL_GPU_PRESENTMODE_VSYNC) {
             // In VSYNC mode, block until the least recent presented frame is done
             if (!VULKAN_WaitForFences(
                 (SDL_GPURenderer *)renderer,
                 true,
-                &swapchainData->inFlightFences[swapchainData->frameCounter],
+                &windowData->inFlightFences[windowData->frameCounter],
                 1)) {
                 return false;
             }
         } else {
             if (!VULKAN_QueryFence(
                     (SDL_GPURenderer *)renderer,
-                    swapchainData->inFlightFences[swapchainData->frameCounter])) {
+                    windowData->inFlightFences[windowData->frameCounter])) {
                 /*
                  * In MAILBOX or IMMEDIATE mode, if the least recent fence is not signaled,
                  * return true to indicate that there is no error but rendering should be skipped
@@ -9589,47 +9592,35 @@ static bool VULKAN_AcquireSwapchainTexture(
 
         VULKAN_ReleaseFence(
             (SDL_GPURenderer *)renderer,
-            swapchainData->inFlightFences[swapchainData->frameCounter]);
+            windowData->inFlightFences[windowData->frameCounter]);
 
-        swapchainData->inFlightFences[swapchainData->frameCounter] = NULL;
-    }
-
-    // If window data marked as needing swapchain recreate, try to recreate
-    if (windowData->needsSwapchainRecreate) {
-        if (!VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData)) {
-            return false;
-        }
-
-        swapchainData = windowData->swapchainData;
-
-        if (swapchainData == NULL) {
-            return false;
-        }
+        windowData->inFlightFences[windowData->frameCounter] = NULL;
     }
 
     // Finally, try to acquire!
     acquireResult = renderer->vkAcquireNextImageKHR(
         renderer->logicalDevice,
-        swapchainData->swapchain,
+        windowData->swapchain,
         SDL_MAX_UINT64,
-        swapchainData->imageAvailableSemaphore[swapchainData->frameCounter],
+        windowData->imageAvailableSemaphore[windowData->frameCounter],
         VK_NULL_HANDLE,
         &swapchainImageIndex);
 
     // Acquisition is invalid, let's try to recreate
     if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
-        VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
-        swapchainData = windowData->swapchainData;
-
-        if (swapchainData == NULL) {
+        Uint32 recreateSwapchainResult = VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
+        if (!recreateSwapchainResult) {
             return false;
+        } else if (recreateSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
+            // Edge case, texture is filled in with NULL but not an error
+            return true;
         }
 
         acquireResult = renderer->vkAcquireNextImageKHR(
             renderer->logicalDevice,
-            swapchainData->swapchain,
+            windowData->swapchain,
             SDL_MAX_UINT64,
-            swapchainData->imageAvailableSemaphore[swapchainData->frameCounter],
+            windowData->imageAvailableSemaphore[windowData->frameCounter],
             VK_NULL_HANDLE,
             &swapchainImageIndex);
 
@@ -9638,7 +9629,7 @@ static bool VULKAN_AcquireSwapchainTexture(
         }
     }
 
-    swapchainTextureContainer = &swapchainData->textureContainers[swapchainImageIndex];
+    swapchainTextureContainer = &windowData->textureContainers[swapchainImageIndex];
 
     // We need a special execution dependency with pWaitDstStageMask or image transition can start before acquire finishes
 
@@ -9695,7 +9686,7 @@ static bool VULKAN_AcquireSwapchainTexture(
     }
 
     vulkanCommandBuffer->waitSemaphores[vulkanCommandBuffer->waitSemaphoreCount] =
-        swapchainData->imageAvailableSemaphore[swapchainData->frameCounter];
+        windowData->imageAvailableSemaphore[windowData->frameCounter];
     vulkanCommandBuffer->waitSemaphoreCount += 1;
 
     if (vulkanCommandBuffer->signalSemaphoreCount == vulkanCommandBuffer->signalSemaphoreCapacity) {
@@ -9706,7 +9697,7 @@ static bool VULKAN_AcquireSwapchainTexture(
     }
 
     vulkanCommandBuffer->signalSemaphores[vulkanCommandBuffer->signalSemaphoreCount] =
-        swapchainData->renderFinishedSemaphore[swapchainData->frameCounter];
+        windowData->renderFinishedSemaphore[windowData->frameCounter];
     vulkanCommandBuffer->signalSemaphoreCount += 1;
 
     *swapchainTexture = (SDL_GPUTexture *)swapchainTextureContainer;
@@ -9724,13 +9715,9 @@ static SDL_GPUTextureFormat VULKAN_GetSwapchainTextureFormat(
         SET_STRING_ERROR_AND_RETURN("Cannot get swapchain format, window has not been claimed!", SDL_GPU_TEXTUREFORMAT_INVALID)
     }
 
-    if (windowData->swapchainData == NULL) {
-        SET_STRING_ERROR_AND_RETURN("Cannot get swapchain format, swapchain is currently invalid!", SDL_GPU_TEXTUREFORMAT_INVALID)
-    }
-
     return SwapchainCompositionToSDLFormat(
         windowData->swapchainComposition,
-        windowData->swapchainData->usingFallbackFormat);
+        windowData->usingFallbackFormat);
 }
 
 static bool VULKAN_SetSwapchainParameters(
@@ -9757,9 +9744,16 @@ static bool VULKAN_SetSwapchainParameters(
     windowData->presentMode = presentMode;
     windowData->swapchainComposition = swapchainComposition;
 
-    return VULKAN_INTERNAL_RecreateSwapchain(
-        (VulkanRenderer *)driverData,
-        windowData);
+    Uint32 recreateSwapchainResult = VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
+    if (!recreateSwapchainResult) {
+        return false;
+    } else if (recreateSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
+        // Edge case, swapchain extent is (0, 0) but this is not an error
+        windowData->needsSwapchainRecreate = true;
+        return true;
+    }
+
+    return true;
 }
 
 // Submission structure
@@ -10109,7 +10103,7 @@ static bool VULKAN_Submit(
     for (Uint32 j = 0; j < vulkanCommandBuffer->presentDataCount; j += 1) {
         swapchainImageIndex = vulkanCommandBuffer->presentDatas[j].swapchainImageIndex;
         swapchainTextureSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
-            &vulkanCommandBuffer->presentDatas[j].windowData->swapchainData->textureContainers[swapchainImageIndex],
+            &vulkanCommandBuffer->presentDatas[j].windowData->textureContainers[swapchainImageIndex],
             0,
             0);
 
@@ -10180,9 +10174,9 @@ static bool VULKAN_Submit(
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.pNext = NULL;
         presentInfo.pWaitSemaphores =
-            &presentData->windowData->swapchainData->renderFinishedSemaphore[presentData->windowData->swapchainData->frameCounter];
+            &presentData->windowData->renderFinishedSemaphore[presentData->windowData->frameCounter];
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pSwapchains = &presentData->windowData->swapchainData->swapchain;
+        presentInfo.pSwapchains = &presentData->windowData->swapchain;
         presentInfo.swapchainCount = 1;
         presentInfo.pImageIndices = &presentData->swapchainImageIndex;
         presentInfo.pResults = NULL;
@@ -10191,16 +10185,18 @@ static bool VULKAN_Submit(
             renderer->unifiedQueue,
             &presentInfo);
 
-        presentData->windowData->swapchainData->frameCounter =
-            (presentData->windowData->swapchainData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
+        presentData->windowData->frameCounter =
+            (presentData->windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
 
         if (presentResult != VK_SUCCESS) {
-            result = VULKAN_INTERNAL_RecreateSwapchain(
-                renderer,
-                presentData->windowData);
+            if (presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
+                presentData->windowData->needsSwapchainRecreate = true;
+            } else {
+                CHECK_VULKAN_ERROR_AND_RETURN(presentResult, vkQueuePresentKHR, false)
+            }
         } else {
             // If presenting, the swapchain is using the in-flight fence
-            presentData->windowData->swapchainData->inFlightFences[presentData->windowData->swapchainData->frameCounter] = (SDL_GPUFence*)vulkanCommandBuffer->inFlightFence;
+            presentData->windowData->inFlightFences[presentData->windowData->frameCounter] = (SDL_GPUFence*)vulkanCommandBuffer->inFlightFence;
 
             (void)SDL_AtomicIncRef(&vulkanCommandBuffer->inFlightFence->referenceCount);
         }

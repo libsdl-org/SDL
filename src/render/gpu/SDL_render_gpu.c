@@ -957,7 +957,8 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
 
     SDL_GPUTexture *swapchain;
-    bool result = SDL_AcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain);
+    Uint32 swapchain_texture_width, swapchain_texture_height;
+    bool result = SDL_AcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain, &swapchain_texture_width, &swapchain_texture_height);
 
     if (!result) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to acquire swapchain texture: %s", SDL_GetError());
@@ -967,8 +968,6 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
         goto submit;
     }
 
-    SDL_GPUTextureFormat swapchain_fmt = SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window);
-
     SDL_GPUBlitInfo blit_info;
     SDL_zero(blit_info);
 
@@ -976,17 +975,12 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
     blit_info.source.w = data->backbuffer.width;
     blit_info.source.h = data->backbuffer.height;
     blit_info.destination.texture = swapchain;
-    blit_info.destination.w = renderer->output_pixel_w;
-    blit_info.destination.h = renderer->output_pixel_h;
+    blit_info.destination.w = swapchain_texture_width;
+    blit_info.destination.h = swapchain_texture_height;
     blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
     blit_info.filter = SDL_GPU_FILTER_LINEAR;
 
     SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
-
-    if (renderer->output_pixel_w != data->backbuffer.width || renderer->output_pixel_h != data->backbuffer.height || swapchain_fmt != data->backbuffer.format) {
-        SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
-        CreateBackbuffer(data, renderer->output_pixel_w, renderer->output_pixel_h, swapchain_fmt);
-    }
 
 // *** FIXME ***
 // This is going to block if there is ever a frame in flight.
@@ -1005,6 +999,11 @@ submit:
 #else
     SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
 #endif
+
+    if (swapchain != NULL && (swapchain_texture_width != data->backbuffer.width || swapchain_texture_height != data->backbuffer.height)) {
+        SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
+        CreateBackbuffer(data, swapchain_texture_width, swapchain_texture_height, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
+    }
 
     data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
 

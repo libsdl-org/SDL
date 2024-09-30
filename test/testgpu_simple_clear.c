@@ -82,7 +82,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 	}
 
     SDL_GPUTexture *swapchainTexture;
-	if (!SDL_AcquireGPUSwapchainTexture(cmdbuf, state->windows[0], &swapchainTexture)) {
+	if (!SDL_AcquireGPUSwapchainTexture(cmdbuf, state->windows[0], &swapchainTexture, NULL, NULL)) {
         SDL_Log("SDL_AcquireGPUSwapchainTexture failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
