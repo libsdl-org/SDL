@@ -1212,7 +1212,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_unsetenv_unsafe(const char *name);
  *
  * \param a a pointer to the first element being compared.
  * \param b a pointer to the second element being compared.
- * \returns -1 if `a` should be sorted before `b`, 1 if `b` should be sorted before `a`, 0 if they are equal. If two elements are equal, their order in the sorted array is undefined.
+ * \returns -1 if `a` should be sorted before `b`, 1 if `b` should be sorted
+ *          before `a`, 0 if they are equal. If two elements are equal, their
+ *          order in the sorted array is undefined.
  *
  * \since This callback is available since SDL 3.0.0.
  *
@@ -1225,6 +1227,7 @@ typedef int (SDLCALL *SDL_CompareCallback)(const void *a, const void *b);
  * Sort an array.
  *
  * For example:
+ *
  * ```c
  * typedef struct {
  *     int key;
@@ -1268,6 +1271,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size
  * Perform a binary search on a previously sorted array.
  *
  * For example:
+ *
  * ```c
  * typedef struct {
  *     int key;
@@ -1315,7 +1319,9 @@ extern SDL_DECLSPEC void * SDLCALL SDL_bsearch(const void *key, const void *base
  * \param userdata the `userdata` pointer passed to the sort function.
  * \param a a pointer to the first element being compared.
  * \param b a pointer to the second element being compared.
- * \returns -1 if `a` should be sorted before `b`, 1 if `b` should be sorted before `a`, 0 if they are equal. If two elements are equal, their order in the sorted array is undefined.
+ * \returns -1 if `a` should be sorted before `b`, 1 if `b` should be sorted
+ *          before `a`, 0 if they are equal. If two elements are equal, their
+ *          order in the sorted array is undefined.
  *
  * \since This callback is available since SDL 3.0.0.
  *
@@ -1328,6 +1334,7 @@ typedef int (SDLCALL *SDL_CompareCallback_r)(void *userdata, const void *a, cons
  * Sort an array, passing a userdata pointer to the compare function.
  *
  * For example:
+ *
  * ```c
  * typedef enum {
  *     sort_increasing,
@@ -1375,9 +1382,11 @@ typedef int (SDLCALL *SDL_CompareCallback_r)(void *userdata, const void *a, cons
 extern SDL_DECLSPEC void SDLCALL SDL_qsort_r(void *base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void *userdata);
 
 /**
- * Perform a binary search on a previously sorted array, passing a userdata pointer to the compare function.
+ * Perform a binary search on a previously sorted array, passing a userdata
+ * pointer to the compare function.
  *
  * For example:
+ *
  * ```c
  * typedef enum {
  *     sort_increasing,
