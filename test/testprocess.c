@@ -477,6 +477,9 @@ static int process_testStdinToStdout(void *arg)
             }
             total_written += amount_written;
             SDL_FlushIO(process_stdin);
+            if (total_written == text_in_size) {
+                SDLTest_Log("All data written to stdin");
+            }
         }
 
         /* FIXME: this needs a rate limit */
