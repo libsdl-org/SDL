@@ -1860,7 +1860,7 @@ static Uint8 VULKAN_INTERNAL_BindImageMemory(
 
     SDL_UnlockMutex(usedRegion->allocation->memoryLock);
 
-    CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkBindBufferMemory, 0)
+    CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkBindImageMemory, 0)
 
     return 1;
 }
