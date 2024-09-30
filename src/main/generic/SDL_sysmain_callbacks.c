@@ -75,7 +75,7 @@ int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, 
 
         SDL_RemoveHintCallback(SDL_HINT_MAIN_CALLBACK_RATE, MainCallbackRateHintChanged, NULL);
     }
-    SDL_QuitMainCallbacks();
+    SDL_QuitMainCallbacks(rc);
 
     return (rc == SDL_APP_FAILURE) ? 1 : 0;
 }

@@ -55,7 +55,7 @@ static SDLIosMainCallbacksDisplayLink *globalDisplayLink;
         [self.displayLink invalidate];
         self.displayLink = nil;
         globalDisplayLink = nil;
-        SDL_QuitMainCallbacks();
+        SDL_QuitMainCallbacks(rc);
         SDL_UpdateLifecycleObserver();
         exit((rc == SDL_APP_FAILURE) ? 1 : 0);
     }
@@ -66,16 +66,18 @@ static SDLIosMainCallbacksDisplayLink *globalDisplayLink;
 // When we return from here, we're living in the RunLoop, and a CADisplayLink is firing regularly for us.
 int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {
-    const SDL_AppResult rc = SDL_InitMainCallbacks(argc, argv, appinit, appiter, appevent, appquit);
+    SDL_AppResult rc = SDL_InitMainCallbacks(argc, argv, appinit, appiter, appevent, appquit);
     if (rc == SDL_APP_CONTINUE) {
         globalDisplayLink = [[SDLIosMainCallbacksDisplayLink alloc] init:appiter quitfunc:appquit];
-        if (globalDisplayLink != nil) {
+        if (globalDisplayLink == nil) {
+            rc = SDL_APP_FAILURE;
+        } else {
             return 0;  // this will fall all the way out of SDL_main, where UIApplicationMain will keep running the RunLoop.
         }
     }
 
     // appinit requested quit, just bounce out now.
-    SDL_QuitMainCallbacks();
+    SDL_QuitMainCallbacks(rc);
     exit((rc == SDL_APP_FAILURE) ? 1 : 0);
 
     return 1;  // just in case.

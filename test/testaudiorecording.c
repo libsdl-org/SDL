@@ -196,7 +196,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *appstate)
+void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     SDL_Log("Shutting down.\n");
     const SDL_AudioDeviceID devid_in = SDL_GetAudioStreamDevice(stream_in);

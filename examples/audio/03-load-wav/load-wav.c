@@ -93,7 +93,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 }
 
 /* This function runs once at shutdown. */
-void SDL_AppQuit(void *appstate)
+void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     SDL_free(wav_data);  /* strictly speaking, this isn't necessary because the process is ending, but it's good policy. */
     /* SDL will clean up the window/renderer for us. */

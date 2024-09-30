@@ -1256,7 +1256,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *appstate)
+void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     while (things) {
         DestroyThing(things);  /* make sure all the audio devices are closed, etc. */

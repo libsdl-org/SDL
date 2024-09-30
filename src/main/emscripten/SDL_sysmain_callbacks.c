@@ -28,7 +28,7 @@ static void EmscriptenInternalMainloop(void)
 {
     const SDL_AppResult rc = SDL_IterateMainCallbacks(true);
     if (rc != SDL_APP_CONTINUE) {
-        SDL_QuitMainCallbacks();
+        SDL_QuitMainCallbacks(rc);
         emscripten_cancel_main_loop();  // kill" the mainloop, so it stops calling back into it.
         exit((rc == SDL_APP_FAILURE) ? 1 : 0);  // hopefully this takes down everything else, too.
     }
@@ -40,7 +40,7 @@ int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, 
     if (rc == SDL_APP_CONTINUE) {
         emscripten_set_main_loop(EmscriptenInternalMainloop, 0, 0);  // run at refresh rate, don't throw an exception since we do an orderly return.
     } else {
-        SDL_QuitMainCallbacks();
+        SDL_QuitMainCallbacks(rc);
     }
     return (rc == SDL_APP_FAILURE) ? 1 : 0;
 }

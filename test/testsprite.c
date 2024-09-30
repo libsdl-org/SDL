@@ -42,7 +42,7 @@ static bool suspend_when_occluded;
 /* -1: infinite random moves (default); >=0: enables N deterministic moves */
 static int iterations = -1;
 
-void SDL_AppQuit(void *appstate)
+void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     SDL_free(sprites);
     SDL_free(positions);
