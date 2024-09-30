@@ -363,7 +363,7 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
     // if path ends with any '/', chop them off, so we don't confuse the pattern matcher later.
     char *pathcpy = NULL;
     size_t pathlen = SDL_strlen(path);
-    if (pathlen && (path[pathlen-1] == '/')) {
+    if ((pathlen > 1) && (path[pathlen-1] == '/')) {
         pathcpy = SDL_strdup(path);
         if (!pathcpy) {
             return NULL;
