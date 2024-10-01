@@ -25,7 +25,7 @@
 #if SDL_HAVE_YUV
 
 #include "SDL_yuv_sw_c.h"
-#include "../video/SDL_blit.h"
+#include "../video/SDL_surface_c.h"
 #include "../video/SDL_yuv_c.h"
 
 SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspace colorspace, int w, int h)

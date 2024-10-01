@@ -33,6 +33,7 @@
 */
 
 #include "SDL_pixels_c.h"
+#include "SDL_surface_c.h"
 
 #define SAVE_32BIT_BMP
 
@@ -518,7 +519,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
         if (SDL_ReadIO(src, bits, surface->pitch) != (size_t)surface->pitch) {
             goto done;
         }
-        if (biBitCount == 8 && surface->internal->palette && biClrUsed < (1u << biBitCount)) {
+        if (biBitCount == 8 && surface->palette && biClrUsed < (1u << biBitCount)) {
             for (i = 0; i < surface->w; ++i) {
                 if (bits[i] >= biClrUsed) {
                     SDL_SetError("A BMP image contains a pixel with a color out of the palette");
@@ -644,12 +645,12 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
         // We can save alpha information in a 32-bit BMP
         if (SDL_BITSPERPIXEL(surface->format) >= 8 &&
             (SDL_ISPIXELFORMAT_ALPHA(surface->format) ||
-             surface->internal->map.info.flags & SDL_COPY_COLORKEY)) {
+             surface->map.info.flags & SDL_COPY_COLORKEY)) {
             save32bit = true;
         }
 #endif // SAVE_32BIT_BMP
 
-        if (surface->internal->palette && !save32bit) {
+        if (surface->palette && !save32bit) {
             if (SDL_BITSPERPIXEL(surface->format) == 8) {
                 intermediate_surface = surface;
             } else {
@@ -659,13 +660,13 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
             }
         } else if ((SDL_BITSPERPIXEL(surface->format) == 24) && !save32bit &&
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                   (surface->internal->format->Rmask == 0x00FF0000) &&
-                   (surface->internal->format->Gmask == 0x0000FF00) &&
-                   (surface->internal->format->Bmask == 0x000000FF)
+                   (surface->fmt->Rmask == 0x00FF0000) &&
+                   (surface->fmt->Gmask == 0x0000FF00) &&
+                   (surface->fmt->Bmask == 0x000000FF)
 #else
-                   (surface->internal->format->Rmask == 0x000000FF) &&
-                   (surface->internal->format->Gmask == 0x0000FF00) &&
-                   (surface->internal->format->Bmask == 0x00FF0000)
+                   (surface->fmt->Rmask == 0x000000FF) &&
+                   (surface->fmt->Gmask == 0x0000FF00) &&
+                   (surface->fmt->Bmask == 0x00FF0000)
 #endif
         ) {
             intermediate_surface = surface;
@@ -697,7 +698,7 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
     }
 
     if (SDL_LockSurface(intermediate_surface)) {
-        const size_t bw = intermediate_surface->w * intermediate_surface->internal->format->bytes_per_pixel;
+        const size_t bw = intermediate_surface->w * intermediate_surface->fmt->bytes_per_pixel;
 
         // Set the BMP file header values
         bfSize = 0; // We'll write this when we're done
@@ -723,13 +724,13 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
         biWidth = intermediate_surface->w;
         biHeight = intermediate_surface->h;
         biPlanes = 1;
-        biBitCount = intermediate_surface->internal->format->bits_per_pixel;
+        biBitCount = intermediate_surface->fmt->bits_per_pixel;
         biCompression = BI_RGB;
         biSizeImage = intermediate_surface->h * intermediate_surface->pitch;
         biXPelsPerMeter = 0;
         biYPelsPerMeter = 0;
-        if (intermediate_surface->internal->palette) {
-            biClrUsed = intermediate_surface->internal->palette->ncolors;
+        if (intermediate_surface->palette) {
+            biClrUsed = intermediate_surface->palette->ncolors;
         } else {
             biClrUsed = 0;
         }
@@ -787,12 +788,12 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
         }
 
         // Write the palette (in BGR color order)
-        if (intermediate_surface->internal->palette) {
+        if (intermediate_surface->palette) {
             SDL_Color *colors;
             int ncolors;
 
-            colors = intermediate_surface->internal->palette->colors;
-            ncolors = intermediate_surface->internal->palette->ncolors;
+            colors = intermediate_surface->palette->colors;
+            ncolors = intermediate_surface->palette->ncolors;
             for (i = 0; i < ncolors; ++i) {
                 if (!SDL_WriteU8(dst, colors[i].b) ||
                     !SDL_WriteU8(dst, colors[i].g) ||

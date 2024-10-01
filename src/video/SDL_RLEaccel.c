@@ -88,7 +88,7 @@
  */
 
 #include "SDL_sysvideo.h"
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 #include "SDL_RLEaccel_c.h"
 
 #define PIXEL_COPY(to, from, len, bpp) \
@@ -434,7 +434,7 @@
 static void RLEClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
                         Uint8 *dstbuf, const SDL_Rect *srcrect, unsigned alpha)
 {
-    const SDL_PixelFormatDetails *fmt = surf_dst->internal->format;
+    const SDL_PixelFormatDetails *fmt = surf_dst->fmt;
 
     CHOOSE_BLIT(RLECLIPBLIT, alpha, fmt);
 }
@@ -461,8 +461,8 @@ static bool SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
     // Set up the source and destination pointers
     x = dstrect->x;
     y = dstrect->y;
-    dstbuf = (Uint8 *)surf_dst->pixels + y * surf_dst->pitch + x * surf_src->internal->format->bytes_per_pixel;
-    srcbuf = (Uint8 *)surf_src->internal->map.data + sizeof(SDL_PixelFormat);
+    dstbuf = (Uint8 *)surf_dst->pixels + y * surf_dst->pitch + x * surf_src->fmt->bytes_per_pixel;
+    srcbuf = (Uint8 *)surf_src->map.data + sizeof(SDL_PixelFormat);
 
     {
         // skip lines at the top if necessary
@@ -488,7 +488,7 @@ static bool SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
         }                           \
     }
 
-            switch (surf_src->internal->format->bytes_per_pixel) {
+            switch (surf_src->fmt->bytes_per_pixel) {
             case 1:
                 RLESKIP(1, Uint8);
                 break;
@@ -507,12 +507,12 @@ static bool SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
         }
     }
 
-    alpha = surf_src->internal->map.info.a;
+    alpha = surf_src->map.info.a;
     // if left or right edge clipping needed, call clip blit
     if (srcrect->x || srcrect->w != surf_src->w) {
         RLEClipBlit(w, srcbuf, surf_dst, dstbuf, srcrect, alpha);
     } else {
-        const SDL_PixelFormatDetails *fmt = surf_src->internal->format;
+        const SDL_PixelFormatDetails *fmt = surf_src->fmt;
 
 #define RLEBLIT(bpp, Type, do_blit)                                   \
     do {                                                              \
@@ -608,7 +608,7 @@ done:
 static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
                              Uint8 *dstbuf, const SDL_Rect *srcrect)
 {
-    const SDL_PixelFormatDetails *df = surf_dst->internal->format;
+    const SDL_PixelFormatDetails *df = surf_dst->fmt;
     /*
      * clipped blitter: Ptype is the destination pixel type,
      * Ctype the translucent count type, and do_blend the macro
@@ -703,7 +703,7 @@ static bool SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcr
     int x, y;
     int w = surf_src->w;
     Uint8 *srcbuf, *dstbuf;
-    const SDL_PixelFormatDetails *df = surf_dst->internal->format;
+    const SDL_PixelFormatDetails *df = surf_dst->fmt;
 
     // Lock the destination if necessary
     if (SDL_MUSTLOCK(surf_dst)) {
@@ -715,7 +715,7 @@ static bool SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcr
     x = dstrect->x;
     y = dstrect->y;
     dstbuf = (Uint8 *)surf_dst->pixels + y * surf_dst->pitch + x * df->bytes_per_pixel;
-    srcbuf = (Uint8 *)surf_src->internal->map.data + sizeof(SDL_PixelFormat);
+    srcbuf = (Uint8 *)surf_src->map.data + sizeof(SDL_PixelFormat);
 
     {
         // skip lines at the top if necessary
@@ -1002,12 +1002,12 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
     int (*copy_transl)(void *, const Uint32 *, int,
                        const SDL_PixelFormatDetails *, const SDL_PixelFormatDetails *);
 
-    dest = surface->internal->map.info.dst_surface;
+    dest = surface->map.info.dst_surface;
     if (!dest) {
         return false;
     }
-    df = dest->internal->format;
-    if (surface->internal->format->bits_per_pixel != 32) {
+    df = dest->fmt;
+    if (surface->fmt->bits_per_pixel != 32) {
         return false; // only 32bpp source supported
     }
 
@@ -1071,7 +1071,7 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
     {
         int x, y;
         int h = surface->h, w = surface->w;
-        const SDL_PixelFormatDetails *sf = surface->internal->format;
+        const SDL_PixelFormatDetails *sf = surface->fmt;
         Uint32 *src = (Uint32 *)surface->pixels;
         Uint8 *lastline = dst; // end of last non-blank line
 
@@ -1194,7 +1194,7 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
         if (!p) {
             p = rlebuf;
         }
-        surface->internal->map.data = p;
+        surface->map.data = p;
     }
 
     return true;
@@ -1237,7 +1237,7 @@ static bool RLEColorkeySurface(SDL_Surface *surface)
     int y;
     Uint8 *srcbuf, *lastline;
     int maxsize = 0;
-    const int bpp = surface->internal->format->bytes_per_pixel;
+    const int bpp = surface->fmt->bytes_per_pixel;
     getpix_func getpix;
     Uint32 ckey, rgbmask;
     int w, h;
@@ -1272,8 +1272,8 @@ static bool RLEColorkeySurface(SDL_Surface *surface)
     srcbuf = (Uint8 *)surface->pixels;
     maxn = bpp == 4 ? 65535 : 255;
     dst = rlebuf;
-    rgbmask = ~surface->internal->format->Amask;
-    ckey = surface->internal->map.info.colorkey & rgbmask;
+    rgbmask = ~surface->fmt->Amask;
+    ckey = surface->map.info.colorkey & rgbmask;
     lastline = dst;
     getpix = getpixes[bpp - 1];
     w = surface->w;
@@ -1362,7 +1362,7 @@ static bool RLEColorkeySurface(SDL_Surface *surface)
         if (!p) {
             p = rlebuf;
         }
-        surface->internal->map.data = p;
+        surface->map.data = p;
     }
 
     return true;
@@ -1373,7 +1373,7 @@ bool SDL_RLESurface(SDL_Surface *surface)
     int flags;
 
     // Clear any previous RLE conversion
-    if (surface->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
+    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         SDL_UnRLESurface(surface, true);
     }
 
@@ -1387,7 +1387,7 @@ bool SDL_RLESurface(SDL_Surface *surface)
         return false;
     }
 
-    flags = surface->internal->map.info.flags;
+    flags = surface->map.info.flags;
     if (flags & SDL_COPY_COLORKEY) {
         // ok
     } else if ((flags & SDL_COPY_BLEND) && SDL_ISPIXELFORMAT_ALPHA(surface->format)) {
@@ -1407,24 +1407,24 @@ bool SDL_RLESurface(SDL_Surface *surface)
 
     // Encode and set up the blit
     if (!SDL_ISPIXELFORMAT_ALPHA(surface->format) || !(flags & SDL_COPY_BLEND)) {
-        if (!surface->internal->map.identity) {
+        if (!surface->map.identity) {
             return false;
         }
         if (!RLEColorkeySurface(surface)) {
             return false;
         }
-        surface->internal->map.blit = SDL_RLEBlit;
-        surface->internal->map.info.flags |= SDL_COPY_RLE_COLORKEY;
+        surface->map.blit = SDL_RLEBlit;
+        surface->map.info.flags |= SDL_COPY_RLE_COLORKEY;
     } else {
         if (!RLEAlphaSurface(surface)) {
             return false;
         }
-        surface->internal->map.blit = SDL_RLEAlphaBlit;
-        surface->internal->map.info.flags |= SDL_COPY_RLE_ALPHAKEY;
+        surface->map.blit = SDL_RLEAlphaBlit;
+        surface->map.info.flags |= SDL_COPY_RLE_ALPHAKEY;
     }
 
     // The surface is now accelerated
-    surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
+    surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
 
     return true;
 }
@@ -1439,8 +1439,8 @@ static bool UnRLEAlpha(SDL_Surface *surface)
 {
     Uint8 *srcbuf;
     Uint32 *dst;
-    const SDL_PixelFormatDetails *sf = surface->internal->format;
-    const SDL_PixelFormatDetails *df = SDL_GetPixelFormatDetails(*(SDL_PixelFormat *)surface->internal->map.data);
+    const SDL_PixelFormatDetails *sf = surface->fmt;
+    const SDL_PixelFormatDetails *df = SDL_GetPixelFormatDetails(*(SDL_PixelFormat *)surface->map.data);
     int (*uncopy_opaque)(Uint32 *, const void *, int,
                          const SDL_PixelFormatDetails *, const SDL_PixelFormatDetails *);
     int (*uncopy_transl)(Uint32 *, const void *, int,
@@ -1469,7 +1469,7 @@ static bool UnRLEAlpha(SDL_Surface *surface)
     SDL_memset(surface->pixels, 0, (size_t)surface->h * surface->pitch);
 
     dst = (Uint32 *)surface->pixels;
-    srcbuf = (Uint8 *)surface->internal->map.data + sizeof(SDL_PixelFormat);
+    srcbuf = (Uint8 *)surface->map.data + sizeof(SDL_PixelFormat);
     for (;;) {
         // copy opaque pixels
         int ofs = 0;
@@ -1518,30 +1518,30 @@ end_function:
 
 void SDL_UnRLESurface(SDL_Surface *surface, bool recode)
 {
-    if (surface->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        surface->internal->flags &= ~SDL_INTERNAL_SURFACE_RLEACCEL;
+    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
+        surface->internal_flags &= ~SDL_INTERNAL_SURFACE_RLEACCEL;
 
         if (recode && !(surface->flags & SDL_SURFACE_PREALLOCATED)) {
-            if (surface->internal->map.info.flags & SDL_COPY_RLE_COLORKEY) {
+            if (surface->map.info.flags & SDL_COPY_RLE_COLORKEY) {
                 SDL_Rect full;
                 size_t size;
 
                 // re-create the original surface
                 if (!SDL_size_mul_check_overflow(surface->h, surface->pitch, &size)) {
                     // Memory corruption?
-                    surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
+                    surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
                     return;
                 }
                 surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
                 if (!surface->pixels) {
                     // Oh crap...
-                    surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
+                    surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
                     return;
                 }
                 surface->flags |= SDL_SURFACE_SIMD_ALIGNED;
 
                 // fill it with the background color
-                SDL_FillSurfaceRect(surface, NULL, surface->internal->map.info.colorkey);
+                SDL_FillSurfaceRect(surface, NULL, surface->map.info.colorkey);
 
                 // now render the encoded surface
                 full.x = full.y = 0;
@@ -1551,16 +1551,16 @@ void SDL_UnRLESurface(SDL_Surface *surface, bool recode)
             } else {
                 if (!UnRLEAlpha(surface)) {
                     // Oh crap...
-                    surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
+                    surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
                     return;
                 }
             }
         }
-        surface->internal->map.info.flags &=
+        surface->map.info.flags &=
             ~(SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY);
 
-        SDL_free(surface->internal->map.data);
-        surface->internal->map.data = NULL;
+        SDL_free(surface->map.data);
+        surface->map.data = NULL;
     }
 }
 

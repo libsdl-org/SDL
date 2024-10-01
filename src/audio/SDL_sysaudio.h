@@ -24,8 +24,6 @@
 #ifndef SDL_sysaudio_h_
 #define SDL_sysaudio_h_
 
-#include "../SDL_hashtable.h"
-
 #define DEBUG_AUDIOSTREAM 0
 #define DEBUG_AUDIO_CONVERT 0
 

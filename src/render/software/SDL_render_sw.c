@@ -142,8 +142,8 @@ static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     src = (Uint8 *)pixels;
     dst = (Uint8 *)surface->pixels +
           rect->y * surface->pitch +
-          rect->x * surface->internal->format->bytes_per_pixel;
-    length = (size_t)rect->w * surface->internal->format->bytes_per_pixel;
+          rect->x * surface->fmt->bytes_per_pixel;
+    length = (size_t)rect->w * surface->fmt->bytes_per_pixel;
     for (row = 0; row < rect->h; ++row) {
         SDL_memcpy(dst, src, length);
         src += pitch;
@@ -162,7 +162,7 @@ static bool SW_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     *pixels =
         (void *)((Uint8 *)surface->pixels + rect->y * surface->pitch +
-                 rect->x * surface->internal->format->bytes_per_pixel);
+                 rect->x * surface->fmt->bytes_per_pixel);
     *pitch = surface->pitch;
     return true;
 }
@@ -364,7 +364,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
     SDL_GetSurfaceColorMod(src, &rMod, &gMod, &bMod);
 
     // SDLgfx_rotateSurface only accepts 32-bit surfaces with a 8888 layout. Everything else has to be converted.
-    if (src->internal->format->bits_per_pixel != 32 || SDL_PIXELLAYOUT(src->format) != SDL_PACKEDLAYOUT_8888 || !SDL_ISPIXELFORMAT_ALPHA(src->format)) {
+    if (src->fmt->bits_per_pixel != 32 || SDL_PIXELLAYOUT(src->format) != SDL_PACKEDLAYOUT_8888 || !SDL_ISPIXELFORMAT_ALPHA(src->format)) {
         blitRequired = true;
     }
 
@@ -984,7 +984,7 @@ static SDL_Surface *SW_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *
 
     pixels = (void *)((Uint8 *)surface->pixels +
                       rect->y * surface->pitch +
-                      rect->x * surface->internal->format->bytes_per_pixel);
+                      rect->x * surface->fmt->bytes_per_pixel);
 
     return SDL_DuplicatePixels(rect->w, rect->h, surface->format, SDL_COLORSPACE_SRGB, pixels, surface->pitch);
 }

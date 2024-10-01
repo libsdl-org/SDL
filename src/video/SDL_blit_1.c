@@ -22,7 +22,7 @@
 
 #if SDL_HAVE_BLIT_1
 
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 #include "SDL_sysvideo.h"
 
 // Functions to blit from 8-bit surfaces to other surfaces
@@ -518,13 +518,13 @@ SDL_BlitFunc SDL_CalculateBlit1(SDL_Surface *surface)
 {
     int which;
 
-    if (SDL_BITSPERPIXEL(surface->internal->map.info.dst_fmt->format) < 8) {
+    if (SDL_BITSPERPIXEL(surface->map.info.dst_fmt->format) < 8) {
         which = 0;
     } else {
-        which = SDL_BYTESPERPIXEL(surface->internal->map.info.dst_fmt->format);
+        which = SDL_BYTESPERPIXEL(surface->map.info.dst_fmt->format);
     }
 
-    switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
+    switch (surface->map.info.flags & ~SDL_COPY_RLE_MASK) {
     case 0:
         if (which < SDL_arraysize(one_blit)) {
             return one_blit[which];
@@ -538,7 +538,7 @@ SDL_BlitFunc SDL_CalculateBlit1(SDL_Surface *surface)
         break;
 
     case SDL_COPY_COLORKEY | SDL_COPY_BLEND:  // this is not super-robust but handles a specific case we found sdl12-compat.
-        if (surface->internal->map.info.a == 255) {
+        if (surface->map.info.a == 255) {
             if (which < SDL_arraysize(one_blitkey)) {
                 return one_blitkey[which];
             }

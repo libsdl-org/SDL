@@ -25,7 +25,7 @@
 
 #include "SDL_sysvideo.h"
 #include "SDL_egl_c.h"
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 #include "SDL_pixels_c.h"
 #include "SDL_rect_c.h"
 #include "SDL_video_c.h"
@@ -3414,7 +3414,7 @@ SDL_Surface *SDL_GetWindowSurface(SDL_Window *window)
 
     if (!window->surface_valid) {
         if (window->surface) {
-            window->surface->internal->flags &= ~SDL_INTERNAL_SURFACE_DONTFREE;
+            window->surface->internal_flags &= ~SDL_INTERNAL_SURFACE_DONTFREE;
             SDL_DestroySurface(window->surface);
             window->surface = NULL;
         }
@@ -3422,7 +3422,7 @@ SDL_Surface *SDL_GetWindowSurface(SDL_Window *window)
         window->surface = SDL_CreateWindowFramebuffer(window);
         if (window->surface) {
             window->surface_valid = true;
-            window->surface->internal->flags |= SDL_INTERNAL_SURFACE_DONTFREE;
+            window->surface->internal_flags |= SDL_INTERNAL_SURFACE_DONTFREE;
         }
     }
     return window->surface;
@@ -3480,7 +3480,7 @@ bool SDL_DestroyWindowSurface(SDL_Window *window)
     CHECK_WINDOW_MAGIC(window, false);
 
     if (window->surface) {
-        window->surface->internal->flags &= ~SDL_INTERNAL_SURFACE_DONTFREE;
+        window->surface->internal_flags &= ~SDL_INTERNAL_SURFACE_DONTFREE;
         SDL_DestroySurface(window->surface);
         window->surface = NULL;
         window->surface_valid = false;

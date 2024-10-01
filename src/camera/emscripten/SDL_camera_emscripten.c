@@ -25,6 +25,7 @@
 #include "../SDL_syscamera.h"
 #include "../SDL_camera_c.h"
 #include "../../video/SDL_pixels_c.h"
+#include "../../video/SDL_surface_c.h"
 
 #include <emscripten/emscripten.h>
 

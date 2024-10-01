@@ -26,7 +26,7 @@
 
 #include "SDL_triangle.h"
 
-#include "../../video/SDL_blit.h"
+#include "../../video/SDL_surface_c.h"
 
 /* fixed points bits precision
  * Set to 1, so that it can start rendering with middle of a pixel precision.
@@ -309,13 +309,13 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
 
         SDL_SetSurfaceBlendMode(tmp, blend);
 
-        dstbpp = tmp->internal->format->bytes_per_pixel;
+        dstbpp = tmp->fmt->bytes_per_pixel;
         dst_ptr = (Uint8 *)tmp->pixels;
         dst_pitch = tmp->pitch;
 
     } else {
         // Write directly to destination surface
-        dstbpp = dst->internal->format->bytes_per_pixel;
+        dstbpp = dst->fmt->bytes_per_pixel;
         dst_ptr = (Uint8 *)dst->pixels + dstrect.x * dstbpp + dstrect.y * dst->pitch;
         dst_pitch = dst->pitch;
     }
@@ -406,11 +406,11 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
         const SDL_PixelFormatDetails *format;
         SDL_Palette *palette;
         if (tmp) {
-            format = tmp->internal->format;
-            palette = tmp->internal->palette;
+            format = tmp->fmt;
+            palette = tmp->palette;
         } else {
-            format = dst->internal->format;
-            palette = dst->internal->palette;
+            format = dst->fmt;
+            palette = dst->palette;
         }
         if (dstbpp == 4) {
             TRIANGLE_BEGIN_LOOP
@@ -584,7 +584,7 @@ bool SDL_SW_BlitTriangle(
     }
 
     // Set destination pointer
-    dstbpp = dst->internal->format->bytes_per_pixel;
+    dstbpp = dst->fmt->bytes_per_pixel;
     dst_ptr = (Uint8 *)dst->pixels + dstrect.x * dstbpp + dstrect.y * dst->pitch;
     dst_pitch = dst->pitch;
 
@@ -662,13 +662,13 @@ bool SDL_SW_BlitTriangle(
     if (blend != SDL_BLENDMODE_NONE || src->format != dst->format || has_modulation || !is_uniform) {
         // Use SDL_BlitTriangle_Slow
 
-        SDL_BlitInfo *info = &src->internal->map.info;
+        SDL_BlitInfo *info = &src->map.info;
         SDL_BlitInfo tmp_info;
 
         SDL_zero(tmp_info);
 
-        tmp_info.src_fmt = src->internal->format;
-        tmp_info.dst_fmt = dst->internal->format;
+        tmp_info.src_fmt = src->fmt;
+        tmp_info.dst_fmt = dst->fmt;
         tmp_info.flags = info->flags;
         /*
         tmp_info.r = info->r;

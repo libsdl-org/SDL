@@ -20,8 +20,6 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_hashtable.h"
-
 #if defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE)
 #include <unistd.h>
 #endif

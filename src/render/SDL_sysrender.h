@@ -23,6 +23,8 @@
 #ifndef SDL_sysrender_h_
 #define SDL_sysrender_h_
 
+#include "../video/SDL_surface_c.h"
+
 #include "SDL_yuv_sw_c.h"
 
 // Set up for C function definitions, even when using C++

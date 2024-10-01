@@ -31,7 +31,6 @@
 #include "usb_ids.h"
 #include "hidapi/SDL_hidapi_nintendo.h"
 #include "../events/SDL_events_c.h"
-#include "../SDL_hashtable.h"
 
 
 #ifdef SDL_PLATFORM_ANDROID

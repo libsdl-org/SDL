@@ -27,7 +27,6 @@
 #include "SDL_windowsrawinput.h"
 
 #include "../SDL_video_c.h"
-#include "../SDL_blit.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../joystick/usb_ids.h"
 

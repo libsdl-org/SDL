@@ -23,7 +23,7 @@
 #ifndef SDL_syscamera_h_
 #define SDL_syscamera_h_
 
-#include "../SDL_hashtable.h"
+#include "../video/SDL_surface_c.h"
 
 #define DEBUG_CAMERA 0
 

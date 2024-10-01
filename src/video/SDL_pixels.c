@@ -23,11 +23,8 @@
 // General (mostly internal) pixel/color manipulation routines for SDL
 
 #include "SDL_sysvideo.h"
-#include "SDL_blit.h"
 #include "SDL_pixels_c.h"
 #include "SDL_RLEaccel_c.h"
-#include "../SDL_hashtable.h"
-#include "../SDL_list.h"
 
 // Lookup tables to expand partial bytes to the full 0..255 range
 
@@ -1419,22 +1416,22 @@ static Uint8 *Map1toN(const SDL_Palette *pal, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod
 
 bool SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst)
 {
-    SDL_BlitMap *map = &src->internal->map;
+    SDL_BlitMap *map = &src->map;
 
-    if (map->info.dst_fmt != dst->internal->format ||
-        map->info.dst_pal != dst->internal->palette ||
-        (dst->internal->palette &&
-         map->dst_palette_version != dst->internal->palette->version) ||
-        (src->internal->palette &&
-         map->src_palette_version != src->internal->palette->version)) {
+    if (map->info.dst_fmt != dst->fmt ||
+        map->info.dst_pal != dst->palette ||
+        (dst->palette &&
+         map->dst_palette_version != dst->palette->version) ||
+        (src->palette &&
+         map->src_palette_version != src->palette->version)) {
         if (!SDL_MapSurface(src, dst)) {
             return false;
         }
         // just here for debugging
         // printf
-        // ("src = 0x%08X src->flags = %08X map->info.flags = %08x\ndst = 0x%08X dst->flags = %08X dst->internal->map.info.flags = %08X\nmap->blit = 0x%08x\n",
+        // ("src = 0x%08X src->flags = %08X map->info.flags = %08x\ndst = 0x%08X dst->flags = %08X dst->map.info.flags = %08X\nmap->blit = 0x%08x\n",
         // src, dst->flags, map->info.flags, dst, dst->flags,
-        // dst->internal->map.info.flags, map->blit);
+        // dst->map.info.flags, map->blit);
     } else {
         map->info.dst_surface = dst;
     }
@@ -1466,9 +1463,9 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
     SDL_BlitMap *map;
 
     // Clear out any previous mapping
-    map = &src->internal->map;
+    map = &src->map;
 #if SDL_HAVE_RLE
-    if (src->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
+    if (src->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         SDL_UnRLESurface(src, true);
     }
 #endif
@@ -1476,10 +1473,10 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
 
     // Figure out what kind of mapping we're doing
     map->identity = 0;
-    srcfmt = src->internal->format;
-    srcpal = src->internal->palette;
-    dstfmt = dst->internal->format;
-    dstpal = dst->internal->palette;
+    srcfmt = src->fmt;
+    srcpal = src->palette;
+    dstfmt = dst->fmt;
+    dstpal = dst->palette;
     if (SDL_ISPIXELFORMAT_INDEXED(srcfmt->format)) {
         if (SDL_ISPIXELFORMAT_INDEXED(dstfmt->format)) {
             // Palette --> Palette
@@ -1499,8 +1496,8 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
         } else {
             // Palette --> BitField
             map->info.table =
-                Map1toN(srcpal, src->internal->map.info.r, src->internal->map.info.g,
-                        src->internal->map.info.b, src->internal->map.info.a, dstfmt);
+                Map1toN(srcpal, src->map.info.r, src->map.info.g,
+                        src->map.info.b, src->map.info.a, dstfmt);
             if (!map->info.table) {
                 return false;
             }

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 #include "SDL_blit_slow.h"
 #include "SDL_pixels_c.h"
 
@@ -839,8 +839,8 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     Uint32 last_pixel = 0;
     Uint8 last_index = 0;
 
-    src_colorspace = info->src_surface->internal->colorspace;
-    dst_colorspace = info->dst_surface->internal->colorspace;
+    src_colorspace = info->src_surface->colorspace;
+    dst_colorspace = info->dst_surface->colorspace;
     src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
     dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
 

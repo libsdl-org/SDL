@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 
 #ifdef SDL_SSE_INTRINSICS
 /* *INDENT-OFF* */ // clang-format off
@@ -237,7 +237,7 @@ bool SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 
     // If 'rect' == NULL, then fill the whole surface
     if (!rect) {
-        rect = &dst->internal->clip_rect;
+        rect = &dst->clip_rect;
         // Don't attempt to fill if the surface's clip_rect is empty
         if (SDL_RectEmpty(rect)) {
             return true;
@@ -346,7 +346,7 @@ bool SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Ui
     for (i = 0; i < count; ++i) {
         rect = &rects[i];
         // Perform clipping
-        if (!SDL_GetRectIntersection(rect, &dst->internal->clip_rect, &clipped)) {
+        if (!SDL_GetRectIntersection(rect, &dst->clip_rect, &clipped)) {
             continue;
         }
         rect = &clipped;
