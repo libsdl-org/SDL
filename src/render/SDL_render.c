@@ -2902,6 +2902,26 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
             }
             SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * w, event->tfinger.y * h, &event->tfinger.x, &event->tfinger.y);
         }
+    } else if (event->type == SDL_EVENT_PEN_MOTION) {
+        SDL_Window *window = SDL_GetWindowFromID(event->pmotion.windowID);
+        if (window == renderer->window) {
+            SDL_RenderCoordinatesFromWindow(renderer, event->pmotion.x, event->pmotion.y, &event->pmotion.x, &event->pmotion.y);
+        }
+    } else if ((event->type == SDL_EVENT_PEN_DOWN) || (event->type == SDL_EVENT_PEN_UP)) {
+        SDL_Window *window = SDL_GetWindowFromID(event->ptouch.windowID);
+        if (window == renderer->window) {
+            SDL_RenderCoordinatesFromWindow(renderer, event->ptouch.x, event->ptouch.y, &event->ptouch.x, &event->ptouch.y);
+        }
+    } else if ((event->type == SDL_EVENT_PEN_BUTTON_DOWN) || (event->type == SDL_EVENT_PEN_BUTTON_UP)) {
+        SDL_Window *window = SDL_GetWindowFromID(event->pbutton.windowID);
+        if (window == renderer->window) {
+            SDL_RenderCoordinatesFromWindow(renderer, event->pbutton.x, event->pbutton.y, &event->pbutton.x, &event->pbutton.y);
+        }
+    } else if (event->type == SDL_EVENT_PEN_AXIS) {
+        SDL_Window *window = SDL_GetWindowFromID(event->paxis.windowID);
+        if (window == renderer->window) {
+            SDL_RenderCoordinatesFromWindow(renderer, event->paxis.x, event->paxis.y, &event->paxis.x, &event->paxis.y);
+        }
     } else if (event->type == SDL_EVENT_DROP_POSITION ||
                event->type == SDL_EVENT_DROP_FILE ||
                event->type == SDL_EVENT_DROP_TEXT ||
