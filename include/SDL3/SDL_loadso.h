@@ -29,10 +29,10 @@
  * Shared objects are code that is programmatically loadable at runtime.
  * Windows calls these "DLLs", Linux calls them "shared libraries", etc.
  *
- * To use them, build such a library, then call SDL_LoadObject() on it.
- * Once loaded, you can use SDL_LoadFunction() on that object to find the
- * address of its exported symbols. When done with the object, call
- * SDL_UnloadObject() to dispose of it.
+ * To use them, build such a library, then call SDL_LoadObject() on it. Once
+ * loaded, you can use SDL_LoadFunction() on that object to find the address
+ * of its exported symbols. When done with the object, call SDL_UnloadObject()
+ * to dispose of it.
  *
  * Some things to keep in mind:
  *
@@ -118,8 +118,8 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(SDL_SharedObjec
 /**
  * Unload a shared object from memory.
  *
- * Note that any pointers from this object looked up through SDL_LoadFunction()
- * will no longer be valid.
+ * Note that any pointers from this object looked up through
+ * SDL_LoadFunction() will no longer be valid.
  *
  * \param handle a valid shared object handle returned by SDL_LoadObject().
  *
