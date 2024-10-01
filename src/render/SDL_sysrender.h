@@ -259,9 +259,6 @@ struct SDL_Renderer
     // The method of drawing lines
     SDL_RenderLineMethod line_method;
 
-    // List of triangle indices to draw rects
-    int rect_index_order[6];
-
     // The list of textures
     SDL_Texture *textures;
     SDL_Texture *target;
