@@ -2756,7 +2756,7 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowSurface(SDL_Window *
  * \param surfaceAttribCallback callback for attributes to pass to
  *                              eglCreateSurface.
  * \param contextAttribCallback callback for attributes to pass to
- *                              eglCreateContext. 
+ *                              eglCreateContext.
  * \param userdata a pointer that is passed to the callbacks.
  *
  * \since This function is available since SDL 3.0.0.
