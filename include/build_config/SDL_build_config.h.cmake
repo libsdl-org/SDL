@@ -229,6 +229,7 @@
 #cmakedefine HAVE_LINUX_INPUT_H 1
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBDECOR_H 1
+#cmakedefine HAVE_LIBURING_H 1
 
 #cmakedefine HAVE_D3D11_H @HAVE_D3D11_H@
 #cmakedefine HAVE_DDRAW_H @HAVE_DDRAW_H@
