@@ -1841,7 +1841,8 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
  *
  * \sa SDL_CreateGPUDevice
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPUDevice(SDL_GPUDevice *device);
+extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPUDevice(
+    SDL_GPUDevice *device);
 
 /**
  * Get the number of GPU drivers compiled into SDL.
@@ -1852,7 +1853,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPUDevice(SDL_GPUDevice *device);
  *
  * \sa SDL_GetGPUDriver
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetNumGPUDrivers(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumGPUDrivers(
+    void);
 
 /**
  * Get the name of a built in GPU driver.
@@ -1871,7 +1873,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumGPUDrivers(void);
  *
  * \sa SDL_GetNumGPUDrivers
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDriver(int index);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDriver(
+    int index);
 
 /**
  * Returns the name of the backend used to create this GPU context.
@@ -1881,7 +1884,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDriver(int index);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDeviceDriver(SDL_GPUDevice *device);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDeviceDriver(
+    SDL_GPUDevice *device);
 
 /**
  * Returns the supported shader formats for this GPU context.
@@ -1892,7 +1896,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDeviceDriver(SDL_GPUDevice *d
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUDevice *device);
+extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(
+    SDL_GPUDevice *device);
 
 /* State Creation */
 
@@ -3561,7 +3566,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUTextureSupportsSampleCount(
  *
  * \sa SDL_AddEventWatch
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(SDL_GPUDevice *device);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(
+    SDL_GPUDevice *device);
 
 /**
  * Call this to resume GPU operation on Xbox when you receive the
@@ -3576,7 +3582,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(SDL_GPUDevice *device);
  *
  * \sa SDL_AddEventWatch
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(SDL_GPUDevice *device);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(
+    SDL_GPUDevice *device);
 
 #endif /* SDL_PLATFORM_GDK */
 
