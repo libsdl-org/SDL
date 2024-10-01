@@ -362,6 +362,7 @@ class Releaser:
             ("WhatsNew.txt", ""),
             ("LICENSE.txt", ""),
             ("README.md", ""),
+            ("docs/*.md", "docs/"),
         )
         test_files = list(Path(r) / f for r, _, files in os.walk(self.root / "test") for f in files)
 
@@ -374,10 +375,11 @@ class Releaser:
             logger.info("Creating %s...", tar_paths[comp])
             with tarfile.open(tar_paths[comp], f"w:{comp}") as tar_object:
                 arc_root = f"{self.project}-{self.version}"
-                for file_path, arcdirname in extra_files:
+                for file_path_glob, arcdirname in extra_files:
                     assert not arcdirname or arcdirname[-1] == "/"
-                    arcname = f"{arc_root}/{arcdirname}{Path(file_path).name}"
-                    tar_object.add(self.root / file_path, arcname=arcname)
+                    for file_path in glob.glob(file_path_glob, root_dir=self.root):
+                        arcname = f"{arc_root}/{arcdirname}{Path(file_path).name}"
+                        tar_object.add(self.root / file_path, arcname=arcname)
                 for arch in mingw_archs:
                     install_path = arch_install_paths[arch]
                     arcname_parent = f"{arc_root}/{arch}-w64-mingw32"

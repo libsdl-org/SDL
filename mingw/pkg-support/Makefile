@@ -21,8 +21,6 @@ install-package:
 	    (cd $(arch) && cp -rv bin include lib share $(prefix)/); \
 	    sed "s|^prefix=.*|prefix=$(prefix)|" <$(arch)/bin/sdl2-config >$(prefix)/bin/sdl2-config; \
 	    chmod 755 $(prefix)/bin/sdl2-config; \
-	    sed "s|^libdir=.*|libdir=\'$(prefix)/lib\'|" <$(arch)/lib/libSDL2.la >$(prefix)/lib/libSDL2.la; \
-	    sed "s|^libdir=.*|libdir=\'$(prefix)/lib\'|" <$(arch)/lib/libSDL2main.la >$(prefix)/lib/libSDL2main.la; \
 	    sed "s|^prefix=.*|prefix=$(prefix)|" <$(arch)/lib/pkgconfig/sdl2.pc >$(prefix)/lib/pkgconfig/sdl2.pc; \
 	else \
 	    echo "*** ERROR: $(arch) or $(prefix) does not exist!"; \
