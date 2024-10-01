@@ -46,6 +46,7 @@
 
 #ifndef __cplusplus
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
+    (defined(_MSC_VER) && (_MSC_VER >= 1910 /* Visual Studio 2017 */)) || \
     defined(SDL_INCLUDE_STDBOOL_H)
 #include <stdbool.h>
 #elif !defined(__bool_true_false_are_defined) && !defined(bool)

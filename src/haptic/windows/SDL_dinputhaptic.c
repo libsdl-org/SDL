@@ -455,7 +455,7 @@ bool SDL_DINPUT_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
         return false;
     }
 
-    return WIN_IsEqualGUID(&hap_instance.guidInstance, &joy_instance.guidInstance);
+    return (WIN_IsEqualGUID(&hap_instance.guidInstance, &joy_instance.guidInstance) == TRUE);
 }
 
 bool SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
@@ -1052,13 +1052,14 @@ int SDL_DINPUT_HapticGetEffectStatus(SDL_Haptic *haptic, struct haptic_effect *e
 
     ret = IDirectInputEffect_GetEffectStatus(effect->hweffect->ref, &status);
     if (FAILED(ret)) {
-        return DI_SetError("Getting effect status", ret);
+        DI_SetError("Getting effect status", ret);
+        return -1;
     }
 
     if (status == 0) {
-        return false;
+        return 0;
     }
-    return true;
+    return 1;
 }
 
 bool SDL_DINPUT_HapticSetGain(SDL_Haptic *haptic, int gain)

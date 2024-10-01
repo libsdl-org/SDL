@@ -45,7 +45,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enume
         const size_t patternlen = SDL_strlen(path) + 3;
         char *pattern = (char *) SDL_malloc(patternlen);
         if (!pattern) {
-            return -1;
+            return false;
         }
 
         // you need a wildcard to enumerate through FindFirstFileEx(), but the wildcard is only checked in the
@@ -56,15 +56,14 @@ bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enume
         WCHAR *wpattern = WIN_UTF8ToStringW(pattern);
         SDL_free(pattern);
         if (!wpattern) {
-            return -1;
+            return false;
         }
 
         WIN32_FIND_DATAW entw;
         HANDLE dir = FindFirstFileExW(wpattern, FindExInfoStandard, &entw, FindExSearchNameMatch, NULL, 0);
         SDL_free(wpattern);
         if (dir == INVALID_HANDLE_VALUE) {
-            WIN_SetError("Failed to enumerate directory");
-            return -1;
+            return WIN_SetError("Failed to enumerate directory");
         }
 
         do {

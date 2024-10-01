@@ -1505,7 +1505,7 @@ bool SDL_GetJoystickBall(SDL_Joystick *joystick, int ball, int *dx, int *dy)
 
     SDL_LockJoysticks();
     {
-        CHECK_JOYSTICK_MAGIC(joystick, -1);
+        CHECK_JOYSTICK_MAGIC(joystick, false);
 
         if (ball < joystick->nballs) {
             if (dx) {

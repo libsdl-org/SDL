@@ -518,7 +518,7 @@ bool SDL_GetHapticEffectStatus(SDL_Haptic *haptic, int effect)
 
     SDL_ClearError();
 
-    return SDL_SYS_HapticGetEffectStatus(haptic, &haptic->effects[effect]);
+    return (SDL_SYS_HapticGetEffectStatus(haptic, &haptic->effects[effect]) > 0);
 }
 
 bool SDL_SetHapticGain(SDL_Haptic *haptic, int gain)

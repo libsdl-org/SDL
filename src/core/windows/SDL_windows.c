@@ -306,12 +306,12 @@ char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 
 BOOL WIN_IsEqualGUID(const GUID *a, const GUID *b)
 {
-    return SDL_memcmp(a, b, sizeof(*a)) == 0;
+    return (SDL_memcmp(a, b, sizeof(*a)) == 0);
 }
 
 BOOL WIN_IsEqualIID(REFIID a, REFIID b)
 {
-    return SDL_memcmp(a, b, sizeof(*a)) == 0;
+    return (SDL_memcmp(a, b, sizeof(*a)) == 0);
 }
 
 void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect)
