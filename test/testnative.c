@@ -63,14 +63,12 @@ quit(int rc)
 
 static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
-    float sprite_w, sprite_h;
     int i;
     SDL_Rect viewport;
     SDL_FRect *position, *velocity;
 
     /* Query the sizes */
     SDL_GetRenderViewport(renderer, &viewport);
-    SDL_GetTextureSize(sprite, &sprite_w, &sprite_h);
 
     /* Draw a gray background */
     SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
@@ -81,12 +79,12 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
         position = &positions[i];
         velocity = &velocities[i];
         position->x += velocity->x;
-        if ((position->x < 0) || (position->x >= (viewport.w - sprite_w))) {
+        if ((position->x < 0) || (position->x >= (viewport.w - sprite->w))) {
             velocity->x = -velocity->x;
             position->x += velocity->x;
         }
         position->y += velocity->y;
-        if ((position->y < 0) || (position->y >= (viewport.h - sprite_h))) {
+        if ((position->y < 0) || (position->y >= (viewport.h - sprite->h))) {
             velocity->y = -velocity->y;
             position->y += velocity->y;
         }
@@ -108,7 +106,6 @@ int main(int argc, char *argv[])
     SDL_Renderer *renderer;
     SDL_Texture *sprite;
     int window_w, window_h;
-    float sprite_w, sprite_h;
     SDL_Event event;
 
     /* Initialize test framework */
@@ -178,7 +175,6 @@ int main(int argc, char *argv[])
 
     /* Allocate memory for the sprite info */
     SDL_GetWindowSize(window, &window_w, &window_h);
-    SDL_GetTextureSize(sprite, &sprite_w, &sprite_h);
     positions = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*positions));
     velocities = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*velocities));
     if (!positions || !velocities) {
@@ -186,10 +182,10 @@ int main(int argc, char *argv[])
         quit(2);
     }
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = (float)(SDL_rand(window_w - (int)sprite_w));
-        positions[i].y = (float)(SDL_rand(window_h - (int)sprite_h));
-        positions[i].w = sprite_w;
-        positions[i].h = sprite_h;
+        positions[i].x = (float)SDL_rand(window_w - sprite->w);
+        positions[i].y = (float)SDL_rand(window_h - sprite->h);
+        positions[i].w = (float)sprite->w;
+        positions[i].h = (float)sprite->h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
         while (velocities[i].x == 0.f && velocities[i].y == 0.f) {

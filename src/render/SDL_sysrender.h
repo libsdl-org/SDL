@@ -71,17 +71,22 @@ typedef struct SDL_RenderViewState
 // Define the SDL texture structure
 struct SDL_Texture
 {
-    SDL_Colorspace colorspace;  /**< The colorspace of the texture */
-    float SDR_white_point;      /**< The SDR white point for this content */
-    float HDR_headroom;         /**< The HDR headroom needed by this content */
-    SDL_PixelFormat format;     /**< The pixel format of the texture */
-    SDL_TextureAccess access;   /**< The texture access mode */
-    int w;                      /**< The width of the texture */
-    int h;                      /**< The height of the texture */
-    SDL_BlendMode blendMode;    /**< The texture blend mode */
-    SDL_ScaleMode scaleMode;    /**< The texture scale mode */
-    SDL_FColor color;           /**< Texture modulation values */
-    SDL_RenderViewState view;   /**< Target texture view state */
+    // Public API definition
+    SDL_PixelFormat format;     /**< The format of the texture, read-only */
+    int w;                      /**< The width of the texture, read-only. */
+    int h;                      /**< The height of the texture, read-only. */
+
+    int refcount;               /**< Application reference count, used when freeing texture */
+
+    // Private API definition
+    SDL_Colorspace colorspace;  // The colorspace of the texture
+    float SDR_white_point;      // The SDR white point for this content
+    float HDR_headroom;         // The HDR headroom needed by this content
+    SDL_TextureAccess access;   // The texture access mode
+    SDL_BlendMode blendMode;    // The texture blend mode
+    SDL_ScaleMode scaleMode;    // The texture scale mode
+    SDL_FColor color;           // Texture modulation values
+    SDL_RenderViewState view;   // Target texture view state
 
     SDL_Renderer *renderer;
 
@@ -91,13 +96,13 @@ struct SDL_Texture
     void *pixels;
     int pitch;
     SDL_Rect locked_rect;
-    SDL_Surface *locked_surface; /**< Locked region exposed as a SDL surface */
+    SDL_Surface *locked_surface; // Locked region exposed as a SDL surface
 
     Uint32 last_command_generation; // last command queue generation this texture was in.
 
     SDL_PropertiesID props;
 
-    void *internal; /**< Driver specific texture representation */
+    void *internal;             // Driver specific texture representation
 
     SDL_Texture *prev;
     SDL_Texture *next;

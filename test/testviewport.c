@@ -48,7 +48,6 @@ static void DrawOnViewport(SDL_Renderer *renderer)
 {
     SDL_FRect rect;
     SDL_Rect cliprect;
-    float w, h;
 
     /* Set the viewport */
     SDL_SetRenderViewport(renderer, &viewport);
@@ -91,15 +90,11 @@ static void DrawOnViewport(SDL_Renderer *renderer)
     SDL_RenderFillRect(renderer, &rect);
 
     /* Add a clip rect and fill it with the sprite */
-    SDL_GetTextureSize(sprite, &w, &h);
-    rect.x = (viewport.w - w) / 2;
-    rect.y = (viewport.h - h) / 2;
-    rect.w = w;
-    rect.h = h;
-    cliprect.x = (int)rect.x;
-    cliprect.y = (int)rect.y;
-    cliprect.w = (int)rect.w;
-    cliprect.h = (int)rect.h;
+    cliprect.x = (viewport.w - sprite->w) / 2;
+    cliprect.y = (viewport.h - sprite->h) / 2;
+    cliprect.w = sprite->w;
+    cliprect.h = sprite->h;
+    SDL_RectToFRect(&cliprect, &rect);
     SDL_SetRenderClipRect(renderer, &cliprect);
     SDL_RenderTexture(renderer, sprite, NULL, &rect);
     SDL_SetRenderClipRect(renderer, NULL);
