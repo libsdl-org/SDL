@@ -28,7 +28,11 @@
 // is #defined to 0 instead and implement the SDL_SYS_* functions below in your
 // backend (having them maybe call into the SDL_SYS_*_Generic versions as a
 // fallback if the platform has functionality that isn't always available).
+#ifdef HAVE_LIBURING_H
+#define SDL_ASYNCIO_ONLY_HAVE_GENERIC 0
+#else
 #define SDL_ASYNCIO_ONLY_HAVE_GENERIC 1
+#endif
 
 // this entire thing is just juggling doubly-linked lists, so make some helper macros.
 #define LINKED_LIST_DECLARE_FIELDS(type, prefix) \
