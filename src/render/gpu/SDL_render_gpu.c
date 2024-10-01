@@ -1266,13 +1266,6 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
 
-    renderer->rect_index_order[0] = 0;
-    renderer->rect_index_order[1] = 1;
-    renderer->rect_index_order[2] = 3;
-    renderer->rect_index_order[3] = 1;
-    renderer->rect_index_order[4] = 3;
-    renderer->rect_index_order[5] = 2;
-
     data->state.draw_color.r = 1.0f;
     data->state.draw_color.g = 1.0f;
     data->state.draw_color.b = 1.0f;

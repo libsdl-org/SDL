@@ -149,6 +149,8 @@ static const SDL_RenderDriver *render_drivers[] = {
 
 static SDL_Renderer *SDL_renderers;
 
+static const int rect_index_order[] = { 0, 1, 2, 0, 2, 3 };
+
 void SDL_QuitRender(void)
 {
     while (SDL_renderers) {
@@ -625,7 +627,6 @@ static bool QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, co
                 const int num_indices = 6 * count;
                 const int size_indices = 4;
                 int cur_index = 0;
-                const int *rect_index_order = renderer->rect_index_order;
 
                 for (i = 0; i < count; ++i) {
                     float minx, miny, maxx, maxy;
@@ -1065,16 +1066,6 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     UpdatePixelViewport(renderer, &renderer->main_view);
     UpdatePixelClipRect(renderer, &renderer->main_view);
     UpdateMainViewDimensions(renderer);
-
-    // Default value, if not specified by the renderer back-end
-    if (renderer->rect_index_order[0] == 0 && renderer->rect_index_order[1] == 0) {
-        renderer->rect_index_order[0] = 0;
-        renderer->rect_index_order[1] = 1;
-        renderer->rect_index_order[2] = 2;
-        renderer->rect_index_order[3] = 0;
-        renderer->rect_index_order[4] = 2;
-        renderer->rect_index_order[5] = 3;
-    }
 
     // new textures start at zero, so we start at 1 so first render doesn't flush by accident.
     renderer->render_command_generation = 1;
@@ -3806,7 +3797,7 @@ static bool SDL_RenderTextureInternal(SDL_Renderer *renderer, SDL_Texture *textu
         float uv[8];
         const int uv_stride = 2 * sizeof(float);
         const int num_vertices = 4;
-        const int *indices = renderer->rect_index_order;
+        const int *indices = rect_index_order;
         const int num_indices = 6;
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
@@ -3967,7 +3958,7 @@ bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
         float uv[8];
         const int uv_stride = 2 * sizeof(float);
         const int num_vertices = 4;
-        const int *indices = renderer->rect_index_order;
+        const int *indices = rect_index_order;
         const int num_indices = 6;
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
@@ -4055,7 +4046,7 @@ static bool SDL_RenderTextureTiled_Wrap(SDL_Renderer *renderer, SDL_Texture *tex
     float uv[8];
     const int uv_stride = 2 * sizeof(float);
     const int num_vertices = 4;
-    const int *indices = renderer->rect_index_order;
+    const int *indices = rect_index_order;
     const int num_indices = 6;
     const int size_indices = 4;
     float minu, minv, maxu, maxv;
