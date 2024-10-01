@@ -243,8 +243,8 @@ typedef int SDL_EGLint;
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef SDL_EGLAttrib *(SDLCALL *SDL_EGLAttribArrayCallback)(void);
-typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void);
+typedef SDL_EGLAttrib *(SDLCALL *SDL_EGLAttribArrayCallback)(void *userdata);
+typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void *userdata);
 
 /**
  * An enumeration of OpenGL configuration attributes.
@@ -2756,13 +2756,14 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowSurface(SDL_Window *
  * \param surfaceAttribCallback callback for attributes to pass to
  *                              eglCreateSurface.
  * \param contextAttribCallback callback for attributes to pass to
- *                              eglCreateContext.
+ *                              eglCreateContext. 
+ * \param userdata a pointer that is passed to the callbacks.
  *
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_EGL_SetAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
                                                               SDL_EGLIntArrayCallback surfaceAttribCallback,
-                                                              SDL_EGLIntArrayCallback contextAttribCallback);
+                                                              SDL_EGLIntArrayCallback contextAttribCallback, void *userdata);
 
 /**
  * Set the swap interval for the current OpenGL context.

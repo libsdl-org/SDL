@@ -443,6 +443,7 @@ struct SDL_VideoDevice
     SDL_EGLAttribArrayCallback egl_platformattrib_callback;
     SDL_EGLIntArrayCallback egl_surfaceattrib_callback;
     SDL_EGLIntArrayCallback egl_contextattrib_callback;
+    void *egl_attrib_callback_userdata;
 
     /* * * */
     // Cache current GL context; don't call the OS when it hasn't changed.
