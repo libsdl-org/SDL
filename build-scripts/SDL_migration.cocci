@@ -3699,3 +3699,8 @@ identifier func =~ "^(SDL_AddEventWatch|SDL_AddHintCallback|SDL_AddSurfaceAltern
 @@
 - SDL_FALSE
 + false
+@@
+@@
+- SDL_IsAndroidTV
++ SDL_IsTV
+  (...)

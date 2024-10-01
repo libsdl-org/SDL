@@ -721,6 +721,19 @@ bool SDL_IsTablet(void)
 #endif
 }
 
+bool SDL_IsTV(void)
+{
+#ifdef SDL_PLATFORM_ANDROID
+    extern bool SDL_IsAndroidTV(void);
+    return SDL_IsAndroidTV();
+#elif defined(SDL_PLATFORM_IOS)
+    extern bool SDL_IsAppleTV(void);
+    return SDL_IsAppleTV();
+#else
+    return false;
+#endif
+}
+
 #ifdef SDL_PLATFORM_WIN32
 
 #if (!defined(HAVE_LIBC) || defined(__WATCOMC__)) && !defined(SDL_STATIC_LIB)

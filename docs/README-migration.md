@@ -1888,6 +1888,8 @@ SDL_RequestAndroidPermission is no longer a blocking call; the caller now provid
 
 SDL_iPhoneSetAnimationCallback() and SDL_iPhoneSetEventPump() have been renamed to SDL_SetiOSAnimationCallback() and SDL_SetiOSEventPump(), respectively. SDL2 has had macros to provide this new name with the old symbol since the introduction of the iPad, but now the correctly-named symbol is the only option.
 
+SDL_IsAndroidTV() has been renamed SDL_IsTV() and is no longer Android-specific; an app running on an Apple TV device will also return true, for example.
+
 The following functions have been removed:
 * SDL_GetWinRTFSPathUNICODE() - WinRT support was removed in SDL3.
 * SDL_GetWinRTFSPathUTF8() - WinRT support was removed in SDL3.
@@ -1911,6 +1913,7 @@ The following functions have been renamed:
 * SDL_Direct3D9GetAdapterIndex() => SDL_GetDirect3D9AdapterIndex()
 * SDL_GDKGetDefaultUser() => SDL_GetGDKDefaultUser(), returns bool
 * SDL_GDKGetTaskQueue() => SDL_GetGDKTaskQueue(), returns bool
+* SDL_IsAndroidTV() => SDL_IsTV()
 * SDL_LinuxSetThreadPriority() => SDL_SetLinuxThreadPriority(), returns bool
 * SDL_LinuxSetThreadPriorityAndPolicy() => SDL_SetLinuxThreadPriorityAndPolicy(), returns bool
 * SDL_OnApplicationDidBecomeActive() => SDL_OnApplicationDidEnterForeground()

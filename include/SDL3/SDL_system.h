@@ -347,15 +347,6 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);
 extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
 
 /**
- * Query if the application is running on Android TV.
- *
- * \returns true if this is Android TV, false otherwise.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern SDL_DECLSPEC bool SDLCALL SDL_IsAndroidTV(void);
-
-/**
  * Query if the application is running on a Chromebook.
  *
  * \returns true if this is a Chromebook, false otherwise.
@@ -562,6 +553,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int para
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
+
+/**
+ * Query if the current device is a TV.
+ *
+ * If SDL can't determine this, it will return false.
+ *
+ * \returns true if the device is a TV, false otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsTV(void);
 
 /* Functions used by iOS app delegates to notify SDL about state changes. */
 

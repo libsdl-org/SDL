@@ -188,13 +188,6 @@ int SDL_GetAndroidSDKVersion(void)
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC bool SDLCALL SDL_IsAndroidTV(void);
-bool SDL_IsAndroidTV(void)
-{
-    SDL_Unsupported();
-    return false;
-}
-
 SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
 bool SDL_IsChromebook(void)
 {
