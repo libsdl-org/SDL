@@ -219,25 +219,13 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             SDL_SetError("posix_spawn_file_actions_adddup2 failed: %s", strerror(errno));
             goto posix_spawn_fail_all;
         }
-        if (posix_spawn_file_actions_addclose(&fa, fd) != 0) {
-            SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
-            goto posix_spawn_fail_all;
-        }
         break;
     case SDL_PROCESS_STDIO_APP:
         if (!CreatePipe(stdin_pipe)) {
             goto posix_spawn_fail_all;
         }
-        if (posix_spawn_file_actions_addclose(&fa, stdin_pipe[WRITE_END]) != 0) {
-            SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
-            goto posix_spawn_fail_all;
-        }
         if (posix_spawn_file_actions_adddup2(&fa, stdin_pipe[READ_END], STDIN_FILENO) != 0) {
             SDL_SetError("posix_spawn_file_actions_adddup2 failed: %s", strerror(errno));
-            goto posix_spawn_fail_all;
-        }
-        if (posix_spawn_file_actions_addclose(&fa, stdin_pipe[READ_END]) != 0) {
-            SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
             goto posix_spawn_fail_all;
         }
         break;
@@ -261,25 +249,13 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             SDL_SetError("posix_spawn_file_actions_adddup2 failed: %s", strerror(errno));
             goto posix_spawn_fail_all;
         }
-        if (posix_spawn_file_actions_addclose(&fa, fd) != 0) {
-            SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
-            goto posix_spawn_fail_all;
-        }
         break;
     case SDL_PROCESS_STDIO_APP:
         if (!CreatePipe(stdout_pipe)) {
             goto posix_spawn_fail_all;
         }
-        if (posix_spawn_file_actions_addclose(&fa, stdout_pipe[READ_END]) != 0) {
-            SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
-            goto posix_spawn_fail_all;
-        }
         if (posix_spawn_file_actions_adddup2(&fa, stdout_pipe[WRITE_END], STDOUT_FILENO) != 0) {
             SDL_SetError("posix_spawn_file_actions_adddup2 failed: %s", strerror(errno));
-            goto posix_spawn_fail_all;
-        }
-        if (posix_spawn_file_actions_addclose(&fa, stdout_pipe[WRITE_END]) != 0) {
-            SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
             goto posix_spawn_fail_all;
         }
         break;
@@ -309,25 +285,13 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
                 SDL_SetError("posix_spawn_file_actions_adddup2 failed: %s", strerror(errno));
                 goto posix_spawn_fail_all;
             }
-            if (posix_spawn_file_actions_addclose(&fa, fd) != 0) {
-                SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
-                goto posix_spawn_fail_all;
-            }
             break;
         case SDL_PROCESS_STDIO_APP:
             if (!CreatePipe(stderr_pipe)) {
                 goto posix_spawn_fail_all;
             }
-            if (posix_spawn_file_actions_addclose(&fa, stderr_pipe[READ_END]) != 0) {
-                SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
-                goto posix_spawn_fail_all;
-            }
             if (posix_spawn_file_actions_adddup2(&fa, stderr_pipe[WRITE_END], STDERR_FILENO) != 0) {
                 SDL_SetError("posix_spawn_file_actions_adddup2 failed: %s", strerror(errno));
-                goto posix_spawn_fail_all;
-            }
-            if (posix_spawn_file_actions_addclose(&fa, stderr_pipe[WRITE_END]) != 0) {
-                SDL_SetError("posix_spawn_file_actions_addclose failed: %s", strerror(errno));
                 goto posix_spawn_fail_all;
             }
             break;

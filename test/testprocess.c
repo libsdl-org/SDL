@@ -1010,7 +1010,7 @@ static const SDLTest_TestCaseReference processTestBatBadButVulnerability = {
 };
 
 static const SDLTest_TestCaseReference processTestFileRedirection = {
-    process_testFileRedirection, "process_testFileRedirection", "Test redirection from/to files", TEST_DISABLED
+    process_testFileRedirection, "process_testFileRedirection", "Test redirection from/to files", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference *processTests[] = {
