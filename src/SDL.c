@@ -52,6 +52,7 @@
 #include "stdlib/SDL_getenv_c.h"
 #include "thread/SDL_thread_c.h"
 #include "video/SDL_pixels_c.h"
+#include "video/SDL_surface_c.h"
 #include "video/SDL_video_c.h"
 #include "filesystem/SDL_filesystem_c.h"
 

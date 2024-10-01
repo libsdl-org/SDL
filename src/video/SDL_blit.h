@@ -23,8 +23,6 @@
 #ifndef SDL_blit_h_
 #define SDL_blit_h_
 
-#include "../SDL_hashtable.h"
-
 // Table to do pixel byte expansion
 extern const Uint8 *SDL_expand_byte[9];
 extern const Uint16 SDL_expand_byte_10[];
@@ -723,7 +721,5 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 #if defined(_MSC_VER) && (_MSC_VER >= 600)
 #pragma warning(disable : 4244) // '=': conversion from 'X' to 'Y', possible loss of data
 #endif
-
-#include "SDL_surface_c.h"
 
 #endif // SDL_blit_h_

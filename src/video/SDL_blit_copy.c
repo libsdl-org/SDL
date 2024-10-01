@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 #include "SDL_blit_copy.h"
 
 #ifdef SDL_SSE_INTRINSICS

@@ -25,6 +25,8 @@
 
 #include <SDL3/SDL_vulkan.h>
 
+#include "SDL_surface_c.h"
+
 // The SDL video driver
 
 typedef struct SDL_VideoDisplay SDL_VideoDisplay;

@@ -22,7 +22,7 @@
 
 #if SDL_HAVE_BLIT_A
 
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 
 // Functions to perform alpha blended blitting
 
@@ -1322,15 +1322,15 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
 
 SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 {
-    const SDL_PixelFormatDetails *sf = surface->internal->format;
-    const SDL_PixelFormatDetails *df = surface->internal->map.info.dst_fmt;
+    const SDL_PixelFormatDetails *sf = surface->fmt;
+    const SDL_PixelFormatDetails *df = surface->map.info.dst_fmt;
 
-    switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
+    switch (surface->map.info.flags & ~SDL_COPY_RLE_MASK) {
     case SDL_COPY_BLEND:
         // Per-pixel alpha blits
         switch (df->bytes_per_pixel) {
         case 1:
-            if (surface->internal->map.info.dst_pal) {
+            if (surface->map.info.dst_pal) {
                 return BlitNto1PixelAlpha;
             } else {
                 // RGB332 has no palette !
@@ -1386,7 +1386,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             // Per-surface alpha blits
             switch (df->bytes_per_pixel) {
             case 1:
-                if (surface->internal->map.info.dst_pal) {
+                if (surface->map.info.dst_pal) {
                     return BlitNto1SurfaceAlpha;
                 } else {
                     // RGB332 has no palette !
@@ -1394,7 +1394,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                 }
 
             case 2:
-                if (surface->internal->map.identity) {
+                if (surface->map.identity) {
                     if (df->Gmask == 0x7e0) {
 #ifdef SDL_MMX_INTRINSICS
                         if (SDL_HasMMX()) {
@@ -1441,7 +1441,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
         if (sf->Amask == 0) {
             if (df->bytes_per_pixel == 1) {
 
-                if (surface->internal->map.info.dst_pal) {
+                if (surface->map.info.dst_pal) {
                     return BlitNto1SurfaceAlphaKey;
                 } else {
                     // RGB332 has no palette !

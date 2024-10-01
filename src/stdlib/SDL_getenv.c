@@ -20,7 +20,6 @@
 */
 #include "SDL_internal.h"
 
-#include "../SDL_hashtable.h"
 #include "SDL_getenv_c.h"
 
 #if defined(SDL_PLATFORM_WINDOWS)

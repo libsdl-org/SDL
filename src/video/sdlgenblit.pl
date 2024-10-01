@@ -112,7 +112,7 @@ sub open_file {
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 
 #if SDL_HAVE_BLIT_AUTO
 

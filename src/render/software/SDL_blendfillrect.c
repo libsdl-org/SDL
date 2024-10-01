@@ -144,7 +144,7 @@ static bool SDL_BlendFillRect_ARGB8888(SDL_Surface *dst, const SDL_Rect *rect,
 static bool SDL_BlendFillRect_RGB(SDL_Surface *dst, const SDL_Rect *rect,
                                  SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-    const SDL_PixelFormatDetails *fmt = dst->internal->format;
+    const SDL_PixelFormatDetails *fmt = dst->fmt;
     unsigned inva = 0xff - a;
 
     switch (fmt->bytes_per_pixel) {
@@ -202,7 +202,7 @@ static bool SDL_BlendFillRect_RGB(SDL_Surface *dst, const SDL_Rect *rect,
 static bool SDL_BlendFillRect_RGBA(SDL_Surface *dst, const SDL_Rect *rect,
                                   SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-    const SDL_PixelFormatDetails *fmt = dst->internal->format;
+    const SDL_PixelFormatDetails *fmt = dst->fmt;
     unsigned inva = 0xff - a;
 
     switch (fmt->bytes_per_pixel) {
@@ -250,12 +250,12 @@ bool SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect, SDL_BlendMode ble
     // If 'rect' == NULL, then fill the whole surface
     if (rect) {
         // Perform clipping
-        if (!SDL_GetRectIntersection(rect, &dst->internal->clip_rect, &clipped)) {
+        if (!SDL_GetRectIntersection(rect, &dst->clip_rect, &clipped)) {
             return true;
         }
         rect = &clipped;
     } else {
-        rect = &dst->internal->clip_rect;
+        rect = &dst->clip_rect;
     }
 
     if (blendMode == SDL_BLENDMODE_BLEND || blendMode == SDL_BLENDMODE_ADD) {
@@ -264,23 +264,23 @@ bool SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect, SDL_BlendMode ble
         b = DRAW_MUL(b, a);
     }
 
-    switch (dst->internal->format->bits_per_pixel) {
+    switch (dst->fmt->bits_per_pixel) {
     case 15:
-        switch (dst->internal->format->Rmask) {
+        switch (dst->fmt->Rmask) {
         case 0x7C00:
             return SDL_BlendFillRect_RGB555(dst, rect, blendMode, r, g, b, a);
         }
         break;
     case 16:
-        switch (dst->internal->format->Rmask) {
+        switch (dst->fmt->Rmask) {
         case 0xF800:
             return SDL_BlendFillRect_RGB565(dst, rect, blendMode, r, g, b, a);
         }
         break;
     case 32:
-        switch (dst->internal->format->Rmask) {
+        switch (dst->fmt->Rmask) {
         case 0x00FF0000:
-            if (!dst->internal->format->Amask) {
+            if (!dst->fmt->Amask) {
                 return SDL_BlendFillRect_XRGB8888(dst, rect, blendMode, r, g, b, a);
             } else {
                 return SDL_BlendFillRect_ARGB8888(dst, rect, blendMode, r, g, b, a);
@@ -292,7 +292,7 @@ bool SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect, SDL_BlendMode ble
         break;
     }
 
-    if (!dst->internal->format->Amask) {
+    if (!dst->fmt->Amask) {
         return SDL_BlendFillRect_RGB(dst, rect, blendMode, r, g, b, a);
     } else {
         return SDL_BlendFillRect_RGBA(dst, rect, blendMode, r, g, b, a);
@@ -311,7 +311,7 @@ bool SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count, SDL_
     }
 
     // This function doesn't work on surfaces < 8 bpp
-    if (dst->internal->format->bits_per_pixel < 8) {
+    if (dst->fmt->bits_per_pixel < 8) {
         return SDL_SetError("SDL_BlendFillRects(): Unsupported surface format");
     }
 
@@ -322,23 +322,23 @@ bool SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count, SDL_
     }
 
     // FIXME: Does this function pointer slow things down significantly?
-    switch (dst->internal->format->bits_per_pixel) {
+    switch (dst->fmt->bits_per_pixel) {
     case 15:
-        switch (dst->internal->format->Rmask) {
+        switch (dst->fmt->Rmask) {
         case 0x7C00:
             func = SDL_BlendFillRect_RGB555;
         }
         break;
     case 16:
-        switch (dst->internal->format->Rmask) {
+        switch (dst->fmt->Rmask) {
         case 0xF800:
             func = SDL_BlendFillRect_RGB565;
         }
         break;
     case 32:
-        switch (dst->internal->format->Rmask) {
+        switch (dst->fmt->Rmask) {
         case 0x00FF0000:
-            if (!dst->internal->format->Amask) {
+            if (!dst->fmt->Amask) {
                 func = SDL_BlendFillRect_XRGB8888;
             } else {
                 func = SDL_BlendFillRect_ARGB8888;
@@ -351,7 +351,7 @@ bool SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count, SDL_
     }
 
     if (!func) {
-        if (!dst->internal->format->Amask) {
+        if (!dst->fmt->Amask) {
             func = SDL_BlendFillRect_RGB;
         } else {
             func = SDL_BlendFillRect_RGBA;
@@ -360,7 +360,7 @@ bool SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count, SDL_
 
     for (i = 0; i < count; ++i) {
         // Perform clipping
-        if (!SDL_GetRectIntersection(&rects[i], &dst->internal->clip_rect, &rect)) {
+        if (!SDL_GetRectIntersection(&rects[i], &dst->clip_rect, &rect)) {
             continue;
         }
         result = func(dst, &rect, blendMode, r, g, b, a);

@@ -25,7 +25,7 @@
 
 // Useful functions and variables from SDL_surface.c
 
-#include "../SDL_list.h"
+#include "SDL_blit.h"
 
 // Surface internal flags
 typedef Uint32 SDL_SurfaceDataFlags;
@@ -35,16 +35,30 @@ typedef Uint32 SDL_SurfaceDataFlags;
 #define SDL_INTERNAL_SURFACE_RLEACCEL   0x00000004u /**< Surface is RLE encoded */
 
 // Surface internal data definition
-struct SDL_SurfaceData
+struct SDL_Surface
 {
+    // Public API definition
+    SDL_SurfaceFlags flags;     /**< The flags of the surface, read-only */
+    SDL_PixelFormat format;     /**< The format of the surface, read-only */
+    int w;                      /**< The width of the surface, read-only. */
+    int h;                      /**< The height of the surface, read-only. */
+    int pitch;                  /**< The distance in bytes between rows of pixels, read-only */
+    void *pixels;               /**< A pointer to the pixels of the surface, the pixels are writeable if non-NULL */
+
+    int refcount;               /**< Application reference count, used when freeing surface */
+
+    void *reserved;             /**< Reserved for internal use */
+
+    // Private API definition
+
     /** flags for this surface */
-    SDL_SurfaceDataFlags flags;
+    SDL_SurfaceDataFlags internal_flags;
 
     /** properties for this surface */
     SDL_PropertiesID props;
 
     /** detailed format for this surface */
-    const SDL_PixelFormatDetails *format;
+    const SDL_PixelFormatDetails *fmt;
 
     /** Pixel colorspace */
     SDL_Colorspace colorspace;
@@ -65,13 +79,6 @@ struct SDL_SurfaceData
     /** info for fast blit mapping to other surfaces */
     SDL_BlitMap map;
 };
-
-typedef struct SDL_InternalSurface
-{
-    SDL_Surface surface;
-    SDL_SurfaceData internal;
-
-} SDL_InternalSurface;
 
 // Surface functions
 extern bool SDL_SurfaceValid(SDL_Surface *surface);

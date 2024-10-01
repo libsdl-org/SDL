@@ -26,8 +26,6 @@
 
 #include "SDL_shaders_gpu.h"
 
-#include "SDL_hashtable.h"
-
 typedef struct GPU_PipelineParameters
 {
     SDL_BlendMode blend_mode;

@@ -26,7 +26,6 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../../video/directx/SDL_d3d12.h"
 #include "../SDL_sysgpu.h"
-#include "SDL_hashtable.h"
 
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
 #define HAVE_IDXGIINFOQUEUE

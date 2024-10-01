@@ -25,8 +25,6 @@
 #include "SDL_x11video.h"
 #include "SDL_x11shape.h"
 
-#include "../SDL_blit.h"
-
 
 #ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
 static Uint8 *GenerateShapeMask(SDL_Surface *shape)

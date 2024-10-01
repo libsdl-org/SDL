@@ -22,7 +22,7 @@
 
 #if SDL_HAVE_BLIT_N
 
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 #include "SDL_blit_copy.h"
 
 // General optimized routines that write char by char
@@ -2948,15 +2948,15 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
     SDL_BlitFunc blitfun;
 
     // Set up data for choosing the blit
-    srcfmt = surface->internal->format;
-    dstfmt = surface->internal->map.info.dst_fmt;
+    srcfmt = surface->fmt;
+    dstfmt = surface->map.info.dst_fmt;
 
     // We don't support destinations less than 8-bits
     if (dstfmt->bits_per_pixel < 8) {
         return NULL;
     }
 
-    switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
+    switch (surface->map.info.flags & ~SDL_COPY_RLE_MASK) {
     case 0:
         blitfun = NULL;
         if (dstfmt->bits_per_pixel > 8) {
@@ -3017,7 +3017,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
            because RLE is the preferred fast way to deal with this.
            If a particular case turns out to be useful we'll add it. */
 
-        if (srcfmt->bytes_per_pixel == 2 && surface->internal->map.identity != 0) {
+        if (srcfmt->bytes_per_pixel == 2 && surface->map.identity != 0) {
             return Blit2to2Key;
         } else {
 #ifdef SDL_ALTIVEC_BLITTERS

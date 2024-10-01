@@ -22,7 +22,7 @@
 
 #if SDL_HAVE_BLIT_0
 
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 
 // Functions to blit from bitmaps to other surfaces
 
@@ -919,14 +919,14 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
 {
     int which;
 
-    if (SDL_BITSPERPIXEL(surface->internal->map.info.dst_fmt->format) < 8) {
+    if (SDL_BITSPERPIXEL(surface->map.info.dst_fmt->format) < 8) {
         which = 0;
     } else {
-        which = SDL_BYTESPERPIXEL(surface->internal->map.info.dst_fmt->format);
+        which = SDL_BYTESPERPIXEL(surface->map.info.dst_fmt->format);
     }
 
     if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX1) {
-        switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
+        switch (surface->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
             if (which < SDL_arraysize(bitmap_blit_1b)) {
                 return bitmap_blit_1b[which];
@@ -949,7 +949,7 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
     }
 
     if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX2) {
-        switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
+        switch (surface->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
             if (which < SDL_arraysize(bitmap_blit_2b)) {
                 return bitmap_blit_2b[which];
@@ -972,7 +972,7 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
     }
 
     if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX4) {
-        switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
+        switch (surface->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
             if (which < SDL_arraysize(bitmap_blit_4b)) {
                 return bitmap_blit_4b[which];

@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "SDL_hashtable.h"
+
 #include "SDL_hints_c.h"
 #include "SDL_properties_c.h"
 

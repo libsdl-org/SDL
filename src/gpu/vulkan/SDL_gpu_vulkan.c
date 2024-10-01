@@ -29,7 +29,6 @@
 #define VK_NO_PROTOTYPES
 #include "../../video/khronos/vulkan/vulkan.h"
 
-#include "SDL_hashtable.h"
 #include <SDL3/SDL_vulkan.h>
 
 #include "../SDL_sysgpu.h"

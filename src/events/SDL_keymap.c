@@ -22,7 +22,6 @@
 
 #include "SDL_keymap_c.h"
 #include "SDL_keyboard_c.h"
-#include "../SDL_hashtable.h"
 
 struct SDL_Keymap
 {

@@ -38,7 +38,7 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 
 #include "SDL_rotate.h"
 
-#include "../../video/SDL_blit.h"
+#include "../../video/SDL_surface_c.h"
 
 // ---- Internally used structures
 
@@ -506,8 +506,8 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
         }
     }
     // This function requires a 32-bit surface or 8-bit surface with a colorkey
-    is8bit = src->internal->format->bits_per_pixel == 8 && colorKeyAvailable;
-    if (!(is8bit || (src->internal->format->bits_per_pixel == 32 && SDL_ISPIXELFORMAT_ALPHA(src->format)))) {
+    is8bit = src->fmt->bits_per_pixel == 8 && colorKeyAvailable;
+    if (!(is8bit || (src->fmt->bits_per_pixel == 32 && SDL_ISPIXELFORMAT_ALPHA(src->format)))) {
         return NULL;
     }
 
@@ -521,7 +521,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
         // Target surface is 8 bit
         rz_dst = SDL_CreateSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format);
         if (rz_dst) {
-            SDL_SetSurfacePalette(rz_dst, src->internal->palette);
+            SDL_SetSurfacePalette(rz_dst, src->palette);
         }
     } else {
         // Target surface is 32 bit with source RGBA ordering

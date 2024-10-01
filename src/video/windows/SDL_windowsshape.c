@@ -25,8 +25,6 @@
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsshape.h"
 
-#include "../SDL_blit.h"
-
 
 static void AddRegion(HRGN *mask, int x1, int y1, int x2, int y2)
 {
