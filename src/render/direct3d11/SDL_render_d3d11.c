@@ -310,7 +310,7 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
     SDL_Texture *texture = NULL;
 
     // Release all textures
-    for (texture = renderer->textures; texture; texture = texture->next) {
+    for (texture = renderer->textures; texture; texture = texture->internal->next) {
         D3D11_DestroyTexture(renderer, texture);
     }
 
@@ -1171,9 +1171,9 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     if (!textureData) {
         return false;
     }
-    textureData->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    textureData->scaleMode = (texture->internal->scaleMode == SDL_SCALEMODE_NEAREST) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 
-    texture->internal = textureData;
+    texture->internal->texturerep = textureData;
 
     SDL_zero(textureDesc);
     textureDesc.Width = texture->w;
@@ -1194,13 +1194,13 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
     textureData->w = (int)textureDesc.Width;
     textureData->h = (int)textureDesc.Height;
-    if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
+    if (SDL_COLORSPACETRANSFER(texture->internal->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
         textureData->shader = SHADER_RGB;
     } else {
         textureData->shader = SHADER_ADVANCED;
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_STREAMING) {
         textureDesc.Usage = D3D11_USAGE_DYNAMIC;
         textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     } else {
@@ -1208,7 +1208,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         textureDesc.CPUAccessFlags = 0;
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_TARGET) {
         textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
     } else {
         textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -1263,7 +1263,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
         SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_V_POINTER, textureData->mainTextureV);
 
-        textureData->YCbCr_matrix = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
+        textureData->YCbCr_matrix = SDL_GetYCbCRtoRGBConversionMatrix(texture->internal->colorspace, texture->w, texture->h, 8);
         if (!textureData->YCbCr_matrix) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
@@ -1283,7 +1283,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             bits_per_pixel = 8;
             break;
         }
-        textureData->YCbCr_matrix = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, bits_per_pixel);
+        textureData->YCbCr_matrix = SDL_GetYCbCRtoRGBConversionMatrix(texture->internal->colorspace, texture->w, texture->h, bits_per_pixel);
         if (!textureData->YCbCr_matrix) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
@@ -1338,7 +1338,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
 #endif // SDL_HAVE_YUV
 
-    if (texture->access & SDL_TEXTUREACCESS_TARGET) {
+    if (texture->internal->access & SDL_TEXTUREACCESS_TARGET) {
         D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
         SDL_zero(renderTargetViewDesc);
         renderTargetViewDesc.Format = textureDesc.Format;
@@ -1360,7 +1360,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 static void D3D11_DestroyTexture(SDL_Renderer *renderer,
                                  SDL_Texture *texture)
 {
-    D3D11_TextureData *data = (D3D11_TextureData *)texture->internal;
+    D3D11_TextureData *data = (D3D11_TextureData *)texture->internal->texturerep;
 
     if (!data) {
         return;
@@ -1379,7 +1379,7 @@ static void D3D11_DestroyTexture(SDL_Renderer *renderer,
     SDL_free(data->pixels);
 #endif
     SDL_free(data);
-    texture->internal = NULL;
+    texture->internal->texturerep = NULL;
 }
 
 static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Texture2D *texture, int bpp, int x, int y, int w, int h, const void *pixels, int pitch)
@@ -1503,7 +1503,7 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                int srcPitch)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
-    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal->texturerep;
 
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
@@ -1545,7 +1545,7 @@ static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const Uint8 *Vplane, int Vpitch)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
-    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal->texturerep;
 
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
@@ -1569,7 +1569,7 @@ static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const Uint8 *UVplane, int UVpitch)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
-    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal->texturerep;
     ID3D11Texture2D *stagingTexture;
     const Uint8 *src;
     Uint8 *dst;
@@ -1681,7 +1681,7 @@ static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                              const SDL_Rect *rect, void **pixels, int *pitch)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
-    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal->texturerep;
     HRESULT result = S_OK;
     D3D11_TEXTURE2D_DESC stagingTextureDesc;
     D3D11_MAPPED_SUBRESOURCE textureMemory;
@@ -1761,7 +1761,7 @@ static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 static void D3D11_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
-    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal->texturerep;
 
     if (!textureData) {
         return;
@@ -1797,7 +1797,7 @@ static void D3D11_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static void D3D11_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
-    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal->texturerep;
 
     if (!textureData) {
         return;
@@ -1816,7 +1816,7 @@ static bool D3D11_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         return true;
     }
 
-    textureData = (D3D11_TextureData *)texture->internal;
+    textureData = (D3D11_TextureData *)texture->internal->texturerep;
 
     if (!textureData->mainTextureRenderTargetView) {
         return SDL_SetError("specified texture is not a render target");
@@ -1870,7 +1870,7 @@ static bool D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
     int count = indices ? num_indices : num_vertices;
     D3D11_VertexPositionColor *verts = (D3D11_VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(D3D11_VertexPositionColor), 0, &cmd->data.draw.first);
     bool convert_color = SDL_RenderingLinearSpace(renderer);
-    D3D11_TextureData *textureData = texture ? (D3D11_TextureData *)texture->internal : NULL;
+    D3D11_TextureData *textureData = texture ? (D3D11_TextureData *)texture->internal->texturerep : NULL;
     float u_scale = textureData ? (float)texture->w / textureData->w : 0.0f;
     float v_scale = textureData ? (float)texture->h / textureData->h : 0.0f;
 
@@ -2097,7 +2097,7 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
     constants->color_scale = cmd->data.draw.color_scale;
 
     if (texture) {
-        D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
+        D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal->texturerep;
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_YV12:
@@ -2119,9 +2119,9 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             break;
         default:
             constants->texture_type = TEXTURETYPE_RGB;
-            if (texture->colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+            if (texture->internal->colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 constants->input_type = INPUTTYPE_SCRGB;
-            } else if (texture->colorspace == SDL_COLORSPACE_HDR10) {
+            } else if (texture->internal->colorspace == SDL_COLORSPACE_HDR10) {
                 constants->input_type = INPUTTYPE_HDR10;
             } else {
                 // The sampler will convert from sRGB to linear on load if working in linear colorspace
@@ -2130,17 +2130,17 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             break;
         }
 
-        constants->sdr_white_point = texture->SDR_white_point;
+        constants->sdr_white_point = texture->internal->SDR_white_point;
 
         if (renderer->target) {
-            output_headroom = renderer->target->HDR_headroom;
+            output_headroom = renderer->target->internal->HDR_headroom;
         } else {
             output_headroom = renderer->HDR_headroom;
         }
 
-        if (texture->HDR_headroom > output_headroom) {
+        if (texture->internal->HDR_headroom > output_headroom) {
             constants->tonemap_method = TONEMAP_CHROME;
-            constants->tonemap_factor1 = (output_headroom / (texture->HDR_headroom * texture->HDR_headroom));
+            constants->tonemap_factor1 = (output_headroom / (texture->internal->HDR_headroom * texture->internal->HDR_headroom));
             constants->tonemap_factor2 = (1.0f / output_headroom);
         }
 
@@ -2307,7 +2307,7 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
-    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal->texturerep;
     ID3D11SamplerState *textureSampler;
     D3D11_PixelShaderConstants constants;
 
@@ -2592,7 +2592,7 @@ static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
     output = SDL_DuplicatePixels(
         rect->w, rect->h,
         D3D11_DXGIFormatToSDLPixelFormat(stagingTextureDesc.Format),
-        renderer->target ? renderer->target->colorspace : renderer->output_colorspace,
+        renderer->target ? renderer->target->internal->colorspace : renderer->output_colorspace,
         textureMemory.pData,
         textureMemory.RowPitch);
 

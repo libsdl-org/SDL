@@ -188,7 +188,7 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         return false;
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_STREAMING) {
         size_t size;
         data->pitch = texture->w * SDL_BYTESPERPIXEL(texture->format);
         size = (size_t)texture->h * data->pitch;
@@ -211,11 +211,11 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         // TODO allocate a persistent transfer buffer
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_TARGET) {
         usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     }
 
-    texture->internal = data;
+    texture->internal->texturerep = data;
     SDL_GPUTextureCreateInfo tci;
     SDL_zero(tci);
     tci.format = format;
@@ -246,7 +246,7 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                               const SDL_Rect *rect, const void *pixels, int pitch)
 {
     GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
-    GPU_TextureData *data = (GPU_TextureData *)texture->internal;
+    GPU_TextureData *data = (GPU_TextureData *)texture->internal->texturerep;
     const Uint32 texturebpp = SDL_BYTESPERPIXEL(texture->format);
 
     size_t row_size, data_size;
@@ -313,7 +313,7 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 static bool GPU_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                             const SDL_Rect *rect, void **pixels, int *pitch)
 {
-    GPU_TextureData *data = (GPU_TextureData *)texture->internal;
+    GPU_TextureData *data = (GPU_TextureData *)texture->internal->texturerep;
 
     data->locked_rect = *rect;
     *pixels =
@@ -325,7 +325,7 @@ static bool GPU_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static void GPU_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    GPU_TextureData *data = (GPU_TextureData *)texture->internal;
+    GPU_TextureData *data = (GPU_TextureData *)texture->internal->texturerep;
     const SDL_Rect *rect;
     void *pixels;
 
@@ -534,7 +534,7 @@ static void Draw(
     GPU_TextureData *tdata = NULL;
 
     if (cmd->data.draw.texture) {
-        tdata = (GPU_TextureData *)cmd->data.draw.texture->internal;
+        tdata = (GPU_TextureData *)cmd->data.draw.texture->internal->texturerep;
     }
 
     if (prim == SDL_GPU_PRIMITIVETYPE_TRIANGLELIST) {
@@ -575,7 +575,7 @@ static void Draw(
     if (tdata) {
         SDL_GPUTextureSamplerBinding sampler_bind;
         SDL_zero(sampler_bind);
-        sampler_bind.sampler = *SamplerPointer(data, cmd->data.draw.texture_address_mode, cmd->data.draw.texture->scaleMode);
+        sampler_bind.sampler = *SamplerPointer(data, cmd->data.draw.texture_address_mode, cmd->data.draw.texture->internal->scaleMode);
         sampler_bind.texture = tdata->texture;
         SDL_BindGPUFragmentSamplers(pass, 0, &sampler_bind, 1);
     }
@@ -688,7 +688,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
     data->state.color_attachment.load_op = SDL_GPU_LOADOP_LOAD;
 
     if (renderer->target) {
-        GPU_TextureData *tdata = renderer->target->internal;
+        GPU_TextureData *tdata = (GPU_TextureData *)renderer->target->internal->texturerep;
         data->state.color_attachment.texture = tdata->texture;
     } else {
         data->state.color_attachment.texture = data->backbuffer.texture;
@@ -843,7 +843,7 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
 
     if (data->state.render_target) {
         SDL_Texture *texture = data->state.render_target;
-        GPU_TextureData *texdata = texture->internal;
+        GPU_TextureData *texdata = (GPU_TextureData *)texture->internal->texturerep;
         gpu_tex = texdata->texture;
         pixfmt = texture->format;
     } else {
@@ -1013,7 +1013,7 @@ submit:
 static void GPU_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
-    GPU_TextureData *data = (GPU_TextureData *)texture->internal;
+    GPU_TextureData *data = (GPU_TextureData *)texture->internal->texturerep;
 
     if (renderdata->state.render_target == texture) {
         renderdata->state.render_target = NULL;
@@ -1026,7 +1026,7 @@ static void GPU_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     SDL_ReleaseGPUTexture(renderdata->device, data->texture);
     SDL_free(data->pixels);
     SDL_free(data);
-    texture->internal = NULL;
+    texture->internal->texturerep = NULL;
 }
 
 static void GPU_DestroyRenderer(SDL_Renderer *renderer)

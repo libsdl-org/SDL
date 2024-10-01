@@ -992,7 +992,7 @@ static bool SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, c
         data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, (const GLvoid *)&verts->tex_coord);
     }
 
-    if (!GLES2_SelectProgram(data, imgsrc, texture ? texture->colorspace : SDL_COLORSPACE_SRGB)) {
+    if (!GLES2_SelectProgram(data, imgsrc, texture ? texture->internal->colorspace : SDL_COLORSPACE_SRGB)) {
         return false;
     }
 
@@ -1173,7 +1173,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, v
     ret = SetDrawState(data, cmd, sourceType, vertices);
 
     if (texture != data->drawstate.texture) {
-        GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
+        GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal->texturerep;
 #if SDL_HAVE_YUV
         if (tdata->yuv) {
             data->glActiveTexture(GL_TEXTURE2);
@@ -1522,7 +1522,7 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
 
     if (texture->format == SDL_PIXELFORMAT_EXTERNAL_OES &&
-        texture->access != SDL_TEXTUREACCESS_STATIC) {
+        texture->internal->access != SDL_TEXTUREACCESS_STATIC) {
         return SDL_SetError("Unsupported texture access for SDL_PIXELFORMAT_EXTERNAL_OES");
     }
 
@@ -1545,10 +1545,10 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     data->texture_u = 0;
     data->texture_v = 0;
 #endif
-    scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
+    scaleMode = (texture->internal->scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
 
     // Allocate a blob for image renderdata
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_STREAMING) {
         size_t size;
         data->pitch = texture->w * SDL_BYTESPERPIXEL(texture->format);
         size = (size_t)texture->h * data->pitch;
@@ -1608,7 +1608,7 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_U_NUMBER, data->texture_u);
 
-        if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8)) {
+        if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->internal->colorspace, texture->w, texture->h, 8)) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
     } else if (data->nv12) {
@@ -1631,7 +1631,7 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_UV_NUMBER, data->texture_u);
 
-        if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8)) {
+        if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->internal->colorspace, texture->w, texture->h, 8)) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
     }
@@ -1646,7 +1646,7 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             return false;
         }
     }
-    texture->internal = data;
+    texture->internal->texturerep = data;
     renderdata->glActiveTexture(GL_TEXTURE0);
     renderdata->glBindTexture(data->texture_type, data->texture);
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, scaleMode);
@@ -1660,7 +1660,7 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_NUMBER, data->texture);
     SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER, data->texture_type);
 
-    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_TARGET) {
         data->fbo = GLES2_GetFBO((GLES2_RenderData *)renderer->internal, texture->w, texture->h);
     } else {
         data->fbo = NULL;
@@ -1708,7 +1708,7 @@ static bool GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
                                const void *pixels, int pitch)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
-    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
+    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal->texturerep;
 
     GLES2_ActivateRenderer(renderer);
 
@@ -1789,7 +1789,7 @@ static bool GLES2_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const Uint8 *Vplane, int Vpitch)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
-    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
+    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal->texturerep;
 
     GLES2_ActivateRenderer(renderer);
 
@@ -1839,7 +1839,7 @@ static bool GLES2_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const Uint8 *UVplane, int UVpitch)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
-    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
+    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal->texturerep;
 
     GLES2_ActivateRenderer(renderer);
 
@@ -1877,7 +1877,7 @@ static bool GLES2_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
 static bool GLES2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect,
                              void **pixels, int *pitch)
 {
-    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
+    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal->texturerep;
 
     // Retrieve the buffer/pitch for the specified region
     *pixels = (Uint8 *)tdata->pixel_data +
@@ -1890,7 +1890,7 @@ static bool GLES2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, cons
 
 static void GLES2_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
+    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal->texturerep;
     SDL_Rect rect;
 
     // We do whole texture updates, at least for now
@@ -1904,7 +1904,7 @@ static void GLES2_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 static void GLES2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
     GLES2_RenderData *renderdata = (GLES2_RenderData *)renderer->internal;
-    GLES2_TextureData *data = (GLES2_TextureData *)texture->internal;
+    GLES2_TextureData *data = (GLES2_TextureData *)texture->internal->texturerep;
     GLenum glScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? GL_NEAREST : GL_LINEAR;
 
 #if SDL_HAVE_YUV
@@ -1943,7 +1943,7 @@ static bool GLES2_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     if (!texture) {
         data->glBindFramebuffer(GL_FRAMEBUFFER, data->window_framebuffer);
     } else {
-        texturedata = (GLES2_TextureData *)texture->internal;
+        texturedata = (GLES2_TextureData *)texture->internal->texturerep;
         data->glBindFramebuffer(GL_FRAMEBUFFER, texturedata->fbo->FBO);
         // TODO: check if texture pixel format allows this operation
         data->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texturedata->texture_type, texturedata->texture, 0);
@@ -1959,7 +1959,7 @@ static bool GLES2_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 static void GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
-    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
+    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal->texturerep;
 
     GLES2_ActivateRenderer(renderer);
 
@@ -1985,7 +1985,7 @@ static void GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 #endif
         SDL_free(tdata->pixel_data);
         SDL_free(tdata);
-        texture->internal = NULL;
+        texture->internal->texturerep = NULL;
     }
 }
 

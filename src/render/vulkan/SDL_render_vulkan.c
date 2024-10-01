@@ -2513,13 +2513,13 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     if (!textureData) {
         return false;
     }
-    texture->internal = textureData;
-    if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
+    texture->internal->texturerep = textureData;
+    if (SDL_COLORSPACETRANSFER(texture->internal->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
         textureData->shader = SHADER_RGB;
     } else {
         textureData->shader = SHADER_ADVANCED;
     }
-    textureData->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
+    textureData->scaleMode = (texture->internal->scaleMode == SDL_SCALEMODE_NEAREST) ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
 
 #if SDL_HAVE_YUV
     // YUV textures must have even width and height.  Also create Ycbcr conversion
@@ -2544,7 +2544,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
 
         // Create samplerYcbcrConversion which will be used on the VkImageView and VkSampler
         samplerYcbcrConversionCreateInfo.format = textureFormat;
-        switch (SDL_COLORSPACEMATRIX(texture->colorspace)) {
+        switch (SDL_COLORSPACEMATRIX(texture->internal->colorspace)) {
         case SDL_MATRIX_COEFFICIENTS_BT470BG:
         case SDL_MATRIX_COEFFICIENTS_BT601:
             samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR;
@@ -2565,7 +2565,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
             }
             break;
         default:
-            return SDL_SetError("[Vulkan] Unsupported Ycbcr colorspace: %d", SDL_COLORSPACEMATRIX(texture->colorspace));
+            return SDL_SetError("[Vulkan] Unsupported Ycbcr colorspace: %d", SDL_COLORSPACEMATRIX(texture->internal->colorspace));
         }
         samplerYcbcrConversionCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         samplerYcbcrConversionCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -2577,7 +2577,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
             samplerYcbcrConversionCreateInfo.components.b = VK_COMPONENT_SWIZZLE_R;
         }
 
-        switch (SDL_COLORSPACERANGE(texture->colorspace)) {
+        switch (SDL_COLORSPACERANGE(texture->internal->colorspace)) {
         case SDL_COLOR_RANGE_LIMITED:
             samplerYcbcrConversionCreateInfo.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW_KHR;
             break;
@@ -2587,7 +2587,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
             break;
         }
 
-        switch (SDL_COLORSPACECHROMA(texture->colorspace)) {
+        switch (SDL_COLORSPACECHROMA(texture->internal->colorspace)) {
         case SDL_CHROMA_LOCATION_LEFT:
             samplerYcbcrConversionCreateInfo.xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN_KHR;
             samplerYcbcrConversionCreateInfo.yChromaOffset = VK_CHROMA_LOCATION_MIDPOINT_KHR;
@@ -2647,7 +2647,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     textureData->height = height;
 
     VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_TARGET) {
         usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     }
 
@@ -2660,7 +2660,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, (Sint64)textureData->mainImage.image);
 
-    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_TARGET) {
         result = VULKAN_CreateFramebuffersAndRenderPasses(renderer,
             texture->w,
             texture->h,
@@ -2681,7 +2681,7 @@ static void VULKAN_DestroyTexture(SDL_Renderer *renderer,
                                  SDL_Texture *texture)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
-    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
+    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal->texturerep;
 
     if (!textureData) {
         return;
@@ -2726,7 +2726,7 @@ static void VULKAN_DestroyTexture(SDL_Renderer *renderer,
     }
 
     SDL_free(textureData);
-    texture->internal = NULL;
+    texture->internal->texturerep = NULL;
 }
 
 static VkResult VULKAN_UpdateTextureInternal(VULKAN_RenderData *rendererData, VkImage image, VkFormat format, int plane, int x, int y, int w, int h, const void *pixels, int pitch, VkImageLayout *imageLayout)
@@ -2827,7 +2827,7 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                int srcPitch)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
-    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
+    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal->texturerep;
 
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
@@ -2876,7 +2876,7 @@ static bool VULKAN_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture
                                   const Uint8 *Vplane, int Vpitch)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
-    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
+    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal->texturerep;
 
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
@@ -2900,7 +2900,7 @@ static bool VULKAN_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const Uint8 *UVplane, int UVpitch)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
-    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
+    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal->texturerep;
 
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
@@ -2921,7 +2921,7 @@ static bool VULKAN_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                              const SDL_Rect *rect, void **pixels, int *pitch)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
-    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
+    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal->texturerep;
     VkResult result;
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
@@ -2962,7 +2962,7 @@ static bool VULKAN_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 static void VULKAN_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
-    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
+    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal->texturerep;
 
     if (!textureData) {
         return;
@@ -3014,7 +3014,7 @@ static void VULKAN_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static void VULKAN_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
-    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
+    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal->texturerep;
 
     if (!textureData) {
         return;
@@ -3046,7 +3046,7 @@ static bool VULKAN_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         return true;
     }
 
-    textureData = (VULKAN_TextureData *)texture->internal;
+    textureData = (VULKAN_TextureData *)texture->internal->texturerep;
 
     if (textureData->mainImage.imageView == VK_NULL_HANDLE) {
         return SDL_SetError("specified texture is not a render target");
@@ -3104,7 +3104,7 @@ static bool VULKAN_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     int count = indices ? num_indices : num_vertices;
     VULKAN_VertexPositionColor *verts = (VULKAN_VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VULKAN_VertexPositionColor), 0, &cmd->data.draw.first);
     bool convert_color = SDL_RenderingLinearSpace(renderer);
-    VULKAN_TextureData *textureData = texture ? (VULKAN_TextureData *)texture->internal : NULL;
+    VULKAN_TextureData *textureData = texture ? (VULKAN_TextureData *)texture->internal->texturerep : NULL;
     float u_scale = textureData ? (float)texture->w / textureData->width : 0.0f;
     float v_scale = textureData ? (float)texture->h / textureData->height : 0.0f;
 
@@ -3276,10 +3276,10 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
             constants->input_type = INPUTTYPE_HDR10;
             break;
         default:
-            if (texture->colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+            if (texture->internal->colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 constants->input_type = INPUTTYPE_SCRGB;
-            } else if (SDL_COLORSPACEPRIMARIES(texture->colorspace) == SDL_COLOR_PRIMARIES_BT2020 &&
-                       SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+            } else if (SDL_COLORSPACEPRIMARIES(texture->internal->colorspace) == SDL_COLOR_PRIMARIES_BT2020 &&
+                       SDL_COLORSPACETRANSFER(texture->internal->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
                 constants->input_type = INPUTTYPE_HDR10;
             } else {
                 // The sampler will convert from sRGB to linear on load if working in linear colorspace
@@ -3288,17 +3288,17 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
             break;
         }
 
-        constants->sdr_white_point = texture->SDR_white_point;
+        constants->sdr_white_point = texture->internal->SDR_white_point;
 
         if (renderer->target) {
-            output_headroom = renderer->target->HDR_headroom;
+            output_headroom = renderer->target->internal->HDR_headroom;
         } else {
             output_headroom = renderer->HDR_headroom;
         }
 
-        if (texture->HDR_headroom > output_headroom) {
+        if (texture->internal->HDR_headroom > output_headroom) {
             constants->tonemap_method = TONEMAP_CHROME;
-            constants->tonemap_factor1 = (output_headroom / (texture->HDR_headroom * texture->HDR_headroom));
+            constants->tonemap_factor1 = (output_headroom / (texture->internal->HDR_headroom * texture->internal->HDR_headroom));
             constants->tonemap_factor2 = (1.0f / output_headroom);
         }
     }
@@ -3632,7 +3632,7 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
-    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
+    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal->texturerep;
     VkSampler textureSampler = VK_NULL_HANDLE;
     VULKAN_PixelShaderConstants constants;
     VkDescriptorSetLayout descriptorSetLayout = (textureData->descriptorSetLayoutYcbcr != VK_NULL_HANDLE) ? textureData->descriptorSetLayoutYcbcr : rendererData->descriptorSetLayout;
@@ -3923,7 +3923,7 @@ static SDL_Surface* VULKAN_RenderReadPixels(SDL_Renderer *renderer, const SDL_Re
     output = SDL_DuplicatePixels(
         rect->w, rect->h,
         VULKAN_VkFormatToSDLPixelFormat(vkFormat),
-        renderer->target ? renderer->target->colorspace : renderer->output_colorspace,
+        renderer->target ? renderer->target->internal->colorspace : renderer->output_colorspace,
         readbackBuffer.mappedBufferPtr,
         (int)length);
 

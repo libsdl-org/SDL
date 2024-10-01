@@ -118,12 +118,31 @@ typedef enum SDL_RendererLogicalPresentation
  */
 typedef struct SDL_Renderer SDL_Renderer;
 
+/* Internal texture data */
+typedef struct SDL_TextureData SDL_TextureData;
+
 /**
  * An efficient driver-specific representation of pixel data
  *
  * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateTexture
+ * \sa SDL_CreateTextureFromSurface
+ * \sa SDL_CreateTextureWithProperties
+ * \sa SDL_DestroyTexture
  */
-typedef struct SDL_Texture SDL_Texture;
+typedef struct SDL_Texture
+{
+    SDL_PixelFormat format;     /**< The format of the texture, read-only */
+    int w;                      /**< The width of the texture, read-only. */
+    int h;                      /**< The height of the texture, read-only. */
+
+    int refcount;               /**< Application reference count, used when freeing texture */
+
+    SDL_TextureData *internal;  /**< Private */
+
+} SDL_Texture;
+
 
 /* Function prototypes */
 

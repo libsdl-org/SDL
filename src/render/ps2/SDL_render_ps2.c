@@ -145,7 +145,7 @@ static bool PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         return false;
     }
 
-    texture->internal = ps2_tex;
+    texture->internal->texturerep = ps2_tex;
 
     return true;
 }
@@ -153,7 +153,7 @@ static bool PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
 static bool PS2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                            const SDL_Rect *rect, void **pixels, int *pitch)
 {
-    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal;
+    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal->texturerep;
 
     *pixels =
         (void *)((Uint8 *)ps2_texture->Mem + rect->y * ps2_texture->Width * SDL_BYTESPERPIXEL(texture->format) +
@@ -164,7 +164,7 @@ static bool PS2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static void PS2_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal;
+    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal->texturerep;
     PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
 
     gsKit_TexManager_invalidate(data->gsGlobal, ps2_texture);
@@ -197,7 +197,7 @@ static bool PS2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static void PS2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
-    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal;
+    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal->texturerep;
     /*
      set texture filtering according to scaleMode
      supported hint values are nearest (0, default) or linear (1)
@@ -270,7 +270,7 @@ static bool PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
 
     if (texture) {
         GSPRIMUVPOINT *vertices = (GSPRIMUVPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof(GSPRIMUVPOINT), 4, &cmd->data.draw.first);
-        GSTEXTURE *ps2_tex = (GSTEXTURE *) texture->internal;
+        GSTEXTURE *ps2_tex = (GSTEXTURE *) texture->internal->texturerep;
 
         if (!vertices) {
             return false;
@@ -456,7 +456,7 @@ static bool PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Rende
 
     if (cmd->data.draw.texture) {
         const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *) (vertices + cmd->data.draw.first);
-        GSTEXTURE *ps2_tex = (GSTEXTURE *)cmd->data.draw.texture->internal;
+        GSTEXTURE *ps2_tex = (GSTEXTURE *)cmd->data.draw.texture->internal->texturerep;
 
         gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
         gsKit_prim_list_triangle_goraud_texture_uv_3d(data->gsGlobal, ps2_tex, count, verts);
@@ -581,7 +581,7 @@ static bool PS2_RenderPresent(SDL_Renderer *renderer)
 
 static void PS2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal;
+    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal->texturerep;
     PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
 
     if (!data) {
@@ -597,7 +597,7 @@ static void PS2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     SDL_aligned_free(ps2_texture->Mem);
     SDL_free(ps2_texture);
-    texture->internal = NULL;
+    texture->internal->texturerep = NULL;
 }
 
 static void PS2_DestroyRenderer(SDL_Renderer *renderer)

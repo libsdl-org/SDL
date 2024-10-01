@@ -284,10 +284,10 @@ static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         texture->w,
         texture->h,
         PixelFormatToVITAFMT(texture->format),
-        (texture->access == SDL_TEXTUREACCESS_TARGET),
+        (texture->internal->access == SDL_TEXTUREACCESS_TARGET),
         &(vita_texture->w),
         &(vita_texture->h),
-        &(vita_texture->pitch),
+        &(vita_texture->internal->pitch),
         &(vita_texture->wscale));
 
     if (!vita_texture->tex) {
@@ -295,12 +295,12 @@ static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_OutOfMemory();
     }
 
-    texture->internal = vita_texture;
+    texture->internal->texturerep = vita_texture;
 
-    VITA_GXM_SetTextureScaleMode(renderer, texture, texture->scaleMode);
+    VITA_GXM_SetTextureScaleMode(renderer, texture, texture->internal->scaleMode);
 
 #if SDL_HAVE_YUV
-    vita_texture->yuv = ((texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12));
+    vita_texture->internal->yuv = ((texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12));
     vita_texture->nv12 = ((texture->format == SDL_PIXELFORMAT_NV12) || (texture->format == SDL_PIXELFORMAT_NV21));
 #endif
 
@@ -311,14 +311,14 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     int ret = 0;
-    if (SDL_ISCOLORSPACE_MATRIX_BT601(texture->colorspace)) {
-        if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+    if (SDL_ISCOLORSPACE_MATRIX_BT601(texture->internal->colorspace)) {
+        if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->internal->colorspace)) {
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT601_STANDARD);
         } else {
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT601_FULL_RANGE);
         }
-    } else if (SDL_ISCOLORSPACE_MATRIX_BT709(texture->colorspace)) {
-        if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+    } else if (SDL_ISCOLORSPACE_MATRIX_BT709(texture->internal->colorspace)) {
+        if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->internal->colorspace)) {
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT709_STANDARD);
         } else {
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT709_FULL_RANGE);
@@ -335,12 +335,12 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
 static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect, const void *pixels, int pitch)
 {
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
+    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal->texturerep;
     Uint8 *dst;
     int row, length, dpitch;
 
 #if SDL_HAVE_YUV
-    if (vita_texture->yuv || vita_texture->nv12) {
+    if (vita_texture->internal->yuv || vita_texture->nv12) {
         VITA_GXM_SetYUVProfile(renderer, texture);
     }
 #endif
@@ -358,7 +358,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 
 #if SDL_HAVE_YUV
-    if (vita_texture->yuv) {
+    if (vita_texture->internal->yuv) {
         void *Udst;
         void *Vdst;
         int uv_pitch = (dpitch + 1) / 2;
@@ -366,7 +366,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
 
         // skip Y plane
-        Uint8 *Dpixels = gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h);
+        Uint8 *Dpixels = gxm_texture_get_datap(vita_texture->tex) + (vita_texture->internal->pitch * vita_texture->h);
 
         Udst = Dpixels + (UVrect.y * uv_pitch) + UVrect.x;
         Vdst = Dpixels + (uv_pitch * ((vita_texture->h + 1) / 2)) + (UVrect.y * uv_pitch) + UVrect.x;
@@ -402,7 +402,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
 
         // skip Y plane
-        void *Dpixels = (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h));
+        void *Dpixels = (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->internal->pitch * vita_texture->h));
         UVdst = Dpixels + (UVrect.y * uv_pitch) + UVrect.x;
 
         length = UVrect.w * 2;
@@ -456,11 +456,11 @@ static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *textu
     {
         void *Udst;
         void *Vdst;
-        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
+        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal->texturerep;
         int uv_pitch = (dpitch + 1) / 2;
 
         // skip Y plane
-        void *pixels = (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h));
+        void *pixels = (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->internal->pitch * vita_texture->h));
 
         if (texture->format == SDL_PIXELFORMAT_YV12) { // YVU
             Vdst = pixels + (UVrect.y * uv_pitch) + UVrect.x;
@@ -528,11 +528,11 @@ static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *textur
     // UV plane
     {
         void *UVdst;
-        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
+        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal->texturerep;
         int uv_pitch = 2 * ((dpitch + 1) / 2);
 
         // skip Y plane
-        void *pixels = (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h));
+        void *pixels = (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->internal->pitch * vita_texture->h));
 
         UVdst = pixels + (UVrect.y * uv_pitch) + UVrect.x;
 
@@ -559,11 +559,11 @@ static bool VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                 const SDL_Rect *rect, void **pixels, int *pitch)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
+    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal->texturerep;
 
     *pixels =
-        (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (rect->y * vita_texture->pitch) + rect->x * SDL_BYTESPERPIXEL(texture->format));
-    *pitch = vita_texture->pitch;
+        (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (rect->y * vita_texture->internal->pitch) + rect->x * SDL_BYTESPERPIXEL(texture->format));
+    *pitch = vita_texture->internal->pitch;
 
     // make sure that rendering is finished on render target textures
     if (vita_texture->tex->gxm_rendertarget) {
@@ -582,7 +582,7 @@ static void VITA_GXM_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
+    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal->texturerep;
 
     /*
      set texture filtering according to scaleMode
@@ -710,7 +710,7 @@ static bool VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cm
     size_indices = indices ? size_indices : 0;
 
     if (texture) {
-        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
+        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal->texturerep;
         texture_vertex *vertices;
 
         vertices = (texture_vertex *)pool_malloc(
@@ -909,7 +909,7 @@ static bool SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd
 
     if (texture != data->drawstate.texture) {
         if (texture) {
-            VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)cmd->data.draw.texture->internal;
+            VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)cmd->data.draw.texture->internal->texturerep;
             sceGxmSetFragmentTexture(data->gxm_context, 0, &vita_texture->tex->gxm_tex);
         }
         data->drawstate.texture = texture;
@@ -1168,7 +1168,7 @@ static bool VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
+    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal->texturerep;
 
     if (!data) {
         return;
@@ -1188,7 +1188,7 @@ static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture
 
     SDL_free(vita_texture);
 
-    texture->internal = NULL;
+    texture->internal->texturerep = NULL;
 }
 
 static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)

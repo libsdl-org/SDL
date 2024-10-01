@@ -694,7 +694,7 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         // Not available in iOS 8.
         if ([mtltexdesc respondsToSelector:@selector(usage)]) {
-            if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+            if (texture->internal->access == SDL_TEXTUREACCESS_TARGET) {
                 mtltexdesc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
             } else {
                 mtltexdesc.usage = MTLTextureUsageShaderRead;
@@ -747,7 +747,7 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
 #endif // SDL_HAVE_YUV
         texturedata = [[SDL3METAL_TextureData alloc] init];
-        if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
+        if (SDL_COLORSPACETRANSFER(texture->internal->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
 #if SDL_HAVE_YUV
         } else if (yuv) {
@@ -762,14 +762,14 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         texturedata.yuv = yuv;
         texturedata.nv12 = nv12;
         if (yuv || nv12) {
-            size_t offset = GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
+            size_t offset = GetYCbCRtoRGBConversionMatrix(texture->internal->colorspace, texture->w, texture->h, 8);
             if (offset == 0) {
                 return SDL_SetError("Unsupported YUV colorspace");
             }
             texturedata.conversionBufferOffset = offset;
         }
 #endif
-        texture->internal = (void *)CFBridgingRetain(texturedata);
+        texture->internal->texturerep = (void *)CFBridgingRetain(texturedata);
 
         return true;
     }
@@ -867,7 +867,7 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                const SDL_Rect *rect, const void *pixels, int pitch)
 {
     @autoreleasepool {
-        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
+        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal->texturerep;
 
         if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, pixels, pitch)) {
             return false;
@@ -917,7 +917,7 @@ static bool METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const Uint8 *Vplane, int Vpitch)
 {
     @autoreleasepool {
-        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
+        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal->texturerep;
         const int Uslice = 0;
         const int Vslice = 1;
         SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
@@ -949,7 +949,7 @@ static bool METAL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const Uint8 *UVplane, int UVpitch)
 {
     @autoreleasepool {
-        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
+        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal->texturerep;
         SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
 
         // Bail out if we're supposed to update an empty rectangle
@@ -977,7 +977,7 @@ static bool METAL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
-        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
+        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal->texturerep;
         int buffersize = 0;
         id<MTLBuffer> lockedbuffer = nil;
 
@@ -1012,7 +1012,7 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
-        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
+        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal->texturerep;
         id<MTLBlitCommandEncoder> blitcmd;
         SDL_Rect rect = texturedata.lockedrect;
         int pitch = SDL_BYTESPERPIXEL(texture->format) * rect.w;
@@ -1362,7 +1362,7 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
             constants->texture_type = TEXTURETYPE_RGB;
         }
 
-        switch (SDL_COLORSPACETRANSFER(texture->colorspace)) {
+        switch (SDL_COLORSPACETRANSFER(texture->internal->colorspace)) {
         case SDL_TRANSFER_CHARACTERISTICS_LINEAR:
             constants->input_type = INPUTTYPE_SCRGB;
             break;
@@ -1374,7 +1374,7 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
             break;
         }
 
-        constants->sdr_white_point = texture->SDR_white_point;
+        constants->sdr_white_point = texture->internal->SDR_white_point;
 
         if (renderer->target) {
             output_headroom = renderer->target->HDR_headroom;
@@ -1382,9 +1382,9 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
             output_headroom = renderer->HDR_headroom;
         }
 
-        if (texture->HDR_headroom > output_headroom) {
+        if (texture->internal->HDR_headroom > output_headroom) {
             constants->tonemap_method = TONEMAP_CHROME;
-            constants->tonemap_factor1 = (output_headroom / (texture->HDR_headroom * texture->HDR_headroom));
+            constants->tonemap_factor1 = (output_headroom / (texture->internal->HDR_headroom * texture->internal->HDR_headroom));
             constants->tonemap_factor2 = (1.0f / output_headroom);
         }
     }
@@ -1486,7 +1486,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
 {
     SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
     SDL_Texture *texture = cmd->data.draw.texture;
-    SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
+    SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal->texturerep;
     PixelShaderConstants constants;
 
     SetupShaderConstants(renderer, cmd, texture, &constants);
@@ -1498,7 +1498,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
     if (texture != statecache->texture) {
         id<MTLSamplerState> mtlsampler;
 
-        if (texture->scaleMode == SDL_SCALEMODE_NEAREST) {
+        if (texture->internal->scaleMode == SDL_SCALEMODE_NEAREST) {
             switch (cmd->data.draw.texture_address_mode) {
             case SDL_TEXTURE_ADDRESS_CLAMP:
                 mtlsampler = data.mtlsamplers[SDL_METAL_SAMPLER_NEAREST_CLAMP];
@@ -1797,8 +1797,8 @@ static bool METAL_RenderPresent(SDL_Renderer *renderer)
 static void METAL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     @autoreleasepool {
-        CFBridgingRelease(texture->internal);
-        texture->internal = NULL;
+        CFBridgingRelease(texture->internal->texturerep);
+        texture->internal->texturerep = NULL;
     }
 }
 

@@ -107,19 +107,19 @@ static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     if (!SDL_SurfaceValid(surface)) {
         return SDL_SetError("Cannot create surface");
     }
-    texture->internal = surface;
-    r = (Uint8)SDL_roundf(SDL_clamp(texture->color.r, 0.0f, 1.0f) * 255.0f);
-    g = (Uint8)SDL_roundf(SDL_clamp(texture->color.g, 0.0f, 1.0f) * 255.0f);
-    b = (Uint8)SDL_roundf(SDL_clamp(texture->color.b, 0.0f, 1.0f) * 255.0f);
-    a = (Uint8)SDL_roundf(SDL_clamp(texture->color.a, 0.0f, 1.0f) * 255.0f);
+    texture->internal->texturerep = surface;
+    r = (Uint8)SDL_roundf(SDL_clamp(texture->internal->color.r, 0.0f, 1.0f) * 255.0f);
+    g = (Uint8)SDL_roundf(SDL_clamp(texture->internal->color.g, 0.0f, 1.0f) * 255.0f);
+    b = (Uint8)SDL_roundf(SDL_clamp(texture->internal->color.b, 0.0f, 1.0f) * 255.0f);
+    a = (Uint8)SDL_roundf(SDL_clamp(texture->internal->color.a, 0.0f, 1.0f) * 255.0f);
     SDL_SetSurfaceColorMod(surface, r, g, b);
     SDL_SetSurfaceAlphaMod(surface, a);
-    SDL_SetSurfaceBlendMode(surface, texture->blendMode);
+    SDL_SetSurfaceBlendMode(surface, texture->internal->blendMode);
 
     /* Only RLE encode textures without an alpha channel since the RLE coder
      * discards the color values of pixels with an alpha value of zero.
      */
-    if (texture->access == SDL_TEXTUREACCESS_STATIC && !SDL_ISPIXELFORMAT_ALPHA(surface->format)) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_STATIC && !SDL_ISPIXELFORMAT_ALPHA(surface->format)) {
         SDL_SetSurfaceRLE(surface, 1);
     }
 
@@ -129,7 +129,7 @@ static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                             const SDL_Rect *rect, const void *pixels, int pitch)
 {
-    SDL_Surface *surface = (SDL_Surface *)texture->internal;
+    SDL_Surface *surface = (SDL_Surface *)texture->internal->texturerep;
     Uint8 *src, *dst;
     int row;
     size_t length;
@@ -158,7 +158,7 @@ static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 static bool SW_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                           const SDL_Rect *rect, void **pixels, int *pitch)
 {
-    SDL_Surface *surface = (SDL_Surface *)texture->internal;
+    SDL_Surface *surface = (SDL_Surface *)texture->internal->texturerep;
 
     *pixels =
         (void *)((Uint8 *)surface->pixels + rect->y * surface->pitch +
@@ -180,7 +180,7 @@ static bool SW_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     SW_RenderData *data = (SW_RenderData *)renderer->internal;
 
     if (texture) {
-        data->surface = (SDL_Surface *)texture->internal;
+        data->surface = (SDL_Surface *)texture->internal->texturerep;
     } else {
         data->surface = data->window;
     }
@@ -319,7 +319,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
                             const SDL_Rect *srcrect, const SDL_Rect *final_rect,
                             const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y)
 {
-    SDL_Surface *src = (SDL_Surface *)texture->internal;
+    SDL_Surface *src = (SDL_Surface *)texture->internal->texturerep;
     SDL_Rect tmp_rect;
     SDL_Surface *src_clone, *src_rotated, *src_scaled;
     SDL_Surface *mask = NULL, *mask_rotated = NULL;
@@ -412,7 +412,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
             result = false;
         } else {
             SDL_SetSurfaceBlendMode(src_clone, SDL_BLENDMODE_NONE);
-            result = SDL_BlitSurfaceScaled(src_clone, srcrect, src_scaled, &scale_rect, texture->scaleMode);
+            result = SDL_BlitSurfaceScaled(src_clone, srcrect, src_scaled, &scale_rect, texture->internal->scaleMode);
             SDL_DestroySurface(src_clone);
             src_clone = src_scaled;
             src_scaled = NULL;
@@ -429,7 +429,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
         SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, angle, center,
                                        &rect_dest, &cangle, &sangle);
         src_rotated = SDLgfx_rotateSurface(src_clone, angle,
-                                           (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? 0 : 1, flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL,
+                                           (texture->internal->scaleMode == SDL_SCALEMODE_NEAREST) ? 0 : 1, flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL,
                                            &rect_dest, cangle, sangle, center);
         if (!src_rotated) {
             result = false;
@@ -460,7 +460,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
                     SDL_SetSurfaceColorMod(src_rotated, rMod, gMod, bMod);
                 }
                 // Renderer scaling, if needed
-                result = Blit_to_Screen(src_rotated, NULL, surface, &tmp_rect, scale_x, scale_y, texture->scaleMode);
+                result = Blit_to_Screen(src_rotated, NULL, surface, &tmp_rect, scale_x, scale_y, texture->internal->scaleMode);
             } else {
                 /* The NONE blend mode requires three steps to get the pixels onto the destination surface.
                  * First, the area where the rotated pixels will be blitted to get set to zero.
@@ -470,7 +470,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
                 SDL_Rect mask_rect = tmp_rect;
                 SDL_SetSurfaceBlendMode(mask_rotated, SDL_BLENDMODE_NONE);
                 // Renderer scaling, if needed
-                result = Blit_to_Screen(mask_rotated, NULL, surface, &mask_rect, scale_x, scale_y, texture->scaleMode);
+                result = Blit_to_Screen(mask_rotated, NULL, surface, &mask_rect, scale_x, scale_y, texture->internal->scaleMode);
                 if (result) {
                     /* The next step copies the alpha value. This is done with the BLEND blend mode and
                      * by modulating the source colors with 0. Since the destination is all zeros, this
@@ -479,7 +479,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
                     SDL_SetSurfaceColorMod(src_rotated, 0, 0, 0);
                     mask_rect = tmp_rect;
                     // Renderer scaling, if needed
-                    result = Blit_to_Screen(src_rotated, NULL, surface, &mask_rect, scale_x, scale_y, texture->scaleMode);
+                    result = Blit_to_Screen(src_rotated, NULL, surface, &mask_rect, scale_x, scale_y, texture->internal->scaleMode);
                     if (result) {
                         /* The last step gets the color values in place. The ADD blend mode simply adds them to
                          * the destination (where the color values are all zero). However, because the ADD blend
@@ -492,7 +492,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
                         } else {
                             SDL_SetSurfaceBlendMode(src_rotated_rgb, SDL_BLENDMODE_ADD);
                             // Renderer scaling, if needed
-                            result = Blit_to_Screen(src_rotated_rgb, NULL, surface, &tmp_rect, scale_x, scale_y, texture->scaleMode);
+                            result = Blit_to_Screen(src_rotated_rgb, NULL, surface, &tmp_rect, scale_x, scale_y, texture->internal->scaleMode);
                             SDL_DestroySurface(src_rotated_rgb);
                         }
                     }
@@ -628,7 +628,7 @@ static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *
     const Uint8 a = drawstate->color.a;
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SDL_Texture *texture = cmd->data.draw.texture;
-    SDL_Surface *surface = (SDL_Surface *)texture->internal;
+    SDL_Surface *surface = (SDL_Surface *)texture->internal->texturerep;
     const bool colormod = ((r & g & b) != 0xFF);
     const bool alphamod = (a != 0xFF);
     const bool blending = ((blend == SDL_BLENDMODE_ADD) || (blend == SDL_BLENDMODE_MOD) || (blend == SDL_BLENDMODE_MUL));
@@ -816,7 +816,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             const SDL_Rect *srcrect = verts;
             SDL_Rect *dstrect = verts + 1;
             SDL_Texture *texture = cmd->data.draw.texture;
-            SDL_Surface *src = (SDL_Surface *)texture->internal;
+            SDL_Surface *src = (SDL_Surface *)texture->internal->texturerep;
 
             SetDrawState(surface, &drawstate);
 
@@ -858,7 +858,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
                         SDL_SetSurfaceColorMod(src, 255, 255, 255);
                         SDL_SetSurfaceAlphaMod(src, 255);
 
-                        SDL_BlitSurfaceScaled(src, srcrect, tmp, &r, texture->scaleMode);
+                        SDL_BlitSurfaceScaled(src, srcrect, tmp, &r, texture->internal->scaleMode);
 
                         SDL_SetSurfaceColorMod(tmp, rMod, gMod, bMod);
                         SDL_SetSurfaceAlphaMod(tmp, alphaMod);
@@ -869,7 +869,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
                         // No need to set back r/g/b/a/blendmode to 'src' since it's done in PrepTextureForCopy()
                     }
                 } else {
-                    SDL_BlitSurfaceScaled(src, srcrect, surface, dstrect, texture->scaleMode);
+                    SDL_BlitSurfaceScaled(src, srcrect, surface, dstrect, texture->internal->scaleMode);
                 }
             }
             break;
@@ -904,7 +904,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             SetDrawState(surface, &drawstate);
 
             if (texture) {
-                SDL_Surface *src = (SDL_Surface *)texture->internal;
+                SDL_Surface *src = (SDL_Surface *)texture->internal->texturerep;
 
                 GeometryCopyData *ptr = (GeometryCopyData *)verts;
 
@@ -1001,7 +1001,7 @@ static bool SW_RenderPresent(SDL_Renderer *renderer)
 
 static void SW_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    SDL_Surface *surface = (SDL_Surface *)texture->internal;
+    SDL_Surface *surface = (SDL_Surface *)texture->internal->texturerep;
 
     SDL_DestroySurface(surface);
 }

@@ -181,7 +181,7 @@ bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
     SDL_Colorspace colorspace;
 
     if (renderer->target) {
-        colorspace = renderer->target->colorspace;
+        colorspace = renderer->target->internal->colorspace;
     } else {
         colorspace = renderer->output_colorspace;
     }
@@ -300,7 +300,7 @@ static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                 break;
 
         }
-        cmd = cmd->next;
+        cmd = cmd->internal->next;
     }
 #endif
 }
@@ -337,8 +337,8 @@ static bool FlushRenderCommands(SDL_Renderer *renderer)
 
 static bool FlushRenderCommandsIfTextureNeeded(SDL_Texture *texture)
 {
-    SDL_Renderer *renderer = texture->renderer;
-    if (texture->last_command_generation == renderer->render_command_generation) {
+    SDL_Renderer *renderer = texture->internal->renderer;
+    if (texture->internal->last_command_generation == renderer->render_command_generation) {
         // the current command queue depends on this texture, flush the queue now before it changes
         return FlushRenderCommands(renderer);
     }
@@ -541,8 +541,8 @@ static SDL_RenderCommand *PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_Ren
     SDL_BlendMode blendMode;
 
     if (texture) {
-        color = &texture->color;
-        blendMode = texture->blendMode;
+        color = &texture->internal->color;
+        blendMode = texture->internal->blendMode;
     } else {
         color = &renderer->color;
         blendMode = renderer->blendMode;
@@ -753,7 +753,7 @@ static void UpdateColorScale(SDL_Renderer *renderer)
 {
     float SDR_white_point;
     if (renderer->target) {
-        SDR_white_point = renderer->target->SDR_white_point;
+        SDR_white_point = renderer->target->internal->SDR_white_point;
     } else {
         SDR_white_point = renderer->SDR_white_point;
     }
@@ -1323,6 +1323,7 @@ static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_Pix
 
 SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props)
 {
+    SDL_InternalTexture *mem;
     SDL_Texture *texture;
     SDL_PixelFormat format = (SDL_PixelFormat)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_UNKNOWN);
     SDL_TextureAccess access = (SDL_TextureAccess)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
@@ -1358,44 +1359,46 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
 
     default_colorspace = SDL_GetDefaultColorspaceForFormat(format);
 
-    texture = (SDL_Texture *)SDL_calloc(1, sizeof(*texture));
-    if (!texture) {
+    mem = (SDL_InternalTexture *)SDL_calloc(1, sizeof(*mem));
+    if (!mem) {
         return NULL;
     }
+    texture = &mem->texture;
+    texture->internal = &mem->internal;
     SDL_SetObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE, true);
-    texture->colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
+    texture->internal->colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
     texture->format = format;
-    texture->access = access;
+    texture->internal->access = access;
     texture->w = w;
     texture->h = h;
-    texture->color.r = 1.0f;
-    texture->color.g = 1.0f;
-    texture->color.b = 1.0f;
-    texture->color.a = 1.0f;
-    texture->blendMode = SDL_ISPIXELFORMAT_ALPHA(format) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE;
-    texture->scaleMode = SDL_SCALEMODE_LINEAR;
-    texture->view.pixel_w = w;
-    texture->view.pixel_h = h;
-    texture->view.viewport.w = -1;
-    texture->view.viewport.h = -1;
-    texture->view.scale.x = 1.0f;
-    texture->view.scale.y = 1.0f;
-    texture->view.logical_scale.x = 1.0f;
-    texture->view.logical_scale.y = 1.0f;
-    texture->view.current_scale.x = 1.0f;
-    texture->view.current_scale.y = 1.0f;
-    texture->renderer = renderer;
-    texture->next = renderer->textures;
+    texture->internal->color.r = 1.0f;
+    texture->internal->color.g = 1.0f;
+    texture->internal->color.b = 1.0f;
+    texture->internal->color.a = 1.0f;
+    texture->internal->blendMode = SDL_ISPIXELFORMAT_ALPHA(format) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE;
+    texture->internal->scaleMode = SDL_SCALEMODE_LINEAR;
+    texture->internal->view.pixel_w = w;
+    texture->internal->view.pixel_h = h;
+    texture->internal->view.viewport.w = -1;
+    texture->internal->view.viewport.h = -1;
+    texture->internal->view.scale.x = 1.0f;
+    texture->internal->view.scale.y = 1.0f;
+    texture->internal->view.logical_scale.x = 1.0f;
+    texture->internal->view.logical_scale.y = 1.0f;
+    texture->internal->view.current_scale.x = 1.0f;
+    texture->internal->view.current_scale.y = 1.0f;
+    texture->internal->renderer = renderer;
+    texture->internal->next = renderer->textures;
     if (renderer->textures) {
-        renderer->textures->prev = texture;
+        renderer->textures->internal->prev = texture;
     }
     renderer->textures = texture;
 
-    UpdatePixelViewport(renderer, &texture->view);
-    UpdatePixelClipRect(renderer, &texture->view);
+    UpdatePixelViewport(renderer, &texture->internal->view);
+    UpdatePixelClipRect(renderer, &texture->internal->view);
 
-    texture->SDR_white_point = SDL_GetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, SDL_GetDefaultSDRWhitePoint(texture->colorspace));
-    texture->HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT, SDL_GetDefaultHDRHeadroom(texture->colorspace));
+    texture->internal->SDR_white_point = SDL_GetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, SDL_GetDefaultSDRWhitePoint(texture->internal->colorspace));
+    texture->internal->HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT, SDL_GetDefaultHDRHeadroom(texture->internal->colorspace));
 
     // FOURCC format cannot be used directly by renderer back-ends for target texture
     texture_is_fourcc_and_target = (access == SDL_TEXTUREACCESS_TARGET && SDL_ISPIXELFORMAT_FOURCC(format));
@@ -1416,53 +1419,53 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         }
 
         default_colorspace = SDL_GetDefaultColorspaceForFormat(closest_format);
-        if (SDL_COLORSPACETYPE(texture->colorspace) == SDL_COLORSPACETYPE(default_colorspace)) {
-            SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, texture->colorspace);
+        if (SDL_COLORSPACETYPE(texture->internal->colorspace) == SDL_COLORSPACETYPE(default_colorspace)) {
+            SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, texture->internal->colorspace);
         } else {
             SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
         }
         SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, closest_format);
-        SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, texture->access);
+        SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, texture->internal->access);
         SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, texture->w);
         SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, texture->h);
 
-        texture->native = SDL_CreateTextureWithProperties(renderer, native_props);
+        texture->internal->native = SDL_CreateTextureWithProperties(renderer, native_props);
         SDL_DestroyProperties(native_props);
-        if (!texture->native) {
+        if (!texture->internal->native) {
             SDL_DestroyTexture(texture);
             return NULL;
         }
 
-        SDL_SetPointerProperty(SDL_GetTextureProperties(texture->native), SDL_PROP_TEXTURE_PARENT_POINTER, texture);
+        SDL_SetPointerProperty(SDL_GetTextureProperties(texture->internal->native), SDL_PROP_TEXTURE_PARENT_POINTER, texture);
 
-        // Swap textures to have texture before texture->native in the list
-        texture->native->next = texture->next;
-        if (texture->native->next) {
-            texture->native->next->prev = texture->native;
+        // Swap textures to have texture before texture->internal->native in the list
+        texture->internal->native->internal->next = texture->internal->next;
+        if (texture->internal->native->internal->next) {
+            texture->internal->native->internal->next->internal->prev = texture->internal->native;
         }
-        texture->prev = texture->native->prev;
-        if (texture->prev) {
-            texture->prev->next = texture;
+        texture->internal->prev = texture->internal->native->internal->prev;
+        if (texture->internal->prev) {
+            texture->internal->prev->internal->next = texture;
         }
-        texture->native->prev = texture;
-        texture->next = texture->native;
+        texture->internal->native->internal->prev = texture;
+        texture->internal->next = texture->internal->native;
         renderer->textures = texture;
 
         if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
 #if SDL_HAVE_YUV
-            texture->yuv = SDL_SW_CreateYUVTexture(texture->format, texture->colorspace, w, h);
+            texture->internal->yuv = SDL_SW_CreateYUVTexture(texture->format, texture->internal->colorspace, w, h);
 #else
             SDL_SetError("SDL not built with YUV support");
 #endif
-            if (!texture->yuv) {
+            if (!texture->internal->yuv) {
                 SDL_DestroyTexture(texture);
                 return NULL;
             }
         } else if (access == SDL_TEXTUREACCESS_STREAMING) {
             // The pitch is 4 byte aligned
-            texture->pitch = (((w * SDL_BYTESPERPIXEL(format)) + 3) & ~3);
-            texture->pixels = SDL_calloc(1, (size_t)texture->pitch * h);
-            if (!texture->pixels) {
+            texture->internal->pitch = (((w * SDL_BYTESPERPIXEL(format)) + 3) & ~3);
+            texture->internal->pixels = SDL_calloc(1, (size_t)texture->internal->pitch * h);
+            if (!texture->internal->pixels) {
                 SDL_DestroyTexture(texture);
                 return NULL;
             }
@@ -1471,14 +1474,14 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
 
     // Now set the properties for the new texture
     props = SDL_GetTextureProperties(texture);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_COLORSPACE_NUMBER, texture->colorspace);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_COLORSPACE_NUMBER, texture->internal->colorspace);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_FORMAT_NUMBER, texture->format);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_ACCESS_NUMBER, texture->access);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_ACCESS_NUMBER, texture->internal->access);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_WIDTH_NUMBER, texture->w);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_HEIGHT_NUMBER, texture->h);
-    SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT, texture->SDR_white_point);
-    if (texture->HDR_headroom > 0.0f) {
-        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_HDR_HEADROOM_FLOAT, texture->HDR_headroom);
+    SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT, texture->internal->SDR_white_point);
+    if (texture->internal->HDR_headroom > 0.0f) {
+        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_HDR_HEADROOM_FLOAT, texture->internal->HDR_headroom);
     }
     return texture;
 }
@@ -1737,17 +1740,17 @@ SDL_Renderer *SDL_GetRendererFromTexture(SDL_Texture *texture)
 {
     CHECK_TEXTURE_MAGIC(texture, NULL);
 
-    return texture->renderer;
+    return texture->internal->renderer;
 }
 
 SDL_PropertiesID SDL_GetTextureProperties(SDL_Texture *texture)
 {
     CHECK_TEXTURE_MAGIC(texture, 0);
 
-    if (texture->props == 0) {
-        texture->props = SDL_CreateProperties();
+    if (texture->internal->props == 0) {
+        texture->internal->props = SDL_CreateProperties();
     }
-    return texture->props;
+    return texture->internal->props;
 }
 
 bool SDL_GetTextureSize(SDL_Texture *texture, float *w, float *h)
@@ -1783,11 +1786,11 @@ bool SDL_SetTextureColorModFloat(SDL_Texture *texture, float r, float g, float b
 {
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    texture->color.r = r;
-    texture->color.g = g;
-    texture->color.b = b;
-    if (texture->native) {
-        return SDL_SetTextureColorModFloat(texture->native, r, g, b);
+    texture->internal->color.r = r;
+    texture->internal->color.g = g;
+    texture->internal->color.b = b;
+    if (texture->internal->native) {
+        return SDL_SetTextureColorModFloat(texture->internal->native, r, g, b);
     }
     return true;
 }
@@ -1837,7 +1840,7 @@ bool SDL_GetTextureColorModFloat(SDL_Texture *texture, float *r, float *g, float
 
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    color = texture->color;
+    color = texture->internal->color;
 
     if (r) {
         *r = color.r;
@@ -1862,9 +1865,9 @@ bool SDL_SetTextureAlphaModFloat(SDL_Texture *texture, float alpha)
 {
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    texture->color.a = alpha;
-    if (texture->native) {
-        return SDL_SetTextureAlphaModFloat(texture->native, alpha);
+    texture->internal->color.a = alpha;
+    if (texture->internal->native) {
+        return SDL_SetTextureAlphaModFloat(texture->internal->native, alpha);
     }
     return true;
 }
@@ -1895,7 +1898,7 @@ bool SDL_GetTextureAlphaModFloat(SDL_Texture *texture, float *alpha)
     CHECK_TEXTURE_MAGIC(texture, false);
 
     if (alpha) {
-        *alpha = texture->color.a;
+        *alpha = texture->internal->color.a;
     }
     return true;
 }
@@ -1910,13 +1913,13 @@ bool SDL_SetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode blendMode)
         return SDL_InvalidParamError("blendMode");
     }
 
-    renderer = texture->renderer;
+    renderer = texture->internal->renderer;
     if (!IsSupportedBlendMode(renderer, blendMode)) {
         return SDL_Unsupported();
     }
-    texture->blendMode = blendMode;
-    if (texture->native) {
-        return SDL_SetTextureBlendMode(texture->native, blendMode);
+    texture->internal->blendMode = blendMode;
+    if (texture->internal->native) {
+        return SDL_SetTextureBlendMode(texture->internal->native, blendMode);
     }
     return true;
 }
@@ -1930,7 +1933,7 @@ bool SDL_GetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode *blendMode)
     CHECK_TEXTURE_MAGIC(texture, false);
 
     if (blendMode) {
-        *blendMode = texture->blendMode;
+        *blendMode = texture->internal->blendMode;
     }
     return true;
 }
@@ -1946,10 +1949,10 @@ bool SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
         return SDL_InvalidParamError("scaleMode");
     }
 
-    renderer = texture->renderer;
-    texture->scaleMode = scaleMode;
-    if (texture->native) {
-        return SDL_SetTextureScaleMode(texture->native, scaleMode);
+    renderer = texture->internal->renderer;
+    texture->internal->scaleMode = scaleMode;
+    if (texture->internal->native) {
+        return SDL_SetTextureScaleMode(texture->internal->native, scaleMode);
     } else {
         renderer->SetTextureScaleMode(renderer, texture, scaleMode);
     }
@@ -1965,7 +1968,7 @@ bool SDL_GetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode *scaleMode)
     CHECK_TEXTURE_MAGIC(texture, false);
 
     if (scaleMode) {
-        *scaleMode = texture->scaleMode;
+        *scaleMode = texture->internal->scaleMode;
     }
     return true;
 }
@@ -1974,10 +1977,10 @@ bool SDL_GetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode *scaleMode)
 static bool SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
                                 const void *pixels, int pitch)
 {
-    SDL_Texture *native = texture->native;
+    SDL_Texture *native = texture->internal->native;
     SDL_Rect full_rect;
 
-    if (!SDL_SW_UpdateYUVTexture(texture->yuv, rect, pixels, pitch)) {
+    if (!SDL_SW_UpdateYUVTexture(texture->internal->yuv, rect, pixels, pitch)) {
         return false;
     }
 
@@ -1987,7 +1990,7 @@ static bool SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
     full_rect.h = texture->h;
     rect = &full_rect;
 
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_STREAMING) {
         // We can lock the texture and copy to it
         void *native_pixels = NULL;
         int native_pitch = 0;
@@ -1995,7 +1998,7 @@ static bool SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
         if (!SDL_LockTexture(native, rect, &native_pixels, &native_pitch)) {
             return false;
         }
-        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+        SDL_SW_CopyYUVToRGB(texture->internal->yuv, rect, native->format,
                             rect->w, rect->h, native_pixels, native_pitch);
         SDL_UnlockTexture(native);
     } else {
@@ -2007,7 +2010,7 @@ static bool SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
             if (!temp_pixels) {
                 return false;
             }
-            SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+            SDL_SW_CopyYUVToRGB(texture->internal->yuv, rect, native->format,
                                 rect->w, rect->h, temp_pixels, temp_pitch);
             SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
             SDL_free(temp_pixels);
@@ -2020,13 +2023,13 @@ static bool SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
 static bool SDL_UpdateTextureNative(SDL_Texture *texture, const SDL_Rect *rect,
                                    const void *pixels, int pitch)
 {
-    SDL_Texture *native = texture->native;
+    SDL_Texture *native = texture->internal->native;
 
     if (!rect->w || !rect->h) {
         return true; // nothing to do.
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_STREAMING) {
         // We can lock the texture and copy to it
         void *native_pixels = NULL;
         int native_pitch = 0;
@@ -2083,13 +2086,13 @@ bool SDL_UpdateTexture(SDL_Texture *texture, const SDL_Rect *rect, const void *p
     if (real_rect.w == 0 || real_rect.h == 0) {
         return true; // nothing to do.
 #if SDL_HAVE_YUV
-    } else if (texture->yuv) {
+    } else if (texture->internal->yuv) {
         return SDL_UpdateTextureYUV(texture, &real_rect, pixels, pitch);
 #endif
-    } else if (texture->native) {
+    } else if (texture->internal->native) {
         return SDL_UpdateTextureNative(texture, &real_rect, pixels, pitch);
     } else {
-        SDL_Renderer *renderer = texture->renderer;
+        SDL_Renderer *renderer = texture->internal->renderer;
         if (!FlushRenderCommandsIfTextureNeeded(texture)) {
             return false;
         }
@@ -2103,10 +2106,10 @@ static bool SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rec
                                       const Uint8 *Uplane, int Upitch,
                                       const Uint8 *Vplane, int Vpitch)
 {
-    SDL_Texture *native = texture->native;
+    SDL_Texture *native = texture->internal->native;
     SDL_Rect full_rect;
 
-    if (!SDL_SW_UpdateYUVTexturePlanar(texture->yuv, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch)) {
+    if (!SDL_SW_UpdateYUVTexturePlanar(texture->internal->yuv, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch)) {
         return false;
     }
 
@@ -2120,7 +2123,7 @@ static bool SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rec
         return true; // nothing to do.
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_STREAMING) {
         // We can lock the texture and copy to it
         void *native_pixels = NULL;
         int native_pitch = 0;
@@ -2128,7 +2131,7 @@ static bool SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rec
         if (!SDL_LockTexture(native, rect, &native_pixels, &native_pitch)) {
             return false;
         }
-        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+        SDL_SW_CopyYUVToRGB(texture->internal->yuv, rect, native->format,
                             rect->w, rect->h, native_pixels, native_pitch);
         SDL_UnlockTexture(native);
     } else {
@@ -2140,7 +2143,7 @@ static bool SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rec
             if (!temp_pixels) {
                 return false;
             }
-            SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+            SDL_SW_CopyYUVToRGB(texture->internal->yuv, rect, native->format,
                                 rect->w, rect->h, temp_pixels, temp_pitch);
             SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
             SDL_free(temp_pixels);
@@ -2153,10 +2156,10 @@ static bool SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect
                                      const Uint8 *Yplane, int Ypitch,
                                      const Uint8 *UVplane, int UVpitch)
 {
-    SDL_Texture *native = texture->native;
+    SDL_Texture *native = texture->internal->native;
     SDL_Rect full_rect;
 
-    if (!SDL_SW_UpdateNVTexturePlanar(texture->yuv, rect, Yplane, Ypitch, UVplane, UVpitch)) {
+    if (!SDL_SW_UpdateNVTexturePlanar(texture->internal->yuv, rect, Yplane, Ypitch, UVplane, UVpitch)) {
         return false;
     }
 
@@ -2170,7 +2173,7 @@ static bool SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect
         return true; // nothing to do.
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->internal->access == SDL_TEXTUREACCESS_STREAMING) {
         // We can lock the texture and copy to it
         void *native_pixels = NULL;
         int native_pitch = 0;
@@ -2178,7 +2181,7 @@ static bool SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect
         if (!SDL_LockTexture(native, rect, &native_pixels, &native_pitch)) {
             return false;
         }
-        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+        SDL_SW_CopyYUVToRGB(texture->internal->yuv, rect, native->format,
                             rect->w, rect->h, native_pixels, native_pitch);
         SDL_UnlockTexture(native);
     } else {
@@ -2190,7 +2193,7 @@ static bool SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect
             if (!temp_pixels) {
                 return false;
             }
-            SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+            SDL_SW_CopyYUVToRGB(texture->internal->yuv, rect, native->format,
                                 rect->w, rect->h, temp_pixels, temp_pitch);
             SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
             SDL_free(temp_pixels);
@@ -2248,11 +2251,11 @@ bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
         return true; // nothing to do.
     }
 
-    if (texture->yuv) {
+    if (texture->internal->yuv) {
         return SDL_UpdateTextureYUVPlanar(texture, &real_rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
     } else {
-        SDL_assert(!texture->native);
-        renderer = texture->renderer;
+        SDL_assert(!texture->internal->native);
+        renderer = texture->internal->renderer;
         SDL_assert(renderer->UpdateTextureYUV);
         if (renderer->UpdateTextureYUV) {
             if (!FlushRenderCommandsIfTextureNeeded(texture)) {
@@ -2308,11 +2311,11 @@ bool SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
         return true; // nothing to do.
     }
 
-    if (texture->yuv) {
+    if (texture->internal->yuv) {
         return SDL_UpdateTextureNVPlanar(texture, &real_rect, Yplane, Ypitch, UVplane, UVpitch);
     } else {
-        SDL_assert(!texture->native);
-        renderer = texture->renderer;
+        SDL_assert(!texture->internal->native);
+        renderer = texture->internal->renderer;
         SDL_assert(renderer->UpdateTextureNV);
         if (renderer->UpdateTextureNV) {
             if (!FlushRenderCommandsIfTextureNeeded(texture)) {
@@ -2332,18 +2335,18 @@ bool SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
 static bool SDL_LockTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
                               void **pixels, int *pitch)
 {
-    return SDL_SW_LockYUVTexture(texture->yuv, rect, pixels, pitch);
+    return SDL_SW_LockYUVTexture(texture->internal->yuv, rect, pixels, pitch);
 }
 #endif // SDL_HAVE_YUV
 
 static bool SDL_LockTextureNative(SDL_Texture *texture, const SDL_Rect *rect,
                                  void **pixels, int *pitch)
 {
-    texture->locked_rect = *rect;
-    *pixels = (void *)((Uint8 *)texture->pixels +
-                       rect->y * texture->pitch +
+    texture->internal->locked_rect = *rect;
+    *pixels = (void *)((Uint8 *)texture->internal->pixels +
+                       rect->y * texture->internal->pitch +
                        rect->x * SDL_BYTESPERPIXEL(texture->format));
-    *pitch = texture->pitch;
+    *pitch = texture->internal->pitch;
     return true;
 }
 
@@ -2353,7 +2356,7 @@ bool SDL_LockTexture(SDL_Texture *texture, const SDL_Rect *rect, void **pixels, 
 
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->internal->access != SDL_TEXTUREACCESS_STREAMING) {
         return SDL_SetError("SDL_LockTexture(): texture must be streaming");
     }
 
@@ -2366,18 +2369,18 @@ bool SDL_LockTexture(SDL_Texture *texture, const SDL_Rect *rect, void **pixels, 
     }
 
 #if SDL_HAVE_YUV
-    if (texture->yuv) {
+    if (texture->internal->yuv) {
         if (!FlushRenderCommandsIfTextureNeeded(texture)) {
             return false;
         }
         return SDL_LockTextureYUV(texture, rect, pixels, pitch);
     } else
 #endif
-        if (texture->native) {
+        if (texture->internal->native) {
         // Calls a real SDL_LockTexture/SDL_UnlockTexture on unlock, flushing then.
         return SDL_LockTextureNative(texture, rect, pixels, pitch);
     } else {
-        SDL_Renderer *renderer = texture->renderer;
+        SDL_Renderer *renderer = texture->internal->renderer;
         if (!FlushRenderCommandsIfTextureNeeded(texture)) {
             return false;
         }
@@ -2407,20 +2410,20 @@ bool SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect, SDL_Su
         return false;
     }
 
-    texture->locked_surface = SDL_CreateSurfaceFrom(real_rect.w, real_rect.h, texture->format, pixels, pitch);
-    if (!texture->locked_surface) {
+    texture->internal->locked_surface = SDL_CreateSurfaceFrom(real_rect.w, real_rect.h, texture->format, pixels, pitch);
+    if (!texture->internal->locked_surface) {
         SDL_UnlockTexture(texture);
         return false;
     }
 
-    *surface = texture->locked_surface;
+    *surface = texture->internal->locked_surface;
     return true;
 }
 
 #if SDL_HAVE_YUV
 static void SDL_UnlockTextureYUV(SDL_Texture *texture)
 {
-    SDL_Texture *native = texture->native;
+    SDL_Texture *native = texture->internal->native;
     void *native_pixels = NULL;
     int native_pitch = 0;
     SDL_Rect rect;
@@ -2433,7 +2436,7 @@ static void SDL_UnlockTextureYUV(SDL_Texture *texture)
     if (!SDL_LockTexture(native, &rect, &native_pixels, &native_pitch)) {
         return;
     }
-    SDL_SW_CopyYUVToRGB(texture->yuv, &rect, native->format,
+    SDL_SW_CopyYUVToRGB(texture->internal->yuv, &rect, native->format,
                         rect.w, rect.h, native_pixels, native_pitch);
     SDL_UnlockTexture(native);
 }
@@ -2441,14 +2444,14 @@ static void SDL_UnlockTextureYUV(SDL_Texture *texture)
 
 static void SDL_UnlockTextureNative(SDL_Texture *texture)
 {
-    SDL_Texture *native = texture->native;
+    SDL_Texture *native = texture->internal->native;
     void *native_pixels = NULL;
     int native_pitch = 0;
-    const SDL_Rect *rect = &texture->locked_rect;
-    const void *pixels = (void *)((Uint8 *)texture->pixels +
-                                  rect->y * texture->pitch +
+    const SDL_Rect *rect = &texture->internal->locked_rect;
+    const void *pixels = (void *)((Uint8 *)texture->internal->pixels +
+                                  rect->y * texture->internal->pitch +
                                   rect->x * SDL_BYTESPERPIXEL(texture->format));
-    int pitch = texture->pitch;
+    int pitch = texture->internal->pitch;
 
     if (!SDL_LockTexture(native, rect, &native_pixels, &native_pitch)) {
         return;
@@ -2463,23 +2466,23 @@ void SDL_UnlockTexture(SDL_Texture *texture)
 {
     CHECK_TEXTURE_MAGIC(texture,);
 
-    if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->internal->access != SDL_TEXTUREACCESS_STREAMING) {
         return;
     }
 #if SDL_HAVE_YUV
-    if (texture->yuv) {
+    if (texture->internal->yuv) {
         SDL_UnlockTextureYUV(texture);
     } else
 #endif
-        if (texture->native) {
+        if (texture->internal->native) {
         SDL_UnlockTextureNative(texture);
     } else {
-        SDL_Renderer *renderer = texture->renderer;
+        SDL_Renderer *renderer = texture->internal->renderer;
         renderer->UnlockTexture(renderer, texture);
     }
 
-    SDL_DestroySurface(texture->locked_surface);
-    texture->locked_surface = NULL;
+    SDL_DestroySurface(texture->internal->locked_surface);
+    texture->internal->locked_surface = NULL;
 }
 
 bool SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -2487,15 +2490,15 @@ bool SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     // texture == NULL is valid and means reset the target to the window
     if (texture) {
         CHECK_TEXTURE_MAGIC(texture, false);
-        if (renderer != texture->renderer) {
+        if (renderer != texture->internal->renderer) {
             return SDL_SetError("Texture was not created with this renderer");
         }
-        if (texture->access != SDL_TEXTUREACCESS_TARGET) {
+        if (texture->internal->access != SDL_TEXTUREACCESS_TARGET) {
             return SDL_SetError("Texture not created with SDL_TEXTUREACCESS_TARGET");
         }
-        if (texture->native) {
+        if (texture->internal->native) {
             // Always render to the native texture
-            texture = texture->native;
+            texture = texture->internal->native;
         }
     }
 
@@ -2510,7 +2513,7 @@ bool SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
     renderer->target = texture;
     if (texture) {
-        renderer->view = &texture->view;
+        renderer->view = &texture->internal->view;
     } else {
         renderer->view = &renderer->main_view;
     }
@@ -3832,7 +3835,7 @@ static bool SDL_RenderTextureInternal(SDL_Renderer *renderer, SDL_Texture *textu
         xy[7] = maxy;
 
         result = QueueCmdGeometry(renderer, texture,
-                                  xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
+                                  xy, xy_stride, &texture->internal->color, 0 /* color_stride */, uv, uv_stride,
                                   num_vertices, indices, num_indices, size_indices,
                                   scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP);
     } else {
@@ -3850,7 +3853,7 @@ bool SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_F
     CHECK_RENDERER_MAGIC(renderer, false);
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    if (renderer != texture->renderer) {
+    if (renderer != texture->internal->renderer) {
         return SDL_SetError("Texture was not created with this renderer");
     }
 
@@ -3879,11 +3882,11 @@ bool SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_F
         real_dstrect = *dstrect;
     }
 
-    if (texture->native) {
-        texture = texture->native;
+    if (texture->internal->native) {
+        texture = texture->internal->native;
     }
 
-    texture->last_command_generation = renderer->render_command_generation;
+    texture->internal->last_command_generation = renderer->render_command_generation;
 
     return SDL_RenderTextureInternal(renderer, texture, &real_srcrect, &real_dstrect);
 }
@@ -3904,7 +3907,7 @@ bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
     CHECK_RENDERER_MAGIC(renderer, false);
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    if (renderer != texture->renderer) {
+    if (renderer != texture->internal->renderer) {
         return SDL_SetError("Texture was not created with this renderer");
     }
     if (!renderer->QueueCopyEx && !renderer->QueueGeometry) {
@@ -3935,8 +3938,8 @@ bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
         GetRenderViewportSize(renderer, &real_dstrect);
     }
 
-    if (texture->native) {
-        texture = texture->native;
+    if (texture->internal->native) {
+        texture = texture->internal->native;
     }
 
     if (center) {
@@ -3946,7 +3949,7 @@ bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
         real_center.y = real_dstrect.h / 2.0f;
     }
 
-    texture->last_command_generation = renderer->render_command_generation;
+    texture->internal->last_command_generation = renderer->render_command_generation;
 
     const float scale_x = renderer->view->current_scale.x;
     const float scale_y = renderer->view->current_scale.y;
@@ -4030,7 +4033,7 @@ bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
         xy[7] = (s_minx + c_maxy) + centery;
 
         result = QueueCmdGeometry(renderer, texture,
-                                  xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
+                                  xy, xy_stride, &texture->internal->color, 0 /* color_stride */, uv, uv_stride,
                                   num_vertices, indices, num_indices, size_indices,
                                   scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP);
     } else {
@@ -4081,7 +4084,7 @@ static bool SDL_RenderTextureTiled_Wrap(SDL_Renderer *renderer, SDL_Texture *tex
     xy[7] = maxy;
 
     return QueueCmdGeometry(renderer, texture,
-                            xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
+                            xy, xy_stride, &texture->internal->color, 0 /* color_stride */, uv, uv_stride,
                             num_vertices, indices, num_indices, size_indices,
                             renderer->view->current_scale.x, renderer->view->current_scale.y, SDL_TEXTURE_ADDRESS_WRAP);
 }
@@ -4153,7 +4156,7 @@ bool SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const 
     CHECK_RENDERER_MAGIC(renderer, false);
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    if (renderer != texture->renderer) {
+    if (renderer != texture->internal->renderer) {
         return SDL_SetError("Texture was not created with this renderer");
     }
 
@@ -4186,11 +4189,11 @@ bool SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const 
         real_dstrect = *dstrect;
     }
 
-    if (texture->native) {
-        texture = texture->native;
+    if (texture->internal->native) {
+        texture = texture->internal->native;
     }
 
-    texture->last_command_generation = renderer->render_command_generation;
+    texture->internal->last_command_generation = renderer->render_command_generation;
 
     // See if we can use geometry with repeating texture coordinates
     if (!renderer->software &&
@@ -4215,7 +4218,7 @@ bool SDL_RenderTexture9Grid(SDL_Renderer *renderer, SDL_Texture *texture, const 
     CHECK_RENDERER_MAGIC(renderer, false);
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    if (renderer != texture->renderer) {
+    if (renderer != texture->internal->renderer) {
         return SDL_SetError("Texture was not created with this renderer");
     }
 
@@ -4432,7 +4435,7 @@ static bool SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     bool result = true;
     int count = indices ? num_indices : num_vertices;
     int prev[3]; // Previous triangle vertex indices
-    float texw = 0.0f, texh = 0.0f;
+    int texw = 0, texh = 0;
     SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
     float r = 0, g = 0, b = 0, a = 0;
     const float scale_x = renderer->view->current_scale.x;
@@ -4443,7 +4446,8 @@ static bool SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     SDL_GetRenderDrawColorFloat(renderer, &r, &g, &b, &a);
 
     if (texture) {
-        SDL_GetTextureSize(texture, &texw, &texh);
+        texw = texture->w;
+        texh = texture->h;
     }
 
     prev[0] = -1;
@@ -4749,7 +4753,7 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     if (texture) {
         CHECK_TEXTURE_MAGIC(texture, false);
 
-        if (renderer != texture->renderer) {
+        if (renderer != texture->internal->renderer) {
             return SDL_SetError("Texture was not created with this renderer");
         }
     }
@@ -4789,8 +4793,8 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
         return true;
     }
 
-    if (texture && texture->native) {
-        texture = texture->native;
+    if (texture && texture->internal->native) {
+        texture = texture->internal->native;
     }
 
     texture_address_mode = renderer->texture_address_mode;
@@ -4824,7 +4828,7 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     }
 
     if (texture) {
-        texture->last_command_generation = renderer->render_command_generation;
+        texture->internal->last_command_generation = renderer->render_command_generation;
     }
 
     // For the software renderer, try to reinterpret triangles as SDL_Rect
@@ -4867,8 +4871,8 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
         SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
 
         if (renderer->target) {
-            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->target->SDR_white_point);
-            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, renderer->target->HDR_headroom);
+            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->target->internal->SDR_white_point);
+            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, renderer->target->internal->HDR_headroom);
         } else {
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point);
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, renderer->HDR_headroom);
@@ -4976,9 +4980,9 @@ static bool SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
 
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    SDL_DestroyProperties(texture->props);
+    SDL_DestroyProperties(texture->internal->props);
 
-    renderer = texture->renderer;
+    renderer = texture->internal->renderer;
     if (is_destroying) {
         // Renderer get destroyed, avoid to queue more commands
     } else {
@@ -4991,29 +4995,29 @@ static bool SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
 
     SDL_SetObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE, false);
 
-    if (texture->next) {
-        texture->next->prev = texture->prev;
+    if (texture->internal->next) {
+        texture->internal->next->internal->prev = texture->internal->prev;
     }
-    if (texture->prev) {
-        texture->prev->next = texture->next;
+    if (texture->internal->prev) {
+        texture->internal->prev->internal->next = texture->internal->next;
     } else {
-        renderer->textures = texture->next;
+        renderer->textures = texture->internal->next;
     }
 
-    if (texture->native) {
-        SDL_DestroyTextureInternal(texture->native, is_destroying);
+    if (texture->internal->native) {
+        SDL_DestroyTextureInternal(texture->internal->native, is_destroying);
     }
 #if SDL_HAVE_YUV
-    if (texture->yuv) {
-        SDL_SW_DestroyYUVTexture(texture->yuv);
+    if (texture->internal->yuv) {
+        SDL_SW_DestroyYUVTexture(texture->internal->yuv);
     }
 #endif
-    SDL_free(texture->pixels);
+    SDL_free(texture->internal->pixels);
 
     renderer->DestroyTexture(renderer, texture);
 
-    SDL_DestroySurface(texture->locked_surface);
-    texture->locked_surface = NULL;
+    SDL_DestroySurface(texture->internal->locked_surface);
+    texture->internal->locked_surface = NULL;
 
     SDL_free(texture);
     return true;
