@@ -723,8 +723,8 @@ bool SDL_IsTablet(void)
 bool SDL_IsTV(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
-    extern bool SDL_IsTV(void);
-    return SDL_IsTV();
+    extern bool SDL_IsAndroidTV(void);
+    return SDL_IsAndroidTV(();
 #elif defined(SDL_PLATFORM_IOS)
     extern bool SDL_IsAppleTV(void);
     return SDL_IsAppleTV();
