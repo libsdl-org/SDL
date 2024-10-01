@@ -793,6 +793,12 @@ SDL_IOStream *SDL_IOFromMem(void *mem, size_t size)
     SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
     if (!iostr) {
         SDL_free(iodata);
+    } else {
+        const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
+        if (props) {
+            SDL_SetPointerProperty(props, SDL_PROP_IOSTREAM_MEMORY_POINTER, mem);
+            SDL_SetNumberProperty(props, SDL_PROP_IOSTREAM_MEMORY_SIZE_NUMBER, size);
+        }
     }
     return iostr;
 }
@@ -827,6 +833,12 @@ SDL_IOStream *SDL_IOFromConstMem(const void *mem, size_t size)
     SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
     if (!iostr) {
         SDL_free(iodata);
+    } else {
+        const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
+        if (props) {
+            SDL_SetPointerProperty(props, SDL_PROP_IOSTREAM_MEMORY_POINTER, (void *)mem);
+            SDL_SetNumberProperty(props, SDL_PROP_IOSTREAM_MEMORY_SIZE_NUMBER, size);
+        }
     }
     return iostr;
 }
