@@ -39,7 +39,7 @@ struct SDL_VideoData
 #ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     vdkPrivate vdk_private;
 #else
-    void *egl_handle; // EGL shared library handle
+    SDL_SharedObject *egl_handle; // EGL shared library handle
     EGLNativeDisplayType(EGLAPIENTRY *fbGetDisplay)(void *context);
     EGLNativeDisplayType(EGLAPIENTRY *fbGetDisplayByIndex)(int DisplayIndex);
     void(EGLAPIENTRY *fbGetDisplayGeometry)(EGLNativeDisplayType Display, int *Width, int *Height);

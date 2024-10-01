@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     int hello = 0;
     const char *libname = NULL;
     const char *symname = NULL;
-    void *lib = NULL;
+    SDL_SharedObject *lib = NULL;
     fntype fn = NULL;
     SDLTest_CommonState *state;
 

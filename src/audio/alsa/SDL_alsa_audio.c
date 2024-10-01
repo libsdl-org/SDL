@@ -91,7 +91,7 @@ static int (*ALSA_snd_pcm_chmap_print)(const snd_pcm_chmap_t *map, size_t maxlen
 #define snd_pcm_sw_params_sizeof ALSA_snd_pcm_sw_params_sizeof
 
 static const char *alsa_library = SDL_AUDIO_DRIVER_ALSA_DYNAMIC;
-static void *alsa_handle = NULL;
+static SDL_SharedObject *alsa_handle = NULL;
 
 static bool load_alsa_sym(const char *fn, void **addr)
 {

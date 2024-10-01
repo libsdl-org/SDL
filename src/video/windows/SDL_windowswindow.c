@@ -740,7 +740,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     // FIXME: does not work on all hardware configurations with different renders (i.e. hybrid GPUs)
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
-        void *handle = SDL_LoadObject("dwmapi.dll");
+        SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
         if (handle) {
             DwmEnableBlurBehindWindow_t DwmEnableBlurBehindWindowFunc = (DwmEnableBlurBehindWindow_t)SDL_LoadFunction(handle, "DwmEnableBlurBehindWindow");
             if (DwmEnableBlurBehindWindowFunc) {
@@ -1199,7 +1199,7 @@ static DWM_WINDOW_CORNER_PREFERENCE WIN_UpdateCornerRoundingForHWND(HWND hwnd, D
 {
     DWM_WINDOW_CORNER_PREFERENCE oldPref = DWMWCP_DEFAULT;
 
-    void *handle = SDL_LoadObject("dwmapi.dll");
+    SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
     if (handle) {
         DwmGetWindowAttribute_t DwmGetWindowAttributeFunc = (DwmGetWindowAttribute_t)SDL_LoadFunction(handle, "DwmGetWindowAttribute");
         DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
@@ -1218,7 +1218,7 @@ static COLORREF WIN_UpdateBorderColorForHWND(HWND hwnd, COLORREF colorRef)
 {
     COLORREF oldPref = DWMWA_COLOR_DEFAULT;
 
-    void *handle = SDL_LoadObject("dwmapi.dll");
+    SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
     if (handle) {
         DwmGetWindowAttribute_t DwmGetWindowAttributeFunc = (DwmGetWindowAttribute_t)SDL_LoadFunction(handle, "DwmGetWindowAttribute");
         DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
@@ -2223,7 +2223,7 @@ bool WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool foc
 
 void WIN_UpdateDarkModeForHWND(HWND hwnd)
 {
-    void *handle = SDL_LoadObject("dwmapi.dll");
+    SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
     if (handle) {
         DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
         if (DwmSetWindowAttributeFunc) {

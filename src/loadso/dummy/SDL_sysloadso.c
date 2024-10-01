@@ -25,21 +25,19 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 // System dependent library loading routines
 
-void *SDL_LoadObject(const char *sofile)
+SDL_SharedObject *SDL_LoadObject(const char *sofile)
 {
-    const char *loaderror = "SDL_LoadObject() not implemented";
-    SDL_SetError("Failed loading %s: %s", sofile, loaderror);
+    SDL_Unsupported();
     return NULL;
 }
 
-SDL_FunctionPointer SDL_LoadFunction(void *handle, const char *name)
+SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)
 {
-    const char *loaderror = "SDL_LoadFunction() not implemented";
-    SDL_SetError("Failed loading %s: %s", name, loaderror);
+    SDL_Unsupported();
     return NULL;
 }
 
-void SDL_UnloadObject(void *handle)
+void SDL_UnloadObject(SDL_SharedObject *handle)
 {
     // no-op.
 }

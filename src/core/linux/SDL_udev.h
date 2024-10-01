@@ -86,7 +86,7 @@ typedef struct SDL_UDEV_Symbols
 typedef struct SDL_UDEV_PrivateData
 {
     const char *udev_library;
-    void *udev_handle;
+    SDL_SharedObject *udev_handle;
     struct udev *udev;
     struct udev_monitor *udev_mon;
     int ref_count;

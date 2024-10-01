@@ -145,7 +145,7 @@ struct SDL_VideoData
 
 #ifdef SDL_VIDEO_VULKAN
     // Vulkan variables only valid if _this->vulkan_config.loader_handle is not NULL
-    void *vulkan_xlib_xcb_library;
+    SDL_SharedObject *vulkan_xlib_xcb_library;
     PFN_XGetXCBConnection vulkan_XGetXCBConnection;
 #endif
 

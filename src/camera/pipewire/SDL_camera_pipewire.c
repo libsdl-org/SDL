@@ -101,7 +101,7 @@ static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, 
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
 
 static const char *pipewire_library = SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC;
-static void *pipewire_handle = NULL;
+static SDL_SharedObject *pipewire_handle = NULL;
 
 static bool pipewire_dlsym(const char *fn, void **addr)
 {

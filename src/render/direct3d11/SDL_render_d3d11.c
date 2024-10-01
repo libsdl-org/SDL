@@ -153,8 +153,8 @@ typedef struct
 // Private renderer data
 typedef struct
 {
-    void *hDXGIMod;
-    void *hD3D11Mod;
+    SDL_SharedObject *hDXGIMod;
+    SDL_SharedObject *hD3D11Mod;
     IDXGIFactory2 *dxgiFactory;
     IDXGIAdapter *dxgiAdapter;
     IDXGIDebug *dxgiDebug;

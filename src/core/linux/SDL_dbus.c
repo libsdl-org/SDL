@@ -26,7 +26,7 @@
 #ifdef SDL_USE_LIBDBUS
 // we never link directly to libdbus.
 static const char *dbus_library = "libdbus-1.so.3";
-static void *dbus_handle = NULL;
+static SDL_SharedObject *dbus_handle = NULL;
 static char *inhibit_handle = NULL;
 static unsigned int screensaver_cookie = 0;
 static SDL_DBusContext dbus;

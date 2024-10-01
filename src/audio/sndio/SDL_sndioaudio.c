@@ -66,7 +66,7 @@ static void (*SNDIO_sio_initpar)(struct sio_par *);
 
 #ifdef SDL_AUDIO_DRIVER_SNDIO_DYNAMIC
 static const char *sndio_library = SDL_AUDIO_DRIVER_SNDIO_DYNAMIC;
-static void *sndio_handle = NULL;
+static SDL_SharedObject *sndio_handle = NULL;
 
 static bool load_sndio_sym(const char *fn, void **addr)
 {

@@ -695,7 +695,7 @@ typedef struct DRIVER_hid_device_ DRIVER_hid_device;
 
 static struct
 {
-    void *libhandle;
+    SDL_SharedObject *libhandle;
 
     /* *INDENT-OFF* */ // clang-format off
     int (LIBUSB_CALL *init)(libusb_context **ctx);

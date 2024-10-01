@@ -134,7 +134,7 @@ static bool load_pulseaudio_syms(void);
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
 
 static const char *pulseaudio_library = SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC;
-static void *pulseaudio_handle = NULL;
+static SDL_SharedObject *pulseaudio_handle = NULL;
 
 static bool load_pulseaudio_sym(const char *fn, void **addr)
 {

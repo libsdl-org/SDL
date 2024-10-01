@@ -576,8 +576,8 @@ struct D3D12Renderer
     IDXGIInfoQueue *dxgiInfoQueue;
 #endif
     IDXGIAdapter1 *adapter;
-    void *dxgi_dll;
-    void *dxgidebug_dll;
+    SDL_SharedObject *dxgi_dll;
+    SDL_SharedObject *dxgidebug_dll;
 #endif
     ID3D12Debug *d3d12Debug;
     bool supportsTearing;
@@ -7762,8 +7762,8 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     return true;
 #else
-    void *d3d12Dll;
-    void *dxgiDll;
+    SDL_SharedObject *d3d12Dll;
+    SDL_SharedObject *dxgiDll;
     PFN_D3D12_CREATE_DEVICE D3D12CreateDeviceFunc;
     PFN_CREATE_DXGI_FACTORY1 CreateDXGIFactoryFunc;
     HRESULT res;
