@@ -303,7 +303,8 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     tex_dst.h = rect->h;
     tex_dst.d = 1;
 
-    SDL_UploadToGPUTexture(cpass, &tex_src, &tex_dst, true);
+    bool cycle = texture->w == rect->w && texture->h == rect->h;
+    SDL_UploadToGPUTexture(cpass, &tex_src, &tex_dst, cycle);
     SDL_EndGPUCopyPass(cpass);
     SDL_ReleaseGPUTransferBuffer(renderdata->device, tbuf);
 
