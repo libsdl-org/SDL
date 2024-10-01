@@ -119,6 +119,7 @@ typedef enum SDL_RendererLogicalPresentation
 typedef struct SDL_Renderer SDL_Renderer;
 
 #ifndef SDL_INTERNAL
+
 /**
  * An efficient driver-specific representation of pixel data
  *

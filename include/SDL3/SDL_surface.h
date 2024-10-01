@@ -87,6 +87,7 @@ typedef enum SDL_FlipMode
 } SDL_FlipMode;
 
 #ifndef SDL_INTERNAL
+
 /**
  * A collection of pixels used in software blitting.
  *
