@@ -278,7 +278,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_RenderClear(renderer);
 
     int win_w, win_h;
-    float tw, th;
     SDL_FRect d;
     Uint64 timestampNS = 0;
     SDL_Surface *frame_next = camera ? SDL_AcquireCameraFrame(camera, &timestampNS) : NULL;
@@ -305,8 +304,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     if (frame_current) {
         if (!texture ||
-            !SDL_GetTextureSize(texture, &tw, &th) ||
-            (int)tw != frame_current->w || (int)th != frame_current->h) {
+            texture->w != frame_current->w || texture->h != frame_current->h) {
             /* Resize the window to match */
             SDL_SetWindowSize(window, frame_current->w, frame_current->h);
 
@@ -337,12 +335,11 @@ SDL_AppResult SDL_AppIterate(void *appstate)
             texture_updated = true;
         }
 
-        SDL_GetTextureSize(texture, &tw, &th);
         SDL_GetRenderOutputSize(renderer, &win_w, &win_h);
-        d.x = ((win_w - tw) / 2);
-        d.y = ((win_h - th) / 2);
-        d.w = tw;
-        d.h = th;
+        d.x = ((win_w - texture->w) / 2.0f);
+        d.y = ((win_h - texture->h) / 2.0f);
+        d.w = (float)texture->w;
+        d.h = (float)texture->h;
         SDL_RenderTexture(renderer, texture, NULL, &d);
     }
 

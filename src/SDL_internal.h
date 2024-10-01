@@ -222,6 +222,9 @@
 #define SDL_EndThreadFunction NULL
 #endif
 
+/* Enable internal definitions in SDL API headers */
+#define SDL_INTERNAL
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
 

@@ -1362,6 +1362,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     if (!texture) {
         return NULL;
     }
+    texture->refcount = 1;
     SDL_SetObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE, true);
     texture->colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
     texture->format = format;
@@ -4970,11 +4971,9 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
     return true;
 }
 
-static bool SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
+static void SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
 {
     SDL_Renderer *renderer;
-
-    CHECK_TEXTURE_MAGIC(texture, false);
 
     SDL_DestroyProperties(texture->props);
 
@@ -5016,11 +5015,16 @@ static bool SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
     texture->locked_surface = NULL;
 
     SDL_free(texture);
-    return true;
 }
 
 void SDL_DestroyTexture(SDL_Texture *texture)
 {
+    CHECK_TEXTURE_MAGIC(texture, );
+
+    if (--texture->refcount > 0) {
+        return;
+    }
+
     SDL_DestroyTextureInternal(texture, false /* is_destroying */);
 }
 
