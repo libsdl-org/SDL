@@ -1306,6 +1306,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size
  * \param nmemb the number of elements in the array.
  * \param size the size of the elements in the array.
  * \param compare a function used to compare elements in the array.
+ * \returns a pointer to the matching element in the array, or NULL if not found.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1428,6 +1429,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_qsort_r(void *base, size_t nmemb, size_t si
  * \param size the size of the elements in the array.
  * \param compare a function used to compare elements in the array.
  * \param userdata a pointer to pass to the compare function.
+ * \returns a pointer to the matching element in the array, or NULL if not found.
  *
  * \since This function is available since SDL 3.0.0.
  *
