@@ -179,8 +179,8 @@ typedef struct
 // Private renderer data
 typedef struct
 {
-    void *hDXGIMod;
-    void *hD3D12Mod;
+    SDL_SharedObject *hDXGIMod;
+    SDL_SharedObject *hD3D12Mod;
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     UINT64 frameToken;
 #else

@@ -30,7 +30,7 @@
 
 typedef struct
 {
-    void *lib;
+    SDL_SharedObject *lib;
     const char *libname;
 } waylanddynlib;
 

@@ -64,7 +64,8 @@ typedef EGLint (EGLAPIENTRYP PFNEGLCLIENTWAITSYNCKHRPROC) (EGLDisplay dpy, EGLSy
 
 typedef struct SDL_EGL_VideoData
 {
-    void *opengl_dll_handle, *egl_dll_handle;
+    SDL_SharedObject *opengl_dll_handle;
+    SDL_SharedObject *egl_dll_handle;
     EGLDisplay egl_display;
     EGLConfig egl_config;
     int egl_swapinterval;

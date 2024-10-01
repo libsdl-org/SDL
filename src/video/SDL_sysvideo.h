@@ -435,7 +435,7 @@ struct SDL_VideoDevice
         int egl_platform;
         int driver_loaded;
         char driver_path[256];
-        void *dll_handle;
+        SDL_SharedObject *dll_handle;
     } gl_config;
 
     SDL_EGLAttribArrayCallback egl_platformattrib_callback;
@@ -465,7 +465,7 @@ struct SDL_VideoDevice
         SDL_FunctionPointer vkEnumerateInstanceExtensionProperties;
         int loader_loaded;
         char loader_path[256];
-        void *loader_handle;
+        SDL_SharedObject *loader_handle;
     } vulkan_config;
 
     /* * * */

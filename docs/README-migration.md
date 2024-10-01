@@ -1104,6 +1104,8 @@ The following symbols have been renamed:
 
 ## SDL_loadso.h
 
+Shared object handles are now `SDL_SharedObject *`, an opaque type, instead of `void *`. This is just for type-safety and there is no functional difference.
+
 SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
 
 ## SDL_log.h

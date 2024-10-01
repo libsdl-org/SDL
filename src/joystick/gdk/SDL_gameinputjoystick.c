@@ -60,7 +60,7 @@ typedef struct joystick_hwdata
 } GAMEINPUT_InternalJoystickHwdata;
 
 static GAMEINPUT_InternalList g_GameInputList = { NULL };
-static void *g_hGameInputDLL = NULL;
+static SDL_SharedObject *g_hGameInputDLL = NULL;
 static IGameInput *g_pGameInput = NULL;
 static GameInputCallbackToken g_GameInputCallbackToken = GAMEINPUT_INVALID_CALLBACK_TOKEN_VALUE;
 static Uint64 g_GameInputTimestampOffset;

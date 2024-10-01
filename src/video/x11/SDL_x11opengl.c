@@ -164,7 +164,7 @@ static void X11_GL_InitExtensions(SDL_VideoDevice *_this);
 bool X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     Display *display;
-    void *handle;
+    SDL_SharedObject *handle;
 
     if (_this->gl_data) {
         return SDL_SetError("OpenGL context already created");

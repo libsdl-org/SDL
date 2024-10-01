@@ -606,7 +606,7 @@ static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex)
 static void IME_SetupAPI(SDL_VideoData *videodata)
 {
     char ime_file[MAX_PATH + 1];
-    void *hime = 0;
+    SDL_SharedObject *hime = 0;
     HKL hkl = 0;
     videodata->GetReadingString = NULL;
     videodata->ShowReadingWindow = NULL;

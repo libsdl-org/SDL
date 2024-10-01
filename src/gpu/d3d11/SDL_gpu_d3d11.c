@@ -737,9 +737,9 @@ struct D3D11Renderer
     IDXGIInfoQueue *dxgiInfoQueue;
 #endif
 
-    void *d3d11_dll;
-    void *dxgi_dll;
-    void *dxgidebug_dll;
+    SDL_SharedObject *d3d11_dll;
+    SDL_SharedObject *dxgi_dll;
+    SDL_SharedObject *dxgidebug_dll;
 
     Uint8 debugMode;
     BOOL supportsTearing;
@@ -5886,7 +5886,8 @@ static bool D3D11_SupportsTextureFormat(
 
 static bool D3D11_PrepareDriver(SDL_VideoDevice *this)
 {
-    void *d3d11_dll, *dxgi_dll;
+    SDL_SharedObject *d3d11_dll;
+    SDL_SharedObject *dxgi_dll;
     PFN_D3D11_CREATE_DEVICE D3D11CreateDeviceFunc;
     D3D_FEATURE_LEVEL levels[] = { D3D_FEATURE_LEVEL_11_1 };
     PFN_CREATE_DXGI_FACTORY1 CreateDxgiFactoryFunc;

@@ -32,7 +32,7 @@
 
 typedef struct STEAM_RemoteStorage
 {
-    void *libsteam_api;
+    SDL_SharedObject *libsteam_api;
     #define STEAM_PROC(ret, func, parms) \
         steamfntype_##func func;
     #include "SDL_steamstorage_proc.h"

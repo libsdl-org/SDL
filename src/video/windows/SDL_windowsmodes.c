@@ -393,7 +393,7 @@ static bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
 {
     typedef HRESULT (WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID riid, void **ppFactory);
     PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc = NULL;
-    void *hDXGIMod = NULL;
+    SDL_SharedObject *hDXGIMod = NULL;
     bool found = false;
 
     hDXGIMod = SDL_LoadObject("dxgi.dll");

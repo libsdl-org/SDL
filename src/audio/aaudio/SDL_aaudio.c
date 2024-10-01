@@ -55,7 +55,7 @@ struct SDL_PrivateAudioData
 
 typedef struct AAUDIO_Data
 {
-    void *handle;
+    SDL_SharedObject *handle;
 #define SDL_PROC(ret, func, params) ret (*func) params;
 #include "SDL_aaudiofuncs.h"
 } AAUDIO_Data;

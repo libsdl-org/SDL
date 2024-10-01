@@ -39,7 +39,7 @@ static bool SupportsIMMDevice = false;
 #endif
 
 // DirectX function pointers for audio
-static void *DSoundDLL = NULL;
+static SDL_SharedObject *DSoundDLL = NULL;
 typedef HRESULT(WINAPI *fnDirectSoundCreate8)(LPGUID, LPDIRECTSOUND *, LPUNKNOWN);
 typedef HRESULT(WINAPI *fnDirectSoundEnumerateW)(LPDSENUMCALLBACKW, LPVOID);
 typedef HRESULT(WINAPI *fnDirectSoundCaptureCreate8)(LPCGUID, LPDIRECTSOUNDCAPTURE8 *, LPUNKNOWN);
