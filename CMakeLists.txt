@@ -2725,7 +2725,7 @@ elseif(PSP)
   endif()
 
 elseif(PS2)
-  list(APPEND EXTRA_CFLAGS "-DPS2" "-D__PS2__" "-I$ENV{PS2SDK}/ports/include" "-I$ENV{PS2DEV}/gsKit/include")
+  list(APPEND EXTRA_CFLAGS "-I$ENV{PS2DEV}/gsKit/include")
 
   file(GLOB PS2_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/ps2/*.c)
   set(SDLMAIN_SOURCES ${SDLMAIN_SOURCES} ${PS2_MAIN_SOURCES})
