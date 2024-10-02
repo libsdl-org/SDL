@@ -1322,10 +1322,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioStreamAvailable(SDL_AudioStream *str
 /**
  * Get the number of bytes currently queued.
  *
- * This is the number of bytes put into a stream as input, not the number
- * that can be retrieved as output. Because of several details, it's not
- * possible to calculate one number directly from the other. If you need to
- * know how much usable data can be retrieved right now, you should use
+ * This is the number of bytes put into a stream as input, not the number that
+ * can be retrieved as output. Because of several details, it's not possible
+ * to calculate one number directly from the other. If you need to know how
+ * much usable data can be retrieved right now, you should use
  * SDL_GetAudioStreamAvailable() and not this function.
  *
  * Note that audio streams can change their input format at any time, even if
