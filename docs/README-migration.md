@@ -998,7 +998,9 @@ The following functions have been removed:
 * SDL_VIRTUAL_JOYSTICK_DESC_VERSION - no longer needed
 
 The following symbols have been removed:
+* SDL_IPHONE_MAX_GFORCE
 * SDL_JOYBALLMOTION
+
 
 The following structures have been renamed:
 * SDL_JoystickGUID => SDL_GUID
