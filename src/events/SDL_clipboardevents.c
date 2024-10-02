@@ -25,12 +25,17 @@
 #include "SDL_events_c.h"
 #include "SDL_clipboardevents_c.h"
 
-void SDL_SendClipboardUpdate(void)
+void SDL_SendClipboardUpdate(bool owner, char **mime_types, size_t n_mime_types)
 {
     if (SDL_EventEnabled(SDL_EVENT_CLIPBOARD_UPDATE)) {
         SDL_Event event;
         event.type = SDL_EVENT_CLIPBOARD_UPDATE;
-        event.clipboard.timestamp = 0;
+
+        SDL_ClipboardEvent *cevent = &event.clipboard;
+        cevent->timestamp = 0;
+        cevent->owner = owner;
+        cevent->mime_types = (const char **)mime_types;
+        cevent->n_mime_types = (Uint32)n_mime_types;
         SDL_PushEvent(&event);
     }
 }

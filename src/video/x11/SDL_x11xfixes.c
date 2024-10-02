@@ -51,7 +51,7 @@ void X11_InitXfixes(SDL_VideoDevice *_this)
     int event, error;
     int fixes_opcode;
 
-    Atom XA_CLIPBOARD = X11_XInternAtom(data->display, "CLIPBOARD", 0);
+    Atom XA_CLIPBOARD = data->atoms.CLIPBOARD;
 
     if (!SDL_X11_HAVE_XFIXES ||
         !X11_XQueryExtension(data->display, "XFIXES", &fixes_opcode, &event, &error)) {

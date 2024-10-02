@@ -235,6 +235,9 @@ static void SDL_TransferTemporaryMemoryToEvent(SDL_EventEntry *event)
         SDL_LinkTemporaryMemoryToEvent(event, event->event.drop.source);
         SDL_LinkTemporaryMemoryToEvent(event, event->event.drop.data);
         break;
+    case SDL_EVENT_CLIPBOARD_UPDATE:
+        SDL_LinkTemporaryMemoryToEvent(event, event->event.clipboard.mime_types);
+        break;
     default:
         break;
     }

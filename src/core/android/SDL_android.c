@@ -1377,7 +1377,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
     JNIEnv *env, jclass jcls)
 {
-    SDL_SendClipboardUpdate();
+    // TODO: compute new mime types
+    SDL_SendClipboardUpdate(false, NULL, 0);
 }
 
 // Low memory

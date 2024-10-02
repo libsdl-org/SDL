@@ -83,7 +83,8 @@ void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data)
         count = [pasteboard changeCount];
         if (count != data.clipboard_count) {
             if (data.clipboard_count) {
-                SDL_SendClipboardUpdate();
+                // TODO: compute mime types
+                SDL_SendClipboardUpdate(false, NULL, 0);
             }
             data.clipboard_count = count;
         }
