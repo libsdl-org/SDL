@@ -30,11 +30,11 @@ typedef bool (*SDL_HashTable_KeyMatchFn)(const void *a, const void *b, void *dat
 typedef void (*SDL_HashTable_NukeFn)(const void *key, const void *value, void *data);
 
 extern SDL_HashTable *SDL_CreateHashTable(void *data,
-                                          const Uint32 num_buckets,
-                                          const SDL_HashTable_HashFn hashfn,
-                                          const SDL_HashTable_KeyMatchFn keymatchfn,
-                                          const SDL_HashTable_NukeFn nukefn,
-                                          const bool stackable);
+                                          Uint32 num_buckets,
+                                          SDL_HashTable_HashFn hashfn,
+                                          SDL_HashTable_KeyMatchFn keymatchfn,
+                                          SDL_HashTable_NukeFn nukefn,
+                                          bool stackable);
 
 extern void SDL_EmptyHashTable(SDL_HashTable *table);
 extern void SDL_DestroyHashTable(SDL_HashTable *table);
