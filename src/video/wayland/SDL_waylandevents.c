@@ -2277,6 +2277,40 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
     data_device->drag_offer = NULL;
 }
 
+static void notifyFromMimes(struct wl_list *mimes) {
+    int nformats = 0;
+    char **new_mime_types = NULL;
+    if (mimes) {
+        nformats = WAYLAND_wl_list_length(mimes);
+        size_t alloc_size = (nformats + 1) * sizeof(char *);
+
+        /* do a first pass to compute allocation size */
+        SDL_MimeDataList *item = NULL;
+        wl_list_for_each(item, mimes, link) {
+            alloc_size += SDL_strlen(item->mime_type) + 1;
+        }
+
+        new_mime_types = SDL_AllocateTemporaryMemory(alloc_size);
+        if (!new_mime_types) {
+            SDL_LogError(SDL_LOG_CATEGORY_INPUT, "unable to allocate new_mime_types");
+            return;
+        }
+
+        /* second pass to fill*/
+        char *strPtr = (char *)(new_mime_types + nformats + 1);
+        item = NULL;
+        int i = 0;
+        wl_list_for_each(item, mimes, link) {
+            new_mime_types[i] = strPtr;
+            strPtr = stpcpy(strPtr, item->mime_type) + 1;
+            i++;
+        }
+        new_mime_types[nformats] = NULL;
+    }
+
+    SDL_SendClipboardUpdate(false, new_mime_types, nformats);
+}
+
 static void data_device_handle_selection(void *data, struct wl_data_device *wl_data_device,
                                          struct wl_data_offer *id)
 {
@@ -2295,7 +2329,7 @@ static void data_device_handle_selection(void *data, struct wl_data_device *wl_d
         data_device->selection_offer = offer;
     }
 
-    SDL_SendClipboardUpdate();
+    notifyFromMimes(offer ? &offer->mimes : NULL);
 }
 
 static const struct wl_data_device_listener data_device_listener = {
@@ -2341,7 +2375,7 @@ static void primary_selection_device_handle_selection(void *data, struct zwp_pri
                  ". In zwp_primary_selection_device_v1_listener . primary_selection_device_handle_selection on primary_selection_offer 0x%08x\n",
                  (id ? WAYLAND_wl_proxy_get_id((struct wl_proxy *)id) : -1));
 
-    SDL_SendClipboardUpdate();
+    notifyFromMimes(offer ? &offer->mimes : NULL);
 }
 
 static const struct zwp_primary_selection_device_v1_listener primary_selection_device_listener = {

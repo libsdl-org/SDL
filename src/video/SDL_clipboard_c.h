@@ -39,4 +39,7 @@ extern bool SDL_HasInternalClipboardData(SDL_VideoDevice *_this, const char *mim
 // General purpose clipboard text callback
 const void * SDLCALL SDL_ClipboardTextCallback(void *userdata, const char *mime_type, size_t *size);
 
+void SDLCALL SDL_FreeClipboardMimeTypes(SDL_VideoDevice *_this);
+char ** SDLCALL SDL_CopyClipboardMimeTypes(const char **clipboard_mime_types, size_t num_mime_types, bool temporary);
+
 #endif // SDL_clipboard_c_h_

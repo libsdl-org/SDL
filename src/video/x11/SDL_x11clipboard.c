@@ -38,7 +38,7 @@ static const char *text_mime_types[] = {
 };
 
 // Get any application owned window handle for clipboard association
-static Window GetWindow(SDL_VideoDevice *_this)
+Window GetWindow(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
 

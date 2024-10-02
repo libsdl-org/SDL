@@ -25,6 +25,7 @@
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
 #include "../SDL_clipboard_c.h"
+#include "../../events/SDL_events_c.h"
 #include "../../events/SDL_clipboardevents_c.h"
 
 #ifdef UNICODE
@@ -329,14 +330,73 @@ bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     return false;
 }
 
+static char **GetMimeTypes(int *pnformats)
+{
+    *pnformats = 0;
+
+    int nformats = CountClipboardFormats();
+    size_t allocSize = (nformats + 1) * sizeof(char*);
+
+    UINT format = 0;
+    int formatsSz = 0;
+    int i;
+    for (i = 0; i < nformats; i++) {
+        format = EnumClipboardFormats(format);
+        if (!format) {
+            nformats = i;
+            break;
+        }
+
+        char mimeType[200];
+        int nchars = GetClipboardFormatNameA(format, mimeType, sizeof(mimeType));
+        formatsSz += nchars + 1;
+    }
+
+    char **new_mime_types = SDL_AllocateTemporaryMemory(allocSize + formatsSz);
+    if (!new_mime_types)
+        return NULL;
+
+    format = 0;
+    char *strPtr = (char *)(new_mime_types + nformats + 1);
+    int formatRemains = formatsSz;
+    for (i = 0; i < nformats; i++) {
+        format = EnumClipboardFormats(format);
+        if (!format) {
+            nformats = i;
+            break;
+        }
+
+        new_mime_types[i] = strPtr;
+
+        int nchars = GetClipboardFormatNameA(format, strPtr, formatRemains-1);
+        strPtr += nchars;
+        *strPtr = '\0';
+        strPtr++;
+
+        formatRemains -= (nchars + 1);
+    }
+
+    new_mime_types[nformats] = NULL;
+    *pnformats = nformats;
+    return new_mime_types;
+}
+
 void WIN_CheckClipboardUpdate(struct SDL_VideoData *data)
 {
-    const DWORD count = GetClipboardSequenceNumber();
-    if (count != data->clipboard_count) {
+    const DWORD seq = GetClipboardSequenceNumber();
+    if (seq != data->clipboard_count) {
         if (data->clipboard_count) {
-            SDL_SendClipboardUpdate();
+            int nformats = 0;
+            char **new_mime_types = GetMimeTypes(&nformats);
+            if (new_mime_types) {
+                SDL_SendClipboardUpdate(false, new_mime_types, nformats);
+            } else {
+                WIN_SetError("Couldn't get clipboard mime types");
+            }
+
         }
-        data->clipboard_count = count;
+
+        data->clipboard_count = seq;
     }
 }
 

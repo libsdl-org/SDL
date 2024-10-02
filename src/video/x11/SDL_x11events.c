@@ -415,7 +415,7 @@ static void DispatchWindowMove(SDL_VideoDevice *_this, const SDL_WindowData *dat
 
     evt.xclient.type = ClientMessage;
     evt.xclient.window = data->xwindow;
-    evt.xclient.message_type = X11_XInternAtom(display, "_NET_WM_MOVERESIZE", True);
+    evt.xclient.message_type = videodata->atoms._NET_WM_MOVERESIZE;
     evt.xclient.format = 32;
     evt.xclient.data.l[0] = (size_t)window->x + point->x;
     evt.xclient.data.l[1] = (size_t)window->y + point->y;
@@ -450,7 +450,7 @@ static void InitiateWindowResize(SDL_VideoDevice *_this, const SDL_WindowData *d
 
     evt.xclient.type = ClientMessage;
     evt.xclient.window = data->xwindow;
-    evt.xclient.message_type = X11_XInternAtom(display, "_NET_WM_MOVERESIZE", True);
+    evt.xclient.message_type = videodata->atoms._NET_WM_MOVERESIZE;
     evt.xclient.format = 32;
     evt.xclient.data.l[0] = (size_t)window->x + point->x;
     evt.xclient.data.l[1] = (size_t)window->y + point->y;
@@ -553,7 +553,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         int mime_formats;
         unsigned char *seln_data;
         size_t seln_length = 0;
-        Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
+        Atom XA_TARGETS = videodata->atoms.TARGETS;
         SDLX11_ClipboardData *clipboard;
 
 #ifdef DEBUG_XEVENTS
@@ -627,17 +627,52 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
 
     case SelectionNotify:
     {
+        const XSelectionEvent *xsel = &xevent->xselection;
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window CLIPBOARD: SelectionNotify (requestor = 0x%lx, target = 0x%lx)\n",
-               xevent->xselection.requestor, xevent->xselection.target);
+        const char *propName = xsel->property ? X11_XGetAtomName(display, xsel->property) : "None";
+        const char *targetName = xsel->target ? X11_XGetAtomName(display, xsel->target) : "None";
+
+        SDL_Log("window CLIPBOARD: SelectionNotify (requestor = 0x%lx, target = %s, property = %s)\n",
+               xsel->requestor, targetName, propName);
 #endif
+        if (xsel->target == videodata->atoms.TARGETS && xsel->property == videodata->atoms.SDL_FORMATS) {
+            /* the new mime formats are the SDL_FORMATS property as an array of Atoms */
+            Atom atom = None;
+            Atom *patom;
+            unsigned char* data = NULL;
+            int format_property = 0;
+            unsigned long length = 0;
+            unsigned long bytes_left = 0;
+            int j;
+
+            X11_XGetWindowProperty(display, GetWindow(_this), videodata->atoms.SDL_FORMATS, 0, 200,
+                                            0, XA_ATOM, &atom, &format_property, &length, &bytes_left, &data);
+
+            int allocationsize = (length + 1) * sizeof(char*);
+            for (j = 0, patom = (Atom*)data; j < length; j++, patom++) {
+                allocationsize += SDL_strlen( X11_XGetAtomName(display, *patom) ) + 1;
+            }
+
+            char **new_mime_types = SDL_AllocateTemporaryMemory(allocationsize);
+            if (new_mime_types) {
+                char *strPtr = (char *)(new_mime_types + length + 1);
+
+                for (j = 0, patom = (Atom*)data; j < length; j++, patom++) {
+                    new_mime_types[j] = strPtr;
+                    strPtr = stpcpy(strPtr, X11_XGetAtomName(display, *patom)) + 1;
+                }
+                new_mime_types[length] = NULL;
+
+                SDL_SendClipboardUpdate(false, new_mime_types, length);
+            }
+        }
+
         videodata->selection_waiting = false;
     } break;
 
     case SelectionClear:
     {
-        // !!! FIXME: cache atoms
-        Atom XA_CLIPBOARD = X11_XInternAtom(display, "CLIPBOARD", 0);
+        Atom XA_CLIPBOARD = videodata->atoms.CLIPBOARD;
         SDLX11_ClipboardData *clipboard = NULL;
 
 #ifdef DEBUG_XEVENTS
@@ -994,11 +1029,25 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                X11_XGetAtomName(display, ev->selection));
 #endif
 
-        if (ev->selection == XA_PRIMARY ||
-            (videodata->atoms.CLIPBOARD != None && ev->selection == videodata->atoms.CLIPBOARD)) {
-            SDL_SendClipboardUpdate();
-            return;
+        if (ev->subtype == XFixesSetSelectionOwnerNotify)
+        {
+            if (ev->selection != videodata->atoms.CLIPBOARD)
+                return;
+
+            if (X11_XGetSelectionOwner(display, ev->selection) == videodata->clipboard_window)
+                return;
+
+            /* when here we're notified that the clipboard had an external change, we request the
+             * available mime types by asking for a conversion to the TARGETS format. We should get a
+             * SelectionNotify event later, and when treating these results, we will push a ClipboardUpdated
+             * event
+             */
+
+            X11_XConvertSelection(display, videodata->atoms.CLIPBOARD, videodata->atoms.TARGETS,
+                    videodata->atoms.SDL_FORMATS, GetWindow(_this), CurrentTime);
         }
+
+        return;
     }
 #endif // SDL_VIDEO_DRIVER_X11_XFIXES
 

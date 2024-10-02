@@ -403,6 +403,7 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
     GET_ATOM(_NET_WM_STATE_ABOVE);
     GET_ATOM(_NET_WM_STATE_SKIP_TASKBAR);
     GET_ATOM(_NET_WM_STATE_SKIP_PAGER);
+    GET_ATOM(_NET_WM_MOVERESIZE);
     GET_ATOM(_NET_WM_STATE_MODAL);
     GET_ATOM(_NET_WM_ALLOWED_ACTIONS);
     GET_ATOM(_NET_WM_ACTION_FULLSCREEN);
@@ -420,6 +421,9 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
     GET_ATOM(CLIPBOARD);
     GET_ATOM(INCR);
     GET_ATOM(SDL_SELECTION);
+    GET_ATOM(TARGETS);
+    GET_ATOM(SDL_FORMATS);
+    GET_ATOM(XdndAware);
     GET_ATOM(XdndEnter);
     GET_ATOM(XdndPosition);
     GET_ATOM(XdndStatus);

@@ -2001,7 +2001,7 @@ void X11_AcceptDragAndDrop(SDL_Window *window, bool accept)
 {
     SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
-    Atom XdndAware = X11_XInternAtom(display, "XdndAware", False);
+    Atom XdndAware = data->videodata->atoms.XdndAware;
 
     if (accept) {
         Atom xdnd_version = 5;

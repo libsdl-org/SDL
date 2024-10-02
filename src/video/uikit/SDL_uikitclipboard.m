@@ -80,7 +80,8 @@ void UIKit_InitClipboard(SDL_VideoDevice *_this)
                                           object:nil
                                            queue:nil
                                       usingBlock:^(NSNotification *note) {
-                                        SDL_SendClipboardUpdate();
+                                        // TODO: compute mime types
+                                        SDL_SendClipboardUpdate(false, NULL, 0);
                                       }];
 
         data.pasteboardObserver = observer;
