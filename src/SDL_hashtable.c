@@ -55,10 +55,12 @@ struct SDL_HashTable
     bool stackable;
 };
 
-SDL_HashTable *SDL_CreateHashTable(void *data, const Uint32 num_buckets, const SDL_HashTable_HashFn hashfn,
-                                   const SDL_HashTable_KeyMatchFn keymatchfn,
-                                   const SDL_HashTable_NukeFn nukefn,
-                                   const bool stackable)
+SDL_HashTable *SDL_CreateHashTable(void *data,
+                                   Uint32 num_buckets,
+                                   SDL_HashTable_HashFn hashfn,
+                                   SDL_HashTable_KeyMatchFn keymatchfn,
+                                   SDL_HashTable_NukeFn nukefn,
+                                   bool stackable)
 {
     SDL_HashTable *table;
 
