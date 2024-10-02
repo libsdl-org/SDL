@@ -232,7 +232,7 @@ bool SDLCALL SDLTest_CommonInit(SDLTest_CommonState *state);
  *
  * \returns false if app should quit, true otherwise.
  */
-bool SDLCALL SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv);
+bool SDLCALL SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, int argc, char **argv);
 
 /**
  * Print the details of an event.
