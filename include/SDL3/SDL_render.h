@@ -2062,8 +2062,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_T
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
                                                      const SDL_FRect *srcrect, const SDL_FRect *dstrect,
-                                                     const double angle, const SDL_FPoint *center,
-                                                     const SDL_FlipMode flip);
+                                                     double angle, const SDL_FPoint *center,
+                                                     SDL_FlipMode flip);
 
 /**
  * Tile a portion of the texture to the current rendering target at subpixel
