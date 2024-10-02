@@ -787,7 +787,7 @@ void SDLTest_CommonLogUsage(SDLTest_CommonState *state, const char *argv0, const
     }
 }
 
-bool SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv)
+bool SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, int argc, char **argv)
 {
     int i = 1;
     while (i < argc) {
