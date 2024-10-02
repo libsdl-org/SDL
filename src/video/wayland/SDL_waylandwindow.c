@@ -1939,13 +1939,6 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     c = _this->driverdata;
     window->driverdata = data;
 
-    if (!(window->flags & SDL_WINDOW_VULKAN)) {
-        if (!(window->flags & SDL_WINDOW_OPENGL)) {
-            SDL_GL_LoadLibrary(NULL);
-            window->flags |= SDL_WINDOW_OPENGL;
-        }
-    }
-
     if (window->x == SDL_WINDOWPOS_UNDEFINED) {
         window->x = 0;
     }
