@@ -174,6 +174,12 @@ expression e;
 + /* FIXME MIGRATION: SDL_Has3DNow() has been removed; there is no replacement. */ 0
 - SDL_Has3DNow()
 
+// SDL_HasRDTSC() has been removed; there is no replacement.
+@@
+@@
++ /* FIXME MIGRATION: SDL_HasRDTSC() has been removed; there is no replacement. */ 0
+- SDL_HasRDTSC()
+
 // SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
 @@
 @@
@@ -887,11 +893,11 @@ typedef SDL_ControllerTouchpadEvent, SDL_GamepadTouchpadEvent;
 @@
 @@
 - SDL_CONTROLLER_BUTTON_A
-+ SDL_GAMEPAD_BUTTON_A
++ SDL_GAMEPAD_BUTTON_SOUTH
 @@
 @@
 - SDL_CONTROLLER_BUTTON_B
-+ SDL_GAMEPAD_BUTTON_B
++ SDL_GAMEPAD_BUTTON_EAST
 @@
 @@
 - SDL_CONTROLLER_BUTTON_BACK
@@ -971,11 +977,11 @@ typedef SDL_ControllerTouchpadEvent, SDL_GamepadTouchpadEvent;
 @@
 @@
 - SDL_CONTROLLER_BUTTON_X
-+ SDL_GAMEPAD_BUTTON_X
++ SDL_GAMEPAD_BUTTON_WEST
 @@
 @@
 - SDL_CONTROLLER_BUTTON_Y
-+ SDL_GAMEPAD_BUTTON_Y
++ SDL_GAMEPAD_BUTTON_NORTH
 @@
 @@
 - SDL_CONTROLLER_TYPE_AMAZON_LUNA
