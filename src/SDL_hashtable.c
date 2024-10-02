@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "SDL_internal.h"
 #include "SDL_hashtable.h"
 
@@ -429,13 +428,21 @@ bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const v
     HT_ASSERT(item <= end);
 
     if (item == end) {
-        *_key = NULL;
-        *_value = NULL;
+        if (_key) {
+            *_key = NULL;
+        }
+        if (_value) {
+            *_value = NULL;
+        }
         return false;
     }
 
-    *_key = item->key;
-    *_value = item->value;
+    if (_key) {
+        *_key = item->key;
+    }
+    if (_value) {
+        *_value = item->value;
+    }
     *iter = item;
 
     return true;
