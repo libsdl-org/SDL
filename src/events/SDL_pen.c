@@ -349,7 +349,7 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
 
     if (send_event) {
         const SDL_EventType evtype = down ? SDL_EVENT_PEN_DOWN : SDL_EVENT_PEN_UP;
-        if (send_event && SDL_EventEnabled(evtype)) {
+        if (SDL_EventEnabled(evtype)) {
             SDL_Event event;
             SDL_zero(event);
             event.ptouch.type = evtype;
