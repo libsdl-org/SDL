@@ -2478,11 +2478,6 @@ expression e1, e2, e3, e4;
 - SDL_CreateWindow(e1, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, e2, e3, e4)
 + SDL_CreateWindow(e1, e2, e3, e4)
 @@
-expression e1, e2, e3, e4, e5, e6;
-@@
-- SDL_CreateWindow(e1, e2, e3, e4, e5, e6)
-+ SDL_CreateWindowWithPosition(e1, e2, e3, e4, e5, e6)
-@@
 expression e1, e2, e3, e4;
 constant c1, c2;
 @@
