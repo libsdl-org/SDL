@@ -39,8 +39,6 @@
 #include "../../video/SDL_pixels_c.h"
 #include "SDL_shaders_vulkan.h"
 
-extern const char *SDL_Vulkan_GetResultString(VkResult result);
-
 #define VULKAN_FUNCTIONS()                                              \
     VULKAN_DEVICE_FUNCTION(vkAcquireNextImageKHR)                       \
     VULKAN_DEVICE_FUNCTION(vkAllocateCommandBuffers)                    \
