@@ -731,7 +731,7 @@ static Texture *CreateTexture(const char *fname)
     return tex;
 }
 
-static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID which, const float x, const float y);
+static Thing *CreateLogicalDeviceThing(Thing *parent, SDL_AudioDeviceID which, float x, float y);
 
 static void DeviceThing_ondrag(Thing *thing, int button, float x, float y)
 {
@@ -903,7 +903,7 @@ static void LogicalDeviceThing_onmousewheel(Thing *thing, float y)
     SDL_SetAudioDeviceGain(thing->data.logdev.devid, thing->meter);
 }
 
-static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID which, const float x, const float y)
+static Thing *CreateLogicalDeviceThing(Thing *parent, SDL_AudioDeviceID which, float x, float y)
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_NULL };
     Thing *physthing = ((parent->what == THING_LOGDEV) || (parent->what == THING_LOGDEV_RECORDING)) ? parent->data.logdev.physdev : parent;

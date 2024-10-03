@@ -26,7 +26,7 @@
 // just a few special pieces right now.
 
 // this expects `from` to be a Unicode codepoint, and `to` to point to AT LEAST THREE Uint32s.
-int SDL_CaseFoldUnicode(const Uint32 from, Uint32 *to);
+int SDL_CaseFoldUnicode(Uint32 from, Uint32 *to);
 
 #endif
 

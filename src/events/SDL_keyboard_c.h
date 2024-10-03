@@ -82,6 +82,6 @@ extern void SDL_SendEditingTextCandidates(char **candidates, int num_candidates,
 extern void SDL_QuitKeyboard(void);
 
 // Toggle on or off pieces of the keyboard mod state.
-extern void SDL_ToggleModState(const SDL_Keymod modstate, const bool toggle);
+extern void SDL_ToggleModState(SDL_Keymod modstate, bool toggle);
 
 #endif // SDL_keyboard_c_h_

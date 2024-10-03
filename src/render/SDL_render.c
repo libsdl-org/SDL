@@ -354,7 +354,7 @@ bool SDL_FlushRenderer(SDL_Renderer *renderer)
     return true;
 }
 
-void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const size_t alignment, size_t *offset)
+void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, size_t numbytes, size_t alignment, size_t *offset)
 {
     const size_t needed = renderer->vertex_data_used + numbytes + alignment;
     const size_t current_offset = renderer->vertex_data_used;
