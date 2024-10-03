@@ -2,6 +2,7 @@
 
 import argparse
 from pathlib import Path
+import json
 import logging
 import re
 import subprocess
@@ -10,9 +11,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def determine_project() -> str:
-    text = (ROOT / "CMakeLists.txt").read_text()
-    match = next(re.finditer(r"project\((?P<project>[a-zA-Z0-9_]+)\s+", text, flags=re.M))
-    project_with_version = match["project"]
+    text = (ROOT / "build-scripts/release-info.json").read_text()
+    release_info = json.loads(text)
+    project_with_version = release_info["name"]
     project, _ = re.subn("([^a-zA-Z_])", "", project_with_version)
     return project
 
