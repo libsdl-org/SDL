@@ -2806,6 +2806,10 @@ bool SDL_RenderCoordinatesFromWindow(SDL_Renderer *renderer, float window_x, flo
         render_y = ((render_y - dst->y) * src->h) / dst->h;
     }
 
+    const SDL_RenderViewState *view = &renderer->main_view;
+    render_x = (render_x / view->scale.x) - view->viewport.x;
+    render_y = (render_y / view->scale.y) - view->viewport.y;
+
     if (x) {
         *x = render_x;
     }
@@ -2818,6 +2822,10 @@ bool SDL_RenderCoordinatesFromWindow(SDL_Renderer *renderer, float window_x, flo
 bool SDL_RenderCoordinatesToWindow(SDL_Renderer *renderer, float x, float y, float *window_x, float *window_y)
 {
     CHECK_RENDERER_MAGIC(renderer, false);
+
+    const SDL_RenderViewState *view = &renderer->main_view;
+    x = (view->viewport.x + x) * view->scale.x;
+    y = (view->viewport.y + y) * view->scale.y;
 
     // Convert from render coordinates to pixels within the window
     if (renderer->logical_presentation_mode != SDL_LOGICAL_PRESENTATION_DISABLED) {
@@ -2861,6 +2869,7 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
                 }
 
                 // Convert from pixels within the view to render coordinates
+                scale = (scale / renderer->main_view.scale.x);
                 event->motion.xrel *= scale;
             }
             if (event->motion.yrel != 0.0f) {
@@ -2875,6 +2884,7 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
                 }
 
                 // Convert from pixels within the view to render coordinates
+                scale = (scale / renderer->main_view.scale.y);
                 event->motion.yrel *= scale;
             }
         }

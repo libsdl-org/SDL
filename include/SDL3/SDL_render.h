@@ -1441,6 +1441,13 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderLogicalPresentationRect(SDL_Render
 /**
  * Get a point in render coordinates when given a point in window coordinates.
  *
+ * This takes into account several states:
+ *
+ * - The window dimensions.
+ * - The logical presentation settings (SDL_SetRenderLogicalPresentation)
+ * - The scale (SDL_SetRenderScale)
+ * - The viewport (SDL_SetRenderViewport)
+ *
  * \param renderer the rendering context.
  * \param window_x the x coordinate in window coordinates.
  * \param window_y the y coordinate in window coordinates.
@@ -1461,6 +1468,13 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderCoordinatesFromWindow(SDL_Renderer *r
 /**
  * Get a point in window coordinates when given a point in render coordinates.
  *
+ * This takes into account several states:
+ *
+ * - The window dimensions.
+ * - The logical presentation settings (SDL_SetRenderLogicalPresentation)
+ * - The scale (SDL_SetRenderScale)
+ * - The viewport (SDL_SetRenderViewport)
+ *
  * \param renderer the rendering context.
  * \param x the x coordinate in render coordinates.
  * \param y the y coordinate in render coordinates.
@@ -1477,11 +1491,19 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderCoordinatesFromWindow(SDL_Renderer *r
  *
  * \sa SDL_SetRenderLogicalPresentation
  * \sa SDL_SetRenderScale
+ * \sa SDL_SetRenderViewport
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderCoordinatesToWindow(SDL_Renderer *renderer, float x, float y, float *window_x, float *window_y);
 
 /**
  * Convert the coordinates in an event to render coordinates.
+ *
+ * This takes into account several states:
+ *
+ * - The window dimensions.
+ * - The logical presentation settings (SDL_SetRenderLogicalPresentation)
+ * - The scale (SDL_SetRenderScale)
+ * - The viewport (SDL_SetRenderViewport)
  *
  * Touch coordinates are converted from normalized coordinates in the window
  * to non-normalized rendering coordinates.
