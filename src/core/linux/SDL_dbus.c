@@ -341,7 +341,7 @@ bool SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *int
     return result;
 }
 
-bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result)
+bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result)
 {
     bool retval = false;
 
@@ -358,7 +358,7 @@ bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, 
     return retval;
 }
 
-bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, const int expectedtype, void *result)
+bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result)
 {
     return SDL_DBus_QueryPropertyOnConnection(dbus.session_conn, node, path, interface, property, expectedtype, result);
 }

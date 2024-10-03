@@ -79,7 +79,7 @@ char *SDL_UCS4ToUTF8(Uint32 codepoint, char *dst)
 
 
 // this expects `from` and `to` to be UTF-32 encoding!
-int SDL_CaseFoldUnicode(const Uint32 from, Uint32 *to)
+int SDL_CaseFoldUnicode(Uint32 from, Uint32 *to)
 {
     // !!! FIXME: since the hashtable is static, maybe we should binary
     // !!! FIXME: search it instead of walking the whole bucket.
