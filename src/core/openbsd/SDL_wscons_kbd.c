@@ -49,7 +49,7 @@
     }
 
 typedef struct SDL_WSCONS_mouse_input_data SDL_WSCONS_mouse_input_data;
-extern SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse();
+extern SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse(void);
 extern void updateMouse(SDL_WSCONS_mouse_input_data *input);
 extern void SDL_WSCONS_Quit_Mouse(SDL_WSCONS_mouse_input_data *input);
 
