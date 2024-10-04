@@ -243,7 +243,7 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcessWithProperties(SDL_Pro
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_PropertiesID SDL_GetProcessProperties(SDL_Process *process);
+extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetProcessProperties(SDL_Process *process);
 
 #define SDL_PROP_PROCESS_PID_NUMBER         "SDL.process.pid"
 #define SDL_PROP_PROCESS_STDIN_POINTER      "SDL.process.stdin"
