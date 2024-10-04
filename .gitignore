@@ -51,6 +51,7 @@ cmake-build-*
 .DS_Store
 xcuserdata
 *.xcworkspace
+Xcode/build.xcconfig
 
 # for Visual Studio Code
 .vscode/
