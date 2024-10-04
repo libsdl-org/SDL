@@ -59,7 +59,7 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
 {
     SDL_HIDAPI_RumbleContext *ctx = (SDL_HIDAPI_RumbleContext *)data;
 
-    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
+    SDL_SetCurrentThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
     while (SDL_GetAtomicInt(&ctx->running)) {
         SDL_HIDAPI_RumbleRequest *request = NULL;

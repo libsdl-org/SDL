@@ -62,7 +62,7 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
     ASensorEvent event;
     struct android_poll_source *source;
 
-    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
+    SDL_SetCurrentThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
     SDL_sensor_looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
     SDL_SignalSemaphore(ctx->sem);

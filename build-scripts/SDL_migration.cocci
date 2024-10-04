@@ -3705,3 +3705,8 @@ identifier func =~ "^(SDL_AddEventWatch|SDL_AddHintCallback|SDL_AddSurfaceAltern
 - SDL_IsAndroidTV
 + SDL_IsTV
   (...)
+@@
+@@
+- SDL_SetThreadPriority
++ SDL_SetCurrentThreadPriority
+  (...)

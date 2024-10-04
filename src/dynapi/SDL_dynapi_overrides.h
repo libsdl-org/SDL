@@ -625,8 +625,8 @@
 #define SDL_IsJoystickHaptic SDL_IsJoystickHaptic_REAL
 #define SDL_IsJoystickVirtual SDL_IsJoystickVirtual_REAL
 #define SDL_IsMouseHaptic SDL_IsMouseHaptic_REAL
-#define SDL_IsTablet SDL_IsTablet_REAL
 #define SDL_IsTV SDL_IsTV_REAL
+#define SDL_IsTablet SDL_IsTablet_REAL
 #define SDL_JoystickConnected SDL_JoystickConnected_REAL
 #define SDL_JoystickEventsEnabled SDL_JoystickEventsEnabled_REAL
 #define SDL_KillProcess SDL_KillProcess_REAL
@@ -821,6 +821,7 @@
 #define SDL_SetBooleanProperty SDL_SetBooleanProperty_REAL
 #define SDL_SetClipboardData SDL_SetClipboardData_REAL
 #define SDL_SetClipboardText SDL_SetClipboardText_REAL
+#define SDL_SetCurrentThreadPriority SDL_SetCurrentThreadPriority_REAL
 #define SDL_SetCursor SDL_SetCursor_REAL
 #define SDL_SetEnvironmentVariable SDL_SetEnvironmentVariable_REAL
 #define SDL_SetError    SDL_SetError_REAL
@@ -894,7 +895,6 @@
 #define SDL_SetTextureColorMod SDL_SetTextureColorMod_REAL
 #define SDL_SetTextureColorModFloat SDL_SetTextureColorModFloat_REAL
 #define SDL_SetTextureScaleMode SDL_SetTextureScaleMode_REAL
-#define SDL_SetThreadPriority SDL_SetThreadPriority_REAL
 #define SDL_SetWindowAlwaysOnTop SDL_SetWindowAlwaysOnTop_REAL
 #define SDL_SetWindowAspectRatio SDL_SetWindowAspectRatio_REAL
 #define SDL_SetWindowBordered SDL_SetWindowBordered_REAL

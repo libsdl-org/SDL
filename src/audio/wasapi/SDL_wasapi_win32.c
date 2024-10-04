@@ -143,7 +143,7 @@ void WASAPI_PlatformThreadInit(SDL_AudioDevice *device)
         DWORD idx = 0;
         device->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
     } else {
-        SDL_SetThreadPriority(device->recording ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
+        SDL_SetCurrentThreadPriority(device->recording ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
     }
 
 }

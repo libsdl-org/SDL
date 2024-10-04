@@ -781,7 +781,7 @@ static void SDL_AudioFreeDeviceHandle_Default(SDL_AudioDevice *device) { /* no-o
 
 static void SDL_AudioThreadInit_Default(SDL_AudioDevice *device)
 {
-    SDL_SetThreadPriority(device->recording ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
+    SDL_SetCurrentThreadPriority(device->recording ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
 }
 
 static void SDL_AudioDetectDevices_Default(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)

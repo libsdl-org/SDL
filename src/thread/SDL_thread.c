@@ -439,7 +439,7 @@ const char *SDL_GetThreadName(SDL_Thread *thread)
     }
 }
 
-bool SDL_SetThreadPriority(SDL_ThreadPriority priority)
+bool SDL_SetCurrentThreadPriority(SDL_ThreadPriority priority)
 {
     return SDL_SYS_SetThreadPriority(priority);
 }

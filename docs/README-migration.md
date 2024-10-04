@@ -2028,6 +2028,7 @@ SDL_CreateThread and SDL_CreateThreadWithProperties now take beginthread/endthre
 SDL_GetTLS() and SDL_SetTLS() take a pointer to a TLS ID, and will automatically initialize it in a thread-safe way as needed.
 
 The following functions have been renamed:
+* SDL_SetThreadPriority() => SDL_SetCurrentThreadPriority()
 * SDL_TLSCleanup() => SDL_CleanupTLS()
 * SDL_TLSGet() => SDL_GetTLS()
 * SDL_TLSSet() => SDL_SetTLS(), returns bool

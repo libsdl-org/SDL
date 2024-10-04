@@ -600,8 +600,8 @@ SDL3_0.0.0 {
     SDL_IsJoystickHaptic;
     SDL_IsJoystickVirtual;
     SDL_IsMouseHaptic;
-    SDL_IsTablet;
     SDL_IsTV;
+    SDL_IsTablet;
     SDL_JoystickConnected;
     SDL_JoystickEventsEnabled;
     SDL_KillProcess;
@@ -796,6 +796,7 @@ SDL3_0.0.0 {
     SDL_SetBooleanProperty;
     SDL_SetClipboardData;
     SDL_SetClipboardText;
+    SDL_SetCurrentThreadPriority;
     SDL_SetCursor;
     SDL_SetEnvironmentVariable;
     SDL_SetError;
@@ -869,7 +870,6 @@ SDL3_0.0.0 {
     SDL_SetTextureColorMod;
     SDL_SetTextureColorModFloat;
     SDL_SetTextureScaleMode;
-    SDL_SetThreadPriority;
     SDL_SetWindowAlwaysOnTop;
     SDL_SetWindowAspectRatio;
     SDL_SetWindowBordered;

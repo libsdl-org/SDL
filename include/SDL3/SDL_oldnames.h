@@ -644,6 +644,7 @@
 #define SDL_iPhoneSetEventPump SDL_SetiOSEventPump
 
 /* ##SDL_thread.h */
+#define SDL_SetThreadPriority SDL_SetCurrentThreadPriority
 #define SDL_TLSCleanup SDL_CleanupTLS
 #define SDL_TLSGet SDL_GetTLS
 #define SDL_TLSSet SDL_SetTLS
@@ -1281,6 +1282,7 @@
 #define SDL_iPhoneSetEventPump SDL_iPhoneSetEventPump_renamed_SDL_iOSSetEventPump
 
 /* ##SDL_thread.h */
+#define SDL_SetThreadPriority SDL_SetThreadPriority_renamed_SDL_SetCurrentThreadPriority
 #define SDL_TLSCleanup SDL_TLSCleanup_renamed_SDL_CleanupTLS
 #define SDL_TLSGet SDL_TLSGet_renamed_SDL_GetTLS
 #define SDL_TLSSet SDL_TLSSet_renamed_SDL_SetTLS

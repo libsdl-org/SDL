@@ -892,7 +892,7 @@ static int SDLCALL HotplugThread(void *data)
 {
     pa_operation *op;
 
-    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
+    SDL_SetCurrentThreadPriority(SDL_THREAD_PRIORITY_LOW);
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
     PULSEAUDIO_pa_context_set_subscribe_callback(pulseaudio_context, HotplugCallback, NULL);
 

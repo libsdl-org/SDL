@@ -66,7 +66,7 @@ ThreadFunc(void *data)
         SDL_Log("Thread '%s' is alive!\n", (char *)data);
 
         if (testprio) {
-            SDL_Log("SDL_SetThreadPriority(%s):%d\n", getprioritystr(prio), SDL_SetThreadPriority(prio));
+            SDL_Log("SDL_SetCurrentThreadPriority(%s):%d\n", getprioritystr(prio), SDL_SetCurrentThreadPriority(prio));
             if (++prio > SDL_THREAD_PRIORITY_TIME_CRITICAL) {
                 prio = SDL_THREAD_PRIORITY_LOW;
             }

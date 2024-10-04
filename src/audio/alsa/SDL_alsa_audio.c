@@ -823,7 +823,7 @@ static SDL_Thread *ALSA_hotplug_thread;
 
 static int SDLCALL ALSA_HotplugThread(void *arg)
 {
-    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
+    SDL_SetCurrentThreadPriority(SDL_THREAD_PRIORITY_LOW);
 
     while (!SDL_GetAtomicInt(&ALSA_hotplug_shutdown)) {
         // Block awhile before checking again, unless we're told to stop.
