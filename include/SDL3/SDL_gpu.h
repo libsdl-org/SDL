@@ -30,24 +30,24 @@
  *
  * A basic workflow might be something like this:
  *
- * The app creates a GPU device with SDL_GPUCreateDevice(), and assigns it to
- * a window with SDL_ClaimWindowForGPUDevice()--although strictly speaking you
+ * The app creates a GPU device with SDL_GPUCreateDevice, and assigns it to
+ * a window with SDL_ClaimWindowForGPUDevice--although strictly speaking you
  * can render offscreen entirely, perhaps for image processing, and not use a
  * window at all.
  *
  * Next the app prepares static data (things that are created once and used
  * over and over). For example:
  *
- * - Shaders (programs that run on the GPU): use SDL_CreateGPUShader().
+ * - Shaders (programs that run on the GPU): use SDL_CreateGPUShader.
  * - Vertex buffers (arrays of geometry data) and other data rendering will
- *   need: use SDL_UploadToGPUBuffer().
- * - Textures (images): use SDL_UploadToGPUTexture().
- * - Samplers (how textures should be read from): use SDL_CreateGPUSampler().
+ *   need: use SDL_UploadToGPUBuffer.
+ * - Textures (images): use SDL_UploadToGPUTexture.
+ * - Samplers (how textures should be read from): use SDL_CreateGPUSampler.
  * - Render pipelines (precalculated rendering state): use
- *   SDL_CreateGPUGraphicsPipeline()
+ *   SDL_CreateGPUGraphicsPipeline
  *
  * To render, the app creates one or more command buffers, with
- * SDL_AcquireGPUCommandBuffer(). Command buffers collect rendering
+ * SDL_AcquireGPUCommandBuffer. Command buffers collect rendering
  * instructions that will be submitted to the GPU in batch. Complex scenes can
  * use multiple command buffers, maybe configured across multiple threads in
  * parallel, as long as they are submitted in the correct order, but many apps
@@ -56,7 +56,7 @@
  * Rendering can happen to a texture (what other APIs call a "render target")
  * or it can happen to the swapchain texture (which is just a special texture
  * that represents a window's contents). The app can use
- * SDL_AcquireGPUSwapchainTexture() to render to the window.
+ * SDL_AcquireGPUSwapchainTexture to render to the window.
  *
  * Rendering actually happens in a Render Pass, which is encoded into a
  * command buffer. One can encode multiple render passes (or alternate between
@@ -66,7 +66,7 @@
  * simultaneously. If the set of textures being rendered to needs to change,
  * the Render Pass must be ended and a new one must be begun.
  *
- * The app calls SDL_BeginGPURenderPass(). Then it sets states it needs for
+ * The app calls SDL_BeginGPURenderPass. Then it sets states it needs for
  * each draw:
  *
  * - SDL_BindGPUGraphicsPipeline
@@ -83,25 +83,25 @@
  * - etc
  *
  * After all the drawing commands for a pass are complete, the app should call
- * SDL_EndGPURenderPass(). Once a render pass ends all render-related state is
+ * SDL_EndGPURenderPass. Once a render pass ends all render-related state is
  * reset.
  *
  * The app can begin new Render Passes and make new draws in the same command
  * buffer until the entire scene is rendered.
  *
  * Once all of the render commands for the scene are complete, the app calls
- * SDL_SubmitGPUCommandBuffer() to send it to the GPU for processing.
+ * SDL_SubmitGPUCommandBuffer to send it to the GPU for processing.
  *
  * If the app needs to read back data from texture or buffers, the API has an
  * efficient way of doing this, provided that the app is willing to tolerate
- * some latency. When the app uses SDL_DownloadFromGPUTexture() or
- * SDL_DownloadFromGPUBuffer(), submitting the command buffer with
- * SubmitGPUCommandBufferAndAcquireFence() will return a fence handle that the
+ * some latency. When the app uses SDL_DownloadFromGPUTexture or
+ * SDL_DownloadFromGPUBuffer, submitting the command buffer with
+ * SubmitGPUCommandBufferAndAcquireFence will return a fence handle that the
  * app can poll or wait on in a thread. Once the fence indicates that the
  * command buffer is done processing, it is safe to read the downloaded data.
- * Make sure to call SDL_ReleaseGPUFence() when done with the fence.
+ * Make sure to call SDL_ReleaseGPUFence when done with the fence.
  *
- * The API also has "compute" support. The app calls SDL_GPUBeginComputePass()
+ * The API also has "compute" support. The app calls SDL_GPUBeginComputePass
  * with compute-writeable textures and/or buffers, which can be written to in
  * a compute shader. Then it sets states it needs for the compute dispatches:
  *
@@ -121,16 +121,15 @@
  * creates the GPU device, the app lets the device know which shader formats
  * the app can provide. It will then select the appropriate backend depending
  * on the available shader formats and the backends available on the platform.
- * When creating shaders, the app must provide the correct shader for the
+ * When creating shaders, the app must provide the correct shader format for the
  * selected backend. If you would like to learn more about why the API works
  * this way, there is a detailed
  * [blog post](https://moonside.games/posts/layers-all-the-way-down/)
  * explaining this situation.
  *
  * It is optimal for apps to pre-compile the shader formats they might use,
- * but for ease of use SDL provides a satellite single-header library for
- * performing runtime shader cross-compilation:
- * https://github.com/libsdl-org/SDL_gpu_shadercross
+ * but for ease of use SDL provides a [satellite single-header library](https://github.com/libsdl-org/SDL_gpu_shadercross) for
+ * performing runtime shader cross-compilation.
  *
  * This is an extremely quick overview that leaves out several important
  * details. Already, though, one can see that GPU programming can be quite
@@ -145,8 +144,8 @@
  * itself by querying feature support. If you need cutting-edge features with
  * limited hardware support, this API is probably not for you.
  *
- * Examples demonstrating proper usage of this API can be found here:
- * https://github.com/TheSpydog/SDL_gpu_examples
+ * Examples demonstrating proper usage of this API can be found [here]
+ * (https://github.com/TheSpydog/SDL_gpu_examples).
  */
 
 #ifndef SDL_gpu_h_
