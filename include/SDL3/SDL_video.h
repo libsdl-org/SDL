@@ -241,8 +241,8 @@ typedef int SDL_EGLint;
 /**
  * EGL platform attribute initialization callback.
  *
- * This is called when SDL is attempting to create an EGL context, to let
- * the app add extra attributes to its eglGetPlatformDisplay() call.
+ * This is called when SDL is attempting to create an EGL context, to let the
+ * app add extra attributes to its eglGetPlatformDisplay() call.
  *
  * The callback should return a pointer to an EGL attribute array terminated
  * with `EGL_NONE`. If this function returns NULL, the SDL_CreateWindow
@@ -266,8 +266,8 @@ typedef SDL_EGLAttrib *(SDLCALL *SDL_EGLAttribArrayCallback)(void *userdata);
 /**
  * EGL surface/context attribute initialization callback types.
  *
- * This is called when SDL is attempting to create an EGL surface, to let
- * the app add extra attributes to its eglCreateWindowSurface() or
+ * This is called when SDL is attempting to create an EGL surface, to let the
+ * app add extra attributes to its eglCreateWindowSurface() or
  * eglCreateContext calls.
  *
  * For convenience, the EGLDisplay and EGLConfig to use are provided to the
