@@ -581,7 +581,7 @@ struct D3D12Renderer
 #endif
     ID3D12Debug *d3d12Debug;
     bool supportsTearing;
-    void *d3d12_dll;
+    SDL_SharedObject *d3d12_dll;
     ID3D12Device *device;
     PFN_D3D12_SERIALIZE_ROOT_SIGNATURE D3D12SerializeRootSignature_func;
     const char *semantic;
