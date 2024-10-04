@@ -147,7 +147,8 @@
  * limited hardware support, this API is probably not for you.
  *
  * Examples demonstrating proper usage of this API can be found
- * [here](https://github.com/TheSpydog/SDL_gpu_examples).
+ * [here](https://github.com/TheSpydog/SDL_gpu_examples)
+ * .
  */
 
 #ifndef SDL_gpu_h_
