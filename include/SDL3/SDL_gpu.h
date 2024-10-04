@@ -1280,8 +1280,8 @@ typedef struct SDL_GPUColorTargetBlendState
     SDL_GPUColorComponentFlags color_write_mask;  /**< A bitmask specifying which of the RGBA components are enabled for writing. Writes to all channels if enable_color_write_mask is false. */
     bool enable_blend;                        /**< Whether blending is enabled for the color target. */
     bool enable_color_write_mask;             /**< Whether the color write mask is enabled. */
+    Uint8 padding1;
     Uint8 padding2;
-    Uint8 padding3;
 } SDL_GPUColorTargetBlendState;
 
 
