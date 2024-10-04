@@ -30,7 +30,7 @@
  *
  * These strings are maintained per-thread, and apps are welcome to set their
  * own errors, which is popular when building libraries on top of SDL for
- * other apps to consume. These strings are set by calling SDL_SetError.
+ * other apps to consume. These strings are set by calling SDL_SetError().
  *
  * A common usage pattern is to have a function that returns true for success
  * and false for failure, and do this when something fails:

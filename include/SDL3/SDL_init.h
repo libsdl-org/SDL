@@ -38,7 +38,7 @@
  * make sure that the display's resolution is back to what the user expects if
  * you had previously changed it for your game.
  *
- * SDL3 apps are strongly encouraged to call SDL_SetAppMetadata at startup to
+ * SDL3 apps are strongly encouraged to call SDL_SetAppMetadata() at startup to
  * fill in details about the program. This is completely optional, but it
  * helps in small ways (we can provide an About dialog box for the macOS menu,
  * we can name the app in the system's audio mixer, etc). Those that want to
