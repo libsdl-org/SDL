@@ -351,6 +351,164 @@ SDL_IOStream *SDL_IOFromHandle(HANDLE handle, const char *mode, bool autoclose)
 }
 #endif // defined(SDL_PLATFORM_WINDOWS)
 
+#if !defined(SDL_PLATFORM_WINDOWS)
+
+// Functions to read/write file descriptors. Not used for windows.
+
+typedef struct IOStreamFDData
+{
+    int fd;
+    bool autoclose;
+    bool regular_file;
+} IOStreamFDData;
+
+static int SDL_fdatasync(int fd)
+{
+    int result = 0;
+
+#if defined(SDL_PLATFORM_APPLE)  // Apple doesn't have fdatasync (rather, the symbol exists as an incompatible system call).
+    result = fcntl(fd, F_FULLFSYNC);
+#elif defined(SDL_PLATFORM_HAIKU)
+    result = fsync(fd);
+#elif defined(_POSIX_SYNCHRONIZED_IO)  // POSIX defines this if fdatasync() exists, so we don't need a CMake test.
+#ifndef SDL_PLATFORM_RISCOS  // !!! FIXME: however, RISCOS doesn't have the symbol...maybe we need to link to an extra library or something?
+    result = fdatasync(fd);
+#endif
+#endif
+    return result;
+}
+
+static Sint64 SDLCALL fd_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
+{
+    IOStreamFDData *iodata = (IOStreamFDData *) userdata;
+    int fdwhence;
+
+    switch (whence) {
+    case SDL_IO_SEEK_SET:
+        fdwhence = SEEK_SET;
+        break;
+    case SDL_IO_SEEK_CUR:
+        fdwhence = SEEK_CUR;
+        break;
+    case SDL_IO_SEEK_END:
+        fdwhence = SEEK_END;
+        break;
+    default:
+        SDL_SetError("Unknown value for 'whence'");
+        return -1;
+    }
+
+    off_t result = lseek(iodata->fd, (off_t)offset, fdwhence);
+    if (result < 0) {
+        SDL_SetError("Couldn't get stream offset: %s", strerror(errno));
+    }
+    return result;
+}
+
+static size_t SDLCALL fd_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
+{
+    IOStreamFDData *iodata = (IOStreamFDData *) userdata;
+    ssize_t bytes;
+    do {
+        bytes = read(iodata->fd, ptr, size);
+    } while (bytes < 0 && errno == EINTR);
+
+    if (bytes < 0) {
+        if (errno == EAGAIN) {
+            *status = SDL_IO_STATUS_NOT_READY;
+        } else {
+            SDL_SetError("Error reading from datastream: %s", strerror(errno));
+        }
+        bytes = 0;
+    }
+    return (size_t)bytes;
+}
+
+static size_t SDLCALL fd_write(void *userdata, const void *ptr, size_t size, SDL_IOStatus *status)
+{
+    IOStreamFDData *iodata = (IOStreamFDData *) userdata;
+    ssize_t bytes;
+    do {
+        bytes = write(iodata->fd, ptr, size);
+    } while (bytes < 0 && errno == EINTR);
+
+    if (bytes < 0) {
+        if (errno == EAGAIN) {
+            *status = SDL_IO_STATUS_NOT_READY;
+        } else {
+            SDL_SetError("Error writing to datastream: %s", strerror(errno));
+        }
+        bytes = 0;
+    }
+    return (size_t)bytes;
+}
+
+static bool SDLCALL fd_flush(void *userdata, SDL_IOStatus *status)
+{
+    IOStreamFDData *iodata = (IOStreamFDData *) userdata;
+    int result;
+    do {
+        result = SDL_fdatasync(iodata->fd);
+    } while (result < 0 && errno == EINTR);
+
+    if (result < 0) {
+        return SDL_SetError("Error flushing datastream: %s", strerror(errno));
+    }
+    return true;
+}
+
+static bool SDLCALL fd_close(void *userdata)
+{
+    IOStreamFDData *iodata = (IOStreamFDData *) userdata;
+    bool status = true;
+    if (iodata->autoclose) {
+        if (close(iodata->fd) < 0) {
+            status = SDL_SetError("Error closing datastream: %s", strerror(errno));
+        }
+    }
+    SDL_free(iodata);
+    return status;
+}
+
+SDL_IOStream *SDL_IOFromFD(int fd, bool autoclose)
+{
+    IOStreamFDData *iodata = (IOStreamFDData *) SDL_calloc(1, sizeof (*iodata));
+    if (!iodata) {
+        if (autoclose) {
+           close(fd);
+        }
+        return NULL;
+    }
+
+    SDL_IOStreamInterface iface;
+    SDL_INIT_INTERFACE(&iface);
+    // There's no fd_size because SDL_GetIOSize emulates it the same way we'd do it for fd anyhow.
+    iface.seek = fd_seek;
+    iface.read = fd_read;
+    iface.write = fd_write;
+    iface.flush = fd_flush;
+    iface.close = fd_close;
+
+    iodata->fd = fd;
+    iodata->autoclose = autoclose;
+
+    struct stat st;
+    iodata->regular_file = ((fstat(fd, &st) == 0) && S_ISREG(st.st_mode));
+
+    SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
+    if (!iostr) {
+        iface.close(iodata);
+    } else {
+        const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
+        if (props) {
+            SDL_SetNumberProperty(props, SDL_PROP_IOSTREAM_FILE_DESCRIPTOR_NUMBER, fd);
+        }
+    }
+
+    return iostr;
+}
+#endif // !defined(SDL_PLATFORM_WINDOWS)
+
 #if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINDOWS)
 
 // Functions to read/write stdio file pointers. Not used for windows.
@@ -482,26 +640,15 @@ static bool SDLCALL stdio_flush(void *userdata, SDL_IOStatus *status)
         }
     }
 
-    #if defined(SDL_PLATFORM_APPLE)  // Apple doesn't have fdatasync (rather, the symbol exists as an incompatible system call).
-    if (fcntl(fileno(iodata->fp), F_FULLFSYNC) == -1) {
+    int result;
+    int fd = fileno(iodata->fp);
+    do {
+        result = SDL_fdatasync(fd);
+    } while (result < 0 && errno == EINTR);
+
+    if (result < 0) {
         return SDL_SetError("Error flushing datastream: %s", strerror(errno));
     }
-    #elif defined(_POSIX_SYNCHRONIZED_IO)  // POSIX defines this if fdatasync() exists, so we don't need a CMake test.
-        #ifndef SDL_PLATFORM_RISCOS  // !!! FIXME: however, RISCOS doesn't have the symbol...maybe we need to link to an extra library or something?
-        if (iodata->regular_file) {
-            int sync_result;
-#ifdef SDL_PLATFORM_HAIKU
-            sync_result = fsync(fileno(iodata->fp));
-#else
-            sync_result = fdatasync(fileno(iodata->fp));
-#endif
-            if (sync_result == -1) {
-                return SDL_SetError("Error flushing datastream: %s", strerror(errno));
-            }
-        }
-        #endif
-    #endif
-
     return true;
 }
 
@@ -511,7 +658,7 @@ static bool SDLCALL stdio_close(void *userdata)
     bool status = true;
     if (iodata->autoclose) {
         if (fclose(iodata->fp) != 0) {
-            status = SDL_SetError("Error writing to datastream: %s", strerror(errno));
+            status = SDL_SetError("Error closing datastream: %s", strerror(errno));
         }
     }
     SDL_free(iodata);

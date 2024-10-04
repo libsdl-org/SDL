@@ -57,12 +57,7 @@ static bool SetupStream(SDL_Process *process, int fd, const char *mode, const ch
     // Set the file descriptor to non-blocking mode
     fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
 
-    FILE *fp = fdopen(fd, mode);
-    if (!fp) {
-        return false;
-    }
-
-    SDL_IOStream *io = SDL_IOFromFP(fp, true);
+    SDL_IOStream *io = SDL_IOFromFD(fd, true);
     if (!io) {
         return false;
     }
