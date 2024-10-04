@@ -115,7 +115,7 @@
  * executed on the GPU. Each backend (Vulkan, Metal, D3D12) requires a different shader format.
  * When the app creates the GPU device, the app lets the device know which shader formats the app can provide.
  * It will then select the appropriate backend depending on the available shader formats and the backends available on the platform.
- * When creating shaders, the client must provide the correct shader for the selected backend.
+ * When creating shaders, the app must provide the correct shader for the selected backend.
  * If you would like to learn more about why the API works this way, there is a
  * detailed [blog post](https://moonside.games/posts/layers-all-the-way-down/)
  * explaining this situation. In the future, SDL may provide a universal shader format.
