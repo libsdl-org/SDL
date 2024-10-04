@@ -30,9 +30,9 @@
  *
  * A basic workflow might be something like this:
  *
- * The app creates a GPU device with SDL_GPUCreateDevice(), and assigns it to a
- * window with SDL_ClaimWindowForGPUDevice()--although strictly speaking you can
- * render offscreen entirely, perhaps for image processing, and not use a
+ * The app creates a GPU device with SDL_GPUCreateDevice(), and assigns it to
+ * a window with SDL_ClaimWindowForGPUDevice()--although strictly speaking you
+ * can render offscreen entirely, perhaps for image processing, and not use a
  * window at all.
  *
  * Next the app prepares static data (things that are created once and used
@@ -47,11 +47,11 @@
  *   SDL_CreateGPUGraphicsPipeline()
  *
  * To render, the app creates one or more command buffers, with
- * SDL_AcquireGPUCommandBuffer(). Command buffers collect rendering instructions
- * that will be submitted to the GPU in batch. Complex scenes can use multiple
- * command buffers, maybe configured across multiple threads in parallel, as
- * long as they are submitted in the correct order, but many apps will just
- * need one command buffer per frame.
+ * SDL_AcquireGPUCommandBuffer(). Command buffers collect rendering
+ * instructions that will be submitted to the GPU in batch. Complex scenes can
+ * use multiple command buffers, maybe configured across multiple threads in
+ * parallel, as long as they are submitted in the correct order, but many apps
+ * will just need one command buffer per frame.
  *
  * Rendering can happen to a texture (what other APIs call a "render target")
  * or it can happen to the swapchain texture (which is just a special texture
@@ -66,8 +66,8 @@
  * simultaneously. If the set of textures being rendered to needs to change,
  * the Render Pass must be ended and a new one must be begun.
  *
- * The app calls SDL_BeginGPURenderPass(). Then it sets states it needs for each
- * draw:
+ * The app calls SDL_BeginGPURenderPass(). Then it sets states it needs for
+ * each draw:
  *
  * - SDL_BindGPUGraphicsPipeline()
  * - SDL_SetGPUViewport()
