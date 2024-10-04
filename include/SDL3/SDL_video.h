@@ -239,12 +239,60 @@ typedef intptr_t SDL_EGLAttrib;
 typedef int SDL_EGLint;
 
 /**
- * EGL attribute initialization callback types.
+ * EGL platform attribute initialization callback.
+ *
+ * This is called when SDL is attempting to create an EGL context, to let
+ * the app add extra attributes to its eglGetPlatformDisplay() call.
+ *
+ * The callback should return a pointer to an EGL attribute array terminated
+ * with `EGL_NONE`. If this function returns NULL, the SDL_CreateWindow
+ * process will fail gracefully.
+ *
+ * The returned pointer should be allocated with SDL_malloc() and will be
+ * passed to SDL_free().
+ *
+ * The arrays returned by each callback will be appended to the existing
+ * attribute arrays defined by SDL.
+ *
+ * \param userdata an app-controlled pointer that is passed to the callback.
+ * \returns a newly-allocated array of attributes, terminated with `EGL_NONE`.
  *
  * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_EGL_SetAttributeCallbacks
  */
 typedef SDL_EGLAttrib *(SDLCALL *SDL_EGLAttribArrayCallback)(void *userdata);
-typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void *userdata);
+
+/**
+ * EGL surface/context attribute initialization callback types.
+ *
+ * This is called when SDL is attempting to create an EGL surface, to let
+ * the app add extra attributes to its eglCreateWindowSurface() or
+ * eglCreateContext calls.
+ *
+ * For convenience, the EGLDisplay and EGLConfig to use are provided to the
+ * callback.
+ *
+ * The callback should return a pointer to an EGL attribute array terminated
+ * with `EGL_NONE`. If this function returns NULL, the SDL_CreateWindow
+ * process will fail gracefully.
+ *
+ * The returned pointer should be allocated with SDL_malloc() and will be
+ * passed to SDL_free().
+ *
+ * The arrays returned by each callback will be appended to the existing
+ * attribute arrays defined by SDL.
+ *
+ * \param userdata an app-controlled pointer that is passed to the callback.
+ * \param display the EGL display to be used.
+ * \param config the EGL config to be used.
+ * \returns a newly-allocated array of attributes, terminated with `EGL_NONE`.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_EGL_SetAttributeCallbacks
+ */
+typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void *userdata, SDL_EGLDisplay display, SDL_EGLConfig config);
 
 /**
  * An enumeration of OpenGL configuration attributes.
@@ -2742,28 +2790,23 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowSurface(SDL_Window *
  * Sets the callbacks for defining custom EGLAttrib arrays for EGL
  * initialization.
  *
- * Each callback should return a pointer to an EGL attribute array terminated
- * with EGL_NONE. Callbacks may return NULL pointers to signal an error, which
- * will cause the SDL_CreateWindow process to fail gracefully.
- *
- * The arrays returned by each callback will be appended to the existing
- * attribute arrays defined by SDL.
+ * Callbacks that aren't needed can be set to NULL.
  *
  * NOTE: These callback pointers will be reset after SDL_GL_ResetAttributes.
  *
  * \param platformAttribCallback callback for attributes to pass to
- *                               eglGetPlatformDisplay.
+ *                               eglGetPlatformDisplay. May be NULL.
  * \param surfaceAttribCallback callback for attributes to pass to
- *                              eglCreateSurface.
+ *                              eglCreateSurface. May be NULL.
  * \param contextAttribCallback callback for attributes to pass to
- *                              eglCreateContext.
+ *                              eglCreateContext. May be NULL.
  * \param userdata a pointer that is passed to the callbacks.
  *
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_EGL_SetAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
-                                                              SDL_EGLIntArrayCallback surfaceAttribCallback,
-                                                              SDL_EGLIntArrayCallback contextAttribCallback, void *userdata);
+                                                               SDL_EGLIntArrayCallback surfaceAttribCallback,
+                                                               SDL_EGLIntArrayCallback contextAttribCallback, void *userdata);
 
 /**
  * Set the swap interval for the current OpenGL context.
