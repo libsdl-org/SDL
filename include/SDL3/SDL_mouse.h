@@ -246,10 +246,10 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *
  * Retrieve the relative state of the mouse.
  *
  * The current button state is returned as a button bitmask, which can be
- * tested using the `SDL_BUTTON_MASK(X)` macros (where `X` is generally 1 for the
- * left, 2 for middle, 3 for the right button), and `x` and `y` are set to the
- * mouse deltas since the last call to SDL_GetRelativeMouseState() or since
- * event initialization. You can pass NULL for either `x` or `y`.
+ * tested using the `SDL_BUTTON_MASK(X)` macros (where `X` is generally 1 for
+ * the left, 2 for middle, 3 for the right button), and `x` and `y` are set to
+ * the mouse deltas since the last call to SDL_GetRelativeMouseState() or
+ * since event initialization. You can pass NULL for either `x` or `y`.
  *
  * \param x a pointer filled with the last recorded x coordinate of the mouse.
  * \param y a pointer filled with the last recorded y coordinate of the mouse.
