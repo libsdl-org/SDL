@@ -220,10 +220,10 @@ static void WIN_CheckWParamMouseButton(Uint64 timestamp, bool bwParamMousePresse
         }
     }
 
-    if (data->focus_click_pending & SDL_BUTTON(button)) {
+    if (data->focus_click_pending & SDL_BUTTON_MASK(button)) {
         // Ignore the button click for activation
         if (!bwParamMousePressed) {
-            data->focus_click_pending &= ~SDL_BUTTON(button);
+            data->focus_click_pending &= ~SDL_BUTTON_MASK(button);
             WIN_UpdateClipCursor(data->window);
         }
         if (WIN_ShouldIgnoreFocusClick(data)) {
@@ -231,9 +231,9 @@ static void WIN_CheckWParamMouseButton(Uint64 timestamp, bool bwParamMousePresse
         }
     }
 
-    if (bwParamMousePressed && !(mouseFlags & SDL_BUTTON(button))) {
+    if (bwParamMousePressed && !(mouseFlags & SDL_BUTTON_MASK(button))) {
         SDL_SendMouseButton(timestamp, data->window, mouseID, button, true);
-    } else if (!bwParamMousePressed && (mouseFlags & SDL_BUTTON(button))) {
+    } else if (!bwParamMousePressed && (mouseFlags & SDL_BUTTON_MASK(button))) {
         SDL_SendMouseButton(timestamp, data->window, mouseID, button, false);
     }
 }
@@ -651,10 +651,10 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                     }
                 }
 
-                if (windowdata->focus_click_pending & SDL_BUTTON(button)) {
+                if (windowdata->focus_click_pending & SDL_BUTTON_MASK(button)) {
                     // Ignore the button click for activation
                     if (!down) {
-                        windowdata->focus_click_pending &= ~SDL_BUTTON(button);
+                        windowdata->focus_click_pending &= ~SDL_BUTTON_MASK(button);
                         WIN_UpdateClipCursor(window);
                     }
                     if (WIN_ShouldIgnoreFocusClick(windowdata)) {

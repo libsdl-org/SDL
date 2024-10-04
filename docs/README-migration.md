@@ -1174,6 +1174,7 @@ The following functions have been removed:
 * SDL_GetRelativeMouseMode() - replaced with SDL_GetWindowRelativeMouseMode()
 
 The following symbols have been renamed:
+* SDL_BUTTON => SDL_BUTTON_MASK
 * SDL_NUM_SYSTEM_CURSORS => SDL_SYSTEM_CURSOR_COUNT
 * SDL_SYSTEM_CURSOR_ARROW => SDL_SYSTEM_CURSOR_DEFAULT
 * SDL_SYSTEM_CURSOR_HAND => SDL_SYSTEM_CURSOR_POINTER

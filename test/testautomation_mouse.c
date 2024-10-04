@@ -17,11 +17,11 @@
 static int mouseStateCheck(Uint32 state)
 {
     return (state == 0) ||
-           (state == SDL_BUTTON(SDL_BUTTON_LEFT)) ||
-           (state == SDL_BUTTON(SDL_BUTTON_MIDDLE)) ||
-           (state == SDL_BUTTON(SDL_BUTTON_RIGHT)) ||
-           (state == SDL_BUTTON(SDL_BUTTON_X1)) ||
-           (state == SDL_BUTTON(SDL_BUTTON_X2));
+           (state == SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) ||
+           (state == SDL_BUTTON_MASK(SDL_BUTTON_MIDDLE)) ||
+           (state == SDL_BUTTON_MASK(SDL_BUTTON_RIGHT)) ||
+           (state == SDL_BUTTON_MASK(SDL_BUTTON_X1)) ||
+           (state == SDL_BUTTON_MASK(SDL_BUTTON_X2));
 }
 
 /**

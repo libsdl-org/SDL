@@ -1018,12 +1018,12 @@ static void SDLTest_PrintButtonMask(char *text, size_t maxlen, SDL_MouseButtonFl
     int i;
     int count = 0;
     for (i = 1; i <= 32; ++i) {
-        const Uint32 flag = SDL_BUTTON(i);
+        const Uint32 flag = SDL_BUTTON_MASK(i);
         if ((flags & flag) == flag) {
             if (count > 0) {
                 SDL_snprintfcat(text, maxlen, " | ");
             }
-            SDL_snprintfcat(text, maxlen, "SDL_BUTTON(%d)", i);
+            SDL_snprintfcat(text, maxlen, "SDL_BUTTON_MASK(%d)", i);
             ++count;
         }
     }

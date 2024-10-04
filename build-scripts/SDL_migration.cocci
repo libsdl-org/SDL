@@ -3710,3 +3710,7 @@ identifier func =~ "^(SDL_AddEventWatch|SDL_AddHintCallback|SDL_AddSurfaceAltern
 - SDL_SetThreadPriority
 + SDL_SetCurrentThreadPriority
   (...)
+@@
+@@
+- SDL_BUTTON
++ SDL_BUTTON_MASK

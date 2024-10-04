@@ -740,9 +740,9 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
          * long as any button is still down, the capture remains).
          */
         if (state) { // update our mask of currently-pressed buttons
-            input->buttons_pressed |= SDL_BUTTON(sdl_button);
+            input->buttons_pressed |= SDL_BUTTON_MASK(sdl_button);
         } else {
-            input->buttons_pressed &= ~(SDL_BUTTON(sdl_button));
+            input->buttons_pressed &= ~(SDL_BUTTON_MASK(sdl_button));
         }
 
         // Don't modify the capture flag in relative mode.

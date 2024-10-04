@@ -485,7 +485,7 @@ void SDL_ResetMouse(void)
     int i;
 
     for (i = 1; i <= sizeof(buttonState)*8; ++i) {
-        if (buttonState & SDL_BUTTON(i)) {
+        if (buttonState & SDL_BUTTON_MASK(i)) {
             SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, i, false);
         }
     }
@@ -876,13 +876,13 @@ static SDL_MouseInputSource *GetMouseInputSource(SDL_Mouse *mouse, SDL_MouseID m
         }
     }
 
-    if (!down && (!match || !(match->buttonstate & SDL_BUTTON(button)))) {
+    if (!down && (!match || !(match->buttonstate & SDL_BUTTON_MASK(button)))) {
         /* This might be a button release from a transition between mouse messages and raw input.
          * See if there's another mouse source that already has that button down and use that.
          */
         for (i = 0; i < mouse->num_sources; ++i) {
             source = &mouse->sources[i];
-            if ((source->buttonstate & SDL_BUTTON(button))) {
+            if ((source->buttonstate & SDL_BUTTON_MASK(button))) {
                 match = source;
                 break;
             }
@@ -966,10 +966,10 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
     // Figure out which event to perform
     if (down) {
         type = SDL_EVENT_MOUSE_BUTTON_DOWN;
-        buttonstate |= SDL_BUTTON(button);
+        buttonstate |= SDL_BUTTON_MASK(button);
     } else {
         type = SDL_EVENT_MOUSE_BUTTON_UP;
-        buttonstate &= ~SDL_BUTTON(button);
+        buttonstate &= ~SDL_BUTTON_MASK(button);
     }
 
     // We do this after calculating buttonstate so button presses gain focus

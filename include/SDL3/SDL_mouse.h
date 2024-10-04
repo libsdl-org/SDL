@@ -124,12 +124,12 @@ typedef Uint32 SDL_MouseButtonFlags;
 #define SDL_BUTTON_X1       4
 #define SDL_BUTTON_X2       5
 
-#define SDL_BUTTON(X)       (1u << ((X)-1))
-#define SDL_BUTTON_LMASK    SDL_BUTTON(SDL_BUTTON_LEFT)
-#define SDL_BUTTON_MMASK    SDL_BUTTON(SDL_BUTTON_MIDDLE)
-#define SDL_BUTTON_RMASK    SDL_BUTTON(SDL_BUTTON_RIGHT)
-#define SDL_BUTTON_X1MASK   SDL_BUTTON(SDL_BUTTON_X1)
-#define SDL_BUTTON_X2MASK   SDL_BUTTON(SDL_BUTTON_X2)
+#define SDL_BUTTON_MASK(X)  (1u << ((X)-1))
+#define SDL_BUTTON_LMASK    SDL_BUTTON_MASK(SDL_BUTTON_LEFT)
+#define SDL_BUTTON_MMASK    SDL_BUTTON_MASK(SDL_BUTTON_MIDDLE)
+#define SDL_BUTTON_RMASK    SDL_BUTTON_MASK(SDL_BUTTON_RIGHT)
+#define SDL_BUTTON_X1MASK   SDL_BUTTON_MASK(SDL_BUTTON_X1)
+#define SDL_BUTTON_X2MASK   SDL_BUTTON_MASK(SDL_BUTTON_X2)
 
 
 /* Function prototypes */
@@ -194,7 +194,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  * Retrieve the current state of the mouse.
  *
  * The current button state is returned as a button bitmask, which can be
- * tested using the SDL_BUTTON(X) macro (where `X` is generally 1 for the
+ * tested using the SDL_BUTTON_MASK(X) macro (where `X` is generally 1 for the
  * left, 2 for middle, 3 for the right button), and `x` and `y` are set to the
  * mouse cursor position relative to the focus window. You can pass NULL for
  * either `x` or `y`.
@@ -233,7 +233,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, flo
  * \param y filled in with the current Y coord relative to the desktop; can be
  *          NULL.
  * \returns the current button state as a bitmask which can be tested using
- *          the SDL_BUTTON(X) macros.
+ *          the SDL_BUTTON_MASK(X) macros.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -246,7 +246,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *
  * Retrieve the relative state of the mouse.
  *
  * The current button state is returned as a button bitmask, which can be
- * tested using the `SDL_BUTTON(X)` macros (where `X` is generally 1 for the
+ * tested using the `SDL_BUTTON_MASK(X)` macros (where `X` is generally 1 for the
  * left, 2 for middle, 3 for the right button), and `x` and `y` are set to the
  * mouse deltas since the last call to SDL_GetRelativeMouseState() or since
  * event initialization. You can pass NULL for either `x` or `y`.
