@@ -54,16 +54,18 @@
  * apps will just need one command buffer per frame.
  *
  * Rendering can happen to a texture (what other APIs call a "render target")
- * or it can happen to the swapchain (which is just a special texture that
- * represents a window's contents).
+ * or it can happen to the swapchain texture (which is just a special texture that
+ * represents a window's contents). The app can use SDL_AcquireGPUSwapchainTexture()
+ * to render to the window.
  *
  * Rendering actually happens in a Render Pass, which is encoded into a
  * command buffer. One can encode multiple render passes (or alternate
  * between render and compute passes) in a single command buffer, but many
  * apps might simply need a single render pass in a single command buffer.
+ * Render Passes can render to up to four color textures and one depth texture simultaneously.
+ * If the set of textures being rendered to needs to change, the Render Pass must be ended and a new one must be begun.
  *
- * The app calls SDL_BeginGPURenderPass(). If it isn't rendering to a texture,
- * the app can use SDL_AcquireGPUSwapchainTexture() to render to the window.
+ * The app calls SDL_BeginGPURenderPass().
  * Then it sets states it needs for each draw:
  *
  * - SDL_BindGPUGraphicsPipeline
@@ -79,12 +81,14 @@
  * - SDL_DrawGPUIndexedPrimitivesIndirect
  * - etc
  *
- * It can then set new states and make new draws in the same command buffer,
- * until the whole scene is rendered.
+ * After all the drawing commands for a pass are complete, the app should call
+ * SDL_EndGPURenderPass(). Once a render pass ends all render-related state is reset.
  *
- * After all the drawing commands are complete, the app should call
- * SDL_EndGPURenderPass(), then SDL_SubmitGPUCommandBuffer() to send
- * it to the GPU for processing.
+ * The app can begin new Render Passes and make new draws in the same command buffer
+ * until the entire scene is rendered.
+ *
+ * Once all of the render commands for the scene are complete,
+ * the app calls SDL_SubmitGPUCommandBuffer() to send it to the GPU for processing.
  *
  * If the app needs to read back data from texture or buffers, the API
  * has an efficient way of doing this, provided that the app is willing to tolerate some latency.
@@ -106,6 +110,19 @@
  * - SDL_DispatchGPUCompute
  *
  * For advanced users, this opens up powerful GPU-driven workflows.
+ *
+ * Graphics and compute pipelines require the use of shaders, which as mentioned above are small programs
+ * executed on the GPU. Each backend (Vulkan, Metal, D3D12) requires a different shader format.
+ * When the app creates the GPU device, the app lets the device know which shader formats the app can provide.
+ * It will then select the appropriate backend depending on the available shader formats and the backends available on the platform.
+ * When creating shaders, the client must provide the correct shader for the selected backend.
+ * If you would like to learn more about why the API works this way, there is a
+ * detailed [blog post](https://moonside.games/posts/layers-all-the-way-down/)
+ * explaining this situation. In the future, SDL may provide a universal shader format.
+ *
+ * It is optimal for apps to pre-compile the shader formats they might use, but for ease of use
+ * SDL provides a satellite single-header library for performing runtime shader cross-compilation:
+ * https://github.com/libsdl-org/SDL_gpu_shadercross
  *
  * This is an extremely quick overview that leaves out several important
  * details. Already, though, one can see that GPU programming can be quite
