@@ -32,14 +32,24 @@ endmacro()
 set(SDL3_FOUND TRUE)
 
 macro(_check_target_is_simulator)
-    include(CheckCSourceCompiles)
-    check_c_source_compiles([===[
+    set(src [===[
     #include <TargetConditionals.h>
-    #if defined(TARGET_OS_SIMULATOR)
+    #if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
     int target_is_simulator;
     #endif
     int main(int argc, char *argv[]) { return target_is_simulator; }
-    ]===] SDL_TARGET_IS_SIMULATOR)
+    ]===])
+    if(CMAKE_C_COMPILER)
+        include(CheckCSourceCompiles)
+        check_c_source_compiles("${src}" SDL_TARGET_IS_SIMULATOR)
+    elseif(CMAKE_CXX_COMPILER)
+        include(CheckCXXSourceCompiles)
+        check_cxx_source_compiles("${src}" SDL_TARGET_IS_SIMULATOR)
+    else()
+        enable_language(C)
+        include(CheckCSourceCompiles)
+        check_c_source_compiles("${src}" SDL_TARGET_IS_SIMULATOR)
+    endif()
 endmacro()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
@@ -59,7 +69,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "tvOS")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(_xcfw_target_subdir "macos-arm64_x86_64")
 else()
-    message(WARNING "Unsupported Apple platform (${CMAKE_SYSTEM_NAME}) and broken sdl3-config-version.cmake")
+    message(WARNING "Unsupported Apple platform (${CMAKE_SYSTEM_NAME}) and broken SDL3ConfigVersion.cmake")
     set(SDL3_FOUND FALSE)
     return()
 endif()
@@ -89,7 +99,9 @@ set(SDL3_Headers_FOUND TRUE)
 
 if(NOT TARGET SDL3::SDL3-shared)
     add_library(SDL3::SDL3-shared SHARED IMPORTED)
-    if(CMAKE_VERSION GREATER_EQUAL "3.28")
+    # CMake does not automatically add RPATHS when using xcframeworks
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/25998
+    if(0)  # if(CMAKE_VERSION GREATER_EQUAL "3.28")
         set_target_properties(SDL3::SDL3-shared
             PROPERTIES
                 FRAMEWORK "TRUE"

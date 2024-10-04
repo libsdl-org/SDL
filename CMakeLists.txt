@@ -1415,13 +1415,20 @@ if(ANDROID)
         set(javadoc_index_html "${javadocdir}/index.html")
         add_custom_command(
           OUTPUT "${javadoc_index_html}"
-          COMMAND ${CMAKE_COMMAND} -E rm -rf "${javadocdir}"
+          COMMAND ${CMAKE_COMMAND} -E rm -rf "${javadocdir}" "${javadocjar}"
           COMMAND ${Java_JAVADOC_EXECUTABLE} -encoding utf8 -d "${javadocdir}"
             -classpath "${path_android_jar}"
             -author -use -version ${SDL_JAVA_SOURCES}
           DEPENDS ${SDL_JAVA_SOURCES} "${path_android_jar}"
         )
-        add_custom_target(SDL3-javadoc ALL DEPENDS "${javadoc_index_html}")
+        add_custom_command(
+          OUTPUT "${javadocjar}"
+          COMMAND ${Java_JAR_EXECUTABLE} -c -f "${javadocjar}"
+            -C "${javadocdir}" *
+          WORKING_DIRECTORY "${javadocdir}"
+          DEPENDS ${javadoc_index_html}
+        )
+        add_custom_target(SDL3-javadoc ALL DEPENDS "${javadoc_index_html}" "${javadocjar}")
         set_property(TARGET SDL3-javadoc PROPERTY OUTPUT_DIR "${javadocdir}")
       endif()
     endif()
@@ -3044,21 +3051,17 @@ foreach(_hdr IN LISTS SDL3_INCLUDE_FILES)
   endif()
 endforeach()
 
-set(SDL_REVISION "" CACHE STRING "Custom SDL revision (overrides SDL_REVISION_SUFFIX)")
-if(NOT SDL_REVISION)
-  set(SDL_REVISION_SUFFIX "" CACHE STRING "Suffix for the SDL revision")
-  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt")
-    # If VERSION.txt exists, it contains the SDL version
-    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt" SDL_REVISION_CENTER)
-    string(STRIP "${SDL_REVISION_CENTER}" SDL_REVISION_CENTER)
+# If REVISION.txt exists, then we are building from a SDL release.
+# SDL_revision.h(.cmake) in source releases have SDL_REVISION baked into them.
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/REVISION.txt")
+  set(SDL_REVISION "" CACHE STRING "Custom SDL revision")
+  if(SDL_REVISION)
+    set(SDL_REVISION_CENTER "${SDL_VERSION_MAJOR}.${SDL_VERSION_MINOR}.${SDL_VERSION_MICRO}-${SDL_REVISION}")
   else()
-    # If VERSION does not exist, use git to calculate a version
+    # If SDL_REVISION is not overrided, use git to describe
     git_describe(SDL_REVISION_CENTER)
-    if(NOT SDL_REVISION_CENTER)
-      set(SDL_REVISION_CENTER "${SDL3_VERSION}-no-vcs")
-    endif()
   endif()
-  set(SDL_REVISION "SDL-${SDL_REVISION_CENTER}${SDL_REVISION_SUFFIX}")
+  set(SDL_REVISION "SDL3-${SDL_REVISION_CENTER}")
 endif()
 
 execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${SDL3_BINARY_DIR}/include/SDL3")
@@ -3645,7 +3648,7 @@ if(NOT SDL_DISABLE_INSTALL)
       )
     endif()
     if(TARGET SDL3-javasources)
-      install(FILES  "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-sources.jar"
+      install(FILES "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-sources.jar"
         DESTINATION "${SDL_INSTALL_JAVADIR}/SDL3")
     endif()
   endif()
@@ -3659,7 +3662,7 @@ if(NOT SDL_DISABLE_INSTALL)
     )
     if(TARGET SDL3-javadoc)
       set(SDL_INSTALL_JAVADOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/javadoc" CACHE PATH "Path where to install SDL3 javadoc")
-      install(DIRECTORY "${SDL3_BINARY_DIR}/docs/javadoc/"
+      install(FILES "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-javadoc.jar"
         DESTINATION "${SDL_INSTALL_JAVADOCDIR}/SDL3")
     endif()
   endif()

@@ -26,6 +26,8 @@ install-x86_64:
 
 install-all:
 	@if test -d $(DESTDIR); then \
+		mkdir -p $(DESTDIR)/cmake; \
+		cp -rv cmake/* $(DESTDIR)/cmake; \
 		for arch in $(ARCHITECTURES); do \
 			$(MAKE) install ARCH=$$arch DESTDIR=$(DESTDIR)/$$arch; \
 		done \

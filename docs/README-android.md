@@ -126,13 +126,10 @@ Here's an explanation of the files in the Android project, so you can customize 
 Using the SDL3 Android Archive (.aar)
 ================================================================================
 
-The `create-android-project.py` script can
-./create-android-project.py com.yourcompany.yourapp < sources.list
-
-The Android archive allows use of SDL3 in your Android project, without needing to copy any SDL c or java source.
+The Android archive allows use of SDL3 in your Android project, without needing to copy any SDL C or JAVA source into your project.
 For integration with CMake/ndk-build, it uses [prefab](https://google.github.io/prefab/).
 
-Copy the archive to a `app/libs` directory of your project and add the following to `app/gradle.build`:
+Copy the archive to a `app/libs` directory in your project and add the following to `app/gradle.build`:
 ```
 android {
     /* ... */
@@ -141,29 +138,34 @@ android {
     }
 }
 dependencies {
-    implementation files('libs/@PROJECT_NAME@-@PROJECT_VERSION@.aar')
+    implementation files('libs/SDL3-X.Y.Z.aar') /* Replace with the filename of the actual SDL3-x.y.z.aar file you downloaded */
     /* ... */
 }
 ```
 
-If you're using CMake, add the following to your CMakeLists.txt:
+If you use CMake, add the following to your CMakeLists.txt:
 ```
-find_package(@PROJECT_NAME@ REQUIRED CONFIG)
-target_link_libraries(yourgame PRIVATE @PROJECT_NAME@::@PROJECT_NAME@)
+find_package(SDL3 REQUIRED CONFIG)
+target_link_libraries(yourgame PRIVATE SDL3::SDL3)
 ```
 
-If you're using ndk-build, add the following somewhere after `LOCAL_MODULE := yourgame` to your `Android.mk` or `Application.mk`:
+If you use ndk-build, add the following before `include $(BUILD_SHARED_LIBRARY)` to your `Android.mk`:
+```
+LOCAL_SHARED_LIBARARIES := SDL3 SDL3-Headers
+```
+And add the following at the bottom:
 ```
 # https://google.github.io/prefab/build-systems.html
-
 # Add the prefab modules to the import path.
 $(call import-add-path,/out)
-
 # Import @PROJECT_NAME@ so we can depend on it.
 $(call import-module,prefab/@PROJECT_NAME@)
 ```
 
-If you want to avoid adding the complete SDL source base as a subproject, or adding the Java sources of the bindings to your Android project
+The `build-scripts/create-android-project.py` script can create a project using Android aar-chives from scratch:
+```
+build-scripts/create-android-project.py --variant aar com.yourcompany.yourapp < sources.list
+```
 
 Customizing your application name
 ================================================================================

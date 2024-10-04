@@ -1,0 +1,5 @@
+{
+    "name": "@<@PROJECT_NAME@>@",
+    "version": "@<@PROJECT_VERSION@>@",
+    "git-hash": "@<@PROJECT_COMMIT@>@"
+}
