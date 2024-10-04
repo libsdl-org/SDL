@@ -22,7 +22,7 @@
 /**
  *  \file SDL.h
  *
- *  Main include header for the SDL library, version 3.1.2
+ *  Main include header for the SDL library, version 3.1.3
  */
 
 #ifndef SDL_h_
