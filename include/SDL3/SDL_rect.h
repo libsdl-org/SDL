@@ -23,7 +23,7 @@
  * # CategoryRect
  *
  * Some helper functions for managing rectangles and 2D points, in both
- * interger and floating point versions.
+ * integer and floating point versions.
  */
 
 #ifndef SDL_rect_h_
