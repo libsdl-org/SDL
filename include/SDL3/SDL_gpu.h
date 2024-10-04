@@ -24,7 +24,101 @@
 /**
  * # CategoryGPU
  *
- * Include file for SDL GPU API functions
+ * The GPU API offers a cross-platform way for apps to talk to modern
+ * graphics hardware. It offers both 3D graphics and "compute" support,
+ * in the style of Metal, Vulkan, and Direct3D 12.
+ *
+ * A basic workflow might be something like this:
+ *
+ * The app creates a GPU device with SDL_GPUCreateDevice(), and assigns it
+ * to a window with SDL_ClaimWindowForGPUDevice()--although strictly speaking
+ * you can render offscreen entirely, perhaps for image processing, and not
+ * use a window at all.
+ *
+ * Next the app prepares static data (things that are created once and used
+ * over and over). For example:
+ *
+ * - Shaders (programs that run on the GPU): use SDL_CreateGPUShader().
+ * - Vertex buffers (arrays of geometry data) and other data rendering will
+ *   need: use SDL_UploadToGPUBuffer().
+ * - Textures (images): use SDL_UploadToGPUTexture().
+ * - Samplers (how textures should be read from): use SDL_CreateGPUSampler().
+ * - Render pipelines (precalculated rendering state): use
+ *   SDL_CreateGPUGraphicsPipeline()
+ *
+ * To render, the app creates one or more command buffers, with
+ * SDL_AcquireGPUCommandBuffer(). Command buffers collect rendering
+ * instructions that will be submitted to the GPU in batch. Complex scenes
+ * can use multiple command buffers, maybe configured across multiple threads
+ * in parallel, as long as they are submitted in the correct order, but many
+ * apps will just need one command buffer per frame.
+ *
+ * Rendering can happen to a texture (what other APIs call a "render target")
+ * or it can happen to the swapchain (which is just a special texture that
+ * represents a window's contents).
+ *
+ * Rendering actually happens in a Render Pass, which is encoded into a
+ * command buffer. One can encode multiple render passes (or alternate
+ * between render and compute passes) in a single command buffer, but many
+ * apps might simply need a single render pass in a single command buffer.
+ *
+ * The app calls SDL_BeginGPURenderPass(). If it isn't rendering to a texture,
+ * the app can use SDL_AcquireGPUSwapchainTexture() to render to the window.
+ * Then it sets states it needs for each draw:
+ *
+ * - SDL_BindGPUGraphicsPipeline
+ * - SDL_SetGPUViewport
+ * - SDL_BindGPUVertexBuffers
+ * - SDL_BindGPUVertexSamplers
+ * - etc
+ *
+ * Then, make the actual draw commands with these states:
+ *
+ * - SDL_DrawGPUPrimitives
+ * - SDL_DrawGPUPrimitivesIndirect
+ * - SDL_DrawGPUIndexedPrimitivesIndirect
+ * - etc
+ *
+ * It can then set new states and make new draws in the same command buffer,
+ * until the whole scene is rendered.
+ *
+ * After all the drawing commands are complete, the app should call
+ * SDL_EndGPURenderPass(), then SDL_SubmitGPUCommandBuffer() to send
+ * it to the GPU for processing.
+ *
+ * If the app needs to read back data from texture or buffers, the API
+ * has an efficient way of doing this, provided that the app is willing to tolerate some latency.
+ * When the app uses SDL_DownloadFromGPUTexture or SDL_DownloadFromGPUBuffer, submitting the command buffer with
+ * SubmitGPUCommandBufferAndAcquireFence() will return a fence handle that the app
+ * can poll or wait on in a thread. Once the fence indicates that the command buffer is done processing,
+ * it is safe to read the downloaded data. Make sure to call SDL_ReleaseGPUFence() when done with the fence.
+ *
+ * The API also has "compute" support. The app calls SDL_GPUBeginComputePass()
+ * with compute-writeable textures and/or buffers, which can be written to in a compute shader.
+ * Then it sets states it needs for the compute dispatches:
+ *
+ * - SDL_BindGPUComputePipeline
+ * - SDL_BindGPUComputeStorageBuffers
+ * - SDL_BindGPUComputeStorageTextures
+ *
+ * Then, dispatch compute work:
+ *
+ * - SDL_DispatchGPUCompute
+ *
+ * For advanced users, this opens up powerful GPU-driven workflows.
+ *
+ * This is an extremely quick overview that leaves out several important
+ * details. Already, though, one can see that GPU programming can be quite
+ * complex! If you just need simple 2D graphics, the
+ * [Render API](CategoryRender) is much easier to use but still
+ * hardware-accelerated. That said, even for 2D applications the performance benefits
+ * and expressiveness of the GPU API are significant.
+ *
+ * The GPU API targets a feature set with a wide range of hardware support and ease of portability.
+ * It is designed so that the app won't have to branch itself by querying feature support.
+ * If you need cutting-edge features with limited hardware support, this API is probably not for you.
+ *
+ * Examples demonstrating proper usage of this API can be found here: https://github.com/TheSpydog/SDL_gpu_examples
  */
 
 #ifndef SDL_gpu_h_
