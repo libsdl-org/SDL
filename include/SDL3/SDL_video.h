@@ -2795,11 +2795,11 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowSurface(SDL_Window *
  * NOTE: These callback pointers will be reset after SDL_GL_ResetAttributes.
  *
  * \param platformAttribCallback callback for attributes to pass to
- *                               eglGetPlatformDisplay, may be NULL.
+ *                               eglGetPlatformDisplay. May be NULL.
  * \param surfaceAttribCallback callback for attributes to pass to
- *                              eglCreateSurface, may be NULL.
+ *                              eglCreateSurface. May be NULL.
  * \param contextAttribCallback callback for attributes to pass to
- *                              eglCreateContext, may be NULL.
+ *                              eglCreateContext. May be NULL.
  * \param userdata a pointer that is passed to the callbacks.
  *
  * \since This function is available since SDL 3.0.0.
