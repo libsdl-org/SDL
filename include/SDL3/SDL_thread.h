@@ -89,9 +89,9 @@ typedef SDL_AtomicInt SDL_TLSID;
  *
  * SDL will make system changes as necessary in order to apply the thread
  * priority. Code which attempts to control thread state related to priority
- * should be aware that calling SDL_SetCurrentThreadPriority may alter such state.
- * SDL_HINT_THREAD_PRIORITY_POLICY can be used to control aspects of this
- * behavior.
+ * should be aware that calling SDL_SetCurrentThreadPriority may alter such
+ * state. SDL_HINT_THREAD_PRIORITY_POLICY can be used to control aspects of
+ * this behavior.
  *
  * \since This enum is available since SDL 3.0.0.
  */
