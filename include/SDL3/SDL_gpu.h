@@ -118,7 +118,7 @@
  * When creating shaders, the app must provide the correct shader for the selected backend.
  * If you would like to learn more about why the API works this way, there is a
  * detailed [blog post](https://moonside.games/posts/layers-all-the-way-down/)
- * explaining this situation. In the future, SDL may provide a universal shader format.
+ * explaining this situation.
  *
  * It is optimal for apps to pre-compile the shader formats they might use, but for ease of use
  * SDL provides a satellite single-header library for performing runtime shader cross-compilation:
