@@ -88,7 +88,7 @@
  *
  * If the app needs to read back data from texture or buffers, the API
  * has an efficient way of doing this, provided that the app is willing to tolerate some latency.
- * When the app uses SDL_DownloadFromGPUTexture or SDL_DownloadFromGPUBuffer, submitting the command buffer with
+ * When the app uses SDL_DownloadFromGPUTexture() or SDL_DownloadFromGPUBuffer(), submitting the command buffer with
  * SubmitGPUCommandBufferAndAcquireFence() will return a fence handle that the app
  * can poll or wait on in a thread. Once the fence indicates that the command buffer is done processing,
  * it is safe to read the downloaded data. Make sure to call SDL_ReleaseGPUFence() when done with the fence.
@@ -110,7 +110,7 @@
  * This is an extremely quick overview that leaves out several important
  * details. Already, though, one can see that GPU programming can be quite
  * complex! If you just need simple 2D graphics, the
- * [Render API](CategoryRender) is much easier to use but still
+ * [Render API](https://wiki.libsdl.org/SDL3/CategoryRender) is much easier to use but still
  * hardware-accelerated. That said, even for 2D applications the performance benefits
  * and expressiveness of the GPU API are significant.
  *
