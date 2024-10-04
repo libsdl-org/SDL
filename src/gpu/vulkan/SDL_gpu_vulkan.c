@@ -3205,6 +3205,7 @@ static void VULKAN_INTERNAL_DestroyDescriptorSetCache(
         SDL_free(descriptorSetCache->pools[i].descriptorSets);
         SDL_free(descriptorSetCache->pools[i].descriptorPools);
     }
+    SDL_free(descriptorSetCache->pools);
     SDL_free(descriptorSetCache);
 }
 
