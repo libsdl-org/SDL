@@ -2767,7 +2767,7 @@ extern "C" {
  *
  * If the application doesn't pick a specific renderer to use, this variable
  * specifies the name of the preferred renderer. If the preferred renderer
- * can't be initialized, the normal default renderer is used.
+ * can't be initialized, creating a renderer will fail.
  *
  * This variable is case insensitive and can be set to the following values:
  *
