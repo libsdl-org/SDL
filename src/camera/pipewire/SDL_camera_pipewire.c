@@ -79,7 +79,7 @@ static struct pw_context *(*PIPEWIRE_pw_context_new)(struct pw_loop *, struct pw
 static void (*PIPEWIRE_pw_context_destroy)(struct pw_context *);
 static struct pw_core *(*PIPEWIRE_pw_context_connect)(struct pw_context *, struct pw_properties *, size_t);
 static void (*PIPEWIRE_pw_proxy_add_object_listener)(struct pw_proxy *, struct spa_hook *, const void *, void *);
-static void (*PIPEWIRE_pw_proxy_add_listener)(struct pw_proxy *, struct spa_hook *, const void *, void *);
+static void (*PIPEWIRE_pw_proxy_add_listener)(struct pw_proxy *, struct spa_hook *, const struct pw_proxy_events *, void *);
 static void *(*PIPEWIRE_pw_proxy_get_user_data)(struct pw_proxy *);
 static void (*PIPEWIRE_pw_proxy_destroy)(struct pw_proxy *);
 static int (*PIPEWIRE_pw_core_disconnect)(struct pw_core *);
