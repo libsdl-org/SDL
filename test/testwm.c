@@ -230,6 +230,10 @@ static void loop(void)
 
             SDL_SetRenderViewport(renderer, NULL);
             SDL_GetRenderSafeArea(renderer, &viewport);
+            if (state->scale != 0.0f) {
+                viewport.w = (int)(viewport.w * state->scale);
+                viewport.h = (int)(viewport.h * state->scale);
+            }
             SDL_SetRenderViewport(renderer, &viewport);
 
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
