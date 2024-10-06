@@ -9,36 +9,23 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-/* A simple program to test the Input Method support in the SDL library (2.0+)
-   If you build without SDL_ttf, you can use the GNU Unifont hex file instead.
-   Download at http://unifoundry.com/unifont.html */
 
+/* A simple program to test the Input Method support in SDL.
+ *
+ * This uses the GNU Unifont to display non-ASCII characters, available at:
+ * http://unifoundry.com/unifont.html
+ *
+ * An example of IME support with TrueType fonts is available in the SDL_ttf example code:
+ * https://github.com/libsdl-org/SDL_ttf/blob/main/examples/editbox.h
+ */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test_font.h>
-#ifdef HAVE_SDL_TTF
-#include "SDL_ttf.h"
-#endif
 
 #include <SDL3/SDL_test_common.h>
 #include "testutils.h"
 
-#ifdef HAVE_SDL_TTF
-#define DEFAULT_PTSIZE 30
-#endif
-
-#ifdef HAVE_SDL_TTF
-#ifdef SDL_PLATFORM_MACOS
-#define DEFAULT_FONT "/System/Library/Fonts/华文细黑.ttf"
-#elif defined(SDL_PLATFORM_WIN32)
-/* Some japanese font present on at least Windows 8.1. */
-#define DEFAULT_FONT "C:\\Windows\\Fonts\\yugothic.ttf"
-#else
-#define DEFAULT_FONT "NoDefaultFont.ttf"
-#endif
-#else
 #define DEFAULT_FONT "unifont-15.1.05.hex"
-#endif
 #define MAX_TEXT_LENGTH 256
 
 #define WINDOW_WIDTH    640
@@ -105,9 +92,6 @@ static const struct
     { "Multiline ON",           SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN, true }
 };
 
-#ifdef HAVE_SDL_TTF
-static TTF_Font *font;
-#else
 #define UNIFONT_MAX_CODEPOINT     0x1ffff
 #define UNIFONT_NUM_GLYPHS        0x20000
 #define UNIFONT_REPLACEMENT       0xFFFD
@@ -433,7 +417,6 @@ static void unifont_cleanup(void)
 }
 
 /* Unifont code end */
-#endif
 
 static size_t utf8_length(unsigned char c)
 {
@@ -449,35 +432,6 @@ static size_t utf8_length(unsigned char c)
     }
     return 0;
 }
-
-#ifdef HAVE_SDL_TTF
-static char *utf8_next(char *p)
-{
-    size_t len = utf8_length(*p);
-    size_t i = 0;
-    if (!len) {
-        return 0;
-    }
-
-    for (; i < len; ++i) {
-        ++p;
-        if (!*p) {
-            return 0;
-        }
-    }
-    return p;
-}
-
-
-static char *utf8_advance(char *p, size_t distance)
-{
-    size_t i = 0;
-    for (; i < distance && p; ++i) {
-        p = utf8_next(p);
-    }
-    return p;
-}
-#endif
 
 static Uint32 utf8_decode(const char *p, size_t len)
 {
@@ -582,9 +536,6 @@ static void DrawCandidates(WindowState *ctx, SDL_FRect *cursorRect)
             continue;
         }
 
-#ifdef HAVE_SDL_TTF
-        /* FIXME */
-#else
         if (ctx->horizontal_candidates) {
             const char *utext = ctx->candidates[i];
             Uint32 codepoint;
@@ -616,7 +567,6 @@ static void DrawCandidates(WindowState *ctx, SDL_FRect *cursorRect)
             }
             h += UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
         }
-#endif
     }
 
     /* Position the candidate window */
@@ -646,9 +596,6 @@ static void DrawCandidates(WindowState *ctx, SDL_FRect *cursorRect)
             continue;
         }
 
-#ifdef HAVE_SDL_TTF
-        /* FIXME */
-#else
         dstRect.w = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
         dstRect.h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
 
@@ -706,7 +653,6 @@ static void DrawCandidates(WindowState *ctx, SDL_FRect *cursorRect)
             }
             dstRect.y += dstRect.h;
         }
-#endif
     }
 }
 
@@ -733,12 +679,7 @@ static void CleanupVideo(void)
         ClearCandidates(ctx);
         SDL_DestroyProperties(ctx->text_settings);
     }
-#ifdef HAVE_SDL_TTF
-    TTF_CloseFont(font);
-    TTF_Quit();
-#else
     unifont_cleanup();
-#endif
 }
 
 static void DrawSettingsButton(WindowState *ctx)
@@ -860,21 +801,6 @@ static void RedrawWindow(WindowState *ctx)
     drawnTextRect.h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
 
     if (text[0]) {
-#ifdef HAVE_SDL_TTF
-        SDL_Surface *textSur = TTF_RenderUTF8_Blended(font, text, textColor);
-        SDL_Texture *texture;
-
-        /* Vertically center text */
-        drawnTextRect.y = ctx->textRect.y + (ctx->textRect.h - textSur->h) / 2;
-        drawnTextRect.w = textSur->w;
-        drawnTextRect.h = textSur->h;
-
-        texture = SDL_CreateTextureFromSurface(renderer, textSur);
-        SDL_DestroySurface(textSur);
-
-        SDL_RenderTexture(renderer, texture, NULL, &drawnTextRect);
-        SDL_DestroyTexture(texture);
-#else
         char *utext = text;
         Uint32 codepoint;
         size_t len;
@@ -893,7 +819,6 @@ static void RedrawWindow(WindowState *ctx)
             drawnTextRect.w += advance;
             utext += len;
         }
-#endif
     }
 
     /* The marked text rectangle is the text area that hasn't been filled by committed text */
@@ -910,39 +835,6 @@ static void RedrawWindow(WindowState *ctx)
     cursorRect.h = drawnTextRect.h;
 
     if (ctx->markedText[0]) {
-#ifdef HAVE_SDL_TTF
-        SDL_Surface *textSur;
-        SDL_Texture *texture;
-        if (ctx->cursor) {
-            char *p = utf8_advance(ctx->markedText, ctx->cursor);
-            char c = 0;
-            if (!p) {
-                p = &ctx->markedText[SDL_strlen(ctx->markedText)];
-            }
-
-            c = *p;
-            *p = 0;
-            TTF_SizeUTF8(font, ctx->markedText, &drawnTextRect.w, NULL);
-            cursorRect.x += drawnTextRect.w;
-            *p = c;
-        }
-        textSur = TTF_RenderUTF8_Blended(font, ctx->markedText, textColor);
-        /* Vertically center text */
-        drawnTextRect.y = ctx->textRect.y + (ctx->textRect.h - textSur->h) / 2;
-        drawnTextRect.w = textSur->w;
-        drawnTextRect.h = textSur->h;
-
-        texture = SDL_CreateTextureFromSurface(renderer, textSur);
-        SDL_DestroySurface(textSur);
-
-        SDL_RenderTexture(renderer, texture, NULL, &drawnTextRect);
-        SDL_DestroyTexture(texture);
-
-        if (ctx->cursor_length > 0) {
-            /* FIXME: Need to measure text extents */
-            cursorRect.w = ctx->cursor_length * UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
-        }
-#else
         int i = 0;
         char *utext = ctx->markedText;
         Uint32 codepoint;
@@ -970,7 +862,6 @@ static void RedrawWindow(WindowState *ctx)
         if (ctx->cursor_length > 0) {
             cursorRect.w = ctx->cursor_length * UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
         }
-#endif
 
         cursorRect.y = drawnTextRect.y;
         cursorRect.h = drawnTextRect.h;
@@ -1085,20 +976,9 @@ int main(int argc, char *argv[])
 
     fontname = GetResourceFilename(fontname, DEFAULT_FONT);
 
-#ifdef HAVE_SDL_TTF
-    /* Initialize fonts */
-    TTF_Init();
-
-    font = TTF_OpenFont(fontname, DEFAULT_PTSIZE);
-    if (!font) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to find font: %s\n", SDL_GetError());
-        return -1;
-    }
-#else
     if (unifont_init(fontname) < 0) {
         return -1;
     }
-#endif
 
     SDL_Log("Using font: %s\n", fontname);
 
