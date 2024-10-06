@@ -1,0 +1,41 @@
+Source code in this directory, unless otherwise noted, falls under the
+following license, which is different (more permissive) than SDL's usual
+license.
+
+/*
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely.
+*/
+
+
+This directory contains sample.wav, which is a sample from Will Provost's
+song, The Living Proof:
+
+     From the album The Living Proof
+     Publisher: 5 Guys Named Will
+     Copyright 1996 Will Provost
+
+You can get a copy of the full song (and album!) from iTunes...
+
+    https://itunes.apple.com/us/album/the-living-proof/id4153978
+
+or Amazon...
+
+    http://www.amazon.com/The-Living-Proof-Will-Provost/dp/B00004R8RH
+
+Thanks to Will for permitting us to distribute this sample with SDL!
+
+
+
+The .bmp files used by testaudio.c were made by AlDraw:
+
+https://linktr.ee/AlexDraw
+
+These bitmaps may be distributed as public domain files!
