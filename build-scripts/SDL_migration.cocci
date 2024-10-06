@@ -2062,7 +2062,7 @@ expression e;
 @@
 @@
 - SDL_WINDOWEVENT_TAKE_FOCUS
-+ SDL_EVENT_WINDOW_TAKE_FOCUS
++ /* FIXME MIGRATION: SDL_WINDOWEVENT_TAKE_FOCUS has been removed; there is no replacement. */ 0
 @@
 @@
 - SDL_WINDOWEVENT_HIT_TEST
