@@ -1411,6 +1411,8 @@ static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         SDL_SendJoystickPowerInfo(joystick, state, percent);
     }
 
+    HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, dev, ctx, (PS5StatePacketCommon_t *)packet, timestamp);
+
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
 }
 
@@ -1432,6 +1434,8 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
         touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
     }
+
+    HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, dev, ctx, (PS5StatePacketCommon_t *)packet, timestamp);
 
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
 }
@@ -1517,7 +1521,6 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
             if (size == 10 || size == 78) {
                 HIDAPI_DriverPS5_HandleSimpleStatePacket(joystick, device->dev, ctx, (PS5SimpleStatePacket_t *)&data[1], timestamp);
             } else {
-                HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, device->dev, ctx, (PS5StatePacketCommon_t *)&data[1], timestamp);
                 if (ctx->use_alternate_report) {
                     HIDAPI_DriverPS5_HandleStatePacketAlt(joystick, device->dev, ctx, (PS5StatePacketAlt_t *)&data[1], timestamp);
                 } else {
@@ -1529,7 +1532,6 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
             // This is the extended report, we can enable effects now in default mode
             HIDAPI_DriverPS5_UpdateEnhancedModeOnEnhancedReport(ctx);
 
-            HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, device->dev, ctx, (PS5StatePacketCommon_t *)&data[2], timestamp);
             if (ctx->use_alternate_report) {
                 HIDAPI_DriverPS5_HandleStatePacketAlt(joystick, device->dev, ctx, (PS5StatePacketAlt_t *)&data[2], timestamp);
             } else {
