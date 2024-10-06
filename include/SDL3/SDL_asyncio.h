@@ -299,6 +299,17 @@ extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_WriteAsyncIO(SDL_AsyncIO *asyn
  * were to happen during the closing process, for example, the
  * task results will report it as usual.
  *
+ * Closing a file that has been written to does not guarantee the data
+ * has made it to physical media; it may remain in the operating
+ * system's file cache, for later writing to disk. This means that
+ * a successfully-closed file can be lost if the system crashes or
+ * loses power in this small window. To prevent this, call this
+ * function with the `flush` parameter set to true. This will make
+ * the operation take longer, but a successful result guarantees that
+ * the data has made it to physical storage. Don't use this for
+ * temporary files, caches, and unimportant data, and definitely use
+ * it for crucial irreplaceable files, like game saves.
+ *
  * This function guarantees that the close will happen after any other
  * pending tasks to `asyncio`, so it's safe to open a file, start
  * several operations, close the file immediately, then check for all
@@ -315,6 +326,7 @@ extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_WriteAsyncIO(SDL_AsyncIO *asyn
  * it's safe to attempt to close again later.
  *
  * \param asyncio a pointer to an SDL_AsyncIO structure to close.
+ * \param flush true if data should sync to disk before the task completes.
  * \param queue a queue to add the new SDL_AsyncIO to.
  * \param userdata an app-defined pointer that will be provided with the task results.
  * \returns A new task handle if a task was started, NULL on complete failure;
@@ -325,7 +337,7 @@ extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_WriteAsyncIO(SDL_AsyncIO *asyn
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, SDL_AsyncIOQueue *queue, void *userdata);
+extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQueue *queue, void *userdata);
 
 /**
  * Create a task queue for tracking multiple I/O operations.
