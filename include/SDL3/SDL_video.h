@@ -961,6 +961,7 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_CreateWindowAndRenderer
  * \sa SDL_CreatePopupWindow
  * \sa SDL_CreateWindowWithProperties
  * \sa SDL_DestroyWindow
