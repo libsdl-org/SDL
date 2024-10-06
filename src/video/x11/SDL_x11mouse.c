@@ -412,6 +412,11 @@ static bool X11_CaptureMouse(SDL_Window *window)
             if (rc != GrabSuccess) {
                 return SDL_SetError("X server refused mouse capture");
             }
+
+            if (data->mouse_grabbed) {
+                // XGrabPointer can warp the cursor when confining, so update the coordinates.
+                data->videodata->global_mouse_changed = true;
+            }
         }
     } else if (mouse_focus) {
         SDL_UpdateWindowGrab(mouse_focus);
