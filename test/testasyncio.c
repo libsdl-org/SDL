@@ -23,6 +23,7 @@ static SDLTest_CommonState *state = NULL;
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     const char *base = NULL;
+    SDL_AsyncIO *asyncio = NULL;
     char **bmps = NULL;
     int bmpcount = 0;
     int i;
@@ -104,6 +105,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SDL_free(bmps);
 
+    SDL_Log("Opening asyncio.tmp...");
+    asyncio = SDL_AsyncIOFromFile("asyncio.tmp", "w");
+    if (!asyncio) {
+        SDL_Log("Failed!");
+        return SDL_APP_FAILURE;
+    }
+    SDL_WriteAsyncIO(asyncio, "hello", 0, 5, queue, "asyncio.tmp (write)");
+    SDL_CloseAsyncIO(asyncio, true, queue, "asyncio.tmp (flush/close)");
+
     return SDL_APP_CONTINUE;
 }
 
@@ -134,6 +144,10 @@ static void async_io_task_complete(const SDL_AsyncIOOutcome *outcome)
     }
 
     SDL_Log("File '%s' async results: %s", fname, resultstr);
+
+    if (SDL_strncmp(fname, "asyncio.tmp", 11) == 0) {
+        return;
+    }
 
     if (outcome->result == SDL_ASYNCIO_COMPLETE) {
         SDL_Surface *surface = SDL_LoadBMP_IO(SDL_IOFromConstMem(outcome->buffer, (size_t) outcome->bytes_transferred), true);
@@ -171,6 +185,7 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     SDL_DestroyAsyncIOQueue(queue);
     SDL_DestroyTexture(texture);
+    SDL_RemovePath("asyncio.tmp");
     SDLTest_CommonQuit(state);
 }
 

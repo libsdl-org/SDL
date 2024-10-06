@@ -68,6 +68,7 @@ struct SDL_AsyncIOTask
     SDL_AsyncIOTaskType type;
     SDL_AsyncIOQueue *queue;
     Uint64 offset;
+    bool flush;
     void *buffer;
     char *error;
     SDL_AsyncIOResult result;

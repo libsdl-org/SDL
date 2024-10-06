@@ -1224,7 +1224,7 @@ SDL_DYNAPI_PROC(SDL_AsyncIO*,SDL_AsyncIOFromFile,(const char *a, const char *b),
 SDL_DYNAPI_PROC(Sint64,SDL_GetAsyncIOSize,(SDL_AsyncIO *a),(a),return)
 SDL_DYNAPI_PROC(SDL_AsyncIOTask*,SDL_ReadAsyncIO,(SDL_AsyncIO *a, void *b, Uint64 c, Uint64 d, SDL_AsyncIOQueue *e, void *f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(SDL_AsyncIOTask*,SDL_WriteAsyncIO,(SDL_AsyncIO *a, void *b, Uint64 c, Uint64 d, SDL_AsyncIOQueue *e, void *f),(a,b,c,d,e,f),return)
-SDL_DYNAPI_PROC(SDL_AsyncIOTask*,SDL_CloseAsyncIO,(SDL_AsyncIO *a, SDL_AsyncIOQueue *b, void *c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_AsyncIOTask*,SDL_CloseAsyncIO,(SDL_AsyncIO *a, bool b, SDL_AsyncIOQueue *c, void *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(SDL_AsyncIOQueue*,SDL_CreateAsyncIOQueue,(void),(),return)
 SDL_DYNAPI_PROC(void,SDL_DestroyAsyncIOQueue,(SDL_AsyncIOQueue *a),(a),)
 SDL_DYNAPI_PROC(bool,SDL_GetAsyncIOResult,(SDL_AsyncIOQueue *a, SDL_AsyncIOOutcome *b),(a,b),return)
