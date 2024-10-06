@@ -76,7 +76,12 @@ static void SynchronousIO(SDL_AsyncIOTask *task)
     // files will still run in parallel. An app can also open the same file twice to avoid this.
     SDL_LockMutex(data->lock);
     if (task->type == SDL_ASYNCIO_TASK_CLOSE) {
-        task->result = SDL_CloseIO(data->io) ? SDL_ASYNCIO_COMPLETE : SDL_ASYNCIO_FAILURE;
+        bool okay = true;
+        if (task->flush) {
+            okay = SDL_FlushIO(data->io);
+        }
+        okay = SDL_CloseIO(data->io) && okay;
+        task->result = okay ? SDL_ASYNCIO_COMPLETE : SDL_ASYNCIO_FAILURE;
     } else if (SDL_SeekIO(io, (Sint64) task->offset, SDL_IO_SEEK_SET) < 0) {
         task->result = SDL_ASYNCIO_FAILURE;
     } else {

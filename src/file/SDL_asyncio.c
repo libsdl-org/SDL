@@ -143,7 +143,7 @@ SDL_AsyncIOTask *SDL_WriteAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset
     return RequestAsyncIO(false, asyncio, ptr, offset, size, queue, userdata);
 }
 
-SDL_AsyncIOTask *SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, SDL_AsyncIOQueue *queue, void *userdata)
+SDL_AsyncIOTask *SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQueue *queue, void *userdata)
 {
     if (!asyncio) {
         SDL_InvalidParamError("asyncio");
@@ -166,6 +166,7 @@ SDL_AsyncIOTask *SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, SDL_AsyncIOQueue *queue,
         task->type = SDL_ASYNCIO_TASK_CLOSE;
         task->app_userdata = userdata;
         task->queue = queue;
+        task->flush = flush;
 
         asyncio->closing = task;
 
@@ -328,7 +329,7 @@ SDL_AsyncIOTask *SDL_LoadFileAsync(const char *file, SDL_AsyncIOQueue *queue, vo
             SDL_free(ptr);
         }
 
-        SDL_CloseAsyncIO(asyncio, queue, userdata);  // if this fails, we'll have a resource leak, but this would already be a dramatic system failure.
+        SDL_CloseAsyncIO(asyncio, false, queue, userdata);  // if this fails, we'll have a resource leak, but this would already be a dramatic system failure.
     }
 
     return task;

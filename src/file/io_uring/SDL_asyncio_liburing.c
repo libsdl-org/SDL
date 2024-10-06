@@ -58,6 +58,7 @@ static void *liburing_handle = NULL;
     SDL_LIBURING_FUNC(void, io_uring_prep_fsync, (struct io_uring_sqe *sqe, int fd, unsigned fsync_flags)) \
     SDL_LIBURING_FUNC(void, io_uring_prep_cancel, (struct io_uring_sqe *sqe, void *user_data, int flags)) \
     SDL_LIBURING_FUNC(void, io_uring_prep_timeout, (struct io_uring_sqe *sqe, struct __kernel_timespec *ts, unsigned count, unsigned flags)) \
+    SDL_LIBURING_FUNC(void, io_uring_prep_nop, (struct io_uring_sqe *sqe)) \
     SDL_LIBURING_FUNC(void, io_uring_sqe_set_data, (struct io_uring_sqe *sqe, void *data)) \
     SDL_LIBURING_FUNC(void, io_uring_sqe_set_flags, (struct io_uring_sqe *sqe, unsigned flags)) \
     SDL_LIBURING_FUNC(int, io_uring_submit, (struct io_uring *ring)) \
@@ -211,7 +212,7 @@ static SDL_AsyncIOTask *ProcessCQE(LibUringAsyncIOQueueData *queuedata, struct i
     }
 
     SDL_AsyncIOTask *task = (SDL_AsyncIOTask *) io_uring_cqe_get_data(cqe);
-    if (task) {  // can be NULL if this was just a wakeup message, etc.
+    if (task) {  // can be NULL if this was just a wakeup message, a NOP, etc.
         if (!task->queue) {  // We leave `queue` blank to signify this was a task cancellation.
             SDL_AsyncIOTask *cancel_task = task;
             task = (SDL_AsyncIOTask *) cancel_task->app_userdata;
@@ -227,12 +228,18 @@ static SDL_AsyncIOTask *ProcessCQE(LibUringAsyncIOQueueData *queuedata, struct i
         } else {
             if ((task->type == SDL_ASYNCIO_TASK_WRITE) && (((Uint64) cqe->res) < task->requested_size)) {
                 task->result = SDL_ASYNCIO_FAILURE;  // it's always a failure on short writes.
-            } else {
-                task->result = SDL_ASYNCIO_COMPLETE;
             }
+
+            // don't explicitly mark it as COMPLETE; that's the default value and a linked task might have failed in an earlier operation and this would overwrite it.
+
             if ((task->type == SDL_ASYNCIO_TASK_READ) || (task->type == SDL_ASYNCIO_TASK_WRITE)) {
                 task->result_size = (Uint64) cqe->res;
             }
+        }
+
+        if ((task->type == SDL_ASYNCIO_TASK_CLOSE) && task->flush) {
+            task->flush = false;
+            task = NULL;  // don't return this one, it's a linked task, so it'll arrive in a later CQE.
         }
     }
 
@@ -358,6 +365,7 @@ static bool SDL_SYS_CreateAsyncIOQueue_liburing(SDL_AsyncIOQueue *queue)
 static bool liburing_asyncio_read(void *userdata, SDL_AsyncIOTask *task)
 {
     LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) task->queue->userdata;
+    const int fd = (int) (size_t) userdata;
 
     // !!! FIXME: `unsigned` is likely smaller than requested_size's Uint64. If we overflow it, we could try submitting multiple SQEs
     // !!! FIXME:  and make a note in the task that there are several in sequence.
@@ -372,7 +380,7 @@ static bool liburing_asyncio_read(void *userdata, SDL_AsyncIOTask *task)
         return SDL_SetError("io_uring: submission queue is full");
     }
 
-    liburing.io_uring_prep_read(sqe, (int) (size_t) userdata, task->buffer, (unsigned) task->requested_size, task->offset);
+    liburing.io_uring_prep_read(sqe, fd, task->buffer, (unsigned) task->requested_size, task->offset);
     liburing.io_uring_sqe_set_data(sqe, task);
 
     const bool retval = task->queue->iface.queue_task(task->queue->userdata, task);
@@ -383,6 +391,7 @@ static bool liburing_asyncio_read(void *userdata, SDL_AsyncIOTask *task)
 static bool liburing_asyncio_write(void *userdata, SDL_AsyncIOTask *task)
 {
     LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) task->queue->userdata;
+    const int fd = (int) (size_t) userdata;
 
     // !!! FIXME: `unsigned` is likely smaller than requested_size's Uint64. If we overflow it, we could try submitting multiple SQEs
     // !!! FIXME:  and make a note in the task that there are several in sequence.
@@ -397,7 +406,7 @@ static bool liburing_asyncio_write(void *userdata, SDL_AsyncIOTask *task)
         return SDL_SetError("io_uring: submission queue is full");
     }
 
-    liburing.io_uring_prep_write(sqe, (int) (size_t) userdata, task->buffer, (unsigned) task->requested_size, task->offset);
+    liburing.io_uring_prep_write(sqe, fd, task->buffer, (unsigned) task->requested_size, task->offset);
     liburing.io_uring_sqe_set_data(sqe, task);
 
     const bool retval = task->queue->iface.queue_task(task->queue->userdata, task);
@@ -408,6 +417,7 @@ static bool liburing_asyncio_write(void *userdata, SDL_AsyncIOTask *task)
 static bool liburing_asyncio_close(void *userdata, SDL_AsyncIOTask *task)
 {
     LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) task->queue->userdata;
+    const int fd = (int) (size_t) userdata;
 
     // have to hold a lock because otherwise two threads could get_sqe and submit while one request isn't fully set up.
     SDL_LockMutex(queuedata->sqe_lock);
@@ -416,7 +426,22 @@ static bool liburing_asyncio_close(void *userdata, SDL_AsyncIOTask *task)
         return SDL_SetError("io_uring: submission queue is full");
     }
 
-    liburing.io_uring_prep_close(sqe, (int) (size_t) userdata);
+    if (task->flush) {
+        struct io_uring_sqe *flush_sqe = sqe;
+        sqe = liburing.io_uring_get_sqe(&queuedata->ring);  // this will be our actual close task.
+        if (!sqe) {
+            liburing.io_uring_prep_nop(flush_sqe);  // we already have the first sqe, just make it a NOP.
+            liburing.io_uring_sqe_set_data(flush_sqe, NULL);
+            task->queue->iface.queue_task(task->queue->userdata, task);
+            return SDL_SetError("io_uring: submission queue is full");
+        }
+
+        liburing.io_uring_prep_fsync(flush_sqe, fd, IORING_FSYNC_DATASYNC);
+        liburing.io_uring_sqe_set_data(flush_sqe, task);
+        liburing.io_uring_sqe_set_flags(flush_sqe, IOSQE_IO_HARDLINK);  // must complete before next sqe starts, and next sqe should run even if this fails.
+    }
+
+    liburing.io_uring_prep_close(sqe, fd);
     liburing.io_uring_sqe_set_data(sqe, task);
 
     const bool retval = task->queue->iface.queue_task(task->queue->userdata, task);
