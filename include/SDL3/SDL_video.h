@@ -939,7 +939,7 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  * corresponding UnloadLibrary function is called by SDL_DestroyWindow().
  *
  * If SDL_WINDOW_VULKAN is specified and there isn't a working Vulkan driver,
- * SDL_CreateWindow() will fail because SDL_Vulkan_LoadLibrary() will fail.
+ * SDL_CreateWindow() will fail, because SDL_Vulkan_LoadLibrary() will fail.
  *
  * If SDL_WINDOW_METAL is specified on an OS that does not support Metal,
  * SDL_CreateWindow() will fail.
