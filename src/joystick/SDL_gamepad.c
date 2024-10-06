@@ -1935,12 +1935,13 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
     bool is_xinput_mapping = false;
     bool existing = false;
     GamepadMapping_t *pGamepadMapping;
-    int result = false;
+    int result = -1;
 
     SDL_AssertJoysticksLocked();
 
     if (!mappingString) {
-        return SDL_InvalidParamError("mappingString");
+        SDL_InvalidParamError("mappingString");
+        return -1;
     }
 
     { // Extract and verify the hint field
@@ -1992,7 +1993,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
                     value = !value;
                 }
                 if (!value) {
-                    result = true;
+                    result = 0;
                     goto done;
                 }
             }
@@ -2041,7 +2042,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
     }
 
     if (existing) {
-        result = true;
+        result = 0;
     } else {
         if (is_default_mapping) {
             s_pDefaultMapping = pGamepadMapping;
