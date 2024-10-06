@@ -24,12 +24,12 @@ static float previous_touch_y = -1.0f;
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't initialize SDL!", SDL_GetError(), NULL);
+        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
     if (!SDL_CreateWindowAndRenderer("examples/pen/drawing-lines", 640, 480, 0, &window, &renderer)) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create window/renderer!", SDL_GetError(), NULL);
+        SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
@@ -37,7 +37,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
        Instead rendering a frame for us is a single texture draw. */
     render_target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 640, 480);
     if (!render_target) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create render target!", SDL_GetError(), NULL);
+        SDL_Log("Couldn't create render target: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 

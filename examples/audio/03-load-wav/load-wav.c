@@ -32,20 +32,20 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     char *wav_path = NULL;
 
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't initialize SDL!", SDL_GetError(), NULL);
+        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
     /* we don't _need_ a window for audio-only things but it's good policy to have one. */
     if (!SDL_CreateWindowAndRenderer("examples/audio/load-wav", 640, 480, 0, &window, &renderer)) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create window/renderer!", SDL_GetError(), NULL);
+        SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
     /* Load the .wav file from wherever the app is being run from. */
     SDL_asprintf(&wav_path, "%ssample.wav", SDL_GetBasePath());  /* allocate a string of the full file path */
     if (!SDL_LoadWAV(wav_path, &spec, &wav_data, &wav_data_len)) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't load .wav file!", SDL_GetError(), NULL);
+        SDL_Log("Couldn't load .wav file: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
@@ -54,7 +54,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     /* Create our audio stream in the same format as the .wav file. It'll convert to what the audio hardware wants. */
     stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
     if (!stream) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create audio stream!", SDL_GetError(), window);
+        SDL_Log("Couldn't create audio stream: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
