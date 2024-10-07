@@ -642,6 +642,16 @@ Uint32 SDL_GPUTextureFormatTexelBlockSize(
         return 8;
     case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
         return 16;
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
+        return 16;
     default:
         SDL_assert_release(!"Unrecognized TextureFormat!");
         return 0;

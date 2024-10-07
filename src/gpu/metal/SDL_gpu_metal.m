@@ -166,6 +166,15 @@ static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
     MTLPixelFormatInvalid, // D24_UNORM_S8_UINT
 #endif
     MTLPixelFormatDepth32Float_Stencil8, // D32_FLOAT_S8_UINT
+    MTLPixelFormatASTC_4x4_LDR,   // SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM
+    MTLPixelFormatASTC_8x8_LDR,   // SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM
+    MTLPixelFormatASTC_12x12_LDR, // SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM
+    MTLPixelFormatASTC_4x4_sRGB,  // SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB
+    MTLPixelFormatASTC_8x8_sRGB,  // SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB
+    MTLPixelFormatASTC_12x12_sRGB,// SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB
+    MTLPixelFormatASTC_4x4_HDR,   // SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT
+    MTLPixelFormatASTC_8x8_HDR,   // SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT
+    MTLPixelFormatASTC_12x12_HDR, // SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT
 };
 SDL_COMPILE_TIME_ASSERT(SDLToMetal_SurfaceFormat, SDL_arraysize(SDLToMetal_SurfaceFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
@@ -3877,7 +3886,25 @@ static bool METAL_SupportsTextureFormat(
 #else
             return false;
 #endif
-
+        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
+#ifdef SDL_PLATFORM_MACOS
+            return [renderer->device supportsFamily:MTLGPUFamilyApple7];
+#else
+            return true;
+#endif
+        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
+#ifdef SDL_PLATFORM_MACOS
+            return [renderer->device supportsFamily:MTLGPUFamilyApple7];
+#elif
+            return [renderer->device supportsFamily:MTLGPUFamilyApple6];
+#endif
         default:
             return true;
         }

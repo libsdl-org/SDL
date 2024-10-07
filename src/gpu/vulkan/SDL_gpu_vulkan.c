@@ -60,6 +60,8 @@ typedef struct VulkanExtensions
     Uint8 EXT_vertex_attribute_divisor;
     // Only required for special implementations (i.e. MoltenVK)
     Uint8 KHR_portability_subset;
+    // Only required for decoding HDR ASTC textures
+    Uint8 EXT_texture_compression_astc_hdr;
 } VulkanExtensions;
 
 // Defines
@@ -198,6 +200,15 @@ static VkFormat SDLToVK_TextureFormat[] = {
     VK_FORMAT_D32_SFLOAT,               // D32_FLOAT
     VK_FORMAT_D24_UNORM_S8_UINT,        // D24_UNORM_S8_UINT
     VK_FORMAT_D32_SFLOAT_S8_UINT,       // D32_FLOAT_S8_UINT
+    VK_FORMAT_ASTC_4x4_UNORM_BLOCK,     // SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM
+    VK_FORMAT_ASTC_8x8_UNORM_BLOCK,     // SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM
+    VK_FORMAT_ASTC_12x12_UNORM_BLOCK,   // SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM
+    VK_FORMAT_ASTC_4x4_SRGB_BLOCK,      // SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB
+    VK_FORMAT_ASTC_8x8_SRGB_BLOCK,      // SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB
+    VK_FORMAT_ASTC_12x12_SRGB_BLOCK,    // SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB
+    VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK,    // SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT
+    VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK,    // SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT
+    VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK,  // SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT
 };
 SDL_COMPILE_TIME_ASSERT(SDLToVK_TextureFormat, SDL_arraysize(SDLToVK_TextureFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
@@ -10568,7 +10579,7 @@ static inline Uint8 CheckDeviceExtensions(
         supports->ext = 1;                   \
     }
         CHECK(KHR_swapchain)
-        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(EXT_vertex_attribute_divisor) else CHECK(KHR_portability_subset)
+        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(EXT_vertex_attribute_divisor) else CHECK(KHR_portability_subset) else CHECK(EXT_texture_compression_astc_hdr)
 #undef CHECK
     }
 
@@ -10583,7 +10594,8 @@ static inline Uint32 GetDeviceExtensionCount(VulkanExtensions *supports)
         supports->KHR_maintenance1 +
         supports->KHR_driver_properties +
         supports->EXT_vertex_attribute_divisor +
-        supports->KHR_portability_subset);
+        supports->KHR_portability_subset +
+        supports->EXT_texture_compression_astc_hdr);
 }
 
 static inline void CreateDeviceExtensionArray(
@@ -10600,6 +10612,7 @@ static inline void CreateDeviceExtensionArray(
     CHECK(KHR_driver_properties)
     CHECK(EXT_vertex_attribute_divisor)
     CHECK(KHR_portability_subset)
+    CHECK(EXT_texture_compression_astc_hdr)
 #undef CHECK
 }
 
