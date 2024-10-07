@@ -19,6 +19,9 @@
     <ClCompile Include="..\..\src\file\SDL_asyncio.c">
       <Filter>file</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\file\windows\SDL_asyncio_windows_ioring.c">
+      <Filter>file\windows</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\render\direct3d12\SDL_render_d3d12_xbox.cpp" />
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12_xboxone.cpp" />
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12_xboxseries.cpp" />

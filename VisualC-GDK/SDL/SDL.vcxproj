@@ -522,6 +522,7 @@
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
     <ClCompile Include="..\..\src\file\generic\SDL_asyncio_generic.c" />
     <ClCompile Include="..\..\src\file\SDL_asyncio.c" />
+    <ClCompile Include="..\..\src\file\windows\SDL_asyncio_windows_ioring.c" />
     <ClCompile Include="..\..\src\main\gdk\SDL_sysmain_runapp.cpp" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />

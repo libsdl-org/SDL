@@ -130,6 +130,7 @@ static bool LoadLibUring(void)
             result = LoadLibUringSyms();
             if (result) {
                 static const int needed_ops[] = {
+                    IORING_OP_NOP,
                     IORING_OP_FSYNC,
                     IORING_OP_TIMEOUT,
                     IORING_OP_CLOSE,
@@ -193,16 +194,21 @@ static void liburing_asyncioqueue_cancel_task(void *userdata, SDL_AsyncIOTask *t
     }
 
     LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) userdata;
+
+    // have to hold a lock because otherwise two threads could get_sqe and submit while one request isn't fully set up.
+    SDL_LockMutex(queuedata->sqe_lock);
     struct io_uring_sqe *sqe = liburing.io_uring_get_sqe(&queuedata->ring);
     if (!sqe) {
-        SDL_free(cancel_task);
-        return;  // oh well, the task can just finish on its own.
+        SDL_UnlockMutex(queuedata->sqe_lock);
+        SDL_free(cancel_task);  // oh well, the task can just finish on its own.
+        return;
     }
 
     cancel_task->app_userdata = task;
     liburing.io_uring_prep_cancel(sqe, task, 0);
     liburing.io_uring_sqe_set_data(sqe, cancel_task);
     liburing_asyncioqueue_queue_task(userdata, task);
+    SDL_UnlockMutex(queuedata->sqe_lock);
 }
 
 static SDL_AsyncIOTask *ProcessCQE(LibUringAsyncIOQueueData *queuedata, struct io_uring_cqe *cqe)
@@ -375,15 +381,15 @@ static bool liburing_asyncio_read(void *userdata, SDL_AsyncIOTask *task)
 
     // have to hold a lock because otherwise two threads could get_sqe and submit while one request isn't fully set up.
     SDL_LockMutex(queuedata->sqe_lock);
+    bool retval;
     struct io_uring_sqe *sqe = liburing.io_uring_get_sqe(&queuedata->ring);
     if (!sqe) {
-        return SDL_SetError("io_uring: submission queue is full");
+        retval = SDL_SetError("io_uring: submission queue is full");
+    } else {
+        liburing.io_uring_prep_read(sqe, fd, task->buffer, (unsigned) task->requested_size, task->offset);
+        liburing.io_uring_sqe_set_data(sqe, task);
+        retval = task->queue->iface.queue_task(task->queue->userdata, task);
     }
-
-    liburing.io_uring_prep_read(sqe, fd, task->buffer, (unsigned) task->requested_size, task->offset);
-    liburing.io_uring_sqe_set_data(sqe, task);
-
-    const bool retval = task->queue->iface.queue_task(task->queue->userdata, task);
     SDL_UnlockMutex(queuedata->sqe_lock);
     return retval;
 }
@@ -401,15 +407,15 @@ static bool liburing_asyncio_write(void *userdata, SDL_AsyncIOTask *task)
 
     // have to hold a lock because otherwise two threads could get_sqe and submit while one request isn't fully set up.
     SDL_LockMutex(queuedata->sqe_lock);
+    bool retval;
     struct io_uring_sqe *sqe = liburing.io_uring_get_sqe(&queuedata->ring);
     if (!sqe) {
-        return SDL_SetError("io_uring: submission queue is full");
+        retval = SDL_SetError("io_uring: submission queue is full");
+    } else {
+        liburing.io_uring_prep_write(sqe, fd, task->buffer, (unsigned) task->requested_size, task->offset);
+        liburing.io_uring_sqe_set_data(sqe, task);
+        retval = task->queue->iface.queue_task(task->queue->userdata, task);
     }
-
-    liburing.io_uring_prep_write(sqe, fd, task->buffer, (unsigned) task->requested_size, task->offset);
-    liburing.io_uring_sqe_set_data(sqe, task);
-
-    const bool retval = task->queue->iface.queue_task(task->queue->userdata, task);
     SDL_UnlockMutex(queuedata->sqe_lock);
     return retval;
 }
@@ -421,30 +427,31 @@ static bool liburing_asyncio_close(void *userdata, SDL_AsyncIOTask *task)
 
     // have to hold a lock because otherwise two threads could get_sqe and submit while one request isn't fully set up.
     SDL_LockMutex(queuedata->sqe_lock);
+    bool retval;
     struct io_uring_sqe *sqe = liburing.io_uring_get_sqe(&queuedata->ring);
     if (!sqe) {
-        return SDL_SetError("io_uring: submission queue is full");
-    }
-
-    if (task->flush) {
-        struct io_uring_sqe *flush_sqe = sqe;
-        sqe = liburing.io_uring_get_sqe(&queuedata->ring);  // this will be our actual close task.
-        if (!sqe) {
-            liburing.io_uring_prep_nop(flush_sqe);  // we already have the first sqe, just make it a NOP.
-            liburing.io_uring_sqe_set_data(flush_sqe, NULL);
-            task->queue->iface.queue_task(task->queue->userdata, task);
-            return SDL_SetError("io_uring: submission queue is full");
+        retval = SDL_SetError("io_uring: submission queue is full");
+    } else {
+        if (task->flush) {
+            struct io_uring_sqe *flush_sqe = sqe;
+            sqe = liburing.io_uring_get_sqe(&queuedata->ring);  // this will be our actual close task.
+            if (!sqe) {
+                liburing.io_uring_prep_nop(flush_sqe);  // we already have the first sqe, just make it a NOP.
+                liburing.io_uring_sqe_set_data(flush_sqe, NULL);
+                task->queue->iface.queue_task(task->queue->userdata, task);
+                SDL_UnlockMutex(queuedata->sqe_lock);
+                return SDL_SetError("io_uring: submission queue is full");
+            }
+            liburing.io_uring_prep_fsync(flush_sqe, fd, IORING_FSYNC_DATASYNC);
+            liburing.io_uring_sqe_set_data(flush_sqe, task);
+            liburing.io_uring_sqe_set_flags(flush_sqe, IOSQE_IO_HARDLINK);  // must complete before next sqe starts, and next sqe should run even if this fails.
         }
 
-        liburing.io_uring_prep_fsync(flush_sqe, fd, IORING_FSYNC_DATASYNC);
-        liburing.io_uring_sqe_set_data(flush_sqe, task);
-        liburing.io_uring_sqe_set_flags(flush_sqe, IOSQE_IO_HARDLINK);  // must complete before next sqe starts, and next sqe should run even if this fails.
+        liburing.io_uring_prep_close(sqe, fd);
+        liburing.io_uring_sqe_set_data(sqe, task);
+
+        retval = task->queue->iface.queue_task(task->queue->userdata, task);
     }
-
-    liburing.io_uring_prep_close(sqe, fd);
-    liburing.io_uring_sqe_set_data(sqe, task);
-
-    const bool retval = task->queue->iface.queue_task(task->queue->userdata, task);
     SDL_UnlockMutex(queuedata->sqe_lock);
     return retval;
 }
