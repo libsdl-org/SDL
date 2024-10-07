@@ -251,10 +251,25 @@ void SDL_SetMainReady(void)
 // Initialize all the subsystems that require initialization before threads start
 void SDL_InitMainThread(void)
 {
+    static bool done_info = false;
+
     SDL_InitTLSData();
     SDL_InitEnvironment();
     SDL_InitTicks();
     SDL_InitFilesystem();
+
+    if (!done_info) {
+        const char *value;
+
+        value = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
+        SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "App name: %s", value);
+        value = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING);
+        SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "App version: %s", value ? value : "<unspecified>");
+        value = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING);
+        SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "App ID: %s", value ? value : "<unspecified>");
+
+        done_info = true;
+    }
 }
 
 static void SDL_QuitMainThread(void)
