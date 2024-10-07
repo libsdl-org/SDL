@@ -78,6 +78,7 @@ typedef struct
     struct zwp_idle_inhibit_manager_v1 *idle_inhibit_manager;
     struct xdg_activation_v1 *activation_manager;
     struct zwp_text_input_manager_v3 *text_input_manager;
+    struct xdg_toplevel_icon_manager_v1 *xdg_toplevel_icon_manager_v1;
     struct zxdg_output_manager_v1 *xdg_output_manager;
     struct wp_viewporter *viewporter;
     struct wp_fractional_scale_manager_v1 *fractional_scale_manager;
