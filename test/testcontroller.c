@@ -2005,6 +2005,10 @@ int main(int argc, char *argv[])
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_LINUX_DEADZONES, "1");
 
+#if SDL_PLATFORM_GDK
+    SDL_SetHint(SDL_HINT_JOYSTICK_GAMEINPUT, "1");
+#endif
+
     /* Enable input debug logging */
     SDL_SetLogPriority(SDL_LOG_CATEGORY_INPUT, SDL_LOG_PRIORITY_DEBUG);
 
