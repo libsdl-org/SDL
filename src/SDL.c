@@ -55,6 +55,9 @@
 #include "video/SDL_surface_c.h"
 #include "video/SDL_video_c.h"
 #include "filesystem/SDL_filesystem_c.h"
+#ifdef SDL_PLATFORM_ANDROID
+#include "core/android/SDL_android.h"
+#endif
 
 #define SDL_INIT_EVERYTHING ~0U
 
@@ -711,7 +714,6 @@ const char *SDL_GetPlatform(void)
 bool SDL_IsTablet(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
-    extern bool SDL_IsAndroidTablet(void);
     return SDL_IsAndroidTablet();
 #elif defined(SDL_PLATFORM_IOS)
     extern bool SDL_IsIPad(void);
@@ -724,7 +726,6 @@ bool SDL_IsTablet(void)
 bool SDL_IsTV(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
-    extern bool SDL_IsAndroidTV(void);
     return SDL_IsAndroidTV();
 #elif defined(SDL_PLATFORM_IOS)
     extern bool SDL_IsAppleTV(void);
