@@ -281,8 +281,32 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     return SDL_APP_CONTINUE;
 }
 
+static const struct
+{
+    const char *key;
+    const char *value;
+} extended_metadata[] =
+{
+    { SDL_PROP_APP_METADATA_URL_STRING, "https://examples.libsdl.org/SDL3/game/01-snake/" },
+    { SDL_PROP_APP_METADATA_CREATOR_STRING, "SDL team" },
+    { SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Placed in the public domain" },
+    { SDL_PROP_APP_METADATA_TYPE_STRING, "game" }
+};
+
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
+    size_t i;
+
+    if (!SDL_SetAppMetadata("Example Snake game", "1.0", "com.example.Snake")) {
+        return SDL_APP_FAILURE;
+    }
+
+    for (i = 0; i < SDL_arraysize(extended_metadata); i++) {
+        if (!SDL_SetAppMetadataProperty(extended_metadata[i].key, extended_metadata[i].value)) {
+            return SDL_APP_FAILURE;
+        }
+    }
+
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         return SDL_APP_FAILURE;
     }

@@ -276,7 +276,7 @@ static bool maybe_resize(SDL_HashTable *restrict ht)
     }
 
     Uint32 max_load_factor = 217; // range: 0-255; 217 is roughly 85%
-    Uint32 resize_threshold = (max_load_factor * (Uint64)capacity) >> 8;
+    Uint32 resize_threshold = (Uint32)((max_load_factor * (Uint64)capacity) >> 8);
 
     if (ht->num_occupied_slots > resize_threshold) {
         return resize(ht, capacity * 2);

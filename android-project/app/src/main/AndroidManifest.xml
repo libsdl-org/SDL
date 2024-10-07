@@ -33,6 +33,7 @@
 
     <!-- Audio recording support -->
     <!-- if you want to record audio, uncomment this. -->
+    <!-- <uses-permission android:name="android.permission.RECORD_AUDIO" /> -->
     <!-- <uses-feature
         android:name="android.hardware.microphone"
         android:required="false" /> -->
@@ -54,9 +55,6 @@
 
     <!-- Allow access to the vibrator -->
     <uses-permission android:name="android.permission.VIBRATE" />
-
-    <!-- if you want to record audio, uncomment this. -->
-    <!-- <uses-permission android:name="android.permission.RECORD_AUDIO" /> -->
 
     <!-- Create a Java class extending SDLActivity and place it in a
          directory under app/src/main/java matching the package, e.g. app/src/main/java/com/gamemaker/game/MyGame.java

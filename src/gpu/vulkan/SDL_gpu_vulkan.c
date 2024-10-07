@@ -10246,12 +10246,12 @@ static bool VULKAN_Submit(
         presentData->windowData->frameCounter =
             (presentData->windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
 
-        if (presentResult == VK_SUCCESS || presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
+        if (presentResult == VK_SUCCESS || presentResult == VK_SUBOPTIMAL_KHR || presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
             // If presenting, the swapchain is using the in-flight fence
             presentData->windowData->inFlightFences[presentData->windowData->frameCounter] = (SDL_GPUFence*)vulkanCommandBuffer->inFlightFence;
             (void)SDL_AtomicIncRef(&vulkanCommandBuffer->inFlightFence->referenceCount);
 
-            if (presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
+            if (presentResult == VK_SUBOPTIMAL_KHR || presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
                 presentData->windowData->needsSwapchainRecreate = true;
             }
         } else {

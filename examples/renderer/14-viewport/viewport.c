@@ -25,6 +25,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_Surface *surface = NULL;
     char *bmp_path = NULL;
 
+    SDL_SetAppMetadata("Example Renderer Viewport", "1.0", "com.example.renderer-viewport");
+
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
