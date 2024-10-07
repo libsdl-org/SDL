@@ -257,7 +257,7 @@ typedef uint64_t Uint64;
 #define SDL_PRIs64 "I64d"
 #elif defined(PRIs64)
 #define SDL_PRIs64 PRIs64
-#elif defined(__LP64__) && !defined(__APPLE__)
+#elif defined(__LP64__) && !defined(__APPLE__) && !defined(__EMSCRIPTEN__)
 #define SDL_PRIs64 "ld"
 #else
 #define SDL_PRIs64 "lld"
