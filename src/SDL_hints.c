@@ -83,13 +83,28 @@ static void SDLCALL CleanupHintProperty(void *userdata, void *value)
     SDL_free(hint);
 }
 
+static const char* GetHintEnvironmentVariable(const char *name)
+{
+    const char *result = SDL_getenv(name);
+    if (!result && name && *name) {
+        // fall back to old (SDL2) names of environment variables that
+        // are important to users (e.g. many use SDL_VIDEODRIVER=wayland)
+        if (SDL_strcmp(name, SDL_HINT_VIDEO_DRIVER) == 0) {
+            result = SDL_getenv("SDL_VIDEODRIVER");
+        } else if (SDL_strcmp(name, SDL_HINT_AUDIO_DRIVER) == 0) {
+            result = SDL_getenv("SDL_AUDIODRIVER");
+        }
+    }
+    return result;
+}
+
 bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
 {
     if (!name || !*name) {
         return SDL_InvalidParamError("name");
     }
 
-    const char *env = SDL_getenv(name);
+    const char *env = GetHintEnvironmentVariable(name);
     if (env && (priority < SDL_HINT_OVERRIDE)) {
         return SDL_SetError("An environment variable is taking priority");
     }
@@ -143,7 +158,7 @@ bool SDL_ResetHint(const char *name)
         return SDL_InvalidParamError("name");
     }
 
-    const char *env = SDL_getenv(name);
+    const char *env = GetHintEnvironmentVariable(name);
 
     const SDL_PropertiesID hints = GetHintProperties(false);
     if (!hints) {
@@ -182,7 +197,7 @@ static void SDLCALL ResetHintsCallback(void *userdata, SDL_PropertiesID hints, c
         return;  // uh...okay.
     }
 
-    const char *env = SDL_getenv(name);
+    const char *env = GetHintEnvironmentVariable(name);
     if ((!env && hint->value) || (env && !hint->value) || (env && SDL_strcmp(env, hint->value) != 0)) {
         SDL_HintWatch *entry = hint->callbacks;
         while (entry) {
@@ -213,7 +228,7 @@ const char *SDL_GetHint(const char *name)
         return NULL;
     }
 
-    const char *result = SDL_getenv(name);
+    const char *result = GetHintEnvironmentVariable(name);
 
     const SDL_PropertiesID hints = GetHintProperties(false);
     if (hints) {
