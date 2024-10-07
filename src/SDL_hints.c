@@ -237,10 +237,10 @@ int SDL_GetStringInteger(const char *value, int default_value)
     if (!value || !*value) {
         return default_value;
     }
-    if (*value == '0' || SDL_strcasecmp(value, "false") == 0) {
+    if (SDL_strcasecmp(value, "false") == 0) {
         return 0;
     }
-    if (*value == '1' || SDL_strcasecmp(value, "true") == 0) {
+    if (SDL_strcasecmp(value, "true") == 0) {
         return 1;
     }
     if (*value == '-' || SDL_isdigit(*value)) {
