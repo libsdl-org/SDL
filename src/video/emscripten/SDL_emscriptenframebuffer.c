@@ -89,7 +89,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect
             SDL2.imageCtx = SDL2.ctx;
         }
         var data = SDL2.image.data;
-        var src = pixels >> 2;
+        var src = pixels / 4;
         var dst = 0;
         var num;
         if (typeof CanvasPixelArray !== 'undefined' && data instanceof CanvasPixelArray) {
