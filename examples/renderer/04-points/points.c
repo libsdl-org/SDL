@@ -36,6 +36,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     int i;
 
+    SDL_SetAppMetadata("Example Renderer Points", "1.0", "com.example.renderer-points");
+
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;

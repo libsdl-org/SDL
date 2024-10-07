@@ -31,6 +31,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_AudioSpec spec;
     char *wav_path = NULL;
 
+    SDL_SetAppMetadata("Example Audio Load Wave", "1.0", "com.example.audio-load-wav");
+
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
