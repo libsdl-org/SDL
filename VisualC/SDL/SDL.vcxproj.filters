@@ -214,6 +214,9 @@
     <Filter Include="file\generic">
       <UniqueIdentifier>{00004d6806b6238cae0ed62db5440000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="file\windows">
+      <UniqueIdentifier>{000028b2ea36d7190d13777a4dc70000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
@@ -961,6 +964,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\file\SDL_asyncio.c">
       <Filter>file</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\file\windows\SDL_asyncio_windows_ioring.c">
+      <Filter>file\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c">
       <Filter>main\generic</Filter>

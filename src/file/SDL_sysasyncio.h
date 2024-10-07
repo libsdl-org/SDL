@@ -24,11 +24,17 @@
 #ifndef SDL_sysasyncio_h_
 #define SDL_sysasyncio_h_
 
+#if defined(SDL_PLATFORM_WINDOWS) && defined(NTDDI_WIN10_CO)
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) && NTDDI_VERSION >= NTDDI_WIN10_CO
+#define HAVE_IORINGAPI_H
+#endif
+#endif
+
 // If your platform has an option other than the "generic" code, make sure this
 // is #defined to 0 instead and implement the SDL_SYS_* functions below in your
 // backend (having them maybe call into the SDL_SYS_*_Generic versions as a
 // fallback if the platform has functionality that isn't always available).
-#ifdef HAVE_LIBURING_H
+#if defined(HAVE_LIBURING_H) || defined(HAVE_IORINGAPI_H)
 #define SDL_ASYNCIO_ONLY_HAVE_GENERIC 0
 #else
 #define SDL_ASYNCIO_ONLY_HAVE_GENERIC 1

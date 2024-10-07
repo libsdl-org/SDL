@@ -552,6 +552,7 @@
 		00005081394CCF8322BE0000 /* SDL_sysasyncio.h in Headers */ = {isa = PBXBuildFile; fileRef = 0000585B2CAB450B40540000 /* SDL_sysasyncio.h */; };
 		000018AF97C08F2DAFFD0000 /* SDL_asyncio.h in Headers */ = {isa = PBXBuildFile; fileRef = 00004945A946DF5B1AED0000 /* SDL_asyncio.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		00004D0B73767647AD550000 /* SDL_asyncio_generic.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */; };
+		0000A03C0F32C43816F40000 /* SDL_asyncio_windows_ioring.c in Sources */ = {isa = PBXBuildFile; fileRef = 000030DD21496B5C0F210000 /* SDL_asyncio_windows_ioring.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1134,6 +1135,7 @@
 		0000585B2CAB450B40540000 /* SDL_sysasyncio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_sysasyncio.h; path = SDL_sysasyncio.h; sourceTree = "<group>"; };
 		00004945A946DF5B1AED0000 /* SDL_asyncio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_asyncio.h; path = SDL3/SDL_asyncio.h; sourceTree = "<group>"; };
 		0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_asyncio_generic.c; path = SDL_asyncio_generic.c; sourceTree = "<group>"; };
+		000030DD21496B5C0F210000 /* SDL_asyncio_windows_ioring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_asyncio_windows_ioring.c; path = SDL_asyncio_windows_ioring.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1947,6 +1949,7 @@
 				0000919399B1A908267F0000 /* SDL_asyncio_c.h */,
 				0000585B2CAB450B40540000 /* SDL_sysasyncio.h */,
 				000013C0F2EADC24ADC10000 /* generic */,
+				000064F9A2AAE947C1CD0000 /* windows */,
 			);
 			path = file;
 			sourceTree = "<group>";
@@ -2445,6 +2448,14 @@
 				0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */,
 			);
 			path = generic;
+			sourceTree = "<group>";
+		};
+		000064F9A2AAE947C1CD0000 /* windows */ = {
+			isa = PBXGroup;
+			children = (
+				000030DD21496B5C0F210000 /* SDL_asyncio_windows_ioring.c */,
+			);
+			path = windows;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -3073,6 +3084,7 @@
 				6312C66D2B42341400A7BB00 /* SDL_murmur3.c in Sources */,
 				0000AEB9AE90228CA2D60000 /* SDL_asyncio.c in Sources */,
 				00004D0B73767647AD550000 /* SDL_asyncio_generic.c in Sources */,
+				0000A03C0F32C43816F40000 /* SDL_asyncio_windows_ioring.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
