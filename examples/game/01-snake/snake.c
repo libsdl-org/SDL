@@ -283,6 +283,10 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
+    if (!SDL_SetAppMetadata("Example Snake game", "1.0", "com.example.Snake")) {
+        return SDL_APP_FAILURE;
+    }
+
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         return SDL_APP_FAILURE;
     }
