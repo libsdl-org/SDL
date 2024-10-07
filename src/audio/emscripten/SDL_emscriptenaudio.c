@@ -39,6 +39,12 @@ static void FeedAudioDevice(_THIS, const void *buf, const int buflen)
     /* *INDENT-OFF* */ /* clang-format off */
     MAIN_THREAD_EM_ASM({
         var SDL2 = Module['SDL2'];
+        /* Convert incoming buf pointer to a HEAPF32 offset. */
+#ifdef __wasm64__
+        var buf = $0 / 4;
+#else
+        var buf = $0 >>> 2;
+#endif
         var numChannels = SDL2.audio.currentOutputBuffer['numberOfChannels'];
         for (var c = 0; c < numChannels; ++c) {
             var channelData = SDL2.audio.currentOutputBuffer['getChannelData'](c);
@@ -47,7 +53,7 @@ static void FeedAudioDevice(_THIS, const void *buf, const int buflen)
             }
 
             for (var j = 0; j < $1; ++j) {
-                channelData[j] = HEAPF32[$0 + ((j*numChannels + c) << 2) >> 2];  /* !!! FIXME: why are these shifts here? */
+                channelData[j] = HEAPF32[buf + (j*numChannels + c)];
             }
         }
     }, buf, buflen / framelen);
