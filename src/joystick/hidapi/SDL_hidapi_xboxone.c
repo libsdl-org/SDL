@@ -350,9 +350,11 @@ static bool HIDAPI_DriverXboxOne_IsEnabled(void)
 
 static bool HIDAPI_DriverXboxOne_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-#ifdef SDL_PLATFORM_MACOS
-    // Wired Xbox One controllers are handled by the 360Controller driver
+#if defined(SDL_PLATFORM_MACOS) && defined(SDL_JOYSTICK_MFI)
     if (!SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
+        // On macOS we get a shortened version of the real report and
+        // you can't write output reports for wired controllers, so
+        // we'll just use the GCController support instead.
         return false;
     }
 #endif
@@ -1552,8 +1554,9 @@ static bool HIDAPI_GIP_ProcessData(SDL_Joystick *joystick, SDL_DriverXboxOne_Con
 
     while (size > GIP_HEADER_MIN_LENGTH) {
         hdr_len = HIDAPI_GIP_DecodeHeader(&hdr, data, size);
-        if ((hdr_len + hdr.packet_length) > (size_t)size) {
-            return false;
+        if ((hdr_len + hdr.packet_length) > (Uint32)size) {
+            // On macOS we get a shortened version of the real report
+            hdr.packet_length = (Uint32)(size - hdr_len);
         }
 
         if (!HIDAPI_GIP_ProcessPacket(joystick, ctx, &hdr, data + hdr_len)) {
