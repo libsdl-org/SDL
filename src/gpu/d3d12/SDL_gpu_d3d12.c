@@ -6105,6 +6105,8 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     windowData->swapchainComposition = swapchain_composition;
     windowData->swapchainColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
     windowData->frameCounter = 0;
+    windowData->width = width;
+    windowData->height = height;
 
     // Precache blit pipelines for the swapchain format
     for (Uint32 i = 0; i < 5; i += 1) {
