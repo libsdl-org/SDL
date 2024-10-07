@@ -642,17 +642,14 @@ enum {
 static HANDLE stderrHandle = NULL;
 #endif
 
-static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
-                                  const char *message)
+static void SDLCALL SDL_LogOutputRaw(void *userdata, int category, SDL_LogPriority priority,
+                                     const char *user_message, const char *processed_message)
 {
 #if defined(SDL_PLATFORM_WINDOWS)
     // Way too many allocations here, urgh
     // Note: One can't call SDL_SetError here, since that function itself logs.
     {
-        char *output;
-        size_t length;
         LPTSTR tstr;
-        bool isstack;
 
 #if !defined(SDL_PLATFORM_GDK)
         BOOL attachResult;
@@ -694,10 +691,8 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
             }
         }
 #endif // !defined(SDL_PLATFORM_GDK)
-        length = SDL_strlen(GetLogPriorityPrefix(priority)) + SDL_strlen(message) + 1 + 1 + 1;
-        output = SDL_small_alloc(char, length, &isstack);
-        (void)SDL_snprintf(output, length, "%s%s\r\n", GetLogPriorityPrefix(priority), message);
-        tstr = WIN_UTF8ToString(output);
+
+        tstr = WIN_UTF8ToString(processed_message);
 
         // Output to debugger
         OutputDebugString(tstr);
@@ -720,21 +715,20 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 #endif // !defined(SDL_PLATFORM_GDK)
 
         SDL_free(tstr);
-        SDL_small_free(output, isstack);
     }
 #elif defined(SDL_PLATFORM_ANDROID)
     {
         char tag[32];
 
         SDL_snprintf(tag, SDL_arraysize(tag), "SDL/%s", GetCategoryPrefix(category));
-        __android_log_write(SDL_android_priority[priority], tag, message);
+        __android_log_write(SDL_android_priority[priority], tag, user_message);
     }
 #elif defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))
     /* Technically we don't need Cocoa/UIKit, but that's where this function is defined for now.
      */
     extern void SDL_NSLog(const char *prefix, const char *text);
     {
-        SDL_NSLog(GetLogPriorityPrefix(priority), message);
+        SDL_NSLog(GetLogPriorityPrefix(priority), user_message);
         return;
     }
 #elif defined(SDL_PLATFORM_PSP) || defined(SDL_PLATFORM_PS2)
@@ -742,7 +736,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         FILE *pFile;
         pFile = fopen("SDL_Log.txt", "a");
         if (pFile) {
-            (void)fprintf(pFile, "%s%s\n", GetLogPriorityPrefix(priority), message);
+            (void)fprintf(pFile, "%s", processed_message);
             (void)fclose(pFile);
         }
     }
@@ -751,7 +745,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         FILE *pFile;
         pFile = fopen("ux0:/data/SDL_Log.txt", "a");
         if (pFile) {
-            (void)fprintf(pFile, "%s%s\n", GetLogPriorityPrefix(priority), message);
+            (void)fprintf(pFile, "%s", processed_message);
             (void)fclose(pFile);
         }
     }
@@ -760,7 +754,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         FILE *pFile;
         pFile = fopen("sdmc:/3ds/SDL_Log.txt", "a");
         if (pFile) {
-            (void)fprintf(pFile, "%s%s\n", GetLogPriorityPrefix(priority), message);
+            (void)fprintf(pFile, "%s", processed_message);
             (void)fclose(pFile);
         }
     }
@@ -768,8 +762,30 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 #if defined(HAVE_STDIO_H) && \
     !(defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))) && \
     !(defined(SDL_PLATFORM_WIN32))
-    (void)fprintf(stderr, "%s%s\n", GetLogPriorityPrefix(priority), message);
+    (void)fprintf(stderr, "%s", processed_message);
 #endif
+}
+
+static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
+                                  const char *message)
+{
+	char *output;
+	size_t length;
+	bool isstack;
+
+	length = SDL_strlen(GetLogPriorityPrefix(priority)) + SDL_strlen(message) + 1 + 1 + 1;
+	output = SDL_small_alloc(char, length, &isstack);
+
+#if defined(SDL_PLATFORM_WINDOWS)	
+	const char *newline = "\r\n";
+#else
+	const char *newline = "\n";
+#endif	
+	
+	(void)SDL_snprintf(output, length, "%s%s%s", GetLogPriorityPrefix(priority), message, newline);
+	
+	SDL_LogOutputRaw(userdata, category, priority, message, output);
+	SDL_small_free(output, isstack);
 }
 
 void SDL_GetLogOutputFunction(SDL_LogOutputFunction *callback, void **userdata)
