@@ -267,6 +267,7 @@ void SDL_InitMainThread(void)
         SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "App version: %s", value ? value : "<unspecified>");
         value = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING);
         SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "App ID: %s", value ? value : "<unspecified>");
+        SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "SDL revision: %s", SDL_REVISION);
 
         done_info = true;
     }
