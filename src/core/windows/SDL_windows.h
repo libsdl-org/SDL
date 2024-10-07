@@ -119,7 +119,7 @@ extern "C" {
 // Sets an error message based on a given HRESULT
 extern bool WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 
-// Sets an error message based on GetLastError(). Always return -1.
+// Sets an error message based on GetLastError(). Always returns false.
 extern bool WIN_SetError(const char *prefix);
 
 // Load a function from combase.dll
