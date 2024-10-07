@@ -888,9 +888,6 @@ static bool IsROGAlly(SDL_Joystick *joystick)
 
 static bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, bool *invert_sensors)
 {
-    const char *hint;
-    int hint_value;
-
     SDL_AssertJoysticksLocked();
 
     *invert_sensors = false;
@@ -905,30 +902,26 @@ static bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, bool *invert_senso
         return false;
     }
 
-    hint = SDL_GetHint(SDL_HINT_GAMECONTROLLER_SENSOR_FUSION);
-    hint_value = SDL_GetStringInteger(hint, -1);
-    if (hint_value > 0) {
-        return true;
-    }
-    if (hint_value == 0) {
-        return false;
-    }
+    const char *hint = SDL_GetHint(SDL_HINT_GAMECONTROLLER_SENSOR_FUSION);
+    if (hint && *hint) {
+        if (*hint == '@' || SDL_strncmp(hint, "0x", 2) == 0) {
+            SDL_vidpid_list gamepads;
+            SDL_GUID guid;
+            Uint16 vendor, product;
+            bool enabled;
+            SDL_zero(gamepads);
 
-    if (hint) {
-        SDL_vidpid_list gamepads;
-        SDL_GUID guid;
-        Uint16 vendor, product;
-        bool enabled;
-        SDL_zero(gamepads);
-
-        // See if the gamepad is in our list of devices to enable
-        guid = SDL_GetJoystickGUID(joystick);
-        SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
-        SDL_LoadVIDPIDListFromHints(&gamepads, hint, NULL);
-        enabled = SDL_VIDPIDInList(vendor, product, &gamepads);
-        SDL_FreeVIDPIDList(&gamepads);
-        if (enabled) {
-            return true;
+            // See if the gamepad is in our list of devices to enable
+            guid = SDL_GetJoystickGUID(joystick);
+            SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+            SDL_LoadVIDPIDListFromHints(&gamepads, hint, NULL);
+            enabled = SDL_VIDPIDInList(vendor, product, &gamepads);
+            SDL_FreeVIDPIDList(&gamepads);
+            if (enabled) {
+                return true;
+            }
+        } else {
+            return SDL_GetStringBoolean(hint, false);
         }
     }
 
