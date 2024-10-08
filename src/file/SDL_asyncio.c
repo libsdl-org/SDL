@@ -83,22 +83,19 @@ Sint64 SDL_GetAsyncIOSize(SDL_AsyncIO *asyncio)
     return asyncio->iface.size(asyncio->userdata);
 }
 
-static SDL_AsyncIOTask *RequestAsyncIO(bool reading, SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata)
+static bool RequestAsyncIO(bool reading, SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata)
 {
     if (!asyncio) {
-        SDL_InvalidParamError("asyncio");
-        return NULL;
+        return SDL_InvalidParamError("asyncio");
     } else if (!ptr) {
-        SDL_InvalidParamError("ptr");
-        return NULL;
+        return SDL_InvalidParamError("ptr");
     } else if (!queue) {
-        SDL_InvalidParamError("queue");
-        return NULL;
+        return SDL_InvalidParamError("queue");
     }
 
     SDL_AsyncIOTask *task = (SDL_AsyncIOTask *) SDL_calloc(1, sizeof (*task));
     if (!task) {
-        return NULL;
+        return false;
     }
 
     task->asyncio = asyncio;
@@ -113,8 +110,7 @@ static SDL_AsyncIOTask *RequestAsyncIO(bool reading, SDL_AsyncIO *asyncio, void 
     if (asyncio->closing) {
         SDL_free(task);
         SDL_UnlockMutex(asyncio->lock);
-        SDL_SetError("SDL_AsyncIO is closing, can't start new tasks");
-        return NULL;
+        return SDL_SetError("SDL_AsyncIO is closing, can't start new tasks");
     }
     LINKED_LIST_PREPEND(task, asyncio->tasks, asyncio);
     SDL_AddAtomicInt(&queue->tasks_inflight, 1);
@@ -130,34 +126,31 @@ static SDL_AsyncIOTask *RequestAsyncIO(bool reading, SDL_AsyncIO *asyncio, void 
         task = NULL;
     }
 
-    return task;
+    return (task != NULL);
 }
 
-SDL_AsyncIOTask *SDL_ReadAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata)
+bool SDL_ReadAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata)
 {
     return RequestAsyncIO(true, asyncio, ptr, offset, size, queue, userdata);
 }
 
-SDL_AsyncIOTask *SDL_WriteAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata)
+bool SDL_WriteAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata)
 {
     return RequestAsyncIO(false, asyncio, ptr, offset, size, queue, userdata);
 }
 
-SDL_AsyncIOTask *SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQueue *queue, void *userdata)
+bool SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQueue *queue, void *userdata)
 {
     if (!asyncio) {
-        SDL_InvalidParamError("asyncio");
-        return NULL;
+        return SDL_InvalidParamError("asyncio");
     } else if (!queue) {
-        SDL_InvalidParamError("queue");
-        return NULL;
+        return SDL_InvalidParamError("queue");
     }
 
     SDL_LockMutex(asyncio->lock);
     if (asyncio->closing) {
         SDL_UnlockMutex(asyncio->lock);
-        SDL_SetError("Already closing");
-        return NULL;
+        return SDL_SetError("Already closing");
     }
 
     SDL_AsyncIOTask *task = (SDL_AsyncIOTask *) SDL_calloc(1, sizeof (*task));
@@ -185,7 +178,7 @@ SDL_AsyncIOTask *SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQ
 
     SDL_UnlockMutex(asyncio->lock);
 
-    return task;
+    return (task != NULL);
 }
 
 SDL_AsyncIOQueue *SDL_CreateAsyncIOQueue(void)
@@ -300,17 +293,15 @@ void SDL_QuitAsyncIO(void)
     SDL_SYS_QuitAsyncIO();
 }
 
-SDL_AsyncIOTask *SDL_LoadFileAsync(const char *file, SDL_AsyncIOQueue *queue, void *userdata)
+bool SDL_LoadFileAsync(const char *file, SDL_AsyncIOQueue *queue, void *userdata)
 {
     if (!file) {
-        SDL_InvalidParamError("file");
-        return NULL;
+        return SDL_InvalidParamError("file");
     } else if (!queue) {
-        SDL_InvalidParamError("queue");
-        return NULL;
+        return SDL_InvalidParamError("queue");
     }
 
-    SDL_AsyncIOTask *task = NULL;
+    bool retval = false;
     SDL_AsyncIO *asyncio = SDL_AsyncIOFromFile(file, "r");
     if (asyncio) {
         asyncio->oneshot = true;
@@ -321,16 +312,16 @@ SDL_AsyncIOTask *SDL_LoadFileAsync(const char *file, SDL_AsyncIOQueue *queue, vo
             // !!! FIXME: check if flen > address space, since it'll truncate and we'll just end up with an incomplete buffer or a crash.
             ptr = SDL_malloc((size_t) (flen + 1));  // over-allocate by one so we can add a null-terminator.
             if (ptr) {
-                task = SDL_ReadAsyncIO(asyncio, ptr, 0, (Uint64) flen, queue, userdata);
+                retval = SDL_ReadAsyncIO(asyncio, ptr, 0, (Uint64) flen, queue, userdata);
+                if (!retval) {
+                    SDL_free(ptr);
+                }
             }
-        }
-
-        if (!task) {
-            SDL_free(ptr);
         }
 
         SDL_CloseAsyncIO(asyncio, false, queue, userdata);  // if this fails, we'll have a resource leak, but this would already be a dramatic system failure.
     }
 
-    return task;
+    return retval;
 }
+
