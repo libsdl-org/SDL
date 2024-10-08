@@ -299,8 +299,8 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppIterate(void *appstate);
  * Apps implement this function when using SDL_MAIN_USE_CALLBACKS. If using a
  * standard "main" function, you should not supply this.
  *
- * This function is called as needed by SDL after SDL_AppInit returns 0; It is
- * called once for each new event.
+ * This function is called as needed by SDL after SDL_AppInit returns
+ * SDL_APP_CONTINUE. It is called once for each new event.
  *
  * There is (currently) no guarantee about what thread this will be called
  * from; whatever thread pushes an event onto SDL's queue will trigger this
