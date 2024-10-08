@@ -65,7 +65,7 @@ SDL_OpenAudioDevice(...)
 expression e;
 @@
 - SDL_PauseAudio(e)
-+ e == SDL_TRUE ? SDL_PauseAudioDevice(g_audio_id) : SDL_PlayAudioDevice(g_audio_id)
++ e ? SDL_PauseAudioDevice(g_audio_id) : SDL_PlayAudioDevice(g_audio_id)
 
 @@
 @@
@@ -92,13 +92,13 @@ expression e1;
 @@
 (
 - SDL_EventState(e1, SDL_IGNORE)
-+ SDL_SetEventEnabled(e1, SDL_FALSE)
++ SDL_SetEventEnabled(e1, false)
 |
 - SDL_EventState(e1, SDL_DISABLE)
-+ SDL_SetEventEnabled(e1, SDL_FALSE)
++ SDL_SetEventEnabled(e1, false)
 |
 - SDL_EventState(e1, SDL_ENABLE)
-+ SDL_SetEventEnabled(e1, SDL_TRUE)
++ SDL_SetEventEnabled(e1, true)
 |
 - SDL_EventState(e1, SDL_QUERY)
 + SDL_EventEnabled(e1)
@@ -3633,11 +3633,11 @@ typedef SDL_JoystickGUID, SDL_GUID;
 @@
 @@
 - SDL_PRESSED
-+ SDL_TRUE
++ true
 @@
 @@
 - SDL_RELEASED
-+ SDL_FALSE
++ false
 
 // This should be the last rule in the file, since it works on SDL3 functions and previous rules may have renamed old functions.
 @ bool_return_type  @
