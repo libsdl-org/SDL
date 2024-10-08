@@ -227,6 +227,7 @@
 
 #define SDL_CAMERA_DRIVER_DUMMY 1
 
+/* Enable dialog subsystem */
 #define SDL_DIALOG_DUMMY 1
 
 #endif /* SDL_build_config_ios_h_ */
