@@ -88,7 +88,7 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
             SDL3.imageCtx = SDL3.ctx;
         }
         var data = SDL3.image.data;
-        var src = pixels >> 2;
+        var src = pixels / 4;
         var dst = 0;
         var num;
 

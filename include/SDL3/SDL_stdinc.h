@@ -428,7 +428,7 @@ typedef Sint64 SDL_Time;
 #define SDL_PRIs64 "I64d"
 #elif defined(PRIs64)
 #define SDL_PRIs64 PRIs64
-#elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE)
+#elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE) && !defined(__EMSCRIPTEN__)
 #define SDL_PRIs64 "ld"
 #else
 #define SDL_PRIs64 "lld"
@@ -439,7 +439,7 @@ typedef Sint64 SDL_Time;
 #define SDL_PRIu64 "I64u"
 #elif defined(PRIu64)
 #define SDL_PRIu64 PRIu64
-#elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE)
+#elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE) && !defined(__EMSCRIPTEN__)
 #define SDL_PRIu64 "lu"
 #else
 #define SDL_PRIu64 "llu"

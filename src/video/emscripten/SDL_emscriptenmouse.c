@@ -94,7 +94,7 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
 
         var image = ctx.createImageData(w, h);
         var data = image.data;
-        var src = pixels >> 2;
+        var src = pixels / 4;
 
         var data32 = new Int32Array(data.buffer);
         data32.set(HEAP32.subarray(src, src + data32.length));
