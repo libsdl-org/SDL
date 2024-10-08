@@ -25,11 +25,7 @@
 
 #include <SDL3/SDL_platform_defines.h>
 
-/**
- *  \file SDL_build_config_emscripten.h
- *
- *  This is a configuration that can be used to build SDL for Emscripten.
- */
+/* This is a configuration that can be used to build SDL for Emscripten. */
 
 #define HAVE_GCC_ATOMICS 1
 

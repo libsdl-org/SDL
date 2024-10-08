@@ -125,10 +125,6 @@ _m_prefetch(void *__P)
 extern "C" {
 #endif
 
-/**
- *  \file SDL_endian.h
- */
-
 /* various modern compilers may have builtin swap */
 #if defined(__GNUC__) || defined(__clang__)
 #   define HAS_BUILTIN_BSWAP16 (SDL_HAS_BUILTIN(__builtin_bswap16)) || \

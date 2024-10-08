@@ -19,11 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
-*  \file SDL_revision.h
-*
-*  Header file containing the SDL revision.
-*/
+/* Header file containing the SDL revision. */
 
 #ifndef SDL_revision_h_
 #define SDL_revision_h_

@@ -25,11 +25,7 @@
 
 #include <SDL3/SDL_platform_defines.h>
 
-/**
- *  \file SDL_build_config_minimal.h
- *
- *  This is the minimal configuration that can be used to build SDL.
- */
+/* This is the minimal configuration that can be used to build SDL. */
 
 #define HAVE_STDARG_H   1
 #define HAVE_STDDEF_H   1

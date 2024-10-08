@@ -24,11 +24,7 @@
 
 #include <SDL3/SDL_platform_defines.h>
 
-/**
- *  \file SDL_build_config.h
- *
- *  This is a set of defines to configure the SDL features
- */
+/* This is a set of defines to configure the SDL features */
 
 /* Add any platform that doesn't build using the configure system. */
 #if defined(SDL_PLATFORM_WIN32)
