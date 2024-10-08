@@ -27,11 +27,11 @@
  * In order to make this consistent on all platforms, the application's main()
  * should look like this:
  *
- *  ```c
+ * ```c
  *  int main(int argc, char *argv[])
  *  {
  *  }
- *  ```
+ * ```
  *
  * SDL will take care of platform specific details on how it gets called.
  *
