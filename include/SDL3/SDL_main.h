@@ -563,30 +563,16 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
     /* include header-only SDL_main implementations
-     * Note: currently Android is the only platform where we rename main() to SDL_main()
-     *  but do *not* use SDL_main_impl.h (because SDL_main() is called from external Java code)
+     * Note: currently Android is the only platform where we rename main() to SDL_main() but
+     *  do *not* use SDL_main_impl.h (because SDL_main() is called from external Java code).
+     *  If other platforms like that turn up, add them next to "defined(SDL_PLATFORM_ANDROID)"
      */
     #if ( defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE) ) && \
           !defined(SDL_PLATFORM_ANDROID)
 
         /* platforms which main (-equivalent) can be implemented in plain C */
         #include <SDL3/SDL_main_impl.h>
-
-    #elif 0  /* C++ platforms (currently none, this used to be here for WinRT, but is left for future platforms that might arrive. */
-        #ifdef __cplusplus
-        #include <SDL3/SDL_main_impl.h>
-        #else
-            /* Note: to get rid of the following warning, you can #define SDL_MAIN_NOIMPL before including SDL_main.h
-             *  in your C sourcefile that contains the standard main. Do *not* use SDL_MAIN_HANDLED for that, then SDL_main won't find your main()!
-             */
-            #ifdef _MSC_VER
-                #pragma message("Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C (then continue including SDL_main.h there!) and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>")
-            #elif defined(__GNUC__) /* gcc, clang, mingw and compatible are matched by this and have #warning */
-                #warning "Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>"
-            #endif /* __GNUC__ */
-        #endif /* __cplusplus */
-
-    #endif /* C++ platforms */
+    #endif
 #endif
 
 #endif /* SDL_main_h_ */
