@@ -133,7 +133,7 @@ typedef enum SDL_EventType
     SDL_EVENT_WINDOW_ENTER_FULLSCREEN,  /**< The window has entered fullscreen mode */
     SDL_EVENT_WINDOW_LEAVE_FULLSCREEN,  /**< The window has left fullscreen mode */
     SDL_EVENT_WINDOW_DESTROYED,         /**< The window with the associated ID is being or has been destroyed. If this message is being handled
-                                             in an event watcher, the window handle is still valid and can still be used to retrieve any userdata
+                                             in an event watcher, the window handle is still valid and can still be used to retrieve any properties
                                              associated with the window. Otherwise, the handle has already been destroyed and all resources
                                              associated with it are invalid */
     SDL_EVENT_WINDOW_HDR_STATE_CHANGED, /**< Window HDR properties have changed */
@@ -554,7 +554,7 @@ typedef struct SDL_JoyDeviceEvent
 } SDL_JoyDeviceEvent;
 
 /**
- * Joysick battery level change event structure (event.jbattery.*)
+ * Joystick battery level change event structure (event.jbattery.*)
  *
  * \since This struct is available since SDL 3.0.0.
  */
