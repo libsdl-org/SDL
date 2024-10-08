@@ -62,6 +62,7 @@
 #include "xdg-dialog-v1-client-protocol.h"
 #include "xdg-foreign-unstable-v2-client-protocol.h"
 #include "xdg-output-unstable-v1-client-protocol.h"
+#include "xdg-session-management-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 #include "xdg-toplevel-icon-v1-client-protocol.h"
 
@@ -1194,6 +1195,8 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->xdg_wm_dialog_v1 = wl_registry_bind(d->registry, id, &xdg_wm_dialog_v1_interface, 1);
     } else if (SDL_strcmp(interface, "wp_alpha_modifier_v1") == 0) {
         d->wp_alpha_modifier_v1 = wl_registry_bind(d->registry, id, &wp_alpha_modifier_v1_interface, 1);
+    } else if (SDL_strcmp(interface, "xdg_session_manager_v1") == 0) {
+        d->xdg_session_manager_v1 = wl_registry_bind(d->registry, id, &xdg_session_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "xdg_toplevel_icon_manager_v1") == 0) {
         d->xdg_toplevel_icon_manager_v1 = wl_registry_bind(d->registry, id, &xdg_toplevel_icon_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "kde_output_order_v1") == 0) {
@@ -1463,6 +1466,16 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->wp_alpha_modifier_v1) {
         wp_alpha_modifier_v1_destroy(data->wp_alpha_modifier_v1);
         data->wp_alpha_modifier_v1 = NULL;
+    }
+
+    if (data->xdg_session_v1) {
+        xdg_session_v1_destroy(data->xdg_session_v1);
+        data->xdg_session_v1 = NULL;
+    }
+
+    if (data->xdg_session_manager_v1) {
+        xdg_session_manager_v1_destroy(data->xdg_session_manager_v1);
+        data->xdg_session_manager_v1 = NULL;
     }
 
     if (data->xdg_toplevel_icon_manager_v1) {

@@ -6,6 +6,18 @@ encounter limitations or behavior that is different from other windowing systems
 
 ## Common issues:
 
+### ```SDL_SetWindowPosition()``` doesn't work on non-popup windows
+
+- Wayland does not allow toplevel windows to position themselves programmatically.
+
+### How do I save and restore window layout and state between runs?
+
+- To preserve the state of toplevel windows across runs, assign the window a stable ID string with the
+  `SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING` property at creation time, and serialize the global session property
+  string `SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING` before shutting down. On subsequent runs, restore the session
+  ID string property to the previously serialized value before window creation. This functionality requires that the
+  compositor supports the `xdg_session_management_v1` protocol.
+
 ### Legacy, DPI-unaware applications are blurry
 
 - Wayland handles high-DPI displays by scaling the desktop, which causes applications that are not designed to be
@@ -27,10 +39,6 @@ encounter limitations or behavior that is different from other windowing systems
 - Wayland requires that the application initially present a buffer before the window becomes visible. Additionally,
   applications _must_ have an event loop and processes messages on a regular basis, or the application can appear
   unresponsive to both the user and desktop compositor.
-
-### ```SDL_SetWindowPosition()``` doesn't work on non-popup windows
-
-- Wayland does not allow toplevel windows to position themselves programmatically.
 
 ### Retrieving the global mouse cursor position when the cursor is outside a window doesn't work
 

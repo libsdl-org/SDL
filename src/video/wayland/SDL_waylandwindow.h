@@ -99,6 +99,7 @@ struct SDL_WindowData
     struct zxdg_exported_v2 *exported;
     struct xdg_dialog_v1 *xdg_dialog_v1;
     struct wp_alpha_modifier_surface_v1 *wp_alpha_modifier_surface_v1;
+    struct xdg_toplevel_session_v1 *xdg_toplevel_session_v1;
     struct xdg_toplevel_icon_v1 *xdg_toplevel_icon_v1;
     struct frog_color_managed_surface *frog_color_managed_surface;
 
@@ -110,6 +111,7 @@ struct SDL_WindowData
     SDL_Window *keyboard_focus;
 
     char *app_id;
+    char *window_id;
     double scale_factor;
 
     struct Wayland_SHMBuffer icon;
