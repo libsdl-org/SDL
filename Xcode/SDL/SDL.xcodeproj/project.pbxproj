@@ -43,7 +43,7 @@
 		000080903BC03006F24E0000 /* SDL_filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 00002B010DB1A70931C20000 /* SDL_filesystem.c */; };
 		000095FA1BDE436CF3AF0000 /* SDL_time.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000641A9BAC11AB3FBE0000 /* SDL_time.c */; };
 		000098E9DAA43EF6FF7F0000 /* SDL_camera.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000035D38C3899C7EFD0000 /* SDL_camera.c */; };
-		0000A4DA2F45A31DC4F00000 /* SDL_sysmain_callbacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 0000BB287BA0A0178C1A0000 /* SDL_sysmain_callbacks.m */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
+		0000A4DA2F45A31DC4F00000 /* SDL_sysmain_callbacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 0000BB287BA0A0178C1A0000 /* SDL_sysmain_callbacks.m */; };
 		0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */ = {isa = PBXBuildFile; fileRef = 0000CCA310B73A7B59910000 /* SDL_cocoapen.m */; };
 		007317A40858DECD00B2BC32 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0073179D0858DECD00B2BC32 /* Cocoa.framework */; platformFilters = (macos, ); };
 		007317A60858DECD00B2BC32 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0073179F0858DECD00B2BC32 /* IOKit.framework */; platformFilters = (ios, maccatalyst, macos, ); };
@@ -421,8 +421,8 @@
 		F37A8E1A28405AA100C38E95 /* CMake in Resources */ = {isa = PBXBuildFile; fileRef = F37A8E1928405AA100C38E95 /* CMake */; };
 		F37E184E2B8C097D0098C111 /* SDL_camera.h in Headers */ = {isa = PBXBuildFile; fileRef = 000084ED0A56E3ED52F90000 /* SDL_camera.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F37E18522BA50E760098C111 /* SDL_dialog.h in Headers */ = {isa = PBXBuildFile; fileRef = F37E18512BA50E750098C111 /* SDL_dialog.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F37E18582BA50F3B0098C111 /* SDL_cocoadialog.m in Sources */ = {isa = PBXBuildFile; fileRef = F37E18572BA50F3B0098C111 /* SDL_cocoadialog.m */; platformFilters = (macos, ); };
-		F37E185A2BA50F450098C111 /* SDL_dummydialog.c in Sources */ = {isa = PBXBuildFile; fileRef = F37E18592BA50F450098C111 /* SDL_dummydialog.c */; platformFilters = (ios, maccatalyst, tvos, xros, ); };
+		F37E18582BA50F3B0098C111 /* SDL_cocoadialog.m in Sources */ = {isa = PBXBuildFile; fileRef = F37E18572BA50F3B0098C111 /* SDL_cocoadialog.m */; };
+		F37E185A2BA50F450098C111 /* SDL_dummydialog.c in Sources */ = {isa = PBXBuildFile; fileRef = F37E18592BA50F450098C111 /* SDL_dummydialog.c */; };
 		F37E185C2BAA3EF90098C111 /* SDL_time.h in Headers */ = {isa = PBXBuildFile; fileRef = F37E185B2BAA3EF90098C111 /* SDL_time.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F37E18622BAA40090098C111 /* SDL_sysfilesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = F37E18612BAA40090098C111 /* SDL_sysfilesystem.h */; };
 		F37E18642BAA40670098C111 /* SDL_time_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F37E18632BAA40670098C111 /* SDL_time_c.h */; };

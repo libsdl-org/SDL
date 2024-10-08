@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#ifdef SDL_DIALOG_DUMMY
+
 void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
 {
   SDL_Unsupported();
@@ -37,3 +39,5 @@ void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, S
   SDL_Unsupported();
   callback(userdata, NULL, -1);
 }
+
+#endif // SDL_DIALOG_DUMMY
