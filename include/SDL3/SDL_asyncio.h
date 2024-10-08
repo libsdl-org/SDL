@@ -127,23 +127,6 @@ typedef struct SDL_AsyncIOOutcome
 } SDL_AsyncIOOutcome;
 
 /**
- * An opaque handle for asynchronous I/O tasks.
- *
- * Each asynchronous read or write operation generates a task, which will
- * complete at some time in the future. This handle is used to track the
- * progress of that task.
- *
- * Tasks are added to an SDL_AsyncIOQueue, where they can be queried for
- * completion later.
- *
- * \since This struct is available since SDL 3.0.0.
- *
- * \sa SDL_ReadAsyncIO
- * \sa SDL_WriteAsyncIO
- */
-typedef struct SDL_AsyncIOTask SDL_AsyncIOTask;
-
-/**
  * A queue of completed asynchronous I/O tasks.
  *
  * When starting an asynchronous operation, you specify a queue for the new
@@ -232,8 +215,8 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetAsyncIOSize(SDL_AsyncIO *asyncio);
  * the system at any time until then. Do not allocate it on the stack, as this
  * might take longer than the life of the calling function to complete!
  *
- * An SDL_AsyncIOQueue must be specified. The newly-created SDL_AsyncIOTask
- * will be added to it when it completes its work.
+ * An SDL_AsyncIOQueue must be specified. The newly-created task will be added
+ * to it when it completes its work.
  *
  * \param asyncio a pointer to an SDL_AsyncIO structure.
  * \param ptr a pointer to a buffer to read data into.
@@ -241,8 +224,8 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetAsyncIOSize(SDL_AsyncIO *asyncio);
  * \param size the number of bytes to read from the data source.
  * \param queue a queue to add the new SDL_AsyncIO to.
  * \param userdata an app-defined pointer that will be provided with the task results.
- * \returns A new task handle if a task was started, NULL on complete failure;
- *          call SDL_GetError() for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -252,7 +235,7 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetAsyncIOSize(SDL_AsyncIO *asyncio);
  * \sa SDL_CreateAsyncIOQueue
  * \sa SDL_GetAsyncIOTaskResult
  */
-extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_ReadAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_ReadAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata);
 
 /**
  * Start an async write.
@@ -269,8 +252,8 @@ extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_ReadAsyncIO(SDL_AsyncIO *async
  * the system at any time until then. Do not allocate it on the stack, as this
  * might take longer than the life of the calling function to complete!
  *
- * An SDL_AsyncIOQueue must be specified. The newly-created SDL_AsyncIOTask
- * will be added to it when it completes its work.
+ * An SDL_AsyncIOQueue must be specified. The newly-created task will be added
+ * to it when it completes its work.
  *
  * \param asyncio a pointer to an SDL_AsyncIO structure.
  * \param ptr a pointer to a buffer to write data from.
@@ -278,8 +261,8 @@ extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_ReadAsyncIO(SDL_AsyncIO *async
  * \param size the number of bytes to write to the data source.
  * \param queue a queue to add the new SDL_AsyncIO to.
  * \param userdata an app-defined pointer that will be provided with the task results.
- * \returns A new task handle if a task was started, NULL on complete failure;
- *          call SDL_GetError() for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -290,7 +273,7 @@ extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_ReadAsyncIO(SDL_AsyncIO *async
  * \sa SDL_GetAsyncIOTaskResult
 
  */
-extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_WriteAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_WriteAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata);
 
 /**
  * Close and free any allocated resources for an async I/O object.
@@ -305,10 +288,11 @@ extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_WriteAsyncIO(SDL_AsyncIO *asyn
  * a successfully-closed file can be lost if the system crashes or
  * loses power in this small window. To prevent this, call this
  * function with the `flush` parameter set to true. This will make
- * the operation take longer, but a successful result guarantees that
- * the data has made it to physical storage. Don't use this for
- * temporary files, caches, and unimportant data, and definitely use
- * it for crucial irreplaceable files, like game saves.
+ * the operation take longer, and perhaps increase system load in
+ * general, but a successful result guarantees that the data has made
+ * it to physical storage. Don't use this for temporary files, caches,
+ * and unimportant data, and definitely use it for crucial irreplaceable
+ * files, like game saves.
  *
  * This function guarantees that the close will happen after any other
  * pending tasks to `asyncio`, so it's safe to open a file, start
@@ -322,22 +306,25 @@ extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_WriteAsyncIO(SDL_AsyncIO *asyn
  * app was using this value to track information, but it should not
  * be used again.
  *
- * If this function returns NULL, the close wasn't started at all, and
+ * If this function returns false, the close wasn't started at all, and
  * it's safe to attempt to close again later.
+ *
+ * An SDL_AsyncIOQueue must be specified. The newly-created task will be added
+ * to it when it completes its work.
  *
  * \param asyncio a pointer to an SDL_AsyncIO structure to close.
  * \param flush true if data should sync to disk before the task completes.
  * \param queue a queue to add the new SDL_AsyncIO to.
  * \param userdata an app-defined pointer that will be provided with the task results.
- * \returns A new task handle if a task was started, NULL on complete failure;
- *          call SDL_GetError() for more information.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread, but
  *               two threads should not attempt to close the same object.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQueue *queue, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQueue *queue, void *userdata);
 
 /**
  * Create a task queue for tracking multiple I/O operations.
@@ -495,19 +482,20 @@ extern SDL_DECLSPEC void SDLCALL SDL_SignalAsyncIOQueue(SDL_AsyncIOQueue *queue)
  * deallocated by calling SDL_free() on SDL_AsyncIOOutcome's buffer field
  * after completion.
  *
- * An SDL_AsyncIOQueue must be specified. The newly-created SDL_AsyncIOTask
- * will be added to it when it completes its work.
+ * An SDL_AsyncIOQueue must be specified. The newly-created task will be added
+ * to it when it completes its work.
  *
  * \param file the path to read all available data from.
  * \param queue a queue to add the new SDL_AsyncIO to.
  * \param userdata an app-defined pointer that will be provided with the task results.
- * \returns an async task, to be queried for results later.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LoadFile_IO
  */
-extern SDL_DECLSPEC SDL_AsyncIOTask * SDLCALL SDL_LoadFileAsync(const char *file, SDL_AsyncIOQueue *queue, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_LoadFileAsync(const char *file, SDL_AsyncIOQueue *queue, void *userdata);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
