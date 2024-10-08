@@ -3239,8 +3239,6 @@ bool SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
         if (cache->charTextureCache[ci] == NULL) {
             return false;
         }
-
-        SDL_SetTextureScaleMode(cache->charTextureCache[ci], SDL_SCALEMODE_NEAREST);
     }
 
     /*
