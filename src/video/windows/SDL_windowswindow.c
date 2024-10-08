@@ -1788,16 +1788,16 @@ static STDMETHODIMP SDLDropTarget_DragEnter(SDLDropTarget *target,
                                             IDataObject *pDataObject, DWORD grfKeyState,
                                             POINTL pt, DWORD *pdwEffect)
 {
-    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+    SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                  ". In DragEnter at %ld, %ld\n", pt.x, pt.y);
     *pdwEffect = DROPEFFECT_COPY;
     POINT pnt = { pt.x, pt.y };
     if (ScreenToClient(target->hwnd, &pnt)) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In DragEnter at %ld, %ld => window %u at %ld, %ld\n", pt.x, pt.y, target->window->id, pnt.x, pnt.y);
         SDL_SendDropPosition(target->window, pnt.x, pnt.y);
     } else {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In DragEnter at %ld, %ld => nil, nil\n", pt.x, pt.y);
     }
     return S_OK;
@@ -1807,16 +1807,16 @@ static STDMETHODIMP SDLDropTarget_DragOver(SDLDropTarget *target,
                                            DWORD grfKeyState,
                                            POINTL pt, DWORD *pdwEffect)
 {
-    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+    SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                  ". In DragOver at %ld, %ld\n", pt.x, pt.y);
     *pdwEffect = DROPEFFECT_COPY;
     POINT pnt = { pt.x, pt.y };
     if (ScreenToClient(target->hwnd, &pnt)) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In DragOver at %ld, %ld => window %u at %ld, %ld\n", pt.x, pt.y, target->window->id, pnt.x, pnt.y);
         SDL_SendDropPosition(target->window, pnt.x, pnt.y);
     } else {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In DragOver at %ld, %ld => nil, nil\n", pt.x, pt.y);
     }
     return S_OK;
@@ -1824,7 +1824,7 @@ static STDMETHODIMP SDLDropTarget_DragOver(SDLDropTarget *target,
 
 static STDMETHODIMP SDLDropTarget_DragLeave(SDLDropTarget *target)
 {
-    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+    SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                  ". In DragLeave\n");
     SDL_SendDropComplete(target->window);
     return S_OK;
@@ -1837,11 +1837,11 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
     *pdwEffect = DROPEFFECT_COPY;
     POINT pnt = { pt.x, pt.y };
     if (ScreenToClient(target->hwnd, &pnt)) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In Drop at %ld, %ld => window %u at %ld, %ld\n", pt.x, pt.y, target->window->id, pnt.x, pnt.y);
         SDL_SendDropPosition(target->window, pnt.x, pnt.y);
     } else {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In Drop at %ld, %ld => nil, nil\n", pt.x, pt.y);
     }
 
@@ -1849,7 +1849,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
         IEnumFORMATETC *pEnumFormatEtc;
         HRESULT hres;
         hres = pDataObject->lpVtbl->EnumFormatEtc(pDataObject, DATADIR_GET, &pEnumFormatEtc);
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In Drop for EnumFormatEtc, HRESULT is %08lx\n", hres);
         if (hres == S_OK) {
             FORMATETC fetc;
@@ -1857,10 +1857,10 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                 char name[257] = { 0 };
                 const char *cfnm = SDLGetClipboardFormatName(fetc.cfFormat, name, 256);
                 if (cfnm) {
-                    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                    SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                                  ". In Drop, Supported format is %08x, '%s'\n", fetc.cfFormat, cfnm);
                 } else {
-                    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                    SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                                  ". In Drop, Supported format is %08x, Predefined\n", fetc.cfFormat);
                 }
             }
@@ -1876,18 +1876,18 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
         fetc.tymed = TYMED_HGLOBAL;
         const char *format_mime = "text/uri-list";
         if (SUCCEEDED(pDataObject->lpVtbl->QueryGetData(pDataObject, &fetc))) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop File for QueryGetData, format %08x '%s', success\n",
                          fetc.cfFormat, format_mime);
             STGMEDIUM med;
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop File for      GetData, format %08x '%s', HRESULT is %08lx\n",
                          fetc.cfFormat, format_mime, hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
                 const void *buffer = (void *)GlobalLock(med.hGlobal);
-                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                              ". In Drop File for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
@@ -1898,7 +1898,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                     char *token = SDL_strtok_r(text, "\r\n", &saveptr);
                     while (token != NULL) {
                         if (SDL_URIToLocal(token, token) >= 0) {
-                            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                                          ". In Drop File, file (%lu of %lu) '%s'\n",
                                          (unsigned long)SDL_strlen(token), (unsigned long)bsize, token);
                             SDL_SendDropFile(target->window, NULL, token);
@@ -1924,18 +1924,18 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
         fetc.tymed = TYMED_HGLOBAL;
         const char *format_mime = "text/plain;charset=utf-8";
         if (SUCCEEDED(pDataObject->lpVtbl->QueryGetData(pDataObject, &fetc))) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop Text for QueryGetData, format %08x '%s', success\n",
                          fetc.cfFormat, format_mime);
             STGMEDIUM med;
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx\n",
                          fetc.cfFormat, format_mime, hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
                 const void *buffer = (void *)GlobalLock(med.hGlobal);
-                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                              ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
@@ -1945,7 +1945,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                     char *saveptr = NULL;
                     char *token = SDL_strtok_r(text, "\r\n", &saveptr);
                     while (token != NULL) {
-                        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                                      ". In Drop Text, text (%lu of %lu) '%s'\n",
                                      (unsigned long)SDL_strlen(token), (unsigned long)bsize, token);
                         SDL_SendDropText(target->window, (char *)token);
@@ -1970,25 +1970,25 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
         fetc.tymed = TYMED_HGLOBAL;
         const char *format_mime = "CF_UNICODETEXT";
         if (SUCCEEDED(pDataObject->lpVtbl->QueryGetData(pDataObject, &fetc))) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop Text for QueryGetData, format %08x '%s', success\n",
                          fetc.cfFormat, format_mime);
             STGMEDIUM med;
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx\n",
                          fetc.cfFormat, format_mime, hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
                 const void *buffer = (void *)GlobalLock(med.hGlobal);
-                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                              ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
                     buffer = WIN_StringToUTF8((const wchar_t *)buffer);
                     if (buffer) {
                         const size_t lbuffer = SDL_strlen((const char *)buffer);
-                        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                                      ". In Drop Text for StringToUTF8, format %08x '%s', memory (%lu) %p\n",
                                      fetc.cfFormat, format_mime, (unsigned long)lbuffer, buffer);
                         char *text = (char *)SDL_malloc(lbuffer + sizeof(Uint32));
@@ -1997,7 +1997,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                         char *saveptr = NULL;
                         char *token = SDL_strtok_r(text, "\r\n", &saveptr);
                         while (token != NULL) {
-                            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                                          ". In Drop Text, text (%lu of %lu) '%s'\n",
                                          (unsigned long)SDL_strlen(token), (unsigned long)lbuffer, token);
                             SDL_SendDropText(target->window, (char *)token);
@@ -2024,18 +2024,18 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
         fetc.tymed = TYMED_HGLOBAL;
         const char *format_mime = "CF_TEXT";
         if (SUCCEEDED(pDataObject->lpVtbl->QueryGetData(pDataObject, &fetc))) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop Text for QueryGetData, format %08x '%s', success\n",
                          fetc.cfFormat, format_mime);
             STGMEDIUM med;
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx\n",
                          fetc.cfFormat, format_mime, hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
                 const void *buffer = (void *)GlobalLock(med.hGlobal);
-                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                              ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
@@ -2045,7 +2045,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                     char *saveptr = NULL;
                     char *token = SDL_strtok_r(text, "\r\n", &saveptr);
                     while (token != NULL) {
-                        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                                      ". In Drop Text, text (%lu of %lu) '%s'\n",
                                      (unsigned long)SDL_strlen(token), (unsigned long)bsize, token);
                         SDL_SendDropText(target->window, (char *)token);
@@ -2070,18 +2070,18 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
         fetc.tymed = TYMED_HGLOBAL;
         const char *format_mime = "CF_HDROP";
         if (SUCCEEDED(pDataObject->lpVtbl->QueryGetData(pDataObject, &fetc))) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop File for QueryGetData, format %08x '%s', success\n",
                          fetc.cfFormat, format_mime);
             STGMEDIUM med;
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop File for      GetData, format %08x '%s', HRESULT is %08lx\n",
                          fetc.cfFormat, format_mime, hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
                 HDROP drop = (HDROP)GlobalLock(med.hGlobal);
-                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                              ". In Drop File for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, drop);
                 UINT count = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
@@ -2091,7 +2091,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                     if (buffer) {
                         if (DragQueryFile(drop, i, buffer, size)) {
                             char *file = WIN_StringToUTF8(buffer);
-                            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                                          ". In Drop File, file (%lu of %lu) '%s'\n",
                                          (unsigned long)SDL_strlen(file), (unsigned long)bsize, file);
                             SDL_SendDropFile(target->window, NULL, file);
@@ -2137,7 +2137,7 @@ void WIN_AcceptDragAndDrop(SDL_Window *window, bool accept)
                 data->drop_target = drop_target;
                 SDLDropTarget_AddRef(drop_target);
                 RegisterDragDrop(data->hwnd, (LPDROPTARGET)drop_target);
-                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                              ". In Accept Drag and Drop, window %u, enabled Full OLE IDropTarget\n",
                              window->id);
             }
@@ -2145,13 +2145,13 @@ void WIN_AcceptDragAndDrop(SDL_Window *window, bool accept)
             RevokeDragDrop(data->hwnd);
             SDLDropTarget_Release(data->drop_target);
             data->drop_target = NULL;
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Accept Drag and Drop, window %u, disabled Full OLE IDropTarget\n",
                          window->id);
         }
     } else {
         DragAcceptFiles(data->hwnd, accept ? TRUE : FALSE);
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In Accept Drag and Drop, window %u, %s Fallback WM_DROPFILES\n",
                      window->id, (accept ? "enabled" : "disabled"));
     }
