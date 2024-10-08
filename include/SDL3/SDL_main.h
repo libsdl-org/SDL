@@ -22,13 +22,22 @@
 /**
  * # CategoryMain
  *
- * Redefine main() on some platforms so that it is called by SDL.
+ * Redefine main() if necessary so that it is called by SDL.
  *
- * For details on how SDL_main works, and how to use it, please refer to:
+ * In order to make this consistent on all platforms, the application's main()
+ * should look like this:
+ *
+ *  ```c
+ *  int main(int argc, char *argv[])
+ *  {
+ *  }
+ *  ```
+ *
+ * SDL will take care of platform specific details on how it gets called.
+ *
+ * For more information, see:
  *
  * https://wiki.libsdl.org/SDL3/README/main-functions
- *
- * (or docs/README-main-functions.md in the SDL source tree)
  */
 
 #ifndef SDL_main_h_
@@ -128,22 +137,6 @@
 #ifndef SDLMAIN_DECLSPEC
 #define SDLMAIN_DECLSPEC
 #endif
-
-/**
- *  \file SDL_main.h
- *
- *  The application's main() function must be called with C linkage,
- *  and should be declared like this:
- *
- *  ```c
- *  #ifdef __cplusplus
- *  extern "C"
- *  #endif
- *  int main(int argc, char *argv[])
- *  {
- *  }
- *  ```
- */
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
