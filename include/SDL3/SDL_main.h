@@ -567,8 +567,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
      *  do *not* use SDL_main_impl.h (because SDL_main() is called from external Java code).
      *  If other platforms like that turn up, add them next to "defined(SDL_PLATFORM_ANDROID)"
      */
-    #if ( defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE) ) && \
-          !defined(SDL_PLATFORM_ANDROID)
+    #if (defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE)) && \
+        !defined(SDL_PLATFORM_ANDROID)
 
         /* platforms which main (-equivalent) can be implemented in plain C */
         #include <SDL3/SDL_main_impl.h>

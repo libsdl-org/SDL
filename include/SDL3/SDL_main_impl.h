@@ -82,7 +82,7 @@
             #if defined(_MSC_VER) && !defined(SDL_PLATFORM_GDK)
 
                 /* This is where execution begins [console apps] */
-                #if defined( UNICODE ) && UNICODE
+                #if defined(UNICODE) && UNICODE
                     int wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
                     {
                         (void)argc;
@@ -107,7 +107,7 @@
             extern "C" {
             #endif
 
-            #if defined( UNICODE ) && UNICODE
+            #if defined(UNICODE) && UNICODE
             int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrev, PWSTR szCmdLine, int sw)
             #else /* ANSI */
             int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
