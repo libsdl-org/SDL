@@ -265,7 +265,7 @@ void SDL_InitMainThread(void)
         const char *value;
 
         value = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
-        SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "App name: %s", value);
+        SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "App name: %s", value ? value : "<unspecified>");
         value = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING);
         SDL_LogInfo(SDL_LOG_CATEGORY_SYSTEM, "App version: %s", value ? value : "<unspecified>");
         value = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING);
