@@ -562,11 +562,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #include <SDL3/SDL_close_code.h>
 
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
-    /* include header-only SDL_main implementations */
-    #if defined(SDL_MAIN_USE_CALLBACKS) \
-        || defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
-        || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP) \
-        || defined(SDL_PLATFORM_EMSCRIPTEN)
+    /* include header-only SDL_main implementations
+     * Note: currently Android is the only platform where we rename main() to SDL_main()
+     *  but do *not* use SDL_main_impl.h (because SDL_main() is called from external Java code)
+     */
+    #if ( defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE) ) && \
+          !defined(SDL_PLATFORM_ANDROID)
 
         /* platforms which main (-equivalent) can be implemented in plain C */
         #include <SDL3/SDL_main_impl.h>
