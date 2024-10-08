@@ -505,6 +505,9 @@
 #cmakedefine SDL_CAMERA_DRIVER_PIPEWIRE @SDL_CAMERA_DRIVER_PIPEWIRE@
 #cmakedefine SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC @SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC@
 
+/* Enable dialog subsystem */
+#cmakedefine SDL_DIALOG_DUMMY @SDL_DIALOG_DUMMY@
+
 /* Enable misc subsystem */
 #cmakedefine SDL_MISC_DUMMY @SDL_MISC_DUMMY@
 

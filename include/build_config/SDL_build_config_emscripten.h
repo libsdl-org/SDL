@@ -211,4 +211,7 @@
 /* Enable the camera driver */
 #define SDL_CAMERA_DRIVER_EMSCRIPTEN  1
 
+/* Enable dialog subsystem */
+#define SDL_DIALOG_DUMMY 1
+
 #endif /* SDL_build_config_emscripten_h */
