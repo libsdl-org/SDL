@@ -1064,7 +1064,7 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
         return false;
     }
     // save the destination format so we can undo the encoding later
-    *(SDL_PixelFormat *)rlebuf = df->format;
+    *(SDL_PixelFormat *)rlebuf = dest->format;
     dst = rlebuf + sizeof(SDL_PixelFormat);
 
     // Do the actual encoding
@@ -1232,6 +1232,7 @@ static const getpix_func getpixes[4] = {
 
 static bool RLEColorkeySurface(SDL_Surface *surface)
 {
+    SDL_Surface *dest;
     Uint8 *rlebuf, *dst;
     int maxn;
     int y;
@@ -1241,6 +1242,11 @@ static bool RLEColorkeySurface(SDL_Surface *surface)
     getpix_func getpix;
     Uint32 ckey, rgbmask;
     int w, h;
+
+    dest = surface->map.info.dst_surface;
+    if (!dest) {
+        return false;
+    }
 
     // calculate the worst case size for the compressed surface
     switch (bpp) {
@@ -1263,15 +1269,18 @@ static bool RLEColorkeySurface(SDL_Surface *surface)
         return false;
     }
 
+    maxsize += sizeof(SDL_PixelFormat);
     rlebuf = (Uint8 *)SDL_malloc(maxsize);
     if (!rlebuf) {
         return false;
     }
+    // save the destination format so we can undo the encoding later
+    *(SDL_PixelFormat *)rlebuf = dest->format;
 
     // Set up the conversion
     srcbuf = (Uint8 *)surface->pixels;
     maxn = bpp == 4 ? 65535 : 255;
-    dst = rlebuf;
+    dst = rlebuf + sizeof(SDL_PixelFormat);
     rgbmask = ~surface->fmt->Amask;
     ckey = surface->map.info.colorkey & rgbmask;
     lastline = dst;
