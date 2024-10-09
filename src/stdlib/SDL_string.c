@@ -265,6 +265,26 @@ Uint32 SDL_StepUTF8(const char **pstr, size_t *pslen)
     return result;
 }
 
+Uint32 SDL_StepBackUTF8(const char *start, const char **pstr)
+{
+    if (!pstr || *pstr <= start) {
+        return 0;
+    }
+
+    // Step back over the previous UTF-8 character
+    const char *str = *pstr;
+    do {
+        if (str == start) {
+            break;
+        }
+        --str;
+    } while ((*str & 0xC0) == 0x80);
+
+    size_t length = (*pstr - str);
+    *pstr = str;
+    return StepUTF8(&str, length);
+}
+
 #if (SDL_SIZEOF_WCHAR_T == 2)
 static Uint32 StepUTF16(const Uint16 **_str, const size_t slen)
 {
