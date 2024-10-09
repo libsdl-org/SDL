@@ -381,7 +381,7 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
         }
         close(pipefd[0]);
     }
-    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+    SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                  ". In Wayland_data_offer_receive for '%s', buffer (%ld) at %p\n",
                  mime_type, *length, buffer);
     return buffer;
@@ -417,7 +417,7 @@ void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *
         }
         close(pipefd[0]);
     }
-    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+    SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                  ". In Wayland_primary_selection_offer_receive for '%s', buffer (%ld) at %p\n",
                  mime_type, *length, buffer);
     return buffer;

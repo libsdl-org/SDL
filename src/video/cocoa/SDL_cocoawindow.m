@@ -199,7 +199,7 @@
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender
 {
-    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+    SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                  ". [SDL] In performDragOperation, draggingSourceOperationMask %lx, "
                  "expected Generic %lx, others Copy %lx, Link %lx, Private %lx, Move %lx, Delete %lx\n",
                  (unsigned long)[sender draggingSourceOperationMask],
@@ -210,7 +210,7 @@
                  (unsigned long)NSDragOperationMove,
                  (unsigned long)NSDragOperationDelete);
     if ([sender draggingPasteboard]) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". [SDL] In performDragOperation, valid draggingPasteboard, "
                      "name [%s] '%s', changeCount %ld\n",
                      [[[[sender draggingPasteboard] name] className] UTF8String],
@@ -229,7 +229,7 @@
 
         for (NSString *supportedType in [pasteboard types]) {
             NSString *typeString = [pasteboard stringForType:supportedType];
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". [SDL] In performDragOperation, Pasteboard type '%s', stringForType (%lu) '%s'\n",
                          [[supportedType description] UTF8String],
                          (unsigned long)[[typeString description] length],
@@ -281,7 +281,7 @@
                         }
                     }
                 }
-                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                              ". [SDL] In performDragOperation, desiredType '%s', "
                              "Submitting DropFile as (%lu) '%s'\n",
                              [[desiredType description] UTF8String],
@@ -296,7 +296,7 @@
             char *saveptr = NULL;
             char *token   = SDL_strtok_r(buffer, "\r\n", &saveptr);
             while (token) {
-                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                              ". [SDL] In performDragOperation, desiredType '%s', "
                              "Submitting DropText as (%lu) '%s'\n",
                              [[desiredType description] UTF8String],
