@@ -140,7 +140,7 @@ add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c D
 add_sdl_example_executable(camera-read-and-draw SOURCES camera/01-read-and-draw/read-and-draw.c)
 add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawing-lines.c)
 add_sdl_example_executable(game-snake SOURCES game/01-snake/snake.c)
-
+add_sdl_example_executable(asyncio-load-bitmaps SOURCES asyncio/01-load-bitmaps/load-bitmaps.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.bmp ${CMAKE_CURRENT_SOURCE_DIR}/../test/gamepad_front.bmp ${CMAKE_CURRENT_SOURCE_DIR}/../test/speaker.bmp ${CMAKE_CURRENT_SOURCE_DIR}/../test/icon2x.bmp)
 
 if(PSP)
     # Build EBOOT files if building for PSP
