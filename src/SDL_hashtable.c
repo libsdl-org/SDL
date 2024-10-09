@@ -95,7 +95,7 @@ SDL_HashTable *SDL_CreateHashTable(void *data,
     return table;
 }
 
-static SDL_INLINE Uint32 calc_hash(const SDL_HashTable *restrict table, const void *key)
+static SDL_INLINE Uint32 calc_hash(const SDL_HashTable *table, const void *key)
 {
     const Uint32 BitMixer = 0x9E3779B1u;
     return table->hash(key, table->data) * BitMixer;
@@ -112,7 +112,7 @@ static SDL_INLINE Uint32 get_probe_length(Uint32 zero_idx, Uint32 actual_idx, Ui
     return actual_idx - zero_idx;
 }
 
-static SDL_HashItem *find_item(const SDL_HashTable *restrict ht, const void *key, Uint32 hash, Uint32 *restrict i, Uint32 *restrict probe_len)
+static SDL_HashItem *find_item(const SDL_HashTable *ht, const void *key, Uint32 hash, Uint32 *i, Uint32 *probe_len)
 {
     Uint32 hash_mask = ht->hash_mask;
     Uint32 max_probe_len = ht->max_probe_len;
@@ -146,14 +146,14 @@ static SDL_HashItem *find_item(const SDL_HashTable *restrict ht, const void *key
     }
 }
 
-static SDL_HashItem *find_first_item(const SDL_HashTable *restrict ht, const void *key, Uint32 hash)
+static SDL_HashItem *find_first_item(const SDL_HashTable *ht, const void *key, Uint32 hash)
 {
     Uint32 i = hash & ht->hash_mask;
     Uint32 probe_len = 0;
     return find_item(ht, key, hash, &i, &probe_len);
 }
 
-static SDL_HashItem *insert_item(SDL_HashItem *restrict item_to_insert, SDL_HashItem *restrict table, Uint32 hash_mask, Uint32 *max_probe_len_ptr)
+static SDL_HashItem *insert_item(SDL_HashItem *item_to_insert, SDL_HashItem *table, Uint32 hash_mask, Uint32 *max_probe_len_ptr)
 {
     Uint32 idx = item_to_insert->hash & hash_mask;
     SDL_HashItem temp_item, *target = NULL;
@@ -213,7 +213,7 @@ static SDL_HashItem *insert_item(SDL_HashItem *restrict item_to_insert, SDL_Hash
     return target;
 }
 
-static void delete_item(SDL_HashTable *restrict ht, SDL_HashItem *item)
+static void delete_item(SDL_HashTable *ht, SDL_HashItem *item)
 {
     Uint32 hash_mask = ht->hash_mask;
     SDL_HashItem *table = ht->table;
@@ -241,7 +241,7 @@ static void delete_item(SDL_HashTable *restrict ht, SDL_HashItem *item)
     }
 }
 
-static bool resize(SDL_HashTable *restrict ht, Uint32 new_size)
+static bool resize(SDL_HashTable *ht, Uint32 new_size)
 {
     SDL_HashItem *old_table = ht->table;
     Uint32 old_size = ht->hash_mask + 1;
@@ -267,7 +267,7 @@ static bool resize(SDL_HashTable *restrict ht, Uint32 new_size)
     return true;
 }
 
-static bool maybe_resize(SDL_HashTable *restrict ht)
+static bool maybe_resize(SDL_HashTable *ht)
 {
     Uint32 capacity = ht->hash_mask + 1;
 
@@ -285,7 +285,7 @@ static bool maybe_resize(SDL_HashTable *restrict ht)
     return true;
 }
 
-bool SDL_InsertIntoHashTable(SDL_HashTable *restrict table, const void *key, const void *value)
+bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value)
 {
     SDL_HashItem *item;
     Uint32 hash;
@@ -455,7 +455,7 @@ bool SDL_HashTableEmpty(SDL_HashTable *table)
     return !(table && table->num_occupied_slots);
 }
 
-static void nuke_all(SDL_HashTable *restrict table)
+static void nuke_all(SDL_HashTable *table)
 {
     void *data = table->data;
     SDL_HashItem *end = table->table + (table->hash_mask + 1);
@@ -468,7 +468,7 @@ static void nuke_all(SDL_HashTable *restrict table)
     }
 }
 
-void SDL_EmptyHashTable(SDL_HashTable *restrict table)
+void SDL_EmptyHashTable(SDL_HashTable *table)
 {
     if (table) {
         if (table->nuke) {
