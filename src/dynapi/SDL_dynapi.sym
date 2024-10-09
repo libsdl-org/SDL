@@ -1176,6 +1176,19 @@ SDL3_0.0.0 {
     SDL_wcsnstr;
     SDL_wcsstr;
     SDL_wcstol;
+    SDL_CreateTray;
+    SDL_CreateTrayMenu;
+    SDL_CreateTraySubmenu;
+    SDL_AppendTrayEntry;
+    SDL_AppendTraySeparator;
+    SDL_SetTrayEntryChecked;
+    SDL_GetTrayEntryChecked;
+    SDL_SetTrayEntryEnabled;
+    SDL_GetTrayEntryEnabled;
+    SDL_SetTrayEntryCallback;
+    SDL_DestroyTray;
+    SDL_SetTrayIcon;
+    SDL_SetTrayTooltip;
     # extra symbols go here (don't modify this line)
   local: *;
 };
