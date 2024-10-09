@@ -503,6 +503,24 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetLogOutputFunction(SDL_LogOutputFunction 
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetLogOutputFunction(SDL_LogOutputFunction callback, void *userdata);
 
+/**
+ * Output a message to the platform-specific log channel.
+ *
+ * \param userdata a pointer filled in with the pointer that is passed to
+ *                 `callback`.
+ * \param category the category of the message.
+ * \param priority the priority of the message.
+ * \param user_message the message being output.
+ * \param processed_message message with optional decorations (for example, prefix to notate the priority/category).
+ *                          If NULL, `user_message` gets used it its place.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_LogOutputRaw(void *userdata, int category, SDL_LogPriority priority,
+                                                const char *user_message, const char *processed_message);
+
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
