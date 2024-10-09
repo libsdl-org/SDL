@@ -2472,8 +2472,8 @@ extern SDL_DECLSPEC char * SDLCALL SDL_strpbrk(const char *str, const char *brea
 /**
  * The Unicode REPLACEMENT CHARACTER codepoint.
  *
- * SDL_StepUTF8() and SDL_StepBackUTF8() report this codepoint when they encounter a UTF-8 string
- * with encoding errors.
+ * SDL_StepUTF8() and SDL_StepBackUTF8() report this codepoint when they
+ * encounter a UTF-8 string with encoding errors.
  *
  * This tends to render as something like a question mark in most places.
  *
@@ -2532,9 +2532,11 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_StepUTF8(const char **pstr, size_t *pslen
 /**
  * Decode a UTF-8 string in reverse, one Unicode codepoint at a time.
  *
- * This will go to the start of the previous Unicode codepoint in the string, move `*pstr` to that location and return that codepoint.
+ * This will go to the start of the previous Unicode codepoint in the string,
+ * move `*pstr` to that location and return that codepoint.
  *
- * If the resulting codepoint is zero (already at the start of the string), it will not advance `*pstr` at all.
+ * If the resulting codepoint is zero (already at the start of the string), it
+ * will not advance `*pstr` at all.
  *
  * Generally this function is called in a loop until it returns zero,
  * adjusting its parameter each iteration.
