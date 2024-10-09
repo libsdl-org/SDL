@@ -292,26 +292,11 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             if (touch.type == UITouchTypeIndirectPointer) {
                 if (!SDL_HasMouse()) {
                     int i;
+                    SDL_MouseButtonFlags buttons = SDL_GetMouseState(NULL, NULL);
 
-                    for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
-                        if (event.buttonMask & SDL_BUTTON_MASK(i)) {
-                            Uint8 button;
-
-                            switch (i) {
-                            case 1:
-                                button = SDL_BUTTON_LEFT;
-                                break;
-                            case 2:
-                                button = SDL_BUTTON_RIGHT;
-                                break;
-                            case 3:
-                                button = SDL_BUTTON_MIDDLE;
-                                break;
-                            default:
-                                button = (Uint8)i;
-                                break;
-                            }
-                            SDL_SendMouseButton(UIKit_GetEventTimestamp([event timestamp]), sdlwindow, SDL_GLOBAL_MOUSE_ID, button, false);
+                    for (i = 0; i < MAX_MOUSE_BUTTONS; ++i) {
+                        if (buttons & SDL_BUTTON_MASK(i)) {
+                            SDL_SendMouseButton(UIKit_GetEventTimestamp([event timestamp]), sdlwindow, SDL_GLOBAL_MOUSE_ID, (Uint8)i, false);
                         }
                     }
                 }
