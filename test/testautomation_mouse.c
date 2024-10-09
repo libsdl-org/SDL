@@ -512,7 +512,8 @@ static int SDLCALL mouse_getMouseFocus(void *arg)
     float x, y;
     SDL_Window *window;
     SDL_Window *focusWindow;
-    const bool video_driver_is_wayland = !SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland");
+    const char *xdg_session = SDL_getenv("XDG_SESSION_TYPE");
+    const bool env_is_wayland = !SDL_strcmp(xdg_session ? xdg_session : "", "wayland");
 
     /* Get focus - focus non-deterministic */
     focusWindow = SDL_GetMouseFocus();
@@ -523,9 +524,12 @@ static int SDLCALL mouse_getMouseFocus(void *arg)
     if (!window) {
         return TEST_ABORTED;
     }
+    
+    /* Delay a brief period to allow the window to actually appear on the desktop. */
+    SDL_Delay(100);
 
-    /* Wayland explicitly disallows warping the mouse pointer, so this test must be skipped. */
-    if (!video_driver_is_wayland) {
+    /* Warping the pointer when it is outside the window on a Wayland desktop usually doesn't work, so this test will be skipped. */
+    if (!env_is_wayland) {
         /* Mouse to random position inside window */
         x = (float)SDLTest_RandomIntegerInRange(1, w - 1);
         y = (float)SDLTest_RandomIntegerInRange(1, h - 1);
@@ -549,7 +553,7 @@ static int SDLCALL mouse_getMouseFocus(void *arg)
         SDL_WarpMouseInWindow(window, x, y);
         SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
     } else {
-        SDLTest_Log("Skipping mouse warp focus tests: Wayland does not support warping the mouse pointer");
+        SDLTest_Log("Skipping mouse warp focus tests: warping the mouse pointer when outside the window is unreliable on Wayland/XWayland");
     }
 
     /* Clean up test window */
