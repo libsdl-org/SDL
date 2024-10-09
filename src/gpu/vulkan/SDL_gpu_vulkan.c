@@ -4542,8 +4542,13 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     windowData->width = swapchainSupportDetails.capabilities.currentExtent.width;
     windowData->height = swapchainSupportDetails.capabilities.currentExtent.height;
 #else
-    windowData->width = windowData->swapchainCreateWidth;
-    windowData->height = windowData->swapchainCreateHeight;
+    windowData->width = SDL_clamp(
+        windowData->swapchainCreateWidth,
+        swapchainSupportDetails.capabilities.minImageExtent.width,
+        swapchainSupportDetails.capabilities.maxImageExtent.width);
+    windowData->height = SDL_clamp(windowData->swapchainCreateHeight,
+        swapchainSupportDetails.capabilities.minImageExtent.height,
+        swapchainSupportDetails.capabilities.maxImageExtent.height);
 #endif
 
     if (swapchainSupportDetails.capabilities.maxImageCount > 0 &&
