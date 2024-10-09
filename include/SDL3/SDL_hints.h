@@ -1244,8 +1244,10 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": GameInput is not used. (default)
+ * - "0": GameInput is not used.
  * - "1": GameInput is used.
+ *
+ * The default is "1" on GDK platforms, and "0" otherwise.
  *
  * This hint should be set before SDL is initialized.
  *

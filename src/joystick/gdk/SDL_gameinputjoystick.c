@@ -28,6 +28,13 @@
 #define COBJMACROS
 #include <gameinput.h>
 
+// Default value for SDL_HINT_JOYSTICK_GAMEINPUT
+#if defined(SDL_PLATFORM_GDK)
+#define SDL_GAMEINPUT_DEFAULT true
+#else
+#define SDL_GAMEINPUT_DEFAULT false
+#endif
+
 enum
 {
     SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE = 11
@@ -234,7 +241,7 @@ static bool GAMEINPUT_JoystickInit(void)
 {
     HRESULT hR;
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, false)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT)) {
         return true;
     }
 
