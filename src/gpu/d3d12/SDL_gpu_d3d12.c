@@ -6347,19 +6347,12 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
         SDL_free(windowData->textureContainers[i].textures);
     }
 
-    int w, h;
-    SDL_SyncWindow(windowData->window);
-    SDL_GetWindowSizeInPixels(
-        windowData->window,
-        &w,
-        &h);
-
     // Resize the swapchain
     HRESULT res = IDXGISwapChain_ResizeBuffers(
         windowData->swapchain,
         0, // Keep buffer count the same
-        w,
-        h,
+        0, // use client window width
+        0, // use client window height
         DXGI_FORMAT_UNKNOWN, // Keep the old format
         renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
     CHECK_D3D12_ERROR_AND_RETURN("Could not resize swapchain buffers", false)
@@ -6376,8 +6369,12 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
         }
     }
 
-    windowData->width = w;
-    windowData->height = h;
+    DXGI_SWAP_CHAIN_DESC1 swapchainDesc;
+    IDXGISwapChain3_GetDesc1(windowData->swapchain, &swapchainDesc);
+    CHECK_D3D12_ERROR_AND_RETURN("Failed to retrieve swapchain descriptor!", false)
+
+    windowData->width = swapchainDesc.Width;
+    windowData->height = swapchainDesc.Height;
     windowData->needsSwapchainRecreate = false;
     return true;
 }
@@ -6429,12 +6426,9 @@ static bool D3D12_INTERNAL_CreateSwapchain(
 
     swapchainFormat = SwapchainCompositionToTextureFormat[swapchainComposition];
 
-    int w, h;
-    SDL_GetWindowSizeInPixels(windowData->window, &w, &h);
-
     // Initialize the swapchain buffer descriptor
-    swapchainDesc.Width = 0;
-    swapchainDesc.Height = 0;
+    swapchainDesc.Width = 0;  // use client window width
+    swapchainDesc.Height = 0; // use client window height
     swapchainDesc.Format = swapchainFormat;
     swapchainDesc.SampleDesc.Count = 1;
     swapchainDesc.SampleDesc.Quality = 0;
@@ -6521,14 +6515,17 @@ static bool D3D12_INTERNAL_CreateSwapchain(
         IDXGIFactory1_Release(pParent);
     }
 
+    IDXGISwapChain3_GetDesc1(swapchain3, &swapchainDesc);
+    CHECK_D3D12_ERROR_AND_RETURN("Failed to retrieve swapchain descriptor!", false)
+
     // Initialize the swapchain data
     windowData->swapchain = swapchain3;
     windowData->present_mode = presentMode;
     windowData->swapchainComposition = swapchainComposition;
     windowData->swapchainColorSpace = SwapchainCompositionToColorSpace[swapchainComposition];
     windowData->frameCounter = 0;
-    windowData->width = w;
-    windowData->height = h;
+    windowData->width = swapchainDesc.Width;
+    windowData->height = swapchainDesc.Height;
 
     // Precache blit pipelines for the swapchain format
     for (Uint32 i = 0; i < 5; i += 1) {
