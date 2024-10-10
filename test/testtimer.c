@@ -178,6 +178,34 @@ int main(int argc, char *argv[])
     /* Wait for the results to be seen */
     SDL_Delay(1 * 1000);
 
+    /* Check accuracy of nanosecond delay */
+    {
+        Uint64 desired_delay = SDL_NS_PER_SECOND / 60;
+        Uint64 actual_delay;
+        Uint64 total_overslept = 0;
+
+        start = SDL_GetTicksNS();
+        SDL_DelayNS(1);
+        now = SDL_GetTicksNS();
+        actual_delay = (now - start);
+        SDL_Log("Minimum nanosecond delay: %" SDL_PRIu64 " ns\n", actual_delay);
+
+        SDL_Log("Timing 100 frames at 60 FPS\n");
+        for (i = 0; i < 100; ++i) {
+            start = SDL_GetTicksNS();
+            SDL_DelayNS(desired_delay);
+            now = SDL_GetTicksNS();
+            actual_delay = (now - start);
+            if (actual_delay > desired_delay) {
+                total_overslept += (actual_delay - desired_delay);
+            }
+        }
+        SDL_Log("Overslept %.2f ms\n", (double)total_overslept / SDL_NS_PER_MS);
+    }
+
+    /* Wait for the results to be seen */
+    SDL_Delay(1 * 1000);
+
     /* Check accuracy of precise delay */
     {
         Uint64 desired_delay = SDL_NS_PER_SECOND / 60;
