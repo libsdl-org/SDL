@@ -5269,9 +5269,8 @@ static bool D3D11_INTERNAL_CreateSwapchain(
         return false;
     }
 
-    int w, h;
-    SDL_SyncWindow(windowData->window);
-    SDL_GetWindowSizeInPixels(windowData->window, &w, &h);
+    res = IDXGISwapChain_GetDesc(swapchain, &swapchainDesc);
+    CHECK_D3D11_ERROR_AND_RETURN("Failed to get swapchain descriptor!", false);
 
     // Initialize dummy container, width/height will be filled out in AcquireSwapchainTexture
     SDL_zerop(&windowData->textureContainer);
@@ -5288,14 +5287,14 @@ static bool D3D11_INTERNAL_CreateSwapchain(
     windowData->textureContainer.header.info.num_levels = 1;
     windowData->textureContainer.header.info.sample_count = SDL_GPU_SAMPLECOUNT_1;
     windowData->textureContainer.header.info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
-    windowData->textureContainer.header.info.width = w;
-    windowData->textureContainer.header.info.height = h;
+    windowData->textureContainer.header.info.width = swapchainDesc.BufferDesc.Width;
+    windowData->textureContainer.header.info.height = swapchainDesc.BufferDesc.Height;
 
     windowData->texture.container = &windowData->textureContainer;
     windowData->texture.containerIndex = 0;
 
-    windowData->width = w;
-    windowData->height = h;
+    windowData->width = swapchainDesc.BufferDesc.Width;
+    windowData->height = swapchainDesc.BufferDesc.Height;
     return true;
 }
 
@@ -5310,16 +5309,12 @@ static bool D3D11_INTERNAL_ResizeSwapchain(
     SDL_free(windowData->texture.subresources[0].colorTargetViews);
     SDL_free(windowData->texture.subresources);
 
-    int w, h;
-    SDL_SyncWindow(windowData->window);
-    SDL_GetWindowSizeInPixels(windowData->window, &w, &h);
-
     // Resize the swapchain
     HRESULT res = IDXGISwapChain_ResizeBuffers(
         windowData->swapchain,
         0, // Keep buffer count the same
-        w,
-        h,
+        0, // Use client window width
+        0, // Use client window height
         DXGI_FORMAT_UNKNOWN, // Keep the old format
         renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
     CHECK_D3D11_ERROR_AND_RETURN("Could not resize swapchain buffers", false);
@@ -5332,10 +5327,14 @@ static bool D3D11_INTERNAL_ResizeSwapchain(
         (windowData->swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR) ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : windowData->swapchainFormat,
         &windowData->texture);
 
-    windowData->textureContainer.header.info.width = w;
-    windowData->textureContainer.header.info.height = h;
-    windowData->width = w;
-    windowData->height = h;
+    DXGI_SWAP_CHAIN_DESC swapchainDesc;
+    res = IDXGISwapChain_GetDesc(windowData->swapchain, &swapchainDesc);
+    CHECK_D3D11_ERROR_AND_RETURN("Failed to get swapchain descriptor!", false);
+
+    windowData->textureContainer.header.info.width = swapchainDesc.BufferDesc.Width;
+    windowData->textureContainer.header.info.height = swapchainDesc.BufferDesc.Height;
+    windowData->width = swapchainDesc.BufferDesc.Width;
+    windowData->height = swapchainDesc.BufferDesc.Height;
     windowData->needsSwapchainRecreate = !result;
     return result;
 }

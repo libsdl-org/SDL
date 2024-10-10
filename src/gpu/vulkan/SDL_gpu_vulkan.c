@@ -714,6 +714,8 @@ typedef struct WindowData
     SDL_GPUSwapchainComposition swapchainComposition;
     SDL_GPUPresentMode presentMode;
     bool needsSwapchainRecreate;
+    Uint32 swapchainCreateWidth;
+    Uint32 swapchainCreateHeight;
 
     // Window surface
     VkSurfaceKHR surface;
@@ -4425,13 +4427,12 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     VkSemaphoreCreateInfo semaphoreCreateInfo;
     SwapchainSupportDetails swapchainSupportDetails;
     bool hasValidSwapchainComposition, hasValidPresentMode;
-    Sint32 drawableWidth, drawableHeight;
     Uint32 i;
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-
-    SDL_assert(_this && _this->Vulkan_CreateSurface);
 
     windowData->frameCounter = 0;
+
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_assert(_this && _this->Vulkan_CreateSurface);
 
     // Each swapchain must have its own surface.
     if (!_this->Vulkan_CreateSurface(
@@ -4535,16 +4536,20 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
         return VULKAN_INTERNAL_TRY_AGAIN;
     }
 
-    // Sync now to be sure that our swapchain size is correct
-    SDL_SyncWindow(windowData->window);
-    SDL_GetWindowSizeInPixels(
-        windowData->window,
-        &drawableWidth,
-        &drawableHeight);
-
     windowData->imageCount = MAX_FRAMES_IN_FLIGHT;
-    windowData->width = drawableWidth;
-    windowData->height = drawableHeight;
+
+#ifdef SDL_PLATFORM_APPLE
+    windowData->width = swapchainSupportDetails.capabilities.currentExtent.width;
+    windowData->height = swapchainSupportDetails.capabilities.currentExtent.height;
+#else
+    windowData->width = SDL_clamp(
+        windowData->swapchainCreateWidth,
+        swapchainSupportDetails.capabilities.minImageExtent.width,
+        swapchainSupportDetails.capabilities.maxImageExtent.width);
+    windowData->height = SDL_clamp(windowData->swapchainCreateHeight,
+        swapchainSupportDetails.capabilities.minImageExtent.height,
+        swapchainSupportDetails.capabilities.maxImageExtent.height);
+#endif
 
     if (swapchainSupportDetails.capabilities.maxImageCount > 0 &&
         windowData->imageCount > swapchainSupportDetails.capabilities.maxImageCount) {
@@ -4572,8 +4577,8 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     swapchainCreateInfo.minImageCount = windowData->imageCount;
     swapchainCreateInfo.imageFormat = windowData->format;
     swapchainCreateInfo.imageColorSpace = windowData->colorSpace;
-    swapchainCreateInfo.imageExtent.width = drawableWidth;
-    swapchainCreateInfo.imageExtent.height = drawableHeight;
+    swapchainCreateInfo.imageExtent.width = windowData->width;
+    swapchainCreateInfo.imageExtent.height = windowData->height;
     swapchainCreateInfo.imageArrayLayers = 1;
     swapchainCreateInfo.imageUsage =
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
@@ -4647,8 +4652,8 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
         // Initialize dummy container
         SDL_zero(windowData->textureContainers[i]);
         windowData->textureContainers[i].canBeCycled = false;
-        windowData->textureContainers[i].header.info.width = drawableWidth;
-        windowData->textureContainers[i].header.info.height = drawableHeight;
+        windowData->textureContainers[i].header.info.width = windowData->width;
+        windowData->textureContainers[i].header.info.height = windowData->height;
         windowData->textureContainers[i].header.info.layer_count_or_depth = 1;
         windowData->textureContainers[i].header.info.format = SwapchainCompositionToSDLFormat(
             windowData->swapchainComposition,
@@ -9411,6 +9416,8 @@ static bool VULKAN_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
     if (e->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED && e->window.windowID == SDL_GetWindowID(w)) {
         data = VULKAN_INTERNAL_FetchWindowData(w);
         data->needsSwapchainRecreate = true;
+        data->swapchainCreateWidth = e->window.data1;
+        data->swapchainCreateHeight = e->window.data2;
     }
 
     return true;
@@ -9508,6 +9515,16 @@ static bool VULKAN_ClaimWindow(
         windowData->window = window;
         windowData->presentMode = SDL_GPU_PRESENTMODE_VSYNC;
         windowData->swapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
+
+        // On non-Apple platforms the swapchain capability currentExtent can be different from the window,
+        // so we have to query the window size.
+#ifndef SDL_PLATFORM_APPLE
+        int w, h;
+        SDL_SyncWindow(window);
+        SDL_GetWindowSizeInPixels(window, &w, &h);
+        windowData->swapchainCreateWidth = w;
+        windowData->swapchainCreateHeight = h;
+#endif
 
         Uint32 createSwapchainResult = VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
         if (createSwapchainResult == 1) {
