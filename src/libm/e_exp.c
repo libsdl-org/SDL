@@ -102,7 +102,7 @@ union {
 	Uint64 u64;
 	double d;
 } inf_union = {
-	0x7ff0000000000000  /* Binary representation of a 64-bit infinite double (sign=0, exponent=2047, mantissa=0) */
+	SDL_UINT64_C(0x7ff0000000000000)  /* Binary representation of a 64-bit infinite double (sign=0, exponent=2047, mantissa=0) */
 };
 
 double __ieee754_exp(double x)	/* default IEEE double exp */
