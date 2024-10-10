@@ -26,8 +26,10 @@
 // System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
+#include "../../file/SDL_iostream_c.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -613,6 +615,68 @@ append_slash:
     SDL_strlcat(result, "/", SDL_strlen(result) + 2);
 
     return result;
+}
+
+SDL_IOStream *SDL_SYS_CreateSafeTempFile(void)
+{
+    FILE *file = tmpfile();
+
+    if (!file) {
+        SDL_SetError("Could not tmpfile(): %s", strerror(errno));
+        return NULL;
+    }
+
+    return SDL_IOFromFP(file, true);
+}
+
+char *SDL_SYS_CreateUnsafeTempFile(void)
+{
+    /* TODO: Check for possible alternatives to /tmp, like $TMP */
+    char template[] = "/tmp/tmp.XXXXXX";
+
+    char *file = SDL_strdup(template);
+
+    if (!file) {
+        return NULL;
+    }
+
+    int fd = mkstemp(file);
+
+    if (fd < 0) {
+        SDL_free(file);
+        SDL_SetError("Could not mkstemp(): %s", strerror(errno));
+        return NULL;
+    }
+
+    /* Normal usage of mkstemp() would use the file descriptor rather than the
+       path, to avoid issues. In this function, security is assumed to be
+       unimportant, so no need to worry about it. */
+    /* See https://stackoverflow.com/questions/27680807/mkstemp-is-it-safe-to-close-descriptor-and-reopen-it-again */
+    close(fd);
+
+    return file;
+}
+
+char *SDL_SYS_CreateTempFolder(void)
+{
+    /* TODO: Check for possible alternatives to /tmp, like $TMP */
+    char template[] = "/tmp/tmp.XXXXXX";
+
+    char *folder = SDL_strdup(template);
+
+    if (!folder) {
+        return NULL;
+    }
+
+    char *res = mkdtemp(folder);
+
+    if (!res) {
+        SDL_free(folder);
+        SDL_SetError("Could not mkdtemp(): %s", strerror(errno));
+        return NULL;
+    }
+
+    return folder;
 }
 
 #endif // SDL_FILESYSTEM_UNIX
