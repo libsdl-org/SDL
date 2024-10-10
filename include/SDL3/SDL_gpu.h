@@ -3724,7 +3724,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUTextureSupportsSampleCount(
  * \param depth depth in pixels.
  * \returns the size of a texture with this format and dimensions.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.1.5.
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_CalculateGPUTextureFormatSize(
     SDL_GPUTextureFormat format,
