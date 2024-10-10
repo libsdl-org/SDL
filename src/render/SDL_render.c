@@ -4948,7 +4948,7 @@ static void SDL_SimulateRenderVSync(SDL_Renderer *renderer)
     elapsed = (now - renderer->last_present);
     if (elapsed < interval) {
         Uint64 duration = (interval - elapsed);
-        SDL_DelayNS(duration);
+        SDL_DelayPrecise(duration);
         now = SDL_GetTicksNS();
     }
 

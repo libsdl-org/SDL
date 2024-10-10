@@ -115,14 +115,27 @@ extern SDL_DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
  * Wait a specified number of nanoseconds before returning.
  *
  * This function waits a specified number of nanoseconds before returning. It
- * will attempt to wait as close to the requested time as possible, busy
- * waiting if necessary, but could return later due to OS scheduling.
+ * waits at least the specified time, but possibly longer due to OS
+ * scheduling.
  *
  * \param ns the number of nanoseconds to delay.
  *
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
+
+/**
+ * Wait a specified number of nanoseconds before returning.
+ *
+ * This function waits a specified number of nanoseconds before returning. It
+ * will attempt to wait as close to the requested time as possible, busy
+ * waiting if necessary, but could return later due to OS scheduling.
+ *
+ * \param ns the number of nanoseconds to delay.
+ *
+ * \since This function is available since SDL 3.1.5.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_DelayPrecise(Uint64 ns);
 
 /**
  * Definition of the timer ID type.

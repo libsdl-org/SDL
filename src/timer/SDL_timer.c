@@ -658,6 +658,11 @@ void SDL_Delay(Uint32 ms)
 
 void SDL_DelayNS(Uint64 ns)
 {
+    SDL_SYS_DelayNS(ns);
+}
+
+void SDL_DelayPrecise(Uint64 ns)
+{
     Uint64 current_value = SDL_GetTicksNS();
     Uint64 target_value = current_value + ns;
 
