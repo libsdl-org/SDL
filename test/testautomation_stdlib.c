@@ -358,7 +358,7 @@ static int SDLCALL stdlib_snprintf(void *arg)
         "Check result value, expected: %d, got: %d", (int)SDL_strlen(expected), result);
 
     if (sizeof(void *) >= 8) {
-        result = SDL_snprintf(text, sizeof(text), "%p", (void *)0x1ba07bddf60L);
+        result = SDL_snprintf(text, sizeof(text), "%p", (void *)SDL_SINT64_C(0x1ba07bddf60));
         expected = "0x1ba07bddf60";
         expected2 = "000001BA07BDDF60";
         expected3 = "000001ba07bddf60";
