@@ -3723,7 +3723,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUTextureSupportsSampleCount(
  * \param depth_or_layer_count depth for 3D textures or layer count otherwise.
  * \returns the size of a texture with this format and dimensions.
  *
- * \since This function is available since SDL 3.1.5.
+ * \since This function is available since SDL 3.1.4.
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_CalculateGPUTextureFormatSize(
     SDL_GPUTextureFormat format,
