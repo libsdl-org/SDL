@@ -1203,3 +1203,4 @@
 #define SDL_wcstol SDL_wcstol_REAL
 #define SDL_StepBackUTF8 SDL_StepBackUTF8_REAL
 #define SDL_DelayPrecise SDL_DelayPrecise_REAL
+#define SDL_CalculateGPUTextureFormatSize SDL_CalculateGPUTextureFormatSize_REAL

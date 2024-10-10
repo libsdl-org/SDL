@@ -1209,3 +1209,4 @@ SDL_DYNAPI_PROC(wchar_t*,SDL_wcsstr,(const wchar_t *a, const wchar_t *b),(a,b),r
 SDL_DYNAPI_PROC(long,SDL_wcstol,(const wchar_t *a, wchar_t **b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(Uint32,SDL_StepBackUTF8,(const char *a, const char **b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_DelayPrecise,(Uint64 a),(a),)
+SDL_DYNAPI_PROC(Uint32,SDL_CalculateGPUTextureFormatSize,(SDL_GPUTextureFormat a, Uint32 b, Uint32 c, Uint32 d),(a,b,c,d),return)
