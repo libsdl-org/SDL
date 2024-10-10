@@ -8949,6 +8949,7 @@ static void VULKAN_Blit(
     // Using BeginRenderPass to clear because vkCmdClearColorImage requires barriers anyway
     if (info->load_op == SDL_GPU_LOADOP_CLEAR) {
         SDL_GPUColorTargetInfo targetInfo;
+        SDL_zero(targetInfo);
         targetInfo.texture = info->destination.texture;
         targetInfo.mip_level = info->destination.mip_level;
         targetInfo.layer_or_depth_plane = info->destination.layer_or_depth_plane;
