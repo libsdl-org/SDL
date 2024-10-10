@@ -208,21 +208,6 @@ static inline Uint32 BytesPerRow(
     return blocksPerRow * SDL_GPUTextureFormatTexelBlockSize(format);
 }
 
-static inline Sint32 BytesPerImage(
-    Uint32 width,
-    Uint32 height,
-    SDL_GPUTextureFormat format)
-{
-    Uint32 blocksPerRow = width;
-    Uint32 blocksPerColumn = height;
-    Uint32 pixelRowsPerBlock = Texture_GetBlockSize(format);
-    Uint32 pixelColumnsPerBlock = pixelRowsPerBlock;
-
-    blocksPerRow = (width + pixelRowsPerBlock - 1) / pixelRowsPerBlock;
-    blocksPerColumn = (height + pixelColumnsPerBlock - 1) / pixelColumnsPerBlock;
-    return blocksPerRow * blocksPerColumn * SDL_GPUTextureFormatTexelBlockSize(format);
-}
-
 // GraphicsDevice Limits
 
 #define MAX_TEXTURE_SAMPLERS_PER_STAGE 16
