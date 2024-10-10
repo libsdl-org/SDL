@@ -307,6 +307,7 @@ bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *
     new_item.value = value;
     new_item.hash = hash;
     new_item.live = true;
+    new_item.probe_len = 0;
 
     table->num_occupied_slots++;
 
