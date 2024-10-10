@@ -1218,7 +1218,7 @@ struct VulkanRenderer
 
 // Forward declarations
 
-static bool VULKAN_INTERNAL_DefragmentMemory(VulkanRenderer *renderer);
+static bool VULKAN_INTERNAL_DefragmentMemory(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
 static bool VULKAN_INTERNAL_BeginCommandBuffer(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
 static void VULKAN_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window);
 static bool VULKAN_Wait(SDL_GPURenderer *driverData);
@@ -10200,7 +10200,6 @@ static bool VULKAN_Submit(
     VulkanTextureSubresource *swapchainTextureSubresource;
     Uint8 commandBufferCleaned = 0;
     VulkanMemorySubAllocator *allocator;
-    bool presenting = false;
 
     SDL_LockMutex(renderer->submitLock);
 
@@ -10221,6 +10220,17 @@ static bool VULKAN_Submit(
             vulkanCommandBuffer,
             VULKAN_TEXTURE_USAGE_MODE_PRESENT,
             swapchainTextureSubresource);
+    }
+
+    // Insert defrag commands if we are presenting, there are fragmented allocations, and there is no other defrag in process
+    if (
+        vulkanCommandBuffer->presentDataCount > 0 &&
+        renderer->allocationsToDefragCount > 0 &&
+        !renderer->defragInProgress) {
+        if (!VULKAN_INTERNAL_DefragmentMemory(renderer, vulkanCommandBuffer)) {
+            SDL_UnlockMutex(renderer->submitLock);
+            return false;
+        }
     }
 
     if (!VULKAN_INTERNAL_EndCommandBuffer(renderer, vulkanCommandBuffer)) {
@@ -10272,12 +10282,7 @@ static bool VULKAN_Submit(
     renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount] = vulkanCommandBuffer;
     renderer->submittedCommandBufferCount += 1;
 
-    // Present, if applicable
-    bool result = true;
-
     for (Uint32 j = 0; j < vulkanCommandBuffer->presentDataCount; j += 1) {
-        presenting = true;
-
         presentData = &vulkanCommandBuffer->presentDatas[j];
 
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -10348,21 +10353,14 @@ static bool VULKAN_Submit(
     // Check pending destroys
     VULKAN_INTERNAL_PerformPendingDestroys(renderer);
 
-    // Defrag!
-    if (
-        presenting &&
-        renderer->allocationsToDefragCount > 0 &&
-        !renderer->defragInProgress) {
-        result = VULKAN_INTERNAL_DefragmentMemory(renderer);
-    }
-
     SDL_UnlockMutex(renderer->submitLock);
 
-    return result;
+    return true;
 }
 
 static bool VULKAN_INTERNAL_DefragmentMemory(
-    VulkanRenderer *renderer)
+    VulkanRenderer *renderer,
+    VulkanCommandBuffer *commandBuffer)
 {
     VulkanMemoryAllocation *allocation;
     VulkanMemoryUsedRegion *currentRegion;
@@ -10370,17 +10368,11 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
     VulkanTexture *newTexture;
     VkBufferCopy bufferCopy;
     VkImageCopy imageCopy;
-    VulkanCommandBuffer *commandBuffer;
     VulkanTextureSubresource *srcSubresource;
     VulkanTextureSubresource *dstSubresource;
     Uint32 i, subresourceIndex;
 
     renderer->defragInProgress = 1;
-
-    commandBuffer = (VulkanCommandBuffer *)VULKAN_AcquireCommandBuffer((SDL_GPURenderer *)renderer);
-    if (commandBuffer == NULL) {
-        return false;
-    }
     commandBuffer->isDefrag = 1;
 
     SDL_LockMutex(renderer->allocatorLock);
@@ -10562,8 +10554,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
 
     SDL_UnlockMutex(renderer->allocatorLock);
 
-    return VULKAN_Submit(
-        (SDL_GPUCommandBuffer *)commandBuffer);
+    return true;
 }
 
 // Format Info
