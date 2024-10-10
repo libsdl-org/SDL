@@ -48,15 +48,6 @@ bool OHOS_FindNativeWindow(OH_NativeXComponent *nativeXComponent, SDL_WindowData
     return isFind;
 }
 
-void OHOS_FindOrCreateThreadLock(pthread_t id, OhosThreadLock **lock)
-{
-    SDL_LockMutex(g_ohosPageMutex);
-    OhosThreadLock *temp = OhosPluginManager::GetInstance()->CreateOhosThreadLock(id);
-    *lock = temp;
-    SDL_UnlockMutex(g_ohosPageMutex);
-    return;
-}
-
 void OHOS_ClearPluginData(char *id)
 {
     std::string strId(id);

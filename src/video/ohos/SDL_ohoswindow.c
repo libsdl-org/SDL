@@ -25,6 +25,8 @@
 #define OHOS_EGL_ALPHA_SIZE_DEFAULT 8
 #define OHOS_GETWINDOW_DELAY_TIME 2
 #define TIMECONSTANT 3000
+#define OHOS_WAIT_COUNT 700
+#define OHOS_WAIT_TIME 10
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
 #if SDL_VIDEO_DRIVER_OHOS
@@ -182,34 +184,24 @@ void OHOS_HideWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
 
 static void OHOS_WaitGetNativeXcompent(const char *strID, pthread_t tid, OH_NativeXComponent **nativeXComponent)
 {
-    OhosThreadLock *lock = NULL;
-    if (!OHOS_FindNativeXcomPoment(strID, nativeXComponent)) {
-        OHOS_FindOrCreateThreadLock(tid, &lock);
-        if (lock == NULL) {
-            return;
+    int cnt = OHOS_WAIT_COUNT;
+    while (!OHOS_FindNativeXcomPoment(strID, nativeXComponent)) {
+        if (cnt-- == 0) {
+            break;
         }
-        while (!OHOS_FindNativeXcomPoment(strID, nativeXComponent)) {
-            SDL_LockMutex(lock->mLock);
-            SDL_CondWait(lock->mCond, lock->mLock);
-            SDL_UnlockMutex(lock->mLock);
-        }
+        SDL_Delay(OHOS_WAIT_TIME);
     }
 }
 
 static void OHOS_WaitGetNativeWindow(const char *strID, pthread_t tid, SDL_WindowData **windowData,
     OH_NativeXComponent *nativeXComponent)
 {
-    OhosThreadLock *lock = NULL;
-    if (!OHOS_FindNativeWindow(nativeXComponent, windowData)) {
-        OHOS_FindOrCreateThreadLock(tid, &lock);
-        if (lock == NULL) {
-            return;
+    int cnt = OHOS_WAIT_COUNT;
+    while (!OHOS_FindNativeWindow(nativeXComponent, windowData)) {
+        if (cnt-- == 0) {
+            break;
         }
-        while (!OHOS_FindNativeWindow(nativeXComponent, windowData)) {
-            SDL_LockMutex(lock->mLock);
-            SDL_CondWait(lock->mCond, lock->mLock);
-            SDL_LockMutex(lock->mLock);
-        }
+        SDL_Delay(OHOS_WAIT_TIME);
     }
 }
 

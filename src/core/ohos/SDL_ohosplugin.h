@@ -37,12 +37,9 @@ public:
     void SetNativeXComponent(std::string &id, OH_NativeXComponent *nativeXComponent);
     bool FindNativeXcomPoment(std::string &id, OH_NativeXComponent **nativeXComponent);
     bool FindNativeWindow(OH_NativeXComponent *nativeXComponent, SDL_WindowData **window);
-    OhosThreadLock* CreateOhosThreadLock(const pthread_t threadId);
-    void DestroyOhosThreadLock(OhosThreadLock *threadLock);
 
     void SetNativeXComponentList(OH_NativeXComponent*, SDL_WindowData *);
     pthread_t  GetThreadIdFromXComponentId(std::string &id);
-    OhosThreadLock *GetOhosThreadLockFromThreadId(pthread_t threadId);
     int ClearPluginManagerData(std::string &id, OH_NativeXComponent *component, pthread_t threadId);
     
     SDL_WindowData* GetWindowDataByXComponent(OH_NativeXComponent *component);
@@ -52,7 +49,6 @@ private:
 
     std::unordered_map<std::string, OH_NativeXComponent *> nativeXComponentMap;
     std::unordered_map<pthread_t, std::vector<std::string>> threadXcompentList;
-    std::unordered_map<pthread_t, OhosThreadLock *> ohosThreadLocks;
     std::unordered_map<OH_NativeXComponent *, SDL_WindowData *> nativeXComponentList;
 };
 #endif // SDL_OHOSPLUGIN_H

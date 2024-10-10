@@ -139,19 +139,6 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
     } else {
         setWindowDataValue(data, width, height, offsetX, offsetY, window);
     }
-    
-    long threadId = OhosPluginManager::GetInstance()->GetThreadIdFromXComponentId(curXComponentId);
-    if (threadId == -1) {
-        SDL_UnlockMutex(g_ohosPageMutex);
-        return;
-    }
-    OhosThreadLock *lock = OhosPluginManager::GetInstance()->GetOhosThreadLockFromThreadId(threadId);
-    if (lock == nullptr) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Get this threadId: %ld lock error", threadId);
-        SDL_UnlockMutex(g_ohosPageMutex);
-        return;
-    }
-    SDL_CondBroadcast(lock->mCond);
     SDL_UnlockMutex(g_ohosPageMutex);
 }
 
@@ -327,13 +314,6 @@ void OHOS_XcomponentExport(napi_env env, napi_value exports)
 
     SDL_LockMutex(g_ohosPageMutex);
     OhosPluginManager::GetInstance()->SetNativeXComponent(xComponentId, nativeXComponent);
-    long threadId = OhosPluginManager::GetInstance()->GetThreadIdFromXComponentId(xComponentId);
-    if (threadId != -1) {
-        OhosThreadLock *lock = OhosPluginManager::GetInstance()->GetOhosThreadLockFromThreadId(threadId);
-        if (lock != nullptr) {
-            SDL_CondBroadcast(lock->mCond);
-        }
-    }
     SDL_UnlockMutex(g_ohosPageMutex);
 
     callback.OnSurfaceCreated = OnSurfaceCreatedCB;

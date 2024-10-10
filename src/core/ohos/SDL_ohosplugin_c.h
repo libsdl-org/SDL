@@ -26,11 +26,7 @@ bool OHOS_FindNativeXcomPoment(char *id, OH_NativeXComponent **nativeXComponent)
 
 bool OHOS_FindNativeWindow(OH_NativeXComponent *nativeXComponent, SDL_WindowData **window);
 
-OhosThreadLock* OHOS_CreateThreadLock(long *id);
-
 void OHOS_AddXcomPomentIdForThread(char *xCompentId, pthread_t threadId);
-
-void OHOS_FindOrCreateThreadLock(pthread_t id, OhosThreadLock **lock);
 
 void OHOS_ClearPluginData(char* data);
 /* *INDENT-ON* */
