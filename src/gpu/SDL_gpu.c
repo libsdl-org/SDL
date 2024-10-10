@@ -2801,7 +2801,11 @@ Uint32 SDL_CalculateGPUTextureFormatSize(
     SDL_GPUTextureFormat format,
     Uint32 width,
     Uint32 height,
-    Uint32 depth)
+    Uint32 depth_or_layer_count)
 {
-    return depth * BytesPerImage(width, height, format);
+    Uint32 blockWidth = Texture_GetBlockWidth(format);
+    Uint32 blockHeight = Texture_GetBlockHeight(format);
+    Uint32 blocksPerRow = (width + blockWidth - 1) / blockWidth;
+    Uint32 blocksPerColumn = (height + blockHeight - 1) / blockHeight;
+    return depth_or_layer_count * blocksPerRow * blocksPerColumn * SDL_GPUTextureFormatTexelBlockSize(format);
 }
