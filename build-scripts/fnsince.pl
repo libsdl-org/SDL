@@ -13,23 +13,28 @@ foreach (@ARGV) {
 chdir(dirname(__FILE__));
 chdir('..');
 
+my %fulltags = ();
 my @unsorted_releases = ();
 open(PIPEFH, '-|', 'git tag -l') or die "Failed to read git release tags: $!\n";
 
 while (<PIPEFH>) {
     chomp;
-    if (/\Arelease\-(.*?)\Z/) {
+    my $fulltag = $_;
+    if ($fulltag =~ /\A(prerelease|preview|release)\-(\d+)\.(\d+)\.(\d+)\Z/) {
         # Ignore anything that isn't a x.y.0 release.
-        # Make sure new APIs are assigned to the next minor version and ignore the patch versions.
-        my $ver = $1;
-        my @versplit = split /\./, $ver;
-        next if (scalar(@versplit) < 1) || ($versplit[0] != 3);  # Ignore anything that isn't an SDL3 release.
-        next if (scalar(@versplit) < 3) || ($versplit[2] != 0);
+        # Make sure new APIs are assigned to the next minor version and ignore the patch versions, but we'll make an except for the prereleases.
+        my $release_type = $1;
+        my $major = int($2);
+        my $minor = int($3);
+        my $patch = int($4);
+        next if ($major != 3);  # Ignore anything that isn't an SDL3 release.
+        next if ($patch != 0) && ($minor >= 2);  # Ignore anything that is a patch release (unless it was between the preview release and the official release).
 
         # Consider this release version.
+        my $ver = "${major}.${minor}.${patch}";
         push @unsorted_releases, $ver;
+        $fulltags{$ver} = $fulltag;
     }
-
 }
 close(PIPEFH);
 
@@ -52,14 +57,21 @@ my @releases = sort {
     return 0;  # still here? They matched completely?!
 } @unsorted_releases;
 
-my $current_release = 'in-development';
-my $next_release = '3.0.0';  # valid until we actually ship something.  :)
+my $current_release = $releases[-1];
+my $next_release;
+
 if (scalar(@releases) > 0) {
     # this happens to work for how SDL versions things at the moment.
     $current_release = $releases[-1];
 
     my @current_release_segments = split /\./, $current_release;
-    @current_release_segments[1] = '' . ($current_release_segments[1] + 2);
+
+    # if we're still in the 3.1.x prereleases, bump x by 1, otherwise, bump minor version by 2.
+    if (($current_release_segments[0] == '3') && ($current_release_segments[1] == '1')) {
+        @current_release_segments[2] = '' . (int($current_release_segments[2]) + 1);
+    } else {
+        @current_release_segments[1] = '' . (int($current_release_segments[1]) + 2);
+    }
     $next_release = join('.', @current_release_segments);
 }
 
@@ -71,12 +83,16 @@ if (scalar(@releases) > 0) {
 #print("NEXT RELEASE: $next_release\n\n");
 
 push @releases, 'HEAD';
+$fulltags{'HEAD'} = 'HEAD';
 
 my %funcs = ();
 foreach my $release (@releases) {
     #print("Checking $release...\n");
-    my $tag = ($release eq 'HEAD') ? $release : "release-$release";
+    my $tag = $fulltags{$release};
     my $blobname = "$tag:src/dynapi/SDL_dynapi_overrides.h";
+
+    $release = '3.0.0' if $release =~ /\A3\.1\.[0123]/;  # hack to make everything up to ABI-lock look like 3.0.0.
+
     open(PIPEFH, '-|', "git show '$blobname'") or die "Failed to read git blob '$blobname': $!\n";
     while (<PIPEFH>) {
         chomp;
@@ -98,6 +114,7 @@ if (not defined $wikipath) {
     if (defined $wikipath) {
         chdir($wikipath);
         foreach my $fn (keys %funcs) {
+            next if $fn eq 'SDL_ThreadID';  # this was a function early on (it's now called SDL_GetThreadID), but now it's a datatype (which originally had a different capitalization).
             my $revision = $funcs{$fn};
             $revision = $next_release if $revision eq 'HEAD';
             my $fname = "$fn.md";
