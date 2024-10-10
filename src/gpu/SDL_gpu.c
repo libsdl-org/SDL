@@ -2796,3 +2796,12 @@ void SDL_ReleaseGPUFence(
         device->driverData,
         fence);
 }
+
+Uint32 SDL_CalculateGPUTextureFormatSize(
+    SDL_GPUTextureFormat format,
+    Uint32 width,
+    Uint32 height,
+    Uint32 depth)
+{
+    return depth * BytesPerImage(width, height, format);
+}
