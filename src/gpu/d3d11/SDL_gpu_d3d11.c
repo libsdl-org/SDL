@@ -2698,10 +2698,11 @@ static void D3D11_UploadToTexture(
         destination->mip_level,
         cycle);
 
-    Sint32 blockSize = Texture_GetBlockSize(dstFormat);
-    if (blockSize > 1) {
-        w = (w + blockSize - 1) & ~(blockSize - 1);
-        h = (h + blockSize - 1) & ~(blockSize - 1);
+    Sint32 blockWidth = Texture_GetBlockWidth(dstFormat);
+    Sint32 blockHeight = Texture_GetBlockHeight(dstFormat);
+    if (blockWidth > 1 && blockHeight > 1) {
+        w = (w + blockWidth - 1) & ~(blockWidth - 1);
+        h = (h + blockHeight - 1) & ~(blockHeight - 1);
     }
 
     if (bufferStride == 0) {
