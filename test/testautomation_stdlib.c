@@ -913,9 +913,11 @@ static int SDLCALL stdlib_aligned_alloc(void *arg)
         }
         SDLTest_AssertCheck(ptr != NULL, "Check output, expected non-NULL, got: %p", ptr);
         SDLTest_AssertCheck((((size_t)ptr) % alignment) == 0, "Check output, expected aligned pointer, actual offset: %"SIZE_FORMAT, (((size_t)ptr) % alignment));
-        SDLTest_AssertPass("Filling memory to alignment value");
-        SDL_memset(ptr, 0xAA, alignment);
-        SDL_aligned_free(ptr);
+        if (ptr != NULL) {
+            SDLTest_AssertPass("Filling memory to alignment value");
+            SDL_memset(ptr, 0xAA, alignment);
+            SDL_aligned_free(ptr);
+        }
     }
 
     return TEST_COMPLETED;
