@@ -1178,6 +1178,7 @@ SDL3_0.0.0 {
     SDL_wcstol;
     SDL_StepBackUTF8;
     SDL_DelayPrecise;
+    SDL_CalculateGPUTextureFormatSize;
     # extra symbols go here (don't modify this line)
   local: *;
 };

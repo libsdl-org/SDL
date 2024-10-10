@@ -2796,3 +2796,16 @@ void SDL_ReleaseGPUFence(
         device->driverData,
         fence);
 }
+
+Uint32 SDL_CalculateGPUTextureFormatSize(
+    SDL_GPUTextureFormat format,
+    Uint32 width,
+    Uint32 height,
+    Uint32 depth)
+{
+    Uint32 pixelRowsPerBlock = Texture_GetBlockSize(format);
+    Uint32 pixelColumnsPerBlock = pixelRowsPerBlock;
+    Uint32 blocksPerRow = (width + pixelRowsPerBlock - 1) / pixelRowsPerBlock;
+    Uint32 blocksPerColumn = (height + pixelColumnsPerBlock - 1) / pixelColumnsPerBlock;
+    return depth * blocksPerRow * blocksPerColumn * SDL_GPUTextureFormatTexelBlockSize(format);
+}
