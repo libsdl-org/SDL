@@ -133,7 +133,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
  *
  * \param ns the number of nanoseconds to delay.
  *
- * \since This function is available since SDL 3.1.5.
+ * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DelayPrecise(Uint64 ns);
 
