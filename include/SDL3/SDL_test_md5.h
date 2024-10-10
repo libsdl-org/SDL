@@ -20,8 +20,6 @@
 */
 
 /**
- *  \file SDL_test_md5.h
- *
  *  MD5 related functions of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
