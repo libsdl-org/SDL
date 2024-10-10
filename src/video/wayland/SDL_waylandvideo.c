@@ -64,6 +64,7 @@
 #include "xdg-output-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 #include "xdg-toplevel-icon-v1-client-protocol.h"
+#include "pointer-warp-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1201,6 +1202,8 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         kde_output_order_v1_add_listener(d->kde_output_order, &kde_output_order_listener, d);
     } else if (SDL_strcmp(interface, "frog_color_management_factory_v1") == 0) {
         d->frog_color_management_factory_v1 = wl_registry_bind(d->registry, id, &frog_color_management_factory_v1_interface, 1);
+    } else if (SDL_strcmp(interface, "wp_pointer_warp_v1") == 0) {
+        d->pointer_warp = wl_registry_bind(d->registry, id, &wp_pointer_warp_v1_interface, 1);
     }
 }
 
@@ -1479,6 +1482,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->frog_color_management_factory_v1) {
         frog_color_management_factory_v1_destroy(data->frog_color_management_factory_v1);
         data->frog_color_management_factory_v1 = NULL;
+    }
+
+    if (data->pointer_warp) {
+        wp_pointer_warp_v1_destroy(data->pointer_warp);
+        data->pointer_warp = NULL;
     }
 
     if (data->compositor) {
