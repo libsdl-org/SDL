@@ -194,11 +194,6 @@ typedef struct
 #undef SDL_DYNAPI_PROC
 } SDL_DYNAPI_jump_table;
 
-// Predeclare the default functions for initializing the jump table.
-#define SDL_DYNAPI_PROC(rc, fn, params, args, ret) static rc SDLCALL fn##_DEFAULT params;
-#include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
-
 // The actual jump table.
 static SDL_DYNAPI_jump_table jump_table = {
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) fn##_DEFAULT,
