@@ -2303,7 +2303,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MAC_SCROLL_MOMENTUM "SDL_HINT_MAC_SCROLL_MOMENTUM"
+#define SDL_HINT_MAC_SCROLL_MOMENTUM "SDL_MAC_SCROLL_MOMENTUM"
 
 /**
  * Request SDL_AppIterate() be called at a specific rate.
