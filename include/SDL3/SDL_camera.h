@@ -268,7 +268,7 @@ extern SDL_DECLSPEC SDL_CameraPosition SDLCALL SDL_GetCameraPosition(SDL_CameraI
  *
  * You can call SDL_GetCameraFormat() to get the actual data format if passing
  * a NULL spec here. You can see the exact specs a device can support without
- * conversion with SDL_GetCameraSupportedSpecs().
+ * conversion with SDL_GetCameraSupportedFormats().
  *
  * SDL will not attempt to emulate framerate; it will try to set the hardware
  * to the rate closest to the requested speed, but it won't attempt to limit
