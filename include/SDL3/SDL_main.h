@@ -86,8 +86,14 @@
          */
         #define SDL_MAIN_NEEDED
 
-        /* We need to export SDL_main so it can be launched from Java */
-        #define SDLMAIN_DECLSPEC    SDL_DECLSPEC
+        /* As this is launched from Java, the real entry point (main() function)
+           is outside of the the binary built from this code.
+           This define makes sure that, unlike on other platforms, SDL_main.h
+           and SDL_main_impl.h export an `SDL_main()` function (to be called
+           from Java), but don't implement a native `int main(int argc, char* argv[])`
+           or similar.
+         */
+        #define SDL_MAIN_EXPORTED
 
     #elif defined(SDL_PLATFORM_EMSCRIPTEN)
         /* On Emscripten, SDL provides a main function that converts URL
@@ -134,9 +140,14 @@
     #endif
 #endif /* SDL_MAIN_HANDLED */
 
-#ifndef SDLMAIN_DECLSPEC
+#ifdef SDL_MAIN_EXPORTED
+/* We need to export SDL_main so it can be launched from external code,
+   like SDLActivity.java on Android */
+#define SDLMAIN_DECLSPEC    SDL_DECLSPEC
+#else
+/* usually this is empty */
 #define SDLMAIN_DECLSPEC
-#endif
+#endif /* SDL_MAIN_EXPORTED */
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
@@ -562,14 +573,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #include <SDL3/SDL_close_code.h>
 
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
-    /* include header-only SDL_main implementations
-     * Note: currently Android is the only platform where we rename main() to SDL_main() but
-     *  do *not* use SDL_main_impl.h (because SDL_main() is called from external Java code).
-     *  If other platforms like that turn up, add them next to "defined(SDL_PLATFORM_ANDROID)"
-     */
-    #if (defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE)) && \
-        !defined(SDL_PLATFORM_ANDROID)
-
+    /* include header-only SDL_main implementations */
+    #if defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE)
         /* platforms which main (-equivalent) can be implemented in plain C */
         #include <SDL3/SDL_main_impl.h>
     #endif
