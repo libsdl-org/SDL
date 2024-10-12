@@ -950,6 +950,9 @@
     <ClCompile Include="..\..\src\camera\SDL_camera.c">
       <Filter>camera</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\dialog\SDL_dialog.c">
+      <Filter>dialog</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c">
       <Filter>dialog</Filter>
     </ClCompile>
