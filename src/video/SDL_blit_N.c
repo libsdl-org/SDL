@@ -2076,7 +2076,7 @@ static void Blit_RGB555_ARGB1555(SDL_BlitInfo *info)
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP(
+        DUFFS_LOOP_TRIVIAL(
         {
             *dst = *src | mask;
             ++dst;
@@ -2200,7 +2200,7 @@ static void Blit4to4MaskAlpha(SDL_BlitInfo *info)
 
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
-            DUFFS_LOOP(
+            DUFFS_LOOP_TRIVIAL(
             {
                 *dst = *src | mask;
                 ++dst;
@@ -2217,7 +2217,7 @@ static void Blit4to4MaskAlpha(SDL_BlitInfo *info)
 
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
-            DUFFS_LOOP(
+            DUFFS_LOOP_TRIVIAL(
             {
                 *dst = *src & mask;
                 ++dst;
@@ -2576,7 +2576,7 @@ static void Blit2to2Key(SDL_BlitInfo *info)
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP(
+        DUFFS_LOOP_TRIVIAL(
         {
             if ( (*srcp & rgbmask) != ckey ) {
                 *dstp = *srcp;
@@ -2622,7 +2622,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
             Uint32 mask = ((Uint32)info->a) << dstfmt->Ashift;
             while (height--) {
                 /* *INDENT-OFF* */ /* clang-format off */
-                DUFFS_LOOP(
+                DUFFS_LOOP_TRIVIAL(
                 {
                     if ((*src32 & rgbmask) != ckey) {
                         *dst32 = *src32 | mask;
@@ -2640,7 +2640,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
             Uint32 mask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
             while (height--) {
                 /* *INDENT-OFF* */ /* clang-format off */
-                DUFFS_LOOP(
+                DUFFS_LOOP_TRIVIAL(
                 {
                     if ((*src32 & rgbmask) != ckey) {
                         *dst32 = *src32 & mask;
@@ -2897,7 +2897,7 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
             Uint32 *dst32 = (Uint32 *)dst;
             while (height--) {
                 /* *INDENT-OFF* */ /* clang-format off */
-                DUFFS_LOOP(
+                DUFFS_LOOP_TRIVIAL(
                 {
                     if ((*src32 & rgbmask) != ckey) {
                         *dst32 = *src32;

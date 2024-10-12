@@ -47,7 +47,7 @@ static void BlitNto1SurfaceAlpha(SDL_BlitInfo *info)
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP4(
+        DUFFS_LOOP(
         {
         DISEMBLE_RGB(src, srcbpp, srcfmt, Pixel, sR, sG, sB);
         dR = dstfmt->palette->colors[*dst].r;
@@ -92,7 +92,7 @@ static void BlitNto1PixelAlpha(SDL_BlitInfo *info)
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP4(
+        DUFFS_LOOP(
         {
         DISEMBLE_RGBA(src,srcbpp,srcfmt,Pixel,sR,sG,sB,sA);
         dR = dstfmt->palette->colors[*dst].r;
@@ -484,7 +484,7 @@ static void BlitRGBtoRGBSurfaceAlpha128(SDL_BlitInfo *info)
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP4({
+        DUFFS_LOOP({
             Uint32 s = *srcp++;
             Uint32 d = *dstp;
             *dstp++ = ((((s & 0x00fefefe) + (d & 0x00fefefe)) >> 1)
@@ -516,7 +516,7 @@ static void BlitRGBtoRGBSurfaceAlpha(SDL_BlitInfo *info)
 
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
-            DUFFS_LOOP4({
+            DUFFS_LOOP({
                 s = *srcp;
                 d = *dstp;
                 s1 = s & 0xff00ff;
@@ -1148,7 +1148,7 @@ static void Blit565to565SurfaceAlpha(SDL_BlitInfo *info)
 
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
-            DUFFS_LOOP4({
+            DUFFS_LOOP({
                 Uint32 s = *srcp++;
                 Uint32 d = *dstp;
                 /*
@@ -1186,7 +1186,7 @@ static void Blit555to555SurfaceAlpha(SDL_BlitInfo *info)
 
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
-            DUFFS_LOOP4({
+            DUFFS_LOOP({
                 Uint32 s = *srcp++;
                 Uint32 d = *dstp;
                 /*
@@ -1219,7 +1219,7 @@ static void BlitARGBto565PixelAlpha(SDL_BlitInfo *info)
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP4({
+        DUFFS_LOOP({
         Uint32 s = *srcp;
         unsigned alpha = s >> 27; /* downscale alpha to 5 bits */
         /* Here we special-case opaque alpha since the
@@ -1262,7 +1262,7 @@ static void BlitARGBto555PixelAlpha(SDL_BlitInfo *info)
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP4({
+        DUFFS_LOOP({
         unsigned alpha;
         Uint32 s = *srcp;
         alpha = s >> 27; /* downscale alpha to 5 bits */
@@ -1315,7 +1315,7 @@ static void BlitNtoNSurfaceAlpha(SDL_BlitInfo *info)
     if (sA) {
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP4(
+        DUFFS_LOOP(
         {
         DISEMBLE_RGB(src, srcbpp, srcfmt, Pixel, sR, sG, sB);
         DISEMBLE_RGBA(dst, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
@@ -1353,7 +1353,7 @@ static void BlitNtoNSurfaceAlphaKey(SDL_BlitInfo *info)
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP4(
+        DUFFS_LOOP(
         {
         RETRIEVE_RGB_PIXEL(src, srcbpp, Pixel);
         if (sA && Pixel != ckey) {
@@ -1395,7 +1395,7 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP4(
+        DUFFS_LOOP(
         {
         DISEMBLE_RGBA(src, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
         if (sA) {

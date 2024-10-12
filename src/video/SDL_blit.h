@@ -471,6 +471,15 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 #else
 #define USE_DUFFS_LOOP
 #endif
+
+#define DUFFS_LOOP1(pixel_copy_increment, width) \
+    {                                            \
+        int n;                                   \
+        for (n = width; n > 0; --n) {            \
+            pixel_copy_increment;                \
+        }                                        \
+    }
+
 #ifdef USE_DUFFS_LOOP
 
 /* 8-times unrolled loop */
@@ -527,8 +536,26 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         }                                        \
     }
 
-/* Use the 8-times version of the loop by default */
+/* 2-times unrolled loop */
+#define DUFFS_LOOP2(pixel_copy_increment, width) \
+    {                                            \
+        int n = (width + 1) / 2;                 \
+        switch (width & 1) {                     \
+        case 0:                                  \
+            do {                                 \
+                pixel_copy_increment;            \
+                SDL_FALLTHROUGH;                 \
+            case 1:                              \
+                pixel_copy_increment;            \
+            } while (--n > 0);                   \
+        }                                        \
+    }
+
+/* Use the 4-times version of the loop by default */
 #define DUFFS_LOOP(pixel_copy_increment, width) \
+    DUFFS_LOOP4(pixel_copy_increment, width)
+/* Use the 8-times version of the loop for simple routines */
+#define DUFFS_LOOP_TRIVIAL(pixel_copy_increment, width) \
     DUFFS_LOOP8(pixel_copy_increment, width)
 
 /* Special version of Duff's device for even more optimization */
@@ -562,20 +589,19 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 
 /* Don't use Duff's device to unroll loops */
 #define DUFFS_LOOP(pixel_copy_increment, width) \
-    {                                           \
-        int n;                                  \
-        for (n = width; n > 0; --n) {           \
-            pixel_copy_increment;               \
-        }                                       \
-    }
+    DUFFS_LOOP1(pixel_copy_increment, width)
+#define DUFFS_LOOP_TRIVIAL(pixel_copy_increment, width) \
+    DUFFS_LOOP1(pixel_copy_increment, width)
 #define DUFFS_LOOP8(pixel_copy_increment, width) \
-    DUFFS_LOOP(pixel_copy_increment, width)
+    DUFFS_LOOP1(pixel_copy_increment, width)
 #define DUFFS_LOOP4(pixel_copy_increment, width) \
-    DUFFS_LOOP(pixel_copy_increment, width)
+    DUFFS_LOOP1(pixel_copy_increment, width)
+#define DUFFS_LOOP2(pixel_copy_increment, width) \
+    DUFFS_LOOP1(pixel_copy_increment, width)
 #define DUFFS_LOOP_124(pixel_copy_increment1,        \
                        pixel_copy_increment2,        \
                        pixel_copy_increment4, width) \
-    DUFFS_LOOP(pixel_copy_increment1, width)
+    DUFFS_LOOP1(pixel_copy_increment1, width)
 
 #endif /* USE_DUFFS_LOOP */
 
