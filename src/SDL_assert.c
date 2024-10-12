@@ -292,7 +292,7 @@ static SDL_assert_state SDLCALL SDL_PromptAssertion(const SDL_assert_data *data,
                 break;
             }
         }
-#elif defined(HAVE_STDIO_H)
+#elif defined(HAVE_STDIO_H) && !defined(__3DS__)
         /* this is a little hacky. */
         for (;;) {
             char buf[32];
@@ -319,6 +319,8 @@ static SDL_assert_state SDLCALL SDL_PromptAssertion(const SDL_assert_data *data,
                 break;
             }
         }
+#else
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Assertion Failed", message, window);
 #endif /* HAVE_STDIO_H */
     }
 
