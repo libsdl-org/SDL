@@ -238,6 +238,8 @@ extern "C" {
  * SDL_APP_SUCCESS, SDL calls SDL_AppQuit and terminates with an exit code
  * that reports success to the platform.
  *
+ * This function is called by SDL on the main thread.
+ *
  * \param appstate a place where the app can optionally store a pointer for
  *                 future use.
  * \param argc the standard ANSI C main's argc; number of elements in `argv`.
@@ -245,8 +247,6 @@ extern "C" {
  *             arguments.
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
- *
- * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -291,11 +291,15 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int a
  * SDL_AppQuit and terminates with an exit code that reports success to the
  * platform.
  *
+ * This function is called by SDL on the main thread.
+ *
  * \param appstate an optional pointer, provided by the app in SDL_AppInit.
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
  *
- * \threadsafety This function is not thread safe.
+ * \threadsafety This function may get called concurrently with
+ *               SDL_AppEvent() for events not pushed on the main
+ *               thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -318,7 +322,7 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppIterate(void *appstate);
  * function. SDL is responsible for pumping the event queue between each call
  * to SDL_AppIterate, so in normal operation one should only get events in a
  * serial fashion, but be careful if you have a thread that explicitly calls
- * SDL_PushEvent.
+ * SDL_PushEvent. SDL itself will push events to the queue on the main thread.
  *
  * Events sent to this function are not owned by the app; if you need to save
  * the data, you should copy it.
@@ -342,7 +346,9 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppIterate(void *appstate);
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
  *
- * \threadsafety This function is not thread safe.
+ * \threadsafety This function may get called concurrently with
+ *               SDL_AppIterate() or SDL_AppQuit() for events not
+ *               pushed from the main thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -375,10 +381,13 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_E
  * function call is the last time this pointer will be provided, so any
  * resources to it should be cleaned up here.
  *
+ * This function is called by SDL on the main thread.
+ *
  * \param appstate an optional pointer, provided by the app in SDL_AppInit.
  * \param result the result code that terminated the app (success or failure).
  *
- * \threadsafety This function is not thread safe.
+ * \threadsafety SDL_AppEvent() may get called concurrently with this function
+ *               if other threads that push events are still active.
  *
  * \since This function is available since SDL 3.0.0.
  *
