@@ -1785,8 +1785,8 @@ static void Blit_RGB565_BGRA8888(SDL_BlitInfo * info)
 
 #endif // SDL_HAVE_BLIT_N_RGB565
 
-// RGB555->ARGB1555, and BGR555->ABGR1555, SET_ALPHA
-static void Blit_RGB555_ARGB1555(SDL_BlitInfo *info)
+// blits 16 bit RGB<->RGBA with both surfaces having the same R,G,B fields
+static void Blit2to2MaskAlpha(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -1794,22 +1794,43 @@ static void Blit_RGB555_ARGB1555(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint16 *dst = (Uint16 *)info->dst;
     int dstskip = info->dst_skip;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
 
-    Uint16 mask = ((Uint32)info->a >> (8 - dstfmt->Abits)) << dstfmt->Ashift;
+    if (dstfmt->Amask) {
+        // RGB->RGBA, SET_ALPHA
+        Uint16 mask = ((Uint32)info->a >> (8 - dstfmt->Abits)) << dstfmt->Ashift;
 
-    while (height--) {
-        /* *INDENT-OFF* */ // clang-format off
-        DUFFS_LOOP_TRIVIAL(
-        {
-            *dst = *src | mask;
-            ++dst;
-            ++src;
-        },
-        width);
-        /* *INDENT-ON* */ // clang-format on
-        src = (Uint16 *)((Uint8 *)src + srcskip);
-        dst = (Uint16 *)((Uint8 *)dst + dstskip);
+        while (height--) {
+            /* *INDENT-OFF* */ // clang-format off
+            DUFFS_LOOP_TRIVIAL(
+            {
+                *dst = *src | mask;
+                ++dst;
+                ++src;
+            },
+            width);
+            /* *INDENT-ON* */ // clang-format on
+            src = (Uint16 *)((Uint8 *)src + srcskip);
+            dst = (Uint16 *)((Uint8 *)dst + dstskip);
+        }
+    } else {
+        // RGBA->RGB, NO_ALPHA
+        Uint16 mask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+
+        while (height--) {
+            /* *INDENT-OFF* */ // clang-format off
+            DUFFS_LOOP_TRIVIAL(
+            {
+                *dst = *src & mask;
+                ++dst;
+                ++src;
+            },
+            width);
+            /* *INDENT-ON* */ // clang-format on
+            src = (Uint16 *)((Uint8 *)src + srcskip);
+            dst = (Uint16 *)((Uint8 *)dst + dstskip);
+        }
     }
 }
 
@@ -2742,11 +2763,6 @@ static const struct blit_table normal_blit_2[] = {
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x0000FF00, 0x00FF0000, 0xFF000000,
       0, Blit_RGB565_BGRA8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
 #endif
-    { 0x00007C00, 0x000003E0, 0x0000001F, 2, 0x00007C00, 0x000003E0, 0x0000001F,
-      0, Blit_RGB555_ARGB1555, SET_ALPHA },
-    { 0x0000001F, 0x000003E0, 0x00007C00, 2, 0x0000001F, 0x000003E0, 0x00007C00,
-      0, Blit_RGB555_ARGB1555, SET_ALPHA },
-
     // Default for 16-bit RGB source, used if no other blitter matches
     { 0, 0, 0, 0, 0, 0, 0, 0, BlitNtoN, 0 }
 };
@@ -2884,21 +2900,25 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
             }
 
             if (blitfun == BlitNtoN) { // default C fallback catch-all. Slow!
-                if (srcfmt->bytes_per_pixel == 4 &&
-                    dstfmt->bytes_per_pixel == 4 &&
+                if (srcfmt->bytes_per_pixel == dstfmt->bytes_per_pixel &&
                     srcfmt->Rmask == dstfmt->Rmask &&
                     srcfmt->Gmask == dstfmt->Gmask &&
                     srcfmt->Bmask == dstfmt->Bmask) {
                     if (a_need == COPY_ALPHA) {
                         if (srcfmt->Amask == dstfmt->Amask) {
-                            // Fastpath C fallback: 32bit RGBA<->RGBA blit with matching RGBA
+                            // Fastpath C fallback: RGBA<->RGBA blit with matching RGBA
                             blitfun = SDL_BlitCopy;
                         } else {
                             blitfun = BlitNtoNCopyAlpha;
                         }
                     } else {
-                        // Fastpath C fallback: 32bit RGB<->RGBA blit with matching RGB
-                        blitfun = Blit4to4MaskAlpha;
+                        if (srcfmt->bytes_per_pixel == 4) {
+                            // Fastpath C fallback: 32bit RGB<->RGBA blit with matching RGB
+                            blitfun = Blit4to4MaskAlpha;
+                        } else if (srcfmt->bytes_per_pixel == 2) {
+                            // Fastpath C fallback: 16bit RGB<->RGBA blit with matching RGB
+                            blitfun = Blit2to2MaskAlpha;
+                        }
                     }
                 } else if (a_need == COPY_ALPHA) {
                     blitfun = BlitNtoNCopyAlpha;
