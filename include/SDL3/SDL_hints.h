@@ -2301,7 +2301,7 @@ extern "C" {
  *
  * This hint needs to be set before SDL_Init().
  *
- * \since This hint is available since SDL 3.0.0.
+ * \since This hint is available since SDL 3.1.4.
  */
 #define SDL_HINT_MAC_SCROLL_MOMENTUM "SDL_MAC_SCROLL_MOMENTUM"
 
