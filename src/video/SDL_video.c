@@ -59,6 +59,10 @@
 #include <emscripten.h>
 #endif
 
+#ifdef SDL_PLATFORM_3DS
+#include <3ds.h>
+#endif
+
 #ifdef SDL_PLATFORM_LINUX
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -5517,6 +5521,23 @@ bool SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags flags, const char *title, cons
         alert(UTF8ToString($0) + "\n\n" + UTF8ToString($1));
     },
             title, message);
+    return true;
+#elif defined(SDL_PLATFORM_3DS)
+    errorConf errCnf;
+    bool hasGpuRight;
+
+    // If the video subsystem has not been initialised, set up graphics temporarily
+    hasGpuRight = gspHasGpuRight();
+    if (!hasGpuRight)
+        gfxInitDefault();
+
+    errorInit(&errCnf, ERROR_TEXT_WORD_WRAP, CFG_LANGUAGE_EN);
+    errorText(&errCnf, message);
+    errorDisp(&errCnf);
+
+    if (!hasGpuRight)
+        gfxExit();
+
     return true;
 #else
     SDL_MessageBoxData data;
