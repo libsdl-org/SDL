@@ -772,9 +772,9 @@ static const float mat_BT601_Limited_8bit[] = {
 
 static const float mat_BT601_Full_8bit[] = {
     0.0f, -0.501960814f, -0.501960814f, 0.0f,           // offset
-    1.0000f, 0.0000f, 1.4020f, 0.0f,                    // Rcoeff
-    1.0000f, -0.3441f, -0.7141f, 0.0f,                  // Gcoeff
-    1.0000f, 1.7720f, 0.0000f, 0.0f,                    // Bcoeff
+    1.0000f, 0.0000f, 1.4075f, 0.0f,                    // Rcoeff
+    1.0000f, -0.3455f, -0.7169f, 0.0f,                  // Gcoeff
+    1.0000f, 1.7790f, 0.0000f, 0.0f,                    // Bcoeff
 };
 
 static const float mat_BT709_Limited_8bit[] = {
@@ -786,9 +786,9 @@ static const float mat_BT709_Limited_8bit[] = {
 
 static const float mat_BT709_Full_8bit[] = {
     0.0f, -0.501960814f, -0.501960814f, 0.0f,           // offset
-    1.0000f, 0.0000f, 1.5748f, 0.0f,                    // Rcoeff
-    1.0000f, -0.1873f, -0.4681f, 0.0f,                  // Gcoeff
-    1.0000f, 1.8556f, 0.0000f, 0.0f,                    // Bcoeff
+    1.0000f, 0.0000f, 1.5810f, 0.0f,                    // Rcoeff
+    1.0000f, -0.1881f, -0.4700f, 0.0f,                  // Gcoeff
+    1.0000f, 1.8629f, 0.0000f, 0.0f,                    // Bcoeff
 };
 
 static const float mat_BT2020_Limited_10bit[] = {
