@@ -516,8 +516,6 @@
 
 /* Enable assembly routines */
 #cmakedefine SDL_ALTIVEC_BLITTERS @SDL_ALTIVEC_BLITTERS@
-#cmakedefine SDL_ARM_SIMD_BLITTERS @SDL_ARM_SIMD_BLITTERS@
-#cmakedefine SDL_ARM_NEON_BLITTERS @SDL_ARM_NEON_BLITTERS@
 
 /* Whether SDL_DYNAMIC_API needs dlopen */
 #cmakedefine DYNAPI_NEEDS_DLOPEN @DYNAPI_NEEDS_DLOPEN@
