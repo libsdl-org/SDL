@@ -85,7 +85,7 @@ SDL_FORCE_INLINE int SDL_MostSignificantBitIndex32(Uint32 x)
 #elif defined(_MSC_VER)
     unsigned long index;
     if (_BitScanReverse(&index, x)) {
-        return index;
+        return (int)index;
     }
     return -1;
 #else
