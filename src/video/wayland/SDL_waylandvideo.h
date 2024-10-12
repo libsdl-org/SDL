@@ -83,6 +83,7 @@ struct SDL_VideoData
     struct wp_alpha_modifier_v1 *wp_alpha_modifier_v1;
     struct xdg_toplevel_icon_manager_v1 *xdg_toplevel_icon_manager_v1;
     struct frog_color_management_factory_v1 *frog_color_management_factory_v1;
+    struct wp_color_manager_v1 *wp_color_manager_v1;
     struct zwp_tablet_manager_v2 *tablet_manager;
 
     struct xkb_context *xkb_context;
@@ -102,6 +103,7 @@ struct SDL_DisplayData
     SDL_VideoData *videodata;
     struct wl_output *output;
     struct zxdg_output_v1 *xdg_output;
+    struct wp_color_management_output_v1 *wp_color_management_output;
     char *wl_output_name;
     double scale_factor;
     uint32_t registry_id;
@@ -111,6 +113,8 @@ struct SDL_DisplayData
     SDL_DisplayOrientation orientation;
     int physical_width_mm, physical_height_mm;
     bool has_logical_position, has_logical_size;
+    bool running_colorspace_event_queue;
+    SDL_HDROutputProperties HDR;
     SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
     int wl_output_done_count;

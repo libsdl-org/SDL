@@ -27,6 +27,7 @@
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandclipboard.h"
+#include "SDL_waylandcolor.h"
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandkeyboard.h"
 #include "SDL_waylandmessagebox.h"
@@ -63,6 +64,7 @@
 #include "xdg-output-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 #include "xdg-toplevel-icon-v1-client-protocol.h"
+#include "color-management-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -249,7 +251,7 @@ static int SDLCALL Wayland_DisplayPositionCompare(const void *a, const void *b)
  * The primary is determined by the following criteria, in order:
  * - Landscape is preferred over portrait
  * - The highest native resolution
- * - TODO: A higher HDR range is preferred
+ * - A higher HDR range is preferred
  * - Higher refresh is preferred (ignoring small differences)
  * - Lower scale values are preferred (larger display)
  */
@@ -271,6 +273,7 @@ static int Wayland_GetPrimaryDisplay(SDL_VideoData *vid)
     int best_width = 0;
     int best_height = 0;
     double best_scale = 0.0;
+    float best_headroom = 0.0f;
     int best_refresh = 0;
     bool best_is_landscape = false;
     int best_index = 0;
@@ -286,11 +289,15 @@ static int Wayland_GetPrimaryDisplay(SDL_VideoData *vid)
             if (d->pixel_width > best_width || d->pixel_height > best_height) {
                 have_new_best = true;
             } else if (d->pixel_width == best_width && d->pixel_height == best_height) {
-                if (d->refresh - best_refresh > REFRESH_DELTA) { // Favor a higher refresh rate, but ignore small differences (e.g. 59.97 vs 60.1)
+                if (d->HDR.HDR_headroom > best_headroom) { // Favor a higher HDR luminance range
                     have_new_best = true;
-                } else if (d->scale_factor < best_scale && SDL_abs(d->refresh - best_refresh) <= REFRESH_DELTA) {
-                    // Prefer a lower scale display if the difference in refresh rate is small.
-                    have_new_best = true;
+                } else if (d->HDR.HDR_headroom == best_headroom) {
+                    if (d->refresh - best_refresh > REFRESH_DELTA) { // Favor a higher refresh rate, but ignore small differences (e.g. 59.97 vs 60.1)
+                        have_new_best = true;
+                    } else if (d->scale_factor < best_scale && SDL_abs(d->refresh - best_refresh) <= REFRESH_DELTA) {
+                        // Prefer a lower scale display if the difference in refresh rate is small.
+                        have_new_best = true;
+                    }
                 }
             }
         }
@@ -299,6 +306,7 @@ static int Wayland_GetPrimaryDisplay(SDL_VideoData *vid)
             best_width = d->pixel_width;
             best_height = d->pixel_height;
             best_scale = d->scale_factor;
+            best_headroom = d->HDR.HDR_headroom;
             best_refresh = d->refresh;
             best_is_landscape = is_landscape;
             best_index = i;
@@ -630,6 +638,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->SetWindowIcon = Wayland_SetWindowIcon;
     device->GetWindowSizeInPixels = Wayland_GetWindowSizeInPixels;
     device->GetWindowContentScale = Wayland_GetWindowContentScale;
+    device->GetWindowICCProfile = Wayland_GetWindowICCProfile;
     device->GetDisplayForWindow = Wayland_GetDisplayForWindow;
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
@@ -1049,6 +1058,8 @@ static void display_handle_done(void *data,
         AddEmulatedModes(internal, native_mode.w, native_mode.h);
     }
 
+    SDL_SetDisplayHDRProperties(dpy, &internal->HDR);
+
     if (internal->display == 0) {
         // First time getting display info, initialize the VideoDisplay
         if (internal->physical_width_mm >= internal->physical_height_mm) {
@@ -1106,6 +1117,27 @@ static const struct wl_output_listener output_listener = {
     display_handle_description // Version 4
 };
 
+static void Wayland_GetOutputColorInfo(SDL_DisplayData *display)
+{
+    Wayland_ColorInfo info;
+    SDL_zero(info);
+
+    if (Wayland_GetColorInfoForOutput(display, &info)) {
+        SDL_copyp(&display->HDR, &info.HDR);
+    }
+}
+
+static void handle_output_image_description_changed(void *data,
+                                                    struct wp_color_management_output_v1 *wp_color_management_output_v1)
+{
+    // wl_display.done is called after this event, so the display HDR status will be updated there.
+    Wayland_GetOutputColorInfo(data);
+}
+
+static const struct wp_color_management_output_v1_listener wp_color_management_output_listener = {
+    handle_output_image_description_changed
+};
+
 static bool Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
     struct wl_output *output;
@@ -1135,6 +1167,11 @@ static bool Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
         data->xdg_output = zxdg_output_manager_v1_get_xdg_output(data->videodata->xdg_output_manager, output);
         zxdg_output_v1_add_listener(data->xdg_output, &xdg_output_listener, data);
     }
+    if (data->videodata->wp_color_manager_v1) {
+        data->wp_color_management_output = wp_color_manager_v1_get_output(data->videodata->wp_color_manager_v1, output);
+        wp_color_management_output_v1_add_listener(data->wp_color_management_output, &wp_color_management_output_listener, data);
+        Wayland_GetOutputColorInfo(data);
+    }
     return true;
 }
 
@@ -1151,6 +1188,10 @@ static void Wayland_free_display(SDL_VideoDisplay *display, bool send_event)
         }
 
         SDL_free(display_data->wl_output_name);
+
+        if (display_data->wp_color_management_output) {
+            wp_color_management_output_v1_destroy(display_data->wp_color_management_output);
+        }
 
         if (display_data->xdg_output) {
             zxdg_output_v1_destroy(display_data->xdg_output);
@@ -1183,6 +1224,16 @@ static void Wayland_init_xdg_output(SDL_VideoData *d)
         SDL_DisplayData *disp = d->output_list[i];
         disp->xdg_output = zxdg_output_manager_v1_get_xdg_output(disp->videodata->xdg_output_manager, disp->output);
         zxdg_output_v1_add_listener(disp->xdg_output, &xdg_output_listener, disp);
+    }
+}
+
+static void Wayland_InitColorManager(SDL_VideoData *d)
+{
+    for (int i = 0; i < d->output_count; ++i) {
+        SDL_DisplayData *disp = d->output_list[i];
+        disp->wp_color_management_output = wp_color_manager_v1_get_output(disp->videodata->wp_color_manager_v1, disp->output);
+        wp_color_management_output_v1_add_listener(disp->wp_color_management_output, &wp_color_management_output_listener, disp);
+        Wayland_GetOutputColorInfo(disp);
     }
 }
 
@@ -1279,6 +1330,9 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->xdg_toplevel_icon_manager_v1 = wl_registry_bind(d->registry, id, &xdg_toplevel_icon_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "frog_color_management_factory_v1") == 0) {
         d->frog_color_management_factory_v1 = wl_registry_bind(d->registry, id, &frog_color_management_factory_v1_interface, 1);
+    } else if (SDL_strcmp(interface, "xx_color_manager_v4") == 0) {
+        d->wp_color_manager_v1 = wl_registry_bind(d->registry, id, &wp_color_manager_v1_interface, 1);
+        Wayland_InitColorManager(d);
     }
 }
 
@@ -1564,6 +1618,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->frog_color_management_factory_v1) {
         frog_color_management_factory_v1_destroy(data->frog_color_management_factory_v1);
         data->frog_color_management_factory_v1 = NULL;
+    }
+
+    if (data->wp_color_manager_v1) {
+        wp_color_manager_v1_destroy(data->wp_color_manager_v1);
+        data->wp_color_manager_v1 = NULL;
     }
 
     if (data->compositor) {
