@@ -20,19 +20,13 @@
 */
 #include "SDL_internal.h"
 
+#include "../SDL_dialog.h"
 #include "./SDL_portaldialog.h"
 #include "./SDL_zenitydialog.h"
 
-static void (*detected_open)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many) = NULL;
-static void (*detected_save)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location) = NULL;
-static void (*detected_folder)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many) = NULL;
+static void (*detected_function)(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props) = NULL;
 
-static int detect_available_methods(const char *value);
-
-void SDLCALL hint_callback(void *userdata, const char *name, const char *oldValue, const char *newValue)
-{
-    detect_available_methods(newValue);
-}
+void SDLCALL hint_callback(void *userdata, const char *name, const char *oldValue, const char *newValue);
 
 static void set_callback(void)
 {
@@ -53,58 +47,35 @@ static int detect_available_methods(const char *value)
 
     if (driver == NULL || SDL_strcmp(driver, "portal") == 0) {
         if (SDL_Portal_detect()) {
-            detected_open = SDL_Portal_ShowOpenFileDialog;
-            detected_save = SDL_Portal_ShowSaveFileDialog;
-            detected_folder = SDL_Portal_ShowOpenFolderDialog;
+            detected_function = SDL_Portal_ShowFileDialogWithProperties;
             return 1;
         }
     }
 
     if (driver == NULL || SDL_strcmp(driver, "zenity") == 0) {
         if (SDL_Zenity_detect()) {
-            detected_open = SDL_Zenity_ShowOpenFileDialog;
-            detected_save = SDL_Zenity_ShowSaveFileDialog;
-            detected_folder = SDL_Zenity_ShowOpenFolderDialog;
+            detected_function = SDL_Zenity_ShowFileDialogWithProperties;
             return 2;
         }
     }
 
-    SDL_SetError("File dialog driver unsupported");
+    SDL_SetError("File dialog driver unsupported (supported values for SDL_HINT_FILE_DIALOG_DRIVER are 'zenity' and 'portal')");
     return 0;
 }
 
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
+void SDLCALL hint_callback(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
-    // Call detect_available_methods() again each time in case the situation changed
-    if (!detected_open && !detect_available_methods(NULL)) {
-        // SetError() done by detect_available_methods()
-        callback(userdata, NULL, -1);
-        return;
-    }
-
-    detected_open(callback, userdata, window, filters, nfilters, default_location, allow_many);
+    detect_available_methods(newValue);
 }
 
-void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location)
+void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
     // Call detect_available_methods() again each time in case the situation changed
-    if (!detected_save && !detect_available_methods(NULL)) {
+    if (!detected_function && !detect_available_methods(NULL)) {
         // SetError() done by detect_available_methods()
         callback(userdata, NULL, -1);
         return;
     }
 
-    detected_save(callback, userdata, window, filters, nfilters, default_location);
-}
-
-void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many)
-{
-    // Call detect_available_methods() again each time in case the situation changed
-    if (!detected_folder && !detect_available_methods(NULL)) {
-        // SetError() done by detect_available_methods()
-        callback(userdata, NULL, -1);
-        return;
-    }
-
-    detected_folder(callback, userdata, window, default_location, allow_many);
+    detected_function(type, callback, userdata, props);
 }

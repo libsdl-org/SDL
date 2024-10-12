@@ -517,6 +517,7 @@
     </ClCompile>
     <ClCompile Include="..\..\src\camera\dummy\SDL_camera_dummy.c" />
     <ClCompile Include="..\..\src\camera\SDL_camera.c" />
+    <ClCompile Include="..\..\src\dialog\SDL_dialog.c" />
     <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c" />
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />

@@ -2874,6 +2874,7 @@ endif()
 
 if (SDL_DIALOG)
   sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog_utils.c)
+  sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog.c)
   if(ANDROID)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/android/SDL_androiddialog.c)
     set(HAVE_SDL_DIALOG TRUE)
