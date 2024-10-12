@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
         Uint64 total_overslept = 0;
 
         start = SDL_GetTicksNS();
-        SDL_DelayNS(1);
+        SDL_DelayPrecise(1);
         now = SDL_GetTicksNS();
         actual_delay = (now - start);
         SDL_Log("Minimum precise delay: %" SDL_PRIu64 " ns\n", actual_delay);
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
         SDL_Log("Timing 100 frames at 60 FPS\n");
         for (i = 0; i < 100; ++i) {
             start = SDL_GetTicksNS();
-            SDL_DelayNS(desired_delay);
+            SDL_DelayPrecise(desired_delay);
             now = SDL_GetTicksNS();
             actual_delay = (now - start);
             if (actual_delay > desired_delay) {
