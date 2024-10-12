@@ -2803,8 +2803,8 @@ Uint32 SDL_CalculateGPUTextureFormatSize(
     Uint32 height,
     Uint32 depth_or_layer_count)
 {
-    Uint32 blockWidth = Texture_GetBlockWidth(format);
-    Uint32 blockHeight = Texture_GetBlockHeight(format);
+    Uint32 blockWidth = SDL_max(Texture_GetBlockWidth(format), 1);
+    Uint32 blockHeight = SDL_max(Texture_GetBlockHeight(format), 1);
     Uint32 blocksPerRow = (width + blockWidth - 1) / blockWidth;
     Uint32 blocksPerColumn = (height + blockHeight - 1) / blockHeight;
     return depth_or_layer_count * blocksPerRow * blocksPerColumn * SDL_GPUTextureFormatTexelBlockSize(format);
