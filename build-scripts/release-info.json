@@ -34,7 +34,7 @@
       "archs": ["x86", "x64"],
       "args": [
         "-DSDL_SHARED=ON",
-        "-DSDL_STATIC=ON",
+        "-DSDL_STATIC=OFF",
         "-DSDL_DISABLE_INSTALL_DOCS=ON",
         "-DSDL_TEST_LIBRARY=ON",
         "-DSDL_VENDOR_INFO=libsdl.org",
