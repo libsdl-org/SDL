@@ -240,7 +240,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fm
  *
  * \param category the category of the message.
  * \param fmt a printf() style message format string.
- * \param ... additional parameters matching % tokens in the **fmt** string,
+ * \param ... additional parameters matching % tokens in the `fmt` string,
  *            if any.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -265,7 +265,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogTrace(int category, SDL_PRINTF_FORMAT_ST
  *
  * \param category the category of the message.
  * \param fmt a printf() style message format string.
- * \param ... additional parameters matching % tokens in the **fmt** string,
+ * \param ... additional parameters matching % tokens in the `fmt` string,
  *            if any.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -288,7 +288,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogVerbose(int category, SDL_PRINTF_FORMAT_
  *
  * \param category the category of the message.
  * \param fmt a printf() style message format string.
- * \param ... additional parameters matching % tokens in the **fmt** string,
+ * \param ... additional parameters matching % tokens in the `fmt` string,
  *            if any.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -312,7 +312,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogDebug(int category, SDL_PRINTF_FORMAT_ST
  *
  * \param category the category of the message.
  * \param fmt a printf() style message format string.
- * \param ... additional parameters matching % tokens in the **fmt** string,
+ * \param ... additional parameters matching % tokens in the `fmt` string,
  *            if any.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -336,7 +336,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogInfo(int category, SDL_PRINTF_FORMAT_STR
  *
  * \param category the category of the message.
  * \param fmt a printf() style message format string.
- * \param ... additional parameters matching % tokens in the **fmt** string,
+ * \param ... additional parameters matching % tokens in the `fmt` string,
  *            if any.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -360,7 +360,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogWarn(int category, SDL_PRINTF_FORMAT_STR
  *
  * \param category the category of the message.
  * \param fmt a printf() style message format string.
- * \param ... additional parameters matching % tokens in the **fmt** string,
+ * \param ... additional parameters matching % tokens in the `fmt` string,
  *            if any.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -384,7 +384,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogError(int category, SDL_PRINTF_FORMAT_ST
  *
  * \param category the category of the message.
  * \param fmt a printf() style message format string.
- * \param ... additional parameters matching % tokens in the **fmt** string,
+ * \param ... additional parameters matching % tokens in the `fmt` string,
  *            if any.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -409,7 +409,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogCritical(int category, SDL_PRINTF_FORMAT
  * \param category the category of the message.
  * \param priority the priority of the message.
  * \param fmt a printf() style message format string.
- * \param ... additional parameters matching % tokens in the **fmt** string,
+ * \param ... additional parameters matching % tokens in the `fmt` string,
  *            if any.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -503,6 +503,56 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetLogOutputFunction(SDL_LogOutputFunction 
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetLogOutputFunction(SDL_LogOutputFunction callback, void *userdata);
 
+/**
+ * Output a line of text to the default debug output for the platform.
+ *
+ * The text should not include any newline characters, those will be automatically added as needed for the current platform.
+ *
+ * \param fmt a printf() style message format string.
+ * \param ... additional parameters matching % tokens in the `fmt` string,
+ *            if any.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.6.
+ *
+ * \sa SDL_OutputDebugString
+ * \sa SDL_OutputDebugV
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_OutputDebug(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
+
+/**
+ * Output a line of text to the default debug output for the platform.
+ *
+ * The text should not include any newline characters, those will be automatically added as needed for the current platform.
+ *
+ * \param fmt a printf() style message format string.
+ * \param ap a variable argument list.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.6.
+ *
+ * \sa SDL_OutputDebug
+ * \sa SDL_OutputDebugString
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_OutputDebugV(SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(1);
+
+/**
+ * Output a line of text to the default debug output for the platform.
+ *
+ * The text should not include any newline characters, those will be automatically added as needed for the current platform.
+ *
+ * \param message a line of text in UTF-8 format.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.6.
+ *
+ * \sa SDL_OutputDebug
+ * \sa SDL_OutputDebugV
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_OutputDebugString(const char *message);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

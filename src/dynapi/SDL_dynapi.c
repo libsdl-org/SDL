@@ -100,7 +100,15 @@ static void SDL_InitDynamicAPI(void);
         if (str != buf) {                                                                                                                 \
             jump_table.SDL_free(str);                                                                                                     \
         }                                                                                                                                 \
-        return false;                                                                                                                 \
+        return false;                                                                                                                     \
+    }                                                                                                                                     \
+    _static void SDLCALL SDL_OutputDebug##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) \
+    {                                                                                                                                     \
+        va_list ap;                                                                                                                       \
+        initcall;                                                                                                                         \
+        va_start(ap, fmt);                                                                                                                \
+        jump_table.SDL_OutputDebugV(fmt, ap);                                                                                             \
+        va_end(ap);                                                                                                                       \
     }                                                                                                                                     \
     _static int SDLCALL SDL_sscanf##name(const char *buf, SDL_SCANF_FORMAT_STRING const char *fmt, ...)                                   \
     {                                                                                                                                     \
@@ -237,6 +245,14 @@ static bool SDLCALL SDL_SetError_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char
     SDL_vsnprintf_REAL(buf, sizeof(buf), fmt, ap);
     va_end(ap);
     return SDL_SetError_REAL("%s", buf);
+}
+static void SDLCALL SDL_OutputDebug_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+{
+    va_list ap;
+    SDL_Log_REAL("SDL3CALL SDL_OutputDebug");
+    va_start(ap, fmt);
+    SDL_OutputDebugV_REAL(fmt, ap);
+    va_end(ap);
 }
 static int SDLCALL SDL_sscanf_LOGSDLCALLS(const char *buf, SDL_SCANF_FORMAT_STRING const char *fmt, ...)
 {

@@ -108,7 +108,7 @@ SDL_COMPILE_TIME_ASSERT(category_names, SDL_arraysize(SDL_category_names) == SDL
 
 #ifdef SDL_PLATFORM_ANDROID
 static int SDL_android_priority[] = {
-    ANDROID_LOG_UNKNOWN,
+    ANDROID_LOG_DEBUG,
     ANDROID_LOG_VERBOSE,
     ANDROID_LOG_VERBOSE,
     ANDROID_LOG_DEBUG,
@@ -642,8 +642,7 @@ enum {
 static HANDLE stderrHandle = NULL;
 #endif
 
-static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
-                                  const char *message)
+static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
 {
 #if defined(SDL_PLATFORM_WINDOWS)
     // Way too many allocations here, urgh
@@ -735,7 +734,6 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
     extern void SDL_NSLog(const char *prefix, const char *text);
     {
         SDL_NSLog(GetLogPriorityPrefix(priority), message);
-        return;
     }
 #elif defined(SDL_PLATFORM_PSP) || defined(SDL_PLATFORM_PS2)
     {
@@ -794,4 +792,57 @@ void SDL_SetLogOutputFunction(SDL_LogOutputFunction callback, void *userdata)
         SDL_log_userdata = userdata;
     }
     SDL_UnlockMutex(SDL_log_function_lock);
+}
+
+void SDL_OutputDebug(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    SDL_OutputDebugV(fmt, ap);
+    va_end(ap);
+}
+
+void SDL_OutputDebugV(SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
+{
+    char *message = NULL;
+    char stack_buf[SDL_MAX_LOG_MESSAGE_STACK];
+    size_t len_plus_term;
+    int len;
+    va_list aq;
+
+    // Render into stack buffer
+    va_copy(aq, ap);
+    len = SDL_vsnprintf(stack_buf, sizeof(stack_buf), fmt, aq);
+    va_end(aq);
+
+    if (len < 0) {
+        return;
+    }
+
+    // If message truncated, allocate and re-render
+    if (len >= sizeof(stack_buf) && SDL_size_add_check_overflow(len, 1, &len_plus_term)) {
+        // Allocate exactly what we need, including the zero-terminator
+        message = (char *)SDL_malloc(len_plus_term);
+        if (!message) {
+            return;
+        }
+        va_copy(aq, ap);
+        len = SDL_vsnprintf(message, len_plus_term, fmt, aq);
+        va_end(aq);
+    } else {
+        message = stack_buf;
+    }
+
+    SDL_OutputDebugString(message);
+
+    // Free only if dynamically allocated
+    if (message != stack_buf) {
+        SDL_free(message);
+    }
+}
+
+void SDL_OutputDebugString(const char *message)
+{
+    SDL_LogOutput(NULL, SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INVALID, message);
 }

@@ -1205,3 +1205,6 @@
 #define SDL_DelayPrecise SDL_DelayPrecise_REAL
 #define SDL_CalculateGPUTextureFormatSize SDL_CalculateGPUTextureFormatSize_REAL
 #define SDL_SetErrorV SDL_SetErrorV_REAL
+#define SDL_OutputDebug SDL_OutputDebug_REAL
+#define SDL_OutputDebugV SDL_OutputDebugV_REAL
+#define SDL_OutputDebugString SDL_OutputDebugString_REAL
