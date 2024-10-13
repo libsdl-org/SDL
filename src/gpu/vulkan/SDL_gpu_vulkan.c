@@ -10294,9 +10294,6 @@ static bool VULKAN_Submit(
             renderer->unifiedQueue,
             &presentInfo);
 
-        presentData->windowData->frameCounter =
-            (presentData->windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
-
         if (presentResult == VK_SUCCESS || presentResult == VK_SUBOPTIMAL_KHR || presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
             // If presenting, the swapchain is using the in-flight fence
             presentData->windowData->inFlightFences[presentData->windowData->frameCounter] = (SDL_GPUFence*)vulkanCommandBuffer->inFlightFence;
@@ -10308,6 +10305,10 @@ static bool VULKAN_Submit(
         } else {
             CHECK_VULKAN_ERROR_AND_RETURN(presentResult, vkQueuePresentKHR, false)
         }
+
+        presentData->windowData->frameCounter =
+            (presentData->windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
+
     }
 
     // Check if we can perform any cleanups
