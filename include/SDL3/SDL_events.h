@@ -437,8 +437,8 @@ typedef struct SDL_MouseRawAxisEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID, or SDL_PEN_MOUSEID */
-    Sint32 dx;          /**< The axis delta value in the X direction */
-    Sint32 dy;          /**< The axis delta value in the Y direction */
+    int dx;             /**< The axis delta value in the X direction */
+    int dy;             /**< The axis delta value in the Y direction */
     float ux;           /**< The denominator unit in the X direction */
     float uy;           /**< The denominator unit in the Y direction */
 } SDL_MouseRawAxisEvent;

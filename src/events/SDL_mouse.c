@@ -586,7 +586,7 @@ void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouse
     SDL_PrivateSendMouseMotion(timestamp, window, mouseID, relative, x, y);
 }
 
-void SDL_SendRawMouseAxis(Uint64 timestamp, SDL_MouseID mouseID, Sint32 dx, Sint32 dy, float ux, float uy, SDL_EventType type)
+void SDL_SendRawMouseAxis(Uint64 timestamp, SDL_MouseID mouseID, int dx, int dy, float ux, float uy, SDL_EventType type)
 {
     if (SDL_EventEnabled(type)) {
         SDL_Event event;

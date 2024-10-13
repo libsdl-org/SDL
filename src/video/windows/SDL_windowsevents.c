@@ -524,8 +524,8 @@ static bool WIN_SwapButtons(HANDLE hDevice)
 
 static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
 {
-    Sint32 xraw = (Sint32)rawmouse->lLastX;
-    Sint32 yraw = (Sint32)rawmouse->lLastY;
+    int xraw = (int)rawmouse->lLastX;
+    int yraw = (int)rawmouse->lLastY;
     bool haveMotion = (xraw || yraw) ? true : false;
     bool haveButton = (rawmouse->usButtonFlags) ? true : false;
     bool isAbsolute = (rawmouse->usFlags & MOUSE_MOVE_ABSOLUTE) ? true : false;
@@ -555,9 +555,9 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         if (haveButton) {
             short amount = (short)rawmouse->usButtonData;
             if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
-                SDL_SendRawMouseAxis(timestamp, mouseID, 0, (Sint32)amount, 120.0f, 120.0f, SDL_EVENT_MOUSE_RAW_SCROLL);
+                SDL_SendRawMouseAxis(timestamp, mouseID, 0, (int)amount, 120.0f, 120.0f, SDL_EVENT_MOUSE_RAW_SCROLL);
             } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
-                SDL_SendRawMouseAxis(timestamp, mouseID, (Sint32)amount, 0, 120.0f, 120.0f, SDL_EVENT_MOUSE_RAW_SCROLL);
+                SDL_SendRawMouseAxis(timestamp, mouseID, (int)amount, 0, 120.0f, 120.0f, SDL_EVENT_MOUSE_RAW_SCROLL);
             }
         }
     }
