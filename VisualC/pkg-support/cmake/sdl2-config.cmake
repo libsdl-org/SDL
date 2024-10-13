@@ -94,7 +94,7 @@ if(EXISTS "${_sdl2main_library}")
     endif()
     set(SDL2_SDL2main_FOUND TRUE)
 else()
-    set(SDL2_SDL2_FOUND FALSE)
+    set(SDL2_SDL2main_FOUND FALSE)
 endif()
 unset(_sdl2main_library)
 
