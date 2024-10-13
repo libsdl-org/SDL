@@ -297,9 +297,8 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int a
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
  *
- * \threadsafety This function may get called concurrently with
- *               SDL_AppEvent() for events not pushed on the main
- *               thread.
+ * \threadsafety This function may get called concurrently with SDL_AppEvent()
+ *               for events not pushed on the main thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -347,8 +346,8 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppIterate(void *appstate);
  *          terminate with success, SDL_APP_CONTINUE to continue.
  *
  * \threadsafety This function may get called concurrently with
- *               SDL_AppIterate() or SDL_AppQuit() for events not
- *               pushed from the main thread.
+ *               SDL_AppIterate() or SDL_AppQuit() for events not pushed from
+ *               the main thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
