@@ -297,12 +297,12 @@ static int COMPUTEOUTCODE(const RECTTYPE *rect, SCALARTYPE x, SCALARTYPE y)
     int code = 0;
     if (y < rect->y) {
         code |= CODE_TOP;
-    } else if (y >= rect->y + rect->h) {
+    } else if (y > (rect->y + rect->h - ENCLOSEPOINTS_EPSILON)) {
         code |= CODE_BOTTOM;
     }
     if (x < rect->x) {
         code |= CODE_LEFT;
-    } else if (x >= rect->x + rect->w) {
+    } else if (x > (rect->x + rect->w - ENCLOSEPOINTS_EPSILON)) {
         code |= CODE_RIGHT;
     }
     return code;
