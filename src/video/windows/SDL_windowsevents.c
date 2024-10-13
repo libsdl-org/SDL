@@ -596,11 +596,11 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
             */
             bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? true : false;
             bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? true : false;
-            bool normalized_coordinates = !(rawmouse->usFlags & 0x40) ? true : false;
+            bool raw_coordinates = (rawmouse->usFlags & 0x40) ? true : false;
             int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
             int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
-            int x = normalized_coordinates ? (int)(((float)xraw / 65535.0f) * w) : (int)xraw;
-            int y = normalized_coordinates ? (int)(((float)yraw / 65535.0f) * h) : (int)yraw;
+            int x = raw_coordinates ? (int)xraw : (int)(((float)xraw / 65535.0f) * w);
+            int y = raw_coordinates ? (int)yraw : (int)(((float)yraw / 65535.0f) * h);
             int relX, relY;
     
             /* Calculate relative motion */
