@@ -95,7 +95,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const cha
  * \param ap a variable argument list.
  * \returns false.
  *
- * \since This function is available since SDL 3.1.6.
+ * \since This function is available since SDL 3.1.4.
  *
  * \sa SDL_ClearError
  * \sa SDL_GetError
