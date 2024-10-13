@@ -44,8 +44,8 @@
 #define SIZEOF_VOIDP 4
 #endif
 
-#cmakedefine HAVE_GCC_ATOMICS @HAVE_GCC_ATOMICS@
-#cmakedefine HAVE_GCC_SYNC_LOCK_TEST_AND_SET @HAVE_GCC_SYNC_LOCK_TEST_AND_SET@
+#cmakedefine01 HAVE_GCC_ATOMICS @HAVE_GCC_ATOMICS@
+#cmakedefine01 HAVE_GCC_SYNC_LOCK_TEST_AND_SET @HAVE_GCC_SYNC_LOCK_TEST_AND_SET@
 
 /* Comment this if you want to build without any C library requirements */
 #cmakedefine HAVE_LIBC 1
