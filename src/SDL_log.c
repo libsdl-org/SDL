@@ -772,6 +772,11 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 #endif
 }
 
+SDL_LogOutputFunction SDL_GetDefaultLogOutputFunction(void)
+{
+    return SDL_LogOutput;
+}
+
 void SDL_GetLogOutputFunction(SDL_LogOutputFunction *callback, void **userdata)
 {
     SDL_LockMutex(SDL_log_function_lock);
