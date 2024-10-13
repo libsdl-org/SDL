@@ -3578,8 +3578,7 @@ bool SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count
         bool isstack1;
         bool isstack2;
         float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
-        int *indices = SDL_small_alloc(int,
-                                       (4) * 3 * (count - 1) + (2) * 3 * (count), &isstack2);
+        int *indices = SDL_small_alloc(int, (4) * 3 * (count - 1) + (2) * 3 * (count), &isstack2);
 
         if (xy && indices) {
             int i;
