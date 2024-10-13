@@ -88,7 +88,9 @@ struct SDL_VideoData
 
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
-    struct wl_list output_list;
+    SDL_DisplayData **output_list;
+    int output_count;
+    int output_max;
     struct wl_list output_order;
 
     bool output_order_finalized;
@@ -115,7 +117,6 @@ struct SDL_DisplayData
     SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
     int wl_output_done_count;
-    struct wl_list link;
 };
 
 // Needed here to get wl_surface declaration, fixes GitHub#4594
