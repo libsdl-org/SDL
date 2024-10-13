@@ -20,26 +20,39 @@
 */
 
 #include "SDL_internal.h"
+#include "../SDL_dialog.h"
 #include "../../core/android/SDL_android.h"
 
-void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, bool allow_many)
+void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
-    if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, false, allow_many)) {
+    SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
+    int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
+    bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
+    bool is_save;
+
+    if (SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER) != NULL) {
+        SDL_SetError("File dialog driver unsupported (don't set SDL_HINT_FILE_DIALOG_DRIVER)");
+        callback(userdata, NULL, -1);
+        return;
+    }
+
+    switch (type) {
+    case SDL_FILEDIALOG_OPENFILE:
+        is_save = false;
+        break;
+
+    case SDL_FILEDIALOG_SAVEFILE:
+        is_save = true;
+        break;
+
+    case SDL_FILEDIALOG_OPENFOLDER:
+        SDL_Unsupported();
+        callback(userdata, NULL, -1);
+        return;
+    };
+
+    if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, is_save, allow_many)) {
         // SDL_SetError is already called when it fails
         callback(userdata, NULL, -1);
     }
-}
-
-void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location)
-{
-    if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, true, false)) {
-        // SDL_SetError is already called when it fails
-        callback(userdata, NULL, -1);
-    }
-}
-
-void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, bool allow_many)
-{
-    SDL_Unsupported();
-    callback(userdata, NULL, -1);
 }

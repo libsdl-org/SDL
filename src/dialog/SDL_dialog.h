@@ -18,16 +18,5 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
-#include "../SDL_dialog.h"
-
-#ifdef SDL_DIALOG_DUMMY
-
-void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
-{
-  SDL_Unsupported();
-  callback(userdata, NULL, -1);
-}
-
-#endif // SDL_DIALOG_DUMMY
+void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props);

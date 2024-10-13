@@ -275,8 +275,43 @@ not_our_signal:
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-static void DBus_OpenDialog(const char *method, const char *method_title, SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many, int open_folders)
+void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
+    const char *method;
+    const char *method_title;
+
+    SDL_Window* window = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
+    SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
+    int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
+    bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
+    const char* default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
+    const char* accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
+    bool open_folders = false;
+
+    switch (type) {
+    case SDL_FILEDIALOG_OPENFILE:
+        method = "OpenFile";
+        method_title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, "Open File");
+        break;
+
+    case SDL_FILEDIALOG_SAVEFILE:
+        method = "SaveFile";
+        method_title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, "Save File");
+        break;
+
+    case SDL_FILEDIALOG_OPENFOLDER:
+        method = "OpenFile";
+        method_title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, "Open Folder");
+        open_folders = true;
+        break;
+
+    default:
+        /* This is already checked in ../SDL_dialog.c; this silences compiler warnings */
+        SDL_SetError("Invalid file dialog type: %d", type);
+        callback(userdata, NULL, -1);
+        return;
+    }
+
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     DBusMessage *msg;
     DBusMessageIter params, options;
@@ -285,7 +320,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     int filter_len;
     static uint32_t handle_id = 0;
     static char *default_parent_window = "";
-    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
 
     const char *err_msg = validate_filters(filters, nfilters);
 
@@ -311,8 +346,8 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     dbus->message_iter_init_append(msg, &params);
 
     handle_str = default_parent_window;
-    if (props) {
-        const char *parent_handle = SDL_GetStringProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING, NULL);
+    if (window_props) {
+        const char *parent_handle = SDL_GetStringProperty(window_props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING, NULL);
         if (parent_handle) {
             size_t len = SDL_strlen(parent_handle);
             len += sizeof(WAYLAND_HANDLE_PREFIX) + 1;
@@ -324,7 +359,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
 
             SDL_snprintf(handle_str, len, "%s%s", WAYLAND_HANDLE_PREFIX, parent_handle);
         } else {
-            const Uint64 xid = (Uint64)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+            const Uint64 xid = (Uint64)SDL_GetNumberProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
             if (xid) {
                 const size_t len = sizeof(X11_HANDLE_PREFIX) + 24; // A 64-bit number can be 20 characters max.
                 handle_str = SDL_malloc(len * sizeof(char));
@@ -357,7 +392,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     SDL_free(handle_str);
 
     DBus_AppendBoolOption(dbus, &options, "modal", !!window);
-    if (allow_many == true) {
+    if (allow_many) {
         DBus_AppendBoolOption(dbus, &options, "multiple", 1);
     }
     if (open_folders) {
@@ -368,6 +403,9 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     }
     if (default_location) {
         DBus_AppendByteArray(dbus, &options, "current_folder", default_location);
+    }
+    if (accept) {
+        DBus_AppendStringOption(dbus, &options, "accept_label", accept);
     }
     dbus->message_iter_close_container(&params, &options);
 
@@ -423,21 +461,6 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
 
 incorrect_type:
     dbus->message_unref(reply);
-}
-
-void SDL_Portal_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
-{
-    DBus_OpenDialog("OpenFile", "Open File", callback, userdata, window, filters, nfilters, default_location, allow_many, 0);
-}
-
-void SDL_Portal_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location)
-{
-    DBus_OpenDialog("SaveFile", "Save File", callback, userdata, window, filters, nfilters, default_location, 0, 0);
-}
-
-void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many)
-{
-    DBus_OpenDialog("OpenFile", "Open Folder", callback, userdata, window, NULL, 0, default_location, allow_many, 1);
 }
 
 bool SDL_Portal_detect(void)
@@ -500,19 +523,7 @@ done:
 
 // Dummy implementation to avoid compilation problems
 
-void SDL_Portal_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
-{
-    SDL_Unsupported();
-    callback(userdata, NULL, -1);
-}
-
-void SDL_Portal_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location)
-{
-    SDL_Unsupported();
-    callback(userdata, NULL, -1);
-}
-
-void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many)
+void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
     SDL_Unsupported();
     callback(userdata, NULL, -1);

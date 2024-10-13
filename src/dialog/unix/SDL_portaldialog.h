@@ -21,9 +21,7 @@
 
 #include "SDL_internal.h"
 
-void SDL_Portal_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many);
-void SDL_Portal_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location);
-void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many);
+void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props);
 
 /** @returns non-zero if available, zero if unavailable */
 bool SDL_Portal_detect(void);

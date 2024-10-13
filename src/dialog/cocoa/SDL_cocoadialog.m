@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#include "../SDL_dialog.h"
 #include "../SDL_dialog_utils.h"
 
 #ifdef SDL_PLATFORM_MACOS
@@ -26,15 +27,16 @@
 #import <Cocoa/Cocoa.h>
 #import <UniformTypeIdentifiers/UTType.h>
 
-typedef enum
+void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
-    FDT_SAVE,
-    FDT_OPEN,
-    FDT_OPENFOLDER
-} cocoa_FileDialogType;
+    SDL_Window* window = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
+    SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
+    int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
+    bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
+    const char* default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
+    const char* title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, NULL);
+    const char* accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
 
-void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
-{
     if (filters) {
         const char *msg = validate_filters(filters, nfilters);
 
@@ -46,7 +48,7 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
     }
 
     if (SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER) != NULL) {
-        SDL_SetError("File dialog driver unsupported");
+        SDL_SetError("File dialog driver unsupported (don't set SDL_HINT_FILE_DIALOG_DRIVER)");
         callback(userdata, NULL, -1);
         return;
     }
@@ -56,15 +58,17 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
     NSOpenPanel *dialog_as_open;
 
     switch (type) {
-    case FDT_SAVE:
+    case SDL_FILEDIALOG_SAVEFILE:
         dialog = [NSSavePanel savePanel];
         break;
-    case FDT_OPEN:
+
+    case SDL_FILEDIALOG_OPENFILE:
         dialog_as_open = [NSOpenPanel openPanel];
         [dialog_as_open setAllowsMultipleSelection:((allow_many == true) ? YES : NO)];
         dialog = dialog_as_open;
         break;
-    case FDT_OPENFOLDER:
+
+    case SDL_FILEDIALOG_OPENFOLDER:
         dialog_as_open = [NSOpenPanel openPanel];
         [dialog_as_open setCanChooseFiles:NO];
         [dialog_as_open setCanChooseDirectories:YES];
@@ -72,6 +76,14 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
         dialog = dialog_as_open;
         break;
     };
+
+    if (title) {
+        [dialog setTitle:[NSString stringWithUTF8String:title]];
+    }
+
+    if (accept) {
+        [dialog setPrompt:[NSString stringWithUTF8String:accept]];
+    }
 
     if (filters) {
         // On macOS 11.0 and up, this is an array of UTType. Prior to that, it's an array of NSString
@@ -173,21 +185,6 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
             callback(userdata, files, -1);
         }
     }
-}
-
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
-{
-    show_file_dialog(FDT_OPEN, callback, userdata, window, filters, nfilters, default_location, allow_many);
-}
-
-void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location)
-{
-    show_file_dialog(FDT_SAVE, callback, userdata, window, filters, nfilters, default_location, 0);
-}
-
-void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many)
-{
-    show_file_dialog(FDT_OPENFOLDER, callback, userdata, window, NULL, 0, default_location, allow_many);
 }
 
 #endif // SDL_PLATFORM_MACOS
