@@ -696,6 +696,9 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 #endif // !defined(SDL_PLATFORM_GDK)
         length = SDL_strlen(GetLogPriorityPrefix(priority)) + SDL_strlen(message) + 1 + 1 + 1;
         output = SDL_small_alloc(char, length, &isstack);
+        if (!output) {
+            return;
+        }
         (void)SDL_snprintf(output, length, "%s%s\r\n", GetLogPriorityPrefix(priority), message);
         tstr = WIN_UTF8ToString(output);
 
