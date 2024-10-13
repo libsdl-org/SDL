@@ -202,6 +202,7 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddTimerNS
+ * \sa SDL_AddTimerPrecise
  * \sa SDL_RemoveTimer
  */
 extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *userdata);
@@ -229,6 +230,7 @@ extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval, SDL_TimerC
  * \since This datatype is available since SDL 3.0.0.
  *
  * \sa SDL_AddTimerNS
+ * \sa SDL_AddTimerPrecise
  */
 typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerID, Uint64 interval);
 
@@ -264,9 +266,57 @@ typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerI
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddTimer
+ * \sa SDL_AddTimerPrecise
  * \sa SDL_RemoveTimer
  */
 extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void *userdata);
+
+/**
+ * Call a callback function at a future time.
+ *
+ * The callback function is passed the current timer interval and the user
+ * supplied parameter from the SDL_AddTimerPrecise() call and should return the
+ * next timer interval. If the value returned from the callback is 0, the timer
+ * is canceled and will be removed.
+ *
+ * The callback is run on a separate thread, and for short timeouts can
+ * potentially be called before this function returns.
+ *
+ * Timers take into account the amount of time it took to execute the
+ * callback. For example, if the callback took 250 ns to execute and returned
+ * 1000 (ns), the timer would only wait another 750 ns before its next
+ * iteration.
+ *
+ * Timers produced by this function run at nanosecond resolution, like those
+ * produced by SDL_AddTimerNS(), but with additional logic for precise timing:
+ * Internally, this function paces calls of the callback with the same
+ * algorithm used in SDL_DelayPrecise(), with fixed timestepping logic added,
+ * so calls of the callback might be *earlier* or *later* than expected. As the
+ * precise delay algorithm may use more CPU/power than an ordinary delay,
+ * precise timers might consume more CPU/power than those produced by
+ * SDL_AddTimerNS().
+ *
+ * Timing may be inexact due to OS scheduling. Be sure to note the current
+ * time with SDL_GetTicksNS() or SDL_GetPerformanceCounter() in case your
+ * callback needs to adjust for variances.
+ *
+ * \param interval the timer delay, in nanoseconds, passed to `callback`.
+ * \param callback the SDL_TimerCallback function to call when the specified
+ *                 `interval` elapses.
+ * \param userdata a pointer that is passed to `callback`.
+ * \returns a timer ID or 0 on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AddTimer
+ * \sa SDL_AddTimerNS
+ * \sa SDL_RemoveTimer
+ * \sa SDL_DelayPrecise
+ */
+extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimerPrecise(Uint64 interval, SDL_NSTimerCallback callback, void *userdata);
 
 /**
  * Remove a timer created with SDL_AddTimer().

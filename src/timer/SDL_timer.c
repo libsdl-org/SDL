@@ -25,13 +25,34 @@
 
 // #define DEBUG_TIMERS
 
+typedef enum SDL_TimerCallbackType
+{
+    SDL_TIMER_CALLBACK_TYPE_MS,
+    SDL_TIMER_CALLBACK_TYPE_NS,
+    SDL_TIMER_CALLBACK_TYPE_PRECISE
+} SDL_TimerCallbackType;
+
+typedef struct SDL_TimerCallbackData
+{
+    SDL_TimerCallbackType type;
+    union
+    {
+        SDL_TimerCallback callback_ms;
+        SDL_NSTimerCallback callback_ns;
+        struct
+        {
+            SDL_NSTimerCallback callback;
+            Sint64 accumulated;
+        } precise;
+    };
+} SDL_TimerCallbackData;
+
 #if !defined(SDL_PLATFORM_EMSCRIPTEN) || !defined(SDL_THREADS_DISABLED)
 
 typedef struct SDL_Timer
 {
     SDL_TimerID timerID;
-    SDL_TimerCallback callback_ms;
-    SDL_NSTimerCallback callback_ns;
+    SDL_TimerCallbackData callback_data;
     void *userdata;
     Uint64 interval;
     Uint64 scheduled;
@@ -104,7 +125,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
     SDL_Timer *current;
     SDL_Timer *freelist_head = NULL;
     SDL_Timer *freelist_tail = NULL;
-    Uint64 tick, now, interval, delay;
+    Uint64 tick, start, now, interval, delay;
 
     /* Threaded timer loop:
      *  1. Queue timers added by other threads
@@ -162,17 +183,38 @@ static int SDLCALL SDL_TimerThread(void *_data)
             if (SDL_GetAtomicInt(&current->canceled)) {
                 interval = 0;
             } else {
-                if (current->callback_ms) {
-                    interval = SDL_MS_TO_NS(current->callback_ms(current->userdata, current->timerID, (Uint32)SDL_NS_TO_MS(current->interval)));
-                } else {
-                    interval = current->callback_ns(current->userdata, current->timerID, current->interval);
+                switch (current->callback_data.type) {
+                case SDL_TIMER_CALLBACK_TYPE_MS:
+                    interval = SDL_MS_TO_NS(current->callback_data.callback_ms(current->userdata, current->timerID, (Uint32)SDL_NS_TO_MS(current->interval)));
+                    break;
+                case SDL_TIMER_CALLBACK_TYPE_NS:
+                    interval = current->callback_data.callback_ns(current->userdata, current->timerID, current->interval);
+                    break;
+		case SDL_TIMER_CALLBACK_TYPE_PRECISE:
+                    interval = current->callback_data.precise.callback(current->userdata, current->timerID, current->interval);
+		    break;
                 }
             }
 
             if (interval > 0) {
                 // Reschedule this timer
                 current->interval = interval;
-                current->scheduled = tick + interval;
+                if (current->callback_data.type == SDL_TIMER_CALLBACK_TYPE_PRECISE) {
+		    /* We want good pacing accuracy in the common case, but we
+		       don't want to skip iterations, so only use the
+		       accumulated time if we don't have to skip.
+		     */
+                    if (
+                        (current->callback_data.precise.accumulated >= 0 && current->callback_data.precise.accumulated < interval) ||
+                        current->callback_data.precise.accumulated < 0) {
+                        current->scheduled = tick + interval - current->callback_data.precise.accumulated;
+                    } else {
+                        current->scheduled = tick + interval;
+                        current->callback_data.precise.accumulated = 0;
+                    }
+                } else {
+                    current->scheduled = tick + interval;
+                }
                 SDL_AddTimerInternal(data, current);
             } else {
                 if (!freelist_head) {
@@ -188,7 +230,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
         }
 
         // Adjust the delay based on processing time
-        now = SDL_GetTicksNS();
+        start = now = SDL_GetTicksNS();
         interval = (now - tick);
         if (interval > delay) {
             delay = 0;
@@ -201,7 +243,78 @@ static int SDLCALL SDL_TimerThread(void *_data)
            That's okay, it just means we run through the loop a few
            extra times.
          */
-        SDL_WaitSemaphoreTimeoutNS(data->sem, delay);
+        switch (current->callback_data.type) {
+        case SDL_TIMER_CALLBACK_TYPE_MS:
+        case SDL_TIMER_CALLBACK_TYPE_NS:
+            SDL_WaitSemaphoreTimeoutNS(data->sem, delay);
+            break;
+        case SDL_TIMER_CALLBACK_TYPE_PRECISE:
+        {
+            /* This is an adaptation of the algorithm in SDL_DelayPrecise() to
+               produce proper timer behavior, ending the wait if signaled by
+               the semaphore. Notes about how the algorithm works are in
+               SDL_DelayPrecise()'s code.
+             */
+
+            bool signaled = false;
+            const Uint64 SHORT_SLEEP_NS = 1 * SDL_NS_PER_MS;
+            const Uint64 target_value = tick + delay;
+            Uint64 max_sleep_ns = SHORT_SLEEP_NS;
+            while (now + max_sleep_ns < target_value) {
+                if (SDL_WaitSemaphoreTimeoutNS(data->sem, SHORT_SLEEP_NS)) {
+                    signaled = true;
+                    goto precise_timer_done;
+                }
+
+                const Uint64 next_now = SDL_GetTicksNS();
+                const Uint64 next_sleep_ns = (next_now - now);
+                if (next_sleep_ns > max_sleep_ns) {
+                    max_sleep_ns = next_sleep_ns;
+                }
+                now = next_now;
+            }
+
+            if (now < target_value) {
+                if ((target_value - now) > (max_sleep_ns - SHORT_SLEEP_NS)) {
+                    const Uint64 delay_ns = (target_value - now) - (max_sleep_ns - SHORT_SLEEP_NS);
+                    if (SDL_WaitSemaphoreTimeoutNS(data->sem, delay_ns)) {
+                        signaled = true;
+                        goto precise_timer_done;
+                    } else {
+                        now = SDL_GetTicksNS();
+                    }
+                }
+            } else {
+                signaled = SDL_WaitSemaphoreTimeoutNS(data->sem, 0);
+                goto precise_timer_done;
+            }
+
+            while (now + SHORT_SLEEP_NS < target_value) {
+                if (SDL_WaitSemaphoreTimeoutNS(data->sem, SHORT_SLEEP_NS)) {
+                    signaled = true;
+                    goto precise_timer_done;
+                } else {
+                    now = SDL_GetTicksNS();
+                }
+            }
+
+            while (now < target_value) {
+                if (SDL_WaitSemaphoreTimeoutNS(data->sem, 0)) {
+                    signaled = true;
+                    goto precise_timer_done;
+                }
+                now = SDL_GetTicksNS();
+            }
+
+        precise_timer_done:
+            if (signaled) {
+                current->callback_data.precise.accumulated = 0;
+            } else {
+                current->callback_data.precise.accumulated = (now - start) - delay;
+            }
+            break;
+        }
+        }
     }
     return 0;
 }
@@ -295,14 +408,39 @@ static bool SDL_CheckInitTimers(void)
     return SDL_InitTimers();
 }
 
-static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_ms, SDL_NSTimerCallback callback_ns, void *userdata)
+static SDL_TimerID SDL_CreateTimer(Uint64 interval, const SDL_TimerCallbackData *callback_data, void *userdata)
 {
+    const Uint64 start = SDL_GetTicksNS();
     SDL_TimerData *data = &SDL_timer_data;
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    if (!callback_ms && !callback_ns) {
-        SDL_InvalidParamError("callback");
+    if (!callback_data) {
+        SDL_InvalidParamError("callback data");
+        return 0;
+    }
+
+    switch (callback_data->type) {
+    case SDL_TIMER_CALLBACK_TYPE_MS:
+        if (!callback_data->callback_ms) {
+            SDL_InvalidParamError("callback ms");
+            return 0;
+        }
+        break;
+    case SDL_TIMER_CALLBACK_TYPE_NS:
+        if (!callback_data->callback_ns) {
+            SDL_InvalidParamError("callback ns");
+            return 0;
+        }
+        break;
+    case SDL_TIMER_CALLBACK_TYPE_PRECISE:
+        if (!callback_data->precise.callback) {
+            SDL_InvalidParamError("callback precise");
+            return 0;
+        }
+        break;
+    default:
+        SDL_InvalidParamError("callback type");
         return 0;
     }
 
@@ -326,11 +464,13 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
         }
     }
     timer->timerID = SDL_GetNextObjectID();
-    timer->callback_ms = callback_ms;
-    timer->callback_ns = callback_ns;
+    timer->callback_data = *callback_data;
     timer->userdata = userdata;
     timer->interval = interval;
-    timer->scheduled = SDL_GetTicksNS() + timer->interval;
+    if (timer->callback_data.type == SDL_TIMER_CALLBACK_TYPE_PRECISE) {
+        timer->callback_data.precise.accumulated = 0;
+    }
+    timer->scheduled = start + timer->interval;
     SDL_SetAtomicInt(&timer->canceled, 0);
 
     entry = (SDL_TimerMap *)SDL_malloc(sizeof(*entry));
@@ -360,12 +500,26 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
 
 SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *userdata)
 {
-    return SDL_CreateTimer(SDL_MS_TO_NS(interval), callback, NULL, userdata);
+    SDL_TimerCallbackData callback_data;
+    callback_data.type = SDL_TIMER_CALLBACK_TYPE_MS;
+    callback_data.callback_ms = callback;
+    return SDL_CreateTimer(SDL_MS_TO_NS(interval), &callback_data, userdata);
 }
 
 SDL_TimerID SDL_AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void *userdata)
 {
-    return SDL_CreateTimer(interval, NULL, callback, userdata);
+    SDL_TimerCallbackData callback_data;
+    callback_data.type = SDL_TIMER_CALLBACK_TYPE_NS;
+    callback_data.callback_ns = callback;
+    return SDL_CreateTimer(interval, &callback_data, userdata);
+}
+
+SDL_TimerID SDL_AddTimerPrecise(Uint64 interval, SDL_NSTimerCallback callback, void *userdata)
+{
+    SDL_TimerCallbackData callback_data;
+    callback_data.type = SDL_TIMER_CALLBACK_TYPE_PRECISE;
+    callback_data.precise.callback = callback;
+    return SDL_CreateTimer(interval, &callback_data, userdata);
 }
 
 bool SDL_RemoveTimer(SDL_TimerID id)
@@ -409,6 +563,10 @@ bool SDL_RemoveTimer(SDL_TimerID id)
 
 #else
 
+/* TODO: No precise timer logic is here. Not sure how best to implement it
+   in Emscripten. -nightmareci
+*/
+
 #include <emscripten/emscripten.h>
 #include <emscripten/eventloop.h>
 
@@ -417,8 +575,7 @@ typedef struct SDL_TimerMap
     SDL_TimerID timerID;
     int timeoutID;
     Uint64 interval;
-    SDL_TimerCallback callback_ms;
-    SDL_NSTimerCallback callback_ns;
+    SDL_TimerCallbackData callback_data;
     void *userdata;
     struct SDL_TimerMap *next;
 } SDL_TimerMap;
@@ -433,10 +590,16 @@ static SDL_TimerData SDL_timer_data;
 static void SDL_Emscripten_TimerHelper(void *userdata)
 {
     SDL_TimerMap *entry = (SDL_TimerMap *)userdata;
-    if (entry->callback_ms) {
-        entry->interval = SDL_MS_TO_NS(entry->callback_ms(entry->userdata, entry->timerID, (Uint32)SDL_NS_TO_MS(entry->interval)));
-    } else {
-        entry->interval = entry->callback_ns(entry->userdata, entry->timerID, entry->interval);
+    switch (entry->callback_data.type) {
+    case SDL_TIMER_CALLBACK_TYPE_MS:
+        entry->interval = SDL_MS_TO_NS(entry->callback_data.callback_ms(entry->userdata, entry->timerID, (Uint32)SDL_NS_TO_MS(entry->interval)));
+        break;
+    case SDL_TIMER_CALLBACK_TYPE_NS:
+        entry->interval = entry->callback_data.callback_ns(entry->userdata, entry->timerID, entry->interval);
+        break;
+    case SDL_TIMER_CALLBACK_TYPE_PRECISE:
+        entry->interval = entry->callback_data.precise.callback(entry->userdata, entry->timerID, entry->interval);
+        break;
     }
     if (entry->interval > 0) {
         entry->timeoutID = emscripten_set_timeout(&SDL_Emscripten_TimerHelper,
@@ -462,13 +625,37 @@ void SDL_QuitTimers(void)
     }
 }
 
-static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_ms, SDL_NSTimerCallback callback_ns, void *userdata)
+static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallbackData *callback_data, void *userdata)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *entry;
 
-    if (!callback_ms && !callback_ns) {
-        SDL_InvalidParamError("callback");
+    if (!callback_data) {
+        SDL_InvalidParamError("callback data");
+        return 0;
+    }
+
+    switch (callback_data->type) {
+    case SDL_TIMER_CALLBACK_TYPE_MS:
+        if (!callback_data->callback_ms) {
+            SDL_InvalidParamError("callback ms");
+            return 0;
+        }
+        break;
+    case SDL_TIMER_CALLBACK_TYPE_NS:
+        if (!callback_data->callback_ns) {
+            SDL_InvalidParamError("callback ns");
+            return 0;
+        }
+        break;
+    case SDL_TIMER_CALLBACK_TYPE_PRECISE:
+        if (!callback_data->precise.callback) {
+            SDL_InvalidParamError("callback precise");
+            return 0;
+        }
+        break;
+    default:
+        SDL_InvalidParamError("callback type");
         return 0;
     }
 
@@ -477,8 +664,7 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
         return 0;
     }
     entry->timerID = SDL_GetNextObjectID();
-    entry->callback_ms = callback_ms;
-    entry->callback_ns = callback_ns;
+    entry->callback_data = *callback_data;
     entry->userdata = userdata;
     entry->interval = interval;
 
@@ -494,12 +680,26 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
 
 SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *userdata)
 {
-    return SDL_CreateTimer(SDL_MS_TO_NS(interval), callback, NULL, userdata);
+    SDL_TimerCallbackData callback_data;
+    callback_data.type = SDL_TIMER_CALLBACK_TYPE_MS;
+    callback_data.callback_ms = callback;
+    return SDL_CreateTimer(SDL_MS_TO_NS(interval), &callback_data, userdata);
 }
 
 SDL_TimerID SDL_AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void *userdata)
 {
-    return SDL_CreateTimer(interval, NULL, callback, userdata);
+    SDL_TimerCallbackData callback_data;
+    callback_data.type = SDL_TIMER_CALLBACK_TYPE_NS;
+    callback_data.callback_ns = callback;
+    return SDL_CreateTimer(interval, &callback_data, userdata);
+}
+
+SDL_TimerID SDL_AddTimerPrecise(Uint64 interval, SDL_NSTimerCallback callback, void *userdata)
+{
+    SDL_TimerCallbackData callback_data;
+    callback_data.type = SDL_TIMER_CALLBACK_TYPE_PRECISE;
+    callback_data.precise.callback = callback;
+    return SDL_CreateTimer(interval, &callback_data, userdata);
 }
 
 bool SDL_RemoveTimer(SDL_TimerID id)
