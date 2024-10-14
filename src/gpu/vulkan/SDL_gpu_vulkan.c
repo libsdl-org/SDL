@@ -2987,6 +2987,9 @@ static void VULKAN_INTERNAL_DestroyTexture(
         }
 
         if (texture->subresources[subresourceIndex].depthStencilView != VK_NULL_HANDLE) {
+            VULKAN_INTERNAL_RemoveFramebuffersContainingView(
+                renderer,
+                texture->subresources[subresourceIndex].depthStencilView);
             renderer->vkDestroyImageView(
                 renderer->logicalDevice,
                 texture->subresources[subresourceIndex].depthStencilView,
