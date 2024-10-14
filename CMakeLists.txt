@@ -1538,6 +1538,9 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     CheckVivante()
     CheckVulkan()
     CheckQNXScreen()
+
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/unix/*.c")
+    set(HAVE_SDL_TRAY TRUE)
   endif()
 
   if(UNIX)
@@ -2032,6 +2035,9 @@ elseif(WINDOWS)
         set(HAVE_RENDER_VULKAN TRUE)
       endif()
     endif()
+
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/windows/*.c")
+    set(HAVE_SDL_TRAY TRUE)
   endif()
 
   if(SDL_HIDAPI)
@@ -2310,6 +2316,11 @@ elseif(APPLE)
           sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/metal/*.m")
         endif()
       endif()
+    endif()
+
+    if(MACOS)
+      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/cocoa/*.m")
+      set(HAVE_SDL_TRAY TRUE)
     endif()
   endif()
 
@@ -2909,6 +2920,9 @@ int main(void)
   endif()
 endif()
 
+if(SDL_VIDEO)
+endif()
+
 # Platform-independent options
 
 if(SDL_VIDEO)
@@ -2919,6 +2933,8 @@ if(SDL_VIDEO)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
 endif()
+
+sdl_glob_sources(${SDL3_SOURCE_DIR}/src/tray/*.c)
 
 if(SDL_GPU)
   if(HAVE_D3D11_H)
@@ -3001,6 +3017,10 @@ endif()
 if(NOT HAVE_SDL_PROCESS)
   set(SDL_PROCESS_DUMMY 1)
   sdl_glob_sources(${SDL3_SOURCE_DIR}/src/process/dummy/*.c)
+endif()
+if(NOT HAVE_SDL_TRAY)
+  set(SDL_TRAY_DUMMY 1)
+  sdl_glob_sources(${SDL3_SOURCE_DIR}/src/tray/dummy/*.c)
 endif()
 if(NOT HAVE_CAMERA)
   set(SDL_CAMERA_DRIVER_DUMMY 1)
