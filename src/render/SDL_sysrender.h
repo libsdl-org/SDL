@@ -305,6 +305,8 @@ struct SDL_Renderer
 
     SDL_PropertiesID props;
 
+    SDL_Texture *debug_char_texture_atlas;
+
     bool destroyed;   // already destroyed by SDL_DestroyWindow; just free this struct in SDL_DestroyRenderer.
 
     void *internal;
