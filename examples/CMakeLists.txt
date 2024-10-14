@@ -134,6 +134,7 @@ add_sdl_example_executable(renderer-color-mods SOURCES renderer/11-color-mods/co
 add_sdl_example_executable(renderer-viewport SOURCES renderer/14-viewport/viewport.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.bmp)
 add_sdl_example_executable(renderer-cliprect SOURCES renderer/15-cliprect/cliprect.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.bmp)
 add_sdl_example_executable(renderer-read-pixels SOURCES renderer/17-read-pixels/read-pixels.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.bmp)
+add_sdl_example_executable(renderer-debug-text SOURCES renderer/18-debug-text/debug-text.c)
 add_sdl_example_executable(audio-simple-playback SOURCES audio/01-simple-playback/simple-playback.c)
 add_sdl_example_executable(audio-simple-playback-callback SOURCES audio/02-simple-playback-callback/simple-playback-callback.c)
 add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.wav)

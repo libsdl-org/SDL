@@ -1206,3 +1206,4 @@
 #define SDL_CalculateGPUTextureFormatSize SDL_CalculateGPUTextureFormatSize_REAL
 #define SDL_SetErrorV SDL_SetErrorV_REAL
 #define SDL_GetDefaultLogOutputFunction SDL_GetDefaultLogOutputFunction_REAL
+#define SDL_RenderDebugText SDL_RenderDebugText_REAL
