@@ -1049,6 +1049,7 @@
 		F3F528C82C29E1C300E6CC26 /* s_isnan.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = s_isnan.c; sourceTree = "<group>"; };
 		F3F528C92C29E1C300E6CC26 /* s_modf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = s_modf.c; sourceTree = "<group>"; };
 		F3F528CA2C29E1C300E6CC26 /* s_isinff.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = s_isinff.c; sourceTree = "<group>"; };
+		F3F7BE3B2CBD79D200C984AF /* config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = config.xcconfig; sourceTree = "<group>"; };
 		F3F7D8AA2933074900816151 /* SDL_audio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_audio.h; path = SDL3/SDL_audio.h; sourceTree = "<group>"; };
 		F3F7D8AB2933074900816151 /* SDL_platform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_platform.h; path = SDL3/SDL_platform.h; sourceTree = "<group>"; };
 		F3F7D8AC2933074900816151 /* SDL_stdinc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_stdinc.h; path = SDL3/SDL_stdinc.h; sourceTree = "<group>"; };
@@ -1314,6 +1315,7 @@
 		0867D691FE84028FC02AAC07 /* SDLFramework */ = {
 			isa = PBXGroup;
 			children = (
+				F3F7BE3B2CBD79D200C984AF /* config.xcconfig */,
 				F5A2EF3900C6A39A01000001 /* BUGS.txt */,
 				F59C70FC00D5CB5801000001 /* pkg-support */,
 				0153844A006D81B07F000001 /* Public Headers */,
@@ -3089,6 +3091,7 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(CONFIG_PREPROCESSOR_DEFINITIONS)";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					../../include,
@@ -3112,6 +3115,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MARKETING_VERSION = 3.1.5;
+				OTHER_LDFLAGS = "$(CONFIG_FRAMEWORK_LDFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL3;
 				PRODUCT_NAME = SDL3;
 				STRIP_STYLE = "non-global";
@@ -3124,6 +3128,7 @@
 		};
 		00CFA622106A567900758660 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F3F7BE3B2CBD79D200C984AF /* config.xcconfig */;
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				OTHER_LDFLAGS = "-liconv";
@@ -3147,6 +3152,7 @@
 				GCC_ENABLE_SSE3_EXTENSIONS = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(CONFIG_PREPROCESSOR_DEFINITIONS)";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					../../include,
@@ -3171,6 +3177,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MARKETING_VERSION = 3.1.5;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "$(CONFIG_FRAMEWORK_LDFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL3;
 				PRODUCT_NAME = SDL3;
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -3183,6 +3190,7 @@
 		};
 		00CFA628106A568900758660 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F3F7BE3B2CBD79D200C984AF /* config.xcconfig */;
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				OTHER_LDFLAGS = "-liconv";
