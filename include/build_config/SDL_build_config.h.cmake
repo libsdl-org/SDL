@@ -19,11 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_build_config.h
- *
- *  This is a set of defines to configure the SDL features
- */
+/* This is a set of defines to configure the SDL features */
 
 #ifndef SDL_build_config_h_
 #define SDL_build_config_h_

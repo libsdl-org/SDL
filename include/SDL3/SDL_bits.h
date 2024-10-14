@@ -36,10 +36,6 @@
 extern "C" {
 #endif
 
-/**
- *  \file SDL_bits.h
- */
-
 #if defined(__WATCOMC__) && defined(__386__)
 extern __inline int _SDL_bsr_watcom(Uint32);
 #pragma aux _SDL_bsr_watcom = \

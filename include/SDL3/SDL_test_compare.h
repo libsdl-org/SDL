@@ -20,8 +20,6 @@
 */
 
 /**
- *  \file SDL_test_compare.h
- *
  *  Comparison function of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
