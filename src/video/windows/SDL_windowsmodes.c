@@ -513,7 +513,12 @@ static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
     float SDR_white_level = 1.0f;
 
     if (WIN_GetMonitorPathInfo(videodata, hMonitor, &path_info)) {
-        DISPLAYCONFIG_SDR_WHITE_LEVEL white_level;
+        /* workarounds for https://github.com/libsdl-org/SDL/issues/11193 */
+        struct SDL_DISPLAYCONFIG_SDR_WHITE_LEVEL {
+          DISPLAYCONFIG_DEVICE_INFO_HEADER header;
+          ULONG SDRWhiteLevel;
+        } white_level;
+        #define DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL 11
 
         SDL_zero(white_level);
         white_level.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL;
