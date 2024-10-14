@@ -40,22 +40,26 @@ typedef struct
 // for ITU-R BT.2020 values are assuming RGB is encoded using full 10-bit range ([0-1]<->[0-1023])
 // all values are rounded to the fourth decimal
 
-static const YUV2RGBParam YUV2RGB[4] = {
+static const YUV2RGBParam YUV2RGB[] = {
 	// ITU-T T.871 (JPEG)
 	{/*.y_shift=*/ 0, /*.y_factor=*/ V(1.0), /*.v_r_factor=*/ V(1.402), /*.u_g_factor=*/ -V(0.3441), /*.v_g_factor=*/ -V(0.7141), /*.u_b_factor=*/ V(1.772)},
 	// ITU-R BT.601-7
 	{/*.y_shift=*/ 16, /*.y_factor=*/ V(1.1644), /*.v_r_factor=*/ V(1.596), /*.u_g_factor=*/ -V(0.3918), /*.v_g_factor=*/ -V(0.813), /*.u_b_factor=*/ V(2.0172)},
+	// ITU-R BT.709-6 full range
+	{/*.y_shift=*/ 0, /*.y_factor=*/ V(1.0), /*.v_r_factor=*/ V(1.581), /*.u_g_factor=*/ -V(0.1881), /*.v_g_factor=*/ -V(0.47), /*.u_b_factor=*/ V(1.8629)},
 	// ITU-R BT.709-6
 	{/*.y_shift=*/ 16, /*.y_factor=*/ V(1.1644), /*.v_r_factor=*/ V(1.7927), /*.u_g_factor=*/ -V(0.2132), /*.v_g_factor=*/ -V(0.5329), /*.u_b_factor=*/ V(2.1124)},
 	// ITU-R BT.2020 10-bit full range
 	{/*.y_shift=*/ 0, /*.y_factor=*/ V(1.0), /*.v_r_factor=*/ V(1.4760), /*.u_g_factor=*/ -V(0.1647), /*.v_g_factor=*/ -V(0.5719), /*.u_b_factor=*/ V(1.8832) }
 };
 
-static const RGB2YUVParam RGB2YUV[4] = {
+static const RGB2YUVParam RGB2YUV[] = {
 	// ITU-T T.871 (JPEG)
 	{/*.y_shift=*/ 0, /*.matrix=*/ {{V(0.299), V(0.587), V(0.114)}, {-V(0.1687), -V(0.3313), V(0.5)}, {V(0.5), -V(0.4187), -V(0.0813)}}},
 	// ITU-R BT.601-7
 	{/*.y_shift=*/ 16, /*.matrix=*/ {{V(0.2568), V(0.5041), V(0.0979)}, {-V(0.1482), -V(0.291), V(0.4392)}, {V(0.4392), -V(0.3678), -V(0.0714)}}},
+	// ITU-R BT.709-6 full range
+	{/*.y_shift=*/ 0, /*.matrix=*/ {{V(0.2126), V(0.7152), V(0.0722)}, {-V(0.1141), -V(0.3839), V(0.498)}, {V(0.498), -V(0.4524), -V(0.0457)}}},
 	// ITU-R BT.709-6
 	{/*.y_shift=*/ 16, /*.matrix=*/ {{V(0.1826), V(0.6142), V(0.062)}, {-V(0.1006), -V(0.3386), V(0.4392)}, {V(0.4392), -V(0.3989), -V(0.0403)}}},
 	// ITU-R BT.2020 10-bit full range
