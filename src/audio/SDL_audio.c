@@ -26,6 +26,9 @@
 
 // Available audio drivers
 static const AudioBootStrap *const bootstrap[] = {
+#ifdef SDL_AUDIO_DRIVER_PRIVATE
+    &PRIVATEAUDIO_bootstrap,
+#endif
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE
     &PIPEWIRE_PREFERRED_bootstrap,

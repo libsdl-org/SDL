@@ -662,7 +662,9 @@ const char *SDL_GetRevision(void)
 // Get the name of the platform
 const char *SDL_GetPlatform(void)
 {
-#if defined(SDL_PLATFORM_AIX)
+#if defined(SDL_PLATFORM_PRIVATE)
+    #include "SDL_platform_private.h"
+#elif defined(SDL_PLATFORM_AIX)
     return "AIX";
 #elif defined(SDL_PLATFORM_ANDROID)
     return "Android";

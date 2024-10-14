@@ -300,7 +300,9 @@ void SDL_EGL_UnloadLibrary(SDL_VideoDevice *_this)
 static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_path)
 {
     SDL_SharedObject *egl_dll_handle = NULL;
+#if !defined(SDL_VIDEO_STATIC_ANGLE) && !defined(SDL_VIDEO_DRIVER_VITA)
     SDL_SharedObject *opengl_dll_handle = NULL;
+#endif
     const char *path = NULL;
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
     const char *d3dcompiler;

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE)
+#ifdef HAVE_GETHOSTNAME
 #include <unistd.h>
 #endif
 
@@ -299,7 +299,7 @@ int SDL_URIToLocal(const char *src, char *dst)
             const size_t src_len = hostname_end - (src + 1);
             size_t hostname_len;
 
-#if defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE)
+#ifdef HAVE_GETHOSTNAME
             char hostname[257];
             if (gethostname(hostname, 255) == 0) {
                 hostname[256] = '\0';

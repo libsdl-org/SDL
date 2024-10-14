@@ -94,6 +94,10 @@ typedef enum SDL_EventType
 
     SDL_EVENT_SYSTEM_THEME_CHANGED, /**< The system theme changed */
 
+    /* FIXME: Where do we put these? And how many should we have? */
+    SDL_EVENT_PRIVATE_RESERVED0,
+    SDL_EVENT_PRIVATE_RESERVED1,
+
     /* Display events */
     /* 0x150 was SDL_DISPLAYEVENT, reserve the number for sdl2-compat */
     SDL_EVENT_DISPLAY_ORIENTATION = 0x151,   /**< Display orientation has changed to data1 */
