@@ -429,7 +429,7 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
 
     _this->egl_data->egl_dll_handle = egl_dll_handle;
 #ifdef SDL_VIDEO_DRIVER_VITA
-    _this->egl_data->opengl_dll_handle = opengl_dll_handle;
+    _this->egl_data->opengl_dll_handle = NULL;
 #endif
 
     // Load new function pointers
