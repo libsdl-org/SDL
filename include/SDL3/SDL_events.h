@@ -94,10 +94,6 @@ typedef enum SDL_EventType
 
     SDL_EVENT_SYSTEM_THEME_CHANGED, /**< The system theme changed */
 
-    /* FIXME: Where do we put these? And how many should we have? */
-    SDL_EVENT_PRIVATE_RESERVED0,
-    SDL_EVENT_PRIVATE_RESERVED1,
-
     /* Display events */
     /* 0x150 was SDL_DISPLAYEVENT, reserve the number for sdl2-compat */
     SDL_EVENT_DISPLAY_ORIENTATION = 0x151,   /**< Display orientation has changed to data1 */
@@ -232,6 +228,12 @@ typedef enum SDL_EventType
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
     SDL_EVENT_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
+
+    /* Reserved events for private platforms */
+    SDL_EVENT_PRIVATE0 = 0x4000,
+    SDL_EVENT_PRIVATE1,
+    SDL_EVENT_PRIVATE2,
+    SDL_EVENT_PRIVATE3,
 
     /* Internal events */
     SDL_EVENT_POLL_SENTINEL = 0x7F00, /**< Signals the end of an event poll cycle */

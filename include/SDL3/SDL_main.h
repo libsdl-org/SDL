@@ -49,7 +49,7 @@
 #include <SDL3/SDL_events.h>
 
 #ifndef SDL_MAIN_HANDLED
-    #if defined(SDL_PLATFORM_PRIVATE)
+    #if defined(SDL_PLATFORM_PRIVATE_MAIN)
         /* Private platforms may have their own ideas about entry points. */
         #include "SDL_main_private.h"
 
