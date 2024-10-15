@@ -370,7 +370,7 @@ static int SDL_fdatasync(int fd)
     result = fcntl(fd, F_FULLFSYNC);
 #elif defined(SDL_PLATFORM_HAIKU)
     result = fsync(fd);
-#elif HAVE_FDATASYNC
+#elif defined(HAVE_FDATASYNC)
     result = fdatasync(fd);
 #endif
     return result;

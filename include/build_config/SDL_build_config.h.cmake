@@ -75,8 +75,10 @@
 #cmakedefine HAVE_MALLOC 1
 #cmakedefine HAVE_CALLOC 1
 #cmakedefine HAVE_REALLOC 1
+#cmakedefine HAVE_FDATASYNC 1
 #cmakedefine HAVE_FREE 1
 #cmakedefine HAVE_GETENV 1
+#cmakedefine HAVE_GETHOSTNAME 1
 #cmakedefine HAVE_SETENV 1
 #cmakedefine HAVE_PUTENV 1
 #cmakedefine HAVE_UNSETENV 1

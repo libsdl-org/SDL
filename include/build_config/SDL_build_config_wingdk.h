@@ -75,6 +75,7 @@
 #define HAVE_LIBC   1
 #define HAVE_MALLOC 1
 #define HAVE_CALLOC 1
+#define HAVE_FDATASYNC 1
 #define HAVE_REALLOC 1
 #define HAVE_FREE 1
 #define HAVE_ABS 1
