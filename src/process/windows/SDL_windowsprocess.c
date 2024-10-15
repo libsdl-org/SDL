@@ -73,6 +73,14 @@ static bool SetupRedirect(SDL_PropertiesID props, const char *property, HANDLE *
         WIN_SetError("DuplicateHandle()");
         return false;
     }
+
+    if (GetFileType(*result) == FILE_TYPE_PIPE) {
+        DWORD wait_mode = PIPE_WAIT;
+        if (!SetNamedPipeHandleState(*result, &wait_mode, NULL, NULL)) {
+            WIN_SetError("SetNamedPipeHandleState()");
+            return false;
+        }
+    }
     return true;
 }
 
