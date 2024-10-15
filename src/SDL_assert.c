@@ -246,7 +246,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
         }
     } else {
 #ifdef SDL_PLATFORM_PRIVATE_ASSERT
-        SDL_PRIVATE_PROMPTASSERTION()
+        SDL_PRIVATE_PROMPTASSERTION();
 #elif defined(SDL_PLATFORM_EMSCRIPTEN)
         // This is nasty, but we can't block on a custom UI.
         for (;;) {
