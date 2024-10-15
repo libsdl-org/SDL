@@ -1947,10 +1947,10 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  *
  * These are the supported properties:
  *
- * - `SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN`: enable debug mode properties
- *   and validations, defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN`: enable to prefer energy
- *   efficiency over maximum GPU performance, defaults to false.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN`: enable debug mode
+ *   properties and validations, defaults to true.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN`: enable to prefer
+ *   energy efficiency over maximum GPU performance, defaults to false.
  * - `SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING`: the name of the GPU driver to
  *   use, if a specific one is desired.
  *
@@ -1964,8 +1964,8 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  *   provide DXBC shaders if applicable
  *   `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN`: The app is able to
  *   provide DXIL shaders if applicable.
- * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN`: The app is able to provide
- *   MSL shaders if applicable.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN`: The app is able to
+ *   provide MSL shaders if applicable.
  * - `SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN`: The app is able to
  *   provide Metal shader libraries if applicable.
  *
