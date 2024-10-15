@@ -1204,7 +1204,14 @@ done:
 
 void *SDL_LoadFile(const char *file, size_t *datasize)
 {
-    return SDL_LoadFile_IO(SDL_IOFromFile(file, "rb"), datasize, true);
+    SDL_IOStream *stream = SDL_IOFromFile(file, "rb");
+    if (!stream) {
+        if (datasize) {
+            *datasize = 0;
+        }
+        return NULL;
+    }
+    return SDL_LoadFile_IO(stream, datasize, true);
 }
 
 SDL_PropertiesID SDL_GetIOProperties(SDL_IOStream *context)
