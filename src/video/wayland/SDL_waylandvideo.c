@@ -289,8 +289,8 @@ static int SDLCALL Wayland_DisplayPositionCompare(const void *a, const void *b)
  * If all displays are equal, the one at position 0,0 will become the primary.
  *
  * The primary is determined by the following criteria, in order:
- * - The highest native resolution
  * - Landscape is preferred over portrait
+ * - The highest native resolution
  * - TODO: A higher HDR range is preferred
  * - Higher refresh is preferred (ignoring small differences)
  * - Lower scale values are preferred (larger display)
@@ -322,12 +322,12 @@ static int Wayland_GetPrimaryDisplay(SDL_VideoData *vid)
         const bool is_landscape = d->orientation != SDL_ORIENTATION_PORTRAIT && d->orientation != SDL_ORIENTATION_PORTRAIT_FLIPPED;
         bool have_new_best = false;
 
-        if (d->pixel_width > best_width || d->pixel_height > best_height) {
+        if (!best_is_landscape && is_landscape) { // Favor landscape over portrait displays.
             have_new_best = true;
-        } else if (d->pixel_width == best_width && d->pixel_height == best_height) {
-            if (!best_is_landscape && is_landscape) { // Favor landscape over portrait displays.
+        } else if (!best_is_landscape || is_landscape) { // Ignore portrait displays if a landscape was already found.
+            if (d->pixel_width > best_width || d->pixel_height > best_height) {
                 have_new_best = true;
-            } else if (!best_is_landscape || is_landscape) { // Ignore portrait displays if a landscape was already found.
+            } else if (d->pixel_width == best_width && d->pixel_height == best_height) {
                 if (d->refresh - best_refresh > REFRESH_DELTA) { // Favor a higher refresh rate, but ignore small differences (e.g. 59.97 vs 60.1)
                     have_new_best = true;
                 } else if (d->scale_factor < best_scale && SDL_abs(d->refresh - best_refresh) <= REFRESH_DELTA) {
