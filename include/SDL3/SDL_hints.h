@@ -3135,13 +3135,14 @@ extern "C" {
  * A comma separated list containing the names of the displays that SDL should
  * sort to the front of the display list.
  *
- * When this hint is set, displays with matching name strings will be prioritized in
- * the list of displays, as exposed by calling SDL_GetDisplays(), with the first listed
- * becoming the primary display. The naming convention can vary depending on the environment,
- * but it is usually a connector name (e.g. 'DP-1', 'DP-2', 'HDMI-1', etc...).
+ * When this hint is set, displays with matching name strings will be
+ * prioritized in the list of displays, as exposed by calling
+ * SDL_GetDisplays(), with the first listed becoming the primary display. The
+ * naming convention can vary depending on the environment, but it is usually
+ * a connector name (e.g. 'DP-1', 'DP-2', 'HDMI-1', etc...).
  *
- * On X11 and Wayland desktops, the connector names associated with displays can typically be
- * found by using the `xrandr` utility.
+ * On X11 and Wayland desktops, the connector names associated with displays
+ * can typically be found by using the `xrandr` utility.
  *
  * This hint is currently supported on the following drivers:
  *
