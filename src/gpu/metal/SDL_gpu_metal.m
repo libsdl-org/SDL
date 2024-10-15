@@ -1331,9 +1331,9 @@ static SDL_GPUSampler *METAL_CreateSampler(
         id<MTLSamplerState> sampler;
         MetalSampler *metalSampler;
 
-        samplerDesc.rAddressMode = SDLToMetal_SamplerAddressMode[createinfo->address_mode_u];
-        samplerDesc.sAddressMode = SDLToMetal_SamplerAddressMode[createinfo->address_mode_v];
-        samplerDesc.tAddressMode = SDLToMetal_SamplerAddressMode[createinfo->address_mode_w];
+        samplerDesc.sAddressMode = SDLToMetal_SamplerAddressMode[createinfo->address_mode_u];
+        samplerDesc.tAddressMode = SDLToMetal_SamplerAddressMode[createinfo->address_mode_v];
+        samplerDesc.rAddressMode = SDLToMetal_SamplerAddressMode[createinfo->address_mode_w];
         samplerDesc.minFilter = SDLToMetal_MinMagFilter[createinfo->min_filter];
         samplerDesc.magFilter = SDLToMetal_MinMagFilter[createinfo->mag_filter];
         samplerDesc.mipFilter = SDLToMetal_MipFilter[createinfo->mipmap_mode]; // FIXME: Is this right with non-mipmapped samplers?
