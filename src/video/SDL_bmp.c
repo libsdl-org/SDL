@@ -593,7 +593,7 @@ SDL_Surface *SDL_LoadBMP(const char *file)
     if (!stream) {
         return NULL;
     }
-    return SDL_LoadBMP_IO(stream, 1);
+    return SDL_LoadBMP_IO(stream, true);
 }
 
 bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
