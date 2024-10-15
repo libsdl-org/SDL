@@ -2525,7 +2525,9 @@ elseif(VITA)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/vita/*.c")
   set(HAVE_SDL_FILESYSTEM TRUE)
 
-  # !!! FIXME: do we need a FSops implementation for this?
+  set(SDL_FSOPS_POSIX 1)
+  sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
+  set(HAVE_SDL_FSOPS TRUE)
 
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_VITA 1)
