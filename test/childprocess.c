@@ -13,6 +13,7 @@ int main(int argc, char *argv[]) {
     bool stdin_to_stdout = false;
     bool read_stdin = false;
     bool stdin_to_stderr = false;
+    SDL_IOStream *log_stdin = NULL;
     int exit_code = 0;
 
     state = SDLTest_CommonCreateState(argv, 0);
@@ -45,6 +46,15 @@ int main(int argc, char *argv[]) {
                     fprintf(stderr, "%s", argv[i + 1]);
                     consumed = 2;
                 }
+            } else if (SDL_strcmp(argv[i], "--log-stdin") == 0) {
+                if (i + 1 < argc) {
+                    log_stdin = SDL_IOFromFile(argv[i + 1], "w");
+                    if (!log_stdin) {
+                        fprintf(stderr, "Couldn't open %s\n", argv[i + 1]);
+                        return 2;
+                    }
+                    consumed = 2;
+                }
             } else if (SDL_strcmp(argv[i], "--exit-code") == 0) {
                 if (i + 1 < argc) {
                     char *endptr = NULL;
@@ -75,6 +85,7 @@ int main(int argc, char *argv[]) {
                 "[--print-arguments]",
                 "[--print-environment]",
                 "[--stdin]",
+                "[--log-stdin FILE]",
                 "[--stdin-to-stdout]",
                 "[--stdout TEXT]",
                 "[--stdin-to-stderr]",
@@ -135,6 +146,10 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             }
+            if (log_stdin) {
+                SDL_WriteIO(log_stdin, buffer, result);
+                SDL_FlushIO(log_stdin);
+            }
             if (stdin_to_stdout) {
                 fwrite(buffer, 1, result, stdout);
                 fflush(stdout);
@@ -143,6 +158,10 @@ int main(int argc, char *argv[]) {
                 fwrite(buffer, 1, result, stderr);
             }
         }
+    }
+
+    if (log_stdin) {
+        SDL_CloseIO(log_stdin);
     }
 
     SDLTest_CommonDestroyState(state);
