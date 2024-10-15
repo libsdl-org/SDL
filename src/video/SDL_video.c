@@ -71,6 +71,9 @@
 
 // Available video drivers
 static VideoBootStrap *bootstrap[] = {
+#ifdef SDL_VIDEO_DRIVER_PRIVATE
+    &PRIVATE_bootstrap,
+#endif
 #ifdef SDL_VIDEO_DRIVER_COCOA
     &COCOA_bootstrap,
 #endif

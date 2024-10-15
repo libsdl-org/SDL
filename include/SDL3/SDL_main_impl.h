@@ -68,7 +68,11 @@
        unless the real entry point needs to be somewhere else entirely, like Android where it's in Java code */
     #if (!defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD)) && !defined(SDL_MAIN_EXPORTED)
 
-        #if defined(SDL_PLATFORM_WINDOWS)
+        #if defined(SDL_PLATFORM_PRIVATE_MAIN)
+            /* Private platforms may have their own ideas about entry points. */
+            #include "SDL_main_impl_private.h"
+
+        #elif defined(SDL_PLATFORM_WINDOWS)
 
             /* these defines/typedefs are needed for the WinMain() definition */
             #ifndef WINAPI

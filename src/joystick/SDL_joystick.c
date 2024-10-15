@@ -52,6 +52,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI // Highest priority driver for supported devices
     &SDL_HIDAPI_JoystickDriver,
 #endif
+#ifdef SDL_JOYSTICK_PRIVATE
+    &SDL_PRIVATE_JoystickDriver,
+#endif
 #ifdef SDL_JOYSTICK_GAMEINPUT // Higher priority than other Windows drivers
     &SDL_GAMEINPUT_JoystickDriver,
 #endif

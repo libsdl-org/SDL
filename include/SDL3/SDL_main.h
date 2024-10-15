@@ -49,7 +49,11 @@
 #include <SDL3/SDL_events.h>
 
 #ifndef SDL_MAIN_HANDLED
-    #ifdef SDL_PLATFORM_WIN32
+    #if defined(SDL_PLATFORM_PRIVATE_MAIN)
+        /* Private platforms may have their own ideas about entry points. */
+        #include "SDL_main_private.h"
+
+    #elif defined(SDL_PLATFORM_WIN32)
         /* On Windows SDL provides WinMain(), which parses the command line and passes
            the arguments to your main function.
 

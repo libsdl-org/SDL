@@ -370,10 +370,8 @@ static int SDL_fdatasync(int fd)
     result = fcntl(fd, F_FULLFSYNC);
 #elif defined(SDL_PLATFORM_HAIKU)
     result = fsync(fd);
-#elif defined(_POSIX_SYNCHRONIZED_IO)  // POSIX defines this if fdatasync() exists, so we don't need a CMake test.
-#ifndef SDL_PLATFORM_RISCOS  // !!! FIXME: however, RISCOS doesn't have the symbol...maybe we need to link to an extra library or something?
+#elif defined(HAVE_FDATASYNC)
     result = fdatasync(fd);
-#endif
 #endif
     return result;
 }

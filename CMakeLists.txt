@@ -966,8 +966,8 @@ if(SDL_LIBC)
     bcopy
     calloc ceil ceilf copysign copysignf cos cosf
     _Exit exp expf
-    fabs fabsf floor floorf fmod fmodf fopen64 free fseeko fseeko64
-    getenv
+    fabs fabsf fdatasync floor floorf fmod fmodf fopen64 free fseeko fseeko64
+    getenv gethostname
     _i64toa index itoa
     log log10 log10f logf lround lroundf _ltoa
     malloc memcmp memcpy memmove memset modf modff

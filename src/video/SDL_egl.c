@@ -300,7 +300,9 @@ void SDL_EGL_UnloadLibrary(SDL_VideoDevice *_this)
 static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_path)
 {
     SDL_SharedObject *egl_dll_handle = NULL;
+#if !defined(SDL_VIDEO_STATIC_ANGLE) && !defined(SDL_VIDEO_DRIVER_VITA)
     SDL_SharedObject *opengl_dll_handle = NULL;
+#endif
     const char *path = NULL;
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
     const char *d3dcompiler;
@@ -426,9 +428,6 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
 #endif
 
     _this->egl_data->egl_dll_handle = egl_dll_handle;
-#ifdef SDL_VIDEO_DRIVER_VITA
-    _this->egl_data->opengl_dll_handle = opengl_dll_handle;
-#endif
 
     // Load new function pointers
     LOAD_FUNC(PFNEGLGETDISPLAYPROC, eglGetDisplay);

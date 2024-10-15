@@ -229,6 +229,12 @@ typedef enum SDL_EventType
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
     SDL_EVENT_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
 
+    /* Reserved events for private platforms */
+    SDL_EVENT_PRIVATE0 = 0x4000,
+    SDL_EVENT_PRIVATE1,
+    SDL_EVENT_PRIVATE2,
+    SDL_EVENT_PRIVATE3,
+
     /* Internal events */
     SDL_EVENT_POLL_SENTINEL = 0x7F00, /**< Signals the end of an event poll cycle */
 
