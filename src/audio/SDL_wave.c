@@ -2093,7 +2093,8 @@ bool SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio, SDL_AudioSpec *spec, Uint8 
 
     // Make sure we are passed a valid data source
     if (!src) {
-        goto done;  // Error may come from SDL_IOStream.
+        SDL_InvalidParamError("src");
+        goto done;
     } else if (!spec) {
         SDL_InvalidParamError("spec");
         goto done;
@@ -2132,6 +2133,19 @@ done:
 
 bool SDL_LoadWAV(const char *path, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
 {
-    return SDL_LoadWAV_IO(SDL_IOFromFile(path, "rb"), 1, spec, audio_buf, audio_len);
+    SDL_IOStream *stream = SDL_IOFromFile(path, "rb");
+    if (!stream) {
+        if (spec) {
+            SDL_zerop(spec);
+        }
+        if (audio_buf) {
+            *audio_buf = NULL;
+        }
+        if (audio_len) {
+            *audio_len = 0;
+        }
+        return false;
+    }
+    return SDL_LoadWAV_IO(stream, true, spec, audio_buf, audio_len);
 }
 
