@@ -60,7 +60,12 @@ int main(int argc, char *argv[])
             goto quit;
         }
     } else {
-        shape = SDL_LoadBMP_IO(SDL_IOFromConstMem(glass_bmp, sizeof(glass_bmp)), true);
+        SDL_IOStream *stream = SDL_IOFromConstMem(glass_bmp, sizeof(glass_bmp));
+        if (!stream) {
+            SDL_Log("Couldn't create iostream for glass.bmp: %s\n", SDL_GetError());
+            goto quit;
+        }
+        shape = SDL_LoadBMP_IO(stream, true);
         if (!shape) {
             SDL_Log("Couldn't load glass.bmp: %s\n", SDL_GetError());
             goto quit;
