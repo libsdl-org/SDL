@@ -582,9 +582,10 @@ typedef enum SDL_Sandbox
 /**
  * Get the application sandbox environment, if any.
  *
- * \returns the application sandbox environment or SDL_SANDBOX_NONE if the application is not running in a sandbox environment.
+ * \returns the application sandbox environment or SDL_SANDBOX_NONE if the
+ *          application is not running in a sandbox environment.
  *
- * \since This function is available since SDL 3.1.6.
+ * \since This function is available since SDL 3.1.4.
  */
 extern SDL_DECLSPEC SDL_Sandbox SDLCALL SDL_GetSandbox(void);
 
