@@ -565,6 +565,30 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsTV(void);
 
+/**
+ * Application sandbox environment.
+ *
+ * \since This enum is available since SDL 3.1.6.
+ */
+typedef enum SDL_Sandbox
+{
+    SDL_SANDBOX_NONE = 0,
+    SDL_SANDBOX_UNKNOWN,
+    SDL_SANDBOX_FLATPAK,
+    SDL_SANDBOX_SNAP,
+    SDL_SANDBOX_MACOS
+} SDL_Sandbox;
+
+/**
+ * Get the application sandbox environment, if any.
+ *
+ * \returns the application sandbox environment or SDL_SANDBOX_NONE if the application is not running in a sandbox environment.
+ *
+ * \since This function is available since SDL 3.1.6.
+ */
+extern SDL_DECLSPEC SDL_Sandbox SDLCALL SDL_GetSandbox(void);
+
+
 /* Functions used by iOS app delegates to notify SDL about state changes. */
 
 /**
