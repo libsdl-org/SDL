@@ -929,6 +929,7 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, device->vendor_id, device->product_id, device->version, device->manufacturer_string, device->product_string, 'h', 0);
     device->joystick_type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
     device->type = SDL_GetJoystickGameControllerProtocol(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol);
+    device->steam_virtual_gamepad_slot = -1;
 
     if (num_children > 0) {
         int i;
@@ -1380,6 +1381,12 @@ static const char *HIDAPI_JoystickGetDevicePath(int device_index)
 
 static int HIDAPI_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
 {
+    SDL_HIDAPI_Device *device;
+
+    device = HIDAPI_GetDeviceByIndex(device_index, NULL);
+    if (device) {
+        return device->steam_virtual_gamepad_slot;
+    }
     return -1;
 }
 

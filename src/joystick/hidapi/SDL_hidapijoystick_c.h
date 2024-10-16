@@ -83,6 +83,7 @@ typedef struct _SDL_HIDAPI_Device
     SDL_bool is_bluetooth;
     SDL_JoystickType joystick_type;
     SDL_GameControllerType type;
+    int steam_virtual_gamepad_slot;
 
     struct _SDL_HIDAPI_DeviceDriver *driver;
     void *context;
