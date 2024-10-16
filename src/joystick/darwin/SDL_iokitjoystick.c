@@ -495,6 +495,10 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         SDL_free(name);
     }
 
+    if (SDL_ShouldIgnoreJoystick(vendor, product, version, pDevice->product)) {
+        return false;
+    }
+
     if (SDL_JoystickHandledByAnotherDriver(&SDL_DARWIN_JoystickDriver, vendor, product, version, pDevice->product)) {
         return false;
     }
@@ -551,11 +555,6 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     if (!GetDeviceInfo(ioHIDDeviceObject, device)) {
         FreeDevice(device);
         return; // not a device we care about, probably.
-    }
-
-    if (SDL_ShouldIgnoreJoystick(device->product, device->guid)) {
-        FreeDevice(device);
-        return;
     }
 
     // Get notified when this device is disconnected.

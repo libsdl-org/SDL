@@ -328,7 +328,7 @@ static SDL_HIDAPI_DeviceDriver *HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device
         return &SDL_HIDAPI_DriverCombined;
     }
 
-    if (SDL_ShouldIgnoreJoystick(device->name, device->guid)) {
+    if (SDL_ShouldIgnoreJoystick(device->vendor_id, device->product_id, device->version, device->name)) {
         return NULL;
     }
 

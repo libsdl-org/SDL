@@ -3236,24 +3236,19 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
     return SDL_JOYSTICK_TYPE_UNKNOWN;
 }
 
-bool SDL_ShouldIgnoreJoystick(const char *name, SDL_GUID guid)
+bool SDL_ShouldIgnoreJoystick(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    Uint16 vendor;
-    Uint16 product;
-
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
-
     // Check the joystick blacklist
-    if (SDL_VIDPIDInList(vendor, product, &blacklist_devices)) {
+    if (SDL_VIDPIDInList(vendor_id, product_id, &blacklist_devices)) {
         return true;
     }
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_ROG_CHAKRAM, false)) {
-        if (SDL_VIDPIDInList(vendor, product, &rog_gamepad_mice)) {
+        if (SDL_VIDPIDInList(vendor_id, product_id, &rog_gamepad_mice)) {
             return true;
         }
     }
 
-    if (SDL_ShouldIgnoreGamepad(name, guid)) {
+    if (SDL_ShouldIgnoreGamepad(vendor_id, product_id, version, name)) {
         return true;
     }
 

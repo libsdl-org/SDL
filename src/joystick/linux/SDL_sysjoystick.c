@@ -329,15 +329,14 @@ static bool IsJoystick(const char *path, int *fd, char **name_return, Uint16 *ve
     SDL_Log("Joystick: %s, bustype = %d, vendor = 0x%.4x, product = 0x%.4x, version = %d\n", name, inpid.bustype, inpid.vendor, inpid.product, inpid.version);
 #endif
 
-    *guid = SDL_CreateJoystickGUID(inpid.bustype, inpid.vendor, inpid.product, inpid.version, NULL, product_string, 0, 0);
-
-    if (SDL_ShouldIgnoreJoystick(name, *guid)) {
+    if (SDL_ShouldIgnoreJoystick(inpid.vendor, inpid.product, inpid.version, name)) {
         SDL_free(name);
         return false;
     }
     *name_return = name;
     *vendor_return = inpid.vendor;
     *product_return = inpid.product;
+    *guid = SDL_CreateJoystickGUID(inpid.bustype, inpid.vendor, inpid.product, inpid.version, NULL, product_string, 0, 0);
     return true;
 }
 
