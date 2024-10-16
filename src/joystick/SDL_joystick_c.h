@@ -126,6 +126,9 @@ extern bool SDL_IsJoystickGoogleStadiaController(Uint16 vendor_id, Uint16 produc
 // Function to return whether a joystick is an NVIDIA SHIELD controller
 extern bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_id);
 
+// Function to return whether a joystick is a Steam Virtual Gamepad
+extern bool SDL_IsJoystickSteamVirtualGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version);
+
 // Function to return whether a joystick is a Steam Controller
 extern bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id);
 
