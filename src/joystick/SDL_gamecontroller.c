@@ -2123,28 +2123,10 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
         return SDL_TRUE;
     }
 
-    if (SDL_allowed_controllers.num_included_entries == 0 &&
-        SDL_ignored_controllers.num_included_entries == 0) {
-        return SDL_FALSE;
-    }
-
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, NULL);
 
-    if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE)) {
-        /* We shouldn't ignore Steam's virtual gamepad since it's using the hints to filter out the real controllers so it can remap input for the virtual controller */
-        /* https://partner.steamgames.com/doc/features/steam_controller/steam_input_gamepad_emulation_bestpractices */
-        SDL_bool bSteamVirtualGamepad = SDL_FALSE;
-#if defined(__LINUX__)
-        bSteamVirtualGamepad = (vendor == USB_VENDOR_VALVE && product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD);
-#elif defined(__MACOSX__)
-        bSteamVirtualGamepad = (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 0);
-#elif defined(__WIN32__)
-        /* We can't tell on Windows, but Steam will block others in input hooks */
-        bSteamVirtualGamepad = SDL_TRUE;
-#endif
-        if (bSteamVirtualGamepad) {
-            return SDL_FALSE;
-        }
+    if (SDL_IsJoystickSteamVirtualGamepad(vendor, product, version)) {
+        return !SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE);
     }
 
     if (SDL_allowed_controllers.num_included_entries > 0) {
