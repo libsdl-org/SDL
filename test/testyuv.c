@@ -239,7 +239,7 @@ done:
     return result;
 }
 
-static bool run_colorspace_test()
+static bool run_colorspace_test(void)
 {
     bool result = false;
     SDL_Window *window;
