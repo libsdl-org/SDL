@@ -894,6 +894,13 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
 #ifdef DEBUG_XEVENTS
     SDL_Log("window 0x%lx: ButtonPress (X11 button = %d)\n", windowdata->xwindow, button);
 #endif
+
+    SDL_Mouse *mouse = SDL_GetMouse();
+    if ((!mouse->relative_mode || mouse->relative_mode_warp) && (x != mouse->x || y != mouse->y)) {
+        X11_ProcessHitTest(_this, windowdata, x, y, false);
+        SDL_SendMouseMotion(0, window, mouseID, false, x, y);
+    }
+
     if (X11_IsWheelEvent(display, button, &xticks, &yticks)) {
         SDL_SendMouseWheel(0, window, mouseID, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
     } else {
