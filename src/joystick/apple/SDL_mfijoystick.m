@@ -498,6 +498,10 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         return false;
     }
 
+    if (SDL_ShouldIgnoreJoystick(vendor, product, 0, name)) {
+        return false;
+    }
+
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
     if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
         NSDictionary<NSString *, GCControllerElement *> *elements = controller.physicalInputProfile.elements;
@@ -665,10 +669,6 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         signature = device->button_mask;
     }
     device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, signature, NULL, name, 'm', subtype);
-
-    if (SDL_ShouldIgnoreJoystick(name, device->guid)) {
-        return false;
-    }
 
     /* This will be set when the first button press of the controller is
      * detected. */

@@ -157,7 +157,7 @@ extern bool SDL_IsJoystickRAWINPUT(SDL_GUID guid);
 extern bool SDL_IsJoystickVIRTUAL(SDL_GUID guid);
 
 // Function to return whether a joystick should be ignored
-extern bool SDL_ShouldIgnoreJoystick(const char *name, SDL_GUID guid);
+extern bool SDL_ShouldIgnoreJoystick(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
 // Internal event queueing functions
 extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers);

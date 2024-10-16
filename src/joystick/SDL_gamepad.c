@@ -2595,12 +2595,8 @@ bool SDL_IsGamepad(SDL_JoystickID instance_id)
 /*
  * Return 1 if the gamepad should be ignored by SDL
  */
-bool SDL_ShouldIgnoreGamepad(const char *name, SDL_GUID guid)
+bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    Uint16 vendor;
-    Uint16 product;
-    Uint16 version;
-
 #ifdef SDL_PLATFORM_LINUX
     if (SDL_endswith(name, " Motion Sensors")) {
         // Don't treat the PS3 and PS4 motion controls as a separate gamepad
@@ -2624,19 +2620,17 @@ bool SDL_ShouldIgnoreGamepad(const char *name, SDL_GUID guid)
         return true;
     }
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, NULL);
-
-    if (SDL_IsJoystickSteamVirtualGamepad(vendor, product, version)) {
+    if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
         return !SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", false);
     }
 
     if (SDL_allowed_gamepads.num_included_entries > 0) {
-        if (SDL_VIDPIDInList(vendor, product, &SDL_allowed_gamepads)) {
+        if (SDL_VIDPIDInList(vendor_id, product_id, &SDL_allowed_gamepads)) {
             return false;
         }
         return true;
     } else {
-        if (SDL_VIDPIDInList(vendor, product, &SDL_ignored_gamepads)) {
+        if (SDL_VIDPIDInList(vendor_id, product_id, &SDL_ignored_gamepads)) {
             return true;
         }
         return false;
