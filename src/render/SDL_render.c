@@ -4389,7 +4389,7 @@ bool SDL_RenderGeometry(SDL_Renderer *renderer,
 }
 
 #ifdef SDL_VIDEO_RENDER_SW
-static bool remap_one_indice(
+static int remap_one_indice(
     int prev,
     int k,
     SDL_Texture *texture,
@@ -4427,7 +4427,7 @@ static bool remap_one_indice(
     return prev;
 }
 
-static bool remap_indices(
+static int remap_indices(
     int prev[3],
     int k,
     SDL_Texture *texture,
