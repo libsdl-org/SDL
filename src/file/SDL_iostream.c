@@ -134,7 +134,9 @@ static HANDLE SDLCALL windows_file_open(const char *filename, const char *mode)
 
     if (h == INVALID_HANDLE_VALUE) {
         char *error;
+        DWORD last_error = GetLastError();
         if (SDL_asprintf(&error, "Couldn't open %s", filename) > 0) {
+            SetLastError(last_error);
             WIN_SetError(error);
             SDL_free(error);
         } else {
