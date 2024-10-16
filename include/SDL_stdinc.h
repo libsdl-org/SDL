@@ -749,6 +749,9 @@ size_t wcslcpy(wchar_t *dst, const wchar_t *src, size_t size);
 size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
 #endif
 
+/* strdup is not ANSI but POSIX, and its prototype might be hidden... */
+char *strdup(const char *str);
+
 /* Starting LLVM 16, the analyser errors out if these functions do not have
    their prototype defined (clang-diagnostic-implicit-function-declaration) */
 #include <stdlib.h>
