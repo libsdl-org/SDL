@@ -85,10 +85,15 @@ static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device
         return SDL_FALSE;
     }
 #if defined(__MACOSX__) && defined(SDL_JOYSTICK_MFI)
-    /* On macOS you can't write output reports to wired XBox controllers,
-       so we'll just use the GCController support instead.
-    */
-    return SDL_FALSE;
+    if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
+        /* GCController support doesn't work with the Steam Virtual Gamepad */
+        return SDL_TRUE;
+    } else {
+        /* On macOS you can't write output reports to wired XBox controllers,
+           so we'll just use the GCController support instead.
+        */
+        return SDL_FALSE;
+    }
 #else
     return (type == SDL_CONTROLLER_TYPE_XBOX360) ? SDL_TRUE : SDL_FALSE;
 #endif
@@ -142,6 +147,13 @@ static SDL_bool HIDAPI_DriverXbox360_InitDevice(SDL_HIDAPI_Device *device)
     device->context = ctx;
 
     device->type = SDL_CONTROLLER_TYPE_XBOX360;
+
+    if (SDL_IsJoystickSteamVirtualGamepad(device->vendor_id, device->product_id, device->version) &&
+        device->product_string && SDL_strncmp(device->product_string, "GamePad-", 8) == 0) {
+        int slot = 0;
+        SDL_sscanf(device->product_string, "GamePad-%d", &slot);
+        device->steam_virtual_gamepad_slot = (slot - 1);
+    }
 
     return HIDAPI_JoystickConnected(device, NULL);
 }
@@ -231,7 +243,11 @@ static int HIDAPI_DriverXbox360_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *dev
 static void HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXbox360_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
+#ifdef __MACOSX__
+    const SDL_bool invert_y_axes = SDL_FALSE;
+#else
     const SDL_bool invert_y_axes = SDL_TRUE;
+#endif
 
     if (ctx->last_state[2] != data[2]) {
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, (data[2] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
