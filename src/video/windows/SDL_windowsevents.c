@@ -1153,7 +1153,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                  SDL_GetMouse()->relative_mode_clip_interval > 0 && 
                  GetClipCursor(&clipped_rect) && 
                  SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
-                 WIN_UpdateClipCursor(window);
+                 WIN_UpdateClipCursor(data->window);
              }     
         }
     } break;
