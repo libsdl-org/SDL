@@ -88,6 +88,7 @@ static HANDLE SDLCALL windows_file_open(const char *filename, const char *mode)
     UINT old_error_mode;
 #endif
     HANDLE h;
+    DWORD last_error;
     DWORD r_right, w_right;
     DWORD must_exist, truncate;
     int a_mode;
@@ -124,6 +125,7 @@ static HANDLE SDLCALL windows_file_open(const char *filename, const char *mode)
                        (must_exist | truncate | a_mode),
                        FILE_ATTRIBUTE_NORMAL,
                        NULL);
+        last_error = GetLastError();
         SDL_free(str);
     }
 
@@ -134,7 +136,6 @@ static HANDLE SDLCALL windows_file_open(const char *filename, const char *mode)
 
     if (h == INVALID_HANDLE_VALUE) {
         char *error;
-        DWORD last_error = GetLastError();
         if (SDL_asprintf(&error, "Couldn't open %s", filename) > 0) {
             SetLastError(last_error);
             WIN_SetError(error);
