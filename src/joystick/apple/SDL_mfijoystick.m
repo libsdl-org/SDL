@@ -405,6 +405,10 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         return false;
     }
 #endif
+    if (device->is_xbox && SDL_strncmp(name, "GamePad-", 8) == 0) {
+        // This is a Steam Virtual Gamepad, which isn't supported by GCController
+        return false;
+    }
     CheckControllerSiriRemote(controller, &device->is_siri_remote);
 
     if (device->is_siri_remote && !SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, true)) {
