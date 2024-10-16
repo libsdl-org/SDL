@@ -632,7 +632,6 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             ))
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
-            job.clang_tidy = False
         case SdlPlatform.N3ds:
             job.shared = False
             job.apt_packages = ["ninja-build", "binutils"]
