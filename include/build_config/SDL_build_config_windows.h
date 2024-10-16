@@ -135,7 +135,6 @@ typedef unsigned int uintptr_t;
 #define HAVE_MALLOC 1
 #define HAVE_CALLOC 1
 #define HAVE_REALLOC 1
-#define HAVE_FDATASYNC 1
 #define HAVE_FREE 1
 #define HAVE_ABS 1
 #define HAVE_MEMSET 1
