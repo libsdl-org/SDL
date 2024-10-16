@@ -133,7 +133,13 @@ static HANDLE SDLCALL windows_file_open(const char *filename, const char *mode)
 #endif
 
     if (h == INVALID_HANDLE_VALUE) {
-        SDL_SetError("Couldn't open %s", filename);
+        char *p;
+        if (SDL_asprintf(&p, "Couldn't open %s", filename) > 0) {
+            WIN_SetError(p);
+            SDL_free(p);
+        } else {
+            SDL_SetError("Couldn't open %s", filename);
+        }
     }
     return h;
 }
