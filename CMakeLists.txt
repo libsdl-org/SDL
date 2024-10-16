@@ -966,8 +966,8 @@ if(SDL_LIBC)
     bcopy
     calloc ceil ceilf copysign copysignf cos cosf
     _Exit exp expf
-    fabs fabsf fdatasync floor floorf fmod fmodf fopen64 free fseeko fseeko64
-    getenv gethostname
+    fabs fabsf floor floorf fmod fmodf fopen64 free fseeko fseeko64
+    getenv
     _i64toa index itoa
     log log10 log10f logf lround lroundf _ltoa
     malloc memcmp memcpy memmove memset modf modff
@@ -1042,6 +1042,8 @@ if(SDL_LIBC)
   cmake_pop_check_state()
 
   if(NOT WINDOWS)
+    check_symbol_exists(fdatasync "unistd.h" HAVE_FDATASYNC)
+    check_symbol_exists(gethostname "unistd.h" HAVE_GETHOSTNAME)
     check_symbol_exists(getpagesize "unistd.h" HAVE_GETPAGESIZE)
     check_symbol_exists(sigaction "signal.h" HAVE_SIGACTION)
     check_symbol_exists(setjmp "setjmp.h" HAVE_SETJMP)
