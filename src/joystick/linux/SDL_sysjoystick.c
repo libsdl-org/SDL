@@ -124,7 +124,6 @@
 
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
-#include "../../core/linux/SDL_sandbox.h"
 
 #if 0
 #define DEBUG_INPUT_EVENTS 1
@@ -1069,7 +1068,7 @@ static bool LINUX_JoystickInit(void)
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
             enumeration_method = ENUMERATION_FALLBACK;
-        } else if (SDL_DetectSandbox() != SDL_SANDBOX_NONE) {
+        } else if (SDL_GetSandbox() != SDL_SANDBOX_NONE) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "Container detected, disabling udev integration");
             enumeration_method = ENUMERATION_FALLBACK;
