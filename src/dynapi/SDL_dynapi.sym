@@ -1182,6 +1182,28 @@ SDL3_0.0.0 {
     SDL_SetErrorV;
     SDL_GetDefaultLogOutputFunction;
     SDL_RenderDebugText;
+    SDL_CreateTray;
+    SDL_SetTrayIcon;
+    SDL_SetTrayTooltip;
+    SDL_CreateTrayMenu;
+    SDL_CreateTraySubmenu;
+    SDL_GetTrayMenu;
+    SDL_CreateOrGetTrayMenu;
+    SDL_GetTraySubmenu;
+    SDL_CreateOrGetTraySubmenu;
+    SDL_GetTrayEntries;
+    SDL_GetTrayEntryAt;
+    SDL_RemoveTrayEntry;
+    SDL_RemoveTrayEntryAt;
+    SDL_InsertTrayEntryAt;
+    SDL_AppendTrayEntry;
+    SDL_AppendTraySeparator;
+    SDL_SetTrayEntryChecked;
+    SDL_GetTrayEntryChecked;
+    SDL_SetTrayEntryEnabled;
+    SDL_GetTrayEntryEnabled;
+    SDL_SetTrayEntryCallback;
+    SDL_DestroyTray;
     # extra symbols go here (don't modify this line)
   local: *;
 };
