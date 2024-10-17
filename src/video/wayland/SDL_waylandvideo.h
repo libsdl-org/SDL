@@ -84,6 +84,7 @@ struct SDL_VideoData
     struct xdg_toplevel_icon_manager_v1 *xdg_toplevel_icon_manager_v1;
     struct kde_output_order_v1 *kde_output_order;
     struct frog_color_management_factory_v1 *frog_color_management_factory_v1;
+    struct xx_color_manager_v4 *xx_color_manager_v4;
     struct zwp_tablet_manager_v2 *tablet_manager;
 
     struct xkb_context *xkb_context;
@@ -106,6 +107,7 @@ struct SDL_DisplayData
     SDL_VideoData *videodata;
     struct wl_output *output;
     struct zxdg_output_v1 *xdg_output;
+    struct xx_color_management_output_v4 *xx_color_management_output;
     char *wl_output_name;
     double scale_factor;
     uint32_t registry_id;
@@ -114,6 +116,8 @@ struct SDL_DisplayData
     SDL_DisplayOrientation orientation;
     int physical_width, physical_height;
     bool has_logical_position, has_logical_size;
+    bool running_colorspace_event_queue;
+    SDL_HDROutputProperties HDR;
     SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
     int wl_output_done_count;
