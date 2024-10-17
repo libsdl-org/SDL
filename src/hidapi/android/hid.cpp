@@ -500,46 +500,38 @@ public:
 			return false;
 		}
 
-		m_bIsWaitingForOpen = false;
-		m_bOpenResult = env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerOpen, m_nId );
-		ExceptionCheck( env, "BOpen" );
-
 		if ( m_bIsWaitingForOpen )
 		{
-			hid_mutex_guard cvl( &m_cvLock );
-
-			const int OPEN_TIMEOUT_SECONDS = 60;
-			struct timespec ts, endtime;
-			clock_gettime( CLOCK_REALTIME, &ts );
-			endtime = ts;
-			endtime.tv_sec += OPEN_TIMEOUT_SECONDS;
-			do
-			{
-				if ( pthread_cond_timedwait( &m_cv, &m_cvLock, &endtime ) != 0 )
-				{
-					break;
-				}
-			}
-			while ( m_bIsWaitingForOpen && get_timespec_ms( ts ) < get_timespec_ms( endtime ) );
+			SDL_SetError( "Waiting for permission" );
+			return false;
 		}
 
 		if ( !m_bOpenResult )
 		{
+			m_bOpenResult = env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerOpen, m_nId );
+			ExceptionCheck( env, "BOpen" );
+
 			if ( m_bIsWaitingForOpen )
 			{
-				LOGV( "Device open failed - timed out waiting for device permission" );
+				LOGV( "Device open waiting for permission" );
+				SDL_SetError( "Waiting for permission" );
+				m_bWasOpenPending = true;
+				return false;
 			}
-			else
+
+			if ( !m_bOpenResult )
 			{
 				LOGV( "Device open failed" );
+				SDL_SetError( "Device open failed" );
+				return false;
 			}
-			return false;
 		}
 
 		m_pDevice = new hid_device;
 		m_pDevice->m_nId = m_nId;
 		m_pDevice->m_nDeviceRefCount = 1;
 		LOGD("Creating device %d (%p), refCount = 1\n", m_pDevice->m_nId, m_pDevice);
+
 		return true;
 	}
 
@@ -548,14 +540,42 @@ public:
 		m_bIsWaitingForOpen = true;
 	}
 
+	bool BOpenPending() const
+	{
+		return m_bIsWaitingForOpen;
+	}
+
+	void SetWasOpenPending( bool bState )
+	{
+		m_bWasOpenPending = bState;
+	}
+
+	bool BWasOpenPending() const
+	{
+		return m_bWasOpenPending;
+	}
+
 	void SetOpenResult( bool bResult )
 	{
 		if ( m_bIsWaitingForOpen )
 		{
 			m_bOpenResult = bResult;
 			m_bIsWaitingForOpen = false;
-			pthread_cond_signal( &m_cv );
+
+			if ( m_bOpenResult )
+			{
+				LOGV( "Device open succeeded" );
+			}
+			else
+			{
+				LOGV( "Device open failed" );
+			}
 		}
+	}
+
+	bool BOpenResult() const
+	{
+		return m_bOpenResult;
 	}
 
 	void ProcessInput( const uint8_t *pBuf, size_t nBufSize )
@@ -606,18 +626,16 @@ public:
 	{
 		JNIEnv *env = SDL_GetAndroidJNIEnv();
 
-		int nRet = -1;
-		if ( g_HIDDeviceManagerCallbackHandler )
-		{
-			jbyteArray pBuf = NewByteArray( env, pData, nDataLen );
-			nRet = env->CallIntMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerWriteReport, m_nId, pBuf, bFeature );
-			ExceptionCheck( env, "WriteReport" );
-			env->DeleteLocalRef( pBuf );
-		}
-		else
+		if ( !g_HIDDeviceManagerCallbackHandler )
 		{
 			LOGV( "WriteReport without callback handler" );
+			return -1;
 		}
+
+		jbyteArray pBuf = NewByteArray( env, pData, nDataLen );
+		int nRet = env->CallIntMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerWriteReport, m_nId, pBuf, bFeature );
+		ExceptionCheck( env, "WriteReport" );
+		env->DeleteLocalRef( pBuf );
 		return nRet;
 	}
 
@@ -713,8 +731,11 @@ public:
 
 		if ( g_HIDDeviceManagerCallbackHandler )
 		{
-			env->CallVoidMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerClose, m_nId );
-			ExceptionCheck( env, "Close" );
+			if ( !m_bIsWaitingForOpen && m_bOpenResult )
+			{
+				env->CallVoidMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerClose, m_nId );
+				ExceptionCheck( env, "Close" );
+			}
 		}
 
 		hid_mutex_guard dataLock( &m_dataLock );
@@ -749,6 +770,7 @@ private:
 	pthread_mutex_t m_cvLock = PTHREAD_MUTEX_INITIALIZER; // This lock has to be held to access any variables below
 	pthread_cond_t m_cv = PTHREAD_COND_INITIALIZER;
 	bool m_bIsWaitingForOpen = false;
+	bool m_bWasOpenPending = false;
 	bool m_bOpenResult = false;
 	bool m_bIsWaitingForReportResponse = false;
 	int m_nReportResponseError = 0;
@@ -1045,6 +1067,18 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 	hid_mutex_guard l( &g_DevicesMutex );
 	for ( hid_device_ref<CHIDDevice> pDevice = g_Devices; pDevice; pDevice = pDevice->next )
 	{
+		// Don't enumerate devices that are currently being opened, we'll re-enumerate them when we're done
+		// Make sure we skip them at least once, so they get removed and then re-added to the caller's device list
+		if ( pDevice->BWasOpenPending() )
+		{
+			// Don't enumerate devices that failed to open, otherwise the application might try to keep prompting for access
+			if ( !pDevice->BOpenPending() && pDevice->BOpenResult() )
+			{
+				pDevice->SetWasOpenPending( false );
+			}
+			continue;
+		}
+
 		const hid_device_info *info = pDevice->GetDeviceInfo();
 
 		/* See if there are any devices we should skip in enumeration */
@@ -1105,7 +1139,12 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path)
 			}
 		}
 	}
-	if ( pDevice && pDevice->BOpen() )
+	if ( !pDevice )
+	{
+		SDL_SetError( "Couldn't find device with path %s", path );
+		return NULL;
+	}
+	if ( pDevice->BOpen() )
 	{
 		return pDevice->GetDevice();
 	}
@@ -1116,7 +1155,7 @@ int  HID_API_EXPORT HID_API_CALL hid_write(hid_device *device, const unsigned ch
 {
 	if ( device )
 	{
-		LOGV( "hid_write id=%d length=%zu", device->m_nId, length );
+//		LOGV( "hid_write id=%d length=%zu", device->m_nId, length );
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
 		if ( pDevice )
 		{
@@ -1180,7 +1219,7 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *device, unsigned ch
 // TODO: Implement blocking
 int  HID_API_EXPORT HID_API_CALL hid_read(hid_device *device, unsigned char *data, size_t length)
 {
-	LOGV( "hid_read id=%d length=%zu", device->m_nId, length );
+//	LOGV( "hid_read id=%d length=%zu", device->m_nId, length );
 	return hid_read_timeout( device, data, length, 0 );
 }
 
