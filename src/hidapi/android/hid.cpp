@@ -1029,51 +1029,49 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceReportResponse
 extern "C"
 {
 
-// !!! FIXME: make this non-blocking!
-static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, bool granted)
+static void SDLCALL RequestBluetoothPermissionCallback( void *userdata, const char *permission, bool granted )
 {
-    SDL_SetAtomicInt((SDL_AtomicInt *) userdata, granted ? 1 : -1);
+	SDL_Log( "Bluetooth permission %s\n", granted ? "granted" : "denied" );
+
+	if ( granted && g_HIDDeviceManagerCallbackHandler )
+	{
+		// Make sure thread is attached to JVM/env
+		JNIEnv *env;
+		g_JVM->AttachCurrentThread( &env, NULL );
+		pthread_setspecific( g_ThreadKey, (void*)env );
+
+		env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerInitialize, false, true );
+	}
 }
-
-static bool RequestBluetoothPermissions(const char *permission)
-{
-    // !!! FIXME: make this non-blocking!
-    SDL_AtomicInt permission_response;
-    SDL_SetAtomicInt(&permission_response, 0);
-    if (!SDL_RequestAndroidPermission(permission, RequestAndroidPermissionBlockingCallback, &permission_response)) {
-        return false;
-    }
-
-    while (SDL_GetAtomicInt(&permission_response) == 0) {
-        SDL_Delay(10);
-    }
-
-    return SDL_GetAtomicInt(&permission_response) > 0;
-}
-
 
 int hid_init(void)
 {
 	if ( !g_initialized && g_HIDDeviceManagerCallbackHandler )
 	{
 		// HIDAPI doesn't work well with Android < 4.3
-		if (SDL_GetAndroidSDKVersion() >= 18) {
+		if ( SDL_GetAndroidSDKVersion() >= 18 )
+		{
 			// Make sure thread is attached to JVM/env
 			JNIEnv *env;
 			g_JVM->AttachCurrentThread( &env, NULL );
 			pthread_setspecific( g_ThreadKey, (void*)env );
 
+			env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerInitialize, true, false );
+
 			// Bluetooth is currently only used for Steam Controllers, so check that hint
 			// before initializing Bluetooth, which will prompt the user for permission.
-			bool init_usb = true;
-			bool init_bluetooth = false;
-			if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STEAM, false)) {
-				if (SDL_GetAndroidSDKVersion() < 31 ||
-					RequestBluetoothPermissions("android.permission.BLUETOOTH_CONNECT")) {
-					init_bluetooth = true;
+			if ( SDL_GetHintBoolean( SDL_HINT_JOYSTICK_HIDAPI_STEAM, false ) )
+			{
+				if ( SDL_GetAndroidSDKVersion() < 31 )
+				{
+					env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerInitialize, false, true );
+				}
+				else
+				{
+					SDL_Log( "Requesting Bluetooth permission" );
+					SDL_RequestAndroidPermission( "android.permission.BLUETOOTH_CONNECT", RequestBluetoothPermissionCallback, NULL );
 				}
 			}
-			env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerInitialize, init_usb, init_bluetooth );
 			ExceptionCheck( env, NULL, "hid_init" );
 		}
 		g_initialized = true;	// Regardless of result, so it's only called once
