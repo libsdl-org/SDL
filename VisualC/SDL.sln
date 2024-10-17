@@ -12,7 +12,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testatomic", "tests\testato
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testautomation", "tests\testautomation\testautomation.vcxproj", "{9C7E8C03-3130-436D-A97E-E8F8ED1AC4EA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdialog", "tests\testdialog\testdialog.vcxproj", "{97A3A89b-E023-48CD-905F-CDBDE8D951DE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdialog", "tests\testdialog\testdialog.vcxproj", "{97A3A89B-E023-48CD-905F-CDBDE8D951DE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdraw", "tests\testdraw\testdraw.vcxproj", "{8682FE1E-0CF6-4EDD-9BB5-1733D8C8B4DF}"
 EndProject
@@ -53,6 +53,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testsurround", "tests\testsurround\testsurround.vcxproj", "{70B894A9-E306-49E8-ABC2-932A952A5E5F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testpen", "tests\testpen\testpen.vcxproj", "{C4E04D18-EF76-4B42-B4C2-16A1BACDC1A3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{1498F0CD-F4DA-4847-9CB2-FB18D48061D5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "audio", "audio", "{1B61A1B7-92DE-4C37-9151-D2928D6449AB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01-simple-playback", "examples\audio\01-simple-playback\01-simple-playback.vcxproj", "{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -270,6 +276,14 @@ Global
 		{C4E04D18-EF76-4B42-B4C2-16A1BACDC1A3}.Release|Win32.Build.0 = Release|Win32
 		{C4E04D18-EF76-4B42-B4C2-16A1BACDC1A3}.Release|x64.ActiveCfg = Release|x64
 		{C4E04D18-EF76-4B42-B4C2-16A1BACDC1A3}.Release|x64.Build.0 = Release|x64
+		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Debug|Win32.Build.0 = Debug|Win32
+		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Debug|x64.ActiveCfg = Debug|x64
+		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Debug|x64.Build.0 = Debug|x64
+		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Release|Win32.ActiveCfg = Release|Win32
+		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Release|Win32.Build.0 = Release|Win32
+		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Release|x64.ActiveCfg = Release|x64
+		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -299,6 +313,8 @@ Global
 		{C4E04D18-EF76-4B42-B4C2-16A1BACDC0A4} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 		{70B894A9-E306-49E8-ABC2-932A952A5E5F} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 		{C4E04D18-EF76-4B42-B4C2-16A1BACDC1A3} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
+		{1B61A1B7-92DE-4C37-9151-D2928D6449AB} = {1498F0CD-F4DA-4847-9CB2-FB18D48061D5}
+		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5} = {1B61A1B7-92DE-4C37-9151-D2928D6449AB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C320C9F2-1A8F-41D7-B02B-6338F872BCAD}
