@@ -1,5 +1,7 @@
 if(MSVC)
   function(SDL_Preseed_CMakeCache)
+    set(HAVE_OPENGLES_V1                                 ""    CACHE INTERNAL "Test HAVE_OPENGLES_V1")
+    set(HAVE_OPENGLES_V2                                 "1"   CACHE INTERNAL "Test HAVE_OPENGLES_V2")
     set(COMPILER_SUPPORTS_W3                             "1"   CACHE INTERNAL "Test /W3")
     set(COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS      ""    CACHE INTERNAL "Test COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS")
     set(HAVE_ALLOCA_H                                    ""    CACHE INTERNAL "Have include alloca.h")

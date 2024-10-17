@@ -679,21 +679,25 @@ endmacro()
 # - PkgCheckModules
 macro(CheckEGL)
   if(SDL_OPENGL OR SDL_OPENGLES)
-    cmake_push_check_state()
-    find_package(OpenGL MODULE)
-    list(APPEND CMAKE_REQUIRED_INCLUDES ${OPENGL_EGL_INCLUDE_DIRS})
-    list(APPEND CMAKE_REQUIRED_INCLUDES "${SDL3_SOURCE_DIR}/src/video/khronos")
-    check_c_source_compiles("
-        #define EGL_API_FB
-        #define MESA_EGL_NO_X11_HEADERS
-        #define EGL_NO_X11
-        #include <EGL/egl.h>
-        #include <EGL/eglext.h>
-        int main (int argc, char** argv) { return 0; }" HAVE_OPENGL_EGL)
-    cmake_pop_check_state()
-    if(HAVE_OPENGL_EGL)
+    if(NOT MSVC)
+      cmake_push_check_state()
+      find_package(OpenGL MODULE)
+      list(APPEND CMAKE_REQUIRED_INCLUDES ${OPENGL_EGL_INCLUDE_DIRS})
+      list(APPEND CMAKE_REQUIRED_INCLUDES "${SDL3_SOURCE_DIR}/src/video/khronos")
+      check_c_source_compiles("
+          #define EGL_API_FB
+          #define MESA_EGL_NO_X11_HEADERS
+          #define EGL_NO_X11
+          #include <EGL/egl.h>
+          #include <EGL/eglext.h>
+          int main (int argc, char** argv) { return 0; }" HAVE_OPENGL_EGL)
+      cmake_pop_check_state()
+    endif()
+    if(MSVC OR HAVE_OPENGL_EGL)
       set(SDL_VIDEO_OPENGL_EGL 1)
-      sdl_link_dependency(egl INCLUDES ${OPENGL_EGL_INCLUDE_DIRS})
+      if(NOT MSVC)
+        sdl_link_dependency(egl INCLUDES ${OPENGL_EGL_INCLUDE_DIRS})
+      endif()
     endif()
   endif()
 endmacro()
