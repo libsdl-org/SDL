@@ -2026,10 +2026,8 @@ elseif(WINDOWS)
     endif()
 
     if(SDL_OPENGLES)
-      set(SDL_VIDEO_OPENGL_EGL 1)
-      set(SDL_VIDEO_OPENGL_ES2 1)
-      set(SDL_VIDEO_RENDER_OGL_ES2 1)
-      set(HAVE_OPENGLES TRUE)
+      CheckEGL()
+      CheckOpenGLES()
     endif()
 
     if(SDL_VULKAN)
