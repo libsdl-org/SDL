@@ -98,9 +98,6 @@ struct hid_device_
 	int m_nDeviceRefCount;
 };
 
-static JavaVM *g_JVM;
-static pthread_key_t g_ThreadKey;
-
 template<class T>
 class hid_device_ref
 {
@@ -495,10 +492,7 @@ public:
 
 	bool BOpen()
 	{
-		// Make sure thread is attached to JVM/env
-		JNIEnv *env;
-		g_JVM->AttachCurrentThread( &env, NULL );
-		pthread_setspecific( g_ThreadKey, (void*)env );
+		JNIEnv *env = SDL_GetAndroidJNIEnv();
 
 		if ( !g_HIDDeviceManagerCallbackHandler )
 		{
@@ -610,10 +604,7 @@ public:
 
 	int WriteReport( const unsigned char *pData, size_t nDataLen, bool bFeature )
 	{
-		// Make sure thread is attached to JVM/env
-		JNIEnv *env;
-		g_JVM->AttachCurrentThread( &env, NULL );
-		pthread_setspecific( g_ThreadKey, (void*)env );
+		JNIEnv *env = SDL_GetAndroidJNIEnv();
 
 		int nRet = -1;
 		if ( g_HIDDeviceManagerCallbackHandler )
@@ -645,10 +636,7 @@ public:
 
 	int ReadReport( unsigned char *pData, size_t nDataLen, bool bFeature )
 	{
-		// Make sure thread is attached to JVM/env
-		JNIEnv *env;
-		g_JVM->AttachCurrentThread( &env, NULL );
-		pthread_setspecific( g_ThreadKey, (void*)env );
+		JNIEnv *env = SDL_GetAndroidJNIEnv();
 
 		if ( !g_HIDDeviceManagerCallbackHandler )
 		{
@@ -721,10 +709,7 @@ public:
 
 	void Close( bool bDeleteDevice )
 	{
-		// Make sure thread is attached to JVM/env
-		JNIEnv *env;
-		g_JVM->AttachCurrentThread( &env, NULL );
-		pthread_setspecific( g_ThreadKey, (void*)env );
+		JNIEnv *env = SDL_GetAndroidJNIEnv();
 
 		if ( g_HIDDeviceManagerCallbackHandler )
 		{
@@ -793,16 +778,6 @@ static hid_device_ref<CHIDDevice> FindDevice( int nDeviceId )
 	return pDevice;
 }
 
-static void ThreadDestroyed(void* value)
-{
-	/* The thread is being destroyed, detach it from the Java VM and set the g_ThreadKey value to NULL as required */
-	JNIEnv *env = (JNIEnv*) value;
-	if (env != NULL) {
-		g_JVM->DetachCurrentThread();
-		pthread_setspecific(g_ThreadKey, NULL);
-	}
-}
-
 
 extern "C"
 JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallback)(JNIEnv *env, jobject thiz);
@@ -833,16 +808,6 @@ extern "C"
 JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallback)(JNIEnv *env, jobject thiz )
 {
 	LOGV( "HIDDeviceRegisterCallback()");
-
-	env->GetJavaVM( &g_JVM );
-
-	/*
-	 * Create mThreadKey so we can keep track of the JNIEnv assigned to each thread
-	 * Refer to http://developer.android.com/guide/practices/design/jni.html for the rationale behind this
-	 */
-	if (pthread_key_create(&g_ThreadKey, ThreadDestroyed) != 0) {
-		__android_log_print(ANDROID_LOG_ERROR, TAG, "Error initializing pthread key");
-	}
 
 	if ( g_HIDDeviceManagerCallbackHandler != NULL )
 	{
@@ -1035,10 +1000,7 @@ static void SDLCALL RequestBluetoothPermissionCallback( void *userdata, const ch
 
 	if ( granted && g_HIDDeviceManagerCallbackHandler )
 	{
-		// Make sure thread is attached to JVM/env
-		JNIEnv *env;
-		g_JVM->AttachCurrentThread( &env, NULL );
-		pthread_setspecific( g_ThreadKey, (void*)env );
+		JNIEnv *env = SDL_GetAndroidJNIEnv();
 
 		env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerInitialize, false, true );
 	}
@@ -1051,10 +1013,7 @@ int hid_init(void)
 		// HIDAPI doesn't work well with Android < 4.3
 		if ( SDL_GetAndroidSDKVersion() >= 18 )
 		{
-			// Make sure thread is attached to JVM/env
-			JNIEnv *env;
-			g_JVM->AttachCurrentThread( &env, NULL );
-			pthread_setspecific( g_ThreadKey, (void*)env );
+			JNIEnv *env = SDL_GetAndroidJNIEnv();
 
 			env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerInitialize, true, false );
 
