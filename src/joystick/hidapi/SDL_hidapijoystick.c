@@ -454,57 +454,7 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, bool *removed) S
             // Wait a little bit for the device to initialize
             SDL_Delay(10);
 
-#ifdef SDL_PLATFORM_ANDROID
-            /* On Android we need to leave joysticks unlocked because it calls
-             * out to the main thread for permissions and the main thread can
-             * be in the process of handling controller input.
-             *
-             * See https://github.com/libsdl-org/SDL/issues/6347 for details
-             */
-            {
-                SDL_HIDAPI_Device *curr;
-                int lock_count = 0;
-                char *path = SDL_strdup(device->path);
-
-                SDL_AssertJoysticksLocked();
-                while (SDL_JoysticksLocked()) {
-                    ++lock_count;
-                    SDL_UnlockJoysticks();
-                }
-
-                dev = SDL_hid_open_path(path);
-
-                while (lock_count > 0) {
-                    --lock_count;
-                    SDL_LockJoysticks();
-                }
-                SDL_free(path);
-
-                // Make sure the device didn't get removed while opening the HID path
-                for (curr = SDL_HIDAPI_devices; curr && curr != device; curr = curr->next) {
-                    continue;
-                }
-                if (curr == NULL) {
-                    *removed = true;
-                    if (dev) {
-                        SDL_hid_close(dev);
-                    }
-                    return;
-                }
-            }
-#else
-            /* On other platforms we want to keep the lock so other threads wait for
-             * us to finish opening the controller before checking to see whether the
-             * HIDAPI driver is handling the device.
-             *
-             * On Windows, for example, the main thread can be enumerating DirectInput
-             * devices while the Windows.Gaming.Input thread is calling back with a new
-             * controller available.
-             *
-             * See https://github.com/libsdl-org/SDL/issues/7304 for details.
-             */
             dev = SDL_hid_open_path(device->path);
-#endif
 
             if (dev == NULL) {
                 SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
