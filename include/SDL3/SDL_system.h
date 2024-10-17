@@ -261,6 +261,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(bool enabled);
 /*
  * Platform specific functions for Android
  */
+
+#if defined(__cplusplus)
+typedef struct _JNIEnv JNIEnv;
+#else
+typedef const struct JNINativeInterface* JNIEnv;
+#endif
+
 #ifdef SDL_PLATFORM_ANDROID
 
 /**
@@ -283,7 +290,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(bool enabled);
  *
  * \sa SDL_GetAndroidActivity
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);
+extern SDL_DECLSPEC JNIEnv * SDLCALL SDL_GetAndroidJNIEnv(void);
 
 /**
  * Retrieve the Java instance of the Android activity class.
