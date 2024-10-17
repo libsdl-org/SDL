@@ -5098,8 +5098,10 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 
     SDL_DiscardAllCommands(renderer);
 
-    SDL_DestroyTexture(renderer->debug_char_texture_atlas);
-    renderer->debug_char_texture_atlas = NULL;
+    if (renderer->debug_char_texture_atlas) {
+        SDL_DestroyTexture(renderer->debug_char_texture_atlas);
+        renderer->debug_char_texture_atlas = NULL;
+    }
 
     // Free existing textures for this renderer
     while (renderer->textures) {
