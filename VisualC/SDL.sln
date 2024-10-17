@@ -60,6 +60,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "audio", "audio", "{1B61A1B7
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01-simple-playback", "examples\audio\01-simple-playback\01-simple-playback.vcxproj", "{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02-simple-playback-callback", "examples\audio\02-simple-playback-callback\02-simple-playback-callback.vcxproj", "{6B710DFF-8A4A-40A2-BF2D-88D266F3D4F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -284,6 +286,14 @@ Global
 		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Release|Win32.Build.0 = Release|Win32
 		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Release|x64.ActiveCfg = Release|x64
 		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5}.Release|x64.Build.0 = Release|x64
+		{6B710DFF-8A4A-40A2-BF2D-88D266F3D4F0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6B710DFF-8A4A-40A2-BF2D-88D266F3D4F0}.Debug|Win32.Build.0 = Debug|Win32
+		{6B710DFF-8A4A-40A2-BF2D-88D266F3D4F0}.Debug|x64.ActiveCfg = Debug|x64
+		{6B710DFF-8A4A-40A2-BF2D-88D266F3D4F0}.Debug|x64.Build.0 = Debug|x64
+		{6B710DFF-8A4A-40A2-BF2D-88D266F3D4F0}.Release|Win32.ActiveCfg = Release|Win32
+		{6B710DFF-8A4A-40A2-BF2D-88D266F3D4F0}.Release|Win32.Build.0 = Release|Win32
+		{6B710DFF-8A4A-40A2-BF2D-88D266F3D4F0}.Release|x64.ActiveCfg = Release|x64
+		{6B710DFF-8A4A-40A2-BF2D-88D266F3D4F0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -315,6 +325,7 @@ Global
 		{C4E04D18-EF76-4B42-B4C2-16A1BACDC1A3} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 		{1B61A1B7-92DE-4C37-9151-D2928D6449AB} = {1498F0CD-F4DA-4847-9CB2-FB18D48061D5}
 		{EB448819-74BC-40C9-A61A-4D4ECD55F9D5} = {1B61A1B7-92DE-4C37-9151-D2928D6449AB}
+		{6B710DFF-8A4A-40A2-BF2D-88D266F3D4F0} = {1B61A1B7-92DE-4C37-9151-D2928D6449AB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C320C9F2-1A8F-41D7-B02B-6338F872BCAD}
