@@ -2630,13 +2630,12 @@ extern "C" {
 #define SDL_HINT_OPENGL_ES_DRIVER "SDL_OPENGL_ES_DRIVER"
 
 /**
- *  Mechanism to specify openvr_api library location
+ * Mechanism to specify openvr_api library location
  *
- *  By default, when using the OpenVR driver, it will search for the API
- *  library in the current folder.  But, if you wish to use a system API
- *  you can specify that by using this hint.  This should be the full or
- *  relative path to a .dll on Windows or .so on Linux.
- *
+ * By default, when using the OpenVR driver, it will search for the API
+ * library in the current folder. But, if you wish to use a system API you can
+ * specify that by using this hint. This should be the full or relative path
+ * to a .dll on Windows or .so on Linux.
  */
 #define SDL_HINT_OPENVR_LIBRARY              "SDL_OPENVR_LIBRARY"
 
