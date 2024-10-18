@@ -5,8 +5,6 @@
 #ifdef EXTERN_C
 #undef EXTERN_C
 #endif
-#define GL_APIENTRY
-#define GL_APICALL
 #endif
 
 // OpenVR has a LOT of unused variables that GCC will freak out on.

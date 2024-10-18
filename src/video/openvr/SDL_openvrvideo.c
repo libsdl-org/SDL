@@ -46,6 +46,7 @@ struct SDL_GLContextState
 {
     HGLRC hglrc;
 };
+
 #else
 #include <SDL3/SDL_opengles2_gl2.h>
 #endif
@@ -68,30 +69,30 @@ struct SDL_CursorData
 };
 
 // GL Extensions for functions we will be using.
-void (*ov_glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
-void (*ov_glGenRenderbuffers)(GLsizei n, GLuint *renderbuffers);
-void (*ov_glBindFramebuffer)(GLenum target, GLuint framebuffer);
-void (*ov_glBindRenderbuffer)(GLenum target, GLuint renderbuffer);
-void (*ov_glRenderbufferStorage)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
-void (*ov_glFramebufferRenderbuffer)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
-void (*ov_glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-GLenum (*ov_glCheckNamedFramebufferStatus)(GLuint framebuffer, GLenum target);
-GLenum (*ov_glGetError)();
-void (*ov_glFlush)();
-void (*ov_glFinish)();
-void (*ov_glGenTextures)(GLsizei n, GLuint *textures);
-void (*ov_glDeleteTextures)(GLsizei n, GLuint *textures);
-void (*ov_glTexParameterf)(GLenum target, GLenum pname, GLfloat param);
-void (*ov_glTexParameteri)(GLenum target, GLenum pname, GLenum param);
-void (*ov_glTexImage2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *data);
-void (*ov_glBindTexture)(GLenum target, GLuint texture);
-void (*ov_glDrawBuffers)(GLsizei n, const GLenum *bufs);
-void (*ov_glGetIntegerv)(GLenum pname, GLint * data);
-const GLubyte *(*ov_glGetStringi)(GLenum name, GLuint index);
-void (*ov_glClear)(GLbitfield mask);
-void (*ov_glClearColor)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-void (*ov_glColorMask)(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
-void (*ov_glDebugMessageInsert)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char *message);
+void (APIENTRY *ov_glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
+void (APIENTRY *ov_glGenRenderbuffers)(GLsizei n, GLuint *renderbuffers);
+void (APIENTRY *ov_glBindFramebuffer)(GLenum target, GLuint framebuffer);
+void (APIENTRY *ov_glBindRenderbuffer)(GLenum target, GLuint renderbuffer);
+void (APIENTRY *ov_glRenderbufferStorage)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+void (APIENTRY *ov_glFramebufferRenderbuffer)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+void (APIENTRY *ov_glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+GLenum (APIENTRY *ov_glCheckNamedFramebufferStatus)(GLuint framebuffer, GLenum target);
+GLenum (APIENTRY *ov_glGetError)();
+void (APIENTRY *ov_glFlush)();
+void (APIENTRY *ov_glFinish)();
+void (APIENTRY *ov_glGenTextures)(GLsizei n, GLuint *textures);
+void (APIENTRY *ov_glDeleteTextures)(GLsizei n, GLuint *textures);
+void (APIENTRY *ov_glTexParameterf)(GLenum target, GLenum pname, GLfloat param);
+void (APIENTRY *ov_glTexParameteri)(GLenum target, GLenum pname, GLenum param);
+void (APIENTRY *ov_glTexImage2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *data);
+void (APIENTRY *ov_glBindTexture)(GLenum target, GLuint texture);
+void (APIENTRY *ov_glDrawBuffers)(GLsizei n, const GLenum *bufs);
+void (APIENTRY *ov_glGetIntegerv)(GLenum pname, GLint * data);
+const GLubyte *(APIENTRY *ov_glGetStringi)(GLenum name, GLuint index);
+void (APIENTRY *ov_glClear)(GLbitfield mask);
+void (APIENTRY *ov_glClearColor)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+void (APIENTRY *ov_glColorMask)(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
+void (APIENTRY *ov_glDebugMessageInsert)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char *message);
 
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 PROC(*ov_wglGetProcAddress)(LPCSTR);
@@ -980,6 +981,9 @@ static SDL_GLContext OPENVR_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window 
     OPENVR_SetupFrame(_this, window);
 
     SDL_GLContext result = malloc(sizeof(struct SDL_GLContextState));
+    if (!result) {
+        return NULL;
+    }
     result->hglrc = videodata->hglrc;
     return result;
 }
