@@ -46,6 +46,7 @@
 	#endif // OPENVR_API_EXPORTS
 #endif
 
+#ifndef USE_SDL
 #include <stdint.h>
 
 #if defined( __WIN32 )
@@ -53,14 +54,7 @@ typedef char bool;
 #else
 #include <stdbool.h>
 #endif
-
-typedef uint64_t PropertyContainerHandle_t;
-typedef uint32_t PropertyTypeTag_t;
-typedef uint64_t VRActionHandle_t;
-typedef uint64_t VRActionSetHandle_t;
-typedef uint64_t VRInputValueHandle_t;
-typedef uint64_t PathHandle_t;
-
+#endif // USE_SDL
 
 // OpenVR Constants
 
@@ -1837,10 +1831,6 @@ typedef enum EBlockQueueCreationFlag
 
 // OpenVR typedefs
 
-typedef uint32_t TrackedDeviceIndex_t;
-typedef uint32_t VRNotificationId;
-typedef uint64_t VROverlayHandle_t;
-
 typedef uint32_t PropertyTypeTag_t;
 typedef uint32_t SpatialAnchorHandle_t;
 typedef void * glSharedTextureHandle_t;
@@ -1851,7 +1841,6 @@ typedef uint32_t DriverId_t;
 typedef uint32_t TrackedDeviceIndex_t;
 typedef uint64_t WebConsoleHandle_t;
 typedef uint64_t PropertyContainerHandle_t;
-typedef uint32_t PropertyTypeTag_t;
 typedef PropertyContainerHandle_t DriverHandle_t;
 typedef uint64_t VRActionHandle_t;
 typedef uint64_t VRActionSetHandle_t;

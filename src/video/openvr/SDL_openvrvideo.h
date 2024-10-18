@@ -15,6 +15,7 @@
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 
+#define USE_SDL
 #include "openvr_capi.h"
 
 #ifdef __GNUC__
@@ -35,7 +36,7 @@
 #endif
 
 
-typedef struct SDL_WindowData
+struct SDL_WindowData
 {
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
     SDL_Window *window;
@@ -46,9 +47,9 @@ typedef struct SDL_WindowData
 #else
     int dummy;
 #endif
-} SDL_WindowData;
+};
 
-typedef struct SDL_VideoData {
+struct SDL_VideoData {
     void * openVRLIB;
     intptr_t vrtoken;
     intptr_t (*FN_VR_InitInternal)( EVRInitError *peError, EVRApplicationType eType );
@@ -97,13 +98,11 @@ typedef struct SDL_VideoData {
     EGLDisplay eglDpy;
     EGLContext eglCtx;
 #endif
-} SDL_VideoData;
+};
 
-
-typedef struct SDL_DisplayData
+struct SDL_DisplayData
 {
     int dummy;
-} SDL_DisplayData;
-
+};
 
 #endif
