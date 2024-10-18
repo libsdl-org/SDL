@@ -324,7 +324,7 @@ endif()
 On Unix systems, `$<TARGET_FILE:...>` will refer to the dynamic library (or framework),
 and you might need to use `$<TARGET_SONAME_FILE:tgt>` instead.
 
-Most often, you can avoid copying libraries by configuring your project with absolute [`https://cmake.org/cmake/help/latest/variable/CMAKE_LIBRARY_OUTPUT_DIRECTORY.html`]
+Most often, you can avoid copying libraries by configuring your project with absolute [`CMAKE_LIBRARY_OUTPUT_DIRECTORY`](https://cmake.org/cmake/help/latest/variable/CMAKE_LIBRARY_OUTPUT_DIRECTORY.html)
 and [`CMAKE_RUNTIME_OUTPUT_DIRECTORY`](https://cmake.org/cmake/help/latest/variable/CMAKE_RUNTIME_OUTPUT_DIRECTORY.html) paths.
 When using a multi-config generator (such as Visual Studio or Ninja Multi-Config), eventually add `/$<CONFIG>` to both paths.
 
