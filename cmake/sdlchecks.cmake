@@ -663,6 +663,19 @@ macro(CheckVivante)
 endmacro()
 
 # Requires:
+# - n/a
+macro(CheckOpenVR)
+  if(SDL_OPENVR)
+    set(HAVE_OPENVR TRUE)
+    set(HAVE_OPENVR_VIDEO TRUE)
+
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/openvr/*.c")
+    set(SDL_VIDEO_DRIVER_OPENVR 1)
+    sdl_link_dependency(egl LIBS EGL)
+  endif()
+endmacro()
+
+# Requires:
 # - nada
 macro(CheckGLX)
   if(SDL_OPENGL)

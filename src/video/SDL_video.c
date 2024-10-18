@@ -140,6 +140,9 @@ static VideoBootStrap *bootstrap[] = {
     &DUMMY_evdev_bootstrap,
 #endif
 #endif
+#ifdef SDL_VIDEO_DRIVER_OPENVR
+    &OPENVR_bootstrap,
+#endif
     NULL
 };
 
@@ -2338,6 +2341,10 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     if (!graphics_flags && !external_graphics_context) {
         flags |= SDL_DefaultGraphicsBackends(_this);
     }
+
+#if defined(SDL_VIDEO_OPENGL) && defined(SDL_VIDEO_DRIVER_OPENVR)
+    flags |= SDL_WINDOW_OPENGL;
+#endif
 
     if (flags & SDL_WINDOW_OPENGL) {
         if (!_this->GL_CreateContext) {

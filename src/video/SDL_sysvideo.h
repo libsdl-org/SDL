@@ -521,6 +521,7 @@ extern VideoBootStrap Emscripten_bootstrap;
 extern VideoBootStrap OFFSCREEN_bootstrap;
 extern VideoBootStrap NGAGE_bootstrap;
 extern VideoBootStrap QNX_bootstrap;
+extern VideoBootStrap OPENVR_bootstrap;
 
 // Use SDL_OnVideoThread() sparingly, to avoid regressions in use cases that currently happen to work
 extern bool SDL_OnVideoThread(void);
