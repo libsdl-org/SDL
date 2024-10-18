@@ -3158,6 +3158,7 @@ extern "C" {
  *
  * - KMSDRM (kmsdrm)
  * - Wayland (wayland)
+ * - X11 (x11)
  *
  * This hint should be set before SDL is initialized.
  *

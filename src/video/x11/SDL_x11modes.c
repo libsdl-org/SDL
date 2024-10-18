@@ -623,6 +623,7 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
     displaydata->y = display_y;
     displaydata->use_xrandr = true;
     displaydata->xrandr_output = outputid;
+    SDL_strlcpy(displaydata->connector_name, display_name, sizeof(displaydata->connector_name));
 
     SetXRandRModeInfo(dpy, res, output_crtc, modeID, &mode);
     SetXRandRDisplayName(dpy, EDID, display_name, display_name_size, outputid, display_mm_width, display_mm_height);
@@ -751,6 +752,52 @@ void X11_HandleXRandREvent(SDL_VideoDevice *_this, const XEvent *xevent)
     }
 }
 
+static void X11_SortOutputsByPriorityHint(SDL_VideoDevice *_this)
+{
+    const char *name_hint = SDL_GetHint(SDL_HINT_VIDEO_DISPLAY_PRIORITY);
+
+    if (name_hint) {
+        char *saveptr;
+        char *str = SDL_strdup(name_hint);
+        SDL_VideoDisplay **sorted_list = SDL_malloc(sizeof(SDL_VideoDisplay *) * _this->num_displays);
+
+        if (str && sorted_list) {
+            int sorted_index = 0;
+
+            // Sort the requested displays to the front of the list.
+            const char *token = SDL_strtok_r(str, ",", &saveptr);
+            while (token) {
+                for (int i = 0; i < _this->num_displays; ++i) {
+                    SDL_VideoDisplay *d = _this->displays[i];
+                    if (d) {
+                        SDL_DisplayData *data = d->internal;
+                        if (SDL_strcmp(token, data->connector_name) == 0) {
+                            sorted_list[sorted_index++] = d;
+                            _this->displays[i] = NULL;
+                            break;
+                        }
+                    }
+                }
+
+                token = SDL_strtok_r(NULL, ",", &saveptr);
+            }
+
+            // Append the remaining displays to the end of the list.
+            for (int i = 0; i < _this->num_displays; ++i) {
+                if (_this->displays[i]) {
+                    sorted_list[sorted_index++] = _this->displays[i];
+                }
+            }
+
+            // Copy the sorted list back to the display list.
+            SDL_memcpy(_this->displays, sorted_list, sizeof(SDL_VideoDisplay *) * _this->num_displays);
+        }
+
+        SDL_free(str);
+        SDL_free(sorted_list);
+    }
+}
+
 static bool X11_InitModes_XRandR(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
@@ -809,6 +856,8 @@ static bool X11_InitModes_XRandR(SDL_VideoDevice *_this)
     if (_this->num_displays == 0) {
         return SDL_SetError("No available displays");
     }
+
+    X11_SortOutputsByPriorityHint(_this);
 
     return true;
 }
