@@ -5072,6 +5072,7 @@ static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
     renderer->render_commands_pool = NULL;
     renderer->render_commands_tail = NULL;
     renderer->render_commands = NULL;
+    renderer->vertex_data_used = 0;
 
     while (cmd) {
         SDL_RenderCommand *next = cmd->next;
