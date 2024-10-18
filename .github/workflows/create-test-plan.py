@@ -531,6 +531,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     "testcontroller-apk",
                     "testmultiaudio-apk",
                     "testsprite-apk",
+                    "testcamera-apk",
                 ]
         case SdlPlatform.Emscripten:
             job.clang_tidy = False  # clang-tidy does not understand -gsource-map
