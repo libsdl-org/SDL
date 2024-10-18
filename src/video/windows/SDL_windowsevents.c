@@ -1146,6 +1146,15 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 lParam != data->last_pointer_update) {
                 SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
             }
+        } else {            
+            RECT rect, clipped_rect;
+            rect = data->cursor_clipped_rect;
+             if (!WIN_IsRectEmpty(&rect) && 
+                 SDL_GetMouse()->relative_mode_clip_interval > 0 && 
+                 GetClipCursor(&clipped_rect) && 
+                 SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
+                 WIN_UpdateClipCursor(data->window);
+             }     
         }
     } break;
 
