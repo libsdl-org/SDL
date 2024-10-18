@@ -31,7 +31,9 @@
  */
 
 /* Add any platform that doesn't build using the configure system. */
-#if defined(SDL_PLATFORM_WIN32)
+#if defined(SDL_PLATFORM_PRIVATE)
+#include "SDL_build_config_private.h"
+#elif defined(SDL_PLATFORM_WIN32)
 #include "SDL_build_config_windows.h"
 #elif defined(SDL_PLATFORM_WINGDK)
 #include "SDL_build_config_wingdk.h"
@@ -43,8 +45,6 @@
 #include "SDL_build_config_ios.h"
 #elif defined(SDL_PLATFORM_ANDROID)
 #include "SDL_build_config_android.h"
-#elif defined(SDL_PLATFORM_EMSCRIPTEN)
-#include "SDL_build_config_emscripten.h"
 #elif defined(SDL_PLATFORM_NGAGE)
 #include "SDL_build_config_ngage.h"
 #else

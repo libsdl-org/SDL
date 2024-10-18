@@ -261,6 +261,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(bool enabled);
 /*
  * Platform specific functions for Android
  */
+
+#if defined(__cplusplus)
+typedef struct _JNIEnv JNIEnv;
+#else
+typedef const struct JNINativeInterface* JNIEnv;
+#endif
+
 #ifdef SDL_PLATFORM_ANDROID
 
 /**
@@ -283,7 +290,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(bool enabled);
  *
  * \sa SDL_GetAndroidActivity
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);
+extern SDL_DECLSPEC JNIEnv * SDLCALL SDL_GetAndroidJNIEnv(void);
 
 /**
  * Retrieve the Java instance of the Android activity class.
@@ -564,6 +571,31 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsTV(void);
+
+/**
+ * Application sandbox environment.
+ *
+ * \since This enum is available since SDL 3.1.6.
+ */
+typedef enum SDL_Sandbox
+{
+    SDL_SANDBOX_NONE = 0,
+    SDL_SANDBOX_UNKNOWN,
+    SDL_SANDBOX_FLATPAK,
+    SDL_SANDBOX_SNAP,
+    SDL_SANDBOX_MACOS
+} SDL_Sandbox;
+
+/**
+ * Get the application sandbox environment, if any.
+ *
+ * \returns the application sandbox environment or SDL_SANDBOX_NONE if the
+ *          application is not running in a sandbox environment.
+ *
+ * \since This function is available since SDL 3.1.4.
+ */
+extern SDL_DECLSPEC SDL_Sandbox SDLCALL SDL_GetSandbox(void);
+
 
 /* Functions used by iOS app delegates to notify SDL about state changes. */
 

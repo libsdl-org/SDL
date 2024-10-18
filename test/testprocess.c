@@ -667,6 +667,8 @@ static int process_testMultiprocessStdinToStdout(void *arg)
     const char *process_args[] = {
         data->childprocess_path,
         "--stdin-to-stdout",
+        "--log-stdin",
+        NULL,
         NULL,
     };
     SDL_Process *process1 = NULL;
@@ -680,6 +682,7 @@ static int process_testMultiprocessStdinToStdout(void *arg)
     size_t total_read = 0;
     bool finished;
 
+    process_args[3] = "child1-stdin.txt";
     process1 = SDL_CreateProcess(process_args, true);
     SDLTest_AssertCheck(process1 != NULL, "SDL_CreateProcess()");
     if (!process1) {
@@ -692,6 +695,7 @@ static int process_testMultiprocessStdinToStdout(void *arg)
     SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_POINTER, SDL_GetPointerProperty(SDL_GetProcessProperties(process1), SDL_PROP_PROCESS_STDOUT_POINTER, NULL));
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
     SDLTest_AssertPass("About to call SDL_CreateProcessWithProperties");
+    process_args[3] = "child2-stdin.txt";
     process2 = SDL_CreateProcessWithProperties(props);
     SDL_DestroyProperties(props);
     SDLTest_AssertCheck(process2 != NULL, "SDL_CreateProcess()");

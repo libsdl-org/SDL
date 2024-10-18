@@ -3,7 +3,7 @@ description: 'Download Linux LoongArch64 toolchain and set output variables'
 inputs:
   version:
     description: 'LoongArch64 version'
-    default: '2022.09.06'
+    default: '2023.08.08'
 outputs:
   prefix:
     description: "LoongArch toolchain prefix"
@@ -27,7 +27,7 @@ runs:
       if: ${{ !steps.restore-cache.outputs.cache-hit }}
       shell: bash
       run: |
-        url="https://github.com/loongson/build-tools/releases/download/${{ inputs.version }}/loongarch64-clfs-6.3-cross-tools-gcc-glibc.tar.xz"
+        url="https://github.com/loongson/build-tools/releases/download/${{ inputs.version }}/CLFS-loongarch64-8.1-x86_64-cross-tools-gcc-glibc.tar.xz"
         
         wget "$url" -O /tmp/toolchain.tar.xz
         

@@ -240,6 +240,7 @@ typedef struct SDL_JoystickDriver
 #define SDL_LED_MIN_REPEAT_MS 5000
 
 // The available joystick drivers
+extern SDL_JoystickDriver SDL_PRIVATE_JoystickDriver;
 extern SDL_JoystickDriver SDL_ANDROID_JoystickDriver;
 extern SDL_JoystickDriver SDL_BSD_JoystickDriver;
 extern SDL_JoystickDriver SDL_DARWIN_JoystickDriver;

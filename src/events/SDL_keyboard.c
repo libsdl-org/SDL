@@ -637,7 +637,12 @@ void SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Keymod modstate = SDL_KMOD_NONE;
-    SDL_Scancode scancode = SDL_GetKeymapScancode(keyboard->keymap, ch, &modstate);
+    SDL_Scancode scancode;
+
+    if (ch == '\n') {
+        ch = SDLK_RETURN;
+    }
+    scancode = SDL_GetKeymapScancode(keyboard->keymap, ch, &modstate);
 
     // Make sure we have this keycode in our keymap
     if (scancode == SDL_SCANCODE_UNKNOWN && ch < SDLK_SCANCODE_MASK) {

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 """
-Create a @PROJECT_NAME@ SDK prefix from an Android archive
+Create a @<@PROJECT_NAME@>@ SDK prefix from an Android archive
 This file is meant to be placed in a the root of an android .aar archive
 
 Example usage:
 ```sh
-python @PROJECT_NAME@-@PROJECT_VERSION@.aar -o /usr/opt/android-sdks
+python @<@PROJECT_NAME@>@-@<@PROJECT_VERSION@>@.aar -o /usr/opt/android-sdks
 cmake -S my-project \
     -DCMAKE_PREFIX_PATH=/usr/opt/android-sdks \
     -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
@@ -31,13 +31,14 @@ ANDROID_ARCHS = { "armeabi-v7a", "arm64-v8a", "x86", "x86_64" }
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Convert a @PROJECT_NAME@ Android .aar archive into a SDK",
+        description="Convert a @<@PROJECT_NAME@>@ Android .aar archive into a SDK",
         allow_abbrev=False,
     )
+    parser.add_argument("--version", action="version", version="@<@PROJECT_NAME@>@ @<@PROJECT_VERSION@>@")
     parser.add_argument("-o", dest="output", type=pathlib.Path, required=True, help="Folder where to store the SDK")
     args = parser.parse_args()
 
-    print(f"Creating a @PROJECT_NAME@ SDK at {args.output}...")
+    print(f"Creating a @<@PROJECT_NAME@>@ SDK at {args.output}...")
 
     prefix = args.output
     incdir = prefix / "include"
@@ -92,9 +93,8 @@ def main():
                 jarpath = javadir / f"{project_name}-{project_version}-sources.jar"
                 read_zipfile_and_write(jarpath, zippath)
             elif zippath == "classes-doc.jar":
-                data = zf.read(zippath)
-                with zipfile.ZipFile(io.BytesIO(data)) as doc_zf:
-                    doc_zf.extractall(javadocdir)
+                jarpath = javadocdir / f"{project_name}-{project_version}-javadoc.jar"
+                read_zipfile_and_write(jarpath, zippath)
 
     print("... done")
     return 0

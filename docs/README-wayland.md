@@ -28,6 +28,12 @@ encounter limitations or behavior that is different from other windowing systems
   applications _must_ have an event loop and processes messages on a regular basis, or the application can appear
   unresponsive to both the user and desktop compositor.
 
+### The display reported as the primary by ```SDL_GetPrimaryDisplay()``` is incorrect
+
+- Wayland doesn't natively have the concept of a primary display, so SDL attempts to determine it by querying various
+  system settings, and falling back to a selection algorithm if this fails. If it is incorrect, it can be manually
+  overridden by setting the ```SDL_VIDEO_DISPLAY_PRIORITY``` hint.
+
 ### ```SDL_SetWindowPosition()``` doesn't work on non-popup windows
 
 - Wayland does not allow toplevel windows to position themselves programmatically.

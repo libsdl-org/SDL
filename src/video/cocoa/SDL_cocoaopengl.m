@@ -286,7 +286,7 @@ SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
             _this->GL_SwapWindow = Cocoa_GLES_SwapWindow;
             _this->GL_DestroyContext = Cocoa_GLES_DestroyContext;
 
-            if (Cocoa_GLES_LoadLibrary(_this, NULL) != 0) {
+            if (!Cocoa_GLES_LoadLibrary(_this, NULL)) {
                 return NULL;
             }
             return Cocoa_GLES_CreateContext(_this, window);

@@ -104,7 +104,7 @@ static bool verify_yuv_data(Uint32 format, SDL_Colorspace colorspace, const Uint
     return result;
 }
 
-static int run_automated_tests(int pattern_size, int extra_pitch)
+static bool run_automated_tests(int pattern_size, int extra_pitch)
 {
     const Uint32 formats[] = {
         SDL_PIXELFORMAT_YV12,
@@ -125,7 +125,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
     SDL_Colorspace colorspace;
     const int tight_tolerance = 20;
     const int loose_tolerance = 333;
-    int result = -1;
+    bool result = false;
 
     if (!pattern || !yuv1 || !yuv2) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't allocate test surfaces");
@@ -230,12 +230,135 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
         goto done;
     }
 
-    result = 0;
+    result = true;
 
 done:
     SDL_free(yuv1);
     SDL_free(yuv2);
     SDL_DestroySurface(pattern);
+    return result;
+}
+
+static bool run_colorspace_test(void)
+{
+    bool result = false;
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    struct {
+        const char *name;
+        SDL_Colorspace colorspace;
+    } colorspaces[] = {
+#define COLORSPACE(X) { #X, X }
+        COLORSPACE(SDL_COLORSPACE_JPEG),
+#if 0 /* We don't support converting color primaries here */
+        COLORSPACE(SDL_COLORSPACE_BT601_LIMITED),
+        COLORSPACE(SDL_COLORSPACE_BT601_FULL),
+#endif
+        COLORSPACE(SDL_COLORSPACE_BT709_LIMITED),
+        COLORSPACE(SDL_COLORSPACE_BT709_FULL)
+#undef COLORSPACE
+    };
+    SDL_Surface *rgb = NULL;
+    SDL_Surface *yuv = NULL;
+    SDL_Texture *texture = NULL;
+    int allowed_error = 2;
+    int i;
+
+    if (!SDL_CreateWindowAndRenderer("testyuv", 320, 240, 0, &window, &renderer)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s\n", SDL_GetError());
+        goto done;
+    }
+
+    rgb = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_XRGB8888);
+    if (!rgb) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create RGB surface: %s\n", SDL_GetError());
+        goto done;
+    }
+    SDL_FillSurfaceRect(rgb, NULL, SDL_MapSurfaceRGB(rgb, 255, 0, 0));
+
+    for (i = 0; i < SDL_arraysize(colorspaces); ++i) {
+        bool next = false;
+        Uint8 r, g, b, a;
+
+        SDL_Log("Checking colorspace %s\n", colorspaces[i].name);
+
+        yuv = SDL_ConvertSurfaceAndColorspace(rgb, SDL_PIXELFORMAT_NV12, NULL, colorspaces[i].colorspace, 0);
+        if (!yuv) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create YUV surface: %s\n", SDL_GetError());
+            goto done;
+        }
+
+        if (!SDL_ReadSurfacePixel(yuv, 0, 0, &r, &g, &b, &a)) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't read YUV surface: %s\n", SDL_GetError());
+            goto done;
+        }
+
+        if (SDL_abs((int)r - 255) > allowed_error ||
+            SDL_abs((int)g - 0) > allowed_error ||
+            SDL_abs((int)b - 0) > allowed_error) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed color conversion, expected 255,0,0, got %d,%d,%d\n", r, g, b);
+        }
+
+        texture = SDL_CreateTextureFromSurface(renderer, yuv);
+        if (!texture) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create YUV texture: %s\n", SDL_GetError());
+            goto done;
+        }
+
+        SDL_DestroySurface(yuv);
+        yuv = NULL;
+
+        SDL_RenderTexture(renderer, texture, NULL, NULL);
+        yuv = SDL_RenderReadPixels(renderer, NULL);
+
+        if (!SDL_ReadSurfacePixel(yuv, 0, 0, &r, &g, &b, &a)) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't read YUV surface: %s\n", SDL_GetError());
+            goto done;
+        }
+
+        if (SDL_abs((int)r - 255) > allowed_error ||
+            SDL_abs((int)g - 0) > allowed_error ||
+            SDL_abs((int)b - 0) > allowed_error) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed renderer color conversion, expected 255,0,0, got %d,%d,%d\n", r, g, b);
+        }
+
+        while (!next) {
+            SDL_Event event;
+            while (SDL_PollEvent(&event)) {
+                switch (event.type) {
+                case SDL_EVENT_KEY_DOWN:
+                    if (event.key.key == SDLK_ESCAPE) {
+                        result = true;
+                        goto done;
+                    }
+                    if (event.key.key == SDLK_SPACE) {
+                        next = true;
+                    }
+                    break;
+                case SDL_EVENT_QUIT:
+                    result = true;
+                    goto done;
+                }
+            }
+
+            SDL_RenderTexture(renderer, texture, NULL, NULL);
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_RenderDebugText(renderer, 4, 4, colorspaces[i].name);
+            SDL_RenderPresent(renderer);
+            SDL_Delay(10);
+        }
+
+        SDL_DestroyTexture(texture);
+        texture = NULL;
+    }
+
+    result = true;
+
+done:
+    SDL_DestroySurface(rgb);
+    SDL_DestroySurface(yuv);
+    SDL_DestroyTexture(texture);
+    SDL_Quit();
     return result;
 }
 
@@ -297,6 +420,7 @@ int main(int argc, char **argv)
     Uint64 then, now;
     int i, iterations = 100;
     bool should_run_automated_tests = false;
+    bool should_run_colorspace_test = false;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
@@ -377,6 +501,9 @@ int main(int argc, char **argv)
             } else if (SDL_strcmp(argv[i], "--automated") == 0) {
                 should_run_automated_tests = true;
                 consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--colorspace-test") == 0) {
+                should_run_colorspace_test = true;
+                consumed = 1;
             } else if (!filename) {
                 filename = argv[i];
                 consumed = 1;
@@ -388,7 +515,7 @@ int main(int argc, char **argv)
                 "[--yv12|--iyuv|--yuy2|--uyvy|--yvyu|--nv12|--nv21]",
                 "[--rgb555|--rgb565|--rgb24|--argb|--abgr|--rgba|--bgra]",
                 "[--monochrome] [--luminance N%]",
-                "[--automated]",
+                "[--automated] [--colorspace-test]",
                 "[sample.bmp]",
                 NULL,
             };
@@ -407,9 +534,16 @@ int main(int argc, char **argv)
                         automated_test_params[i].pattern_size,
                         automated_test_params[i].extra_pitch,
                         automated_test_params[i].enable_intrinsics ? "enabled" : "disabled");
-            if (run_automated_tests(automated_test_params[i].pattern_size, automated_test_params[i].extra_pitch) < 0) {
+            if (!run_automated_tests(automated_test_params[i].pattern_size, automated_test_params[i].extra_pitch)) {
                 return 2;
             }
+        }
+        return 0;
+    }
+
+    if (should_run_colorspace_test) {
+        if (!run_colorspace_test()) {
+            return 2;
         }
         return 0;
     }

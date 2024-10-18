@@ -45,6 +45,9 @@ def android_mk_use_prefab(path: Path) -> None:
 
     data, _ = re.subn("[\n]{3,}", "\n\n", data)
 
+    data, count = re.subn(r"(LOCAL_SHARED_LIBRARIES\s*:=\s*SDL3)", "LOCAL_SHARED_LIBRARIES := SDL3 SDL3-Headers", data)
+    assert count == 1, f"Must have injected SDL3-Headers in {path} exactly once"
+
     newdata = data + textwrap.dedent("""
         # https://google.github.io/prefab/build-systems.html
 
@@ -116,7 +119,7 @@ def main() -> int:
     description = "Create a simple Android gradle project from input sources."
     epilog = textwrap.dedent("""\
         You need to manually copy a prebuilt SDL3 Android archive into the project tree when using the aar variant.
-        
+
         Any changes you have done to the sources in the Android project will be lost
     """)
     parser = ArgumentParser(description=description, epilog=epilog, allow_abbrev=False)

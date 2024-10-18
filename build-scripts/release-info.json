@@ -1,0 +1,215 @@
+{
+  "name": "SDL3",
+  "remote": "libsdl-org/SDL",
+  "version": {
+    "file": "include/SDL3/SDL_version.h",
+    "re_major": "^#define SDL_MAJOR_VERSION\\s+([0-9]+)$",
+    "re_minor": "^#define SDL_MINOR_VERSION\\s+([0-9]+)$",
+    "re_micro": "^#define SDL_MICRO_VERSION\\s+([0-9]+)$"
+  },
+  "source": {
+    "checks": [
+      "src/SDL.c",
+      "include/SDL3/SDL.h",
+      "test/testsprite.c",
+      "android-project/app/src/main/java/org/libsdl/app/SDLActivity.java"
+    ],
+    "files": {
+      "include/SDL3": [
+        "build-scripts/pkg-support/source/SDL_revision.h.in:SDL_revision.h"
+      ],
+      "include/build_config": [
+        "build-scripts/pkg-support/source/SDL_revision.h.cmake.in:SDL_revision.h.cmake"
+      ]
+    }
+  },
+  "dmg": {
+    "project": "Xcode/SDL/SDL.xcodeproj",
+    "path": "Xcode/SDL/build/SDL3.dmg",
+    "target": "SDL3.dmg",
+    "build-xcconfig": "Xcode/SDL/pkg-support/build.xcconfig"
+  },
+  "mingw": {
+    "cmake": {
+      "archs": ["x86", "x64"],
+      "args": [
+        "-DSDL_SHARED=ON",
+        "-DSDL_STATIC=OFF",
+        "-DSDL_DISABLE_INSTALL_DOCS=ON",
+        "-DSDL_TEST_LIBRARY=ON",
+        "-DSDL_VENDOR_INFO=libsdl.org",
+        "-DSDL_TESTS=OFF"
+      ],
+      "shared-static": "args"
+    },
+    "files": {
+      "": [
+        "build-scripts/pkg-support/mingw/INSTALL.txt",
+        "build-scripts/pkg-support/mingw/Makefile",
+        "BUGS.txt",
+        "CREDITS.md",
+        "README-SDL.txt",
+        "WhatsNew.txt",
+        "LICENSE.txt",
+        "README.md"
+      ],
+      "cmake": [
+        "build-scripts/pkg-support/mingw/cmake/SDL3Config.cmake",
+        "build-scripts/pkg-support/mingw/cmake/SDL3ConfigVersion.cmake"
+      ],
+      "docs": [
+        "docs/*"
+      ],
+      "test": [
+        "test/*"
+      ]
+    }
+  },
+  "msvc": {
+    "msbuild": {
+      "archs": [
+        "x86",
+        "x64"
+      ],
+      "directory-build-props": "build-scripts/pkg-support/msvc/Directory.Build.props",
+      "projects": [
+        "VisualC/SDL/SDL.vcxproj",
+        "VisualC/SDL_test/SDL_test.vcxproj"
+      ],
+      "files-lib": {
+        "": [
+          "VisualC/SDL/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL3.dll"
+        ]
+      },
+      "files-devel": {
+        "lib/@<@ARCH@>@": [
+          "VisualC/SDL/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL3.dll",
+          "VisualC/SDL/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL3.lib",
+          "VisualC/SDL/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL3.pdb",
+          "VisualC/SDL_test/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL3_test.lib"
+        ]
+      }
+    },
+    "cmake": {
+      "archs": [
+        "arm64"
+      ],
+      "args": [
+        "-DSDL_SHARED=ON",
+        "-DSDL_STATIC=OFF",
+        "-DSDL_TEST_LIBRARY=ON",
+        "-DSDL_TESTS=OFF",
+        "-DSDL_DISABLE_INSTALL_DOCS=ON",
+        "-DSDL_VENDOR_INFO=libsdl.org"
+      ],
+      "files-lib": {
+        "": [
+          "bin/SDL3.dll"
+        ]
+      },
+      "files-devel": {
+        "lib/@<@ARCH@>@": [
+          "bin/SDL3.dll",
+          "bin/SDL3.pdb",
+          "lib/SDL3.lib",
+          "lib/SDL3_test.lib"
+        ]
+      }
+    },
+    "files-lib": {
+      "": [
+        "README-SDL.txt"
+      ]
+    },
+    "files-devel": {
+      "": [
+        "README-SDL.txt",
+        "BUGS.txt",
+        "LICENSE.txt",
+        "README.md",
+        "WhatsNew.txt"
+      ],
+      "cmake": [
+        "build-scripts/pkg-support/msvc/cmake/SDL3Config.cmake.in:SDL3Config.cmake",
+        "build-scripts/pkg-support/msvc/cmake/SDL3ConfigVersion.cmake.in:SDL3ConfigVersion.cmake",
+        "cmake/sdlcpu.cmake"
+      ],
+      "docs": [
+        "docs/*"
+      ],
+      "include/SDL3": [
+        "include/SDL3/*.h"
+      ]
+    }
+  },
+  "android": {
+    "cmake": {
+      "args": [
+        "-DSDL_SHARED=ON",
+        "-DSDL_STATIC=OFF",
+        "-DSDL_TEST_LIBRARY=ON",
+        "-DSDL_TESTS=OFF",
+        "-DSDL_DISABLE_ANDROID_JAR=OFF",
+        "-DSDL_DISABLE_INSTALL=OFF",
+        "-DSDL_DISABLE_INSTALL_DOCS=OFF",
+        "-DSDL_VENDOR_INFO=libsdl.org"
+      ]
+    },
+    "modules": {
+      "SDL3-Headers": {
+        "type": "interface",
+        "includes": {
+          "SDL3": ["include/SDL3/*.h"]
+        }
+      },
+      "Headers": {
+        "type": "interface",
+        "export-libraries": [":SDL3-Headers"]
+      },
+      "SDL3_test": {
+        "type": "library",
+        "library": "lib/libSDL3_test.a",
+        "export-libraries": [":Headers"]
+      },
+      "SDL3-shared": {
+        "type": "library",
+        "library": "lib/libSDL3.so",
+        "export-libraries": [":Headers"]
+      },
+      "SDL3": {
+        "type": "interface",
+        "export-libraries": [":SDL3-shared"]
+      }
+    },
+    "jars": {
+      "classes": "share/java/@<@PROJECT_NAME@>@/@<@PROJECT_NAME@>@-@<@PROJECT_VERSION@>@.jar",
+      "sources": "share/java/@<@PROJECT_NAME@>@/@<@PROJECT_NAME@>@-@<@PROJECT_VERSION@>@-sources.jar",
+      "doc": "share/javadoc/@<@PROJECT_NAME@>@/@<@PROJECT_NAME@>@-@<@PROJECT_VERSION@>@-javadoc.jar"
+    },
+    "abis": [
+      "armeabi-v7a",
+      "arm64-v8a",
+      "x86",
+      "x86_64"
+    ],
+    "api-minimum": 19,
+    "api-target": 29,
+    "ndk-minimum": 21,
+    "files": {
+      "": [
+        "android-project/app/proguard-rules.pro:proguard.txt",
+        "build-scripts/pkg-support/android/INSTALL.md.in:INSTALL.md",
+        "build-scripts/pkg-support/android/__main__.py.in:__main__.py",
+        "build-scripts/pkg-support/android/description.json.in:description.json"
+      ],
+      "META-INF": [
+        "LICENSE.txt"
+      ],
+      "cmake": [
+        "cmake/sdlcpu.cmake",
+        "build-scripts/pkg-support/android/cmake/SDL3Config.cmake",
+        "build-scripts/pkg-support/android/cmake/SDL3ConfigVersion.cmake.in:SDL3ConfigVersion.cmake"
+      ]
+    }
+  }
+}

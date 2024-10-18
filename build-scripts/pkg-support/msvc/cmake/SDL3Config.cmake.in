@@ -1,5 +1,5 @@
-# SDL CMake configuration file:
-# This file is meant to be placed in a cmake subfolder of SDL3-devel-3.x.y-VC
+# @<@PROJECT_NAME@>@ CMake configuration file:
+# This file is meant to be placed in a cmake subfolder of @<@PROJECT_NAME@>@-devel-@<@PROJECT_VERSION@>@-VC.zip
 
 cmake_minimum_required(VERSION 3.0...3.5)
 
@@ -105,7 +105,7 @@ else()
 endif()
 unset(_sdl3test_lib)
 
-if(SDL3_SDL3-shared_FOUND)
+if(SDL3_SDL3-shared_FOUND OR SDL3_SDL3-static_FOUND)
     set(SDL3_SDL3_FOUND TRUE)
 endif()
 

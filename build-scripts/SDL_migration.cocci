@@ -3689,6 +3689,7 @@ identifier func =~ "^(SDL_AddEventWatch|SDL_AddHintCallback|SDL_AddSurfaceAltern
 + SDL_GetNumLogicalCPUCores
   (...)
 @@
+typedef SDL_bool, bool;
 @@
 - SDL_bool
 + bool

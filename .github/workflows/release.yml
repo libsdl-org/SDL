@@ -37,9 +37,8 @@ jobs:
         shell: bash
         run: |
           python build-scripts/build-release.py \
-            --create source \
+            --actions source \
             --commit ${{ inputs.commit }} \
-            --project SDL3 \
             --root "${{ github.workspace }}/SDL" \
             --github \
             --debug
@@ -93,7 +92,7 @@ jobs:
       - name: 'Set up Python'
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       - name: 'Fetch build-release.py'
         uses: actions/checkout@v4
         with:
@@ -114,9 +113,8 @@ jobs:
         shell: bash
         run: |
           python build-scripts/build-release.py \
-            --create xcframework \
+            --actions dmg \
             --commit ${{ inputs.commit }} \
-            --project SDL3 \
             --root "${{ steps.tar.outputs.path }}" \
             --github \
             --debug
@@ -240,12 +238,13 @@ jobs:
     outputs:
       VC-x86: ${{ steps.releaser.outputs.VC-x86 }}
       VC-x64: ${{ steps.releaser.outputs.VC-x64 }}
+      VC-arm64: ${{ steps.releaser.outputs.VC-arm64 }}
       VC-devel: ${{ steps.releaser.outputs.VC-devel }}
     steps:
       - name: 'Set up Python'
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       - name: 'Fetch build-release.py'
         uses: actions/checkout@v4
         with:
@@ -265,12 +264,11 @@ jobs:
       - name: 'Build MSVC binary archives'
         id: releaser
         run: |
-          python build-scripts/build-release.py     `
-            --create win32                          `
-            --commit ${{ inputs.commit }}           `
-            --project SDL3                          `
-            --root "${{ steps.zip.outputs.path }}"  `
-            --github                                `
+          python build-scripts/build-release.py `
+            --actions msvc `
+            --commit ${{ inputs.commit }} `
+            --root "${{ steps.zip.outputs.path }}" `
+            --github `
             --debug
       - name: 'Store MSVC archives'
         uses: actions/upload-artifact@v4
@@ -405,7 +403,7 @@ jobs:
       - name: 'Set up Python'
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       - name: 'Fetch build-release.py'
         uses: actions/checkout@v4
         with:
@@ -428,12 +426,11 @@ jobs:
       - name: 'Build MinGW binary archives'
         id: releaser
         run: |
-          python build-scripts/build-release.py     \
-            --create mingw                          \
-            --commit ${{ inputs.commit }}           \
-            --project SDL3                          \
-            --root "${{ steps.tar.outputs.path }}"  \
-            --github                                \
+          python build-scripts/build-release.py \
+            --actions mingw \
+            --commit ${{ inputs.commit }} \
+            --root "${{ steps.tar.outputs.path }}" \
+            --github \
             --debug
       - name: 'Store MinGW archives'
         uses: actions/upload-artifact@v4
@@ -476,7 +473,7 @@ jobs:
           cmake -S "${{ steps.src.outputs.path }}/cmake/test"                                                           \
               -DCMAKE_BUILD_TYPE="Release"                                                                              \
               -DTEST_FULL=TRUE                                                                                          \
-              -DTEST_STATIC=TRUE                                                                                        \
+              -DTEST_STATIC=FALSE                                                                                       \
               -DTEST_TEST=TRUE                                                                                          \
               -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}"                                                       \
               -DCMAKE_TOOLCHAIN_FILE="${{ steps.src.outputs.path }}/build-scripts/cmake-toolchain-mingw64-i686.cmake"   \
@@ -489,7 +486,7 @@ jobs:
           cmake -S "${{ steps.src.outputs.path }}/cmake/test"                                                           \
               -DCMAKE_BUILD_TYPE="Release"                                                                              \
               -DTEST_FULL=TRUE                                                                                          \
-              -DTEST_STATIC=TRUE                                                                                        \
+              -DTEST_STATIC=false                                                                                       \
               -DTEST_TEST=TRUE                                                                                          \
               -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}"                                                       \
               -DCMAKE_TOOLCHAIN_FILE="${{ steps.src.outputs.path }}/build-scripts/cmake-toolchain-mingw64-x86_64.cmake" \
@@ -507,7 +504,7 @@ jobs:
       - name: 'Set up Python'
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       - name: 'Fetch build-release.py'
         uses: actions/checkout@v4
         with:
@@ -540,12 +537,11 @@ jobs:
       - name: 'Build Android prefab binary archive(s)'
         id: releaser
         run: |
-          python build-scripts/build-release.py     \
-            --create android                        \
-            --commit ${{ inputs.commit }}           \
-            --project SDL3                          \
-            --root "${{ steps.tar.outputs.path }}"  \
-            --github                                \
+          python build-scripts/build-release.py \
+            --actions android \
+            --commit ${{ inputs.commit }} \
+            --root "${{ steps.tar.outputs.path }}" \
+            --github \
             --debug
       - name: 'Store Android archive(s)'
         uses: actions/upload-artifact@v4
@@ -560,7 +556,7 @@ jobs:
       - name: 'Set up Python'
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -581,37 +577,6 @@ jobs:
           mkdir -p /tmp/tardir
           tar -C /tmp/tardir -v -x -f "${{ github.workspace }}/${{ needs.src.outputs.src-tar-gz }}"
           echo "path=/tmp/tardir/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$GITHUB_OUTPUT
-      - name: 'Create gradle project'
-        id: create-gradle-project
-        run: |
-          python ${{ steps.src.outputs.path }}/build-scripts/create-android-project.py \
-            org.libsdl.testspriteminimal \
-            ${{ steps.src.outputs.path }}/test/testspriteminimal.c \
-            ${{ steps.src.outputs.path }}/test/icon.h \
-            --variant aar \
-            --output "/tmp/projects"
-          echo "path=/tmp/projects/org.libsdl.testspriteminimal" >>$GITHUB_OUTPUT
-
-          echo ""
-          echo "Project contents:"
-          echo ""
-          find "/tmp/projects/org.libsdl.testspriteminimal"
-      - name: 'Copy SDL3 aar into Gradle project'
-        run: |
-          cp "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" "${{ steps.create-gradle-project.outputs.path }}/app/libs"
-
-          echo ""
-          echo "Project contents:"
-          echo ""
-          find "${{ steps.create-gradle-project.outputs.path }}"
-      - name: 'Build app (Gradle & ndk-build)'
-        run: |
-          cd "${{ steps.create-gradle-project.outputs.path }}"
-          ./gradlew -i assembleRelease -PBUILD_WITH_CMAKE=1
-      - name: 'Build app (Gradle & CMake)'
-        run: |
-          cd "${{ steps.create-gradle-project.outputs.path }}"
-          ./gradlew -i assembleRelease
       - name: 'Extract Android SDK from AAR'
         id: sdk
         run: |
@@ -622,16 +587,42 @@ jobs:
           android_abis="x86 x86_64 armeabi-v7a arm64-v8a"
           for android_abi in ${android_abis}; do
             echo "Configuring ${android_abi}..."
-            cmake -S "${{ steps.src.outputs.path }}/cmake/test"                               \
-              -DTEST_FULL=TRUE                                                                \
-              -DTEST_STATIC=FALSE                                                             \
-              -DTEST_TEST=TRUE                                                                \
-              -DCMAKE_PREFIX_PATH="${{ steps.sdk.outputs.prefix }}"                           \
-              -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake  \
-              -DANDROID_ABI=${android_abi}                                                    \
-              -Werror=dev                                                                     \
-              -DCMAKE_BUILD_TYPE=Release                                                      \
+            cmake -S "${{ steps.src.outputs.path }}/cmake/test" \
+              -DTEST_FULL=TRUE \
+              -DTEST_STATIC=FALSE \
+              -DTEST_TEST=TRUE \
+              -DCMAKE_PREFIX_PATH="${{ steps.sdk.outputs.prefix }}" \
+              -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake \
+              -DANDROID_ABI=${android_abi} \
+              -Werror=dev \
+              -DCMAKE_BUILD_TYPE=Release \
               -B "${android_abi}"
             echo "Building ${android_abi}..."
             cmake --build "${android_abi}" --config Release --verbose
           done
+      - name: 'Create gradle project'
+        id: create-gradle-project
+        run: |
+          python ${{ steps.src.outputs.path }}/build-scripts/create-android-project.py \
+            org.libsdl.testspriteminimal \
+            ${{ steps.src.outputs.path }}/test/testspriteminimal.c \
+            ${{ steps.src.outputs.path }}/test/icon.h \
+            --variant aar \
+            --output "/tmp/projects"
+          echo "path=/tmp/projects/org.libsdl.testspriteminimal" >>$GITHUB_OUTPUT
+      - name: 'Copy SDL3 aar into Gradle project'
+        run: |
+          cp "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" "${{ steps.create-gradle-project.outputs.path }}/app/libs"
+
+          echo ""
+          echo "Project contents:"
+          echo ""
+          find "${{ steps.create-gradle-project.outputs.path }}"
+      - name: 'Build app (Gradle & CMake)'
+        run: |
+          cd "${{ steps.create-gradle-project.outputs.path }}"
+          ./gradlew -i assembleRelease -Pandroid.native.buildOutput=verbose -PBUILD_WITH_CMAKE=1
+      - name: 'Build app (Gradle & ndk-build)'
+        run: |
+          cd "${{ steps.create-gradle-project.outputs.path }}"
+          ./gradlew -i assembleRelease -Pandroid.native.buildOutput=verbose

@@ -75,6 +75,11 @@ static bool SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *even
         // Make sure any currently queued events are processed then dispatch this before continuing
         SDL_DispatchMainCallbackEvents();
         SDL_DispatchMainCallbackEvent(event);
+
+        // Make sure that we quit if we get a terminating event
+        if (event->type == SDL_EVENT_TERMINATING) {
+            SDL_CompareAndSwapAtomicInt(&apprc, SDL_APP_CONTINUE, SDL_APP_SUCCESS);
+        }
     } else {
         // We'll process this event later from the main event queue
     }

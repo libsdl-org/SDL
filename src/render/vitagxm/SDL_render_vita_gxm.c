@@ -349,6 +349,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     length = rect->w * SDL_BYTESPERPIXEL(texture->format);
     if (length == pitch && length == dpitch) {
         SDL_memcpy(dst, pixels, length * rect->h);
+        pixels += pitch * rect->h;
     } else {
         for (row = 0; row < rect->h; ++row) {
             SDL_memcpy(dst, pixels, length);
@@ -376,6 +377,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         // U plane
         if (length == uv_src_pitch && length == uv_pitch) {
             SDL_memcpy(Udst, pixels, length * UVrect.h);
+            pixels += uv_src_pitch * UVrect.h;
         } else {
             for (row = 0; row < UVrect.h; ++row) {
                 SDL_memcpy(Udst, pixels, length);
@@ -1103,22 +1105,8 @@ static SDL_Surface *VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_
     read_pixels(rect->x, y, rect->w, rect->h, surface->pixels);
 
     // Flip the rows to be top-down if necessary
-
     if (!renderer->target) {
-        bool isstack;
-        int length = rect->w * SDL_BYTESPERPIXEL(format);
-        Uint8 *src = (Uint8 *)surface->pixels + (rect->h - 1) * surface->pitch;
-        Uint8 *dst = (Uint8 *)surface->pixels;
-        Uint8 *tmp = SDL_small_alloc(Uint8, length, &isstack);
-        int rows = rect->h / 2;
-        while (rows--) {
-            SDL_memcpy(tmp, dst, length);
-            SDL_memcpy(dst, src, length);
-            SDL_memcpy(src, tmp, length);
-            dst += surface->pitch;
-            src -= surface->pitch;
-        }
-        SDL_small_free(tmp, isstack);
+        SDL_FlipSurface(surface, SDL_FLIP_VERTICAL);
     }
     return surface;
 }

@@ -1282,6 +1282,11 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER`: the NSInteger tag
  *   assocated with metal views on the window
  *
+ * On OpenVR:
+ *
+ * - `SDL_PROP_WINDOW_OPENVR_OVERLAY_ID`: the OpenVR Overlay Handle ID for the
+ *   associated overlay window.
+ *
  * On Vivante:
  *
  * - `SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER`: the EGLNativeDisplayType
@@ -1354,6 +1359,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_KMSDRM_GBM_DEVICE_POINTER                   "SDL.window.kmsdrm.gbm_dev"
 #define SDL_PROP_WINDOW_COCOA_WINDOW_POINTER                        "SDL.window.cocoa.window"
 #define SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER                 "SDL.window.cocoa.metal_view_tag"
+#define SDL_PROP_WINDOW_OPENVR_OVERLAY_ID                           "SDL.window.openvr.overlay_id"
 #define SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER                     "SDL.window.vivante.display"
 #define SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER                      "SDL.window.vivante.window"
 #define SDL_PROP_WINDOW_VIVANTE_SURFACE_POINTER                     "SDL.window.vivante.surface"
@@ -2459,12 +2465,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowHitTest(SDL_Window *window, SDL_Hi
  *
  * This sets the alpha channel of a transparent window and any fully
  * transparent areas are also transparent to mouse clicks. If you are using
- * something besides the SDL render API, then you are responsible for setting
- * the alpha channel of the window yourself.
+ * something besides the SDL render API, then you are responsible for drawing
+ * the alpha channel of the window to match the shape alpha channel to get
+ * consistent cross-platform results.
  *
  * The shape is copied inside this function, so you can free it afterwards. If
  * your shape surface changes, you should call SDL_SetWindowShape() again to
- * update the window.
+ * update the window. This is an expensive operation, so should be done
+ * sparingly.
  *
  * The window must have been created with the SDL_WINDOW_TRANSPARENT flag.
  *

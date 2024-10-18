@@ -31,9 +31,6 @@
 #include "../windows/SDL_rawinputjoystick_c.h"
 #endif
 
-#ifdef SDL_USE_LIBUDEV
-#include "../../core/linux/SDL_sandbox.h"
-#endif
 
 struct joystick_hwdata
 {
@@ -331,7 +328,7 @@ static SDL_HIDAPI_DeviceDriver *HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device
         return &SDL_HIDAPI_DriverCombined;
     }
 
-    if (SDL_ShouldIgnoreJoystick(device->name, device->guid)) {
+    if (SDL_ShouldIgnoreJoystick(device->vendor_id, device->product_id, device->version, device->name)) {
         return NULL;
     }
 
@@ -457,57 +454,7 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, bool *removed) S
             // Wait a little bit for the device to initialize
             SDL_Delay(10);
 
-#ifdef SDL_PLATFORM_ANDROID
-            /* On Android we need to leave joysticks unlocked because it calls
-             * out to the main thread for permissions and the main thread can
-             * be in the process of handling controller input.
-             *
-             * See https://github.com/libsdl-org/SDL/issues/6347 for details
-             */
-            {
-                SDL_HIDAPI_Device *curr;
-                int lock_count = 0;
-                char *path = SDL_strdup(device->path);
-
-                SDL_AssertJoysticksLocked();
-                while (SDL_JoysticksLocked()) {
-                    ++lock_count;
-                    SDL_UnlockJoysticks();
-                }
-
-                dev = SDL_hid_open_path(path);
-
-                while (lock_count > 0) {
-                    --lock_count;
-                    SDL_LockJoysticks();
-                }
-                SDL_free(path);
-
-                // Make sure the device didn't get removed while opening the HID path
-                for (curr = SDL_HIDAPI_devices; curr && curr != device; curr = curr->next) {
-                    continue;
-                }
-                if (curr == NULL) {
-                    *removed = true;
-                    if (dev) {
-                        SDL_hid_close(dev);
-                    }
-                    return;
-                }
-            }
-#else
-            /* On other platforms we want to keep the lock so other threads wait for
-             * us to finish opening the controller before checking to see whether the
-             * HIDAPI driver is handling the device.
-             *
-             * On Windows, for example, the main thread can be enumerating DirectInput
-             * devices while the Windows.Gaming.Input thread is calling back with a new
-             * controller available.
-             *
-             * See https://github.com/libsdl-org/SDL/issues/7304 for details.
-             */
             dev = SDL_hid_open_path(device->path);
-#endif
 
             if (dev == NULL) {
                 SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
@@ -586,7 +533,7 @@ static bool HIDAPI_JoystickInit(void)
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "udev disabled by SDL_HINT_HIDAPI_UDEV");
             linux_enumeration_method = ENUMERATION_FALLBACK;
-        } else if (SDL_DetectSandbox() != SDL_SANDBOX_NONE) {
+        } else if (SDL_GetSandbox() != SDL_SANDBOX_NONE) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "Container detected, disabling HIDAPI udev integration");
             linux_enumeration_method = ENUMERATION_FALLBACK;
@@ -983,6 +930,7 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     device->guid = SDL_CreateJoystickGUID(bus, device->vendor_id, device->product_id, device->version, device->manufacturer_string, device->product_string, 'h', 0);
     device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
     device->type = SDL_GetJoystickGameControllerProtocol(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol);
+    device->steam_virtual_gamepad_slot = -1;
 
     if (num_children > 0) {
         int i;
@@ -1440,6 +1388,12 @@ static const char *HIDAPI_JoystickGetDevicePath(int device_index)
 
 static int HIDAPI_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
 {
+    SDL_HIDAPI_Device *device;
+
+    device = HIDAPI_GetDeviceByIndex(device_index, NULL);
+    if (device) {
+        return device->steam_virtual_gamepad_slot;
+    }
     return -1;
 }
 

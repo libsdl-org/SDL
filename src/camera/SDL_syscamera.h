@@ -27,8 +27,6 @@
 
 #define DEBUG_CAMERA 0
 
-typedef struct SDL_Camera SDL_Camera;
-
 /* Backends should call this as devices are added to the system (such as
    a USB camera being plugged in), and should also be called for
    for every device found during DetectDevices(). */
@@ -217,5 +215,6 @@ extern CameraBootStrap COREMEDIA_bootstrap;
 extern CameraBootStrap ANDROIDCAMERA_bootstrap;
 extern CameraBootStrap EMSCRIPTENCAMERA_bootstrap;
 extern CameraBootStrap MEDIAFOUNDATION_bootstrap;
+extern CameraBootStrap VITACAMERA_bootstrap;
 
 #endif // SDL_syscamera_h_

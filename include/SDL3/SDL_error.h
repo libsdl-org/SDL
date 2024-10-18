@@ -82,8 +82,26 @@ extern "C" {
  *
  * \sa SDL_ClearError
  * \sa SDL_GetError
+ * \sa SDL_SetErrorV
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
+
+/**
+ * Set the SDL error message for the current thread.
+ *
+ * Calling this function will replace any previous error message that was set.
+ *
+ * \param fmt a printf()-style message format string.
+ * \param ap a variable argument list.
+ * \returns false.
+ *
+ * \since This function is available since SDL 3.1.4.
+ *
+ * \sa SDL_ClearError
+ * \sa SDL_GetError
+ * \sa SDL_SetError
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetErrorV(SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(1);
 
 /**
  * Set an error indicating that memory allocation failed.

@@ -474,6 +474,20 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogMessageV(int category,
 typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
 /**
+ * Get the default log output function.
+ *
+ * \returns the default log output callback.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.4.
+ *
+ * \sa SDL_SetLogOutputFunction
+ * \sa SDL_GetLogOutputFunction
+ */
+extern SDL_DECLSPEC SDL_LogOutputFunction SDLCALL SDL_GetDefaultLogOutputFunction(void);
+
+/**
  * Get the current log output function.
  *
  * \param callback an SDL_LogOutputFunction filled in with the current log
@@ -485,6 +499,7 @@ typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetDefaultLogOutputFunction
  * \sa SDL_SetLogOutputFunction
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GetLogOutputFunction(SDL_LogOutputFunction *callback, void **userdata);
@@ -499,6 +514,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetLogOutputFunction(SDL_LogOutputFunction 
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetDefaultLogOutputFunction
  * \sa SDL_GetLogOutputFunction
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetLogOutputFunction(SDL_LogOutputFunction callback, void *userdata);

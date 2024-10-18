@@ -93,6 +93,17 @@ static int SDLCALL rect_testIntersectRectAndLineFloat(void *arg)
     intersected = SDL_GetRectAndLineIntersectionFloat(&rect, &x1, &y1, &x2, &y2);
     validateIntersectRectAndLineFloatResults(intersected, true, &rect, x1, y1, x2, y2, 2.5f, 6.0f, 2.75f, 6.0f);
 
+    x1 = 456.0f;
+    y1 = 592.0f;
+    x2 = 160.0f;
+    y2 = 670.0f;
+    rect.x = 300.0f;
+    rect.y = 592.0f;
+    rect.w = 64.0f;
+    rect.h = 64.0f;
+    intersected = SDL_GetRectAndLineIntersectionFloat(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineFloatResults(intersected, true, &rect, x1, y1, x2, y2, 364.0f, 616.243225f, 300.0f, 633.108093f);
+
     return TEST_COMPLETED;
 }
 

@@ -23,6 +23,7 @@
 // The SDL 2D rendering system
 
 #include "SDL_sysrender.h"
+#include "SDL_render_debug_font.h"
 #include "software/SDL_render_sw_c.h"
 #include "../video/SDL_pixels_c.h"
 #include "../video/SDL_video_c.h"
@@ -3578,8 +3579,7 @@ bool SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count
         bool isstack1;
         bool isstack2;
         float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
-        int *indices = SDL_small_alloc(int,
-                                       (4) * 3 * (count - 1) + (2) * 3 * (count), &isstack2);
+        int *indices = SDL_small_alloc(int, (4) * 3 * (count - 1) + (2) * 3 * (count), &isstack2);
 
         if (xy && indices) {
             int i;
@@ -4389,7 +4389,7 @@ bool SDL_RenderGeometry(SDL_Renderer *renderer,
 }
 
 #ifdef SDL_VIDEO_RENDER_SW
-static bool remap_one_indice(
+static int remap_one_indice(
     int prev,
     int k,
     SDL_Texture *texture,
@@ -4427,7 +4427,7 @@ static bool remap_one_indice(
     return prev;
 }
 
-static bool remap_indices(
+static int remap_indices(
     int prev[3],
     int k,
     SDL_Texture *texture,
@@ -5098,6 +5098,11 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 
     SDL_DiscardAllCommands(renderer);
 
+    if (renderer->debug_char_texture_atlas) {
+        SDL_DestroyTexture(renderer->debug_char_texture_atlas);
+        renderer->debug_char_texture_atlas = NULL;
+    }
+
     // Free existing textures for this renderer
     while (renderer->textures) {
         SDL_Texture *tex = renderer->textures;
@@ -5346,4 +5351,120 @@ bool SDL_GetRenderVSync(SDL_Renderer *renderer, int *vsync)
         *vsync = (int)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_VSYNC_NUMBER, 0);
     }
     return true;
+}
+
+
+#define SDL_DEBUG_FONT_GLYPHS_PER_ROW 14
+
+static bool CreateDebugTextAtlas(SDL_Renderer *renderer)
+{
+    SDL_assert(renderer->debug_char_texture_atlas == NULL);  // don't double-create it!
+
+    const int charWidth = SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
+    const int charHeight = SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
+
+    // actually make each glyph two pixels taller/wider, to prevent scaling artifacts.
+    const int rows = (SDL_DEBUG_FONT_NUM_GLYPHS / SDL_DEBUG_FONT_GLYPHS_PER_ROW) + 1;
+    SDL_Surface *atlas = SDL_CreateSurface((charWidth + 2) * SDL_DEBUG_FONT_GLYPHS_PER_ROW, rows * (charHeight + 2), SDL_PIXELFORMAT_RGBA8888);
+    if (!atlas) {
+        return false;
+    }
+
+    const int pitch = atlas->pitch;
+    SDL_memset(atlas->pixels, '\0', atlas->h * atlas->pitch);
+
+    int column = 0;
+    int row = 0;
+    for (int glyph = 0; glyph < SDL_DEBUG_FONT_NUM_GLYPHS; glyph++) {
+        // find top-left of this glyph in destination surface. The +2's account for glyph padding.
+        Uint8 *linepos = (((Uint8 *)atlas->pixels) + ((row * (charHeight + 2) + 1) * pitch)) + ((column * (charWidth + 2) + 1) * sizeof (Uint32));
+        const Uint8 *charpos = SDL_RenderDebugTextFontData + (glyph * 8);
+
+        // Draw the glyph to the surface...
+        for (int iy = 0; iy < charHeight; iy++) {
+            Uint32 *curpos = (Uint32 *)linepos;
+            for (int ix = 0; ix < charWidth; ix++) {
+                if ((*charpos) & (1 << ix)) {
+                    *curpos = 0xffffffff;
+                } else {
+                    *curpos = 0;
+                }
+                ++curpos;
+            }
+            linepos += pitch;
+            ++charpos;
+        }
+
+        // move to next position (and if too far, start the next row).
+        column++;
+        if (column >= SDL_DEBUG_FONT_GLYPHS_PER_ROW) {
+            row++;
+            column = 0;
+        }
+    }
+
+    SDL_assert((row < rows) || ((row == rows) && (column == 0)));  // make sure we didn't overflow the surface.
+
+    // Convert temp surface into texture
+    renderer->debug_char_texture_atlas = SDL_CreateTextureFromSurface(renderer, atlas);
+    SDL_DestroySurface(atlas);
+
+    return (renderer->debug_char_texture_atlas != NULL);
+}
+
+static bool DrawDebugCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
+{
+    SDL_assert(renderer->debug_char_texture_atlas != NULL);   // should have been created by now!
+
+    const int charWidth = SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
+    const int charHeight = SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
+
+    // Character index in cache
+    Uint32 ci = c;
+    if ((ci <= 32) || ((ci >= 127) && (ci <= 160))) {
+        return true;  // these are just completely blank chars, don't bother doing anything.
+    } else if (ci >= SDL_DEBUG_FONT_NUM_GLYPHS) {
+        ci = SDL_DEBUG_FONT_NUM_GLYPHS - 1;  // use our "not a valid/supported character" glyph.
+    } else if (ci < 127) {
+        ci -= 33;     // adjust for the 33 blank glyphs at the start
+    } else {
+        ci -= 67;     // adjust for the 33 blank glyphs at the start AND the 34 gap in the middle.
+    }
+
+    const float src_x = (float) (((ci % SDL_DEBUG_FONT_GLYPHS_PER_ROW) * (charWidth + 2)) + 1);
+    const float src_y = (float) (((ci / SDL_DEBUG_FONT_GLYPHS_PER_ROW) * (charHeight + 2)) + 1);
+
+    // Draw texture onto destination
+    const SDL_FRect srect = { src_x, src_y, (float) charWidth, (float) charHeight };
+    const SDL_FRect drect = { x, y, (float) charWidth, (float) charHeight };
+    return SDL_RenderTexture(renderer, renderer->debug_char_texture_atlas, &srect, &drect);
+}
+
+bool SDL_RenderDebugText(SDL_Renderer *renderer, float x, float y, const char *s)
+{
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    // Allocate a texture atlas for this renderer if needed.
+    if (!renderer->debug_char_texture_atlas) {
+        if (!CreateDebugTextAtlas(renderer)) {
+            return false;
+        }
+    }
+
+    bool result = true;
+
+    Uint8 r, g, b, a;
+    result &= SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+    result &= SDL_SetTextureColorMod(renderer->debug_char_texture_atlas, r, g, b);
+    result &= SDL_SetTextureAlphaMod(renderer->debug_char_texture_atlas, a);
+
+    float curx = x;
+    Uint32 ch;
+
+    while (result && ((ch = SDL_StepUTF8(&s, NULL)) != 0)) {
+        result &= DrawDebugCharacter(renderer, curx, y, ch);
+        curx += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
+    }
+
+    return result;
 }

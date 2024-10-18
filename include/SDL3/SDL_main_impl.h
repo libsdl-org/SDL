@@ -29,7 +29,7 @@
 #endif
 
 /* if someone wants to include SDL_main.h but doesn't want the main handing magic,
-   (maybe to call SDL_RegisterApp()) they can #define SDL_MAIN_HANDLED first
+   (maybe to call SDL_RegisterApp()) they can #define SDL_MAIN_HANDLED first.
    SDL_MAIN_NOIMPL is for SDL-internal usage (only affects implementation,
    not definition of SDL_MAIN_AVAILABLE etc in SDL_main.h) and if the user wants
    to have the SDL_main implementation (from this header) in another source file
@@ -64,10 +64,15 @@
     #endif  /* SDL_MAIN_USE_CALLBACKS */
 
 
-    /* set up the usual SDL_main stuff if we're not using callbacks or if we are but need the normal entry point. */
-    #if !defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD)
+    /* set up the usual SDL_main stuff if we're not using callbacks or if we are but need the normal entry point,
+       unless the real entry point needs to be somewhere else entirely, like Android where it's in Java code */
+    #if (!defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD)) && !defined(SDL_MAIN_EXPORTED)
 
-        #if defined(SDL_PLATFORM_WINDOWS)
+        #if defined(SDL_PLATFORM_PRIVATE_MAIN)
+            /* Private platforms may have their own ideas about entry points. */
+            #include "SDL_main_impl_private.h"
+
+        #elif defined(SDL_PLATFORM_WINDOWS)
 
             /* these defines/typedefs are needed for the WinMain() definition */
             #ifndef WINAPI

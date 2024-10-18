@@ -52,6 +52,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI // Highest priority driver for supported devices
     &SDL_HIDAPI_JoystickDriver,
 #endif
+#ifdef SDL_JOYSTICK_PRIVATE
+    &SDL_PRIVATE_JoystickDriver,
+#endif
 #ifdef SDL_JOYSTICK_GAMEINPUT // Higher priority than other Windows drivers
     &SDL_GAMEINPUT_JoystickDriver,
 #endif
@@ -3087,6 +3090,15 @@ bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_id)
              product_id == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104));
 }
 
+bool SDL_IsJoystickSteamVirtualGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version)
+{
+#ifdef SDL_PLATFORM_MACOS
+    return (vendor_id == USB_VENDOR_MICROSOFT && product_id == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 0);
+#else
+    return (vendor_id == USB_VENDOR_VALVE && product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD);
+#endif
+}
+
 bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
@@ -3224,24 +3236,19 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
     return SDL_JOYSTICK_TYPE_UNKNOWN;
 }
 
-bool SDL_ShouldIgnoreJoystick(const char *name, SDL_GUID guid)
+bool SDL_ShouldIgnoreJoystick(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    Uint16 vendor;
-    Uint16 product;
-
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
-
     // Check the joystick blacklist
-    if (SDL_VIDPIDInList(vendor, product, &blacklist_devices)) {
+    if (SDL_VIDPIDInList(vendor_id, product_id, &blacklist_devices)) {
         return true;
     }
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_ROG_CHAKRAM, false)) {
-        if (SDL_VIDPIDInList(vendor, product, &rog_gamepad_mice)) {
+        if (SDL_VIDPIDInList(vendor_id, product_id, &rog_gamepad_mice)) {
             return true;
         }
     }
 
-    if (SDL_ShouldIgnoreGamepad(name, guid)) {
+    if (SDL_ShouldIgnoreGamepad(vendor_id, product_id, version, name)) {
         return true;
     }
 

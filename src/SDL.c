@@ -662,7 +662,9 @@ const char *SDL_GetRevision(void)
 // Get the name of the platform
 const char *SDL_GetPlatform(void)
 {
-#if defined(SDL_PLATFORM_AIX)
+#if defined(SDL_PLATFORM_PRIVATE)
+    return SDL_PLATFORM_PRIVATE_NAME;
+#elif defined(SDL_PLATFORM_AIX)
     return "AIX";
 #elif defined(SDL_PLATFORM_ANDROID)
     return "Android";
@@ -749,6 +751,44 @@ bool SDL_IsTV(void)
 #else
     return false;
 #endif
+}
+
+static SDL_Sandbox SDL_DetectSandbox(void)
+{
+#if defined(SDL_PLATFORM_LINUX)
+    if (access("/.flatpak-info", F_OK) == 0) {
+        return SDL_SANDBOX_FLATPAK;
+    }
+
+    /* For Snap, we check multiple variables because they might be set for
+     * unrelated reasons. This is the same thing WebKitGTK does. */
+    if (SDL_getenv("SNAP") && SDL_getenv("SNAP_NAME") && SDL_getenv("SNAP_REVISION")) {
+        return SDL_SANDBOX_SNAP;
+    }
+
+    if (access("/run/host/container-manager", F_OK) == 0) {
+        return SDL_SANDBOX_UNKNOWN;
+    }
+
+#elif defined(SDL_PLATFORM_MACOS)
+    if (SDL_getenv("APP_SANDBOX_CONTAINER_ID")) {
+        return SDL_SANDBOX_MACOS;
+    }
+#endif
+
+    return SDL_SANDBOX_NONE;
+}
+
+SDL_Sandbox SDL_GetSandbox(void)
+{
+    static SDL_Sandbox sandbox;
+    static bool sandbox_initialized;
+
+    if (!sandbox_initialized) {
+        sandbox = SDL_DetectSandbox();
+        sandbox_initialized = true;
+    }
+    return sandbox;
 }
 
 #ifdef SDL_PLATFORM_WIN32

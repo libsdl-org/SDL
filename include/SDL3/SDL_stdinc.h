@@ -2535,8 +2535,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_StepUTF8(const char **pstr, size_t *pslen
  * This will go to the start of the previous Unicode codepoint in the string,
  * move `*pstr` to that location and return that codepoint.
  *
- * If the resulting codepoint is zero (already at the start of the string), it
- * will not advance `*pstr` at all.
+ * If `*pstr` is already at the start of the string), it will not advance
+ * `*pstr` at all.
  *
  * Generally this function is called in a loop until it returns zero,
  * adjusting its parameter each iteration.
@@ -4243,6 +4243,9 @@ size_t wcslcpy(wchar_t *dst, const wchar_t *src, size_t size);
 #if !defined(HAVE_WCSLCAT) && !defined(wcslcat)
 size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
 #endif
+
+/* strdup is not ANSI but POSIX, and its prototype might be hidden... */
+char *strdup(const char *str);
 
 /* Starting LLVM 16, the analyser errors out if these functions do not have
    their prototype defined (clang-diagnostic-implicit-function-declaration) */

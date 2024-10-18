@@ -399,7 +399,6 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(e, &IID___x_ABI_CWindows_CGaming_CInput_CIRawGameController, (void **)&controller);
     if (SUCCEEDED(hr)) {
         char *name = NULL;
-        SDL_GUID guid = { 0 };
         Uint16 bus = SDL_HARDWARE_BUS_USB;
         Uint16 vendor = 0;
         Uint16 product = 0;
@@ -446,6 +445,10 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             name = SDL_strdup("");
         }
 
+        if (!ignore_joystick && SDL_ShouldIgnoreJoystick(vendor, product, version, name)) {
+            ignore_joystick = true;
+        }
+
         if (!ignore_joystick && SDL_JoystickHandledByAnotherDriver(&SDL_WGI_JoystickDriver, vendor, product, version, name)) {
             ignore_joystick = true;
         }
@@ -456,29 +459,21 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         }
 
         if (!ignore_joystick) {
-            if (game_controller) {
-                type = GetGameControllerType(game_controller);
-            }
-
-            guid = SDL_CreateJoystickGUID(bus, vendor, product, version, NULL, name, 'w', (Uint8)type);
-
-            if (SDL_ShouldIgnoreJoystick(name, guid)) {
-                ignore_joystick = true;
-            }
-        }
-
-        if (!ignore_joystick) {
             // New device, add it
             WindowsGamingInputControllerState *controllers = SDL_realloc(wgi.controllers, sizeof(wgi.controllers[0]) * (wgi.controller_count + 1));
             if (controllers) {
                 WindowsGamingInputControllerState *state = &controllers[wgi.controller_count];
                 SDL_JoystickID joystickID = SDL_GetNextObjectID();
 
+                if (game_controller) {
+                    type = GetGameControllerType(game_controller);
+                }
+
                 SDL_zerop(state);
                 state->instance_id = joystickID;
                 state->controller = controller;
                 state->name = name;
-                state->guid = guid;
+                state->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, NULL, name, 'w', (Uint8)type);
                 state->type = type;
                 state->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(controller, vendor, product);
 

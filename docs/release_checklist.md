@@ -1,9 +1,15 @@
 # Release checklist
 
-When changing the version, run `build-scripts/update-version.sh X Y Z`,
-where `X Y Z` are the major version, minor version, and patch level. So
-`3 8 1` means "change the version to 3.8.1". This script does much of the
-mechanical work.
+* Run `build-scripts/create-release.py -R libsdl-org/SDL --ref <git-ref>` to command
+  GitHub Actions to start creating release assets.
+  It's advisable to run this script regularly, and also prior to any release step.
+  When creating the release assets, `<git-ref>` must be the release tag
+  This makes sure the revision string baked into the archives is correct.
+
+* When changing the version, run `build-scripts/update-version.sh X Y Z`,
+  where `X Y Z` are the major version, minor version, and patch level. So
+  `3 8 1` means "change the version to 3.8.1". This script does much of the
+  mechanical work.
 
 
 ## New feature release
