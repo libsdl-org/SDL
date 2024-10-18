@@ -799,8 +799,10 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *connecto
     SDL_DisplayModeData *modedata = NULL;
     drmModeEncoder *encoder = NULL;
     drmModeCrtc *crtc = NULL;
+    const char *connector_type = NULL;
     SDL_DisplayID display_id;
     SDL_PropertiesID display_properties;
+    char name_fmt[64];
     int orientation;
     int mode_index;
     int i, j;
@@ -963,6 +965,15 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *connecto
         KMSDRM_CrtcSetVrr(viddata->drm_fd, crtc->crtc_id, true);
     }
 
+    // Set the name by the connector type, if possible
+    if (KMSDRM_drmModeGetConnectorTypeName) {
+        connector_type = KMSDRM_drmModeGetConnectorTypeName(connector->connector_type);
+        if (connector_type == NULL) {
+            connector_type = "Unknown";
+        }
+        SDL_snprintf(name_fmt, sizeof(name_fmt), "%s-%u", connector_type, connector->connector_type_id);
+    }
+
     /*****************************************/
     // Part 2: setup the SDL_Display itself.
     /*****************************************/
@@ -984,6 +995,9 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *connecto
     CalculateRefreshRate(&dispdata->mode, &display.desktop_mode.refresh_rate_numerator, &display.desktop_mode.refresh_rate_denominator);
     display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
     display.desktop_mode.internal = modedata;
+    if (connector_type) {
+        display.name = name_fmt;
+    }
 
     // Add the display to the list of SDL displays.
     display_id = SDL_AddVideoDisplay(&display, false);
@@ -1015,6 +1029,49 @@ cleanup:
         }
     }
 } // NOLINT(clang-analyzer-unix.Malloc): If no error `dispdata` is saved in the display
+
+static void KMSDRM_SortDisplays(SDL_VideoDevice *_this)
+{
+    const char *name_hint = SDL_GetHint(SDL_HINT_VIDEO_DISPLAY_PRIORITY);
+
+    if (name_hint) {
+        char *saveptr;
+        char *str = SDL_strdup(name_hint);
+        SDL_VideoDisplay **sorted_list = SDL_malloc(sizeof(SDL_VideoDisplay *) * _this->num_displays);
+
+        if (str && sorted_list) {
+            int sorted_index = 0;
+
+            // Sort the requested displays to the front of the list.
+            const char *token = SDL_strtok_r(str, ",", &saveptr);
+            while (token) {
+                for (int i = 0; i < _this->num_displays; ++i) {
+                    SDL_VideoDisplay *d = _this->displays[i];
+                    if (d && SDL_strcmp(token, d->name) == 0) {
+                        sorted_list[sorted_index++] = d;
+                        _this->displays[i] = NULL;
+                        break;
+                    }
+                }
+
+                token = SDL_strtok_r(NULL, ",", &saveptr);
+            }
+
+            // Append the remaining displays to the end of the list.
+            for (int i = 0; i < _this->num_displays; ++i) {
+                if (_this->displays[i]) {
+                    sorted_list[sorted_index++] = _this->displays[i];
+                }
+            }
+
+            // Copy the sorted list back to the display list.
+            SDL_memcpy(_this->displays, sorted_list, sizeof(SDL_VideoDisplay *) * _this->num_displays);
+        }
+
+        SDL_free(str);
+        SDL_free(sorted_list);
+    }
+}
 
 /* Initializes the list of SDL displays: we build a new display for each
    connecter connector we find.
@@ -1077,6 +1134,9 @@ static bool KMSDRM_InitDisplays(SDL_VideoDevice *_this)
         result = SDL_SetError("No connected displays found.");
         goto cleanup;
     }
+
+    // Sort the displays, if necessary
+    KMSDRM_SortDisplays(_this);
 
     // Determine if video hardware supports async pageflips.
     if (KMSDRM_drmGetCap(viddata->drm_fd, DRM_CAP_ASYNC_PAGE_FLIP, &async_pageflip) != 0) {

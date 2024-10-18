@@ -3149,13 +3149,14 @@ extern "C" {
  * prioritized in the list of displays, as exposed by calling
  * SDL_GetDisplays(), with the first listed becoming the primary display. The
  * naming convention can vary depending on the environment, but it is usually
- * a connector name (e.g. 'DP-1', 'DP-2', 'HDMI-1', etc...).
+ * a connector name (e.g. 'DP-1', 'DP-2', 'HDMI-A-1',etc...).
  *
- * On X11 and Wayland desktops, the connector names associated with displays
+ * On Wayland and X11 desktops, the connector names associated with displays
  * can typically be found by using the `xrandr` utility.
  *
  * This hint is currently supported on the following drivers:
  *
+ * - KMSDRM (kmsdrm)
  * - Wayland (wayland)
  *
  * This hint should be set before SDL is initialized.
