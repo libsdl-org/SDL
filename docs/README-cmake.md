@@ -201,7 +201,7 @@ SDL supports following Apple architectures:
 
 CMake documentation: [link](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_ARCHITECTURES.html)
 
-#### Simulators and/or non-default maxOS platform SDK
+#### Simulators and/or non-default macOS platform SDK
 
 Use `-DCMAKE_OSX_SYSROOT=<value>` to configure a different platform SDK.
 The value can be either the name of the SDK, or a full path to the sdk (e.g. `/full/path/to/iPhoneOS.sdk`).
