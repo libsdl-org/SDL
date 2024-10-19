@@ -1140,21 +1140,21 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
         }
 
-        if (!data->videodata->raw_mouse_enabled) {
+        int lparam_x = GET_X_LPARAM(lParam);
+        int lparam_y = GET_Y_LPARAM(lParam);
+        if (data->videodata->raw_mouse_enabled && SDL_GetMouse()->relative_mode_clip_interval > 0) {         
+            RECT rect = data->cursor_clipped_rect;
+            if (!WIN_IsRectEmpty(&rect)) {
+                if(lparam_x < rect.left || lparam_y < rect.top || lparam_x > rect.right || lparam_y > rect.bottom) {
+                     WIN_UpdateClipCursor(data->window);
+                }
+            }     
+        } else {
             // Only generate mouse events for real mouse
             if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
-                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
-            }
-        } else {            
-            RECT rect, clipped_rect;
-            rect = data->cursor_clipped_rect;
-             if (!WIN_IsRectEmpty(&rect) && 
-                 SDL_GetMouse()->relative_mode_clip_interval > 0 && 
-                 GetClipCursor(&clipped_rect) && 
-                 SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
-                 WIN_UpdateClipCursor(data->window);
-             }     
+                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, false, (float)x_lparam, (float)y_lparam);
+            } 
         }
     } break;
 
