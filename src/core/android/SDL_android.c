@@ -2177,7 +2177,7 @@ bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *b
 //////////////////////////////////////////////////////////////////////////////
 */
 
-JNIEnv *SDL_GetAndroidJNIEnv(void)
+void *SDL_GetAndroidJNIEnv(void)
 {
     return Android_JNI_GetEnv();
 }
