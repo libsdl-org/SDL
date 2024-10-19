@@ -91,9 +91,6 @@ struct SDL_VideoData
     SDL_DisplayData **output_list;
     int output_count;
     int output_max;
-    struct wl_list output_order;
-
-    bool output_order_finalized;
 
     int relative_mouse_mode;
     bool display_externally_owned;
