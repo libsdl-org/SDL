@@ -767,7 +767,7 @@ static SDL_Sandbox SDL_DetectSandbox(void)
     }
 
     if (access("/run/host/container-manager", F_OK) == 0) {
-        return SDL_SANDBOX_UNKNOWN;
+        return SDL_SANDBOX_UNKNOWN_CONTAINER;
     }
 
 #elif defined(SDL_PLATFORM_MACOS)
