@@ -1137,7 +1137,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 cur.x = lparam_x_client;
                 cur.y = lparam_y_client;
                 if (ClientToScreen(hwnd, &cur) && (cur.x < rect.left || cur.y < rect.top || cur.x > rect.right || cur.y > rect.bottom)) {
-                     WIN_UpdateClipCursor(data->window);
+                    if (data->skip_update_clipcursor) data->skip_update_clipcursor = false;
+                    WIN_UpdateClipCursor(data->window);
                 }
             }     
         }
