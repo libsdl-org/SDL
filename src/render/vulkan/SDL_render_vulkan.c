@@ -3544,7 +3544,7 @@ static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand 
     }
 
     if (rendererData->viewportDirty) {
-        if (!VULKAN_UpdateViewport(renderer)) {
+        if (VULKAN_UpdateViewport(renderer)) {
             // vertexShaderConstantsData.projectionAndView has changed
             updateConstants = true;
         }
