@@ -301,7 +301,7 @@ At the end of SDL CMake configuration, a table shows all CMake options along wit
 
 #### `SDL_LIBC=OFF` and sanitizers
 
-Building with `-DSDL_LIBC=OFF` will make it impossible to use the sanitizer, such as the address sanitizer. 
+Building with `-DSDL_LIBC=OFF` will make it impossible to use the sanitizer, such as the address sanitizer.
 Configure your project with `-DSDL_LIBC=ON` to make use of sanitizers.
 
 ## CMake FAQ
