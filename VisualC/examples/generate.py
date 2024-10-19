@@ -2,7 +2,7 @@ import os
 import pathlib
 import uuid
 
-REPOSITORY_ROOT = pathlib.Path(__file__).parent.parent
+REPOSITORY_ROOT = pathlib.Path(__file__).parent.parent.parent
 
 def generate(x, y):
     guid = str(uuid.uuid4()).upper()
