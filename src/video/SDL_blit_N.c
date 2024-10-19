@@ -2530,68 +2530,6 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
     }
 }
 
-// Special optimized blit for ARGB 2-10-10-10 --> RGBA
-static void Blit2101010toN(SDL_BlitInfo *info)
-{
-    int width = info->dst_w;
-    int height = info->dst_h;
-    Uint8 *src = info->src;
-    int srcskip = info->src_skip;
-    Uint8 *dst = info->dst;
-    int dstskip = info->dst_skip;
-    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
-    int dstbpp = dstfmt->bytes_per_pixel;
-    Uint32 Pixel;
-    unsigned sR, sG, sB, sA;
-
-    while (height--) {
-        /* *INDENT-OFF* */ // clang-format off
-        DUFFS_LOOP(
-        {
-            Pixel = *(Uint32 *)src;
-            RGBA_FROM_ARGB2101010(Pixel, sR, sG, sB, sA);
-            ASSEMBLE_RGBA(dst, dstbpp, dstfmt, sR, sG, sB, sA);
-            dst += dstbpp;
-            src += 4;
-        },
-        width);
-        /* *INDENT-ON* */ // clang-format on
-        src += srcskip;
-        dst += dstskip;
-    }
-}
-
-// Special optimized blit for RGBA --> ARGB 2-10-10-10
-static void BlitNto2101010(SDL_BlitInfo *info)
-{
-    int width = info->dst_w;
-    int height = info->dst_h;
-    Uint8 *src = info->src;
-    int srcskip = info->src_skip;
-    Uint8 *dst = info->dst;
-    int dstskip = info->dst_skip;
-    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
-    int srcbpp = srcfmt->bytes_per_pixel;
-    Uint32 Pixel;
-    unsigned sR, sG, sB, sA;
-
-    while (height--) {
-        /* *INDENT-OFF* */ // clang-format off
-        DUFFS_LOOP(
-        {
-            DISEMBLE_RGBA(src, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
-            ARGB2101010_FROM_RGBA(Pixel, sR, sG, sB, sA);
-            *(Uint32 *)dst = Pixel;
-            dst += 4;
-            src += srcbpp;
-        },
-        width);
-        /* *INDENT-ON* */ // clang-format on
-        src += srcskip;
-        dst += dstskip;
-    }
-}
-
 // Blit_3or4_to_3or4__same_rgb: 3 or 4 bpp, same RGB triplet
 static void Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo *info)
 {
@@ -2946,15 +2884,11 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
             }
 
             if (blitfun == BlitNtoN) { // default C fallback catch-all. Slow!
-                if (srcfmt->format == SDL_PIXELFORMAT_ARGB2101010) {
-                    blitfun = Blit2101010toN;
-                } else if (dstfmt->format == SDL_PIXELFORMAT_ARGB2101010) {
-                    blitfun = BlitNto2101010;
-                } else if (srcfmt->bytes_per_pixel == 4 &&
-                           dstfmt->bytes_per_pixel == 4 &&
-                           srcfmt->Rmask == dstfmt->Rmask &&
-                           srcfmt->Gmask == dstfmt->Gmask &&
-                           srcfmt->Bmask == dstfmt->Bmask) {
+                if (srcfmt->bytes_per_pixel == 4 &&
+                    dstfmt->bytes_per_pixel == 4 &&
+                    srcfmt->Rmask == dstfmt->Rmask &&
+                    srcfmt->Gmask == dstfmt->Gmask &&
+                    srcfmt->Bmask == dstfmt->Bmask) {
                     if (a_need == COPY_ALPHA) {
                         if (srcfmt->Amask == dstfmt->Amask) {
                             // Fastpath C fallback: 32bit RGBA<->RGBA blit with matching RGBA
