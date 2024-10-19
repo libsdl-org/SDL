@@ -1137,7 +1137,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 cur.x = lparam_x_client;
                 cur.y = lparam_y_client;
                 if (ClientToScreen(hwnd, &cur) && (cur.x < rect.left || cur.y < rect.top || cur.x > rect.right || cur.y > rect.bottom)) {
-                    if (data->skip_update_clipcursor) data->skip_update_clipcursor = false;
+                    // Always want to update clipcursor when WM_MOUSEMOVE is received.
+                    // Commit 55b24b93b406d8213e7eaa7c0b319f138225c9c9 is meant to fix titlebar-drag,
+                    // I don't think you will receive WM_MOUSEMOVE message until button release.
+                    data->skip_update_clipcursor = false;
                     WIN_UpdateClipCursor(data->window);
                 }
             }     
