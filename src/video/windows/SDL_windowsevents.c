@@ -1145,10 +1145,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         if (data->videodata->raw_mouse_enabled && SDL_GetMouse()->relative_mode_clip_interval > 0) {         
             RECT rect = data->cursor_clipped_rect;
             if (!WIN_IsRectEmpty(&rect)) {
-                POINT cur = {
-                    .x = lparam_x_client;
-                    .y = lparam_y_client;
-                };
+                POINT cur;
+                cur.x = lparam_x_client;
+                cur.y = lparam_y_client;
                 if (ClientToScreen(hwnd, &cur) && cur.x < rect.left || cur.y < rect.top || cur.x > rect.right || cur.y > rect.bottom) {
                      WIN_UpdateClipCursor(data->window);
                 }
