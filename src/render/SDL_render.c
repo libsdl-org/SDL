@@ -1812,13 +1812,13 @@ bool SDL_GetTextureColorMod(SDL_Texture *texture, Uint8 *r, Uint8 *g, Uint8 *b)
     }
 
     if (r) {
-        *r = (Uint8)(fR * 255.0f);
+        *r = (Uint8)SDL_roundf(SDL_clamp(fR, 0.0f, 1.0f) * 255.0f);
     }
     if (g) {
-        *g = (Uint8)(fG * 255.0f);
+        *g = (Uint8)SDL_roundf(SDL_clamp(fG, 0.0f, 1.0f) * 255.0f);
     }
     if (b) {
-        *b = (Uint8)(fB * 255.0f);
+        *b = (Uint8)SDL_roundf(SDL_clamp(fB, 0.0f, 1.0f) * 255.0f);
     }
     return true;
 }
@@ -1883,7 +1883,7 @@ bool SDL_GetTextureAlphaMod(SDL_Texture *texture, Uint8 *alpha)
     }
 
     if (alpha) {
-        *alpha = (Uint8)(fA * 255.0f);
+        *alpha = (Uint8)SDL_roundf(SDL_clamp(fA, 0.0f, 1.0f) * 255.0f);
     }
     return true;
 }
