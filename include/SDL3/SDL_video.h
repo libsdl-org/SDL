@@ -656,7 +656,7 @@ extern SDL_DECLSPEC SDL_DisplayMode ** SDLCALL SDL_GetFullscreenDisplayModes(SDL
  * refresh rate default to the desktop mode if they are set to 0. The modes
  * are scanned with size being first priority, format being second priority,
  * and finally checking the refresh rate. If all the available modes are too
- * small, then NULL is returned.
+ * small, then false is returned.
  *
  * \param displayID the instance ID of the display to query.
  * \param w the width in pixels of the desired display mode.

@@ -297,6 +297,13 @@ At the end of SDL CMake configuration, a table shows all CMake options along wit
 | `-DSDL_DISABLE_INSTALL_DOCS=` | `ON`/`OFF`   | Don't install the SDL documentation                                                                 |
 | `-DSDL_INSTALL_TESTS=`        | `ON`/`OFF`   | Install the SDL test programs                                                                       |
 
+### Incompatibilities
+
+#### `SDL_LIBC=OFF` and sanitizers
+
+Building with `-DSDL_LIBC=OFF` will make it impossible to use the sanitizer, such as the address sanitizer.
+Configure your project with `-DSDL_LIBC=ON` to make use of sanitizers.
+
 ## CMake FAQ
 
 ### How do I copy a SDL3 dynamic library to another location?
@@ -304,8 +311,7 @@ At the end of SDL CMake configuration, a table shows all CMake options along wit
 Use [CMake generator expressions](https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#target-dependent-expressions).
 Generator expressions support multiple configurations, and are evaluated during build system generation time.
 
-On Windows, the following example this copies `SDL3.dll` to the directory where `mygame.exe` is built.
-On Unix systems, `$<TARGET_FILE:...>` will refer to the dynamic library (or framework).
+On Windows, the following example copies `SDL3.dll` to the directory where `mygame.exe` is built.
 ```cmake
 if(WIN32)
     add_custom_command(
@@ -315,6 +321,12 @@ if(WIN32)
     )
 endif()
 ```
+On Unix systems, `$<TARGET_FILE:...>` will refer to the dynamic library (or framework),
+and you might need to use `$<TARGET_SONAME_FILE:tgt>` instead.
+
+Most often, you can avoid copying libraries by configuring your project with absolute [`CMAKE_LIBRARY_OUTPUT_DIRECTORY`](https://cmake.org/cmake/help/latest/variable/CMAKE_LIBRARY_OUTPUT_DIRECTORY.html)
+and [`CMAKE_RUNTIME_OUTPUT_DIRECTORY`](https://cmake.org/cmake/help/latest/variable/CMAKE_RUNTIME_OUTPUT_DIRECTORY.html) paths.
+When using a multi-config generator (such as Visual Studio or Ninja Multi-Config), eventually add `/$<CONFIG>` to both paths.
 
 ### Linking against a static SDL library fails due to relocation errors
 

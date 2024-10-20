@@ -492,7 +492,7 @@ public:
 
 	bool BOpen()
 	{
-		JNIEnv *env = SDL_GetAndroidJNIEnv();
+		JNIEnv *env = (JNIEnv *)SDL_GetAndroidJNIEnv();
 
 		if ( !g_HIDDeviceManagerCallbackHandler )
 		{
@@ -624,7 +624,7 @@ public:
 
 	int WriteReport( const unsigned char *pData, size_t nDataLen, bool bFeature )
 	{
-		JNIEnv *env = SDL_GetAndroidJNIEnv();
+		JNIEnv *env = (JNIEnv *)SDL_GetAndroidJNIEnv();
 
 		if ( !g_HIDDeviceManagerCallbackHandler )
 		{
@@ -654,7 +654,7 @@ public:
 
 	int ReadReport( unsigned char *pData, size_t nDataLen, bool bFeature )
 	{
-		JNIEnv *env = SDL_GetAndroidJNIEnv();
+		JNIEnv *env = (JNIEnv *)SDL_GetAndroidJNIEnv();
 
 		if ( !g_HIDDeviceManagerCallbackHandler )
 		{
@@ -727,7 +727,7 @@ public:
 
 	void Close( bool bDeleteDevice )
 	{
-		JNIEnv *env = SDL_GetAndroidJNIEnv();
+		JNIEnv *env = (JNIEnv *)SDL_GetAndroidJNIEnv();
 
 		if ( g_HIDDeviceManagerCallbackHandler )
 		{
@@ -1022,7 +1022,7 @@ static void SDLCALL RequestBluetoothPermissionCallback( void *userdata, const ch
 
 	if ( granted && g_HIDDeviceManagerCallbackHandler )
 	{
-		JNIEnv *env = SDL_GetAndroidJNIEnv();
+		JNIEnv *env = (JNIEnv *)SDL_GetAndroidJNIEnv();
 
 		env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerInitialize, false, true );
 	}
@@ -1035,7 +1035,7 @@ int hid_init(void)
 		// HIDAPI doesn't work well with Android < 4.3
 		if ( SDL_GetAndroidSDKVersion() >= 18 )
 		{
-			JNIEnv *env = SDL_GetAndroidJNIEnv();
+			JNIEnv *env = (JNIEnv *)SDL_GetAndroidJNIEnv();
 
 			env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerInitialize, true, false );
 

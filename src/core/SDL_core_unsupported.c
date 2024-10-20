@@ -146,8 +146,8 @@ const char *SDL_GetAndroidInternalStoragePath(void)
     return NULL;
 }
 
-SDL_DECLSPEC JNIEnv *SDLCALL SDL_GetAndroidJNIEnv(void);
-JNIEnv *SDL_GetAndroidJNIEnv(void)
+SDL_DECLSPEC void *SDLCALL SDL_GetAndroidJNIEnv(void);
+void *SDL_GetAndroidJNIEnv(void)
 {
     SDL_Unsupported();
     return NULL;
