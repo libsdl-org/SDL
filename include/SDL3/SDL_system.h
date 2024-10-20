@@ -400,7 +400,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetAndroidExternalStorageState
+ * \sa SDL_GetAndroidExternalStoragePath
+ * \sa SDL_GetAndroidCachePath
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidInternalStoragePath(void);
 
@@ -440,6 +441,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetAndroidExternalStorageState
+ * \sa SDL_GetAndroidInternalStoragePath
+ * \sa SDL_GetAndroidCachePath
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void);
 
@@ -459,6 +462,9 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void)
  *          on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetAndroidInternalStoragePath
+ * \sa SDL_GetAndroidExternalStoragePath
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
 
