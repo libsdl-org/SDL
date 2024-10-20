@@ -484,6 +484,10 @@ typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, con
  * like memory running out. Normally there will be a yes or no to the request
  * through the callback.
  *
+ * For the `permission` parameter, choose a value from here:
+ *
+ * https://developer.android.com/reference/android/Manifest.permission
+ *
  * \param permission the permission to request.
  * \param cb the callback to trigger when the request has a response.
  * \param userdata an app-controlled pointer that is passed to the callback.
