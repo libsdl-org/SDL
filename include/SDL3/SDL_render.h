@@ -214,7 +214,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CreateWindowAndRenderer(const char *title, 
  * Create a 2D rendering context for a window.
  *
  * If you want a specific renderer, you can specify its name here. A list of
- * available renderers can be obtained by calling SDL_GetRenderDriver multiple
+ * available renderers can be obtained by calling SDL_GetRenderDriver() multiple
  * times, with indices from 0 to SDL_GetNumRenderDrivers()-1. If you don't
  * need a specific renderer, specify NULL and SDL will attempt to choose the
  * best option for you, based on what is available on the user's system.
@@ -224,8 +224,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CreateWindowAndRenderer(const char *title, 
  * scaling options.
  *
  * \param window the window where rendering is displayed.
- * \param name the name of the rendering driver to initialize, or NULL to
- *             initialize the first one supporting the requested flags.
+ * \param name the name of the rendering driver to initialize, or NULL to let
+ *             SDL choose one.
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
