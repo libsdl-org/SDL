@@ -65,7 +65,6 @@ int OHOS_CreateWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
         windowPosition->y = window->y;
         OHOS_AddChildNode(parentWindowNode, &childWindowNode, windowPosition);
         SDL_free(windowPosition);
-        napi_release_threadsafe_function(parentWindowNode, napi_tsfn_release);
         if (childWindowNode == NULL) {
             return -1;
         }
@@ -263,7 +262,6 @@ int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const
         }
     }
     window->driverdata = sdlWindowData;
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
 endfunction:
      SDL_UnlockMutex(g_ohosPageMutex);
      return 0;

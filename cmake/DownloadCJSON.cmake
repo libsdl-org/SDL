@@ -22,8 +22,8 @@ ENDIF()
 
 INCLUDE(ExternalProject)
 ExternalProject_Add(cjson
-  URL https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.15.tar.gz
-  URL_HASH SHA256=5308fd4bd90cef7aa060558514de6a1a4a0819974a26e6ed13973c5f624c24b2
+  URL https://gitee.com/mirrors/cJSON/repository/archive/v1.7.15.zip
+  URL_HASH SHA256=7a10eccfbf907bf0d6adc695dc7e503f33b83f50a8f31470b82f92352ecc57e4
   SOURCE_DIR "${CMAKE_BINARY_DIR}/cjson-source"
   BINARY_DIR "${CMAKE_BINARY_DIR}/cjson"
   CONFIGURE_COMMAND ""

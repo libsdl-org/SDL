@@ -137,20 +137,18 @@ int OhosPluginManager::ClearPluginManagerData(std::string &id, OH_NativeXCompone
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "This xComponentId: %s not in nativeXComponentMap", id.c_str());
     }
     if (nativeXComponentList.find(component) != nativeXComponentList.end()) {
-        delete nativeXComponentList[component];
+        SDL_free(nativeXComponentList[component]);
         nativeXComponentList.erase(component);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "this xComponent not in nativeXComponentList");
     }
     
     if (threadXcompentList.find(threadId) != threadXcompentList.end()) {
-        auto iter = threadXcompentList[threadId].begin();
-        int size = threadXcompentList[threadId].size();
-        for (int i = 0; i < size; i++) {
+        for (auto iter = threadXcompentList[threadId].begin(); iter != threadXcompentList[threadId].end();) {
             if (*iter == id) {
                 iter = threadXcompentList[threadId].erase(iter);
             } else {
-                iter++;
+                ++iter;
             }
         }
         if (threadXcompentList[threadId].empty()) {
