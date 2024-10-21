@@ -1338,12 +1338,14 @@ D3D12_HandleDeviceLost(SDL_Renderer *renderer)
     result = D3D12_CreateDeviceResources(renderer);
     if (FAILED(result)) {
         // D3D12_CreateDeviceResources will set the SDL error
+        D3D12_ReleaseAll(renderer);
         return result;
     }
 
     result = D3D12_UpdateForWindowSizeChange(renderer);
     if (FAILED(result)) {
         // D3D12_UpdateForWindowSizeChange will set the SDL error
+        D3D12_ReleaseAll(renderer);
         return result;
     }
 
@@ -2830,6 +2832,10 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
     const int viewportRotation = D3D12_GetRotationForCurrentRenderTarget(renderer);
 
+    if (!rendererData->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
+
     if (rendererData->pixelSizeChanged) {
         D3D12_UpdateForWindowSizeChange(renderer);
         rendererData->pixelSizeChanged = false;
@@ -3112,6 +3118,10 @@ static bool D3D12_RenderPresent(SDL_Renderer *renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     HRESULT result;
+
+    if (!data->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
 
     // Transition the render target to present state
     D3D12_TransitionResource(data,
