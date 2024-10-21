@@ -28,8 +28,10 @@
 #include "../SDL_sysfilesystem.h"
 
 #include "../../core/windows/SDL_windows.h"
+#include "../../file/SDL_iostream_c.h"
 #include <shlobj.h>
 #include <initguid.h>
+#include <fileapi.h>
 
 // These aren't all defined in older SDKs, so define them here
 DEFINE_GUID(SDL_FOLDERID_Profile, 0x5E6C858F, 0x0E22, 0x4760, 0x9A, 0xFE, 0xEA, 0x33, 0x17, 0xB6, 0x71, 0x73);
@@ -343,4 +345,101 @@ done:
     }
     return result;
 }
+
+SDL_IOStream *SDL_SYS_CreateSafeTempFile(void)
+{
+    wchar_t tmp_folder[MAX_PATH];
+    wchar_t tmp_file[MAX_PATH];
+    HANDLE hFile;
+
+    /* There exists GetTempPath2W, which is available only on Windows 11+ */
+    DWORD tmp_len = GetTempPathW(MAX_PATH, tmp_folder);
+
+    if (tmp_len == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get the temporary folder");
+        return NULL;
+    }
+
+    UINT id = GetTempFileNameW(tmp_folder, L"tmp", 0, tmp_file);
+
+    if (id == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get a temporary file");
+        return NULL;
+    }
+
+    hFile = CreateFileW(tmp_file, GENERIC_READ | GENERIC_WRITE, 0,  NULL, CREATE_NEW,
+                        FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, NULL);
+
+    if (hFile == INVALID_HANDLE_VALUE) {
+        WIN_SetError("Couldn't create the temporary file safely");
+        return NULL;
+    }
+
+    return SDL_IOFromHandle(hFile, "w+", true);
+}
+
+char *SDL_SYS_CreateUnsafeTempFile(void)
+{
+    wchar_t tmp_folder[MAX_PATH];
+    wchar_t tmp_file[MAX_PATH];
+    HANDLE hFile;
+
+    /* There exists GetTempPath2W, which is available only on Windows 11+ */
+    DWORD tmp_len = GetTempPathW(MAX_PATH, tmp_folder);
+
+    if (tmp_len == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get the temporary folder");
+        return NULL;
+    }
+
+    UINT id = GetTempFileNameW(tmp_folder, L"tmp", 0, tmp_file);
+
+    if (id == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get a temporary file");
+        return NULL;
+    }
+
+    /* TODO: See if there is any advantage to FILE_ATTRIBUTE_TEMPORARY if the
+       file is immediately closed. */
+    hFile = CreateFileW(tmp_file, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+                        CREATE_NEW, FILE_ATTRIBUTE_TEMPORARY, NULL);
+
+    if (hFile == INVALID_HANDLE_VALUE) {
+        WIN_SetError("Couldn't touch the temporary file");
+        return NULL;
+    }
+
+    CloseHandle(hFile);
+
+    return WIN_StringToUTF8W(tmp_file);
+}
+
+char *SDL_SYS_CreateTempFolder(void)
+{
+    wchar_t tmp_folder[MAX_PATH];
+    wchar_t tmp_file[MAX_PATH];
+
+    /* There exists GetTempPath2W, which is available only on Windows 11+ */
+    DWORD tmp_len = GetTempPathW(MAX_PATH, tmp_folder);
+
+    if (tmp_len == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get the temporary folder");
+        return NULL;
+    }
+
+    UINT id = GetTempFileNameW(tmp_folder, L"tmp", 0, tmp_file);
+
+    if (id == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get a temporary subfolder");
+        return NULL;
+    }
+
+    if (!CreateDirectory(tmp_file, NULL)) {
+        WIN_SetError("Couldn't create temporary subfolder");
+        return NULL;
+    }
+
+    return WIN_StringToUTF8W(tmp_file);
+}
+
 #endif // SDL_FILESYSTEM_WINDOWS
