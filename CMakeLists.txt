@@ -1943,6 +1943,8 @@ elseif(WINDOWS)
     set(SDL_VIDEO_DRIVER_WINDOWS 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/windows/*.c")
 
+    CheckOpenVR()
+
     if(SDL_RENDER_D3D AND HAVE_D3D9_H)
       set(SDL_VIDEO_RENDER_D3D 1)
       set(HAVE_RENDER_D3D TRUE)
