@@ -278,6 +278,11 @@ static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
         return SDL_WINDOW_METAL;
     }
 #endif
+#if defined(SDL_VIDEO_OPENGL) && defined(SDL_VIDEO_DRIVER_OPENVR)
+    if (SDL_strcmp(_this->name, "openvr") == 0) {
+        return SDL_WINDOW_OPENGL;
+    }
+#endif
     return 0;
 }
 
@@ -2341,10 +2346,6 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     if (!graphics_flags && !external_graphics_context) {
         flags |= SDL_DefaultGraphicsBackends(_this);
     }
-
-#if defined(SDL_VIDEO_OPENGL) && defined(SDL_VIDEO_DRIVER_OPENVR)
-    flags |= SDL_WINDOW_OPENGL;
-#endif
 
     if (flags & SDL_WINDOW_OPENGL) {
         if (!_this->GL_CreateContext) {
