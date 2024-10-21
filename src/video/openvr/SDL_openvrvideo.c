@@ -521,7 +521,7 @@ static void OPENVR_VirtualControllerUpdate(void *userdata)
     return;
 }
 
-static bool OPENVR_SetupJoystckBasedOnLoadedActionManifest(SDL_VideoData * videodata)
+static bool OPENVR_SetupJoystickBasedOnLoadedActionManifest(SDL_VideoData * videodata)
 {
     SDL_VirtualJoystickDesc desc;
     int virtual_index;
@@ -1646,8 +1646,7 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
             goto error;
         }
     } else {
-        int e = OPENVR_SetupJoystckBasedOnLoadedActionManifest(data);
-        if(e) {
+        if(!OPENVR_SetupJoystickBasedOnLoadedActionManifest(data)) {
             goto error;
         }
     }
