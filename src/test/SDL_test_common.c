@@ -1880,11 +1880,14 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;
 
+    case SDL_EVENT_RENDER_TARGETS_RESET:
+        SDL_Log("SDL EVENT: render targets reset");
+        break;
     case SDL_EVENT_RENDER_DEVICE_RESET:
         SDL_Log("SDL EVENT: render device reset");
         break;
-    case SDL_EVENT_RENDER_TARGETS_RESET:
-        SDL_Log("SDL EVENT: render targets reset");
+    case SDL_EVENT_RENDER_DEVICE_LOST:
+        SDL_Log("SDL EVENT: render device lost");
         break;
 
     case SDL_EVENT_TERMINATING:
