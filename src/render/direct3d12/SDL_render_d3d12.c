@@ -414,6 +414,7 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
                 D3D_SAFE_RELEASE(data->pipelineStates[i].pipelineState);
             }
             SDL_free(data->pipelineStates);
+            data->pipelineStates = NULL;
             data->pipelineStateCount = 0;
         }
 
@@ -2738,6 +2739,10 @@ static bool D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     D3D12_CPU_DESCRIPTOR_HANDLE *textureSampler;
     D3D12_PixelShaderConstants constants;
 
+    if (!textureData) {
+        return SDL_SetError("Texture is not currently available");
+    }
+
     D3D12_SetupShaderConstants(renderer, cmd, texture, &constants);
 
     switch (textureData->scaleMode) {
@@ -3132,10 +3137,15 @@ static bool D3D12_RenderPresent(SDL_Renderer *renderer)
          * must recreate all device resources.
          */
         if (result == DXGI_ERROR_DEVICE_REMOVED) {
-            D3D12_HandleDeviceLost(renderer);
+            if (SUCCEEDED(D3D12_HandleDeviceLost(renderer))) {
+                SDL_SetError("Present failed, device lost");
+            } else {
+                // Recovering from device lost failed, error is already set
+            }
         } else if (result == DXGI_ERROR_INVALID_CALL) {
             // We probably went through a fullscreen <-> windowed transition
             D3D12_CreateWindowSizeDependentResources(renderer);
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         } else {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         }
