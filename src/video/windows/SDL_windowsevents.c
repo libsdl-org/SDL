@@ -1128,7 +1128,33 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_MOUSEMOVE:
     {
-        /* SDL_Mouse *mouse = SDL_GetMouse(); */
+        int lparam_x_client = GET_X_LPARAM(lParam);
+        int lparam_y_client = GET_Y_LPARAM(lParam);
+        SDL_Window *window = data->window;
+
+        if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
+            SDL_Mouse *mouse = SDL_GetMouse();
+            bool wish_clip_cursor = (
+                mouse->relative_mode || 
+                (window->flags & SDL_WINDOW_MOUSE_GRABBED) ||
+                (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)
+            );
+            if (wish_clip_cursor) {         
+                RECT rect = data->cursor_clipped_rect;
+                if (!WIN_IsRectEmpty(&rect)) {
+                    POINT cur;
+                    cur.x = lparam_x_client;
+                    cur.y = lparam_y_client;
+                    if (ClientToScreen(hwnd, &cur) && (cur.x < rect.left || cur.y < rect.top || cur.x > rect.right || cur.y > rect.bottom)) {
+                        // Always want to update clipcursor when WM_MOUSEMOVE is received.
+                        // Commit 55b24b93b406d8213e7eaa7c0b319f138225c9c9 is meant to fix titlebar-drag,
+                        // I don't think you will receive WM_MOUSEMOVE message until button release.
+                        data->skip_update_clipcursor = false;
+                        WIN_UpdateClipCursor(window);
+                    }
+                }     
+            }
+        }
 
         if (!data->mouse_tracked) {
             TRACKMOUSEEVENT trackMouseEvent;
@@ -1146,7 +1172,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             // Only generate mouse events for real mouse
             if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
-                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+                SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, SDL_GLOBAL_MOUSE_ID, false, (float)lparam_x_client, (float)lparam_y_client);
             }
         }
     } break;
@@ -2102,28 +2128,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-static void WIN_UpdateClipCursorForWindows(void)
-{
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_Window *window;
-    Uint64 now = SDL_GetTicks();
-    const int CLIPCURSOR_UPDATE_INTERVAL_MS = SDL_GetMouse()->relative_mode_clip_interval;
-
-    if (_this) {
-        for (window = _this->windows; window; window = window->next) {
-            SDL_WindowData *data = window->internal;
-            if (data) {
-                if (data->skip_update_clipcursor) {
-                    data->skip_update_clipcursor = false;
-                    WIN_UpdateClipCursor(window);
-                } else if (CLIPCURSOR_UPDATE_INTERVAL_MS > 0 && now >= (data->last_updated_clipcursor + CLIPCURSOR_UPDATE_INTERVAL_MS)) {
-                    WIN_UpdateClipCursor(window);
-                }
-            }
-        }
-    }
-}
-
 static void WIN_UpdateMouseCapture(void)
 {
     SDL_Window *focusWindow = SDL_GetKeyboardFocus();
@@ -2316,9 +2320,6 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
             SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_RGUI, false);
         }
     }
-
-    // Update the clipping rect in case someone else has stolen it
-    WIN_UpdateClipCursorForWindows();
 
     // Update mouse capture
     WIN_UpdateMouseCapture();
