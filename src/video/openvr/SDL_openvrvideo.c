@@ -271,22 +271,20 @@ static bool OPENVR_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 
-    {
-        const char * hintWidth = SDL_GetHint("SDL_DEFAULT_WIDTH");
-        const char * hintHeight = SDL_GetHint("SDL_DEFAULT_HEIGHT");
-        const char * hintFPS = SDL_GetHint("SDL_DEFAULT_FPS");
-        int width = hintWidth?atoi(hintWidth):0;
-        int height = hintHeight?atoi(hintHeight):0;
-        if (height > 0 && width > 0) {
-            openvr_vd_default.desktop_mode.w = width;
-            openvr_vd_default.desktop_mode.h = height;
-        }
-        int fps = hintFPS?atoi(hintFPS):0;
-        if (fps) {
-            openvr_vd_default.desktop_mode.refresh_rate = fps;
-        } else {
-            openvr_vd_default.desktop_mode.refresh_rate = data->oSystem->GetFloatTrackedDeviceProperty(k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty_Prop_DisplayFrequency_Float, 0);
-        }
+    const char * hintWidth = SDL_GetHint("SDL_DEFAULT_WIDTH");
+    const char * hintHeight = SDL_GetHint("SDL_DEFAULT_HEIGHT");
+    const char * hintFPS = SDL_GetHint("SDL_DEFAULT_FPS");
+    int width = hintWidth?atoi(hintWidth):0;
+    int height = hintHeight?atoi(hintHeight):0;
+    if (height > 0 && width > 0) {
+        openvr_vd_default.desktop_mode.w = width;
+        openvr_vd_default.desktop_mode.h = height;
+    }
+    int fps = hintFPS?atoi(hintFPS):0;
+    if (fps) {
+        openvr_vd_default.desktop_mode.refresh_rate = fps;
+    } else {
+        openvr_vd_default.desktop_mode.refresh_rate = data->oSystem->GetFloatTrackedDeviceProperty(k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty_Prop_DisplayFrequency_Float, 0);
     }
 
     openvr_vd_default.internal = (SDL_DisplayData *)data;
@@ -306,7 +304,19 @@ static void OPENVR_VideoQuit(SDL_VideoDevice *_this)
 
 static void OPENVR_Destroy(SDL_VideoDevice *device)
 {
-    // Don't need to destroy and free internal, since it is already done in SDL_VideoQuit
+    SDL_VideoData *data = device->internal;
+
+#ifdef SDL_PLATFORM_WINDOWS
+    SDL_UnregisterApp();
+#endif
+
+    if (data) {
+        if (data->openVRLIB) {
+            SDL_UnloadObject(data->openVRLIB);
+        }
+    }
+    SDL_free(device->internal);
+    SDL_free(device);
 }
 
 static uint32_t *ImageSDLToOpenVRGL(SDL_Surface * surf, bool bFlipY)
@@ -1552,10 +1562,13 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
         data = NULL;
     }
     if (!data) {
+#ifdef SDL_PLATFORM_WINDOWS
+        SDL_UnregisterApp();
+#endif
         SDL_free(device);
-        SDL_OutOfMemory();
         return NULL;
     }
+    device->internal = data;
 
     {
         const char * hint = SDL_GetHint(SDL_HINT_OPENVR_LIBRARY);
@@ -1570,81 +1583,74 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
 #endif
     }
 
-    if (data->openVRLIB) {
-        data->FN_VR_InitInternal = (intptr_t(*)(EVRInitError * peError, EVRApplicationType eType))SDL_LoadFunction(data->openVRLIB, "VR_InitInternal");
-        data->FN_VR_GetVRInitErrorAsEnglishDescription = (const char *(*)(EVRInitError error))SDL_LoadFunction(data->openVRLIB, "VR_GetVRInitErrorAsEnglishDescription");
-        data->FN_VR_GetGenericInterface = (intptr_t (*)(const char *pchInterfaceVersion, EVRInitError * peError))SDL_LoadFunction(data->openVRLIB, "VR_GetGenericInterface");
-    } else {
+    if (!data->openVRLIB) {
         SDL_SetError("Could not open OpenVR API Library");
-        return NULL;
+        goto error;
     }
 
-    if (data->FN_VR_InitInternal) {
-        char fnname[128];
-        EVRInitError e;
-        data->vrtoken = data->FN_VR_InitInternal(&e, EVRApplicationType_VRApplication_Overlay);
-        if (!data->vrtoken) {
-            const char *err = "Can't get english description";
-            if (data->FN_VR_GetVRInitErrorAsEnglishDescription != NULL)
-                err = data->FN_VR_GetVRInitErrorAsEnglishDescription(e);
-            SDL_SetError("Could not generate OpenVR Context (%s)", err);
-            return NULL;
-        }
-
-        SDL_snprintf(fnname, 127, "FnTable:%s", IVRSystem_Version);
-        data->oSystem = (struct VR_IVRSystem_FnTable *)data->FN_VR_GetGenericInterface(fnname, &e);
-        SDL_snprintf(fnname, 127, "FnTable:%s", IVROverlay_Version);
-        data->oOverlay = (struct VR_IVROverlay_FnTable *)data->FN_VR_GetGenericInterface(fnname, &e);
-        SDL_snprintf(fnname, 127, "FnTable:%s", IVRInput_Version);
-        data->oInput = (struct VR_IVRInput_FnTable *)data->FN_VR_GetGenericInterface(fnname, &e);
-
-        if (!data->oOverlay || !data->oSystem) {
-            SDL_SetError("Could not get interfaces for the OpenVR System (%s), Overlay (%s) and Input (%s) versions", IVRSystem_Version, IVROverlay_Version, IVRInput_Version);
-        }
+    data->FN_VR_InitInternal = (intptr_t(*)(EVRInitError * peError, EVRApplicationType eType))SDL_LoadFunction(data->openVRLIB, "VR_InitInternal");
+    data->FN_VR_GetVRInitErrorAsEnglishDescription = (const char *(*)(EVRInitError error))SDL_LoadFunction(data->openVRLIB, "VR_GetVRInitErrorAsEnglishDescription");
+    data->FN_VR_GetGenericInterface = (intptr_t (*)(const char *pchInterfaceVersion, EVRInitError * peError))SDL_LoadFunction(data->openVRLIB, "VR_GetGenericInterface");
+    if (!data->FN_VR_InitInternal || !data->FN_VR_GetVRInitErrorAsEnglishDescription || !data->FN_VR_GetGenericInterface) {
+        goto error;
     }
 
-    {
-        const char * hint = SDL_GetHint("SDL_OPENVR_INPUT_PROFILE");
-        char * loadpath = 0;
-        EVRInputError err;
+    char fnname[128];
+    EVRInitError e;
+    data->vrtoken = data->FN_VR_InitInternal(&e, EVRApplicationType_VRApplication_Overlay);
+    if (!data->vrtoken) {
+        const char *err = "Can't get english description";
+        if (data->FN_VR_GetVRInitErrorAsEnglishDescription != NULL)
+            err = data->FN_VR_GetVRInitErrorAsEnglishDescription(e);
+        SDL_SetError("Could not generate OpenVR Context (%s)", err);
+        goto error;
+    }
 
+    SDL_snprintf(fnname, 127, "FnTable:%s", IVRSystem_Version);
+    data->oSystem = (struct VR_IVRSystem_FnTable *)data->FN_VR_GetGenericInterface(fnname, &e);
+    SDL_snprintf(fnname, 127, "FnTable:%s", IVROverlay_Version);
+    data->oOverlay = (struct VR_IVROverlay_FnTable *)data->FN_VR_GetGenericInterface(fnname, &e);
+    SDL_snprintf(fnname, 127, "FnTable:%s", IVRInput_Version);
+    data->oInput = (struct VR_IVRInput_FnTable *)data->FN_VR_GetGenericInterface(fnname, &e);
+
+    if (!data->oOverlay || !data->oSystem || !data->oInput) {
+        SDL_SetError("Could not get interfaces for the OpenVR System (%s), Overlay (%s) and Input (%s) versions", IVRSystem_Version, IVROverlay_Version, IVRInput_Version);
+    }
+
+    const char *hint = SDL_GetHint("SDL_OPENVR_INPUT_PROFILE");
+    char *loadpath = 0;
+    EVRInputError err;
+
+    if (hint) {
+        SDL_asprintf(&loadpath, "%s", hint);
+    } else {
+        const char *basepath = SDL_GetBasePath();
+        SDL_asprintf(&loadpath, "%ssdloverlay_actions.json", basepath);
+    }
+    if (!loadpath) {
+        goto error;
+    }
+
+    err = data->oInput->SetActionManifestPath(loadpath);
+#ifdef DEBUG_OPENVR
+    SDL_Log("Loaded action manifest at %s (%d)", loadpath, err);
+#endif
+    SDL_free(loadpath);
+    if (err != EVRInputError_VRInputError_None) {
+        // I know we don't normally log, but this _really_ should be percolated
+        // up as far as we can.
+        SDL_Log("Could not load action manifest path");
+        // If we didn't have a hint, this is a soft fail.
+        // If we did have the hint, then it's a hard fail.
         if (hint) {
-            SDL_asprintf(&loadpath, "%s", hint);
-        } else {
-            const char *basepath = SDL_GetBasePath();
-            SDL_asprintf(&loadpath, "%ssdloverlay_actions.json", basepath);
+            goto error;
         }
-
-        if (!loadpath) {
-            return NULL;
-        }
-
-        err = data->oInput->SetActionManifestPath(loadpath);
-        #ifdef DEBUG_OPENVR
-        SDL_Log("Loaded action manifest at %s (%d)", loadpath, err);
-        #endif
-        SDL_free(loadpath);
-        if (err != EVRInputError_VRInputError_None) {
-            // I know we don't normally log, but this _really_ should be percolated
-            // up as far as we can.
-            SDL_Log("Could not load action manifest path");
-            // If we didn't have a hint, this is a soft fail.
-            // If we did have the hint, then it's a hard fail.
-            if (hint) {
-                return NULL;
-            }
-        }
-        else
-        {
-            int e = OPENVR_SetupJoystckBasedOnLoadedActionManifest(data);
-            if(e) {
-                return NULL;
-            }
+    } else {
+        int e = OPENVR_SetupJoystckBasedOnLoadedActionManifest(data);
+        if(e) {
+            goto error;
         }
     }
-
-    device->internal = data;
-    device->wakeup_lock = SDL_CreateMutex();
 
     // Setup amount of available displays
     device->num_displays = 0;
@@ -1722,6 +1728,10 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
     device->SetWindowIcon = OPENVR_SetWindowIcon;
 
     return device;
+
+error:
+    OPENVR_Destroy(device);
+    return NULL;
 }
 
 VideoBootStrap OPENVR_bootstrap = {
