@@ -549,7 +549,7 @@ typedef struct SDL_JoyButtonEvent
 /**
  * Joystick device event structure (event.jdevice.*)
  *
- * SDL will populate the event queue with JOYSTICK_ADDED events for devices that
+ * SDL will send JOYSTICK_ADDED events for devices that
  * are already plugged in during SDL_Init.
  *
  * \since This struct is available since SDL 3.0.0.
@@ -620,11 +620,11 @@ typedef struct SDL_GamepadButtonEvent
 /**
  * Gamepad device event structure (event.gdevice.*)
  *
- * Joysticks that are supported Gamepads receive both an SDL_JoyDeviceEvent and
+ * Joysticks that are supported gamepads receive both an SDL_JoyDeviceEvent and
  * an SDL_GamepadDeviceEvent.
  *
- * SDL will populate the event queue with GAMEPAD_ADDED events for joysticks
- * that are already plugged in duing SDL_Init and are recognized as Gamepads.
+ * SDL will send GAMEPAD_ADDED events for joysticks
+ * that are already plugged in during SDL_Init and are recognized as gamepads. It will also send events for joysticks that get gamepad mappings at runtime.
  *
  * \since This struct is available since SDL 3.0.0.
  *
