@@ -390,6 +390,7 @@ static void SDL_LogEvent(const SDL_Event *event)
     // sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded.
     if ((SDL_EventLoggingVerbosity < 2) &&
         ((event->type == SDL_EVENT_MOUSE_MOTION) ||
+         (event->type == SDL_EVENT_MOUSE_RAW_MOTION) ||
          (event->type == SDL_EVENT_FINGER_MOTION) ||
          (event->type == SDL_EVENT_PEN_AXIS) ||
          (event->type == SDL_EVENT_PEN_MOTION) ||
@@ -1704,6 +1705,12 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
         if (type == SDL_EVENT_DROP_FILE || type == SDL_EVENT_DROP_TEXT) {
             SDL_ToggleDragAndDropSupport();
         }
+
+        if (type == SDL_EVENT_MOUSE_RAW_MOTION || 
+            type == SDL_EVENT_MOUSE_RAW_SCROLL || 
+            type == SDL_EVENT_MOUSE_RAW_BUTTON) {
+            SDL_UpdateRawMouseDataEnabled();
+        }
     }
 }
 
@@ -1791,6 +1798,9 @@ bool SDL_InitEvents(void)
         return false;
     }
 
+    SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_MOTION, false);
+    SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_SCROLL, false);
+    SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON, false);
     SDL_InitQuit();
 
     return true;
