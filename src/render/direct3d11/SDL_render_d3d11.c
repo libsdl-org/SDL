@@ -336,7 +336,7 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
                 SAFE_RELEASE(data->blendModes[i].blendState);
             }
             SDL_free(data->blendModes);
-
+            data->blendModes = NULL;
             data->blendModesCount = 0;
         }
         for (i = 0; i < SDL_arraysize(data->pixelShaders); ++i) {
@@ -993,12 +993,14 @@ static HRESULT D3D11_HandleDeviceLost(SDL_Renderer *renderer)
     result = D3D11_CreateDeviceResources(renderer);
     if (FAILED(result)) {
         // D3D11_CreateDeviceResources will set the SDL error
+        D3D11_ReleaseAll(renderer);
         return result;
     }
 
     result = D3D11_UpdateForWindowSizeChange(renderer);
     if (FAILED(result)) {
         // D3D11_UpdateForWindowSizeChange will set the SDL error
+        D3D11_ReleaseAll(renderer);
         return result;
     }
 
@@ -2395,6 +2397,10 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     const int viewportRotation = D3D11_GetRotationForCurrentRenderTarget(renderer);
 
+    if (!rendererData->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
+
     if (rendererData->pixelSizeChanged) {
         D3D11_UpdateForWindowSizeChange(renderer);
         rendererData->pixelSizeChanged = false;
@@ -2613,6 +2619,10 @@ static bool D3D11_RenderPresent(SDL_Renderer *renderer)
     HRESULT result;
     DXGI_PRESENT_PARAMETERS parameters;
 
+    if (!data->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
+
     SDL_zero(parameters);
 
     /* The application may optionally specify "dirty" or "scroll"
@@ -2634,10 +2644,15 @@ static bool D3D11_RenderPresent(SDL_Renderer *renderer)
          * must recreate all device resources.
          */
         if (result == DXGI_ERROR_DEVICE_REMOVED) {
-            D3D11_HandleDeviceLost(renderer);
+            if (SUCCEEDED(D3D11_HandleDeviceLost(renderer))) {
+                SDL_SetError("Present failed, device lost");
+            } else {
+                // Recovering from device lost failed, error is already set
+            }
         } else if (result == DXGI_ERROR_INVALID_CALL) {
             // We probably went through a fullscreen <-> windowed transition
             D3D11_CreateWindowSizeDependentResources(renderer);
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         } else {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         }
