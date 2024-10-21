@@ -295,6 +295,9 @@ typedef struct SDL_GamepadBinding
  *
  * Buttons can be used as a gamepad axes and vice versa.
  *
+ * If a device with this GUID is already plugged in, SDL will generate an
+ * SDL_EVENT_GAMEPAD_ADDED event.
+ *
  * This string shows an example of a valid mapping for a gamepad:
  *
  * ```c
@@ -309,8 +312,13 @@ typedef struct SDL_GamepadBinding
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_AddGamepadMappingsFromFile
+ * \sa SDL_AddGamepadMappingsFromIO
  * \sa SDL_GetGamepadMapping
  * \sa SDL_GetGamepadMappingForGUID
+ * \sa SDL_HINT_GAMECONTROLLERCONFIG
+ * \sa SDL_HINT_GAMECONTROLLERCONFIG_FILE
+ * \sa SDL_EVENT_GAMEPAD_ADDED
  */
 extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
 
@@ -322,6 +330,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  *
  * If a new mapping is loaded for an already known gamepad GUID, the later
  * version will overwrite the one currently loaded.
+ *
+ * Any new mappings for already plugged in controllers will generate
+ * SDL_EVENT_GAMEPAD_ADDED events.
  *
  * Mappings not belonging to the current platform or with no platform field
  * specified will be ignored (i.e. mappings for Linux will be ignored in
@@ -345,6 +356,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * \sa SDL_AddGamepadMappingsFromFile
  * \sa SDL_GetGamepadMapping
  * \sa SDL_GetGamepadMappingForGUID
+ * \sa SDL_HINT_GAMECONTROLLERCONFIG
+ * \sa SDL_HINT_GAMECONTROLLERCONFIG_FILE
+ * \sa SDL_EVENT_GAMEPAD_ADDED
  */
 extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, bool closeio);
 
@@ -356,6 +370,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, 
  *
  * If a new mapping is loaded for an already known gamepad GUID, the later
  * version will overwrite the one currently loaded.
+ *
+ * Any new mappings for already plugged in controllers will generate
+ * SDL_EVENT_GAMEPAD_ADDED events.
  *
  * Mappings not belonging to the current platform or with no platform field
  * specified will be ignored (i.e. mappings for Linux will be ignored in
@@ -373,6 +390,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, 
  * \sa SDL_AddGamepadMappingsFromIO
  * \sa SDL_GetGamepadMapping
  * \sa SDL_GetGamepadMappingForGUID
+ * \sa SDL_HINT_GAMECONTROLLERCONFIG
+ * \sa SDL_HINT_GAMECONTROLLERCONFIG_FILE
+ * \sa SDL_EVENT_GAMEPAD_ADDED
  */
 extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromFile(const char *file);
 
