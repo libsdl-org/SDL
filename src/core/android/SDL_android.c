@@ -2400,7 +2400,7 @@ const char *SDL_GetAndroidCachePath(void)
 
         // fileObj = context.getExternalFilesDir();
         mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
-                                  "getCacheDir", "(Ljava/lang/String;)Ljava/io/File;");
+                                  "getCacheDir", "()Ljava/io/File;");
         fileObject = (*env)->CallObjectMethod(env, context, mid, NULL);
         if (!fileObject) {
             SDL_SetError("Couldn't get cache directory");
