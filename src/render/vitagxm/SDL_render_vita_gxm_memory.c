@@ -31,6 +31,8 @@ void *vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignmen
 
     if (type == SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW) {
         size = ALIGN(size, 256 * 1024);
+    } else if (type == SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW) {
+        size = ALIGN(size, 1024 * 1024);
     } else {
         size = ALIGN(size, 4 * 1024);
     }
