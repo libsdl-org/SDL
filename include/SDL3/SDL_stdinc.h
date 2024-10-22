@@ -1355,9 +1355,9 @@ typedef int (SDLCALL *SDL_CompareCallback_r)(void *userdata, const void *a, cons
  *     const data *A = (const data *)a;
  *     const data *B = (const data *)b;
  *
- *     if (A->n < B->n) {
+ *     if (A->key < B->key) {
  *         return (method == sort_increasing) ? -1 : 1;
- *     } else if (B->n < A->n) {
+ *     } else if (B->key < A->key) {
  *         return (method == sort_increasing) ? 1 : -1;
  *     } else {
  *         return 0;
@@ -1407,9 +1407,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_qsort_r(void *base, size_t nmemb, size_t si
  *     const data *A = (const data *)a;
  *     const data *B = (const data *)b;
  *
- *     if (A->n < B->n) {
+ *     if (A->key < B->key) {
  *         return (method == sort_increasing) ? -1 : 1;
- *     } else if (B->n < A->n) {
+ *     } else if (B->key < A->key) {
  *         return (method == sort_increasing) ? 1 : -1;
  *     } else {
  *         return 0;
