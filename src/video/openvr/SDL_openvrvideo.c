@@ -206,65 +206,6 @@ static bool OPENVR_SetOverlayError(EVROverlayError e)
     }
 }
 
-#ifdef SDL_VIDEO_DRIVER_WINDOWS
-
-#define STYLE_BASIC         (WS_CLIPSIBLINGS | WS_CLIPCHILDREN)
-#define STYLE_FULLSCREEN    (WS_POPUP | WS_MINIMIZEBOX)
-#define STYLE_BORDERLESS    (WS_POPUP | WS_MINIMIZEBOX)
-#define STYLE_BORDERLESS_WINDOWED (WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
-#define STYLE_NORMAL        (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
-#define STYLE_RESIZABLE     (WS_THICKFRAME | WS_MAXIMIZEBOX)
-#define STYLE_MASK          (STYLE_FULLSCREEN | STYLE_BORDERLESS | STYLE_NORMAL | STYLE_RESIZABLE)
-
-static DWORD GetWindowStyle(SDL_Window *window)
-{
-    DWORD style = 0;
-
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        style |= STYLE_FULLSCREEN;
-    } else {
-        if (window->flags & SDL_WINDOW_BORDERLESS) {
-            /* SDL 2.1:
-               This behavior more closely matches other platform where the window is borderless
-               but still interacts with the window manager (e.g. task bar shows above it, it can
-               be resized to fit within usable desktop area, etc.) so this should be the behavior
-               for a future SDL release.
-
-               If you want a borderless window the size of the desktop that looks like a fullscreen
-               window, then you should use the SDL_WINDOW_FULLSCREEN_DESKTOP flag.
-             */
-            if (SDL_GetHintBoolean("SDL_BORDERLESS_WINDOWED_STYLE", false)) {
-                style |= STYLE_BORDERLESS_WINDOWED;
-            } else {
-                style |= STYLE_BORDERLESS;
-            }
-        } else {
-            style |= STYLE_NORMAL;
-        }
-
-        if (window->flags & SDL_WINDOW_RESIZABLE) {
-            /* You can have a borderless resizable window, but Windows doesn't always draw it correctly,
-               see https://bugzilla.libsdl.org/show_bug.cgi?id=4466
-             */
-            if (!(window->flags & SDL_WINDOW_BORDERLESS) ||
-                 SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", false)) {
-                style |= STYLE_RESIZABLE;
-            }
-        }
-
-        // Need to set initialize minimize style, or when we call ShowWindow with WS_MINIMIZE it will activate a random window
-        if (window->flags & SDL_WINDOW_MINIMIZED) {
-            style |= WS_MINIMIZE;
-        }
-    }
-    return style;
-}
-// Importing from the Windows code.
-void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut);
-void WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, bool use_current);
-
-#endif
-
 static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this, SDL_Window *window);
 
 static bool OPENVR_VideoInit(SDL_VideoDevice *_this)
