@@ -1261,6 +1261,8 @@ typedef int (SDLCALL *SDL_CompareCallback)(const void *a, const void *b);
  * \param size the size of the elements in the array.
  * \param compare a function used to compare elements in the array.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_bsearch
@@ -1308,6 +1310,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size
  * \param compare a function used to compare elements in the array.
  * \returns a pointer to the matching element in the array, or NULL if not
  *          found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1377,6 +1381,8 @@ typedef int (SDLCALL *SDL_CompareCallback_r)(void *userdata, const void *a, cons
  * \param compare a function used to compare elements in the array.
  * \param userdata a pointer to pass to the compare function.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_bsearch_r
@@ -1432,6 +1438,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_qsort_r(void *base, size_t nmemb, size_t si
  * \param userdata a pointer to pass to the compare function.
  * \returns a pointer to the matching element in the array, or NULL if not
  *          found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *

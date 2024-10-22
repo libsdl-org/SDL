@@ -56,6 +56,8 @@ extern "C" {
  * \returns an unsigned 64-bit value representing the number of milliseconds
  *          since the SDL library initialized.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetTicks(void);
@@ -65,6 +67,8 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetTicks(void);
  *
  * \returns an unsigned 64-bit value representing the number of nanoseconds
  *          since the SDL library initialized.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -81,6 +85,8 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetTicksNS(void);
  *
  * \returns the current counter value.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPerformanceFrequency
@@ -91,6 +97,8 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetPerformanceCounter(void);
  * Get the count per second of the high resolution counter.
  *
  * \returns a platform-specific count per second.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -107,6 +115,8 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetPerformanceFrequency(void);
  *
  * \param ms the number of milliseconds to delay.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
@@ -120,6 +130,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
  *
  * \param ns the number of nanoseconds to delay.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
@@ -132,6 +144,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
  * waiting if necessary, but could return later due to OS scheduling.
  *
  * \param ns the number of nanoseconds to delay.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.4.
  */
@@ -274,6 +288,8 @@ extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimerNS(Uint64 interval, SDL_NSTi
  * \param id the ID of the timer to remove.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *

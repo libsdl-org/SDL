@@ -78,6 +78,8 @@ extern "C" {
  *            any.
  * \returns false.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ClearError
@@ -95,6 +97,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const cha
  * \param ap a variable argument list.
  * \returns false.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.1.4.
  *
  * \sa SDL_ClearError
@@ -109,6 +113,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetErrorV(SDL_PRINTF_FORMAT_STRING const ch
  * This function does not do any memory allocation.
  *
  * \returns false.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -142,6 +148,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_OutOfMemory(void);
  *          or an empty string if there hasn't been an error message set since
  *          the last call to SDL_ClearError().
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ClearError
@@ -155,6 +163,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetError(void);
  * \returns true.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \sa SDL_GetError
  * \sa SDL_SetError
