@@ -1162,7 +1162,7 @@ void gxm_init_for_common_dialog(void)
     for (int i = 0; i < VITA_GXM_BUFFERS; i += 1) {
         buffer_for_common_dialog[i].displayData.wait_vblank = SDL_TRUE;
         buffer_for_common_dialog[i].displayData.address = vita_mem_alloc(
-            SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
+            SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW,
             4 * VITA_GXM_SCREEN_STRIDE * VITA_GXM_SCREEN_HEIGHT,
             SCE_GXM_COLOR_SURFACE_ALIGNMENT,
             SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
