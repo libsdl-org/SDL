@@ -49,8 +49,6 @@ static void X11_VideoQuit(SDL_VideoDevice *_this);
 
 // X11 driver bootstrap functions
 
-static int (*orig_x11_errhandler)(Display *, XErrorEvent *) = NULL;
-
 static void X11_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_VideoData *data = device->internal;
@@ -58,7 +56,6 @@ static void X11_DeleteDevice(SDL_VideoDevice *device)
         device->Vulkan_UnloadLibrary(device);
     }
     if (data->display) {
-        X11_XSetErrorHandler(orig_x11_errhandler);
         X11_XCloseDisplay(data->display);
     }
     if (data->request_display) {
@@ -72,33 +69,6 @@ static void X11_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 
     SDL_X11_UnloadSymbols();
-}
-
-// An error handler to reset the vidmode and then call the default handler.
-static bool safety_net_triggered = false;
-static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
-{
-    SDL_VideoDevice *device = NULL;
-    // if we trigger an error in our error handler, don't try again.
-    if (!safety_net_triggered) {
-        safety_net_triggered = true;
-        device = SDL_GetVideoDevice();
-        if (device) {
-            int i;
-            for (i = 0; i < device->num_displays; i++) {
-                SDL_VideoDisplay *display = device->displays[i];
-                if (SDL_GetCurrentDisplayMode(display->id) != SDL_GetDesktopDisplayMode(display->id)) {
-                    X11_SetDisplayMode(device, display, &display->desktop_mode);
-                }
-            }
-        }
-    }
-
-    if (orig_x11_errhandler) {
-        return orig_x11_errhandler(d, e); // probably terminate.
-    }
-
-    return 0;
 }
 
 static bool X11_IsXWayland(Display *d)
@@ -163,10 +133,6 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 #ifdef X11_DEBUG
     X11_XSynchronize(data->display, True);
 #endif
-
-    // Hook up an X11 error handler to recover the desktop resolution.
-    safety_net_triggered = false;
-    orig_x11_errhandler = X11_XSetErrorHandler(X11_SafetyNetErrHandler);
 
     /* Steam Deck will have an on-screen keyboard, so check their environment
      * variable so we can make use of SDL_StartTextInput.
