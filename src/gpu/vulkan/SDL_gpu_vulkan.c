@@ -587,6 +587,7 @@ struct VulkanBufferContainer
     Uint32 bufferCapacity;
     Uint32 bufferCount;
 
+    bool dedicated;
     char *debugName;
 };
 
@@ -1915,6 +1916,7 @@ static Uint8 VULKAN_INTERNAL_BindResourceMemory(
     Uint32 memoryTypeIndex,
     VkMemoryRequirements *memoryRequirements,
     VkDeviceSize resourceSize, // may be different from requirements size!
+    bool dedicated,            // the entire memory allocation should be used for this resource
     VkBuffer buffer,           // may be VK_NULL_HANDLE
     VkImage image,             // may be VK_NULL_HANDLE
     VulkanMemoryUsedRegion **pMemoryUsedRegion)
@@ -1949,105 +1951,111 @@ static Uint8 VULKAN_INTERNAL_BindResourceMemory(
 
     selectedRegion = NULL;
 
-    for (i = allocator->sortedFreeRegionCount - 1; i >= 0; i -= 1) {
-        region = allocator->sortedFreeRegions[i];
+    if (dedicated) {
+        // Force an allocation
+        allocationSize = requiredSize;
+    } else {
+        // Search for a suitable existing free region
+        for (i = allocator->sortedFreeRegionCount - 1; i >= 0; i -= 1) {
+            region = allocator->sortedFreeRegions[i];
 
-        if (smallAllocation && region->allocation->size != SMALL_ALLOCATION_SIZE) {
-            // region is not in a small allocation
-            continue;
+            if (smallAllocation && region->allocation->size != SMALL_ALLOCATION_SIZE) {
+                // region is not in a small allocation
+                continue;
+            }
+
+            if (!smallAllocation && region->allocation->size == SMALL_ALLOCATION_SIZE) {
+                // allocation is not small and current region is in a small allocation
+                continue;
+            }
+
+            alignedOffset = VULKAN_INTERNAL_NextHighestAlignment(
+                region->offset,
+                memoryRequirements->alignment);
+
+            if (alignedOffset + requiredSize <= region->offset + region->size) {
+                selectedRegion = region;
+                break;
+            }
         }
 
-        if (!smallAllocation && region->allocation->size == SMALL_ALLOCATION_SIZE) {
-            // allocation is not small and current region is in a small allocation
-            continue;
-        }
+        if (selectedRegion != NULL) {
+            region = selectedRegion;
+            allocation = region->allocation;
 
-        alignedOffset = VULKAN_INTERNAL_NextHighestAlignment(
-            region->offset,
-            memoryRequirements->alignment);
-
-        if (alignedOffset + requiredSize <= region->offset + region->size) {
-            selectedRegion = region;
-            break;
-        }
-    }
-
-    if (selectedRegion != NULL) {
-        region = selectedRegion;
-        allocation = region->allocation;
-
-        usedRegion = VULKAN_INTERNAL_NewMemoryUsedRegion(
-            renderer,
-            allocation,
-            region->offset,
-            requiredSize + (alignedOffset - region->offset),
-            alignedOffset,
-            resourceSize,
-            memoryRequirements->alignment);
-
-        usedRegion->isBuffer = buffer != VK_NULL_HANDLE;
-
-        newRegionSize = region->size - ((alignedOffset - region->offset) + requiredSize);
-        newRegionOffset = alignedOffset + requiredSize;
-
-        // remove and add modified region to re-sort
-        VULKAN_INTERNAL_RemoveMemoryFreeRegion(renderer, region);
-
-        // if size is 0, no need to re-insert
-        if (newRegionSize != 0) {
-            VULKAN_INTERNAL_NewMemoryFreeRegion(
+            usedRegion = VULKAN_INTERNAL_NewMemoryUsedRegion(
                 renderer,
                 allocation,
-                newRegionOffset,
-                newRegionSize);
+                region->offset,
+                requiredSize + (alignedOffset - region->offset),
+                alignedOffset,
+                resourceSize,
+                memoryRequirements->alignment);
+
+            usedRegion->isBuffer = buffer != VK_NULL_HANDLE;
+
+            newRegionSize = region->size - ((alignedOffset - region->offset) + requiredSize);
+            newRegionOffset = alignedOffset + requiredSize;
+
+            // remove and add modified region to re-sort
+            VULKAN_INTERNAL_RemoveMemoryFreeRegion(renderer, region);
+
+            // if size is 0, no need to re-insert
+            if (newRegionSize != 0) {
+                VULKAN_INTERNAL_NewMemoryFreeRegion(
+                    renderer,
+                    allocation,
+                    newRegionOffset,
+                    newRegionSize);
+            }
+
+            SDL_UnlockMutex(renderer->allocatorLock);
+
+            if (buffer != VK_NULL_HANDLE) {
+                if (!VULKAN_INTERNAL_BindBufferMemory(
+                        renderer,
+                        usedRegion,
+                        alignedOffset,
+                        buffer)) {
+                    VULKAN_INTERNAL_RemoveMemoryUsedRegion(
+                        renderer,
+                        usedRegion);
+
+                    return 0;
+                }
+            } else if (image != VK_NULL_HANDLE) {
+                if (!VULKAN_INTERNAL_BindImageMemory(
+                        renderer,
+                        usedRegion,
+                        alignedOffset,
+                        image)) {
+                    VULKAN_INTERNAL_RemoveMemoryUsedRegion(
+                        renderer,
+                        usedRegion);
+
+                    return 0;
+                }
+            }
+
+            *pMemoryUsedRegion = usedRegion;
+            return 1;
         }
 
-        SDL_UnlockMutex(renderer->allocatorLock);
-
-        if (buffer != VK_NULL_HANDLE) {
-            if (!VULKAN_INTERNAL_BindBufferMemory(
-                    renderer,
-                    usedRegion,
-                    alignedOffset,
-                    buffer)) {
-                VULKAN_INTERNAL_RemoveMemoryUsedRegion(
-                    renderer,
-                    usedRegion);
-
-                return 0;
-            }
-        } else if (image != VK_NULL_HANDLE) {
-            if (!VULKAN_INTERNAL_BindImageMemory(
-                    renderer,
-                    usedRegion,
-                    alignedOffset,
-                    image)) {
-                VULKAN_INTERNAL_RemoveMemoryUsedRegion(
-                    renderer,
-                    usedRegion);
-
-                return 0;
-            }
+        // No suitable free regions exist, allocate a new memory region
+        if (
+            renderer->allocationsToDefragCount == 0 &&
+            !renderer->defragInProgress) {
+            // Mark currently fragmented allocations for defrag
+            VULKAN_INTERNAL_MarkAllocationsForDefrag(renderer);
         }
 
-        *pMemoryUsedRegion = usedRegion;
-        return 1;
-    }
-
-    // No suitable free regions exist, allocate a new memory region
-    if (
-        renderer->allocationsToDefragCount == 0 &&
-        !renderer->defragInProgress) {
-        // Mark currently fragmented allocations for defrag
-        VULKAN_INTERNAL_MarkAllocationsForDefrag(renderer);
-    }
-
-    if (requiredSize > SMALL_ALLOCATION_THRESHOLD) {
-        // allocate a page of required size aligned to LARGE_ALLOCATION_INCREMENT increments
-        allocationSize =
-            VULKAN_INTERNAL_NextHighestAlignment(requiredSize, LARGE_ALLOCATION_INCREMENT);
-    } else {
-        allocationSize = SMALL_ALLOCATION_SIZE;
+        if (requiredSize > SMALL_ALLOCATION_THRESHOLD) {
+            // allocate a page of required size aligned to LARGE_ALLOCATION_INCREMENT increments
+            allocationSize =
+                VULKAN_INTERNAL_NextHighestAlignment(requiredSize, LARGE_ALLOCATION_INCREMENT);
+        } else {
+            allocationSize = SMALL_ALLOCATION_SIZE;
+        }
     }
 
     allocationResult = VULKAN_INTERNAL_AllocateMemory(
@@ -2161,6 +2169,7 @@ static Uint8 VULKAN_INTERNAL_BindMemoryForImage(
             memoryTypesToTry[i],
             &memoryRequirements,
             memoryRequirements.size,
+            false,
             VK_NULL_HANDLE,
             image,
             usedRegion);
@@ -2191,6 +2200,7 @@ static Uint8 VULKAN_INTERNAL_BindMemoryForBuffer(
     VkBuffer buffer,
     VkDeviceSize size,
     VulkanBufferType type,
+    bool dedicated,
     VulkanMemoryUsedRegion **usedRegion)
 {
     Uint8 bindResult = 0;
@@ -2304,6 +2314,7 @@ static Uint8 VULKAN_INTERNAL_BindMemoryForBuffer(
             memoryTypesToTry[i],
             &memoryRequirements,
             size,
+            dedicated,
             buffer,
             VK_NULL_HANDLE,
             usedRegion);
@@ -4054,7 +4065,8 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
     VulkanRenderer *renderer,
     VkDeviceSize size,
     SDL_GPUBufferUsageFlags usageFlags,
-    VulkanBufferType type)
+    VulkanBufferType type,
+    bool dedicated)
 {
     VulkanBuffer *buffer;
     VkResult vulkanResult;
@@ -4123,6 +4135,7 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
         buffer->buffer,
         buffer->size,
         buffer->type,
+        dedicated,
         &buffer->usedRegion);
 
     if (bindResult != 1) {
@@ -4146,7 +4159,8 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
     VulkanRenderer *renderer,
     VkDeviceSize size,
     SDL_GPUBufferUsageFlags usageFlags,
-    VulkanBufferType type)
+    VulkanBufferType type,
+    bool dedicated)
 {
     VulkanBufferContainer *bufferContainer;
     VulkanBuffer *buffer;
@@ -4155,7 +4169,8 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
         renderer,
         size,
         usageFlags,
-        type);
+        type,
+        dedicated);
 
     if (buffer == NULL) {
         return NULL;
@@ -4172,6 +4187,7 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
     bufferContainer->buffers = SDL_malloc(
         bufferContainer->bufferCapacity * sizeof(VulkanBuffer *));
     bufferContainer->buffers[0] = bufferContainer->activeBuffer;
+    bufferContainer->dedicated = dedicated;
     bufferContainer->debugName = NULL;
 
     return bufferContainer;
@@ -5773,7 +5789,8 @@ static void VULKAN_INTERNAL_CycleActiveBuffer(
         renderer,
         container->activeBuffer->size,
         container->activeBuffer->usage,
-        container->activeBuffer->type);
+        container->activeBuffer->type,
+        container->dedicated);
 
     if (!buffer) {
         return;
@@ -6675,7 +6692,8 @@ static SDL_GPUBuffer *VULKAN_CreateBuffer(
         (VulkanRenderer *)driverData,
         (VkDeviceSize)size,
         usageFlags,
-        VULKAN_BUFFER_TYPE_GPU);
+        VULKAN_BUFFER_TYPE_GPU,
+        false);
 }
 
 static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
@@ -6688,7 +6706,8 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
         renderer,
         (VkDeviceSize)size,
         0,
-        VULKAN_BUFFER_TYPE_UNIFORM);
+        VULKAN_BUFFER_TYPE_UNIFORM,
+        false);
 
     uniformBuffer->drawOffset = 0;
     uniformBuffer->writeOffset = 0;
@@ -6699,14 +6718,18 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
 
 static SDL_GPUTransferBuffer *VULKAN_CreateTransferBuffer(
     SDL_GPURenderer *driverData,
-    SDL_GPUTransferBufferUsage usage, // ignored on Vulkan
+    SDL_GPUTransferBufferUsage usage,
     Uint32 size)
 {
+    // We use dedicated allocations for download buffers to avoid an issue
+    // where a defrag is triggered after submitting a download but before
+    // waiting on the fence.
     return (SDL_GPUTransferBuffer *)VULKAN_INTERNAL_CreateBufferContainer(
         (VulkanRenderer *)driverData,
         (VkDeviceSize)size,
         0,
-        VULKAN_BUFFER_TYPE_TRANSFER);
+        VULKAN_BUFFER_TYPE_TRANSFER,
+        usage == SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD);
 }
 
 static void VULKAN_INTERNAL_ReleaseTexture(
@@ -10406,7 +10429,8 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 renderer,
                 currentRegion->vulkanBuffer->size,
                 currentRegion->vulkanBuffer->usage,
-                currentRegion->vulkanBuffer->type);
+                currentRegion->vulkanBuffer->type,
+                false);
 
             if (newBuffer == NULL) {
                 SDL_UnlockMutex(renderer->allocatorLock);
