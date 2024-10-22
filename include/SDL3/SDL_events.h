@@ -707,6 +707,20 @@ typedef struct SDL_CameraDeviceEvent
 /**
  * Touch finger event structure (event.tfinger.*)
  *
+ * Coordinates in this event are normalized. `x` and `y` are normalized to a
+ * range between 0.0f and 1.0f, relative to the window, so (0,0) is the top
+ * left and (1,1) is the bottom right. Delta coordinates `dx` and `dy` are
+ * normalized in the ranges of -1.0f (traversed all the way from the bottom or
+ * right to all the way up or left) to 1.0f (traversed all the way from the
+ * top or left to all the way down or right).
+ *
+ * Note that while the coordinates are _normalized_, they are not _clamped_,
+ * which means in some circumstances you can get a value outside of this
+ * range. For example, a renderer using logical presentation might give a
+ * negative value when the touch is in the letterboxing. Some platforms might
+ * report a touch outside of the window, which will also be outside of the
+ * range.
+ *
  * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_TouchFingerEvent
