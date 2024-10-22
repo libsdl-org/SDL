@@ -162,9 +162,9 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetError(void);
  *
  * \returns true.
  *
- * \since This function is available since SDL 3.0.0.
- *
  * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetError
  * \sa SDL_SetError
