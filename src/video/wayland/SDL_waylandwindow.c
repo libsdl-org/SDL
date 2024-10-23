@@ -2658,6 +2658,17 @@ void Wayland_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, i
     *h = data->current.pixel_height;
 }
 
+float Wayland_GetWindowContentScale(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    SDL_WindowData *wind = window->internal;
+
+    if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY || wind->scale_to_display || wind->fullscreen_exclusive) {
+        return (float)wind->scale_factor;
+    }
+
+    return 1.0f;
+}
+
 SDL_DisplayID Wayland_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->internal;

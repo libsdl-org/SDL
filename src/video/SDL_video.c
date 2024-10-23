@@ -1751,11 +1751,17 @@ float SDL_GetWindowDisplayScale(SDL_Window *window)
 
 static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
 {
-    float pixel_density = SDL_GetWindowPixelDensity(window);
-    float content_scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindowPosition(window));
     float display_scale;
 
-    display_scale = (pixel_density * content_scale);
+    if (_this->GetWindowContentScale) {
+        display_scale = _this->GetWindowContentScale(_this, window);
+    } else {
+        const float pixel_density = SDL_GetWindowPixelDensity(window);
+        const float content_scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindowPosition(window));
+
+        display_scale = pixel_density * content_scale;
+    }
+
     if (display_scale != window->display_scale) {
         window->display_scale = display_scale;
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED, 0, 0);

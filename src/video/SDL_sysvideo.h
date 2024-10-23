@@ -264,6 +264,7 @@ struct SDL_VideoDevice
     void (*SetWindowMaximumSize)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*SetWindowAspectRatio)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*GetWindowBordersSize)(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right);
+    float (*GetWindowContentScale)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*GetWindowSizeInPixels)(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
     bool (*SetWindowOpacity)(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
     bool (*SetWindowParent)(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent);
