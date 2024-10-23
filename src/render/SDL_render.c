@@ -1812,13 +1812,13 @@ bool SDL_GetTextureColorMod(SDL_Texture *texture, Uint8 *r, Uint8 *g, Uint8 *b)
     }
 
     if (r) {
-        *r = (Uint8)(fR * 255.0f);
+        *r = (Uint8)SDL_roundf(SDL_clamp(fR, 0.0f, 1.0f) * 255.0f);
     }
     if (g) {
-        *g = (Uint8)(fG * 255.0f);
+        *g = (Uint8)SDL_roundf(SDL_clamp(fG, 0.0f, 1.0f) * 255.0f);
     }
     if (b) {
-        *b = (Uint8)(fB * 255.0f);
+        *b = (Uint8)SDL_roundf(SDL_clamp(fB, 0.0f, 1.0f) * 255.0f);
     }
     return true;
 }
@@ -1883,7 +1883,7 @@ bool SDL_GetTextureAlphaMod(SDL_Texture *texture, Uint8 *alpha)
     }
 
     if (alpha) {
-        *alpha = (Uint8)(fA * 255.0f);
+        *alpha = (Uint8)SDL_roundf(SDL_clamp(fA, 0.0f, 1.0f) * 255.0f);
     }
     return true;
 }
@@ -3006,8 +3006,8 @@ bool SDL_RenderViewportSet(SDL_Renderer *renderer)
 static void GetRenderViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
 {
     const SDL_RenderViewState *view = renderer->view;
-    const float scale_x = view->current_scale.x;
-    const float scale_y = view->current_scale.y;
+    const float scale_x = view->logical_scale.x;
+    const float scale_y = view->logical_scale.y;
 
     rect->x = 0.0f;
     rect->y = 0.0f;
@@ -5072,6 +5072,7 @@ static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
     renderer->render_commands_pool = NULL;
     renderer->render_commands_tail = NULL;
     renderer->render_commands = NULL;
+    renderer->vertex_data_used = 0;
 
     while (cmd) {
         SDL_RenderCommand *next = cmd->next;
@@ -5098,8 +5099,10 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 
     SDL_DiscardAllCommands(renderer);
 
-    SDL_DestroyTexture(renderer->debug_char_texture_atlas);
-    renderer->debug_char_texture_atlas = NULL;
+    if (renderer->debug_char_texture_atlas) {
+        SDL_DestroyTexture(renderer->debug_char_texture_atlas);
+        renderer->debug_char_texture_atlas = NULL;
+    }
 
     // Free existing textures for this renderer
     while (renderer->textures) {

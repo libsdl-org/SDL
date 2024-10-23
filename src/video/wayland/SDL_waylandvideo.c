@@ -49,7 +49,6 @@
 #include "frog-color-management-v1-client-protocol.h"
 #include "idle-inhibit-unstable-v1-client-protocol.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
-#include "kde-output-order-v1-client-protocol.h"
 #include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
@@ -203,47 +202,6 @@ error:
     return false;
 }
 
-static void Wayland_FlushOutputOrder(SDL_VideoData *vid)
-{
-    SDL_WaylandConnectorName *c, *tmp;
-    wl_list_for_each_safe (c, tmp, &vid->output_order, link) {
-        WAYLAND_wl_list_remove(&c->link);
-        SDL_free(c);
-    }
-
-    vid->output_order_finalized = false;
-}
-
-/* The order of wl_output displays exposed by KDE doesn't correspond to any priority, but KDE does provide a protocol
- * that tells clients the preferred order or all connected displays via an ordered list of connector name strings.
- */
-static void handle_kde_output_order_output(void *data, struct kde_output_order_v1 *kde_output_order_v1, const char *output_name)
-{
-    SDL_VideoData *vid = (SDL_VideoData *)data;
-
-    // Starting a new list, flush the old.
-    if (vid->output_order_finalized) {
-        Wayland_FlushOutputOrder(vid);
-    }
-
-    const int len = SDL_strlen(output_name) + 1;
-    SDL_WaylandConnectorName *node = SDL_malloc(sizeof(SDL_WaylandConnectorName) + len);
-    SDL_strlcpy(node->wl_output_name, output_name, len);
-
-    WAYLAND_wl_list_insert(vid->output_order.prev, &node->link);
-}
-
-static void handle_kde_output_order_done(void *data, struct kde_output_order_v1 *kde_output_order_v1)
-{
-    SDL_VideoData *vid = (SDL_VideoData *)data;
-    vid->output_order_finalized = true;
-}
-
-static const struct kde_output_order_v1_listener kde_output_order_listener = {
-    handle_kde_output_order_output,
-    handle_kde_output_order_done
-};
-
 // Sort the list of displays into a deterministic order
 static int SDLCALL Wayland_DisplayPositionCompare(const void *a, const void *b)
 {
@@ -350,7 +308,7 @@ static int Wayland_GetPrimaryDisplay(SDL_VideoData *vid)
     return best_index;
 }
 
-static bool Wayland_SortOutputsByPriorityHint(SDL_VideoData *vid)
+static void Wayland_SortOutputsByPriorityHint(SDL_VideoData *vid)
 {
     const char *name_hint = SDL_GetHint(SDL_HINT_VIDEO_DISPLAY_PRIORITY);
 
@@ -358,9 +316,10 @@ static bool Wayland_SortOutputsByPriorityHint(SDL_VideoData *vid)
         char *saveptr;
         char *str = SDL_strdup(name_hint);
         SDL_DisplayData **sorted_list = SDL_malloc(sizeof(SDL_DisplayData *) * vid->output_count);
-        int sorted_index = 0;
 
         if (str && sorted_list) {
+            int sorted_index = 0;
+
             // Sort the requested displays to the front of the list.
             const char *token = SDL_strtok_r(str, ",", &saveptr);
             while (token) {
@@ -389,67 +348,24 @@ static bool Wayland_SortOutputsByPriorityHint(SDL_VideoData *vid)
 
         SDL_free(str);
         SDL_free(sorted_list);
-
-        return true;
     }
-
-    return false;
 }
 
 static void Wayland_SortOutputs(SDL_VideoData *vid)
 {
-    bool have_primary = false;
+    // Sort by position or connector name, so the order of outputs is deterministic.
+    SDL_qsort(vid->output_list, vid->output_count, sizeof(SDL_DisplayData *), Wayland_DisplayPositionCompare);
 
-    /* KDE provides the kde-output-order-v1 protocol, which gives us the full preferred display
-     * ordering in the form of a list of wl_output.name strings.
-     */
-    if (!WAYLAND_wl_list_empty(&vid->output_order)) {
-        SDL_WaylandConnectorName *c;
-        SDL_DisplayData **sorted_list = SDL_malloc(sizeof(SDL_DisplayData *) * vid->output_count);
-        int sorted_index = 0;
-
-        if (sorted_list) {
-            // Sort the outputs by connector name.
-            wl_list_for_each (c, &vid->output_order, link) {
-                for (int i = 0; i < vid->output_count; ++i) {
-                    SDL_DisplayData *d = vid->output_list[i];
-                    if (d && d->wl_output_name && SDL_strcmp(c->wl_output_name, d->wl_output_name) == 0) {
-                        sorted_list[sorted_index++] = d;
-                        vid->output_list[i] = NULL;
-                        break;
-                    }
-                }
-            }
-
-            /* If any displays were omitted during the sort, append them to the new list.
-             * This shouldn't happen, but better safe than sorry.
-             */
-            for (int i = 0; i < vid->output_count; ++i) {
-                if (vid->output_list[i]) {
-                    sorted_list[sorted_index++] = vid->output_list[i];
-                }
-            }
-
-            // Copy the sorted list to the output list.
-            SDL_memcpy(vid->output_list, sorted_list, sizeof(SDL_DisplayData *) * vid->output_count);
-            SDL_free(sorted_list);
-
-            have_primary = true;
-        }
-    } else {
-        // Sort by position or connector name, so the order of outputs is deterministic.
-        SDL_qsort(vid->output_list, vid->output_count, sizeof(SDL_DisplayData *), Wayland_DisplayPositionCompare);
+    // Find a suitable primary display and move it to the front of the list.
+    const int primary_index = Wayland_GetPrimaryDisplay(vid);
+    if (primary_index) {
+        SDL_DisplayData *primary = vid->output_list[primary_index];
+        SDL_memmove(&vid->output_list[1], &vid->output_list[0], sizeof(SDL_DisplayData *) * primary_index);
+        vid->output_list[0] = primary;
     }
 
-    // Apply the ordering hint if specified, otherwise, try to find the primary display, if no preferred order is known.
-    if (!Wayland_SortOutputsByPriorityHint(vid) && !have_primary) {
-        const int primary_index = Wayland_GetPrimaryDisplay(vid);
-        if (primary_index) {
-            SDL_DisplayData *primary = vid->output_list[primary_index];
-            SDL_memmove(&vid->output_list[1], &vid->output_list[0], sizeof(SDL_DisplayData *) * primary_index);
-            vid->output_list[0] = primary;
-        }
-    }
+    // Apply the ordering hint, if specified.
+    Wayland_SortOutputsByPriorityHint(vid);
 }
 
 static void display_handle_done(void *data, struct wl_output *output);
@@ -643,7 +559,6 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     data->input = input;
     data->display_externally_owned = display_is_external;
     data->scale_to_display_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY, false);
-    WAYLAND_wl_list_init(&data->output_order);
     WAYLAND_wl_list_init(&external_window_list);
 
     // Initialize all variables that we clean on shutdown
@@ -710,6 +625,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->SetWindowTitle = Wayland_SetWindowTitle;
     device->SetWindowIcon = Wayland_SetWindowIcon;
     device->GetWindowSizeInPixels = Wayland_GetWindowSizeInPixels;
+    device->GetWindowContentScale = Wayland_GetWindowContentScale;
     device->GetDisplayForWindow = Wayland_GetDisplayForWindow;
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
@@ -1353,9 +1269,6 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->wp_alpha_modifier_v1 = wl_registry_bind(d->registry, id, &wp_alpha_modifier_v1_interface, 1);
     } else if (SDL_strcmp(interface, "xdg_toplevel_icon_manager_v1") == 0) {
         d->xdg_toplevel_icon_manager_v1 = wl_registry_bind(d->registry, id, &xdg_toplevel_icon_manager_v1_interface, 1);
-    } else if (SDL_strcmp(interface, "kde_output_order_v1") == 0) {
-        d->kde_output_order = wl_registry_bind(d->registry, id, &kde_output_order_v1_interface, 1);
-        kde_output_order_v1_add_listener(d->kde_output_order, &kde_output_order_listener, d);
     } else if (SDL_strcmp(interface, "frog_color_management_factory_v1") == 0) {
         d->frog_color_management_factory_v1 = wl_registry_bind(d->registry, id, &frog_color_management_factory_v1_interface, 1);
     }
@@ -1632,12 +1545,6 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->xdg_toplevel_icon_manager_v1) {
         xdg_toplevel_icon_manager_v1_destroy(data->xdg_toplevel_icon_manager_v1);
         data->xdg_toplevel_icon_manager_v1 = NULL;
-    }
-
-    if (data->kde_output_order) {
-        Wayland_FlushOutputOrder(data);
-        kde_output_order_v1_destroy(data->kde_output_order);
-        data->kde_output_order = NULL;
     }
 
     if (data->frog_color_management_factory_v1) {

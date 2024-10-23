@@ -39,7 +39,7 @@ extern void SDL_PrivateGamepadRemoved(SDL_JoystickID instance_id);
 extern bool SDL_IsGamepadNameAndGUID(const char *name, SDL_GUID guid);
 
 // Function to return whether a gamepad should be ignored
-extern bool SDL_ShouldIgnoreGamepad(const char *name, SDL_GUID guid);
+extern bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
 // Handle delayed guide button on a gamepad
 extern void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick);

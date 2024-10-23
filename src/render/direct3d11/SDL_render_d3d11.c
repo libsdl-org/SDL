@@ -307,10 +307,9 @@ static void D3D11_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture);
 static void D3D11_ReleaseAll(SDL_Renderer *renderer)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
-    SDL_Texture *texture = NULL;
 
     // Release all textures
-    for (texture = renderer->textures; texture; texture = texture->next) {
+    for (SDL_Texture *texture = renderer->textures; texture; texture = texture->next) {
         D3D11_DestroyTexture(renderer, texture);
     }
 
@@ -336,7 +335,7 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
                 SAFE_RELEASE(data->blendModes[i].blendState);
             }
             SDL_free(data->blendModes);
-
+            data->blendModes = NULL;
             data->blendModesCount = 0;
         }
         for (i = 0; i < SDL_arraysize(data->pixelShaders); ++i) {
@@ -982,37 +981,6 @@ static void D3D11_ReleaseMainRenderTargetView(SDL_Renderer *renderer)
     SAFE_RELEASE(data->mainRenderTargetView);
 }
 
-static HRESULT D3D11_UpdateForWindowSizeChange(SDL_Renderer *renderer);
-
-static HRESULT D3D11_HandleDeviceLost(SDL_Renderer *renderer)
-{
-    HRESULT result = S_OK;
-
-    D3D11_ReleaseAll(renderer);
-
-    result = D3D11_CreateDeviceResources(renderer);
-    if (FAILED(result)) {
-        // D3D11_CreateDeviceResources will set the SDL error
-        return result;
-    }
-
-    result = D3D11_UpdateForWindowSizeChange(renderer);
-    if (FAILED(result)) {
-        // D3D11_UpdateForWindowSizeChange will set the SDL error
-        return result;
-    }
-
-    // Let the application know that the device has been reset
-    {
-        SDL_Event event;
-        event.type = SDL_EVENT_RENDER_DEVICE_RESET;
-        event.common.timestamp = 0;
-        SDL_PushEvent(&event);
-    }
-
-    return S_OK;
-}
-
 // Initialize all resources that change when the window's size changes.
 static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 {
@@ -1043,15 +1011,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
                                               w, h,
                                               DXGI_FORMAT_UNKNOWN,
                                               0);
-        if (result == DXGI_ERROR_DEVICE_REMOVED) {
-            // If the device was removed for any reason, a new device and swap chain will need to be created.
-            D3D11_HandleDeviceLost(renderer);
-
-            /* Everything is set up now. Do not continue execution of this method. HandleDeviceLost will reenter this method
-             * and correctly set up the new device.
-             */
-            goto done;
-        } else if (FAILED(result)) {
+        if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::ResizeBuffers"), result);
             goto done;
         }
@@ -1108,6 +1068,29 @@ done:
     return result;
 }
 
+static bool D3D11_HandleDeviceLost(SDL_Renderer *renderer)
+{
+    bool recovered = false;
+
+    D3D11_ReleaseAll(renderer);
+
+    if (SUCCEEDED(D3D11_CreateDeviceResources(renderer)) &&
+        SUCCEEDED(D3D11_CreateWindowSizeDependentResources(renderer))) {
+        recovered = true;
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Renderer couldn't recover from device lost: %s\n", SDL_GetError());
+        D3D11_ReleaseAll(renderer);
+    }
+
+    // Let the application know that the device has been reset or lost
+    SDL_Event event;
+    event.type = recovered ? SDL_EVENT_RENDER_DEVICE_RESET : SDL_EVENT_RENDER_DEVICE_LOST;
+    event.common.timestamp = 0;
+    SDL_PushEvent(&event);
+
+    return recovered;
+}
+
 // This method is called when the window's size changes.
 static HRESULT D3D11_UpdateForWindowSizeChange(SDL_Renderer *renderer)
 {
@@ -1161,6 +1144,10 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     DXGI_FORMAT textureFormat = SDLPixelFormatToDXGITextureFormat(texture->format, renderer->output_colorspace);
     D3D11_TEXTURE2D_DESC textureDesc;
     D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
+
+    if (!rendererData->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
 
     if (textureFormat == DXGI_FORMAT_UNKNOWN) {
         return SDL_SetError("%s, An unsupported SDL pixel format (0x%x) was specified",
@@ -2395,6 +2382,10 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     const int viewportRotation = D3D11_GetRotationForCurrentRenderTarget(renderer);
 
+    if (!rendererData->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
+
     if (rendererData->pixelSizeChanged) {
         D3D11_UpdateForWindowSizeChange(renderer);
         rendererData->pixelSizeChanged = false;
@@ -2613,6 +2604,10 @@ static bool D3D11_RenderPresent(SDL_Renderer *renderer)
     HRESULT result;
     DXGI_PRESENT_PARAMETERS parameters;
 
+    if (!data->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
+
     SDL_zero(parameters);
 
     /* The application may optionally specify "dirty" or "scroll"
@@ -2634,10 +2629,15 @@ static bool D3D11_RenderPresent(SDL_Renderer *renderer)
          * must recreate all device resources.
          */
         if (result == DXGI_ERROR_DEVICE_REMOVED) {
-            D3D11_HandleDeviceLost(renderer);
+            if (D3D11_HandleDeviceLost(renderer)) {
+                SDL_SetError("Present failed, device lost");
+            } else {
+                // Recovering from device lost failed, error is already set
+            }
         } else if (result == DXGI_ERROR_INVALID_CALL) {
             // We probably went through a fullscreen <-> windowed transition
             D3D11_CreateWindowSizeDependentResources(renderer);
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         } else {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         }

@@ -1207,3 +1207,4 @@
 #define SDL_SetErrorV SDL_SetErrorV_REAL
 #define SDL_GetDefaultLogOutputFunction SDL_GetDefaultLogOutputFunction_REAL
 #define SDL_RenderDebugText SDL_RenderDebugText_REAL
+#define SDL_GetSandbox SDL_GetSandbox_REAL

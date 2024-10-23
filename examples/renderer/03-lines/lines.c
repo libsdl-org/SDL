@@ -56,18 +56,18 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     };
 
     /* as you can see from this, rendering draws over whatever was drawn before it. */
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);  /* grey, full alpha */
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);  /* grey, full alpha */
     SDL_RenderClear(renderer);  /* start with a blank canvas. */
 
     /* You can draw lines, one at a time, like these brown ones... */
-    SDL_SetRenderDrawColor(renderer, 127, 49, 32, 255);
+    SDL_SetRenderDrawColor(renderer, 127, 49, 32, SDL_ALPHA_OPAQUE);
     SDL_RenderLine(renderer, 240, 450, 400, 450);
     SDL_RenderLine(renderer, 240, 356, 400, 356);
     SDL_RenderLine(renderer, 240, 356, 240, 450);
     SDL_RenderLine(renderer, 400, 356, 400, 450);
 
     /* You can also draw a series of connected lines in a single batch... */
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderLines(renderer, line_points, SDL_arraysize(line_points));
 
     /* here's a bunch of lines drawn out from a center point in a circle. */
@@ -76,7 +76,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         const float size = 30.0f;
         const float x = 320.0f;
         const float y = 95.0f - (size / 2.0f);
-        SDL_SetRenderDrawColor(renderer, SDL_rand(256), SDL_rand(256), SDL_rand(256), 255);
+        SDL_SetRenderDrawColor(renderer, SDL_rand(256), SDL_rand(256), SDL_rand(256), SDL_ALPHA_OPAQUE);
         SDL_RenderLine(renderer, x, y, x + SDL_sinf((float) i) * size, y + SDL_cosf((float) i) * size);
     }
 

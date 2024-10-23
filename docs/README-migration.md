@@ -2134,7 +2134,9 @@ SDL_CreateWindow() has been simplified and no longer takes a window position. Yo
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, y);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, width);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, height);
-    SDL_SetNumberProperty(props, "flags", flags);
+    // For window flags you should use separate window creation properties,
+    // but for easier migration from SDL2 you can use the following:
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
     pWindow = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     if (window) {
@@ -2227,6 +2229,10 @@ The following symbols have been renamed:
 * SDL_DISPLAYEVENT_DISCONNECTED => SDL_EVENT_DISPLAY_REMOVED
 * SDL_DISPLAYEVENT_MOVED => SDL_EVENT_DISPLAY_MOVED
 * SDL_DISPLAYEVENT_ORIENTATION => SDL_EVENT_DISPLAY_ORIENTATION
+* SDL_GLattr => SDL_GLAttr
+* SDL_GLcontextFlag => SDL_GLContextFlag
+* SDL_GLcontextReleaseFlag => SDL_GLContextReleaseFlag
+* SDL_GLprofile => SDL_GLProfile
 * SDL_WINDOWEVENT_CLOSE => SDL_EVENT_WINDOW_CLOSE_REQUESTED
 * SDL_WINDOWEVENT_DISPLAY_CHANGED => SDL_EVENT_WINDOW_DISPLAY_CHANGED
 * SDL_WINDOWEVENT_ENTER => SDL_EVENT_WINDOW_MOUSE_ENTER

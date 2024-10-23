@@ -65,14 +65,13 @@ if (scalar(@releases) > 0) {
     $current_release = $releases[-1];
 
     my @current_release_segments = split /\./, $current_release;
-
-    # if we're still in the 3.1.x prereleases, bump x by 1, otherwise, bump minor version by 2.
+    # if we're still in the 3.1.x prereleases, call the "next release" 3.2.0 even if we do more prereleases.
     if (($current_release_segments[0] == '3') && ($current_release_segments[1] == '1')) {
-        @current_release_segments[2] = '' . (int($current_release_segments[2]) + 1);
+        $next_release = '3.2.0';
     } else {
         @current_release_segments[1] = '' . (int($current_release_segments[1]) + 2);
+        $next_release = join('.', @current_release_segments);
     }
-    $next_release = join('.', @current_release_segments);
 }
 
 #print("\n\nSORTED\n");
@@ -91,7 +90,11 @@ foreach my $release (@releases) {
     my $tag = $fulltags{$release};
     my $blobname = "$tag:src/dynapi/SDL_dynapi_overrides.h";
 
-    $release = '3.0.0' if $release =~ /\A3\.1\.[0123]/;  # hack to make everything up to ABI-lock look like 3.0.0.
+    if ($release =~ /\A3\.[01]\.\d+/) {  # make everything up to the first SDL3 prerelease look like 3.1.3 (ABI lock version).
+        $release = '3.1.3';
+    }
+
+    else { $release = '3.2.0'; }  # !!! FIXME: REMOVE ME WHEN 3.2.0 SHIPS!
 
     open(PIPEFH, '-|', "git show '$blobname'") or die "Failed to read git blob '$blobname': $!\n";
     while (<PIPEFH>) {

@@ -65,7 +65,7 @@ int SDLCALL SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *reference
  *
  * \returns 0 if the left and right memory block are equal, non-zero if they are non-equal.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 int SDLCALL SDLTest_CompareMemory(const void *actual, size_t size_actual, const void *reference, size_t size_reference);
 

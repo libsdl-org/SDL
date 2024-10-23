@@ -49,7 +49,7 @@ extern "C" {
  * processors have a 128 byte cache line. We use the larger value to be
  * generally safe.
  *
- * \since This macro is available since SDL 3.0.0.
+ * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_CACHELINE_SIZE  128
 
@@ -60,7 +60,9 @@ extern "C" {
  *          technologies such as hyperthreading, the number of logical cores
  *          may be more than the number of physical cores.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetNumLogicalCPUCores(void);
 
@@ -72,7 +74,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumLogicalCPUCores(void);
  *
  * \returns the L1 cache line size of the CPU, in bytes.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetCPUCacheLineSize(void);
 
@@ -84,7 +88,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCPUCacheLineSize(void);
  *
  * \returns true if the CPU has AltiVec features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_HasAltiVec(void);
 
@@ -95,7 +101,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasAltiVec(void);
  *
  * \returns true if the CPU has MMX features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_HasMMX(void);
 
@@ -106,7 +114,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasMMX(void);
  *
  * \returns true if the CPU has SSE features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HasSSE2
  * \sa SDL_HasSSE3
@@ -122,7 +132,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasSSE(void);
  *
  * \returns true if the CPU has SSE2 features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HasSSE
  * \sa SDL_HasSSE3
@@ -138,7 +150,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasSSE2(void);
  *
  * \returns true if the CPU has SSE3 features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HasSSE
  * \sa SDL_HasSSE2
@@ -154,7 +168,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasSSE3(void);
  *
  * \returns true if the CPU has SSE4.1 features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HasSSE
  * \sa SDL_HasSSE2
@@ -170,7 +186,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasSSE41(void);
  *
  * \returns true if the CPU has SSE4.2 features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HasSSE
  * \sa SDL_HasSSE2
@@ -186,7 +204,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasSSE42(void);
  *
  * \returns true if the CPU has AVX features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HasAVX2
  * \sa SDL_HasAVX512F
@@ -200,7 +220,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasAVX(void);
  *
  * \returns true if the CPU has AVX2 features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX512F
@@ -214,7 +236,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasAVX2(void);
  *
  * \returns true if the CPU has AVX-512F features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
@@ -230,7 +254,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasAVX512F(void);
  *
  * \returns true if the CPU has ARM SIMD features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HasNEON
  */
@@ -243,7 +269,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasARMSIMD(void);
  *
  * \returns true if the CPU has ARM NEON features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_HasNEON(void);
 
@@ -255,7 +283,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasNEON(void);
  *
  * \returns true if the CPU has LOONGARCH LSX features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_HasLSX(void);
 
@@ -267,7 +297,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasLSX(void);
  *
  * \returns true if the CPU has LOONGARCH LASX features or false if not.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_HasLASX(void);
 
@@ -276,7 +308,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasLASX(void);
  *
  * \returns the amount of RAM configured in the system in MiB.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
 
@@ -295,7 +329,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
  * \returns the alignment in bytes needed for available, known SIMD
  *          instructions.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_aligned_alloc
  * \sa SDL_aligned_free

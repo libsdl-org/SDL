@@ -1154,6 +1154,9 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_RIGHT_PADDLE,
                                           ((ctx->m_state.ulButtons & STEAM_BUTTON_BACK_RIGHT_MASK) != 0));
 
+                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK,
+                                          ((ctx->m_state.ulButtons & STEAM_BUTTON_RIGHTPAD_CLICKED_MASK) != 0));
+
                 if (ctx->m_state.ulButtons & STEAM_DPAD_UP_MASK) {
                     hat |= SDL_HAT_UP;
                 }

@@ -374,14 +374,13 @@ static void D3D12_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture);
 static void D3D12_ReleaseAll(SDL_Renderer *renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
-    SDL_Texture *texture = NULL;
 
     SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_DEVICE_POINTER, NULL);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER, NULL);
 
     // Release all textures
-    for (texture = renderer->textures; texture; texture = texture->next) {
+    for (SDL_Texture *texture = renderer->textures; texture; texture = texture->next) {
         D3D12_DestroyTexture(renderer, texture);
     }
 
@@ -414,6 +413,7 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
                 D3D_SAFE_RELEASE(data->pipelineStates[i].pipelineState);
             }
             SDL_free(data->pipelineStates);
+            data->pipelineStates = NULL;
             data->pipelineStateCount = 0;
         }
 
@@ -1325,38 +1325,6 @@ done:
 }
 #endif
 
-static HRESULT D3D12_UpdateForWindowSizeChange(SDL_Renderer *renderer);
-
-HRESULT
-D3D12_HandleDeviceLost(SDL_Renderer *renderer)
-{
-    HRESULT result = S_OK;
-
-    D3D12_ReleaseAll(renderer);
-
-    result = D3D12_CreateDeviceResources(renderer);
-    if (FAILED(result)) {
-        // D3D12_CreateDeviceResources will set the SDL error
-        return result;
-    }
-
-    result = D3D12_UpdateForWindowSizeChange(renderer);
-    if (FAILED(result)) {
-        // D3D12_UpdateForWindowSizeChange will set the SDL error
-        return result;
-    }
-
-    // Let the application know that the device has been reset
-    {
-        SDL_Event event;
-        event.type = SDL_EVENT_RENDER_DEVICE_RESET;
-        event.common.timestamp = 0;
-        SDL_PushEvent(&event);
-    }
-
-    return S_OK;
-}
-
 // Initialize all resources that change when the window's size changes.
 static HRESULT D3D12_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 {
@@ -1395,15 +1363,7 @@ static HRESULT D3D12_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
                           w, h,
                           DXGI_FORMAT_UNKNOWN,
                           data->swapFlags);
-        if (result == DXGI_ERROR_DEVICE_REMOVED) {
-            // If the device was removed for any reason, a new device and swap chain will need to be created.
-            D3D12_HandleDeviceLost(renderer);
-
-            /* Everything is set up now. Do not continue execution of this method. HandleDeviceLost will reenter this method
-             * and correctly set up the new device.
-             */
-            goto done;
-        } else if (FAILED(result)) {
+        if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::ResizeBuffers"), result);
             goto done;
         }
@@ -1481,6 +1441,29 @@ static HRESULT D3D12_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 
 done:
     return result;
+}
+
+static bool D3D12_HandleDeviceLost(SDL_Renderer *renderer)
+{
+    bool recovered = false;
+
+    D3D12_ReleaseAll(renderer);
+
+    if (SUCCEEDED(D3D12_CreateDeviceResources(renderer)) &&
+        SUCCEEDED(D3D12_CreateWindowSizeDependentResources(renderer))) {
+        recovered = true;
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Renderer couldn't recover from device lost: %s\n", SDL_GetError());
+        D3D12_ReleaseAll(renderer);
+    }
+
+    // Let the application know that the device has been reset or lost
+    SDL_Event event;
+    event.type = recovered ? SDL_EVENT_RENDER_DEVICE_RESET : SDL_EVENT_RENDER_DEVICE_LOST;
+    event.common.timestamp = 0;
+    SDL_PushEvent(&event);
+
+    return recovered;
 }
 
 // This method is called when the window's size changes.
@@ -1564,6 +1547,10 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     D3D12_RESOURCE_DESC textureDesc;
     D3D12_HEAP_PROPERTIES heapProps;
     D3D12_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
+
+    if (!rendererData->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
 
     if (textureFormat == DXGI_FORMAT_UNKNOWN) {
         return SDL_SetError("%s, An unsupported SDL pixel format (0x%x) was specified", __FUNCTION__, texture->format);
@@ -2738,6 +2725,10 @@ static bool D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     D3D12_CPU_DESCRIPTOR_HANDLE *textureSampler;
     D3D12_PixelShaderConstants constants;
 
+    if (!textureData) {
+        return SDL_SetError("Texture is not currently available");
+    }
+
     D3D12_SetupShaderConstants(renderer, cmd, texture, &constants);
 
     switch (textureData->scaleMode) {
@@ -2824,6 +2815,10 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 {
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
     const int viewportRotation = D3D12_GetRotationForCurrentRenderTarget(renderer);
+
+    if (!rendererData->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
 
     if (rendererData->pixelSizeChanged) {
         D3D12_UpdateForWindowSizeChange(renderer);
@@ -3108,6 +3103,10 @@ static bool D3D12_RenderPresent(SDL_Renderer *renderer)
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     HRESULT result;
 
+    if (!data->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
+
     // Transition the render target to present state
     D3D12_TransitionResource(data,
                              data->renderTargets[data->currentBackBufferIndex],
@@ -3132,10 +3131,15 @@ static bool D3D12_RenderPresent(SDL_Renderer *renderer)
          * must recreate all device resources.
          */
         if (result == DXGI_ERROR_DEVICE_REMOVED) {
-            D3D12_HandleDeviceLost(renderer);
+            if (D3D12_HandleDeviceLost(renderer)) {
+                SDL_SetError("Present failed, device lost");
+            } else {
+                // Recovering from device lost failed, error is already set
+            }
         } else if (result == DXGI_ERROR_INVALID_CALL) {
             // We probably went through a fullscreen <-> windowed transition
             D3D12_CreateWindowSizeDependentResources(renderer);
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         } else {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         }

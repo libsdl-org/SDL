@@ -102,6 +102,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
      *                          NULL, &wszPath);
      */
 
+    HRESULT hr = E_FAIL;
     WCHAR path[MAX_PATH];
     char *result = NULL;
     WCHAR *worg = NULL;
@@ -117,8 +118,9 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
         org = "";
     }
 
-    if (!SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, path))) {
-        WIN_SetError("Couldn't locate our prefpath");
+    hr = SHGetFolderPathW(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, path);
+    if (!SUCCEEDED(hr)) {
+        WIN_SetErrorFromHRESULT("Couldn't locate our prefpath", hr);
         return NULL;
     }
 

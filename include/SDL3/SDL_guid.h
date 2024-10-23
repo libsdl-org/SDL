@@ -54,7 +54,7 @@ extern "C" {
  * GUIDs may be platform-dependent (i.e., the same device may report different
  * GUIDs on different operating systems).
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.3.
  */
 typedef struct SDL_GUID {
     Uint8 data[16];
@@ -69,7 +69,7 @@ typedef struct SDL_GUID {
  * \param pszGUID buffer in which to write the ASCII string.
  * \param cbGUID the size of pszGUID, should be at least 33 bytes.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_StringToGUID
  */
@@ -85,7 +85,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GUIDToString(SDL_GUID guid, char *pszGUID, 
  * \param pchGUID string containing an ASCII representation of a GUID.
  * \returns a SDL_GUID structure.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GUIDToString
  */

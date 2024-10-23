@@ -309,7 +309,7 @@ SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 SDL_FORCE_INLINE float SDL_SwapFloat(float x)
 {
@@ -348,7 +348,7 @@ SDL_FORCE_INLINE float SDL_SwapFloat(float x)
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
 
@@ -369,7 +369,7 @@ SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
 
@@ -390,7 +390,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
 
@@ -404,7 +404,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in littleendian byte order.
  * \returns `x` in native byte order.
  *
- * \since This macro is available since SDL 3.0.0.
+ * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_Swap16LE(x) SwapOnlyIfNecessary(x)
 
@@ -418,7 +418,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in littleendian byte order.
  * \returns `x` in native byte order.
  *
- * \since This macro is available since SDL 3.0.0.
+ * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_Swap32LE(x) SwapOnlyIfNecessary(x)
 
@@ -432,7 +432,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in littleendian byte order.
  * \returns `x` in native byte order.
  *
- * \since This macro is available since SDL 3.0.0.
+ * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_Swap64LE(x) SwapOnlyIfNecessary(x)
 
@@ -446,7 +446,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in littleendian byte order.
  * \returns `x` in native byte order.
  *
- * \since This macro is available since SDL 3.0.0.
+ * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_SwapFloatLE(x) SwapOnlyIfNecessary(x)
 
@@ -460,7 +460,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in bigendian byte order.
  * \returns `x` in native byte order.
  *
- * \since This macro is available since SDL 3.0.0.
+ * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_Swap16BE(x) SwapOnlyIfNecessary(x)
 
@@ -474,7 +474,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in bigendian byte order.
  * \returns `x` in native byte order.
  *
- * \since This macro is available since SDL 3.0.0.
+ * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_Swap32BE(x) SwapOnlyIfNecessary(x)
 
@@ -488,7 +488,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in bigendian byte order.
  * \returns `x` in native byte order.
  *
- * \since This macro is available since SDL 3.0.0.
+ * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_Swap64BE(x) SwapOnlyIfNecessary(x)
 
@@ -502,7 +502,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in bigendian byte order.
  * \returns `x` in native byte order.
  *
- * \since This macro is available since SDL 3.0.0.
+ * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_SwapFloatBE(x) SwapOnlyIfNecessary(x)
 

@@ -47,7 +47,7 @@ extern "C" {
  *
  * The value 0 is an invalid ID.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  */
 typedef Uint32 SDL_MouseID;
 
@@ -56,14 +56,14 @@ typedef Uint32 SDL_MouseID;
  *
  * This is opaque data.
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.3.
  */
 typedef struct SDL_Cursor SDL_Cursor;
 
 /**
  * Cursor types for SDL_CreateSystemCursor().
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.1.3.
  */
 typedef enum SDL_SystemCursor
 {
@@ -93,7 +93,7 @@ typedef enum SDL_SystemCursor
 /**
  * Scroll direction types for the Scroll event
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.1.3.
  */
 typedef enum SDL_MouseWheelDirection
 {
@@ -110,7 +110,7 @@ typedef enum SDL_MouseWheelDirection
  * - Button 4: Side mouse button 1
  * - Button 5: Side mouse button 2
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  *
  * \sa SDL_GetMouseState
  * \sa SDL_GetGlobalMouseState
@@ -139,7 +139,7 @@ typedef Uint32 SDL_MouseButtonFlags;
  *
  * \returns true if a mouse is connected, false otherwise.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetMice
  */
@@ -159,7 +159,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasMouse(void);
  *          call SDL_GetError() for more information. This should be freed
  *          with SDL_free() when it is no longer needed.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetMouseNameForID
  * \sa SDL_HasMouse
@@ -175,7 +175,7 @@ extern SDL_DECLSPEC SDL_MouseID * SDLCALL SDL_GetMice(int *count);
  * \returns the name of the selected mouse, or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetMice
  */
@@ -186,7 +186,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID insta
  *
  * \returns the window with mouse focus.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
 
@@ -205,7 +205,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  *          focus window.
  * \returns a 32-bit button bitmask of the current button state.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetGlobalMouseState
  * \sa SDL_GetRelativeMouseState
@@ -235,7 +235,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, flo
  * \returns the current button state as a bitmask which can be tested using
  *          the SDL_BUTTON_MASK(X) macros.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CaptureMouse
  * \sa SDL_GetMouseState
@@ -255,7 +255,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *
  * \param y a pointer filled with the last recorded y coordinate of the mouse.
  * \returns a 32-bit button bitmask of the relative button state.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetMouseState
  */
@@ -276,7 +276,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float
  * \param x the x coordinate within the window.
  * \param y the y coordinate within the window.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_WarpMouseGlobal
  */
@@ -299,7 +299,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window,
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_WarpMouseInWindow
  */
@@ -320,7 +320,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WarpMouseGlobal(float x, float y);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetWindowRelativeMouseMode
  */
@@ -332,7 +332,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowRelativeMouseMode(SDL_Window *wind
  * \param window the window to query.
  * \returns true if relative mode is enabled for a window or false otherwise.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_SetWindowRelativeMouseMode
  */
@@ -378,7 +378,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowRelativeMouseMode(SDL_Window *wind
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetGlobalMouseState
  */
@@ -419,7 +419,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CaptureMouse(bool enabled);
  * \returns a new cursor with the specified parameters on success or NULL on
  *          failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateColorCursor
  * \sa SDL_CreateSystemCursor
@@ -450,7 +450,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 * data,
  * \returns the new cursor on success or NULL on failure; call SDL_GetError()
  *          for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateCursor
  * \sa SDL_CreateSystemCursor
@@ -468,7 +468,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateColorCursor(SDL_Surface *surf
  * \returns a cursor on success or NULL on failure; call SDL_GetError() for
  *          more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_DestroyCursor
  */
@@ -486,7 +486,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetCursor
  */
@@ -500,7 +500,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetCursor(SDL_Cursor *cursor);
  *
  * \returns the active cursor or NULL if there is no mouse.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_SetCursor
  */
@@ -515,7 +515,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetCursor(void);
  * \returns the default cursor on success or NULL on failuree; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetDefaultCursor(void);
 
@@ -527,7 +527,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetDefaultCursor(void);
  *
  * \param cursor the cursor to free.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateColorCursor
  * \sa SDL_CreateCursor
@@ -541,7 +541,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyCursor(SDL_Cursor *cursor);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CursorVisible
  * \sa SDL_HideCursor
@@ -554,7 +554,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowCursor(void);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CursorVisible
  * \sa SDL_ShowCursor
@@ -567,7 +567,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HideCursor(void);
  * \returns `true` if the cursor is being shown, or `false` if the cursor is
  *          hidden.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HideCursor
  * \sa SDL_ShowCursor

@@ -933,14 +933,18 @@ static bool SDL_EVDEV_device_added(const char *dev_path, int udev_class)
             SDL_free(item);
             return false;
         }
-    } else if (udev_class & SDL_UDEV_DEVICE_MOUSE) {
+    }
+
+    if (udev_class & SDL_UDEV_DEVICE_MOUSE) {
         if (!SDL_EVDEV_init_mouse(item, udev_class)) {
             close(item->fd);
             SDL_free(item->path);
             SDL_free(item);
             return false;
         }
-    } else if (udev_class & SDL_UDEV_DEVICE_KEYBOARD) {
+    }
+
+    if (udev_class & SDL_UDEV_DEVICE_KEYBOARD) {
         if (!SDL_EVDEV_init_keyboard(item, udev_class)) {
             close(item->fd);
             SDL_free(item->path);
@@ -981,11 +985,14 @@ static bool SDL_EVDEV_device_removed(const char *dev_path)
             if (item == _this->last) {
                 _this->last = prev;
             }
+
             if (item->is_touchscreen) {
                 SDL_EVDEV_destroy_touchscreen(item);
-            } else if (item->udev_class & SDL_UDEV_DEVICE_MOUSE) {
+            }
+            if (item->udev_class & SDL_UDEV_DEVICE_MOUSE) {
                 SDL_EVDEV_destroy_mouse(item);
-            } else if (item->udev_class & SDL_UDEV_DEVICE_KEYBOARD) {
+            }
+            if (item->udev_class & SDL_UDEV_DEVICE_KEYBOARD) {
                 SDL_EVDEV_destroy_keyboard(item);
             }
             close(item->fd);

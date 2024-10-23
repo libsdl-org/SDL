@@ -337,6 +337,7 @@ dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS
 dep_option(SDL_VULKAN              "Enable Vulkan support" ON "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR WINDOWS" OFF)
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
 dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
+set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
 dep_option(SDL_KMSDRM              "Use KMS DRM video driver" ${UNIX_SYS} "SDL_VIDEO" OFF)
 dep_option(SDL_KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "SDL_KMSDRM" OFF)
 set_option(SDL_OFFSCREEN           "Use offscreen video driver" ON)
@@ -1544,6 +1545,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     CheckOpenGL()
     CheckOpenGLES()
     CheckWayland()
+    CheckOpenVR()
     CheckVivante()
     CheckVulkan()
     CheckQNXScreen()
@@ -1726,7 +1728,6 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     sdl_sources(
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.c"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_threadprio.c"
-      "${SDL3_SOURCE_DIR}/src/core/linux/SDL_sandbox.c"
     )
 
     # src/core/unix/*.c is included in a generic if(UNIX) section, elsewhere.
@@ -1941,6 +1942,8 @@ elseif(WINDOWS)
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_WINDOWS 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/windows/*.c")
+
+    CheckOpenVR()
 
     if(SDL_RENDER_D3D AND HAVE_D3D9_H)
       set(SDL_VIDEO_RENDER_D3D 1)
@@ -2571,6 +2574,12 @@ elseif(VITA)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/sensor/vita/*.c")
   endif()
 
+  if(SDL_CAMERA)
+    set(SDL_CAMERA_DRIVER_VITA 1)
+    set(HAVE_CAMERA TRUE)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/camera/vita/*.c")
+  endif()
+
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_VITA 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/vita/*.c")
@@ -2651,6 +2660,7 @@ elseif(VITA)
         SceMotion_stub
         ScePower_stub
         SceProcessmgr_stub
+        SceCamera_stub
     )
   endif()
 

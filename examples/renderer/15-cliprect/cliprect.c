@@ -116,7 +116,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     /* okay, now draw! */
 
     /* Note that SDL_RenderClear is _not_ affected by the clipping rectangle! */
-    SDL_SetRenderDrawColor(renderer, 33, 33, 33, 255);  /* grey, full alpha */
+    SDL_SetRenderDrawColor(renderer, 33, 33, 33, SDL_ALPHA_OPAQUE);  /* grey, full alpha */
     SDL_RenderClear(renderer);  /* start with a blank canvas. */
 
     /* stretch the texture across the entire window. Only the piece in the

@@ -3715,3 +3715,19 @@ typedef SDL_bool, bool;
 @@
 - SDL_BUTTON
 + SDL_BUTTON_MASK
+@@
+@@
+- SDL_GLprofile
++ SDL_GLProfile
+@@
+@@
+- SDL_GLcontextFlag
++ SDL_GLContextFlag
+@@
+@@
+- SDL_GLcontextReleaseFlag
++ SDL_GLContextReleaseFlag
+@@
+@@
+- SDL_GLattr
++ SDL_GLAttr

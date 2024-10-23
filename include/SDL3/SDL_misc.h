@@ -65,7 +65,7 @@ extern "C" {
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_OpenURL(const char *url);
 

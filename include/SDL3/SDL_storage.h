@@ -54,7 +54,7 @@ extern "C" {
  *
  * This structure should be initialized using SDL_INIT_INTERFACE()
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.3.
  *
  * \sa SDL_INIT_INTERFACE
  */
@@ -114,7 +114,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_StorageInterface_SIZE,
  * functions like SDL_OpenTitleStorage or SDL_OpenUserStorage, etc, or create
  * an object with a custom implementation using SDL_OpenStorage.
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.3.
  */
 typedef struct SDL_Storage SDL_Storage;
 
@@ -126,7 +126,7 @@ typedef struct SDL_Storage SDL_Storage;
  * \returns a title storage container on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CloseStorage
  * \sa SDL_GetStorageFileSize
@@ -149,7 +149,7 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenTitleStorage(const char *overr
  * \returns a user storage container on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CloseStorage
  * \sa SDL_GetStorageFileSize
@@ -173,7 +173,7 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenUserStorage(const char *org, c
  * \returns a filesystem storage container on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CloseStorage
  * \sa SDL_GetStorageFileSize
@@ -202,7 +202,7 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenFileStorage(const char *path);
  * \returns a storage container on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CloseStorage
  * \sa SDL_GetStorageFileSize
@@ -223,7 +223,7 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenStorage(const SDL_StorageInter
  *          returns an error, the container data will be freed; the error is
  *          only for informational purposes.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_OpenFileStorage
  * \sa SDL_OpenStorage
@@ -242,7 +242,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CloseStorage(SDL_Storage *storage);
  * \param storage a storage container to query.
  * \returns true if the container is ready, false otherwise.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
 
@@ -255,7 +255,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
  * \returns true if the file could be queried or false on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_ReadStorageFile
  * \sa SDL_StorageReady
@@ -273,7 +273,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetStorageFileSize(SDL_Storage *storage, co
  * \returns true if the file was read or false on failure; call SDL_GetError()
  *          for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetStorageFileSize
  * \sa SDL_StorageReady
@@ -291,7 +291,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const
  * \returns true if the file was written or false on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetStorageSpaceRemaining
  * \sa SDL_ReadStorageFile
@@ -307,7 +307,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteStorageFile(SDL_Storage *storage, cons
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_StorageReady
  */
@@ -331,7 +331,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_StorageReady
  */
@@ -345,7 +345,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_EnumerateStorageDirectory(SDL_Storage *stor
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_StorageReady
  */
@@ -360,7 +360,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RemoveStoragePath(SDL_Storage *storage, con
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_StorageReady
  */
@@ -375,7 +375,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenameStoragePath(SDL_Storage *storage, con
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_StorageReady
  */
@@ -391,7 +391,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CopyStorageFile(SDL_Storage *storage, const
  * \returns true on success or false if the file doesn't exist, or another
  *          failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_StorageReady
  */
@@ -403,7 +403,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetStoragePathInfo(SDL_Storage *storage, co
  * \param storage a storage container to query.
  * \returns the amount of remaining space, in bytes.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_StorageReady
  * \sa SDL_WriteStorageFile
@@ -443,7 +443,7 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *sto
  * \threadsafety It is safe to call this function from any thread, assuming
  *               the `storage` object is thread-safe.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC char ** SDLCALL SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
 

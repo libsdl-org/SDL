@@ -32,6 +32,8 @@
 #define STACK_SIZE_PARAM_IS_A_RESERVATION 0x00010000
 #endif
 
+#define SDL_DEBUGGER_NAME_EXCEPTION_CODE 0x406D1388
+
 typedef void (__cdecl * SDL_EndThreadExCallback) (unsigned retval);
 typedef uintptr_t (__cdecl * SDL_BeginThreadExCallback)
                    (void *security, unsigned stacksize, unsigned (__stdcall *startaddr)(void *),
@@ -97,10 +99,13 @@ typedef struct tagTHREADNAME_INFO
 } THREADNAME_INFO;
 #pragma pack(pop)
 
-static LONG NTAPI EmptyVectoredExceptionHandler(EXCEPTION_POINTERS *ExceptionInfo)
+static LONG NTAPI EmptyVectoredExceptionHandler(EXCEPTION_POINTERS *info)
 {
-    (void)ExceptionInfo;
-    return EXCEPTION_CONTINUE_EXECUTION;
+    if (info != NULL && info->ExceptionRecord != NULL && info->ExceptionRecord->ExceptionCode == SDL_DEBUGGER_NAME_EXCEPTION_CODE) {
+        return EXCEPTION_CONTINUE_EXECUTION;
+    } else {
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
 }
 
 typedef HRESULT(WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
@@ -148,7 +153,7 @@ void SDL_SYS_SetupThread(const char *name)
             inf.dwFlags = 0;
 
             // The debugger catches this, renames the thread, continues on.
-            RaiseException(0x406D1388, 0, sizeof(inf) / sizeof(ULONG), (const ULONG_PTR *)&inf);
+            RaiseException(SDL_DEBUGGER_NAME_EXCEPTION_CODE, 0, sizeof(inf) / sizeof(ULONG), (const ULONG_PTR *)&inf);
             RemoveVectoredExceptionHandler(exceptionHandlerHandle);
         }
     }

@@ -45,7 +45,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     /* just blank the render target to gray to start. */
     SDL_SetRenderTarget(renderer, render_target);
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
     SDL_SetRenderTarget(renderer, NULL);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -90,7 +90,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 {
     /* make sure we're drawing to the window and not the render target */
     SDL_SetRenderTarget(renderer, NULL);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);  /* just in case. */
     SDL_RenderTexture(renderer, render_target, NULL, NULL);
     SDL_RenderPresent(renderer);

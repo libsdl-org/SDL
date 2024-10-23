@@ -432,6 +432,7 @@ static bool GPU_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
         }
 
         // FIXME: The Vulkan backend doesn't multiply by color_scale. GL does. I'm not sure which one is wrong.
+        // ANSWER: The color scale should be applied in linear space when using the scRGB colorspace. This is done in shaders in the Vulkan backend.
         *(verts++) = col_.r * color_scale;
         *(verts++) = col_.g * color_scale;
         *(verts++) = col_.b * color_scale;

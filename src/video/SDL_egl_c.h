@@ -117,7 +117,7 @@ typedef enum SDL_EGL_ExtensionType
 
 extern bool SDL_EGL_HasExtension(SDL_VideoDevice *_this, SDL_EGL_ExtensionType type, const char *ext);
 
-extern bool SDL_EGL_GetAttribute(SDL_VideoDevice *_this, SDL_GLattr attrib, int *value);
+extern bool SDL_EGL_GetAttribute(SDL_VideoDevice *_this, SDL_GLAttr attrib, int *value);
 /* SDL_EGL_LoadLibrary can get a display for a specific platform (EGL_PLATFORM_*)
  * or, if 0 is passed, let the implementation decide.
  */

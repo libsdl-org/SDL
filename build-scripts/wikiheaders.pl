@@ -1860,6 +1860,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my @paramsorder = ();
         my $fnsigparams = $headersymsparaminfo{$sym};
         my $has_returns = 0;
+        my $has_threadsafety = 0;
 
         while (@doxygenlines) {
             my $l = shift @doxygenlines;
@@ -1998,6 +1999,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 }
                 $desc =~ s/[\s\n]+\Z//ms;
                 $sections{'Thread Safety'} = wordwrap(wikify($wikitype, $desc)) . "\n";
+                $has_threadsafety = 1;
             } elsif ($l =~ /\A\\sa\s+(.*)\Z/) {
                 my $sa = $1;
                 $sa =~ s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
@@ -2013,6 +2015,11 @@ if ($copy_direction == 1) {  # --copy-to-headers
         if (($symtype == 1) && ($headersymsrettype{$sym} ne 'void') && !$has_returns) {
             print STDERR "WARNING: Function '$sym' has a non-void return type but no '\\returns' declaration\n";
         }
+
+        # !!! FIXME: uncomment this when we're trying to clean this up in the headers.
+        #if (($symtype == 1) && !$has_threadsafety) {
+        #    print STDERR "WARNING: Function '$sym' doesn't have a '\\threadsafety' declaration\n";
+        #}
 
         # Make sure %params is in the same order as the actual function signature and add C datatypes...
         my $params_has_c_datatype = 0;

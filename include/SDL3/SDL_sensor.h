@@ -52,7 +52,7 @@ typedef struct SDL_Sensor SDL_Sensor;
  *
  * The value 0 is an invalid ID.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  */
 typedef Uint32 SDL_SensorID;
 
@@ -64,7 +64,7 @@ typedef Uint32 SDL_SensorID;
  * rest will have an value of SDL_STANDARD_GRAVITY away from the center of the
  * earth, which is a positive Y value.
  *
- * \since This macro is available since SDL 3.0.0.
+ * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_STANDARD_GRAVITY    9.80665f
 
@@ -118,7 +118,7 @@ typedef Uint32 SDL_SensorID;
  *
  * The gyroscope axis data is not changed when the device is rotated.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.1.3.
  *
  * \sa SDL_GetCurrentDisplayOrientation
  */
@@ -146,7 +146,7 @@ typedef enum SDL_SensorType
  *          call SDL_GetError() for more information. This should be freed
  *          with SDL_free() when it is no longer needed.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_SensorID * SDLCALL SDL_GetSensors(int *count);
 
@@ -158,7 +158,7 @@ extern SDL_DECLSPEC SDL_SensorID * SDLCALL SDL_GetSensors(int *count);
  * \param instance_id the sensor instance ID.
  * \returns the sensor name, or NULL if `instance_id` is not valid.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetSensorNameForID(SDL_SensorID instance_id);
 
@@ -171,7 +171,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetSensorNameForID(SDL_SensorID ins
  * \returns the SDL_SensorType, or `SDL_SENSOR_INVALID` if `instance_id` is
  *          not valid.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorTypeForID(SDL_SensorID instance_id);
 
@@ -184,7 +184,7 @@ extern SDL_DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorTypeForID(SDL_SensorID i
  * \returns the sensor platform dependent type, or -1 if `instance_id` is not
  *          valid.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableTypeForID(SDL_SensorID instance_id);
 
@@ -195,7 +195,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableTypeForID(SDL_SensorID i
  * \returns an SDL_Sensor object or NULL on failure; call SDL_GetError() for
  *          more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_Sensor * SDLCALL SDL_OpenSensor(SDL_SensorID instance_id);
 
@@ -206,7 +206,7 @@ extern SDL_DECLSPEC SDL_Sensor * SDLCALL SDL_OpenSensor(SDL_SensorID instance_id
  * \returns an SDL_Sensor object or NULL on failure; call SDL_GetError() for
  *          more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_Sensor * SDLCALL SDL_GetSensorFromID(SDL_SensorID instance_id);
 
@@ -217,7 +217,7 @@ extern SDL_DECLSPEC SDL_Sensor * SDLCALL SDL_GetSensorFromID(SDL_SensorID instan
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor *sensor);
 
@@ -228,7 +228,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor 
  * \returns the sensor name or NULL on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetSensorName(SDL_Sensor *sensor);
 
@@ -239,7 +239,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetSensorName(SDL_Sensor *sensor);
  * \returns the SDL_SensorType type, or `SDL_SENSOR_INVALID` if `sensor` is
  *          NULL.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorType(SDL_Sensor *sensor);
 
@@ -249,7 +249,7 @@ extern SDL_DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorType(SDL_Sensor *sensor)
  * \param sensor the SDL_Sensor object to inspect.
  * \returns the sensor platform dependent type, or -1 if `sensor` is NULL.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableType(SDL_Sensor *sensor);
 
@@ -260,7 +260,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
  * \returns the sensor instance ID, or 0 on failure; call SDL_GetError() for
  *          more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_SensorID SDLCALL SDL_GetSensorID(SDL_Sensor *sensor);
 
@@ -275,7 +275,7 @@ extern SDL_DECLSPEC SDL_SensorID SDLCALL SDL_GetSensorID(SDL_Sensor *sensor);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetSensorData(SDL_Sensor *sensor, float *data, int num_values);
 
@@ -284,7 +284,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetSensorData(SDL_Sensor *sensor, float *da
  *
  * \param sensor the SDL_Sensor object to close.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_CloseSensor(SDL_Sensor *sensor);
 
@@ -297,7 +297,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseSensor(SDL_Sensor *sensor);
  * This needs to be called from the thread that initialized the sensor
  * subsystem.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_UpdateSensors(void);
 

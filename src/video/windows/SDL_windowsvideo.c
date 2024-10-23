@@ -135,6 +135,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
         data = NULL;
     }
     if (!data) {
+        SDL_UnregisterApp();
         SDL_free(device);
         return NULL;
     }

@@ -233,7 +233,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
                     if ((SDL3 === undefined) || (SDL3.audio_recording === undefined)) { return; }
                     audioProcessingEvent.outputBuffer.getChannelData(0).fill(0.0);
                     SDL3.audio_recording.currentRecordingBuffer = audioProcessingEvent.inputBuffer;
-                    dynCall('vi', $2, [$3]);
+                    dynCall('ii', $2, [$3]);
                 };
                 SDL3.audio_recording.mediaStreamNode.connect(SDL3.audio_recording.scriptProcessorNode);
                 SDL3.audio_recording.scriptProcessorNode.connect(SDL3.audioContext.destination);
@@ -249,7 +249,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
             SDL3.audio_recording.silenceBuffer.getChannelData(0).fill(0.0);
             var silence_callback = function() {
                 SDL3.audio_recording.currentRecordingBuffer = SDL3.audio_recording.silenceBuffer;
-                dynCall('vi', $2, [$3]);
+                dynCall('ii', $2, [$3]);
             };
 
             SDL3.audio_recording.silenceTimer = setInterval(silence_callback, ($1 / SDL3.audioContext.sampleRate) * 1000);
@@ -274,7 +274,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
                     SDL3.audio_playback.silenceBuffer = undefined;
                 }
                 SDL3.audio_playback.currentPlaybackBuffer = e['outputBuffer'];
-                dynCall('vi', $2, [$3]);
+                dynCall('ii', $2, [$3]);
             };
 
             SDL3.audio_playback.scriptProcessorNode['connect'](SDL3.audioContext['destination']);
@@ -292,7 +292,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
                     // the buffer that gets filled here just gets ignored, so the app can make progress
                     //  and/or avoid flooding audio queues until we can actually play audio.
                     SDL3.audio_playback.currentPlaybackBuffer = SDL3.audio_playback.silenceBuffer;
-                    dynCall('vi', $2, [$3]);
+                    dynCall('ii', $2, [$3]);
                     SDL3.audio_playback.currentPlaybackBuffer = undefined;
                 };
 

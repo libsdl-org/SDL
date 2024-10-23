@@ -257,7 +257,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     }
 
     r.w = r.h = SNAKE_BLOCK_SIZE_IN_PIXELS;
-    SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(as->renderer);
     for (i = 0; i < SNAKE_GAME_WIDTH; i++) {
         for (j = 0; j < SNAKE_GAME_HEIGHT; j++) {
@@ -266,13 +266,13 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                 continue;
             set_rect_xy_(&r, i, j);
             if (ct == SNAKE_CELL_FOOD)
-                SDL_SetRenderDrawColor(as->renderer, 80, 80, 255, 255);
+                SDL_SetRenderDrawColor(as->renderer, 80, 80, 255, SDL_ALPHA_OPAQUE);
             else /* body */
-                SDL_SetRenderDrawColor(as->renderer, 0, 128, 0, 255);
+                SDL_SetRenderDrawColor(as->renderer, 0, 128, 0, SDL_ALPHA_OPAQUE);
             SDL_RenderFillRect(as->renderer, &r);
         }
     }
-    SDL_SetRenderDrawColor(as->renderer, 255, 255, 0, 255); /*head*/
+    SDL_SetRenderDrawColor(as->renderer, 255, 255, 0, SDL_ALPHA_OPAQUE); /*head*/
     set_rect_xy_(&r, ctx->head_xpos, ctx->head_ypos);
     SDL_RenderFillRect(as->renderer, &r);
     SDL_RenderPresent(as->renderer);

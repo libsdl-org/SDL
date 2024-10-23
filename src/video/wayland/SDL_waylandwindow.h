@@ -208,6 +208,7 @@ extern void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool Wayland_SuspendScreenSaver(SDL_VideoDevice *_this);
 extern bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
+extern float Wayland_GetWindowContentScale(SDL_VideoDevice *_this, SDL_Window *window);
 
 extern bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern bool Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);

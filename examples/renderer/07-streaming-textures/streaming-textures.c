@@ -83,7 +83,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     }
 
     /* as you can see from this, rendering draws over whatever was drawn before it. */
-    SDL_SetRenderDrawColor(renderer, 66, 66, 66, 255);  /* grey, full alpha */
+    SDL_SetRenderDrawColor(renderer, 66, 66, 66, SDL_ALPHA_OPAQUE);  /* grey, full alpha */
     SDL_RenderClear(renderer);  /* start with a blank canvas. */
 
     /* Just draw the static texture a few times. You can think of it like a

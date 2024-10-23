@@ -127,6 +127,11 @@ void SDL_InitSteamVirtualGamepadInfo(void)
 
     SDL_AssertJoysticksLocked();
 
+    // The file isn't available inside the macOS sandbox
+    if (SDL_GetSandbox() == SDL_SANDBOX_MACOS) {
+        return;
+    }
+
     file = SDL_GetHint(SDL_HINT_STEAM_VIRTUAL_GAMEPAD_INFO_FILE);
     if (file && *file) {
         SDL_steam_virtual_gamepad_info_file = SDL_strdup(file);

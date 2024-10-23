@@ -426,7 +426,7 @@ static bool MaybeAddDevice(const char *path)
             name = SDL_CreateJoystickName(di.udi_vendorNo, di.udi_productNo, di.udi_vendor, di.udi_product);
             guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, di.udi_vendor, di.udi_product, 0, 0);
 
-            if (SDL_ShouldIgnoreJoystick(name, guid) ||
+            if (SDL_ShouldIgnoreJoystick(di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name) ||
                 SDL_JoystickHandledByAnotherDriver(&SDL_BSD_JoystickDriver, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
                 SDL_free(name);
                 FreeHwData(hw);

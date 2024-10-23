@@ -185,13 +185,18 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
         pNewJoystick = pNewJoystick->pNext;
     }
 
+    name = GetXInputName(userid, SubType);
+    GetXInputDeviceInfo(userid, &vendor, &product, &version);
+    if (SDL_ShouldIgnoreJoystick(vendor, product, version, name) ||
+        SDL_JoystickHandledByAnotherDriver(&SDL_WINDOWS_JoystickDriver, vendor, product, version, name)) {
+        return;
+    }
+
     pNewJoystick = (JoyStick_DeviceData *)SDL_calloc(1, sizeof(JoyStick_DeviceData));
     if (!pNewJoystick) {
         return; // better luck next time?
     }
 
-    name = GetXInputName(userid, SubType);
-    GetXInputDeviceInfo(userid, &vendor, &product, &version);
     pNewJoystick->bXInputDevice = true;
     pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, name);
     if (!pNewJoystick->joystickname) {
@@ -202,16 +207,6 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
     pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, NULL, name, 'x', SubType);
     pNewJoystick->SubType = SubType;
     pNewJoystick->XInputUserId = userid;
-
-    if (SDL_ShouldIgnoreJoystick(pNewJoystick->joystickname, pNewJoystick->guid)) {
-        SDL_free(pNewJoystick);
-        return;
-    }
-
-    if (SDL_JoystickHandledByAnotherDriver(&SDL_WINDOWS_JoystickDriver, vendor, product, version, pNewJoystick->joystickname)) {
-        SDL_free(pNewJoystick);
-        return;
-    }
 
     WINDOWS_AddJoystickDevice(pNewJoystick);
 }

@@ -215,5 +215,6 @@ extern CameraBootStrap COREMEDIA_bootstrap;
 extern CameraBootStrap ANDROIDCAMERA_bootstrap;
 extern CameraBootStrap EMSCRIPTENCAMERA_bootstrap;
 extern CameraBootStrap MEDIAFOUNDATION_bootstrap;
+extern CameraBootStrap VITACAMERA_bootstrap;
 
 #endif // SDL_syscamera_h_

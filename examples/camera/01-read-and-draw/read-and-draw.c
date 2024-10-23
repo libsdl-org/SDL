@@ -93,7 +93,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         SDL_ReleaseCameraFrame(camera, frame);
     }
 
-    SDL_SetRenderDrawColor(renderer, 0x99, 0x99, 0x99, 255);
+    SDL_SetRenderDrawColor(renderer, 0x99, 0x99, 0x99, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
     if (texture) {  /* draw the latest camera frame, if available. */
         SDL_RenderTexture(renderer, texture, NULL, NULL);
