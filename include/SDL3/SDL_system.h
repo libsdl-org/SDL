@@ -578,7 +578,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsTV(void);
 /**
  * Application sandbox environment.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_Sandbox
 {
