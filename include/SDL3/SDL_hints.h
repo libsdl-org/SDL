@@ -2306,7 +2306,7 @@ extern "C" {
  *
  * This hint needs to be set before SDL_Init().
  *
- * \since This hint is available since SDL 3.1.4.
+ * \since This hint is available since SDL 3.1.6.
  */
 #define SDL_HINT_MAC_SCROLL_MOMENTUM "SDL_MAC_SCROLL_MOMENTUM"
 
@@ -3167,7 +3167,7 @@ extern "C" {
  *
  * This hint should be set before SDL is initialized.
  *
- * \since This hint is available since SDL 3.1.5.
+ * \since This hint is available since SDL 3.1.6.
  */
 #define SDL_HINT_VIDEO_DISPLAY_PRIORITY "SDL_VIDEO_DISPLAY_PRIORITY"
 

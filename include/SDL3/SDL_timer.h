@@ -147,7 +147,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.4.
+ * \since This function is available since SDL 3.1.6.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DelayPrecise(Uint64 ns);
 
