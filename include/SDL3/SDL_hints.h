@@ -2306,7 +2306,7 @@ extern "C" {
  *
  * This hint needs to be set before SDL_Init().
  *
- * \since This hint is available since SDL 3.1.3.
+ * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_MAC_SCROLL_MOMENTUM "SDL_MAC_SCROLL_MOMENTUM"
 
@@ -2641,6 +2641,8 @@ extern "C" {
  * library in the current folder. But, if you wish to use a system API you can
  * specify that by using this hint. This should be the full or relative path
  * to a .dll on Windows or .so on Linux.
+ *
+ * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_OPENVR_LIBRARY              "SDL_OPENVR_LIBRARY"
 
@@ -3167,7 +3169,7 @@ extern "C" {
  *
  * This hint should be set before SDL is initialized.
  *
- * \since This hint is available since SDL 3.1.3.
+ * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_VIDEO_DISPLAY_PRIORITY "SDL_VIDEO_DISPLAY_PRIORITY"
 
