@@ -43,6 +43,29 @@
  * if you aren't reading from a file) as a basic means to load sound data into
  * your program.
  *
+ * ## Logical audio devices
+ *
+ * In SDL3, opening a physical device (like a SoundBlaster 16 Pro) gives you a
+ * logical device ID that you can bind audio streams to. In almost all cases,
+ * logical devices can be used anywhere in the API that a physical device is
+ * normally used. However, since each device opening generates a new logical
+ * device, different parts of the program (say, a VoIP library, or
+ * text-to-speech framework, or maybe some other sort of mixer on top of SDL)
+ * can have their own device opens that do not interfere with each other; each
+ * logical device will mix its separate audio down to a single buffer, fed to
+ * the physical device, behind the scenes. As many logical devices as you like
+ * can come and go; SDL will only have to open the physical device at the OS
+ * level once, and will manage all the logical devices on top of it
+ * internally.
+ *
+ * One other benefit of logical devices: if you don't open a specific physical
+ * device, instead opting for the default, SDL can automatically migrate those
+ * logical devices to different hardware as circumstances change: a user
+ * plugged in headphones? The system default changed? SDL can transparently
+ * migrate the logical devices to the correct physical device seamlessly and
+ * keep playing; the app doesn't even have to know it happened if it doesn't
+ * want to.
+ *
  * ## Channel layouts
  *
  * Audio data passing through SDL is uncompressed PCM data, interleaved. One
