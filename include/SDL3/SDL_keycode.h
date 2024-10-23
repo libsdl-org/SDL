@@ -42,7 +42,7 @@
  * A special exception is the number keys at the top of the keyboard which map
  * to SDLK_0...SDLK_9 on AZERTY layouts.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  */
 typedef Uint32 SDL_Keycode;
 
@@ -301,7 +301,7 @@ typedef Uint32 SDL_Keycode;
 /**
  * Valid key modifiers (possibly OR'd together).
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  */
 typedef Uint16 SDL_Keymod;
 

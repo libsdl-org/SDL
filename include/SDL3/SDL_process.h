@@ -85,7 +85,7 @@ typedef struct SDL_Process SDL_Process;
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateProcessWithProperties
  * \sa SDL_GetProcessProperties
@@ -132,7 +132,7 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcess(const char * const *a
  * `SDL_PROP_IOSTREAM_FILE_DESCRIPTOR_NUMBER` set. This is true for streams
  * representing files and process I/O.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.1.3.
  *
  * \sa SDL_CreateProcessWithProperties
  * \sa SDL_GetProcessProperties
@@ -197,7 +197,7 @@ typedef enum SDL_ProcessIO
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateProcess
  * \sa SDL_GetProcessProperties
@@ -245,7 +245,7 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcessWithProperties(SDL_Pro
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateProcess
  * \sa SDL_CreateProcessWithProperties
@@ -281,7 +281,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetProcessProperties(SDL_Proces
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateProcess
  * \sa SDL_CreateProcessWithProperties
@@ -307,7 +307,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_ReadProcess(SDL_Process *process, size_t 
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateProcess
  * \sa SDL_CreateProcessWithProperties
@@ -331,7 +331,7 @@ extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessInput(SDL_Process *proce
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateProcess
  * \sa SDL_CreateProcessWithProperties
@@ -353,7 +353,7 @@ extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessOutput(SDL_Process *proc
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateProcess
  * \sa SDL_CreateProcessWithProperties
@@ -380,7 +380,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_KillProcess(SDL_Process *process, bool forc
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateProcess
  * \sa SDL_CreateProcessWithProperties
@@ -400,7 +400,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitProcess(SDL_Process *process, bool bloc
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateProcess
  * \sa SDL_CreateProcessWithProperties

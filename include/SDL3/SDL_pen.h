@@ -55,7 +55,7 @@ extern "C" {
  * consistent as long as SDL can recognize a tool to be the same pen; but if a
  * pen physically leaves the area and returns, it might get a new ID.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  */
 typedef Uint32 SDL_PenID;
 
@@ -63,7 +63,7 @@ typedef Uint32 SDL_PenID;
 /**
  * Pen input flags, as reported by various pen events' `pen_state` field.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  */
 typedef Uint32 SDL_PenInputFlags;
 
@@ -88,7 +88,7 @@ typedef Uint32 SDL_PenInputFlags;
  *
  * `SDL_sinf(xtilt * SDL_PI_F / 180.0)`.
  *
- * \since This enum is available since SDL 3.0.0
+ * \since This enum is available since SDL 3.1.3
  */
 typedef enum SDL_PenAxis
 {

@@ -80,7 +80,7 @@ extern "C" {
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_ClearError
  * \sa SDL_GetError
@@ -99,7 +99,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const cha
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.4.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_ClearError
  * \sa SDL_GetError
@@ -116,7 +116,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetErrorV(SDL_PRINTF_FORMAT_STRING const ch
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_OutOfMemory(void);
 
@@ -150,7 +150,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_OutOfMemory(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_ClearError
  * \sa SDL_SetError
@@ -164,7 +164,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetError(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetError
  * \sa SDL_SetError

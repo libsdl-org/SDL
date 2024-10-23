@@ -65,7 +65,7 @@ extern __inline int _SDL_bsr_watcom(Uint32);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 SDL_FORCE_INLINE int SDL_MostSignificantBitIndex32(Uint32 x)
 {
@@ -132,7 +132,7 @@ SDL_FORCE_INLINE int SDL_MostSignificantBitIndex32(Uint32 x)
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 SDL_FORCE_INLINE bool SDL_HasExactlyOneBitSet32(Uint32 x)
 {

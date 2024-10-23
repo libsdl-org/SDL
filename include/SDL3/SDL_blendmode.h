@@ -45,7 +45,7 @@ extern "C" {
  *
  * Additional values may be obtained from SDL_ComposeCustomBlendMode.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  *
  * \sa SDL_ComposeCustomBlendMode
  */
@@ -64,7 +64,7 @@ typedef Uint32 SDL_BlendMode;
  * The blend operation used when combining source and destination pixel
  * components.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.1.3.
  */
 typedef enum SDL_BlendOperation
 {
@@ -83,7 +83,7 @@ typedef enum SDL_BlendOperation
  * operation. The comma-separated factors listed above are always applied in
  * the component order red, green, blue, and alpha.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.1.3.
  */
 typedef enum SDL_BlendFactor
 {
@@ -177,7 +177,7 @@ typedef enum SDL_BlendFactor
  * \returns an SDL_BlendMode that represents the chosen factors and
  *          operations.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_SetRenderDrawBlendMode
  * \sa SDL_GetRenderDrawBlendMode

@@ -112,7 +112,7 @@ struct VkAllocationCallbacks;
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_Vulkan_GetVkGetInstanceProcAddr
  * \sa SDL_Vulkan_UnloadLibrary
@@ -136,14 +136,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
  * \returns the function pointer for `vkGetInstanceProcAddr` or NULL on
  *          failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_Vulkan_GetVkGetInstanceProcAddr(void);
 
 /**
  * Unload the Vulkan library previously loaded by SDL_Vulkan_LoadLibrary().
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_Vulkan_LoadLibrary
  */
@@ -167,7 +167,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  * \returns an array of extension name strings on success, NULL on failure;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_Vulkan_CreateSurface
  */
@@ -192,7 +192,7 @@ extern SDL_DECLSPEC char const * const * SDLCALL SDL_Vulkan_GetInstanceExtension
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_Vulkan_GetInstanceExtensions
  * \sa SDL_Vulkan_DestroySurface
@@ -220,7 +220,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
  * \param allocator a VkAllocationCallbacks struct, which lets the app set the
  *                  allocator that destroys the surface. Can be NULL.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_Vulkan_GetInstanceExtensions
  * \sa SDL_Vulkan_CreateSurface
@@ -242,7 +242,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_DestroySurface(VkInstance instance,
  *                         device.
  * \returns true if supported, false if unsupported or an error occurred.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_Vulkan_GetInstanceExtensions
  */

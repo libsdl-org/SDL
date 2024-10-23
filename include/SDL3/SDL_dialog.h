@@ -49,7 +49,7 @@ extern "C" {
  * hyphens, underscores and periods. Alternatively, the whole string can be a
  * single asterisk ("*"), which serves as an "All files" filter.
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.3.
  *
  * \sa SDL_DialogFileCallback
  * \sa SDL_ShowOpenFileDialog
@@ -87,7 +87,7 @@ typedef struct SDL_DialogFileFilter
  * \param filelist the file(s) chosen by the user.
  * \param filter index of the selected filter.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  *
  * \sa SDL_DialogFileFilter
  * \sa SDL_ShowOpenFileDialog
@@ -144,7 +144,7 @@ typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * cons
  * \param allow_many if non-zero, the user will be allowed to select multiple
  *                   entries. Not all platforms support this option.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_DialogFileCallback
  * \sa SDL_DialogFileFilter
@@ -199,7 +199,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  * \param default_location the default folder or file to start the dialog at,
  *                         may be NULL. Not all platforms support this option.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_DialogFileCallback
  * \sa SDL_DialogFileFilter
@@ -248,7 +248,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  * \param allow_many if non-zero, the user will be allowed to select multiple
  *                   entries. Not all platforms support this option.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_DialogFileCallback
  * \sa SDL_ShowOpenFileDialog

@@ -42,7 +42,7 @@ extern "C" {
  *
  * These are results returned by SDL_GetPowerInfo().
  *
- * \since This enum is available since SDL 3.0.0
+ * \since This enum is available since SDL 3.1.3
  */
 typedef enum SDL_PowerState
 {
@@ -80,7 +80,7 @@ typedef enum SDL_PowerState
  * \returns the current battery state or `SDL_POWERSTATE_ERROR` on failure;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_PowerState SDLCALL SDL_GetPowerInfo(int *seconds, int *percent);
 

@@ -73,7 +73,7 @@ extern "C" {
  *          doesn't implement this functionality, call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetPrefPath
  */
@@ -128,7 +128,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetBasePath(void);
  *          etc.). This should be freed with SDL_free() when it is no longer
  *          needed.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetBasePath
  */
@@ -159,7 +159,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetPrefPath(const char *org, const char *
  *
  * Note that on macOS/iOS, the Videos folder is called "Movies".
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.1.3.
  *
  * \sa SDL_GetUserFolder
  */
@@ -212,7 +212,7 @@ typedef enum SDL_Folder
  * \returns either a null-terminated C string containing the full path to the
  *          folder, or NULL if an error happened.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
@@ -239,7 +239,7 @@ typedef struct SDL_PathInfo
 /**
  * Flags for path matching
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  *
  * \sa SDL_GlobDirectory
  * \sa SDL_GlobStorageDirectory
@@ -260,14 +260,14 @@ typedef Uint32 SDL_GlobFlags;
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_CreateDirectory(const char *path);
 
 /**
  * Possible results from an enumeration callback.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.1.3.
  *
  * \sa SDL_EnumerateDirectoryCallback
  */
@@ -295,7 +295,7 @@ typedef enum SDL_EnumerationResult
  * \param fname the next entry in the enumeration.
  * \returns how the enumeration should proceed.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  *
  * \sa SDL_EnumerateDirectory
  */
@@ -318,7 +318,7 @@ typedef SDL_EnumerationResult (SDLCALL *SDL_EnumerateDirectoryCallback)(void *us
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata);
 
@@ -332,7 +332,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_EnumerateDirectory(const char *path, SDL_En
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RemovePath(const char *path);
 
@@ -355,7 +355,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RemovePath(const char *path);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenamePath(const char *oldpath, const char *newpath);
 
@@ -395,7 +395,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenamePath(const char *oldpath, const char 
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_CopyFile(const char *oldpath, const char *newpath);
 
@@ -408,7 +408,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CopyFile(const char *oldpath, const char *n
  * \returns true on success or false if the file doesn't exist, or another
  *          failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info);
 
@@ -441,7 +441,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo 
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC char ** SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
 

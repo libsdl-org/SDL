@@ -43,7 +43,7 @@ extern "C" {
  *
  * If supported will display warning icon, etc.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  */
 typedef Uint32 SDL_MessageBoxFlags;
 
@@ -56,7 +56,7 @@ typedef Uint32 SDL_MessageBoxFlags;
 /**
  * SDL_MessageBoxButtonData flags.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.1.3.
  */
 typedef Uint32 SDL_MessageBoxButtonFlags;
 
@@ -66,7 +66,7 @@ typedef Uint32 SDL_MessageBoxButtonFlags;
 /**
  * Individual button data.
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.3.
  */
 typedef struct SDL_MessageBoxButtonData
 {
@@ -78,7 +78,7 @@ typedef struct SDL_MessageBoxButtonData
 /**
  * RGB value used in a message box color scheme
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.3.
  */
 typedef struct SDL_MessageBoxColor
 {
@@ -102,7 +102,7 @@ typedef enum SDL_MessageBoxColorType
 /**
  * A set of colors to use for message box dialogs
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.3.
  */
 typedef struct SDL_MessageBoxColorScheme
 {
@@ -112,7 +112,7 @@ typedef struct SDL_MessageBoxColorScheme
 /**
  * MessageBox structure containing title, text, window, etc.
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.3.
  */
 typedef struct SDL_MessageBoxData
 {
@@ -157,7 +157,7 @@ typedef struct SDL_MessageBoxData
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_ShowSimpleMessageBox
  */
@@ -199,7 +199,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *me
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_ShowMessageBox
  */
