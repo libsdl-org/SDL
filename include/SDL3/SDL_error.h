@@ -99,7 +99,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const cha
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.6.
+ * \since This function is available since SDL 3.1.4.
  *
  * \sa SDL_ClearError
  * \sa SDL_GetError
