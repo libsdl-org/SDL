@@ -659,6 +659,7 @@
 
 /* ##SDL_video.h */
 #define SDL_GL_DeleteContext SDL_GL_DestroyContext
+#define SDL_GLattr SDL_GLAttr
 #define SDL_GLcontextFlag SDL_GLContextFlag
 #define SDL_GLcontextReleaseFlag SDL_GLContextReleaseFlag
 #define SDL_GLprofile SDL_GLProfile
@@ -1300,6 +1301,7 @@
 
 /* ##SDL_video.h */
 #define SDL_GL_DeleteContext SDL_GL_DeleteContext_renamed_SDL_GL_DestroyContext
+#define SDL_GLattr SDL_GLattr_renamed_SDL_GLAttr
 #define SDL_GLcontextFlag SDL_GLcontextFlag_renamed_SDL_GLContextFlag
 #define SDL_GLcontextReleaseFlag SDL_GLcontextReleaseFlag_renamed_SDL_GLContextReleaseFlag
 #define SDL_GLprofile SDL_GLprofile_renamed_SDL_GLProfile

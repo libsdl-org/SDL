@@ -332,7 +332,7 @@ typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void *userdata, SDL_EGLDi
  *
  * \since This enum is available since SDL 3.1.3.
  */
-typedef enum SDL_GLattr
+typedef enum SDL_GLAttr
 {
     SDL_GL_RED_SIZE,                    /**< the minimum number of bits for the red channel of the color buffer; defaults to 3. */
     SDL_GL_GREEN_SIZE,                  /**< the minimum number of bits for the green channel of the color buffer; defaults to 3. */
@@ -362,7 +362,7 @@ typedef enum SDL_GLattr
     SDL_GL_CONTEXT_NO_ERROR,
     SDL_GL_FLOATBUFFERS,
     SDL_GL_EGL_PLATFORM
-} SDL_GLattr;
+} SDL_GLAttr;
 
 /**
  * Possible values to be set for the SDL_GL_CONTEXT_PROFILE_MASK attribute.
@@ -2709,7 +2709,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
  * SDL_GL_GetAttribute() to check the values after creating the OpenGL
  * context, since the values obtained can differ from the requested ones.
  *
- * \param attr an SDL_GLattr enum value specifying the OpenGL attribute to
+ * \param attr an SDL_GLAttr enum value specifying the OpenGL attribute to
  *             set.
  * \param value the desired value for the attribute.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -2720,12 +2720,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
  * \sa SDL_GL_GetAttribute
  * \sa SDL_GL_ResetAttributes
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GL_SetAttribute(SDL_GLattr attr, int value);
+extern SDL_DECLSPEC bool SDLCALL SDL_GL_SetAttribute(SDL_GLAttr attr, int value);
 
 /**
  * Get the actual value for an attribute from the current context.
  *
- * \param attr an SDL_GLattr enum value specifying the OpenGL attribute to
+ * \param attr an SDL_GLAttr enum value specifying the OpenGL attribute to
  *             get.
  * \param value a pointer filled in with the current value of `attr`.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -2736,7 +2736,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_SetAttribute(SDL_GLattr attr, int value)
  * \sa SDL_GL_ResetAttributes
  * \sa SDL_GL_SetAttribute
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value);
+extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value);
 
 /**
  * Create an OpenGL context for an OpenGL window, and make it current.
