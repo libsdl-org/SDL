@@ -73,7 +73,7 @@
  * - 4 channels (quad) layout: FL, FR, BL, BR
  * - 5 channels (4.1) layout: FL, FR, LFE, BL, BR
  * - 6 channels (5.1) layout: FL, FR, FC, LFE, BL, BR (last two can also be
- *   BL, BR)
+ *   SL, SR)
  * - 7 channels (6.1) layout: FL, FR, FC, LFE, BC, SL, SR
  * - 8 channels (7.1) layout: FL, FR, FC, LFE, BL, BR, SL, SR
  *
