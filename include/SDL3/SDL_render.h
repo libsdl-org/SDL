@@ -2469,7 +2469,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderVSync(SDL_Renderer *renderer, int 
  *
  * The font is monospaced and square, so this applies to all characters.
  *
- * \since This macro is available since SDL 3.1.5.
+ * \since This macro is available since SDL 3.1.6.
  *
  * \sa SDL_RenderDebugText
  */
@@ -2509,7 +2509,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderVSync(SDL_Renderer *renderer, int 
  *
  * \threadsafety You may only call this function from the main thread.
  *
- * \since This function is available since SDL 3.1.4.
+ * \since This function is available since SDL 3.1.6.
  *
  * \sa SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
  */
