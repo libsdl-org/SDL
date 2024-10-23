@@ -367,50 +367,50 @@ typedef enum SDL_GLattr
 /**
  * Possible values to be set for the SDL_GL_CONTEXT_PROFILE_MASK attribute.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.1.3.
  */
-typedef enum SDL_GLprofile
-{
-    SDL_GL_CONTEXT_PROFILE_CORE           = 0x0001,
-    SDL_GL_CONTEXT_PROFILE_COMPATIBILITY  = 0x0002,
-    SDL_GL_CONTEXT_PROFILE_ES             = 0x0004 /**< GLX_CONTEXT_ES2_PROFILE_BIT_EXT */
-} SDL_GLprofile;
+typedef Uint32 SDL_GLprofile;
+
+#define SDL_GL_CONTEXT_PROFILE_CORE           0x0001  /**< OpenGL Core Profile context */
+#define SDL_GL_CONTEXT_PROFILE_COMPATIBILITY  0x0002  /**< OpenGL Compatibility Profile context */
+#define SDL_GL_CONTEXT_PROFILE_ES             0x0004  /**< GLX_CONTEXT_ES2_PROFILE_BIT_EXT */
+
 
 /**
- * Possible values to be set for the SDL_GL_CONTEXT_FLAGS attribute.
+ * Possible flags to be set for the SDL_GL_CONTEXT_FLAGS attribute.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.1.3.
  */
-typedef enum SDL_GLcontextFlag
-{
-    SDL_GL_CONTEXT_DEBUG_FLAG              = 0x0001,
-    SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG = 0x0002,
-    SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG      = 0x0004,
-    SDL_GL_CONTEXT_RESET_ISOLATION_FLAG    = 0x0008
-} SDL_GLcontextFlag;
+typedef Uint32 SDL_GLcontextFlag;
+
+#define SDL_GL_CONTEXT_DEBUG_FLAG              0x0001
+#define SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG 0x0002
+#define SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG      0x0004
+#define SDL_GL_CONTEXT_RESET_ISOLATION_FLAG    0x0008
+
 
 /**
  * Possible values to be set for the SDL_GL_CONTEXT_RELEASE_BEHAVIOR
  * attribute.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.1.3.
  */
-typedef enum SDL_GLcontextReleaseFlag
-{
-    SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE   = 0x0000,
-    SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH  = 0x0001
-} SDL_GLcontextReleaseFlag;
+typedef Uint32 SDL_GLcontextReleaseFlag;
+
+#define SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE   0x0000
+#define SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH  0x0001
+
 
 /**
  * Possible values to be set SDL_GL_CONTEXT_RESET_NOTIFICATION attribute.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.1.3.
  */
-typedef enum SDL_GLContextResetNotification
-{
-    SDL_GL_CONTEXT_RESET_NO_NOTIFICATION = 0x0000,
-    SDL_GL_CONTEXT_RESET_LOSE_CONTEXT    = 0x0001
-} SDL_GLContextResetNotification;
+typedef Uint32 SDL_GLContextResetNotification;
+
+#define SDL_GL_CONTEXT_RESET_NO_NOTIFICATION  0x0000
+#define SDL_GL_CONTEXT_RESET_LOSE_CONTEXT     0x0001
+
 
 /* Function prototypes */
 
