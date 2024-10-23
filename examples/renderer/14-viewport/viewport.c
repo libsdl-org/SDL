@@ -86,7 +86,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
        window. It does _not_ scale rendering to fit the viewport. */
 
     /* as you can see from this, rendering draws over whatever was drawn before it. */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  /* black, full alpha */
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);  /* black, full alpha */
     SDL_RenderClear(renderer);  /* start with a blank canvas. */
 
     /* Draw once with the whole window as the viewport. */

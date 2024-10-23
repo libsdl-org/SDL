@@ -96,7 +96,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     const float rotation = (((float) ((int) (now % 2000))) / 2000.0f) * 360.0f;
 
     /* as you can see from this, rendering draws over whatever was drawn before it. */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  /* black, full alpha */
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);  /* black, full alpha */
     SDL_RenderClear(renderer);  /* start with a blank canvas. */
 
     /* Center this one, and draw it with some rotation so it spins! */

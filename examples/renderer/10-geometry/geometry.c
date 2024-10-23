@@ -89,7 +89,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     int i;
 
     /* as you can see from this, rendering draws over whatever was drawn before it. */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  /* black, full alpha */
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);  /* black, full alpha */
     SDL_RenderClear(renderer);  /* start with a blank canvas. */
 
     /* Draw a single triangle with a different color at each vertex. Center this one and make it grow and shrink. */

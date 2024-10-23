@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
         SDL_SetWindowSize(sdlWindow, SDL_lround(640. * scale), SDL_lround(480. * scale));
 
         if (qtWindow.isVisible()) {
-            SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 255, 255);
+            SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(sdlRenderer);
             SDL_RenderPresent(sdlRenderer);
         } else {
