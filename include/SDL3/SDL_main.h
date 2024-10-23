@@ -168,7 +168,7 @@
  * docs/README-main-functions.md in the source tree) for a more detailed
  * explanation.
  *
- * \since This macro is used by the headers since SDL 3.0.0.
+ * \since This macro is used by the headers since SDL 3.1.3.
  *
  * \sa SDL_AppInit
  * \sa SDL_AppEvent
