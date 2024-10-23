@@ -300,7 +300,7 @@ void *alloca(size_t);
 #define SDL_UINT64_C(c)  c ## ULL
 #endif
 
-#endif
+#endif /* !(defined(SDL_SINT64_C) && defined(SDL_UINT64_C)) */
 
 /**
  *  \name Basic data types
