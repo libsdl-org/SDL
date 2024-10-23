@@ -47,16 +47,16 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
     /* as you can see from this, rendering draws over whatever was drawn before it. */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  /* black, full alpha */
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);  /* black, full alpha */
     SDL_RenderClear(renderer);  /* start with a blank canvas. */
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);  /* white, full alpha */
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);  /* white, full alpha */
     SDL_RenderDebugText(renderer, 272, 100, "Hello world!");
     SDL_RenderDebugText(renderer, 224, 150, "This is some debug text.");
 
-    SDL_SetRenderDrawColor(renderer, 51, 102, 255, 255);  /* light blue, full alpha */
+    SDL_SetRenderDrawColor(renderer, 51, 102, 255, SDL_ALPHA_OPAQUE);  /* light blue, full alpha */
     SDL_RenderDebugText(renderer, 184, 200, "You can do it in different colors.");
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);  /* white, full alpha */
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);  /* white, full alpha */
 
     SDL_SetRenderScale(renderer, 4.0f, 4.0f);
     SDL_RenderDebugText(renderer, 14, 65, "It can be scaled.");
