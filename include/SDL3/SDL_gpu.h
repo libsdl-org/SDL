@@ -2294,8 +2294,8 @@ extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
  * Creates a transfer buffer to be used when uploading to or downloading from
  * graphics resources.
  *
- * Download buffers can be particularly expensive to create,
- * so it is good practice to reuse them if data will be downloaded regularly.
+ * Download buffers can be particularly expensive to create, so it is good
+ * practice to reuse them if data will be downloaded regularly.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the transfer buffer to
