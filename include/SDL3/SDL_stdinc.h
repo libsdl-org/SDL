@@ -256,6 +256,8 @@ void *alloca(size_t);
      (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (C))) << 16) | \
      (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (D))) << 24))
 
+#if !(defined(SDL_SINT64_C) && defined(SDL_UINT64_C))
+
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
 /**
@@ -296,6 +298,8 @@ void *alloca(size_t);
 #else
 #define SDL_SINT64_C(c)  c ## LL
 #define SDL_UINT64_C(c)  c ## ULL
+#endif
+
 #endif
 
 /**
