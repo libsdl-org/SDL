@@ -15,13 +15,13 @@ cmake_minimum_required(VERSION 3.4.1)
 project(entry)
 
 set(env ${CMAKE_CURRENT_SOURCE_DIR})
-set(SDL_HOME_PATH ohos_sdl2)
-set(NATIVE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${SDL_HOME_PATH}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/${SDL_HOME_PATH}/src/video/khronos/GLES2)
+set(SDL_HOME_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../ohos_sdl2)
+set(NATIVE_INCLUDE_PATH ${SDL_HOME_PATH}/include
+    ${SDL_HOME_PATH}/src/video/khronos/GLES2)
 set(NATIVE_ENTRY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/application)
-set(NATIVE_TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${SDL_HOME_PATH}/src/test)
+set(NATIVE_TEST_PATH ${SDL_HOME_PATH}/src/test)
 
-add_subdirectory(${SDL_HOME_PATH})
+add_subdirectory(${SDL_HOME_PATH} sdl2)
 include_directories(${NATIVE_INCLUDE_PATH})
 
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
