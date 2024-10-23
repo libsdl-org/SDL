@@ -3727,3 +3727,7 @@ typedef SDL_bool, bool;
 @@
 - SDL_GLcontextReleaseFlag
 + SDL_GLContextReleaseFlag
+@@
+@@
+- SDL_GLattr
++ SDL_GLAttr
