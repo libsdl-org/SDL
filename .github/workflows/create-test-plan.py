@@ -608,7 +608,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.cmake_arguments.extend((
                 f"-DCMAKE_C_COMPILER={job.cc}",
                 f"-DCMAKE_CXX_COMPILER={job.cxx}",
-                "-DCMAKE_SYSTEM_NAME=Haiku",
+                "-DSDL_UNIX_CONSOLE_BUILD=ON",
             ))
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
@@ -621,6 +621,9 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.apt_packages = []
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
+            job.cmake_arguments.extend((
+                "-DSDL_UNIX_CONSOLE_BUILD=ON",
+            ))
         case SdlPlatform.LoongArch64:
             job.run_tests = False
             job.cc = "${LOONGARCH64_CC}"
@@ -628,6 +631,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.cmake_arguments.extend((
                 f"-DCMAKE_C_COMPILER={job.cc}",
                 f"-DCMAKE_CXX_COMPILER={job.cxx}",
+                "-DSDL_UNIX_CONSOLE_BUILD=ON",
                 "-DCMAKE_SYSTEM_NAME=Linux",
             ))
             job.shared_lib = SharedLibType.SO_0

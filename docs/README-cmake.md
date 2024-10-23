@@ -306,6 +306,14 @@ Configure your project with `-DSDL_LIBC=ON` to make use of sanitizers.
 
 ## CMake FAQ
 
+### CMake fails to build without X11 or Wayland support
+
+Install the required system packages prior to running CMake.
+See [README-linux][README-linux.md#build-dependencies] for the list of dependencies on Linux.
+Other unix operationg systems should provide similar packages.
+
+If you **really** don't need to show windows, add `-DSDL_UNIX_CONSOLE_BUILD=ON` to the CMake configure command.
+
 ### How do I copy a SDL3 dynamic library to another location?
 
 Use [CMake generator expressions](https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#target-dependent-expressions).
