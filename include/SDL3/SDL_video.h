@@ -353,11 +353,11 @@ typedef enum SDL_GLattr
     SDL_GL_RETAINED_BACKING,            /**< not used (deprecated). */
     SDL_GL_CONTEXT_MAJOR_VERSION,       /**< OpenGL context major version. */
     SDL_GL_CONTEXT_MINOR_VERSION,       /**< OpenGL context minor version. */
-    SDL_GL_CONTEXT_FLAGS,               /**< some combination of 0 or more of elements of the SDL_GLcontextFlag enumeration; defaults to 0. */
-    SDL_GL_CONTEXT_PROFILE_MASK,        /**< type of GL context (Core, Compatibility, ES). See SDL_GLprofile; default value depends on platform. */
+    SDL_GL_CONTEXT_FLAGS,               /**< some combination of 0 or more of elements of the SDL_GLContextFlag enumeration; defaults to 0. */
+    SDL_GL_CONTEXT_PROFILE_MASK,        /**< type of GL context (Core, Compatibility, ES). See SDL_GLProfile; default value depends on platform. */
     SDL_GL_SHARE_WITH_CURRENT_CONTEXT,  /**< OpenGL context sharing; defaults to 0. */
     SDL_GL_FRAMEBUFFER_SRGB_CAPABLE,    /**< requests sRGB capable visual; defaults to 0. */
-    SDL_GL_CONTEXT_RELEASE_BEHAVIOR,    /**< sets context the release behavior. See SDL_GLcontextReleaseFlag; defaults to FLUSH. */
+    SDL_GL_CONTEXT_RELEASE_BEHAVIOR,    /**< sets context the release behavior. See SDL_GLContextReleaseFlag; defaults to FLUSH. */
     SDL_GL_CONTEXT_RESET_NOTIFICATION,  /**< set context reset notification. See SDL_GLContextResetNotification; defaults to NO_NOTIFICATION. */
     SDL_GL_CONTEXT_NO_ERROR,
     SDL_GL_FLOATBUFFERS,
@@ -369,7 +369,7 @@ typedef enum SDL_GLattr
  *
  * \since This datatype is available since SDL 3.1.3.
  */
-typedef Uint32 SDL_GLprofile;
+typedef Uint32 SDL_GLProfile;
 
 #define SDL_GL_CONTEXT_PROFILE_CORE           0x0001  /**< OpenGL Core Profile context */
 #define SDL_GL_CONTEXT_PROFILE_COMPATIBILITY  0x0002  /**< OpenGL Compatibility Profile context */
@@ -381,7 +381,7 @@ typedef Uint32 SDL_GLprofile;
  *
  * \since This datatype is available since SDL 3.1.3.
  */
-typedef Uint32 SDL_GLcontextFlag;
+typedef Uint32 SDL_GLContextFlag;
 
 #define SDL_GL_CONTEXT_DEBUG_FLAG              0x0001
 #define SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG 0x0002
@@ -395,7 +395,7 @@ typedef Uint32 SDL_GLcontextFlag;
  *
  * \since This datatype is available since SDL 3.1.3.
  */
-typedef Uint32 SDL_GLcontextReleaseFlag;
+typedef Uint32 SDL_GLContextReleaseFlag;
 
 #define SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE   0x0000
 #define SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH  0x0001
