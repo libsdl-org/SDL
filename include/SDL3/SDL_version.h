@@ -115,6 +115,8 @@ extern "C" {
  * This is the version number macro for the current SDL version.
  *
  * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_GetVersion
  */
 #define SDL_VERSION \
     SDL_VERSIONNUM(SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION)
