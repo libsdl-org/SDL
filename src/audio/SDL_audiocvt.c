@@ -442,9 +442,11 @@ SDL_PropertiesID SDL_GetAudioStreamProperties(SDL_AudioStream *stream)
         SDL_InvalidParamError("stream");
         return 0;
     }
+    SDL_LockMutex(stream->lock);
     if (stream->props == 0) {
         stream->props = SDL_CreateProperties();
     }
+    SDL_UnlockMutex(stream->lock);
     return stream->props;
 }
 
