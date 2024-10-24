@@ -90,6 +90,8 @@ typedef int SDL_SpinLock;
  * \param lock a pointer to a lock variable.
  * \returns true if the lock succeeded, false if the lock is already held.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_LockSpinlock
@@ -104,6 +106,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TryLockSpinlock(SDL_SpinLock *lock);
  * doing. Please be careful using any sort of spinlock!***
  *
  * \param lock a pointer to a lock variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -121,6 +125,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_LockSpinlock(SDL_SpinLock *lock);
  * doing. Please be careful using any sort of spinlock!***
  *
  * \param lock a pointer to a lock variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -415,6 +421,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * \param a a pointer to an SDL_AtomicInt to increment.
  * \returns the previous value of the atomic variable.
  *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
  * \since This macro is available since SDL 3.1.3.
  *
  * \sa SDL_AtomicDecRef
@@ -432,6 +440,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * \param a a pointer to an SDL_AtomicInt to increment.
  * \returns true if the variable reached zero after decrementing, false
  *          otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
  *
  * \since This macro is available since SDL 3.1.3.
  *

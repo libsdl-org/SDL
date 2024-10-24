@@ -177,6 +177,8 @@ typedef enum SDL_BlendFactor
  * \returns an SDL_BlendMode that represents the chosen factors and
  *          operations.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_SetRenderDrawBlendMode

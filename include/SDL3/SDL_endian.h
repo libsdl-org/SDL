@@ -404,6 +404,8 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in littleendian byte order.
  * \returns `x` in native byte order.
  *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_Swap16LE(x) SwapOnlyIfNecessary(x)
@@ -417,6 +419,8 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \param x the value to swap, in littleendian byte order.
  * \returns `x` in native byte order.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
  *
  * \since This macro is available since SDL 3.1.3.
  */
@@ -432,6 +436,8 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in littleendian byte order.
  * \returns `x` in native byte order.
  *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_Swap64LE(x) SwapOnlyIfNecessary(x)
@@ -445,6 +451,8 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \param x the value to swap, in littleendian byte order.
  * \returns `x` in native byte order.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
  *
  * \since This macro is available since SDL 3.1.3.
  */
@@ -460,6 +468,8 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in bigendian byte order.
  * \returns `x` in native byte order.
  *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_Swap16BE(x) SwapOnlyIfNecessary(x)
@@ -473,6 +483,8 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \param x the value to swap, in bigendian byte order.
  * \returns `x` in native byte order.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
  *
  * \since This macro is available since SDL 3.1.3.
  */
@@ -488,6 +500,8 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  * \param x the value to swap, in bigendian byte order.
  * \returns `x` in native byte order.
  *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_Swap64BE(x) SwapOnlyIfNecessary(x)
@@ -501,6 +515,8 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \param x the value to swap, in bigendian byte order.
  * \returns `x` in native byte order.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
  *
  * \since This macro is available since SDL 3.1.3.
  */

@@ -1007,10 +1007,6 @@ SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NUL
  *
  * This function updates the event queue and internal input device state.
  *
- * **WARNING**: This should only be run in the thread that initialized the
- * video subsystem, and for extra safety, you should consider only doing those
- * things on the main thread in any case.
- *
  * SDL_PumpEvents() gathers all the pending input information from devices and
  * places it in the event queue. Without calls to SDL_PumpEvents() no events
  * would ever be placed on the queue. Often the need for calls to
@@ -1018,6 +1014,10 @@ SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NUL
  * SDL_WaitEvent() implicitly call SDL_PumpEvents(). However, if you are not
  * polling or waiting for events (e.g. you are filtering them), then you must
  * call SDL_PumpEvents() to force an event queue update.
+ *
+ * \threadsafety This should only be run in the thread that initialized the
+ *               video subsystem, and for extra safety, you should consider
+ *               only doing those things on the main thread in any case.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -1060,8 +1060,6 @@ typedef enum SDL_EventAction
  * Otherwise, the events may not be ready to be filtered when you call
  * SDL_PeepEvents().
  *
- * This function is thread-safe.
- *
  * \param events destination buffer for the retrieved events, may be NULL to
  *               leave the events in the queue and return the number of events
  *               that would have been stored.
@@ -1075,6 +1073,8 @@ typedef enum SDL_EventAction
  *                SDL_EVENT_LAST is a safe choice.
  * \returns the number of events actually stored or -1 on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -1095,6 +1095,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event *events, int numevents,
  * \returns true if events matching `type` are present, or false if events
  *          matching `type` are not present.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_HasEvents
@@ -1113,6 +1115,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasEvent(Uint32 type);
  *                SDL_EventType for details.
  * \returns true if events with type >= `minType` and <= `maxType` are
  *          present, or false if not.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -1140,6 +1144,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasEvents(Uint32 minType, Uint32 maxType);
  *
  * \param type the type of event to be cleared; see SDL_EventType for details.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_FlushEvents
@@ -1164,6 +1170,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvent(Uint32 type);
  *                SDL_EventType for details.
  * \param maxType the high end of event type to be cleared, inclusive; see
  *                SDL_EventType for details.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -1207,6 +1215,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType)
  *              the queue, or NULL.
  * \returns true if this got an event or false if there are none available.
  *
+ * \threadsafety This should only be run in the thread that initialized the
+ *               video subsystem, and for extra safety, you should consider
+ *               only doing those things on the main thread in any case.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_PushEvent
@@ -1228,6 +1240,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PollEvent(SDL_Event *event);
  *              from the queue, or NULL.
  * \returns true on success or false if there was an error while waiting for
  *          events; call SDL_GetError() for more information.
+ *
+ * \threadsafety This should only be run in the thread that initialized the
+ *               video subsystem, and for extra safety, you should consider
+ *               only doing those things on the main thread in any case.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -1257,6 +1273,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitEvent(SDL_Event *event);
  * \returns true if this got an event or false if the timeout elapsed without
  *          any events available.
  *
+ * \threadsafety This should only be run in the thread that initialized the
+ *               video subsystem, and for extra safety, you should consider
+ *               only doing those things on the main thread in any case.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_PollEvent
@@ -1277,8 +1297,6 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 t
  * Note: Pushing device input events onto the queue doesn't modify the state
  * of the device within SDL.
  *
- * This function is thread-safe, and can be called from other threads safely.
- *
  * Note: Events pushed onto the queue with SDL_PushEvent() get passed through
  * the event filter but events added with SDL_PeepEvents() do not.
  *
@@ -1290,6 +1308,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 t
  * \returns true on success, false if the event was filtered or on failure;
  *          call SDL_GetError() for more information. A common reason for
  *          error is the event queue being full.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -1354,9 +1374,7 @@ typedef bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
  * \param filter an SDL_EventFilter function to call when an event happens.
  * \param userdata a pointer that is passed to `filter`.
  *
- * \threadsafety SDL may call the filter callback at any time from any thread;
- *               the application is responsible for locking resources the
- *               callback touches that need to be protected.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -1378,6 +1396,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetEventFilter(SDL_EventFilter filter, void
  * \param userdata the pointer that is passed to the current event filter will
  *                 be stored here.
  * \returns true on success or false if there is no event filter set.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -1426,6 +1446,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AddEventWatch(SDL_EventFilter filter, void 
  * \param filter the function originally passed to SDL_AddEventWatch().
  * \param userdata the pointer originally passed to SDL_AddEventWatch().
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_AddEventWatch
@@ -1443,6 +1465,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_RemoveEventWatch(SDL_EventFilter filter, vo
  * \param filter the SDL_EventFilter function to call when an event happens.
  * \param userdata a pointer that is passed to `filter`.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetEventFilter
@@ -1456,6 +1480,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter, void *
  * \param type the type of event; see SDL_EventType for details.
  * \param enabled whether to process the event or not.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_EventEnabled
@@ -1467,6 +1493,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetEventEnabled(Uint32 type, bool enabled);
  *
  * \param type the type of event; see SDL_EventType for details.
  * \returns true if the event is being processed, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -1482,6 +1510,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_EventEnabled(Uint32 type);
  * \returns the beginning event number, or 0 if numevents is invalid or if
  *          there are not enough user-defined events left.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_PushEvent
@@ -1493,6 +1523,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  *
  * \param event an event containing a `windowID`.
  * \returns the associated window on success or NULL if there is none.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
