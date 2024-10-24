@@ -523,13 +523,31 @@ bool Cocoa_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-bool Cocoa_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
+static void DispatchedDestroyContext(SDL_GLContext context)
 {
     @autoreleasepool {
         SDL3OpenGLContext *nscontext = (__bridge SDL3OpenGLContext *)context;
         [nscontext cleanup];
         CFRelease(context);
     }
+}
+
+bool Cocoa_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
+{
+    if ([NSThread isMainThread]) {
+        DispatchedDestroyContext(context);
+    } else {
+        if (SDL_opengl_async_dispatch) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+              DispatchedDestroyContext(context);
+            });
+        } else {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+              DispatchedDestroyContext(context);
+            });
+        }
+    }
+
     return true;
 }
 
