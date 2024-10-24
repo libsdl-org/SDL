@@ -365,7 +365,9 @@ jobs:
         with:
           if-no-files-found: error
           name: '${{ matrix.platform.artifact }}'
-          path: build/dist/SDL3*
+          path: |
+            build/dist/SDL3*
+            build/include*
       - name: 'Upload minidumps'
         uses: actions/upload-artifact@v4
         if: ${{ always() && steps.tests.outcome == 'failure' && (matrix.platform.platform == 'msvc' || matrix.platform.platform == 'msys2') }}
