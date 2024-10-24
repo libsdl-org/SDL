@@ -7176,18 +7176,20 @@ static bool D3D12_INTERNAL_CopyTextureDownload(
 
 static bool D3D12_INTERNAL_CleanCommandBuffer(
     D3D12Renderer *renderer,
-    D3D12CommandBuffer *commandBuffer)
+    D3D12CommandBuffer *commandBuffer,
+    bool cancel)
 {
     Uint32 i;
     HRESULT res;
     bool result = true;
 
     // Perform deferred texture data copies
-
     for (i = 0; i < commandBuffer->textureDownloadCount; i += 1) {
-        result &= D3D12_INTERNAL_CopyTextureDownload(
-            commandBuffer,
-            commandBuffer->textureDownloads[i]);
+        if (!cancel) {
+            result &= D3D12_INTERNAL_CopyTextureDownload(
+                commandBuffer,
+                commandBuffer->textureDownloads[i]);
+        }
         SDL_free(commandBuffer->textureDownloads[i]);
     }
     commandBuffer->textureDownloadCount = 0;
@@ -7280,10 +7282,12 @@ static bool D3D12_INTERNAL_CleanCommandBuffer(
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
     // Remove this command buffer from the submitted list
-    for (i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
-        if (renderer->submittedCommandBuffers[i] == commandBuffer) {
-            renderer->submittedCommandBuffers[i] = renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount - 1];
-            renderer->submittedCommandBufferCount -= 1;
+    if (!cancel) {
+        for (i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
+            if (renderer->submittedCommandBuffers[i] == commandBuffer) {
+                renderer->submittedCommandBuffers[i] = renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount - 1];
+                renderer->submittedCommandBufferCount -= 1;
+            }
         }
     }
 
@@ -7452,7 +7456,8 @@ static bool D3D12_Submit(
         if (fenceValue == D3D12_FENCE_SIGNAL_VALUE) {
             result &= D3D12_INTERNAL_CleanCommandBuffer(
                 renderer,
-                renderer->submittedCommandBuffers[i]);
+                renderer->submittedCommandBuffers[i],
+                false);
         }
     }
 
@@ -7470,6 +7475,26 @@ static SDL_GPUFence *D3D12_SubmitAndAcquireFence(
     d3d12CommandBuffer->autoReleaseFence = false;
     D3D12_Submit(commandBuffer);
     return (SDL_GPUFence *)d3d12CommandBuffer->inFlightFence;
+}
+
+static bool D3D12_Cancel(
+    SDL_GPUCommandBuffer *commandBuffer)
+{
+    D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    D3D12Renderer *renderer = d3d12CommandBuffer->renderer;
+    bool result;
+    HRESULT res;
+
+    // Notify the command buffer that we have completed recording
+    res = ID3D12GraphicsCommandList_Close(d3d12CommandBuffer->graphicsCommandList);
+    CHECK_D3D12_ERROR_AND_RETURN("Failed to close command list!", false);
+
+    d3d12CommandBuffer->autoReleaseFence = 0;
+    SDL_LockMutex(renderer->submitLock);
+    result = D3D12_INTERNAL_CleanCommandBuffer(renderer, d3d12CommandBuffer, true);
+    SDL_UnlockMutex(renderer->submitLock);
+
+    return result;
 }
 
 static bool D3D12_Wait(
@@ -7515,7 +7540,7 @@ static bool D3D12_Wait(
 
     // Clean up
     for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
-        result &= D3D12_INTERNAL_CleanCommandBuffer(renderer, renderer->submittedCommandBuffers[i]);
+        result &= D3D12_INTERNAL_CleanCommandBuffer(renderer, renderer->submittedCommandBuffers[i], false);
     }
 
     D3D12_INTERNAL_PerformPendingDestroys(renderer);
@@ -7571,7 +7596,8 @@ static bool D3D12_WaitForFences(
         if (fenceValue == D3D12_FENCE_SIGNAL_VALUE) {
             result &= D3D12_INTERNAL_CleanCommandBuffer(
                 renderer,
-                renderer->submittedCommandBuffers[i]);
+                renderer->submittedCommandBuffers[i],
+                false);
         }
     }
 

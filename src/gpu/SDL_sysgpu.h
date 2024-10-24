@@ -40,6 +40,7 @@ typedef struct CommandBufferCommonHeader
     Pass compute_pass;
     bool compute_pipeline_bound;
     Pass copy_pass;
+    bool swapchain_texture_acquired;
     bool submitted;
 } CommandBufferCommonHeader;
 
@@ -810,6 +811,9 @@ struct SDL_GPUDevice
     SDL_GPUFence *(*SubmitAndAcquireFence)(
         SDL_GPUCommandBuffer *commandBuffer);
 
+    bool (*Cancel)(
+        SDL_GPUCommandBuffer *commandBuffer);
+
     bool (*Wait)(
         SDL_GPURenderer *driverData);
 
@@ -928,6 +932,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(AcquireSwapchainTexture, name)       \
     ASSIGN_DRIVER_FUNC(Submit, name)                        \
     ASSIGN_DRIVER_FUNC(SubmitAndAcquireFence, name)         \
+    ASSIGN_DRIVER_FUNC(Cancel, name)                        \
     ASSIGN_DRIVER_FUNC(Wait, name)                          \
     ASSIGN_DRIVER_FUNC(WaitForFences, name)                 \
     ASSIGN_DRIVER_FUNC(QueryFence, name)                    \
