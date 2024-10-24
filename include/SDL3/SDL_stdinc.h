@@ -256,8 +256,6 @@ void *alloca(size_t);
      (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (C))) << 16) | \
      (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (D))) << 24))
 
-#if !(defined(SDL_SINT64_C) && defined(SDL_UINT64_C))
-
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
 /**
@@ -286,21 +284,33 @@ void *alloca(size_t);
  */
 #define SDL_UINT64_C(c)  c ## ULL /* or whatever the current compiler uses. */
 
-#elif defined(INT64_C)
+#else /* !SDL_WIKI_DOCUMENTATION_SECTION */
+
+#ifndef SDL_SINT64_C
+#if defined(INT64_C)
 #define SDL_SINT64_C(c)  INT64_C(c)
-#define SDL_UINT64_C(c)  UINT64_C(c)
 #elif defined(_MSC_VER)
 #define SDL_SINT64_C(c)  c ## i64
-#define SDL_UINT64_C(c)  c ## ui64
 #elif defined(__LP64__) || defined(_LP64)
 #define SDL_SINT64_C(c)  c ## L
-#define SDL_UINT64_C(c)  c ## UL
 #else
 #define SDL_SINT64_C(c)  c ## LL
+#endif
+#endif /* !SDL_SINT64_C */
+
+#ifndef SDL_UINT64_C
+#if defined(UINT64_C)
+#define SDL_UINT64_C(c)  UINT64_C(c)
+#elif defined(_MSC_VER)
+#define SDL_UINT64_C(c)  c ## ui64
+#elif defined(__LP64__) || defined(_LP64)
+#define SDL_UINT64_C(c)  c ## UL
+#else
 #define SDL_UINT64_C(c)  c ## ULL
 #endif
+#endif /* !SDL_UINT64_C */
 
-#endif /* !(defined(SDL_SINT64_C) && defined(SDL_UINT64_C)) */
+#endif /* !SDL_WIKI_DOCUMENTATION_SECTION */
 
 /**
  *  \name Basic data types
