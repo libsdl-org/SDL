@@ -2134,6 +2134,7 @@ static void data_device_handle_leave(void *data, struct wl_data_device *wl_data_
 
     if (data_device->drag_offer) {
         if (data_device->dnd_window) {
+            SDL_SendDropComplete(data_device->dnd_window);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In wl_data_device_listener . data_device_handle_leave on data_offer 0x%08x from window %d for serial %d\n",
                          WAYLAND_wl_proxy_get_id((struct wl_proxy *)data_device->drag_offer->offer),

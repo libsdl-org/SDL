@@ -391,6 +391,7 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
     GET_ATOM(SDL_FORMATS);
     GET_ATOM(XdndAware);
     GET_ATOM(XdndEnter);
+    GET_ATOM(XdndLeave);
     GET_ATOM(XdndPosition);
     GET_ATOM(XdndStatus);
     GET_ATOM(XdndTypeList);
