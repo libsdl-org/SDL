@@ -549,9 +549,9 @@ extern SDL_DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);
  * no items. In addition, any previously-triggered assertions will be reset to
  * a trigger_count of zero, and their always_ignore state will be false.
  *
- * \threadsafety This function is not thread safe. Other threads triggering
- *               an assertion, or simultaneously calling this function may
- *               cause memory leaks or crashes.
+ * \threadsafety This function is not thread safe. Other threads triggering an
+ *               assertion, or simultaneously calling this function may cause
+ *               memory leaks or crashes.
  *
  * \since This function is available since SDL 3.1.3.
  *
