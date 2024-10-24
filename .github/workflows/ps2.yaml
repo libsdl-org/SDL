@@ -13,15 +13,6 @@ jobs:
         apk update 
         apk add cmake gmp mpc1 mpfr4 ninja pkgconf make git
 
-    # To be removed once ps2_drivers is part of PS2DEV
-    - name: Install ps2_drivers lib
-      run: |
-        git clone https://github.com/fjtrujy/ps2_drivers.git
-        cd ps2_drivers
-        make -j $(getconf _NPROCESSORS_ONLN) clean
-        make -j $(getconf _NPROCESSORS_ONLN)
-        make -j $(getconf _NPROCESSORS_ONLN) install
-
     - name: Configure (CMake)
       run: |
         cmake -S . -B build -G Ninja \
