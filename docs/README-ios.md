@@ -140,6 +140,8 @@ Notes -- Mouse
 
 iOS now supports Bluetooth mice on iPad, but by default will provide the mouse input as touch. In order for SDL to see the real mouse events, you should set the key UIApplicationSupportsIndirectInputEvents to true in your Info.plist
 
+From iOS 17 onward, the key now defaults to true.
+
 
 Notes -- Reading and Writing files
 ==============================================================================
