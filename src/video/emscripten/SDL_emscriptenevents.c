@@ -360,20 +360,24 @@ static EM_BOOL Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent 
     SDL_WindowData *window_data = userData;
 
     float deltaY = wheelEvent->deltaY;
+    float deltaX = wheelEvent->deltaX;
 
     switch (wheelEvent->deltaMode) {
     case DOM_DELTA_PIXEL:
+        deltaX /= 100; // 100 pixels make up a step
         deltaY /= 100; // 100 pixels make up a step
         break;
     case DOM_DELTA_LINE:
+        deltaX /= 3; // 3 lines make up a step
         deltaY /= 3; // 3 lines make up a step
         break;
     case DOM_DELTA_PAGE:
+        deltaX *= 80; // A page makes up 80 steps
         deltaY *= 80; // A page makes up 80 steps
         break;
     }
 
-    SDL_SendMouseWheel(0, window_data->window, SDL_DEFAULT_MOUSE_ID, (float)wheelEvent->deltaX, -deltaY, SDL_MOUSEWHEEL_NORMAL);
+    SDL_SendMouseWheel(0, window_data->window, SDL_DEFAULT_MOUSE_ID, deltaX, -deltaY, SDL_MOUSEWHEEL_NORMAL);
     return SDL_EventEnabled(SDL_EVENT_MOUSE_WHEEL);
 }
 
