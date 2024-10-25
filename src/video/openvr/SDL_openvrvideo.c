@@ -69,71 +69,42 @@ struct SDL_CursorData
 };
 
 // GL Extensions for functions we will be using.
-void (APIENTRY *ov_glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
-void (APIENTRY *ov_glGenRenderbuffers)(GLsizei n, GLuint *renderbuffers);
-void (APIENTRY *ov_glBindFramebuffer)(GLenum target, GLuint framebuffer);
-void (APIENTRY *ov_glBindRenderbuffer)(GLenum target, GLuint renderbuffer);
-void (APIENTRY *ov_glRenderbufferStorage)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
-void (APIENTRY *ov_glFramebufferRenderbuffer)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
-void (APIENTRY *ov_glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-GLenum (APIENTRY *ov_glCheckNamedFramebufferStatus)(GLuint framebuffer, GLenum target);
-GLenum (APIENTRY *ov_glGetError)();
-void (APIENTRY *ov_glFlush)();
-void (APIENTRY *ov_glFinish)();
-void (APIENTRY *ov_glGenTextures)(GLsizei n, GLuint *textures);
-void (APIENTRY *ov_glDeleteTextures)(GLsizei n, GLuint *textures);
-void (APIENTRY *ov_glTexParameterf)(GLenum target, GLenum pname, GLfloat param);
-void (APIENTRY *ov_glTexParameteri)(GLenum target, GLenum pname, GLenum param);
-void (APIENTRY *ov_glTexImage2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *data);
-void (APIENTRY *ov_glBindTexture)(GLenum target, GLuint texture);
-void (APIENTRY *ov_glDrawBuffers)(GLsizei n, const GLenum *bufs);
-void (APIENTRY *ov_glGetIntegerv)(GLenum pname, GLint * data);
-const GLubyte *(APIENTRY *ov_glGetStringi)(GLenum name, GLuint index);
-void (APIENTRY *ov_glClear)(GLbitfield mask);
-void (APIENTRY *ov_glClearColor)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-void (APIENTRY *ov_glColorMask)(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
-void (APIENTRY *ov_glDebugMessageInsert)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char *message);
+static void (APIENTRY *ov_glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
+static void (APIENTRY *ov_glGenRenderbuffers)(GLsizei n, GLuint *renderbuffers);
+static void (APIENTRY *ov_glBindFramebuffer)(GLenum target, GLuint framebuffer);
+static void (APIENTRY *ov_glBindRenderbuffer)(GLenum target, GLuint renderbuffer);
+static void (APIENTRY *ov_glRenderbufferStorage)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+static void (APIENTRY *ov_glFramebufferRenderbuffer)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+static void (APIENTRY *ov_glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+static GLenum (APIENTRY *ov_glCheckNamedFramebufferStatus)(GLuint framebuffer, GLenum target);
+static GLenum (APIENTRY *ov_glGetError)();
+static void (APIENTRY *ov_glFlush)();
+static void (APIENTRY *ov_glFinish)();
+static void (APIENTRY *ov_glGenTextures)(GLsizei n, GLuint *textures);
+static void (APIENTRY *ov_glDeleteTextures)(GLsizei n, GLuint *textures);
+static void (APIENTRY *ov_glTexParameterf)(GLenum target, GLenum pname, GLfloat param);
+static void (APIENTRY *ov_glTexParameteri)(GLenum target, GLenum pname, GLenum param);
+static void (APIENTRY *ov_glTexImage2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *data);
+static void (APIENTRY *ov_glBindTexture)(GLenum target, GLuint texture);
+static void (APIENTRY *ov_glDrawBuffers)(GLsizei n, const GLenum *bufs);
+static void (APIENTRY *ov_glGetIntegerv)(GLenum pname, GLint * data);
+static const GLubyte *(APIENTRY *ov_glGetStringi)(GLenum name, GLuint index);
+static void (APIENTRY *ov_glClear)(GLbitfield mask);
+static void (APIENTRY *ov_glClearColor)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+static void (APIENTRY *ov_glColorMask)(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
+static void (APIENTRY *ov_glDebugMessageInsert)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char *message);
 
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
-PROC(*ov_wglGetProcAddress)(LPCSTR);
-HGLRC(*ov_wglCreateContext)(HDC);
-BOOL(*ov_wglDeleteContext)(HGLRC);
-BOOL(*ov_wglMakeCurrent)(HDC, HGLRC);
-HGLRC(*ov_wglGetCurrentContext)();
+static PROC (*ov_wglGetProcAddress)(LPCSTR);
+static HGLRC (*ov_wglCreateContext)(HDC);
+static BOOL (*ov_wglDeleteContext)(HGLRC);
+static BOOL (*ov_wglMakeCurrent)(HDC, HGLRC);
+//static HGLRC (*ov_wglGetCurrentContext)(void);
 #endif
 
 
 #define OPENVR_DEFAULT_WIDTH 1920
 #define OPENVR_DEFAULT_HEIGHT 1080
-
-SDL_DisplayMode openvr_dm_default = {
-    .format = SDL_PIXELFORMAT_RGBA32,
-    .w = OPENVR_DEFAULT_WIDTH,
-    .h = OPENVR_DEFAULT_HEIGHT,
-    .refresh_rate = 120,
-    .internal = 0
-};
-
-SDL_VideoDisplay openvr_vd_default = {
-    .name = 0,
-    .max_fullscreen_modes = 0,
-    .num_fullscreen_modes = 0,
-    .fullscreen_modes = 0,
-    .desktop_mode = {
-        .format = SDL_PIXELFORMAT_RGBA32,
-        .w = OPENVR_DEFAULT_WIDTH,
-        .h = OPENVR_DEFAULT_HEIGHT,
-        .refresh_rate = 120,
-        .internal = 0
-    },
-    .current_mode = 0,
-    .natural_orientation = SDL_ORIENTATION_LANDSCAPE,
-    .current_orientation = SDL_ORIENTATION_LANDSCAPE,
-    .fullscreen_window = 0,
-    .device = 0,
-    .content_scale = 1.0f,
-    .internal = 0
-};
 
 #define OPENVR_SetupProc(proc) { proc = (void*)SDL_GL_GetProcAddress((#proc)+3); if (!proc) { failed_extension = (#proc)+3; } }
 
@@ -215,22 +186,31 @@ static bool OPENVR_VideoInit(SDL_VideoDevice *_this)
     const char * hintWidth = SDL_GetHint("SDL_DEFAULT_WIDTH");
     const char * hintHeight = SDL_GetHint("SDL_DEFAULT_HEIGHT");
     const char * hintFPS = SDL_GetHint("SDL_DEFAULT_FPS");
-    int width = hintWidth?atoi(hintWidth):0;
-    int height = hintHeight?atoi(hintHeight):0;
+    int width = hintWidth ? SDL_atoi(hintWidth) : 0;
+    int height = hintHeight ? SDL_atoi(hintHeight) : 0;
+    int fps = hintFPS ? SDL_atoi(hintFPS) : 0;
+
+    SDL_VideoDisplay display;
+    SDL_zero(display);
+    display.desktop_mode.format = SDL_PIXELFORMAT_RGBA32;
+    display.desktop_mode.w = OPENVR_DEFAULT_WIDTH;
+    display.desktop_mode.h = OPENVR_DEFAULT_HEIGHT;
+    display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
+    display.current_orientation = SDL_ORIENTATION_LANDSCAPE;
+    display.content_scale = 1.0f;
     if (height > 0 && width > 0) {
-        openvr_vd_default.desktop_mode.w = width;
-        openvr_vd_default.desktop_mode.h = height;
+        display.desktop_mode.w = width;
+        display.desktop_mode.h = height;
     }
-    int fps = hintFPS?atoi(hintFPS):0;
     if (fps) {
-        openvr_vd_default.desktop_mode.refresh_rate = fps;
+        display.desktop_mode.refresh_rate = fps;
     } else {
-        openvr_vd_default.desktop_mode.refresh_rate = data->oSystem->GetFloatTrackedDeviceProperty(k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty_Prop_DisplayFrequency_Float, 0);
+        display.desktop_mode.refresh_rate = data->oSystem->GetFloatTrackedDeviceProperty(k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty_Prop_DisplayFrequency_Float, 0);
     }
 
-    openvr_vd_default.internal = (SDL_DisplayData *)data;
-    openvr_vd_default.name = (char*)"OpenVRDisplay";
-    SDL_AddVideoDisplay(&openvr_vd_default, false);
+    display.internal = (SDL_DisplayData *)data;
+    display.name = (char*)"OpenVRDisplay";
+    SDL_AddVideoDisplay(&display, false);
 
     return true;
 }
@@ -619,13 +599,13 @@ static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this,SDL_Window *window)
     }
     {
         const char * hint = SDL_GetHint("SDL_OPENVR_OVERLAY_PANEL_WIDTH");
-        float fWidth = (float)(hint?atof(hint):1.0f);
+        float fWidth = hint ? (float)SDL_atof(hint) : 1.0f;
         videodata->oOverlay->SetOverlayWidthInMeters(videodata->overlayID, fWidth);
     }
     {
         const char * hint = SDL_GetHint("SDL_OPENVR_CURSOR_WIDTH");
         // Default is what SteamVR Does
-        float fCursorWidth = (float)(hint?atof(hint):0.06f);
+        float fCursorWidth = hint ? (float)SDL_atof(hint) : 0.06f;
         videodata->oOverlay->SetOverlayWidthInMeters(videodata->cursorID, fCursorWidth * 0.5f);
     }
     {
@@ -974,7 +954,7 @@ static bool OPENVR_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext conte
 
 #else
 
-EGLint context_attribs[] = {
+static EGLint context_attribs[] = {
     EGL_CONTEXT_CLIENT_VERSION, 2,
     EGL_NONE
 };
