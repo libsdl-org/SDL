@@ -2263,8 +2263,8 @@ static void RemoveMappingValueAt(MappingParts *parts, int index)
     SDL_free(parts->values[index]);
     --parts->num_elements;
     if (index < parts->num_elements) {
-        SDL_memcpy(&parts->keys[index], &parts->keys[index] + 1, (parts->num_elements - index) * sizeof(parts->keys[index]));
-        SDL_memcpy(&parts->values[index], &parts->values[index] + 1, (parts->num_elements - index) * sizeof(parts->values[index]));
+        SDL_memmove(&parts->keys[index], &parts->keys[index] + 1, (parts->num_elements - index) * sizeof(parts->keys[index]));
+        SDL_memmove(&parts->values[index], &parts->values[index] + 1, (parts->num_elements - index) * sizeof(parts->values[index]));
     }
 }
 
