@@ -361,6 +361,7 @@ typedef struct
     uint32_t swapchainDesiredImageCount;
     VkSurfaceFormatKHR surfaceFormat;
     VkExtent2D swapchainSize;
+    VkSurfaceTransformFlagBitsKHR swapChainPreTransform;
     uint32_t swapchainImageCount;
     VkImage *swapchainImages;
     VkImageView *swapchainImageViews;
@@ -477,6 +478,8 @@ static bool VULKAN_FindMemoryTypeIndex(VULKAN_RenderData *rendererData, uint32_t
 static VkResult VULKAN_CreateWindowSizeDependentResources(SDL_Renderer *renderer);
 static VkDescriptorPool VULKAN_AllocateDescriptorPool(VULKAN_RenderData *rendererData);
 static VkResult VULKAN_CreateDescriptorSetAndPipelineLayout(VULKAN_RenderData *rendererData, VkSampler samplerYcbcr, VkDescriptorSetLayout *descriptorSetLayoutOut, VkPipelineLayout *pipelineLayoutOut);
+static VkSurfaceTransformFlagBitsKHR VULKAN_GetRotationForCurrentRenderTarget(VULKAN_RenderData *rendererData);
+static bool VULKAN_IsDisplayRotated90Degrees(VkSurfaceTransformFlagBitsKHR rotation);
 
 static void VULKAN_DestroyAll(SDL_Renderer *renderer)
 {
@@ -923,6 +926,7 @@ static void VULKAN_BeginRenderPass(VULKAN_RenderData *rendererData, VkAttachment
         width = rendererData->textureRenderTarget->width;
         height = rendererData->textureRenderTarget->height;
     }
+
     switch (loadOp) {
     case VK_ATTACHMENT_LOAD_OP_CLEAR:
         rendererData->currentRenderPass = rendererData->textureRenderTarget ?
@@ -2212,6 +2216,15 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
                                            rendererData->surfaceCapabilities.minImageExtent.height,
                                            rendererData->surfaceCapabilities.maxImageExtent.height);
 
+    // Handle rotation
+    rendererData->swapChainPreTransform = rendererData->surfaceCapabilities.currentTransform;
+    if (rendererData->swapChainPreTransform == VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
+        rendererData->swapChainPreTransform == VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+        uint32_t tempWidth = rendererData->swapchainSize.width;
+        rendererData->swapchainSize.width = rendererData->swapchainSize.height;
+        rendererData->swapchainSize.height = tempWidth;
+    }
+
     if (rendererData->swapchainSize.width == 0 && rendererData->swapchainSize.height == 0) {
         // Don't recreate the swapchain if size is (0,0), just fail and continue attempting creation
         return VK_ERROR_OUT_OF_DATE_KHR;
@@ -2275,7 +2288,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapchainCreateInfo.imageArrayLayers = 1;
     swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    swapchainCreateInfo.preTransform = rendererData->surfaceCapabilities.currentTransform;
+    swapchainCreateInfo.preTransform = rendererData->swapChainPreTransform;
     swapchainCreateInfo.compositeAlpha = (renderer->window->flags & SDL_WINDOW_TRANSPARENT) ? (VkCompositeAlphaFlagBitsKHR)0 : VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     swapchainCreateInfo.presentMode = presentMode;
     swapchainCreateInfo.clipped = VK_TRUE;
@@ -3249,12 +3262,34 @@ static bool VULKAN_UpdateVertexBuffer(SDL_Renderer *renderer,
     return true;
 }
 
+static VkSurfaceTransformFlagBitsKHR VULKAN_GetRotationForCurrentRenderTarget(VULKAN_RenderData *rendererData)
+{
+    if (rendererData->textureRenderTarget) {
+        return VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    } else {
+        return rendererData->swapChainPreTransform;
+    }
+}
+
+static bool VULKAN_IsDisplayRotated90Degrees(VkSurfaceTransformFlagBitsKHR rotation)
+{
+    switch (rotation) {
+        case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+        case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+            return true;
+        default:
+            return false;
+    }
+}
+
 static bool VULKAN_UpdateViewport(SDL_Renderer *renderer)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     const SDL_Rect *viewport = &rendererData->currentViewport;
     Float4X4 projection;
     Float4X4 view;
+    VkSurfaceTransformFlagBitsKHR rotation = VULKAN_GetRotationForCurrentRenderTarget(rendererData);
+    bool swapDimensions;
 
     if (viewport->w == 0 || viewport->h == 0) {
         /* If the viewport is empty, assume that it is because
@@ -3265,7 +3300,22 @@ static bool VULKAN_UpdateViewport(SDL_Renderer *renderer)
         return false;
     }
 
-    projection = MatrixIdentity();
+    switch (rotation) {
+        case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+            projection = MatrixRotationZ(SDL_PI_F * 0.5f);
+            break;
+        case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
+            projection = MatrixRotationZ(SDL_PI_F);
+            break;
+        case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+            projection = MatrixRotationZ(-SDL_PI_F * 0.5f);
+            break;
+        case VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR:
+        default:
+            projection = MatrixIdentity();
+            break;
+
+    }
 
     // Update the view matrix
     SDL_zero(view);
@@ -3281,10 +3331,20 @@ static bool VULKAN_UpdateViewport(SDL_Renderer *renderer)
         projection);
 
     VkViewport vkViewport;
-    vkViewport.x = viewport->x;
-    vkViewport.y = viewport->y;
-    vkViewport.width = viewport->w;
-    vkViewport.height = viewport->h;
+
+    swapDimensions = VULKAN_IsDisplayRotated90Degrees(rotation);
+    if (swapDimensions) {
+        vkViewport.x = viewport->y;
+        vkViewport.y = viewport->x;
+        vkViewport.width = viewport->h;
+        vkViewport.height = viewport->w;
+    }
+    else {
+        vkViewport.x = viewport->x;
+        vkViewport.y = viewport->y;
+        vkViewport.width = viewport->w;
+        vkViewport.height = viewport->h;
+    }
     vkViewport.minDepth = 0.0f;
     vkViewport.maxDepth = 1.0f;
     vkCmdSetViewport(rendererData->currentCommandBuffer, 0, 1, &vkViewport);
@@ -3297,6 +3357,8 @@ static bool VULKAN_UpdateClipRect(SDL_Renderer *renderer)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     const SDL_Rect *viewport = &rendererData->currentViewport;
+    VkSurfaceTransformFlagBitsKHR rotation = VULKAN_GetRotationForCurrentRenderTarget(rendererData);
+    bool swapDimensions = VULKAN_IsDisplayRotated90Degrees(rotation);
 
     VkRect2D scissor;
     if (rendererData->currentCliprectEnabled) {
@@ -3309,6 +3371,13 @@ static bool VULKAN_UpdateClipRect(SDL_Renderer *renderer)
         scissor.offset.y = viewport->y;
         scissor.extent.width = viewport->w;
         scissor.extent.height = viewport->h;
+    }
+    if (swapDimensions) {
+        VkRect2D scissorTemp = scissor;
+        scissor.offset.x = scissorTemp.offset.y;
+        scissor.offset.y = scissorTemp.offset.x;
+        scissor.extent.width = scissorTemp.extent.height;
+        scissor.extent.height = scissorTemp.extent.width;
     }
     vkCmdSetScissor(rendererData->currentCommandBuffer, 0, 1, &scissor);
 
@@ -3769,11 +3838,18 @@ static void VULKAN_InvalidateCachedState(SDL_Renderer *renderer)
 static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
+    VkSurfaceTransformFlagBitsKHR currentRotation = VULKAN_GetRotationForCurrentRenderTarget(rendererData);
     VULKAN_DrawStateCache stateCache;
     SDL_memset(&stateCache, 0, sizeof(stateCache));
 
     if (!rendererData->device) {
         return SDL_SetError("Device lost and couldn't be recovered");
+    }
+
+    if(rendererData->currentViewportRotation != currentRotation) {
+        rendererData->currentViewportRotation = currentRotation;
+        rendererData->viewportDirty = true;
+        rendererData->cliprectDirty = true;
     }
 
     if (rendererData->recreateSwapchain) {
