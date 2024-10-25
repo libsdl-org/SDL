@@ -496,6 +496,21 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return path;
 }
 
+SDL_IOStream *SDL_CreateSafeTempFile(void)
+{
+    return SDL_SYS_CreateSafeTempFile();
+}
+
+char *SDL_CreateUnsafeTempFile(void)
+{
+    return SDL_SYS_CreateUnsafeTempFile();
+}
+
+char *SDL_CreateTempFolder(void)
+{
+    return SDL_SYS_CreateTempFolder();
+}
+
 
 void SDL_InitFilesystem(void)
 {
