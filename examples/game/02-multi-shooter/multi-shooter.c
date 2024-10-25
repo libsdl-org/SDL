@@ -2,6 +2,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <math.h>
+#include <stdio.h>
 
 #ifndef max
     #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -81,11 +82,11 @@ void shoot(int shooter, Player players[], int players_len) {
     }
 }
 
-void update(Player players[], int players_len, Uint64 dt_ms) {
+void update(Player players[], int players_len, Uint64 dt_ns) {
     for (int i = 0; i < players_len; i++) {
         Player* player = &players[i];
         double rate = 6.0;
-        double time = (double)dt_ms * 0.001;
+        double time = (double)dt_ns * 1e-9;
         double drag = exp(-time * rate);
         double diff = 1.0 - drag;
         double mult = 60.0;
@@ -166,6 +167,7 @@ void drawClippedSegment(
     SDL_RenderLine(renderer, x + ax, y - ay, x + bx, y - by);
 }
 
+char debug_string[32];
 void draw(SDL_Renderer* renderer, const float edges[][6], const Player players[], int players_len) {
     int w, h;
     if (!SDL_GetRenderOutputSize(renderer, &w, &h)) return;
@@ -239,6 +241,7 @@ void draw(SDL_Renderer* renderer, const float edges[][6], const Player players[]
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             SDL_RenderLine(renderer, hor_origin, ver_origin-10, hor_origin, ver_origin+10);
             SDL_RenderLine(renderer, hor_origin-10, ver_origin, hor_origin+10, ver_origin);
+            SDL_RenderDebugText(renderer, 0, 0, debug_string);
         }
     }
     SDL_RenderPresent(renderer);
@@ -338,6 +341,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     as->player_count = 2;
     initPlayers(&as->players, as->player_count);
     initEdges(MAP_BOX_SCALE, &as->edges, MAP_BOX_EDGES_LEN);
+    debug_string[0] = 0;
 
     SDL_SetRenderVSync(as->renderer, 0);
     SDL_SetWindowRelativeMouseMode(as->window, 1);
@@ -387,11 +391,20 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 
 SDL_AppResult SDL_AppIterate(void *appstate) {
     AppState *as = appstate;
-    Uint64 now = SDL_GetTicks();
-    Uint64 dt_ms = (now - as->last_step);
-    as->last_step = now;    
-    update(as->players, as->player_count, dt_ms);
+    Uint64 now = SDL_GetTicksNS();
+    Uint64 dt_ns = (now - as->last_step);
+    as->last_step = now;
+    update(as->players, as->player_count, dt_ns);
     draw(as->renderer, as->edges, as->players, as->player_count);
+    static int frames = 0;
+    static Uint64 last_count = 0;
+    frames += 1;
+    if (now - last_count >= 1000000000) {
+        last_count = now;
+        sprintf(debug_string, "%d fps", frames);
+        frames = 0;
+    }
+    SDL_DelayNS(999999 - (SDL_GetTicksNS() - now));
 }
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
