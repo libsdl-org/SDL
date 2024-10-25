@@ -531,8 +531,6 @@ void Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context)
             });
         }
     }
-
-    return true;
 }
 
 /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
