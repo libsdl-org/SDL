@@ -1,0 +1,1 @@
+Minimal splitscreen FPS showcasing SDL3's new multiple input feature, drawn with the 2D Render API.
