@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This script is shared between SDL2, SDL3, and all satellite libraries.
