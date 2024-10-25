@@ -586,6 +586,34 @@ void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouse
     SDL_PrivateSendMouseMotion(timestamp, window, mouseID, relative, x, y);
 }
 
+void SDL_SendRawMouseAxis(Uint64 timestamp, SDL_MouseID mouseID, int dx, int dy, float ux, float uy, SDL_EventType type)
+{
+    if (SDL_EventEnabled(type)) {
+        SDL_Event event;
+        event.type = type;
+        event.common.timestamp = timestamp;
+        event.maxis.which = mouseID;
+        event.maxis.dx = dx;
+        event.maxis.dy = dy;
+        event.maxis.ux = ux;
+        event.maxis.uy = uy;
+        SDL_PushEvent(&event);
+    }
+}
+
+void SDL_SendRawMouseButton(Uint64 timestamp, SDL_MouseID mouseID, Uint8 state, Uint8 button)
+{
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_MOUSE_RAW_BUTTON;
+        event.common.timestamp = timestamp;
+        event.mbutton.which = mouseID;
+        event.mbutton.button = button;
+        event.mbutton.state = state;
+        SDL_PushEvent(&event);
+    }
+}
+
 static float CalculateSystemScale(SDL_Mouse *mouse, SDL_Window *window, const float *x, const float *y)
 {
     int i;

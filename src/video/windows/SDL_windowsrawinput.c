@@ -29,6 +29,7 @@
 #include "SDL_windowsevents.h"
 
 #include "../../joystick/usb_ids.h"
+#include "../../events/SDL_events_c.h"
 
 #define ENABLE_RAW_MOUSE_INPUT      0x01
 #define ENABLE_RAW_KEYBOARD_INPUT   0x02
@@ -185,7 +186,10 @@ static bool WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
     Uint32 flags = 0;
-    if (data->raw_mouse_enabled) {
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_MOTION) || 
+        SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_SCROLL) ||
+        SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON) ||
+        data->raw_mouse_enabled) {
         flags |= ENABLE_RAW_MOUSE_INPUT;
     }
     if (data->raw_keyboard_enabled) {
@@ -237,6 +241,11 @@ bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
     return true;
 }
 
+bool WIN_RefreshRawInputEnabled(SDL_VideoDevice *_this)
+{
+    return WIN_UpdateRawInputEnabled(_this);
+}
+
 #else
 
 bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
@@ -249,6 +258,10 @@ bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
     return SDL_Unsupported();
 }
 
+bool WIN_RefreshRawInputEnabled(SDL_VideoDevice *_this)
+{
+    return SDL_Unsupported();
+}
 #endif // !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS
