@@ -1,11 +1,8 @@
-// TODO: reimplement in C
-// - actually use SDL3
-// - use callback API
-// - auto-detect and add player on plugging in a new mouse
+#define SDL_MAIN_USE_CALLBACKS 1 /* use the callbacks instead of main() */
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <math.h>
 
-#include<math.h>
-#include<stdio.h>
-#include<SDL3/SDL.h>
 #ifndef max
     #define max(a,b) ((a) > (b) ? (a) : (b))
 #endif
@@ -13,9 +10,8 @@
     #define min(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-#define map_box_scale 16
-#define map_box_edges_len (12 + map_box_scale * 2)
-float map_box_edges[map_box_edges_len][6];
+#define MAP_BOX_SCALE 16
+#define MAP_BOX_EDGES_LEN (12 + MAP_BOX_SCALE * 2)
 
 typedef struct {
     double pos[3];
@@ -27,52 +23,26 @@ typedef struct {
     unsigned char wasd;
 } Player;
 
-void initEdges(int scale, float edges[][6], int edges_len) {
-    float r = (float)scale;
-    float lines[12][6] = {
-        {-r,-r,-r, r,-r,-r},
-        {-r,-r, r, r,-r, r},
-        {-r, r,-r, r, r,-r},
-        {-r, r, r, r, r, r},
-        {-r,-r,-r,-r, r,-r},
-        { r,-r,-r, r, r,-r},
-        {-r,-r, r,-r, r, r},
-        { r,-r, r, r, r, r},
-        {-r,-r,-r,-r,-r, r},
-        { r,-r,-r, r,-r, r},
-        {-r, r,-r,-r, r, r},
-        { r, r,-r, r, r, r}
-    };
-    int i;
-    for(i = 0; i < 12; i++) {
-        edges[i][0] = lines[i][0];
-        edges[i][1] = lines[i][1];
-        edges[i][2] = lines[i][2];
-        edges[i][3] = lines[i][3];
-        edges[i][4] = lines[i][4];
-        edges[i][5] = lines[i][5];
-    }
-    for(i = 0; i < scale; i++) {
-        float d = (float)(i * 2);
-        edges[i+12][0] =  -r;
-        edges[i+12][1] =  -r;
-        edges[i+12][2] = d-r;
-        edges[i+12][3] =   r;
-        edges[i+12][4] =  -r;
-        edges[i+12][5] = d-r;
-    }
-    for(i = 0; i < scale; i++) {
-        float d = (float)(i * 2);
-        edges[i+12+scale][0] = d-r;
-        edges[i+12+scale][1] =  -r;
-        edges[i+12+scale][2] =  -r;
-        edges[i+12+scale][3] = d-r;
-        edges[i+12+scale][4] =  -r;
-        edges[i+12+scale][5] =   r;
-    }
-}
+typedef struct {
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    Uint64 last_step;
+    float edges[MAP_BOX_EDGES_LEN][6];
+    int player_count;
+    Player players[4];
+} AppState;
 
-void shoot(int shooter, Player* players, int players_len) {
+static const struct {
+    const char *key;
+    const char *value;
+} extended_metadata[] = {
+    { SDL_PROP_APP_METADATA_URL_STRING, "https://examples.libsdl.org/SDL3/game/02-multi-shooter/" },
+    { SDL_PROP_APP_METADATA_CREATOR_STRING, "SDL team" },
+    { SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Placed in the public domain" },
+    { SDL_PROP_APP_METADATA_TYPE_STRING, "game" }
+};
+
+void shoot(int shooter, Player players[], int players_len) {
     double x0 = players[shooter].pos[0];
     double y0 = players[shooter].pos[1];
     double z0 = players[shooter].pos[2];
@@ -86,12 +56,11 @@ void shoot(int shooter, Player* players, int players_len) {
     double vx = -yaw_sin*pitch_cos;
     double vy =          pitch_sin;
     double vz = -yaw_cos*pitch_cos;
-    int i, j;
-    for (i = 0; i < players_len; i++) {
+    for (int i = 0; i < players_len; i++) {
         if (i == shooter) continue;
         Player* target = &(players[i]);
         int hit = 0;
-        for (j = 0; j < 2; j++) {
+        for (int j = 0; j < 2; j++) {
             double r = target->radius;
             double h = target->height;
             double dx = target->pos[0] - x0;
@@ -105,16 +74,15 @@ void shoot(int shooter, Player* players, int players_len) {
             if (vd * vd >= vv * (dd - rr)) hit += 1;
         }
         if (hit) {
-            target->pos[0] = (double)(map_box_scale * (SDL_rand(256) - 128)) / 256;
-            target->pos[1] = (double)(map_box_scale * (SDL_rand(256) - 128)) / 256;
-            target->pos[2] = (double)(map_box_scale * (SDL_rand(256) - 128)) / 256;
+            target->pos[0] = (double)(MAP_BOX_SCALE * (SDL_rand(256) - 128)) / 256;
+            target->pos[1] = (double)(MAP_BOX_SCALE * (SDL_rand(256) - 128)) / 256;
+            target->pos[2] = (double)(MAP_BOX_SCALE * (SDL_rand(256) - 128)) / 256;
         }
     }
 }
 
-void update(Player* players, int players_len, Uint64 dt_ms) {
-    int i;
-    for (i = 0; i < players_len; i++) {
+void update(Player players[], int players_len, Uint64 dt_ms) {
+    for (int i = 0; i < players_len; i++) {
         Player* player = &players[i];
         double rate = 6.0;
         double time = (double)dt_ms * 0.001;
@@ -143,7 +111,7 @@ void update(Player* players, int players_len, Uint64 dt_ms) {
         player->pos[0] += ((time - diff/rate) * (accX / rate) + diff * (velX / rate));
         player->pos[1] += (0.5 * grav * time * time + velY * time);
         player->pos[2] += ((time - diff/rate) * (accZ / rate) + diff * (velZ / rate));
-        double scale = (double)map_box_scale;
+        double scale = (double)MAP_BOX_SCALE;
         double bound = scale - player->radius;
         double posX = max(min(bound, player->pos[0]), -bound);
         double posY = max(min(bound, player->pos[1]), player->height - scale);
@@ -157,14 +125,12 @@ void update(Player* players, int players_len, Uint64 dt_ms) {
     }
 }
 
-// TESTED: OK
 void drawCircle(SDL_Renderer* renderer, float r, float x, float y) {
     int sides = 32;
     int len = sides + 1;
     float ang;
     SDL_FPoint points[len];
-    int i;
-    for (i = 0; i < len; i++) {
+    for (int i = 0; i < len; i++) {
         ang = 2.0f * M_PI * (float)i / (float)sides;
         points[i].x = x + r * cos(ang);
         points[i].y = y + r * sin(ang);
@@ -172,7 +138,6 @@ void drawCircle(SDL_Renderer* renderer, float r, float x, float y) {
     SDL_RenderLines(renderer, (const SDL_FPoint*)&points, len);
 }
 
-// TESTED: OK
 void drawClippedSegment(
     SDL_Renderer* renderer, 
     float ax, float ay, float az, 
@@ -201,7 +166,7 @@ void drawClippedSegment(
     SDL_RenderLine(renderer, x + ax, y - ay, x + bx, y - by);
 }
 
-void draw(SDL_Renderer* renderer, const Player* players, int players_len) {
+void draw(SDL_Renderer* renderer, const float edges[][6], const Player players[], int players_len) {
     int w, h;
     if (!SDL_GetRenderOutputSize(renderer, &w, &h)) return;
     SDL_SetRenderDrawColor(renderer, 0,0,0,0);
@@ -213,14 +178,13 @@ void draw(SDL_Renderer* renderer, const Player* players, int players_len) {
         int part_ver = players_len > 1 ? 2 : 1;
         float size_hor = wf / ((float)part_hor);
         float size_ver = hf / ((float)part_ver);
-        int i;
-        for (i = 0; i < players_len; i++) {
+        for (int i = 0; i < players_len; i++) {
             const Player* player = &players[i];
-            float f = (float)(0.5 * sqrt(size_hor * size_hor + size_ver * size_ver));
             float mod_x = (float)(i % part_hor);
             float mod_y = (float)(i / part_hor);
             float hor_origin = (mod_x + 0.5f) * size_hor;
             float ver_origin = (mod_y + 0.5f) * size_ver;
+            float cam_origin = (float)(0.5 * sqrt(size_hor * size_hor + size_ver * size_ver));
             float hor_offset = mod_x * size_hor;
             float ver_offset = mod_y * size_ver;
             SDL_Rect rect;
@@ -244,9 +208,8 @@ void draw(SDL_Renderer* renderer, const Player* players, int players_len) {
                 yaw_sin*pitch_sin, pitch_cos, yaw_cos*pitch_sin,
                 yaw_sin*pitch_cos,-pitch_sin, yaw_cos*pitch_cos
             };
-            int j;
-            for (j = 0; j < map_box_edges_len; j++) {
-                float *line = map_box_edges[j];
+            for (int j = 0; j < MAP_BOX_EDGES_LEN; j++) {
+                float *line = edges[j];
                 float ax = (float)(mat[0] * (line[0] - x0) + mat[1] * (line[1] - y0) + mat[2] * (line[2] - z0));
                 float ay = (float)(mat[3] * (line[0] - x0) + mat[4] * (line[1] - y0) + mat[5] * (line[2] - z0));
                 float az = (float)(mat[6] * (line[0] - x0) + mat[7] * (line[1] - y0) + mat[8] * (line[2] - z0));
@@ -254,49 +217,35 @@ void draw(SDL_Renderer* renderer, const Player* players, int players_len) {
                 float by = (float)(mat[3] * (line[3] - x0) + mat[4] * (line[4] - y0) + mat[5] * (line[5] - z0));
                 float bz = (float)(mat[6] * (line[3] - x0) + mat[7] * (line[4] - y0) + mat[8] * (line[5] - z0));
                 SDL_SetRenderDrawColor(renderer, 64,64,64, 255);
-                drawClippedSegment(
-                    renderer, 
-                    ax,ay,az,
-                    bx,by,bz,
-                    hor_origin,
-                    ver_origin, 
-                    f, 
-                    1
-                );
+                drawClippedSegment(renderer, ax, ay, az, bx, by, bz, hor_origin, ver_origin, cam_origin, 1);
             }
-            for (j = 0; j < players_len; j++) {
+            for (int j = 0; j < players_len; j++) {
                 if (i == j) continue;
                 const Player* target = &players[j];
-                int k;
-                for (k = 0; k < 2; k++) {
+                for (int k = 0; k < 2; k++) {
                     double rx = target->pos[0] - player->pos[0];
                     double ry = target->pos[1] - player->pos[1] + (target->radius - target->height) * (float)k;
                     double rz = target->pos[2] - player->pos[2];
                     double dx = mat[0] * rx + mat[1] * ry + mat[2] * rz;
                     double dy = mat[3] * rx + mat[4] * ry + mat[5] * rz;
                     double dz = mat[6] * rx + mat[7] * ry + mat[8] * rz;
-                    double r_eff = target->radius * f / dz;
+                    double r_eff = target->radius * cam_origin / dz;
                     if (dz < 0) {
                         SDL_SetRenderDrawColor(renderer, target->color[0], target->color[1], target->color[2], 255);
-                        drawCircle(renderer, (float)(r_eff), (float)(hor_origin - f*dx/dz), (float)(ver_origin + f*dy/dz));
+                        drawCircle(renderer, (float)(r_eff), (float)(hor_origin - cam_origin*dx/dz), (float)(ver_origin + cam_origin*dy/dz));
                     }
                 }
             }
-            {
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                SDL_RenderLine(renderer, hor_origin, ver_origin-10, hor_origin, ver_origin+10);
-                SDL_RenderLine(renderer, hor_origin-10, ver_origin, hor_origin+10, ver_origin);
-            }
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_RenderLine(renderer, hor_origin, ver_origin-10, hor_origin, ver_origin+10);
+            SDL_RenderLine(renderer, hor_origin-10, ver_origin, hor_origin+10, ver_origin);
         }
     }
     SDL_RenderPresent(renderer);
 }
 
-
-
 void initPlayers(Player players[], int len) {
-    int i;
-    for (i = 0; i < len; i++) {
+    for (int i = 0; i < len; i++) {
         players[i].pos[0] = 0;
         players[i].pos[1] = 0;
         players[i].pos[2] = 0;
@@ -312,67 +261,6 @@ void initPlayers(Player players[], int len) {
         players[i].color[2] = 255;
         players[i].wasd = 0;
     }
-}
-
-int onEvent(Player players[], int player_count, SDL_Event *event) {
-    switch (event->type) {
-        case SDL_EVENT_QUIT: {
-                return 1;
-            } 
-            break;
-        case SDL_EVENT_MOUSE_MOTION: {
-                players[0].yaw -= ((int)event->motion.xrel) * 0x00080000;
-                players[0].pitch = max(-0x40000000, min(0x40000000, players[0].pitch - event->motion.yrel * 0x00080000));
-            } 
-            break;
-        case SDL_EVENT_MOUSE_BUTTON_DOWN: {
-                shoot(0, players, player_count);
-            } 
-            break;
-        case SDL_EVENT_KEY_DOWN: {
-                SDL_Keycode sym = event->key.key;
-                if (sym == SDLK_W) players[0].wasd |= 1;
-                if (sym == SDLK_A) players[0].wasd |= 2;
-                if (sym == SDLK_S) players[0].wasd |= 4;
-                if (sym == SDLK_D) players[0].wasd |= 8;
-                if (sym == SDLK_SPACE) players[0].wasd |= 16;
-            } 
-            break;
-        case SDL_EVENT_KEY_UP: {
-                SDL_Keycode sym = event->key.key;
-                if (sym == SDLK_ESCAPE) return 1;
-                if (sym == SDLK_W) players[0].wasd &= 30;
-                if (sym == SDLK_A) players[0].wasd &= 29;
-                if (sym == SDLK_S) players[0].wasd &= 27;
-                if (sym == SDLK_D) players[0].wasd &= 23;
-                if (sym == SDLK_SPACE) players[0].wasd &= 15;
-            } 
-            break;
-        default: 
-            break;
-    }
-    return 0;
-}
-
-int main(int argc, char *argv[]) {
-    if (!SDL_Init(SDL_INIT_VIDEO)) return 1;
-    SDL_Window* window = SDL_CreateWindow("My Game Window", 640, 480, 0);
-    if (window == 0) {
-        SDL_Quit();
-        return 1;
-    };
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, 0);
-    if (renderer == 0) {
-        SDL_Quit();
-        return 1;
-    };
-    SDL_SetRenderVSync(renderer, 0);
-    SDL_SetWindowRelativeMouseMode(window, 1);
-
-    initEdges(16, map_box_edges, map_box_edges_len);
-    int player_count = 2;
-    Player players[4];
-    initPlayers(players, player_count);
     players[0].color[0] = 0;
     players[0].color[2] = 0;
     players[0].pos[0] = 8.0;
@@ -384,27 +272,131 @@ int main(int argc, char *argv[]) {
     players[1].pos[2] = -8.0;
     players[1].yaw = -0x60000000;
     players[1].pitch = -0x08000000;
+}
 
-    int quit = 0;
-    Uint64 last = SDL_GetTicks();
+void initEdges(int scale, float edges[][6], int edges_len) {
+    float r = (float)scale;
+    float lines[12][6] = {
+        {-r,-r,-r, r,-r,-r},
+        {-r,-r, r, r,-r, r},
+        {-r, r,-r, r, r,-r},
+        {-r, r, r, r, r, r},
+        {-r,-r,-r,-r, r,-r},
+        { r,-r,-r, r, r,-r},
+        {-r,-r, r,-r, r, r},
+        { r,-r, r, r, r, r},
+        {-r,-r,-r,-r,-r, r},
+        { r,-r,-r, r,-r, r},
+        {-r, r,-r,-r, r, r},
+        { r, r,-r, r, r, r}
+    };
+    for(int i = 0; i < 12; i++) {
+        edges[i][0] = lines[i][0];
+        edges[i][1] = lines[i][1];
+        edges[i][2] = lines[i][2];
+        edges[i][3] = lines[i][3];
+        edges[i][4] = lines[i][4];
+        edges[i][5] = lines[i][5];
+    }
+    for(int i = 0; i < scale; i++) {
+        float d = (float)(i * 2);
+        edges[i+12][0] =  -r;
+        edges[i+12][1] =  -r;
+        edges[i+12][2] = d-r;
+        edges[i+12][3] =   r;
+        edges[i+12][4] =  -r;
+        edges[i+12][5] = d-r;
+    }
+    for(int i = 0; i < scale; i++) {
+        float d = (float)(i * 2);
+        edges[i+12+scale][0] = d-r;
+        edges[i+12+scale][1] =  -r;
+        edges[i+12+scale][2] =  -r;
+        edges[i+12+scale][3] = d-r;
+        edges[i+12+scale][4] =  -r;
+        edges[i+12+scale][5] =   r;
+    }
+}
 
-    while (!quit) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event) != 0) {
-            quit |= onEvent(players, player_count, &event);
-        }
-
-        Uint64 now = SDL_GetTicks();
-        Uint64 dt_ms = (now - last);
-        last = now;
-        
-        update(players, player_count, dt_ms);
-        draw(renderer, players, player_count);
-        // SDL_Delay(1);
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
+    if (!SDL_SetAppMetadata("Example splitscreen shooter game", "1.0", "com.example.multi-shooter")) return SDL_APP_FAILURE;
+    for (int i = 0; i < SDL_arraysize(extended_metadata); i++) {
+        if (!SDL_SetAppMetadataProperty(extended_metadata[i].key, extended_metadata[i].value)) return SDL_APP_FAILURE;
     }
 
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    AppState *as = SDL_calloc(1, sizeof(AppState));
+    if (!as) {
+        return SDL_APP_FAILURE;
+    } else {
+        *appstate = as;
+    }
+
+    if (!SDL_Init(SDL_INIT_VIDEO)) return SDL_APP_FAILURE;
+    if (!SDL_CreateWindowAndRenderer("examples/game/multi-shooter", 640, 480, 0, &as->window, &as->renderer)) return SDL_APP_FAILURE;
+
+    as->last_step = SDL_GetTicks();
+    as->player_count = 2;
+    initPlayers(&as->players, as->player_count);
+    initEdges(MAP_BOX_SCALE, &as->edges, MAP_BOX_EDGES_LEN);
+
+    SDL_SetRenderVSync(as->renderer, 0);
+    SDL_SetWindowRelativeMouseMode(as->window, 1);
+    return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
+    AppState *as = appstate;
+    Player *players = as->players;
+    int player_count = as->player_count;
+    switch (event->type) {
+        case SDL_EVENT_QUIT: {
+            return SDL_APP_SUCCESS;
+            break;
+        }
+        case SDL_EVENT_MOUSE_MOTION: {
+            players[0].yaw -= ((int)event->motion.xrel) * 0x00080000;
+            players[0].pitch = max(-0x40000000, min(0x40000000, players[0].pitch - event->motion.yrel * 0x00080000));
+            break;
+        }
+        case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+            shoot(0, players, player_count);
+            break;
+        }
+        case SDL_EVENT_KEY_DOWN: {
+            SDL_Keycode sym = event->key.key;
+            if (sym == SDLK_W) players[0].wasd |= 1;
+            if (sym == SDLK_A) players[0].wasd |= 2;
+            if (sym == SDLK_S) players[0].wasd |= 4;
+            if (sym == SDLK_D) players[0].wasd |= 8;
+            if (sym == SDLK_SPACE) players[0].wasd |= 16;
+            break;
+        }
+        case SDL_EVENT_KEY_UP: {
+            SDL_Keycode sym = event->key.key;
+            if (sym == SDLK_ESCAPE) return SDL_APP_SUCCESS;
+            if (sym == SDLK_W) players[0].wasd &= 30;
+            if (sym == SDLK_A) players[0].wasd &= 29;
+            if (sym == SDLK_S) players[0].wasd &= 27;
+            if (sym == SDLK_D) players[0].wasd &= 23;
+            if (sym == SDLK_SPACE) players[0].wasd &= 15;
+            break;
+        }
+    }
+    return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppIterate(void *appstate) {
+    AppState *as = appstate;
+    Uint64 now = SDL_GetTicks();
+    Uint64 dt_ms = (now - as->last_step);
+    as->last_step = now;    
+    update(as->players, as->player_count, dt_ms);
+    draw(as->renderer, as->edges, as->players, as->player_count);
+}
+
+void SDL_AppQuit(void *appstate, SDL_AppResult result) {
+    AppState *as = appstate;
+    SDL_DestroyRenderer(as->renderer);
+    SDL_DestroyWindow(as->window);
     SDL_Quit();
-    return 0;
 }
