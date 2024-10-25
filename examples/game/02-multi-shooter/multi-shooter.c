@@ -4,7 +4,8 @@
 // - auto-detect and add player on plugging in a new mouse
 
 #include<math.h>
-#include<SDL2/SDL.h>
+#include<stdio.h>
+#include<SDL3/SDL.h>
 #ifndef max
     #define max(a,b) ((a) > (b) ? (a) : (b))
 #endif
@@ -104,9 +105,9 @@ void shoot(int shooter, Player* players, int players_len) {
             if (vd * vd >= vv * (dd - rr)) hit += 1;
         }
         if (hit) {
-            target->pos[0] = (double)(map_box_scale * ((0xff & rand()) - 128)) / 256;
-            target->pos[1] = (double)(map_box_scale * ((0xff & rand()) - 128)) / 256;
-            target->pos[2] = (double)(map_box_scale * ((0xff & rand()) - 128)) / 256;
+            target->pos[0] = (double)(map_box_scale * (SDL_rand(256) - 128)) / 256;
+            target->pos[1] = (double)(map_box_scale * (SDL_rand(256) - 128)) / 256;
+            target->pos[2] = (double)(map_box_scale * (SDL_rand(256) - 128)) / 256;
         }
     }
 }
@@ -168,7 +169,7 @@ void drawCircle(SDL_Renderer* renderer, float r, float x, float y) {
         points[i].x = x + r * cos(ang);
         points[i].y = y + r * sin(ang);
     }
-    SDL_RenderDrawLinesF(renderer, &points[0], len); // SDL_RenderLines(renderer, &points, len);
+    SDL_RenderLines(renderer, (const SDL_FPoint*)&points, len);
 }
 
 // TESTED: OK
@@ -197,14 +198,14 @@ void drawClippedSegment(
     ay = -z * ay / az;
     bx = -z * bx / bz;
     by = -z * by / bz;
-    SDL_RenderDrawLineF(renderer, x + ax, y - ay, x + bx, y - by); // SDL_RenderLines(renderer, x + ax, y - ay, x + bx, y - by);
+    SDL_RenderLine(renderer, x + ax, y - ay, x + bx, y - by);
 }
 
 void draw(SDL_Renderer* renderer, const Player* players, int players_len) {
     int w, h;
-    if (SDL_GetRendererOutputSize(renderer, &w, &h)) return; // if (!SDL_GetRenderOutputSize(renderer, &w, &h)) return;
-    SDL_SetRenderDrawColor(renderer, 0,0,0,0); // no change
-    SDL_RenderClear(renderer); // no change
+    if (!SDL_GetRenderOutputSize(renderer, &w, &h)) return;
+    SDL_SetRenderDrawColor(renderer, 0,0,0,0);
+    SDL_RenderClear(renderer);
     if (players_len > 0) {
         float wf = (float)w;
         float hf = (float)h;
@@ -227,7 +228,7 @@ void draw(SDL_Renderer* renderer, const Player* players, int players_len) {
             rect.y = (int)ver_offset;
             rect.w = (int)size_hor;
             rect.h = (int)size_ver;
-            SDL_RenderSetClipRect(renderer, &rect); // SDL_SetRenderClipRect(renderer, &rect);
+            SDL_SetRenderClipRect(renderer, &rect);
             double x0 = player->pos[0];
             double y0 = player->pos[1];
             double z0 = player->pos[2];
@@ -245,15 +246,14 @@ void draw(SDL_Renderer* renderer, const Player* players, int players_len) {
             };
             int j;
             for (j = 0; j < map_box_edges_len; j++) {
-                float *line;
-                line = &(map_box_edges[j]);
+                float *line = map_box_edges[j];
                 float ax = (float)(mat[0] * (line[0] - x0) + mat[1] * (line[1] - y0) + mat[2] * (line[2] - z0));
                 float ay = (float)(mat[3] * (line[0] - x0) + mat[4] * (line[1] - y0) + mat[5] * (line[2] - z0));
                 float az = (float)(mat[6] * (line[0] - x0) + mat[7] * (line[1] - y0) + mat[8] * (line[2] - z0));
                 float bx = (float)(mat[0] * (line[3] - x0) + mat[1] * (line[4] - y0) + mat[2] * (line[5] - z0));
                 float by = (float)(mat[3] * (line[3] - x0) + mat[4] * (line[4] - y0) + mat[5] * (line[5] - z0));
                 float bz = (float)(mat[6] * (line[3] - x0) + mat[7] * (line[4] - y0) + mat[8] * (line[5] - z0));
-                SDL_SetRenderDrawColor(renderer, 64,64,64, 255); // no change
+                SDL_SetRenderDrawColor(renderer, 64,64,64, 255);
                 drawClippedSegment(
                     renderer, 
                     ax,ay,az,
@@ -277,19 +277,19 @@ void draw(SDL_Renderer* renderer, const Player* players, int players_len) {
                     double dz = mat[6] * rx + mat[7] * ry + mat[8] * rz;
                     double r_eff = target->radius * f / dz;
                     if (dz < 0) {
-                        SDL_SetRenderDrawColor(renderer, target->color[0], target->color[1], target->color[2], 255); // no change
+                        SDL_SetRenderDrawColor(renderer, target->color[0], target->color[1], target->color[2], 255);
                         drawCircle(renderer, (float)(r_eff), (float)(hor_origin - f*dx/dz), (float)(ver_origin + f*dy/dz));
                     }
                 }
             }
             {
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // no change
-                SDL_RenderDrawLineF(renderer, hor_origin, ver_origin-10, hor_origin, ver_origin+10); // SDL_RenderLine(renderer, hor_origin, ver_origin-10, hor_origin, ver_origin+10);
-                SDL_RenderDrawLineF(renderer, hor_origin-10, ver_origin, hor_origin+10, ver_origin); // SDL_RenderLine(renderer, hor_origin-10, ver_origin, hor_origin+10, ver_origin);
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                SDL_RenderLine(renderer, hor_origin, ver_origin-10, hor_origin, ver_origin+10);
+                SDL_RenderLine(renderer, hor_origin-10, ver_origin, hor_origin+10, ver_origin);
             }
         }
     }
-    SDL_RenderPresent(renderer); // no change
+    SDL_RenderPresent(renderer);
 }
 
 
@@ -316,36 +316,36 @@ void initPlayers(Player players[], int len) {
 
 int onEvent(Player players[], int player_count, SDL_Event *event) {
     switch (event->type) {
-        case SDL_QUIT: { // SDL_EVENT_QUIT
+        case SDL_EVENT_QUIT: {
                 return 1;
             } 
             break;
-        case SDL_MOUSEMOTION: { // SDL_EVENT_MOUSE_MOTION
-                players[0].yaw -= event->motion.xrel * 0x00080000;
+        case SDL_EVENT_MOUSE_MOTION: {
+                players[0].yaw -= ((int)event->motion.xrel) * 0x00080000;
                 players[0].pitch = max(-0x40000000, min(0x40000000, players[0].pitch - event->motion.yrel * 0x00080000));
             } 
             break;
-        case SDL_MOUSEBUTTONDOWN: { // SDL_EVENT_MOUSE_BUTTON_DOWN
+        case SDL_EVENT_MOUSE_BUTTON_DOWN: {
                 shoot(0, players, player_count);
             } 
             break;
-        case SDL_KEYDOWN: { // SDL_EVENT_KEY_DOWN
-                SDL_Keycode sym = event->key.keysym.sym;
-                if (sym == SDLK_w) players[0].wasd |= 1; // SDLK_W
-                if (sym == SDLK_a) players[0].wasd |= 2; // SDLK_A
-                if (sym == SDLK_s) players[0].wasd |= 4; // SDLK_S
-                if (sym == SDLK_d) players[0].wasd |= 8; // SDLK_D
-                if (sym == SDLK_SPACE) players[0].wasd |= 16; // no change
+        case SDL_EVENT_KEY_DOWN: {
+                SDL_Keycode sym = event->key.key;
+                if (sym == SDLK_W) players[0].wasd |= 1;
+                if (sym == SDLK_A) players[0].wasd |= 2;
+                if (sym == SDLK_S) players[0].wasd |= 4;
+                if (sym == SDLK_D) players[0].wasd |= 8;
+                if (sym == SDLK_SPACE) players[0].wasd |= 16;
             } 
             break;
-        case SDL_KEYUP: { // SDL_EVENT_KEY_UP
-                SDL_Keycode sym = event->key.keysym.sym;
+        case SDL_EVENT_KEY_UP: {
+                SDL_Keycode sym = event->key.key;
                 if (sym == SDLK_ESCAPE) return 1;
-                if (sym == SDLK_w) players[0].wasd &= 30; // SDLK_W
-                if (sym == SDLK_a) players[0].wasd &= 29; // SDLK_A
-                if (sym == SDLK_s) players[0].wasd &= 27; // SDLK_S
-                if (sym == SDLK_d) players[0].wasd &= 23; // SDLK_D
-                if (sym == SDLK_SPACE) players[0].wasd &= 15; // no change
+                if (sym == SDLK_W) players[0].wasd &= 30;
+                if (sym == SDLK_A) players[0].wasd &= 29;
+                if (sym == SDLK_S) players[0].wasd &= 27;
+                if (sym == SDLK_D) players[0].wasd &= 23;
+                if (sym == SDLK_SPACE) players[0].wasd &= 15;
             } 
             break;
         default: 
@@ -355,19 +355,19 @@ int onEvent(Player players[], int player_count, SDL_Event *event) {
 }
 
 int main(int argc, char *argv[]) {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) return 1; // no change
-    SDL_Window* window = SDL_CreateWindow("My Game Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0); // SDL_CreateWindow("My Game Window", 640, 480, 0);
+    if (!SDL_Init(SDL_INIT_VIDEO)) return 1;
+    SDL_Window* window = SDL_CreateWindow("My Game Window", 640, 480, 0);
     if (window == 0) {
-        SDL_Quit(); // no change
+        SDL_Quit();
         return 1;
     };
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, 0);
     if (renderer == 0) {
-        SDL_Quit(); // no change
+        SDL_Quit();
         return 1;
     };
-    SDL_RenderSetVSync(renderer, 0); // SDL_SetRenderVSync(renderer, 0);
-    SDL_SetRelativeMouseMode(1); // SDL_SetWindowRelativeMouseMode(window, 1);
+    SDL_SetRenderVSync(renderer, 0);
+    SDL_SetWindowRelativeMouseMode(window, 1);
 
     initEdges(16, map_box_edges, map_box_edges_len);
     int player_count = 2;
@@ -386,15 +386,15 @@ int main(int argc, char *argv[]) {
     players[1].pitch = -0x08000000;
 
     int quit = 0;
-    Uint64 last = SDL_GetTicks64(); // SDL_GetTicks();
+    Uint64 last = SDL_GetTicks();
 
     while (!quit) {
         SDL_Event event;
-        while (SDL_PollEvent(&event) != 0) { // no change
+        while (SDL_PollEvent(&event) != 0) {
             quit |= onEvent(players, player_count, &event);
         }
 
-        Uint64 now = SDL_GetTicks64(); // SDL_GetTicks();
+        Uint64 now = SDL_GetTicks();
         Uint64 dt_ms = (now - last);
         last = now;
         
@@ -403,8 +403,8 @@ int main(int argc, char *argv[]) {
         // SDL_Delay(1);
     }
 
-    SDL_DestroyRenderer(renderer); // no change
-    SDL_DestroyWindow(window); // no change
-    SDL_Quit(); // no change
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
     return 0;
 }
