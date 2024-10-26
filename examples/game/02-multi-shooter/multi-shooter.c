@@ -251,10 +251,9 @@ static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player p
                     double dy = mat[3] * rx + mat[4] * ry + mat[5] * rz;
                     double dz = mat[6] * rx + mat[7] * ry + mat[8] * rz;
                     double r_eff = target->radius * cam_origin / dz;
-                    if (dz < 0) {
-                        SDL_SetRenderDrawColor(renderer, target->color[0], target->color[1], target->color[2], 255);
-                        drawCircle(renderer, (float)(r_eff), (float)(hor_origin - cam_origin*dx/dz), (float)(ver_origin + cam_origin*dy/dz));
-                    }
+                    if (!(dz < 0)) continue;
+                    SDL_SetRenderDrawColor(renderer, target->color[0], target->color[1], target->color[2], 255);
+                    drawCircle(renderer, (float)(r_eff), (float)(hor_origin - cam_origin*dx/dz), (float)(ver_origin + cam_origin*dy/dz));
                 }
             }
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
