@@ -164,7 +164,6 @@ static void drawClippedSegment(
     if (az >= -w && bz >= -w) return;
     float dx = ax - bx;
     float dy = ay - by;
-    float dz = az - bz;
     if (az > -w) {
         float t = (-w - bz) / (az - bz);
         ax = bx + dx * t;
