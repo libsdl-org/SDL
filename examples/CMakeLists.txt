@@ -141,6 +141,7 @@ add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c D
 add_sdl_example_executable(camera-read-and-draw SOURCES camera/01-read-and-draw/read-and-draw.c)
 add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawing-lines.c)
 add_sdl_example_executable(game-snake SOURCES game/01-snake/snake.c)
+add_sdl_example_executable(game-multi-shooter SOURCES game/02-multi-shooter/multi-shooter.c)
 
 
 if(PSP)

@@ -44,21 +44,21 @@ static const struct {
     { SDL_PROP_APP_METADATA_TYPE_STRING, "game" }
 };
 
-int whoseMouse(SDL_MouseID mouse, const Player players[], int players_len) {
+static int whoseMouse(SDL_MouseID mouse, const Player players[], int players_len) {
     for (int i = 0; i < players_len; i++) {
         if (players[i].mouse == mouse) return i;
     }
     return -1;
 }
 
-int whoseKeyboard(SDL_KeyboardID keyboard, const Player players[], int players_len) {
+static int whoseKeyboard(SDL_KeyboardID keyboard, const Player players[], int players_len) {
     for (int i = 0; i < players_len; i++) {
         if (players[i].keyboard == keyboard) return i;
     }
     return -1;
 }
 
-void shoot(int shooter, Player players[], int players_len) {
+static void shoot(int shooter, Player players[], int players_len) {
     double x0 = players[shooter].pos[0];
     double y0 = players[shooter].pos[1];
     double z0 = players[shooter].pos[2];
@@ -97,7 +97,7 @@ void shoot(int shooter, Player players[], int players_len) {
     }
 }
 
-void update(Player players[], int players_len, Uint64 dt_ns) {
+static void update(Player players[], int players_len, Uint64 dt_ns) {
     for (int i = 0; i < players_len; i++) {
         Player* player = &players[i];
         double rate = 6.0;
@@ -141,24 +141,25 @@ void update(Player players[], int players_len, Uint64 dt_ns) {
     }
 }
 
-void drawCircle(SDL_Renderer* renderer, float r, float x, float y) {
-    int sides = 32;
-    int len = sides + 1;
+#define SIDES 32
+#define LEN (SIDES + 1)
+
+static void drawCircle(SDL_Renderer* renderer, float r, float x, float y) {
     float ang;
-    SDL_FPoint points[len];
-    for (int i = 0; i < len; i++) {
-        ang = 2.0f * SDL_PI_F * (float)i / (float)sides;
-        points[i].x = x + r * SDL_cos(ang);
-        points[i].y = y + r * SDL_sin(ang);
+    SDL_FPoint points[LEN];
+    for (int i = 0; i < LEN; i++) {
+        ang = 2.0f * SDL_PI_F * (float)i / (float)SIDES;
+        points[i].x = x + r * SDL_cosf(ang);
+        points[i].y = y + r * SDL_sinf(ang);
     }
-    SDL_RenderLines(renderer, (const SDL_FPoint*)&points, len);
+    SDL_RenderLines(renderer, (const SDL_FPoint*)&points, LEN);
 }
 
-void drawClippedSegment(
-    SDL_Renderer* renderer, 
-    float ax, float ay, float az, 
-    float bx, float by, float bz, 
-    float x, float y, float z, float w 
+static void drawClippedSegment(
+    SDL_Renderer* renderer,
+    float ax, float ay, float az,
+    float bx, float by, float bz,
+    float x, float y, float z, float w
 ) {
     if (az >= -w && bz >= -w) return;
     float dx = ax - bx;
@@ -182,8 +183,8 @@ void drawClippedSegment(
     SDL_RenderLine(renderer, x + ax, y - ay, x + bx, y - by);
 }
 
-char debug_string[32];
-void draw(SDL_Renderer* renderer, const float edges[][6], const Player players[], int players_len) {
+static char debug_string[32];
+static void draw(SDL_Renderer* renderer, const float edges[][6], const Player players[], int players_len) {
     int w, h;
     if (!SDL_GetRenderOutputSize(renderer, &w, &h)) return;
     SDL_SetRenderDrawColor(renderer, 0,0,0,0);
@@ -226,7 +227,7 @@ void draw(SDL_Renderer* renderer, const float edges[][6], const Player players[]
                 yaw_sin*pitch_cos, -pitch_sin,  yaw_cos*pitch_cos
             };
             for (int k = 0; k < MAP_BOX_EDGES_LEN; k++) {
-                float *line = edges[k];
+                const float *line = edges[k];
                 float ax = (float)(mat[0] * (line[0] - x0) + mat[1] * (line[1] - y0) + mat[2] * (line[2] - z0));
                 float ay = (float)(mat[3] * (line[0] - x0) + mat[4] * (line[1] - y0) + mat[5] * (line[2] - z0));
                 float az = (float)(mat[6] * (line[0] - x0) + mat[7] * (line[1] - y0) + mat[8] * (line[2] - z0));
@@ -264,7 +265,7 @@ void draw(SDL_Renderer* renderer, const float edges[][6], const Player players[]
     SDL_RenderPresent(renderer);
 }
 
-void initPlayers(Player players[], int len) {
+static void initPlayers(Player *players, int len) {
     for (int i = 0; i < len; i++) {
         players[i].pos[0] = 0;
         players[i].pos[1] = 0;
@@ -296,7 +297,7 @@ void initPlayers(Player players[], int len) {
     players[1].pitch = -0x08000000;
 }
 
-void initEdges(int scale, float edges[][6], int edges_len) {
+static void initEdges(int scale, float (*edges)[6], int edges_len) {
     float r = (float)scale;
     float lines[12][6] = {
         {-r,-r,-r, r,-r,-r},
@@ -354,8 +355,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     if (!SDL_CreateWindowAndRenderer("examples/game/multi-shooter", 640, 480, 0, &as->window, &as->renderer)) return SDL_APP_FAILURE;
 
     as->player_count = 1;
-    initPlayers(&as->players, MAX_PLAYER_COUNT);
-    initEdges(MAP_BOX_SCALE, &as->edges, MAP_BOX_EDGES_LEN);
+    initPlayers(as->players, MAX_PLAYER_COUNT);
+    initEdges(MAP_BOX_SCALE, as->edges, MAP_BOX_EDGES_LEN);
     debug_string[0] = 0;
 
     SDL_SetRenderVSync(as->renderer, 0);
@@ -464,12 +465,13 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     draw(as->renderer, as->edges, as->players, as->player_count);
     if (now - last > 999999999) {
         last = now;
-        sprintf(debug_string, "%d fps", accu);
+        SDL_snprintf(debug_string, sizeof(debug_string), "%" SDL_PRIu64 " fps", accu);
         accu = 0;
     }
     past = now;
     accu += 1;
     SDL_DelayNS(999999 - (SDL_GetTicksNS() - now));
+    return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
