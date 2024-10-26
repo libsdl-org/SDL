@@ -40,8 +40,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enume
 
     DIR *dir = opendir(path);
     if (!dir) {
-        SDL_SetError("Can't open directory: %s", strerror(errno));
-        return -1;
+        return SDL_SetError("Can't open directory: %s", strerror(errno));
     }
 
     struct dirent *ent;
