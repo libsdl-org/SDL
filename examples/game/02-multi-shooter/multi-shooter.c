@@ -354,8 +354,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     initEdges(MAP_BOX_SCALE, as->edges, MAP_BOX_EDGES_LEN);
     debug_string[0] = 0;
 
-    SDL_SetRenderVSync(as->renderer, 0);
-    SDL_SetWindowRelativeMouseMode(as->window, 1);
+    SDL_SetRenderVSync(as->renderer, false);
+    SDL_SetWindowRelativeMouseMode(as->window, true);
     SDL_SetHintWithPriority(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1", SDL_HINT_OVERRIDE);
     return SDL_APP_CONTINUE;
 }
@@ -454,6 +454,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     static Uint64 accu = 0;
     static Uint64 last = 0;
     static Uint64 past = 0;
+    Uint64 dt;
     AppState *as = appstate;
     Uint64 now = SDL_GetTicksNS();
     Uint64 dt_ns = now - past;
@@ -466,7 +467,10 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     }
     past = now;
     accu += 1;
-    SDL_DelayNS(999999 - (SDL_GetTicksNS() - now));
+    dt = SDL_GetTicksNS() - now;
+    if (dt < 999999) {
+        SDL_DelayNS(999999 - dt);
+    }
     return SDL_APP_CONTINUE;
 }
 
