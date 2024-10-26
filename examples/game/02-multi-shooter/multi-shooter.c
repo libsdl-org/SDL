@@ -2,13 +2,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-#ifndef max
-    #define max(a,b) ((a) > (b) ? (a) : (b))
-#endif
-#ifndef min
-    #define min(a,b) ((a) < (b) ? (a) : (b))
-#endif
-
 #define MAP_BOX_SCALE 16
 #define MAP_BOX_EDGES_LEN (12 + MAP_BOX_SCALE * 2)
 #define MAX_PLAYER_COUNT 4
@@ -134,9 +127,9 @@ static void update(Player players[], int players_len, Uint64 dt_ns) {
         player->pos[2] += (time - diff/rate) * accZ / rate + diff * velZ / rate;
         double scale = (double)MAP_BOX_SCALE;
         double bound = scale - player->radius;
-        double posX = max(min(bound, player->pos[0]), -bound);
-        double posY = max(min(bound, player->pos[1]), player->height - scale);
-        double posZ = max(min(bound, player->pos[2]), -bound);
+        double posX = SDL_max(SDL_min(bound, player->pos[0]), -bound);
+        double posY = SDL_max(SDL_min(bound, player->pos[1]), player->height - scale);
+        double posZ = SDL_max(SDL_min(bound, player->pos[2]), -bound);
         if (player->pos[0] != posX) player->vel[0] = 0;
         if (player->pos[1] != posY) player->vel[1] = (wasd & 16) ? 8.4375 : 0;
         if (player->pos[2] != posZ) player->vel[2] = 0;
@@ -398,12 +391,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
             int index = whoseMouse(id, players, player_count);
             if (index >= 0) {
                 players[index].yaw -= ((int)event->motion.xrel) * 0x00080000;
-                players[index].pitch = max(-0x40000000, min(0x40000000, players[index].pitch - ((int)event->motion.yrel) * 0x00080000));
+                players[index].pitch = SDL_max(-0x40000000, SDL_min(0x40000000, players[index].pitch - ((int)event->motion.yrel) * 0x00080000));
             } else if (id) {
                 for (i = 0; i < MAX_PLAYER_COUNT; i++) {
                     if (players[i].mouse == 0) {
                         players[i].mouse = event->button.which;
-                        as->player_count = max(as->player_count, i + 1);
+                        as->player_count = SDL_max(as->player_count, i + 1);
                         break;
                     }
                 }
@@ -432,7 +425,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
                 for (i = 0; i < MAX_PLAYER_COUNT; i++) {
                     if (players[i].keyboard == 0) {
                         players[i].keyboard = id;
-                        as->player_count = max(as->player_count, i + 1);
+                        as->player_count = SDL_max(as->player_count, i + 1);
                         break;
                     }
                 }
@@ -465,7 +458,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     Uint64 now = SDL_GetTicksNS();
     Uint64 dt_ns = now - past;
     update(as->players, as->player_count, dt_ns);
-    draw(as->renderer, as->edges, as->players, as->player_count);
+    draw(as->renderer, (const float (*)[6])as->edges, as->players, as->player_count);
     if (now - last > 999999999) {
         last = now;
         SDL_snprintf(debug_string, sizeof(debug_string), "%" SDL_PRIu64 " fps", accu);
