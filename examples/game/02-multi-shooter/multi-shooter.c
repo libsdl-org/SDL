@@ -186,7 +186,7 @@ static void drawClippedSegment(
 }
 
 static char debug_string[32];
-static void draw(SDL_Renderer* renderer, const float edges[][6], const Player players[], int players_len) {
+static void draw(SDL_Renderer* renderer, const float (*edges)[6], const Player players[], int players_len) {
     int w, h, i, j, k;
     if (!SDL_GetRenderOutputSize(renderer, &w, &h)) return;
     SDL_SetRenderDrawColor(renderer, 0,0,0,0);
