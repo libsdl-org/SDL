@@ -146,9 +146,9 @@ typedef struct SDL_GameControllerButtonBind
  * If a new mapping is loaded for an already known controller GUID, the later
  * version will overwrite the one currently loaded.
  *
- * If this function is called before SDL_Init, SDL will generate
- * an SDL_CONTROLLERDEVICEADDED event for matching controllers that are
- * plugged in at the time that SDL_Init is called.
+ * If this function is called before SDL_Init, SDL will generate an
+ * SDL_CONTROLLERDEVICEADDED event for matching controllers that are plugged
+ * in at the time that SDL_Init is called.
  *
  * Mappings not belonging to the current platform or with no platform field
  * specified will be ignored (i.e. mappings for Linux will be ignored in
@@ -198,9 +198,9 @@ extern DECLSPEC int SDLCALL SDL_GameControllerAddMappingsFromRW(SDL_RWops * rw, 
  * "341a3608000000000000504944564944,Afterglow PS3 Controller,a:b1,b:b2,y:b3,x:b0,start:b9,guide:b12,back:b8,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftshoulder:b4,rightshoulder:b5,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7"
  * ```
  *
- * If this function is called before SDL_Init, SDL will generate
- * an SDL_CONTROLLERDEVICEADDED event for matching controllers that are
- * plugged in at the time that SDL_Init is called.
+ * If this function is called before SDL_Init, SDL will generate an
+ * SDL_CONTROLLERDEVICEADDED event for matching controllers that are plugged
+ * in at the time that SDL_Init is called.
  *
  * \param mappingString the mapping string.
  * \returns 1 if a new mapping is added, 0 if an existing mapping is updated,
