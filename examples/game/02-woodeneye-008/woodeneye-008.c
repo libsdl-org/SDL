@@ -32,7 +32,7 @@ static const struct {
     const char *key;
     const char *value;
 } extended_metadata[] = {
-    { SDL_PROP_APP_METADATA_URL_STRING, "https://examples.libsdl.org/SDL3/game/02-multi-shooter/" },
+    { SDL_PROP_APP_METADATA_URL_STRING, "https://examples.libsdl.org/SDL3/game/02-woodeneye-008/" },
     { SDL_PROP_APP_METADATA_CREATOR_STRING, "SDL team" },
     { SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Placed in the public domain" },
     { SDL_PROP_APP_METADATA_TYPE_STRING, "game" }
@@ -343,7 +343,7 @@ static void initEdges(int scale, float (*edges)[6], int edges_len)
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
-    if (!SDL_SetAppMetadata("Example splitscreen shooter game", "1.0", "com.example.multi-shooter")) {
+    if (!SDL_SetAppMetadata("Example splitscreen shooter game", "1.0", "com.example.woodeneye-008")) {
         return SDL_APP_FAILURE;
     }
     int i;
@@ -363,7 +363,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         return SDL_APP_FAILURE;
     }
-    if (!SDL_CreateWindowAndRenderer("examples/game/multi-shooter", 640, 480, 0, &as->window, &as->renderer)) {
+    if (!SDL_CreateWindowAndRenderer("examples/game/woodeneye-008", 640, 480, 0, &as->window, &as->renderer)) {
         return SDL_APP_FAILURE;
     }
 
