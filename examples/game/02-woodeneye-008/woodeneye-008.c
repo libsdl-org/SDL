@@ -320,18 +320,14 @@ static void initEdges(int scale, float (*edges)[6], int edges_len)
     }
     for(i = 0; i < scale; i++) {
         float d = (float)(i * 2);
-        edges[i+12][0] =  -r;
-        edges[i+12][1] =  -r;
-        edges[i+12][2] = d-r;
-        edges[i+12][3] =   r;
-        edges[i+12][4] =  -r;
-        edges[i+12][5] = d-r;
-        edges[i+12+scale][0] = d-r;
-        edges[i+12+scale][1] =  -r;
-        edges[i+12+scale][2] =  -r;
-        edges[i+12+scale][3] = d-r;
-        edges[i+12+scale][4] =  -r;
-        edges[i+12+scale][5] =   r;
+        for (j = 0; j < 2; j++) {
+            edges[i+12][3*j+0]       = j ? r : -r;
+            edges[i+12][3*j+1]       =  -r;
+            edges[i+12][3*j+2]       = d-r;
+            edges[i+12+scale][3*j+0] = d-r;
+            edges[i+12+scale][3*j+1] =  -r;
+            edges[i+12+scale][3*j+2] = j ? r : -r;
+        }
     }
 }
 
