@@ -730,7 +730,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
         case SDL_RENDERCMD_CLEAR:
         {
-            data->state.color_attachment.clear_color = GetDrawCmdColor(renderer, cmd);
+            data->state.color_attachment.clear_color.float32 = GetDrawCmdColor(renderer, cmd);
             data->state.color_attachment.load_op = SDL_GPU_LOADOP_CLEAR;
             break;
         }

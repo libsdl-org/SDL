@@ -1127,6 +1127,53 @@ typedef enum SDL_GPUSwapchainComposition
 /* Structures */
 
 /**
+ * Unsigned integer clear color for unsigned integer color formats.
+ *
+ * \since This struct is available since SDL 3.2.0
+ *
+ * \sa SDL_BeginGPURenderPass
+ * \sa SDL_BlitGPUTexture
+ */
+typedef struct SDL_GPUClearColorUint32
+{
+    Uint32 r;
+    Uint32 g;
+    Uint32 b;
+    Uint32 a;
+} SDL_GPUClearColorUint32;
+
+/**
+ * Signed integer clear color for signed integer color formats.
+ *
+ * \since This struct is available since SDL 3.2.0
+ *
+ * \sa SDL_BeginGPURenderPass
+ * \sa SDL_BlitGPUTexture
+ */
+typedef struct SDL_GPUClearColorSint32
+{
+    Sint32 r;
+    Sint32 g;
+    Sint32 b;
+    Sint32 a;
+} SDL_GPUClearColorSint32;
+
+/**
+ * A union specifying a clear color.
+ *
+ * \since This union is available since SDL 3.2.0
+ *
+ * \sa SDL_BeginGPURenderPass
+ * \sa SDL_BlitGPUTexture
+ */
+typedef union SDL_GPUClearColor
+{
+    SDL_FColor float32;
+    SDL_GPUClearColorUint32 uint32;
+    SDL_GPUClearColorSint32 sint32;
+} SDL_GPUClearColor;
+
+/**
  * A structure specifying a viewport.
  *
  * \since This struct is available since SDL 3.1.3
@@ -1729,7 +1776,7 @@ typedef struct SDL_GPUColorTargetInfo
     SDL_GPUTexture *texture;         /**< The texture that will be used as a color target by a render pass. */
     Uint32 mip_level;                /**< The mip level to use as a color target. */
     Uint32 layer_or_depth_plane;     /**< The layer index or depth plane to use as a color target. This value is treated as a layer index on 2D array and cube textures, and as a depth plane on 3D textures. */
-    SDL_FColor clear_color;          /**< The color to clear the color target to at the start of the render pass. Ignored if SDL_GPU_LOADOP_CLEAR is not used. */
+    SDL_GPUClearColor clear_color;   /**< The color to clear the color target to at the start of the render pass. Ignored if SDL_GPU_LOADOP_CLEAR is not used. */
     SDL_GPULoadOp load_op;           /**< What is done with the contents of the color target at the beginning of the render pass. */
     SDL_GPUStoreOp store_op;         /**< What is done with the results of the render pass. */
     SDL_GPUTexture *resolve_texture; /**< The texture that will receive the results of a multisample resolve operation. Ignored if a RESOLVE* store_op is not used. */
@@ -1810,7 +1857,7 @@ typedef struct SDL_GPUBlitInfo {
     SDL_GPUBlitRegion source;       /**< The source region for the blit. */
     SDL_GPUBlitRegion destination;  /**< The destination region for the blit. */
     SDL_GPULoadOp load_op;          /**< What is done with the contents of the destination before the blit. */
-    SDL_FColor clear_color;         /**< The color to clear the destination region to before the blit. Ignored if load_op is not SDL_GPU_LOADOP_CLEAR. */
+    SDL_GPUClearColor clear_color;  /**< The color to clear the destination region to before the blit. Ignored if load_op is not SDL_GPU_LOADOP_CLEAR. */
     SDL_FlipMode flip_mode;         /**< The flip mode for the source region. */
     SDL_GPUFilter filter;           /**< The filter mode used when blitting. */
     bool cycle;                 /**< true cycles the destination texture if it is already bound. */

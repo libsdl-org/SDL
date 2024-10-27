@@ -3544,12 +3544,26 @@ static void D3D11_BeginRenderPass(
         }
 
         if (colorTargetInfos[i].load_op == SDL_GPU_LOADOP_CLEAR) {
-            float clearColor[] = {
-                colorTargetInfos[i].clear_color.r,
-                colorTargetInfos[i].clear_color.g,
-                colorTargetInfos[i].clear_color.b,
-                colorTargetInfos[i].clear_color.a
+            float clearColor[4] = {
+                colorTargetInfos[i].clear_color.float32.r,
+                colorTargetInfos[i].clear_color.float32.g,
+                colorTargetInfos[i].clear_color.float32.b,
+                colorTargetInfos[i].clear_color.float32.a
             };
+            if (IsUnsignedIntegerFormat(container->header.info.format)) {
+                // FIXME: Handle out-of-range values for R32_UINT & friends.
+                clearColor[0] = (float)colorTargetInfos[i].clear_color.uint32.r;
+                clearColor[1] = (float)colorTargetInfos[i].clear_color.uint32.g;
+                clearColor[2] = (float)colorTargetInfos[i].clear_color.uint32.b;
+                clearColor[3] = (float)colorTargetInfos[i].clear_color.uint32.a;
+            } else if (IsSignedIntegerFormat(container->header.info.format)) {
+                // FIXME: Handle out-of-range values for R32_INT & friends.
+                clearColor[0] = (float)colorTargetInfos[i].clear_color.sint32.r;
+                clearColor[1] = (float)colorTargetInfos[i].clear_color.sint32.g;
+                clearColor[2] = (float)colorTargetInfos[i].clear_color.sint32.b;
+                clearColor[3] = (float)colorTargetInfos[i].clear_color.sint32.a;
+            }
+
             ID3D11DeviceContext_ClearRenderTargetView(
                 d3d11CommandBuffer->context,
                 rtvs[i],
