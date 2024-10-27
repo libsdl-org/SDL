@@ -107,6 +107,11 @@ bool SDL_CreateDirectory(const char *path)
         }
 
         SDL_free(parents);
+
+        // clear error message when all is good after some hiccups
+        if (retval) {
+            SDL_ClearError();
+        }
     }
     return retval;
 }
