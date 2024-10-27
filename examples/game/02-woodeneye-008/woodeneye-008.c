@@ -65,13 +65,13 @@ static void shoot(int shooter, Player players[], int players_len)
     double bin_rad = SDL_PI_D / 2147483648.0;
     double yaw_rad   = bin_rad * players[shooter].yaw;
     double pitch_rad = bin_rad * players[shooter].pitch;
-    double yaw_cos   = SDL_cos(  yaw_rad);
-    double yaw_sin   = SDL_sin(  yaw_rad);
-    double pitch_cos = SDL_cos(pitch_rad);
-    double pitch_sin = SDL_sin(pitch_rad);
-    double vx = -yaw_sin*pitch_cos;
-    double vy =          pitch_sin;
-    double vz = -yaw_cos*pitch_cos;
+    double cos_yaw   = SDL_cos(  yaw_rad);
+    double sin_yaw   = SDL_sin(  yaw_rad);
+    double cos_pitch = SDL_cos(pitch_rad);
+    double sin_pitch = SDL_sin(pitch_rad);
+    double vx = -sin_yaw*cos_pitch;
+    double vy =          sin_pitch;
+    double vz = -cos_yaw*cos_pitch;
     for (i = 0; i < players_len; i++) {
         if (i == shooter) continue;
         Player *target = &(players[i]);
@@ -220,14 +220,14 @@ static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player p
             double bin_rad = SDL_PI_D / 2147483648.0;
             double yaw_rad   = bin_rad * player->yaw;
             double pitch_rad = bin_rad * player->pitch;
-            double yaw_cos   = SDL_cos(  yaw_rad);
-            double yaw_sin   = SDL_sin(  yaw_rad);
-            double pitch_cos = SDL_cos(pitch_rad);
-            double pitch_sin = SDL_sin(pitch_rad);
+            double cos_yaw   = SDL_cos(  yaw_rad);
+            double sin_yaw   = SDL_sin(  yaw_rad);
+            double cos_pitch = SDL_cos(pitch_rad);
+            double sin_pitch = SDL_sin(pitch_rad);
             double mat[9] = {
-                yaw_cos          ,          0, -yaw_sin          ,
-                yaw_sin*pitch_sin,  pitch_cos,  yaw_cos*pitch_sin,
-                yaw_sin*pitch_cos, -pitch_sin,  yaw_cos*pitch_cos
+                cos_yaw          ,          0, -sin_yaw          ,
+                sin_yaw*sin_pitch,  cos_pitch,  cos_yaw*sin_pitch,
+                sin_yaw*cos_pitch, -sin_pitch,  cos_yaw*cos_pitch
             };
             for (k = 0; k < MAP_BOX_EDGES_LEN; k++) {
                 const float *line = edges[k];
@@ -237,7 +237,7 @@ static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player p
                 float bx = (float)(mat[0] * (line[3] - x0) + mat[1] * (line[4] - y0) + mat[2] * (line[5] - z0));
                 float by = (float)(mat[3] * (line[3] - x0) + mat[4] * (line[4] - y0) + mat[5] * (line[5] - z0));
                 float bz = (float)(mat[6] * (line[3] - x0) + mat[7] * (line[4] - y0) + mat[8] * (line[5] - z0));
-                SDL_SetRenderDrawColor(renderer, 64,64,64, 255);
+                SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
                 drawClippedSegment(renderer, ax, ay, az, bx, by, bz, hor_origin, ver_origin, cam_origin, 1);
             }
             for (j = 0; j < players_len; j++) {
@@ -271,34 +271,28 @@ static void initPlayers(Player *players, int len)
 {
     int i;
     for (i = 0; i < len; i++) {
-        players[i].pos[0] = 0;
+        players[i].pos[0] = 8.0 * (i & 1 ? -1.0 : 0);
         players[i].pos[1] = 0;
-        players[i].pos[2] = 0;
+        players[i].pos[2] = 8.0 * (i & 1 ? -1.0 : 0) * (i & 2 ? -1.0 : 0);
         players[i].vel[0] = 0;
         players[i].vel[1] = 0;
         players[i].vel[2] = 0;
         players[i].yaw = 0;
-        players[i].pitch = 0;
+        players[i].pitch = -0x08000000;
         players[i].radius = 0.5f;
         players[i].height = 1.5f;
-        players[i].color[0] = 255;
-        players[i].color[1] = 255;
-        players[i].color[2] = 255;
         players[i].wasd = 0;
         players[i].mouse = 0;
         players[i].keyboard = 0;
+        players[i].color[0] = (1 << (i / 2)) & 2 ? 0 : 0xff;
+        players[i].color[1] = (1 << (i / 2)) & 1 ? 0 : 0xff;
+        players[i].color[2] = (1 << (i / 2)) & 4 ? 0 : 0xff;
+        players[i].color[0] = (i & 1) ? players[i].color[0] : ~players[i].color[0];
+        players[i].color[1] = (i & 1) ? players[i].color[1] : ~players[i].color[1];
+        players[i].color[2] = (i & 1) ? players[i].color[2] : ~players[i].color[2];
     }
-    players[0].color[0] = 0;
-    players[0].color[2] = 0;
-    players[0].pos[0] = 8.0;
-    players[0].pos[2] = 8.0;
     players[0].yaw = 0x20000000;
-    players[0].pitch = -0x08000000;
-    players[1].color[1] = 0;
-    players[1].pos[0] = -8.0;
-    players[1].pos[2] = -8.0;
     players[1].yaw = -0x60000000;
-    players[1].pitch = -0x08000000;
 }
 
 static void initEdges(int scale, float (*edges)[6], int edges_len)
@@ -403,7 +397,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             }
             break;
         case SDL_EVENT_MOUSE_MOTION: {
-            SDL_MouseID id = event->button.which;
+            SDL_MouseID id = event->motion.which;
             int index = whoseMouse(id, players, player_count);
             if (index >= 0) {
                 players[index].yaw -= ((int)event->motion.xrel) * 0x00080000;
@@ -411,7 +405,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             } else if (id) {
                 for (i = 0; i < MAX_PLAYER_COUNT; i++) {
                     if (players[i].mouse == 0) {
-                        players[i].mouse = event->button.which;
+                        players[i].mouse = id;
                         as->player_count = SDL_max(as->player_count, i + 1);
                         break;
                     }
@@ -471,7 +465,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     static Uint64 accu = 0;
     static Uint64 last = 0;
     static Uint64 past = 0;
-    Uint64 dt;
     AppState *as = appstate;
     Uint64 now = SDL_GetTicksNS();
     Uint64 dt_ns = now - past;
@@ -484,9 +477,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     }
     past = now;
     accu += 1;
-    dt = SDL_GetTicksNS() - now;
-    if (dt < 999999) {
-        SDL_DelayNS(999999 - dt);
+    Uint64 elapsed = SDL_GetTicksNS() - now;
+    if (elapsed < 999999) {
+        SDL_DelayNS(999999 - elapsed);
     }
     return SDL_APP_CONTINUE;
 }
