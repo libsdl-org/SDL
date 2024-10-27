@@ -38,6 +38,10 @@ NOTES:
 - The sndio audio target is unavailable on Fedora (but probably not what you
   should want to use anyhow).
 
+openSUSE Tumbleweed:
+
+    sudo zypper in libunwind-devel libusb-1_0-devel Mesa-libGL-devel libxkbcommon-devel libdrm-devel \
+    libgbm-devel pipewire-devel libpulse-devel sndio-devel Mesa-libEGL-devel
 
 Joystick does not work
 --------------------------------------------------------------------------------
