@@ -2077,6 +2077,36 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer
                                                      SDL_FlipMode flip);
 
 /**
+ * Copy a portion of the source texture to the current rendering target, with
+ * affine transform, at subpixel precision.
+ *
+ * \param renderer the renderer which should copy parts of a texture.
+ * \param texture the source texture.
+ * \param srcrect a pointer to the source rectangle, or NULL for the entire
+ *                texture.
+ * \param origin a pointer to a point indicating where the top-left corner of 
+                 srcrect should be mapped to, or NULL for the rendering 
+                 target's origin.
+ * \param right a pointer to a point indicating where the top-right corner of
+                srcrect should be mapped to, or NULL for the rendering 
+                target's top-right corner.
+ * \param down a pointer to a point indicating where the bottom-left corner 
+               of srcrect should be mapped to, or NULL for the rendering 
+               target's bottom-left corner.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety You may only call this function from the main thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderTexture
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_RenderTextureAffine(SDL_Renderer *renderer, SDL_Texture *texture,
+                                                     const SDL_FRect *srcrect, const SDL_FPoint *origin,
+                                                     const SDL_FPoint *right, const SDL_FPoint *down);
+
+/**
  * Tile a portion of the texture to the current rendering target at subpixel
  * precision.
  *
