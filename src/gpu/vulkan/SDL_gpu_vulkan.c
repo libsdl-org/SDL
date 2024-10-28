@@ -1092,9 +1092,9 @@ typedef struct VulkanCommandBuffer
     Sint32 usedUniformBufferCapacity;
 
     VulkanFenceHandle *inFlightFence;
-    Uint8 autoReleaseFence;
+    bool autoReleaseFence;
 
-    Uint8 isDefrag; // Whether this CB was created for defragging
+    bool isDefrag; // Whether this CB was created for defragging
 } VulkanCommandBuffer;
 
 struct VulkanCommandPool
@@ -9365,7 +9365,7 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
     SDL_zeroa(commandBuffer->readOnlyComputeStorageTextures);
     SDL_zeroa(commandBuffer->readOnlyComputeStorageBuffers);
 
-    commandBuffer->autoReleaseFence = 1;
+    commandBuffer->autoReleaseFence = true;
 
     commandBuffer->isDefrag = 0;
 
@@ -10210,15 +10210,11 @@ static bool VULKAN_Wait(
 static SDL_GPUFence *VULKAN_SubmitAndAcquireFence(
     SDL_GPUCommandBuffer *commandBuffer)
 {
-    VulkanCommandBuffer *vulkanCommandBuffer;
-
-    vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    vulkanCommandBuffer->autoReleaseFence = 0;
-
+    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+    vulkanCommandBuffer->autoReleaseFence = false;
     if (!VULKAN_Submit(commandBuffer)) {
         return NULL;
     }
-
     return (SDL_GPUFence *)vulkanCommandBuffer->inFlightFence;
 }
 
@@ -10414,8 +10410,8 @@ static bool VULKAN_Cancel(
         VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
     CHECK_VULKAN_ERROR_AND_RETURN(result, vkResetCommandBuffer, NULL)
 
+    vulkanCommandBuffer->autoReleaseFence = false;
     SDL_LockMutex(renderer->submitLock);
-    vulkanCommandBuffer->autoReleaseFence = 0;
     VULKAN_INTERNAL_CleanCommandBuffer(renderer, vulkanCommandBuffer, true);
     SDL_UnlockMutex(renderer->submitLock);
 

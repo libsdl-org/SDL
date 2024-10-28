@@ -7473,7 +7473,9 @@ static SDL_GPUFence *D3D12_SubmitAndAcquireFence(
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     d3d12CommandBuffer->autoReleaseFence = false;
-    D3D12_Submit(commandBuffer);
+    if (!D3D12_Submit(commandBuffer)) {
+        return NULL;
+    }
     return (SDL_GPUFence *)d3d12CommandBuffer->inFlightFence;
 }
 
@@ -7489,7 +7491,7 @@ static bool D3D12_Cancel(
     res = ID3D12GraphicsCommandList_Close(d3d12CommandBuffer->graphicsCommandList);
     CHECK_D3D12_ERROR_AND_RETURN("Failed to close command list!", false);
 
-    d3d12CommandBuffer->autoReleaseFence = 0;
+    d3d12CommandBuffer->autoReleaseFence = false;
     SDL_LockMutex(renderer->submitLock);
     result = D3D12_INTERNAL_CleanCommandBuffer(renderer, d3d12CommandBuffer, true);
     SDL_UnlockMutex(renderer->submitLock);

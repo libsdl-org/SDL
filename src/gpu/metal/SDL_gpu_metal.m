@@ -610,7 +610,7 @@ typedef struct MetalCommandBuffer
 
     // Fences
     MetalFence *fence;
-    Uint8 autoReleaseFence;
+    bool autoReleaseFence;
 
     // Reference Counting
     MetalBuffer **usedBuffers;
@@ -2042,7 +2042,7 @@ static Uint8 METAL_INTERNAL_CreateFence(
     return 1;
 }
 
-static Uint8 METAL_INTERNAL_AcquireFence(
+static bool METAL_INTERNAL_AcquireFence(
     MetalRenderer *renderer,
     MetalCommandBuffer *commandBuffer)
 {
@@ -2055,7 +2055,7 @@ static Uint8 METAL_INTERNAL_AcquireFence(
         if (!METAL_INTERNAL_CreateFence(renderer)) {
             SDL_UnlockMutex(renderer->fenceLock);
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create fence!");
-            return 0;
+            return false;
         }
     }
 
@@ -2068,7 +2068,7 @@ static Uint8 METAL_INTERNAL_AcquireFence(
     commandBuffer->fence = fence;
     SDL_SetAtomicInt(&fence->complete, 0); // FIXME: Is this right?
 
-    return 1;
+    return true;
 }
 
 static SDL_GPUCommandBuffer *METAL_AcquireCommandBuffer(
@@ -2105,8 +2105,7 @@ static SDL_GPUCommandBuffer *METAL_AcquireCommandBuffer(
         commandBuffer->needComputeTextureBind = true;
         commandBuffer->needComputeUniformBind = true;
 
-        METAL_INTERNAL_AcquireFence(renderer, commandBuffer);
-        commandBuffer->autoReleaseFence = 1;
+        commandBuffer->autoReleaseFence = true;
 
         SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
@@ -3279,20 +3278,24 @@ static void METAL_ReleaseFence(
 
 static void METAL_INTERNAL_CleanCommandBuffer(
     MetalRenderer *renderer,
-    MetalCommandBuffer *commandBuffer)
+    MetalCommandBuffer *commandBuffer,
+    bool cancel)
 {
     Uint32 i;
 
-    // Reference Counting
-    for (i = 0; i < commandBuffer->usedBufferCount; i += 1) {
-        (void)SDL_AtomicDecRef(&commandBuffer->usedBuffers[i]->referenceCount);
+    // End any active passes
+    if (commandBuffer->renderEncoder) {
+        [commandBuffer->renderEncoder endEncoding];
+        commandBuffer->renderEncoder = nil;
     }
-    commandBuffer->usedBufferCount = 0;
-
-    for (i = 0; i < commandBuffer->usedTextureCount; i += 1) {
-        (void)SDL_AtomicDecRef(&commandBuffer->usedTextures[i]->referenceCount);
+    if (commandBuffer->computeEncoder) {
+        [commandBuffer->computeEncoder endEncoding];
+        commandBuffer->computeEncoder = nil;
     }
-    commandBuffer->usedTextureCount = 0;
+    if (commandBuffer->blitEncoder) {
+        [commandBuffer->blitEncoder endEncoding];
+        commandBuffer->blitEncoder = nil;
+    }
 
     // Uniform buffers are now available
 
@@ -3306,6 +3309,18 @@ static void METAL_INTERNAL_CleanCommandBuffer(
     commandBuffer->usedUniformBufferCount = 0;
 
     SDL_UnlockMutex(renderer->acquireUniformBufferLock);
+
+    // Reference Counting
+
+    for (i = 0; i < commandBuffer->usedBufferCount; i += 1) {
+        (void)SDL_AtomicDecRef(&commandBuffer->usedBuffers[i]->referenceCount);
+    }
+    commandBuffer->usedBufferCount = 0;
+
+    for (i = 0; i < commandBuffer->usedTextureCount; i += 1) {
+        (void)SDL_AtomicDecRef(&commandBuffer->usedTextures[i]->referenceCount);
+    }
+    commandBuffer->usedTextureCount = 0;
 
     // Reset presentation
     commandBuffer->windowDataCount = 0;
@@ -3358,10 +3373,12 @@ static void METAL_INTERNAL_CleanCommandBuffer(
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
     // Remove this command buffer from the submitted list
-    for (i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
-        if (renderer->submittedCommandBuffers[i] == commandBuffer) {
-            renderer->submittedCommandBuffers[i] = renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount - 1];
-            renderer->submittedCommandBufferCount -= 1;
+    if (!cancel) {
+        for (i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
+            if (renderer->submittedCommandBuffers[i] == commandBuffer) {
+                renderer->submittedCommandBuffers[i] = renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount - 1];
+                renderer->submittedCommandBufferCount -= 1;
+            }
         }
     }
 }
@@ -3756,6 +3773,11 @@ static bool METAL_Submit(
 
         SDL_LockMutex(renderer->submitLock);
 
+        if (!METAL_INTERNAL_AcquireFence(renderer, metalCommandBuffer)) {
+            SDL_UnlockMutex(renderer->submitLock);
+            return false;
+        }
+
         // Enqueue present requests, if applicable
         for (Uint32 i = 0; i < metalCommandBuffer->windowDataCount; i += 1) {
             [metalCommandBuffer->handle presentDrawable:metalCommandBuffer->windowDatas[i]->drawable];
@@ -3787,7 +3809,8 @@ static bool METAL_Submit(
             if (SDL_GetAtomicInt(&renderer->submittedCommandBuffers[i]->fence->complete)) {
                 METAL_INTERNAL_CleanCommandBuffer(
                     renderer,
-                    renderer->submittedCommandBuffers[i]);
+                    renderer->submittedCommandBuffers[i],
+                    false);
             }
         }
 
@@ -3803,12 +3826,25 @@ static SDL_GPUFence *METAL_SubmitAndAcquireFence(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-    MetalFence *fence = metalCommandBuffer->fence;
+    metalCommandBuffer->autoReleaseFence = false;
+    if (!METAL_Submit(commandBuffer)) {
+        return NULL;
+    }
+    return (SDL_GPUFence *)metalCommandBuffer->fence;
+}
 
-    metalCommandBuffer->autoReleaseFence = 0;
-    METAL_Submit(commandBuffer);
+static bool METAL_Cancel(
+    SDL_GPUCommandBuffer *commandBuffer)
+{
+    MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+    MetalRenderer *renderer = metalCommandBuffer->renderer;
 
-    return (SDL_GPUFence *)fence;
+    metalCommandBuffer->autoReleaseFence = false;
+    SDL_LockMutex(renderer->submitLock);
+    METAL_INTERNAL_CleanCommandBuffer(renderer, metalCommandBuffer, true);
+    SDL_UnlockMutex(renderer->submitLock);
+
+    return true;
 }
 
 static bool METAL_Wait(
@@ -3832,7 +3868,7 @@ static bool METAL_Wait(
 
         for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
             commandBuffer = renderer->submittedCommandBuffers[i];
-            METAL_INTERNAL_CleanCommandBuffer(renderer, commandBuffer);
+            METAL_INTERNAL_CleanCommandBuffer(renderer, commandBuffer, false);
         }
 
         METAL_INTERNAL_PerformPendingDestroys(renderer);
