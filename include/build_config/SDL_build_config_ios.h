@@ -197,15 +197,12 @@
 #endif
 
 #if SDL_PLATFORM_SUPPORTS_METAL
-#define SDL_VIDEO_RENDER_METAL  1
-#endif
-
-#if SDL_PLATFORM_SUPPORTS_METAL
-#define SDL_VIDEO_VULKAN 1
-#endif
-
-#if SDL_PLATFORM_SUPPORTS_METAL
 #define SDL_VIDEO_METAL 1
+#define SDL_GPU_METAL 1
+#define SDL_VIDEO_RENDER_METAL 1
+#define SDL_VIDEO_VULKAN 1
+#define SDL_GPU_VULKAN 1
+#define SDL_VIDEO_RENDER_GPU  1
 #endif
 
 /* Enable system power support */
