@@ -258,4 +258,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_GetPresentationSupport(VkInstance in
 #endif
 #include <SDL3/SDL_close_code.h>
 
+#undef VK_DEFINE_HANDLE
+#undef VK_DEFINE_NON_DISPATCHABLE_HANDLE
+
 #endif /* SDL_vulkan_h_ */
