@@ -111,6 +111,12 @@ static int UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
         }
     }
 
+    /* if the device sample size changed, make sure we're asking for enough data. */
+    if (this->callbackspec.samples != this->spec.samples) {
+        this->callbackspec.samples = this->spec.samples;
+        SDL_CalculateAudioSpec(&this->callbackspec);
+    }
+
     /* make sure our scratch buffer can cover the new device spec. */
     if (this->spec.size > this->work_buffer_len) {
         Uint8 *ptr = (Uint8 *)SDL_realloc(this->work_buffer, this->spec.size);
