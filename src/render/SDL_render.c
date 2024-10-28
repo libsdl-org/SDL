@@ -3919,6 +3919,123 @@ bool SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_F
     return SDL_RenderTextureInternal(renderer, texture, &real_srcrect, &real_dstrect);
 }
 
+bool SDL_RenderTextureAffine(SDL_Renderer *renderer, SDL_Texture *texture,
+    const SDL_FRect *srcrect, const SDL_FPoint *origin, const SDL_FPoint *right, const SDL_FPoint *down)
+{
+    SDL_FRect real_srcrect;
+    SDL_FRect real_dstrect;
+    bool result;
+
+    CHECK_RENDERER_MAGIC(renderer, false);
+    CHECK_TEXTURE_MAGIC(texture, false);
+
+    if (renderer != texture->renderer) {
+        return SDL_SetError("Texture was not created with this renderer");
+    }
+    if (!renderer->QueueCopyEx && !renderer->QueueGeometry) {
+        return SDL_SetError("Renderer does not support RenderCopyEx");
+    }
+
+#if DONT_DRAW_WHILE_HIDDEN
+    // Don't draw while we're hidden
+    if (renderer->hidden) {
+        return true;
+    }
+#endif
+
+    real_srcrect.x = 0.0f;
+    real_srcrect.y = 0.0f;
+    real_srcrect.w = (float)texture->w;
+    real_srcrect.h = (float)texture->h;
+    if (srcrect) {
+        if (!SDL_GetRectIntersectionFloat(srcrect, &real_srcrect, &real_srcrect)) {
+            return true;
+        }
+    }
+
+    GetRenderViewportSize(renderer, &real_dstrect);
+
+    if (texture->native) {
+        texture = texture->native;
+    }
+
+    texture->last_command_generation = renderer->render_command_generation;
+
+    const float scale_x = renderer->view->current_scale.x;
+    const float scale_y = renderer->view->current_scale.y;
+
+    {
+        float xy[8];
+        const int xy_stride = 2 * sizeof(float);
+        float uv[8];
+        const int uv_stride = 2 * sizeof(float);
+        const int num_vertices = 4;
+        const int *indices = rect_index_order;
+        const int num_indices = 6;
+        const int size_indices = 4;
+
+        float minu = real_srcrect.x / texture->w;
+        float minv = real_srcrect.y / texture->h;
+        float maxu = (real_srcrect.x + real_srcrect.w) / texture->w;
+        float maxv = (real_srcrect.y + real_srcrect.h) / texture->h;
+
+        uv[0] = minu;
+        uv[1] = minv;
+        uv[2] = maxu;
+        uv[3] = minv;
+        uv[4] = maxu;
+        uv[5] = maxv;
+        uv[6] = minu;
+        uv[7] = maxv;
+
+        // (minx, miny)
+        if (origin) {
+            xy[0] = origin->x;
+            xy[1] = origin->y;
+        } else {
+            xy[0] = real_dstrect.x;
+            xy[1] = real_dstrect.y;
+        }
+        
+        // (maxx, miny)
+        if (right) {
+            xy[2] = right->x;
+            xy[3] = right->y;
+        } else {
+            xy[2] = real_dstrect.x + real_dstrect.w;
+            xy[3] = real_dstrect.y;
+        }
+
+        // (minx, maxy)
+        if (down) {
+            xy[6] = down->x;
+            xy[7] = down->y;
+        } else {
+            xy[6] = real_dstrect.x;
+            xy[7] = real_dstrect.y + real_dstrect.h;
+        }
+
+        // (maxx, maxy)
+        if (origin || right || down) {
+            xy[4] = xy[2] + xy[6] - xy[0];
+            xy[5] = xy[3] + xy[7] - xy[1];
+        } else {
+            xy[4] = real_dstrect.x + real_dstrect.w;
+            xy[5] = real_dstrect.y + real_dstrect.h;
+        }
+
+        result = QueueCmdGeometry(
+            renderer, texture,
+            xy, xy_stride, 
+            &texture->color, 0 /* color_stride */,
+            uv, uv_stride,
+            num_vertices, indices, num_indices, size_indices,
+            scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP
+        );
+    }
+    return result;
+}
+
 bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
                       const SDL_FRect *srcrect, const SDL_FRect *dstrect,
                       const double angle, const SDL_FPoint *center, const SDL_FlipMode flip)
