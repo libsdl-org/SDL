@@ -82,7 +82,6 @@ struct SDL_VideoData
     struct xdg_wm_dialog_v1 *xdg_wm_dialog_v1;
     struct wp_alpha_modifier_v1 *wp_alpha_modifier_v1;
     struct xdg_toplevel_icon_manager_v1 *xdg_toplevel_icon_manager_v1;
-    struct kde_output_order_v1 *kde_output_order;
     struct frog_color_management_factory_v1 *frog_color_management_factory_v1;
     struct zwp_tablet_manager_v2 *tablet_manager;
 
