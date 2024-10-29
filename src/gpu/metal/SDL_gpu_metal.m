@@ -4166,33 +4166,40 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
 {
     @autoreleasepool {
         MetalRenderer *renderer;
-
-        // Allocate and zero out the renderer
-        renderer = (MetalRenderer *)SDL_calloc(1, sizeof(MetalRenderer));
+        id<MTLDevice> device = NULL;
 
         // Create the Metal device and command queue
 #ifdef SDL_PLATFORM_MACOS
         if (preferLowPower) {
             NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
-            for (id<MTLDevice> device in devices) {
-                if (device.isLowPower) {
-                    renderer->device = device;
+            for (id<MTLDevice> candidate in devices) {
+                if (candidate.isLowPower) {
+                    device = candidate;
                     break;
                 }
             }
         }
 #endif
-        if (renderer->device == NULL) {
-            renderer->device = MTLCreateSystemDefaultDevice();
+        if (device == NULL) {
+            device = MTLCreateSystemDefaultDevice();
+            if (device == NULL) {
+                SDL_SetError("Failed to create Metal device");
+                return NULL;
+            }
         }
-        renderer->queue = [renderer->device newCommandQueue];
+
+        // Allocate and zero out the renderer
+        renderer = (MetalRenderer *)SDL_calloc(1, sizeof(MetalRenderer));
+
+        renderer->device = device;
+        renderer->queue = [device newCommandQueue];
 
         // Print driver info
         SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: Metal");
         SDL_LogInfo(
             SDL_LOG_CATEGORY_GPU,
             "Metal Device: %s",
-            [renderer->device.name UTF8String]);
+            [device.name UTF8String]);
 
         // Remember debug mode
         renderer->debugMode = debugMode;
