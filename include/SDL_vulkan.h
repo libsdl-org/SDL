@@ -52,6 +52,10 @@ extern "C" {
 VK_DEFINE_HANDLE(VkInstance)
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSurfaceKHR)
 
+/* Make sure to undef to avoid issues in case of later vulkan include */
+#undef VK_DEFINE_HANDLE
+#undef VK_DEFINE_NON_DISPATCHABLE_HANDLE
+
 #endif /* !NO_SDL_VULKAN_TYPEDEFS */
 
 typedef VkInstance SDL_vulkanInstance;
