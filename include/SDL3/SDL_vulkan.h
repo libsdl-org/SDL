@@ -69,6 +69,10 @@ VK_DEFINE_HANDLE(VkPhysicalDevice)
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSurfaceKHR)
 struct VkAllocationCallbacks;
 
+/* Make sure to undef to avoid issues in case of later vulkan include */
+#undef VK_DEFINE_HANDLE
+#undef VK_DEFINE_NON_DISPATCHABLE_HANDLE
+
 #endif /* !NO_SDL_VULKAN_TYPEDEFS */
 
 /**
@@ -257,8 +261,5 @@ extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_GetPresentationSupport(VkInstance in
 }
 #endif
 #include <SDL3/SDL_close_code.h>
-
-#undef VK_DEFINE_HANDLE
-#undef VK_DEFINE_NON_DISPATCHABLE_HANDLE
 
 #endif /* SDL_vulkan_h_ */
