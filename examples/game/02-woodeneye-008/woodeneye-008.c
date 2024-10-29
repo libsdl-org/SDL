@@ -1,3 +1,7 @@
+/*
+ * This code is public domain. Feel free to use it for any purpose!
+ */
+
 #define SDL_MAIN_USE_CALLBACKS 1 /* use the callbacks instead of main() */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -458,10 +462,10 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
+    AppState *as = appstate;
     static Uint64 accu = 0;
     static Uint64 last = 0;
     static Uint64 past = 0;
-    AppState *as = appstate;
     Uint64 now = SDL_GetTicksNS();
     Uint64 dt_ns = now - past;
     update(as->players, as->player_count, dt_ns);
@@ -483,7 +487,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     AppState *as = appstate;
-    SDL_DestroyRenderer(as->renderer);
-    SDL_DestroyWindow(as->window);
-    SDL_Quit();
+
+    SDL_free(as);
+
+    /* SDL will clean up the window/renderer for us. */
 }
