@@ -609,7 +609,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
 #endif
 
-    if (self.keyboardHeight) {
+    if (self.keyboardHeight && self.textInputRect.h) {
         int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h);
         int keybottom = (int)(self.view.bounds.size.height - self.keyboardHeight);
         if (keybottom < rectbottom) {
