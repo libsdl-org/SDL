@@ -143,6 +143,16 @@ add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawin
 add_sdl_example_executable(game-snake SOURCES game/01-snake/snake.c)
 add_sdl_example_executable(game-woodeneye-008 SOURCES game/02-woodeneye-008/woodeneye-008.c)
 
+# When you add an example, remember to add the Visual Studio project as well:
+# - Add a new example in examples/
+# - Run python VisualC/examples/generate.py
+# - Take note of the newly generated .vcxproj files
+# - Modify the .vcxproj files if necessary (adding content such as BMP or WAV files)
+# - Open VisualC/SDL.sln in Visual Studio or JetBrains Rider
+# - Locate the appropriate folder in the Solution Explorer
+# - Add the newly generated projects: Right click -> Add -> Existing project...
+# - Test if they work
+# - Save the SDL.sln solution
 
 if(PSP)
     # Build EBOOT files if building for PSP
