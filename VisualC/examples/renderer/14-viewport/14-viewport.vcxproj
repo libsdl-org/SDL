@@ -7,7 +7,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\renderer\14-viewport\README.txt" />
-    <ClCompile Include="$(SolutionDir)\..\examples\renderer\14-viewport\*.c" />
+    <ClCompile Include="$(SolutionDir)\..\examples\renderer\14-viewport\viewport.c" />
     <Content Include="$(SolutionDir)\..\test\sample.bmp" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

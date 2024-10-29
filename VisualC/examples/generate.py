@@ -4,7 +4,8 @@ import uuid
 
 REPOSITORY_ROOT = pathlib.Path(__file__).parent.parent.parent
 
-def generate(category, example_name):
+
+def generate(category, example_name, c_source_file):
     guid = str(uuid.uuid4()).upper()
     text = f"""
 <?xml version="1.0" encoding="utf-8"?>
@@ -16,7 +17,7 @@ def generate(category, example_name):
   <Import Project="$(VCTargetsPath)\\Microsoft.Cpp.props" />
   <ItemGroup>
     <None Include="$(SolutionDir)\\..\\examples\\{category}\\{example_name}\\README.txt" />
-    <ClCompile Include="$(SolutionDir)\\..\\examples\\{category}\\{example_name}\\*.c" />
+    <ClCompile Include="$(SolutionDir)\\..\\examples\\{category}\\{example_name}\\{c_source_file}" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\\Microsoft.Cpp.targets" />
 </Project>
@@ -34,12 +35,19 @@ def generate(category, example_name):
         f.write(text)
 
 
+def get_c_source_filename(example_dir: pathlib.Path):
+    """Gets the one and only C source file name in the directory of the example."""
+    c_files = [f.name for f in example_dir.iterdir() if f.name.endswith(".c")]
+    assert len(c_files) == 1
+    return c_files[0]
+
+
 def main():
     path = REPOSITORY_ROOT / "examples"
     for category in path.iterdir():
         if category.is_dir():
             for example in category.iterdir():
-                generate(category.name, example.name)
+                generate(category.name, example.name, get_c_source_filename(example))
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\renderer\11-color-mods\README.txt" />
-    <ClCompile Include="$(SolutionDir)\..\examples\renderer\11-color-mods\*.c" />
+    <ClCompile Include="$(SolutionDir)\..\examples\renderer\11-color-mods\color-mods.c" />
     <Content Include="$(SolutionDir)\..\test\sample.bmp" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

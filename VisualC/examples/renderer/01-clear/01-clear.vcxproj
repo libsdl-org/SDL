@@ -7,7 +7,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\renderer\01-clear\README.txt" />
-    <ClCompile Include="$(SolutionDir)\..\examples\renderer\01-clear\*.c" />
+    <ClCompile Include="$(SolutionDir)\..\examples\renderer\01-clear\clear.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
