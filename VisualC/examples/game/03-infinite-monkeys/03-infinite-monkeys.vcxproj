@@ -7,7 +7,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\game\03-infinite-monkeys\README.txt" />
-    <ClCompile Include="$(SolutionDir)\..\examples\game\03-infinite-monkeys\*.c" />
+    <ClCompile Include="$(SolutionDir)\..\examples\game\03-infinite-monkeys\infinite-monkeys.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

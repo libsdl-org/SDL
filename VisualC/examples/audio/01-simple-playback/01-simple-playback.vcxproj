@@ -7,7 +7,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\audio\01-simple-playback\README.txt" />
-    <ClCompile Include="$(SolutionDir)\..\examples\audio\01-simple-playback\*.c" />
+    <ClCompile Include="$(SolutionDir)\..\examples\audio\01-simple-playback\simple-playback.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

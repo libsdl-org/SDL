@@ -7,7 +7,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\renderer\07-streaming-textures\README.txt" />
-    <ClCompile Include="$(SolutionDir)\..\examples\renderer\07-streaming-textures\*.c" />
+    <ClCompile Include="$(SolutionDir)\..\examples\renderer\07-streaming-textures\streaming-textures.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
