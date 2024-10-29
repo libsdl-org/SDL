@@ -3529,10 +3529,11 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * freed by the user. You MUST NOT call this function from any thread other
  * than the one that created the window.
  *
- * When using SDL_GPU_PRESENTMODE_VSYNC, this function will block if too many frames are in flight.
- * Otherwise, this function will fill the swapchain texture handle with NULL if too many frames are in flight.
- * The best practice is to call SDL_CancelGPUCommandBuffer if the swapchain texture handle is NULL
- * to avoid enqueuing needless work on the GPU.
+ * When using SDL_GPU_PRESENTMODE_VSYNC, this function will block if too many
+ * frames are in flight. Otherwise, this function will fill the swapchain
+ * texture handle with NULL if too many frames are in flight. The best
+ * practice is to call SDL_CancelGPUCommandBuffer if the swapchain texture
+ * handle is NULL to avoid enqueuing needless work on the GPU.
  *
  * \param command_buffer a command buffer.
  * \param window a window that has been claimed.
@@ -3611,12 +3612,15 @@ extern SDL_DECLSPEC SDL_GPUFence *SDLCALL SDL_SubmitGPUCommandBufferAndAcquireFe
     SDL_GPUCommandBuffer *command_buffer);
 
 /**
- * Cancels a command buffer. None of the enqueued commands are executed.
+ * Cancels a command buffer.
+ *
+ * None of the enqueued commands are executed.
  *
  * This must be called from the thread the command buffer was acquired on.
  *
- * You must not reference the command buffer after calling this function.
- * It is an error to call this function after a swapchain texture has been acquired.
+ * You must not reference the command buffer after calling this function. It
+ * is an error to call this function after a swapchain texture has been
+ * acquired.
  *
  * \param command_buffer a command buffer.
  * \returns true on success, false on error; call SDL_GetError() for more
