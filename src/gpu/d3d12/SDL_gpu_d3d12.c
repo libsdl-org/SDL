@@ -4827,6 +4827,8 @@ static void D3D12_DrawPrimitivesIndirect(
         offset,
         NULL,
         0);
+
+    D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, d3d12Buffer);
 }
 
 static void D3D12_DrawIndexedPrimitivesIndirect(
@@ -4848,6 +4850,8 @@ static void D3D12_DrawIndexedPrimitivesIndirect(
         offset,
         NULL,
         0);
+
+    D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, d3d12Buffer);
 }
 
 static void D3D12_EndRenderPass(
@@ -5303,6 +5307,8 @@ static void D3D12_DispatchComputeIndirect(
         offset,
         NULL,
         0);
+
+    D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, d3d12Buffer);
 }
 
 static void D3D12_EndComputePass(
