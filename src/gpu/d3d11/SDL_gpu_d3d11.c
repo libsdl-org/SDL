@@ -748,7 +748,7 @@ typedef struct D3D11CommandBuffer
 
     // Fences
     D3D11Fence *fence;
-    Uint8 autoReleaseFence;
+    bool autoReleaseFence;
 
     // Reference Counting
     D3D11Buffer **usedBuffers;
@@ -3280,14 +3280,9 @@ static SDL_GPUCommandBuffer *D3D11_AcquireCommandBuffer(
     SDL_zeroa(commandBuffer->computeReadWriteStorageTextureSubresources);
     SDL_zeroa(commandBuffer->computeReadWriteStorageBuffers);
 
-    bool acquireFenceResult = D3D11_INTERNAL_AcquireFence(commandBuffer);
-    commandBuffer->autoReleaseFence = 1;
+    commandBuffer->autoReleaseFence = true;
 
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
-
-    if (!acquireFenceResult) {
-        return NULL;
-    }
 
     return (SDL_GPUCommandBuffer *)commandBuffer;
 }
@@ -4806,7 +4801,8 @@ static bool D3D11_INTERNAL_MapAndCopyTextureDownload(
 
 static bool D3D11_INTERNAL_CleanCommandBuffer(
     D3D11Renderer *renderer,
-    D3D11CommandBuffer *commandBuffer)
+    D3D11CommandBuffer *commandBuffer,
+    bool cancel)
 {
     Uint32 i, j;
     bool result = true;
@@ -4817,17 +4813,21 @@ static bool D3D11_INTERNAL_CleanCommandBuffer(
         D3D11TransferBuffer *transferBuffer = commandBuffer->usedTransferBuffers[i];
 
         for (j = 0; j < transferBuffer->bufferDownloadCount; j += 1) {
-            result &= D3D11_INTERNAL_MapAndCopyBufferDownload(
-                renderer,
-                transferBuffer,
-                &transferBuffer->bufferDownloads[j]);
+            if (!cancel) {
+                result &= D3D11_INTERNAL_MapAndCopyBufferDownload(
+                    renderer,
+                    transferBuffer,
+                    &transferBuffer->bufferDownloads[j]);
+            }
         }
 
         for (j = 0; j < transferBuffer->textureDownloadCount; j += 1) {
-            result &= D3D11_INTERNAL_MapAndCopyTextureDownload(
-                renderer,
-                transferBuffer,
-                &transferBuffer->textureDownloads[j]);
+            if (!cancel) {
+                result &= D3D11_INTERNAL_MapAndCopyTextureDownload(
+                    renderer,
+                    transferBuffer,
+                    &transferBuffer->textureDownloads[j]);
+            }
         }
 
         transferBuffer->bufferDownloadCount = 0;
@@ -4887,10 +4887,12 @@ static bool D3D11_INTERNAL_CleanCommandBuffer(
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
     // Remove this command buffer from the submitted list
-    for (i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
-        if (renderer->submittedCommandBuffers[i] == commandBuffer) {
-            renderer->submittedCommandBuffers[i] = renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount - 1];
-            renderer->submittedCommandBufferCount -= 1;
+    if (!cancel) {
+        for (i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
+            if (renderer->submittedCommandBuffers[i] == commandBuffer) {
+                renderer->submittedCommandBuffers[i] = renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount - 1];
+                renderer->submittedCommandBufferCount -= 1;
+            }
         }
     }
 
@@ -5024,7 +5026,8 @@ static bool D3D11_WaitForFences(
         if (res == S_OK) {
             result &= D3D11_INTERNAL_CleanCommandBuffer(
                 renderer,
-                renderer->submittedCommandBuffers[i]);
+                renderer->submittedCommandBuffers[i],
+                false);
         }
     }
 
@@ -5696,6 +5699,11 @@ static bool D3D11_Submit(
 
     SDL_LockMutex(renderer->contextLock);
 
+    if (!D3D11_INTERNAL_AcquireFence(d3d11CommandBuffer)) {
+        SDL_UnlockMutex(renderer->contextLock);
+        return false;
+    }
+
     // Notify the command buffer completion query that we have completed recording
     ID3D11DeviceContext_End(
         renderer->immediateContext,
@@ -5778,7 +5786,8 @@ static bool D3D11_Submit(
         if (res == S_OK) {
             result &= D3D11_INTERNAL_CleanCommandBuffer(
                 renderer,
-                renderer->submittedCommandBuffers[i]);
+                renderer->submittedCommandBuffers[i],
+                false);
         }
     }
 
@@ -5793,12 +5802,26 @@ static SDL_GPUFence *D3D11_SubmitAndAcquireFence(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
-    D3D11Fence *fence = d3d11CommandBuffer->fence;
+    d3d11CommandBuffer->autoReleaseFence = false;
+    if (!D3D11_Submit(commandBuffer)) {
+        return NULL;
+    }
+    return (SDL_GPUFence *)d3d11CommandBuffer->fence;
+}
 
-    d3d11CommandBuffer->autoReleaseFence = 0;
-    D3D11_Submit(commandBuffer);
+static bool D3D11_Cancel(
+    SDL_GPUCommandBuffer *commandBuffer)
+{
+    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
+    D3D11Renderer *renderer = d3d11CommandBuffer->renderer;
+    bool result;
 
-    return (SDL_GPUFence *)fence;
+    d3d11CommandBuffer->autoReleaseFence = false;
+    SDL_LockMutex(renderer->contextLock);
+    result = D3D11_INTERNAL_CleanCommandBuffer(renderer, d3d11CommandBuffer, true);
+    SDL_UnlockMutex(renderer->contextLock);
+
+    return result;
 }
 
 static bool D3D11_Wait(
@@ -5822,7 +5845,7 @@ static bool D3D11_Wait(
 
     for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
         commandBuffer = renderer->submittedCommandBuffers[i];
-        result &= D3D11_INTERNAL_CleanCommandBuffer(renderer, commandBuffer);
+        result &= D3D11_INTERNAL_CleanCommandBuffer(renderer, commandBuffer, false);
     }
 
     D3D11_INTERNAL_PerformPendingDestroys(renderer);

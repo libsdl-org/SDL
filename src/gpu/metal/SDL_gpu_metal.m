@@ -446,6 +446,7 @@ typedef struct MetalTextureContainer
 typedef struct MetalFence
 {
     SDL_AtomicInt complete;
+    SDL_AtomicInt referenceCount;
 } MetalFence;
 
 typedef struct MetalWindowData
@@ -453,9 +454,12 @@ typedef struct MetalWindowData
     SDL_Window *window;
     SDL_MetalView view;
     CAMetalLayer *layer;
+    SDL_GPUPresentMode presentMode;
     id<CAMetalDrawable> drawable;
     MetalTexture texture;
     MetalTextureContainer textureContainer;
+    SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
+    Uint32 frameCounter;
 } MetalWindowData;
 
 typedef struct MetalShader
@@ -605,7 +609,7 @@ typedef struct MetalCommandBuffer
 
     // Fences
     MetalFence *fence;
-    Uint8 autoReleaseFence;
+    bool autoReleaseFence;
 
     // Reference Counting
     MetalBuffer **usedBuffers;
@@ -2019,6 +2023,7 @@ static Uint8 METAL_INTERNAL_CreateFence(
 
     fence = SDL_calloc(1, sizeof(MetalFence));
     SDL_SetAtomicInt(&fence->complete, 0);
+    SDL_SetAtomicInt(&fence->referenceCount, 0);
 
     // Add it to the available pool
     // FIXME: Should this be EXPAND_IF_NEEDED?
@@ -2036,7 +2041,7 @@ static Uint8 METAL_INTERNAL_CreateFence(
     return 1;
 }
 
-static Uint8 METAL_INTERNAL_AcquireFence(
+static bool METAL_INTERNAL_AcquireFence(
     MetalRenderer *renderer,
     MetalCommandBuffer *commandBuffer)
 {
@@ -2049,7 +2054,7 @@ static Uint8 METAL_INTERNAL_AcquireFence(
         if (!METAL_INTERNAL_CreateFence(renderer)) {
             SDL_UnlockMutex(renderer->fenceLock);
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create fence!");
-            return 0;
+            return false;
         }
     }
 
@@ -2061,8 +2066,9 @@ static Uint8 METAL_INTERNAL_AcquireFence(
     // Associate the fence with the command buffer
     commandBuffer->fence = fence;
     SDL_SetAtomicInt(&fence->complete, 0); // FIXME: Is this right?
+    (void)SDL_AtomicIncRef(&commandBuffer->fence->referenceCount);
 
-    return 1;
+    return true;
 }
 
 static SDL_GPUCommandBuffer *METAL_AcquireCommandBuffer(
@@ -2099,8 +2105,7 @@ static SDL_GPUCommandBuffer *METAL_AcquireCommandBuffer(
         commandBuffer->needComputeTextureBind = true;
         commandBuffer->needComputeUniformBind = true;
 
-        METAL_INTERNAL_AcquireFence(renderer, commandBuffer);
-        commandBuffer->autoReleaseFence = 1;
+        commandBuffer->autoReleaseFence = true;
 
         SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
@@ -3266,29 +3271,36 @@ static void METAL_ReleaseFence(
     SDL_GPURenderer *driverData,
     SDL_GPUFence *fence)
 {
-    METAL_INTERNAL_ReleaseFenceToPool(
-        (MetalRenderer *)driverData,
-        (MetalFence *)fence);
+    MetalFence *metalFence = (MetalFence *)fence;
+    if (SDL_AtomicDecRef(&metalFence->referenceCount)) {
+        METAL_INTERNAL_ReleaseFenceToPool(
+            (MetalRenderer *)driverData,
+            (MetalFence *)fence);
+    }
 }
 
 // Cleanup
 
 static void METAL_INTERNAL_CleanCommandBuffer(
     MetalRenderer *renderer,
-    MetalCommandBuffer *commandBuffer)
+    MetalCommandBuffer *commandBuffer,
+    bool cancel)
 {
     Uint32 i;
 
-    // Reference Counting
-    for (i = 0; i < commandBuffer->usedBufferCount; i += 1) {
-        (void)SDL_AtomicDecRef(&commandBuffer->usedBuffers[i]->referenceCount);
+    // End any active passes
+    if (commandBuffer->renderEncoder) {
+        [commandBuffer->renderEncoder endEncoding];
+        commandBuffer->renderEncoder = nil;
     }
-    commandBuffer->usedBufferCount = 0;
-
-    for (i = 0; i < commandBuffer->usedTextureCount; i += 1) {
-        (void)SDL_AtomicDecRef(&commandBuffer->usedTextures[i]->referenceCount);
+    if (commandBuffer->computeEncoder) {
+        [commandBuffer->computeEncoder endEncoding];
+        commandBuffer->computeEncoder = nil;
     }
-    commandBuffer->usedTextureCount = 0;
+    if (commandBuffer->blitEncoder) {
+        [commandBuffer->blitEncoder endEncoding];
+        commandBuffer->blitEncoder = nil;
+    }
 
     // Uniform buffers are now available
 
@@ -3302,6 +3314,18 @@ static void METAL_INTERNAL_CleanCommandBuffer(
     commandBuffer->usedUniformBufferCount = 0;
 
     SDL_UnlockMutex(renderer->acquireUniformBufferLock);
+
+    // Reference Counting
+
+    for (i = 0; i < commandBuffer->usedBufferCount; i += 1) {
+        (void)SDL_AtomicDecRef(&commandBuffer->usedBuffers[i]->referenceCount);
+    }
+    commandBuffer->usedBufferCount = 0;
+
+    for (i = 0; i < commandBuffer->usedTextureCount; i += 1) {
+        (void)SDL_AtomicDecRef(&commandBuffer->usedTextures[i]->referenceCount);
+    }
+    commandBuffer->usedTextureCount = 0;
 
     // Reset presentation
     commandBuffer->windowDataCount = 0;
@@ -3354,10 +3378,12 @@ static void METAL_INTERNAL_CleanCommandBuffer(
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
     // Remove this command buffer from the submitted list
-    for (i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
-        if (renderer->submittedCommandBuffers[i] == commandBuffer) {
-            renderer->submittedCommandBuffers[i] = renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount - 1];
-            renderer->submittedCommandBufferCount -= 1;
+    if (!cancel) {
+        for (i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
+            if (renderer->submittedCommandBuffers[i] == commandBuffer) {
+                renderer->submittedCommandBuffers[i] = renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount - 1];
+                renderer->submittedCommandBufferCount -= 1;
+            }
         }
     }
 }
@@ -3483,12 +3509,19 @@ static Uint8 METAL_INTERNAL_CreateSwapchain(
 
     windowData->view = SDL_Metal_CreateView(windowData->window);
     windowData->drawable = nil;
+    windowData->presentMode = SDL_GPU_PRESENTMODE_VSYNC;
+    windowData->frameCounter = 0;
+
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+        windowData->inFlightFences[i] = NULL;
+    }
 
     windowData->layer = (__bridge CAMetalLayer *)(SDL_Metal_GetLayer(windowData->view));
     windowData->layer.device = renderer->device;
 #ifdef SDL_PLATFORM_MACOS
     if (@available(macOS 10.13, *)) {
         windowData->layer.displaySyncEnabled = (presentMode != SDL_GPU_PRESENTMODE_IMMEDIATE);
+        windowData->presentMode = presentMode;
     }
 #endif
     windowData->layer.pixelFormat = SDLToMetal_TextureFormat(SwapchainCompositionToFormat[swapchainComposition]);
@@ -3610,6 +3643,13 @@ static void METAL_ReleaseWindow(
 
         METAL_Wait(driverData);
         SDL_Metal_DestroyView(windowData->view);
+        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+            if (windowData->inFlightFences[i] != NULL) {
+                METAL_ReleaseFence(
+                    (SDL_GPURenderer *)renderer,
+                    windowData->inFlightFences[i]);
+            }
+        }
 
         SDL_LockMutex(renderer->windowLock);
         for (Uint32 i = 0; i < renderer->claimedWindowCount; i += 1) {
@@ -3653,10 +3693,6 @@ static bool METAL_AcquireSwapchainTexture(
             SET_STRING_ERROR_AND_RETURN("Window is not claimed by this SDL_GpuDevice", false);
         }
 
-        // Get the drawable and its underlying texture
-        windowData->drawable = [windowData->layer nextDrawable];
-        windowData->texture.handle = [windowData->drawable texture];
-
         // Update the window size
         drawableSize = windowData->layer.drawableSize;
         windowData->textureContainer.header.info.width = (Uint32)drawableSize.width;
@@ -3667,6 +3703,39 @@ static bool METAL_AcquireSwapchainTexture(
         if (swapchainTextureHeight) {
             *swapchainTextureHeight = (Uint32)drawableSize.height;
         }
+
+        if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
+            if (windowData->presentMode == SDL_GPU_PRESENTMODE_VSYNC) {
+                // In VSYNC mode, block until the least recent presented frame is done
+                if (!METAL_WaitForFences(
+                    (SDL_GPURenderer *)renderer,
+                    true,
+                    &windowData->inFlightFences[windowData->frameCounter],
+                    1)) {
+                    return false;
+                }
+            } else {
+                if (!METAL_QueryFence(
+                        (SDL_GPURenderer *)metalCommandBuffer->renderer,
+                        windowData->inFlightFences[windowData->frameCounter])) {
+                    /*
+                    * In IMMEDIATE mode, if the least recent fence is not signaled,
+                    * return true to indicate that there is no error but rendering should be skipped
+                    */
+                    return true;
+                }
+            }
+
+            METAL_ReleaseFence(
+                (SDL_GPURenderer *)metalCommandBuffer->renderer,
+                windowData->inFlightFences[windowData->frameCounter]);
+
+            windowData->inFlightFences[windowData->frameCounter] = NULL;
+        }
+
+        // Get the drawable and its underlying texture
+        windowData->drawable = [windowData->layer nextDrawable];
+        windowData->texture.handle = [windowData->drawable texture];
 
         // Set up presentation
         if (metalCommandBuffer->windowDataCount == metalCommandBuffer->windowDataCapacity) {
@@ -3723,9 +3792,12 @@ static bool METAL_SetSwapchainParameters(
 
         METAL_Wait(driverData);
 
+        windowData->presentMode = SDL_GPU_PRESENTMODE_VSYNC;
+
 #ifdef SDL_PLATFORM_MACOS
         if (@available(macOS 10.13, *)) {
             windowData->layer.displaySyncEnabled = (presentMode != SDL_GPU_PRESENTMODE_IMMEDIATE);
+            windowData->presentMode = presentMode;
         }
 #endif
         windowData->layer.pixelFormat = SDLToMetal_TextureFormat(SwapchainCompositionToFormat[swapchainComposition]);
@@ -3756,10 +3828,22 @@ static bool METAL_Submit(
 
         SDL_LockMutex(renderer->submitLock);
 
+        if (!METAL_INTERNAL_AcquireFence(renderer, metalCommandBuffer)) {
+            SDL_UnlockMutex(renderer->submitLock);
+            return false;
+        }
+
         // Enqueue present requests, if applicable
         for (Uint32 i = 0; i < metalCommandBuffer->windowDataCount; i += 1) {
-            [metalCommandBuffer->handle presentDrawable:metalCommandBuffer->windowDatas[i]->drawable];
-            metalCommandBuffer->windowDatas[i]->drawable = nil;
+            MetalWindowData *windowData = metalCommandBuffer->windowDatas[i];
+            [metalCommandBuffer->handle presentDrawable:windowData->drawable];
+            windowData->drawable = nil;
+
+            windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence *)metalCommandBuffer->fence;
+
+            (void)SDL_AtomicIncRef(&metalCommandBuffer->fence->referenceCount);
+
+            windowData->frameCounter = (windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
         }
 
         // Notify the fence when the command buffer has completed
@@ -3787,7 +3871,8 @@ static bool METAL_Submit(
             if (SDL_GetAtomicInt(&renderer->submittedCommandBuffers[i]->fence->complete)) {
                 METAL_INTERNAL_CleanCommandBuffer(
                     renderer,
-                    renderer->submittedCommandBuffers[i]);
+                    renderer->submittedCommandBuffers[i],
+                    false);
             }
         }
 
@@ -3803,12 +3888,25 @@ static SDL_GPUFence *METAL_SubmitAndAcquireFence(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-    MetalFence *fence = metalCommandBuffer->fence;
+    metalCommandBuffer->autoReleaseFence = false;
+    if (!METAL_Submit(commandBuffer)) {
+        return NULL;
+    }
+    return (SDL_GPUFence *)metalCommandBuffer->fence;
+}
 
-    metalCommandBuffer->autoReleaseFence = 0;
-    METAL_Submit(commandBuffer);
+static bool METAL_Cancel(
+    SDL_GPUCommandBuffer *commandBuffer)
+{
+    MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+    MetalRenderer *renderer = metalCommandBuffer->renderer;
 
-    return (SDL_GPUFence *)fence;
+    metalCommandBuffer->autoReleaseFence = false;
+    SDL_LockMutex(renderer->submitLock);
+    METAL_INTERNAL_CleanCommandBuffer(renderer, metalCommandBuffer, true);
+    SDL_UnlockMutex(renderer->submitLock);
+
+    return true;
 }
 
 static bool METAL_Wait(
@@ -3832,7 +3930,7 @@ static bool METAL_Wait(
 
         for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
             commandBuffer = renderer->submittedCommandBuffers[i];
-            METAL_INTERNAL_CleanCommandBuffer(renderer, commandBuffer);
+            METAL_INTERNAL_CleanCommandBuffer(renderer, commandBuffer, false);
         }
 
         METAL_INTERNAL_PerformPendingDestroys(renderer);

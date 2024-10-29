@@ -1301,6 +1301,7 @@ SDL_GPUCommandBuffer *SDL_AcquireGPUCommandBuffer(
     commandBufferHeader->compute_pipeline_bound = false;
     commandBufferHeader->copy_pass.command_buffer = command_buffer;
     commandBufferHeader->copy_pass.in_progress = false;
+    commandBufferHeader->swapchain_texture_acquired = false;
     commandBufferHeader->submitted = false;
 
     return command_buffer;
@@ -2666,6 +2667,8 @@ bool SDL_AcquireGPUSwapchainTexture(
     Uint32 *swapchain_texture_width,
     Uint32 *swapchain_texture_height)
 {
+    CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
+
     if (command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return false;
@@ -2684,12 +2687,18 @@ bool SDL_AcquireGPUSwapchainTexture(
         CHECK_ANY_PASS_IN_PROGRESS("Cannot acquire a swapchain texture during a pass!", false)
     }
 
-    return COMMAND_BUFFER_DEVICE->AcquireSwapchainTexture(
+    bool result = COMMAND_BUFFER_DEVICE->AcquireSwapchainTexture(
         command_buffer,
         window,
         swapchain_texture,
         swapchain_texture_width,
         swapchain_texture_height);
+
+    if (*swapchain_texture != NULL){
+        commandBufferHeader->swapchain_texture_acquired = true;
+    }
+
+    return result;
 }
 
 bool SDL_SubmitGPUCommandBuffer(
@@ -2743,6 +2752,27 @@ SDL_GPUFence *SDL_SubmitGPUCommandBufferAndAcquireFence(
     commandBufferHeader->submitted = true;
 
     return COMMAND_BUFFER_DEVICE->SubmitAndAcquireFence(
+        command_buffer);
+}
+
+bool SDL_CancelGPUCommandBuffer(
+    SDL_GPUCommandBuffer *command_buffer)
+{
+    CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
+
+    if (command_buffer == NULL) {
+        SDL_InvalidParamError("command_buffer");
+        return false;
+    }
+
+    if (COMMAND_BUFFER_DEVICE->debug_mode) {
+        if (commandBufferHeader->swapchain_texture_acquired) {
+            SDL_assert_release(!"Cannot cancel command buffer after a swapchain texture has been acquired!");
+            return false;
+        }
+    }
+
+    return COMMAND_BUFFER_DEVICE->Cancel(
         command_buffer);
 }
 
