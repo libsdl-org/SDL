@@ -29,15 +29,27 @@ __pycache__
 *.rej
 
 # for CMake
+.cmake
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 cmake_uninstall.cmake
-SDL3ConfigVersion.cmake
-.ninja_*
-*.ninja
+install_manifest.txt
+*Targets.cmake
+*Config.cmake
+*ConfigVersion.cmake
+CTestTestfile.cmake
+Testing
 compile_commands.json
 .cache/
+/include-config-*
+/include-revision
+/Makefile
+.ninja_*
+*.ninja
+*.pc
+test/*.test
+wayland-generated-protocols
 
 # for CLion
 .idea
