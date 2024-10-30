@@ -1270,6 +1270,7 @@ static inline const char *VkErrorMessages(VkResult code)
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s %s", #fn, VkErrorMessages(res)); \
         }                                                                           \
         SDL_SetError("%s %s", #fn, VkErrorMessages(res));                           \
+        return ret;                                                                 \
     }
 
 // Utility
@@ -4125,7 +4126,7 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
 
     if (vulkanResult != VK_SUCCESS) {
         SDL_free(buffer);
-        CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateBuffer, 0)
+        CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateBuffer, NULL)
     }
 
     bindResult = VULKAN_INTERNAL_BindMemoryForBuffer(
@@ -10408,7 +10409,7 @@ static bool VULKAN_Cancel(
     result = renderer->vkResetCommandBuffer(
         vulkanCommandBuffer->commandBuffer,
         VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
-    CHECK_VULKAN_ERROR_AND_RETURN(result, vkResetCommandBuffer, NULL)
+    CHECK_VULKAN_ERROR_AND_RETURN(result, vkResetCommandBuffer, false)
 
     vulkanCommandBuffer->autoReleaseFence = false;
     SDL_LockMutex(renderer->submitLock);
