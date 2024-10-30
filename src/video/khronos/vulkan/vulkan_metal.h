@@ -88,8 +88,11 @@ typedef void* MTLTexture_id;
 
 typedef struct __IOSurface* IOSurfaceRef;
 #ifdef __OBJC__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
 @protocol MTLSharedEvent;
 typedef __unsafe_unretained id<MTLSharedEvent> MTLSharedEvent_id;
+#pragma clang diagnostic pop
 #else
 typedef void* MTLSharedEvent_id;
 #endif
