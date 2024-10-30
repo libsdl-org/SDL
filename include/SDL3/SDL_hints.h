@@ -2511,8 +2511,8 @@ extern "C" {
  *
  * This variable can be set to the following values: 
  *
- * - "0" - The cursor will be hidden while relative mode is active (default) 
- * - "1" - The cursor will remain visible while relative mode is active
+ * - "0": The cursor will be hidden while relative mode is active (default) 
+ * - "1": The cursor will remain visible while relative mode is active
  *
  * Note that for systems without raw hardware inputs, relative mode is
  * implemented using warping, so the hardware cursor will visibly warp between
