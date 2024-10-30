@@ -226,29 +226,29 @@ CMake documentation: [link](https://cmake.org/cmake/help/latest/variable/CMAKE_O
 - for macOS, building a dylib and/or static library for x86_64 and arm64:
 
     ```bash
-    cmake ~/sdl -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+    cmake ~/sdl -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.11
 
 - for macOS, building an universal framework for x86_64 and arm64:
 
     ```bash
-    cmake ~/sdl -DSDL_FRAMEWORK=ON -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+    cmake ~/sdl -DSDL_FRAMEWORK=ON -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.11
 
 - for iOS-Simulator, using the latest, installed SDK:
 
     ```bash
-    cmake ~/sdl -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphonesimulator -DCMAKE_OSX_ARCHITECTURES=x86_64
+    cmake ~/sdl -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphonesimulator -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=9.0
     ```
 
 - for iOS-Device, using the latest, installed SDK, 64-bit only
 
     ```bash
-    cmake ~/sdl -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos -DCMAKE_OSX_ARCHITECTURES=arm64
+    cmake ~/sdl -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=9.0
     ```
 
 - for iOS-Device, using the latest, installed SDK, mixed 32/64 bit
 
     ```cmake
-    cmake ~/sdl -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos -DCMAKE_OSX_ARCHITECTURES="arm64;armv7s"
+    cmake ~/sdl -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos -DCMAKE_OSX_ARCHITECTURES="arm64;armv7s" -DCMAKE_OSX_DEPLOYMENT_TARGET=9.0
     ```
 
 - for iOS-Device, using a specific SDK revision (iOS 12.4, in this example):
@@ -260,19 +260,19 @@ CMake documentation: [link](https://cmake.org/cmake/help/latest/variable/CMAKE_O
 - for iOS-Simulator, using the latest, installed SDK, and building SDL test apps (as .app bundles):
 
     ```cmake
-    cmake ~/sdl -DSDL_TESTS=1 -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphonesimulator -DCMAKE_OSX_ARCHITECTURES=x86_64
+    cmake ~/sdl -DSDL_TESTS=1 -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphonesimulator -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=9.0
     ```
 
 - for tvOS-Simulator, using the latest, installed SDK:
 
     ```cmake
-    cmake ~/sdl -DCMAKE_SYSTEM_NAME=tvOS -DCMAKE_OSX_SYSROOT=appletvsimulator -DCMAKE_OSX_ARCHITECTURES=x86_64
+    cmake ~/sdl -DCMAKE_SYSTEM_NAME=tvOS -DCMAKE_OSX_SYSROOT=appletvsimulator -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=9.0
     ```
 
 - for tvOS-Device, using the latest, installed SDK:
 
     ```cmake
-    cmake ~/sdl -DCMAKE_SYSTEM_NAME=tvOS -DCMAKE_OSX_SYSROOT=appletvos -DCMAKE_OSX_ARCHITECTURES=arm64`
+    cmake ~/sdl -DCMAKE_SYSTEM_NAME=tvOS -DCMAKE_OSX_SYSROOT=appletvos -DCMAKE_OSX_ARCHITECTURES=arm64` -DCMAKE_OSX_DEPLOYMENT_TARGET=9.0
     ```
 
 - for QNX/aarch64, using the latest, installed SDK:
