@@ -200,6 +200,8 @@ static void SDLCALL SDL_MouseRelativeCursorVisibleChanged(void *userdata, const 
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
     mouse->relative_mode_cursor_visible = SDL_GetStringBoolean(hint, false);
+    
+    SDL_SetCursor(NULL); // Update cursor visibility
 }
 
 // Public functions
