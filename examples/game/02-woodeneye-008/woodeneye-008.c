@@ -233,6 +233,7 @@ static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player p
                 sin_yaw*sin_pitch,  cos_pitch,  cos_yaw*sin_pitch,
                 sin_yaw*cos_pitch, -sin_pitch,  cos_yaw*cos_pitch
             };
+            SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
             for (k = 0; k < MAP_BOX_EDGES_LEN; k++) {
                 const float *line = edges[k];
                 float ax = (float)(mat[0] * (line[0] - x0) + mat[1] * (line[1] - y0) + mat[2] * (line[2] - z0));
@@ -241,12 +242,12 @@ static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player p
                 float bx = (float)(mat[0] * (line[3] - x0) + mat[1] * (line[4] - y0) + mat[2] * (line[5] - z0));
                 float by = (float)(mat[3] * (line[3] - x0) + mat[4] * (line[4] - y0) + mat[5] * (line[5] - z0));
                 float bz = (float)(mat[6] * (line[3] - x0) + mat[7] * (line[4] - y0) + mat[8] * (line[5] - z0));
-                SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
                 drawClippedSegment(renderer, ax, ay, az, bx, by, bz, hor_origin, ver_origin, cam_origin, 1);
             }
             for (j = 0; j < players_len; j++) {
                 if (i == j) continue;
                 const Player *target = &players[j];
+                SDL_SetRenderDrawColor(renderer, target->color[0], target->color[1], target->color[2], 255);
                 for (k = 0; k < 2; k++) {
                     double rx = target->pos[0] - player->pos[0];
                     double ry = target->pos[1] - player->pos[1] + (target->radius - target->height) * (float)k;
@@ -256,7 +257,6 @@ static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player p
                     double dz = mat[6] * rx + mat[7] * ry + mat[8] * rz;
                     double r_eff = target->radius * cam_origin / dz;
                     if (!(dz < 0)) continue;
-                    SDL_SetRenderDrawColor(renderer, target->color[0], target->color[1], target->color[2], 255);
                     drawCircle(renderer, (float)(r_eff), (float)(hor_origin - cam_origin*dx/dz), (float)(ver_origin + cam_origin*dy/dz));
                 }
             }
@@ -275,13 +275,13 @@ static void initPlayers(Player *players, int len)
 {
     int i;
     for (i = 0; i < len; i++) {
-        players[i].pos[0] = 8.0 * (i & 1 ? -1.0 : 0);
+        players[i].pos[0] = 8.0 * (i & 1 ? -1.0 : 1.0);
         players[i].pos[1] = 0;
-        players[i].pos[2] = 8.0 * (i & 1 ? -1.0 : 0) * (i & 2 ? -1.0 : 0);
+        players[i].pos[2] = 8.0 * (i & 1 ? -1.0 : 1.0) * (i & 2 ? -1.0 : 1.0);
         players[i].vel[0] = 0;
         players[i].vel[1] = 0;
         players[i].vel[2] = 0;
-        players[i].yaw = 0;
+        players[i].yaw = 0x20000000 + (i & 1 ? 0x80000000 : 0) + (i & 2 ? 0x40000000 : 0);
         players[i].pitch = -0x08000000;
         players[i].radius = 0.5f;
         players[i].height = 1.5f;
@@ -295,31 +295,21 @@ static void initPlayers(Player *players, int len)
         players[i].color[1] = (i & 1) ? players[i].color[1] : ~players[i].color[1];
         players[i].color[2] = (i & 1) ? players[i].color[2] : ~players[i].color[2];
     }
-    players[0].yaw = 0x20000000;
-    players[1].yaw = -0x60000000;
 }
 
 static void initEdges(int scale, float (*edges)[6], int edges_len)
 {
     int i, j;
     const float r = (float)scale;
-    const float lines[12][6] = {
-        {-r,-r,-r, r,-r,-r},
-        {-r,-r, r, r,-r, r},
-        {-r, r,-r, r, r,-r},
-        {-r, r, r, r, r, r},
-        {-r,-r,-r,-r, r,-r},
-        { r,-r,-r, r, r,-r},
-        {-r,-r, r,-r, r, r},
-        { r,-r, r, r, r, r},
-        {-r,-r,-r,-r,-r, r},
-        { r,-r,-r, r,-r, r},
-        {-r, r,-r,-r, r, r},
-        { r, r,-r, r, r, r}
+    const int map[24] = {
+        0,1 , 1,3 , 3,2 , 2,0 ,
+        7,6 , 6,4 , 4,5 , 5,7 ,
+        6,2 , 3,7 , 0,4 , 5,1
     };
     for(i = 0; i < 12; i++) {
-        for (j = 0; j < 6; j++) {
-            edges[i][j] = lines[i][j];
+        for (j = 0; j < 3; j++) {
+            edges[i][j+0] = (map[i*2+0] & (1 << j) ? r : -r);
+            edges[i][j+3] = (map[i*2+1] & (1 << j) ? r : -r);
         }
     }
     for(i = 0; i < scale; i++) {
@@ -486,9 +476,5 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
-    AppState *as = appstate;
-
-    SDL_free(as);
-
-    /* SDL will clean up the window/renderer for us. */
+    SDL_free(appstate); // just free the memory, SDL will clean up the window/renderer for us.
 }
