@@ -146,6 +146,9 @@ for line in input:
         elif (line.startswith("#if")):
             print(f"Parsing {line.strip()}")
             output.write(line)
+        elif ("SDL_PRIVATE_GAMEPAD_DEFINITIONS" in line):
+            write_controllers()
+            output.write(line)
         elif (line.startswith("#endif")):
             write_controllers()
             output.write(line)
