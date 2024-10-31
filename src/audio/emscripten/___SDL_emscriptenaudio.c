@@ -37,36 +37,24 @@ static void FeedAudioDevice(_THIS, const void *buf, const int buflen)
 {
     const int framelen = (SDL_AUDIO_BITSIZE(this->spec.format) / 8) * this->spec.channels;
     /* *INDENT-OFF* */ /* clang-format off */
-
     MAIN_THREAD_EM_ASM({
         var SDL2 = Module['SDL2'];
-
-        // var numChannels = $2;
-
-        if ( SDL2.audio.currentOutputBuffer != null && SDL2.audio.currentOutputBuffer != undefined)
-        {
-            var numChannels = SDL2.audio.currentOutputBuffer['numOfChannels'];
-
-            console.log( "numChannels: ", $2 );
-            console.log( "frames: ", $1 );
-
-            for (var c = 0; c < numChannels; ++c) {
-
-    //            SDL2.audioContext.decodeAudioData(new Uint8Array(audioData).buffer, (audioBuffer) => {
-    //	            myAudioWorklet.port.postMessage(audioBuffer.getChannelData(0))
-    //            })
-
-                var channelData = SDL2.audio.currentOutputBuffer['getChannelData'](c);
-                if (channelData.length != $1) {
-                    throw 'Web Audio output buffer length mismatch! Destination size: ' + channelData.length + ' samples vs expected ' + $1 + ' samples!';
-                }
-
-                for (var j = 0; j < $1; ++j) {
-                    channelData[c][j] = HEAPF32[$0 + ((j*numChannels + c) * 4) / 4];  /* !!! FIXME: why are these shifts here? */
-                }
+        /* Convert incoming buf pointer to a HEAPF32 offset. */
+#ifdef __wasm64__
+        var buf = $0 / 4;
+#else
+        var buf = $0 >>> 2;
+#endif
+        var numChannels = SDL2.audio.currentOutputBuffer['numberOfChannels'];
+        for (var c = 0; c < numChannels; ++c) {
+            var channelData = SDL2.audio.currentOutputBuffer['getChannelData'](c);
+            if (channelData.length != $1) {
+                throw 'Web Audio output buffer length mismatch! Destination size: ' + channelData.length + ' samples vs expected ' + $1 + ' samples!';
             }
-        
-            SDL2.audio.workletNode.port.postMessage(Object.entries(SDL2.audio.currentOutputBuffer));
+
+            for (var j = 0; j < $1; ++j) {
+                channelData[j] = HEAPF32[buf + (j*numChannels + c)];
+            }
         }
     }, buf, buflen / framelen);
 /* *INDENT-ON* */ /* clang-format on */
@@ -191,19 +179,12 @@ static void EMSCRIPTENAUDIO_CloseDevice(_THIS)
             }
             SDL2.capture = undefined;
         } else {
-/*
             if (SDL2.audio.scriptProcessorNode != undefined) {
                 SDL2.audio.scriptProcessorNode.disconnect();
             }
-*/
-            if (SDL2.audio.workletNode != undefined) {
-                SDL2.audio.workletNode.disconnect();
-            }
-
             if (SDL2.audio.silenceTimer !== undefined) {
                 clearInterval(SDL2.audio.silenceTimer);
             }
-
             SDL2.audio = undefined;
         }
         if ((SDL2.audioContext !== undefined) && (SDL2.audio === undefined) && (SDL2.capture === undefined)) {
@@ -360,32 +341,6 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
         /* setup a ScriptProcessorNode */
         MAIN_THREAD_EM_ASM({
             var SDL2 = Module['SDL2'];
-
-            SDL2.audio.workletProcessor = new URL('./bypass-processor.js', import.meta.url);
-
-            SDL2.audioContext.audioWorklet.addModule( SDL2.audio.workletProcessor.pathname ).then(() => {
-                SDL2.audio.workletNode = new AudioWorkletNode( SDL2.audioContext, 'bypass-processor',
-                {
-                    numberOfInputs: 1,
-                    numberOfOutputs: 1,
-                    outputChannelCount: [$0],
-                    channelCount: $0,
-                    channelCountMode: 'max',
-                    channelInterpretation: 'speakers'
-                } );
-
-                SDL2.audio.workletNode.connect( SDL2.audioContext.destination );
-
-                if ((typeof navigator.userActivation) !== 'undefined') {  // Almost everything modern except Firefox (as of August 2023)
-                    if (navigator.userActivation.hasBeenActive) {
-                        SDL2.audioContext.resume();
-                    }
-                }
-
-                dynCall('vi', $2, [$3]);
-            });
-
-/*
             SDL2.audio.scriptProcessorNode = SDL2.audioContext['createScriptProcessor']($1, 0, $0);
             SDL2.audio.scriptProcessorNode['onaudioprocess'] = function (e) {
                 if ((SDL2 === undefined) || (SDL2.audio === undefined)) { return; }
@@ -400,8 +355,6 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
             };
 
             SDL2.audio.scriptProcessorNode['connect'](SDL2.audioContext['destination']);
-            
-*/
 
             if (SDL2.audioContext.state === 'suspended') {  // uhoh, autoplay is blocked.
                 SDL2.audio.silenceBuffer = SDL2.audioContext.createBuffer($0, $1, SDL2.audioContext.sampleRate);
@@ -422,7 +375,6 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
 
                 SDL2.audio.silenceTimer = setInterval(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1000);
             }
-
         }, this->spec.channels, this->spec.samples, HandleAudioProcess, this);
     }
 /* *INDENT-ON* */ /* clang-format on */
