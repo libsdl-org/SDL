@@ -101,7 +101,6 @@ struct SwsContextContainer
     struct SwsContext *context;
 };
 static const char *SWS_CONTEXT_CONTAINER_PROPERTY = "SWS_CONTEXT_CONTAINER";
-static int done;
 static bool verbose;
 
 static bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *driver)
@@ -1111,9 +1110,8 @@ static void HandleVideoFrame(AVFrame *frame, double pts)
         video_start = SDL_GetTicks();
     }
     double now = (double)(SDL_GetTicks() - video_start) / 1000.0;
-    while (now < pts - 0.001) {
-        SDL_Delay(1);
-        now = (double)(SDL_GetTicks() - video_start) / 1000.0;
+    if (now < pts) {
+        SDL_DelayPrecise((Uint64)((pts - now) * SDL_NS_PER_SECOND));
     }
 
     if (BeginFrameRendering(frame) < 0) {
@@ -1173,7 +1171,7 @@ static AVCodecContext *OpenAudioStream(AVFormatContext *ic, int stream, const AV
     return context;
 }
 
-static SDL_AudioFormat GetAudioFormat(enum AVSampleFormat format)
+static SDL_AudioFormat GetAudioFormat(int format)
 {
     switch (format) {
     case AV_SAMPLE_FMT_U8:
@@ -1190,11 +1188,11 @@ static SDL_AudioFormat GetAudioFormat(enum AVSampleFormat format)
         return SDL_AUDIO_F32;
     default:
         /* Unsupported */
-        return 0;
+        return SDL_AUDIO_UNKNOWN;
     }
 }
 
-static bool IsPlanarAudioFormat(enum AVSampleFormat format)
+static bool IsPlanarAudioFormat(int format)
 {
     switch (format) {
     case AV_SAMPLE_FMT_U8P:
@@ -1313,6 +1311,7 @@ int main(int argc, char *argv[])
     SDL_WindowFlags window_flags;
     bool flushing = false;
     bool decoded = false;
+    bool done = false;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
@@ -1497,8 +1496,6 @@ int main(int argc, char *argv[])
     SDL_ShowWindow(window);
 
     /* Main render loop */
-    done = 0;
-
     while (!done) {
         SDL_Event event;
 
@@ -1506,7 +1503,7 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT ||
                 (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE)) {
-                done = 1;
+                done = true;
             }
         }
 
@@ -1572,7 +1569,7 @@ int main(int argc, char *argv[])
                 /* Wait a little bit for the audio to finish */
                 SDL_Delay(10);
             } else {
-                done = 1;
+                done = true;
             }
         }
     }
