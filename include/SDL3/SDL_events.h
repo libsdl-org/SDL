@@ -938,6 +938,9 @@ typedef struct SDL_UserEvent
 /**
  * The structure for all events in SDL.
  *
+ * The SDL_Event structure is the core of all event handling in SDL. SDL_Event
+ * is a union of all event structures used in SDL.
+ *
  * \since This struct is available since SDL 3.1.3.
  */
 typedef union SDL_Event
