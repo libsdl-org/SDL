@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 from pathlib import Path
@@ -10,17 +10,18 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def determine_project() -> str:
+def determine_remote() -> str:
     text = (ROOT / "build-scripts/release-info.json").read_text()
     release_info = json.loads(text)
+    if "remote" in release_info:
+        return release_info["remote"]
     project_with_version = release_info["name"]
     project, _ = re.subn("([^a-zA-Z_])", "", project_with_version)
-    return project
+    return f"libsdl-org/{project}"
 
 
 def main():
-    project = determine_project()
-    default_remote = f"libsdl-org/{project}"
+    default_remote = determine_remote()
 
     current_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
 

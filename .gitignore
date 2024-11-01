@@ -15,7 +15,7 @@ build
 gen
 Build
 buildbot
-/VERSION.txt
+/REVISION.txt
 dist
 
 *.so

@@ -1,5 +1,6 @@
 {
   "name": "SDL2",
+  "remote": "libsdl-org/SDL",
   "version": {
     "file": "include/SDL_version.h",
     "re_major": "^#define SDL_MAJOR_VERSION\\s+([0-9]+)$",
@@ -23,10 +24,15 @@
     "autotools": {
       "archs": ["x86", "x64"],
       "args": [
-      ]
+      ],
+      "files": {
+        "@<@TRIPLET@>@/include/SDL2": [
+          "include/SDL_config*.h"
+        ]
+      }
     },
     "files": {
-      "/": [
+      "": [
         "mingw/pkg-support/INSTALL.txt",
         "mingw/pkg-support/Makefile",
         "BUGS.txt",
@@ -36,15 +42,12 @@
         "LICENSE.txt",
         "README.md"
       ],
-      "/cmake/": [
+      "cmake": [
         "mingw/pkg-support/cmake/sdl2-config.cmake",
         "mingw/pkg-support/cmake/sdl2-config-version.cmake"
       ],
-      "/docs/": [
+      "docs": [
         "docs/*"
-      ],
-      "/@TRIPLET@/include/SDL2/": [
-        "include/SDL_config*.h"
       ]
     }
   },
@@ -59,61 +62,44 @@
         "VisualC/SDLmain/SDLmain.vcxproj",
         "VisualC/SDLtest/SDLtest.vcxproj"
       ],
-      "files": [
-        {
-          "lib": "",
-          "devel": "lib/@ARCH@",
-          "paths": [
-            "VisualC/SDL/@PLATFORM@/@CONFIGURATION@/SDL2.dll"
-          ]
-        },
-        {
-          "devel": "lib/@ARCH@",
-          "paths": [
-            "VisualC/SDL/@PLATFORM@/@CONFIGURATION@/SDL2.lib",
-            "VisualC/SDL/@PLATFORM@/@CONFIGURATION@/SDL2.pdb",
-            "VisualC/SDLmain/@PLATFORM@/@CONFIGURATION@/SDL2main.lib",
-            "VisualC/SDLtest/@PLATFORM@/@CONFIGURATION@/SDL2test.lib"
-          ]
-        }
-      ]
-    },
-    "files": [
-      {
-        "devel": "",
-        "lib": "",
-        "paths": [
-          "README-SDL.txt"
+      "files-lib": {
+        "": [
+          "VisualC/SDL/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL2.dll"
         ]
       },
-      {
-        "devel": "",
-        "paths": [
-          "BUGS.txt",
-          "LICENSE.txt",
-          "README.md",
-          "WhatsNew.txt"
-        ]
-      },
-      {
-        "devel": "cmake",
-        "paths": [
-          "VisualC/pkg-support/cmake/sdl2-config.cmake",
-          "VisualC/pkg-support/cmake/sdl2-config-version.cmake"
-        ]
-      },
-      {
-        "devel": "docs",
-        "paths": [
-          "docs/*"
-        ]
-      },
-      {
-        "devel": "include",
-        "paths": [
-          "include/*.h"
+      "files-devel": {
+        "lib/@<@ARCH@>@": [
+          "VisualC/SDL/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL2.dll",
+          "VisualC/SDL/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL2.lib",
+          "VisualC/SDL/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL2.pdb",
+          "VisualC/SDLmain/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL2main.lib",
+          "VisualC/SDLtest/@<@PLATFORM@>@/@<@CONFIGURATION@>@/SDL2test.lib"
         ]
       }
-    ]
+    },
+    "files-lib": {
+      "": [
+        "README-SDL.txt"
+      ]
+    },
+    "files-devel": {
+      "": [
+        "README-SDL.txt",
+        "BUGS.txt",
+        "LICENSE.txt",
+        "README.md",
+        "WhatsNew.txt"
+      ],
+      "cmake": [
+        "VisualC/pkg-support/cmake/sdl2-config.cmake",
+        "VisualC/pkg-support/cmake/sdl2-config-version.cmake"
+      ],
+      "docs": [
+        "docs/*"
+      ],
+      "include": [
+        "include/*.h"
+      ]
+    }
   }
 }

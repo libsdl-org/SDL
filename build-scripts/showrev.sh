@@ -5,8 +5,8 @@
 SDL_ROOT=$(dirname $0)/..
 cd $SDL_ROOT
 
-if [ -e ./VERSION.txt ]; then
-    cat ./VERSION.txt
+if [ -e ./REVISION.txt ]; then
+    cat ./REVISION.txt
     exit 0
 fi
 
