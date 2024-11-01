@@ -650,12 +650,7 @@ typedef struct SDL_SysWMEvent
  * General event structure
  *
  * The SDL_Event structure is the core of all event handling in SDL. SDL_Event
- * is a union of all event structures used in SDL. Using it is a simple matter
- * of knowing which event type corresponds to which union member. The table
- * below lists these relationships.
- *
- * The SDL_Event structure has two uses: * Reading events from the event queue
- * * Placing events on the event queue
+ * is a union of all event structures used in SDL.
  */
 typedef union SDL_Event
 {
