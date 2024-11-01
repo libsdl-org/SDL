@@ -175,8 +175,9 @@ static bool HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
                         SDL_PlayerLEDHintChanged, ctx);
 
     // Initialize the joystick capabilities
-    joystick->nbuttons = 15;
+    joystick->nbuttons = 11;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
+    joystick->nhats = 1;
 
     return true;
 }
