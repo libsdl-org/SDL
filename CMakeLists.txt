@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # See docs/release_checklist.md
-project(SDL3 LANGUAGES C VERSION "3.1.6")
+project(SDL3 LANGUAGES C VERSION "3.1.7")
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL3_SUBPROJECT OFF)
