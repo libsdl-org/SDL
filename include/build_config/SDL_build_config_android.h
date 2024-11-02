@@ -41,8 +41,7 @@
 #define HAVE_LIMITS_H 1
 #define HAVE_MATH_H 1
 #define HAVE_SIGNAL_H 1
-#define HAVE_STDARG_H 1
-#define HAVE_STDBOOL_H 1
+#define HAVE_STDARG_H    1
 #define HAVE_STDDEF_H 1
 #define HAVE_STDINT_H 1
 #define HAVE_STDIO_H 1
@@ -54,11 +53,8 @@
 /* C library functions */
 #define HAVE_LIBC   1
 #define HAVE_DLOPEN 1
-#define HAVE_MALLOC 1
-#define HAVE_CALLOC 1
-#define HAVE_REALLOC    1
-#define HAVE_FDATASYNC 1
-#define HAVE_FREE   1
+#define HAVE_MALLOC            1
+#define HAVE_FDATASYNC         1
 #define HAVE_GETENV 1
 #define HAVE_GETHOSTNAME 1
 #define HAVE_PUTENV 1
@@ -85,8 +81,7 @@
 #define HAVE_ATOI   1
 #define HAVE_ATOF 1
 #define HAVE_STRCMP 1
-#define HAVE_STRNCMP    1
-#define HAVE_STRCASESTR 1
+#define HAVE_STRNCMP           1
 #define HAVE_VSSCANF 1
 #define HAVE_VSNPRINTF  1
 #define HAVE_ACOS   1
