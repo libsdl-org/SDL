@@ -36,13 +36,18 @@
 
 #cmakedefine SDL_DISABLE_ALLOCA
 
+/* Useful headers */
+#cmakedefine HAVE_FLOAT_H 1
+#cmakedefine HAVE_STDARG_H 1
+#cmakedefine HAVE_STDDEF_H 1
+#cmakedefine HAVE_STDINT_H 1
+
 /* Comment this if you want to build without any C library requirements */
 #cmakedefine HAVE_LIBC 1
 #ifdef HAVE_LIBC
 
 /* Useful headers */
 #cmakedefine HAVE_ALLOCA_H 1
-#cmakedefine HAVE_FLOAT_H 1
 #cmakedefine HAVE_ICONV_H 1
 #cmakedefine HAVE_INTTYPES_H 1
 #cmakedefine HAVE_LIMITS_H 1
@@ -50,9 +55,6 @@
 #cmakedefine HAVE_MATH_H 1
 #cmakedefine HAVE_MEMORY_H 1
 #cmakedefine HAVE_SIGNAL_H 1
-#cmakedefine HAVE_STDARG_H 1
-#cmakedefine HAVE_STDDEF_H 1
-#cmakedefine HAVE_STDINT_H 1
 #cmakedefine HAVE_STDIO_H 1
 #cmakedefine HAVE_STDLIB_H 1
 #cmakedefine HAVE_STRINGS_H 1
@@ -191,11 +193,6 @@
 #cmakedefine HAVE_POLL 1
 #cmakedefine HAVE__EXIT 1
 
-#else
-#cmakedefine HAVE_STDARG_H 1
-#cmakedefine HAVE_STDDEF_H 1
-#cmakedefine HAVE_STDINT_H 1
-#cmakedefine HAVE_FLOAT_H 1
 #endif /* HAVE_LIBC */
 
 #cmakedefine HAVE_DBUS_DBUS_H 1
