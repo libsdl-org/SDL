@@ -59,7 +59,6 @@
 #cmakedefine HAVE_MEMORY_H 1
 #cmakedefine HAVE_SIGNAL_H 1
 #cmakedefine HAVE_STDARG_H 1
-#cmakedefine HAVE_STDBOOL_H 1
 #cmakedefine HAVE_STDDEF_H 1
 #cmakedefine HAVE_STDINT_H 1
 #cmakedefine HAVE_STDIO_H 1
@@ -73,10 +72,7 @@
 /* C library functions */
 #cmakedefine HAVE_DLOPEN 1
 #cmakedefine HAVE_MALLOC 1
-#cmakedefine HAVE_CALLOC 1
-#cmakedefine HAVE_REALLOC 1
 #cmakedefine HAVE_FDATASYNC 1
-#cmakedefine HAVE_FREE 1
 #cmakedefine HAVE_GETENV 1
 #cmakedefine HAVE_GETHOSTNAME 1
 #cmakedefine HAVE_SETENV 1
@@ -92,8 +88,6 @@
 #cmakedefine HAVE_WCSNLEN 1
 #cmakedefine HAVE_WCSLCPY 1
 #cmakedefine HAVE_WCSLCAT 1
-#cmakedefine HAVE__WCSDUP 1
-#cmakedefine HAVE_WCSDUP 1
 #cmakedefine HAVE_WCSSTR 1
 #cmakedefine HAVE_WCSCMP 1
 #cmakedefine HAVE_WCSNCMP 1
@@ -104,8 +98,6 @@
 #cmakedefine HAVE_STRLCAT 1
 #cmakedefine HAVE_STRPBRK 1
 #cmakedefine HAVE__STRREV 1
-#cmakedefine HAVE__STRUPR 1
-#cmakedefine HAVE__STRLWR 1
 #cmakedefine HAVE_INDEX 1
 #cmakedefine HAVE_RINDEX 1
 #cmakedefine HAVE_STRCHR 1
@@ -128,8 +120,6 @@
 #cmakedefine HAVE_ATOF 1
 #cmakedefine HAVE_STRCMP 1
 #cmakedefine HAVE_STRNCMP 1
-#cmakedefine HAVE_STRCASESTR 1
-#cmakedefine HAVE_SSCANF 1
 #cmakedefine HAVE_VSSCANF 1
 #cmakedefine HAVE_VSNPRINTF 1
 #cmakedefine HAVE_ACOS 1
@@ -219,8 +209,6 @@
 #cmakedefine HAVE_DBUS_DBUS_H 1
 #cmakedefine HAVE_FCITX 1
 #cmakedefine HAVE_IBUS_IBUS_H 1
-#cmakedefine HAVE_SYS_INOTIFY_H 1
-#cmakedefine HAVE_INOTIFY_INIT 1
 #cmakedefine HAVE_INOTIFY_INIT1 1
 #cmakedefine HAVE_INOTIFY 1
 #cmakedefine HAVE_LIBUSB 1
@@ -231,7 +219,6 @@
 #cmakedefine HAVE_LIBDECOR_H 1
 #cmakedefine HAVE_LIBURING_H 1
 
-#cmakedefine HAVE_D3D11_H @HAVE_D3D11_H@
 #cmakedefine HAVE_DDRAW_H @HAVE_DDRAW_H@
 #cmakedefine HAVE_DSOUND_H @HAVE_DSOUND_H@
 #cmakedefine HAVE_DINPUT_H @HAVE_DINPUT_H@
@@ -242,9 +229,7 @@
 #cmakedefine HAVE_DXGI1_6_H @HAVE_DXGI1_6_H@
 
 #cmakedefine HAVE_MMDEVICEAPI_H @HAVE_MMDEVICEAPI_H@
-#cmakedefine HAVE_AUDIOCLIENT_H @HAVE_AUDIOCLIENT_H@
 #cmakedefine HAVE_TPCSHRD_H @HAVE_TPCSHRD_H@
-#cmakedefine HAVE_SENSORSAPI_H @HAVE_SENSORSAPI_H@
 #cmakedefine HAVE_ROAPI_H @HAVE_ROAPI_H@
 #cmakedefine HAVE_SHELLSCALINGAPI_H @HAVE_SHELLSCALINGAPI_H@
 
@@ -346,7 +331,6 @@
 /* Enable various shared object loading systems */
 #cmakedefine SDL_LOADSO_DLOPEN @SDL_LOADSO_DLOPEN@
 #cmakedefine SDL_LOADSO_DUMMY @SDL_LOADSO_DUMMY@
-#cmakedefine SDL_LOADSO_LDG @SDL_LOADSO_LDG@
 #cmakedefine SDL_LOADSO_WINDOWS @SDL_LOADSO_WINDOWS@
 
 /* Enable various threading systems */
@@ -371,7 +355,6 @@
 
 /* Enable various timer systems */
 #cmakedefine SDL_TIMER_HAIKU @SDL_TIMER_HAIKU@
-#cmakedefine SDL_TIMER_DUMMY @SDL_TIMER_DUMMY@
 #cmakedefine SDL_TIMER_UNIX @SDL_TIMER_UNIX@
 #cmakedefine SDL_TIMER_WINDOWS @SDL_TIMER_WINDOWS@
 #cmakedefine SDL_TIMER_VITA @SDL_TIMER_VITA@
@@ -444,13 +427,10 @@
 #cmakedefine SDL_VIDEO_OPENGL @SDL_VIDEO_OPENGL@
 #cmakedefine SDL_VIDEO_OPENGL_ES @SDL_VIDEO_OPENGL_ES@
 #cmakedefine SDL_VIDEO_OPENGL_ES2 @SDL_VIDEO_OPENGL_ES2@
-#cmakedefine SDL_VIDEO_OPENGL_BGL @SDL_VIDEO_OPENGL_BGL@
 #cmakedefine SDL_VIDEO_OPENGL_CGL @SDL_VIDEO_OPENGL_CGL@
 #cmakedefine SDL_VIDEO_OPENGL_GLX @SDL_VIDEO_OPENGL_GLX@
 #cmakedefine SDL_VIDEO_OPENGL_WGL @SDL_VIDEO_OPENGL_WGL@
 #cmakedefine SDL_VIDEO_OPENGL_EGL @SDL_VIDEO_OPENGL_EGL@
-#cmakedefine SDL_VIDEO_OPENGL_OSMESA @SDL_VIDEO_OPENGL_OSMESA@
-#cmakedefine SDL_VIDEO_OPENGL_OSMESA_DYNAMIC @SDL_VIDEO_OPENGL_OSMESA_DYNAMIC@
 
 /* Enable Vulkan support */
 #cmakedefine SDL_VIDEO_VULKAN @SDL_VIDEO_VULKAN@
@@ -492,7 +472,6 @@
 #cmakedefine SDL_FILESYSTEM_N3DS @SDL_FILESYSTEM_N3DS@
 
 /* Enable system storage support */
-#cmakedefine SDL_STORAGE_GENERIC @SDL_STORAGE_GENERIC@
 #cmakedefine SDL_STORAGE_STEAM @SDL_STORAGE_STEAM@
 
 /* Enable system FSops support */
@@ -514,12 +493,6 @@
 
 /* Enable dialog subsystem */
 #cmakedefine SDL_DIALOG_DUMMY @SDL_DIALOG_DUMMY@
-
-/* Enable misc subsystem */
-#cmakedefine SDL_MISC_DUMMY @SDL_MISC_DUMMY@
-
-/* Enable locale subsystem */
-#cmakedefine SDL_LOCALE_DUMMY @SDL_LOCALE_DUMMY@
 
 /* Enable assembly routines */
 #cmakedefine SDL_ALTIVEC_BLITTERS @SDL_ALTIVEC_BLITTERS@
@@ -560,7 +533,6 @@ typedef unsigned __int64 uintptr_t;
 #else
 typedef unsigned int uintptr_t;
 #endif
-#define _UINTPTR_T_DEFINED
 #endif
 #endif /* Visual Studio 2008 */
 #endif /* !_STDINT_H_ && !HAVE_STDINT_H */

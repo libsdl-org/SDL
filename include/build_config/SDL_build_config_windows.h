@@ -69,7 +69,6 @@ typedef unsigned __int64 uintptr_t;
 #else
 typedef unsigned int uintptr_t;
 #endif
-#define _UINTPTR_T_DEFINED
 #endif
 #else
 #define HAVE_STDINT_H 1
@@ -124,7 +123,6 @@ typedef unsigned int uintptr_t;
 #define HAVE_MATH_H 1
 #define HAVE_SIGNAL_H 1
 #define HAVE_STDARG_H 1
-#define HAVE_STDBOOL_H 1
 #define HAVE_STDDEF_H 1
 #define HAVE_STDIO_H 1
 #define HAVE_STDLIB_H 1
@@ -132,10 +130,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_WCHAR_H 1
 
 /* C library functions */
-#define HAVE_MALLOC 1
-#define HAVE_CALLOC 1
-#define HAVE_REALLOC 1
-#define HAVE_FREE 1
+#define HAVE_MALLOC  1
 #define HAVE_ABS 1
 #define HAVE_MEMSET 1
 #define HAVE_MEMCPY 1
@@ -143,9 +138,6 @@ typedef unsigned int uintptr_t;
 #define HAVE_MEMCMP 1
 #define HAVE_STRLEN 1
 #define HAVE__STRREV 1
-/* These functions have security warnings, so we won't use them */
-/* #undef HAVE__STRUPR */
-/* #undef HAVE__STRLWR */
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
@@ -160,9 +152,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_ATOF 1
 #define HAVE_STRCMP 1
 #define HAVE_STRNCMP 1
-#define HAVE_STRPBRK 1
-#define HAVE__WCSDUP 1
-#define HAVE_SSCANF 1
+#define HAVE_STRPBRK           1
 #define HAVE_VSSCANF 1
 #define HAVE_VSNPRINTF 1
 #define HAVE_ACOS   1
@@ -232,7 +222,6 @@ typedef unsigned int uintptr_t;
 #define SDL_AUDIO_DRIVER_WASAPI 1
 #endif
 #define SDL_AUDIO_DRIVER_DSOUND 1
-#define SDL_AUDIO_DRIVER_WINMM  1
 #define SDL_AUDIO_DRIVER_DISK   1
 #define SDL_AUDIO_DRIVER_DUMMY  1
 

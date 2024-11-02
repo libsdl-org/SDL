@@ -51,7 +51,6 @@ typedef unsigned __int64 uintptr_t;
 #else
 typedef unsigned int uintptr_t;
 #endif
-#define _UINTPTR_T_DEFINED
 #endif
 #else
 #define HAVE_STDINT_H 1
