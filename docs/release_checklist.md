@@ -1,16 +1,15 @@
 # Release checklist
 
-* Run `build-scripts/create-release.py -R libsdl-org/SDL --ref <git-ref>` to command
-  GitHub Actions to start creating release assets.
-  It's advisable to run this script regularly, and also prior to any release step.
-  When creating the release assets, `<git-ref>` must be the release tag
-  This makes sure the revision string baked into the archives is correct.
+* Run `build-scripts/create-release.py -R libsdl-org/SDL --ref <branch>` to do
+  a dry run creating the release assets. Verify that the archives are correct.
 
-* When changing the version, run `build-scripts/update-version.sh X Y Z`,
-  where `X Y Z` are the major version, minor version, and patch level. So
-  `3 8 1` means "change the version to 3.8.1". This script does much of the
-  mechanical work.
+* Tag the release, e.g. `git tag release-3.8.0; git push --tags`
 
+* Run `build-scripts/create-release.py -R libsdl-org/SDL --ref <release-tag>`
+  to have GitHub Actions create release assets. This makes sure the revision
+  string baked into the archives is correct.
+
+* Create a GitHub release and attach the archives you just generated.
 
 ## New feature release
 
@@ -22,13 +21,15 @@
 
 * Do the release
 
+* Immediately create a branch for patch releases, e.g. `git branch release-3.EVEN.x`
+
+* Bump version number from 3.EVEN.0 to 3.(EVEN+1).0
+
+    * `./build-scripts/update-version.sh 3 EVEN+1 0`
+
 * Update the website file include/header.inc.php to reflect the new version
 
 ## New bugfix release
-
-* Check that no new API/ABI was added
-
-    * If it was, do a new feature release (see above) instead
 
 * Bump version number from 3.Y.Z to 3.Y.(Z+1) (Y is even)
 
@@ -37,14 +38,6 @@
 * Do the release
 
 * Update the website file include/header.inc.php to reflect the new version
-
-## After a feature release
-
-* Create a branch like `release-3.4.x`
-
-* Bump version number to 3.ODD.0 for next development branch
-
-    * `./build-scripts/update-version.sh 3 ODD 0`
 
 ## New development prerelease
 
