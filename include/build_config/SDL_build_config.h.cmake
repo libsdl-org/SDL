@@ -31,14 +31,6 @@
 /* General platform specific identifiers */
 #include <SDL3/SDL_platform_defines.h>
 
-/* C datatypes */
-/* Define SIZEOF_VOIDP for 64/32 architectures */
-#if defined(__LP64__) || defined(_LP64) || defined(_WIN64)
-#define SIZEOF_VOIDP 8
-#else
-#define SIZEOF_VOIDP 4
-#endif
-
 #cmakedefine HAVE_GCC_ATOMICS @HAVE_GCC_ATOMICS@
 #cmakedefine HAVE_GCC_SYNC_LOCK_TEST_AND_SET @HAVE_GCC_SYNC_LOCK_TEST_AND_SET@
 
