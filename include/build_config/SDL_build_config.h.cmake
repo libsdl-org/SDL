@@ -50,6 +50,7 @@
 #cmakedefine HAVE_ALLOCA_H 1
 #cmakedefine HAVE_ICONV_H 1
 #cmakedefine HAVE_INTTYPES_H 1
+#cmakedefine HAVE_LIBUNWIND_H 1
 #cmakedefine HAVE_LIMITS_H 1
 #cmakedefine HAVE_MALLOC_H 1
 #cmakedefine HAVE_MATH_H 1
@@ -128,6 +129,7 @@
 #cmakedefine HAVE_CEILF 1
 #cmakedefine HAVE_COPYSIGN 1
 #cmakedefine HAVE_COPYSIGNF 1
+#cmakedefine HAVE__COPYSIGN 1
 #cmakedefine HAVE_COS 1
 #cmakedefine HAVE_COSF 1
 #cmakedefine HAVE_EXP 1
@@ -166,6 +168,7 @@
 #cmakedefine HAVE_TANF 1
 #cmakedefine HAVE_TRUNC 1
 #cmakedefine HAVE_TRUNCF 1
+#cmakedefine HAVE__FSEEKI64 1
 #cmakedefine HAVE_FOPEN64 1
 #cmakedefine HAVE_FSEEKO 1
 #cmakedefine HAVE_FSEEKO64 1
@@ -491,6 +494,8 @@
 
 /* Enable ime support */
 #cmakedefine SDL_USE_IME @SDL_USE_IME@
+#cmakedefine SDL_DISABLE_WINDOWS_IME 1
+#cmakedefine SDL_GDK_TEXTINPUT 1
 
 /* Platform specific definitions */
 #cmakedefine SDL_IPHONE_KEYBOARD @SDL_IPHONE_KEYBOARD@
