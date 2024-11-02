@@ -1267,6 +1267,8 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
 
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
+
     data->state.draw_color.r = 1.0f;
     data->state.draw_color.g = 1.0f;
     data->state.draw_color.b = 1.0f;
