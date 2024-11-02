@@ -23,18 +23,20 @@ def determine_remote() -> str:
 def main():
     default_remote = determine_remote()
 
-    current_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--ref", required=True, help=f"Name of branch or tag containing release.yml")
     parser.add_argument("--remote", "-R", default=default_remote, help=f"Remote repo (default={default_remote})")
-    parser.add_argument("--commit", default=current_commit, help=f"Commit (default={current_commit})")
+    parser.add_argument("--commit", help=f"Input 'commit' of release.yml (default is the hash of the ref)")
     args = parser.parse_args()
+
+    if args.commit is None:
+        args.commit = subprocess.check_output(["git", "rev-parse", args.ref], cwd=ROOT, text=True).strip()
 
 
     print(f"Running release.yml workflow:")
-    print(f"  commit = {args.commit}")
     print(f"  remote = {args.remote}")
+    print(f"     ref = {args.ref}")
+    print(f"  commit = {args.commit}")
 
     subprocess.check_call(["gh", "-R", args.remote, "workflow", "run", "release.yml", "--ref", args.ref, "-f", f"commit={args.commit}"], cwd=ROOT)
 
