@@ -2864,6 +2864,8 @@ void Wayland_input_init_tablet_support(struct SDL_WaylandInput *input, struct zw
     tablet_input->seat = zwp_tablet_manager_v2_get_tablet_seat(tablet_manager, input->seat);
 
     zwp_tablet_seat_v2_add_listener(tablet_input->seat, &tablet_seat_listener, tablet_input);
+
+    input->tablet_input = tablet_input;
 }
 
 static void Wayland_remove_all_pens_callback(SDL_PenID instance_id, void *handle, void *userdata)
