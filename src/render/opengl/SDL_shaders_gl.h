@@ -33,7 +33,7 @@ typedef enum
     SHADER_SOLID,
     SHADER_RGB,
     SHADER_RGBA,
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     SHADER_YUV,
     SHADER_NV12_RA,
     SHADER_NV12_RG,

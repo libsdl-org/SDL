@@ -284,7 +284,7 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "    gl_FragColor = texture2D(tex0, v_texCoord) * v_color;\n"
 "}"
     },
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     // SHADER_YUV
     {
         // vertex shader

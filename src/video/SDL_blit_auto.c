@@ -21,7 +21,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_HAVE_BLIT_AUTO
+#ifdef SDL_HAVE_BLIT_AUTO
 
 /* *INDENT-OFF* */ // clang-format off
 
