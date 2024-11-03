@@ -665,7 +665,7 @@ extern SDL_DECLSPEC SDL_DisplayMode ** SDLCALL SDL_GetFullscreenDisplayModes(SDL
  *                     for the desktop refresh rate.
  * \param include_high_density_modes boolean to include high density modes in
  *                                   the search.
- * \param mode a pointer filled in with the closest display mode equal to or
+ * \param closest a pointer filled in with the closest display mode equal to or
  *             larger than the desired mode.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
@@ -675,7 +675,7 @@ extern SDL_DECLSPEC SDL_DisplayMode ** SDLCALL SDL_GetFullscreenDisplayModes(SDL
  * \sa SDL_GetDisplays
  * \sa SDL_GetFullscreenDisplayModes
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate, bool include_high_density_modes, SDL_DisplayMode *mode);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate, bool include_high_density_modes, SDL_DisplayMode *closest);
 
 /**
  * Get information about the desktop's display mode.
