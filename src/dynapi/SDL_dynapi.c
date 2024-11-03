@@ -230,13 +230,36 @@ SDL_DYNAPI_VARARGS(, , )
 #if ENABLE_SDL_CALL_LOGGING
 static bool SDLCALL SDL_SetError_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
-    char buf[512]; // !!! FIXME: dynamic allocation
+    char static_buf[512];
+    char *buf = static_buf;
+    int buf_size = sizeof(static_buf);
+
     va_list ap;
-    SDL_Log_REAL("SDL3CALL SDL_SetError");
     va_start(ap, fmt);
-    SDL_vsnprintf_REAL(buf, sizeof(buf), fmt, ap);
+
+    // Try to format into the static buffer first.
+    int required_size = SDL_vsnprintf_REAL(buf, buf_size, fmt, ap);
+    if (required_size >= buf_size) {
+        // Reallocate with the required size plus one for null terminator.
+        buf_size = required_size + 1;
+        buf = new char[buf_size];
+        va_end(ap); // Restart va_list due to potential buffer size change.
+        va_start(ap, fmt);
+        SDL_vsnprintf_REAL(buf, buf_size, fmt, ap);
+    }
     va_end(ap);
-    return SDL_SetError_REAL("%s", buf);
+
+    // Log the function call for debugging purposes.
+    SDL_Log_REAL("SDL3CALL SDL_SetError: %s", buf);
+
+    bool result = SDL_SetError_REAL("%s", buf);
+
+    // Clean up if dynamically allocated
+    if (buf != static_buf) {
+        delete[] buf;
+    }
+
+    return result;
 }
 static int SDLCALL SDL_sscanf_LOGSDLCALLS(const char *buf, SDL_SCANF_FORMAT_STRING const char *fmt, ...)
 {
