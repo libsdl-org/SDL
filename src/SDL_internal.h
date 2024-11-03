@@ -127,9 +127,7 @@
 #endif
 
 /* A few #defines to reduce SDL footprint.
-   Only effective when library is statically linked.
-   You have to manually edit this file. */
-#undef SDL_LEAN_AND_MEAN
+   Only effective when library is statically linked. */
 
 /* Optimized functions from 'SDL_blit_0.c'
    - blit with source bits_per_pixel < 8, palette */
