@@ -1130,7 +1130,7 @@ static bool Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
     return true;
 }
 
-static void Wayland_free_display(SDL_VideoDisplay *display)
+static void Wayland_free_display(SDL_VideoDisplay *display, bool send_event)
 {
     if (display) {
         SDL_DisplayData *display_data = display->internal;
@@ -1154,7 +1154,7 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
             wl_output_destroy(display_data->output);
         }
 
-        SDL_DelVideoDisplay(display->id, false);
+        SDL_DelVideoDisplay(display->id, send_event);
     }
 }
 
@@ -1282,7 +1282,7 @@ static void display_remove_global(void *data, struct wl_registry *registry, uint
     for (int i = 0; i < d->output_count; ++i) {
         SDL_DisplayData *disp = d->output_list[i];
         if (disp->registry_id == id) {
-            Wayland_free_display(SDL_GetVideoDisplay(disp->display));
+            Wayland_free_display(SDL_GetVideoDisplay(disp->display), true);
 
             if (i < d->output_count) {
                 SDL_memmove(&d->output_list[i], &d->output_list[i + 1], sizeof(SDL_DisplayData *) * (d->output_count - i - 1));
@@ -1429,7 +1429,7 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
 
     for (i = _this->num_displays - 1; i >= 0; --i) {
         SDL_VideoDisplay *display = _this->displays[i];
-        Wayland_free_display(display);
+        Wayland_free_display(display, false);
     }
     SDL_free(data->output_list);
 
