@@ -166,7 +166,7 @@ bool SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask,
 {
     Uint32 masks[4];
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     // Partial support for SDL_Surface with FOURCC
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
         // Not a format that uses masks
@@ -1464,7 +1464,7 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
 
     // Clear out any previous mapping
     map = &src->map;
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
     if (src->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         SDL_UnRLESurface(src, true);
     }

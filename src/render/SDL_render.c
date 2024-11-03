@@ -1451,7 +1451,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         renderer->textures = texture;
 
         if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
             texture->yuv = SDL_SW_CreateYUVTexture(texture->format, texture->colorspace, w, h);
 #else
             SDL_SetError("SDL not built with YUV support");
@@ -1972,7 +1972,7 @@ bool SDL_GetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode *scaleMode)
     return true;
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
                                 const void *pixels, int pitch)
 {
@@ -2084,7 +2084,7 @@ bool SDL_UpdateTexture(SDL_Texture *texture, const SDL_Rect *rect, const void *p
 
     if (real_rect.w == 0 || real_rect.h == 0) {
         return true; // nothing to do.
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     } else if (texture->yuv) {
         return SDL_UpdateTextureYUV(texture, &real_rect, pixels, pitch);
 #endif
@@ -2099,7 +2099,7 @@ bool SDL_UpdateTexture(SDL_Texture *texture, const SDL_Rect *rect, const void *p
     }
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rect,
                                       const Uint8 *Yplane, int Ypitch,
                                       const Uint8 *Uplane, int Upitch,
@@ -2208,7 +2208,7 @@ bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
                          const Uint8 *Uplane, int Upitch,
                          const Uint8 *Vplane, int Vpitch)
 {
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     SDL_Renderer *renderer;
     SDL_Rect real_rect;
 
@@ -2274,7 +2274,7 @@ bool SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
                         const Uint8 *Yplane, int Ypitch,
                         const Uint8 *UVplane, int UVpitch)
 {
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     SDL_Renderer *renderer;
     SDL_Rect real_rect;
 
@@ -2330,7 +2330,7 @@ bool SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
 #endif
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool SDL_LockTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
                               void **pixels, int *pitch)
 {
@@ -2367,7 +2367,7 @@ bool SDL_LockTexture(SDL_Texture *texture, const SDL_Rect *rect, void **pixels, 
         rect = &full_rect;
     }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (texture->yuv) {
         if (!FlushRenderCommandsIfTextureNeeded(texture)) {
             return false;
@@ -2419,7 +2419,7 @@ bool SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect, SDL_Su
     return true;
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static void SDL_UnlockTextureYUV(SDL_Texture *texture)
 {
     SDL_Texture *native = texture->native;
@@ -2468,7 +2468,7 @@ void SDL_UnlockTexture(SDL_Texture *texture)
     if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
         return;
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (texture->yuv) {
         SDL_UnlockTextureYUV(texture);
     } else
@@ -5032,7 +5032,7 @@ static void SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
     if (texture->native) {
         SDL_DestroyTextureInternal(texture->native, is_destroying);
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (texture->yuv) {
         SDL_SW_DestroyYUVTexture(texture->yuv);
     }

@@ -1722,7 +1722,7 @@ bool SDL_LockSurface(SDL_Surface *surface)
     }
 
     if (!surface->locked) {
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
         // Perform the lock
         if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
             SDL_UnRLESurface(surface, true);
@@ -1753,7 +1753,7 @@ void SDL_UnlockSurface(SDL_Surface *surface)
         return;
     }
 
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
     // Update RLE encoded surface with new data
     if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         surface->internal_flags &= ~SDL_INTERNAL_SURFACE_RLEACCEL; // stop lying
@@ -2276,7 +2276,7 @@ bool SDL_ConvertPixelsAndColorspace(int width, int height,
         dst_colorspace = SDL_GetDefaultColorspaceForFormat(dst_format);
     }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (SDL_ISPIXELFORMAT_FOURCC(src_format) && SDL_ISPIXELFORMAT_FOURCC(dst_format)) {
         return SDL_ConvertPixels_YUV_to_YUV(width, height, src_format, src_colorspace, src_properties, src, src_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch);
     } else if (SDL_ISPIXELFORMAT_FOURCC(src_format)) {
@@ -2959,7 +2959,7 @@ void SDL_DestroySurface(SDL_Surface *surface)
     while (surface->locked > 0) {
         SDL_UnlockSurface(surface);
     }
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
     if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         SDL_UnRLESurface(surface, false);
     }

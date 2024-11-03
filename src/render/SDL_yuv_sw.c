@@ -22,7 +22,7 @@
 
 // This is the software implementation of the YUV texture support
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 
 #include "SDL_yuv_sw_c.h"
 #include "../video/SDL_surface_c.h"

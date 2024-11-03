@@ -125,7 +125,7 @@ typedef struct
     D3D11_FILTER scaleMode;
     D3D11_Shader shader;
     const float *YCbCr_matrix;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     // YV12 texture support
     bool yuv;
     ID3D11Texture2D *mainTextureU;
@@ -1214,7 +1214,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
     }
     SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_POINTER, textureData->mainTexture);
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
         textureData->yuv = true;
@@ -1288,7 +1288,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     if (FAILED(result)) {
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateShaderResourceView"), result);
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
         result = ID3D11Device_CreateShaderResourceView(rendererData->d3dDevice,
                                                        (ID3D11Resource *)textureData->mainTextureU,
@@ -1357,7 +1357,7 @@ static void D3D11_DestroyTexture(SDL_Renderer *renderer,
     SAFE_RELEASE(data->mainTextureResourceView);
     SAFE_RELEASE(data->mainTextureRenderTargetView);
     SAFE_RELEASE(data->stagingTexture);
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     SAFE_RELEASE(data->mainTextureU);
     SAFE_RELEASE(data->mainTextureResourceViewU);
     SAFE_RELEASE(data->mainTextureV);
@@ -1472,7 +1472,7 @@ static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Te
     return true;
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const SDL_Rect *rect,
                                  const Uint8 *Yplane, int Ypitch,
@@ -1496,7 +1496,7 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("Texture is not currently available");
     }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (textureData->nv12) {
         const Uint8 *Yplane = (const Uint8 *)srcPixels;
         const Uint8 *UVplane = Yplane + rect->h * srcPitch;
@@ -1524,7 +1524,7 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     return true;
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
                                   const Uint8 *Yplane, int Ypitch,
@@ -1676,7 +1676,7 @@ static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (textureData->yuv || textureData->nv12) {
         // It's more efficient to upload directly...
         if (!textureData->pixels) {
@@ -1753,7 +1753,7 @@ static void D3D11_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (!textureData) {
         return;
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (textureData->yuv || textureData->nv12) {
         const SDL_Rect *rect = &textureData->locked_rect;
         void *pixels =
@@ -2332,7 +2332,7 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     default:
         return SDL_SetError("Unknown scale mode: %d\n", textureData->scaleMode);
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
         ID3D11ShaderResourceView *shaderResources[3];
 
@@ -2692,7 +2692,7 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     renderer->SupportsBlendMode = D3D11_SupportsBlendMode;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = D3D11_UpdateTextureYUV;
     renderer->UpdateTextureNV = D3D11_UpdateTextureNV;
 #endif
