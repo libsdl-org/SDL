@@ -127,10 +127,9 @@
  * [blog post](https://moonside.games/posts/layers-all-the-way-down/)
  * explaining this situation.
  *
- * It is optimal for apps to pre-compile the shader formats they might use,
- * but for ease of use SDL provides a separate project,
- * [SDL_gpu_shadercross](https://github.com/libsdl-org/SDL_gpu_shadercross)
- * , for performing runtime shader cross-compilation.
+ * SDL provides a satellite library, [SDL_gpu_shadercross](https://github.com/libsdl-org/SDL_gpu_shadercross)
+ * to more easily facilitate use of shaders. The library can be used at runtime to perform shader cross-compilation,
+ * and it can also be used via command-line interface to pre-compile different shader formats.
  *
  * This is an extremely quick overview that leaves out several important
  * details. Already, though, one can see that GPU programming can be quite
@@ -782,7 +781,7 @@ typedef Uint32 SDL_GPUShaderFormat;
 #define SDL_GPU_SHADERFORMAT_INVALID  0
 #define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 0) /**< Shaders for NDA'd platforms. */
 #define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1) /**< SPIR-V shaders for Vulkan. */
-#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_0 shaders for D3D11. */
+#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_0 shaders for D3D11. Only allowed in legacy mode. */
 #define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL shaders for D3D12. */
 #define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal. */
 #define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< Precompiled metallib shaders for Metal. */
@@ -1953,7 +1952,7 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  *   energy efficiency over maximum GPU performance, defaults to false.
  * - `SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING`: the name of the GPU driver to
  *   use, if a specific one is desired.
- * - `SDL_PROP_GPU_DEVICE_CREATE_LEGACY_MODE_BOOLEAN`: enable legacy mode, which enables the D3D11 backend and disables features not supported by the 11_0 feature set, defaults to false.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_LEGACYMODE_BOOLEAN`: enable legacy mode, which allows the D3D11 backend and disables features not supported by the 11_0 feature set, defaults to false. Useful for applications that wish to target legacy hardware.
  *
  * These are the current shader format properties:
  *
