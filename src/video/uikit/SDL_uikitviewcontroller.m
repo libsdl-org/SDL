@@ -80,7 +80,6 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_IPHONE_KEYBOARD
     SDLUITextField *textField;
-    BOOL hardwareKeyboard;
     BOOL showingKeyboard;
     BOOL hidingKeyboard;
     BOOL rotatingOrientation;
@@ -98,7 +97,6 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_IPHONE_KEYBOARD
         [self initKeyboard];
-        hardwareKeyboard = NO;
         showingKeyboard = NO;
         hidingKeyboard = NO;
         rotatingOrientation = NO;
