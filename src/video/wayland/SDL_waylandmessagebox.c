@@ -146,6 +146,9 @@ bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *butto
             argv[argc++] = "--extra-button=\"\"";
         }
     }
+    if (messageboxdata->numbuttons == 0) {
+        argv[argc++] = "--extra-button=OK";
+    }
     argv[argc] = NULL;
 
     SDL_PropertiesID props = SDL_CreateProperties();
