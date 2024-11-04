@@ -665,8 +665,8 @@ extern SDL_DECLSPEC SDL_DisplayMode ** SDLCALL SDL_GetFullscreenDisplayModes(SDL
  *                     for the desktop refresh rate.
  * \param include_high_density_modes boolean to include high density modes in
  *                                   the search.
- * \param closest a pointer filled in with the closest display mode equal to or
- *             larger than the desired mode.
+ * \param closest a pointer filled in with the closest display mode equal to
+ *                or larger than the desired mode.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
