@@ -2335,7 +2335,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         SDL_GetDisplayUsableBounds(displayID, &bounds);
         if (w > bounds.w || h > bounds.h) {
             // This window is larger than the usable bounds, just center on the display
-            SDL_GetDisplayUsableBounds(displayID, &bounds);
+            SDL_GetDisplayBounds(displayID, &bounds);
         }
         if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISUNDEFINED(x)) {
             if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
