@@ -392,8 +392,12 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
     if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, false)) {
         format_flags |= SDL_GPU_SHADERFORMAT_SPIRV;
     }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN, false) && SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_LEGACYMODE_BOOLEAN, false)) {
-        format_flags |= SDL_GPU_SHADERFORMAT_DXBC;
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN, false)) {
+        if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_LEGACYMODE_BOOLEAN, false)) {
+            format_flags |= SDL_GPU_SHADERFORMAT_DXBC;
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "%s", "DXBC is only supported in legacy mode but legacy mode is not enabled!");
+        }
     }
     if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, false)) {
         format_flags |= SDL_GPU_SHADERFORMAT_DXIL;
@@ -457,9 +461,6 @@ static void SDL_GPU_FillProperties(
     }
     if (format_flags & SDL_GPU_SHADERFORMAT_SPIRV) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, true);
-    }
-    if (format_flags & SDL_GPU_SHADERFORMAT_DXBC) {
-        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN, true);
     }
     if (format_flags & SDL_GPU_SHADERFORMAT_DXIL) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, true);

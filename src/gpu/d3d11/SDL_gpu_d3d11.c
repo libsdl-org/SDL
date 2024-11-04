@@ -5954,7 +5954,7 @@ static bool D3D11_PrepareDriver(SDL_VideoDevice *this)
     SDL_SharedObject *d3d11_dll;
     SDL_SharedObject *dxgi_dll;
     PFN_D3D11_CREATE_DEVICE D3D11CreateDeviceFunc;
-    D3D_FEATURE_LEVEL levels[] = { D3D_FEATURE_LEVEL_11_1 };
+    D3D_FEATURE_LEVEL levels[] = { D3D_FEATURE_LEVEL_11_0 };
     PFN_CREATE_DXGI_FACTORY1 CreateDxgiFactoryFunc;
     HRESULT res;
 
@@ -5992,7 +5992,7 @@ static bool D3D11_PrepareDriver(SDL_VideoDevice *this)
     SDL_UnloadObject(d3d11_dll);
 
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D11: Could not create D3D11Device with feature level 11_1");
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D11: Could not create D3D11Device with feature level 11_0");
         return false;
     }
 
@@ -6288,7 +6288,7 @@ static SDL_GPUDevice *D3D11_CreateDevice(bool debugMode, bool preferLowPower, SD
     D3D11Renderer *renderer;
     PFN_CREATE_DXGI_FACTORY1 CreateDxgiFactoryFunc;
     PFN_D3D11_CREATE_DEVICE D3D11CreateDeviceFunc;
-    D3D_FEATURE_LEVEL levels[] = { D3D_FEATURE_LEVEL_11_1 };
+    D3D_FEATURE_LEVEL levels[] = { D3D_FEATURE_LEVEL_11_0 };
     IDXGIFactory4 *factory4;
     IDXGIFactory5 *factory5;
     IDXGIFactory6 *factory6;
@@ -6418,6 +6418,26 @@ tryCreateDevice:
     }
 
     CHECK_D3D11_ERROR_AND_RETURN("Could not create D3D11 device", NULL);
+
+    // Check for constant buffer partial updates
+    D3D11_FEATURE_DATA_D3D11_OPTIONS options;
+    res = ID3D11Device_CheckFeatureSupport(
+        d3d11Device,
+        D3D11_FEATURE_D3D11_OPTIONS,
+        &options,
+        sizeof(D3D11_FEATURE_DATA_D3D11_OPTIONS));
+    if (FAILED(res)) {
+        D3D11_INTERNAL_SetError(renderer, "ID3D11Device_CheckFeatureSupport failed!", res);
+        ID3D11DeviceContext_Release(renderer->immediateContext);
+        ID3D11Device_Release(d3d11Device);
+        return NULL;
+    }
+
+    if (!options.ConstantBufferPartialUpdate || !options.ConstantBufferOffsetting) {
+        ID3D11DeviceContext_Release(renderer->immediateContext);
+        ID3D11Device_Release(d3d11Device);
+        SET_STRING_ERROR_AND_RETURN("Device does not support constant buffer partial update and offsetting!", NULL)
+    }
 
     // The actual device we want is the ID3D11Device1 interface...
     res = ID3D11Device_QueryInterface(
