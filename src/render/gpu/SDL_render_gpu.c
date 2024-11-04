@@ -1225,6 +1225,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, debug);
     SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, lowpower);
+    SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_LEGACYMODE_BOOLEAN, true); // Render doesn't need features that would prevent legacy mode
 
     GPU_FillSupportedShaderFormats(create_props);
     data->device = SDL_CreateGPUDeviceWithProperties(create_props);

@@ -392,7 +392,7 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
     if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, false)) {
         format_flags |= SDL_GPU_SHADERFORMAT_SPIRV;
     }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN, false)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN, false) && SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_LEGACYMODE_BOOLEAN, false)) {
         format_flags |= SDL_GPU_SHADERFORMAT_DXBC;
     }
     if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, false)) {
@@ -416,6 +416,10 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
             if (SDL_strcasecmp(gpudriver, backends[i]->name) == 0) {
                 if (!(backends[i]->shader_formats & format_flags)) {
                     SDL_SetError("Required shader format for backend %s not provided!", gpudriver);
+                    return NULL;
+                }
+                if (!SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_LEGACYMODE_BOOLEAN, false) && SDL_strcasecmp(gpudriver, "direct3d11") == 0) {
+                    SDL_SetError("Direct3D11 is only enabled in Legacy Mode!");
                     return NULL;
                 }
                 if (backends[i]->PrepareDriver(_this)) {
@@ -467,6 +471,7 @@ static void SDL_GPU_FillProperties(
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN, true);
     }
     SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, debug_mode);
+    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_LEGACYMODE_BOOLEAN, false);
     SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);
 }
 #endif // SDL_GPU_DISABLED
@@ -521,6 +526,7 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
 #ifndef SDL_GPU_DISABLED
     bool debug_mode;
     bool preferLowPower;
+    bool legacy_mode;
     SDL_GPUDevice *result = NULL;
     const SDL_GPUBootstrap *selectedBackend;
 
@@ -528,12 +534,14 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
     if (selectedBackend != NULL) {
         debug_mode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, true);
         preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
+        legacy_mode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_LEGACYMODE_BOOLEAN, false);
 
         result = selectedBackend->CreateDevice(debug_mode, preferLowPower, props);
         if (result != NULL) {
             result->backend = selectedBackend->name;
             result->shader_formats = selectedBackend->shader_formats;
             result->debug_mode = debug_mode;
+            result->legacy_mode = legacy_mode;
         }
     }
     return result;
@@ -1953,6 +1961,13 @@ SDL_GPUComputePass *SDL_BeginGPUComputePass(
             TextureCommonHeader *header = (TextureCommonHeader *)storage_texture_bindings[i].texture;
             if (!(header->info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) && !(header->info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE)) {
                 SDL_assert_release(!"Texture must be created with COMPUTE_STORAGE_WRITE or COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE flag");
+                return NULL;
+            }
+        }
+
+        if (COMMAND_BUFFER_DEVICE->legacy_mode) {
+            if (num_storage_buffer_bindings + num_storage_texture_bindings > 8) {
+                SDL_assert_release(!"Legacy mode only supports 8 total read-write compute bindings!");
                 return NULL;
             }
         }

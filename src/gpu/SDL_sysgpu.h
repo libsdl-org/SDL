@@ -855,6 +855,9 @@ struct SDL_GPUDevice
 
     // Store this for SDL_gpu.c's debug layer
     bool debug_mode;
+
+    // Store this for SDL_gpu.c
+    bool legacy_mode;
 };
 
 #define ASSIGN_DRIVER_FUNC(func, name) \
