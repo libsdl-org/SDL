@@ -4264,15 +4264,28 @@ bool SDL_RenderTexture9Grid(SDL_Renderer *renderer, SDL_Texture *texture, const 
     }
 
     if (scale <= 0.0f || scale == 1.0f) {
-        dst_left_width = left_width;
-        dst_right_width = right_width;
-        dst_top_height = top_height;
-        dst_bottom_height = bottom_height;
+        dst_left_width = SDL_ceilf(left_width);
+        dst_right_width = SDL_ceilf(right_width);
+        dst_top_height = SDL_ceilf(top_height);
+        dst_bottom_height = SDL_ceilf(bottom_height);
     } else {
-        dst_left_width = (left_width * scale);
-        dst_right_width = (right_width * scale);
-        dst_top_height = (top_height * scale);
-        dst_bottom_height = (bottom_height * scale);
+        dst_left_width = SDL_ceilf(left_width * scale);
+        dst_right_width = SDL_ceilf(right_width * scale);
+        dst_top_height = SDL_ceilf(top_height * scale);
+        dst_bottom_height = SDL_ceilf(bottom_height * scale);
+    }
+
+    // Center
+    curr_src.x = srcrect->x + left_width;
+    curr_src.y = srcrect->y + top_height;
+    curr_src.w = srcrect->w - left_width - right_width;
+    curr_src.h = srcrect->h - top_height - bottom_height;
+    curr_dst.x = dstrect->x + dst_left_width;
+    curr_dst.y = dstrect->y + dst_top_height;
+    curr_dst.w = dstrect->w - dst_left_width - dst_right_width;
+    curr_dst.h = dstrect->h - dst_top_height - dst_bottom_height;
+    if (!SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst)) {
+        return false;
     }
 
     // Upper-left corner
@@ -4349,19 +4362,6 @@ bool SDL_RenderTexture9Grid(SDL_Renderer *renderer, SDL_Texture *texture, const 
     curr_src.y = srcrect->y + srcrect->h - bottom_height;
     curr_dst.y = dstrect->y + dstrect->h - dst_bottom_height;
     curr_dst.h = dst_bottom_height;
-    if (!SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst)) {
-        return false;
-    }
-
-    // Center
-    curr_src.x = srcrect->x + left_width;
-    curr_src.y = srcrect->y + top_height;
-    curr_src.w = srcrect->w - left_width - right_width;
-    curr_src.h = srcrect->h - top_height - bottom_height;
-    curr_dst.x = dstrect->x + dst_left_width;
-    curr_dst.y = dstrect->y + dst_top_height;
-    curr_dst.w = dstrect->w - dst_left_width - dst_right_width;
-    curr_dst.h = dstrect->h - dst_top_height - dst_bottom_height;
     if (!SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst)) {
         return false;
     }
