@@ -61,7 +61,7 @@ static SDL_GLContext *context = NULL;
 static int depth = 16;
 static GLES2_Context ctx;
 
-static int LoadContext(GLES2_Context *data)
+static bool LoadContext(GLES2_Context *data)
 {
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #define __SDL_NOGETPROCADDR__
@@ -83,7 +83,7 @@ static int LoadContext(GLES2_Context *data)
 
 #include "../src/render/opengles2/SDL_gles2funcs.h"
 #undef SDL_PROC
-    return 0;
+    return true;
 }
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
@@ -523,7 +523,7 @@ int main(int argc, char *argv[])
     }
 
     /* Important: call this *after* creating the context */
-    if (LoadContext(&ctx) < 0) {
+    if (!LoadContext(&ctx)) {
         SDL_Log("Could not load GLES2 functions\n");
         quit(2);
         return 0;
