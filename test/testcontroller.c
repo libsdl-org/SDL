@@ -1077,6 +1077,7 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
     }
 
     HandleGamepadRemapped(id);
+    SetController(id);
 }
 
 static void HandleGamepadRemoved(SDL_JoystickID id)
