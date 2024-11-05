@@ -267,13 +267,21 @@ static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *
     return false;
 }
 
-static bool QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char **device_name)
+static bool QueryDeviceName(LPDIRECTINPUTDEVICE8 device, Uint16 vendor_id, Uint16 product_id, char **manufacturer_string, char **product_string)
 {
     DIPROPSTRING dipstr;
 
-    if (!device || !device_name) {
+    if (!device || !manufacturer_string || !product_string) {
         return false;
     }
+
+#ifdef SDL_JOYSTICK_HIDAPI
+    *manufacturer_string = HIDAPI_GetDeviceManufacturerName(vendor_id, product_id);
+    *product_string = HIDAPI_GetDeviceProductName(vendor_id, product_id);
+    if (*product_string) {
+        return true;
+    }
+#endif
 
     dipstr.diph.dwSize = sizeof(dipstr);
     dipstr.diph.dwHeaderSize = sizeof(dipstr.diph);
@@ -284,7 +292,8 @@ static bool QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char **device_name)
         return false;
     }
 
-    *device_name = WIN_StringToUTF8(dipstr.wsz);
+    *manufacturer_string = NULL;
+    *product_string = WIN_StringToUTF8(dipstr.wsz);
 
     return true;
 }
@@ -460,20 +469,21 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     Uint16 product = 0;
     Uint16 version = 0;
     char *hidPath = NULL;
-    char *name = NULL;
+    char *manufacturer_string = NULL;
+    char *product_string = NULL;
     LPDIRECTINPUTDEVICE8 device = NULL;
 
     // We are only supporting HID devices.
     CHECK(pDeviceInstance->dwDevType & DIDEVTYPE_HID);
 
     CHECK(SUCCEEDED(IDirectInput8_CreateDevice(dinput, &pDeviceInstance->guidInstance, &device, NULL)));
-    CHECK(QueryDeviceName(device, &name));
     CHECK(QueryDevicePath(device, &hidPath));
     CHECK(QueryDeviceInfo(device, &vendor, &product));
+    CHECK(QueryDeviceName(device, vendor, product, &manufacturer_string, &product_string));
 
     CHECK(!SDL_IsXInputDevice(vendor, product, hidPath));
-    CHECK(!SDL_ShouldIgnoreJoystick(vendor, product, version, name));
-    CHECK(!SDL_JoystickHandledByAnotherDriver(&SDL_WINDOWS_JoystickDriver, vendor, product, version, name));
+    CHECK(!SDL_ShouldIgnoreJoystick(vendor, product, version, product_string));
+    CHECK(!SDL_JoystickHandledByAnotherDriver(&SDL_WINDOWS_JoystickDriver, vendor, product, version, product_string));
 
     pNewJoystick = *(JoyStick_DeviceData **)pContext;
     while (pNewJoystick) {
@@ -507,13 +517,13 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     SDL_strlcpy(pNewJoystick->path, hidPath, SDL_arraysize(pNewJoystick->path));
     SDL_memcpy(&pNewJoystick->dxdevice, pDeviceInstance, sizeof(DIDEVICEINSTANCE));
 
-    pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, name);
+    pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, manufacturer_string, product_string);
     CHECK(pNewJoystick->joystickname);
 
     if (vendor && product) {
-        pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, NULL, name, 0, 0);
+        pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, manufacturer_string, product_string, 0, 0);
     } else {
-        pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, version, NULL, name, 0, 0);
+        pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, version, manufacturer_string, product_string, 0, 0);
     }
 
     WINDOWS_AddJoystickDevice(pNewJoystick);
@@ -526,7 +536,8 @@ err:
     }
 
     SDL_free(hidPath);
-    SDL_free(name);
+    SDL_free(manufacturer_string);
+    SDL_free(product_string);
 
     if (device) {
         IDirectInputDevice8_Release(device);
