@@ -1027,7 +1027,10 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
             SDL_PropertiesID props = SDL_GetGamepadProperties(gamepad);
             const char *name = SDL_GetGamepadName(gamepad);
             const char *path = SDL_GetGamepadPath(gamepad);
-            SDL_Log("Opened gamepad %s%s%s\n", name, path ? ", " : "", path ? path : "");
+            SDL_GUID guid = SDL_GetGamepadGUIDForID(id);
+            char guid_string[33];
+            SDL_GUIDToString(guid, guid_string, sizeof(guid_string));
+            SDL_Log("Opened gamepad %s, guid %s%s%s\n", name, guid_string, path ? ", " : "", path ? path : "");
 
             firmware_version = SDL_GetGamepadFirmwareVersion(gamepad);
             if (firmware_version) {
