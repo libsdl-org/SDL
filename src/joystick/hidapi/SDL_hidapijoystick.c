@@ -1285,6 +1285,38 @@ bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version,
     return result;
 }
 
+char *HIDAPI_GetDeviceProductName(Uint16 vendor_id, Uint16 product_id)
+{
+    SDL_HIDAPI_Device *device;
+    char *name = NULL;
+
+    SDL_LockJoysticks();
+    for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        if (vendor_id == device->vendor_id && product_id == device->product_id) {
+            name = SDL_strdup(device->product_string);
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return name;
+}
+
+char *HIDAPI_GetDeviceManufacturerName(Uint16 vendor_id, Uint16 product_id)
+{
+    SDL_HIDAPI_Device *device;
+    char *name = NULL;
+
+    SDL_LockJoysticks();
+    for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        if (vendor_id == device->vendor_id && product_id == device->product_id) {
+            name = SDL_strdup(device->manufacturer_string);
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return name;
+}
+
 SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_GUID guid)
 {
     SDL_HIDAPI_Device *device;
