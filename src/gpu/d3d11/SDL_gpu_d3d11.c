@@ -842,8 +842,7 @@ struct D3D11Renderer
 
     ID3D11SamplerState *nullSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE * 2];
 
-    ID3D11UnorderedAccessView *nullUAVs[MAX_COMPUTE_WRITE_TEXTURES +
-                                    MAX_COMPUTE_WRITE_BUFFERS];
+    ID3D11UnorderedAccessView *nullUAVs[8]; // Max UAVs in feature set 11_0 is 8
 };
 
 // Logging
@@ -4342,7 +4341,7 @@ static void D3D11_BeginComputePass(
     D3D11TextureSubresource *textureSubresource;
     D3D11BufferContainer *bufferContainer;
     D3D11Buffer *buffer;
-    ID3D11UnorderedAccessView *uavs[MAX_COMPUTE_WRITE_TEXTURES + MAX_COMPUTE_WRITE_BUFFERS];
+    ID3D11UnorderedAccessView *uavs[8]; // Max UAVs in feature set 11_0 is 8
 
     for (Uint32 i = 0; i < numStorageTextureBindings; i += 1) {
         textureContainer = (D3D11TextureContainer *)storageTextureBindings[i].texture;
@@ -4647,7 +4646,7 @@ static void D3D11_EndComputePass(
     ID3D11DeviceContext_CSSetUnorderedAccessViews(
         d3d11CommandBuffer->context,
         0,
-        MAX_COMPUTE_WRITE_TEXTURES + MAX_COMPUTE_WRITE_BUFFERS,
+        8,
         renderer->nullUAVs,
         NULL);
 
