@@ -588,111 +588,6 @@ void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouse
     SDL_PrivateSendMouseMotion(timestamp, window, mouseID, relative, x, y);
 }
 
-static float CalculateSystemScale(SDL_Mouse *mouse, SDL_Window *window, const float *x, const float *y)
-{
-    int i;
-    int n = mouse->num_system_scale_values;
-    float *v = mouse->system_scale_values;
-    float speed, coef, scale;
-
-    // If we're using a single scale value, return that
-    if (n == 1) {
-        scale = v[0];
-    } else {
-        speed = SDL_sqrtf((*x * *x) + (*y * *y));
-        for (i = 0; i < (n - 2); i += 2) {
-            if (speed < v[i + 2]) {
-                break;
-            }
-        }
-        if (i == (n - 2)) {
-            scale = v[n - 1];
-        } else if (speed <= v[i]) {
-            scale = v[i + 1];
-        } else {
-            coef = (speed - v[i]) / (v[i + 2] - v[i]);
-            scale = v[i + 1] + (coef * (v[i + 3] - v[i + 1]));
-        }
-    }
-#ifdef SDL_PLATFORM_WIN32
-    {
-        // On Windows the mouse speed is affected by the content scale
-        SDL_VideoDisplay *display;
-
-        if (window) {
-            display = SDL_GetVideoDisplayForWindow(window);
-        } else {
-            display = SDL_GetVideoDisplay(SDL_GetPrimaryDisplay());
-        }
-        if (display) {
-            scale *= display->content_scale;
-        }
-    }
-#endif
-    return scale;
-}
-
-// You can set either a single scale, or a set of {speed, scale} values in ascending order
-bool SDL_SetMouseSystemScale(int num_values, const float *values)
-{
-    SDL_Mouse *mouse = SDL_GetMouse();
-    float *v;
-
-    if (num_values == mouse->num_system_scale_values &&
-        SDL_memcmp(values, mouse->system_scale_values, num_values * sizeof(*values)) == 0) {
-        // Nothing has changed
-        return true;
-    }
-
-    if (num_values < 1) {
-        return SDL_SetError("You must have at least one scale value");
-    }
-
-    if (num_values > 1) {
-        // Validate the values
-        int i;
-
-        if (num_values < 4 || (num_values % 2) != 0) {
-            return SDL_SetError("You must pass a set of {speed, scale} values");
-        }
-
-        for (i = 0; i < (num_values - 2); i += 2) {
-            if (values[i] >= values[i + 2]) {
-                return SDL_SetError("Speed values must be in ascending order");
-            }
-        }
-    }
-
-    v = (float *)SDL_realloc(mouse->system_scale_values, num_values * sizeof(*values));
-    if (!v) {
-        return false;
-    }
-    SDL_memcpy(v, values, num_values * sizeof(*values));
-
-    mouse->num_system_scale_values = num_values;
-    mouse->system_scale_values = v;
-    return true;
-}
-
-static void GetScaledMouseDeltas(SDL_Mouse *mouse, SDL_Window *window, float *x, float *y)
-{
-    if (mouse->relative_mode) {
-        if (mouse->enable_relative_speed_scale) {
-            *x *= mouse->relative_speed_scale;
-            *y *= mouse->relative_speed_scale;
-        } else if (mouse->enable_relative_system_scale && mouse->num_system_scale_values > 0) {
-            float relative_system_scale = CalculateSystemScale(mouse, window, x, y);
-            *x *= relative_system_scale;
-            *y *= relative_system_scale;
-        }
-    } else {
-        if (mouse->enable_normal_speed_scale) {
-            *x *= mouse->normal_speed_scale;
-            *y *= mouse->normal_speed_scale;
-        }
-    }
-}
-
 static void ConstrainMousePosition(SDL_Mouse *mouse, SDL_Window *window, float *x, float *y)
 {
     /* make sure that the pointers find themselves inside the windows,
@@ -786,7 +681,21 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
     }
 
     if (relative) {
-        GetScaledMouseDeltas(mouse, window, &x, &y);
+        if (mouse->relative_mode) {
+            if (mouse->enable_relative_speed_scale) {
+                x *= mouse->relative_speed_scale;
+                y *= mouse->relative_speed_scale;
+            } else if (mouse->enable_relative_system_scale) {
+                if (mouse->ApplySystemScale) {
+                    mouse->ApplySystemScale(mouse->system_scale_data, timestamp, window, mouseID, &x, &y);
+                }
+            }
+        } else {
+            if (mouse->enable_normal_speed_scale) {
+                x *= mouse->normal_speed_scale;
+                y *= mouse->normal_speed_scale;
+            }
+        }
         xrel = x;
         yrel = y;
         x = (mouse->last_x + xrel);
@@ -1110,12 +1019,6 @@ void SDL_QuitMouse(void)
         mouse->clickstate = NULL;
     }
     mouse->num_clickstates = 0;
-
-    if (mouse->system_scale_values) {
-        SDL_free(mouse->system_scale_values);
-        mouse->system_scale_values = NULL;
-    }
-    mouse->num_system_scale_values = 0;
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME,
                         SDL_MouseDoubleClickTimeChanged, mouse);

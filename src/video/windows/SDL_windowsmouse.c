@@ -29,6 +29,7 @@
 #include "../SDL_video_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../joystick/usb_ids.h"
+#include "../../core/windows/SDL_windows.h" // for checking windows version
 
 
 typedef struct CachedCursor
@@ -47,9 +48,22 @@ struct SDL_CursorData
     HCURSOR cursor;
 };
 
+typedef struct
+{
+    Uint64 xs[5];
+    Uint64 ys[5];
+    Sint64 residual[2];
+    Uint32 dpiscale;
+    Uint32 dpidenom;
+    int last_node;
+    bool enhanced;
+    bool dpiaware;
+} WIN_MouseData;
+
 DWORD SDL_last_warp_time = 0;
 HCURSOR SDL_cursor = NULL;
 static SDL_Cursor *SDL_blank_cursor = NULL;
+static WIN_MouseData WIN_system_scale_data;
 
 static SDL_Cursor *WIN_CreateCursorAndData(HCURSOR hcursor)
 {
@@ -521,6 +535,95 @@ static SDL_MouseButtonFlags WIN_GetGlobalMouseState(float *x, float *y)
     return result;
 }
 
+static void WIN_ApplySystemScale(void *internal, Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float *x, float *y)
+{
+    if (!internal) {
+        return;
+    }
+    WIN_MouseData *data = (WIN_MouseData *)internal;
+
+    SDL_VideoDisplay *display = window ? SDL_GetVideoDisplayForWindow(window) : SDL_GetVideoDisplay(SDL_GetPrimaryDisplay());
+
+    Sint64 ix = (Sint64)*x * 65536;
+    Sint64 iy = (Sint64)*y * 65536;
+    Uint32 dpi = display ? (Uint32)(display->content_scale * USER_DEFAULT_SCREEN_DPI) : USER_DEFAULT_SCREEN_DPI;
+
+    if (!data->enhanced) { // early return if flat scale
+        dpi = data->dpiscale * (data->dpiaware ? dpi : USER_DEFAULT_SCREEN_DPI);
+        ix *= dpi;
+        iy *= dpi;
+        ix /= USER_DEFAULT_SCREEN_DPI;
+        iy /= USER_DEFAULT_SCREEN_DPI;
+        ix /= 32;
+        iy /= 32;
+        // data->residual[0] += ix;
+        // data->residual[1] += iy;
+        // ix = 65536 * (data->residual[0] / 65536);
+        // iy = 65536 * (data->residual[1] / 65536);
+        // data->residual[0] -= ix;
+        // data->residual[1] -= iy;
+        *x = (float)ix / 65536.0f;
+        *y = (float)iy / 65536.0f;
+        return;
+    }
+
+    Uint64 *xs = data->xs;
+    Uint64 *ys = data->ys;
+    Uint64 absx = SDL_abs(ix);
+    Uint64 absy = SDL_abs(iy);
+    Uint64 speed = SDL_min(absx, absy) + (SDL_max(absx, absy) << 1); // super cursed approximation used by Windows
+    if (speed == 0) {
+        return;
+    }
+
+    int i, j, k;
+    for (i = 1; i < 5; i++) {
+        j = i;
+        if (speed < xs[j]) {
+            break;
+        }
+    }
+    i -= 1;
+    j -= 1;
+    k = data->last_node;
+    data->last_node = j;
+
+    Uint32 denom = data->dpidenom;
+    Sint64 scale = 0;
+    Sint64 xdiff = xs[j+1] - xs[j];
+    Sint64 ydiff = ys[j+1] - ys[j];
+    if (xdiff != 0) {
+        Sint64 slope = ydiff / xdiff;
+        Sint64 inter = slope * xs[i] - ys[i];
+        scale += slope - inter / speed;
+    }
+
+    if (j > k) {
+        denom <<= 1;
+        xdiff = xs[k+1] - xs[k];
+        ydiff = ys[k+1] - ys[k];
+        if (xdiff != 0) {
+            Sint64 slope = ydiff / xdiff;
+            Sint64 inter = slope * xs[k] - ys[k];
+            scale += slope - inter / speed;
+        }
+    }
+
+    scale *= dpi;
+    ix *= scale;
+    iy *= scale;
+    ix /= denom;
+    iy /= denom;
+    // data->residual[0] += ix;
+    // data->residual[1] += iy;
+    // ix = 65536 * (data->residual[0] / 65536);
+    // iy = 65536 * (data->residual[1] / 65536);
+    // data->residual[0] -= ix;
+    // data->residual[1] -= iy;
+    *x = (float)ix / 65536.0f;
+    *y = (float)iy / 65536.0f;
+}
+
 void WIN_InitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -534,6 +637,8 @@ void WIN_InitMouse(SDL_VideoDevice *_this)
     mouse->SetRelativeMouseMode = WIN_SetRelativeMouseMode;
     mouse->CaptureMouse = WIN_CaptureMouse;
     mouse->GetGlobalMouseState = WIN_GetGlobalMouseState;
+    mouse->ApplySystemScale = WIN_ApplySystemScale;
+    mouse->system_scale_data = &WIN_system_scale_data;
 
     SDL_SetDefaultCursor(WIN_CreateDefaultCursor());
 
@@ -550,101 +655,68 @@ void WIN_QuitMouse(SDL_VideoDevice *_this)
     }
 }
 
-/* For a great description of how the enhanced mouse curve works, see:
- * https://superuser.com/questions/278362/windows-mouse-acceleration-curve-smoothmousexcurve-and-smoothmouseycurve
- * http://www.esreality.com/?a=post&id=1846538/
- */
-static bool LoadFiveFixedPointFloats(const BYTE *bytes, float *values)
+static void ReadMouseCurve(int v, Uint64 xs[5], Uint64 ys[5])
 {
-    int i;
-
-    for (i = 0; i < 5; ++i) {
-        float fraction = (float)((Uint16)bytes[1] << 8 | bytes[0]) / 65535.0f;
-        float value = (float)(((Uint16)bytes[3] << 8) | bytes[2]) + fraction;
-        *values++ = value;
-        bytes += 8;
-    }
-    return true;
-}
-
-static void WIN_SetEnhancedMouseScale(int mouse_speed)
-{
-    float scale = (float)mouse_speed / 10.0f;
-    HKEY hKey;
-    DWORD dwType = REG_BINARY;
-    BYTE value[40];
-    DWORD length = sizeof(value);
-    int i;
-    float xpoints[5];
-    float ypoints[5];
-    float scale_points[10];
-    const int dpi = USER_DEFAULT_SCREEN_DPI; // FIXME, how do we handle different monitors with different DPI?
-    const float display_factor = 3.5f * (150.0f / dpi);
-
-    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Mouse", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
-        if (RegQueryValueExW(hKey, L"SmoothMouseXCurve", 0, &dwType, value, &length) == ERROR_SUCCESS &&
-            LoadFiveFixedPointFloats(value, xpoints) &&
-            RegQueryValueExW(hKey, L"SmoothMouseYCurve", 0, &dwType, value, &length) == ERROR_SUCCESS &&
-            LoadFiveFixedPointFloats(value, ypoints)) {
-            for (i = 0; i < 5; ++i) {
-                float gain;
-                if (xpoints[i] > 0.0f) {
-                    gain = (ypoints[i] / xpoints[i]) * scale;
-                } else {
-                    gain = 0.0f;
-                }
-                scale_points[i * 2] = xpoints[i];
-                scale_points[i * 2 + 1] = gain / display_factor;
-                // SDL_Log("Point %d = %f,%f\n", i, scale_points[i * 2], scale_points[i * 2 + 1]);
-            }
-            SDL_SetMouseSystemScale(SDL_arraysize(scale_points), scale_points);
-        }
-        RegCloseKey(hKey);
-    }
-}
-
-static void WIN_SetLinearMouseScale(int mouse_speed)
-{
-    static float mouse_speed_scale[] = {
-        0.0f,
-        1 / 32.0f,
-        1 / 16.0f,
-        1 / 8.0f,
-        2 / 8.0f,
-        3 / 8.0f,
-        4 / 8.0f,
-        5 / 8.0f,
-        6 / 8.0f,
-        7 / 8.0f,
-        1.0f,
-        1.25f,
-        1.5f,
-        1.75f,
-        2.0f,
-        2.25f,
-        2.5f,
-        2.75f,
-        3.0f,
-        3.25f,
-        3.5f
+    bool win8 = WIN_IsWindows8OrGreater();
+    DWORD xbuff[10] = {
+        0x00000000, 0,
+        0x00006e15, 0,
+        0x00014000, 0,
+        0x0003dc29, 0,
+        0x00280000, 0
     };
-
-    if (mouse_speed > 0 && mouse_speed < SDL_arraysize(mouse_speed_scale)) {
-        SDL_SetMouseSystemScale(1, &mouse_speed_scale[mouse_speed]);
+    DWORD ybuff[10] = {
+        0x00000000, 0,
+        win8 ? 0x000111fd : 0x00015eb8, 0,
+        win8 ? 0x00042400 : 0x00054ccd, 0,
+        win8 ? 0x0012fc00 : 0x00184ccd, 0,
+        win8 ? 0x01bbc000 : 0x02380000, 0
+    };
+    DWORD xsize = sizeof(xbuff);
+    DWORD ysize = sizeof(ybuff);
+    HKEY open_handle;
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Mouse", 0, KEY_READ, &open_handle) == ERROR_SUCCESS) {
+        RegQueryValueExW(open_handle, L"SmoothMouseXCurve", NULL, NULL, (BYTE*)xbuff, &xsize);
+        RegQueryValueExW(open_handle, L"SmoothMouseYCurve", NULL, NULL, (BYTE*)ybuff, &ysize);
+        RegCloseKey(open_handle);
+    }
+    xs[0] = 0; // first node must always be origin
+    ys[0] = 0; // first node must always be origin
+    int i;
+    for (i = 1; i < 5; i++) {
+        xs[i] = (7 * (Uint64)xbuff[i*2]);
+        ys[i] = (v * (Uint64)ybuff[i*2]) << 17;
     }
 }
 
 void WIN_UpdateMouseSystemScale(void)
 {
-    int mouse_speed;
-    int params[3] = { 0, 0, 0 };
+    SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (SystemParametersInfo(SPI_GETMOUSESPEED, 0, &mouse_speed, 0) &&
-        SystemParametersInfo(SPI_GETMOUSE, 0, params, 0)) {
+    if (mouse->ApplySystemScale == WIN_ApplySystemScale) {
+        mouse->system_scale_data = &WIN_system_scale_data;
+    }
+
+    // always reinitialize to valid defaults, whether fetch was successful or not.
+    WIN_MouseData *data = &WIN_system_scale_data;
+    data->residual[0] = 0;
+    data->residual[1] = 0;
+    data->dpiscale = 32;
+    data->dpidenom = (10 * (WIN_IsWindows8OrGreater() ? 120 : 150)) << 16;
+    data->dpiaware = WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice());
+    data->enhanced = false;
+
+    int v = 10;
+    if (SystemParametersInfo(SPI_GETMOUSESPEED, 0, &v, 0)) {
+        v = SDL_max(1, SDL_min(v, 20));
+        data->dpiscale = SDL_max(SDL_max(v, (v - 2) << 2), (v - 6) << 3);
+    }
+
+    int params[3];
+    if (SystemParametersInfo(SPI_GETMOUSE, 0, &params, 0)) {
+        data->enhanced = params[2] ? true : false;
         if (params[2]) {
-            WIN_SetEnhancedMouseScale(mouse_speed);
-        } else {
-            WIN_SetLinearMouseScale(mouse_speed);
+            ReadMouseCurve(v, data->xs, data->ys);
         }
     }
 }
