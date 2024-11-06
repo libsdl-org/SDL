@@ -1967,7 +1967,7 @@ SDL_GPUComputePass *SDL_BeginGPUComputePass(
         }
 
         if (COMMAND_BUFFER_DEVICE->legacy_mode) {
-            if (num_storage_buffer_bindings + num_storage_texture_bindings > 8) {
+            if (num_storage_buffer_bindings + num_storage_texture_bindings > LEGACY_MAX_TOTAL_COMPUTE_WRITE_RESOURCES) {
                 SDL_assert_release(!"Legacy mode only supports 8 total read-write compute bindings!");
                 return NULL;
             }

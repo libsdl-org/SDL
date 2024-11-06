@@ -388,6 +388,8 @@ static inline Uint32 BytesPerRow(
 #define MAX_PRESENT_COUNT              16
 #define MAX_FRAMES_IN_FLIGHT           3
 
+#define LEGACY_MAX_TOTAL_COMPUTE_WRITE_RESOURCES 8
+
 // Internal Macros
 
 #define EXPAND_ARRAY_IF_NEEDED(arr, elementType, newCount, capacity, newCapacity) \
