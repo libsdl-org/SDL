@@ -664,6 +664,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FlushIO(SDL_IOStream *context);
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_LoadFile
+ * \sa SDL_SaveFile_IO
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, bool closeio);
 
@@ -684,8 +685,45 @@ extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *da
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_LoadFile_IO
+ * \sa SDL_SaveFile
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile(const char *file, size_t *datasize);
+
+/**
+ * Save all the data into an SDL data stream.
+ *
+ * \param src the SDL_IOStream to write all data to.
+ * \param data the data to be written. If datasize is 0, may be NULL or a
+ *        invalid pointer.
+ * \param datasize the number of bytes to be written.
+ * \param closeio if true, calls SDL_CloseIO() on `src` before returning, even
+ *                in the case of an error.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_SaveFile
+ * \sa SDL_LoadFile_IO
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SaveFile_IO(SDL_IOStream *src, const void *data, size_t datasize, bool closeio);
+
+/**
+ * Save all the data into a file path.
+ *
+ * \param file the path to read all available data from.
+ * \param data the data to be written. If datasize is 0, may be NULL or a
+ *        invalid pointer.
+ * \param datasize the number of bytes to be written.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_SaveFile_IO
+ * \sa SDL_LoadFile
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SaveFile(const char *file, const void *data, size_t datasize);
 
 /**
  *  \name Read endian functions
