@@ -748,6 +748,8 @@ public:
 		m_nReportResponseError = -ECONNRESET;
 		pthread_cond_broadcast( &m_cv );
 
+		m_bOpenResult = false;
+
 		if ( bDeleteDevice )
 		{
 			delete m_pDevice;
