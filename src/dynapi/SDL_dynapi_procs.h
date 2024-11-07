@@ -1215,3 +1215,5 @@ SDL_DYNAPI_PROC(SDL_LogOutputFunction,SDL_GetDefaultLogOutputFunction,(void),(),
 SDL_DYNAPI_PROC(bool,SDL_RenderDebugText,(SDL_Renderer *a,float b,float c,const char *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(SDL_Sandbox,SDL_GetSandbox,(void),(),return)
 SDL_DYNAPI_PROC(bool,SDL_CancelGPUCommandBuffer,(SDL_GPUCommandBuffer *a),(a),return)
+SDL_DYNAPI_PROC(bool,SDL_SaveFile_IO,(SDL_IOStream *a,const void *b,size_t c,bool d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(bool,SDL_SaveFile,(const char *a,const void *b,size_t c),(a,b,c),return)

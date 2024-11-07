@@ -1209,3 +1209,5 @@
 #define SDL_RenderDebugText SDL_RenderDebugText_REAL
 #define SDL_GetSandbox SDL_GetSandbox_REAL
 #define SDL_CancelGPUCommandBuffer SDL_CancelGPUCommandBuffer_REAL
+#define SDL_SaveFile_IO SDL_SaveFile_IO_REAL
+#define SDL_SaveFile SDL_SaveFile_REAL

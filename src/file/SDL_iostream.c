@@ -1218,6 +1218,58 @@ void *SDL_LoadFile(const char *file, size_t *datasize)
     return SDL_LoadFile_IO(stream, datasize, true);
 }
 
+bool SDL_SaveFile_IO(SDL_IOStream *src, const void *data, size_t datasize, bool closeio)
+{
+    size_t size_written = 0;
+    size_t size_total = 0;
+    bool success = true;
+
+    if (!src) {
+        SDL_InvalidParamError("src");
+        goto done;
+    }
+
+    if (!data && datasize > 0) {
+        SDL_InvalidParamError("data");
+        goto done;
+    }
+
+    if (datasize > 0) {
+        while (size_total < datasize) {
+            size_written = SDL_WriteIO(src, ((const char *) data) + size_written, datasize - size_written);
+
+            if (size_written <= 0) {
+                if (SDL_GetIOStatus(src) == SDL_IO_STATUS_NOT_READY) {
+                    // Wait for the stream to be ready
+                    SDL_Delay(1);
+                    continue;
+                } else {
+                    success = false;
+                    goto done;
+                }
+            }
+
+            size_total += size_written;
+        }
+    }
+
+done:
+    if (closeio && src) {
+        SDL_CloseIO(src);
+    }
+
+    return success;
+}
+
+bool SDL_SaveFile(const char *file, const void *data, size_t datasize)
+{
+    SDL_IOStream *stream = SDL_IOFromFile(file, "wb");
+    if (!stream) {
+        return false;
+    }
+    return SDL_SaveFile_IO(stream, data, datasize, true);
+}
+
 SDL_PropertiesID SDL_GetIOProperties(SDL_IOStream *context)
 {
     if (!context) {
