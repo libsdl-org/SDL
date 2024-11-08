@@ -101,6 +101,22 @@ extern "C" {
 #define SDL_HINT_ANDROID_BLOCK_ON_PAUSE "SDL_ANDROID_BLOCK_ON_PAUSE"
 
 /**
+ * A variable to control whether low latency audio should be enabled.
+ *
+ * Some devices have poor quality output when this is enabled, but this is usually an improvement in audio latency.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Low latency audio is not enabled.
+ * - "1": Low latency audio is enabled. (default)
+ *
+ * This hint should be set before SDL audio is initialized.
+ *
+ * \since This hint is available since SDL 3.1.8.
+ */
+#define SDL_HINT_ANDROID_LOW_LATENCY_AUDIO "SDL_ANDROID_LOW_LATENCY_AUDIO"
+
+/**
  * A variable to control whether we trap the Android back button to handle it
  * manually.
  *
