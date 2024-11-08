@@ -694,14 +694,14 @@ extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile(const char *file, size_t *datasi
  *
  * \param src the SDL_IOStream to write all data to.
  * \param data the data to be written. If datasize is 0, may be NULL or a
- *        invalid pointer.
+ *             invalid pointer.
  * \param datasize the number of bytes to be written.
  * \param closeio if true, calls SDL_CloseIO() on `src` before returning, even
  *                in the case of an error.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SaveFile
  * \sa SDL_LoadFile_IO
@@ -713,12 +713,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveFile_IO(SDL_IOStream *src, const void *
  *
  * \param file the path to read all available data from.
  * \param data the data to be written. If datasize is 0, may be NULL or a
- *        invalid pointer.
+ *             invalid pointer.
  * \param datasize the number of bytes to be written.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SaveFile_IO
  * \sa SDL_LoadFile
