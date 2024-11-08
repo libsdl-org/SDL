@@ -616,7 +616,6 @@
     <ClCompile Include="..\..\src\audio\SDL_mixer.c" />
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
-    <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c" />
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />

@@ -1178,9 +1178,6 @@
     <ClCompile Include="..\..\src\audio\dummy\SDL_dummyaudio.c">
       <Filter>audio\dummy</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c">
-      <Filter>audio\wasapi</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c">
       <Filter>audio\wasapi</Filter>
     </ClCompile>
