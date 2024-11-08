@@ -124,9 +124,9 @@ static int SDLCALL keyboard_getKeyFromScancode(void *arg)
     SDL_Keycode result;
 
     /* Case where input is valid */
-    result = SDL_GetKeyFromScancode(SDL_SCANCODE_A, SDL_KMOD_NONE, false);
+    result = SDL_GetKeyFromScancode(SDL_SCANCODE_SPACE, SDL_KMOD_NONE, false);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(valid)");
-    SDLTest_AssertCheck(result == SDLK_A, "Verify result from call, expected: %d, got: %" SDL_PRIu32, SDLK_A, result);
+    SDLTest_AssertCheck(result == SDLK_SPACE, "Verify result from call, expected: %d, got: %" SDL_PRIu32, SDLK_SPACE, result);
 
     /* Case where input is zero */
     result = SDL_GetKeyFromScancode(SDL_SCANCODE_UNKNOWN, SDL_KMOD_NONE, false);
