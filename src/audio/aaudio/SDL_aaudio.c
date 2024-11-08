@@ -298,7 +298,6 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
 #endif
 
     aaudio_format_t format;
-#ifdef SET_AUDIO_FORMAT
     if ((device->spec.format == SDL_AUDIO_S32) && (SDL_GetAndroidSDKVersion() >= 31)) {
         format = AAUDIO_FORMAT_PCM_I32;
     } else if (device->spec.format == SDL_AUDIO_F32) {
@@ -308,7 +307,6 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     }
     ctx.AAudioStreamBuilder_setFormat(builder, format);
     ctx.AAudioStreamBuilder_setSampleRate(builder, device->spec.freq);
-#endif
     ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
 
     const aaudio_direction_t direction = (recording ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
@@ -323,9 +321,9 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
         SDL_Log("Low latency audio disabled\n");
     }
 
-    LOGI("AAudio Try to open %u hz %u bit %u channels %s samples %u",
-         device->spec.freq, SDL_AUDIO_BITSIZE(device->spec.format),
-         device->spec.channels, SDL_AUDIO_ISBIGENDIAN(device->spec.format) ? "BE" : "LE", device->sample_frames);
+    LOGI("AAudio Try to open %u hz %s %u channels samples %u",
+         device->spec.freq, SDL_GetAudioFormatName(device->spec.format),
+         device->spec.channels, device->sample_frames);
 
     res = ctx.AAudioStreamBuilder_openStream(builder, &hidden->stream);
     if (res != AAUDIO_OK) {
@@ -373,9 +371,9 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
         return false;
     }
 
-    LOGI("AAudio Actually opened %u hz %u bit %u channels %s samples %u, buffers %d",
-         device->spec.freq, SDL_AUDIO_BITSIZE(device->spec.format),
-         device->spec.channels, SDL_AUDIO_ISBIGENDIAN(device->spec.format) ? "BE" : "LE", device->sample_frames, hidden->num_buffers);
+    LOGI("AAudio Actually opened %u hz %s %u channels samples %u, buffers %d",
+         device->spec.freq, SDL_GetAudioFormatName(device->spec.format),
+         device->spec.channels, device->sample_frames, hidden->num_buffers);
 
     res = ctx.AAudioStream_requestStart(hidden->stream);
     if (res != AAUDIO_OK) {
