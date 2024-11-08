@@ -440,8 +440,8 @@ typedef Sint64 SDL_Time;
 #ifndef SDL_PRIs64
 #if defined(SDL_PLATFORM_WINDOWS)
 #define SDL_PRIs64 "I64d"
-#elif defined(PRIs64)
-#define SDL_PRIs64 PRIs64
+#elif defined(PRId64)
+#define SDL_PRIs64 PRId64
 #elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE) && !defined(__EMSCRIPTEN__)
 #define SDL_PRIs64 "ld"
 #else
