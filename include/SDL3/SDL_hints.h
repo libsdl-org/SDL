@@ -103,7 +103,8 @@ extern "C" {
 /**
  * A variable to control whether low latency audio should be enabled.
  *
- * Some devices have poor quality output when this is enabled, but this is usually an improvement in audio latency.
+ * Some devices have poor quality output when this is enabled, but this is
+ * usually an improvement in audio latency.
  *
  * The variable can be set to the following values:
  *
