@@ -428,20 +428,6 @@ extern "C" {
 #define SDL_HINT_ENABLE_SCREEN_KEYBOARD "SDL_ENABLE_SCREEN_KEYBOARD"
 
 /**
- * A variable that controls whether Steam Controllers should be exposed using
- * the SDL joystick and game controller APIs
- *
- * The variable can be set to the following values:
- *
- * - "0": Do not scan for Steam Controllers
- * - "1": Scan for Steam Controllers (the default)
- *
- * The default value is "1". This hint must be set before initializing the
- * joystick subsystem.
- */
-#define SDL_HINT_ENABLE_STEAM_CONTROLLERS "SDL_ENABLE_STEAM_CONTROLLERS"
-
-/**
  * A variable controlling verbosity of the logging of SDL events pushed onto
  * the internal queue.
  *
