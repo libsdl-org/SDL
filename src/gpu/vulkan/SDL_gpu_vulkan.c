@@ -10219,6 +10219,22 @@ static SDL_GPUFence *VULKAN_SubmitAndAcquireFence(
     return (SDL_GPUFence *)vulkanCommandBuffer->inFlightFence;
 }
 
+static void VULKAN_INTERNAL_ReleaseCommandBuffer(VulkanCommandBuffer *vulkanCommandBuffer)
+{
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
+
+    if (renderer->submittedCommandBufferCount + 1 >= renderer->submittedCommandBufferCapacity) {
+        renderer->submittedCommandBufferCapacity = renderer->submittedCommandBufferCount + 1;
+
+        renderer->submittedCommandBuffers = SDL_realloc(
+            renderer->submittedCommandBuffers,
+            sizeof(VulkanCommandBuffer *) * renderer->submittedCommandBufferCapacity);
+    }
+
+    renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount] = vulkanCommandBuffer;
+    renderer->submittedCommandBufferCount += 1;
+}
+
 static bool VULKAN_Submit(
     SDL_GPUCommandBuffer *commandBuffer)
 {
@@ -10292,19 +10308,6 @@ static bool VULKAN_Submit(
         CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkQueueSubmit, false)
     }
 
-    // Mark command buffers as submitted
-
-    if (renderer->submittedCommandBufferCount + 1 >= renderer->submittedCommandBufferCapacity) {
-        renderer->submittedCommandBufferCapacity = renderer->submittedCommandBufferCount + 1;
-
-        renderer->submittedCommandBuffers = SDL_realloc(
-            renderer->submittedCommandBuffers,
-            sizeof(VulkanCommandBuffer *) * renderer->submittedCommandBufferCapacity);
-    }
-
-    renderer->submittedCommandBuffers[renderer->submittedCommandBufferCount] = vulkanCommandBuffer;
-    renderer->submittedCommandBufferCount += 1;
-
     // Present, if applicable
     bool result = true;
 
@@ -10336,6 +10339,11 @@ static bool VULKAN_Submit(
                 presentData->windowData->needsSwapchainRecreate = true;
             }
         } else {
+            if (presentResult != VK_SUCCESS) {
+                VULKAN_INTERNAL_ReleaseCommandBuffer(vulkanCommandBuffer);
+                SDL_UnlockMutex(renderer->submitLock);
+            }
+
             CHECK_VULKAN_ERROR_AND_RETURN(presentResult, vkQueuePresentKHR, false)
         }
 
@@ -10390,6 +10398,10 @@ static bool VULKAN_Submit(
         !renderer->defragInProgress) {
         result = VULKAN_INTERNAL_DefragmentMemory(renderer);
     }
+
+    // Mark command buffer as submitted
+    // This must happen after defrag, because it will try to acquire new command buffers.
+    VULKAN_INTERNAL_ReleaseCommandBuffer(vulkanCommandBuffer);
 
     SDL_UnlockMutex(renderer->submitLock);
 
