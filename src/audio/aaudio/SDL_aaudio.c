@@ -355,8 +355,9 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
 
     SDL_UpdatedAudioDeviceFormat(device);
 
-    // Allocate a double buffered mixing buffer
-    hidden->num_buffers = 2;
+    // Allocate a triple buffered mixing buffer
+    // Two buffers can be in the process of being filled while the third is being read
+    hidden->num_buffers = 3;
     hidden->mixbuf_bytes = (hidden->num_buffers * device->buffer_size);
     hidden->mixbuf = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), hidden->mixbuf_bytes);
     if (!hidden->mixbuf) {
