@@ -3066,7 +3066,7 @@ endforeach()
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/REVISION.txt")
   set(SDL_REVISION "" CACHE STRING "Custom SDL revision")
   if(SDL_REVISION)
-    set(SDL_REVISION_CENTER "${SDL_VERSION_MAJOR}.${SDL_VERSION_MINOR}.${SDL_VERSION_MICRO}-${SDL_REVISION}")
+    set(SDL_REVISION_CENTER "${SDL3_VERSION}-${SDL_REVISION}")
   else()
     # If SDL_REVISION is not overrided, use git to describe
     git_describe(SDL_REVISION_CENTER)
