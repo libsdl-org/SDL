@@ -3063,15 +3063,17 @@ endforeach()
 
 # If REVISION.txt exists, then we are building from a SDL release.
 # SDL_revision.h(.cmake) in source releases have SDL_REVISION baked into them.
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/REVISION.txt")
-  set(SDL_REVISION "" CACHE STRING "Custom SDL revision")
-  if(SDL_REVISION)
-    set(SDL_REVISION_CENTER "${SDL_VERSION_MAJOR}.${SDL_VERSION_MINOR}.${SDL_VERSION_MICRO}-${SDL_REVISION}")
-  else()
-    # If SDL_REVISION is not overrided, use git to describe
-    git_describe(SDL_REVISION_CENTER)
-  endif()
-  set(SDL_REVISION "SDL3-${SDL_REVISION_CENTER}")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/REVISION.txt")
+  file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/REVISION.txt" revisions)
+  list(GET revisions 0 revisions_0)
+  string(STRIP "${revisions_0}" SDL_REVISION)
+else()
+  set(SDL_REVISION "" CACHE STRING "Custom SDL revision (only used when REVISION.txt does not exist)")
+endif()
+if(NOT SDL_REVISION)
+  # If SDL_REVISION is not overrided, use git to describe
+  git_describe(SDL_REVISION_GIT)
+  set(SDL_REVISION "SDL3-${SDL3_VERSION}-${SDL_REVISION_GIT}")
 endif()
 
 execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${SDL3_BINARY_DIR}/include-revision/SDL3")
