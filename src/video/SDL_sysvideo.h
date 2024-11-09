@@ -352,6 +352,7 @@ struct SDL_VideoDevice
     bool (*HasScreenKeyboardSupport)(SDL_VideoDevice *_this);
     void (*ShowScreenKeyboard)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
     void (*HideScreenKeyboard)(SDL_VideoDevice *_this, SDL_Window *window);
+    void (*SetTextInputProperties)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
     bool (*IsScreenKeyboardShown)(SDL_VideoDevice *_this, SDL_Window *window);
 
     // Clipboard
