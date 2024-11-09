@@ -470,6 +470,21 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     } else {
         textField.enablesReturnKeyAutomatically = NO;
     }
+
+    if (!textField.window) {
+        /* textField has not been added to the view yet,
+         we don't have to do anything. */
+        return;
+    }
+
+    // the text field needs to be re-added to the view in order to update correctly.
+    UIView *superview = textField.superview;
+    [textField removeFromSuperview];
+    [superview addSubview:textField];
+
+    if (SDL_TextInputActive(window)) {
+        [textField becomeFirstResponder];
+    }
 }
 
 /* requests the SDL text field to become focused and accept text input.
@@ -672,7 +687,6 @@ bool UIKit_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
-        [vc setTextFieldProperties:props];
         return [vc startTextInput];
     }
 }
@@ -682,6 +696,14 @@ bool UIKit_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
         return [vc stopTextInput];
+    }
+}
+
+void UIKit_SetTextInputProperties(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
+{
+    @autoreleasepool {
+        SDL_uikitviewcontroller *vc = GetWindowViewController(window);
+        [vc setTextFieldProperties:props];
     }
 }
 
