@@ -1422,6 +1422,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             mTextEdit.requestFocus();
 
             InputMethodManager imm = (InputMethodManager) SDL.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.restartInput(mTextEdit);
             imm.showSoftInput(mTextEdit, 0);
 
             mScreenKeyboardShown = true;

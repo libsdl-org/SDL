@@ -5297,7 +5297,7 @@ bool SDL_StartTextInputWithProperties(SDL_Window *window, SDL_PropertiesID props
     }
 
     // Show the on-screen keyboard, if desired
-    if (AutoShowingScreenKeyboard() && !SDL_ScreenKeyboardShown(window)) {
+    if (AutoShowingScreenKeyboard()) {
         if (_this->ShowScreenKeyboard) {
             _this->ShowScreenKeyboard(_this, window, props);
         }
