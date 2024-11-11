@@ -2237,6 +2237,12 @@ static void METAL_BeginRenderPass(
                 renderer,
                 container,
                 colorTargetInfos[i].cycle);
+            double clearColor[4] = {
+                colorTargetInfos[i].clear_color.float32.r,
+                colorTargetInfos[i].clear_color.float32.g,
+                colorTargetInfos[i].clear_color.float32.b,
+                colorTargetInfos[i].clear_color.float32.a
+            };
 
             passDescriptor.colorAttachments[i].texture = texture->handle;
             passDescriptor.colorAttachments[i].level = colorTargetInfos[i].mip_level;
@@ -2245,11 +2251,19 @@ static void METAL_BeginRenderPass(
             } else {
                 passDescriptor.colorAttachments[i].slice = colorTargetInfos[i].layer_or_depth_plane;
             }
-            passDescriptor.colorAttachments[i].clearColor = MTLClearColorMake(
-                colorTargetInfos[i].clear_color.r,
-                colorTargetInfos[i].clear_color.g,
-                colorTargetInfos[i].clear_color.b,
-                colorTargetInfos[i].clear_color.a);
+
+            if (IsUnsignedIntegerFormat(container->header.info.format)) {
+                clearColor[0] = (double)colorTargetInfos[i].clear_color.uint32.r;
+                clearColor[1] = (double)colorTargetInfos[i].clear_color.uint32.g;
+                clearColor[2] = (double)colorTargetInfos[i].clear_color.uint32.b;
+                clearColor[3] = (double)colorTargetInfos[i].clear_color.uint32.a;
+            } else if (IsSignedIntegerFormat(container->header.info.format)) {
+                clearColor[0] = (double)colorTargetInfos[i].clear_color.sint32.r;
+                clearColor[1] = (double)colorTargetInfos[i].clear_color.sint32.g;
+                clearColor[2] = (double)colorTargetInfos[i].clear_color.sint32.b;
+                clearColor[3] = (double)colorTargetInfos[i].clear_color.sint32.a;
+            }
+            passDescriptor.colorAttachments[i].clearColor = MTLClearColorMake(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
             passDescriptor.colorAttachments[i].loadAction = SDLToMetal_LoadOp[colorTargetInfos[i].load_op];
             passDescriptor.colorAttachments[i].storeAction = SDLToMetal_StoreOp[colorTargetInfos[i].store_op];
 

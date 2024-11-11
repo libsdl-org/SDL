@@ -92,10 +92,10 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 		SDL_GPUColorTargetInfo color_target_info;
         SDL_zero(color_target_info);
 		color_target_info.texture = swapchainTexture;
-		color_target_info.clear_color.r = (float)(0.5 + 0.5 * SDL_sin(currentTime));
-		color_target_info.clear_color.g = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 2 / 3));
-		color_target_info.clear_color.b = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 4 / 3));
-		color_target_info.clear_color.a = 1.0f;
+		color_target_info.clear_color.float32.r = (float)(0.5 + 0.5 * SDL_sin(currentTime));
+		color_target_info.clear_color.float32.g = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 2 / 3));
+		color_target_info.clear_color.float32.b = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 4 / 3));
+		color_target_info.clear_color.float32.a = 1.0f;
 		color_target_info.load_op = SDL_GPU_LOADOP_CLEAR;
 		color_target_info.store_op = SDL_GPU_STOREOP_STORE;
 

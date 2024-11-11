@@ -399,7 +399,7 @@ Render(SDL_Window *window, const int windownum)
     /* Set up the pass */
 
     SDL_zero(color_target);
-    color_target.clear_color.a = 1.0f;
+    color_target.clear_color.float32.a = 1.0f;
     if (winstate->tex_msaa) {
         color_target.load_op = SDL_GPU_LOADOP_CLEAR;
         color_target.store_op = SDL_GPU_STOREOP_RESOLVE;
