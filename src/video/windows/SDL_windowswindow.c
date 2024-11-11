@@ -886,6 +886,10 @@ bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *
 
     // Set the icon in the task manager (should we do this?)
     SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+
+    if (!DestroyIcon(hIcon)) {
+        SDL_LogWarn("DestroyIcon() failed, error %08X", (unsigned int)GetLastError());
+    }
     return result;
 #else
     return SDL_Unsupported();
