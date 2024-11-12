@@ -26,11 +26,12 @@
 #include "../../events/SDL_pen_c.h"
 #include "../../core/android/SDL_android.h"
 
-#define ACTION_DOWN 0
-#define ACTION_UP   1
-#define ACTION_POINTER_DOWN   5
-#define ACTION_POINTER_UP     6
-#define ACTION_HOVER_EXIT     10
+#define ACTION_DOWN   0
+#define ACTION_UP     1
+#define ACTION_CANCEL 3
+#define ACTION_POINTER_DOWN 5
+#define ACTION_POINTER_UP   6
+#define ACTION_HOVER_EXIT   10
 
 void Android_OnPen(SDL_Window *window, int pen_id_in, int button, int action, float x, float y, float p)
 {
@@ -56,11 +57,6 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, int button, int action, fl
         }
     }
 
-    if (action == ACTION_HOVER_EXIT) {
-        SDL_RemovePenDevice(0, pen);
-        return;
-    }
-
     SDL_SendPenMotion(0, pen, window, x, y);
     SDL_SendPenAxis(0, pen, window, SDL_PEN_AXIS_PRESSURE, p);
     // TODO: add more axis
@@ -77,7 +73,13 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, int button, int action, fl
     }
 
     // button contains DOWN/ERASER_TIP on DOWN/UP regardless of pressed state, use action to distinguish
+    // we don't compare tip flags above because MotionEvent.getButtonState doesn't return stylus tip/eraser state.
     switch (action) {
+    case ACTION_CANCEL:
+    case ACTION_HOVER_EXIT:
+        SDL_RemovePenDevice(0, pen);
+        break;
+
     case ACTION_DOWN:
     case ACTION_POINTER_DOWN:
         SDL_SendPenTouch(0, pen, window, (button & SDL_PEN_INPUT_ERASER_TIP) != 0, true);
