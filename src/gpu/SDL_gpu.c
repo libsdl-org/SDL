@@ -167,9 +167,6 @@ static const SDL_GPUBootstrap *backends[] = {
 #ifdef SDL_GPU_D3D12
     &D3D12Driver,
 #endif
-#ifdef SDL_GPU_D3D11
-    &D3D11Driver,
-#endif
     NULL
 };
 #endif // !SDL_GPU_DISABLED

@@ -782,8 +782,8 @@ typedef Uint32 SDL_GPUShaderFormat;
 #define SDL_GPU_SHADERFORMAT_INVALID  0
 #define SDL_GPU_SHADERFORMAT_PRIVATE  (1u << 0) /**< Shaders for NDA'd platforms. */
 #define SDL_GPU_SHADERFORMAT_SPIRV    (1u << 1) /**< SPIR-V shaders for Vulkan. */
-#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_0 shaders for D3D11. */
-#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL shaders for D3D12. */
+#define SDL_GPU_SHADERFORMAT_DXBC     (1u << 2) /**< DXBC SM5_1 shaders for D3D12. */
+#define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL SM6_0 shaders for D3D12. */
 #define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal. */
 #define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< Precompiled metallib shaders for Metal. */
 
@@ -2076,15 +2076,7 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * - 1: Write-only storage textures, followed by write-only storage buffers
  * - 2: Uniform buffers
  *
- * For DXBC Shader Model 5_0 shaders, use the following register order:
- *
- * - t registers: Sampled textures, followed by read-only storage textures,
- *   followed by read-only storage buffers
- * - u registers: Write-only storage textures, followed by write-only storage
- *   buffers
- * - b registers: Uniform buffers
- *
- * For DXIL shaders, use the following register order:
+ * For DXBC and DXIL shaders, use the following register order:
  *
  * - (t[n], space0): Sampled textures, followed by read-only storage textures,
  *   followed by read-only storage buffers
@@ -2172,14 +2164,7 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
  *   buffers
  * - 3: Uniform buffers
  *
- * For DXBC Shader Model 5_0 shaders, use the following register order:
- *
- * - t registers: Sampled textures, followed by storage textures, followed by
- *   storage buffers
- * - s registers: Samplers with indices corresponding to the sampled textures
- * - b registers: Uniform buffers
- *
- * For DXIL shaders, use the following register order:
+ * For DXBC and DXIL shaders, use the following register order:
  *
  * For vertex shaders:
  *

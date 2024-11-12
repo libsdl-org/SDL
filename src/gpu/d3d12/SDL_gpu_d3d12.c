@@ -5898,7 +5898,7 @@ static void D3D12_DownloadFromTexture(
      * And just for some extra fun, D3D12 doesn't actually support depth pitch, so we have to realign that too!
      *
      * Since this is an async download we have to do all these fixups after the command is finished,
-     * so we'll cache the metadata similar to D3D11 and map and copy it when the command buffer is cleaned.
+     * so we'll cache the metadata and map and copy it when the command buffer is cleaned.
      */
 
     if (pixelsPerRow == 0) {
@@ -8676,7 +8676,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
 SDL_GPUBootstrap D3D12Driver = {
     "direct3d12",
-    SDL_GPU_SHADERFORMAT_DXIL,
+    SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_DXBC,
     D3D12_PrepareDriver,
     D3D12_CreateDevice
 };
