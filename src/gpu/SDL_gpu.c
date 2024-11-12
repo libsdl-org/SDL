@@ -783,6 +783,14 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
     }
 
     if (device->debug_mode) {
+        if (graphicsPipelineCreateInfo->vertex_shader == NULL) {
+            SDL_assert_release(!"Vertex shader cannot be NULL!");
+            return NULL;
+        }
+        if (graphicsPipelineCreateInfo->fragment_shader == NULL) {
+            SDL_assert_release(!"Fragment shader cannot be NULL!");
+            return NULL;
+        }
         if (graphicsPipelineCreateInfo->target_info.num_color_targets > 0 && graphicsPipelineCreateInfo->target_info.color_target_descriptions == NULL) {
             SDL_assert_release(!"Color target descriptions array pointer cannot be NULL if num_color_targets is greater than zero!");
             return NULL;
