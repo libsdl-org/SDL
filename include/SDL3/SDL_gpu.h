@@ -2076,15 +2076,7 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * - 1: Write-only storage textures, followed by write-only storage buffers
  * - 2: Uniform buffers
  *
- * For DXBC Shader Model 5_0 shaders, use the following register order:
- *
- * - t registers: Sampled textures, followed by read-only storage textures,
- *   followed by read-only storage buffers
- * - u registers: Write-only storage textures, followed by write-only storage
- *   buffers
- * - b registers: Uniform buffers
- *
- * For DXIL shaders, use the following register order:
+ * For DXBC and DXIL shaders, use the following register order:
  *
  * - (t[n], space0): Sampled textures, followed by read-only storage textures,
  *   followed by read-only storage buffers
@@ -2172,14 +2164,7 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
  *   buffers
  * - 3: Uniform buffers
  *
- * For DXBC Shader Model 5_0 shaders, use the following register order:
- *
- * - t registers: Sampled textures, followed by storage textures, followed by
- *   storage buffers
- * - s registers: Samplers with indices corresponding to the sampled textures
- * - b registers: Uniform buffers
- *
- * For DXIL shaders, use the following register order:
+ * For DXBC and DXIL shaders, use the following register order:
  *
  * For vertex shaders:
  *
