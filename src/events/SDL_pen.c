@@ -158,6 +158,16 @@ bool SDL_GetPenInfo(SDL_PenID instance_id, SDL_PenInfo *info)
     return result;
 }
 
+bool SDL_PenConnected(SDL_PenID instance_id)
+{
+    SDL_LockRWLockForReading(pen_device_rwlock);
+    const SDL_Pen *pen = FindPenByInstanceId(instance_id);
+    const bool result = (pen != NULL);
+    SDL_UnlockRWLock(pen_device_rwlock);
+    return result;
+}
+#endif
+
 SDL_PenInputFlags SDL_GetPenStatus(SDL_PenID instance_id, float *axes, int num_axes)
 {
     if (num_axes < 0) {
@@ -180,16 +190,6 @@ SDL_PenInputFlags SDL_GetPenStatus(SDL_PenID instance_id, float *axes, int num_a
     SDL_UnlockRWLock(pen_device_rwlock);
     return result;
 }
-
-bool SDL_PenConnected(SDL_PenID instance_id)
-{
-    SDL_LockRWLockForReading(pen_device_rwlock);
-    const SDL_Pen *pen = FindPenByInstanceId(instance_id);
-    const bool result = (pen != NULL);
-    SDL_UnlockRWLock(pen_device_rwlock);
-    return result;
-}
-#endif
 
 SDL_PenCapabilityFlags SDL_GetPenCapabilityFromAxis(SDL_PenAxis axis)
 {
