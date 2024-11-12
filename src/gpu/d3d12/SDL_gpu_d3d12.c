@@ -5898,7 +5898,7 @@ static void D3D12_DownloadFromTexture(
      * And just for some extra fun, D3D12 doesn't actually support depth pitch, so we have to realign that too!
      *
      * Since this is an async download we have to do all these fixups after the command is finished,
-     * so we'll cache the metadata similar to D3D11 and map and copy it when the command buffer is cleaned.
+     * so we'll cache the metadata and map and copy it when the command buffer is cleaned.
      */
 
     if (pixelsPerRow == 0) {
