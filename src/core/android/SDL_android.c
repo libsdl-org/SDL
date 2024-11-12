@@ -28,6 +28,7 @@
 #include "../../video/android/SDL_androidkeyboard.h"
 #include "../../video/android/SDL_androidmouse.h"
 #include "../../video/android/SDL_androidtouch.h"
+#include "../../video/android/SDL_androidpen.h"
 #include "../../video/android/SDL_androidvideo.h"
 #include "../../video/android/SDL_androidwindow.h"
 #include "../../joystick/android/SDL_sysjoystick_c.h"
@@ -117,6 +118,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
     JNIEnv *env, jclass jcls,
     jint button, jint action, jfloat x, jfloat y, jboolean relative);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePen)(
+    JNIEnv *env, jclass jcls,
+    jint pen_id_in, jint button, jint action, jfloat x, jfloat y, jfloat p);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
     JNIEnv *env, jclass jcls,
@@ -209,6 +214,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativeKeyboardFocusLost", "()V", SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost) },
     { "onNativeTouch", "(IIIFFF)V", SDL_JAVA_INTERFACE(onNativeTouch) },
     { "onNativeMouse", "(IIFFZ)V", SDL_JAVA_INTERFACE(onNativeMouse) },
+    { "onNativePen", "(IIIFFF)V", SDL_JAVA_INTERFACE(onNativePen) },
     { "onNativeAccel", "(FFF)V", SDL_JAVA_INTERFACE(onNativeAccel) },
     { "onNativeClipboardChanged", "()V", SDL_JAVA_INTERFACE(onNativeClipboardChanged) },
     { "nativeLowMemory", "()V", SDL_JAVA_INTERFACE(nativeLowMemory) },
@@ -1358,6 +1364,18 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
     SDL_LockMutex(Android_ActivityMutex);
 
     Android_OnMouse(Android_Window, button, action, x, y, relative);
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+// Pen
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePen)(
+    JNIEnv *env, jclass jcls,
+    jint pen_id_in, jint button, jint action, jfloat x, jfloat y, jfloat p)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    Android_OnPen(Android_Window, pen_id_in, button, action, x, y, p);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
