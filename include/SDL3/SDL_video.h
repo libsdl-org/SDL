@@ -2193,7 +2193,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window *window, b
  *
  * \since This function is available since SDL 3.1.3.
  *
- * \sa SDL_GetWindowMouseGrab
+ * \sa SDL_GetWindowMouseRect
+ * \sa SDL_SetWindowMouseRect
+ * \sa SDL_SetWindowMouseGrab
  * \sa SDL_SetWindowKeyboardGrab
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowMouseGrab(SDL_Window *window, bool grabbed);
@@ -2218,6 +2220,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowKeyboardGrab(SDL_Window *window);
  *
  * \since This function is available since SDL 3.1.3.
  *
+ * \sa SDL_GetWindowMouseRect
+ * \sa SDL_SetWindowMouseRect
+ * \sa SDL_SetWindowMouseGrab
  * \sa SDL_SetWindowKeyboardGrab
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowMouseGrab(SDL_Window *window);
@@ -2249,6 +2254,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetGrabbedWindow(void);
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetWindowMouseRect
+ * \sa SDL_GetWindowMouseGrab
  * \sa SDL_SetWindowMouseGrab
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowMouseRect(SDL_Window *window, const SDL_Rect *rect);
@@ -2263,6 +2269,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowMouseRect(SDL_Window *window, cons
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_SetWindowMouseRect
+ * \sa SDL_GetWindowMouseGrab
+ * \sa SDL_SetWindowMouseGrab
  */
 extern SDL_DECLSPEC const SDL_Rect * SDLCALL SDL_GetWindowMouseRect(SDL_Window *window);
 
