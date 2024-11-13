@@ -86,8 +86,8 @@ typedef struct
     SDL_Window *focus;
     float x;
     float y;
-    float xdelta;
-    float ydelta;
+    float x_accu;
+    float y_accu;
     float last_x, last_y; // the last reported x and y coordinates
     bool has_position;
     bool relative_mode;

@@ -739,6 +739,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
     SDL_Mouse *mouse = SDL_GetMouse();
     float xrel = 0.0f;
     float yrel = 0.0f;
+    bool window_is_relative = mouse->focus && (mouse->focus->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE);
 
     if ((!mouse->relative_mode || mouse->warp_emulation_active) && mouseID != SDL_TOUCH_MOUSEID) {
         // We're not in relative mode, so all mouse events are global mouse events
@@ -794,7 +795,6 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
         ConstrainMousePosition(mouse, window, &x, &y);
     } else {
         ConstrainMousePosition(mouse, window, &x, &y);
-
         if (mouse->has_position) {
             xrel = x - mouse->last_x;
             yrel = y - mouse->last_y;
@@ -814,24 +814,29 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
         yrel = 0.0f;
     }
 
-    if (mouse->has_position) {
-        // Update internal mouse coordinates
-        if (!mouse->relative_mode) {
+    { // modify internal state
+        if (relative) {
+            if (mouse->has_position) {
+                mouse->x += xrel;
+                mouse->y += yrel;
+                ConstrainMousePosition(mouse, window, &mouse->x, &mouse->y);
+            } else {
+                mouse->x = x;
+                mouse->y = y;
+            }
+            mouse->last_x = mouse->x;
+            mouse->last_y = mouse->y;
+            mouse->x_accu += xrel;
+            mouse->y_accu += yrel;
+        } else {
+            // Use unclamped values if we're getting events outside the window
             mouse->x = x;
             mouse->y = y;
-        } else {
-            mouse->x += xrel;
-            mouse->y += yrel;
-            ConstrainMousePosition(mouse, window, &mouse->x, &mouse->y);
+            mouse->last_x = x;
+            mouse->last_y = y;
         }
-    } else {
-        mouse->x = x;
-        mouse->y = y;
         mouse->has_position = true;
     }
-
-    mouse->xdelta += xrel;
-    mouse->ydelta += yrel;
 
     // Move the mouse cursor, if needed
     if (mouse->cursor_shown && !mouse->relative_mode &&
@@ -841,6 +846,11 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
 
     // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION)) {
+        if (!relative && window_is_relative) {
+            if (!mouse->relative_mode_warp_motion) return;
+            xrel = 0.0f;
+            yrel = 0.0f;
+        }
         SDL_Event event;
         event.type = SDL_EVENT_MOUSE_MOTION;
         event.common.timestamp = timestamp;
@@ -854,14 +864,6 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
         event.motion.xrel = xrel;
         event.motion.yrel = yrel;
         SDL_PushEvent(&event);
-    }
-    if (relative) {
-        mouse->last_x = mouse->x;
-        mouse->last_y = mouse->y;
-    } else {
-        // Use unclamped values if we're getting events outside the window
-        mouse->last_x = x;
-        mouse->last_y = y;
     }
 }
 
@@ -1178,13 +1180,13 @@ SDL_MouseButtonFlags SDL_GetRelativeMouseState(float *x, float *y)
     SDL_Mouse *mouse = SDL_GetMouse();
 
     if (x) {
-        *x = mouse->xdelta;
+        *x = mouse->x_accu;
     }
     if (y) {
-        *y = mouse->ydelta;
+        *y = mouse->y_accu;
     }
-    mouse->xdelta = 0.0f;
-    mouse->ydelta = 0.0f;
+    mouse->x_accu = 0.0f;
+    mouse->y_accu = 0.0f;
     return SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, true);
 }
 
