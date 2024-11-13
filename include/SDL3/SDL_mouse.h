@@ -191,19 +191,28 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID insta
 extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
 
 /**
- * Retrieve the current state of the mouse.
+ * Query SDL's cache for the synchronous mouse button state and the
+ * window-relative SDL-cursor position.
  *
- * The current button state is returned as a button bitmask, which can be
- * tested using the SDL_BUTTON_MASK(X) macro (where `X` is generally 1 for the
- * left, 2 for middle, 3 for the right button), and `x` and `y` are set to the
- * mouse cursor position relative to the focus window. You can pass NULL for
- * either `x` or `y`.
+ * This function returns the cached synchronous state as SDL understands it
+ * from the last pump of the event queue.
  *
- * \param x the x coordinate of the mouse cursor position relative to the
- *          focus window.
- * \param y the y coordinate of the mouse cursor position relative to the
- *          focus window.
- * \returns a 32-bit button bitmask of the current button state.
+ * To query the platform for immediate asynchronous state, use
+ * SDL_GetGlobalMouseState.
+ *
+ * Passing non-NULL pointers to `x` or `y` will write the destination with
+ * respective x or y coordinates relative to the focused window.
+ *
+ * In Relative Mode, the SDL-cursor's position usually contradicts the
+ * platform-cursor's position as manually calculated from
+ * SDL_GetGlobalMouseState() and SDL_GetWindowPosition.
+ *
+ * \param x a pointer to receive the SDL-cursor's x-position from the focused
+ *          window's top left corner, can be NULL if unused.
+ * \param y a pointer to receive the SDL-cursor's y-position from the focused
+ *          window's top left corner, can be NULL if unused.
+ * \returns a 32-bit bitmask of the button state that can be bitwise-compared
+ *          against the SDL_BUTTON_MASK(X) macro.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -213,51 +222,70 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
 extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
 
 /**
- * Get the current state of the mouse in relation to the desktop.
+ * Query the platform for the asynchronous mouse button state and the
+ * desktop-relative platform-cursor position.
  *
- * This works similarly to SDL_GetMouseState(), but the coordinates will be
- * reported relative to the top-left of the desktop. This can be useful if you
- * need to track the mouse outside of a specific window and SDL_CaptureMouse()
- * doesn't fit your needs. For example, it could be useful if you need to
- * track the mouse while dragging a window, where coordinates relative to a
- * window might not be in sync at all times.
+ * This function immediately queries the platform for the most recent
+ * asynchronous state, more costly than retrieving SDL's cached state in
+ * SDL_GetMouseState().
  *
- * Note: SDL_GetMouseState() returns the mouse position as SDL understands it
- * from the last pump of the event queue. This function, however, queries the
- * OS for the current mouse position, and as such, might be a slightly less
- * efficient function. Unless you know what you're doing and have a good
- * reason to use this function, you probably want SDL_GetMouseState() instead.
+ * Passing non-NULL pointers to `x` or `y` will write the destination with
+ * respective x or y coordinates relative to the desktop.
  *
- * \param x filled in with the current X coord relative to the desktop; can be
- *          NULL.
- * \param y filled in with the current Y coord relative to the desktop; can be
- *          NULL.
- * \returns the current button state as a bitmask which can be tested using
- *          the SDL_BUTTON_MASK(X) macros.
+ * In Relative Mode, the platform-cursor's position usually contradicts the
+ * SDL-cursor's position as manually calculated from SDL_GetMouseState() and
+ * SDL_GetWindowPosition.
+ *
+ * This function can be useful if you need to track the mouse outside of a
+ * specific window and SDL_CaptureMouse() doesn't fit your needs. For example,
+ * it could be useful if you need to track the mouse while dragging a window,
+ * where coordinates relative to a window might not be in sync at all times.
+ *
+ * \param x a pointer to receive the platform-cursor's x-position from the
+ *          desktop's top left corner, can be NULL if unused.
+ * \param y a pointer to receive the platform-cursor's y-position from the
+ *          desktop's top left corner, can be NULL if unused.
+ * \returns a 32-bit bitmask of the button state that can be bitwise-compared
+ *          against the SDL_BUTTON_MASK(X) macro.
  *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CaptureMouse
  * \sa SDL_GetMouseState
+ * \sa SDL_GetGlobalMouseState
  */
 extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *x, float *y);
 
 /**
- * Retrieve the relative state of the mouse.
+ * Query SDL's cache for the synchronous mouse button state and accumulated
+ * mouse delta since last call.
  *
- * The current button state is returned as a button bitmask, which can be
- * tested using the `SDL_BUTTON_MASK(X)` macros (where `X` is generally 1 for
- * the left, 2 for middle, 3 for the right button), and `x` and `y` are set to
- * the mouse deltas since the last call to SDL_GetRelativeMouseState() or
- * since event initialization. You can pass NULL for either `x` or `y`.
+ * This function returns the cached synchronous state as SDL understands it
+ * from the last pump of the event queue.
  *
- * \param x a pointer filled with the last recorded x coordinate of the mouse.
- * \param y a pointer filled with the last recorded y coordinate of the mouse.
- * \returns a 32-bit button bitmask of the relative button state.
+ * To query the platform for immediate asynchronous state, use
+ * SDL_GetGlobalMouseState.
+ *
+ * Passing non-NULL pointers to `x` or `y` will write the destination with
+ * respective x or y deltas accumulated since the last call to this function
+ * (or since event initialization).
+ *
+ * This function is useful for reducing overhead by processing relative mouse
+ * inputs in one go per-frame instead of individually per-event, at the
+ * expense of losing the order between events within the frame (e.g. quickly
+ * pressing and releasing a button within the same frame).
+ *
+ * \param x a pointer to receive the x mouse delta accumulated since last
+ *          call, can be NULL if unused.
+ * \param y a pointer to receive the y mouse delta accumulated since last
+ *          call, can be NULL if unused.
+ * \returns a 32-bit bitmask of the button state that can be bitwise-compared
+ *          against the SDL_BUTTON_MASK(X) macro.
  *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetMouseState
+ * \sa SDL_GetGlobalMouseState
  */
 extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float *x, float *y);
 
