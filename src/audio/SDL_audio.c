@@ -93,11 +93,11 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_FUSIONSOUND
     &FUSIONSOUND_bootstrap,
 #endif
-#ifdef SDL_AUDIO_DRIVER_AAUDIO
-    &aaudio_bootstrap,
-#endif
 #ifdef SDL_AUDIO_DRIVER_OPENSLES
     &openslES_bootstrap,
+#endif
+#ifdef SDL_AUDIO_DRIVER_AAUDIO
+    &aaudio_bootstrap,
 #endif
 #ifdef SDL_AUDIO_DRIVER_ANDROID
     &ANDROIDAUDIO_bootstrap,
