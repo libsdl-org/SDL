@@ -33,7 +33,7 @@
  * even if the data format changes on either side halfway through.
  *
  * An app opens an audio device and binds any number of audio streams to it,
- * feeding more data to the streams as available. When the devices needs more
+ * feeding more data to the streams as available. When the device needs more
  * data, it will pull it from all bound streams and mix them together for
  * playback.
  *
@@ -66,6 +66,22 @@
  * migrate the logical devices to the correct physical device seamlessly and
  * keep playing; the app doesn't even have to know it happened if it doesn't
  * want to.
+ *
+ * ## Simplified audio
+ *
+ * As a simplified model for when a single source of audio is all that's
+ * needed, an app can use SDL_OpenAudioDeviceStream, which is a single
+ * function to open an audio device, create an audio stream, bind that stream
+ * to the newly-opened device, and (optionally) provide a callback for
+ * obtaining audio data. When using this function, the primary interface is
+ * the SDL_AudioStream and the device handle is mostly hidden away; destroying
+ * a stream created through this function will also close the device, stream
+ * bindings cannot be changed, etc. One other quirk of this is that the device
+ * is started in a _paused_ state and must be explicitly resumed; this is
+ * partially to offer a clean migration for SDL2 apps and partially because
+ * the app might have to do more setup before playback begins; in the
+ * non-simplified form, nothing will play until a stream is bound to a device,
+ * so they start _unpaused_.
  *
  * ## Channel layouts
  *
