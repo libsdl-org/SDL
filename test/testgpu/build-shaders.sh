@@ -82,18 +82,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
 elif [[ "$OSTYPE" == "cygwin"* ]] || [[ "$OSTYPE" == "msys"* ]]; then
 
-    # FXC
-    fxc cube.hlsl /E VSMain /T vs_5_0 /Fh cube.vert.h
-    fxc cube.hlsl /E PSMain /T ps_5_0 /Fh cube.frag.h
-
-    cat cube.vert.h | perl -w -p -e 's/BYTE/unsigned char/;s/g_VSMain/D3D11_CubeVert/;' > cube.vert.temp.h
-    cat cube.frag.h | perl -w -p -e 's/BYTE/unsigned char/;s/g_PSMain/D3D11_CubeFrag/;' > cube.frag.temp.h
-    cat cube.vert.temp.h cube.frag.temp.h > testgpu_dxbc.h
-    rm -f cube.vert.h cube.frag.h cube.vert.temp.h cube.frag.temp.h
-
     # DXC
-    dxc cube.hlsl /E VSMain /T vs_6_0 /Fh cube.vert.h /D D3D12=1
-    dxc cube.hlsl /E PSMain /T ps_6_0 /Fh cube.frag.h /D D3D12=1
+    dxc cube.hlsl /E VSMain /T vs_6_0 /Fh cube.vert.h
+    dxc cube.hlsl /E PSMain /T ps_6_0 /Fh cube.frag.h
 
     cat cube.vert.h | perl -w -p -e 's/BYTE/unsigned char/;s/g_VSMain/D3D12_CubeVert/;' > cube.vert.temp.h
     cat cube.frag.h | perl -w -p -e 's/BYTE/unsigned char/;s/g_PSMain/D3D12_CubeFrag/;' > cube.frag.temp.h

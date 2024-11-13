@@ -1,8 +1,4 @@
-#if D3D12
 #define REG(reg, space) register(reg, space)
-#else
-#define REG(reg, space) register(reg)
-#endif
 
 cbuffer UBO : REG(b0, space1)
 {

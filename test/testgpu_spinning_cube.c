@@ -22,7 +22,6 @@
 
 /* Regenerate the shaders with testgpu/build-shaders.sh */
 #include "testgpu/testgpu_spirv.h"
-#include "testgpu/testgpu_dxbc.h"
 #include "testgpu/testgpu_dxil.h"
 #include "testgpu/testgpu_metallib.h"
 
@@ -471,12 +470,7 @@ load_shader(bool is_vertex)
     createinfo.props = 0;
 
     SDL_GPUShaderFormat format = SDL_GetGPUShaderFormats(gpu_device);
-    if (format & SDL_GPU_SHADERFORMAT_DXBC) {
-        createinfo.format = SDL_GPU_SHADERFORMAT_DXBC;
-        createinfo.code = is_vertex ? D3D11_CubeVert : D3D11_CubeFrag;
-        createinfo.code_size = is_vertex ? SDL_arraysize(D3D11_CubeVert) : SDL_arraysize(D3D11_CubeFrag);
-        createinfo.entrypoint = is_vertex ? "VSMain" : "PSMain";
-    } else if (format & SDL_GPU_SHADERFORMAT_DXIL) {
+    if (format & SDL_GPU_SHADERFORMAT_DXIL) {
         createinfo.format = SDL_GPU_SHADERFORMAT_DXIL;
         createinfo.code = is_vertex ? D3D12_CubeVert : D3D12_CubeFrag;
         createinfo.code_size = is_vertex ? SDL_arraysize(D3D12_CubeVert) : SDL_arraysize(D3D12_CubeFrag);
