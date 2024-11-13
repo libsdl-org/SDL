@@ -33,8 +33,9 @@
  * even if the data format changes on either side halfway through.
  *
  * An app opens an audio device and binds any number of audio streams to it,
- * feeding more data to it as available. When the devices needs more data, it
- * will pull it from all bound streams and mix them together for playback.
+ * feeding more data to the streams as available. When the devices needs more
+ * data, it will pull it from all bound streams and mix them together for
+ * playback.
  *
  * Audio streams can also use an app-provided callback to supply data
  * on-demand, which maps pretty closely to the SDL2 audio model.
