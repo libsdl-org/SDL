@@ -2406,7 +2406,9 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     window->undefined_y = undefined_y;
 
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-    SDL_SetWindowHDRProperties(window, &display->HDR, false);
+    if (display) {
+        SDL_SetWindowHDRProperties(window, &display->HDR, false);
+    }
 
     if (flags & SDL_WINDOW_FULLSCREEN || IsFullscreenOnly(_this)) {
         SDL_Rect bounds;
