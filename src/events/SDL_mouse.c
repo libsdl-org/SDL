@@ -847,7 +847,9 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
     // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION)) {
         if (!relative && window_is_relative) {
-            if (!mouse->relative_mode_warp_motion) return;
+            if (!mouse->relative_mode_warp_motion) {
+                return;
+            }
             xrel = 0.0f;
             yrel = 0.0f;
         }
