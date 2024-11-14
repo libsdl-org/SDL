@@ -3,27 +3,35 @@ Raspberry Pi
 
 Requirements:
 
-Raspbian (other Linux distros may work as well).
+Raspberry Pi OS (other Linux distros may work as well).
 
-Features
---------
+In modern times, the Raspberry Pi works mostly like any other Linux device:
+for video, you can use X11, Wayland, or KMSDRM. For audio, you can use ALSA,
+PulseAudio, or PipeWire, etc. OpenGL, OpenGL ES, and Vulkan are known to work.
 
-* Works without X11
-* Hardware accelerated OpenGL ES 2.x
-* Sound via ALSA
-* Input (mouse/keyboard/joystick) via EVDEV
-* Hotplugging of input devices via UDEV
+There is a video backend in SDL called "rpi" that uses a deprecated Broadcom
+interface (named "dispmanx") to draw directly to the console without X11.
+Newer Raspberry Pi OS releases don't support this (and work fine with our
+"kmsdrm" backend for the same purposes, a standard Linux interface). Don't
+panic if you can't use this backend, or CMake says it can't find libraries it
+needs for this.
+
+SDL has, in past times, worked on the original Raspberry Pi and the RPi 2, but
+these devices are no longer targets we actively test; if they broke, please
+report bugs or send patches!
+
+The Raspberry Pi 3 and later (in 32-bit and 64-bit mode) are still known to
+work well at the time of this writing. The Raspberry Pi Zero and Zero 2 are
+also known to work well.
 
 
-Raspbian Build Dependencies
----------------------------
+## Documentation Out Of Date
 
-sudo apt-get install libudev-dev libasound2-dev libdbus-1-dev
+The rest of this document is likely out of date; a lot has changed in recent
+years in both SDL and the Raspberry Pi universe, and this document has not
+been updated to reflect those details. Take the rest of this information with
+a grain of salt!
 
-You also need the VideoCore binary stuff that ships in /opt/vc for EGL and
-OpenGL ES 2.x, it usually comes pre-installed, but in any case:
-
-sudo apt-get install libraspberrypi0 libraspberrypi-bin libraspberrypi-dev
 
 
 NEON
@@ -31,8 +39,8 @@ NEON
 
 If your Pi has NEON support, make sure you add -mfpu=neon to your CFLAGS so
 that SDL will select some otherwise-disabled highly-optimized code. The
-original Pi units don't have NEON, the Pi2 probably does, and the Pi3
-definitely does.
+original Pi units don't have NEON, the Pi2/PiZero probably do, and the Pi3 and
+Zero2 definitely do.
 
 
 Cross compiling from x86 Linux
