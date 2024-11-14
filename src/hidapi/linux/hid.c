@@ -1042,7 +1042,28 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			memset(&usage_iterator, 0, sizeof(usage_iterator));
 			get_next_hid_usage(report_desc.value, report_desc.size, &usage_iterator, &page, &usage);
 		}
-		if (HIDAPI_IGNORE_DEVICE(bus_type, dev_vid, dev_pid, page, usage)) {
+
+		/* Convert from Linux bus types to standard HIDAPI ones */
+		hid_bus_type hidapi_bus_type;
+		switch (bus_type) {
+			case BUS_USB:
+				hidapi_bus_type = HID_API_BUS_USB;
+				break;
+			case BUS_BLUETOOTH:
+				hidapi_bus_type = HID_API_BUS_BLUETOOTH;
+				break;
+			case BUS_I2C:
+				hidapi_bus_type = HID_API_BUS_I2C;
+				break;
+			case BUS_SPI:
+				hidapi_bus_type = HID_API_BUS_SPI;
+				break;
+			default:
+				hidapi_bus_type = HID_API_BUS_UNKNOWN;
+				break;
+		}
+
+		if (HIDAPI_IGNORE_DEVICE(hidapi_bus_type, dev_vid, dev_pid, page, usage)) {
 			continue;
 		}
 #endif
