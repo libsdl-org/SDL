@@ -39,11 +39,11 @@
  * stay on for long times (Pokemon Go, etc).
  *
  * It's not uncommon that a newly-opened camera will provide a couple of
- * completely black frames, maybe followed by some under-exposed images.
- * If taking single frame automatically, or recording video from a camera's
- * input without the user initiating it from a preview, it could be wise
- * to drop the first several frames (if not the first several _seconds_ worth
- * of frames!) before using images from a camera.
+ * completely black frames, maybe followed by some under-exposed images. If
+ * taking single frame automatically, or recording video from a camera's input
+ * without the user initiating it from a preview, it could be wise to drop the
+ * first several frames (if not the first several _seconds_ worth of frames!)
+ * before using images from a camera.
  */
 
 #ifndef SDL_camera_h_
