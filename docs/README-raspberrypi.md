@@ -39,8 +39,8 @@ NEON
 
 If your Pi has NEON support, make sure you add -mfpu=neon to your CFLAGS so
 that SDL will select some otherwise-disabled highly-optimized code. The
-original Pi units don't have NEON, the Pi2/PiZero probably do, and the Pi3 and
-Zero2 definitely do.
+original Pi and Pi Zero units don't have NEON; everything from the Pi2/PiZero2
+and later do.
 
 
 Cross compiling from x86 Linux
