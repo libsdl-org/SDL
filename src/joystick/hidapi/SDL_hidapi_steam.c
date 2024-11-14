@@ -27,6 +27,13 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM
 
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
+// This requires prompting for Bluetooth permissions, so make sure the application really wants it
+#define SDL_HINT_JOYSTICK_HIDAPI_STEAM_DEFAULT  false
+#else
+#define SDL_HINT_JOYSTICK_HIDAPI_STEAM_DEFAULT  SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT)
+#endif
+
 /*****************************************************************************************************/
 
 #include "steam/controller_constants.h"
@@ -981,8 +988,7 @@ static void HIDAPI_DriverSteam_UnregisterHints(SDL_HintCallback callback, void *
 
 static bool HIDAPI_DriverSteam_IsEnabled(void)
 {
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STEAM,
-                              SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STEAM, SDL_HINT_JOYSTICK_HIDAPI_STEAM_DEFAULT);
 }
 
 static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
