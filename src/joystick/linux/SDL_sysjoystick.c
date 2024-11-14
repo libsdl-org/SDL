@@ -216,6 +216,11 @@ static bool IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version, con
     }
     return false;
 }
+#else
+static bool IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version, const char *name)
+{
+    return false;
+}
 #endif // SDL_JOYSTICK_HIDAPI
 
 static bool GetSteamVirtualGamepadSlot(int fd, int *slot)
@@ -661,9 +666,13 @@ static void HandlePendingRemovals(void)
 
 static bool SteamControllerConnectedCallback(const char *name, SDL_GUID guid, SDL_JoystickID *device_instance)
 {
-    SDL_joylist_item *item;
+    Uint16 vendor, product, version;
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, NULL);
+    if (SDL_JoystickHandledByAnotherDriver(&SDL_LINUX_JoystickDriver, vendor, product, version, name)) {
+        return false;
+    }
 
-    item = (SDL_joylist_item *)SDL_calloc(1, sizeof(SDL_joylist_item));
+    SDL_joylist_item *item = (SDL_joylist_item *)SDL_calloc(1, sizeof(SDL_joylist_item));
     if (!item) {
         return false;
     }
