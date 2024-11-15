@@ -1,6 +1,6 @@
 /*
  * Logic implementation of the Snake game. It is designed to efficiently
- * represent in memory the state of the game.
+ * represent the state of the game in memory.
  *
  * This code is public domain. Feel free to use it for any purpose!
  */
