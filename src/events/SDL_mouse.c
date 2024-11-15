@@ -814,28 +814,31 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
         yrel = 0.0f;
     }
 
-    { // modify internal state
-        if (relative) {
-            if (mouse->has_position) {
-                mouse->x += xrel;
-                mouse->y += yrel;
-                ConstrainMousePosition(mouse, window, &mouse->x, &mouse->y);
-            } else {
-                mouse->x = x;
-                mouse->y = y;
-            }
-            mouse->last_x = mouse->x;
-            mouse->last_y = mouse->y;
+    // TODO: should rework overall so that relative bool arg conveys intent,
+    // and do this logic at the SDL_SendMouseMotion level instead of here.
+    bool cmd_is_meant_as_delta = relative || (mouse->relative_mode && mouse->relative_mode_warp);
+    bool cmd_is_hardware_delta = relative;
+
+    // modify internal state
+    {
+        if (cmd_is_meant_as_delta) {
             mouse->x_accu += xrel;
             mouse->y_accu += yrel;
+        }
+
+        if (cmd_is_meant_as_delta && mouse->has_position) {
+            mouse->x += xrel;
+            mouse->y += yrel;
+            ConstrainMousePosition(mouse, window, &mouse->x, &mouse->y);
         } else {
-            // Use unclamped values if we're getting events outside the window
             mouse->x = x;
             mouse->y = y;
-            mouse->last_x = x;
-            mouse->last_y = y;
         }
         mouse->has_position = true;
+
+        // Use unclamped values if we're getting events outside the window
+        mouse->last_x = cmd_is_hardware_delta ? mouse->x : x;
+        mouse->last_y = cmd_is_hardware_delta ? mouse->y : y;
     }
 
     // Move the mouse cursor, if needed
@@ -846,7 +849,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
 
     // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION)) {
-        if (!relative && window_is_relative) {
+        if (!cmd_is_meant_as_delta && window_is_relative) {
             if (!mouse->relative_mode_warp_motion) {
                 return;
             }
