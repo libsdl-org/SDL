@@ -107,10 +107,6 @@ this should probably be removed at some point in the future.  --ryan. */
 
 #ifndef SDL_RENDER_DISABLED
 static const SDL_RenderDriver *render_drivers[] = {
-// Temporarily list the GPU renderer first so we get testing feedback
-#ifdef SDL_VIDEO_RENDER_GPU
-    &GPU_RenderDriver,
-#endif
 #ifdef SDL_VIDEO_RENDER_D3D11
     &D3D11_RenderDriver,
 #endif
@@ -140,6 +136,9 @@ static const SDL_RenderDriver *render_drivers[] = {
 #endif
 #ifdef SDL_VIDEO_RENDER_VULKAN
     &VULKAN_RenderDriver,
+#endif
+#ifdef SDL_VIDEO_RENDER_GPU
+    &GPU_RenderDriver,
 #endif
 #ifdef SDL_VIDEO_RENDER_SW
     &SW_RenderDriver,
