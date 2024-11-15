@@ -22,10 +22,13 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
+#include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM
+
+#define SDL_HINT_JOYSTICK_HIDAPI_STEAM_PAIRING_ENABLED    "SDL_JOYSTICK_HIDAPI_STEAM_PAIRING_ENABLED"
 
 #if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
 // This requires prompting for Bluetooth permissions, so make sure the application really wants it
@@ -621,6 +624,31 @@ static int ReadSteamController(SDL_hid_device *dev, uint8_t *pData, int nDataSiz
 }
 
 //---------------------------------------------------------------------------
+// Set Steam Controller pairing state
+//---------------------------------------------------------------------------
+static void SetPairingState(SDL_HIDAPI_Device *dev, bool bEnablePairing)
+{
+    unsigned char buf[65];
+    SDL_memset(buf, 0, 65);
+    buf[1] = ID_ENABLE_PAIRING;
+    buf[2] = 2; // 2 payload bytes: bool + timeout
+    buf[3] = bEnablePairing ? 1 : 0;
+    buf[4] = bEnablePairing ? 60 : 0;
+    SetFeatureReport(dev, buf, 5);
+}
+
+//---------------------------------------------------------------------------
+// Commit Steam Controller pairing
+//---------------------------------------------------------------------------
+static void CommitPairing(SDL_HIDAPI_Device *dev)
+{
+    unsigned char buf[65];
+    SDL_memset(buf, 0, 65);
+    buf[1] = ID_DONGLE_COMMIT_DEVICE;
+    SetFeatureReport(dev, buf, 2);
+}
+
+//---------------------------------------------------------------------------
 // Close a Steam Controller
 //---------------------------------------------------------------------------
 static void CloseSteamController(SDL_HIDAPI_Device *dev)
@@ -967,6 +995,7 @@ static bool UpdateSteamControllerState(const uint8_t *pData, int nDataSize, Stea
 
 typedef struct
 {
+    SDL_HIDAPI_Device *device;
     bool connected;
     bool report_sensors;
     uint32_t update_rate_in_us;
@@ -976,6 +1005,11 @@ typedef struct
     SteamControllerStateInternal_t m_state;
     SteamControllerStateInternal_t m_last_state;
 } SDL_DriverSteam_Context;
+
+static bool IsDongle(Uint16 product_id)
+{
+    return (product_id == USB_PRODUCT_VALVE_STEAM_CONTROLLER_DONGLE);
+}
 
 static void HIDAPI_DriverSteam_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -997,6 +1031,45 @@ static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
     return SDL_IsJoystickSteamController(vendor_id, product_id);
 }
 
+static void HIDAPI_DriverSteam_SetPairingState(SDL_DriverSteam_Context *ctx, bool enabled)
+{
+    // Only have one dongle in pairing mode at a time
+    static SDL_DriverSteam_Context *s_PairingContext = NULL;
+
+    if (enabled && s_PairingContext != NULL) {
+        return;
+    }
+
+    if (!enabled && s_PairingContext != ctx) {
+        return;
+    }
+
+    if (ctx->connected) {
+        return;
+    }
+
+    SetPairingState(ctx->device, enabled);
+
+    if (enabled) {
+        s_PairingContext = ctx;
+    } else {
+        s_PairingContext = NULL;
+    }
+}
+
+static void HIDAPI_DriverSteam_CommitPairing(SDL_DriverSteam_Context *ctx)
+{
+    CommitPairing(ctx->device);
+}
+
+static void SDLCALL SDL_PairingEnabledHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)userdata;
+    bool enabled = SDL_GetStringBoolean(hint, false);
+
+    HIDAPI_DriverSteam_SetPairingState(ctx, enabled);
+}
+
 static bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSteam_Context *ctx;
@@ -1005,6 +1078,7 @@ static bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
     if (!ctx) {
         return false;
     }
+    ctx->device = device;
     device->context = ctx;
 
 #ifdef SDL_PLATFORM_WIN32
@@ -1018,7 +1092,7 @@ static bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
     HIDAPI_SetDeviceName(device, "Steam Controller");
 
     // If this is a wireless dongle, request a wireless state update
-    if (device->product_id == USB_PRODUCT_VALVE_STEAM_CONTROLLER_DONGLE) {
+    if (IsDongle(device->product_id)) {
         unsigned char buf[65];
         int res;
 
@@ -1028,6 +1102,9 @@ static bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
         if (res < 0) {
             return SDL_SetError("Failed to send ID_DONGLE_GET_WIRELESS_STATE request");
         }
+
+        SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM_PAIRING_ENABLED,
+                            SDL_PairingEnabledHintChanged, ctx);
 
         // We will enumerate any attached controllers in UpdateDevice()
         return true;
@@ -1255,6 +1332,9 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
                 return false;
             }
 
+            // We'll automatically accept this controller if we're in pairing mode
+            HIDAPI_DriverSteam_CommitPairing(ctx);
+
             joystick = SDL_GetJoystickFromID(device->joysticks[0]);
             ctx->connected = true;
         }
@@ -1277,6 +1357,14 @@ static void HIDAPI_DriverSteam_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 
 static void HIDAPI_DriverSteam_FreeDevice(SDL_HIDAPI_Device *device)
 {
+    SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
+
+    if (IsDongle(device->product_id)) {
+        SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM_PAIRING_ENABLED,
+                               SDL_PairingEnabledHintChanged, ctx);
+
+        HIDAPI_DriverSteam_SetPairingState(ctx, false);
+    }
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam = {
