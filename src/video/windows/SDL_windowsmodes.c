@@ -355,11 +355,10 @@ static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info,
     display.driverdata = displaydata;
     WIN_GetDisplayBounds(_this, &display, &displaydata->bounds);
     index = SDL_AddVideoDisplay(&display, send_event);
-    SDL_assert(index == *display_index);
     SDL_free(display.name);
 
 done:
-    *display_index += 1;
+    *display_index = index + 1;
 }
 
 typedef struct _WIN_AddDisplaysData
