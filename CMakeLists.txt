@@ -1295,7 +1295,6 @@ if(ANDROID)
     set(SDL_JOYSTICK_ANDROID 1)
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/joystick/android/*.c"
-      "${SDL3_SOURCE_DIR}/src/joystick/steam/*.c"
     )
     set(HAVE_SDL_JOYSTICK TRUE)
   endif()
@@ -1741,7 +1740,6 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       set(SDL_JOYSTICK_LINUX 1)
       sdl_glob_sources(
         "${SDL3_SOURCE_DIR}/src/joystick/linux/*.c"
-        "${SDL3_SOURCE_DIR}/src/joystick/steam/*.c"
       )
       set(HAVE_SDL_JOYSTICK TRUE)
     endif()
@@ -2146,7 +2144,6 @@ elseif(APPLE)
   if(SDL_JOYSTICK)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/apple/*.m")
     if(IOS OR TVOS OR VISIONOS OR WATCHOS)
-      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/steam/*.c")
       set(SDL_JOYSTICK_MFI 1)
       if(IOS OR VISIONOS OR WATCHOS)
         set(SDL_FRAMEWORK_COREMOTION 1)
