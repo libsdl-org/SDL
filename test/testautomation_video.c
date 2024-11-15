@@ -1879,7 +1879,7 @@ static int SDLCALL video_setWindowCenteredOnDisplay(void *arg)
                     SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
                     SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
                 }
-                if (video_driver_is_wayland) {
+                if (video_driver_is_emscripten || video_driver_is_wayland) {
                     SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
                 } else {
                     SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
