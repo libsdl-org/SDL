@@ -178,6 +178,7 @@ static bool HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     joystick->nbuttons = 11;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
+    joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
 
     return true;
 }
