@@ -1997,7 +1997,46 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar
  */
 extern SDL_DECLSPEC long SDLCALL SDL_wcstol(const wchar_t *str, wchar_t **endp, int base);
 
+/**
+ * This works exactly like strlen() but doesn't require access to a C runtime.
+ *
+ * Counts the bytes in `str`, excluding the null terminator.
+ *
+ * If you need the length of a UTF-8 string, consider using SDL_utf8strlen().
+ *
+ * \param str The null-terminated string to read. Must not be NULL.
+ * \returns The length (in bytes, excluding the null terminator) of `src`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_strnlen
+ * \sa SDL_utf8strlen
+ * \sa SDL_utf8strnlen
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_strlen(const char *str);
+
+/**
+ * This works exactly like strnlen() but doesn't require access to a C runtime.
+ *
+ * Counts up to a maximum of `maxlen` bytes in `str`, excluding the null terminator.
+ *
+ * If you need the length of a UTF-8 string, consider using SDL_utf8strnlen().
+ *
+ * \param str The null-terminated string to read. Must not be NULL.
+ * \param maxlen The maximum amount of bytes to count.
+ * \returns The length (in bytes, excluding the null terminator) of `src`
+ *          but never more than `maxlen`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_strlen
+ * \sa SDL_utf8strlen
+ * \sa SDL_utf8strnlen
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_strnlen(const char *str, size_t maxlen);
 
 /**
