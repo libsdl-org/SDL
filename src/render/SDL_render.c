@@ -5406,10 +5406,14 @@ static bool CreateDebugTextAtlas(SDL_Renderer *renderer)
     SDL_assert((row < rows) || ((row == rows) && (column == 0)));  // make sure we didn't overflow the surface.
 
     // Convert temp surface into texture
-    renderer->debug_char_texture_atlas = SDL_CreateTextureFromSurface(renderer, atlas);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, atlas);
+    if (texture) {
+        SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+        renderer->debug_char_texture_atlas = texture;
+    }
     SDL_DestroySurface(atlas);
 
-    return (renderer->debug_char_texture_atlas != NULL);
+    return texture != NULL;
 }
 
 static bool DrawDebugCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
