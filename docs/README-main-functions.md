@@ -204,3 +204,15 @@ data, as this pointer will not be provided to your app again.
 
 The SDL_AppResult value that terminated the app is provided here, in case
 it's useful to know if this was a successful or failing run of the app.
+
+##Summary and Best Practices 
+
+Always Include SDL_main.h in One Source File: When working with SDL, remember that SDL_main.h must only be included in one source file in your project. Including it in multiple files will lead to conflicts and undefined behavior.
+
+Avoid Redefining main: If you're using SDL's entry point system (which renames main to SDL_main), do not define main yourself. SDL takes care of this for you, and redefining it can cause issues, especially when linking with SDL libraries.
+
+Using SDL's Callback System: If you're working with more complex scenarios, such as requiring more control over your application's flow (e.g., with games or apps that need extensive event handling), consider using SDL's callback system. Define the necessary callbacks and SDL will handle initialization, event processing, and cleanup automatically.
+
+Platform-Specific Considerations: On platforms like Windows, SDL handles the platform-specific entry point (like WinMain) automatically. This means you don't need to worry about writing platform-specific entry code when using SDL.
+
+When to Skip SDL_main.h: If you do not require SDL's custom entry point (for example, if you're integrating SDL into an existing application or a scripting environment), you can omit SDL_main.h. However, this will limit SDL's ability to abstract away platform-specific entry point details.
