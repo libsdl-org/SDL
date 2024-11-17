@@ -90,7 +90,8 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         if: ${{ matrix.platform.platform == 'msvc' }}
         with:
-          arch: ${{ matrix.platform.msvc-vcvars }}
+          arch: ${{ matrix.platform.msvc-vcvars-arch }}
+          sdk: ${{ matrix.platform.msvc-vcvars-sdk }}
       - name: 'Set up Windows GDK Desktop'
         uses: ./.github/actions/setup-gdk-desktop
         if: ${{ matrix.platform.setup-gdk-folder != '' }}

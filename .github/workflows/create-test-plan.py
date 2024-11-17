@@ -205,7 +205,8 @@ class JobDetails:
     msys2_env: str = ""
     msys2_no_perl: bool = False
     werror: bool = True
-    msvc_vcvars: str = ""
+    msvc_vcvars_arch: str = ""
+    msvc_vcvars_sdk: str = ""
     msvc_project: str = ""
     msvc_project_flags: list[str] = dataclasses.field(default_factory=list)
     setup_ninja: bool = False
@@ -267,7 +268,8 @@ class JobDetails:
             "android-mk": self.android_mk,
             "werror": self.werror,
             "sudo": self.sudo,
-            "msvc-vcvars": self.msvc_vcvars,
+            "msvc-vcvars-arch": self.msvc_vcvars_arch,
+            "msvc-vcvars-sdk": self.msvc_vcvars_sdk,
             "msvc-project": self.msvc_project,
             "msvc-project-flags": my_shlex_join(self.msvc_project_flags),
             "setup-ninja": self.setup_ninja,
@@ -391,14 +393,15 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 job.msvc_project_flags.append(f"-p:Platform={msvc_platform}")
             match spec.msvc_arch:
                 case MsvcArch.X86:
-                    job.msvc_vcvars = "x64_x86"
+                    job.msvc_vcvars_arch = "x64_x86"
                 case MsvcArch.X64:
-                    job.msvc_vcvars = "x64"
+                    job.msvc_vcvars_arch = "x64"
                 case MsvcArch.Arm32:
-                    job.msvc_vcvars = "x64_arm"
+                    job.msvc_vcvars_arch = "x64_arm"
+                    job.msvc_vcvars_sdk = "10.0.22621.0"  # 10.0.26100.0 dropped ARM32 um and ucrt libraries
                     job.run_tests = False
                 case MsvcArch.Arm64:
-                    job.msvc_vcvars = "x64_arm64"
+                    job.msvc_vcvars_arch = "x64_arm64"
                     job.run_tests = False
             if spec.gdk:
                 job.setup_gdk_folder = "VisualC-GDK"
