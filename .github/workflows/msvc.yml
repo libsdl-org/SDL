@@ -11,17 +11,17 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: 'Windows (x64)',                vcvars: 'x64',        artifact: 'SDL-VC-x64',         project: 'VisualC/SDL.sln', projectflags: '/p:Platform=x64', }
-        - { name: 'Windows (x86)',                vcvars: 'x64_x86',    artifact: 'SDL-VC-x86',         project: 'VisualC/SDL.sln', projectflags: '/p:Platform=Win32', }
-        - { name: 'Windows static VCRT (x64)',    vcvars: 'x64',        artifact: 'SDL-static-crt-x64', cmake-args: '-DSDL_FORCE_STATIC_VCRT=ON', }
-        - { name: 'Windows static VCRT (x86)',    vcvars: 'x64_x86',    artifact: 'SDL-static-crt-x86', cmake-args: '-DSDL_FORCE_STATIC_VCRT=ON', }
-        - { name: 'Windows (clang-cl x64)',       vcvars: 'x64',        artifact: 'SDL-clang-cl-x64',   cmake-args: '-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl', cppflags: '/clang:-m64', ldflags: '/MACHINE:X64',  }
-        - { name: 'Windows (clang-cl x86)',       vcvars: 'x86',        artifact: 'SDL-clang-cl-x86',   cmake-args: '-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl', cppflags: '/clang:-m32', ldflags: '/MACHINE:X86', }
-        - { name: 'Windows (ARM)',                vcvars: 'x64_arm',    artifact: 'SDL-VC-arm32', }
-        - { name: 'Windows (ARM64)',              vcvars: 'x64_arm64',  artifact: 'SDL-VC-arm64', }
-        - { name: 'UWP (x64)',                    vcvars: 'x64',        artifact: 'SDL-VC-UWP',         cmake-args: '-DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0" -DSDL_TESTS=OFF',
+        - { name: 'Windows (x64)',                vcvars-arch: 'x64',        artifact: 'SDL-VC-x64',         project: 'VisualC/SDL.sln', projectflags: '/p:Platform=x64', }
+        - { name: 'Windows (x86)',                vcvars-arch: 'x64_x86',    artifact: 'SDL-VC-x86',         project: 'VisualC/SDL.sln', projectflags: '/p:Platform=Win32', }
+        - { name: 'Windows static VCRT (x64)',    vcvars-arch: 'x64',        artifact: 'SDL-static-crt-x64', cmake-args: '-DSDL_FORCE_STATIC_VCRT=ON', }
+        - { name: 'Windows static VCRT (x86)',    vcvars-arch: 'x64_x86',    artifact: 'SDL-static-crt-x86', cmake-args: '-DSDL_FORCE_STATIC_VCRT=ON', }
+        - { name: 'Windows (clang-cl x64)',       vcvars-arch: 'x64',        artifact: 'SDL-clang-cl-x64',   cmake-args: '-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl', cppflags: '/clang:-m64', ldflags: '/MACHINE:X64',  }
+        - { name: 'Windows (clang-cl x86)',       vcvars-arch: 'x86',        artifact: 'SDL-clang-cl-x86',   cmake-args: '-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl', cppflags: '/clang:-m32', ldflags: '/MACHINE:X86', }
+        - { name: 'Windows (ARM)',                vcvars-arch: 'x64_arm',    artifact: 'SDL-VC-arm32',       vcvars-sdk: '10.0.22621.0'}
+        - { name: 'Windows (ARM64)',              vcvars-arch: 'x64_arm64',  artifact: 'SDL-VC-arm64', }
+        - { name: 'UWP (x64)',                    vcvars-arch: 'x64',        artifact: 'SDL-VC-UWP',         cmake-args: '-DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0" -DSDL_TESTS=OFF',
             project: 'VisualC-WinRT/SDL-UWP.sln', projectflags: '/p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0', }
-        - { name: 'GDK (x64)',                    vcvars: 'x64',        artifact: '',                   no-cmake: true, gdk: true,
+        - { name: 'GDK (x64)',                    vcvars-arch: 'x64',        artifact: '',                   no-cmake: true, gdk: true,
             project: 'VisualC-GDK/SDL.sln', projectflags: '/p:Platform=Gaming.Desktop.x64', }
 
     steps:
@@ -31,7 +31,9 @@ jobs:
       uses: ./.github/actions/setup-ninja
     - uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: ${{ matrix.platform.vcvars }}
+        arch: ${{ matrix.platform.vcvars-arch }}
+        sdk: ${{ matrix.platform.vcvars-sdk }}
+
     - name: 'Set up Windows GDK Desktop'
       uses: ./.github/actions/setup-gdk-desktop
       if: ${{ matrix.platform.gdk }}
