@@ -201,13 +201,6 @@ typedef enum SDL_PackedLayout
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF16) || \
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF32)))
 
-#define SDL_ISPIXELFORMAT_ALPHA(format)   \
-    ((SDL_ISPIXELFORMAT_PACKED(format) && \
-     ((SDL_PIXELORDER(format) == SDL_PACKEDORDER_ARGB) || \
-      (SDL_PIXELORDER(format) == SDL_PACKEDORDER_RGBA) || \
-      (SDL_PIXELORDER(format) == SDL_PACKEDORDER_ABGR) || \
-      (SDL_PIXELORDER(format) == SDL_PACKEDORDER_BGRA))))
-
 #define SDL_ISPIXELFORMAT_10BIT(format)    \
       (!SDL_ISPIXELFORMAT_FOURCC(format) && \
        ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED32) && \
@@ -217,6 +210,18 @@ typedef enum SDL_PackedLayout
       (!SDL_ISPIXELFORMAT_FOURCC(format) && \
        ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF16) || \
         (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF32)))
+
+#define SDL_ISPIXELFORMAT_ALPHA(format)   \
+    ((SDL_ISPIXELFORMAT_PACKED(format) && \
+      ((SDL_PIXELORDER(format) == SDL_PACKEDORDER_ARGB) || \
+       (SDL_PIXELORDER(format) == SDL_PACKEDORDER_RGBA) || \
+       (SDL_PIXELORDER(format) == SDL_PACKEDORDER_ABGR) || \
+       (SDL_PIXELORDER(format) == SDL_PACKEDORDER_BGRA))) || \
+     (SDL_ISPIXELFORMAT_ARRAY(format) && \
+      ((SDL_PIXELORDER(format) == SDL_ARRAYORDER_ARGB) || \
+       (SDL_PIXELORDER(format) == SDL_ARRAYORDER_RGBA) || \
+       (SDL_PIXELORDER(format) == SDL_ARRAYORDER_ABGR) || \
+       (SDL_PIXELORDER(format) == SDL_ARRAYORDER_BGRA))))
 
 /* The flag is set to 1 because 0x1? is not in the printable ASCII range */
 #define SDL_ISPIXELFORMAT_FOURCC(format)    \

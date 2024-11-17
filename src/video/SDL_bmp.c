@@ -664,17 +664,8 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
                          SDL_BITSPERPIXEL(surface->format));
             goto done;
         }
-    } else if ((SDL_BITSPERPIXEL(surface->format) == 24) && !save32bit &&
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-               (surface->fmt->Rmask == 0x00FF0000) &&
-               (surface->fmt->Gmask == 0x0000FF00) &&
-               (surface->fmt->Bmask == 0x000000FF)
-#else
-               (surface->fmt->Rmask == 0x000000FF) &&
-               (surface->fmt->Gmask == 0x0000FF00) &&
-               (surface->fmt->Bmask == 0x00FF0000)
-#endif
-    ) {
+    } else if ((surface->format == SDL_PIXELFORMAT_BGR24 && !save32bit) ||
+               (surface->format == SDL_PIXELFORMAT_BGRA32 && save32bit)) {
         intermediate_surface = surface;
     } else {
         SDL_PixelFormat pixel_format;

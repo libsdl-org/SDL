@@ -2597,6 +2597,7 @@ bool SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a)
             goto done;
         }
         SDL_SetSurfaceColorspace(tmp, surface->colorspace);
+        SDL_SetSurfaceBlendMode(tmp, SDL_BLENDMODE_NONE);
 
         float *pixels = (float *)tmp->pixels;
         pixels[0] = r;
