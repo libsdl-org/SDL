@@ -412,7 +412,7 @@ dep_option(SDL_SSE                 "Use SSE assembly routines" ON "SDL_ASSEMBLY;
 dep_option(SDL_SSE2                "Use SSE2 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE3                "Use SSE3 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_MMX                 "Use MMX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
-dep_option(SDL_3DNOW               "Use 3Dnow! MMX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
+dep_option(SDL_3DNOW               "Use 3Dnow! MMX assembly routines" OFF "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_ALTIVEC             "Use Altivec assembly routines" ON "SDL_ASSEMBLY" OFF)
 dep_option(SDL_ARMSIMD             "Use SIMD assembly blitters on ARM" OFF "SDL_ASSEMBLY;SDL_CPU_ARM32" OFF)
 dep_option(SDL_ARMNEON             "Use NEON assembly blitters on ARM" OFF "SDL_ASSEMBLY;SDL_CPU_ARM32" OFF)

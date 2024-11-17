@@ -1672,7 +1672,7 @@ Optional Features:
   --enable-ssemath        Allow GCC to use SSE floating point math
                           [default=maybe]
   --enable-mmx            use MMX assembly routines [default=yes]
-  --enable-3dnow          use 3DNow! assembly routines [default=yes]
+  --enable-3dnow          use 3DNow! assembly routines [default=no]
   --enable-sse            use SSE assembly routines [default=yes]
   --enable-sse2           use SSE2 assembly routines [default=maybe]
   --enable-sse3           use SSE3 assembly routines [default=maybe]
@@ -20699,7 +20699,7 @@ if test ${enable_3dnow+y}
 then :
   enableval=$enable_3dnow;
 else $as_nop
-  enable_3dnow=yes
+  enable_3dnow=no
 fi
 
     if test x$enable_3dnow = xyes; then
@@ -21088,7 +21088,7 @@ printf "%s\n" "#define HAVE_ALTIVEC_H 1" >>confdefs.h
     fi
 fi
 
-    # Check whether --enable-lsx was given.
+# Check whether --enable-lsx was given.
 if test ${enable_lsx+y}
 then :
   enableval=$enable_lsx;
@@ -21096,20 +21096,20 @@ else $as_nop
   enable_lsx=yes
 fi
 
-    if test x$enable_lsx = xyes; then
-        save_CFLAGS="$CFLAGS"
-        have_gcc_lsx=no
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -mlsx option" >&5
+if test x$enable_lsx = xyes; then
+    save_CFLAGS="$CFLAGS"
+    have_gcc_lsx=no
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -mlsx option" >&5
 printf %s "checking for GCC -mlsx option... " >&6; }
-        lsx_CFLAGS="-mlsx"
-        CFLAGS="$save_CFLAGS $lsx_CFLAGS"
+    lsx_CFLAGS="-mlsx"
+    CFLAGS="$save_CFLAGS $lsx_CFLAGS"
 
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-        #ifndef __loongarch_sx
-        #error Assembler CPP flag not enabled
-        #endif
+    #ifndef __loongarch_sx
+    #error Assembler CPP flag not enabled
+    #endif
 
 int
 main (void)
@@ -21124,19 +21124,19 @@ then :
   have_gcc_lsx=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_lsx" >&5
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_lsx" >&5
 printf "%s\n" "$have_gcc_lsx" >&6; }
-        CFLAGS="$save_CFLAGS"
+    CFLAGS="$save_CFLAGS"
 
-        if test x$have_gcc_lsx = xyes; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $lsx_CFLAGS"
-            SUMMARY_math="${SUMMARY_math} lsx"
-        fi
+    if test x$have_gcc_lsx = xyes; then
+       EXTRA_CFLAGS="$EXTRA_CFLAGS $lsx_CFLAGS"
+       SUMMARY_math="${SUMMARY_math} lsx"
     fi
+fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for lsxintrin.h" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for lsxintrin.h" >&5
 printf %s "checking for lsxintrin.h... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <lsxintrin.h>
 int
@@ -21154,13 +21154,13 @@ else $as_nop
   have_lsxintrin_h_hdr=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_lsxintrin_h_hdr" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_lsxintrin_h_hdr" >&5
 printf "%s\n" "$have_lsxintrin_h_hdr" >&6; }
-    if test x$have_lsxintrin_h_hdr = xyes; then
+if test x$have_lsxintrin_h_hdr = xyes; then
 
 printf "%s\n" "#define HAVE_LSXINTRIN_H 1" >>confdefs.h
 
-    fi
+fi
 
 CheckOSS()
 {

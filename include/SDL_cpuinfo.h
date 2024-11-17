@@ -59,9 +59,11 @@ _m_prefetch(void *__P)
 #ifndef __MMX__
 #define __MMX__
 #endif
+/*
 #ifndef __3dNOW__
 #define __3dNOW__
 #endif
+*/
 #endif
 #ifndef __SSE__
 #define __SSE__
