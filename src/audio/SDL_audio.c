@@ -700,8 +700,6 @@ static int SDLCALL SDL_RunAudio(void *userdata)
 
     /* Loop, filling the audio buffers */
     while (!SDL_AtomicGet(&device->shutdown)) {
-        data_len = device->callbackspec.size;
-
         /* Fill the current buffer with sound */
         if (!device->stream && SDL_AtomicGet(&device->enabled)) {
             data = current_audio.impl.GetDeviceBuf(device);
@@ -727,6 +725,8 @@ static int SDLCALL SDL_RunAudio(void *userdata)
         if (data == NULL) {
             data = device->work_buffer;
         }
+
+        data_len = device->callbackspec.size;
 
         /* !!! FIXME: this should be LockDevice. */
         SDL_LockMutex(device->mixer_lock);
