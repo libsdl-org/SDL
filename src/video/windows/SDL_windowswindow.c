@@ -1651,7 +1651,6 @@ void WIN_UpdateClipCursor(SDL_Window *window)
             SDL_zero(data->cursor_clipped_rect);
         }
     }
-    data->last_updated_clipcursor = SDL_GetTicks();
 }
 
 bool WIN_SetWindowHitTest(SDL_Window *window, bool enabled)

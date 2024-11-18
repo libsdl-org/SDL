@@ -65,17 +65,6 @@ static void SDLCALL SDL_MouseDoubleClickTimeChanged(void *userdata, const char *
     }
 }
 
-static void SDLCALL SDL_MouseRelativeClipIntervalChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
-
-    if (hint && *hint) {
-        mouse->relative_mode_clip_interval = SDL_atoi(hint);
-    } else {
-        mouse->relative_mode_clip_interval = 3000;
-    }
-}
-
 static void SDLCALL SDL_MouseDoubleClickRadiusChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
@@ -248,9 +237,6 @@ bool SDL_PreInitMouse(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
                         SDL_MouseRelativeCursorVisibleChanged, mouse);
-
-    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_CLIP_INTERVAL,
-                        SDL_MouseRelativeClipIntervalChanged, mouse);
 
     mouse->was_touch_mouse_events = false; // no touch to mouse movement event pending
 
@@ -1059,9 +1045,6 @@ void SDL_QuitMouse(void)
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
                         SDL_MouseRelativeCursorVisibleChanged, mouse);
-
-    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_CLIP_INTERVAL,
-                        SDL_MouseRelativeClipIntervalChanged, mouse);
 
     for (int i = SDL_mouse_count; i--; ) {
         SDL_RemoveMouse(SDL_mice[i].instance_id, false);
