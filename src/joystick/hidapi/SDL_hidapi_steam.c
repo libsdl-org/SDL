@@ -1142,6 +1142,42 @@ static void HIDAPI_DriverSteam_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, S
 {
 }
 
+static bool SetHomeLED(SDL_HIDAPI_Device *device, Uint8 value)
+{
+    unsigned char buf[65];
+    int nSettings = 0;
+
+    SDL_memset(buf, 0, 65);
+    buf[1] = ID_SET_SETTINGS_VALUES;
+    ADD_SETTING(SETTING_LED_USER_BRIGHTNESS, value);
+    buf[2] = (unsigned char)(nSettings * 3);
+    if (SetFeatureReport(device, buf, 3 + nSettings * 3) < 0) {
+        return SDL_SetError("Couldn't write feature report");
+    }
+    return true;
+}
+
+static void SDLCALL SDL_HomeLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)userdata;
+
+    if (hint && *hint) {
+        int value;
+
+        if (SDL_strchr(hint, '.') != NULL) {
+            value = (int)(100.0f * SDL_atof(hint));
+            if (value > 255) {
+                value = 255;
+            }
+        } else if (SDL_GetStringBoolean(hint, true)) {
+            value = 100;
+        } else {
+            value = 0;
+        }
+        SetHomeLED(ctx->device, (Uint8)value);
+    }
+}
+
 static bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
@@ -1175,6 +1211,9 @@ static bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, update_rate_in_hz);
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, update_rate_in_hz);
+
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM_HOME_LED,
+                        SDL_HomeLEDHintChanged, ctx);
 
     return true;
 }
@@ -1395,6 +1434,11 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverSteam_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+    SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
+
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM_HOME_LED,
+                           SDL_HomeLEDHintChanged, ctx);
+
     CloseSteamController(device);
 }
 
