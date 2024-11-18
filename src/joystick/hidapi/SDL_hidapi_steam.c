@@ -1250,7 +1250,9 @@ static void ControllerDisconnected(SDL_HIDAPI_Device *device, SDL_Joystick **joy
 {
     SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
 
-    HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+    if (device->joysticks) {
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+    }
     ctx->connected = false;
     *joystick = NULL;
 }
