@@ -705,8 +705,8 @@ static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xd
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
-    internal->screen_width = width;
-    internal->screen_height = height;
+    internal->logical_width = width;
+    internal->logical_height = height;
     internal->has_logical_size = true;
 }
 
@@ -854,8 +854,8 @@ static void display_handle_geometry(void *data,
         internal->x = x;
         internal->y = y;
     }
-    internal->physical_width = physical_width;
-    internal->physical_height = physical_height;
+    internal->physical_width_mm = physical_width;
+    internal->physical_height_mm = physical_height;
 
     // The model is only used for the output name if wl_output or xdg-output haven't provided a description.
     if (internal->display == 0 && !internal->placeholder.name) {
@@ -867,7 +867,7 @@ static void display_handle_geometry(void *data,
     case WL_OUTPUT_TRANSFORM_##in:                       \
         internal->orientation = SDL_ORIENTATION_##out; \
         break;
-    if (internal->physical_width >= internal->physical_height) {
+    if (internal->physical_width_mm >= internal->physical_height_mm) {
         switch (transform) {
             TF_CASE(NORMAL, LANDSCAPE)
             TF_CASE(90, PORTRAIT)
@@ -911,8 +911,8 @@ static void display_handle_mode(void *data,
          * handle_done and xdg-output coordinates are pre-transformed.
          */
         if (!internal->has_logical_size) {
-            internal->screen_width = width;
-            internal->screen_height = height;
+            internal->logical_width = width;
+            internal->logical_height = height;
         }
 
         internal->refresh = refresh;
@@ -926,7 +926,6 @@ static void display_handle_done(void *data,
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
     SDL_VideoData *video = internal->videodata;
     SDL_DisplayMode native_mode, desktop_mode;
-    SDL_VideoDisplay *dpy;
 
     /*
      * When using xdg-output, two wl-output.done events will be emitted:
@@ -943,7 +942,7 @@ static void display_handle_done(void *data,
     }
 
     // If the display was already created, reset and rebuild the mode list.
-    dpy = SDL_GetVideoDisplay(internal->display);
+    SDL_VideoDisplay *dpy = SDL_GetVideoDisplay(internal->display);
     if (dpy) {
         SDL_ResetFullscreenDisplayModes(dpy);
     }
@@ -964,29 +963,29 @@ static void display_handle_done(void *data,
     native_mode.refresh_rate_denominator = 1000;
 
     if (internal->has_logical_size) { // If xdg-output is present...
-        if (native_mode.w != internal->screen_width || native_mode.h != internal->screen_height) {
+        if (native_mode.w != internal->logical_width || native_mode.h != internal->logical_height) {
             // ...and the compositor scales the logical viewport...
             if (video->viewporter) {
                 // ...and viewports are supported, calculate the true scale of the output.
-                internal->scale_factor = (double)native_mode.w / (double)internal->screen_width;
+                internal->scale_factor = (double)native_mode.w / (double)internal->logical_width;
             } else {
                 // ...otherwise, the 'native' pixel values are a multiple of the logical screen size.
-                internal->pixel_width = internal->screen_width * (int)internal->scale_factor;
-                internal->pixel_height = internal->screen_height * (int)internal->scale_factor;
+                internal->pixel_width = internal->logical_width * (int)internal->scale_factor;
+                internal->pixel_height = internal->logical_height * (int)internal->scale_factor;
             }
         } else {
             /* ...and the output viewport is not scaled in the global compositing
              * space, the output dimensions need to be divided by the scale factor.
              */
-            internal->screen_width /= (int)internal->scale_factor;
-            internal->screen_height /= (int)internal->scale_factor;
+            internal->logical_width /= (int)internal->scale_factor;
+            internal->logical_height /= (int)internal->scale_factor;
         }
     } else {
         /* Calculate the points from the pixel values, if xdg-output isn't present.
          * Use the native mode pixel values since they are pre-transformed.
          */
-        internal->screen_width = native_mode.w / (int)internal->scale_factor;
-        internal->screen_height = native_mode.h / (int)internal->scale_factor;
+        internal->logical_width = native_mode.w / (int)internal->scale_factor;
+        internal->logical_height = native_mode.h / (int)internal->scale_factor;
     }
 
     // The scaled desktop mode
@@ -994,8 +993,8 @@ static void display_handle_done(void *data,
     desktop_mode.format = SDL_PIXELFORMAT_XRGB8888;
 
     if (!video->scale_to_display_enabled) {
-        desktop_mode.w = internal->screen_width;
-        desktop_mode.h = internal->screen_height;
+        desktop_mode.w = internal->logical_width;
+        desktop_mode.h = internal->logical_height;
         desktop_mode.pixel_density = (float)internal->scale_factor;
     } else {
         desktop_mode.w = native_mode.w;
@@ -1029,8 +1028,8 @@ static void display_handle_done(void *data,
         desktop_mode.pixel_density = 1.0f;
 
         for (i = (int)internal->scale_factor; i > 0; --i) {
-            desktop_mode.w = internal->screen_width * i;
-            desktop_mode.h = internal->screen_height * i;
+            desktop_mode.w = internal->logical_width * i;
+            desktop_mode.h = internal->logical_height * i;
             SDL_AddFullscreenDisplayMode(dpy, &desktop_mode);
         }
     }
@@ -1043,7 +1042,7 @@ static void display_handle_done(void *data,
 
     if (internal->display == 0) {
         // First time getting display info, initialize the VideoDisplay
-        if (internal->physical_width >= internal->physical_height) {
+        if (internal->physical_width_mm >= internal->physical_height_mm) {
             internal->placeholder.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
         } else {
             internal->placeholder.natural_orientation = SDL_ORIENTATION_PORTRAIT;
