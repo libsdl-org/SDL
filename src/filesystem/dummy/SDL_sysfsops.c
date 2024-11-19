@@ -58,5 +58,24 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     return SDL_Unsupported();
 }
 
+struct SDL_MemoryMappedFile {};
+
+SDL_MemoryMappedFile *SDL_SYS_MemoryMapFile(const char *file, size_t offset) {
+    (void)file; (void)offset;
+    SDL_Unsupported();
+    return NULL;
+}
+
+bool SDL_SYS_UnmapMemoryFile(SDL_MemoryMappedFile *mmfile) {
+    (void)mmfile;
+    return SDL_Unsupported();
+}
+
+void *SDL_SYS_GetMemoryMappedData(const SDL_MemoryMappedFile *mmfile, size_t *datasize) {
+    (void)mmfile; (void)datasize;
+    SDL_Unsupported();
+    return NULL;
+}
+
 #endif // SDL_FSOPS_DUMMY
 

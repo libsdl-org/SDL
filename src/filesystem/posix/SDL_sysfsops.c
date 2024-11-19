@@ -33,6 +33,9 @@
 #include <errno.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
@@ -183,6 +186,69 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     info->access_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_atime);
 #endif
     return true;
+}
+
+/* define the internal SDL_MemoryMappedFile structure */
+struct SDL_MemoryMappedFile {
+    void *addr;
+    size_t size;
+};
+
+SDL_MemoryMappedFile *SDL_SYS_MemoryMapFile(const char *file, size_t offset) {
+    struct stat statbuf;
+    SDL_MemoryMappedFile *mmfile;
+
+    const int fd = open(file, O_RDONLY);
+    if (fd < 0) {
+        SDL_SetError("Can't open file: %s", strerror(errno));
+        return NULL;
+    }
+    if (fstat(fd, &statbuf)) {
+        close(fd);
+        SDL_SetError("Can't stat: %s", strerror(errno));
+        return NULL;
+    }
+    if (offset >= statbuf.st_size) {
+        close(fd);
+        SDL_SetError("Can't use bigger offset");
+        return NULL;
+    }
+    if ((mmfile = SDL_malloc(sizeof(SDL_MemoryMappedFile))) == NULL) {
+        close(fd);
+        SDL_SetError("Can't allocate SDL_MemoryMappedFile");
+        return NULL;
+    }
+    mmfile->size = statbuf.st_size - offset;
+    if ((mmfile->addr = mmap(NULL, mmfile->size, PROT_READ, MAP_PRIVATE, fd, offset)) == NULL) {
+        close(fd);
+        SDL_free(mmfile);
+        SDL_SetError("Can't mmap: %s", strerror(errno));
+        return NULL;
+    }
+    close(fd); /* file descriptor can be closed after mapping the file */
+    return mmfile;
+}
+
+bool SDL_SYS_UnmapMemoryFile(SDL_MemoryMappedFile *mmfile) {
+    if (mmfile->addr == NULL) {
+        return SDL_SetError("Invalid memory mapped file");
+    }
+    if (munmap(mmfile->addr, mmfile->size)) {
+        return SDL_SetError("Can't munmap: %s", strerror(errno));
+    }
+    SDL_free(mmfile);
+    return true;
+}
+
+void * SDL_SYS_GetMemoryMappedData(const SDL_MemoryMappedFile *mmfile, size_t *datasize) {
+    if ((mmfile == NULL) || (mmfile->addr == NULL)) {
+        SDL_SetError("Invalid memory mapped file");
+        return NULL;
+    }
+    if (datasize != NULL) {
+        *datasize = mmfile->size;
+    }
+    return mmfile->addr;
 }
 
 #endif // SDL_FSOPS_POSIX

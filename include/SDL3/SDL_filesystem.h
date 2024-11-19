@@ -447,6 +447,62 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo 
  */
 extern SDL_DECLSPEC char ** SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
 
+/**
+ * The memory mapped file structure.
+ *
+ * This operates an opaque handle.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
+typedef struct SDL_MemoryMappedFile SDL_MemoryMappedFile;
+
+/**
+ * Memory map all the data from a file path.
+ *
+ * The data will not be loaded into the memory right away, but the
+ * operating system will create memory region where you can read from.
+ * Every read from that memory region will cause the operating system
+ * to load that specific part from the file to RAM and cache it there.
+ *
+ * You have to unmap the file.
+ *
+ * \param file the path to read all available data from.
+ * \param offset the absolute offset of the file where the mapping
+ *               should start.
+ * \returns a pointer to a new SDL_MemoryMappedFile structure or NULL on
+ *          failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ */
+extern SDL_DECLSPEC SDL_MemoryMappedFile * SDLCALL SDL_MemoryMapFile(const char *file, size_t offset);
+
+/**
+ * Unmap a memory mapped file.
+ *
+ * This will unmap a previously mapped memory file.
+ *
+ * \param mmfile a pointer to SDL_MemoryMappedFile
+ * \returns true when the operation was successful or false on failure;
+ *          call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_UnmapMemoryFile(SDL_MemoryMappedFile *mmfile);
+
+/**
+ * Get the data and size from a memory mapped file.
+ *
+ * This will return a pointer to the memory mapped file content.
+ *
+ * \param mmfile a pointer to SDL_MemoryMappedFile
+ * \param datasize if not NULL, will store the number of bytes mapped
+ * \returns the data or NULL on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+ extern SDL_DECLSPEC void * SDLCALL SDL_GetMemoryMappedData(const SDL_MemoryMappedFile *mmfile, size_t *datasize);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

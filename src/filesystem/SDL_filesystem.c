@@ -500,6 +500,32 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 }
 
 
+SDL_MemoryMappedFile * SDL_MemoryMapFile(const char *file, size_t offset) {
+    if (file == NULL) {
+        SDL_InvalidParamError("file");
+        return NULL;
+    }
+    return SDL_SYS_MemoryMapFile(file, offset);
+}
+
+
+bool SDL_UnmapMemoryFile(SDL_MemoryMappedFile *mmfile) {
+    if (mmfile == NULL) {
+        return SDL_InvalidParamError("mmfile");
+    }
+    return SDL_SYS_UnmapMemoryFile(mmfile);
+}
+
+
+void * SDL_GetMemoryMappedData(const SDL_MemoryMappedFile *mmfile, size_t *datasize) {
+    if (mmfile == NULL) {
+        SDL_InvalidParamError("mmfile");
+        return NULL;
+    }
+    return SDL_SYS_GetMemoryMappedData(mmfile, datasize);
+}
+
+
 void SDL_InitFilesystem(void)
 {
 }
