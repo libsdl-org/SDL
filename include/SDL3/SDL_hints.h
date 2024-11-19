@@ -1660,8 +1660,8 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_STEAM "SDL_JOYSTICK_HIDAPI_STEAM"
 
 /**
- * A variable controlling whether the Steam button LED should be turned on when
- * a Steam controller is opened.
+ * A variable controlling whether the Steam button LED should be turned on
+ * when a Steam controller is opened.
  *
  * The variable can be set to the following values:
  *
