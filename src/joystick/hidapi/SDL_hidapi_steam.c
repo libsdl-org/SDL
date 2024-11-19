@@ -296,7 +296,7 @@ static int WriteSegmentToSteamControllerPacketAssembler(SteamControllerPacketAss
 
 #define BLE_MAX_READ_RETRIES 8
 
-static int SetFeatureReport(SDL_HIDAPI_Device *dev, unsigned char uBuffer[65], int nActualDataLen)
+static int SetFeatureReport(SDL_HIDAPI_Device *dev, const unsigned char uBuffer[65], int nActualDataLen)
 {
     int nRet = -1;
 
@@ -305,7 +305,7 @@ static int SetFeatureReport(SDL_HIDAPI_Device *dev, unsigned char uBuffer[65], i
     if (dev->is_bluetooth) {
         int nSegmentNumber = 0;
         uint8_t uPacketBuffer[MAX_REPORT_SEGMENT_SIZE];
-        unsigned char *pBufferPtr = uBuffer + 1;
+        const unsigned char *pBufferPtr = uBuffer + 1;
 
         if (nActualDataLen < 1) {
             return -1;
@@ -1243,6 +1243,12 @@ static bool HIDAPI_DriverSteam_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joy
 
 static bool HIDAPI_DriverSteam_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
+    if (size == 65) {
+        if (SetFeatureReport(device, data, size) < 0) {
+            return SDL_SetError("Couldn't write feature report");
+        }
+        return true;
+    }
     return SDL_Unsupported();
 }
 
