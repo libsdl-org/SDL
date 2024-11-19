@@ -40,13 +40,15 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 
     SDL_joylist_item *item;
 
+    SDL_LockJoysticks();
+
     if (JoystickByIndex(gamepadEvent->index) != NULL) {
-        return 1;
+        goto done;
     }
 
     item = (SDL_joylist_item *)SDL_malloc(sizeof(SDL_joylist_item));
     if (!item) {
-        return 1;
+        goto done;
     }
 
     SDL_zerop(item);
@@ -55,14 +57,14 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     item->name = SDL_CreateJoystickName(0, 0, NULL, gamepadEvent->id);
     if (!item->name) {
         SDL_free(item);
-        return 1;
+        goto done;
     }
 
     item->mapping = SDL_strdup(gamepadEvent->mapping);
     if (!item->mapping) {
         SDL_free(item->name);
         SDL_free(item);
-        return 1;
+        goto done;
     }
 
     item->naxes = gamepadEvent->numAxes;
@@ -89,9 +91,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 
     ++numjoysticks;
 
-    SDL_LockJoysticks();
     SDL_PrivateJoystickAdded(item->device_instance);
-    SDL_UnlockJoysticks();
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Number of joysticks is %d", numjoysticks);
@@ -99,7 +99,8 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Added joystick with index %d", item->index);
 #endif
-
+done:
+    SDL_UnlockJoysticks();
     return 1;
 }
 
@@ -107,6 +108,8 @@ static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGa
 {
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
+
+    SDL_LockJoysticks();
 
     while (item) {
         if (item->index == gamepadEvent->index) {
@@ -117,7 +120,7 @@ static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGa
     }
 
     if (!item) {
-        return 1;
+        goto done;
     }
 
     if (item->joystick) {
@@ -137,16 +140,19 @@ static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGa
     // Need to decrement the joystick count before we post the event
     --numjoysticks;
 
-    SDL_LockJoysticks();
     SDL_PrivateJoystickRemoved(item->device_instance);
-    SDL_UnlockJoysticks();
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Removed joystick with id %d", item->device_instance);
 #endif
-    SDL_free(item->name);
-    SDL_free(item->mapping);
-    SDL_free(item);
+
+done:
+    SDL_UnlockJoysticks();
+    if (item) {
+        SDL_free(item->name);
+        SDL_free(item->mapping);
+        SDL_free(item);
+    }
     return 1;
 }
 
