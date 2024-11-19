@@ -63,7 +63,9 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         SDL_VideoDevice *device;
         SDL_CocoaVideoData *data;
 
-        Cocoa_RegisterApp();
+        if (!Cocoa_RegisterApp()) {
+            return NULL;
+        }
 
         // Initialize all variables that we clean on shutdown
         device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));

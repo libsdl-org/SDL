@@ -497,62 +497,68 @@ static void CreateApplicationMenus(void)
     [NSApp setWindowsMenu:windowMenu];
 }
 
-void Cocoa_RegisterApp(void)
+bool Cocoa_RegisterApp(void)
 {
     @autoreleasepool {
         // This can get called more than once! Be careful what you initialize!
 
-        if (NSApp == nil) {
-            [SDL3Application sharedApplication];
-            SDL_assert(NSApp != nil);
+        @try {
+            if (NSApp == nil) {
+                [SDL3Application sharedApplication];
+                SDL_assert(NSApp != nil);
 
-            s_bShouldHandleEventsInSDLApplication = true;
+                s_bShouldHandleEventsInSDLApplication = true;
 
-            if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, false)) {
-                [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-            }
+                if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, false)) {
+                    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+                }
 
-            /* If there aren't already menus in place, look to see if there's
-             * a nib we should use. If not, then manually create the basic
-             * menus we meed.
-             */
-            if ([NSApp mainMenu] == nil) {
-                bool nibLoaded;
+                /* If there aren't already menus in place, look to see if there's
+                * a nib we should use. If not, then manually create the basic
+                * menus we meed.
+                */
+                if ([NSApp mainMenu] == nil) {
+                    bool nibLoaded;
 
-                nibLoaded = LoadMainMenuNibIfAvailable();
-                if (!nibLoaded) {
-                    CreateApplicationMenus();
+                    nibLoaded = LoadMainMenuNibIfAvailable();
+                    if (!nibLoaded) {
+                        CreateApplicationMenus();
+                    }
+                }
+                [NSApp finishLaunching];
+                if ([NSApp delegate]) {
+                    /* The SDL app delegate calls this in didFinishLaunching if it's
+                    * attached to the NSApp, otherwise we need to call it manually.
+                    */
+                    [SDL3Application registerUserDefaults];
                 }
             }
-            [NSApp finishLaunching];
-            if ([NSApp delegate]) {
-                /* The SDL app delegate calls this in didFinishLaunching if it's
-                 * attached to the NSApp, otherwise we need to call it manually.
-                 */
-                [SDL3Application registerUserDefaults];
-            }
-        }
-        if (NSApp && !appDelegate) {
-            appDelegate = [[SDL3AppDelegate alloc] init];
+            if (NSApp && !appDelegate) {
+                appDelegate = [[SDL3AppDelegate alloc] init];
 
-            /* If someone else has an app delegate, it means we can't turn a
-             * termination into SDL_Quit, and we can't handle application:openFile:
-             */
-            if (![NSApp delegate]) {
-                /* Only register the URL event handler if we are being set as the
-                 * app delegate to avoid replacing any existing event handler.
-                 */
-                [[NSAppleEventManager sharedAppleEventManager]
-                    setEventHandler:appDelegate
-                        andSelector:@selector(handleURLEvent:withReplyEvent:)
-                      forEventClass:kInternetEventClass
-                         andEventID:kAEGetURL];
+                /* If someone else has an app delegate, it means we can't turn a
+                * termination into SDL_Quit, and we can't handle application:openFile:
+                */
+                if (![NSApp delegate]) {
+                    /* Only register the URL event handler if we are being set as the
+                    * app delegate to avoid replacing any existing event handler.
+                    */
+                    [[NSAppleEventManager sharedAppleEventManager]
+                        setEventHandler:appDelegate
+                            andSelector:@selector(handleURLEvent:withReplyEvent:)
+                        forEventClass:kInternetEventClass
+                            andEventID:kAEGetURL];
 
-                [(NSApplication *)NSApp setDelegate:appDelegate];
-            } else {
-                appDelegate->seenFirstActivate = YES;
+                    [(NSApplication *)NSApp setDelegate:appDelegate];
+                } else {
+                    appDelegate->seenFirstActivate = YES;
+                }
             }
+        } @catch (NSException* exception) {
+            const char* reason = [exception.reason UTF8String];
+            return SDL_SetError("Exception caught while registering app: %s", reason);
         }
+        return true;
     }
 }
 

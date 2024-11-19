@@ -23,7 +23,7 @@
 #ifndef SDL_cocoaevents_h_
 #define SDL_cocoaevents_h_
 
-extern void Cocoa_RegisterApp(void);
+extern bool Cocoa_RegisterApp(void);
 extern Uint64 Cocoa_GetEventTimestamp(NSTimeInterval nsTimestamp);
 extern void Cocoa_PumpEvents(SDL_VideoDevice *_this);
 extern int Cocoa_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
