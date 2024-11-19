@@ -2801,14 +2801,7 @@ SDL_FullscreenResult Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Windo
         // When the window style changes the title is cleared
         if (!fullscreen) {
             Cocoa_SetWindowTitle(_this, window);
-
             data.was_zoomed = NO;
-
-            if ([data.listener windowOperationIsPending:PENDING_OPERATION_MINIMIZE]) {
-                Cocoa_WaitForMiniaturizable(window);
-                [data.listener addPendingWindowOperation:PENDING_OPERATION_ENTER_FULLSCREEN];
-                [nswindow miniaturize:nil];
-            }
         }
 
         if (SDL_ShouldAllowTopmost() && fullscreen) {
@@ -2840,6 +2833,15 @@ SDL_FullscreenResult Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Windo
             } else {
                 SDL_SetWindowSafeAreaInsets(data.window, 0, 0, 0, 0);
             }
+        }
+
+        /* When coming out of fullscreen to minimize, this needs to happen after the window
+         * is made key again, or it won't minimize on 15.0 (Sequoia).
+         */
+        if (!fullscreen && [data.listener windowOperationIsPending:PENDING_OPERATION_MINIMIZE]) {
+            Cocoa_WaitForMiniaturizable(window);
+            [data.listener addPendingWindowOperation:PENDING_OPERATION_ENTER_FULLSCREEN];
+            [nswindow miniaturize:nil];
         }
 
         ScheduleContextUpdates(data);
