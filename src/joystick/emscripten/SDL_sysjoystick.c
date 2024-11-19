@@ -89,7 +89,9 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 
     ++numjoysticks;
 
+    SDL_LockJoysticks();
     SDL_PrivateJoystickAdded(item->device_instance);
+    SDL_UnlockJoysticks();
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Number of joysticks is %d", numjoysticks);
@@ -135,7 +137,9 @@ static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGa
     // Need to decrement the joystick count before we post the event
     --numjoysticks;
 
+    SDL_LockJoysticks();
     SDL_PrivateJoystickRemoved(item->device_instance);
+    SDL_UnlockJoysticks();
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Removed joystick with id %d", item->device_instance);
