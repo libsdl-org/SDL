@@ -1034,7 +1034,22 @@ static bool HIDAPI_DriverSteam_IsEnabled(void)
 
 static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return SDL_IsJoystickSteamController(vendor_id, product_id);
+    if (!SDL_IsJoystickSteamController(vendor_id, product_id)) {
+        return false;
+    }
+
+    if (IsDongle(product_id)) {
+        if (interface_number >= 1 && interface_number <= 4) {
+            // This is one of the wireless controller interfaces
+            return true;
+        }
+    } else {
+        if (interface_number == 2) {
+            // This is the controller interface (not mouse or keyboard)
+            return true;
+        }
+    }
+    return false;
 }
 
 static void HIDAPI_DriverSteam_SetPairingState(SDL_DriverSteam_Context *ctx, bool enabled)
@@ -1121,15 +1136,43 @@ static bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
             return SDL_SetError("Failed to send ID_DONGLE_GET_WIRELESS_STATE request");
         }
 
+        for (int attempt = 0; attempt < 5; ++attempt) {
+            uint8_t data[128];
+
+            res = ReadSteamController(device->dev, data, sizeof(data));
+            if (res == 0) {
+                SDL_Delay(1);
+                continue;
+            }
+            if (res < 0) {
+                break;
+            }
+
+#ifdef DEBUG_STEAM_PROTOCOL
+            HIDAPI_DumpPacket("Initial dongle packet: size = %d", data, res);
+#endif
+
+            if (D0G_IS_WIRELESS_CONNECT(data, res)) {
+                ctx->connected = true;
+                break;
+            } else if (D0G_IS_WIRELESS_DISCONNECT(data, res)) {
+                ctx->connected = false;
+                break;
+            }
+        }
+
         SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM_PAIRING_ENABLED,
                             SDL_PairingEnabledHintChanged, ctx);
-
-        // We will enumerate any attached controllers in UpdateDevice()
-        return true;
     } else {
         // Wired and BLE controllers are always connected if HIDAPI can see them
         ctx->connected = true;
+    }
+
+    if (ctx->connected) {
         return HIDAPI_JoystickConnected(device, NULL);
+    } else {
+        // We will enumerate any attached controllers in UpdateDevice()
+        return true;
     }
 }
 
@@ -1321,13 +1364,13 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
         const Uint8 *pPacket;
 
         r = ReadSteamController(device->dev, data, sizeof(data));
-        if (r <= 0) {
-            if (r < 0) {
-                // Failed to read from controller
-                ControllerDisconnected(device, &joystick);
-                return false;
-            }
+        if (r == 0) {
             break;
+        }
+        if (r < 0) {
+            // Failed to read from controller
+            ControllerDisconnected(device, &joystick);
+            return false;
         }
 
 #ifdef DEBUG_STEAM_PROTOCOL
