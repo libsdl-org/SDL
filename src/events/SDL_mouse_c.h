@@ -167,6 +167,12 @@ extern bool SDL_UpdateMouseCapture(bool force_release);
 // Send a mouse motion event
 extern void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y);
 
+/* Send a raw mouse motion or scroll event */
+extern void SDL_SendRawMouseAxis(Uint64 timestamp, SDL_MouseID mouseID, int dx, int dy, float ux, float uy, SDL_EventType type);
+
+/* Send a raw mouse button event */
+extern void SDL_SendRawMouseButton(Uint64 timestamp, SDL_MouseID mouseID, Uint8 state, Uint8 button);
+
 // Send a mouse button event
 extern void SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 button, bool down);
 
