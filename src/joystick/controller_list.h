@@ -196,6 +196,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0738, 0xf738 ), k_eControllerType_XBox360Controller, NULL },	// Super SFIV FightStick TE S
 	{ MAKE_CONTROLLER_ID( 0x0955, 0x7210 ), k_eControllerType_XBox360Controller, NULL },	// Nvidia Shield local controller
 	{ MAKE_CONTROLLER_ID( 0x0955, 0xb400 ), k_eControllerType_XBox360Controller, NULL },	// NVIDIA Shield streaming controller
+	{ MAKE_CONTROLLER_ID( 0x0b05, 0x1b4c ), k_eControllerType_XBox360Controller, NULL },	// ASUS ROG Ally X built-in controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0105 ), k_eControllerType_XBox360Controller, NULL },	// HSM3 Xbox360 dancepad
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0113 ), k_eControllerType_XBox360Controller, "PDP Xbox 360 Afterglow" },	// PDP Afterglow Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x011f ), k_eControllerType_XBox360Controller, "PDP Xbox 360 Rock Candy" },	// PDP Rock Candy Gamepad for Xbox 360
