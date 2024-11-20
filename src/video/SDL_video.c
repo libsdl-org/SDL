@@ -2413,7 +2413,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     if (flags & SDL_WINDOW_FULLSCREEN || IsFullscreenOnly(_this)) {
         SDL_Rect bounds;
 
-        SDL_GetDisplayBounds(display->id, &bounds);
+        SDL_GetDisplayBounds(display ? display->id : SDL_GetPrimaryDisplay(), &bounds);
         window->x = bounds.x;
         window->y = bounds.y;
         window->w = bounds.w;
