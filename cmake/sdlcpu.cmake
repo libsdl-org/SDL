@@ -61,8 +61,8 @@ const char *arch_${known_arch} = \"INFO<${known_arch}=\" ARCH_${known_arch} \">\
 
   set(src_arch_detect "${src_vars}
 int main(int argc, char *argv[]) {
-  (void)argv;
   int result = 0;
+  (void)argv;
 ${src_main}
   return result;
 }")
