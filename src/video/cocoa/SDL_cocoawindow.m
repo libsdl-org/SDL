@@ -2741,7 +2741,8 @@ SDL_FullscreenResult Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Windo
         NSWindow *nswindow = data.nswindow;
         NSRect rect;
 
-        [data.listener clearPendingWindowOperation:PENDING_OPERATION_ENTER_FULLSCREEN];
+        // This is a synchronous operation, so always clear the pending flags.
+        [data.listener clearPendingWindowOperation:PENDING_OPERATION_ENTER_FULLSCREEN | PENDING_OPERATION_LEAVE_FULLSCREEN];
 
         // The view responder chain gets messed with during setStyleMask
         if ([data.sdlContentView nextResponder] == data.listener) {
