@@ -436,7 +436,12 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
                 }
             }
         } else if (data.playback && data.recording) {
-            category = AVAudioSessionCategoryPlayAndRecord;
+            if (allow_playandrecord) {
+                category = AVAudioSessionCategoryPlayAndRecord;
+            } else {
+                // We already failed play and record with AVAudioSessionErrorCodeResourceNotAvailable
+                return false;
+            }
         } else if (data.recording) {
             category = AVAudioSessionCategoryRecord;
         }
@@ -494,12 +499,15 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
             if (![session setActive:YES error:&err]) {
                 if ([err code] == AVAudioSessionErrorCodeResourceNotAvailable &&
                     category == AVAudioSessionCategoryPlayAndRecord) {
-                    return UpdateAudioSession(device, open, false);
+                    if (UpdateAudioSession(device, open, false)) {
+                        return true;
+                    } else {
+                        return SDL_SetError("Could not activate Audio Session: Resource not available");
+                    }
                 }
 
                 NSString *desc = err.description;
-                SDL_SetError("Could not activate Audio Session: %s", desc.UTF8String);
-                return false;
+                return SDL_SetError("Could not activate Audio Session: %s", desc.UTF8String);
             }
             session_active = true;
             ResumeAudioDevices();
