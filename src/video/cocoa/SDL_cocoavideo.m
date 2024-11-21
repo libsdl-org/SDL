@@ -63,6 +63,10 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         SDL_VideoDevice *device;
         SDL_CocoaVideoData *data;
 
+        if (![NSThread isMainThread]) {
+            return NULL;  // this doesn't SDL_SetError() because SDL_VideoInit is just going to overwrite it.
+        }
+
         Cocoa_RegisterApp();
 
         // Initialize all variables that we clean on shutdown
