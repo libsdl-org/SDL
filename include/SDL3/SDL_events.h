@@ -704,6 +704,21 @@ typedef struct SDL_CameraDeviceEvent
     SDL_CameraID which;       /**< SDL_CameraID for the device being added or removed or changing */
 } SDL_CameraDeviceEvent;
 
+
+/**
+ * Renderer event structure (event.render.*)
+ *
+ * \since This struct is available since SDL 3.1.7.
+ */
+typedef struct SDL_RenderEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_RENDER_TARGETS_RESET, SDL_EVENT_RENDER_DEVICE_RESET, SDL_EVENT_RENDER_DEVICE_LOST */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID; /**< The window containing the renderer in question. */
+} SDL_RenderEvent;
+
+
 /**
  * Touch finger event structure (event.tfinger.*)
  *
@@ -980,6 +995,7 @@ typedef union SDL_Event
     SDL_PenMotionEvent pmotion;             /**< Pen motion event data */
     SDL_PenButtonEvent pbutton;             /**< Pen button event data */
     SDL_PenAxisEvent paxis;                 /**< Pen axis event data */
+    SDL_RenderEvent render;                 /**< Render event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
 

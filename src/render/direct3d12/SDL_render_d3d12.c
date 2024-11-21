@@ -1459,8 +1459,9 @@ static bool D3D12_HandleDeviceLost(SDL_Renderer *renderer)
 
     // Let the application know that the device has been reset or lost
     SDL_Event event;
+    SDL_zero(event);
     event.type = recovered ? SDL_EVENT_RENDER_DEVICE_RESET : SDL_EVENT_RENDER_DEVICE_LOST;
-    event.common.timestamp = 0;
+    event.render.windowID = SDL_GetWindowID(SDL_GetRenderWindow(renderer));
     SDL_PushEvent(&event);
 
     return recovered;

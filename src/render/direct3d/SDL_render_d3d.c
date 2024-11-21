@@ -1559,8 +1559,9 @@ static bool D3D_Reset(SDL_Renderer *renderer)
     // Let the application know that render targets were reset
     {
         SDL_Event event;
+        SDL_zero(event);
         event.type = SDL_EVENT_RENDER_TARGETS_RESET;
-        event.common.timestamp = 0;
+        event.render.windowID = SDL_GetWindowID(SDL_GetRenderWindow(renderer));
         SDL_PushEvent(&event);
     }
 
