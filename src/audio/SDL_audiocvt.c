@@ -129,7 +129,7 @@ bool SDL_ChannelMapIsBogus(const int *chmap, int channels)
     if (chmap) {
         for (int i = 0; i < channels; i++) {
             const int mapping = chmap[i];
-            if ((mapping < 0) || (mapping >= channels)) {
+            if ((mapping < -1) || (mapping >= channels)) {
                 return true;
             }
         }
@@ -150,27 +150,60 @@ bool SDL_ChannelMapIsDefault(const int *chmap, int channels)
 }
 
 // Swizzle audio channels. src and dst can be the same pointer. It does not change the buffer size.
-static void SwizzleAudio(const int num_frames, void *dst, const void *src, int channels, const int *map, int bitsize)
+static void SwizzleAudio(const int num_frames, void *dst, const void *src, int channels, const int *map, SDL_AudioFormat fmt)
 {
+    const int bitsize = (int) SDL_AUDIO_BITSIZE(fmt);
+
+    bool has_null_mappings = false;
+    for (int i = 0; i < channels; i++) {
+        if (map[i] == -1) {
+            has_null_mappings = true;
+            break;
+        }
+    }
+
     #define CHANNEL_SWIZZLE(bits) { \
         Uint##bits *tdst = (Uint##bits *) dst; /* treat as UintX; we only care about moving bits and not the type here. */ \
         const Uint##bits *tsrc = (const Uint##bits *) src; \
         if (src != dst) {  /* don't need to copy to a temporary frame first. */ \
-            for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
-                for (int ch = 0; ch < channels; ch++) { \
-                    tdst[ch] = tsrc[map[ch]]; \
+            if (has_null_mappings) { \
+                const Uint##bits silence = (Uint##bits) SDL_GetSilenceValueForFormat(fmt); \
+                for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
+                    for (int ch = 0; ch < channels; ch++) { \
+                        const int m = map[ch]; \
+                        tdst[ch] = (m == -1) ? silence : tsrc[m]; \
+                    } \
+                } \
+            } else { \
+                for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
+                    for (int ch = 0; ch < channels; ch++) { \
+                        tdst[ch] = tsrc[map[ch]]; \
+                    } \
                 } \
             } \
         } else { \
             bool isstack; \
             Uint##bits *tmp = (Uint##bits *) SDL_small_alloc(int, channels, &isstack); /* !!! FIXME: allocate this when setting the channel map instead. */ \
             if (tmp) { \
-                for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
-                    for (int ch = 0; ch < channels; ch++) { \
-                        tmp[ch] = tsrc[map[ch]]; \
+                if (has_null_mappings) { \
+                    const Uint##bits silence = (Uint##bits) SDL_GetSilenceValueForFormat(fmt); \
+                    for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
+                        for (int ch = 0; ch < channels; ch++) { \
+                            const int m = map[ch]; \
+                            tmp[ch] = (m == -1) ? silence : tsrc[m]; \
+                        } \
+                        for (int ch = 0; ch < channels; ch++) { \
+                            tdst[ch] = tmp[ch]; \
+                        } \
                     } \
-                    for (int ch = 0; ch < channels; ch++) { \
-                        tdst[ch] = tmp[ch]; \
+                } else { \
+                    for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
+                        for (int ch = 0; ch < channels; ch++) { \
+                            tmp[ch] = tsrc[map[ch]]; \
+                        } \
+                        for (int ch = 0; ch < channels; ch++) { \
+                            tdst[ch] = tmp[ch]; \
+                        } \
                     } \
                 } \
                 SDL_small_free(tmp, isstack); \
@@ -221,9 +254,7 @@ void ConvertAudio(int num_frames,
     SDL_Log("SDL_AUDIO_CONVERT: Convert format %04x->%04x, channels %u->%u", src_format, dst_format, src_channels, dst_channels);
 #endif
 
-    const int src_bitsize = (int) SDL_AUDIO_BITSIZE(src_format);
     const int dst_bitsize = (int) SDL_AUDIO_BITSIZE(dst_format);
-
     const int dst_sample_frame_size = (dst_bitsize / 8) * dst_channels;
 
     /* Type conversion goes like this now:
@@ -245,7 +276,7 @@ void ConvertAudio(int num_frames,
     // swizzle input to "standard" format if necessary.
     if (src_map) {
         void* buf = scratch ? scratch : dst;  // use scratch if available, since it has to be big enough to hold src, unless it's NULL, then dst has to be.
-        SwizzleAudio(num_frames, buf, src, src_channels, src_map, src_bitsize);
+        SwizzleAudio(num_frames, buf, src, src_channels, src_map, src_format);
         src = buf;
     }
 
@@ -254,7 +285,7 @@ void ConvertAudio(int num_frames,
         if (src_format == dst_format) {
             // nothing to do, we're already in the right format, just copy it over if necessary.
             if (dst_map) {
-                SwizzleAudio(num_frames, dst, src, dst_channels, dst_map, dst_bitsize);
+                SwizzleAudio(num_frames, dst, src, dst_channels, dst_map, dst_format);
             } else if (src != dst) {
                 SDL_memcpy(dst, src, num_frames * dst_sample_frame_size);
             }
@@ -264,7 +295,7 @@ void ConvertAudio(int num_frames,
         // just a byteswap needed?
         if ((src_format ^ dst_format) == SDL_AUDIO_MASK_BIG_ENDIAN) {
             if (dst_map) {  // do this first, in case we duplicate channels, we can avoid an extra copy if src != dst.
-                SwizzleAudio(num_frames, dst, src, dst_channels, dst_map, dst_bitsize);
+                SwizzleAudio(num_frames, dst, src, dst_channels, dst_map, dst_format);
                 src = dst;
             }
             ConvertAudioSwapEndian(dst, src, num_frames * dst_channels, dst_bitsize);
@@ -348,7 +379,7 @@ void ConvertAudio(int num_frames,
     SDL_assert(src == dst);  // if we got here, we _had_ to have done _something_. Otherwise, we should have memcpy'd!
 
     if (dst_map) {
-        SwizzleAudio(num_frames, dst, src, dst_channels, dst_map, dst_bitsize);
+        SwizzleAudio(num_frames, dst, src, dst_channels, dst_map, dst_format);
     }
 }
 

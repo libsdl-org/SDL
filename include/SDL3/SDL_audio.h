@@ -1190,8 +1190,12 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioSt
  * channel that it should be remapped to. To reverse a stereo signal's left
  * and right values, you'd have an array of `{ 1, 0 }`. It is legal to remap
  * multiple channels to the same thing, so `{ 1, 1 }` would duplicate the
- * right channel to both channels of a stereo signal. You cannot change the
- * number of channels through a channel map, just reorder them.
+ * right channel to both channels of a stereo signal. An element in the
+ * channel map set to -1 instead of a valid channel will mute that channel,
+ * setting it to a silence value.
+ *
+ * You cannot change the number of channels through a channel map, just
+ * reorder/mute them.
  *
  * Data that was previously queued in the stream will still be operated on in
  * the order that was current when it was added, which is to say you can put
@@ -1207,7 +1211,7 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioSt
  *
  * If `count` is not equal to the current number of channels in the audio
  * stream's format, this will fail. This is a safety measure to make sure a a
- * race condition hasn't changed the format while you this call is setting the
+ * race condition hasn't changed the format while this call is setting the
  * channel map.
  *
  * \param stream the SDL_AudioStream to change.
@@ -1236,12 +1240,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamInputChannelMap(SDL_AudioStre
  * The output channel map reorders data that leaving a stream via
  * SDL_GetAudioStreamData.
  *
- * Each item in the array represents an output channel, and its value is the
+ * Each item in the array represents an input channel, and its value is the
  * channel that it should be remapped to. To reverse a stereo signal's left
  * and right values, you'd have an array of `{ 1, 0 }`. It is legal to remap
  * multiple channels to the same thing, so `{ 1, 1 }` would duplicate the
- * right channel to both channels of a stereo signal. You cannot change the
- * number of channels through a channel map, just reorder them.
+ * right channel to both channels of a stereo signal. An element in the
+ * channel map set to -1 instead of a valid channel will mute that channel,
+ * setting it to a silence value.
+ *
+ * You cannot change the number of channels through a channel map, just
+ * reorder/mute them.
  *
  * The output channel map can be changed at any time, as output remapping is
  * applied during SDL_GetAudioStreamData.
@@ -1254,7 +1262,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamInputChannelMap(SDL_AudioStre
  *
  * If `count` is not equal to the current number of channels in the audio
  * stream's format, this will fail. This is a safety measure to make sure a a
- * race condition hasn't changed the format while you this call is setting the
+ * race condition hasn't changed the format while this call is setting the
  * channel map.
  *
  * \param stream the SDL_AudioStream to change.
