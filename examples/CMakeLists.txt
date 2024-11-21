@@ -143,6 +143,7 @@ add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawin
 add_sdl_example_executable(game-snake SOURCES game/01-snake/snake.c)
 add_sdl_example_executable(game-woodeneye-008 SOURCES game/02-woodeneye-008/woodeneye-008.c)
 add_sdl_example_executable(game-infinite-monkeys SOURCES game/03-infinite-monkeys/infinite-monkeys.c)
+add_sdl_example_executable(game-bytepusher SOURCES game/04-bytepusher/bytepusher.c)
 
 # When you add an example, remember to add the Visual Studio project as well:
 # - Add a new example in examples/
