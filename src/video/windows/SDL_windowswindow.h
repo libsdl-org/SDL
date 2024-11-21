@@ -79,7 +79,6 @@ struct SDL_WindowData
     bool floating_rect_pending;
     Uint8 focus_click_pending;
     bool skip_update_clipcursor;
-    bool mouse_relative_mode_center;
     bool windowed_mode_was_maximized;
     bool in_window_deactivation;
     RECT cursor_clipped_rect; // last successfully committed clipping rect for this window

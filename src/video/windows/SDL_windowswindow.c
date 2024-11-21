@@ -348,12 +348,6 @@ bool WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags, SDL_WindowRec
     return result;
 }
 
-static void SDLCALL WIN_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_WindowData *data = (SDL_WindowData *)userdata;
-    data->mouse_relative_mode_center = SDL_GetStringBoolean(hint, true);
-}
-
 static SDL_WindowEraseBackgroundMode GetEraseBackgroundModeHint(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE);
@@ -422,8 +416,6 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
 #ifdef HIGHDPI_DEBUG
     SDL_Log("SetupWindowData: initialized data->scaling_dpi to %d", data->scaling_dpi);
 #endif
-
-    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     // Associate the data with the window
@@ -596,7 +588,6 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data = window->internal;
 
     if (data) {
-        SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         if (data->drop_target) {
@@ -1618,7 +1609,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
     // }
 
     SDL_Mouse *mouse = SDL_GetMouse();
-    bool lock_to_ctr = (data->mouse_relative_mode_center && mouse->relative_mode && !mouse->relative_mode_warp);
+    bool lock_to_ctr = (mouse->relative_mode_center && mouse->relative_mode && !mouse->relative_mode_warp);
 
     RECT client;
     if (!GetClientScreenRect(data->hwnd, &client)) {

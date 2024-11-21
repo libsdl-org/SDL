@@ -102,6 +102,13 @@ static void SDLCALL SDL_MouseRelativeSpeedScaleChanged(void *userdata, const cha
     }
 }
 
+static void SDLCALL SDL_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+    
+    mouse->relative_mode_center = SDL_GetStringBoolean(hint, true);
+}
+
 static void SDLCALL SDL_MouseRelativeSystemScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
@@ -214,6 +221,9 @@ bool SDL_PreInitMouse(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
                         SDL_MouseRelativeSystemScaleChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER,
+                        SDL_MouseRelativeModeCenterChanged, mouse);
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE,
                         SDL_MouseWarpEmulationChanged, mouse);
@@ -1027,6 +1037,9 @@ void SDL_QuitMouse(void)
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
                         SDL_MouseRelativeSystemScaleChanged, mouse);
+
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, 
+                        SDL_MouseRelativeModeCenterChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE,
                         SDL_MouseWarpEmulationChanged, mouse);
