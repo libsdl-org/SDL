@@ -19,6 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+// Atomic KMSDRM backend originally written by Manuel Alfayate Corchete <redwindwanderer@gmail.com>
+
 #include "SDL_internal.h"
 
 #ifndef SDL_kmsdrmvideo_h
@@ -32,6 +34,7 @@
 #include <xf86drmMode.h>
 #include <gbm.h>
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #ifndef DRM_FORMAT_MOD_INVALID
 #define DRM_FORMAT_MOD_INVALID 0x00ffffffffffffffULL
@@ -72,6 +75,24 @@
 #define GBM_BO_USE_LINEAR   (1 << 4)
 #endif
 
+typedef struct plane {
+    drmModePlane *plane;
+    drmModeObjectProperties *props;
+    drmModePropertyRes **props_info;
+} plane;
+ 
+typedef struct crtc {
+    drmModeCrtc *crtc;
+    drmModeObjectProperties *props;
+    drmModePropertyRes **props_info;
+} crtc;
+
+typedef struct connector {
+    drmModeConnector *connector;
+    drmModeObjectProperties *props;
+    drmModePropertyRes **props_info;
+} connector;
+
 struct SDL_VideoData
 {
     int devindex;     // device index that was passed on creation
@@ -92,6 +113,7 @@ struct SDL_VideoData
        open 1 FD and create 1 gbm device. */
     bool gbm_init;
 
+    bool is_atomic;  // true if atomic interfaces are supported.
 };
 
 struct SDL_DisplayModeData
@@ -101,8 +123,11 @@ struct SDL_DisplayModeData
 
 struct SDL_DisplayData
 {
-    drmModeConnector *connector;
-    drmModeCrtc *crtc;
+    plane *display_plane;
+    plane *cursor_plane;
+    crtc crtc;
+    connector connector;
+
     drmModeModeInfo mode;
     drmModeModeInfo original_mode;
     drmModeModeInfo fullscreen_mode;
@@ -117,6 +142,15 @@ struct SDL_DisplayData
     struct gbm_bo *cursor_bo;
     int cursor_bo_drm_fd;
     uint64_t cursor_w, cursor_h;
+
+    /* Central atomic request list, used for the prop
+       changeset related to pageflip in SwapWindow. */
+    drmModeAtomicReq *atomic_req;
+
+    int kms_in_fence_fd;
+    int kms_out_fence_fd;
+    EGLSyncKHR kms_fence;
+    EGLSyncKHR gpu_fence;
 
     bool default_cursor_init;
 };
@@ -137,6 +171,9 @@ struct SDL_WindowData
 
     EGLSurface egl_surface;
     bool egl_surface_dirty;
+
+    /* This dictates what approach we'll use for SwapBuffers. */
+    bool (*swap_window)(SDL_VideoDevice *_this, SDL_Window *window);
 };
 
 typedef struct KMSDRM_FBInfo
@@ -145,11 +182,36 @@ typedef struct KMSDRM_FBInfo
     uint32_t fb_id; // DRM framebuffer ID
 } KMSDRM_FBInfo;
 
+typedef struct KMSDRM_PlaneInfo
+{
+    struct plane *plane;
+    uint32_t fb_id;
+    uint32_t crtc_id;
+    int32_t src_x;
+    int32_t src_y;
+    int32_t src_w;
+    int32_t src_h;
+    int32_t crtc_x;
+    int32_t crtc_y;
+    int32_t crtc_w;
+    int32_t crtc_h;
+} KMSDRM_PlaneInfo;
+
 // Helper functions
 extern bool KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window);
 extern KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo);
 extern KMSDRM_FBInfo *KMSDRM_FBFromBO2(SDL_VideoDevice *_this, struct gbm_bo *bo, int w, int h);
 extern bool KMSDRM_WaitPageflip(SDL_VideoDevice *_this, SDL_WindowData *windata);
+
+// Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c
+void drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info);
+void drm_atomic_waitpending(SDL_VideoDevice *_this);
+int drm_atomic_commit(SDL_VideoDevice *_this, bool blocking, bool allow_modeset);
+int add_plane_property(drmModeAtomicReq *req, struct plane *plane, const char *name, uint64_t value);
+int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc, const char *name, uint64_t value);
+int add_connector_property(drmModeAtomicReq *req, struct connector *connector, const char *name, uint64_t value);
+bool setup_plane(SDL_VideoDevice *_this, struct plane **plane, uint32_t plane_type);
+void free_plane(struct plane **plane);
 
 /****************************************************************************/
 // SDL_VideoDevice functions declaration
