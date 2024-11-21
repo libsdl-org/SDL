@@ -102,7 +102,7 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcess(const char * const *a
  * Description of where standard I/O should be directed when creating a
  * process.
  *
- * If a standard I/O stream is set to SDL_PROCESS_STDIO_INHERIT, it will go to
+ * If a standard I/O stream is set to SDL_PROCESS_STDIO_INHERITED, it will go to
  * the same place as the application's I/O stream. This is the default for
  * standard output and standard error.
  *
@@ -298,7 +298,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_ReadProcess(SDL_Process *process, size_t 
  *
  * Writing to this stream can return less data than expected if the process
  * hasn't read its input. It may be blocked waiting for its output to be read,
- * so if you may need to call SDL_GetOutputStream() and read the output in
+ * if so you may need to call SDL_GetProcessOutput() and read the output in
  * parallel with writing input.
  *
  * \param process The process to get the input stream for.

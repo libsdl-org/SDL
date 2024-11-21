@@ -542,7 +542,6 @@ extern SDL_DECLSPEC SDL_AudioDeviceID * SDLCALL SDL_GetAudioRecordingDevices(int
  *
  * \sa SDL_GetAudioPlaybackDevices
  * \sa SDL_GetAudioRecordingDevices
- * \sa SDL_GetDefaultAudioInfo
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
 
