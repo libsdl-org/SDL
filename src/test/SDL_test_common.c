@@ -1899,13 +1899,13 @@ void SDLTest_PrintEvent(const SDL_Event *event)
         break;
 
     case SDL_EVENT_RENDER_TARGETS_RESET:
-        SDL_Log("SDL EVENT: render targets reset");
+        SDL_Log("SDL EVENT: render targets reset in window %" SDL_PRIu32, event->render.windowID);
         break;
     case SDL_EVENT_RENDER_DEVICE_RESET:
-        SDL_Log("SDL EVENT: render device reset");
+        SDL_Log("SDL EVENT: render device reset in window %" SDL_PRIu32, event->render.windowID);
         break;
     case SDL_EVENT_RENDER_DEVICE_LOST:
-        SDL_Log("SDL EVENT: render device lost");
+        SDL_Log("SDL EVENT: render device lost in window %" SDL_PRIu32, event->render.windowID);
         break;
 
     case SDL_EVENT_TERMINATING:

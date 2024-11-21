@@ -450,10 +450,15 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
         SDL_EVENT_CASE(SDL_EVENT_CLIPBOARD_UPDATE)
         break;
-        SDL_EVENT_CASE(SDL_EVENT_RENDER_TARGETS_RESET)
-        break;
-        SDL_EVENT_CASE(SDL_EVENT_RENDER_DEVICE_RESET)
-        break;
+
+#define SDL_RENDEREVENT_CASE(x)                \
+    case x:                                    \
+        SDL_strlcpy(name, #x, sizeof(name));   \
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u event=%s windowid=%u)", \
+                           (uint)event->display.timestamp, name, (uint)event->render.windowID); \
+        break
+        SDL_RENDEREVENT_CASE(SDL_EVENT_RENDER_TARGETS_RESET);
+        SDL_RENDEREVENT_CASE(SDL_EVENT_RENDER_DEVICE_RESET);
 
 #define SDL_DISPLAYEVENT_CASE(x)               \
     case x:                                    \
