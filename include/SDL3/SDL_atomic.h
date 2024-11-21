@@ -475,7 +475,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * \sa SDL_CompareAndSwapAtomicU32
  * \sa SDL_GetAtomicU32
  * \sa SDL_SetAtomicU32
- * \sa SDL_AddAtomicU32
  */
 typedef struct SDL_AtomicU32 { Uint32 value; } SDL_AtomicU32;
 

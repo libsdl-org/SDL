@@ -1838,11 +1838,11 @@ typedef struct SDL_GPUBlitInfo {
  * \since This struct is available since SDL 3.1.3
  *
  * \sa SDL_BindGPUVertexBuffers
- * \sa SDL_BindGPUIndexBuffers
+ * \sa SDL_BindGPUIndexBuffer
  */
 typedef struct SDL_GPUBufferBinding
 {
-    SDL_GPUBuffer *buffer;  /**< The buffer to bind. Must have been created with SDL_GPU_BUFFERUSAGE_VERTEX for SDL_BindGPUVertexBuffers, or SDL_GPU_BUFFERUSAGE_INDEX for SDL_BindGPUIndexBuffers. */
+    SDL_GPUBuffer *buffer;  /**< The buffer to bind. Must have been created with SDL_GPU_BUFFERUSAGE_VERTEX for SDL_BindGPUVertexBuffers, or SDL_GPU_BUFFERUSAGE_INDEX for SDL_BindGPUIndexBuffer. */
     Uint32 offset;          /**< The starting byte of the data to bind in the buffer. */
 } SDL_GPUBufferBinding;
 
@@ -2149,7 +2149,7 @@ extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeli
  *
  * \sa SDL_BindGPUVertexSamplers
  * \sa SDL_BindGPUFragmentSamplers
- * \sa SDL_ReleaseSampler
+ * \sa SDL_ReleaseGPUSampler
  */
 extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
     SDL_GPUDevice *device,
@@ -2201,7 +2201,7 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
  *   is bound at [[buffer(14)]], vertex buffer 1 at [[buffer(15)]], and so on.
  *   Rather than manually authoring vertex buffer indices, use the
  *   [[stage_in]] attribute which will automatically use the vertex input
- *   information from the SDL_GPUPipeline.
+ *   information from the SDL_GPUGraphicsPipeline.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the shader to create.

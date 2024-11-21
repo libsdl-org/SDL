@@ -39,7 +39,7 @@ extern "C" {
 #endif
 
 /**
- * SDL_MessageBox flags.
+ * Message box flags.
  *
  * If supported will display warning icon, etc.
  *
