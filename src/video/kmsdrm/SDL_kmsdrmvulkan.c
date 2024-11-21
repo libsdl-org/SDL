@@ -177,7 +177,7 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     uint32_t display_count;
     uint32_t mode_count;
     uint32_t plane_count;
-    uint32_t plane = UINT32_MAX;
+    uint32_t _plane = UINT32_MAX;
 
     VkPhysicalDevice *physical_devices = NULL;
     VkPhysicalDeviceProperties *device_props = NULL;
@@ -456,13 +456,13 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         vkGetDisplayPlaneCapabilitiesKHR(gpu, display_mode, i, &plane_caps);
         if (plane_caps.supportedAlpha == alpha_mode) {
             // Yep, this plane is alright.
-            plane = i;
+            _plane = i;
             break;
         }
     }
 
     // If we couldn't find an appropriate plane, error out.
-    if (plane == UINT32_MAX) {
+    if (_plane == UINT32_MAX) {
         SDL_SetError("Vulkan couldn't find an appropriate plane.");
         goto clean;
     }
@@ -477,7 +477,7 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     SDL_zero(display_plane_surface_create_info);
     display_plane_surface_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
     display_plane_surface_create_info.displayMode = display_mode;
-    display_plane_surface_create_info.planeIndex = plane;
+    display_plane_surface_create_info.planeIndex = _plane;
     display_plane_surface_create_info.imageExtent = image_size;
     display_plane_surface_create_info.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     display_plane_surface_create_info.alphaMode = alpha_mode;
