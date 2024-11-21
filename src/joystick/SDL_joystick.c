@@ -2957,7 +2957,8 @@ bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
     }
     if (vendor_id == USB_VENDOR_RAZER) {
         if (product_id == USB_PRODUCT_RAZER_WOLVERINE_V2 ||
-            product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_CHROMA) {
+            product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_CHROMA ||
+            product_id == USB_PRODUCT_RAZER_WOLVERINE_V3_PRO) {
             return true;
         }
     }
