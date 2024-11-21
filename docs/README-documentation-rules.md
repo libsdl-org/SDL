@@ -242,6 +242,15 @@ wikiheaders will complain loudly if you don't do this, and exit with an
 error message.
 
 
+## Don't repeat type names in `\param` and `\returns` sections.
+
+Wikiheaders will explicitly mention the datatype for each parameter and the
+return value, linking to the datatype's wikipage. Users reading the headers
+can see the types in the function signature right below the documentation
+comment. So don't mention the type a second time in the documentation if
+possible. It looks cluttered and repetitive to do so.
+
+
 ## Code examples go in the wiki.
 
 We don't want the headers cluttered up with code examples. These live on the
