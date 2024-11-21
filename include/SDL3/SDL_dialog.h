@@ -125,9 +125,9 @@ typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * cons
  *                 it will be invoked.
  * \param window the window that the dialog should be modal for, may be NULL.
  *               Not all platforms support this option.
- * \param filters a list of filters, may be NULL. Not all
- *                platforms support this option, and platforms that do support
- *                it may allow the user to ignore the filters.
+ * \param filters a list of filters, may be NULL. Not all platforms support
+ *                this option, and platforms that do support it may allow the
+ *                user to ignore the filters.
  * \param nfilters the number of filters. Ignored if filters is NULL.
  * \param default_location the default folder or file to start the dialog at,
  *                         may be NULL. Not all platforms support this option.
@@ -172,9 +172,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  *                 it will be invoked.
  * \param window the window that the dialog should be modal for, may be NULL.
  *               Not all platforms support this option.
- * \param filters a list of filters, may be NULL. Not all
- *                platforms support this option, and platforms that do support
- *                it may allow the user to ignore the filters.
+ * \param filters a list of filters, may be NULL. Not all platforms support
+ *                this option, and platforms that do support it may allow the
+ *                user to ignore the filters.
  * \param nfilters the number of filters. Ignored if filters is NULL.
  * \param default_location the default folder or file to start the dialog at,
  *                         may be NULL. Not all platforms support this option.
