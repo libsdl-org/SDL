@@ -76,8 +76,8 @@ typedef struct SDL_DialogFileFilter
  *   is a null-terminated list of pointers to C strings, each containing a
  *   path.
  *
- * The filelist argument should not be freed; it will automatically be
- * freed when the callback returns.
+ * The filelist argument should not be freed; it will automatically be freed
+ * when the callback returns.
  *
  * The filter argument is the index of the filter that was selected, or -1 if
  * no filter was selected or if the platform or method doesn't support
@@ -118,9 +118,9 @@ typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * cons
  * requires an event-handling loop. Apps that do not use SDL to handle events
  * should add a call to SDL_PumpEvents in their main loop.
  *
- * \param callback a function pointer to be invoked when the user
- *                 selects a file and accepts, or cancels the dialog, or an
- *                 error occurs.
+ * \param callback a function pointer to be invoked when the user selects a
+ *                 file and accepts, or cancels the dialog, or an error
+ *                 occurs.
  * \param userdata an optional pointer to pass extra data to the callback when
  *                 it will be invoked.
  * \param window the window that the dialog should be modal for, may be NULL.
@@ -165,9 +165,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  * requires an event-handling loop. Apps that do not use SDL to handle events
  * should add a call to SDL_PumpEvents in their main loop.
  *
- * \param callback a function pointer to be invoked when the user
- *                 selects a file and accepts, or cancels the dialog, or an
- *                 error occurs.
+ * \param callback a function pointer to be invoked when the user selects a
+ *                 file and accepts, or cancels the dialog, or an error
+ *                 occurs.
  * \param userdata an optional pointer to pass extra data to the callback when
  *                 it will be invoked.
  * \param window the window that the dialog should be modal for, may be NULL.
@@ -210,9 +210,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  * requires an event-handling loop. Apps that do not use SDL to handle events
  * should add a call to SDL_PumpEvents in their main loop.
  *
- * \param callback a function pointer to be invoked when the user
- *                 selects a file and accepts, or cancels the dialog, or an
- *                 error occurs.
+ * \param callback a function pointer to be invoked when the user selects a
+ *                 file and accepts, or cancels the dialog, or an error
+ *                 occurs.
  * \param userdata an optional pointer to pass extra data to the callback when
  *                 it will be invoked.
  * \param window the window that the dialog should be modal for, may be NULL.
