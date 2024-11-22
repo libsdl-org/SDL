@@ -459,6 +459,7 @@ static void SDL_LogEvent(const SDL_Event *event)
         break
         SDL_RENDEREVENT_CASE(SDL_EVENT_RENDER_TARGETS_RESET);
         SDL_RENDEREVENT_CASE(SDL_EVENT_RENDER_DEVICE_RESET);
+        SDL_RENDEREVENT_CASE(SDL_EVENT_RENDER_DEVICE_LOST);
 
 #define SDL_DISPLAYEVENT_CASE(x)               \
     case x:                                    \
