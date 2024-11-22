@@ -456,7 +456,6 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
         case SdlPlatform.Ios | SdlPlatform.Tvos:
             job.brew_packages.extend([
                 "ninja",
-                "pkg-config",
             ])
             job.clang_tidy = False
             job.run_tests = False
