@@ -140,10 +140,10 @@ add_sdl_example_executable(audio-simple-playback-callback SOURCES audio/02-simpl
 add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.wav)
 add_sdl_example_executable(camera-read-and-draw SOURCES camera/01-read-and-draw/read-and-draw.c)
 add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawing-lines.c)
-add_sdl_example_executable(game-snake SOURCES game/01-snake/snake.c)
-add_sdl_example_executable(game-woodeneye-008 SOURCES game/02-woodeneye-008/woodeneye-008.c)
-add_sdl_example_executable(game-infinite-monkeys SOURCES game/03-infinite-monkeys/infinite-monkeys.c)
-add_sdl_example_executable(game-bytepusher SOURCES game/04-bytepusher/bytepusher.c)
+add_sdl_example_executable(game-snake SOURCES demo/01-snake/snake.c)
+add_sdl_example_executable(game-woodeneye-008 SOURCES demo/02-woodeneye-008/woodeneye-008.c)
+add_sdl_example_executable(game-infinite-monkeys SOURCES demo/03-infinite-monkeys/infinite-monkeys.c)
+add_sdl_example_executable(game-bytepusher SOURCES demo/04-bytepusher/bytepusher.c)
 
 # When you add an example, remember to add the Visual Studio project as well:
 # - Add a new example in examples/
