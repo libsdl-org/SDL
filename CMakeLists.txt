@@ -2695,6 +2695,9 @@ elseif(PSP)
   )
   set(HAVE_SDL_THREADS TRUE)
 
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/psp/*.c")
+  set(HAVE_SDL_LOCALE TRUE)
+
   set(SDL_TIME_PSP 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/psp/*.c")
   set(HAVE_SDL_TIME TRUE)
