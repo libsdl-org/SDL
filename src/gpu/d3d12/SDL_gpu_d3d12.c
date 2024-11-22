@@ -6849,7 +6849,11 @@ static D3D12Fence *D3D12_INTERNAL_AcquireFence(
             return NULL;
         }
         fence->handle = handle;
-        fence->event = CreateEventEx(NULL, 0, 0, EVENT_ALL_ACCESS);
+#if defined(SDL_PLATFORM_GDK) // CreateEventEx() arrived in Vista, so we need an #ifdef for XP.
+        fence->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
+#else
+        fence->event = CreateEventW(NULL, 0, 0, NULL);
+#endif
         SDL_SetAtomicInt(&fence->referenceCount, 0);
     } else {
         fence = renderer->availableFences[renderer->availableFenceCount - 1];
