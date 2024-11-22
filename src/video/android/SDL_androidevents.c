@@ -45,7 +45,7 @@ static void android_egl_context_restore(SDL_Window *window)
             SDL_Event event;
             SDL_zero(event);
             event.type = SDL_EVENT_RENDER_DEVICE_RESET;
-            event.render.windowID = SDL_GetWindowID(SDL_GetRenderWindow(renderer));
+            event.render.windowID = SDL_GetWindowID(window);
             SDL_PushEvent(&event);
         }
         data->backup_done = false;
