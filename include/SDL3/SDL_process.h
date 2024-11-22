@@ -102,8 +102,8 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcess(const char * const *a
  * Description of where standard I/O should be directed when creating a
  * process.
  *
- * If a standard I/O stream is set to SDL_PROCESS_STDIO_INHERITED, it will go to
- * the same place as the application's I/O stream. This is the default for
+ * If a standard I/O stream is set to SDL_PROCESS_STDIO_INHERITED, it will go
+ * to the same place as the application's I/O stream. This is the default for
  * standard output and standard error.
  *
  * If a standard I/O stream is set to SDL_PROCESS_STDIO_NULL, it is connected
