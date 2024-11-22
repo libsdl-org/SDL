@@ -50,9 +50,12 @@ SDL_EventCategory SDL_GetEventCategory(Uint32 type)
     case SDL_EVENT_DID_ENTER_FOREGROUND:
     case SDL_EVENT_LOCALE_CHANGED:
     case SDL_EVENT_SYSTEM_THEME_CHANGED:
+        return SDL_EVENTCATEGORY_SYSTEM;
+
     case SDL_EVENT_RENDER_TARGETS_RESET:
     case SDL_EVENT_RENDER_DEVICE_RESET:
-        return SDL_EVENTCATEGORY_SYSTEM;
+    case SDL_EVENT_RENDER_DEVICE_LOST:
+        return SDL_EVENTCATEGORY_RENDER;
 
     case SDL_EVENT_QUIT:
         return SDL_EVENTCATEGORY_QUIT;
@@ -232,6 +235,9 @@ SDL_Window *SDL_GetWindowFromEvent(const SDL_Event *event)
         break;
     case SDL_EVENTCATEGORY_DROP:
         windowID = event->drop.windowID;
+        break;
+    case SDL_EVENTCATEGORY_RENDER:
+        windowID = event->render.windowID;
         break;
     default:
         // < 0  -> invalid event type (error is set by SDL_GetEventCategory)

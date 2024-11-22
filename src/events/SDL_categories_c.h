@@ -62,6 +62,7 @@ typedef enum SDL_EventCategory
     SDL_EVENTCATEGORY_PAXIS,
     SDL_EVENTCATEGORY_DROP,
     SDL_EVENTCATEGORY_CLIPBOARD,
+    SDL_EVENTCATEGORY_RENDER,
 } SDL_EventCategory;
 
 extern SDL_EventCategory SDL_GetEventCategory(Uint32 type);
