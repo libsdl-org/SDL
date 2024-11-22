@@ -6,8 +6,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
-    <None Include="$(SolutionDir)\..\examples\game\01-snake\README.txt" />
-    <ClCompile Include="$(SolutionDir)\..\examples\game\01-snake\*.c" />
+    <None Include="$(SolutionDir)\..\examples\demo\01-snake\README.txt" />
+    <ClCompile Include="$(SolutionDir)\..\examples\demo\01-snake\*.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

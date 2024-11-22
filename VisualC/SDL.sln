@@ -71,7 +71,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01-read-and-draw", "example
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "game", "game", "{D1BF59F6-22DC-493B-BDEB-451A50DA793D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01-snake", "examples\game\01-snake\01-snake.vcxproj", "{7820969A-5B7B-4046-BB0A-82905D457FC5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01-snake", "examples\demo\01-snake\01-snake.vcxproj", "{7820969A-5B7B-4046-BB0A-82905D457FC5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pen", "pen", "{F2247885-8EE8-42F4-A702-4155587620E0}"
 EndProject
@@ -111,9 +111,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18-debug-text", "examples\r
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03-load-wav", "examples\audio\03-load-wav\03-load-wav.vcxproj", "{608C6C67-7766-471F-BBFF-8B00086039AF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02-woodeneye-008", "examples\game\02-woodeneye-008\02-woodeneye-008.vcxproj", "{A3F601E0-B54C-4DD8-8A97-FDEF7624EE60}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02-woodeneye-008", "examples\demo\02-woodeneye-008\02-woodeneye-008.vcxproj", "{A3F601E0-B54C-4DD8-8A97-FDEF7624EE60}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03-infinite-monkeys", "examples\game\03-infinite-monkeys\03-infinite-monkeys.vcxproj", "{75AEE75A-C016-4497-960B-D767B822237D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03-infinite-monkeys", "examples\demo\03-infinite-monkeys\03-infinite-monkeys.vcxproj", "{75AEE75A-C016-4497-960B-D767B822237D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
