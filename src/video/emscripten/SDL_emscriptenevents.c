@@ -26,6 +26,7 @@
 #include <emscripten/html5.h>
 #include <emscripten/dom_pk_codes.h>
 
+#include "../../events/SDL_dropevents_c.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_touch_c.h"
@@ -806,6 +807,144 @@ static void Emscripten_unset_pointer_event_callbacks(SDL_WindowData *data)
     }, data->canvas_id);
 }
 
+// IF YOU CHANGE THIS STRUCTURE, YOU NEED TO UPDATE THE JAVASCRIPT THAT FILLS IT IN: makeDropEventCStruct, below.
+typedef struct Emscripten_DropEvent
+{
+    int x;
+    int y;
+} Emscripten_DropEvent;
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_SendDragEvent(SDL_WindowData *window_data, const Emscripten_DropEvent *event)
+{
+    SDL_SendDropPosition(window_data->window, event->x, event->y);
+}
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_SendDragCompleteEvent(SDL_WindowData *window_data)
+{
+    SDL_SendDropComplete(window_data->window);
+}
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_SendDragTextEvent(SDL_WindowData *window_data, char *text)
+{
+    SDL_SendDropText(window_data->window, text);
+}
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_SendDragFileEvent(SDL_WindowData *window_data, char *filename)
+{
+    SDL_SendDropFile(window_data->window, NULL, filename);
+}
+
+EM_JS_DEPS(dragndrop, "$writeArrayToMemory");
+
+static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
+{
+    MAIN_THREAD_EM_ASM({
+        var target = document.querySelector(UTF8ToString($1));
+        if (target) {
+            var data = $0;
+
+            if (typeof(Module['SDL3']) === 'undefined') {
+                Module['SDL3'] = {};
+            }
+            var SDL3 = Module['SDL3'];
+
+            var makeDropEventCStruct = function(event) {
+                var ptr = 0;
+                ptr = _SDL_malloc($2);
+                if (ptr != 0) {
+                    var idx = ptr >> 2;
+                    var rect = target.getBoundingClientRect();
+                    HEAP32[idx++] = event.clientX - rect.left;
+                    HEAP32[idx++] = event.clientY - rect.top;
+                }
+                return ptr;
+            };
+
+            SDL3.eventHandlerDropDragover = function(event) {
+                event.preventDefault();
+                var d = makeDropEventCStruct(event); if (d != 0) { _Emscripten_SendDragEvent(data, d); _SDL_free(d); }
+            };
+            target.addEventListener("dragover", SDL3.eventHandlerDropDragover);
+
+            SDL3.drop_count = 0;
+            FS.mkdir("/tmp/filedrop");
+            SDL3.eventHandlerDropDrop = function(event) {
+                event.preventDefault();
+                if (event.dataTransfer.types.includes("text/plain")) {
+                    let plain_text = stringToNewUTF8(event.dataTransfer.getData("text/plain"));
+                    _Emscripten_SendDragTextEvent(data, plain_text);
+                    _free(plain_text);
+                } else if (event.dataTransfer.types.includes("Files")) {
+                    for (let i = 0; i < event.dataTransfer.files.length; i++) {
+                        const file = event.dataTransfer.files.item(i);
+                        const file_reader = new FileReader();
+                        file_reader.readAsArrayBuffer(file);
+                        file_reader.onload = function(event) {
+                            const fs_dropdir = `/tmp/filedrop/${SDL3.drop_count}`;
+                            SDL3.drop_count += 1;
+
+                            const fs_filepath = `${fs_dropdir}/${file.name}`;
+                            const c_fs_filepath = stringToNewUTF8(fs_filepath);
+                            const contents_array8 = new Uint8Array(event.target.result);
+
+                            FS.mkdir(fs_dropdir);
+                            var stream = FS.open(fs_filepath, "w");
+                            FS.write(stream, contents_array8, 0, contents_array8.length, 0);
+                            FS.close(stream);
+
+                            _Emscripten_SendDragFileEvent(data, c_fs_filepath);
+                            _free(c_fs_filepath);
+                            _Emscripten_SendDragCompleteEvent(data);
+                        };
+                    }
+                }
+                _Emscripten_SendDragCompleteEvent(data);
+            };
+            target.addEventListener("drop", SDL3.eventHandlerDropDrop);
+
+            SDL3.eventHandlerDropDragend = function(event) {
+                event.preventDefault();
+                _Emscripten_SendDragCompleteEvent(data);
+            };
+            target.addEventListener("dragend", SDL3.eventHandlerDropDragend);
+            target.addEventListener("dragleave", SDL3.eventHandlerDropDragend);
+        }
+    }, data, data->canvas_id, sizeof (Emscripten_DropEvent));
+}
+
+static void Emscripten_unset_drag_event_callbacks(SDL_WindowData *data)
+{
+    MAIN_THREAD_EM_ASM({
+        var target = document.querySelector(UTF8ToString($0));
+        if (target) {
+            var SDL3 = Module['SDL3'];
+            target.removeEventListener("dragleave", SDL3.eventHandlerDropDragend);
+            target.removeEventListener("dragend", SDL3.eventHandlerDropDragend);
+            target.removeEventListener("drop", SDL3.eventHandlerDropDrop);
+            SDL3.drop_count = undefined;
+
+            function recursive_remove(dirpath) {
+                FS.readdir(dirpath).forEach((filename) => {
+                    const p = `${dirpath}/${filename}`;
+                    const p_s = FS.stat(p);
+                    if (FS.isFile(p_s.mode)) {
+                        FS.unlink(p);
+                    } else if (FS.isDir(p)) {
+                        recursive_remove(p);
+                    }
+                });
+                FS.rmdir(dirpath);
+            }("/tmp/filedrop");
+
+            FS.rmdir("/tmp/filedrop");
+            target.removeEventListener("dragover", SDL3.eventHandlerDropDragover);
+            SDL3.eventHandlerDropDragover = undefined;
+            SDL3.eventHandlerDropDrop = undefined;
+            SDL3.eventHandlerDropDragend = undefined;
+        }
+    }, data->canvas_id);
+}
+
 void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
     const char *keyElement;
@@ -852,11 +991,17 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     // !!! FIXME: currently Emscripten doesn't have a Pointer Events functions like emscripten_set_*_callback, but we should use those when they do:
     // !!! FIXME:  https://github.com/emscripten-core/emscripten/issues/7278#issuecomment-2280024621
     Emscripten_set_pointer_event_callbacks(data);
+
+    // !!! FIXME: currently Emscripten doesn't have a Drop Events functions like emscripten_set_*_callback, but we should use those when they do:
+    Emscripten_set_drag_event_callbacks(data);
 }
 
 void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 {
     const char *target;
+
+    // !!! FIXME: currently Emscripten doesn't have a Drop Events functions like emscripten_set_*_callback, but we should use those when they do:
+    Emscripten_unset_drag_event_callbacks(data);
 
     // !!! FIXME: currently Emscripten doesn't have a Pointer Events functions like emscripten_set_*_callback, but we should use those when they do:
     // !!! FIXME:  https://github.com/emscripten-core/emscripten/issues/7278#issuecomment-2280024621
