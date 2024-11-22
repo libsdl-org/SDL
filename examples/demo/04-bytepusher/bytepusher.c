@@ -405,24 +405,12 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     }
     if (appstate) {
         BytePusher* vm = (BytePusher*)appstate;
-        if (vm->audiostream) {
-            SDL_DestroyAudioStream(vm->audiostream);
-        }
-        if (vm->rendertarget) {
-            SDL_DestroyTexture(vm->rendertarget);
-        }
-        if (vm->screentex) {
-            SDL_DestroyTexture(vm->screentex);
-        }
-        if (vm->screen) {
-            SDL_DestroySurface(vm->screen);
-        }
-        if (vm->renderer) {
-            SDL_DestroyRenderer(vm->renderer);
-        }
-        if (vm->window) {
-            SDL_DestroyWindow(vm->window);
-        }
+        SDL_DestroyAudioStream(vm->audiostream);
+        SDL_DestroyTexture(vm->rendertarget);
+        SDL_DestroyTexture(vm->screentex);
+        SDL_DestroySurface(vm->screen);
+        SDL_DestroyRenderer(vm->renderer);
+        SDL_DestroyWindow(vm->window);
         SDL_free(vm);
     }
 }
