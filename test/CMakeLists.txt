@@ -99,6 +99,8 @@ elseif(PS2)
         dmakit
         ps2_drivers
     )
+elseif(IOS OR TVOS)
+    link_libraries(SDL2::SDL2main SDL2::SDL2test SDL2::SDL2-static)
 else()
     link_libraries(SDL2::SDL2test SDL2::SDL2-static)
 endif()
