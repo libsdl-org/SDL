@@ -350,8 +350,6 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
 
         WIN_UpdateWindowICCProfile(data->window, true);
     } else {
-        RECT rect;
-
         data->in_window_deactivation = true;
 
         SDL_SetKeyboardFocus(NULL);
@@ -361,10 +359,7 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
         }
         WIN_ResetDeadKeys();
 
-        if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect)) == 0) {
-            ClipCursor(NULL);
-            SDL_zero(data->cursor_clipped_rect);
-        }
+        WIN_UnclipCursorForWindow(window);
 
         data->in_window_deactivation = false;
     }

@@ -127,6 +127,7 @@ extern bool WIN_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window
 extern void WIN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_UpdateClipCursor(SDL_Window *window);
+extern void WIN_UnclipCursorForWindow(SDL_Window *window);
 extern bool WIN_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern void WIN_AcceptDragAndDrop(SDL_Window *window, bool accept);
 extern bool WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);

@@ -1550,6 +1550,15 @@ static BOOL GetClientScreenRect(HWND hwnd, RECT *rect)
            ClientToScreen(hwnd, (LPPOINT)rect + 1); // POINT( right , bottom )
 }
 
+void WIN_UnclipCursorForWindow(SDL_Window *window) {
+    SDL_WindowData *data = window->internal;
+    RECT rect;
+    if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect)) == 0) {
+        ClipCursor(NULL);
+        SDL_zero(data->cursor_clipped_rect);
+    }
+}
+
 void WIN_UpdateClipCursor(SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
@@ -1634,8 +1643,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
         if (IntersectRect(&overlap, &client, &custom)) {
             target = overlap;
         } else if (!win_is_grabbed) {
-            ClipCursor(NULL);
-            SDL_zero(data->cursor_clipped_rect);
+            WIN_UnclipCursorForWindow(window);
             return;
         }
     }
