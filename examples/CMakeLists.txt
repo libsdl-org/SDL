@@ -110,6 +110,7 @@ macro(add_sdl_example_executable TARGET)
         target_link_libraries(${TARGET} PRIVATE GL)
     elseif(EMSCRIPTEN)
         set_property(TARGET ${TARGET} PROPERTY SUFFIX ".html")
+        target_link_options(${TARGET} PRIVATE -sALLOW_MEMORY_GROWTH=1)
     endif()
 
     if(OPENGL_FOUND)
