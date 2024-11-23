@@ -26,7 +26,7 @@ Run: `cmake -S . -B build -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" && cmake --bu
 
 ## Linux and other UNIX systems:
 
-Run: `cmake -S . -B build && cmake --build build && cmake --install build`
+Run: `cmake -S . -B build && cmake --build build --parallel $(nproc) && cmake --install build`
 
 ## Android:
 
