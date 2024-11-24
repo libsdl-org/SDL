@@ -139,6 +139,7 @@ add_sdl_example_executable(renderer-debug-text SOURCES renderer/18-debug-text/de
 add_sdl_example_executable(audio-simple-playback SOURCES audio/01-simple-playback/simple-playback.c)
 add_sdl_example_executable(audio-simple-playback-callback SOURCES audio/02-simple-playback-callback/simple-playback-callback.c)
 add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.wav)
+add_sdl_example_executable(audio-multiple-streams SOURCES audio/04-multiple-streams/multiple-streams.c)
 add_sdl_example_executable(camera-read-and-draw SOURCES camera/01-read-and-draw/read-and-draw.c)
 add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawing-lines.c)
 add_sdl_example_executable(demo-snake SOURCES demo/01-snake/snake.c)
