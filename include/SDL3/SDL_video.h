@@ -1976,6 +1976,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RestoreWindow(SDL_Window *window);
  * \sa SDL_GetWindowFullscreenMode
  * \sa SDL_SetWindowFullscreenMode
  * \sa SDL_SyncWindow
+ * \sa SDL_WINDOW_FULLSCREEN
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowFullscreen(SDL_Window *window, bool fullscreen);
 
