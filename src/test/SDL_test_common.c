@@ -834,6 +834,9 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, SDL_WindowFlags f
     case SDL_WINDOW_OPENGL:
         SDL_snprintfcat(text, maxlen, "OPENGL");
         break;
+    case SDL_WINDOW_OCCLUDED:
+        SDL_snprintfcat(text, maxlen, "OCCLUDED");
+        break;
     case SDL_WINDOW_HIDDEN:
         SDL_snprintfcat(text, maxlen, "HIDDEN");
         break;
@@ -861,11 +864,17 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, SDL_WindowFlags f
     case SDL_WINDOW_EXTERNAL:
         SDL_snprintfcat(text, maxlen, "EXTERNAL");
         break;
+    case SDL_WINDOW_MODAL:
+        SDL_snprintfcat(text, maxlen, "MODAL");
+        break;
     case SDL_WINDOW_HIGH_PIXEL_DENSITY:
         SDL_snprintfcat(text, maxlen, "HIGH_PIXEL_DENSITY");
         break;
     case SDL_WINDOW_MOUSE_CAPTURE:
         SDL_snprintfcat(text, maxlen, "MOUSE_CAPTURE");
+        break;
+    case SDL_WINDOW_MOUSE_RELATIVE_MODE:
+        SDL_snprintfcat(text, maxlen, "MOUSE_RELATIVE_MODE");
         break;
     case SDL_WINDOW_ALWAYS_ON_TOP:
         SDL_snprintfcat(text, maxlen, "ALWAYS_ON_TOP");
@@ -891,6 +900,9 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, SDL_WindowFlags f
     case SDL_WINDOW_TRANSPARENT:
         SDL_snprintfcat(text, maxlen, "TRANSPARENT");
         break;
+    case SDL_WINDOW_NOT_FOCUSABLE:
+        SDL_snprintfcat(text, maxlen, "NOT_FOCUSABLE");
+        break;
     default:
         SDL_snprintfcat(text, maxlen, "0x%16.16" SDL_PRIx64, flag);
         break;
@@ -902,6 +914,7 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, SDL_WindowFlags 
     const SDL_WindowFlags window_flags[] = {
         SDL_WINDOW_FULLSCREEN,
         SDL_WINDOW_OPENGL,
+        SDL_WINDOW_OCCLUDED,
         SDL_WINDOW_HIDDEN,
         SDL_WINDOW_BORDERLESS,
         SDL_WINDOW_RESIZABLE,
@@ -911,8 +924,10 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, SDL_WindowFlags 
         SDL_WINDOW_INPUT_FOCUS,
         SDL_WINDOW_MOUSE_FOCUS,
         SDL_WINDOW_EXTERNAL,
+        SDL_WINDOW_MODAL,
         SDL_WINDOW_HIGH_PIXEL_DENSITY,
         SDL_WINDOW_MOUSE_CAPTURE,
+        SDL_WINDOW_MOUSE_RELATIVE_MODE,
         SDL_WINDOW_ALWAYS_ON_TOP,
         SDL_WINDOW_UTILITY,
         SDL_WINDOW_TOOLTIP,
@@ -920,7 +935,8 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, SDL_WindowFlags 
         SDL_WINDOW_KEYBOARD_GRABBED,
         SDL_WINDOW_VULKAN,
         SDL_WINDOW_METAL,
-        SDL_WINDOW_TRANSPARENT
+        SDL_WINDOW_TRANSPARENT,
+        SDL_WINDOW_NOT_FOCUSABLE
     };
 
     int i;
