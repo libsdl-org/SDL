@@ -6849,7 +6849,7 @@ static D3D12Fence *D3D12_INTERNAL_AcquireFence(
             return NULL;
         }
         fence->handle = handle;
-        fence->event = CreateEventEx(NULL, 0, 0, EVENT_ALL_ACCESS);
+        fence->event = CreateEvent(NULL, 0, 0, NULL);
         SDL_SetAtomicInt(&fence->referenceCount, 0);
     } else {
         fence = renderer->availableFences[renderer->availableFenceCount - 1];
