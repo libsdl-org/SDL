@@ -1848,6 +1848,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowWindow(SDL_Window *window);
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_ShowWindow
+ * \sa SDL_WINDOW_HIDDEN
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_HideWindow(SDL_Window *window);
 
