@@ -580,12 +580,7 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
     IAudioClient *client = device->hidden->client;
     SDL_assert(client != NULL);
 
-#if defined(SDL_PLATFORM_GDK) // CreateEventEx() arrived in Vista, so we need an #ifdef for XP.
-    device->hidden->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
-#else
-    device->hidden->event = CreateEventW(NULL, 0, 0, NULL);
-#endif
-
+    device->hidden->event = CreateEvent(NULL, FALSE, FALSE, NULL);
     if (!device->hidden->event) {
         return WIN_SetError("WASAPI can't create an event handle");
     }
