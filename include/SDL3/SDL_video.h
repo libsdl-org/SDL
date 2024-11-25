@@ -2357,6 +2357,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowParent(SDL_Window *window, SDL_Win
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_SetWindowParent
+ * \sa SDL_WINDOW_MODAL
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowModal(SDL_Window *window, bool modal);
 
