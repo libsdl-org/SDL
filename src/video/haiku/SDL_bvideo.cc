@@ -180,7 +180,8 @@ static SDL_Cursor * HAIKU_CreateSystemCursor(SDL_SystemCursor id)
 
 static SDL_Cursor * HAIKU_CreateDefaultCursor()
 {
-    return HAIKU_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
+    SDL_SystemCursor id = SDL_GetDefaultSystemCursor();
+    return HAIKU_CreateSystemCursor(id);
 }
 
 static void HAIKU_FreeCursor(SDL_Cursor * cursor)

@@ -89,12 +89,6 @@ static SDL_Cursor *X11_CreateCursorAndData(Cursor x11_cursor)
     return cursor;
 }
 
-static SDL_Cursor *X11_CreateDefaultCursor(void)
-{
-    // None is used to indicate the default cursor
-    return X11_CreateCursorAndData(None);
-}
-
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 static Cursor X11_CreateXCursorCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
@@ -277,6 +271,12 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
     }
 
     return cursor;
+}
+
+static SDL_Cursor *X11_CreateDefaultCursor(void)
+{
+    SDL_SystemCursor id = SDL_GetDefaultSystemCursor();
+    return X11_CreateSystemCursor(id);
 }
 
 static void X11_FreeCursor(SDL_Cursor *cursor)

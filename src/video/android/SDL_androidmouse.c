@@ -75,7 +75,8 @@ static SDL_Cursor *Android_WrapCursor(int custom_cursor, int system_cursor)
 
 static SDL_Cursor *Android_CreateDefaultCursor(void)
 {
-    return Android_WrapCursor(0, SDL_SYSTEM_CURSOR_DEFAULT);
+    SDL_SystemCursor id = SDL_GetDefaultSystemCursor();
+    return Android_WrapCursor(0, id);
 }
 
 static SDL_Cursor *Android_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)

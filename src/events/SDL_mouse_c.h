@@ -158,6 +158,9 @@ extern SDL_Mouse *SDL_GetMouse(void);
 // Set the default mouse cursor
 extern void SDL_SetDefaultCursor(SDL_Cursor *cursor);
 
+// Get the preferred default system cursor
+extern SDL_SystemCursor SDL_GetDefaultSystemCursor(void);
+
 // Set the mouse focus window
 extern void SDL_SetMouseFocus(SDL_Window *window);
 

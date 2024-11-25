@@ -592,7 +592,8 @@ static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
 
 static SDL_Cursor *Wayland_CreateDefaultCursor(void)
 {
-    return Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
+    SDL_SystemCursor id = SDL_GetDefaultSystemCursor();
+    return Wayland_CreateSystemCursor(id);
 }
 
 static void Wayland_FreeCursorData(SDL_CursorData *d)

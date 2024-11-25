@@ -2402,6 +2402,17 @@ extern "C" {
 #define SDL_HINT_MOUSE_DOUBLE_CLICK_TIME "SDL_MOUSE_DOUBLE_CLICK_TIME"
 
 /**
+ * A variable setting which system cursor to use as the default cursor.
+ * This should be an integer corresponding to the SDL_SystemCursor enum.
+ * The default value is zero (SDL_SYSTEM_CURSOR_DEFAULT).
+ *
+ * This hint needs to be set before SDL_Init().
+ *
+ * \since This hint is available since SDL 3.1.3.
+ */
+#define SDL_HINT_MOUSE_DEFAULT_SYSTEM_CURSOR "SDL_MOUSE_DEFAULT_SYSTEM_CURSOR"
+
+/**
  * A variable controlling whether warping a hidden mouse cursor will activate
  * relative mouse mode.
  *
