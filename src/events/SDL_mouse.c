@@ -440,6 +440,19 @@ void SDL_SetDefaultCursor(SDL_Cursor *cursor)
     }
 }
 
+SDL_SystemCursor SDL_GetDefaultSystemCursor(void) 
+{
+    SDL_SystemCursor id = SDL_SYSTEM_CURSOR_DEFAULT;
+    const char *value = SDL_GetHint(SDL_HINT_MOUSE_DEFAULT_SYSTEM_CURSOR);
+    if (value) {
+        int index = SDL_atoi(value);
+        if (0 <= index && index < (int)SDL_SYSTEM_CURSOR_COUNT) {
+            id = (SDL_SystemCursor)index;
+        }
+    }
+    return id;
+}
+
 SDL_Mouse *SDL_GetMouse(void)
 {
     return &SDL_mouse;

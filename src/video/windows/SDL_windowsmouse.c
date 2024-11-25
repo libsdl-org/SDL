@@ -84,11 +84,6 @@ static SDL_Cursor *WIN_CreateCursorAndData(HCURSOR hcursor)
     return cursor;
 }
 
-static SDL_Cursor *WIN_CreateDefaultCursor(void)
-{
-    return WIN_CreateCursorAndData(LoadCursor(NULL, IDC_ARROW));
-}
-
 static bool IsMonochromeSurface(SDL_Surface *surface)
 {
     int x, y;
@@ -340,6 +335,12 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
         break;
     }
     return WIN_CreateCursorAndData(LoadCursor(NULL, name));
+}
+
+static SDL_Cursor *WIN_CreateDefaultCursor(void)
+{
+    SDL_SystemCursor id = SDL_GetDefaultSystemCursor();
+    return WIN_CreateSystemCursor(id);
 }
 
 static void WIN_FreeCursor(SDL_Cursor *cursor)
