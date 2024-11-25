@@ -2403,8 +2403,9 @@ extern "C" {
 
 /**
  * A variable setting which system cursor to use as the default cursor.
- * This should be an integer corresponding to the SDL_SystemCursor enum.
- * The default value is zero (SDL_SYSTEM_CURSOR_DEFAULT).
+ *
+ * This should be an integer corresponding to the SDL_SystemCursor enum. The
+ * default value is zero (SDL_SYSTEM_CURSOR_DEFAULT).
  *
  * This hint needs to be set before SDL_Init().
  *
