@@ -650,7 +650,9 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
 
             int allocationsize = (length + 1) * sizeof(char*);
             for (j = 0, patom = (Atom*)data; j < length; j++, patom++) {
-                allocationsize += SDL_strlen( X11_XGetAtomName(display, *patom) ) + 1;
+                char *atomStr = X11_XGetAtomName(display, *patom);
+                allocationsize += SDL_strlen(atomStr) + 1;
+                X11_XFree(atomStr);
             }
 
             char **new_mime_types = SDL_AllocateTemporaryMemory(allocationsize);
@@ -658,12 +660,18 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
                 char *strPtr = (char *)(new_mime_types + length + 1);
 
                 for (j = 0, patom = (Atom*)data; j < length; j++, patom++) {
+                    char *atomStr = X11_XGetAtomName(display, *patom);
                     new_mime_types[j] = strPtr;
-                    strPtr = stpcpy(strPtr, X11_XGetAtomName(display, *patom)) + 1;
+                    strPtr = stpcpy(strPtr, atomStr) + 1;
+                    X11_XFree(atomStr);
                 }
                 new_mime_types[length] = NULL;
 
                 SDL_SendClipboardUpdate(false, new_mime_types, length);
+            }
+
+            if (data) {
+                X11_XFree(data);
             }
         }
 
