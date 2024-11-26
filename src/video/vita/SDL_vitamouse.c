@@ -73,11 +73,27 @@ void VITA_PollMouse(void)
                     else
                         SDL_SendMouseButton(Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_MIDDLE);
                 }
+                if (changed_buttons & 0x8) {
+                    if (prev_buttons & 0x8)
+                        SDL_SendMouseButton(Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_X1);
+                    else
+                        SDL_SendMouseButton(Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_X1);
+                }
+                if (changed_buttons & 0x10) {
+                    if (prev_buttons & 0x10)
+                        SDL_SendMouseButton(Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_X2);
+                    else
+                        SDL_SendMouseButton(Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_X2);
+                }
 
                 prev_buttons = m_reports[i].buttons;
 
                 if (m_reports[i].rel_x || m_reports[i].rel_y) {
                     SDL_SendMouseMotion(Vita_Window, 0, 1, m_reports[i].rel_x, m_reports[i].rel_y);
+                }
+
+                if (m_reports[i].tilt != 0 || m_reports[i].wheel != 0) {
+                    SDL_SendMouseWheel(Vita_Window, 0, m_reports[i].tilt, m_reports[i].wheel, SDL_MOUSEWHEEL_NORMAL);
                 }
             }
         }
