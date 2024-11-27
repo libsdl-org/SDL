@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -71,6 +71,7 @@
 		63134A262A7902FD0021E9A6 /* SDL_pen.c in Sources */ = {isa = PBXBuildFile; fileRef = 63134A242A7902FD0021E9A6 /* SDL_pen.c */; };
 		75E0915A241EA924004729E1 /* SDL_virtualjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75E09158241EA924004729E1 /* SDL_virtualjoystick.c */; };
 		75E09163241EA924004729E1 /* SDL_virtualjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */; };
+		89E5801E2D03602200DAF6D3 /* SDL_hidapi_lg4ff.c in Sources */ = {isa = PBXBuildFile; fileRef = 89E5801D2D03602200DAF6D3 /* SDL_hidapi_lg4ff.c */; };
 		9846B07C287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
 		A1626A3E2617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
 		A1626A522617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
@@ -608,6 +609,7 @@
 		63134A242A7902FD0021E9A6 /* SDL_pen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_pen.c; sourceTree = "<group>"; };
 		75E09158241EA924004729E1 /* SDL_virtualjoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_virtualjoystick.c; sourceTree = "<group>"; };
 		75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_virtualjoystick_c.h; sourceTree = "<group>"; };
+		89E5801D2D03602200DAF6D3 /* SDL_hidapi_lg4ff.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_lg4ff.c; sourceTree = "<group>"; };
 		9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_shield.c; sourceTree = "<group>"; };
 		A1626A3D2617006A003F1973 /* SDL_triangle.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_triangle.c; sourceTree = "<group>"; };
 		A1626A512617008C003F1973 /* SDL_triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_triangle.h; sourceTree = "<group>"; };
@@ -1904,6 +1906,7 @@
 		A7D8A7BE23E2513E00DCD162 /* hidapi */ = {
 			isa = PBXGroup;
 			children = (
+				89E5801D2D03602200DAF6D3 /* SDL_hidapi_lg4ff.c */,
 				F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */,
 				A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */,
 				F3F07D59269640160074468B /* SDL_hidapi_luna.c */,
@@ -2966,6 +2969,7 @@
 				A7D8B76423E2514300DCD162 /* SDL_mixer.c in Sources */,
 				A7D8BB5723E2514500DCD162 /* SDL_events.c in Sources */,
 				A7D8ADE623E2514100DCD162 /* SDL_blit_0.c in Sources */,
+				89E5801E2D03602200DAF6D3 /* SDL_hidapi_lg4ff.c in Sources */,
 				A7D8B8A823E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				56A2373329F9C113003CCA5F /* SDL_sysrwlock.c in Sources */,
 				F3A9AE9A2C8A13C100AAC390 /* SDL_shaders_gpu.c in Sources */,
