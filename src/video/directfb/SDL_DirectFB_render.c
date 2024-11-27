@@ -561,7 +561,7 @@ static void DirectFB_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * textur
     }
 }
 
-static void DirectFB_SetTextureScaleMode(void)
+static void DirectFB_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
 {
 }
 
