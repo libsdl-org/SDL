@@ -2274,7 +2274,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
     SDL_SharedObject *ntdll = SDL_LoadObject("ntdll.dll");
     if (!ntdll)
         return;
-    // There is no function to get windows build number, so let's get it here
+    // There is no function to get Windows build number, so let's get it here via RtlGetVersion
     RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)SDL_LoadFunction(ntdll, "RtlGetVersion");
     NT_OSVERSIONINFOW os_info;
     os_info.dwOSVersionInfoSize = sizeof(NT_OSVERSIONINFOW);
