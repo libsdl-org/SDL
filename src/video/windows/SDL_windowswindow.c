@@ -2276,9 +2276,9 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
     SDL_SharedObject *uxtheme = SDL_LoadObject("uxtheme.dll");
     if (!uxtheme)
         return;
-    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(133));
     RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(104));
     ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(132));
+    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(133));
     if (os_info.dwBuildNumber < 18362) {
         AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(135));
         if (AllowDarkModeForAppFunc)
