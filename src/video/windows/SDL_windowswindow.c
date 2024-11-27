@@ -60,8 +60,7 @@ typedef struct {
     PVOID pvData;
     SIZE_T cbData;
 } WINDOWCOMPOSITIONATTRIBDATA;
-typedef struct
-{
+typedef struct {
     ULONG dwOSVersionInfoSize;
     ULONG dwMajorVersion;
     ULONG dwMinorVersion;
@@ -2258,14 +2257,6 @@ bool WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool foc
 }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-bool WIN_ShouldApplyDarkMode(SDL_SharedObject *uxtheme)
-{
-    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(132));
-    if (ShouldAppsUseDarkModeFunc)
-        return ShouldAppsUseDarkModeFunc();
-    return SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK;
-}
-
 void WIN_UpdateDarkModeForHWND(HWND hwnd)
 {
     SDL_SharedObject *ntdll = SDL_LoadObject("ntdll.dll");
@@ -2287,6 +2278,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
         return;
     AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(133));
     RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(104));
+    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(132));
     if (os_info.dwBuildNumber < 18362) {
         AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(135));
         if (AllowDarkModeForAppFunc)
@@ -2300,7 +2292,12 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
         RefreshImmersiveColorPolicyStateFunc();
     if (AllowDarkModeForWindowFunc)
         AllowDarkModeForWindowFunc(hwnd, true);
-    BOOL value = WIN_ShouldApplyDarkMode(uxtheme) ? TRUE : FALSE;
+    BOOL value;
+    // Check dark mode using ShouldAppsUseDarkMode, but use SDL_GetSystemTheme as a fallback
+    if (ShouldAppsUseDarkModeFunc)
+        value = ShouldAppsUseDarkModeFunc() ? TRUE : FALSE;
+    else
+        value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
     SDL_UnloadObject(uxtheme);
     if (os_info.dwBuildNumber < 18362)
         SetPropW(hwnd, L"UseImmersiveDarkModeColors", SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
