@@ -128,12 +128,14 @@ void *alloca(size_t);
  * A null-pointer constant.
  *
  *
- * This macro is defined as ‘nullptr’ if you are using C++.
+ * This macro is defined as ‘nullptr’ if you are using C++/C23.
  * Otherwise it is defined as a generic pointer defined as 0.
- * \since This macro is available since SDL 3.0.0
+ * \since This macro is available since SDL 3.1.7
  */
 #if defined(__cplusplus)
 #define SDL_null (nullptr)
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)
+#define SDL_null (nullptr_t)
 #else
 #define SDL_null ((void*) 0)
 #endif
