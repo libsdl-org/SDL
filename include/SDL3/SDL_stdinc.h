@@ -125,6 +125,20 @@ void *alloca(size_t);
 #endif
 
 /**
+ * A null-pointer constant.
+ *
+ *
+ * This macro is defined as ‘nullptr’ if you are using C++.
+ * Otherwise it is defined as a generic pointer defined as 0.
+ * \since This macro is available since SDL 3.0.0
+ */
+#if defined(__cplusplus)
+#define SDL_null (nullptr)
+#else
+#define SDL_null ((void*) 0)
+#endif
+
+/**
  * The number of elements in an array.
  *
  * This macro looks like it double-evaluates the argument, but it does so
