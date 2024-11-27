@@ -68,12 +68,11 @@ typedef struct {
     ULONG dwPlatformId;
     WCHAR szCSDVersion[128];
 } NT_OSVERSIONINFOW;
-typedef bool(WINAPI *ShouldAppsUseDarkMode_t)(void);
+typedef bool (WINAPI *ShouldAppsUseDarkMode_t)(void);
 typedef void (WINAPI *AllowDarkModeForWindow_t)(HWND, bool);
 typedef void (WINAPI *AllowDarkModeForApp_t)(bool);
 typedef void (WINAPI *FlushMenuThemes_t)(void);
 typedef void (WINAPI *RefreshImmersiveColorPolicyState_t)(void);
-// typedef bool (WINAPI *IsDarkModeAllowedForWindow_t)(HWND);
 typedef bool (WINAPI *ShouldSystemUseDarkMode_t)(void);
 typedef WinPreferredAppMode (WINAPI *SetPreferredAppMode_t)(WinPreferredAppMode);
 typedef bool (WINAPI *IsDarkModeAllowedForApp_t)(void);
