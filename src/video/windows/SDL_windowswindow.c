@@ -2299,7 +2299,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
         value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
     SDL_UnloadObject(uxtheme);
     if (os_info.dwBuildNumber < 18362)
-        SetPropW(hwnd, L"UseImmersiveDarkModeColors", SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
+        SetProp(hwnd, TEXT("UseImmersiveDarkModeColors"), SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
     else {
         SDL_SharedObject *user32 = SDL_LoadObject("user32.dll");
         if (user32) {
