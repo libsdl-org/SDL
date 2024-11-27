@@ -45,6 +45,7 @@
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
 #define SDL_JOYSTICK_HIDAPI_SHIELD
+#define SDL_JOYSTICK_HIDAPI_LG4FF
 
 /* Whether HIDAPI is enabled by default */
 #if defined(__ANDROID__) || \
@@ -149,6 +150,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLg4ff;
 
 /* Return true if a HID device is present and supported as a joystick of the given type */
 extern SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GameControllerType type);
