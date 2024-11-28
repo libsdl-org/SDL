@@ -1218,3 +1218,5 @@ SDL_DYNAPI_PROC(bool,SDL_CancelGPUCommandBuffer,(SDL_GPUCommandBuffer *a),(a),re
 SDL_DYNAPI_PROC(bool,SDL_SaveFile_IO,(SDL_IOStream *a,const void *b,size_t c,bool d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(bool,SDL_SaveFile,(const char *a,const void *b,size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(char*,SDL_GetCurrentDirectory,(void),(),return)
+SDL_DYNAPI_PROC(bool,SDL_IsAudioDevicePhysical,(SDL_AudioDeviceID a),(a),return)
+SDL_DYNAPI_PROC(bool,SDL_IsAudioDevicePlayback,(SDL_AudioDeviceID a),(a),return)
