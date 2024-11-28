@@ -75,11 +75,8 @@ typedef struct {
 typedef bool (WINAPI *ShouldAppsUseDarkMode_t)(void);
 typedef void (WINAPI *AllowDarkModeForWindow_t)(HWND, bool);
 typedef void (WINAPI *AllowDarkModeForApp_t)(bool);
-typedef void (WINAPI *FlushMenuThemes_t)(void);
 typedef void (WINAPI *RefreshImmersiveColorPolicyState_t)(void);
-typedef bool (WINAPI *ShouldSystemUseDarkMode_t)(void);
 typedef UxthemePreferredAppMode (WINAPI *SetPreferredAppMode_t)(UxthemePreferredAppMode);
-typedef bool (WINAPI *IsDarkModeAllowedForApp_t)(void);
 typedef BOOL (WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
 typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
 
