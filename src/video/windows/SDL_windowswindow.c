@@ -2305,8 +2305,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
     // Check dark mode using ShouldAppsUseDarkMode, but use SDL_GetSystemTheme as a fallback
     if (ShouldAppsUseDarkModeFunc) {
         value = ShouldAppsUseDarkModeFunc() ? TRUE : FALSE;
-    }
-    else {
+    } else {
         value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
     }
     SDL_UnloadObject(uxtheme);
