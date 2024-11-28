@@ -2498,7 +2498,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderVSync(SDL_Renderer *renderer, int 
  *
  * \threadsafety You may only call this function from the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.1.6.
  *
  * \sa SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
  */

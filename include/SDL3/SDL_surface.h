@@ -31,7 +31,7 @@
  *
  * There is also a simple .bmp loader, SDL_LoadBMP(). SDL itself does not
  * provide loaders for various other file formats, but there are several
- * excellent external libraries that do, including it's own satellite library,
+ * excellent external libraries that do, including its own satellite library,
  * SDL_image:
  *
  * https://github.com/libsdl-org/SDL_image
