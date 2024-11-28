@@ -80,8 +80,8 @@ typedef void (WINAPI *RefreshImmersiveColorPolicyState_t)(void);
 typedef bool (WINAPI *ShouldSystemUseDarkMode_t)(void);
 typedef UxthemePreferredAppMode (WINAPI *SetPreferredAppMode_t)(UxthemePreferredAppMode);
 typedef bool (WINAPI *IsDarkModeAllowedForApp_t)(void);
-typedef BOOL (WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA*);
-typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW*);
+typedef BOOL (WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
+typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
 
 // Corner rounding support  (Win 11+)
 #ifndef DWMWA_WINDOW_CORNER_PREFERENCE
