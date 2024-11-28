@@ -205,7 +205,7 @@ data, as this pointer will not be provided to your app again.
 The SDL_AppResult value that terminated the app is provided here, in case
 it's useful to know if this was a successful or failing run of the app.
 
-##Summary and Best Practices 
+##Summary and Best Practices
 
 Always Include SDL_main.h in One Source File: When working with SDL, remember that SDL_main.h must only be included in one source file in your project. Including it in multiple files will lead to conflicts and undefined behavior.
 
