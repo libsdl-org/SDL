@@ -346,6 +346,16 @@ static SDL_AudioDeviceID AssignAudioDeviceInstanceId(bool recording, bool islogi
     return instance_id;
 }
 
+bool SDL_IsAudioDevicePhysical(SDL_AudioDeviceID devid)
+{
+    return (devid & (1 << 1)) != 0;
+}
+
+bool SDL_IsAudioDevicePlayback(SDL_AudioDeviceID devid)
+{
+    return (devid & (1 << 0)) != 0;
+}
+
 static void ObtainPhysicalAudioDeviceObj(SDL_AudioDevice *device) SDL_NO_THREAD_SAFETY_ANALYSIS  // !!! FIXMEL SDL_ACQUIRE
 {
     if (device) {

@@ -680,6 +680,41 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID
 extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec);
 
 /**
+ * Determine if an audio device is physical (instead of logical).
+ *
+ * An SDL_AudioDeviceID that represents physical hardare is a physical device;
+ * there is one for each piece of hardware that SDL can see. Logical devices
+ * are created by calling SDL_OpenAudioDevice or SDL_OpenAudioDeviceStream,
+ * and while each is associated with a physical device, there can be any
+ * number of logical devices on one physical device.
+ *
+ * For the most part, logical and physical IDs are interchangeable--if you
+ * try to open a logical device, SDL understands to assign that effort to the
+ * underlying physical device, etc. However, it might be useful to know if an
+ * arbitrary device ID is physical or logical. This function reports which.
+ *
+ * This function may return either true or false for invalid device IDs.
+ *
+ * \param devid the device ID to query.
+ * \returns true if devid is a physical device, false if it is logical.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePhysical(SDL_AudioDeviceID devid);
+
+/**
+ * Determine if an audio device is a playback device (instead of recording).
+ *
+ * This function may return either true or false for invalid device IDs.
+ *
+ * \param devid the device ID to query.
+ * \returns true if devid is a playback device, false if it is recording.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePlayback(SDL_AudioDeviceID devid);
+
+/**
  * Use this function to pause audio playback on a specified device.
  *
  * This function pauses audio processing for a given device. Any bound audio
