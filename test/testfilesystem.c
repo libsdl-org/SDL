@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 {
     SDLTest_CommonState *state;
     char *pref_path;
+    char *curdir;
     const char *base_path;
 
     /* Initialize test framework */
@@ -105,6 +106,15 @@ int main(int argc, char *argv[])
         SDL_Log("pref path: '%s'\n", pref_path);
     }
     SDL_free(pref_path);
+
+    curdir = SDL_GetCurrentDirectory();
+    if (!curdir) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find current directory: %s\n",
+                     SDL_GetError());
+    } else {
+        SDL_Log("current directory: '%s'\n", curdir);
+    }
+    SDL_free(curdir);
 
     if (base_path) {
         char **globlist;

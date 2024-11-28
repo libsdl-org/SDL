@@ -45,4 +45,10 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     return NULL;
 }
 
+char *SDL_SYS_GetCurrentDirectory(void)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
 #endif // SDL_FILESYSTEM_DUMMY || SDL_FILESYSTEM_DISABLED
