@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
@@ -183,6 +184,37 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     info->access_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_atime);
 #endif
     return true;
+}
+
+// Note that this isn't actually part of filesystem, not fsops, but everything that uses posix fsops uses this implementation, even with separate filesystem code.
+char *SDL_SYS_GetCurrentDirectory(void)
+{
+    size_t buflen = 64;
+    char *buf = NULL;
+
+    while (true) {
+        void *ptr = SDL_realloc(buf, buflen);
+        if (!ptr) {
+            SDL_free(buf);
+            return NULL;
+        }
+        buf = (char *) ptr;
+
+        if (getcwd(buf, buflen) != NULL) {
+            break;  // we got it!
+        }
+
+        if (errno == ERANGE) {
+            buflen *= 2;  // try again with a bigger buffer.
+            continue;
+        }
+
+        SDL_free(buf);
+        SDL_SetError("getcwd failed: %s", strerror(errno));
+        return NULL;
+    }
+
+    return buf;
 }
 
 #endif // SDL_FSOPS_POSIX
