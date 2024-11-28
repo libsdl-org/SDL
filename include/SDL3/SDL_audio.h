@@ -1209,7 +1209,7 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioSt
  * after this call.
  *
  * If `count` is not equal to the current number of channels in the audio
- * stream's format, this will fail. This is a safety measure to make sure a a
+ * stream's format, this will fail. This is a safety measure to make sure a
  * race condition hasn't changed the format while this call is setting the
  * channel map.
  *
@@ -1260,7 +1260,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamInputChannelMap(SDL_AudioStre
  * after this call.
  *
  * If `count` is not equal to the current number of channels in the audio
- * stream's format, this will fail. This is a safety measure to make sure a a
+ * stream's format, this will fail. This is a safety measure to make sure a
  * race condition hasn't changed the format while this call is setting the
  * channel map.
  *
