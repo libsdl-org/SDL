@@ -453,13 +453,15 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GlobDirectory(const char *path, const ch
  * For systems without a concept of a current working directory, this will
  * still attempt to provide something reasonable.
  *
- * SDL does not provide a means to _change_ the current working directory;
- * for platforms without this concept, this would cause surprises with file
- * access outside of SDL.
+ * SDL does not provide a means to _change_ the current working directory; for
+ * platforms without this concept, this would cause surprises with file access
+ * outside of SDL.
  *
  * \returns a UTF-8 string of the current working directory in
  *          platform-dependent notation. NULL if there's a problem. This
  *          should be freed with SDL_free() when it is no longer needed.
+ *
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC char * SDLCALL SDL_GetCurrentDirectory(void);
 
