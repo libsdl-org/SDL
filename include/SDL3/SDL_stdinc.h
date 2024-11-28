@@ -137,7 +137,7 @@ void *alloca(size_t);
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)
 #define SDL_null (nullptr_t)
 #else
-#define SDL_null ((void*) 0)
+#define SDL_null (0)
 #endif
 
 /**
