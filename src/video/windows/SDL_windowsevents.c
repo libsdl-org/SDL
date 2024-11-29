@@ -740,12 +740,12 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
     SDL_SendKeyboardKey(timestamp, keyboardID, rawcode, code, down);
 }
 
-void WIN_PollRawInput(SDL_VideoDevice *_this)
+void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 idle_start, Uint64 idle_end)
 {
     SDL_VideoData *data = _this->internal;
     UINT size, i, count, total = 0;
     RAWINPUT *input;
-    Uint64 now;
+    Uint64 pump_end;
 
     if (data->rawinput_offset == 0) {
         BOOL isWow64;
@@ -762,6 +762,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
     for (;;) {
         size = data->rawinput_size - (UINT)((BYTE *)input - data->rawinput);
         count = GetRawInputBuffer(input, &size, sizeof(RAWINPUTHEADER));
+        pump_end = SDL_GetTicksNS();
         if (count == 0 || count == (UINT)-1) {
             if (!data->rawinput || (count == (UINT)-1 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)) {
                 const UINT RAWINPUT_BUFFER_SIZE_INCREMENT = 96;   // 2 64-bit raw mouse packets
@@ -785,37 +786,29 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
         }
     }
 
-    now = SDL_GetTicksNS();
     if (total > 0) {
-        Uint64 mouse_timestamp, mouse_increment;
-        Uint64 delta = (now - data->last_rawinput_poll);
-        UINT total_mouse = 0;
+        bool idleless = (idle_end - idle_start) <= SDL_US_TO_NS(125);
+        Uint64 delta = pump_end - (idleless ? data->last_rawinput_poll : idle_end);
+        UINT mouse_total = 0;
         for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
             if (input->header.dwType == RIM_TYPEMOUSE) {
-                ++total_mouse;
+                mouse_total += 1;
             }
         }
-        if (total_mouse > 1 && delta <= SDL_MS_TO_NS(100)) {
-            // We'll spread these events over the time since the last poll
-            mouse_timestamp = data->last_rawinput_poll;
-            mouse_increment = delta / total_mouse;
-        } else {
-            // Do we want to track the update rate per device?
-            mouse_timestamp = now;
-            mouse_increment = 0;
-        }
+        int mouse_index = 0;
         for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
             if (input->header.dwType == RIM_TYPEMOUSE) {
+                mouse_index += 1; // increment first so that it starts at one
                 RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + data->rawinput_offset);
-                mouse_timestamp += mouse_increment;
-                WIN_HandleRawMouseInput(mouse_timestamp, data, input->header.hDevice, rawmouse);
+                Uint64 time = pump_end - (delta * (mouse_total - mouse_index)) / mouse_total;
+                WIN_HandleRawMouseInput(time, data, input->header.hDevice, rawmouse);
             } else if (input->header.dwType == RIM_TYPEKEYBOARD) {
                 RAWKEYBOARD *rawkeyboard = (RAWKEYBOARD *)((BYTE *)input + data->rawinput_offset);
-                WIN_HandleRawKeyboardInput(now, data, input->header.hDevice, rawkeyboard);
+                WIN_HandleRawKeyboardInput(pump_end, data, input->header.hDevice, rawkeyboard);
             }
         }
     }
-    data->last_rawinput_poll = now;
+    data->last_rawinput_poll = pump_end;
 }
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
