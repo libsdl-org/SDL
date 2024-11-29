@@ -688,8 +688,8 @@ extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDevic
  * and while each is associated with a physical device, there can be any
  * number of logical devices on one physical device.
  *
- * For the most part, logical and physical IDs are interchangeable--if you
- * try to open a logical device, SDL understands to assign that effort to the
+ * For the most part, logical and physical IDs are interchangeable--if you try
+ * to open a logical device, SDL understands to assign that effort to the
  * underlying physical device, etc. However, it might be useful to know if an
  * arbitrary device ID is physical or logical. This function reports which.
  *
@@ -699,6 +699,8 @@ extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDevic
  * \returns true if devid is a physical device, false if it is logical.
  *
  * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePhysical(SDL_AudioDeviceID devid);
 
@@ -711,6 +713,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePhysical(SDL_AudioDeviceID dev
  * \returns true if devid is a playback device, false if it is recording.
  *
  * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePlayback(SDL_AudioDeviceID devid);
 
