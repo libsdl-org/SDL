@@ -7940,7 +7940,7 @@ static void D3D12_INTERNAL_InitBlitResources(
     samplerCreateInfo.min_lod = 0;
     samplerCreateInfo.max_lod = 1000;
     samplerCreateInfo.max_anisotropy = 1.0f;
-    samplerCreateInfo.compare_op = SDL_GPU_COMPAREOP_ALWAYS;
+    samplerCreateInfo.compare_op = SDL_GPU_COMPAREOP_NEVER;
 
     renderer->blitNearestSampler = D3D12_CreateSampler(
         (SDL_GPURenderer *)renderer,
