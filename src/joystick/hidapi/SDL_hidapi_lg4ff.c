@@ -328,7 +328,7 @@ static bool HIDAPI_DriverLg4ff_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverLg4ff_Context *ctx;
 
-    ctx = (SDL_DriverLg4ff_Context *)SDL_calloc(1, sizeof(SDL_DriverLg4ff_Context));
+    ctx = (SDL_DriverLg4ff_Context *)SDL_malloc(sizeof(SDL_DriverLg4ff_Context));
     if (ctx == NULL) {
         SDL_OutOfMemory();
         return false;
