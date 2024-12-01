@@ -1081,7 +1081,7 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 @@
 @@
 - SDL_GameControllerFromInstanceID
-+ SDL_GetGamepadFromInstanceID
++ SDL_GetGamepadFromID
   (...)
 @@
 @@
@@ -1318,7 +1318,7 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 @@
 @@
 - SDL_JoystickFromInstanceID
-+ SDL_GetJoystickFromInstanceID
++ SDL_GetJoystickFromID
   (...)
 @@
 @@
@@ -1398,7 +1398,7 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 @@
 @@
 - SDL_JoystickInstanceID
-+ SDL_GetJoystickInstanceID
++ SDL_GetJoystickID
   (...)
 @@
 @@
@@ -1807,7 +1807,7 @@ expression e2;
 @@
 @@
 - SDL_SensorFromInstanceID
-+ SDL_GetSensorFromInstanceID
++ SDL_GetSensorFromID
   (...)
 @@
 @@
@@ -1817,7 +1817,7 @@ expression e2;
 @@
 @@
 - SDL_SensorGetInstanceID
-+ SDL_GetSensorInstanceID
++ SDL_GetSensorID
   (...)
 @@
 @@
