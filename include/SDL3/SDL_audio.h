@@ -682,7 +682,7 @@ extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDevic
 /**
  * Determine if an audio device is physical (instead of logical).
  *
- * An SDL_AudioDeviceID that represents physical hardare is a physical device;
+ * An SDL_AudioDeviceID that represents physical hardware is a physical device;
  * there is one for each piece of hardware that SDL can see. Logical devices
  * are created by calling SDL_OpenAudioDevice or SDL_OpenAudioDeviceStream,
  * and while each is associated with a physical device, there can be any
