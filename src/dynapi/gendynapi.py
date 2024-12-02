@@ -444,6 +444,9 @@ def get_header_list() -> list[Path]:
         else:
             logger.debug("Skip %s", f)
 
+    # Order headers for reproducible behavior
+    ret.sort()
+
     return ret
 
 # Write the new API in files: _procs.h _overrivides.h and .sym
