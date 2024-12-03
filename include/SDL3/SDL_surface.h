@@ -855,7 +855,6 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurface(SDL_Surface *surfac
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_ConvertSurface
- * \sa SDL_ConvertSurface
  * \sa SDL_DestroySurface
  */
 extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props);
