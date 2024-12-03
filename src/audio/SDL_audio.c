@@ -863,7 +863,7 @@ static SDL_AudioDevice *GetFirstAddedAudioDevice(const bool recording)
         // bit #0 of devid is set for playback devices and unset for recording.
         // bit #1 of devid is set for physical devices and unset for logical.
         const bool devid_recording = !(devid & (1 << 0));
-        const bool isphysical = (devid & (1 << 1));
+        const bool isphysical = !!(devid & (1 << 1));
         if (isphysical && (devid_recording == recording) && (devid < highest)) {
             highest = devid;
             result = (SDL_AudioDevice *) value;
@@ -1065,7 +1065,7 @@ void SDL_QuitAudio(void)
     while (SDL_IterateHashTable(device_hash, &key, &value, &iter)) {
         // bit #1 of devid is set for physical devices and unset for logical.
         const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
-        const bool isphysical = (devid & (1<<1));
+        const bool isphysical = !!(devid & (1<<1));
         if (isphysical) {
             DestroyPhysicalAudioDevice((SDL_AudioDevice *) value);
         }
@@ -1367,7 +1367,7 @@ static SDL_AudioDeviceID *GetAudioDevices(int *count, bool recording)
                     // bit #0 of devid is set for playback devices and unset for recording.
                     // bit #1 of devid is set for physical devices and unset for logical.
                     const bool devid_recording = !(devid & (1<<0));
-                    const bool isphysical = (devid & (1<<1));
+                    const bool isphysical = !!(devid & (1<<1));
                     if (isphysical && (devid_recording == recording)) {
                         SDL_assert(devs_seen < num_devices);
                         result[devs_seen++] = devid;
@@ -1419,7 +1419,7 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(bool (*callback)(SDL_Audi
     while (SDL_IterateHashTable(current_audio.device_hash, &key, &value, &iter)) {
         const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
         // bit #1 of devid is set for physical devices and unset for logical.
-        const bool isphysical = (devid & (1<<1));
+        const bool isphysical = !!(devid & (1<<1));
         if (isphysical) {
             SDL_AudioDevice *device = (SDL_AudioDevice *) value;
             if (callback(device, userdata)) {  // found it?
