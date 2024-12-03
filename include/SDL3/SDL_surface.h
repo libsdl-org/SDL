@@ -870,7 +870,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurfaceAndColorspace(SDL_Su
  * \param dst_format an SDL_PixelFormat value of the `dst` pixels format.
  * \param dst a pointer to be filled in with new pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
- * \returns false on success or false on failure; call SDL_GetError() for more
+ * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.1.3.
