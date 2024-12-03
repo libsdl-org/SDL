@@ -96,7 +96,7 @@ static int get_driindex(void)
     }
 
     SDL_strlcpy(device + kmsdrm_dri_pathsize, kmsdrm_dri_devname,
-                sizeof(device) - kmsdrm_dri_devnamesize);
+                sizeof(device) - kmsdrm_dri_pathsize);
     while((res = readdir(folder)) != NULL && available < 0) {
         if (SDL_memcmp(res->d_name, kmsdrm_dri_devname,
                        kmsdrm_dri_devnamesize) == 0) {
