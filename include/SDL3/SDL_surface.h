@@ -351,7 +351,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AddSurfaceAlternateImage(SDL_Surface *surfa
  * Return whether a surface has alternate versions available.
  *
  * \param surface the SDL_Surface structure to query.
- * \returns true if alternate versions are available or true otherwise.
+ * \returns true if alternate versions are available or false otherwise.
  *
  * \since This function is available since SDL 3.1.3.
  *
