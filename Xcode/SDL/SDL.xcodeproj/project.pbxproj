@@ -40,10 +40,13 @@
 		000040E76FDC6AE48CBF0000 /* SDL_hashtable.c in Sources */ = {isa = PBXBuildFile; fileRef = 000078E1881E857EBB6C0000 /* SDL_hashtable.c */; };
 		0000481D255AF155B42C0000 /* SDL_sysfsops.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000F4E6AA3EF99DA3C80000 /* SDL_sysfsops.c */; };
 		0000494CC93F3E624D3C0000 /* SDL_systime.c in Sources */ = {isa = PBXBuildFile; fileRef = 00003F472C51CE7DF6160000 /* SDL_systime.c */; };
+		00004D0B73767647AD550000 /* SDL_asyncio_generic.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */; };
 		000080903BC03006F24E0000 /* SDL_filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 00002B010DB1A70931C20000 /* SDL_filesystem.c */; };
 		000095FA1BDE436CF3AF0000 /* SDL_time.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000641A9BAC11AB3FBE0000 /* SDL_time.c */; };
 		000098E9DAA43EF6FF7F0000 /* SDL_camera.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000035D38C3899C7EFD0000 /* SDL_camera.c */; };
+		0000A03C0F32C43816F40000 /* SDL_asyncio_windows_ioring.c in Sources */ = {isa = PBXBuildFile; fileRef = 000030DD21496B5C0F210000 /* SDL_asyncio_windows_ioring.c */; };
 		0000A4DA2F45A31DC4F00000 /* SDL_sysmain_callbacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 0000BB287BA0A0178C1A0000 /* SDL_sysmain_callbacks.m */; };
+		0000AEB9AE90228CA2D60000 /* SDL_asyncio.c in Sources */ = {isa = PBXBuildFile; fileRef = 00003928A612EC33D42C0000 /* SDL_asyncio.c */; };
 		0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */ = {isa = PBXBuildFile; fileRef = 0000CCA310B73A7B59910000 /* SDL_cocoapen.m */; };
 		007317A40858DECD00B2BC32 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0073179D0858DECD00B2BC32 /* Cocoa.framework */; platformFilters = (macos, ); };
 		007317A60858DECD00B2BC32 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0073179F0858DECD00B2BC32 /* IOKit.framework */; platformFilters = (ios, maccatalyst, macos, ); };
@@ -469,6 +472,9 @@
 		F3E5A6EB2AD5E0E600293D83 /* SDL_properties.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E5A6EA2AD5E0E600293D83 /* SDL_properties.c */; };
 		F3E5A6ED2AD5E10800293D83 /* SDL_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = F3E5A6EC2AD5E10800293D83 /* SDL_properties.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F07D5A269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
+		F3F15D7F2D011912007AE210 /* SDL_dialog.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F15D7D2D011912007AE210 /* SDL_dialog.c */; };
+		F3F15D802D011912007AE210 /* SDL_dialog_utils.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F15D7E2D011912007AE210 /* SDL_dialog_utils.h */; };
+		F3F15D812D011912007AE210 /* SDL_dialog.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F15D7C2D011912007AE210 /* SDL_dialog.h */; };
 		F3F528CB2C29E1C300E6CC26 /* s_isnanf.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F528C62C29E1C300E6CC26 /* s_isnanf.c */; };
 		F3F528CC2C29E1C300E6CC26 /* s_isinf.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F528C72C29E1C300E6CC26 /* s_isinf.c */; };
 		F3F528CD2C29E1C300E6CC26 /* s_isnan.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F528C82C29E1C300E6CC26 /* s_isnan.c */; };
@@ -545,14 +551,6 @@
 		F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */; };
 		F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
-		0000E5D7110DFF81FF660000 /* SDL_cocoapen.h in Headers */ = {isa = PBXBuildFile; fileRef = 00002F2F5496FA184A0F0000 /* SDL_cocoapen.h */; };
-		0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */ = {isa = PBXBuildFile; fileRef = 0000CCA310B73A7B59910000 /* SDL_cocoapen.m */; };
-		0000AEB9AE90228CA2D60000 /* SDL_asyncio.c in Sources */ = {isa = PBXBuildFile; fileRef = 00003928A612EC33D42C0000 /* SDL_asyncio.c */; };
-		000062F9C843687F50F70000 /* SDL_asyncio_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0000919399B1A908267F0000 /* SDL_asyncio_c.h */; };
-		00005081394CCF8322BE0000 /* SDL_sysasyncio.h in Headers */ = {isa = PBXBuildFile; fileRef = 0000585B2CAB450B40540000 /* SDL_sysasyncio.h */; };
-		000018AF97C08F2DAFFD0000 /* SDL_asyncio.h in Headers */ = {isa = PBXBuildFile; fileRef = 00004945A946DF5B1AED0000 /* SDL_asyncio.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		00004D0B73767647AD550000 /* SDL_asyncio_generic.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */; };
-		0000A03C0F32C43816F40000 /* SDL_asyncio_windows_ioring.c in Sources */ = {isa = PBXBuildFile; fileRef = 000030DD21496B5C0F210000 /* SDL_asyncio_windows_ioring.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -582,8 +580,12 @@
 		0000035D38C3899C7EFD0000 /* SDL_camera.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_camera.c; sourceTree = "<group>"; };
 		00002B010DB1A70931C20000 /* SDL_filesystem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_filesystem.c; sourceTree = "<group>"; };
 		00002F2F5496FA184A0F0000 /* SDL_cocoapen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoapen.h; sourceTree = "<group>"; };
+		000030DD21496B5C0F210000 /* SDL_asyncio_windows_ioring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_asyncio_windows_ioring.c; sourceTree = "<group>"; };
 		00003260407E1002EAC10000 /* SDL_main_callbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_main_callbacks.h; sourceTree = "<group>"; };
+		00003928A612EC33D42C0000 /* SDL_asyncio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_asyncio.c; sourceTree = "<group>"; };
 		00003F472C51CE7DF6160000 /* SDL_systime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_systime.c; sourceTree = "<group>"; };
+		00004945A946DF5B1AED0000 /* SDL_asyncio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_asyncio.h; path = SDL3/SDL_asyncio.h; sourceTree = "<group>"; };
+		0000585B2CAB450B40540000 /* SDL_sysasyncio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysasyncio.h; sourceTree = "<group>"; };
 		00005BD74B46358B33A20000 /* SDL_camera_dummy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_camera_dummy.c; sourceTree = "<group>"; };
 		00005D3EB902478835E20000 /* SDL_syscamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_syscamera.h; sourceTree = "<group>"; };
 		0000641A9BAC11AB3FBE0000 /* SDL_time.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_time.c; sourceTree = "<group>"; };
@@ -591,12 +593,14 @@
 		000084ED0A56E3ED52F90000 /* SDL_camera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_camera.h; path = SDL3/SDL_camera.h; sourceTree = "<group>"; };
 		00008B79BF08CBCEAC460000 /* SDL_camera_coremedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_camera_coremedia.m; sourceTree = "<group>"; };
 		00009003C7148E1126CA0000 /* SDL_camera_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_camera_c.h; sourceTree = "<group>"; };
+		0000919399B1A908267F0000 /* SDL_asyncio_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_asyncio_c.h; sourceTree = "<group>"; };
 		00009366FB9FBBD54C390000 /* SDL_main_callbacks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_main_callbacks.c; sourceTree = "<group>"; };
 		0000B6ADCD88CAD6610F0000 /* SDL_hashtable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hashtable.h; sourceTree = "<group>"; };
 		0000BB287BA0A0178C1A0000 /* SDL_sysmain_callbacks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_sysmain_callbacks.m; sourceTree = "<group>"; };
 		0000CCA310B73A7B59910000 /* SDL_cocoapen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoapen.m; sourceTree = "<group>"; };
 		0000F4E6AA3EF99DA3C80000 /* SDL_sysfsops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysfsops.c; sourceTree = "<group>"; };
 		0000F6C6A072ED4E3D660000 /* SDL_dialog_utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_dialog_utils.c; sourceTree = "<group>"; };
+		0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_asyncio_generic.c; sourceTree = "<group>"; };
 		0073179D0858DECD00B2BC32 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		0073179F0858DECD00B2BC32 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		007317C10858E15000B2BC32 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
@@ -1048,6 +1052,9 @@
 		F3E5A6EA2AD5E0E600293D83 /* SDL_properties.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_properties.c; sourceTree = "<group>"; };
 		F3E5A6EC2AD5E10800293D83 /* SDL_properties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_properties.h; path = SDL3/SDL_properties.h; sourceTree = "<group>"; };
 		F3F07D59269640160074468B /* SDL_hidapi_luna.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_luna.c; sourceTree = "<group>"; };
+		F3F15D7C2D011912007AE210 /* SDL_dialog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_dialog.h; sourceTree = "<group>"; };
+		F3F15D7D2D011912007AE210 /* SDL_dialog.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_dialog.c; sourceTree = "<group>"; };
+		F3F15D7E2D011912007AE210 /* SDL_dialog_utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_dialog_utils.h; sourceTree = "<group>"; };
 		F3F528C62C29E1C300E6CC26 /* s_isnanf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = s_isnanf.c; sourceTree = "<group>"; };
 		F3F528C72C29E1C300E6CC26 /* s_isinf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = s_isinf.c; sourceTree = "<group>"; };
 		F3F528C82C29E1C300E6CC26 /* s_isnan.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = s_isnan.c; sourceTree = "<group>"; };
@@ -1128,14 +1135,6 @@
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
-		00002F2F5496FA184A0F0000 /* SDL_cocoapen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_cocoapen.h; path = SDL_cocoapen.h; sourceTree = "<group>"; };
-		0000CCA310B73A7B59910000 /* SDL_cocoapen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_cocoapen.m; path = SDL_cocoapen.m; sourceTree = "<group>"; };
-		00003928A612EC33D42C0000 /* SDL_asyncio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_asyncio.c; path = SDL_asyncio.c; sourceTree = "<group>"; };
-		0000919399B1A908267F0000 /* SDL_asyncio_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_asyncio_c.h; path = SDL_asyncio_c.h; sourceTree = "<group>"; };
-		0000585B2CAB450B40540000 /* SDL_sysasyncio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_sysasyncio.h; path = SDL_sysasyncio.h; sourceTree = "<group>"; };
-		00004945A946DF5B1AED0000 /* SDL_asyncio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_asyncio.h; path = SDL3/SDL_asyncio.h; sourceTree = "<group>"; };
-		0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_asyncio_generic.c; path = SDL_asyncio_generic.c; sourceTree = "<group>"; };
-		000030DD21496B5C0F210000 /* SDL_asyncio_windows_ioring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_asyncio_windows_ioring.c; path = SDL_asyncio_windows_ioring.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1170,6 +1169,14 @@
 			path = unix;
 			sourceTree = "<group>";
 		};
+		000013C0F2EADC24ADC10000 /* generic */ = {
+			isa = PBXGroup;
+			children = (
+				0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */,
+			);
+			path = generic;
+			sourceTree = "<group>";
+		};
 		000023E01FD84242AF850000 /* dummy */ = {
 			isa = PBXGroup;
 			children = (
@@ -1196,6 +1203,14 @@
 				0000F4E6AA3EF99DA3C80000 /* SDL_sysfsops.c */,
 			);
 			path = posix;
+			sourceTree = "<group>";
+		};
+		000064F9A2AAE947C1CD0000 /* windows */ = {
+			isa = PBXGroup;
+			children = (
+				000030DD21496B5C0F210000 /* SDL_asyncio_windows_ioring.c */,
+			);
+			path = windows;
 			sourceTree = "<group>";
 		};
 		000082EF09C89B62BD840000 /* main */ = {
@@ -2354,6 +2369,9 @@
 			children = (
 				F37E18552BA50ED50098C111 /* cocoa */,
 				F37E18562BA50F2A0098C111 /* dummy */,
+				F3F15D7C2D011912007AE210 /* SDL_dialog.h */,
+				F3F15D7D2D011912007AE210 /* SDL_dialog.c */,
+				F3F15D7E2D011912007AE210 /* SDL_dialog_utils.h */,
 				0000F6C6A072ED4E3D660000 /* SDL_dialog_utils.c */,
 			);
 			path = dialog;
@@ -2442,22 +2460,6 @@
 			path = resources;
 			sourceTree = "<group>";
 		};
-		000013C0F2EADC24ADC10000 /* generic */ = {
-			isa = PBXGroup;
-			children = (
-				0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */,
-			);
-			path = generic;
-			sourceTree = "<group>";
-		};
-		000064F9A2AAE947C1CD0000 /* windows */ = {
-			isa = PBXGroup;
-			children = (
-				000030DD21496B5C0F210000 /* SDL_asyncio_windows_ioring.c */,
-			);
-			path = windows;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2515,6 +2517,8 @@
 				A7D8B8A223E2514400DCD162 /* SDL_diskaudio.h in Headers */,
 				F3B439482C93595900792030 /* SDL_process.h in Headers */,
 				A7D8BB3F23E2514500DCD162 /* SDL_displayevents_c.h in Headers */,
+				F3F15D802D011912007AE210 /* SDL_dialog_utils.h in Headers */,
+				F3F15D812D011912007AE210 /* SDL_dialog.h in Headers */,
 				A7D8BA1923E2514400DCD162 /* SDL_draw.h in Headers */,
 				F3C2CB222C5DDDB2004D7998 /* SDL_categories_c.h in Headers */,
 				E479118E2BA9555500CE3B7F /* SDL_sysstorage.h in Headers */,
@@ -2958,6 +2962,7 @@
 				F316ABDB2B5CA721002EF551 /* SDL_memmove.c in Sources */,
 				A7D8AA6523E2514000DCD162 /* SDL_hints.c in Sources */,
 				A7D8B53F23E2514300DCD162 /* SDL_hidapi_ps4.c in Sources */,
+				F3F15D7F2D011912007AE210 /* SDL_dialog.c in Sources */,
 				F362B91C2B3349E200D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8AD6E23E2514100DCD162 /* SDL_pixels.c in Sources */,
 				A7D8B75E23E2514300DCD162 /* SDL_sysloadso.c in Sources */,
