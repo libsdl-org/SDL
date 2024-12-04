@@ -128,8 +128,8 @@ typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * cons
  *               Not all platforms support this option.
  * \param filters a list of filters, may be NULL. Not all platforms support
  *                this option, and platforms that do support it may allow the
- *                user to ignore the filters. If non-NULL, it must remain valid
- *                at least until the callback is invoked.
+ *                user to ignore the filters. If non-NULL, it must remain
+ *                valid at least until the callback is invoked.
  * \param nfilters the number of filters. Ignored if filters is NULL.
  * \param default_location the default folder or file to start the dialog at,
  *                         may be NULL. Not all platforms support this option.
@@ -179,8 +179,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  *               Not all platforms support this option.
  * \param filters a list of filters, may be NULL. Not all platforms support
  *                this option, and platforms that do support it may allow the
- *                user to ignore the filters. If non-NULL, it must remain valid
- *                at least until the callback is invoked.
+ *                user to ignore the filters. If non-NULL, it must remain
+ *                valid at least until the callback is invoked.
  * \param nfilters the number of filters. Ignored if filters is NULL.
  * \param default_location the default folder or file to start the dialog at,
  *                         may be NULL. Not all platforms support this option.
@@ -266,17 +266,17 @@ typedef enum SDL_FileDialogType {
  *
  * - `SDL_PROP_FILE_DIALOG_FILTERS_POINTER`: a pointer to a list of
  *   SDL_DialogFileFilter's, which will be used as filters for file-based
- *   selections. Ignored if the dialog is an "Open Folder" dialog. If non-NULL,
- *   the array of filters must remain valid at least until the callback is
- *   invoked.
- * - `SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER`: the number of filters in the array
- *   of filters, if it exists.
+ *   selections. Ignored if the dialog is an "Open Folder" dialog. If
+ *   non-NULL, the array of filters must remain valid at least until the
+ *   callback is invoked.
+ * - `SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER`: the number of filters in the
+ *   array of filters, if it exists.
  * - `SDL_PROP_FILE_DIALOG_WINDOW_POINTER`: the window that the dialog should
  *   be modal for.
  * - `SDL_PROP_FILE_DIALOG_LOCATION_STRING`: the default folder or file to
  *   start the dialog at.
- * - `SDL_PROP_FILE_DIALOG_MANY_BOOLEAN`: true to allow the user to select more
- *   than one entry.
+ * - `SDL_PROP_FILE_DIALOG_MANY_BOOLEAN`: true to allow the user to select
+ *   more than one entry.
  * - `SDL_PROP_FILE_DIALOG_TITLE_STRING`: the title for the dialog.
  * - `SDL_PROP_FILE_DIALOG_ACCEPT_STRING`: the label that the accept button
  *   should have.
