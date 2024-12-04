@@ -283,7 +283,7 @@ static SDL_AsyncIOTask *liburing_asyncioqueue_wait_results(void *userdata, Sint3
     if (timeoutMS < 0) {
         liburing.io_uring_wait_cqe(&queuedata->ring, &cqe);
     } else {
-        struct __kernel_timespec ts = { (__kernel_time64_t) timeoutMS / SDL_MS_PER_SECOND, (long long) SDL_MS_TO_NS(timeoutMS % SDL_MS_PER_SECOND) };
+        struct __kernel_timespec ts = { (Sint64) timeoutMS / SDL_MS_PER_SECOND, (Sint64) SDL_MS_TO_NS(timeoutMS % SDL_MS_PER_SECOND) };
         liburing.io_uring_wait_cqe_timeout(&queuedata->ring, &cqe, &ts);
     }
     SDL_AddAtomicInt(&queuedata->num_waiting, -1);
