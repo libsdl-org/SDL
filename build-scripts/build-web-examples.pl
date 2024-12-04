@@ -180,7 +180,7 @@ sub handle_example_dir {
 
     my $other_examples_html = "<ul>";
     foreach my $example (get_examples_for_category($category)) {
-        $other_examples_html .= "<li><a href='/$category/$example'>$category/$example</a></li>";
+        $other_examples_html .= "<li><a href='/$project/$category/$example'>$category/$example</a></li>";
     }
     $other_examples_html .= "</ul>";
 
@@ -225,7 +225,7 @@ sub handle_category_dir {
         # !!! FIXME: image
         my $example_image_url = "https://placehold.co/600x400/png";
         $examples_list_html .= "
-        <a href='/$category/$example'>
+        <a href='/$project/$category/$example'>
           <div>
             <img src='$example_image_url' />
             <div>$category/$example</div>
@@ -297,7 +297,7 @@ foreach my $category (get_categories()) {
         # !!! FIXME: image
         my $example_image_url = "https://placehold.co/600x400/png";
         $homepage_list_html .= "
-            <a href='/$category/$example'>
+            <a href='/$project/$category/$example'>
             <div>
                 <img src='$example_image_url' />
                 <div>$category/$example</div>
