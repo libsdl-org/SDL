@@ -740,12 +740,12 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
     SDL_SendKeyboardKey(timestamp, keyboardID, rawcode, code, down);
 }
 
-void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 idle_start, Uint64 idle_end)
+void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start)
 {
     SDL_VideoData *data = _this->internal;
     UINT size, i, count, total = 0;
     RAWINPUT *input;
-    Uint64 pump_end;
+    Uint64 poll_finish;
 
     if (data->rawinput_offset == 0) {
         BOOL isWow64;
@@ -762,7 +762,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 idle_start, Uint64 idle_end
     for (;;) {
         size = data->rawinput_size - (UINT)((BYTE *)input - data->rawinput);
         count = GetRawInputBuffer(input, &size, sizeof(RAWINPUTHEADER));
-        pump_end = SDL_GetTicksNS();
+        poll_finish = SDL_GetTicksNS();
         if (count == 0 || count == (UINT)-1) {
             if (!data->rawinput || (count == (UINT)-1 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)) {
                 const UINT RAWINPUT_BUFFER_SIZE_INCREMENT = 96;   // 2 64-bit raw mouse packets
@@ -787,8 +787,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 idle_start, Uint64 idle_end
     }
 
     if (total > 0) {
-        bool idleless = (idle_end - idle_start) <= SDL_US_TO_NS(125);
-        Uint64 delta = pump_end - (idleless ? data->last_rawinput_poll : idle_end);
+        Uint64 delta = poll_finish - poll_start;
         UINT mouse_total = 0;
         for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
             if (input->header.dwType == RIM_TYPEMOUSE) {
@@ -800,15 +799,15 @@ void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 idle_start, Uint64 idle_end
             if (input->header.dwType == RIM_TYPEMOUSE) {
                 mouse_index += 1; // increment first so that it starts at one
                 RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + data->rawinput_offset);
-                Uint64 time = pump_end - (delta * (mouse_total - mouse_index)) / mouse_total;
+                Uint64 time = poll_finish - (delta * (mouse_total - mouse_index)) / mouse_total;
                 WIN_HandleRawMouseInput(time, data, input->header.hDevice, rawmouse);
             } else if (input->header.dwType == RIM_TYPEKEYBOARD) {
                 RAWKEYBOARD *rawkeyboard = (RAWKEYBOARD *)((BYTE *)input + data->rawinput_offset);
-                WIN_HandleRawKeyboardInput(pump_end, data, input->header.hDevice, rawkeyboard);
+                WIN_HandleRawKeyboardInput(poll_finish, data, input->header.hDevice, rawkeyboard);
             }
         }
     }
-    data->last_rawinput_poll = pump_end;
+    data->last_rawinput_poll = poll_finish;
 }
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

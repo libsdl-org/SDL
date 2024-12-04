@@ -92,11 +92,10 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
     // Tell the parent we're ready to go!
     SetEvent(data->ready_event);
 
-    Uint64 idle_start, idle_end;
     while (!data->done) {
-        idle_start = SDL_GetTicksNS();
+        Uint64 idle_begin = SDL_GetTicksNS();
         DWORD result = MsgWaitForMultipleObjects(1, &data->done_event, FALSE, INFINITE, QS_RAWINPUT);
-        idle_end = SDL_GetTicksNS();
+        Uint64 idle_end = SDL_GetTicksNS();
         if (result != (WAIT_OBJECT_0 + 1)) {
             break;
         }
@@ -104,7 +103,11 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
         // Clear the queue status so MsgWaitForMultipleObjects() will wait again
         (void)GetQueueStatus(QS_RAWINPUT);
 
-        WIN_PollRawInput(_this, idle_start, idle_end);
+        Uint64 idle_time = idle_end - idle_begin;
+        Uint64 usb_8khz_interval = SDL_US_TO_NS(125);
+        Uint64 poll_start = idle_time < usb_8khz_interval ? _this->internal->last_rawinput_poll : idle_end;
+
+        WIN_PollRawInput(_this, poll_start);
     }
 
     devices[0].dwFlags |= RIDEV_REMOVE;
