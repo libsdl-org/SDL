@@ -1,0 +1,284 @@
+/** from ghwikipp.css */
+:root {
+  color-scheme: dark light; /* both supported */
+}
+
+body {
+  background-color: white;
+  padding: 2vw;
+  color: #333;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  overflow-wrap: break-word;
+}
+
+a {
+  color: #0969da;
+  /* text-decoration: none; */
+}
+
+a:visited {
+  color: #064998;
+}
+
+h1 {
+  border-bottom: 2px solid #efefef;
+}
+
+h2 {
+  border-bottom: 1px solid #efefef;
+}
+
+p {
+  max-width: 85ch;
+}
+
+li {
+  max-width: 85ch;
+}
+
+div.sourceCode {
+  background-color: #f6f8fa;
+  max-width: 100%;
+  padding: 16px;
+}
+
+code {
+  background-color: #f6f8fa;
+  padding: 0px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
+
+table {
+  border: 1px solid #808080;
+  border-collapse: collapse;
+}
+
+td {
+  border: 1px solid #808080;
+  padding: 5px;
+}
+
+tr:nth-child(even) {
+  background-color: #f6f8fa;
+}
+
+.wikitopbanner {
+  background-color: #efefef;
+  padding: 10px;
+  margin-bottom: 10px;
+  width: auto;
+}
+
+.wikibottombanner {
+  background-color: #efefef;
+  padding: 10px;
+  margin-top: 10px;
+  width: auto;
+}
+
+.alertBox {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  max-width: 60%;
+  padding: 10;
+  margin: auto;
+}
+
+.anchorImage {
+  visibility: hidden;
+  padding-left: 0.2em;
+  color: #fff;
+}
+
+.anchorText:hover .anchorImage {
+  visibility: visible;
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #efefef;
+  margin: 1em 0;
+  padding: 0;
+}
+
+/* Text and background color for dark mode */
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #e6edf3;
+    background-color: #0d1117;
+  }
+
+  h1 {
+    border-color: rgba(48, 54, 61, 0.7);
+  }
+
+  h2 {
+    border-color: rgba(48, 54, 61, 0.7);
+  }
+
+  hr {
+    border-color: rgba(48, 54, 61, 0.7);
+  }
+
+  div.sourceCode {
+    background-color: #161b22;
+  }
+
+  code {
+    background-color: #161b22;
+  }
+
+  a {
+    color: #4493f8;
+  }
+
+  a:visited {
+    color: #2f66ad;
+  }
+
+  table {
+    border-color: rgba(48, 54, 61, 0.7);
+  }
+
+  td {
+    border-color: rgba(48, 54, 61, 0.7);
+  }
+
+  tr:nth-child(even) {
+    background-color: #161b22;
+  }
+
+  .wikitopbanner {
+    background-color: #263040;
+  }
+
+  .wikibottombanner {
+    background-color: #263040;
+  }
+
+  .anchorText:hover .anchorImage {
+    filter: invert(100%);
+  }
+}
+
+@media print {
+  body {
+    font-size: 12px;
+  }
+
+  table {
+    font-size: inherit;
+  }
+
+  a:visited {
+    color: #0969da;
+  }
+
+  .wikitopbanner,
+  .anchorText,
+  .wikibottombanner {
+    display: none;
+  }
+}
+
+/** additional (& overrides) for examples */
+header {
+  background-color: #efefef;
+  padding: 10px;
+  font-size: 2rem;
+}
+
+header > a,
+header > a:hover,
+header > a:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+.breadcrumb {
+  padding: 0.75rem 0.75rem;
+}
+
+.breadcrumb ul {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumb li:not(:last-child)::after {
+  display: inline-block;
+  margin: 0 0.25rem;
+  content: "»";
+}
+
+.list {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 24px;
+}
+
+.list > a > div {
+  width: 200px;
+  border: 5px solid #efefef;
+  border-radius: 5px;
+  background: #efefef;
+
+  display: flex;
+  flex-flow: column nowrap;
+
+  transition: border 0.25s;
+}
+
+.list > a > div:hover {
+  border-color: #064998;
+}
+
+.list > a > div > img {
+  width: 100%;
+  border-radius: 5px;
+}
+
+.list > a > div > div {
+  text-align: center;
+}
+
+.list > a,
+.list > a:visited {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.list > a:hover {
+  color: #0969da;
+}
+
+@media (prefers-color-scheme: dark) {
+  header {
+    background-color: #263040;
+  }
+
+  .breadcrumb li:not(:last-child)::after {
+    color: #efefef;
+  }
+
+  .list > a > div {
+    border-color: #333;
+    background: #333;
+  }
+}
+
+@media only screen and (max-width: 992px) {
+  .list > a > div {
+    width: 150px;
+  }
+}
