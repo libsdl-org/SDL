@@ -1225,3 +1225,4 @@
 #define SDL_WaitAsyncIOResult SDL_WaitAsyncIOResult_REAL
 #define SDL_SignalAsyncIOQueue SDL_SignalAsyncIOQueue_REAL
 #define SDL_LoadFileAsync SDL_LoadFileAsync_REAL
+#define SDL_ShowFileDialogWithProperties SDL_ShowFileDialogWithProperties_REAL

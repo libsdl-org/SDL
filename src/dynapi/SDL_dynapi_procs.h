@@ -1231,3 +1231,4 @@ SDL_DYNAPI_PROC(bool,SDL_GetAsyncIOResult,(SDL_AsyncIOQueue *a, SDL_AsyncIOOutco
 SDL_DYNAPI_PROC(bool,SDL_WaitAsyncIOResult,(SDL_AsyncIOQueue *a, SDL_AsyncIOOutcome *b, Sint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(void,SDL_SignalAsyncIOQueue,(SDL_AsyncIOQueue *a),(a),)
 SDL_DYNAPI_PROC(bool,SDL_LoadFileAsync,(const char *a, SDL_AsyncIOQueue *b, void *c),(a,b,c),return)
+SDL_DYNAPI_PROC(void,SDL_ShowFileDialogWithProperties,(SDL_FileDialogType a, SDL_DialogFileCallback b, void *c, SDL_PropertiesID d),(a,b,c,d),)
