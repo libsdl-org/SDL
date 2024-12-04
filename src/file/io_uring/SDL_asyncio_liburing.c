@@ -169,7 +169,7 @@ static bool liburing_SetError(const char *what, int err)
 
 static Sint64 liburing_asyncio_size(void *userdata)
 {
-    const int fd = (int) (size_t) userdata;
+    const int fd = (int) (intptr_t) userdata;
     struct stat statbuf;
     if (fstat(fd, &statbuf) < 0) {
         SDL_SetError("fstat failed: %s", strerror(errno));
@@ -265,6 +265,7 @@ static SDL_AsyncIOTask *liburing_asyncioqueue_get_results(void *userdata)
         SDL_UnlockMutex(queuedata->cqe_lock);
         return NULL;
     }
+
     struct io_uring_cqe cqe_copy;
     SDL_copyp(&cqe_copy, cqe);  // this is only a few bytes.
     liburing.io_uring_cqe_seen(&queuedata->ring, cqe);  // let io_uring use this slot again.
@@ -371,7 +372,7 @@ static bool SDL_SYS_CreateAsyncIOQueue_liburing(SDL_AsyncIOQueue *queue)
 static bool liburing_asyncio_read(void *userdata, SDL_AsyncIOTask *task)
 {
     LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) task->queue->userdata;
-    const int fd = (int) (size_t) userdata;
+    const int fd = (int) (intptr_t) userdata;
 
     // !!! FIXME: `unsigned` is likely smaller than requested_size's Uint64. If we overflow it, we could try submitting multiple SQEs
     // !!! FIXME:  and make a note in the task that there are several in sequence.
@@ -397,7 +398,7 @@ static bool liburing_asyncio_read(void *userdata, SDL_AsyncIOTask *task)
 static bool liburing_asyncio_write(void *userdata, SDL_AsyncIOTask *task)
 {
     LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) task->queue->userdata;
-    const int fd = (int) (size_t) userdata;
+    const int fd = (int) (intptr_t) userdata;
 
     // !!! FIXME: `unsigned` is likely smaller than requested_size's Uint64. If we overflow it, we could try submitting multiple SQEs
     // !!! FIXME:  and make a note in the task that there are several in sequence.
@@ -423,7 +424,7 @@ static bool liburing_asyncio_write(void *userdata, SDL_AsyncIOTask *task)
 static bool liburing_asyncio_close(void *userdata, SDL_AsyncIOTask *task)
 {
     LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) task->queue->userdata;
-    const int fd = (int) (size_t) userdata;
+    const int fd = (int) (intptr_t) userdata;
 
     // have to hold a lock because otherwise two threads could get_sqe and submit while one request isn't fully set up.
     SDL_LockMutex(queuedata->sqe_lock);
@@ -497,7 +498,7 @@ static bool SDL_SYS_AsyncIOFromFile_liburing(const char *file, const char *mode,
     };
 
     SDL_copyp(&asyncio->iface, &SDL_AsyncIOFile_liburing);
-    asyncio->userdata = (void *) (size_t) fd;
+    asyncio->userdata = (void *) (intptr_t) fd;
     return true;
 }
 
