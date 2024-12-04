@@ -71,6 +71,38 @@ sub build_latest {
     }
 }
 
+sub get_categories {
+    my @categories = ();
+
+    opendir(my $dh, $examples_dir) or die("Couldn't opendir '$examples_dir': $!\n");
+    foreach my $dir (sort readdir $dh) {
+        next if ($dir eq '.') || ($dir eq '..');  # obviously skip current and parent entries.
+        next if not -d "$examples_dir/$dir";   # only care about subdirectories.
+
+        push @categories, $dir;
+    }
+    closedir($dh);
+
+    return @categories;
+}
+
+sub get_examples_for_category {
+    my $category = shift;
+
+    my @examples = ();
+
+    opendir(my $dh, "$examples_dir/$category") or die("Couldn't opendir '$examples_dir/$category': $!\n");
+    foreach my $dir (sort readdir $dh) {
+        next if ($dir eq '.') || ($dir eq '..');  # obviously skip current and parent entries.
+        next if not -d "$examples_dir/$category/$dir";   # only care about subdirectories.
+
+        push @examples, $dir;
+    }
+    closedir($dh);
+
+    return @examples;
+}
+
 sub handle_example_dir {
     my $category = shift;
     my $example = shift;
@@ -146,6 +178,11 @@ sub handle_example_dir {
 
     waitpid($pid, 0);
 
+    my $other_examples_html = "<ul>";
+    foreach my $example (get_examples_for_category($category)) {
+        $other_examples_html .= "<li><a href='/$category/$example'>$category/$example</a></li>";
+    }
+    $other_examples_html .= "</ul>";
 
     my $html = '';
     open my $htmltemplate, '<', "$examples_dir/template.html" or die("Couldn't open '$examples_dir/template.html': $!\n");
@@ -156,6 +193,7 @@ sub handle_example_dir {
         s/\@javascript_file\@/$jsfname/g;
         s/\@htmlified_source_code\@/$htmlified_source_code/g;
         s/\@description\@/$description/g;
+        s/\@other_examples_html\@/$other_examples_html/g;
         $html .= $_;
     }
     close($htmltemplate);
@@ -167,8 +205,6 @@ sub handle_example_dir {
 
 sub handle_category_dir {
     my $category = shift;
-
-    # !!! FIXME: this needs to generate a preview page for all the examples things in the category.
 
     print("Category $category ...\n");
 
@@ -183,6 +219,35 @@ sub handle_category_dir {
     }
 
     closedir($dh);
+
+    my $examples_list_html = "";
+    foreach my $example (get_examples_for_category($category)) {
+        # !!! FIXME: image
+        my $example_image_url = "https://placehold.co/600x400/png";
+        $examples_list_html .= "
+        <a href='/$category/$example'>
+          <div>
+            <img src='$example_image_url' />
+            <div>$category/$example</div>
+          </div>
+        </a>";
+    }
+
+    # write category page
+    my $dst = "$output_dir/$category";
+    my $html = '';
+    open my $htmltemplate, '<', "$examples_dir/template-category.html" or die("Couldn't open '$examples_dir/template-category.html': $!\n");
+    while (<$htmltemplate>) {
+        s/\@project_name\@/$project/g;
+        s/\@category_name\@/$category/g;
+        s/\@examples_list_html\@/$examples_list_html/g;
+        $html .= $_;
+    }
+    close($htmltemplate);
+
+    open my $htmloutput, '>', "$dst/index.html" or die("Couldn't open '$dst/index.html': $!\n");
+    print $htmloutput $html;
+    close($htmloutput);
 }
 
 
@@ -210,6 +275,8 @@ do_mkdir($output_dir);
 
 build_latest();
 
+do_copy("$examples_dir/template.css", "$output_dir/examples.css");
+
 opendir(my $dh, $examples_dir) or die("Couldn't opendir '$examples_dir': $!\n");
 
 while (readdir($dh)) {
@@ -221,6 +288,38 @@ while (readdir($dh)) {
 
 closedir($dh);
 
+# write homepage
+my $homepage_list_html = "";
+foreach my $category (get_categories()) {
+    $homepage_list_html .= "<h2>$category</h2>";
+    $homepage_list_html .= "<div class='list'>";
+    foreach my $example (get_examples_for_category($category)) {
+        # !!! FIXME: image
+        my $example_image_url = "https://placehold.co/600x400/png";
+        $homepage_list_html .= "
+            <a href='/$category/$example'>
+            <div>
+                <img src='$example_image_url' />
+                <div>$category/$example</div>
+            </div>
+            </a>";
+    }
+    $homepage_list_html .= "</div>";
+}
+
+my $dst = "$output_dir/";
+my $html = '';
+open my $htmltemplate, '<', "$examples_dir/template-homepage.html" or die("Couldn't open '$examples_dir/template-category.html': $!\n");
+while (<$htmltemplate>) {
+    s/\@project_name\@/$project/g;
+    s/\@homepage_list_html\@/$homepage_list_html/g;
+    $html .= $_;
+}
+close($htmltemplate);
+
+open my $htmloutput, '>', "$dst/index.html" or die("Couldn't open '$dst/index.html': $!\n");
+print $htmloutput $html;
+close($htmloutput);
+
 print("All examples built successfully!\n");
 exit(0);  # success!
-
