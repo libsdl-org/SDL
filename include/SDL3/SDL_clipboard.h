@@ -49,7 +49,7 @@ extern "C" {
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -68,7 +68,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardText(const char *text);
  *          SDL_GetError() for more information. This should be freed with
  *          SDL_free() when it is no longer needed.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -82,7 +82,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetClipboardText(void);
  *
  * \returns true if the clipboard has text, or false if it does not.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -98,7 +98,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasClipboardText(void);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -117,7 +117,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetPrimarySelectionText(const char *text);
  *          failure; call SDL_GetError() for more information. This should be
  *          freed with SDL_free() when it is no longer needed.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -132,7 +132,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
  *
  * \returns true if the primary selection has text, or false if it does not.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -199,7 +199,7 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -215,7 +215,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback 
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -235,7 +235,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ClearClipboardData(void);
  *          for more information. This should be freed with SDL_free() when it
  *          is no longer needed.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -251,7 +251,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetClipboardData(const char *mime_type, s
  * \returns true if there exists data in clipboard for the provided mime type,
  *          false if it does not.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -269,7 +269,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasClipboardData(const char *mime_type);
  *          failure; call SDL_GetError() for more information. This should be
  *          freed with SDL_free() when it is no longer needed.
  *
- * \threadsafety You may only call this function from the main thread.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *

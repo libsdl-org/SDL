@@ -139,6 +139,8 @@ typedef Uint32 SDL_MouseButtonFlags;
  *
  * \returns true if a mouse is connected, false otherwise.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetMice
@@ -159,6 +161,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasMouse(void);
  *          call SDL_GetError() for more information. This should be freed
  *          with SDL_free() when it is no longer needed.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetMouseNameForID
@@ -175,6 +179,8 @@ extern SDL_DECLSPEC SDL_MouseID * SDLCALL SDL_GetMice(int *count);
  * \returns the name of the selected mouse, or NULL on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetMice
@@ -185,6 +191,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID insta
  * Get the window which currently has mouse focus.
  *
  * \returns the window with mouse focus.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -213,6 +221,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  *          window's top left corner, can be NULL if unused.
  * \returns a 32-bit bitmask of the button state that can be bitwise-compared
  *          against the SDL_BUTTON_MASK(X) macro.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -248,6 +258,8 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, flo
  * \returns a 32-bit bitmask of the button state that can be bitwise-compared
  *          against the SDL_BUTTON_MASK(X) macro.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CaptureMouse
@@ -282,6 +294,8 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *
  * \returns a 32-bit bitmask of the button state that can be bitwise-compared
  *          against the SDL_BUTTON_MASK(X) macro.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetMouseState
@@ -303,6 +317,8 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float
  *               mouse focus.
  * \param x the x coordinate within the window.
  * \param y the y coordinate within the window.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -327,6 +343,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window,
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_WarpMouseInWindow
@@ -348,6 +366,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WarpMouseGlobal(float x, float y);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetWindowRelativeMouseMode
@@ -359,6 +379,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowRelativeMouseMode(SDL_Window *wind
  *
  * \param window the window to query.
  * \returns true if relative mode is enabled for a window or false otherwise.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -406,6 +428,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowRelativeMouseMode(SDL_Window *wind
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetGlobalMouseState
@@ -447,6 +471,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CaptureMouse(bool enabled);
  * \returns a new cursor with the specified parameters on success or NULL on
  *          failure; call SDL_GetError() for more information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateColorCursor
@@ -478,6 +504,8 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 * data,
  * \returns the new cursor on success or NULL on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CreateCursor
@@ -495,6 +523,8 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateColorCursor(SDL_Surface *surf
  * \param id an SDL_SystemCursor enum value.
  * \returns a cursor on success or NULL on failure; call SDL_GetError() for
  *          more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -514,6 +544,8 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_GetCursor
@@ -527,6 +559,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetCursor(SDL_Cursor *cursor);
  * library. It is not necessary to free the cursor with SDL_DestroyCursor().
  *
  * \returns the active cursor or NULL if there is no mouse.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -543,6 +577,8 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetCursor(void);
  * \returns the default cursor on success or NULL on failuree; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetDefaultCursor(void);
@@ -554,6 +590,8 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetDefaultCursor(void);
  * SDL_CreateColorCursor() or SDL_CreateSystemCursor().
  *
  * \param cursor the cursor to free.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -569,6 +607,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyCursor(SDL_Cursor *cursor);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CursorVisible
@@ -582,6 +622,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowCursor(void);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CursorVisible
@@ -594,6 +636,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HideCursor(void);
  *
  * \returns `true` if the cursor is being shown, or `false` if the cursor is
  *          hidden.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
