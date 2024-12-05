@@ -144,7 +144,7 @@ const char *SDL_GetCurrentAudioDriver(void)
     return current_audio.name;
 }
 
-static int GetDefaultSampleFramesFromFreq(const int freq)
+int SDL_GetDefaultSampleFramesFromFreq(const int freq)
 {
     const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES);
     if (hint) {
@@ -626,7 +626,7 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, bool recordi
     device->recording = recording;
     SDL_copyp(&device->spec, spec);
     SDL_copyp(&device->default_spec, spec);
-    device->sample_frames = GetDefaultSampleFramesFromFreq(device->spec.freq);
+    device->sample_frames = SDL_GetDefaultSampleFramesFromFreq(device->spec.freq);
     device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
     device->handle = handle;
 
@@ -1666,7 +1666,7 @@ static bool OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec
     device->spec.format = (SDL_AUDIO_BITSIZE(device->default_spec.format) >= SDL_AUDIO_BITSIZE(spec.format)) ? device->default_spec.format : spec.format;
     device->spec.freq = SDL_max(device->default_spec.freq, spec.freq);
     device->spec.channels = SDL_max(device->default_spec.channels, spec.channels);
-    device->sample_frames = GetDefaultSampleFramesFromFreq(device->spec.freq);
+    device->sample_frames = SDL_GetDefaultSampleFramesFromFreq(device->spec.freq);
     SDL_UpdatedAudioDeviceFormat(device);  // start this off sane.
 
     device->currently_opened = true;  // mark this true even if impl.OpenDevice fails, so we know to clean up.

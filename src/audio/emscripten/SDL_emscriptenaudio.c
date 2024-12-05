@@ -190,6 +190,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     // limit to native freq
     device->spec.freq = EM_ASM_INT({ return Module['SDL3'].audioContext.sampleRate; });
+    device->sample_frames = SDL_GetDefaultSampleFramesFromFreq(device->spec.freq);
 
     SDL_UpdatedAudioDeviceFormat(device);
 
