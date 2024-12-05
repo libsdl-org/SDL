@@ -23,7 +23,6 @@
 #ifndef SDL_kmsdrmopengles_h_
 #define SDL_kmsdrmopengles_h_
 
-#include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
 // OpenGLES functions
