@@ -31,6 +31,7 @@
 
 #include <liburing.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <string.h>  // for strerror()
 
 static SDL_InitState liburing_init;
