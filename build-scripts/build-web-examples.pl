@@ -223,7 +223,7 @@ sub handle_category_dir {
     my $examples_list_html = "";
     foreach my $example (get_examples_for_category($category)) {
         # !!! FIXME: image
-        my $example_image_url = "https://placehold.co/600x400/png";
+        my $example_image_url = "/$project/placeholder.png";
         $examples_list_html .= "
         <a href='/$project/$category/$example'>
           <div>
@@ -276,6 +276,7 @@ do_mkdir($output_dir);
 build_latest();
 
 do_copy("$examples_dir/template.css", "$output_dir/examples.css");
+do_copy("$examples_dir/template-placeholder.png", "$output_dir/placeholder.png");
 
 opendir(my $dh, $examples_dir) or die("Couldn't opendir '$examples_dir': $!\n");
 
@@ -295,7 +296,7 @@ foreach my $category (get_categories()) {
     $homepage_list_html .= "<div class='list'>";
     foreach my $example (get_examples_for_category($category)) {
         # !!! FIXME: image
-        my $example_image_url = "https://placehold.co/600x400/png";
+        my $example_image_url = "/$project/placeholder.png";
         $homepage_list_html .= "
             <a href='/$project/$category/$example'>
             <div>
