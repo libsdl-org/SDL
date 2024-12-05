@@ -1226,3 +1226,5 @@
 #define SDL_SignalAsyncIOQueue SDL_SignalAsyncIOQueue_REAL
 #define SDL_LoadFileAsync SDL_LoadFileAsync_REAL
 #define SDL_ShowFileDialogWithProperties SDL_ShowFileDialogWithProperties_REAL
+#define SDL_IsMainThread SDL_IsMainThread_REAL
+#define SDL_RunOnMainThread SDL_RunOnMainThread_REAL

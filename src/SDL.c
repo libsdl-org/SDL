@@ -183,6 +183,7 @@ static bool SDL_MainIsReady = false;
 #else
 static bool SDL_MainIsReady = true;
 #endif
+static SDL_ThreadID SDL_MainThreadID = 0;
 static bool SDL_bInMainQuit = false;
 static Uint8 SDL_SubsystemRefCount[32];
 
@@ -250,6 +251,22 @@ static bool SDL_InitOrIncrementSubsystem(Uint32 subsystem)
 void SDL_SetMainReady(void)
 {
     SDL_MainIsReady = true;
+
+    if (SDL_MainThreadID == 0) {
+        SDL_MainThreadID = SDL_GetCurrentThreadID();
+    }
+}
+
+bool SDL_IsMainThread(void)
+{
+    if (SDL_MainThreadID == 0) {
+        // Not initialized yet?
+        return true;
+    }
+    if (SDL_MainThreadID == SDL_GetCurrentThreadID()) {
+        return true;
+    }
+    return false;
 }
 
 // Initialize all the subsystems that require initialization before threads start
@@ -329,6 +346,11 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             if (!SDL_InitOrIncrementSubsystem(SDL_INIT_EVENTS)) {
                 goto quit_and_error;
             }
+
+            // We initialize video on the main thread
+            // On Apple platforms this is a requirement.
+            // On other platforms, this is the definition.
+            SDL_MainThreadID = SDL_GetCurrentThreadID();
 
             SDL_IncrementSubsystemRefCount(SDL_INIT_VIDEO);
             if (!SDL_VideoInit(NULL)) {
