@@ -1293,7 +1293,10 @@ char *HIDAPI_GetDeviceProductName(Uint16 vendor_id, Uint16 product_id)
     SDL_LockJoysticks();
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
         if (vendor_id == device->vendor_id && product_id == device->product_id) {
-            name = SDL_strdup(device->product_string);
+            if (device->product_string) {
+                name = SDL_strdup(device->product_string);
+            }
+            break;
         }
     }
     SDL_UnlockJoysticks();
@@ -1309,7 +1312,10 @@ char *HIDAPI_GetDeviceManufacturerName(Uint16 vendor_id, Uint16 product_id)
     SDL_LockJoysticks();
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
         if (vendor_id == device->vendor_id && product_id == device->product_id) {
-            name = SDL_strdup(device->manufacturer_string);
+            if (device->manufacturer_string) {
+                name = SDL_strdup(device->manufacturer_string);
+            }
+            break;
         }
     }
     SDL_UnlockJoysticks();
