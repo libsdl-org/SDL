@@ -1201,6 +1201,8 @@ SDL3_0.0.0 {
     SDL_SignalAsyncIOQueue;
     SDL_LoadFileAsync;
     SDL_ShowFileDialogWithProperties;
+    SDL_IsMainThread;
+    SDL_RunOnMainThread;
     # extra symbols go here (don't modify this line)
   local: *;
 };

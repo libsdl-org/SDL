@@ -1175,6 +1175,177 @@ void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
     SDL_UnlockMutex(SDL_EventQ.lock);
 }
 
+typedef enum
+{
+    SDL_MAIN_CALLBACK_WAITING,
+    SDL_MAIN_CALLBACK_COMPLETE,
+    SDL_MAIN_CALLBACK_CANCELED,
+} SDL_MainThreadCallbackState;
+
+typedef struct SDL_MainThreadCallbackEntry
+{
+    SDL_MainThreadCallback callback;
+    void *userdata;
+    SDL_AtomicInt state;
+    SDL_Semaphore *semaphore;
+    struct SDL_MainThreadCallbackEntry *next;
+} SDL_MainThreadCallbackEntry;
+
+static SDL_Mutex *SDL_main_callbacks_lock;
+static SDL_MainThreadCallbackEntry *SDL_main_callbacks_head;
+static SDL_MainThreadCallbackEntry *SDL_main_callbacks_tail;
+
+static SDL_MainThreadCallbackEntry *SDL_CreateMainThreadCallback(SDL_MainThreadCallback callback, void *userdata, bool wait_complete)
+{
+    SDL_MainThreadCallbackEntry *entry = (SDL_MainThreadCallbackEntry *)SDL_malloc(sizeof(*entry));
+    if (!entry) {
+        return NULL;
+    }
+
+    entry->callback = callback;
+    entry->userdata = userdata;
+    SDL_SetAtomicInt(&entry->state, SDL_MAIN_CALLBACK_WAITING);
+    if (wait_complete) {
+        entry->semaphore = SDL_CreateSemaphore(0);
+        if (!entry->semaphore) {
+            SDL_free(entry);
+            return NULL;
+        }
+    } else {
+        entry->semaphore = NULL;
+    }
+    entry->next = NULL;
+
+    return entry;
+}
+
+static void SDL_DestroyMainThreadCallback(SDL_MainThreadCallbackEntry *entry)
+{
+    if (entry->semaphore) {
+        SDL_DestroySemaphore(entry->semaphore);
+    }
+    SDL_free(entry);
+}
+
+static void SDL_InitMainThreadCallbacks(void)
+{
+    SDL_main_callbacks_lock = SDL_CreateMutex();
+    SDL_assert(SDL_main_callbacks_head == NULL &&
+               SDL_main_callbacks_tail == NULL);
+}
+
+static void SDL_QuitMainThreadCallbacks(void)
+{
+    SDL_MainThreadCallbackEntry *entry;
+
+    SDL_LockMutex(SDL_main_callbacks_lock);
+    {
+        entry = SDL_main_callbacks_head;
+        SDL_main_callbacks_head = NULL;
+        SDL_main_callbacks_tail = NULL;
+    }
+    SDL_UnlockMutex(SDL_main_callbacks_lock);
+
+    while (entry) {
+        SDL_MainThreadCallbackEntry *next = entry->next;
+
+        if (entry->semaphore) {
+            // Let the waiting thread know this is canceled
+            SDL_SetAtomicInt(&entry->state, SDL_MAIN_CALLBACK_CANCELED);
+            SDL_SignalSemaphore(entry->semaphore);
+        } else {
+            // Nobody's waiting for this, clean it up
+            SDL_DestroyMainThreadCallback(entry);
+        }
+        entry = next;
+    }
+
+    SDL_DestroyMutex(SDL_main_callbacks_lock);
+    SDL_main_callbacks_lock = NULL;
+}
+
+static void SDL_RunMainThreadCallbacks(void)
+{
+    SDL_MainThreadCallbackEntry *entry;
+
+    SDL_LockMutex(SDL_main_callbacks_lock);
+    {
+        entry = SDL_main_callbacks_head;
+        SDL_main_callbacks_head = NULL;
+        SDL_main_callbacks_tail = NULL;
+    }
+    SDL_UnlockMutex(SDL_main_callbacks_lock);
+
+    while (entry) {
+        SDL_MainThreadCallbackEntry *next = entry->next;
+
+        entry->callback(entry->userdata);
+
+        if (entry->semaphore) {
+            // Let the waiting thread know this is done
+            SDL_SetAtomicInt(&entry->state, SDL_MAIN_CALLBACK_COMPLETE);
+            SDL_SignalSemaphore(entry->semaphore);
+        } else {
+            // Nobody's waiting for this, clean it up
+            SDL_DestroyMainThreadCallback(entry);
+        }
+        entry = next;
+    }
+}
+
+bool SDL_RunOnMainThread(SDL_MainThreadCallback callback, void *userdata, bool wait_complete)
+{
+    if (SDL_IsMainThread() || !SDL_WasInit(SDL_INIT_EVENTS)) {
+        // No need to queue the callback
+        callback(userdata);
+        return true;
+    }
+
+    SDL_MainThreadCallbackEntry *entry = SDL_CreateMainThreadCallback(callback, userdata, wait_complete);
+    if (!entry) {
+        return false;
+    }
+
+    SDL_LockMutex(SDL_main_callbacks_lock);
+    {
+        if (SDL_main_callbacks_tail) {
+            SDL_main_callbacks_tail->next = entry;
+            SDL_main_callbacks_tail = entry;
+        } else {
+            SDL_main_callbacks_head = entry;
+            SDL_main_callbacks_tail = entry;
+        }
+    }
+    SDL_UnlockMutex(SDL_main_callbacks_lock);
+
+    if (!wait_complete) {
+        // Queued for execution, wait not requested
+        return true;
+    }
+
+    // Maximum wait of 30 seconds to prevent deadlocking forever
+    const Sint32 MAX_CALLBACK_WAIT = 30 * 1000;
+    SDL_WaitSemaphoreTimeout(entry->semaphore, MAX_CALLBACK_WAIT);
+
+    switch (SDL_GetAtomicInt(&entry->state)) {
+    case SDL_MAIN_CALLBACK_COMPLETE:
+        // Execution complete!
+        SDL_DestroyMainThreadCallback(entry);
+        return true;
+
+    case SDL_MAIN_CALLBACK_CANCELED:
+        // The callback was canceled on the main thread
+        SDL_DestroyMainThreadCallback(entry);
+        return SDL_SetError("Callback canceled");
+
+    default:
+        // Probably hit a deadlock in the callback
+        // We can't destroy the entry as the semaphore will be signaled
+        // if it ever comes back, just leak it here.
+        return SDL_SetError("Callback timed out");
+    }
+}
+
 // Run the system dependent event loops
 static void SDL_PumpEventsInternal(bool push_sentinel)
 {
@@ -1183,6 +1354,9 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
 
     // Release any keys held down from last frame
     SDL_ReleaseAutoReleaseKeys();
+
+    // Run any pending main thread callbacks
+    SDL_RunMainThreadCallbacks();
 
 #ifdef SDL_PLATFORM_ANDROID
     // Android event processing is independent of the video subsystem
@@ -1792,6 +1966,7 @@ bool SDL_InitEvents(void)
 #endif
     SDL_AddHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
     SDL_AddHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
+    SDL_InitMainThreadCallbacks();
     if (!SDL_StartEventLoop()) {
         SDL_RemoveHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
         return false;
@@ -1806,6 +1981,7 @@ void SDL_QuitEvents(void)
 {
     SDL_QuitQuit();
     SDL_StopEventLoop();
+    SDL_QuitMainThreadCallbacks();
     SDL_RemoveHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
     SDL_RemoveHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
 #ifndef SDL_JOYSTICK_DISABLED
