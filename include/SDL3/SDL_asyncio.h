@@ -80,7 +80,8 @@
  * some amount of resources, but it is not an overwhelming cost. Do not make a
  * queue for each task, however. It is better to put many tasks into a single
  * queue. They will be reported in order of completion, not in the order they
- * were submitted, so it doesn't generally matter what order tasks are started.
+ * were submitted, so it doesn't generally matter what order tasks are
+ * started.
  *
  * One async i/o queue can be shared by multiple threads, or one thread can
  * have more than one queue, but the most efficient way--if ruthless
