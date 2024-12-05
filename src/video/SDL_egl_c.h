@@ -27,8 +27,6 @@
 
 #include <SDL3/SDL_egl.h>
 
-#include "SDL_sysvideo.h"
-
 #define SDL_EGL_MAX_DEVICES 8
 
 // For systems that don't define these
@@ -115,32 +113,34 @@ typedef enum SDL_EGL_ExtensionType
     SDL_EGL_CLIENT_EXTENSION
 } SDL_EGL_ExtensionType;
 
-extern bool SDL_EGL_HasExtension(SDL_VideoDevice *_this, SDL_EGL_ExtensionType type, const char *ext);
+struct SDL_VideoDevice; // detailed in SDL_sysvideo.h
 
-extern bool SDL_EGL_GetAttribute(SDL_VideoDevice *_this, SDL_GLAttr attrib, int *value);
+extern bool SDL_EGL_HasExtension(struct SDL_VideoDevice *_this, SDL_EGL_ExtensionType type, const char *ext);
+
+extern bool SDL_EGL_GetAttribute(struct SDL_VideoDevice *_this, SDL_GLAttr attrib, int *value);
 /* SDL_EGL_LoadLibrary can get a display for a specific platform (EGL_PLATFORM_*)
  * or, if 0 is passed, let the implementation decide.
  */
-extern bool SDL_EGL_LoadLibraryOnly(SDL_VideoDevice *_this, const char *path);
-extern bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *path, NativeDisplayType native_display, EGLenum platform);
-extern SDL_FunctionPointer SDL_EGL_GetProcAddressInternal(SDL_VideoDevice *_this, const char *proc);
-extern void SDL_EGL_UnloadLibrary(SDL_VideoDevice *_this);
-extern void SDL_EGL_SetRequiredVisualId(SDL_VideoDevice *_this, int visual_id);
-extern bool SDL_EGL_ChooseConfig(SDL_VideoDevice *_this);
-extern bool SDL_EGL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern bool SDL_EGL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
-extern bool SDL_EGL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);
-extern EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw);
-extern void SDL_EGL_DestroySurface(SDL_VideoDevice *_this, EGLSurface egl_surface);
+extern bool SDL_EGL_LoadLibraryOnly(struct SDL_VideoDevice *_this, const char *path);
+extern bool SDL_EGL_LoadLibrary(struct SDL_VideoDevice *_this, const char *path, NativeDisplayType native_display, EGLenum platform);
+extern SDL_FunctionPointer SDL_EGL_GetProcAddressInternal(struct SDL_VideoDevice *_this, const char *proc);
+extern void SDL_EGL_UnloadLibrary(struct SDL_VideoDevice *_this);
+extern void SDL_EGL_SetRequiredVisualId(struct SDL_VideoDevice *_this, int visual_id);
+extern bool SDL_EGL_ChooseConfig(struct SDL_VideoDevice *_this);
+extern bool SDL_EGL_SetSwapInterval(struct SDL_VideoDevice *_this, int interval);
+extern bool SDL_EGL_GetSwapInterval(struct SDL_VideoDevice *_this, int *interval);
+extern bool SDL_EGL_DestroyContext(struct SDL_VideoDevice *_this, SDL_GLContext context);
+extern EGLSurface SDL_EGL_CreateSurface(struct SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw);
+extern void SDL_EGL_DestroySurface(struct SDL_VideoDevice *_this, EGLSurface egl_surface);
 
-extern EGLSurface SDL_EGL_CreateOffscreenSurface(SDL_VideoDevice *_this, int width, int height);
+extern EGLSurface SDL_EGL_CreateOffscreenSurface(struct SDL_VideoDevice *_this, int width, int height);
 // Assumes that LoadLibraryOnly() has succeeded
-extern bool SDL_EGL_InitializeOffscreen(SDL_VideoDevice *_this, int device);
+extern bool SDL_EGL_InitializeOffscreen(struct SDL_VideoDevice *_this, int device);
 
 // These need to be wrapped to get the surface for the window by the platform GLES implementation
-extern SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surface);
-extern bool SDL_EGL_MakeCurrent(SDL_VideoDevice *_this, EGLSurface egl_surface, SDL_GLContext context);
-extern bool SDL_EGL_SwapBuffers(SDL_VideoDevice *_this, EGLSurface egl_surface);
+extern SDL_GLContext SDL_EGL_CreateContext(struct SDL_VideoDevice *_this, EGLSurface egl_surface);
+extern bool SDL_EGL_MakeCurrent(struct SDL_VideoDevice *_this, EGLSurface egl_surface, SDL_GLContext context);
+extern bool SDL_EGL_SwapBuffers(struct SDL_VideoDevice *_this, EGLSurface egl_surface);
 
 // SDL Error-reporting
 extern bool SDL_EGL_SetErrorEx(const char *message, const char *eglFunctionName, EGLint eglErrorCode);

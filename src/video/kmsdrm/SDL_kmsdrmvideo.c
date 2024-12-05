@@ -27,7 +27,7 @@
  * Wayland headers, which pull in EGL headers with EGL types defined as Wayland
  * types, which causes warnings when building with strict-aliasing and LTO.
  */
-#include "SDL_kmsdrmopengles.h"
+#include "../SDL_egl_c.h"
 
 /* include this here before SDL_sysvideo.h to avoid vulkan type
  * redefinition errors.  it already includes SDL_sysvideo.h.  */
@@ -49,6 +49,7 @@
 #include "SDL_kmsdrmevents.h"
 #include "SDL_kmsdrmmouse.h"
 #include "SDL_kmsdrmvideo.h"
+#include "SDL_kmsdrmopengles.h"
 #include <dirent.h>
 #include <errno.h>
 #include <poll.h>

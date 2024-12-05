@@ -25,6 +25,7 @@
 
 #include "../../core/android/SDL_android.h"
 #include "../SDL_egl_c.h"
+#include "../SDL_sysvideo.h"
 
 extern bool Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
