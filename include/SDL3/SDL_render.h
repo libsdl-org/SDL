@@ -2084,15 +2084,15 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer
  * \param texture the source texture.
  * \param srcrect a pointer to the source rectangle, or NULL for the entire
  *                texture.
- * \param origin a pointer to a point indicating where the top-left corner of 
-                 srcrect should be mapped to, or NULL for the rendering 
-                 target's origin.
+ * \param origin a pointer to a point indicating where the top-left corner of
+ *               srcrect should be mapped to, or NULL for the rendering
+ *               target's origin.
  * \param right a pointer to a point indicating where the top-right corner of
-                srcrect should be mapped to, or NULL for the rendering 
-                target's top-right corner.
- * \param down a pointer to a point indicating where the bottom-left corner 
-               of srcrect should be mapped to, or NULL for the rendering 
-               target's bottom-left corner.
+ *              srcrect should be mapped to, or NULL for the rendering
+ *              target's top-right corner.
+ * \param down a pointer to a point indicating where the bottom-left corner of
+ *             srcrect should be mapped to, or NULL for the rendering target's
+ *             bottom-left corner.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
