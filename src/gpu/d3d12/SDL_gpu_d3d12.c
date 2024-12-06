@@ -6619,7 +6619,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
         (void **)&pParent);
     if (FAILED(res)) {
         SDL_LogWarn(
-            SDL_LOG_CATEGORY_APPLICATION,
+            SDL_LOG_CATEGORY_GPU,
             "Could not get swapchain parent! Error Code: " HRESULT_FMT,
             res);
     } else {
@@ -6630,7 +6630,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
             DXGI_MWA_NO_WINDOW_CHANGES);
         if (FAILED(res)) {
             SDL_LogWarn(
-                SDL_LOG_CATEGORY_APPLICATION,
+                SDL_LOG_CATEGORY_GPU,
                 "MakeWindowAssociation failed! Error Code: " HRESULT_FMT,
                 res);
         }
@@ -6723,7 +6723,7 @@ static bool D3D12_ClaimWindow(
             SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window!", false)
         }
     } else {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Window already claimed!");
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Window already claimed!");
         return false;
     }
 }
@@ -6736,7 +6736,7 @@ static void D3D12_ReleaseWindow(
     D3D12WindowData *windowData = D3D12_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Window already unclaimed!");
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Window already unclaimed!");
         return;
     }
 
@@ -7986,7 +7986,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
 
     d3d12Dll = SDL_LoadObject(D3D12_DLL);
     if (d3d12Dll == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not find " D3D12_DLL);
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not find " D3D12_DLL);
         return false;
     }
 
@@ -7994,7 +7994,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
         d3d12Dll,
         D3D12_CREATE_DEVICE_FUNC);
     if (D3D12CreateDeviceFunc == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not find function " D3D12_CREATE_DEVICE_FUNC " in " D3D12_DLL);
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not find function " D3D12_CREATE_DEVICE_FUNC " in " D3D12_DLL);
         SDL_UnloadObject(d3d12Dll);
         return false;
     }
@@ -8003,7 +8003,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
 
     dxgiDll = SDL_LoadObject(DXGI_DLL);
     if (dxgiDll == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not find " DXGI_DLL);
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not find " DXGI_DLL);
         return false;
     }
 
@@ -8011,7 +8011,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
         dxgiDll,
         CREATE_DXGI_FACTORY1_FUNC);
     if (CreateDXGIFactoryFunc == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not find function " CREATE_DXGI_FACTORY1_FUNC " in " DXGI_DLL);
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not find function " CREATE_DXGI_FACTORY1_FUNC " in " DXGI_DLL);
         SDL_UnloadObject(dxgiDll);
         return false;
     }
@@ -8023,7 +8023,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
         &D3D_IID_IDXGIFactory1,
         (void **)&factory);
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not create DXGIFactory");
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not create DXGIFactory");
         SDL_UnloadObject(d3d12Dll);
         SDL_UnloadObject(dxgiDll);
         return false;
@@ -8036,7 +8036,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
         (void **)&factory4);
     if (FAILED(res)) {
         IDXGIFactory1_Release(factory);
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Failed to find DXGI1.4 support, required for DX12");
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Failed to find DXGI1.4 support, required for DX12");
         SDL_UnloadObject(d3d12Dll);
         SDL_UnloadObject(dxgiDll);
         return false;
@@ -8062,7 +8062,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
             &adapter);
     }
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Failed to find adapter for D3D12Device");
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Failed to find adapter for D3D12Device");
         IDXGIFactory1_Release(factory);
         SDL_UnloadObject(d3d12Dll);
         SDL_UnloadObject(dxgiDll);
@@ -8085,7 +8085,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
     SDL_UnloadObject(dxgiDll);
 
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D12: Could not create D3D12Device with feature level " D3D_FEATURE_LEVEL_CHOICE_STR);
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not create D3D12Device with feature level " D3D_FEATURE_LEVEL_CHOICE_STR);
         return false;
     }
 
@@ -8101,7 +8101,7 @@ static void D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
 
     renderer->dxgidebug_dll = SDL_LoadObject(DXGIDEBUG_DLL);
     if (renderer->dxgidebug_dll == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Could not find " DXGIDEBUG_DLL);
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not find " DXGIDEBUG_DLL);
         return;
     }
 
@@ -8109,18 +8109,18 @@ static void D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
         renderer->dxgidebug_dll,
         DXGI_GET_DEBUG_INTERFACE_FUNC);
     if (DXGIGetDebugInterfaceFunc == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Could not load function: " DXGI_GET_DEBUG_INTERFACE_FUNC);
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not load function: " DXGI_GET_DEBUG_INTERFACE_FUNC);
         return;
     }
 
     res = DXGIGetDebugInterfaceFunc(&D3D_IID_IDXGIDebug, (void **)&renderer->dxgiDebug);
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Could not get IDXGIDebug interface");
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not get IDXGIDebug interface");
     }
 
     res = DXGIGetDebugInterfaceFunc(&D3D_IID_IDXGIInfoQueue, (void **)&renderer->dxgiInfoQueue);
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Could not get IDXGIInfoQueue interface");
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not get IDXGIInfoQueue interface");
     }
 }
 #endif
@@ -8140,7 +8140,7 @@ static void D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer)
 
     res = D3D12GetDebugInterfaceFunc(D3D_GUID(D3D_IID_ID3D12Debug), (void **)&renderer->d3d12Debug);
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Could not get ID3D12Debug interface");
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not get ID3D12Debug interface");
         return;
     }
 
