@@ -2127,15 +2127,20 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, NULL);
 
 #ifdef __WIN32__
-    if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE)) {
-        /* We're running under Steam and it will hide any controllers that we shouldn't open */
-        return FALSE;
+    if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE) &&
+        SDL_GetHintBoolean("STEAM_COMPAT_PROTON", SDL_FALSE)) {
+        /* We are launched by Steam and running under Proton
+         * We can't tell whether this controller is a Steam Virtual Gamepad,
+         * so assume that Proton is doing the appropriate filtering of controllers
+         * and anything we see here is fine to use.
+         */
+        return SDL_FALSE;
     }
-#else
+#endif // __WIN32__
+
     if (SDL_IsJoystickSteamVirtualGamepad(vendor, product, version)) {
         return !SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE);
     }
-#endif
 
     if (SDL_allowed_controllers.num_included_entries > 0) {
         if (SDL_VIDPIDInList(vendor, product, &SDL_allowed_controllers)) {
