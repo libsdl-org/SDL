@@ -3499,19 +3499,26 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPUSwapchainParameters(
 /**
  * Configures the maximum allowed number of frames in flight.
  *
- * The default value when the device is created is 2.
- * This means that after you have submitted 2 frames for presentation, if the GPU has not finished working on the first frame, SDL_AcquireGPUSwapchainTexture() will block or return false depending on the present mode.
+ * The default value when the device is created is 2. This means that after
+ * you have submitted 2 frames for presentation, if the GPU has not finished
+ * working on the first frame, SDL_AcquireGPUSwapchainTexture() will block or
+ * return false depending on the present mode.
  *
- * Higher values increase throughput at the expense of visual latency.
- * Lower values decrease visual latency at the expense of throughput.
+ * Higher values increase throughput at the expense of visual latency. Lower
+ * values decrease visual latency at the expense of throughput.
  *
- * Note that calling this function will stall and flush the command queue to prevent synchronization issues.
+ * Note that calling this function will stall and flush the command queue to
+ * prevent synchronization issues.
  *
  * The minimum value of allowed frames in flight is 1, and the maximum is 3.
  *
  * \param device a GPU context.
- * \param allowed_frames_in_flight the maximum number of frames that can be pending on the GPU before AcquireSwapchainTexture blocks or returns false.
- * \returns true if successful, false on error; call SDL_GetError() for more information.
+ * \param allowed_frames_in_flight the maximum number of frames that can be
+ *                                 pending on the GPU before
+ *                                 AcquireSwapchainTexture blocks or returns
+ *                                 false.
+ * \returns true if successful, false on error; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.2.0.
  */
