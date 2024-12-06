@@ -409,6 +409,7 @@
 		F32DDAD32AB795A30041EAA5 /* SDL_audioqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F32DDACD2AB795A30041EAA5 /* SDL_audioqueue.h */; };
 		F32DDAD42AB795A30041EAA5 /* SDL_audioresample.c in Sources */ = {isa = PBXBuildFile; fileRef = F32DDACE2AB795A30041EAA5 /* SDL_audioresample.c */; };
 		F34B9895291DEFF500AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
+		F35B79632D03A7B900C6D591 /* SDL_asyncio.h in Headers */ = {isa = PBXBuildFile; fileRef = 00004945A946DF5B1AED0000 /* SDL_asyncio.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F362B9192B3349E200D30B94 /* controller_list.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9152B3349E200D30B94 /* controller_list.h */; };
 		F362B91A2B3349E200D30B94 /* SDL_gamepad_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */; };
 		F362B91B2B3349E200D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9172B3349E200D30B94 /* SDL_steam_virtual_gamepad.h */; };
@@ -1254,7 +1255,9 @@
 		0153844A006D81B07F000001 /* Public Headers */ = {
 			isa = PBXGroup;
 			children = (
+				F3F7D8CF2933074C00816151 /* SDL.h */,
 				F3F7D8E02933074D00816151 /* SDL_assert.h */,
+				00004945A946DF5B1AED0000 /* SDL_asyncio.h */,
 				F3F7D8B92933074A00816151 /* SDL_atomic.h */,
 				F3F7D8AA2933074900816151 /* SDL_audio.h */,
 				F3F7D8E72933074E00816151 /* SDL_begin_code.h */,
@@ -1286,26 +1289,26 @@
 				F3F7D8D92933074C00816151 /* SDL_loadso.h */,
 				F3F7D8C42933074B00816151 /* SDL_locale.h */,
 				F3F7D8B72933074A00816151 /* SDL_log.h */,
-				F3B38CCA296E2E52005DA6D3 /* SDL_main_impl.h */,
 				F3F7D8B02933074900816151 /* SDL_main.h */,
+				F3B38CCA296E2E52005DA6D3 /* SDL_main_impl.h */,
 				F3F7D8B62933074A00816151 /* SDL_messagebox.h */,
 				F3F7D8D22933074C00816151 /* SDL_metal.h */,
 				F3F7D8D52933074C00816151 /* SDL_misc.h */,
 				F3F7D8DA2933074D00816151 /* SDL_mouse.h */,
 				F3F7D8E62933074E00816151 /* SDL_mutex.h */,
 				F3B38CCD296E2E52005DA6D3 /* SDL_oldnames.h */,
-				F3F7D8C02933074A00816151 /* SDL_opengl_glext.h */,
 				F3F7D8E12933074D00816151 /* SDL_opengl.h */,
+				F3F7D8C02933074A00816151 /* SDL_opengl_glext.h */,
 				F3F7D8C62933074B00816151 /* SDL_opengles.h */,
+				F3F7D8C72933074B00816151 /* SDL_opengles2.h */,
 				F3F7D8AE2933074900816151 /* SDL_opengles2_gl2.h */,
 				F3F7D8BD2933074A00816151 /* SDL_opengles2_gl2ext.h */,
 				F3F7D8C92933074B00816151 /* SDL_opengles2_gl2platform.h */,
 				F3F7D8B12933074900816151 /* SDL_opengles2_khrplatform.h */,
-				F3F7D8C72933074B00816151 /* SDL_opengles2.h */,
 				63134A212A7902CF0021E9A6 /* SDL_pen.h */,
 				F3F7D8B52933074A00816151 /* SDL_pixels.h */,
-				F3B38CCB296E2E52005DA6D3 /* SDL_platform_defines.h */,
 				F3F7D8AB2933074900816151 /* SDL_platform.h */,
+				F3B38CCB296E2E52005DA6D3 /* SDL_platform_defines.h */,
 				F3F7D8DB2933074D00816151 /* SDL_power.h */,
 				F3B439472C93595900792030 /* SDL_process.h */,
 				F3E5A6EC2AD5E10800293D83 /* SDL_properties.h */,
@@ -1325,8 +1328,6 @@
 				F3F7D8E42933074D00816151 /* SDL_version.h */,
 				F3F7D8C52933074B00816151 /* SDL_video.h */,
 				F3F7D8D42933074C00816151 /* SDL_vulkan.h */,
-				F3F7D8CF2933074C00816151 /* SDL.h */,
-				00004945A946DF5B1AED0000 /* SDL_asyncio.h */,
 			);
 			name = "Public Headers";
 			path = ../../include;
@@ -2588,6 +2589,7 @@
 				F31A92C828D4CB39003BFD6A /* SDL_offscreenopengles.h in Headers */,
 				A7D8AB6D23E2514100DCD162 /* SDL_offscreenvideo.h in Headers */,
 				A7D8AB8523E2514100DCD162 /* SDL_offscreenwindow.h in Headers */,
+				F35B79632D03A7B900C6D591 /* SDL_asyncio.h in Headers */,
 				F37E18642BAA40670098C111 /* SDL_time_c.h in Headers */,
 				F3B38CDB296E2E52005DA6D3 /* SDL_oldnames.h in Headers */,
 				F3F7D9C92933074E00816151 /* SDL_opengl.h in Headers */,
