@@ -1123,6 +1123,8 @@ struct VulkanRenderer
 
     bool debugMode;
     bool preferLowPower;
+    Uint32 allowedFramesInFlight;
+
     VulkanExtensions supports;
     bool supportsDebugUtils;
     bool supportsColorspace;
@@ -9898,6 +9900,20 @@ static bool VULKAN_SetSwapchainParameters(
     return true;
 }
 
+static bool VULKAN_SetAllowedFramesInFlight(
+    SDL_GPURenderer *driverData,
+    Uint32 allowedFramesInFlight)
+{
+    VulkanRenderer *renderer = (VulkanRenderer *)driverData;
+
+    if (!VULKAN_Wait(driverData)) {
+        return false;
+    }
+
+    renderer->allowedFramesInFlight = allowedFramesInFlight;
+    return true;
+}
+
 // Submission structure
 
 static VulkanFenceHandle *VULKAN_INTERNAL_AcquireFenceFromPool(
@@ -10348,8 +10364,7 @@ static bool VULKAN_Submit(
         }
 
         presentData->windowData->frameCounter =
-            (presentData->windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
-
+            (presentData->windowData->frameCounter + 1) % renderer->allowedFramesInFlight;
     }
 
     // Check if we can perform any cleanups
@@ -11438,6 +11453,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     SDL_memset(renderer, '\0', sizeof(VulkanRenderer));
     renderer->debugMode = debugMode;
     renderer->preferLowPower = preferLowPower;
+    renderer->allowedFramesInFlight = 2;
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
         SDL_free(renderer);

@@ -641,6 +641,7 @@ struct MetalRenderer
     id<MTLCommandQueue> queue;
 
     bool debugMode;
+    Uint32 allowedFramesInFlight;
 
     MetalWindowData **claimedWindows;
     Uint32 claimedWindowCount;
@@ -3817,6 +3818,22 @@ static bool METAL_SetSwapchainParameters(
     }
 }
 
+static bool METAL_SetAllowedFramesInFlight(
+    SDL_GPURenderer *driverData,
+    Uint32 allowedFramesInFlight)
+{
+    @autoreleasepool {
+        MetalRenderer *renderer = (MetalRenderer *)driverData;
+
+        if (!METAL_Wait(driverData)) {
+            return false;
+        }
+
+        renderer->allowedFramesInFlight = allowedFramesInFlight;
+        return true;
+    }
+}
+
 // Submission
 
 static bool METAL_Submit(
@@ -3843,7 +3860,7 @@ static bool METAL_Submit(
 
             (void)SDL_AtomicIncRef(&metalCommandBuffer->fence->referenceCount);
 
-            windowData->frameCounter = (windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
+            windowData->frameCounter = (windowData->frameCounter + 1) % renderer->allowedFramesInFlight;
         }
 
         // Notify the fence when the command buffer has completed
@@ -4301,6 +4318,7 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
 
         // Remember debug mode
         renderer->debugMode = debugMode;
+        renderer->allowedFramesInFlight = 2;
 
         // Set up colorspace array
         SwapchainCompositionToColorSpace[0] = kCGColorSpaceSRGB;

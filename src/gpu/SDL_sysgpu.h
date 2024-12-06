@@ -791,6 +791,10 @@ struct SDL_GPUDevice
         SDL_GPUSwapchainComposition swapchainComposition,
         SDL_GPUPresentMode presentMode);
 
+    bool (*SetAllowedFramesInFlight)(
+        SDL_GPURenderer *driverData,
+        Uint32 allowedFramesInFlight);
+
     SDL_GPUTextureFormat (*GetSwapchainTextureFormat)(
         SDL_GPURenderer *driverData,
         SDL_Window *window);
@@ -927,6 +931,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(ClaimWindow, name)                   \
     ASSIGN_DRIVER_FUNC(ReleaseWindow, name)                 \
     ASSIGN_DRIVER_FUNC(SetSwapchainParameters, name)        \
+    ASSIGN_DRIVER_FUNC(SetAllowedFramesInFlight, name)      \
     ASSIGN_DRIVER_FUNC(GetSwapchainTextureFormat, name)     \
     ASSIGN_DRIVER_FUNC(AcquireCommandBuffer, name)          \
     ASSIGN_DRIVER_FUNC(AcquireSwapchainTexture, name)       \

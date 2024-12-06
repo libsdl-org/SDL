@@ -1228,3 +1228,4 @@
 #define SDL_ShowFileDialogWithProperties SDL_ShowFileDialogWithProperties_REAL
 #define SDL_IsMainThread SDL_IsMainThread_REAL
 #define SDL_RunOnMainThread SDL_RunOnMainThread_REAL
+#define SDL_SetGPUAllowedFramesInFlight SDL_SetGPUAllowedFramesInFlight_REAL

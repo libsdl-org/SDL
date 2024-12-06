@@ -2650,6 +2650,25 @@ bool SDL_SetGPUSwapchainParameters(
         present_mode);
 }
 
+bool SDL_SetGPUAllowedFramesInFlight(
+    SDL_GPUDevice *device,
+    Uint32 allowed_frames_in_flight)
+{
+    CHECK_DEVICE_MAGIC(device, false);
+
+    if (device->debug_mode) {
+        if (allowed_frames_in_flight < 1 || allowed_frames_in_flight > 3)
+        {
+            SDL_assert_release(!"allowed_frames_in_flight value must be between 1 and 3!");
+        }
+    }
+
+    allowed_frames_in_flight = SDL_clamp(allowed_frames_in_flight, 1, 3);
+    return device->SetAllowedFramesInFlight(
+        device->driverData,
+        allowed_frames_in_flight);
+}
+
 SDL_GPUTextureFormat SDL_GetGPUSwapchainTextureFormat(
     SDL_GPUDevice *device,
     SDL_Window *window)
