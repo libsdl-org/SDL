@@ -146,6 +146,8 @@ static const IID D3D_IID_IDXGIFactory6 = { 0xc1b6694f, 0xff09, 0x44a9, { 0xb0, 0
 static const IID D3D_IID_IDXGIAdapter1 = { 0x29038f61, 0x3839, 0x4626, { 0x91, 0xfd, 0x08, 0x68, 0x79, 0x01, 0x1a, 0x05 } };
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 static const IID D3D_IID_IDXGIDevice1 = { 0x77db970f, 0x6276, 0x48ba, { 0xba, 0x28, 0x07, 0x01, 0x43, 0xb4, 0x39, 0x2c } };
+#else
+static const IID D3D_IID_IDXGIDevice = { 0x54ec77fa, 0x1377, 0x44e6, { 0x8c, 0x32, 0x88, 0xfd, 0x5f, 0x44, 0xc8, 0x4c } };
 #endif
 static const IID D3D_IID_IDXGISwapChain3 = { 0x94d99bdb, 0xf1f8, 0x4ab0, { 0xb2, 0x36, 0x7d, 0xa0, 0x17, 0x0e, 0xda, 0xb1 } };
 #ifdef HAVE_IDXGIINFOQUEUE
@@ -8306,6 +8308,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     IDXGIFactory5 *factory5;
     IDXGIFactory6 *factory6;
     DXGI_ADAPTER_DESC1 adapterDesc;
+    LARGE_INTEGER umdVersion;
     PFN_D3D12_CREATE_DEVICE D3D12CreateDeviceFunc;
 #endif
     D3D12_FEATURE_DATA_ARCHITECTURE architecture;
@@ -8405,9 +8408,21 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         D3D12_INTERNAL_DestroyRenderer(renderer);
         CHECK_D3D12_ERROR_AND_RETURN("Could not get adapter description", NULL);
     }
+    res = IDXGIAdapter1_CheckInterfaceSupport(renderer->adapter, D3D_GUID(D3D_IID_IDXGIDevice), &umdVersion);
+    if (FAILED(res)) {
+        D3D12_INTERNAL_DestroyRenderer(renderer);
+        CHECK_D3D12_ERROR_AND_RETURN("Could not get adapter driver version", NULL);
+    }
 
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: D3D12");
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "D3D12 Adapter: %S", adapterDesc.Description);
+    SDL_LogInfo(
+        SDL_LOG_CATEGORY_GPU,
+        "D3D12 Driver: %d.%d.%d.%d",
+        HIWORD(umdVersion.HighPart),
+        LOWORD(umdVersion.HighPart),
+        HIWORD(umdVersion.LowPart),
+        LOWORD(umdVersion.LowPart));
 #endif
 
     // Load the D3D library
