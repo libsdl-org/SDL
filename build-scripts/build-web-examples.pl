@@ -221,6 +221,7 @@ sub handle_example_dir {
     $other_examples_html .= "</ul>";
 
     my $category_description = get_category_description($category);
+    my $preview_image = get_example_thumbnail($project, $category, $example);
 
     my $html = '';
     open my $htmltemplate, '<', "$examples_dir/template.html" or die("Couldn't open '$examples_dir/template.html': $!\n");
@@ -232,6 +233,7 @@ sub handle_example_dir {
         s/\@javascript_file\@/$jsfname/g;
         s/\@htmlified_source_code\@/$htmlified_source_code/g;
         s/\@description\@/$description/g;
+        s/\@preview_image\@/$preview_image/g;
         s/\@other_examples_html\@/$other_examples_html/g;
         $html .= $_;
     }
@@ -242,6 +244,20 @@ sub handle_example_dir {
     close($htmloutput);
 }
 
+sub get_example_thumbnail {
+    my $project = shift;
+    my $category = shift;
+    my $example = shift;
+
+    if ( -f "$examples_dir/$category/$example/thumbnail.png" ) {
+        return "/$project/$category/$example/thumbnail.png";
+    } elsif ( -f "$examples_dir/$category/thumbnail.png" ) {
+        return "/$project/$category/thumbnail.png";
+    }
+
+    return "/$project/thumbnail.png";
+}
+
 sub generate_example_thumbnail {
     my $project = shift;
     my $category = shift;
@@ -250,20 +266,13 @@ sub generate_example_thumbnail {
     my $example_no_num = "$example";
     $example_no_num =~ s/\A\d+\-//;
 
-    my $example_image_url;
-    if ( -f "$examples_dir/$category/$example/thumbnail.png" ) {
-        $example_image_url = "/$project/$category/$example/thumbnail.png";
-    } elsif ( -f "$examples_dir/$category/thumbnail.png" ) {
-        $example_image_url = "/$project/$category/thumbnail.png";
-    } else {
-        $example_image_url = "/$project/thumbnail.png";
-    }
+    my $example_image_url = get_example_thumbnail($project, $category, $example);
 
     my $example_mouseover_html = '';
     if ( -f "$examples_dir/$category/$example/onmouseover.webp" ) {
-        $example_mouseover_html = "onmouseover=\"this.src='/$project/$category/$example/onmouseover.webp'\" onmouseout=\"this.src='$example_image_url'\";";
+        $example_mouseover_html = "onmouseover=\"this.src='/$project/$category/$example/onmouseover.webp'\" onmouseout=\"this.src='$example_image_url';\"";
     } elsif ( -f "$examples_dir/$category/onmouseover.webp" ) {
-        $example_mouseover_html = "onmouseover=\"this.src='/$project/$category/onmouseover.webp'\" onmouseout=\"this.src='$example_image_url'\";";
+        $example_mouseover_html = "onmouseover=\"this.src='/$project/$category/onmouseover.webp'\" onmouseout=\"this.src='$example_image_url';\"";
     }
 
     return "
@@ -312,6 +321,10 @@ sub handle_category_dir {
     do_copy("$examples_dir/$category/onmouseover.webp", "$dst/onmouseover.webp") if ( -f "$examples_dir/$category/onmouseover.webp" );
 
     my $category_description = get_category_description($category);
+    my $preview_image = "/$project/thumbnail.png";
+    if ( -f "$examples_dir/$category/thumbnail.png" ) {
+        $preview_image = "/$project/$category/thumbnail.png";
+    }
 
     # write category page
     my $html = '';
@@ -321,6 +334,7 @@ sub handle_category_dir {
         s/\@category_name\@/$category/g;
         s/\@category_description\@/$category_description/g;
         s/\@examples_list_html\@/$examples_list_html/g;
+        s/\@preview_image\@/$preview_image/g;
         $html .= $_;
     }
     close($htmltemplate);
@@ -379,12 +393,15 @@ foreach my $category (get_categories()) {
     $homepage_list_html .= "</div>";
 }
 
+my $preview_image = "/$project/thumbnail.png";
+
 my $dst = "$output_dir/";
 my $html = '';
 open my $htmltemplate, '<', "$examples_dir/template-homepage.html" or die("Couldn't open '$examples_dir/template-category.html': $!\n");
 while (<$htmltemplate>) {
     s/\@project_name\@/$project/g;
     s/\@homepage_list_html\@/$homepage_list_html/g;
+    s/\@preview_image\@/$preview_image/g;
     $html .= $_;
 }
 close($htmltemplate);
