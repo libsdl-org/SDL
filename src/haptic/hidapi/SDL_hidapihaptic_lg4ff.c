@@ -131,7 +131,7 @@ Uint64 get_time_ms(){
 #define test_bit(bit, field) (*(field) & (1 << bit))
 #define __set_bit(bit, field) {*(field) = *(field) | (1 << bit);}
 #define __clear_bit(bit, field) {*(field) = *(field) & ~(1 << bit);}
-#define sin_deg(in) (double)(sin((double)(in) * (double)M_PI / 180.0))
+#define sin_deg(in) (double)(sin((double)(in) * SDL_PI_D / 180.0))
 
 #define time_after_eq(a, b) (a >= b)
 #define time_before(a, b) (a < b)
@@ -202,7 +202,7 @@ static Uint16 to_linux_direction(SDL_HapticDirection *src)
                     --> add 45000 in total
                     --> finally convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
                     */
-                tmp = (((Sint32) (f * 18000. / M_PI)) + 45000) % 36000;
+                tmp = (((Sint32) (f * 18000. / SDL_PI_D)) + 45000) % 36000;
             tmp = (tmp * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
             return (Uint16)tmp;
         }
