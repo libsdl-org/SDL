@@ -370,7 +370,9 @@ void SDL_QuitHaptics(void)
         SDL_CloseHaptic(SDL_haptics);
     }
 
+    #ifdef SDL_JOYSTICK_HIDAPI
     SDL_HIDAPI_HapticQuit();
+    #endif //SDL_JOYSTICK_HIDAPI
     SDL_SYS_HapticQuit();
 }
 
