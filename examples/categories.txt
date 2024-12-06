@@ -1,0 +1,13 @@
+# Blank lines and lines that start with '#' in this file are ignored.
+
+# Categories, by directory name, go in here, in the order they should be
+# listed on the main page. If this file is missing, it'll assume any
+# subdirectory is a category and sort them alphabetically.
+
+renderer
+input
+audio
+camera
+asyncio
+pen
+demo
