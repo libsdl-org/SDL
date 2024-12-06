@@ -1235,3 +1235,4 @@ SDL_DYNAPI_PROC(void,SDL_ShowFileDialogWithProperties,(SDL_FileDialogType a, SDL
 SDL_DYNAPI_PROC(bool,SDL_IsMainThread,(void),(),return)
 SDL_DYNAPI_PROC(bool,SDL_RunOnMainThread,(SDL_MainThreadCallback a,void *b,bool c),(a,b,c),return)
 SDL_DYNAPI_PROC(bool,SDL_SetGPUAllowedFramesInFlight,(SDL_GPUDevice *a,Uint32 b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_RenderTextureAffine,(SDL_Renderer *a,SDL_Texture *b,const SDL_FRect *c,const SDL_FPoint *d,const SDL_FPoint *e,const SDL_FPoint *f),(a,b,c,d,e,f),return)

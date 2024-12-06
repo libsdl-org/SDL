@@ -1229,3 +1229,4 @@
 #define SDL_IsMainThread SDL_IsMainThread_REAL
 #define SDL_RunOnMainThread SDL_RunOnMainThread_REAL
 #define SDL_SetGPUAllowedFramesInFlight SDL_SetGPUAllowedFramesInFlight_REAL
+#define SDL_RenderTextureAffine SDL_RenderTextureAffine_REAL
