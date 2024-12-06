@@ -3823,7 +3823,7 @@ static bool METAL_SetAllowedFramesInFlight(
     Uint32 allowedFramesInFlight)
 {
     @autoreleasepool {
-        MetalRenderer *renderer = metalCommandBuffer->renderer;
+        MetalRenderer *renderer = (MetalRenderer *)driverData;
 
         if (!METAL_Wait(driverData)) {
             return false;
