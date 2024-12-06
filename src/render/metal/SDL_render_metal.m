@@ -650,7 +650,6 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
-        case SDL_PIXELFORMAT_XBGR8888:
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
             } else {
@@ -658,14 +657,13 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             }
             break;
         case SDL_PIXELFORMAT_ARGB8888:
-        case SDL_PIXELFORMAT_XRGB8888:
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatBGRA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatBGRA8Unorm;
             }
             break;
-        case SDL_PIXELFORMAT_XBGR2101010:
+        case SDL_PIXELFORMAT_ABGR2101010:
             pixfmt = MTLPixelFormatRGB10A2Unorm;
             break;
         case SDL_PIXELFORMAT_IYUV:
@@ -1737,7 +1735,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
             format = SDL_PIXELFORMAT_ABGR8888;
             break;
         case MTLPixelFormatRGB10A2Unorm:
-            format = SDL_PIXELFORMAT_XBGR2101010;
+            format = SDL_PIXELFORMAT_ABGR2101010;
             break;
         case MTLPixelFormatRGBA16Float:
             format = SDL_PIXELFORMAT_RGBA64_FLOAT;
@@ -2179,9 +2177,7 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         renderer->name = METAL_RenderDriver.name;
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR8888);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR2101010);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA128_FLOAT);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
