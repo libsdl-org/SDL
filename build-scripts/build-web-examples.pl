@@ -167,18 +167,24 @@ sub handle_example_dir {
     my $onmouseoverdst = "$dst/$onmouseoverfname";
 
     my $description = '';
+    my $has_paragraph = 0;
     if (open(my $readmetxth, '<', "$examples_dir/$category/$example/README.txt")) {
         while (<$readmetxth>) {
             chomp;
             s/\A\s+//;
             s/\s+\Z//;
-            if ($_ eq '') {
-                $description .= "\n<br/>\n<br/>\n";
+            if (($_ eq '') && ($description ne '')) {
+                $has_paragraph = 1;
             } else {
+                if ($has_paragraph) {
+                    $description .= "\n<br/>\n<br/>\n";
+                    $has_paragraph = 0;
+                }
                 $description .= "$_ ";
             }
         }
         close($readmetxth);
+        $description =~ s/\s+\Z//;
     }
 
     do_mkdir($dst);
