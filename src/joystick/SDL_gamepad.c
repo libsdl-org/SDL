@@ -2620,6 +2620,17 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
         return true;
     }
 
+#ifdef SDL_PLATFORM_WIN32
+    if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", false) &&
+        SDL_GetHintBoolean("STEAM_COMPAT_PROTON", false)) {
+        // We are launched by Steam and running under Proton
+        // We can't tell whether this controller is a Steam Virtual Gamepad,
+        // so assume that Proton is doing the appropriate filtering of controllers
+        // and anything we see here is fine to use.
+        return false;
+    }
+#endif // SDL_PLATFORM_WIN32
+
     if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
         return !SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", false);
     }
