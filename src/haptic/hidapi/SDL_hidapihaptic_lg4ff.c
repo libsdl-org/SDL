@@ -191,7 +191,7 @@ static Uint16 to_linux_direction(SDL_HapticDirection *src)
         } else if (!src->dir[0]) {
             return (Uint16) (src->dir[1] >= 0 ? 0x8000 : 0);
         } else {
-            float f = SDL_atan2(src->dir[1], src->dir[0]);    /* Ideally we'd use fixed point math instead of floats... */
+            float f = (float)SDL_atan2(src->dir[1], src->dir[0]);    /* Ideally we'd use fixed point math instead of floats... */
                     /*
                     SDL_atan2 takes the parameters: Y-axis-value and X-axis-value (in that order)
                     - Y-axis-value is the second coordinate (from center to SOUTH)
@@ -838,7 +838,7 @@ static void *SDL_HIDAPI_HapticDriverLg4ff_Open(SDL_Joystick *joystick)
 
     ctx->product_id = SDL_GetJoystickProduct(joystick);
 
-    sprintf(ctx->thread_name_buf, "SDL_hidapihaptic_lg4ff 0x%16llx %04x:%04x", (Uint64)joystick, USB_VENDOR_ID_LOGITECH, ctx->product_id);
+    sprintf(ctx->thread_name_buf, "SDL_hidapihaptic_lg4ff %d %04x:%04x", SDL_GetJoystickID(joystick), USB_VENDOR_ID_LOGITECH, ctx->product_id);
     ctx->stop_thread = false;
     ctx->thread = SDL_CreateThread(SDL_HIDAPI_HapticDriverLg4ff_ThreadFunction, ctx->thread_name_buf, ctx);
 
