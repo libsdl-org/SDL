@@ -172,7 +172,11 @@ sub handle_example_dir {
             chomp;
             s/\A\s+//;
             s/\s+\Z//;
-            $description .= "$_<br/>";
+            if ($_ eq '') {
+                $description .= "\n<br/>\n<br/>\n";
+            } else {
+                $description .= "$_ ";
+            }
         }
         close($readmetxth);
     }
