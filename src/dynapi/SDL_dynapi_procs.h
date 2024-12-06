@@ -1234,3 +1234,4 @@ SDL_DYNAPI_PROC(bool,SDL_LoadFileAsync,(const char *a, SDL_AsyncIOQueue *b, void
 SDL_DYNAPI_PROC(void,SDL_ShowFileDialogWithProperties,(SDL_FileDialogType a, SDL_DialogFileCallback b, void *c, SDL_PropertiesID d),(a,b,c,d),)
 SDL_DYNAPI_PROC(bool,SDL_IsMainThread,(void),(),return)
 SDL_DYNAPI_PROC(bool,SDL_RunOnMainThread,(SDL_MainThreadCallback a,void *b,bool c),(a,b,c),return)
+SDL_DYNAPI_PROC(bool,SDL_SetGPUAllowedFramesInFlight,(SDL_GPUDevice *a,Uint32 b),(a,b),return)

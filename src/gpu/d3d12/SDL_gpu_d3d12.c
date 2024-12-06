@@ -750,6 +750,7 @@ struct D3D12Renderer
     // FIXME: these might not be necessary since we're not using custom heaps
     bool UMA;
     bool UMACacheCoherent;
+    Uint32 allowedFramesInFlight;
 
     // Indirect command signatures
     ID3D12CommandSignature *indirectDrawCommandSignature;
@@ -6809,6 +6810,20 @@ static bool D3D12_SetSwapchainParameters(
     return true;
 }
 
+static bool D3D12_SetAllowedFramesInFlight(
+    SDL_GPURenderer *driverData,
+    Uint32 allowedFramesInFlight)
+{
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
+
+    if (!D3D12_Wait(driverData)) {
+        return false;
+    }
+
+    renderer->allowedFramesInFlight = allowedFramesInFlight;
+    return true;
+}
+
 static SDL_GPUTextureFormat D3D12_GetSwapchainTextureFormat(
     SDL_GPURenderer *driverData,
     SDL_Window *window)
@@ -7569,7 +7584,7 @@ static bool D3D12_Submit(
 
         windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence*)d3d12CommandBuffer->inFlightFence;
         (void)SDL_AtomicIncRef(&d3d12CommandBuffer->inFlightFence->referenceCount);
-        windowData->frameCounter = (windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
+        windowData->frameCounter = (windowData->frameCounter + 1) % renderer->allowedFramesInFlight;
     }
 
     // Check for cleanups
@@ -8181,10 +8196,10 @@ static bool D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *rende
 }
 
 static void WINAPI D3D12_INTERNAL_OnD3D12DebugInfoMsg(
-    D3D12_MESSAGE_CATEGORY category, 
-    D3D12_MESSAGE_SEVERITY severity, 
-    D3D12_MESSAGE_ID id, 
-    LPCSTR description, 
+    D3D12_MESSAGE_CATEGORY category,
+    D3D12_MESSAGE_SEVERITY severity,
+    D3D12_MESSAGE_ID id,
+    LPCSTR description,
     void *context)
 {
     char *catStr;
@@ -8288,7 +8303,7 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *rend
         D3D12_MESSAGE_CALLBACK_FLAG_NONE,
         NULL,
         NULL);
-    
+
     ID3D12InfoQueue1_Release(infoQueue);
 }
 #endif
@@ -8776,6 +8791,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     renderer->disposeLock = SDL_CreateMutex();
 
     renderer->debug_mode = debugMode;
+    renderer->allowedFramesInFlight = 2;
 
     renderer->semantic = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING, "TEXCOORD");
 
