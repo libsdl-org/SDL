@@ -646,7 +646,8 @@ void SDL_DestroyHapticEffect(SDL_Haptic *haptic, int effect)
 
     #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
-        return SDL_HIDAPI_HapticDestroyEffect(haptic, effect);
+        SDL_HIDAPI_HapticDestroyEffect(haptic, effect);
+        return;
     }
     #endif //SDL_JOYSTICK_HIDAPI
 

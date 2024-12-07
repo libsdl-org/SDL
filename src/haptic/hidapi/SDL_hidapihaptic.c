@@ -259,7 +259,7 @@ bool SDL_HIDAPI_HapticStopEffect(SDL_Haptic *haptic, int id)
 void SDL_HIDAPI_HapticDestroyEffect(SDL_Haptic *haptic, int id)
 {
     SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
-    return device->driver->DestroyEffect(device, id);
+    device->driver->DestroyEffect(device, id);
 }
 
 bool SDL_HIDAPI_HapticGetEffectStatus(SDL_Haptic *haptic, int id)
