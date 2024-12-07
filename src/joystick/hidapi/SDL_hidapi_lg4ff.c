@@ -361,12 +361,12 @@ static void HIDAPI_DriverLg4ff_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, S
 }
 
 
-static bool HIDAPI_DriverLg4ff_GetBit(const Uint8 *buf, int bit_num, int buf_len)
+static bool HIDAPI_DriverLg4ff_GetBit(const Uint8 *buf, int bit_num, size_t buf_len)
 {
     int byte_offset = bit_num / 8;
     int local_bit = bit_num % 8;
     Uint8 mask = 1 << local_bit;
-    if (byte_offset >= buf_len) {
+    if ((size_t)byte_offset >= buf_len) {
         SDL_assert(0);
     }
     return (buf[byte_offset] & mask) ? true : false;

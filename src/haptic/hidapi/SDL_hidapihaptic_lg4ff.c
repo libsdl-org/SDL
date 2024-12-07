@@ -405,9 +405,9 @@ static Sint32 lg4ff_calculate_constant(struct lg4ff_effect_state *state)
     if (state->time_playing < constant->attack_length) {
         level_sign = level < 0 ? -1 : 1;
         d = level - level_sign * constant->attack_level;
-        level = level_sign * constant->attack_level + d * state->time_playing / constant->attack_length;
+        level = (Sint32) (level_sign * constant->attack_level + d * state->time_playing / constant->attack_length);
     } else if (constant->length && constant->fade_length) {
-        t = state->time_playing - constant->length + constant->fade_length;
+        t = (Sint32) (state->time_playing - constant->length + constant->fade_length);
         if (t > 0) {
             level_sign = level < 0 ? -1 : 1;
             d = level - level_sign * constant->fade_level;
@@ -428,17 +428,17 @@ static Sint32 lg4ff_calculate_ramp(struct lg4ff_effect_state *state)
     if (state->time_playing < ramp->attack_length) {
         level = ramp->start;
         level_sign =  level < 0 ? -1 : 1;
-        t = ramp->attack_length - state->time_playing;
+        t = (Sint32) (ramp->attack_length - state->time_playing);
         d = level - level_sign * ramp->attack_level;
         level = level_sign * ramp->attack_level + d * t / ramp->attack_length;
     } else if (ramp->length && state->time_playing >= ramp->length - ramp->fade_length && ramp->fade_length) {
         level = ramp->end;
         level_sign = level < 0 ? -1 : 1;
-        t = state->time_playing - ramp->length + ramp->fade_length;
+        t = (Sint32) (state->time_playing - ramp->length + ramp->fade_length);
         d = level_sign * ramp->fade_level - level;
         level = level - d * t / ramp->fade_length;
     } else {
-        t = state->time_playing - ramp->attack_length;
+        t = (Sint32) (state->time_playing - ramp->attack_length);
         level = ramp->start + ((t * state->slope) >> 16);
     }
 
@@ -455,9 +455,9 @@ static Sint32 lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
 
     if (state->time_playing < periodic->attack_length) {
         d = magnitude - magnitude_sign * periodic->attack_level;
-        magnitude = magnitude_sign * periodic->attack_level + d * state->time_playing / periodic->attack_length;
+        magnitude = (Sint32) (magnitude_sign * periodic->attack_level + d * state->time_playing / periodic->attack_length);
     } else if (periodic->length && periodic->fade_length) {
-        t = state->time_playing - get_effect_replay_length(&state->effect) + periodic->fade_length;
+        t = (Sint32) (state->time_playing - get_effect_replay_length(&state->effect) + periodic->fade_length);
         if (t > 0) {
             d = magnitude - magnitude_sign * periodic->fade_level;
             magnitude = magnitude - d * t / periodic->fade_length;
@@ -472,7 +472,7 @@ static Sint32 lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
             level += (state->phase < 180 ? 1 : -1) * magnitude;
             break;
         case SDL_HAPTIC_TRIANGLE:
-            level += llabs((Sint64)state->phase * magnitude * 2 / 360 - magnitude) * 2 - magnitude;
+            level += (Sint32) (llabs((Sint64)state->phase * magnitude * 2 / 360 - magnitude) * 2 - magnitude);
             break;
         case SDL_HAPTIC_SAWTOOTHUP:
             level += state->phase * magnitude * 2 / 360 - magnitude;
