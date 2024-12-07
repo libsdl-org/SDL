@@ -36,35 +36,25 @@ typedef struct
     bool allow_many;
     SDL_FileDialogType type;
     /* Zenity only works with X11 handles apparently */
-    Uint64 x11_window_handle;
+    char x11_window_handle[64];
     const char *title;
     const char *accept;
     const char *cancel;
 } zenityArgs;
 
-#define CLEAR_AND_RETURN()                                                    \
-    {                                                                         \
-        while (--nextarg >= 0) {                                              \
-            SDL_free(argv[nextarg]);                                          \
-        }                                                                     \
-        SDL_free(argv);                                                       \
-        return NULL;                                                          \
-    }
+typedef struct
+{
+    char **argv;
+    int argc;
 
-#define CHECK_OOM()                                                           \
-    {                                                                         \
-        if (!argv[nextarg - 1]) {                                             \
-            CLEAR_AND_RETURN()                                                \
-        }                                                                     \
-                                                                              \
-        if (nextarg > argc) {                                                 \
-            SDL_SetError("Zenity dialog problem: argc (%d) < nextarg (%d)",   \
-                         argc, nextarg);                                      \
-            CLEAR_AND_RETURN()                                                \
-        }                                                                     \
-    }
+    char **filters_slice;
+    int nfilters;
+} Args;
 
-char *zenity_clean_name(const char *name)
+#define NULL_ARGS \
+    (Args) { NULL }
+
+static char *zenity_clean_name(const char *name)
 {
     char *newname = SDL_strdup(name);
 
@@ -89,70 +79,31 @@ char *zenity_clean_name(const char *name)
  *                         [--cancel-label CANCEL]
  *                         [--file-filter=Filter Name | *.filt *.fn ...]...
  */
-static char** generate_args(const zenityArgs* info)
+static Args generate_args(const zenityArgs *info)
 {
-    int argc = 3;
-    int nextarg = 0;
-    char **argv = NULL;
-
-    // ARGC PASS
-    if (info->allow_many) {
-        argc++;
-    }
-
-    switch (info->type) {
-    case SDL_FILEDIALOG_OPENFILE:
-        break;
-
-    case SDL_FILEDIALOG_SAVEFILE:
-        argc += 2;
-        break;
-
-    case SDL_FILEDIALOG_OPENFOLDER:
-        argc++;
-        break;
-    };
-
-    if (info->filename) {
-        argc += 2;
-    }
-
-    if (info->x11_window_handle) {
-        argc += 3;
-    }
-
-    if (info->title) {
-        argc += 2;
-    }
-
-    if (info->accept) {
-        argc += 2;
-    }
-
-    if (info->cancel) {
-        argc += 2;
-    }
-
-    if (info->filters) {
-        argc += info->nfilters;
-    }
-
-    argv = SDL_malloc(sizeof(char *) * argc + 1);
+    int argc = 0;
+    char **argv = SDL_malloc(
+        sizeof(*argv) * (3   /* zenity --file-selection --separator=\n */
+                         + 1 /* --multiple */
+                         + 1 /* --directory */
+                         + 2 /* --save --confirm-overwrite */
+                         + 2 /* --filename [file] */
+                         + 3 /* --modal --attach [handle] */
+                         + 2 /* --title [title] */
+                         + 2 /* --ok-label [label] */
+                         + 2 /* --cancel-label [label] */
+                         + info->nfilters + 1 /* NULL */));
     if (!argv) {
-        return NULL;
+        return NULL_ARGS;
     }
 
     // ARGV PASS
-    argv[nextarg++] = SDL_strdup("zenity");
-    CHECK_OOM()
-    argv[nextarg++] = SDL_strdup("--file-selection");
-    CHECK_OOM()
-    argv[nextarg++] = SDL_strdup("--separator=\n");
-    CHECK_OOM()
+    argv[argc++] = "zenity";
+    argv[argc++] = "--file-selection";
+    argv[argc++] = "--separator=\n";
 
     if (info->allow_many) {
-        argv[nextarg++] = SDL_strdup("--multiple");
-        CHECK_OOM()
+        argv[argc++] = "--multiple";
     }
 
     switch (info->type) {
@@ -160,61 +111,43 @@ static char** generate_args(const zenityArgs* info)
         break;
 
     case SDL_FILEDIALOG_SAVEFILE:
-        argv[nextarg++] = SDL_strdup("--save");
+        argv[argc++] = "--save";
         /* Asking before overwriting while saving seems like a sane default */
-        argv[nextarg++] = SDL_strdup("--confirm-overwrite");
+        argv[argc++] = "--confirm-overwrite";
         break;
 
     case SDL_FILEDIALOG_OPENFOLDER:
-        argv[nextarg++] = SDL_strdup("--directory");
+        argv[argc++] = "--directory";
         break;
     };
 
     if (info->filename) {
-        argv[nextarg++] = SDL_strdup("--filename");
-        CHECK_OOM()
-
-        argv[nextarg++] = SDL_strdup(info->filename);
-        CHECK_OOM()
+        argv[argc++] = "--filename";
+        argv[argc++] = (char *)info->filename;
     }
 
-    if (info->x11_window_handle) {
-        argv[nextarg++] = SDL_strdup("--modal");
-        CHECK_OOM()
-
-        argv[nextarg++] = SDL_strdup("--attach");
-        CHECK_OOM()
-
-        argv[nextarg++] = SDL_malloc(64);
-        CHECK_OOM()
-
-        SDL_snprintf(argv[nextarg - 1], 64, "0x%" SDL_PRIx64, info->x11_window_handle);
+    if (info->x11_window_handle[0]) {
+        argv[argc++] = "--modal";
+        argv[argc++] = "--attach";
+        argv[argc++] = (char *)info->x11_window_handle;
     }
 
     if (info->title) {
-        argv[nextarg++] = SDL_strdup("--title");
-        CHECK_OOM()
-
-        argv[nextarg++] = SDL_strdup(info->title);
-        CHECK_OOM()
+        argv[argc++] = "--title";
+        argv[argc++] = (char *)info->title;
     }
 
     if (info->accept) {
-        argv[nextarg++] = SDL_strdup("--ok-label");
-        CHECK_OOM()
-
-        argv[nextarg++] = SDL_strdup(info->accept);
-        CHECK_OOM()
+        argv[argc++] = "--ok-label";
+        argv[argc++] = (char *)info->accept;
     }
 
     if (info->cancel) {
-        argv[nextarg++] = SDL_strdup("--cancel-label");
-        CHECK_OOM()
-
-        argv[nextarg++] = SDL_strdup(info->cancel);
-        CHECK_OOM()
+        argv[argc++] = "--cancel-label";
+        argv[argc++] = (char *)info->cancel;
     }
 
+    char **filters_slice = &argv[argc];
     if (info->filters) {
         for (int i = 0; i < info->nfilters; i++) {
             char *filter_str = convert_filter(info->filters[i],
@@ -223,29 +156,38 @@ static char** generate_args(const zenityArgs* info)
                                               "*.", " *.", "");
 
             if (!filter_str) {
-                CLEAR_AND_RETURN()
+                while (i--) {
+                    SDL_free(filters_slice[i]);
+                }
+                SDL_free(argv);
+                return NULL_ARGS;
             }
 
-            argv[nextarg++] = filter_str;
-            CHECK_OOM()
+            filters_slice[i] = filter_str;
         }
     }
 
-    argv[nextarg++] = NULL;
+    argc += info->nfilters;
+    argv[argc] = NULL;
 
-    return argv;
+    return (Args){
+        .argv = argv,
+        .argc = argc,
+        .filters_slice = filters_slice,
+        .nfilters = info->nfilters
+    };
 }
 
-void free_args(char **argv)
+static void free_args(Args args)
 {
-    char **ptr = argv;
-
-    while (*ptr) {
-        SDL_free(*ptr);
-        ptr++;
+    if (!args.argv) {
+        return;
+    }
+    for (int i = 0; i < args.nfilters; i++) {
+        SDL_free(args.filters_slice[i]);
     }
 
-    SDL_free(argv);
+    SDL_free(args.argv);
 }
 
 // TODO: Zenity survives termination of the parent
@@ -255,7 +197,6 @@ static void run_zenity(zenityArgs* arg_struct)
     SDL_DialogFileCallback callback = arg_struct->callback;
     void* userdata = arg_struct->userdata;
     SDL_Process *process = NULL;
-    char **args = NULL;
     SDL_Environment *env = NULL;
     int status = -1;
     size_t bytes_read = 0;
@@ -264,8 +205,8 @@ static void run_zenity(zenityArgs* arg_struct)
     char **array = NULL;
     bool result = false;
 
-    args = generate_args(arg_struct);
-    if (!args) {
+    Args args = generate_args(arg_struct);
+    if (!args.argv) {
         goto done;
     }
 
@@ -284,7 +225,7 @@ static void run_zenity(zenityArgs* arg_struct)
     SDL_SetEnvironmentVariable(env, "ZENITY_TIMEOUT", "2", true);
 
     SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args);
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args.argv);
     SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, env);
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
@@ -372,7 +313,7 @@ void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     args->nfilters = SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
     args->allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
     args->type = type;
-    args->x11_window_handle = 0;
+    args->x11_window_handle[0] = 0;
     args->title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, NULL);
     args->accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
     args->cancel = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_CANCEL_STRING, NULL);
@@ -381,7 +322,10 @@ void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     if (window) {
         SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
         if (window_props) {
-            args->x11_window_handle = (Uint64) SDL_GetNumberProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+            Uint64 handle = (Uint64)SDL_GetNumberProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+            if (handle) {
+                SDL_snprintf(args->x11_window_handle, 64, "0x%" SDL_PRIx64, handle);
+            }
         }
     }
 
