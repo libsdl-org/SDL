@@ -11,6 +11,8 @@
 
 * Verify that the source archive REVISION.txt has the correct release tag.
 
+* Sign the source archives and upload everything to libsdl.org
+
 * Create a GitHub release and attach the archives you just generated.
 
 ## New feature release
