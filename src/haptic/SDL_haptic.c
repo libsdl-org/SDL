@@ -239,6 +239,8 @@ SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
     haptic->next = SDL_haptics;
     SDL_haptics = haptic;
 
+    SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, true);
+
     // Disable autocenter and set gain to max.
     if (haptic->supported & SDL_HAPTIC_GAIN) {
         SDL_SetHapticGain(haptic, 100);
@@ -247,7 +249,6 @@ SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
         SDL_SetHapticAutocenter(haptic, 0);
     }
 
-    SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, true);
     return haptic;
 }
 
@@ -403,6 +404,15 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
     SDL_haptics = haptic;
 
     SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, true);
+
+    // Disable autocenter and set gain to max.
+    if (haptic->supported & SDL_HAPTIC_GAIN) {
+        SDL_SetHapticGain(haptic, 100);
+    }
+    if (haptic->supported & SDL_HAPTIC_AUTOCENTER) {
+        SDL_SetHapticAutocenter(haptic, 0);
+    }
+
     return haptic;
 }
 
