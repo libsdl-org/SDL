@@ -129,7 +129,7 @@
  *
  * It is optimal for apps to pre-compile the shader formats they might use,
  * but for ease of use SDL provides a separate project,
- * [SDL_gpu_shadercross](https://github.com/libsdl-org/SDL_gpu_shadercross)
+ * [SDL_shadercross](https://github.com/libsdl-org/SDL_shadercross)
  * , for performing runtime shader cross-compilation.
  *
  * This is an extremely quick overview that leaves out several important
