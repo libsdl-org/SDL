@@ -288,17 +288,79 @@ done:
     }
 }
 
-static int run_zenity_thread(void* ptr)
+static void free_zenity_args(zenityArgs *args)
+{
+    if (args->filters) {
+        for (int i = 0; i < args->nfilters; i++) {
+            SDL_free((void *)args->filters[i].name);
+            SDL_free((void *)args->filters[i].pattern);
+        }
+        SDL_free((void *)args->filters);
+    }
+    if (args->filename) {
+        SDL_free((void *)args->filename);
+    }
+    if (args->title) {
+        SDL_free((void *)args->title);
+    }
+    if (args->accept) {
+        SDL_free((void *)args->title);
+    }
+    if (args->cancel) {
+        SDL_free((void *)args->title);
+    }
+
+    SDL_free(args);
+}
+
+static SDL_DialogFileFilter *deep_copy_filters(int nfilters, const SDL_DialogFileFilter *filters)
+{
+    if (nfilters == 0 || filters == NULL) {
+        return NULL;
+    }
+
+    SDL_DialogFileFilter *new_filters = SDL_malloc(sizeof(SDL_DialogFileFilter) * nfilters);
+    if (!new_filters) {
+        return NULL;
+    }
+
+    for (int i = 0; i < nfilters; i++) {
+        new_filters[i].name = SDL_strdup(filters[i].name);
+        if (!new_filters[i].name) {
+            nfilters = i;
+            goto cleanup;
+        }
+
+        new_filters[i].pattern = SDL_strdup(filters[i].pattern);
+        if (!new_filters[i].pattern) {
+            SDL_free((void *)new_filters[i].name);
+            nfilters = i;
+            goto cleanup;
+        }
+    }
+
+    return new_filters;
+
+cleanup:
+    while (nfilters--) {
+        SDL_free((void *)new_filters[nfilters].name);
+        SDL_free((void *)new_filters[nfilters].pattern);
+    }
+    SDL_free(new_filters);
+    return NULL;
+}
+
+static int run_zenity_thread(void *ptr)
 {
     run_zenity(ptr);
-    SDL_free(ptr);
+    free_zenity_args(ptr);
     return 0;
 }
 
 void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
     zenityArgs *args;
-    SDL_Thread *thread;
+    SDL_Thread *thread = NULL;
 
     args = SDL_malloc(sizeof(*args));
     if (!args) {
@@ -306,18 +368,34 @@ void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
         return;
     }
 
+#define COPY_STRING_PROPERTY(dst, prop)                             \
+    {                                                               \
+        const char *str = SDL_GetStringProperty(props, prop, NULL); \
+        if (str) {                                                  \
+            dst = SDL_strdup(str);                                  \
+            if (!dst) {                                             \
+                goto done;                                          \
+            }                                                       \
+        } else {                                                    \
+            dst = NULL;                                             \
+        }                                                           \
+    }
+
     /* Properties can be destroyed as soon as the function returns; copy over what we need. */
     args->callback = callback;
     args->userdata = userdata;
-    args->filename = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
-    args->filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
+    COPY_STRING_PROPERTY(args->filename, SDL_PROP_FILE_DIALOG_LOCATION_STRING);
     args->nfilters = SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
+    args->filters = deep_copy_filters(args->nfilters, SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL));
+    if (args->nfilters != 0 && !args->filters) {
+        goto done;
+    }
     args->allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
     args->type = type;
     args->x11_window_handle[0] = 0;
-    args->title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, NULL);
-    args->accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
-    args->cancel = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_CANCEL_STRING, NULL);
+    COPY_STRING_PROPERTY(args->title, SDL_PROP_FILE_DIALOG_TITLE_STRING);
+    COPY_STRING_PROPERTY(args->accept, SDL_PROP_FILE_DIALOG_ACCEPT_STRING);
+    COPY_STRING_PROPERTY(args->cancel, SDL_PROP_FILE_DIALOG_CANCEL_STRING);
 
     SDL_Window *window = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
     if (window) {
@@ -330,10 +408,11 @@ void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
         }
     }
 
-    thread = SDL_CreateThread(run_zenity_thread, "SDL_ZenityFileDialog", (void *) args);
+    thread = SDL_CreateThread(run_zenity_thread, "SDL_ZenityFileDialog", (void *)args);
 
+done:
     if (thread == NULL) {
-        SDL_free(args);
+        free_zenity_args(args);
         callback(userdata, NULL, -1);
         return;
     }
