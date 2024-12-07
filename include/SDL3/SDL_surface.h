@@ -115,6 +115,8 @@ typedef enum SDL_FlipMode
  * remaining bytes to reach the pitch are used as padding to reach a desired
  * alignment, and have undefined contents.
  *
+ * When a surface holds YUV format data, the planes are assumed to be contiguous without padding between them, e.g. a 32x32 surface in NV12 format with a pitch of 32 would consist of 32x32 bytes of Y plane followed by 32x16 bytes of UV plane.
+ *
  * \since This struct is available since SDL 3.1.3.
  *
  * \sa SDL_CreateSurface
