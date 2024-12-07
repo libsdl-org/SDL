@@ -23,7 +23,7 @@
   All hid command sent are based on https://github.com/berarma/new-lg4ff
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
