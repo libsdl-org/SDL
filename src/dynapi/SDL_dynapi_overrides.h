@@ -1232,3 +1232,5 @@
 #define SDL_SetGPUAllowedFramesInFlight SDL_SetGPUAllowedFramesInFlight_REAL
 #define SDL_RenderTextureAffine SDL_RenderTextureAffine_REAL
 #define SDL_WaitAndAcquireGPUSwapchainTexture SDL_WaitAndAcquireGPUSwapchainTexture_REAL
+#define SDL_RenderDebugTextF SDL_RenderDebugTextF_REAL
+#define SDL_RenderDebugTextV SDL_RenderDebugTextV_REAL

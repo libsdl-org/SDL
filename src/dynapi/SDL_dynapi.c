@@ -149,6 +149,16 @@ static void SDL_InitDynamicAPI(void);
         va_end(ap);                                                                                                                       \
         return result;                                                                                                                    \
     }                                                                                                                                     \
+    _static bool SDLCALL SDL_RenderDebugTextF##name(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) \
+    {                                                                                                                                     \
+        bool result;                                                                                                                      \
+        va_list ap;                                                                                                                       \
+        initcall;                                                                                                                         \
+        va_start(ap, fmt);                                                                                                                \
+        result = jump_table.SDL_RenderDebugTextV(renderer, x, y, fmt, ap);                                                                \
+        va_end(ap);                                                                                                                       \
+        return result;                                                                                                                    \
+    }                                                                                                                                     \
     _static void SDLCALL SDL_Log##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                                     \
     {                                                                                                                                     \
         va_list ap;                                                                                                                       \
