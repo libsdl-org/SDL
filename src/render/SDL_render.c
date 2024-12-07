@@ -3995,7 +3995,7 @@ bool SDL_RenderTextureAffine(SDL_Renderer *renderer, SDL_Texture *texture,
             xy[0] = real_dstrect.x;
             xy[1] = real_dstrect.y;
         }
-        
+
         // (maxx, miny)
         if (right) {
             xy[2] = right->x;
@@ -4025,7 +4025,7 @@ bool SDL_RenderTextureAffine(SDL_Renderer *renderer, SDL_Texture *texture,
 
         result = QueueCmdGeometry(
             renderer, texture,
-            xy, xy_stride, 
+            xy, xy_stride,
             &texture->color, 0 /* color_stride */,
             uv, uv_stride,
             num_vertices, indices, num_indices, size_indices,
@@ -5586,6 +5586,49 @@ bool SDL_RenderDebugText(SDL_Renderer *renderer, float x, float y, const char *s
         result &= DrawDebugCharacter(renderer, curx, y, ch);
         curx += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
     }
+
+    return result;
+}
+
+bool SDL_RenderDebugTextF(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    bool result = SDL_RenderDebugTextV(renderer, x, y, fmt, ap);
+    va_end(ap);
+
+    return result;
+}
+
+bool SDL_RenderDebugTextV(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
+{
+    // Probably for the best to check this here, so we don't do a bunch of string formatting before realizing the renderer isn't even valid...
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    va_list apc;
+    va_copy(apc, ap); // vsnprintf mangles ap, so copy it so it can be used again later
+    int len = SDL_vsnprintf(NULL, 0, fmt, apc);
+    va_end(apc);
+
+    if (len < 0) {
+        return SDL_SetError("Failed to format debug text");
+    }
+
+    char *buf = SDL_malloc(len + 1);
+    if (buf == NULL) {
+        return SDL_OutOfMemory();
+    }
+
+    len = SDL_vsnprintf(buf, len + 1, fmt, ap);
+    if (len < 0) {
+        SDL_free(buf);
+        return SDL_SetError("Failed to format debug text");
+    }
+
+    bool result = SDL_RenderDebugText(renderer, x, y, buf);
+
+    SDL_free(buf);
 
     return result;
 }
