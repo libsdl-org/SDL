@@ -516,9 +516,6 @@
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi_unsupported.h">
       <Filter>dynapi</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\events\SDL_categories.h">
-      <Filter>events</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\events\SDL_clipboardevents_c.h">
       <Filter>events</Filter>
     </ClInclude>
@@ -938,6 +935,9 @@
     <ClInclude Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan_vkfuncs.h">
       <Filter>gpu</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_storage.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_time.h" />
+    <ClInclude Include="..\..\src\events\SDL_categories_c.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1106,79 +1106,7 @@
     <ClCompile Include="..\..\src\joystick\SDL_steam_virtual_gamepad.c">
       <Filter>joystick</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libm\e_atan2.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\e_exp.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\e_fmod.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\e_log.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\e_log10.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\e_pow.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\e_sqrt.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\e_rem_pio2.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\k_cos.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\k_rem_pio2.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\k_sin.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\k_tan.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_atan.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_copysign.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_cos.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_fabs.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_floor.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_isinf.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_isinff.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_isnan.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_isnanf.c">
-      <Filter>libm</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\libm\s_modf.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_scalbn.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_sin.c">
-      <Filter>libm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libm\s_tan.c">
       <Filter>libm</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c">
@@ -1526,15 +1454,6 @@
     <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c">
       <Filter>render\direct3d11</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\render\gpu\SDL_pipeline_gpu.c">
-      <Filter>render\gpu</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\render\gpu\SDL_render_gpu.c">
-      <Filter>render\gpu</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\render\gpu\SDL_shaders_gpu.c">
-      <Filter>render\gpu</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\render\opengl\SDL_render_gl.c">
       <Filter>render\opengl</Filter>
     </ClCompile>
@@ -1576,12 +1495,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\power\windows\SDL_syspower.c">
       <Filter>power\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\process\SDL_process.c">
-      <Filter>process</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\process\windows\SDL_windowsprocess.c">
-      <Filter>process\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL_log.c" />
     <ClCompile Include="..\..\src\render\direct3d12\SDL_render_d3d12.c">
@@ -1634,6 +1547,14 @@
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c">
       <Filter>gpu</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\process\SDL_process.c" />
+    <ClCompile Include="..\..\src\process\windows\SDL_windowsprocess.c" />
+    <ClCompile Include="..\..\src\render\gpu\SDL_pipeline_gpu.c" />
+    <ClCompile Include="..\..\src\render\gpu\SDL_render_gpu.c" />
+    <ClCompile Include="..\..\src\render\gpu\SDL_shaders_gpu.c" />
+    <ClCompile Include="..\..\src\storage\generic\SDL_genericstorage.c" />
+    <ClCompile Include="..\..\src\storage\steam\SDL_steamstorage.c" />
+    <ClCompile Include="..\..\src\storage\SDL_storage.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />
