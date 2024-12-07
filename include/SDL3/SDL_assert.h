@@ -151,6 +151,18 @@ extern "C" {
     #define SDL_TriggerBreakpoint()
 #endif
 
+#if defined(_MSC_VER) && (_MSC_VER > 1400)
+    #define SDL_Assume(cond) __assume(cond)
+#elif SDL_HAS_BUILTIN(__builtin_assume)
+    #define SDL_Assume(cond) __builtin_assume(cond)
+#elif defined(__clang__) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4)))
+    #define SDL_Assume(cond) do {						\
+        (__builtin_expect(!(cond), 0) ? __builtin_unreachable() : (void)0);	\
+    } while (0)
+#else
+    #define SDL_Assume(cond)
+#endif
+
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */
 #   define SDL_FUNCTION __func__
 #elif ((defined(__GNUC__) && (__GNUC__ >= 2)) || defined(_MSC_VER) || defined (__WATCOMC__))

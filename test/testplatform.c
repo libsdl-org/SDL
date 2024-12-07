@@ -444,7 +444,20 @@ static int TestAssertions(bool verbose)
     return 0;
 }
 
-int main(int argc, char *argv[])
+int
+TestAssume(SDL_bool verbose)
+{
+    int max, count, i;
+
+    max = 16;
+    count = SDLTest_RandomIntegerInRange(0,  max);
+    SDL_Assume(count <= max);
+    for (i = 0; i < count; i ++);
+    return (0);
+}
+
+int
+main(int argc, char *argv[])
 {
     int i;
     bool verbose = true;
@@ -486,6 +499,7 @@ int main(int argc, char *argv[])
     status += Test64Bit(verbose);
     status += TestCPUInfo(verbose);
     status += TestAssertions(verbose);
+    status += TestAssume(verbose);
 
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
