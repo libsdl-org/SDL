@@ -82,7 +82,7 @@ char *zenity_clean_name(const char *name)
 
 /* Exec call format:
  *
- *     /usr/bin/env zenity --file-selection --separator=\n [--multiple]
+ *     zenity --file-selection --separator=\n [--multiple]
  *                         [--directory] [--save --confirm-overwrite]
  *                         [--filename FILENAME] [--modal --attach 0x11w1nd0w]
  *                         [--title TITLE] [--ok-label ACCEPT]
@@ -91,7 +91,7 @@ char *zenity_clean_name(const char *name)
  */
 static char** generate_args(const zenityArgs* info)
 {
-    int argc = 4;
+    int argc = 3;
     int nextarg = 0;
     char **argv = NULL;
 
@@ -143,8 +143,6 @@ static char** generate_args(const zenityArgs* info)
     }
 
     // ARGV PASS
-    argv[nextarg++] = SDL_strdup("/usr/bin/env");
-    CHECK_OOM()
     argv[nextarg++] = SDL_strdup("zenity");
     CHECK_OOM()
     argv[nextarg++] = SDL_strdup("--file-selection");
@@ -401,7 +399,7 @@ void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
 bool SDL_Zenity_detect(void)
 {
     const char *args[] = {
-        "/usr/bin/env", "zenity", "--version", NULL
+        "zenity", "--version", NULL
     };
     int status = -1;
 
