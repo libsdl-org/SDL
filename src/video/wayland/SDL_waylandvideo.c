@@ -97,6 +97,14 @@
 #define SDL_WL_OUTPUT_VERSION 3
 #endif
 
+// The SDL wayland-client minimum is 1.18, which supports version 3.
+#define SDL_WL_DATA_DEVICE_VERSION 3
+
+// wl_fixes was introduced in 1.24.0
+#if SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
+#define SDL_WL_FIXES_VERSION 1
+#endif
+
 #ifdef SDL_USE_LIBDBUS
 #include "../../core/linux/SDL_dbus.h"
 
@@ -458,6 +466,7 @@ static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 typedef struct
 {
     bool has_fifo_v1;
+    struct wl_fixes *wl_fixes;
 } SDL_WaylandPreferredData;
 
 static void wayland_preferred_check_handle_global(void *data, struct wl_registry *registry, uint32_t id,
@@ -468,6 +477,11 @@ static void wayland_preferred_check_handle_global(void *data, struct wl_registry
     if (SDL_strcmp(interface, "wp_fifo_manager_v1") == 0) {
         d->has_fifo_v1 = true;
     }
+#ifdef SDL_WL_FIXES_VERSION
+    else if (SDL_strcmp(interface, "wl_fixes") == 0) {
+        d->wl_fixes = wl_registry_bind(registry, id, &wl_fixes_interface, SDL_min(SDL_WL_FIXES_VERSION, version));
+    }
+#endif
 }
 
 static void wayland_preferred_check_remove_global(void *data, struct wl_registry *registry, uint32_t id)
@@ -494,6 +508,10 @@ static bool Wayland_IsPreferred(struct wl_display *display)
 
     WAYLAND_wl_display_roundtrip(display);
 
+    if (preferred_data.wl_fixes) {
+        wl_fixes_destroy_registry(preferred_data.wl_fixes, registry);
+        wl_fixes_destroy(preferred_data.wl_fixes);
+    }
     wl_registry_destroy(registry);
 
     if (!preferred_data.has_fifo_v1) {
@@ -1317,6 +1335,11 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     } else if (SDL_strcmp(interface, "wp_pointer_warp_v1") == 0) {
         d->wp_pointer_warp_v1 = wl_registry_bind(d->registry, id, &wp_pointer_warp_v1_interface, 1);
     }
+#ifdef SDL_WL_FIXES_VERSION
+    else if (SDL_strcmp(interface, "wl_fixes") == 0) {
+        d->wl_fixes = wl_registry_bind(d->registry, id, &wl_fixes_interface, SDL_min(SDL_WL_FIXES_VERSION, version));
+    }
+#endif
 }
 
 static void display_remove_global(void *data, struct wl_registry *registry, uint32_t id)
@@ -1636,6 +1659,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     }
 
     if (data->registry) {
+        if (data->wl_fixes) {
+            wl_fixes_destroy_registry(data->wl_fixes, data->registry);
+            wl_fixes_destroy(data->wl_fixes);
+            data->wl_fixes = NULL;
+        }
         wl_registry_destroy(data->registry);
         data->registry = NULL;
     }
