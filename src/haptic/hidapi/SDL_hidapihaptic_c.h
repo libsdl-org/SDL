@@ -70,4 +70,4 @@ struct SDL_HIDAPI_HapticDriver
 
 extern SDL_HIDAPI_HapticDriver SDL_HIDAPI_HapticDriverLg4ff;
 
-#endif //SDL_joystick_c_h_
+#endif /* SDL_joystick_c_h_ */

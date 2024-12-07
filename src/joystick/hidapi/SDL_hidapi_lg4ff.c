@@ -62,7 +62,8 @@ static const char *supported_device_names[] = {
 
 static const char *HIDAPI_DriverLg4ff_GetDeviceName(Uint32 device_id)
 {
-    for (int i = 0;i < (sizeof supported_device_ids) / sizeof(Uint32);i++) {
+    int i;
+    for (i = 0; i < (sizeof supported_device_ids) / sizeof(Uint32); i++) {
         if (supported_device_ids[i] == device_id) {
             return supported_device_names[i];
         }
@@ -139,10 +140,11 @@ static SDL_bool HIDAPI_DriverLg4ff_IsSupportedDevice(
       should trigger mode switch, then return false, so the next probe cycle
       would take the device on a supported mode
     */
+    int i;
     if (vendor_id != USB_VENDOR_ID_LOGITECH) {
         return SDL_FALSE;
     }
-    for (int i = 0;i < sizeof(supported_device_ids) / sizeof(Uint32);i++) {
+    for (i = 0; i < sizeof(supported_device_ids) / sizeof(Uint32); i++) {
         if (supported_device_ids[i] == product_id) {
             return SDL_TRUE;
         }
@@ -382,6 +384,7 @@ static SDL_bool HIDAPI_DriverLg4ff_HandleState(SDL_HIDAPI_Device *device,
     Uint8 last_hat = 0;
     int num_buttons = HIDAPI_DriverLg4ff_GetNumberOfButtons(device->product_id);
     int bit_offset = 0;
+    int i;
 
     SDL_bool state_changed;
 
@@ -458,7 +461,7 @@ static SDL_bool HIDAPI_DriverLg4ff_HandleState(SDL_HIDAPI_Device *device,
             SDL_assert(0);
     }
 
-    for (int i = 0;i < num_buttons;i++) {
+    for (i = 0;i < num_buttons;i++) {
         int bit_num = bit_offset + i;
         SDL_bool button_on = HIDAPI_DriverLg4ff_GetBit(report_buf, bit_num, report_size);
         SDL_bool button_was_on = HIDAPI_DriverLg4ff_GetBit(ctx->last_report_buf, bit_num, report_size);
@@ -599,8 +602,8 @@ static int SDL_HIDAPI_DriverLg4ff_GetEnvInt(const char *env_name, int min, int m
 static SDL_bool HIDAPI_DriverLg4ff_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_Joystick *joystick = NULL;
-    size_t r;
     Uint8 report_buf[32] = {0};
+    int r;
     size_t report_size = 0;
     SDL_DriverLg4ff_Context *ctx = (SDL_DriverLg4ff_Context *)device->context;
 
@@ -639,7 +642,7 @@ static SDL_bool HIDAPI_DriverLg4ff_UpdateDevice(SDL_HIDAPI_Device *device)
             /* Failed to read from controller */
             HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
             return SDL_FALSE;
-        } else if (r == report_size) {
+        } else if ((size_t)r == report_size) {
             SDL_bool state_changed = HIDAPI_DriverLg4ff_HandleState(device, joystick, report_buf, report_size);
             if(state_changed && !ctx->initialized) {
                 ctx->initialized = SDL_TRUE;
@@ -798,7 +801,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLg4ff = {
     HIDAPI_DriverLg4ff_CloseJoystick,
     HIDAPI_DriverLg4ff_FreeDevice,
 };
-
 
 #endif /* SDL_JOYSTICK_HIDAPI_LG4FF */
 

@@ -192,6 +192,7 @@ void SDL_HIDAPI_HapticClose(SDL_Haptic *haptic)
     SDL_LockMutex(haptic_list_mutex);
 
     cur = haptic_list_head;
+    last = NULL;
     while (cur != NULL) {
         if (cur->haptic == haptic) {
             SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
@@ -256,7 +257,7 @@ int SDL_HIDAPI_HapticStopEffect(SDL_Haptic *haptic, int id)
 void SDL_HIDAPI_HapticDestroyEffect(SDL_Haptic *haptic, int id)
 {
     SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
-    return device->driver->DestroyEffect(device, id);
+    device->driver->DestroyEffect(device, id);
 }
 
 int SDL_HIDAPI_HapticGetEffectStatus(SDL_Haptic *haptic, int id)
@@ -295,4 +296,4 @@ int SDL_HIDAPI_HapticStopAll(SDL_Haptic *haptic)
     return device->driver->StopAll(device);
 }
 
-#endif //SDL_JOYSTICK_HIDAPI
+#endif /* SDL_JOYSTICK_HIDAPI */

@@ -73,7 +73,8 @@ SRCS+= SDL_systimer.c
 SRCS+= SDL_sysloadso.c
 SRCS+= SDL_sysfilesystem.c
 SRCS+= SDL_syshaptic.c SDL_sysjoystick.c SDL_virtualjoystick.c
-SRCS+= SDL_hidapijoystick.c SDL_hidapi_rumble.c SDL_hidapi_combined.c SDL_hidapi_gamecube.c SDL_hidapi_luna.c SDL_hidapi_ps3.c SDL_hidapi_ps4.c SDL_hidapi_ps5.c SDL_hidapi_shield.c SDL_hidapi_stadia.c SDL_hidapi_switch.c SDL_hidapi_wii.c SDL_hidapi_xbox360.c SDL_hidapi_xbox360w.c SDL_hidapi_xboxone.c SDL_hidapi_steam.c SDL_hidapi_steamdeck.c
+SRCS+= SDL_hidapihaptic.c SDL_hidapihaptic_lg4ff.c
+SRCS+= SDL_hidapijoystick.c SDL_hidapi_rumble.c SDL_hidapi_combined.c SDL_hidapi_gamecube.c SDL_hidapi_luna.c SDL_hidapi_ps3.c SDL_hidapi_ps4.c SDL_hidapi_ps5.c SDL_hidapi_shield.c SDL_hidapi_stadia.c SDL_hidapi_switch.c SDL_hidapi_wii.c SDL_hidapi_xbox360.c SDL_hidapi_xbox360w.c SDL_hidapi_xboxone.c SDL_hidapi_steam.c SDL_hidapi_steamdeck.c SDL_hidapi_lg4ff.c
 SRCS+= SDL_dummyaudio.c SDL_diskaudio.c
 SRCS+= SDL_nullvideo.c SDL_nullframebuffer.c SDL_nullevents.c
 SRCS+= SDL_dummysensor.c
@@ -105,7 +106,7 @@ RCOBJS= $(RCSRCS:.rc=.res)
 .extensions:
 .extensions: .lib .dll .obj .res .c .rc .asm
 
-.c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
+.c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/haptic/hidapi;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
 .c: ./src/haptic/dummy;./src/joystick/dummy;./src/joystick/virtual;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
 .c: ./src/core/windows;./src/audio/winmm;./src/audio/directsound;./src/audio/wasapi;./src/loadso/windows;./src/filesystem/windows;./src/haptic/windows;./src/joystick/windows;./src/sensor/windows;./src/thread/windows;./src/timer/windows;./src/video/windows;
 .c: ./src/locale/;./src/locale/windows;./src/misc;./src/misc/windows;./src/power/windows;./src/joystick/hidapi;./src/hidapi;./src/render/direct3d;./src/render/direct3d11;./src/render/direct3d12;./src/render/opengl;./src/render/opengles2

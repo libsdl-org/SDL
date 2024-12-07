@@ -45,4 +45,5 @@ int SDL_HIDAPI_HapticPause(SDL_Haptic *haptic);
 int SDL_HIDAPI_HapticUnpause(SDL_Haptic *haptic);
 int SDL_HIDAPI_HapticStopAll(SDL_Haptic *haptic);
 
-#endif //SDL_hidapihaptic_h_
+#endif /* SDL_hidapihaptic_h_ */
+
