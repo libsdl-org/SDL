@@ -1251,6 +1251,7 @@ static inline const char *VkErrorMessages(VkResult code)
         ERR_TO_STR(VK_ERROR_SURFACE_LOST_KHR)
         ERR_TO_STR(VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT)
         ERR_TO_STR(VK_SUBOPTIMAL_KHR)
+        ERR_TO_STR(VK_ERROR_NATIVE_WINDOW_IN_USE_KHR)
     default:
         return "Unhandled VkResult!";
     }
@@ -4319,8 +4320,7 @@ static bool VULKAN_INTERNAL_QuerySwapchainSupport(
     outputDetails->presentModesLength = 0;
 
     if (!supportsPresent) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "This surface does not support presenting!");
-        return false;
+        SET_STRING_ERROR_AND_RETURN("This surface does not support presenting!", false)
     }
 
     // Run the device surface queries
@@ -4354,8 +4354,8 @@ static bool VULKAN_INTERNAL_QuerySwapchainSupport(
         outputDetails->formats = (VkSurfaceFormatKHR *)SDL_malloc(
             sizeof(VkSurfaceFormatKHR) * outputDetails->formatsLength);
 
-        if (!outputDetails->formats) {
-            return 0;
+        if (!outputDetails->formats) { // OOM
+            return false;
         }
 
         result = renderer->vkGetPhysicalDeviceSurfaceFormatsKHR(
@@ -4374,7 +4374,7 @@ static bool VULKAN_INTERNAL_QuerySwapchainSupport(
         outputDetails->presentModes = (VkPresentModeKHR *)SDL_malloc(
             sizeof(VkPresentModeKHR) * outputDetails->presentModesLength);
 
-        if (!outputDetails->presentModes) {
+        if (!outputDetails->presentModes) { // OOM
             SDL_free(outputDetails->formats);
             return false;
         }
@@ -4461,10 +4461,6 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             renderer->instance,
             NULL, // FIXME: VAllocationCallbacks
             &windowData->surface)) {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_GPU,
-            "Vulkan_CreateSurface failed: %s",
-            SDL_GetError());
         return false;
     }
 
@@ -4644,7 +4640,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     windowData->textureContainers = SDL_malloc(
         sizeof(VulkanTextureContainer) * windowData->imageCount);
 
-    if (!windowData->textureContainers) {
+    if (!windowData->textureContainers) { // OOM
         renderer->vkDestroySurfaceKHR(
             renderer->instance,
             windowData->surface,
