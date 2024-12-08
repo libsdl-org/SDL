@@ -28,7 +28,10 @@ void SDL_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCal
     if (!callback) {
         return;
     }
-
+#ifdef SDL_DIALOG_DISABLED
+    SDL_SetError("SDL not built with dialog support");
+    callback(userdata, NULL, -1);
+#else
     SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
     int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, -1);
 
@@ -58,10 +61,15 @@ void SDL_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCal
         callback(userdata, NULL, -1);
         break;
     };
+#endif
 }
 
 void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, bool allow_many)
 {
+#ifdef SDL_DIALOG_DISABLED
+    SDL_SetError("SDL not built with dialog support");
+    callback(userdata, NULL, -1);
+#else
     SDL_PropertiesID props = SDL_CreateProperties();
 
     SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, (void *) filters);
@@ -73,10 +81,15 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL
     SDL_ShowFileDialogWithProperties(SDL_FILEDIALOG_OPENFILE, callback, userdata, props);
 
     SDL_DestroyProperties(props);
+#endif
 }
 
 void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location)
 {
+#ifdef SDL_DIALOG_DISABLED
+    SDL_SetError("SDL not built with dialog support");
+    callback(userdata, NULL, -1);
+#else
     SDL_PropertiesID props = SDL_CreateProperties();
 
     SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, (void *) filters);
@@ -87,10 +100,15 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL
     SDL_ShowFileDialogWithProperties(SDL_FILEDIALOG_SAVEFILE, callback, userdata, props);
 
     SDL_DestroyProperties(props);
+#endif
 }
 
 void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, bool allow_many)
 {
+#ifdef SDL_DIALOG_DISABLED
+    SDL_SetError("SDL not built with dialog support");
+    callback(userdata, NULL, -1);
+#else
     SDL_PropertiesID props = SDL_CreateProperties();
 
     SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, window);
@@ -100,4 +118,5 @@ void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, S
     SDL_ShowFileDialogWithProperties(SDL_FILEDIALOG_OPENFOLDER, callback, userdata, props);
 
     SDL_DestroyProperties(props);
+#endif
 }
