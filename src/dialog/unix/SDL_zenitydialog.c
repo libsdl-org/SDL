@@ -44,10 +44,10 @@ typedef struct
 
 typedef struct
 {
-    char **argv;
+    const char *const *argv;
     int argc;
 
-    char **filters_slice;
+    char *const *filters_slice;
     int nfilters;
 } Args;
 
@@ -82,7 +82,7 @@ static char *zenity_clean_name(const char *name)
 static Args generate_args(const zenityArgs *info)
 {
     int argc = 0;
-    char **argv = SDL_malloc(
+    const char **argv = SDL_malloc(
         sizeof(*argv) * (3   /* zenity --file-selection --separator=\n */
                          + 1 /* --multiple */
                          + 1 /* --directory */
@@ -123,31 +123,31 @@ static Args generate_args(const zenityArgs *info)
 
     if (info->filename) {
         argv[argc++] = "--filename";
-        argv[argc++] = (char *)info->filename;
+        argv[argc++] = info->filename;
     }
 
     if (info->x11_window_handle[0]) {
         argv[argc++] = "--modal";
         argv[argc++] = "--attach";
-        argv[argc++] = (char *)info->x11_window_handle;
+        argv[argc++] = info->x11_window_handle;
     }
 
     if (info->title) {
         argv[argc++] = "--title";
-        argv[argc++] = (char *)info->title;
+        argv[argc++] = info->title;
     }
 
     if (info->accept) {
         argv[argc++] = "--ok-label";
-        argv[argc++] = (char *)info->accept;
+        argv[argc++] = info->accept;
     }
 
     if (info->cancel) {
         argv[argc++] = "--cancel-label";
-        argv[argc++] = (char *)info->cancel;
+        argv[argc++] = info->cancel;
     }
 
-    char **filters_slice = &argv[argc];
+    char **filters_slice = (char **)&argv[argc];
     if (info->filters) {
         for (int i = 0; i < info->nfilters; i++) {
             char *filter_str = convert_filter(info->filters[i],
@@ -173,6 +173,7 @@ static Args generate_args(const zenityArgs *info)
     return (Args){
         .argv = argv,
         .argc = argc,
+
         .filters_slice = filters_slice,
         .nfilters = info->nfilters
     };
@@ -187,7 +188,7 @@ static void free_args(Args args)
         SDL_free(args.filters_slice[i]);
     }
 
-    SDL_free(args.argv);
+    SDL_free((void *)args.argv);
 }
 
 // TODO: Zenity survives termination of the parent
@@ -225,7 +226,7 @@ static void run_zenity(zenityArgs* arg_struct)
     SDL_SetEnvironmentVariable(env, "ZENITY_TIMEOUT", "2", true);
 
     SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args.argv);
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, (void *)args.argv);
     SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, env);
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
     SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
