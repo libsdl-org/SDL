@@ -69,6 +69,7 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
     case SDL_EVENT_WINDOW_MOVED:
         window->undefined_x = false;
         window->undefined_y = false;
+        window->use_pending_position_for_fullscreen = false;
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             window->windowed.x = data1;
             window->windowed.y = data2;

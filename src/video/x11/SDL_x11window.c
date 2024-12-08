@@ -1060,7 +1060,17 @@ bool X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     // Sync any pending fullscreen or maximize events.
     if (window->internal->pending_operation & (X11_PENDING_OP_FULLSCREEN | X11_PENDING_OP_MAXIMIZE)) {
+        // Save state in case it is overwritten while synchronizing.
+        const bool use_client_fs_coords = window->use_pending_position_for_fullscreen;
+        const int x = window->floating.x;
+        const int y = window->floating.y;
+
         X11_SyncWindow(_this, window);
+
+        // Restore state that may have been overwritten while synchronizing.
+        window->use_pending_position_for_fullscreen = use_client_fs_coords;
+        window->floating.x = x;
+        window->floating.y = y;
     }
 
     // Position will be set when window is de-maximized

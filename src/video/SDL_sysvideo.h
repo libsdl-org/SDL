@@ -96,9 +96,9 @@ struct SDL_Window
     SDL_Surface *surface;
     bool surface_valid;
 
-    bool is_repositioning; // Set during an SDL_SetWindowPosition() call.
     bool is_hiding;
     bool restore_on_show; // Child was hidden recursively by the parent, restore when shown.
+    bool use_pending_position_for_fullscreen;
     bool is_destroying;
     bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
 

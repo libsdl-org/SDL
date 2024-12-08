@@ -1660,19 +1660,20 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
         displayID = window->current_fullscreen_mode.displayID;
     }
 
-    /* The floating position is used here as a very common pattern is
-     * SDL_SetWindowPosition() followed by SDL_SetWindowFullscreen() to make the
-     * window fullscreen desktop on a specific display. If the backend doesn't
-     * support changing the window position, or the compositor hasn't yet actually
-     * moved the window, the current position won't be updated at the time of the
-     * fullscreen call.
+    /* This is used to handle the very common pattern of SDL_SetWindowPosition()
+     * followed immediately by SDL_SetWindowFullscreen() to make the window fullscreen
+     * desktop on a specific display. If the backend doesn't support changing the
+     * window position, or an async window manager hasn't yet actually moved the window,
+     * the current position won't be updated at the time of the fullscreen call.
      */
     if (!displayID) {
-        if (window->flags & SDL_WINDOW_FULLSCREEN && !window->is_repositioning) {
-            // This was a window manager initiated move, use the current position.
-            displayID = GetDisplayForRect(window->x, window->y, 1, 1);
-        } else {
+        if (window->use_pending_position_for_fullscreen) {
+            // The last coordinates were client requested; use the pending floating coordinates.
             displayID = GetDisplayForRect(window->floating.x, window->floating.y, window->floating.w, window->floating.h);
+        }
+        else {
+            // The last coordinates were from the window manager; use the current position.
+            displayID = GetDisplayForRect(window->x, window->y, 1, 1);
         }
     }
     if (!displayID) {
@@ -2806,11 +2807,10 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
     window->floating.y = y;
     window->undefined_x = false;
     window->undefined_y = false;
+    window->use_pending_position_for_fullscreen = true;
 
     if (_this->SetWindowPosition) {
-        window->is_repositioning = true;
         const bool result = _this->SetWindowPosition(_this, window);
-        window->is_repositioning = false;
         if (result) {
             SDL_SyncIfRequired(window);
         }
