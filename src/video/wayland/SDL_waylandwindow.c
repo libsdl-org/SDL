@@ -2651,6 +2651,7 @@ bool Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         RepositionPopup(window, false);
         return true;
     } else if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR || wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
+        const bool use_pending_position_for_fullscreen = window->use_pending_position_for_fullscreen;
         const int x = window->floating.x;
         const int y = window->floating.y;
 
@@ -2671,6 +2672,7 @@ bool Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
          *
          * for positioning a desktop fullscreen window won't work without this.
          */
+        window->use_pending_position_for_fullscreen = use_pending_position_for_fullscreen;
         window->floating.x = x;
         window->floating.y = y;
 
