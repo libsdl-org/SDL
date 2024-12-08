@@ -2788,6 +2788,29 @@ static void SDL_RenderLogicalPresentation(SDL_Renderer *renderer)
     }
 }
 
+static bool SDL_RenderVectorFromWindow(SDL_Renderer *renderer, float window_dx, float window_dy, float *restrict dx, float *restrict dy)
+{
+    // Convert from window coordinates to pixels within the window
+    window_dx *= renderer->dpi_scale.x;
+    window_dy *= renderer->dpi_scale.y;
+
+    // Convert from pixels within the window to pixels within the view
+    if (renderer->logical_presentation_mode != SDL_LOGICAL_PRESENTATION_DISABLED) {
+        const SDL_FRect *src = &renderer->logical_src_rect;
+        const SDL_FRect *dst = &renderer->logical_dst_rect;
+        window_dx = (window_dx * src->w) / dst->w;
+        window_dy = (window_dy * src->h) / dst->h;
+    }
+
+    const SDL_RenderViewState *view = &renderer->main_view;
+    window_dx /= view->scale.x;
+    window_dy /= view->scale.y;
+
+    *dx = window_dx;
+    *dy = window_dy;
+    return true;
+}
+
 bool SDL_RenderCoordinatesFromWindow(SDL_Renderer *renderer, float window_x, float window_y, float *x, float *y)
 {
     float render_x, render_y;
@@ -2856,37 +2879,7 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
         SDL_Window *window = SDL_GetWindowFromID(event->motion.windowID);
         if (window == renderer->window) {
             SDL_RenderCoordinatesFromWindow(renderer, event->motion.x, event->motion.y, &event->motion.x, &event->motion.y);
-
-            if (event->motion.xrel != 0.0f) {
-                // Convert from window coordinates to pixels within the window
-                float scale = renderer->dpi_scale.x;
-
-                // Convert from pixels within the window to pixels within the view
-                if (renderer->logical_presentation_mode != SDL_LOGICAL_PRESENTATION_DISABLED) {
-                    const SDL_FRect *src = &renderer->logical_src_rect;
-                    const SDL_FRect *dst = &renderer->logical_dst_rect;
-                    scale = (scale * src->w) / dst->w;
-                }
-
-                // Convert from pixels within the view to render coordinates
-                scale = (scale / renderer->main_view.scale.x);
-                event->motion.xrel *= scale;
-            }
-            if (event->motion.yrel != 0.0f) {
-                // Convert from window coordinates to pixels within the window
-                float scale = renderer->dpi_scale.y;
-
-                // Convert from pixels within the window to pixels within the view
-                if (renderer->logical_presentation_mode != SDL_LOGICAL_PRESENTATION_DISABLED) {
-                    const SDL_FRect *src = &renderer->logical_src_rect;
-                    const SDL_FRect *dst = &renderer->logical_dst_rect;
-                    scale = (scale * src->h) / dst->h;
-                }
-
-                // Convert from pixels within the view to render coordinates
-                scale = (scale / renderer->main_view.scale.y);
-                event->motion.yrel *= scale;
-            }
+            SDL_RenderVectorFromWindow(renderer, event->motion.xrel, event->motion.yrel, &event->motion.xrel, &event->motion.yrel);
         }
     } else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
                event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
@@ -2912,6 +2905,7 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
                 return false;
             }
             SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * w, event->tfinger.y * h, &event->tfinger.x, &event->tfinger.y);
+            SDL_RenderVectorFromWindow(renderer, event->tfinger.dx * w, event->tfinger.dy * h, &event->tfinger.dx, &event->tfinger.dy);
         }
     } else if (event->type == SDL_EVENT_PEN_MOTION) {
         SDL_Window *window = SDL_GetWindowFromID(event->pmotion.windowID);
