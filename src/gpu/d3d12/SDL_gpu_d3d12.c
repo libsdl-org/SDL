@@ -708,6 +708,8 @@ typedef struct D3D12WindowData
     Uint32 frameCounter;
 
     D3D12TextureContainer textureContainers[MAX_FRAMES_IN_FLIGHT];
+    Uint32 swapchainTextureCount;
+
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
     Uint32 width;
     Uint32 height;
@@ -6256,7 +6258,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     createInfo.layer_count_or_depth = 1;
     createInfo.num_levels = 1;
 
-    for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+    for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
         texture = D3D12_INTERNAL_CreateTexture(renderer, &createInfo, true);
         texture->container = &windowData->textureContainers[i];
         windowData->textureContainers[i].activeTexture = texture;
@@ -6300,7 +6302,7 @@ static void D3D12_INTERNAL_DestroySwapchain(
     D3D12WindowData *windowData)
 {
     renderer->commandQueue->PresentX(0, NULL, NULL);
-    for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+    for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
         D3D12_INTERNAL_DestroyTexture(
             renderer,
             windowData->textureContainers[i].activeTexture);
@@ -6318,7 +6320,7 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
     renderer->commandQueue->PresentX(0, NULL, NULL);
 
     // Clean up the previous swapchain textures
-    for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+    for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
         D3D12_INTERNAL_DestroyTexture(
             renderer,
             windowData->textureContainers[i].activeTexture);
@@ -6458,7 +6460,7 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
     D3D12_Wait((SDL_GPURenderer *)renderer);
 
     // Release views and clean up
-    for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+    for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
         D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
             renderer,
             &windowData->textureContainers[i].activeTexture->srvHandle);
@@ -6483,7 +6485,7 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
     CHECK_D3D12_ERROR_AND_RETURN("Could not resize swapchain buffers", false)
 
     // Create texture object for the swapchain
-    for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+    for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
         if (!D3D12_INTERNAL_InitializeSwapchainTexture(
                 renderer,
                 windowData->swapchain,
@@ -6509,7 +6511,7 @@ static void D3D12_INTERNAL_DestroySwapchain(
     D3D12WindowData *windowData)
 {
     // Release views and clean up
-    for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+    for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
         D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
             renderer,
             &windowData->textureContainers[i].activeTexture->srvHandle);
@@ -6551,6 +6553,9 @@ static bool D3D12_INTERNAL_CreateSwapchain(
 
     swapchainFormat = SwapchainCompositionToTextureFormat[swapchainComposition];
 
+    // Min swapchain image count is 2
+    windowData->swapchainTextureCount = SDL_clamp(renderer->allowedFramesInFlight, 2, 3);
+
     // Initialize the swapchain buffer descriptor
     swapchainDesc.Width = 0;  // use client window width
     swapchainDesc.Height = 0; // use client window height
@@ -6558,7 +6563,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     swapchainDesc.SampleDesc.Count = 1;
     swapchainDesc.SampleDesc.Quality = 0;
     swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapchainDesc.BufferCount = MAX_FRAMES_IN_FLIGHT;
+    swapchainDesc.BufferCount = windowData->swapchainTextureCount;
     swapchainDesc.Scaling = DXGI_SCALING_STRETCH;
     swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
@@ -6672,7 +6677,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     /* If a you are using a FLIP model format you can't create the swapchain as DXGI_FORMAT_B8G8R8A8_UNORM_SRGB.
      * You have to create the swapchain as DXGI_FORMAT_B8G8R8A8_UNORM and then set the render target view's format to DXGI_FORMAT_B8G8R8A8_UNORM_SRGB
      */
-    for (Uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
+    for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
         if (!D3D12_INTERNAL_InitializeSwapchainTexture(
                 renderer,
                 swapchain3,
@@ -6820,7 +6825,29 @@ static bool D3D12_SetAllowedFramesInFlight(
         return false;
     }
 
+    // Destroy all swapchains
+    for (Uint32 i = 0; i < renderer->claimedWindowCount; i += 1) {
+        D3D12WindowData *windowData = renderer->claimedWindows[i];
+
+        D3D12_INTERNAL_DestroySwapchain(renderer, windowData);
+    }
+
+    // Set the frames in flight value
     renderer->allowedFramesInFlight = allowedFramesInFlight;
+
+    // Recreate all swapchains
+    for (Uint32 i = 0; i < renderer->claimedWindowCount; i += 1) {
+        D3D12WindowData *windowData = renderer->claimedWindows[i];
+
+        if (!D3D12_INTERNAL_CreateSwapchain(
+            renderer,
+            windowData,
+            windowData->swapchainComposition,
+            windowData->present_mode)) {
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -8510,7 +8537,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         res = renderer->device->SetFrameIntervalX(
             NULL,
             D3D12XBOX_FRAME_INTERVAL_60_HZ,
-            MAX_FRAMES_IN_FLIGHT - 1,
+            renderer->allowedFramesInFlight - 1,
             D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
         if (FAILED(res)) {
             D3D12_INTERNAL_DestroyRenderer(renderer);
@@ -8864,7 +8891,7 @@ void SDL_GDKResumeGPU(SDL_GPUDevice *device)
     res = renderer->device->SetFrameIntervalX(
         NULL,
         D3D12XBOX_FRAME_INTERVAL_60_HZ,
-        MAX_FRAMES_IN_FLIGHT - 1,
+        renderer->allowedFramesInFlight - 1,
         D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
     if (FAILED(res)) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not set frame interval: %X", res);

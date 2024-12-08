@@ -4556,7 +4556,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
         return VULKAN_INTERNAL_TRY_AGAIN;
     }
 
-    windowData->imageCount = MAX_FRAMES_IN_FLIGHT;
+    Uint32 requestedImageCount = renderer->allowedFramesInFlight;
 
 #ifdef SDL_PLATFORM_APPLE
     windowData->width = swapchainSupportDetails.capabilities.currentExtent.width;
@@ -4572,12 +4572,12 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
 #endif
 
     if (swapchainSupportDetails.capabilities.maxImageCount > 0 &&
-        windowData->imageCount > swapchainSupportDetails.capabilities.maxImageCount) {
-        windowData->imageCount = swapchainSupportDetails.capabilities.maxImageCount;
+        requestedImageCount > swapchainSupportDetails.capabilities.maxImageCount) {
+        requestedImageCount = swapchainSupportDetails.capabilities.maxImageCount;
     }
 
-    if (windowData->imageCount < swapchainSupportDetails.capabilities.minImageCount) {
-        windowData->imageCount = swapchainSupportDetails.capabilities.minImageCount;
+    if (requestedImageCount < swapchainSupportDetails.capabilities.minImageCount) {
+        requestedImageCount = swapchainSupportDetails.capabilities.minImageCount;
     }
 
     if (windowData->presentMode == SDL_GPU_PRESENTMODE_MAILBOX) {
@@ -4587,14 +4587,14 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
          * images, it's not real mailbox support, so let it fail hard.
          * -flibit
          */
-        windowData->imageCount = SDL_max(windowData->imageCount, 3);
+        requestedImageCount = SDL_max(requestedImageCount, 3);
     }
 
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchainCreateInfo.pNext = NULL;
     swapchainCreateInfo.flags = 0;
     swapchainCreateInfo.surface = windowData->surface;
-    swapchainCreateInfo.minImageCount = windowData->imageCount;
+    swapchainCreateInfo.minImageCount = requestedImageCount;
     swapchainCreateInfo.imageFormat = windowData->format;
     swapchainCreateInfo.imageColorSpace = windowData->colorSpace;
     swapchainCreateInfo.imageExtent.width = windowData->width;
@@ -9906,11 +9906,20 @@ static bool VULKAN_SetAllowedFramesInFlight(
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
 
-    if (!VULKAN_Wait(driverData)) {
-        return false;
+    renderer->allowedFramesInFlight = allowedFramesInFlight;
+
+    for (Uint32 i = 0; i < renderer->claimedWindowCount; i += 1) {
+        WindowData *windowData = renderer->claimedWindows[i];
+
+        Uint32 recreateResult = VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
+        if (!recreateResult) {
+            return false;
+        } else if (recreateResult == VULKAN_INTERNAL_TRY_AGAIN) {
+            // Edge case, swapchain extent is (0, 0) but this is not an error
+            windowData->needsSwapchainRecreate = true;
+        }
     }
 
-    renderer->allowedFramesInFlight = allowedFramesInFlight;
     return true;
 }
 
