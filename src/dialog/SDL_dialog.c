@@ -67,6 +67,9 @@ void SDL_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCal
 void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, bool allow_many)
 {
 #ifdef SDL_DIALOG_DISABLED
+    if (!callback) {
+        return;
+    }
     SDL_SetError("SDL not built with dialog support");
     callback(userdata, NULL, -1);
 #else
@@ -87,6 +90,9 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL
 void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location)
 {
 #ifdef SDL_DIALOG_DISABLED
+    if (!callback) {
+        return;
+    }
     SDL_SetError("SDL not built with dialog support");
     callback(userdata, NULL, -1);
 #else
@@ -106,6 +112,9 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL
 void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, bool allow_many)
 {
 #ifdef SDL_DIALOG_DISABLED
+    if (!callback) {
+        return;
+    }
     SDL_SetError("SDL not built with dialog support");
     callback(userdata, NULL, -1);
 #else
