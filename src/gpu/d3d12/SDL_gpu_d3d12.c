@@ -1229,7 +1229,7 @@ static void D3D12_INTERNAL_ReleaseBuffer(
         D3D12Buffer *,
         renderer->buffersToDestroyCount + 1,
         renderer->buffersToDestroyCapacity,
-        renderer->buffersToDestroyCapacity * 2)
+        renderer->buffersToDestroyCapacity * 2);
 
     renderer->buffersToDestroy[renderer->buffersToDestroyCount] = buffer;
     renderer->buffersToDestroyCount += 1;
@@ -1309,7 +1309,7 @@ static void D3D12_INTERNAL_ReleaseTexture(
         D3D12Texture *,
         renderer->texturesToDestroyCount + 1,
         renderer->texturesToDestroyCapacity,
-        renderer->texturesToDestroyCapacity * 2)
+        renderer->texturesToDestroyCapacity * 2);
 
     renderer->texturesToDestroy[renderer->texturesToDestroyCount] = texture;
     renderer->texturesToDestroyCount += 1;
@@ -3740,7 +3740,7 @@ static void D3D12_ReleaseSampler(
         D3D12Sampler *,
         renderer->samplersToDestroyCount + 1,
         renderer->samplersToDestroyCapacity,
-        renderer->samplersToDestroyCapacity * 2)
+        renderer->samplersToDestroyCapacity * 2);
 
     renderer->samplersToDestroy[renderer->samplersToDestroyCount] = d3d12Sampler;
     renderer->samplersToDestroyCount += 1;
@@ -3800,7 +3800,7 @@ static void D3D12_ReleaseComputePipeline(
         D3D12ComputePipeline *,
         renderer->computePipelinesToDestroyCount + 1,
         renderer->computePipelinesToDestroyCapacity,
-        renderer->computePipelinesToDestroyCapacity * 2)
+        renderer->computePipelinesToDestroyCapacity * 2);
 
     renderer->computePipelinesToDestroy[renderer->computePipelinesToDestroyCount] = d3d12ComputePipeline;
     renderer->computePipelinesToDestroyCount += 1;
@@ -3822,7 +3822,7 @@ static void D3D12_ReleaseGraphicsPipeline(
         D3D12GraphicsPipeline *,
         renderer->graphicsPipelinesToDestroyCount + 1,
         renderer->graphicsPipelinesToDestroyCapacity,
-        renderer->graphicsPipelinesToDestroyCapacity * 2)
+        renderer->graphicsPipelinesToDestroyCapacity * 2);
 
     renderer->graphicsPipelinesToDestroy[renderer->graphicsPipelinesToDestroyCount] = d3d12GraphicsPipeline;
     renderer->graphicsPipelinesToDestroyCount += 1;

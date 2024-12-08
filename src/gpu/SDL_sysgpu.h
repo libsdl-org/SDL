@@ -391,12 +391,14 @@ static inline Uint32 BytesPerRow(
 // Internal Macros
 
 #define EXPAND_ARRAY_IF_NEEDED(arr, elementType, newCount, capacity, newCapacity) \
-    if (newCount >= capacity) {                                                   \
-        capacity = newCapacity;                                                   \
-        arr = (elementType *)SDL_realloc(                                         \
-            arr,                                                                  \
-            sizeof(elementType) * capacity);                                      \
-    }
+    do {                                                                          \
+        if ((newCount) >= (capacity)) {                                           \
+            (capacity) = (newCapacity);                                           \
+            (arr) = (elementType *)SDL_realloc(                                   \
+                (arr),                                                            \
+                sizeof(elementType) * (capacity));                                \
+        }                                                                         \
+    } while (0)
 
 // Internal Declarations
 
