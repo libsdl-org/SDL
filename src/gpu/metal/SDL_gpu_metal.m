@@ -3624,8 +3624,7 @@ static bool METAL_ClaimWindow(
                 SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window", false);
             }
         } else {
-            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Window already claimed!");
-            return false;
+            SET_ERROR_AND_RETURN("Window already claimed!", false)
         }
     }
 }

@@ -6729,7 +6729,7 @@ static bool D3D12_ClaimWindow(
             SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window!", false)
         }
     } else {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Window already claimed!");
+        SET_STRING_ERROR_AND_RETURN("Window already claimed", false)
         return false;
     }
 }
@@ -6742,7 +6742,7 @@ static void D3D12_ReleaseWindow(
     D3D12WindowData *windowData = D3D12_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Window already unclaimed!");
+        SET_ERROR("Window already unclaimed!")
         return;
     }
 
