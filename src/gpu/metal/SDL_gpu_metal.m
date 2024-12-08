@@ -34,31 +34,35 @@
 #define WINDOW_PROPERTY_DATA           "SDL_GPUMetalWindowPropertyData"
 #define SDL_GPU_SHADERSTAGE_COMPUTE    2
 
-#define TRACK_RESOURCE(resource, type, array, count, capacity) \
-    Uint32 i;                                                  \
-                                                               \
-    for (i = 0; i < commandBuffer->count; i += 1) {            \
-        if (commandBuffer->array[i] == resource) {             \
-            return;                                            \
-        }                                                      \
-    }                                                          \
-                                                               \
-    if (commandBuffer->count == commandBuffer->capacity) {     \
-        commandBuffer->capacity += 1;                          \
-        commandBuffer->array = SDL_realloc(                    \
-            commandBuffer->array,                              \
-            commandBuffer->capacity * sizeof(type));           \
-    }                                                          \
-    commandBuffer->array[commandBuffer->count] = resource;     \
-    commandBuffer->count += 1;                                 \
-    SDL_AtomicIncRef(&resource->referenceCount);
+#define TRACK_RESOURCE(resource, type, array, count, capacity)   \
+    do {                                                         \
+        Uint32 i;                                                \
+                                                                 \
+        for (i = 0; i < commandBuffer->count; i += 1) {          \
+            if (commandBuffer->array[i] == (resource)) {         \
+                return;                                          \
+            }                                                    \
+        }                                                        \
+                                                                 \
+        if (commandBuffer->count == commandBuffer->capacity) {   \
+            commandBuffer->capacity += 1;                        \
+            commandBuffer->array = SDL_realloc(                  \
+                commandBuffer->array,                            \
+                commandBuffer->capacity * sizeof(type));         \
+        }                                                        \
+        commandBuffer->array[commandBuffer->count] = (resource); \
+        commandBuffer->count += 1;                               \
+        SDL_AtomicIncRef(&(resource)->referenceCount);           \
+    } while (0)
 
-#define SET_ERROR_AND_RETURN(fmt, msg, ret)           \
-    if (renderer->debugMode) {                        \
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, fmt, msg); \
-    }                                                 \
-    SDL_SetError(fmt, msg);                           \
-    return ret;                                       \
+#define SET_ERROR_AND_RETURN(fmt, msg, ret)               \
+    do {                                                  \
+        if (renderer->debugMode) {                        \
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, fmt, msg); \
+        }                                                 \
+        SDL_SetError(fmt, msg);                           \
+        return ret;                                       \
+    } while (0)
 
 #define SET_STRING_ERROR_AND_RETURN(msg, ret) SET_ERROR_AND_RETURN("%s", msg, ret)
 
@@ -3624,7 +3628,7 @@ static bool METAL_ClaimWindow(
                 SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window", false);
             }
         } else {
-            SET_ERROR_AND_RETURN("Window already claimed!", false)
+            SET_ERROR_AND_RETURN("%s", "Window already claimed!", false);
         }
     }
 }
