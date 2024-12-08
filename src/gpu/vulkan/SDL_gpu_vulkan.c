@@ -97,14 +97,6 @@ typedef struct VulkanExtensions
             arr->capacity * sizeof(type));                 \
     }
 
-#define EXPAND_ARRAY_IF_NEEDED(arr, elementType, newCount, capacity, newCapacity) \
-    if (newCount >= capacity) {                                                   \
-        capacity = newCapacity;                                                   \
-        arr = (elementType *)SDL_realloc(                                         \
-            arr,                                                                  \
-            sizeof(elementType) * capacity);                                      \
-    }
-
 #define MOVE_ARRAY_CONTENTS_AND_RESET(i, dstArr, dstCount, srcArr, srcCount) \
     for (i = 0; i < srcCount; i += 1) {                                      \
         dstArr[i] = srcArr[i];                                               \
@@ -2897,7 +2889,7 @@ static void VULKAN_INTERNAL_ReleaseFramebuffer(
         VulkanFramebuffer *,
         renderer->framebuffersToDestroyCount + 1,
         renderer->framebuffersToDestroyCapacity,
-        renderer->framebuffersToDestroyCapacity * 2)
+        renderer->framebuffersToDestroyCapacity * 2);
 
     renderer->framebuffersToDestroy[renderer->framebuffersToDestroyCount] = framebuffer;
     renderer->framebuffersToDestroyCount += 1;
@@ -4940,7 +4932,7 @@ static void VULKAN_INTERNAL_ReturnDescriptorSetCacheToPool(
         DescriptorSetCache *,
         renderer->descriptorSetCachePoolCount + 1,
         renderer->descriptorSetCachePoolCapacity,
-        renderer->descriptorSetCachePoolCapacity * 2)
+        renderer->descriptorSetCachePoolCapacity * 2);
 
     renderer->descriptorSetCachePool[renderer->descriptorSetCachePoolCount] = descriptorSetCache;
     renderer->descriptorSetCachePoolCount += 1;
@@ -6752,7 +6744,7 @@ static void VULKAN_INTERNAL_ReleaseTexture(
         VulkanTexture *,
         renderer->texturesToDestroyCount + 1,
         renderer->texturesToDestroyCapacity,
-        renderer->texturesToDestroyCapacity * 2)
+        renderer->texturesToDestroyCapacity * 2);
 
     renderer->texturesToDestroy[renderer->texturesToDestroyCount] = vulkanTexture;
     renderer->texturesToDestroyCount += 1;
@@ -6800,7 +6792,7 @@ static void VULKAN_ReleaseSampler(
         VulkanSampler *,
         renderer->samplersToDestroyCount + 1,
         renderer->samplersToDestroyCapacity,
-        renderer->samplersToDestroyCapacity * 2)
+        renderer->samplersToDestroyCapacity * 2);
 
     renderer->samplersToDestroy[renderer->samplersToDestroyCount] = vulkanSampler;
     renderer->samplersToDestroyCount += 1;
@@ -6823,7 +6815,7 @@ static void VULKAN_INTERNAL_ReleaseBuffer(
         VulkanBuffer *,
         renderer->buffersToDestroyCount + 1,
         renderer->buffersToDestroyCapacity,
-        renderer->buffersToDestroyCapacity * 2)
+        renderer->buffersToDestroyCapacity * 2);
 
     renderer->buffersToDestroy[renderer->buffersToDestroyCount] = vulkanBuffer;
     renderer->buffersToDestroyCount += 1;
@@ -6893,7 +6885,7 @@ static void VULKAN_ReleaseShader(
         VulkanShader *,
         renderer->shadersToDestroyCount + 1,
         renderer->shadersToDestroyCapacity,
-        renderer->shadersToDestroyCapacity * 2)
+        renderer->shadersToDestroyCapacity * 2);
 
     renderer->shadersToDestroy[renderer->shadersToDestroyCount] = vulkanShader;
     renderer->shadersToDestroyCount += 1;
@@ -6915,7 +6907,7 @@ static void VULKAN_ReleaseComputePipeline(
         VulkanComputePipeline *,
         renderer->computePipelinesToDestroyCount + 1,
         renderer->computePipelinesToDestroyCapacity,
-        renderer->computePipelinesToDestroyCapacity * 2)
+        renderer->computePipelinesToDestroyCapacity * 2);
 
     renderer->computePipelinesToDestroy[renderer->computePipelinesToDestroyCount] = vulkanComputePipeline;
     renderer->computePipelinesToDestroyCount += 1;
@@ -6937,7 +6929,7 @@ static void VULKAN_ReleaseGraphicsPipeline(
         VulkanGraphicsPipeline *,
         renderer->graphicsPipelinesToDestroyCount + 1,
         renderer->graphicsPipelinesToDestroyCapacity,
-        renderer->graphicsPipelinesToDestroyCapacity * 2)
+        renderer->graphicsPipelinesToDestroyCapacity * 2);
 
     renderer->graphicsPipelinesToDestroy[renderer->graphicsPipelinesToDestroyCount] = vulkanGraphicsPipeline;
     renderer->graphicsPipelinesToDestroyCount += 1;

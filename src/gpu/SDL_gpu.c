@@ -247,7 +247,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
         BlitPipelineCacheEntry,
         *blit_pipeline_count + 1,
         *blit_pipeline_capacity,
-        *blit_pipeline_capacity * 2)
+        *blit_pipeline_capacity * 2);
 
     (*blit_pipelines)[*blit_pipeline_count].pipeline = pipeline;
     (*blit_pipelines)[*blit_pipeline_count].type = source_texture_type;
