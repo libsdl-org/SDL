@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+  set(cmake_build_type_undefined 1)
+endif()
+
 # See docs/release_checklist.md
 project(SDL3 LANGUAGES C VERSION "3.1.7")
 
@@ -7,6 +11,23 @@ if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL3_SUBPROJECT OFF)
 else()
   set(SDL3_SUBPROJECT ON)
+endif()
+
+# By default, configure SDL3 in RelWithDebInfo configuration
+if(NOT SDL3_SUBPROJECT)
+  get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+  if(is_multi_config)
+      # The first item in CMAKE_CONFIGURATION_TYPES is the default configuration
+      if(DEFINED CMAKE_CONFIGURATION_TYPES AND "RelWithDebInfo" IN_LIST CMAKE_CONFIGURATION_TYPES)
+        list(REMOVE_ITEM CMAKE_CONFIGURATION_TYPES "RelWithDebInfo")
+        list(INSERT CMAKE_CONFIGURATION_TYPES 0 "RelWithDebInfo")
+        set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING "CMake configuration types" FORCE)
+      endif()
+  else()
+    if(cmake_build_type_undefined)
+      set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "CMake build type" FORCE)
+    endif()
+  endif()
 endif()
 
 # CMake 3.0 expands the "if(${A})" in "set(OFF 1);set(A OFF);if(${A})" to "if(1)"
