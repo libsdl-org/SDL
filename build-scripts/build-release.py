@@ -767,9 +767,12 @@ class Releaser:
                         f"--exec-prefix=${{prefix}}/bin",
                         f"--host={triplet}",
                         f"--build=x86_64-none-linux-gnu",
+                        "CFLAGS=-O2",
+                        "CXXFLAGS=-O2",
+                        "LDFLAGS=-Wl,-s",
                     ] + extra_args, cwd=build_path, env=new_env)
                 with self.section_printer.group(f"Build MinGW {triplet} (autotools)"):
-                    self.executer.run(["make", f"-j{self.cpu_count}"], cwd=build_path, env=new_env)
+                    self.executer.run(["make", "V=1", f"-j{self.cpu_count}"], cwd=build_path, env=new_env)
                 with self.section_printer.group(f"Install MinGW {triplet} (autotools)"):
                     self.executer.run(["make", "install"], cwd=build_path, env=new_env)
                 archive_file_tree.add_directory_tree(arc_dir=arc_join(arc_root, triplet), path=install_path, time=self.arc_time)
