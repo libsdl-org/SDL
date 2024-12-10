@@ -823,6 +823,10 @@ struct SDL_GPUDevice
     bool (*Wait)(
         SDL_GPURenderer *driverData);
 
+    bool (*WaitForSwapchain)(
+        SDL_GPURenderer *driverData,
+        SDL_Window *window);
+
     bool (*WaitForFences)(
         SDL_GPURenderer *driverData,
         bool waitAll,
@@ -941,6 +945,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(SubmitAndAcquireFence, name)         \
     ASSIGN_DRIVER_FUNC(Cancel, name)                        \
     ASSIGN_DRIVER_FUNC(Wait, name)                          \
+    ASSIGN_DRIVER_FUNC(WaitForSwapchain, name)              \
     ASSIGN_DRIVER_FUNC(WaitForFences, name)                 \
     ASSIGN_DRIVER_FUNC(QueryFence, name)                    \
     ASSIGN_DRIVER_FUNC(ReleaseFence, name)                  \

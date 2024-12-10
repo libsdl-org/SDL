@@ -974,6 +974,7 @@ SDL3_0.0.0 {
     SDL_WaitEventTimeout;
     SDL_WaitForGPUFences;
     SDL_WaitForGPUIdle;
+    SDL_WaitForGPUSwapchain;
     SDL_WaitProcess;
     SDL_WaitSemaphore;
     SDL_WaitSemaphoreTimeout;
