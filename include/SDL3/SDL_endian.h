@@ -148,6 +148,7 @@ extern "C" {
 #endif
 
 /* Byte swap 16-bit integer. */
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
 #if HAS_BUILTIN_BSWAP16
 #define SDL_Swap16(x) __builtin_bswap16(x)
 #elif (defined(_MSC_VER) && (_MSC_VER >= 1400)) && !defined(__ICL)
@@ -191,8 +192,10 @@ SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
     return SDL_static_cast(Uint16, ((x << 8) | (x >> 8)));
 }
 #endif
+#endif
 
 /* Byte swap 32-bit integer. */
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
 #if HAS_BUILTIN_BSWAP32
 #define SDL_Swap32(x) __builtin_bswap32(x)
 #elif (defined(_MSC_VER) && (_MSC_VER >= 1400)) && !defined(__ICL)
@@ -239,8 +242,10 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
                                     ((x >> 8) & 0x0000FF00) | (x >> 24)));
 }
 #endif
+#endif
 
 /* Byte swap 64-bit integer. */
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
 #if HAS_BUILTIN_BSWAP64
 #define SDL_Swap64(x) __builtin_bswap64(x)
 #elif (defined(_MSC_VER) && (_MSC_VER >= 1400)) && !defined(__ICL)
@@ -290,7 +295,7 @@ SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
     return (x);
 }
 #endif
-
+#endif
 
 /**
  * Byte-swap a floating point number.
