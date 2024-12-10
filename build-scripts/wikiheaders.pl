@@ -872,10 +872,12 @@ sub generate_quickref {
     # https://blog.theprogrammingjunkie.com/post/sdl2-cheatsheet/
 
     if ($lowascii) {
+        print $fh "# QuickReferenceNoUnicode\n\n";
         print $fh "If you want to paste this into a text editor that can handle\n";
         print $fh "fancy Unicode section headers, try using\n";
         print $fh "[QuickReference](QuickReference) instead.\n\n";
     } else {
+        print $fh "# QuickReference\n\n";
         print $fh "If you want to paste this into a text editor that can't handle\n";
         print $fh "the fancy Unicode section headers, try using\n";
         print $fh "[QuickReferenceNoUnicode](QuickReferenceNoUnicode) instead.\n\n";
