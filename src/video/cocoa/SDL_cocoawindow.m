@@ -106,14 +106,14 @@
      */
     if ([menuItem action] == @selector(toggleFullScreen:)) {
         SDL_Window *window = [self findSDLWindow];
-        if (window == NULL) {
+        if (!window) {
             return NO;
         }
 
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
-        if (window->flags & SDL_WINDOW_FULLSCREEN && ![data.listener isInFullscreenSpace]) {
+        if ((window->flags & SDL_WINDOW_FULLSCREEN) && ![data.listener isInFullscreenSpace]) {
             return NO;
-        } else if ((window->flags & SDL_WINDOW_RESIZABLE) == 0) {
+        } else if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
             return NO;
         }
     }
