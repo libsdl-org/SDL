@@ -3671,6 +3671,32 @@ static void METAL_ReleaseWindow(
     }
 }
 
+static bool METAL_WaitForSwapchain(
+    SDL_GPURenderer *driverData,
+    SDL_Window *window)
+{
+    @autoreleasepool {
+        MetalRenderer *renderer = (MetalRenderer *)driverData;
+        MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
+
+        if (windowData == NULL) {
+            SET_STRING_ERROR_AND_RETURN("Cannot wait for a swapchain from an unclaimed window!", false);
+        }
+
+        if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
+            if (!METAL_WaitForFences(
+                driverData,
+                true,
+                &windowData->inFlightFences[windowData->frameCounter],
+                1)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+
 static bool METAL_AcquireSwapchainTexture(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,

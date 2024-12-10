@@ -3580,6 +3580,7 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  * \sa SDL_CancelGPUCommandBuffer
  * \sa SDL_GetWindowSizeInPixels
+ * \sa SDL_WaitForGPUSwapchain
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_AcquireGPUSwapchainTexture(
     SDL_GPUCommandBuffer *command_buffer,
@@ -3673,6 +3674,25 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CancelGPUCommandBuffer(
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUIdle(
     SDL_GPUDevice *device);
+
+/**
+ * Blocks the thread until a swapchain texture is available to be acquired.
+ * Calling this function before SDL_AcquireGPUSwapchainTexture() will ensure
+ * that the acquire will immediately return a swapchain texture under most, but
+ * not all, conditions.
+ *
+ * \param device a GPU context.
+ * \param window a window that has been claimed.
+ * \returns true on success, false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_AcquireGPUSwapchainTexture
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUSwapchain(
+    SDL_GPUDevice *device,
+    SDL_Window *window);
 
 /**
  * Blocks the thread until the given fences are signaled.

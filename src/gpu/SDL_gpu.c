@@ -2809,6 +2809,17 @@ bool SDL_WaitForGPUIdle(
         device->driverData);
 }
 
+bool SDL_WaitForGPUSwapchain(
+    SDL_GPUDevice *device,
+    SDL_Window *window)
+{
+    CHECK_DEVICE_MAGIC(device, false);
+
+    return device->WaitForSwapchain(
+        device->driverData,
+        window);
+}
+
 bool SDL_WaitForGPUFences(
     SDL_GPUDevice *device,
     bool wait_all,
