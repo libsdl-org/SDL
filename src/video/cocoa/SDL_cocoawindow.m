@@ -108,7 +108,10 @@
         SDL_Window *window = [self findSDLWindow];
         if (window == NULL) {
             return NO;
-        } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        }
+
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+        if (window->flags & SDL_WINDOW_FULLSCREEN && ![data.listener isInFullscreenSpace]) {
             return NO;
         } else if ((window->flags & SDL_WINDOW_RESIZABLE) == 0) {
             return NO;
