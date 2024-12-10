@@ -299,6 +299,19 @@ typedef struct SDL_GPUComputePipeline SDL_GPUComputePipeline;
 typedef struct SDL_GPUGraphicsPipeline SDL_GPUGraphicsPipeline;
 
 /**
+ * An opaque handle representing a pipeline cache.
+ *
+ * Used during pipeline creation.
+ *
+ * \since This struct is available since SDL 3.1.3
+ *
+ * \sa SDL_CreateGPUPipelineCache
+ * \sa SDL_ReleaseGPUPipelineCache
+ * \sa SDL_FetchGPUPipelineCacheData
+ */
+typedef struct SDL_GPUPipelineCache SDL_GPUPipelineCache;
+
+/**
  * An opaque handle representing a command buffer.
  *
  * Most state is managed via command buffers. When setting state using a
@@ -1701,6 +1714,22 @@ typedef struct SDL_GPUComputePipelineCreateInfo
 } SDL_GPUComputePipelineCreateInfo;
 
 /**
+ * A structure specifying the parameters of a pipeline cache.
+ *
+ * \since This struct is available since SDL 3.1.3
+ *
+ * \sa SDL_CreateGPUPipelineCache
+ * \sa SDL_FetchGPUPipelineCacheData
+ */
+typedef struct SDL_GPUPipelineCacheCreateInfo
+{
+    size_t checksum_size;  /**< The size in bytes of the cache checksum. */
+    void*  checksum_data;  /**< A pointer to the checksum data. */
+    size_t cache_size;     /**< The size in bytes of the pipeline cache. */
+    void*  cache_data;     /**< A pointer to the cache data. */
+} SDL_GPUPipelineCacheCreateInfo;
+
+/**
  * A structure specifying the parameters of a color target used by a render
  * pass.
  *
@@ -2009,6 +2038,7 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN        "SDL.gpu.device.create.shaders.msl"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN   "SDL.gpu.device.create.shaders.metallib"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING "SDL.gpu.device.create.d3d12.semantic"
+#define SDL_PROP_GPU_PIPELINE_USE_CACHE                       "SDL.gpu.pipeline.use.cache"
 
 /**
  * Destroys a GPU context previously returned by SDL_CreateGPUDevice.
@@ -2135,6 +2165,43 @@ extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline
 extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeline(
     SDL_GPUDevice *device,
     const SDL_GPUGraphicsPipelineCreateInfo *createinfo);
+
+/**
+ * Creates a pipeline cache object to be used during pipeline builds.
+ *
+ * \param device a GPU Context.
+ * \param createinfo a struct containing the pipeline cache data. Set everything to NULL/0 in order to force a cache rebuild
+ * \returns a pipeline cache object on success, or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_CreatePipelineCache
+ * \sa SDL_ReleasePipelineCache
+ * \sa SDL_RetrievePipelineCacheData
+ */
+extern SDL_DECLSPEC SDL_GPUPipelineCache* SDLCALL SDL_CreateGPUPipelineCache(
+    SDL_GPUDevice* device,
+    const SDL_GPUPipelineCacheCreateInfo* createinfo);
+
+/**
+ * Fetches a pipeline cache object data. This can then be stored to disk and loaded on the next application run
+ *
+ * \param device a GPU Context.
+ * \param pipeline_cache pipeline cache object to fetch data from
+ * \param createinfo a struct that will contain the cache's serializable data 
+ * \returns true on success, or false on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_CreatePipelineCache
+ * \sa SDL_ReleasePipelineCache
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_FetchGPUPipelineCacheData(
+    SDL_GPUDevice* device,
+    SDL_GPUPipelineCache* pipeline_cache,
+    SDL_GPUPipelineCacheCreateInfo* createinfo);
 
 /**
  * Creates a sampler object to be used when binding textures in a graphics
@@ -2495,6 +2562,20 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUShader(
 extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUGraphicsPipeline(
     SDL_GPUDevice *device,
     SDL_GPUGraphicsPipeline *graphics_pipeline);
+
+/**
+ * Frees the given pipeline cache as soon as it is safe to do so.
+ *
+ * You must not reference the pipeline cache after calling this function.
+ *
+ * \param device a GPU context.
+ * \param pipeline_cache a pipeline cache to be destroyed.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUPipelineCache(
+    SDL_GPUDevice* device,
+    SDL_GPUPipelineCache* pipeline_cache);
 
 /**
  * Acquire a command buffer.

@@ -906,6 +906,15 @@ typedef struct VulkanComputePipeline
     SDL_AtomicInt referenceCount;
 } VulkanComputePipeline;
 
+typedef struct VulkanPipelineCache
+{
+    VkPipelineCache pipelineCache;
+    size_t checksumSize;
+    void* checksumData;
+    size_t cacheBlobSize;
+    void* cacheBlob;
+} VulkanPipelineCache;
+
 typedef struct RenderPassColorTargetDescription
 {
     VkFormat format;
@@ -6153,6 +6162,8 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     VulkanGraphicsPipeline *graphicsPipeline = (VulkanGraphicsPipeline *)SDL_malloc(sizeof(VulkanGraphicsPipeline));
     VkGraphicsPipelineCreateInfo vkPipelineCreateInfo;
 
+    VulkanPipelineCache* pipelineCache = SDL_GetPointerProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_USE_CACHE, NULL);
+
     VkPipelineShaderStageCreateInfo shaderStageCreateInfos[2];
 
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo;
@@ -6448,14 +6459,20 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     vkPipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
     vkPipelineCreateInfo.basePipelineIndex = 0;
 
-    // TODO: enable pipeline caching
     vulkanResult = renderer->vkCreateGraphicsPipelines(
         renderer->logicalDevice,
-        VK_NULL_HANDLE,
+        (pipelineCache != NULL) ? pipelineCache->pipelineCache : VK_NULL_HANDLE,
         1,
         &vkPipelineCreateInfo,
         NULL,
         &graphicsPipeline->pipeline);
+
+    if (pipelineCache != NULL)
+    {
+        renderer->vkGetPipelineCacheData(renderer->logicalDevice, pipelineCache->pipelineCache, &pipelineCache->cacheBlobSize, NULL);
+        pipelineCache->cacheBlob = SDL_realloc(pipelineCache->cacheBlob, pipelineCache->cacheBlobSize);
+        renderer->vkGetPipelineCacheData(renderer->logicalDevice, pipelineCache->pipelineCache, &pipelineCache->cacheBlobSize, pipelineCache->cacheBlob);
+    }
 
     SDL_stack_free(vertexInputBindingDescriptions);
     SDL_stack_free(vertexInputAttributeDescriptions);
@@ -6487,6 +6504,8 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
     VkResult vulkanResult;
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     VulkanComputePipeline *vulkanComputePipeline;
+
+    VulkanPipelineCache* pipelineCache = SDL_GetPointerProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_USE_CACHE, NULL);
 
     if (createinfo->format != SDL_GPU_SHADERFORMAT_SPIRV) {
         SET_STRING_ERROR_AND_RETURN("Incompatible shader format for Vulkan!", NULL);
@@ -6541,12 +6560,19 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
 
     vulkanResult = renderer->vkCreateComputePipelines(
         renderer->logicalDevice,
-        (VkPipelineCache)VK_NULL_HANDLE,
+        (pipelineCache != NULL) ? pipelineCache->pipelineCache : VK_NULL_HANDLE,
         1,
         &vkShaderCreateInfo,
         NULL,
         &vulkanComputePipeline->pipeline);
 
+    if (pipelineCache != NULL)
+    {
+        renderer->vkGetPipelineCacheData(renderer->logicalDevice, pipelineCache->pipelineCache, &pipelineCache->cacheBlobSize, NULL);
+        SDL_realloc(pipelineCache->cacheBlob, pipelineCache->cacheBlobSize);
+        renderer->vkGetPipelineCacheData(renderer->logicalDevice, pipelineCache->pipelineCache, &pipelineCache->cacheBlobSize, &pipelineCache->cacheBlobSize);
+    }
+  
     if (vulkanResult != VK_SUCCESS) {
         VULKAN_INTERNAL_DestroyComputePipeline(renderer, vulkanComputePipeline);
         CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateComputePipeline, NULL);
@@ -6556,6 +6582,78 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
     SDL_SetAtomicInt(&vulkanComputePipeline->referenceCount, 0);
 
     return (SDL_GPUComputePipeline *)vulkanComputePipeline;
+}
+
+static SDL_GPUPipelineCache* VULKAN_CreatePipelineCache(
+    SDL_GPURenderer* driverData,
+    const SDL_GPUPipelineCacheCreateInfo* createinfo)
+{
+    VulkanRenderer* renderer = (VulkanRenderer*)driverData;
+    VulkanPipelineCache* pipelineCache = (VulkanPipelineCache*)SDL_malloc(sizeof(VulkanPipelineCache));
+    VkPipelineCache vkPipelineCache;
+    VkResult vulkanResult;
+    
+    // Here I'll eventually need to implement the checksum control
+    VkPipelineCacheCreateInfo vkPipelineCacheInfo;
+    vkPipelineCacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+    vkPipelineCacheInfo.pNext = NULL;
+    vkPipelineCacheInfo.flags = 0;
+    vkPipelineCacheInfo.initialDataSize = createinfo->cache_size;
+    vkPipelineCacheInfo.pInitialData = createinfo->cache_data;
+
+    vulkanResult = renderer->vkCreatePipelineCache(
+        renderer->logicalDevice,
+        &vkPipelineCacheInfo,
+        NULL,
+        &vkPipelineCache);
+
+    if (vulkanResult != VK_SUCCESS)
+    {
+        SDL_free(pipelineCache);
+        CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreatePipelineCache, NULL);
+        return NULL;
+    }
+
+    pipelineCache->pipelineCache  = vkPipelineCache;
+   
+    if (createinfo->cache_size != 0 && createinfo->cache_data != NULL)
+    {
+        pipelineCache->cacheBlobSize = createinfo->cache_size;
+        pipelineCache->cacheBlob = SDL_malloc(createinfo->cache_size);
+        SDL_memcpy(pipelineCache->cacheBlob, createinfo->cache_data, createinfo->cache_size);
+    }
+    else
+    {
+        pipelineCache->cacheBlobSize = 0;
+        pipelineCache->cacheBlob = NULL;
+    }
+    if (createinfo->checksum_size != 0 && createinfo->checksum_data != NULL)
+    {
+        pipelineCache->checksumSize = createinfo->checksum_size;
+        pipelineCache->checksumData = SDL_malloc(createinfo->checksum_size);
+        SDL_memcpy(pipelineCache->checksumData, createinfo->checksum_data, createinfo->checksum_size);
+    }
+    else
+    {
+        pipelineCache->checksumSize = 0;
+        pipelineCache->checksumData = NULL;
+    }
+
+    return (SDL_GPUPipelineCache*)pipelineCache;
+}
+
+static bool VULKAN_FetchPipelineCacheData(
+    SDL_GPURenderer* driverData,
+    SDL_GPUPipelineCache* pipelineCache,
+    SDL_GPUPipelineCacheCreateInfo* createinfo)
+{
+    VulkanPipelineCache* vulkanPipelineCache = (VulkanPipelineCache*)pipelineCache;
+    createinfo->checksum_size = vulkanPipelineCache->checksumSize;
+    createinfo->checksum_data = vulkanPipelineCache->checksumData;
+    createinfo->cache_size = vulkanPipelineCache->cacheBlobSize;
+    createinfo->cache_data = vulkanPipelineCache->cacheBlob;
+
+    return true;
 }
 
 static SDL_GPUSampler *VULKAN_CreateSampler(
@@ -6943,6 +7041,27 @@ static void VULKAN_ReleaseGraphicsPipeline(
     renderer->graphicsPipelinesToDestroyCount += 1;
 
     SDL_UnlockMutex(renderer->disposeLock);
+}
+
+static void VULKAN_ReleasePipelineCache(
+    SDL_GPURenderer* driverData,
+    SDL_GPUPipelineCache* pipelineCache)
+{
+    VulkanRenderer* renderer = (VulkanRenderer*)driverData;
+    VulkanPipelineCache* vulkanPipelineCache = (VulkanPipelineCache*)pipelineCache;
+
+    if (vulkanPipelineCache->cacheBlob != NULL)
+    {
+        SDL_free(vulkanPipelineCache->cacheBlob);
+        vulkanPipelineCache->cacheBlobSize = 0;
+    }
+    if (vulkanPipelineCache->checksumData != NULL)
+    {
+        SDL_free(vulkanPipelineCache->checksumData);
+        vulkanPipelineCache->checksumSize = 0;
+    }
+    renderer->vkDestroyPipelineCache(renderer->logicalDevice, vulkanPipelineCache->pipelineCache, NULL);
+    SDL_free(vulkanPipelineCache);
 }
 
 // Command Buffer render state

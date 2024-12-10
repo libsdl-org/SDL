@@ -2875,6 +2875,23 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     return (SDL_GPUGraphicsPipeline *)pipeline;
 }
 
+static SDL_GPUPipelineCache* D3D12_CreatePipelineCache(
+    SDL_GPURenderer* driverData,
+    const SDL_GPUPipelineCacheCreateInfo* createinfo)
+{
+    // Not yet implemented
+    return NULL;
+}
+
+static bool D3D12_FetchPipelineCacheData(
+    SDL_GPURenderer* driverData,
+    SDL_GPUPipelineCache* pipelineCache,
+    SDL_GPUPipelineCacheCreateInfo* createinfo)
+{
+    // Not yet implemented
+    return false;
+}
+
 static SDL_GPUSampler *D3D12_CreateSampler(
     SDL_GPURenderer *driverData,
     const SDL_GPUSamplerCreateInfo *createinfo)
@@ -3852,6 +3869,13 @@ static void D3D12_INTERNAL_ReleaseBlitPipelines(SDL_GPURenderer *driverData)
         D3D12_ReleaseGraphicsPipeline(driverData, renderer->blitPipelines[i].pipeline);
     }
     SDL_free(renderer->blitPipelines);
+}
+
+static void D3D12_ReleasePipelineCache(
+    SDL_GPURenderer* driverData,
+    SDL_GPUPipelineCache* pipelineCache)
+{
+   // Not yet implemented
 }
 
 // Render Pass
