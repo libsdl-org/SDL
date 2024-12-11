@@ -25,7 +25,7 @@
  * # CategoryGPU
  *
  * The GPU API offers a cross-platform way for apps to talk to modern graphics
- * hardware. It offers both 3D graphics and "compute" support, in the style of
+ * hardware. It offers both 3D graphics and compute support, in the style of
  * Metal, Vulkan, and Direct3D 12.
  *
  * A basic workflow might be something like this:
