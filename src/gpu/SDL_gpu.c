@@ -2694,16 +2694,13 @@ bool SDL_AcquireGPUSwapchainTexture(
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
 
     if (command_buffer == NULL) {
-        SDL_InvalidParamError("command_buffer");
-        return false;
+        return SDL_InvalidParamError("command_buffer");
     }
     if (window == NULL) {
-        SDL_InvalidParamError("window");
-        return false;
+        return SDL_InvalidParamError("window");
     }
     if (swapchain_texture == NULL) {
-        SDL_InvalidParamError("swapchain_texture");
-        return false;
+        return SDL_InvalidParamError("swapchain_texture");
     }
 
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
@@ -2732,10 +2729,9 @@ bool SDL_WaitForGPUSwapchain(
     CHECK_DEVICE_MAGIC(device, false);
 
     if (window == NULL) {
-        SDL_InvalidParamError("window");
-        return false;
+        return SDL_InvalidParamError("window");
     }
-    
+
     return device->WaitForSwapchain(
         device->driverData,
         window);
@@ -2751,16 +2747,13 @@ bool SDL_WaitAndAcquireGPUSwapchainTexture(
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
 
     if (command_buffer == NULL) {
-        SDL_InvalidParamError("command_buffer");
-        return false;
+        return SDL_InvalidParamError("command_buffer");
     }
     if (window == NULL) {
-        SDL_InvalidParamError("window");
-        return false;
+        return SDL_InvalidParamError("window");
     }
     if (swapchain_texture == NULL) {
-        SDL_InvalidParamError("swapchain_texture");
-        return false;
+        return SDL_InvalidParamError("swapchain_texture");
     }
 
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
