@@ -86,13 +86,10 @@ static void SDL_InitDynamicAPI(void);
         result = jump_table.SDL_vsnprintf(buf, sizeof(buf), fmt, ap);                                                                     \
         va_end(ap);                                                                                                                       \
         if (result >= 0 && (size_t)result >= sizeof(buf)) {                                                                               \
-            size_t len = (size_t)result + 1;                                                                                              \
-            str = (char *)jump_table.SDL_malloc(len);                                                                                     \
-            if (str) {                                                                                                                    \
-                va_start(ap, fmt);                                                                                                        \
-                result = jump_table.SDL_vsnprintf(str, len, fmt, ap);                                                                     \
-                va_end(ap);                                                                                                               \
-            }                                                                                                                             \
+            str = NULL;                                                                                                                   \
+            va_start(ap, fmt);                                                                                                            \
+            result = jump_table.SDL_vasprintf(&str, fmt, ap);                                                                                        \
+            va_end(ap);                                                                                                                   \
         }                                                                                                                                 \
         if (result >= 0) {                                                                                                                \
             jump_table.SDL_SetError("%s", str);                                                                                           \
