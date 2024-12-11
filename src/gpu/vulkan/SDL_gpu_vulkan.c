@@ -9655,7 +9655,32 @@ static Uint32 VULKAN_INTERNAL_RecreateSwapchain(
     return VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
 }
 
-static bool VULKAN_AcquireSwapchainTexture(
+static bool VULKAN_WaitForSwapchain(
+    SDL_GPURenderer *driverData,
+    SDL_Window *window)
+{
+    VulkanRenderer *renderer = (VulkanRenderer *)driverData;
+    WindowData *windowData = VULKAN_INTERNAL_FetchWindowData(window);
+
+    if (windowData == NULL) {
+        SET_STRING_ERROR_AND_RETURN("Cannot wait for a swapchain from an unclaimed window!", false);
+    }
+
+    if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
+        if (!VULKAN_WaitForFences(
+            driverData,
+            true,
+            &windowData->inFlightFences[windowData->frameCounter],
+            1)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
+    bool block,
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
     SDL_GPUTexture **swapchainTexture,
@@ -9708,8 +9733,8 @@ static bool VULKAN_AcquireSwapchainTexture(
     }
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
-        if (windowData->presentMode == SDL_GPU_PRESENTMODE_VSYNC) {
-            // In VSYNC mode, block until the least recent presented frame is done
+        if (block) {
+            // If we are blocking, just wait for the fence!
             if (!VULKAN_WaitForFences(
                 (SDL_GPURenderer *)renderer,
                 true,
@@ -9718,13 +9743,11 @@ static bool VULKAN_AcquireSwapchainTexture(
                 return false;
             }
         } else {
+            // If we are not blocking and the least recent fence is not signaled,
+            // return true to indicate that there is no error but rendering should be skipped.
             if (!VULKAN_QueryFence(
                     (SDL_GPURenderer *)renderer,
                     windowData->inFlightFences[windowData->frameCounter])) {
-                /*
-                 * In MAILBOX or IMMEDIATE mode, if the least recent fence is not signaled,
-                 * return true to indicate that there is no error but rendering should be skipped
-                 */
                 return true;
             }
         }
@@ -9841,6 +9864,38 @@ static bool VULKAN_AcquireSwapchainTexture(
 
     *swapchainTexture = (SDL_GPUTexture *)swapchainTextureContainer;
     return true;
+}
+
+static bool VULKAN_AcquireSwapchainTexture(
+    SDL_GPUCommandBuffer *command_buffer,
+    SDL_Window *window,
+    SDL_GPUTexture **swapchain_texture,
+    Uint32 *swapchain_texture_width,
+    Uint32 *swapchain_texture_height
+) {
+    return VULKAN_INTERNAL_AcquireSwapchainTexture(
+        false,
+        command_buffer,
+        window,
+        swapchain_texture,
+        swapchain_texture_width,
+        swapchain_texture_height);
+}
+
+static bool VULKAN_WaitAndAcquireSwapchainTexture(
+    SDL_GPUCommandBuffer *command_buffer,
+    SDL_Window *window,
+    SDL_GPUTexture **swapchain_texture,
+    Uint32 *swapchain_texture_width,
+    Uint32 *swapchain_texture_height
+) {
+    return VULKAN_INTERNAL_AcquireSwapchainTexture(
+        true, 
+        command_buffer, 
+        window, 
+        swapchain_texture,
+        swapchain_texture_width,
+        swapchain_texture_height);
 }
 
 static SDL_GPUTextureFormat VULKAN_GetSwapchainTextureFormat(
