@@ -115,7 +115,7 @@ static EGLSyncKHR create_fence(SDL_VideoDevice *_this, int fd)
 /* Comments about buffer access protection mechanism (=fences) are the ones boxed. */
 /* Also, DON'T remove the asserts: if a fence-related call fails, it's better that */
 /* program exits immediately, or we could leave KMS waiting for a failed/missing   */
-/* fence forevever.                                                                */
+/* fence forever.                                                                  */
 /***********************************************************************************/
 static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * window)
 {
