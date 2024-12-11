@@ -1290,7 +1290,6 @@ The following platform preprocessor macros have been renamed:
 | `__LINUX__`       | `SDL_PLATFORM_LINUX`      |
 | `__MACOSX__`      | `SDL_PLATFORM_MACOS`      |
 | `__NETBSD__`      | `SDL_PLATFORM_NETBSD`     |
-| `__NGAGE__`       | `SDL_PLATFORM_NGAGE`      |
 | `__OPENBSD__`     | `SDL_PLATFORM_OPENBSD`    |
 | `__OS2__`         | `SDL_PLATFORM_OS2`        |
 | `__OSF__`         | `SDL_PLATFORM_OSF`        |

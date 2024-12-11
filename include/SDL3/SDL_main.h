@@ -134,13 +134,6 @@
         */
         #define SDL_MAIN_AVAILABLE
 
-    #elif defined(SDL_PLATFORM_NGAGE)
-        /*
-        TODO: not sure if it should be SDL_MAIN_NEEDED, in SDL2 ngage had a
-                main implementation, but wasn't mentioned in SDL_main.h
-         */
-        #define SDL_MAIN_AVAILABLE
-
     #endif
 #endif /* SDL_MAIN_HANDLED */
 
