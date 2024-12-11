@@ -112,16 +112,6 @@
 #undef SDL_PLATFORM_LINUX
 #endif
 
-#ifdef __NGAGE__
-
-/**
- * A preprocessor macro that is only defined if compiling for Nokia N-Gage.
- *
- * \since This macro is available since SDL 3.1.3.
- */
-#define SDL_PLATFORM_NGAGE 1
-#endif
-
 #if defined(__unix__) || defined(__unix) || defined(unix)
 
 /**

@@ -61,8 +61,6 @@
 #define SDL_DYNAMIC_API 0 // Turn off for static analysis, so reports are more clear.
 #elif defined(SDL_PLATFORM_VITA)
 #define SDL_DYNAMIC_API 0 // vitasdk doesn't support dynamic linking
-#elif defined(SDL_PLATFORM_NGAGE)
-#define SDL_DYNAMIC_API 0 // The N-Gage doesn't support dynamic linking either
 #elif defined(SDL_PLATFORM_3DS)
 #define SDL_DYNAMIC_API 0 // devkitARM doesn't support dynamic linking
 #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
