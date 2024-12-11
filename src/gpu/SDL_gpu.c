@@ -2725,6 +2725,63 @@ bool SDL_AcquireGPUSwapchainTexture(
     return result;
 }
 
+bool SDL_WaitForGPUSwapchain(
+    SDL_GPUDevice *device,
+    SDL_Window *window)
+{
+    CHECK_DEVICE_MAGIC(device, false);
+
+    if (window == NULL) {
+        SDL_InvalidParamError("window");
+        return false;
+    }
+    
+    return device->WaitForSwapchain(
+        device->driverData,
+        window);
+}
+
+bool SDL_WaitAndAcquireGPUSwapchainTexture(
+    SDL_GPUCommandBuffer *command_buffer,
+    SDL_Window *window,
+    SDL_GPUTexture **swapchain_texture,
+    Uint32 *swapchain_texture_width,
+    Uint32 *swapchain_texture_height)
+{
+    CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
+
+    if (command_buffer == NULL) {
+        SDL_InvalidParamError("command_buffer");
+        return false;
+    }
+    if (window == NULL) {
+        SDL_InvalidParamError("window");
+        return false;
+    }
+    if (swapchain_texture == NULL) {
+        SDL_InvalidParamError("swapchain_texture");
+        return false;
+    }
+
+    if (COMMAND_BUFFER_DEVICE->debug_mode) {
+        CHECK_COMMAND_BUFFER_RETURN_FALSE
+        CHECK_ANY_PASS_IN_PROGRESS("Cannot acquire a swapchain texture during a pass!", false)
+    }
+
+    bool result = COMMAND_BUFFER_DEVICE->WaitAndAcquireSwapchainTexture(
+        command_buffer,
+        window,
+        swapchain_texture,
+        swapchain_texture_width,
+        swapchain_texture_height);
+
+    if (*swapchain_texture != NULL){
+        commandBufferHeader->swapchain_texture_acquired = true;
+    }
+
+    return result;
+}
+
 bool SDL_SubmitGPUCommandBuffer(
     SDL_GPUCommandBuffer *command_buffer)
 {
@@ -2807,17 +2864,6 @@ bool SDL_WaitForGPUIdle(
 
     return device->Wait(
         device->driverData);
-}
-
-bool SDL_WaitForGPUSwapchain(
-    SDL_GPUDevice *device,
-    SDL_Window *window)
-{
-    CHECK_DEVICE_MAGIC(device, false);
-
-    return device->WaitForSwapchain(
-        device->driverData,
-        window);
 }
 
 bool SDL_WaitForGPUFences(

@@ -811,6 +811,17 @@ struct SDL_GPUDevice
         Uint32 *swapchainTextureWidth,
         Uint32 *swapchainTextureHeight);
 
+    bool (*WaitForSwapchain)(
+        SDL_GPURenderer *driverData,
+        SDL_Window *window);
+
+    bool (*WaitAndAcquireSwapchainTexture)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_Window *window,
+        SDL_GPUTexture **swapchainTexture,
+        Uint32 *swapchainTextureWidth,
+        Uint32 *swapchainTextureHeight);
+
     bool (*Submit)(
         SDL_GPUCommandBuffer *commandBuffer);
 
@@ -822,10 +833,6 @@ struct SDL_GPUDevice
 
     bool (*Wait)(
         SDL_GPURenderer *driverData);
-
-    bool (*WaitForSwapchain)(
-        SDL_GPURenderer *driverData,
-        SDL_Window *window);
 
     bool (*WaitForFences)(
         SDL_GPURenderer *driverData,
@@ -941,11 +948,12 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(GetSwapchainTextureFormat, name)     \
     ASSIGN_DRIVER_FUNC(AcquireCommandBuffer, name)          \
     ASSIGN_DRIVER_FUNC(AcquireSwapchainTexture, name)       \
+    ASSIGN_DRIVER_FUNC(WaitForSwapchain, name)              \
+    ASSIGN_DRIVER_FUNC(WaitAndAcquireSwapchainTexture, name)\
     ASSIGN_DRIVER_FUNC(Submit, name)                        \
     ASSIGN_DRIVER_FUNC(SubmitAndAcquireFence, name)         \
     ASSIGN_DRIVER_FUNC(Cancel, name)                        \
     ASSIGN_DRIVER_FUNC(Wait, name)                          \
-    ASSIGN_DRIVER_FUNC(WaitForSwapchain, name)              \
     ASSIGN_DRIVER_FUNC(WaitForFences, name)                 \
     ASSIGN_DRIVER_FUNC(QueryFence, name)                    \
     ASSIGN_DRIVER_FUNC(ReleaseFence, name)                  \
