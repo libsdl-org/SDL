@@ -3436,6 +3436,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WindowSupportsGPUPresentMode(
  * \returns true on success, or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function should only be called from the thread that created the window.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_AcquireGPUSwapchainTexture
@@ -3495,8 +3497,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPUSwapchainParameters(
  *
  * The default value when the device is created is 2. This means that after
  * you have submitted 2 frames for presentation, if the GPU has not finished
- * working on the first frame, SDL_AcquireGPUSwapchainTexture() will
- * return false, and SDL_WaitAndAcquireGPUSwapchainTexture() will block.
+ * working on the first frame, SDL_AcquireGPUSwapchainTexture() will fill the swapchain texture pointer with NULL,
+ * and SDL_WaitAndAcquireGPUSwapchainTexture() will block.
  *
  * Higher values increase throughput at the expense of visual latency. Lower
  * values decrease visual latency at the expense of throughput.
