@@ -493,28 +493,6 @@ bool SDL_HashTableEmpty(SDL_HashTable *table)
     return !(table && table->num_occupied_slots);
 }
 
-void SDL_LockHashTable(SDL_HashTable *table, bool for_writing)
-{
-    if (!table) {
-        return;
-    }
-
-    if (for_writing) {
-        SDL_LockRWLockForWriting(table->lock);
-    } else {
-        SDL_LockRWLockForReading(table->lock);
-    }
-}
-
-void SDL_UnlockHashTable(SDL_HashTable *table)
-{
-    if (!table) {
-        return;
-    }
-
-    SDL_UnlockRWLock(table->lock);
-}
-
 static void nuke_all(SDL_HashTable *table)
 {
     void *data = table->data;
