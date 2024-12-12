@@ -449,7 +449,6 @@ static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 typedef struct
 {
     bool has_fifo_v1;
-    bool has_commit_timing_v1;
 } SDL_WaylandPreferredData;
 
 static void wayland_preferred_check_handle_global(void *data, struct wl_registry *registry, uint32_t id,
@@ -459,8 +458,6 @@ static void wayland_preferred_check_handle_global(void *data, struct wl_registry
 
     if (SDL_strcmp(interface, "wp_fifo_manager_v1") == 0) {
         d->has_fifo_v1 = true;
-    } else if (SDL_strcmp(interface, "wp_commit_timing_manager_v1") == 0) {
-        d->has_commit_timing_v1 = true;
     }
 }
 
@@ -490,7 +487,7 @@ static bool Wayland_IsPreferred(struct wl_display *display)
 
     wl_registry_destroy(registry);
 
-    return preferred_data.has_fifo_v1 && preferred_data.has_commit_timing_v1;
+    return preferred_data.has_fifo_v1;
 }
 
 static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
@@ -524,9 +521,8 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
 
     /*
      * If we are checking for preferred Wayland, then let's query for
-     * fifo-v1 and commit-timing-v1's existence, so we don't regress
-     * GPU-bound performance and frame-pacing by default due to
-     * swapchain starvation.
+     * fifo-v1's existence, so we don't regress GPU-bound performance
+     * and frame-pacing by default due to swapchain starvation.
      */
     if (require_preferred_protocols && !Wayland_IsPreferred(display)) {
         WAYLAND_wl_display_disconnect(display);
