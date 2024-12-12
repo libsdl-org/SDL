@@ -3630,7 +3630,8 @@ static bool D3D12_INTERNAL_StrToWStr(
     Uint32 *outSize)
 {
     size_t inlen, result;
-    size_t outlen = wstrSize;
+    size_t outBytesLeft = wstrSize;
+    *outSize = 0;
 
     if (renderer->iconv == NULL) {
         renderer->iconv = SDL_iconv_open("WCHAR_T", "UTF-8");
@@ -3644,9 +3645,8 @@ static bool D3D12_INTERNAL_StrToWStr(
         &str,
         &inlen,
         (char **)&wstr,
-        &outlen);
+        &outBytesLeft);
 
-    *outSize = (Uint32)outlen;
 
     // Check...
     switch (result) {
@@ -3660,6 +3660,7 @@ static bool D3D12_INTERNAL_StrToWStr(
         break;
     }
 
+    *outSize = (Uint32)(wstrSize - outBytesLeft);
     return true;
 }
 
