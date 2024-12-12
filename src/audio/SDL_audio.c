@@ -909,7 +909,7 @@ bool SDL_InitAudio(const char *driver_name)
         return false;
     }
 
-    SDL_HashTable *device_hash = SDL_CreateHashTable(NULL, 8, HashAudioDeviceID, MatchAudioDeviceID, NukeAudioDeviceHashItem, false);
+    SDL_HashTable *device_hash = SDL_CreateHashTable(NULL, 8, HashAudioDeviceID, MatchAudioDeviceID, NukeAudioDeviceHashItem, false, false);
     if (!device_hash) {
         SDL_DestroyRWLock(device_hash_lock);
         return false;
