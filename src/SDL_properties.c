@@ -81,9 +81,8 @@ static void SDL_FreeProperty(const void *key, const void *value, void *data)
     SDL_FreePropertyWithCleanup(key, value, data, true);
 }
 
-static void SDL_FreeProperties(const void *key, const void *value, void *data)
+static void SDL_FreeProperties(SDL_Properties *properties)
 {
-    SDL_Properties *properties = (SDL_Properties *)value;
     if (properties) {
         if (properties->props) {
             SDL_DestroyHashTable(properties->props);
@@ -103,7 +102,7 @@ bool SDL_InitProperties(void)
         return true;
     }
 
-    SDL_properties = SDL_CreateHashTable(NULL, 16, SDL_HashID, SDL_KeyMatchID, SDL_FreeProperties, true, false);
+    SDL_properties = SDL_CreateHashTable(NULL, 16, SDL_HashID, SDL_KeyMatchID, NULL, true, false);
     if (!SDL_properties) {
         goto error;
     }
@@ -133,6 +132,13 @@ void SDL_QuitProperties(void)
     }
 
     if (SDL_properties) {
+        void *iter;
+        const void *key, *value;
+
+        iter = NULL;
+        while (SDL_IterateHashTable(SDL_properties, &key, &value, &iter)) {
+            SDL_FreeProperties((SDL_Properties *)value);
+        }
         SDL_DestroyHashTable(SDL_properties);
         SDL_properties = NULL;
     }
@@ -200,7 +206,7 @@ SDL_PropertiesID SDL_CreateProperties(void)
     }
 
 error:
-    SDL_FreeProperties(NULL, properties, NULL);
+    SDL_FreeProperties(properties);
     return 0;
 }
 
@@ -790,9 +796,14 @@ bool SDL_DumpProperties(SDL_PropertiesID props)
 
 void SDL_DestroyProperties(SDL_PropertiesID props)
 {
+    SDL_Properties *properties = NULL;
+
     if (!props) {
         return;
     }
 
-    SDL_RemoveFromHashTable(SDL_properties, (const void *)(uintptr_t)props);
+    if (SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties)) {
+        SDL_FreeProperties(properties);
+        SDL_RemoveFromHashTable(SDL_properties, (const void *)(uintptr_t)props);
+    }
 }
