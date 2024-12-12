@@ -55,15 +55,12 @@ extern bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, con
 // This function is thread-safe if the hashtable was created with threadsafe = true
 extern bool SDL_HashTableEmpty(SDL_HashTable *table);
 
-extern void SDL_LockHashTable(SDL_HashTable *table, bool for_writing);
-extern void SDL_UnlockHashTable(SDL_HashTable *table);
-
 // iterate all values for a specific key. This only makes sense if the hash is stackable. If not-stackable, just use SDL_FindInHashTable().
-// This function is not thread-safe, you should use SDL_LockHashTable() if necessary
+// This function is not thread-safe, you should use external locking if you use this function
 extern bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, const void **_value, void **iter);
 
 // iterate all key/value pairs in a hash (stackable hashes can have duplicate keys with multiple values).
-// This function is not thread-safe, you should use SDL_LockHashTable() if necessary
+// This function is not thread-safe, you should use external locking if you use this function
 extern bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const void **_value, void **iter);
 
 extern Uint32 SDL_HashPointer(const void *key, void *unused);

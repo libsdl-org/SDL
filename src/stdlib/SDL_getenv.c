@@ -53,6 +53,7 @@ static char **environ;
 
 struct SDL_Environment
 {
+    SDL_Mutex *lock;
     SDL_HashTable *strings;
 };
 static SDL_Environment *SDL_environment;
@@ -87,11 +88,14 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
         return NULL;
     }
 
-    env->strings = SDL_CreateHashTable(NULL, 16, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeKey, true, false);
+    env->strings = SDL_CreateHashTable(NULL, 16, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeKey, false, false);
     if (!env->strings) {
         SDL_free(env);
         return NULL;
     }
+
+    // Don't fail if we can't create a mutex (e.g. on a single-thread environment)
+    env->lock = SDL_CreateMutex();
 
     if (populated) {
 #ifdef SDL_PLATFORM_WINDOWS
@@ -153,10 +157,15 @@ const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
         return NULL;
     }
 
-    const char *value;
-    if (SDL_FindInHashTable(env->strings, name, (const void **)&value)) {
-        result = SDL_GetPersistentString(value);
+    SDL_LockMutex(env->lock);
+    {
+        const char *value;
+
+        if (SDL_FindInHashTable(env->strings, name, (const void **)&value)) {
+            result = SDL_GetPersistentString(value);
+        }
     }
+    SDL_UnlockMutex(env->lock);
 
     return result;
 }
@@ -170,7 +179,7 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
         return NULL;
     }
 
-    SDL_LockHashTable(env->strings, false);
+    SDL_LockMutex(env->lock);
     {
         size_t count, length = 0;
         void *iter;
@@ -207,7 +216,7 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
         }
         result[count] = NULL;
     }
-    SDL_UnlockHashTable(env->strings);
+    SDL_UnlockMutex(env->lock);
 
     return result;
 }
@@ -224,7 +233,7 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
         return SDL_InvalidParamError("value");
     }
 
-    SDL_LockHashTable(env->strings, true);
+    SDL_LockMutex(env->lock);
     {
         const void *existing_value;
         bool insert = true;
@@ -249,21 +258,33 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
             }
         }
     }
-    SDL_UnlockHashTable(env->strings);
+    SDL_UnlockMutex(env->lock);
 
     return result;
 }
 
 bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
 {
+    bool result = false;
+
     if (!env) {
         return SDL_InvalidParamError("env");
     } else if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
         return SDL_InvalidParamError("name");
     }
 
-    SDL_RemoveFromHashTable(env->strings, name);
-    return true;
+    SDL_LockMutex(env->lock);
+    {
+        const void *value;
+        if (SDL_FindInHashTable(env->strings, name, &value)) {
+            result = SDL_RemoveFromHashTable(env->strings, name);
+        } else {
+            result = true;
+        }
+    }
+    SDL_UnlockMutex(env->lock);
+
+    return result;
 }
 
 void SDL_DestroyEnvironment(SDL_Environment *env)
@@ -272,6 +293,7 @@ void SDL_DestroyEnvironment(SDL_Environment *env)
         return;
     }
 
+    SDL_DestroyMutex(env->lock);
     SDL_DestroyHashTable(env->strings);
     SDL_free(env);
 }
