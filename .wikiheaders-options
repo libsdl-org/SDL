@@ -22,3 +22,10 @@ manpageheaderfiletext = Defined in %fname%
 # All SDL_test_* headers become uncategorized, everything else just converts like SDL_audio.h -> Audio
 # A handful of others we fix up in the header itself with /* WIKI CATEGORY: x */ comments.
 headercategoryeval = s/\ASDL_config_.*?\.h\Z//; s/\ASDL_test_.*?\.h\Z//; s/\ASDL_?(.*?)\.h\Z/$1/; ucfirst();
+
+quickrefenabled = 0  # !!! FIXME: maybe later, but there are probably documentation gaps to fix first.
+quickrefcategoryorder = Init,Hints,Error,Version,Properties,Log,Video,Events,Keyboard,Mouse,Touch,Gesture,GameController,Joystick,Haptic,Audio,Timer,Render,LoadSO,Thread,Mutex,Atomic,Filesystem,RWOPS,Pixels,Surface,Blendmode,Rect,Clipboard,Messagebox,Vulkan,Metal,Platform,Power,Sensor,Bits,Endian,Assert,CPUInfo,Locale,System,Misc,GUID,Main,Stdinc
+quickreftitle = SDL2 API Quick Reference
+quickrefurl = https://libsdl.org/
+quickrefdesc = The latest version of this document can be found at https://wiki.libsdl.org/SDL2/QuickReference
+quickrefmacroregex = \A(SDL_Atomic...Ref|SDL_assert.*?|SDL_arraysize|SDL_Swap[BL]E\d\d|SDL_[a-z]+_cast|SDL_Load...)\Z
