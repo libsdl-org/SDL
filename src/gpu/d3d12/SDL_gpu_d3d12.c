@@ -6737,7 +6737,6 @@ static bool D3D12_ClaimWindow(
         }
     } else {
         SET_STRING_ERROR_AND_RETURN("Window already claimed", false);
-        return false;
     }
 }
 
