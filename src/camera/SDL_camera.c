@@ -299,11 +299,9 @@ void UnrefPhysicalCamera(SDL_Camera *device)
 {
     if (SDL_AtomicDecRef(&device->refcount)) {
         // take it out of the device list.
-        SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
         if (SDL_RemoveFromHashTable(camera_driver.device_hash, (const void *) (uintptr_t) device->instance_id)) {
             SDL_AddAtomicInt(&camera_driver.device_count, -1);
         }
-        SDL_UnlockRWLock(camera_driver.device_hash_lock);
         DestroyPhysicalCamera(device);  // ...and nuke it.
     }
 }
@@ -329,9 +327,7 @@ static SDL_Camera *ObtainPhysicalCamera(SDL_CameraID devid)  // !!! FIXME: SDL_A
     }
 
     SDL_Camera *device = NULL;
-    SDL_LockRWLockForReading(camera_driver.device_hash_lock);
     SDL_FindInHashTable(camera_driver.device_hash, (const void *) (uintptr_t) devid, (const void **) &device);
-    SDL_UnlockRWLock(camera_driver.device_hash_lock);
     if (!device) {
         SDL_SetError("Invalid camera device instance ID");
     } else {
@@ -424,9 +420,7 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
     SDL_assert((specs != NULL) == (num_specs > 0));
     SDL_assert(handle != NULL);
 
-    SDL_LockRWLockForReading(camera_driver.device_hash_lock);
     const int shutting_down = SDL_GetAtomicInt(&camera_driver.shutting_down);
-    SDL_UnlockRWLock(camera_driver.device_hash_lock);
     if (shutting_down) {
         return NULL;  // we're shutting down, don't add any devices that are hotplugged at the last possible moment.
     }
@@ -496,7 +490,6 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
     SDL_SetAtomicInt(&device->zombie, 0);
     RefPhysicalCamera(device);
 
-    SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
     if (SDL_InsertIntoHashTable(camera_driver.device_hash, (const void *) (uintptr_t) device->instance_id, device)) {
         SDL_AddAtomicInt(&camera_driver.device_count, 1);
     } else {
@@ -514,13 +507,14 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
             p->type = SDL_EVENT_CAMERA_DEVICE_ADDED;
             p->devid = device->instance_id;
             p->next = NULL;
+            SDL_LockHashTable(camera_driver.device_hash, true);
             SDL_assert(camera_driver.pending_events_tail != NULL);
             SDL_assert(camera_driver.pending_events_tail->next == NULL);
             camera_driver.pending_events_tail->next = p;
             camera_driver.pending_events_tail = p;
+            SDL_UnlockHashTable(camera_driver.device_hash);
         }
     }
-    SDL_UnlockRWLock(camera_driver.device_hash_lock);
 
     return device;
 }
@@ -574,12 +568,12 @@ void SDL_CameraDisconnected(SDL_Camera *device)
 
     if (first_disconnect) {
         if (pending.next) {  // NULL if event is disabled or disaster struck.
-            SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
+            SDL_LockHashTable(camera_driver.device_hash, true);
             SDL_assert(camera_driver.pending_events_tail != NULL);
             SDL_assert(camera_driver.pending_events_tail->next == NULL);
             camera_driver.pending_events_tail->next = pending.next;
             camera_driver.pending_events_tail = pending_tail;
-            SDL_UnlockRWLock(camera_driver.device_hash_lock);
+            SDL_UnlockHashTable(camera_driver.device_hash);
         }
     }
 }
@@ -612,12 +606,12 @@ void SDL_CameraPermissionOutcome(SDL_Camera *device, bool approved)
     ReleaseCamera(device);
 
     if (pending.next) {  // NULL if event is disabled or disaster struck.
-        SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
+        SDL_LockHashTable(camera_driver.device_hash, true);
         SDL_assert(camera_driver.pending_events_tail != NULL);
         SDL_assert(camera_driver.pending_events_tail->next == NULL);
         camera_driver.pending_events_tail->next = pending.next;
         camera_driver.pending_events_tail = pending_tail;
-        SDL_UnlockRWLock(camera_driver.device_hash_lock);
+        SDL_UnlockHashTable(camera_driver.device_hash);
     }
 }
 
@@ -633,16 +627,15 @@ SDL_Camera *SDL_FindPhysicalCameraByCallback(bool (*callback)(SDL_Camera *device
     const void *value;
     void *iter = NULL;
 
-    SDL_LockRWLockForReading(camera_driver.device_hash_lock);
+    SDL_LockHashTable(camera_driver.device_hash, false);
     while (SDL_IterateHashTable(camera_driver.device_hash, &key, &value, &iter)) {
         SDL_Camera *device = (SDL_Camera *) value;
         if (callback(device, userdata)) {  // found it?
-            SDL_UnlockRWLock(camera_driver.device_hash_lock);
+            SDL_UnlockHashTable(camera_driver.device_hash);
             return device;
         }
     }
-
-    SDL_UnlockRWLock(camera_driver.device_hash_lock);
+    SDL_UnlockHashTable(camera_driver.device_hash);
 
     SDL_SetError("Device not found");
     return NULL;
@@ -716,7 +709,7 @@ SDL_CameraID *SDL_GetCameras(int *count)
 
     SDL_CameraID *result = NULL;
 
-    SDL_LockRWLockForReading(camera_driver.device_hash_lock);
+    SDL_LockHashTable(camera_driver.device_hash, false);
     int num_devices = SDL_GetAtomicInt(&camera_driver.device_count);
     result = (SDL_CameraID *) SDL_malloc((num_devices + 1) * sizeof (SDL_CameraID));
     if (!result) {
@@ -733,7 +726,7 @@ SDL_CameraID *SDL_GetCameras(int *count)
         SDL_assert(devs_seen == num_devices);
         result[devs_seen] = 0;  // null-terminated.
     }
-    SDL_UnlockRWLock(camera_driver.device_hash_lock);
+    SDL_UnlockHashTable(camera_driver.device_hash);
 
     *count = num_devices;
 
@@ -1363,14 +1356,14 @@ void SDL_QuitCamera(void)
         return;
     }
 
-    SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
-    SDL_SetAtomicInt(&camera_driver.shutting_down, 1);
     SDL_HashTable *device_hash = camera_driver.device_hash;
+    SDL_LockHashTable(device_hash, true);
+    SDL_SetAtomicInt(&camera_driver.shutting_down, 1);
     camera_driver.device_hash = NULL;
     SDL_PendingCameraEvent *pending_events = camera_driver.pending_events.next;
     camera_driver.pending_events.next = NULL;
     SDL_SetAtomicInt(&camera_driver.device_count, 0);
-    SDL_UnlockRWLock(camera_driver.device_hash_lock);
+    SDL_UnlockHashTable(device_hash);
 
     SDL_PendingCameraEvent *pending_next = NULL;
     for (SDL_PendingCameraEvent *i = pending_events; i; i = pending_next) {
@@ -1388,7 +1381,6 @@ void SDL_QuitCamera(void)
     // Free the driver data
     camera_driver.impl.Deinitialize();
 
-    SDL_DestroyRWLock(camera_driver.device_hash_lock);
     SDL_DestroyHashTable(device_hash);
 
     SDL_zero(camera_driver);
@@ -1417,14 +1409,8 @@ bool SDL_CameraInit(const char *driver_name)
         SDL_QuitCamera(); // shutdown driver if already running.
     }
 
-    SDL_RWLock *device_hash_lock = SDL_CreateRWLock();  // create this early, so if it fails we don't have to tear down the whole camera subsystem.
-    if (!device_hash_lock) {
-        return false;
-    }
-
-    SDL_HashTable *device_hash = SDL_CreateHashTable(NULL, 8, HashCameraID, MatchCameraID, NukeCameraHashItem, false);
+    SDL_HashTable *device_hash = SDL_CreateHashTable(NULL, 8, HashCameraID, MatchCameraID, NukeCameraHashItem, true, false);
     if (!device_hash) {
-        SDL_DestroyRWLock(device_hash_lock);
         return false;
     }
 
@@ -1441,7 +1427,6 @@ bool SDL_CameraInit(const char *driver_name)
         const char *driver_attempt = driver_name_copy;
 
         if (!driver_name_copy) {
-            SDL_DestroyRWLock(device_hash_lock);
             SDL_DestroyHashTable(device_hash);
             return false;
         }
@@ -1457,7 +1442,6 @@ bool SDL_CameraInit(const char *driver_name)
                     tried_to_init = true;
                     SDL_zero(camera_driver);
                     camera_driver.pending_events_tail = &camera_driver.pending_events;
-                    camera_driver.device_hash_lock = device_hash_lock;
                     camera_driver.device_hash = device_hash;
                     if (bootstrap[i]->init(&camera_driver.impl)) {
                         camera_driver.name = bootstrap[i]->name;
@@ -1481,7 +1465,6 @@ bool SDL_CameraInit(const char *driver_name)
             tried_to_init = true;
             SDL_zero(camera_driver);
             camera_driver.pending_events_tail = &camera_driver.pending_events;
-            camera_driver.device_hash_lock = device_hash_lock;
             camera_driver.device_hash = device_hash;
             if (bootstrap[i]->init(&camera_driver.impl)) {
                 camera_driver.name = bootstrap[i]->name;
@@ -1502,7 +1485,6 @@ bool SDL_CameraInit(const char *driver_name)
         }
 
         SDL_zero(camera_driver);
-        SDL_DestroyRWLock(device_hash_lock);
         SDL_DestroyHashTable(device_hash);
         return false;  // No driver was available, so fail.
     }
@@ -1519,20 +1501,20 @@ bool SDL_CameraInit(const char *driver_name)
 // ("UpdateSubsystem" is the same naming that the other things that hook into PumpEvents use.)
 void SDL_UpdateCamera(void)
 {
-    SDL_LockRWLockForReading(camera_driver.device_hash_lock);
+    SDL_LockHashTable(camera_driver.device_hash, false);
     SDL_PendingCameraEvent *pending_events = camera_driver.pending_events.next;
-    SDL_UnlockRWLock(camera_driver.device_hash_lock);
+    SDL_UnlockHashTable(camera_driver.device_hash);
 
     if (!pending_events) {
         return;  // nothing to do, check next time.
     }
 
     // okay, let's take this whole list of events so we can dump the lock, and new ones can queue up for a later update.
-    SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
+    SDL_LockHashTable(camera_driver.device_hash, true);
     pending_events = camera_driver.pending_events.next;  // in case this changed...
     camera_driver.pending_events.next = NULL;
     camera_driver.pending_events_tail = &camera_driver.pending_events;
-    SDL_UnlockRWLock(camera_driver.device_hash_lock);
+    SDL_UnlockHashTable(camera_driver.device_hash);
 
     SDL_PendingCameraEvent *pending_next = NULL;
     for (SDL_PendingCameraEvent *i = pending_events; i; i = pending_next) {

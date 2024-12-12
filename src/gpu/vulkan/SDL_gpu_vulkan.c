@@ -11628,7 +11628,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         VULKAN_INTERNAL_CommandPoolHashFunction,
         VULKAN_INTERNAL_CommandPoolHashKeyMatch,
         VULKAN_INTERNAL_CommandPoolHashNuke,
-        false);
+        false, false);
 
     renderer->renderPassHashTable = SDL_CreateHashTable(
         (void *)renderer,
@@ -11636,7 +11636,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         VULKAN_INTERNAL_RenderPassHashFunction,
         VULKAN_INTERNAL_RenderPassHashKeyMatch,
         VULKAN_INTERNAL_RenderPassHashNuke,
-        false);
+        false, false);
 
     renderer->framebufferHashTable = SDL_CreateHashTable(
         (void *)renderer,
@@ -11644,7 +11644,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         VULKAN_INTERNAL_FramebufferHashFunction,
         VULKAN_INTERNAL_FramebufferHashKeyMatch,
         VULKAN_INTERNAL_FramebufferHashNuke,
-        false);
+        false, false);
 
     renderer->graphicsPipelineResourceLayoutHashTable = SDL_CreateHashTable(
         (void *)renderer,
@@ -11652,7 +11652,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashFunction,
         VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashKeyMatch,
         VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashNuke,
-        false);
+        false, false);
 
     renderer->computePipelineResourceLayoutHashTable = SDL_CreateHashTable(
         (void *)renderer,
@@ -11660,7 +11660,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         VULKAN_INTERNAL_ComputePipelineResourceLayoutHashFunction,
         VULKAN_INTERNAL_ComputePipelineResourceLayoutHashKeyMatch,
         VULKAN_INTERNAL_ComputePipelineResourceLayoutHashNuke,
-        false);
+        false, false);
 
     renderer->descriptorSetLayoutHashTable = SDL_CreateHashTable(
         (void *)renderer,
@@ -11668,7 +11668,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         VULKAN_INTERNAL_DescriptorSetLayoutHashFunction,
         VULKAN_INTERNAL_DescriptorSetLayoutHashKeyMatch,
         VULKAN_INTERNAL_DescriptorSetLayoutHashNuke,
-        false);
+        false, false);
 
     // Initialize fence pool
 

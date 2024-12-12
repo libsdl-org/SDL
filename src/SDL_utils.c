@@ -132,6 +132,7 @@ Uint32 SDL_GetNextObjectID(void)
     return id;
 }
 
+static SDL_InitState SDL_objects_init;
 static SDL_HashTable *SDL_objects;
 
 static Uint32 SDL_HashObject(const void *key, void *unused)
@@ -148,16 +149,18 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
 {
     SDL_assert(object != NULL);
 
-    if (valid) {
+    if (valid && SDL_ShouldInit(&SDL_objects_init)) {
+        SDL_objects = SDL_CreateHashTable(NULL, 32, SDL_HashObject, SDL_KeyMatchObject, NULL, true, false);
         if (!SDL_objects) {
-            SDL_objects = SDL_CreateHashTable(NULL, 32, SDL_HashObject, SDL_KeyMatchObject, NULL, false);
+            SDL_SetInitialized(&SDL_objects_init, false);
         }
+        SDL_SetInitialized(&SDL_objects_init, true);
+    }
 
+    if (valid) {
         SDL_InsertIntoHashTable(SDL_objects, object, (void *)(uintptr_t)type);
     } else {
-        if (SDL_objects) {
-            SDL_RemoveFromHashTable(SDL_objects, object);
-        }
+        SDL_RemoveFromHashTable(SDL_objects, object);
     }
 }
 
@@ -177,7 +180,7 @@ bool SDL_ObjectValid(void *object, SDL_ObjectType type)
 
 void SDL_SetObjectsInvalid(void)
 {
-    if (SDL_objects) {
+    if (SDL_ShouldQuit(&SDL_objects_init)) {
         // Log any leaked objects
         const void *object, *object_type;
         void *iter = NULL;
@@ -221,6 +224,8 @@ void SDL_SetObjectsInvalid(void)
 
         SDL_DestroyHashTable(SDL_objects);
         SDL_objects = NULL;
+
+        SDL_SetInitialized(&SDL_objects_init, false);
     }
 }
 
@@ -357,7 +362,7 @@ const char *SDL_GetPersistentString(const char *string)
 
     SDL_HashTable *strings = (SDL_HashTable *)SDL_GetTLS(&SDL_string_storage);
     if (!strings) {
-        strings = SDL_CreateHashTable(NULL, 32, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeValue, false);
+        strings = SDL_CreateHashTable(NULL, 32, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeValue, false, false);
         if (!strings) {
             return NULL;
         }
