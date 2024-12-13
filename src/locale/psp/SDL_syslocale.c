@@ -63,10 +63,10 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             SDL_strlcpy(buf, "ko_KR", buflen);
             break;
         case PSP_SYSTEMPARAM_LANGUAGE_CHINESE_TRADITIONAL:
-            SDL_strlcpy(buf, "zh_CH", buflen);
+            SDL_strlcpy(buf, "zh_TW", buflen);
             break;
         case PSP_SYSTEMPARAM_LANGUAGE_CHINESE_SIMPLIFIED:
-            SDL_strlcpy(buf, "zh_TW", buflen);
+            SDL_strlcpy(buf, "zh_CN", buflen);
             break;
         default:
             SDL_strlcpy(buf, "en_US", buflen);

@@ -39,8 +39,8 @@ SDL_Keymap *SDL_CreateKeymap(void)
         return NULL;
     }
 
-    keymap->scancode_to_keycode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, false);
-    keymap->keycode_to_scancode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, false);
+    keymap->scancode_to_keycode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, false, false);
+    keymap->keycode_to_scancode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, false, false);
     if (!keymap->scancode_to_keycode || !keymap->keycode_to_scancode) {
         SDL_DestroyKeymap(keymap);
         return NULL;

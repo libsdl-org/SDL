@@ -1,5 +1,5 @@
-This example code loads .wav files dropped onto the app window, puts
-them in an audio stream and binds them for playback. This shows several
-streams mixing into a single playback device.
+If you're running this in a web browser, you need to click the window before you'll hear anything!
 
-Drag several files while one is still playing!
+This example code loads two .wav files, puts them an audio streams and binds
+them for playback, repeating both sounds on loop. This shows several streams
+mixing into a single playback device.

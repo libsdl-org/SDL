@@ -1422,7 +1422,7 @@ bool SDL_CameraInit(const char *driver_name)
         return false;
     }
 
-    SDL_HashTable *device_hash = SDL_CreateHashTable(NULL, 8, HashCameraID, MatchCameraID, NukeCameraHashItem, false);
+    SDL_HashTable *device_hash = SDL_CreateHashTable(NULL, 8, HashCameraID, MatchCameraID, NukeCameraHashItem, false, false);
     if (!device_hash) {
         SDL_DestroyRWLock(device_hash_lock);
         return false;

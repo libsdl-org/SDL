@@ -234,6 +234,10 @@ static bool AudioDeviceCanUseSimpleCopy(SDL_AudioDevice *device)
 // should hold device->lock before calling.
 static void UpdateAudioStreamFormatsPhysical(SDL_AudioDevice *device)
 {
+    if (!device) {
+        return;
+    }
+
     if (device->recording) {  // for recording devices, we only want to move to float32 for postmix and gain, which we'll handle elsewhere.
         // we _do_ need to make sure the channel map is correct, though...
         for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev; logdev = logdev->next) {
@@ -909,7 +913,7 @@ bool SDL_InitAudio(const char *driver_name)
         return false;
     }
 
-    SDL_HashTable *device_hash = SDL_CreateHashTable(NULL, 8, HashAudioDeviceID, MatchAudioDeviceID, NukeAudioDeviceHashItem, false);
+    SDL_HashTable *device_hash = SDL_CreateHashTable(NULL, 8, HashAudioDeviceID, MatchAudioDeviceID, NukeAudioDeviceHashItem, false, false);
     if (!device_hash) {
         SDL_DestroyRWLock(device_hash_lock);
         return false;

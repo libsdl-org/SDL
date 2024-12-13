@@ -249,7 +249,6 @@ static SDL_AsyncIOTask *ioring_asyncioqueue_get_results(void *userdata)
 static SDL_AsyncIOTask *ioring_asyncioqueue_wait_results(void *userdata, Sint32 timeoutMS)
 {
     WinIoRingAsyncIOQueueData *queuedata = (WinIoRingAsyncIOQueueData *) userdata;
-    struct io_uring_cqe *cqe = NULL;
 
     // the event only signals when the IoRing moves from empty to non-empty, so you have to try a (non-blocking) get_results first or risk eternal hangs.
     SDL_AsyncIOTask *task = ioring_asyncioqueue_get_results(userdata);

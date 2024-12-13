@@ -3710,7 +3710,8 @@ static bool D3D12_INTERNAL_StrToWStr(
     Uint32 *outSize)
 {
     size_t inlen, result;
-    size_t outlen = wstrSize;
+    size_t outBytesLeft = wstrSize;
+    *outSize = 0;
 
     if (renderer->iconv == NULL) {
         renderer->iconv = SDL_iconv_open("WCHAR_T", "UTF-8");
@@ -3724,9 +3725,8 @@ static bool D3D12_INTERNAL_StrToWStr(
         &str,
         &inlen,
         (char **)&wstr,
-        &outlen);
+        &outBytesLeft);
 
-    *outSize = (Uint32)outlen;
 
     // Check...
     switch (result) {
@@ -3740,6 +3740,7 @@ static bool D3D12_INTERNAL_StrToWStr(
         break;
     }
 
+    *outSize = (Uint32)(wstrSize - outBytesLeft);
     return true;
 }
 
@@ -6823,7 +6824,6 @@ static bool D3D12_ClaimWindow(
         }
     } else {
         SET_STRING_ERROR_AND_RETURN("Window already claimed", false);
-        return false;
     }
 }
 
@@ -7211,7 +7211,32 @@ static SDL_GPUCommandBuffer *D3D12_AcquireCommandBuffer(
     return (SDL_GPUCommandBuffer *)commandBuffer;
 }
 
-static bool D3D12_AcquireSwapchainTexture(
+static bool D3D12_WaitForSwapchain(
+    SDL_GPURenderer *driverData,
+    SDL_Window *window)
+{
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
+    D3D12WindowData *windowData = D3D12_INTERNAL_FetchWindowData(window);
+
+    if (windowData == NULL) {
+        SET_STRING_ERROR_AND_RETURN("Cannot wait for a swapchain from an unclaimed window!", false);
+    }
+
+    if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
+        if (!D3D12_WaitForFences(
+            driverData,
+            true,
+            &windowData->inFlightFences[windowData->frameCounter],
+            1)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool D3D12_INTERNAL_AcquireSwapchainTexture(
+    bool block,
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
     SDL_GPUTexture **swapchainTexture,
@@ -7251,7 +7276,7 @@ static bool D3D12_AcquireSwapchainTexture(
     }
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
-        if (windowData->present_mode == SDL_GPU_PRESENTMODE_VSYNC) {
+        if (block) {
             // In VSYNC mode, block until the least recent presented frame is done
             if (!D3D12_WaitForFences(
                 (SDL_GPURenderer *)renderer,
@@ -7261,13 +7286,11 @@ static bool D3D12_AcquireSwapchainTexture(
                 return false;
             }
         } else {
+            // If we are not blocking and the least recent fence is not signaled,
+            // return true to indicate that there is no error but rendering should be skipped.
             if (!D3D12_QueryFence(
                     (SDL_GPURenderer *)renderer,
                     windowData->inFlightFences[windowData->frameCounter])) {
-                /*
-                 * In MAILBOX or IMMEDIATE mode, if the least recent fence is not signaled,
-                 * return true to indicate that there is no error but rendering should be skipped
-                 */
                 return true;
             }
         }
@@ -7323,6 +7346,38 @@ static bool D3D12_AcquireSwapchainTexture(
 
     *swapchainTexture = (SDL_GPUTexture*)&windowData->textureContainers[swapchainIndex];
     return true;
+}
+
+static bool D3D12_AcquireSwapchainTexture(
+    SDL_GPUCommandBuffer *command_buffer,
+    SDL_Window *window,
+    SDL_GPUTexture **swapchain_texture,
+    Uint32 *swapchain_texture_width,
+    Uint32 *swapchain_texture_height
+) {
+    return D3D12_INTERNAL_AcquireSwapchainTexture(
+        false,
+        command_buffer,
+        window,
+        swapchain_texture,
+        swapchain_texture_width,
+        swapchain_texture_height);
+}
+
+static bool D3D12_WaitAndAcquireSwapchainTexture(
+    SDL_GPUCommandBuffer *command_buffer,
+    SDL_Window *window,
+    SDL_GPUTexture **swapchain_texture,
+    Uint32 *swapchain_texture_width,
+    Uint32 *swapchain_texture_height
+) {
+    return D3D12_INTERNAL_AcquireSwapchainTexture(
+        true,
+        command_buffer,
+        window,
+        swapchain_texture,
+        swapchain_texture_width,
+        swapchain_texture_height);
 }
 
 static void D3D12_INTERNAL_PerformPendingDestroys(D3D12Renderer *renderer)

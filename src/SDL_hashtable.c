@@ -44,6 +44,7 @@ SDL_COMPILE_TIME_ASSERT(sizeof_SDL_HashItem, sizeof(SDL_HashItem) <= MAX_HASHITE
 
 struct SDL_HashTable
 {
+    SDL_RWLock *lock;
     SDL_HashItem *table;
     SDL_HashTable_HashFn hash;
     SDL_HashTable_KeyMatchFn keymatch;
@@ -60,6 +61,7 @@ SDL_HashTable *SDL_CreateHashTable(void *data,
                                    SDL_HashTable_HashFn hashfn,
                                    SDL_HashTable_KeyMatchFn keymatchfn,
                                    SDL_HashTable_NukeFn nukefn,
+                                   bool threadsafe,
                                    bool stackable)
 {
     SDL_HashTable *table;
@@ -80,9 +82,14 @@ SDL_HashTable *SDL_CreateHashTable(void *data,
         return NULL;
     }
 
+    if (threadsafe) {
+        // Don't fail if we can't create a lock (single threaded environment?)
+        table->lock = SDL_CreateRWLock();
+    }
+
     table->table = (SDL_HashItem *)SDL_calloc(num_buckets, sizeof(SDL_HashItem));
     if (!table->table) {
-        SDL_free(table);
+        SDL_DestroyHashTable(table);
         return NULL;
     }
 
@@ -289,17 +296,22 @@ bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *
 {
     SDL_HashItem *item;
     Uint32 hash;
+    bool result = false;
 
     if (!table) {
         return false;
+    }
+
+    if (table->lock) {
+        SDL_LockRWLockForWriting(table->lock);
     }
 
     hash = calc_hash(table, key);
     item = find_first_item(table, key, hash);
 
     if (item && !table->stackable) {
-        // TODO: Maybe allow overwrites? We could do it more efficiently here than unset followed by insert.
-        return false;
+        // Allow overwrites, this might have been inserted on another thread
+        delete_item(table, item);
     }
 
     SDL_HashItem new_item;
@@ -313,18 +325,25 @@ bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *
 
     if (!maybe_resize(table)) {
         table->num_occupied_slots--;
-        return false;
+        goto done;
     }
 
     // This never returns NULL
     insert_item(&new_item, table->table, table->hash_mask, &table->max_probe_len);
-    return true;
+    result = true;
+
+done:
+    if (table->lock) {
+        SDL_UnlockRWLock(table->lock);
+    }
+    return result;
 }
 
 bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **value)
 {
     Uint32 hash;
     SDL_HashItem *i;
+    bool result = false;
 
     if (!table) {
         if (value) {
@@ -333,24 +352,37 @@ bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void
         return false;
     }
 
+    if (table->lock) {
+        SDL_LockRWLockForReading(table->lock);
+    }
+
     hash = calc_hash(table, key);
     i = find_first_item(table, key, hash);
     if (i) {
         if (value) {
             *value = i->value;
         }
-        return true;
+        result = true;
     }
-    return false;
+
+    if (table->lock) {
+        SDL_UnlockRWLock(table->lock);
+    }
+    return result;
 }
 
 bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
 {
     Uint32 hash;
     SDL_HashItem *item;
+    bool result = false;
 
     if (!table) {
         return false;
+    }
+
+    if (table->lock) {
+        SDL_LockRWLockForWriting(table->lock);
     }
 
     // FIXME: what to do for stacking hashtables?
@@ -361,13 +393,18 @@ bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
 
     hash = calc_hash(table, key);
     item = find_first_item(table, key, hash);
-
     if (!item) {
-        return false;
+        goto done;
     }
 
     delete_item(table, item);
-    return true;
+    result = true;
+
+done:
+    if (table->lock) {
+        SDL_UnlockRWLock(table->lock);
+    }
+    return result;
 }
 
 bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, const void **_value, void **iter)
@@ -472,22 +509,25 @@ static void nuke_all(SDL_HashTable *table)
 void SDL_EmptyHashTable(SDL_HashTable *table)
 {
     if (table) {
-        if (table->nuke) {
-            nuke_all(table);
-        }
+        SDL_LockRWLockForWriting(table->lock);
+        {
+            if (table->nuke) {
+                nuke_all(table);
+            }
 
-        SDL_memset(table->table, 0, sizeof(*table->table) * (table->hash_mask + 1));
-        table->num_occupied_slots = 0;
+            SDL_memset(table->table, 0, sizeof(*table->table) * (table->hash_mask + 1));
+            table->num_occupied_slots = 0;
+        }
+        SDL_UnlockRWLock(table->lock);
     }
 }
 
 void SDL_DestroyHashTable(SDL_HashTable *table)
 {
     if (table) {
-        if (table->nuke) {
-            nuke_all(table);
-        }
+        SDL_EmptyHashTable(table);
 
+        SDL_DestroyRWLock(table->lock);
         SDL_free(table->table);
         SDL_free(table);
     }

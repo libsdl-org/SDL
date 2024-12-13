@@ -34,6 +34,14 @@ Thanks to Will for permitting us to distribute this sample with SDL!
 
 
 
+This directory contains sword.wav:
+
+  sword04.wav by Erdie
+  Original: https://freesound.org/s/27858/
+  License: https://creativecommons.org/licenses/by/4.0/
+
+
+
 The .bmp files used by testaudio.c were made by AlDraw:
 
 https://linktr.ee/AlexDraw

@@ -88,7 +88,7 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
         return NULL;
     }
 
-    env->strings = SDL_CreateHashTable(NULL, 16, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeKey, false);
+    env->strings = SDL_CreateHashTable(NULL, 16, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeKey, false, false);
     if (!env->strings) {
         SDL_free(env);
         return NULL;

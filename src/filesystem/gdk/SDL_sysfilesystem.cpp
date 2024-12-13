@@ -141,3 +141,10 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     SDL_Unsupported();
     return NULL;
 }
+
+// TODO
+char *SDL_SYS_GetCurrentDirectory(void)
+{
+    SDL_Unsupported();
+    return NULL;
+}
