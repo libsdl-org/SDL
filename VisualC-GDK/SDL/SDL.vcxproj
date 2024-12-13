@@ -102,10 +102,10 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'" />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
-    <IncludePath>$(SolutionDir)/../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)../../src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">
-    <IncludePath>$(SolutionDir)/../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)../../src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
     <Midl>
@@ -165,8 +165,10 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\src\render\direct3d12\compile_shaders_xbox.bat $(SolutionDir)</Command>
-      <Command>$(SolutionDir)..\src\gpu\d3d12\compile_shaders_xbox.bat $(SolutionDir)</Command>
+      <Command>
+        $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox Series)</Message>
@@ -200,8 +202,10 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\src\render\direct3d12\compile_shaders_xbox.bat $(SolutionDir) one</Command>
-      <Command>$(SolutionDir)..\src\gpu\d3d12\compile_shaders_xbox.bat $(SolutionDir) one</Command>
+      <Command>
+        $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+        $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox One)</Message>
@@ -267,8 +271,10 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\src\render\direct3d12\compile_shaders_xbox.bat $(SolutionDir)</Command>
-      <Command>$(SolutionDir)..\src\gpu\d3d12\compile_shaders_xbox.bat $(SolutionDir)</Command>
+      <Command>
+        $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox Series)</Message>
@@ -303,8 +309,10 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\src\render\direct3d12\compile_shaders_xbox.bat $(SolutionDir) one</Command>
-      <Command>$(SolutionDir)..\src\gpu\d3d12\compile_shaders_xbox.bat $(SolutionDir) one</Command>
+      <Command>
+        $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+        $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox One)</Message>
