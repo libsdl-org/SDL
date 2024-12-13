@@ -956,7 +956,8 @@ sub generate_quickref {
             if (defined $brief) {
                 $brief = "$brief";
                 chomp($brief);
-                $brief = dewikify($wikitypes{$sym}, $brief);
+                my $thiswikitype = defined $wikitypes{$sym} ? $wikitypes{$sym} : 'md';  # default to MarkDown for new stuff.
+                $brief = dewikify($thiswikitype, $brief);
                 my $spaces = ' ' x ($maxlen - length($csig));
                 $brief = "$spaces// $brief";
             } else {
