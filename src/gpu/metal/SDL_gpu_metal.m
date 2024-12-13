@@ -513,17 +513,6 @@ typedef struct MetalComputePipeline
     Uint32 threadcountZ;
 } MetalComputePipeline;
 
-/*
-typedef struct MetalPipelineCache
-{
-    id<MTLBinaryArchive> pipelineCache;
-    size_t checksumSize;
-    void* checksumData;
-    size_t cacheBlobSize;
-    void* cacheBlob;
-} MetalPipelineCache;
-*/
-
 typedef struct MetalBuffer
 {
     id<MTLBuffer> handle;
@@ -1033,20 +1022,7 @@ static void METAL_ReleasePipelineCache(
     SDL_GPURenderer* driverData,
     SDL_GPUPipelineCache* pipelineCache)
 {
-    /*
-    @autoreleasepool {
-        MetalRenderer* renderer = (MetalRenderer*)driverData;
-        MetalPipelineCache* metalPipelineCache = (MetalPipelineCache*)pipelineCache;
-
-        if (metalPipelineCache->checksumData != NULL)
-        {
-            SDL_free(metalPipelineCache->checksumData);
-            metalPipelineCache->checksumSize = 0;
-        }
-        metalPipelineCache->pipelineCache = nil;
-        SDL_free(metalPipelineCache);
-    }
-     */
+   // Not yet supported
 }
 
 // Pipeline Creation
@@ -1103,10 +1079,6 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
         MetalShader *vertexShader = (MetalShader *)createinfo->vertex_shader;
         MetalShader *fragmentShader = (MetalShader *)createinfo->fragment_shader;
         
-        /*
-        MetalPipelineCache* pipelineCache = SDL_GetPointerProperty_REAL(createinfo->props,SDL_PROP_GPU_PIPELINE_USE_CACHE,NULL);
-        */
-        
         MTLRenderPipelineDescriptor *pipelineDescriptor;
         const SDL_GPUColorTargetBlendState *blendState;
         MTLVertexDescriptor *vertexDescriptor;
@@ -1120,16 +1092,6 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
         MetalGraphicsPipeline *result = NULL;
 
         pipelineDescriptor = [MTLRenderPipelineDescriptor new];
-        
-        /*
-        if(@available(macOS 11.0, iOS 14.0, tvOS 14.0, *))
-        {
-            if(pipelineCache->pipelineCache != nil)
-            {
-                pipelineDescriptor.binaryArchives = @[pipelineCache->pipelineCache];
-            }
-        }
-        */
         
         // Blend
 
@@ -1218,15 +1180,6 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
             pipelineDescriptor.vertexDescriptor = vertexDescriptor;
         }
         
-        /*
-        if(@available(macOS 11.0, iOS 14.0, tvOS 14.0, *))
-        {
-            if(pipelineCache != NULL){
-                [pipelineCache->pipelineCache addRenderPipelineFunctionsWithDescriptor:pipelineDescriptor error:&error];
-            }
-        }
-        */
-         
         // Create the graphics pipeline
 
         pipelineState = [renderer->device newRenderPipelineStateWithDescriptor:pipelineDescriptor error:&error];
@@ -1260,38 +1213,7 @@ static SDL_GPUPipelineCache* METAL_CreatePipelineCache(
     SDL_GPURenderer* driverData,
     const SDL_GPUPipelineCacheCreateInfo* createinfo)
 {
-    // Implementing it is easy, but there's not way to get the binary data out of MTLBinaryArchive without bouncing it to a file first
-    /*
-    if(@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)){
-        @autoreleasepool {
-            MetalRenderer* renderer = (MetalRenderer*)driverData;
-            MetalPipelineCache* pipelineCache = (MetalPipelineCache*)SDL_malloc(sizeof(MetalPipelineCache));
-            
-            MTLBinaryArchiveDescriptor* archiveDescriptor = [[MTLBinaryArchiveDescriptor alloc] init];
-            NSError* error;
-            pipelineCache->pipelineCache = [renderer->device newBinaryArchiveWithDescriptor:archiveDescriptor error:&error];
-            
-            if (error != NULL) {
-                SET_ERROR_AND_RETURN("Creating pipeline cache failed: %s", [[error description] UTF8String], NULL);
-            }
-            if (createinfo->checksum_size != 0 && createinfo->checksum_data != NULL)
-            {
-                pipelineCache->checksumSize = createinfo->checksum_size;
-                pipelineCache->checksumData = SDL_malloc(createinfo->checksum_size);
-                SDL_memcpy(pipelineCache->checksumData, createinfo->checksum_data, createinfo->checksum_size);
-            }
-            else
-            {
-                pipelineCache->checksumSize = 0;
-                pipelineCache->checksumData = NULL;
-            }
-            return (SDL_GPUPipelineCache*)pipelineCache;
-        }
-    }
-    else{
-        return NULL;
-    }
-     */
+    // Not yet supported
     return NULL;
 }
 
@@ -1300,13 +1222,7 @@ static bool METAL_FetchPipelineCacheData(
     SDL_GPUPipelineCache* pipelineCache,
     SDL_GPUPipelineCacheCreateInfo* createinfo)
 {
-    /*
-    MetalRenderer* renderer = (MetalRenderer*)driverData;
-    MetalPipelineCache* metalPipelineCache = (MetalPipelineCache*)pipelineCache;
-    createinfo->checksum_size = metalPipelineCache->checksumSize;
-    createinfo->checksum_data = metalPipelineCache->checksumData;
-    return true;
-    */
+    // Not yet supported
     return false;
 }
 
