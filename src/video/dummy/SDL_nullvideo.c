@@ -57,13 +57,13 @@ static void DUMMY_VideoQuit(SDL_VideoDevice *_this);
 
 static bool DUMMY_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, window->floating.x, window->floating.y);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, window->pending.x, window->pending.y);
     return true;
 }
 
 static void DUMMY_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->pending.w, window->pending.h);
 }
 
 // DUMMY driver bootstrap functions

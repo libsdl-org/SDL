@@ -666,17 +666,6 @@ static void Cocoa_WaitForMiniaturizable(SDL_Window *window)
     }
 }
 
-static bool Cocoa_IsZoomed(SDL_Window *window)
-{
-    SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
-
-    data.checking_zoom = YES;
-    const bool ret = [data.nswindow isZoomed];
-    data.checking_zoom = NO;
-
-    return ret;
-}
-
 static NSCursor *Cocoa_GetDesiredCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -1043,27 +1032,6 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 {
     SDL_Window *window = _data.window;
 
-    /* XXX: Calling [isZoomed] calls this function, and calling [isZoomed]
-     *      from within this function will recurse until the stack overflows,
-     *      so a recursion guard is required.
-     */
-    if (!_data.checking_zoom) {
-        _data.checking_zoom = YES;
-        if ([_data.nswindow isZoomed] && !_data.was_zoomed && _data.send_floating_size) {
-            NSRect rect;
-
-            _data.send_floating_size = NO;
-            rect.origin.x = window->floating.x;
-            rect.origin.y = window->floating.y;
-            rect.size.width = window->floating.w;
-            rect.size.height = window->floating.h;
-            ConvertNSRect(&rect);
-
-            frameSize = rect.size;
-        }
-        _data.checking_zoom = NO;
-    }
-
     if (window->min_aspect > 0.0f || window->max_aspect > 0.0f) {
         NSWindow *nswindow = _data.nswindow;
         NSRect newContentRect = [nswindow contentRectForFrameRect:NSMakeRect(0, 0, frameSize.width, frameSize.height)];
@@ -1119,7 +1087,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     /* isZoomed always returns true if the window is not resizable
      * and fullscreen windows are considered zoomed.
      */
-    if ((window->flags & SDL_WINDOW_RESIZABLE) && Cocoa_IsZoomed(window) &&
+    if ((window->flags & SDL_WINDOW_RESIZABLE) && [nswindow isZoomed] &&
         !(window->flags & SDL_WINDOW_FULLSCREEN) && ![self isInFullscreenSpace]) {
         zoomed = YES;
     } else {
@@ -1164,7 +1132,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
 
     // isZoomed always returns true if the window is not resizable.
-    if ((_data.window->flags & SDL_WINDOW_RESIZABLE) && Cocoa_IsZoomed(_data.window)) {
+    if ((_data.window->flags & SDL_WINDOW_RESIZABLE) && [_data.nswindow isZoomed]) {
         SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
     }
 
@@ -1324,6 +1292,9 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         }
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
 
+        _data.pending_position = NO;
+        _data.pending_size = NO;
+
         /* Force the size change event in case it was delivered earlier
            while the window was still animating into place.
          */
@@ -1361,6 +1332,11 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     if (window->is_destroying) {
         return;
     }
+
+    _data.pending_position = NO;
+    _data.pending_size = NO;
+    window->last_position_pending = false;
+    window->last_size_pending = false;
 
     SetWindowStyle(window, flags);
 
@@ -1425,18 +1401,32 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         }
         [NSMenu setMenuBarVisible:YES];
 
-        // Restore windowed size and position in case it changed while fullscreen
-        NSRect rect;
-        rect.origin.x = _data.was_zoomed ? window->windowed.x : window->floating.x;
-        rect.origin.y = _data.was_zoomed ? window->windowed.y : window->floating.y;
-        rect.size.width = _data.was_zoomed ? window->windowed.w : window->floating.w;
-        rect.size.height = _data.was_zoomed ? window->windowed.h : window->floating.h;
-        ConvertNSRect(&rect);
+        // Toggle zoom, if changed while fullscreen.
+        if ([self windowOperationIsPending:PENDING_OPERATION_ZOOM]) {
+            [self clearPendingWindowOperation:PENDING_OPERATION_ZOOM];
+            [nswindow zoom:nil];
+        }
 
-        _data.send_floating_position = NO;
-        _data.send_floating_size = NO;
-        [nswindow setContentSize:rect.size];
-        [nswindow setFrameOrigin:rect.origin];
+        if (![nswindow isZoomed]) {
+            // Apply a pending window size, if not zoomed.
+            NSRect rect;
+            rect.origin.x = _data.pending_position ? window->pending.x : window->floating.x;
+            rect.origin.y = _data.pending_position ? window->pending.y : window->floating.y;
+            rect.size.width = _data.pending_size ? window->pending.w : window->floating.w;
+            rect.size.height = _data.pending_size ? window->pending.h : window->floating.h;
+            ConvertNSRect(&rect);
+
+            if (_data.pending_size) {
+                [nswindow setContentSize:rect.size];
+            }
+            if (_data.pending_position) {
+                [nswindow setFrameOrigin:rect.origin];
+            }
+        }
+
+        _data.pending_size = NO;
+        _data.pending_position = NO;
+        _data.was_zoomed = NO;
 
         /* Force the size change event in case it was delivered earlier
          * while the window was still animating into place.
@@ -1445,8 +1435,6 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         window->h = 0;
         [self windowDidMove:aNotification];
         [self windowDidResize:aNotification];
-
-        _data.was_zoomed = false;
 
         // FIXME: Why does the window get hidden?
         if (!(window->flags & SDL_WINDOW_HIDDEN)) {
@@ -2083,7 +2071,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow
         }
 
         // isZoomed always returns true if the window is not resizable
-        if ((window->flags & SDL_WINDOW_RESIZABLE) && Cocoa_IsZoomed(window)) {
+        if ((window->flags & SDL_WINDOW_RESIZABLE) && [nswindow isZoomed]) {
             window->flags |= SDL_WINDOW_MAXIMIZED;
         } else {
             window->flags &= ~SDL_WINDOW_MAXIMIZED;
@@ -2352,9 +2340,9 @@ bool Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         BOOL fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
         int x, y;
 
-        if ([windata.listener windowOperationIsPending:(PENDING_OPERATION_ENTER_FULLSCREEN | PENDING_OPERATION_LEAVE_FULLSCREEN)] ||
-            [windata.listener isInFullscreenSpaceTransition]) {
-            Cocoa_SyncWindow(_this, window);
+        if ([windata.listener isInFullscreenSpaceTransition]) {
+            windata.pending_position = YES;
+            return true;
         }
 
         if (!(window->flags & SDL_WINDOW_MAXIMIZED)) {
@@ -2366,7 +2354,7 @@ bool Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
                 rect.origin.x = r.x;
                 rect.origin.y = r.y;
             } else {
-                SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &x, &y);
+                SDL_RelativeToGlobalForWindow(window, window->pending.x, window->pending.y, &x, &y);
                 rect.origin.x = x;
                 rect.origin.y = y;
             }
@@ -2389,8 +2377,6 @@ bool Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
             [nswindow setFrameOrigin:rect.origin];
 
             ScheduleContextUpdates(windata);
-        } else {
-            windata.send_floating_position = true;
         }
     }
     return true;
@@ -2402,13 +2388,13 @@ void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->internal;
         NSWindow *nswindow = windata.nswindow;
 
-        if ([windata.listener windowOperationIsPending:(PENDING_OPERATION_ENTER_FULLSCREEN | PENDING_OPERATION_LEAVE_FULLSCREEN)] ||
-            [windata.listener isInFullscreenSpaceTransition]) {
-            Cocoa_SyncWindow(_this, window);
+        if ([windata.listener isInFullscreenSpaceTransition]) {
+            windata.pending_size = YES;
+            return;
         }
 
         // isZoomed always returns true if the window is not resizable
-        if (!(window->flags & SDL_WINDOW_RESIZABLE) || !Cocoa_IsZoomed(window)) {
+        if (!(window->flags & SDL_WINDOW_RESIZABLE) || ![nswindow isZoomed]) {
             if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
                 int x, y;
                 NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
@@ -2420,17 +2406,19 @@ void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
                 SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &x, &y);
                 rect.origin.x = x;
                 rect.origin.y = y;
-                rect.size.width = window->floating.w;
-                rect.size.height = window->floating.h;
+                rect.size.width = window->pending.w;
+                rect.size.height = window->pending.h;
                 ConvertNSRect(&rect);
 
                 [nswindow setFrame:[nswindow frameRectForContentRect:rect] display:YES];
                 ScheduleContextUpdates(windata);
-            } else if (windata.was_zoomed) {
-                windata.send_floating_size = true;
+            } else {
+                // Can't set the window size.
+                window->last_size_pending = false;
             }
-        } else {
-            windata.send_floating_size = true;
+        }  else {
+            // Can't set the window size.
+            window->last_size_pending = false;
         }
     }
 }
@@ -2614,6 +2602,10 @@ void Cocoa_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
             ![windata.listener isInFullscreenSpace]) {
             [nswindow zoom:nil];
             ScheduleContextUpdates(windata);
+        } else if (!windata.was_zoomed) {
+            [windata.listener addPendingWindowOperation:PENDING_OPERATION_ZOOM];
+        } else {
+            [windata.listener clearPendingWindowOperation:PENDING_OPERATION_ZOOM];
         }
     }
 }
@@ -2654,27 +2646,13 @@ void Cocoa_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
             ![data.listener isInFullscreenSpace]) {
             if ([nswindow isMiniaturized]) {
                 [nswindow deminiaturize:nil];
-            } else if ((window->flags & SDL_WINDOW_RESIZABLE) && Cocoa_IsZoomed(window)) {
-                NSRect rect;
-
-                // Update the floating coordinates
-                rect.origin.x = window->floating.x;
-                rect.origin.y = window->floating.y;
-
-                // The floating size will be set in windowWillResize
+            } else if ((window->flags & SDL_WINDOW_RESIZABLE) && [data.nswindow isZoomed]) {
                 [nswindow zoom:nil];
-
-                rect.size.width = window->floating.w;
-                rect.size.height = window->floating.h;
-
-                ConvertNSRect(&rect);
-
-                if (data.send_floating_position) {
-                    data.send_floating_position = false;
-                    [nswindow setFrameOrigin:rect.origin];
-                    ScheduleContextUpdates(data);
-                }
             }
+        } else if (data.was_zoomed) {
+            [data.listener addPendingWindowOperation:PENDING_OPERATION_ZOOM];
+        } else {
+            [data.listener clearPendingWindowOperation:PENDING_OPERATION_ZOOM];
         }
     }
 }
@@ -2818,6 +2796,10 @@ SDL_FullscreenResult Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Windo
         if (!fullscreen) {
             Cocoa_SetWindowTitle(_this, window);
             data.was_zoomed = NO;
+            if ([data.listener windowOperationIsPending:PENDING_OPERATION_ZOOM]) {
+                [data.listener clearPendingWindowOperation:PENDING_OPERATION_ZOOM];
+                [nswindow zoom:nil];
+            }
         }
 
         if (SDL_ShouldAllowTopmost() && fullscreen) {
