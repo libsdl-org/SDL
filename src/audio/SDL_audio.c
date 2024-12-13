@@ -238,34 +238,35 @@ static void UpdateAudioStreamFormatsPhysical(SDL_AudioDevice *device)
         return;
     }
 
-    if (device->recording) {  // for recording devices, we only want to move to float32 for postmix and gain, which we'll handle elsewhere.
-        // we _do_ need to make sure the channel map is correct, though...
-        for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev; logdev = logdev->next) {
-            for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
-                // set the proper end of the stream to the device's channel map. This will obtain stream->lock itself.
-                SetAudioStreamChannelMap(stream, &stream->src_spec, &stream->src_chmap, device->chmap, device->spec.channels, -1);
-            }
-        }
-    } else {
+    const bool recording = device->recording;
+    SDL_AudioSpec spec;
+    SDL_copyp(&spec, &device->spec);
+
+    const SDL_AudioFormat devformat = spec.format;
+
+    if (!recording) {
         const bool simple_copy = AudioDeviceCanUseSimpleCopy(device);
-        SDL_AudioSpec spec;
-
         device->simple_copy = simple_copy;
-        SDL_copyp(&spec, &device->spec);
-
         if (!simple_copy) {
             spec.format = SDL_AUDIO_F32;  // mixing and postbuf operates in float32 format.
         }
+    }
 
-        for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev; logdev = logdev->next) {
-            for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
-                // set the proper end of the stream to the device's format.
-                // SDL_SetAudioStreamFormat does a ton of validation just to memcpy an audiospec.
-                SDL_LockMutex(stream->lock);
-                SDL_copyp(&stream->dst_spec, &spec);
-                SetAudioStreamChannelMap(stream, &stream->dst_spec, &stream->dst_chmap, device->chmap, spec.channels, -1);  // this should be fast for normal cases, though!
-                SDL_UnlockMutex(stream->lock);
-            }
+    for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev; logdev = logdev->next) {
+        if (recording) {
+            const bool need_float32 = (logdev->postmix || logdev->gain != 1.0f);
+            spec.format = need_float32 ? SDL_AUDIO_F32 : devformat;
+        }
+
+        for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
+            // set the proper end of the stream to the device's format.
+            // SDL_SetAudioStreamFormat does a ton of validation just to memcpy an audiospec.
+            SDL_AudioSpec *streamspec = recording ? &stream->src_spec : &stream->dst_spec;
+            int **streamchmap = recording ? &stream->src_chmap : &stream->dst_chmap;
+            SDL_LockMutex(stream->lock);
+            SDL_copyp(streamspec, &spec);
+            SetAudioStreamChannelMap(stream, streamspec, streamchmap, device->chmap, device->spec.channels, -1);  // this should be fast for normal cases, though!
+            SDL_UnlockMutex(stream->lock);
         }
     }
 }
@@ -1826,17 +1827,6 @@ bool SDL_SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain)
     bool result = false;
     if (logdev) {
         logdev->gain = gain;
-        if (device->recording) {
-            const bool need_float32 = (logdev->postmix || logdev->gain != 1.0f);
-            for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
-                // set the proper end of the stream to the device's format.
-                // SDL_SetAudioStreamFormat does a ton of validation just to memcpy an audiospec.
-                SDL_LockMutex(stream->lock);
-                stream->src_spec.format = need_float32 ? SDL_AUDIO_F32 : device->spec.format;
-                SDL_UnlockMutex(stream->lock);
-            }
-        }
-
         UpdateAudioStreamFormatsPhysical(device);
         result = true;
     }
@@ -1860,17 +1850,6 @@ bool SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallba
         if (result) {
             logdev->postmix = callback;
             logdev->postmix_userdata = userdata;
-
-            if (device->recording) {
-                const bool need_float32 = (callback || logdev->gain != 1.0f);
-                for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
-                    // set the proper end of the stream to the device's format.
-                    // SDL_SetAudioStreamFormat does a ton of validation just to memcpy an audiospec.
-                    SDL_LockMutex(stream->lock);
-                    stream->src_spec.format = need_float32 ? SDL_AUDIO_F32 : device->spec.format;
-                    SDL_UnlockMutex(stream->lock);
-                }
-            }
         }
 
         UpdateAudioStreamFormatsPhysical(device);
@@ -1940,7 +1919,6 @@ bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, in
 
     if (result) {
         // Now that everything is verified, chain everything together.
-        const bool recording = device->recording;
         for (int i = 0; i < num_streams; i++) {
             SDL_AudioStream *stream = streams[i];
             if (stream) {  // shouldn't be NULL, but just in case...
@@ -1951,15 +1929,6 @@ bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, in
                     logdev->bound_streams->prev_binding = stream;
                 }
                 logdev->bound_streams = stream;
-
-                if (recording) {
-                    SDL_copyp(&stream->src_spec, &device->spec);
-                    if (logdev->postmix) {
-                        stream->src_spec.format = SDL_AUDIO_F32;
-                    }
-                    SDL_SetAudioStreamInputChannelMap(stream, device->chmap, device->spec.channels);  // this should be fast for normal cases, though!
-                }
-
                 SDL_UnlockMutex(stream->lock);
             }
         }
