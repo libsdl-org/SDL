@@ -6163,6 +6163,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     VkGraphicsPipelineCreateInfo vkPipelineCreateInfo;
 
     VulkanPipelineCache* pipelineCache = SDL_GetPointerProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_USE_CACHE, NULL);
+    bool storeCache = SDL_GetBooleanProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_STORE_CACHE, false);
 
     VkPipelineShaderStageCreateInfo shaderStageCreateInfos[2];
 
@@ -6467,7 +6468,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
         NULL,
         &graphicsPipeline->pipeline);
 
-    if (pipelineCache != NULL)
+    if (pipelineCache != NULL && storeCache)
     {
         renderer->vkGetPipelineCacheData(renderer->logicalDevice, pipelineCache->pipelineCache, &pipelineCache->cacheBlobSize, NULL);
         pipelineCache->cacheBlob = SDL_realloc(pipelineCache->cacheBlob, pipelineCache->cacheBlobSize);
@@ -6506,6 +6507,7 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
     VulkanComputePipeline *vulkanComputePipeline;
 
     VulkanPipelineCache* pipelineCache = SDL_GetPointerProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_USE_CACHE, NULL);
+    bool storeCache = SDL_GetBooleanProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_STORE_CACHE, false);
 
     if (createinfo->format != SDL_GPU_SHADERFORMAT_SPIRV) {
         SET_STRING_ERROR_AND_RETURN("Incompatible shader format for Vulkan!", NULL);
@@ -6566,7 +6568,7 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
         NULL,
         &vulkanComputePipeline->pipeline);
 
-    if (pipelineCache != NULL)
+    if (pipelineCache != NULL && storeCache)
     {
         renderer->vkGetPipelineCacheData(renderer->logicalDevice, pipelineCache->pipelineCache, &pipelineCache->cacheBlobSize, NULL);
         SDL_realloc(pipelineCache->cacheBlob, pipelineCache->cacheBlobSize);

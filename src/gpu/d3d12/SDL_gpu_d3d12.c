@@ -2541,6 +2541,7 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     ID3D12PipelineState *pipelineState;
 
     D3D12PipelineCache* pipelineCache = SDL_GetPointerProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_USE_CACHE, NULL);
+    bool storeCache = SDL_GetBooleanProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_STORE_CACHE, false);
 
     if (!D3D12_INTERNAL_CreateShaderBytecode(
             renderer,
@@ -2584,7 +2585,7 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
         D3D_GUID(D3D_IID_ID3D12PipelineState),
         (void **)&pipelineState);
 
-    if (pipelineCache != NULL)
+    if (pipelineCache != NULL && storeCache)
     {
         ID3D12PipelineState_GetCachedBlob(pipelineState, &pipelineCache->pipelineCache);
         pipelineCache->cacheBlobSize = ID3D10Blob_GetBufferSize(pipelineCache->pipelineCache);
@@ -2799,6 +2800,7 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     D3D12Shader *fragShader = (D3D12Shader *)createinfo->fragment_shader;
 
     D3D12PipelineCache* pipelineCache = SDL_GetPointerProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_USE_CACHE, NULL);
+    bool storeCache = SDL_GetBooleanProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_STORE_CACHE, false);
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
     SDL_zero(psoDesc);
@@ -2879,7 +2881,7 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
         return NULL;
     }
 
-    if (pipelineCache != NULL)
+    if (pipelineCache != NULL && storeCache)
     {
         ID3D12PipelineState_GetCachedBlob(pipelineState, &pipelineCache->pipelineCache);
         pipelineCache->cacheBlobSize = ID3D10Blob_GetBufferSize(pipelineCache->pipelineCache);
@@ -2912,7 +2914,6 @@ static SDL_GPUPipelineCache* D3D12_CreatePipelineCache(
     SDL_GPURenderer* driverData,
     const SDL_GPUPipelineCacheCreateInfo* createinfo)
 {
-    D3D12Renderer* renderer = (D3D12Renderer*)driverData;
     D3D12PipelineCache* d3d12PipelineCache = (D3D12PipelineCache*)SDL_malloc(sizeof(D3D12PipelineCache));
 
     if (createinfo->cache_size != 0 && createinfo->cache_data != NULL)
