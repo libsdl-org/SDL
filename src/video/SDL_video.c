@@ -1664,14 +1664,13 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
      * the current position won't be updated at the time of the fullscreen call.
      */
     if (!displayID) {
-        if (window->use_pending_position_for_fullscreen) {
-            // The last coordinates were client requested; use the pending floating coordinates.
-            displayID = GetDisplayForRect(window->floating.x, window->floating.y, window->floating.w, window->floating.h);
-        }
-        else {
-            // The last coordinates were from the window manager; use the current position.
-            displayID = GetDisplayForRect(window->x, window->y, 1, 1);
-        }
+        // Use the pending position and dimensions, if available, otherwise, use the current.
+        const int x = window->last_position_pending ? window->pending.x : window->x;
+        const int y = window->last_position_pending ? window->pending.y : window->y;
+        const int w = window->last_size_pending ? window->pending.w : window->w;
+        const int h = window->last_size_pending ? window->pending.h : window->h;
+
+        displayID = GetDisplayForRect(x, y, w, h);
     }
     if (!displayID) {
         // Use the primary display for a window if we can't find it anywhere else
@@ -2763,6 +2762,9 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
 
     CHECK_WINDOW_MAGIC(window, false);
 
+    const int w = window->last_size_pending ? window->pending.w : window->windowed.w;
+    const int h = window->last_size_pending ? window->pending.h : window->windowed.h;
+
     original_displayID = SDL_GetDisplayForWindow(window);
 
     if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
@@ -2785,26 +2787,24 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         }
 
         SDL_zero(bounds);
-        if (!SDL_GetDisplayUsableBounds(displayID, &bounds) ||
-            window->windowed.w > bounds.w ||
-            window->windowed.h > bounds.h) {
+        if (!SDL_GetDisplayUsableBounds(displayID, &bounds) || w > bounds.w || h > bounds.h) {
             if (!SDL_GetDisplayBounds(displayID, &bounds)) {
                 return false;
             }
         }
         if (SDL_WINDOWPOS_ISCENTERED(x)) {
-            x = bounds.x + (bounds.w - window->windowed.w) / 2;
+            x = bounds.x + (bounds.w - w) / 2;
         }
         if (SDL_WINDOWPOS_ISCENTERED(y)) {
-            y = bounds.y + (bounds.h - window->windowed.h) / 2;
+            y = bounds.y + (bounds.h - h) / 2;
         }
     }
 
-    window->floating.x = x;
-    window->floating.y = y;
+    window->pending.x = x;
+    window->pending.y = y;
     window->undefined_x = false;
     window->undefined_y = false;
-    window->use_pending_position_for_fullscreen = true;
+    window->last_position_pending = true;
 
     if (_this->SetWindowPosition) {
         const bool result = _this->SetWindowPosition(_this, window);
@@ -2952,8 +2952,9 @@ bool SDL_SetWindowSize(SDL_Window *window, int w, int h)
         h = window->max_h;
     }
 
-    window->floating.w = w;
-    window->floating.h = h;
+    window->last_size_pending = true;
+    window->pending.w = w;
+    window->pending.h = h;
 
     if (_this->SetWindowSize) {
         _this->SetWindowSize(_this, window);

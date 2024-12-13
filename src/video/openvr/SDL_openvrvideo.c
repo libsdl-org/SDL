@@ -1138,12 +1138,12 @@ static void OPENVR_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 
-    if (window->floating.w != window->w) {
-        window->w = window->floating.w;
+    if (window->pending.w != window->w) {
+        window->w = window->pending.w;
     }
 
-    if (window->floating.h != window->h) {
-        window->h = window->floating.h;
+    if (window->pending.h != window->h) {
+        window->h = window->pending.h;
     }
 
     if (data->targh != window->h || data->targw != window->w) {

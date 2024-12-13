@@ -103,6 +103,8 @@ struct SDL_WindowData
         X11_PENDING_OP_RESIZE = 0x20
     } pending_operation;
 
+    bool pending_size;
+    bool pending_position;
     bool window_was_maximized;
     bool disable_size_position_events;
     bool previous_borders_nonzero;

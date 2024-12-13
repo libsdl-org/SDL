@@ -204,6 +204,11 @@ static bool WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD
         *width = window->floating.w;
         *height = window->floating.h;
         break;
+    case SDL_WINDOWRECT_PENDING:
+        SDL_RelativeToGlobalForWindow(window, window->pending.x, window->pending.y, x, y);
+        *width = window->pending.w;
+        *height = window->pending.h;
+        break;
     default:
         // Should never be here
         SDL_assert_release(false);
@@ -901,10 +906,8 @@ bool WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         if (!(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
             WIN_ConstrainPopup(window);
             return WIN_SetWindowPositionInternal(window,
-                                                 window->internal->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER |
-                                                 SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
-        } else {
-            window->internal->floating_rect_pending = true;
+                                                 window->internal->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOSIZE |
+                                                 SWP_NOACTIVATE, SDL_WINDOWRECT_PENDING);
         }
     } else {
         return SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_ENTER, true);
@@ -916,9 +919,10 @@ bool WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 void WIN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED))) {
-        WIN_SetWindowPositionInternal(window, window->internal->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
+        WIN_SetWindowPositionInternal(window, window->internal->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE, SDL_WINDOWRECT_PENDING);
     } else {
-        window->internal->floating_rect_pending = true;
+        // Can't resize the window
+        window->last_size_pending = false;
     }
 }
 

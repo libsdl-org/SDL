@@ -38,7 +38,8 @@ typedef enum SDL_WindowRect
 {
     SDL_WINDOWRECT_CURRENT,
     SDL_WINDOWRECT_WINDOWED,
-    SDL_WINDOWRECT_FLOATING
+    SDL_WINDOWRECT_FLOATING,
+    SDL_WINDOWRECT_PENDING
 } SDL_WindowRect;
 
 typedef enum SDL_WindowEraseBackgroundMode
@@ -76,7 +77,6 @@ struct SDL_WindowData
     bool expected_resize;
     bool in_border_change;
     bool in_title_click;
-    bool floating_rect_pending;
     Uint8 focus_click_pending;
     bool skip_update_clipcursor;
     Uint64 last_updated_clipcursor;

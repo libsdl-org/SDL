@@ -1529,13 +1529,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surfa
 /**
  * Request that the window's position be set.
  *
- * If, at the time of this request, the window is in a fixed-size state such
- * as maximized, this request may be deferred until the window returns to a
- * resizable state.
+ * If the window is in an exclusive fullscreen or maximized state, this request
+ * has no effect.
  *
  * This can be used to reposition fullscreen-desktop windows onto a different
- * display, however, exclusive fullscreen windows are locked to a specific
- * display and can only be repositioned programmatically via
+ * display, however, as exclusive fullscreen windows are locked to a specific
+ * display, they can only be repositioned programmatically via
  * SDL_SetWindowFullscreenMode().
  *
  * On some windowing systems this request is asynchronous and the new
@@ -1596,12 +1595,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *
 /**
  * Request that the size of a window's client area be set.
  *
- * If, at the time of this request, the window in a fixed-size state, such as
- * maximized or fullscreen, the request will be deferred until the window
- * exits this state and becomes resizable again.
+ * If the window is in a fullscreen or maximized state, this request has no
+ * effect.
  *
- * To change the fullscreen mode of a window, use
- * SDL_SetWindowFullscreenMode()
+ * To change the exclusive fullscreen mode of a window, use
+ * SDL_SetWindowFullscreenMode().
  *
  * On some windowing systems, this request is asynchronous and the new window
  * size may not have have been applied immediately upon the return of this
@@ -2021,6 +2019,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_MaximizeWindow(SDL_Window *window);
 /**
  * Request that the window be minimized to an iconic representation.
  *
+ * If the window is in a fullscreen state, this request has no direct effect.
+ * It may alter the state the window is returned to when leaving fullscreen.
+ *
  * On some windowing systems this request is asynchronous and the new window
  * state may not have been applied immediately upon the return of this
  * function. If an immediate change is required, call SDL_SyncWindow() to
@@ -2047,6 +2048,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_MinimizeWindow(SDL_Window *window);
 /**
  * Request that the size and position of a minimized or maximized window be
  * restored.
+ *
+ * If the window is in a fullscreen state, this request has no direct effect.
+ * It may alter the state the window is returned to when leaving fullscreen.
  *
  * On some windowing systems this request is asynchronous and the new window
  * state may not have have been applied immediately upon the return of this

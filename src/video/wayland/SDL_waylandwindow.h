@@ -176,7 +176,7 @@ struct SDL_WindowData
 
     SDL_DisplayID last_displayID;
     int fullscreen_deadline_count;
-    int maximized_deadline_count;
+    int maximized_restored_deadline_count;
     Uint64 last_focus_event_time_ns;
     bool floating;
     bool suspended;
@@ -190,7 +190,6 @@ struct SDL_WindowData
     bool show_hide_sync_required;
     bool scale_to_display;
     bool reparenting_required;
-    bool pending_restored_size;
     bool double_buffer;
 
     SDL_HitTestResult hit_test_result;

@@ -327,14 +327,14 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
         }
-        emscripten_set_canvas_element_size(data->canvas_id, SDL_lroundf(window->floating.w * data->pixel_ratio), SDL_lroundf(window->floating.h * data->pixel_ratio));
+        emscripten_set_canvas_element_size(data->canvas_id, SDL_lroundf(window->pending.w * data->pixel_ratio), SDL_lroundf(window->pending.h * data->pixel_ratio));
 
         // scale canvas down
         if (!data->external_size && data->pixel_ratio != 1.0f) {
-            emscripten_set_element_css_size(data->canvas_id, window->floating.w, window->floating.h);
+            emscripten_set_element_css_size(data->canvas_id, window->pending.w, window->pending.h);
         }
 
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->pending.w, window->pending.h);
     }
 }
 

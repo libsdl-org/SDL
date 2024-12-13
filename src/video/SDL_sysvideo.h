@@ -78,6 +78,9 @@ struct SDL_Window
      */
     SDL_Rect floating;
 
+    // The last client requested size and position for the window.
+    SDL_Rect pending;
+
     /* Toggle for drivers to indicate that the current window state is tiled,
      * and sizes set non-programmatically shouldn't be cached.
      */
@@ -98,7 +101,8 @@ struct SDL_Window
 
     bool is_hiding;
     bool restore_on_show; // Child was hidden recursively by the parent, restore when shown.
-    bool use_pending_position_for_fullscreen;
+    bool last_position_pending; // This should NOT be cleared by the backend, as it is used for fullscreen positioning.
+    bool last_size_pending; // This should be cleared by the backend if the new size cannot be applied.
     bool is_destroying;
     bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
 
