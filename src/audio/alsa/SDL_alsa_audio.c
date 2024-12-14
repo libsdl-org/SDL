@@ -869,7 +869,7 @@ static void swizzle_map_compute(struct ALSA_pcm_cfg_ctx *ctx)
     }
 }
 #define CHMAP_INSTALLED 0
-#define REDUCE_CHANS_N  1
+#define CHANS_N_NEXT            1
 #define CHMAP_NOT_FOUND 2
 // Should always be a queried alsa channel map unless the queried alsa channel map was of type VAR,
 // namely we can program the channel positions directly from the SDL channel map.
@@ -1122,31 +1122,47 @@ static int alsa_chmap_cfg(struct ALSA_pcm_cfg_ctx *ctx)
         return status;
     }
     if (status == CHMAP_NOT_FOUND)
-        return REDUCE_CHANS_N;
+        return CHANS_N_NEXT;
     return status; // < 0 error code
 }
 
-static int ALSA_pcm_cfg_hw(struct ALSA_pcm_cfg_ctx *ctx)
+#define CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N 0 /* target more hardware pressure */
+#define CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N          1 /* target less hardware pressure */
+#define CHANS_N_CONFIGURED      0
+#define CHANS_N_NOT_CONFIGURED  1
+static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned int mode)
 {
     unsigned int target_chans_n = ctx->device->spec.channels; // we start at what was specified
+    if (mode == CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N) {
+        target_chans_n--;
+    }
     loop {
         int status;
         snd_pcm_format_t alsa_format;
         const SDL_AudioFormat *closefmts;
 
+        if (mode == CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N) {
+            if (target_chans_n > SDL_AUDIO_ALSA__CHMAP_CHANS_N_MAX) {
+                return CHANS_N_NOT_CONFIGURED;
+            }
+        } else {/* CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N */
         if (target_chans_n == 0) {
-            return SDL_SetError("ALSA: tried all numbers of channels");
+                return CHANS_N_NOT_CONFIGURED;
         }
+        }
+        LOGDEBUG("target chans_n is %u\n", target_chans_n);
 
         status = ALSA_snd_pcm_hw_params_any(ctx->device->hidden->pcm, ctx->hwparams);
         if (status < 0) {
-            return SDL_SetError("ALSA: Couldn't get hardware config: %s", ALSA_snd_strerror(status));
+            SDL_SetError("ALSA: Couldn't get hardware config: %s", ALSA_snd_strerror(status));
+            return -1;
         }
         // SDL only uses interleaved sample output
         status = ALSA_snd_pcm_hw_params_set_access(ctx->device->hidden->pcm, ctx->hwparams,
                                                                    SND_PCM_ACCESS_RW_INTERLEAVED);
         if (status < 0) {
-            return SDL_SetError("ALSA: Couldn't set interleaved access: %s", ALSA_snd_strerror(status));
+            SDL_SetError("ALSA: Couldn't set interleaved access: %s", ALSA_snd_strerror(status));
+            return -1;
         }
         // Try for a closest match on audio format
         alsa_format = 0;
@@ -1189,66 +1205,103 @@ static int ALSA_pcm_cfg_hw(struct ALSA_pcm_cfg_ctx *ctx)
             }
         }
         if (ctx->matched_sdl_format == 0) {
-            return SDL_SetError("ALSA: Unsupported audio format: %s", ALSA_snd_strerror(status));
+            SDL_SetError("ALSA: Unsupported audio format: %s", ALSA_snd_strerror(status));
+            return -1;
         }
         // let alsa approximate the number of channels
         ctx->chans_n = target_chans_n;
         status = ALSA_snd_pcm_hw_params_set_channels_near(ctx->device->hidden->pcm,
                                                                     ctx->hwparams, &(ctx->chans_n));
         if (status < 0) {
-            return SDL_SetError("ALSA: Couldn't set audio channels: %s", ALSA_snd_strerror(status));
+            SDL_SetError("ALSA: Couldn't set audio channels: %s", ALSA_snd_strerror(status));
+            return -1;
         }
         // let alsa approximate the audio rate
         ctx->rate = ctx->device->spec.freq;
         status = ALSA_snd_pcm_hw_params_set_rate_near(ctx->device->hidden->pcm,
                                                                 ctx->hwparams, &(ctx->rate), NULL);
         if (status < 0) {
-            return SDL_SetError("ALSA: Couldn't set audio frequency: %s", ALSA_snd_strerror(status));
+            SDL_SetError("ALSA: Couldn't set audio frequency: %s", ALSA_snd_strerror(status));
+            return -1;
         }
         // let approximate the period size to the requested buffer size
         ctx->persize = ctx->device->sample_frames;
         status = ALSA_snd_pcm_hw_params_set_period_size_near(ctx->device->hidden->pcm,
                                                             ctx->hwparams, &(ctx->persize), NULL);
         if (status < 0) {
-            return SDL_SetError("ALSA: Couldn't set the period size: %s", ALSA_snd_strerror(status));
+            SDL_SetError("ALSA: Couldn't set the period size: %s", ALSA_snd_strerror(status));
+            return -1;
         }
         // let approximate the minimun number of periods per buffer (we target a double buffer)
         ctx->periods = 2;
         status = ALSA_snd_pcm_hw_params_set_periods_min(ctx->device->hidden->pcm,
                                                             ctx->hwparams, &(ctx->periods), NULL);
         if (status < 0) {
-            return SDL_SetError("ALSA: Couldn't set the minimum number of periods per buffer: %s", ALSA_snd_strerror(status));
+            SDL_SetError("ALSA: Couldn't set the minimum number of periods per buffer: %s", ALSA_snd_strerror(status));
+            return -1;
         }
         // restrict the number of periods per buffer to an approximation of the approximated minimum
         // number of periods per buffer done right above
         status = ALSA_snd_pcm_hw_params_set_periods_first(ctx->device->hidden->pcm,
                                                             ctx->hwparams, &(ctx->periods), NULL);
         if (status < 0) {
-            return SDL_SetError("ALSA: Couldn't set the number of periods per buffer: %s", ALSA_snd_strerror(status));
+            SDL_SetError("ALSA: Couldn't set the number of periods per buffer: %s", ALSA_snd_strerror(status));
+            return -1;
         }
         // install the hw parameters
         status = ALSA_snd_pcm_hw_params(ctx->device->hidden->pcm, ctx->hwparams);
         if (status < 0) {
-            return SDL_SetError("ALSA: installation of hardware parameter failed: %s", ALSA_snd_strerror(status));
+            SDL_SetError("ALSA: installation of hardware parameter failed: %s", ALSA_snd_strerror(status));
+            return -1;
         }
         //==========================================================================================
         // Here the alsa pcm is in SND_PCM_STATE_PREPARED state, let's figure out a good fit for
-        // SDL channel map, it may request to reduce the number of channels though.
+        // SDL channel map, it may request to change the target number of channels though.
         status = alsa_chmap_cfg(ctx);
         if (status < 0)
             return status; // we forward the SDL error
         if (status == CHMAP_INSTALLED)
-            return 0; // we are finished here
-        // status == REDUCE_CHANS_N
-        LOGDEBUG("reducing target chans_n to %u\n",target_chans_n-1);
+            return CHANS_N_CONFIGURED; // we are finished here
+        // status == CHANS_N_NEXT
         ALSA_snd_pcm_free_chmaps(ctx->chmap_queries);
         ALSA_snd_pcm_hw_free(ctx->device->hidden->pcm); // uninstall those hw params
+
+        if (mode == CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N) {
+            ++target_chans_n;
+        } else {/* CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N */
         target_chans_n--;
+    }
     }
 }
 #undef CHMAP_INSTALLED
-#undef REDUCE_CHANS_N
+#undef CHANS_N_NEXT
 #undef CHMAP_NOT_FOUND
+
+static int ALSA_pcm_cfg_hw(struct ALSA_pcm_cfg_ctx *ctx)
+{
+    int status;
+
+    LOGDEBUG("target chans_n, equal or above requested chans_n mode\n");
+    status = ALSA_pcm_cfg_hw_chans_n_scan(ctx, CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N);
+    if (status < 0) /* something went too wrong */
+        return status;
+    if (status == CHANS_N_CONFIGURED)
+        return 0;
+    /* Here, status == CHANS_N_NOT_CONFIGURED */
+    LOGDEBUG("target chans_n, below requested chans_n mode\n");
+    status = ALSA_pcm_cfg_hw_chans_n_scan(ctx, CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N);
+    if (status < 0) /* something went too wrong */
+        return status;
+    if (status == CHANS_N_CONFIGURED)
+        return 0;
+    /* Here, status == CHANS_N_NOT_CONFIGURED */
+    SDL_SetError("ALSA: Coudn't configure targetting any SDL supported channel number");
+    return -1;
+}
+#undef CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N
+#undef CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N
+#undef CHANS_N_CONFIGURED
+#undef CHANS_N_NOT_CONFIGURED
 
 static int ALSA_pcm_cfg_sw(struct ALSA_pcm_cfg_ctx *ctx)
 {
@@ -1256,21 +1309,25 @@ static int ALSA_pcm_cfg_sw(struct ALSA_pcm_cfg_ctx *ctx)
 
     status = ALSA_snd_pcm_sw_params_current(ctx->device->hidden->pcm, ctx->swparams);
     if (status < 0) {
-        return SDL_SetError("ALSA: Couldn't get software config: %s", ALSA_snd_strerror(status));
+        SDL_SetError("ALSA: Couldn't get software config: %s", ALSA_snd_strerror(status));
+        return -1;
     }
     status = ALSA_snd_pcm_sw_params_set_avail_min(ctx->device->hidden->pcm, ctx->swparams,
                                                                                     ctx->persize); // will become device->sample_frames if the alsa pcm configuration is successful
     if (status < 0) {
-        return SDL_SetError("Couldn't set minimum available samples: %s", ALSA_snd_strerror(status));
+        SDL_SetError("Couldn't set minimum available samples: %s", ALSA_snd_strerror(status));
+        return -1;
     }
     status = ALSA_snd_pcm_sw_params_set_start_threshold(ctx->device->hidden->pcm,
                                                                                 ctx->swparams, 1);
     if (status < 0) {
-        return SDL_SetError("ALSA: Couldn't set start threshold: %s", ALSA_snd_strerror(status));
+        SDL_SetError("ALSA: Couldn't set start threshold: %s", ALSA_snd_strerror(status));
+        return -1;
     }
     status = ALSA_snd_pcm_sw_params(ctx->device->hidden->pcm, ctx->swparams);
     if (status < 0) {
-        return SDL_SetError("Couldn't set software audio parameters: %s", ALSA_snd_strerror(status));
+        SDL_SetError("Couldn't set software audio parameters: %s", ALSA_snd_strerror(status));
+        return -1;
     }
     return 0;
 }
