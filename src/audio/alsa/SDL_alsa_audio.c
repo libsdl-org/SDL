@@ -43,8 +43,6 @@
 #ifdef SDL_AUDIO_DRIVER_ALSA_DYNAMIC
 #endif
 
-// !!! FIXME: remove this.
-#define loop for(;;)
 #define LOGDEBUG(...) SDL_Log("ALSA:" __VA_ARGS__)
 
 //TODO: cleanup once the code settled down
@@ -772,7 +770,7 @@ static enum snd_pcm_chmap_position sdl_channel_maps[SDL_AUDIO_ALSA__SDL_CHMAPS_N
 static bool has_pos(unsigned int *chmap, unsigned int pos)
 {
     unsigned int chan_idx = 0;
-    loop {
+    while (true) {
         if (chan_idx == 6)
             return false;
         if (chmap[chan_idx] == pos)
@@ -804,7 +802,7 @@ static void sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(unsigned int *
     }
     chan_idx = 0;
     state = HAVE_NONE;
-    loop {
+    while (true) {
         if (chan_idx == 6)
             break;
         if (alsa_6chans[chan_idx] == SND_CHMAP_SL || alsa_6chans[chan_idx] == SND_CHMAP_SR) {
@@ -846,7 +844,7 @@ static void swizzle_map_compute_alsa_subscan(struct ALSA_pcm_cfg_ctx *ctx,
                                                                         unsigned int sdl_pos_idx)
 {
     unsigned int alsa_pos_idx = 0;
-    loop {
+    while (true) {
         SDL_assert(alsa_pos_idx != ctx->chans_n);  // no 0 channels or not found matching position should happen here (actually enforce playback/recording symmetry).
 
         if (ctx->alsa_chmap_installed[alsa_pos_idx] == ctx->sdl_chmap[sdl_pos_idx]) {
@@ -861,7 +859,7 @@ static void swizzle_map_compute_alsa_subscan(struct ALSA_pcm_cfg_ctx *ctx,
 static void swizzle_map_compute(struct ALSA_pcm_cfg_ctx *ctx)
 {
     unsigned int sdl_pos_idx = 0;
-    loop {
+    while (true) {
         if (sdl_pos_idx == ctx->chans_n)
             break;
         swizzle_map_compute_alsa_subscan(ctx, sdl_pos_idx);
@@ -904,14 +902,14 @@ static bool alsa_chmap_has_duplicate_position(struct ALSA_pcm_cfg_ctx *ctx, unsi
     }
 
     chan_idx = 1;
-    loop {
+    while (true) {
         unsigned seen_idx;
         if (chan_idx == ctx->chans_n) {
             LOGDEBUG("channel map:no duplicate");
             return false;
         }
         seen_idx = 0;
-        loop {
+        while (true) {
             if (pos[seen_idx] == pos[chan_idx]) {
                 LOGDEBUG("channel map:have duplicate");
                 return true;
@@ -927,7 +925,7 @@ static int alsa_chmap_cfg_ordered_fixed_or_paired(struct ALSA_pcm_cfg_ctx *ctx)
 {
     char logdebug_chmap_str[128];
     snd_pcm_chmap_query_t **chmap_query = ctx->chmap_queries;
-    loop {
+    while (true) {
         unsigned int chan_idx;
         unsigned int *alsa_chmap;
 
@@ -953,7 +951,7 @@ static int alsa_chmap_cfg_ordered_fixed_or_paired(struct ALSA_pcm_cfg_ctx *ctx)
             continue;
         }
         chan_idx = 0;
-        loop {
+        while (true) {
             if (chan_idx == ctx->chans_n)
                 return alsa_chmap_install(ctx, alsa_chmap);
 
@@ -972,7 +970,7 @@ static int alsa_chmap_cfg_ordered_var(struct ALSA_pcm_cfg_ctx *ctx)
 {
     char logdebug_chmap_str[128];
     snd_pcm_chmap_query_t **chmap_query = ctx->chmap_queries;
-    loop {
+    while (true) {
         unsigned int pos_matches_n;
         unsigned int chan_idx;
         unsigned int *alsa_chmap;
@@ -999,13 +997,13 @@ static int alsa_chmap_cfg_ordered_var(struct ALSA_pcm_cfg_ctx *ctx)
         }
         pos_matches_n = 0;
         chan_idx = 0;
-        loop {
+        while (true) {
             unsigned int subscan_chan_idx;
 
             if (chan_idx == ctx->chans_n)
                 break;
             subscan_chan_idx = 0;
-            loop {
+            while (true) {
                 if (subscan_chan_idx == ctx->chans_n)
                     break;
                 if (ctx->sdl_chmap[chan_idx] == alsa_chmap[subscan_chan_idx]) {
@@ -1038,7 +1036,7 @@ static int alsa_chmap_cfg_unordered(struct ALSA_pcm_cfg_ctx *ctx)
 {
     char logdebug_chmap_str[128];
     snd_pcm_chmap_query_t **chmap_query = ctx->chmap_queries;
-    loop {
+    while (true) {
         unsigned int pos_matches_n;
         unsigned int chan_idx;
         unsigned int *alsa_chmap;
@@ -1066,13 +1064,13 @@ static int alsa_chmap_cfg_unordered(struct ALSA_pcm_cfg_ctx *ctx)
         }
         pos_matches_n = 0;
         chan_idx = 0;
-        loop {
+        while (true) {
             unsigned int subscan_chan_idx;
 
             if (chan_idx == ctx->chans_n)
                 break;
             subscan_chan_idx = 0;
-            loop {
+            while (true) {
                 if (subscan_chan_idx == ctx->chans_n)
                     break;
                 if (ctx->sdl_chmap[chan_idx] == alsa_chmap[subscan_chan_idx]) {
@@ -1136,7 +1134,7 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
     if (mode == CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N) {
         target_chans_n--;
     }
-    loop {
+    while (true) {
         int status;
         snd_pcm_format_t alsa_format;
         const SDL_AudioFormat *closefmts;
@@ -1450,7 +1448,7 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
 
     subdev_idx = 0;
     subdevs_n = 1; // we have at least one subdevice (substream since the direction is a stream in alsa terminology)
-    loop {
+    while (true) {
         ALSA_Device *unseen_prev_adev;
         ALSA_Device *adev;
 
@@ -1472,7 +1470,7 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
         // using the id, move it to the seen list.
         unseen_prev_adev = NULL;
         adev = *unseen;
-        loop {
+        while (true) {
             if (adev == NULL)
                 break;
             // the unicity key is the couple (id,recording)
@@ -1571,7 +1569,7 @@ static void ALSA_HotplugIteration(bool *has_default_output, bool *has_default_re
 
     card_idx = -1;
 
-    loop {
+    while (true) {
         r = ALSA_snd_card_next(&card_idx);
         if (r < 0)
             goto error_remove_all_devices;
@@ -1587,7 +1585,7 @@ static void ALSA_HotplugIteration(bool *has_default_output, bool *has_default_re
         if (r < 0)
             goto error_close_ctl;
         dev_idx = -1;
-        loop {
+        while (true) {
             r = ALSA_snd_ctl_pcm_next_device(ctl, &dev_idx);
             if (r < 0)
                 goto error_close_ctl;
@@ -1609,7 +1607,7 @@ static void ALSA_HotplugIteration(bool *has_default_output, bool *has_default_re
         ALSA_snd_ctl_card_info_clear(ctl_card_info);
     }
     // remove only the unseen devices
-    loop {
+    while (true) {
         ALSA_Device *next;
         if (unseen == NULL)
             break;
@@ -1629,7 +1627,7 @@ error_close_ctl:
 
 error_remove_all_devices:
     // remove the unseen
-    loop {
+    while (true) {
         ALSA_Device *next;
         if (unseen == NULL)
             break;
@@ -1641,7 +1639,7 @@ error_remove_all_devices:
         unseen = next;
     }
     // remove the seen
-    loop {
+    while (true) {
         ALSA_Device *next;
         if (seen == NULL)
             break;
@@ -1754,5 +1752,4 @@ AudioBootStrap ALSA_bootstrap = {
     "alsa", "ALSA PCM audio", ALSA_Init, false
 };
 
-#undef loop
 #endif // SDL_AUDIO_DRIVER_ALSA
