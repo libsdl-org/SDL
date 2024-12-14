@@ -1344,7 +1344,7 @@ static bool ALSA_OpenDevice(SDL_AudioDevice *device)
     // XXX: We do not use the SDL internal swizzler yet.
     device->chmap = NULL;
 
-    memset(&cfg_ctx,0,sizeof(cfg_ctx));
+    SDL_zero(cfg_ctx);
     cfg_ctx.device = device;
 
     // Initialize all variables that we clean on shutdown
@@ -1444,7 +1444,7 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
     bool recording = direction == SND_PCM_STREAM_CAPTURE ? true : false; // used for the unicity of the device
 
     pcm_info = (snd_pcm_info_t*)SDL_stack_alloc(Uint8,ALSA_snd_pcm_info_sizeof());
-    memset(pcm_info,0,ALSA_snd_pcm_info_sizeof());
+    SDL_memset(pcm_info, 0, ALSA_snd_pcm_info_sizeof());
 
     subdev_idx = 0;
     subdevs_n = 1; // we have at least one subdevice (substream since the direction is a stream in alsa terminology)
@@ -1542,7 +1542,7 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
         ++subdev_idx;
         if (subdev_idx == subdevs_n)
             return 0;
-        memset(pcm_info,0,ALSA_snd_pcm_info_sizeof());
+        SDL_memset(pcm_info, 0, ALSA_snd_pcm_info_sizeof());
     }
 }
 
@@ -1562,7 +1562,7 @@ static void ALSA_HotplugIteration(bool *has_default_output, bool *has_default_re
         *has_default_recording = true;
 
     ctl_card_info = alloca(ALSA_snd_ctl_card_info_sizeof());
-    memset(ctl_card_info,0,ALSA_snd_ctl_card_info_sizeof());
+    SDL_memset(ctl_card_info,0,ALSA_snd_ctl_card_info_sizeof());
 
     unseen = hotplug_devices;
     seen = NULL;
