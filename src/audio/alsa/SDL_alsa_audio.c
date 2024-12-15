@@ -246,6 +246,51 @@ static bool LoadALSALibrary(void)
 
 #endif // SDL_AUDIO_DRIVER_ALSA_DYNAMIC
 
+static const char *ALSA_device_prefix = NULL;
+static void ALSA_guess_device_prefix(void)
+{
+    if (ALSA_device_prefix) {
+        return;  // already calculated.
+    }
+
+    // Apparently there are several different ways that ALSA lists
+    //  actual hardware. It could be prefixed with "hw:" or "default:"
+    //  or "sysdefault:" and maybe others. Go through the list and see
+    //  if we can find a preferred prefix for the system.
+
+    static const char *const prefixes[] = {
+        "hw:", "sysdefault:", "default:"
+    };
+
+    void **hints = NULL;
+    if (ALSA_snd_device_name_hint(-1, "pcm", &hints) == 0) {
+        for (int i = 0; hints[i]; i++) {
+            char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
+            if (name) {
+                for (int j = 0; j < SDL_arraysize(prefixes); j++) {
+                    const char *prefix = prefixes[j];
+                    const size_t prefixlen = SDL_strlen(prefix);
+                    if (SDL_strncmp(name, prefix, prefixlen) == 0) {
+                        ALSA_device_prefix = prefix;
+                        break;
+                    }
+                }
+                free(name); // This should NOT be SDL_free()
+
+                if (ALSA_device_prefix) {
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!ALSA_device_prefix) {
+        ALSA_device_prefix = prefixes[0];  // oh well.
+    }
+
+    LOGDEBUG("device prefix is probably '%s'", ALSA_device_prefix);
+}
+
 typedef struct ALSA_Device
 {
     // the unicity key is the couple (id,recording)
@@ -293,7 +338,7 @@ static char *get_pcm_str(void *handle)
     if (SDL_strlen(dev->id) == 0) {
         pcm_str = SDL_strdup("default");
     } else {
-        SDL_asprintf(&pcm_str, "default:CARD=%s", dev->id);
+        SDL_asprintf(&pcm_str, "%sCARD=%s", ALSA_device_prefix, dev->id);
     }
     return pcm_str;
 }
@@ -1512,7 +1557,8 @@ static void ALSA_HotplugIteration(bool *has_default_output, bool *has_default_re
         }
 
         char ctl_name[64];
-        SDL_snprintf(ctl_name, sizeof (ctl_name), "hw:%d", card_idx); // card_idx >= 0
+        SDL_snprintf(ctl_name, sizeof (ctl_name), "%s%d", ALSA_device_prefix, card_idx); // card_idx >= 0
+        LOGDEBUG("hotplug ctl_name = '%s'", ctl_name);
 
         r = ALSA_snd_ctl_open(&ctl, ctl_name, 0);
         if (r < 0) {
@@ -1616,6 +1662,8 @@ static int SDLCALL ALSA_HotplugThread(void *arg)
 
 static void ALSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
+    ALSA_guess_device_prefix();
+
     // ALSA doesn't have a concept of a changeable default device, afaik, so we expose a generic default
     // device here. It's the best we can do at this level.
     bool has_default_playback = false, has_default_recording = false;
