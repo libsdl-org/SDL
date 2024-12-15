@@ -31,19 +31,18 @@
 #define SDL_ALSA_HOTPLUG_THREAD 1
 #endif
 
-// Allow access to a raw mixing buffer
-
-#include <sys/types.h>
-#include <signal.h> // For kill()
-#include <string.h>
-
 #include "../SDL_sysaudio.h"
 #include "SDL_alsa_audio.h"
 
-#ifdef SDL_AUDIO_DRIVER_ALSA_DYNAMIC
+#ifndef SDL_ALSA_DEBUG
+#define SDL_ALSA_DEBUG 0
 #endif
 
-#define LOGDEBUG(...) SDL_Log("ALSA:" __VA_ARGS__)
+#if SDL_ALSA_DEBUG
+#define LOGDEBUG(...) SDL_Log("ALSA: " __VA_ARGS__)
+#else
+#define LOGDEBUG(...)
+#endif
 
 //TODO: cleanup once the code settled down
 
@@ -278,33 +277,23 @@ static const ALSA_Device default_recording_handle = {
 // All the above may be completely wrong.
 static char *get_pcm_str(void *handle)
 {
-    ALSA_Device *dev;
-    size_t pcm_len;
-    char *pcm_str;
-
     SDL_assert(handle != NULL);  // SDL2 used NULL to mean "default" but that's not true in SDL3.
-    dev = (ALSA_Device *)handle;
- 
+    ALSA_Device *dev = (ALSA_Device *)handle;
+
     // If the user does not want to go thru the default PCM or the canonical default, the
     // the configuration space being _massive_, give the user the ability to specify
     // its own PCMs using environment variables. It will have to fit SDL constraints though.
-    if (dev->recording)
-        pcm_str = (char*)SDL_getenv("SDL_AUDIO_ALSA_PCM_RECORDING");
-    else
-        pcm_str = (char*)SDL_getenv("SDL_AUDIO_ALSA_PCM_PLAYBACK");
-    if (pcm_str)
-        return SDL_strdup(pcm_str);
+    // !!! FIXME: make these into SDL_Hints?
+    const char *env = SDL_getenv(dev->recording ? "SDL_AUDIO_ALSA_PCM_RECORDING" : "SDL_AUDIO_ALSA_PCM_PLAYBACK");
+    if (env) {
+        return SDL_strdup(env);
+    }
 
-    if (SDL_strlen(dev->id) == 0)
-            pcm_str = SDL_strdup("default");
-    else {
-#define PCM_STR_FMT "default:CARD=%s"
-        pcm_len = (size_t)SDL_snprintf(0, 0, PCM_STR_FMT, dev->id);
-
-        pcm_str = SDL_malloc(pcm_len + 1);
-        if (pcm_str != NULL)
-            SDL_snprintf(pcm_str, pcm_len + 1, PCM_STR_FMT, dev->id);
-#undef PCM_STR_FMT
+    char *pcm_str = NULL;
+    if (SDL_strlen(dev->id) == 0) {
+        pcm_str = SDL_strdup("default");
+    } else {
+        SDL_asprintf(&pcm_str, "default:CARD=%s", dev->id);
     }
     return pcm_str;
 }
@@ -680,16 +669,16 @@ struct ALSA_pcm_cfg_ctx {
     snd_pcm_hw_params_t *hwparams;
     snd_pcm_sw_params_t *swparams;
 
-    SDL_AudioFormat             matched_sdl_format;
-    unsigned int                chans_n;
-    unsigned int                target_chans_n;
-    unsigned int                rate;
-    snd_pcm_uframes_t           persize; // alsa period size, SDL audio device sample_frames
-    snd_pcm_chmap_query_t       **chmap_queries;
-    unsigned int                sdl_chmap[SDL_AUDIO_ALSA__CHMAP_CHANS_N_MAX];
-    unsigned int                alsa_chmap_installed[SDL_AUDIO_ALSA__CHMAP_CHANS_N_MAX];
+    SDL_AudioFormat matched_sdl_format;
+    unsigned int chans_n;
+    unsigned int target_chans_n;
+    unsigned int rate;
+    snd_pcm_uframes_t persize; // alsa period size, SDL audio device sample_frames
+    snd_pcm_chmap_query_t **chmap_queries;
+    unsigned int sdl_chmap[SDL_AUDIO_ALSA__CHMAP_CHANS_N_MAX];
+    unsigned int alsa_chmap_installed[SDL_AUDIO_ALSA__CHMAP_CHANS_N_MAX];
 
-    unsigned int            periods;
+    unsigned int periods;
 };
 // The following are SDL channel maps with alsa position values, from 0 channels to 8 channels.
 // See SDL3/SDL_audio.h
@@ -769,15 +758,18 @@ static enum snd_pcm_chmap_position sdl_channel_maps[SDL_AUDIO_ALSA__SDL_CHMAPS_N
 // Helper for the function right below.
 static bool has_pos(unsigned int *chmap, unsigned int pos)
 {
-    unsigned int chan_idx = 0;
-    while (true) {
-        if (chan_idx == 6)
+    for (unsigned int chan_idx = 0; ; chan_idx++) {
+        if (chan_idx == 6) {
             return false;
-        if (chmap[chan_idx] == pos)
+        }
+        if (chmap[chan_idx] == pos) {
             return true;
-        ++chan_idx;
+        }
     }
+    SDL_assert(!"Shouldn't hit this code.");
+    return false;
 }
+
 // XXX: Each time we are going to work on an alsa 6 channels map, we must reduce the set of channel
 // maps which is encoded in sdl_channel_maps[6] to a uniq one.
 #define HAVE_NONE 0
@@ -787,32 +779,28 @@ static bool has_pos(unsigned int *chmap, unsigned int pos)
 static void sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(unsigned int *sdl_6chans,
                                                                         unsigned int *alsa_6chans)
 {
-    unsigned int chan_idx;
-    unsigned int state;
     // For alsa channel maps with 6 channels and with SND_CHMAP_FL,SND_CHMAP_FR,SND_CHMAP_FC,
     // SND_CHMAP_LFE, reduce our 6 channels maps to a uniq one.
-    if (!has_pos(alsa_6chans, SND_CHMAP_FL)
-                                            || !has_pos(alsa_6chans, SND_CHMAP_FR)
-                                            || !has_pos(alsa_6chans, SND_CHMAP_FC)
-                                            || !has_pos(alsa_6chans, SND_CHMAP_LFE)) {
+    if ( !has_pos(alsa_6chans, SND_CHMAP_FL) ||
+         !has_pos(alsa_6chans, SND_CHMAP_FR) ||
+         !has_pos(alsa_6chans, SND_CHMAP_FC) ||
+         !has_pos(alsa_6chans, SND_CHMAP_LFE)) {
         sdl_6chans[4] = SND_CHMAP_UNKNOWN;
         sdl_6chans[5] = SND_CHMAP_UNKNOWN;
         LOGDEBUG("6channels:unsupported channel map");
         return;
     }
-    chan_idx = 0;
-    state = HAVE_NONE;
-    while (true) {
-        if (chan_idx == 6)
-            break;
-        if (alsa_6chans[chan_idx] == SND_CHMAP_SL || alsa_6chans[chan_idx] == SND_CHMAP_SR) {
+
+    unsigned int state = HAVE_NONE;
+    for (unsigned int chan_idx = 0; chan_idx < 6; chan_idx++) {
+        if ((alsa_6chans[chan_idx] == SND_CHMAP_SL) || (alsa_6chans[chan_idx] == SND_CHMAP_SR)) {
             if (state == HAVE_NONE) {
                 state = HAVE_SIDE;
             } else if (state == HAVE_REAR) {
                 state = HAVE_BOTH;
                 break;
             }
-        } else if (alsa_6chans[chan_idx] == SND_CHMAP_RL || alsa_6chans[chan_idx] == SND_CHMAP_RR) {
+        } else if ((alsa_6chans[chan_idx] == SND_CHMAP_RL) || (alsa_6chans[chan_idx] == SND_CHMAP_RR)) {
             if (state == HAVE_NONE) {
                 state = HAVE_REAR;
             } else if (state == HAVE_SIDE) {
@@ -820,9 +808,9 @@ static void sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(unsigned int *
                 break;
             }
         }
-        ++chan_idx;
     }
-    if (state == HAVE_BOTH || state == HAVE_NONE) {
+
+    if ((state == HAVE_BOTH) || (state == HAVE_NONE)) {
         sdl_6chans[4] = SND_CHMAP_UNKNOWN;
         sdl_6chans[5] = SND_CHMAP_UNKNOWN;
         LOGDEBUG("6channels:unsupported channel map");
@@ -840,32 +828,27 @@ static void sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(unsigned int *
 #undef HAVE_REAR
 #undef HAVE_SIDE
 #undef HAVE_BOTH
-static void swizzle_map_compute_alsa_subscan(struct ALSA_pcm_cfg_ctx *ctx,
-                                                                        unsigned int sdl_pos_idx)
-{
-    unsigned int alsa_pos_idx = 0;
-    while (true) {
-        SDL_assert(alsa_pos_idx != ctx->chans_n);  // no 0 channels or not found matching position should happen here (actually enforce playback/recording symmetry).
 
+static void swizzle_map_compute_alsa_subscan(struct ALSA_pcm_cfg_ctx *ctx, unsigned int sdl_pos_idx)
+{
+    for (unsigned int alsa_pos_idx = 0; ; alsa_pos_idx++) {
+        SDL_assert(alsa_pos_idx != ctx->chans_n);  // no 0 channels or not found matching position should happen here (actually enforce playback/recording symmetry).
         if (ctx->alsa_chmap_installed[alsa_pos_idx] == ctx->sdl_chmap[sdl_pos_idx]) {
             LOGDEBUG("swizzle SDL %u <-> alsa %u", sdl_pos_idx,alsa_pos_idx);
             ctx->device->hidden->swizzle_map[sdl_pos_idx] = alsa_pos_idx;
             return;
         }
-        ++alsa_pos_idx;
     }
 }
+
 // XXX: this must stay playback/recording symetric.
 static void swizzle_map_compute(struct ALSA_pcm_cfg_ctx *ctx)
 {
-    unsigned int sdl_pos_idx = 0;
-    while (true) {
-        if (sdl_pos_idx == ctx->chans_n)
-            break;
+    for (unsigned int sdl_pos_idx = 0; sdl_pos_idx != ctx->chans_n; sdl_pos_idx++) {
         swizzle_map_compute_alsa_subscan(ctx, sdl_pos_idx);
-        ++sdl_pos_idx;
     }
 }
+
 #define CHMAP_INSTALLED 0
 #define CHANS_N_NEXT            1
 #define CHMAP_NOT_FOUND 2
@@ -873,218 +856,185 @@ static void swizzle_map_compute(struct ALSA_pcm_cfg_ctx *ctx)
 // namely we can program the channel positions directly from the SDL channel map.
 static int alsa_chmap_install(struct ALSA_pcm_cfg_ctx *ctx, unsigned int *chmap)
 {
-    int status;
-    char logdebug_chmap_str[128];
-    snd_pcm_chmap_t *chmap_to_install = (snd_pcm_chmap_t*)SDL_stack_alloc(unsigned int,
-                                                                                1 + ctx->chans_n);
-    chmap_to_install->channels = ctx->chans_n;
-    SDL_memcpy(chmap_to_install->pos, chmap, sizeof(unsigned int) * ctx->chans_n);
+    bool isstack;
+    snd_pcm_chmap_t *chmap_to_install = (snd_pcm_chmap_t*)SDL_small_alloc(unsigned int, 1 + ctx->chans_n, &isstack);
+    if (!chmap_to_install) {
+        return -1;
+    }
 
+    chmap_to_install->channels = ctx->chans_n;
+    SDL_memcpy(chmap_to_install->pos, chmap, sizeof (unsigned int) * ctx->chans_n);
+
+    #if SDL_ALSA_DEBUG
+    char logdebug_chmap_str[128];
     ALSA_snd_pcm_chmap_print(chmap_to_install,sizeof(logdebug_chmap_str),logdebug_chmap_str);
     LOGDEBUG("channel map to install:%s",logdebug_chmap_str);
+    #endif
 
-    status = ALSA_snd_pcm_set_chmap(ctx->device->hidden->pcm, chmap_to_install);
+    int status = ALSA_snd_pcm_set_chmap(ctx->device->hidden->pcm, chmap_to_install);
     if (status < 0) {
-        return SDL_SetError("ALSA: failed to install channel map: %s", ALSA_snd_strerror(status));
+        SDL_SetError("ALSA: failed to install channel map: %s", ALSA_snd_strerror(status));
+        return -1;
     }
-    SDL_memcpy(ctx->alsa_chmap_installed, chmap, ctx->chans_n * sizeof(unsigned int));
+    SDL_memcpy(ctx->alsa_chmap_installed, chmap, ctx->chans_n * sizeof (unsigned int));
+
+    SDL_small_free(chmap_to_install, isstack);
     return CHMAP_INSTALLED;
 }
+
 // We restrict the alsa channel maps because in the unordered matches we do only simple accounting.
 // In the end, this will handle mostly alsa channel maps with more than one SND_CHMAP_NA position fillers.
 static bool alsa_chmap_has_duplicate_position(struct ALSA_pcm_cfg_ctx *ctx, unsigned int *pos)
 {
-    unsigned int chan_idx;
-
     if (ctx->chans_n < 2) {// we need at least 2 positions
-            LOGDEBUG("channel map:no duplicate");
-            return false;
+        LOGDEBUG("channel map:no duplicate");
+        return false;
     }
 
-    chan_idx = 1;
-    while (true) {
-        unsigned seen_idx;
-        if (chan_idx == ctx->chans_n) {
-            LOGDEBUG("channel map:no duplicate");
-            return false;
-        }
-        seen_idx = 0;
-        while (true) {
+    for (unsigned int chan_idx = 1; chan_idx != ctx->chans_n; chan_idx++) {
+        for (unsigned int seen_idx = 0; seen_idx != chan_idx; seen_idx++) {
             if (pos[seen_idx] == pos[chan_idx]) {
                 LOGDEBUG("channel map:have duplicate");
                 return true;
-               }
-            ++seen_idx;
-            if (seen_idx == chan_idx)
-                break;
+            }
         }
-        ++chan_idx;
     }
+
+    LOGDEBUG("channel map:no duplicate");
+    return false;
 }
+
 static int alsa_chmap_cfg_ordered_fixed_or_paired(struct ALSA_pcm_cfg_ctx *ctx)
 {
-    char logdebug_chmap_str[128];
-    snd_pcm_chmap_query_t **chmap_query = ctx->chmap_queries;
-    while (true) {
-        unsigned int chan_idx;
-        unsigned int *alsa_chmap;
-
-        if (*chmap_query == NULL)
-            break;
-        if (((*chmap_query)->map.channels != ctx->chans_n)
-                        || ((*chmap_query)->type != SND_CHMAP_TYPE_FIXED
-                                                && (*chmap_query)->type != SND_CHMAP_TYPE_PAIRED)) {
-            ++chmap_query;
+    for (snd_pcm_chmap_query_t **chmap_query = ctx->chmap_queries; *chmap_query; chmap_query++) {
+        if ( ((*chmap_query)->map.channels != ctx->chans_n) ||
+             (((*chmap_query)->type != SND_CHMAP_TYPE_FIXED) && ((*chmap_query)->type != SND_CHMAP_TYPE_PAIRED)) ) {
             continue;
         }
 
+        #if SDL_ALSA_DEBUG
+        char logdebug_chmap_str[128];
         ALSA_snd_pcm_chmap_print(&(*chmap_query)->map,sizeof(logdebug_chmap_str),logdebug_chmap_str);
         LOGDEBUG("channel map:ordered:fixed|paired:%s",logdebug_chmap_str);
+        #endif
 
-        alsa_chmap = (*chmap_query)->map.pos;
-        SDL_memcpy(ctx->sdl_chmap, sdl_channel_maps[ctx->chans_n], ctx->chans_n
-                                                                            * sizeof(unsigned int));
-        if (ctx->chans_n == 6)
+        for (int i = 0; i < ctx->chans_n; i++) {
+            ctx->sdl_chmap[i] = (unsigned int) sdl_channel_maps[ctx->chans_n][i];
+        }
+
+        unsigned int *alsa_chmap = (*chmap_query)->map.pos;
+        if (ctx->chans_n == 6) {
             sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(ctx->sdl_chmap, alsa_chmap);
+        }
         if (alsa_chmap_has_duplicate_position(ctx, alsa_chmap)) {
-            ++chmap_query;
             continue;
         }
-        chan_idx = 0;
-        while (true) {
-            if (chan_idx == ctx->chans_n)
-                return alsa_chmap_install(ctx, alsa_chmap);
 
-            if (ctx->sdl_chmap[chan_idx] != alsa_chmap[chan_idx])
-                break; // nope, try next alsa channel map.
-            ++chan_idx;
+        for (unsigned int chan_idx = 0; ctx->sdl_chmap[chan_idx] == alsa_chmap[chan_idx]; chan_idx++) {
+            if (chan_idx == ctx->chans_n) {
+                return alsa_chmap_install(ctx, alsa_chmap);
+            }
         }
-        ++chmap_query;
     }
     return CHMAP_NOT_FOUND;
 }
+
 // Here, the alsa channel positions can be programmed in the alsa frame (cf HDMI).
 // If the alsa channel map is VAR, we only check we have the unordered set of channel positions we
 // are looking for.
 static int alsa_chmap_cfg_ordered_var(struct ALSA_pcm_cfg_ctx *ctx)
 {
-    char logdebug_chmap_str[128];
-    snd_pcm_chmap_query_t **chmap_query = ctx->chmap_queries;
-    while (true) {
-        unsigned int pos_matches_n;
-        unsigned int chan_idx;
-        unsigned int *alsa_chmap;
-
-        if (*chmap_query == NULL)
-            break;
-        if ((*chmap_query)->map.channels != ctx->chans_n
-                                                    || (*chmap_query)->type != SND_CHMAP_TYPE_VAR) {
-            ++chmap_query;
+    for (snd_pcm_chmap_query_t **chmap_query = ctx->chmap_queries; *chmap_query; chmap_query++) {
+        if (((*chmap_query)->map.channels != ctx->chans_n) || ((*chmap_query)->type != SND_CHMAP_TYPE_VAR)) {
             continue;
         }
 
+        #if SDL_ALSA_DEBUG
+        char logdebug_chmap_str[128];
         ALSA_snd_pcm_chmap_print(&(*chmap_query)->map,sizeof(logdebug_chmap_str),logdebug_chmap_str);
         LOGDEBUG("channel map:ordered:var:%s",logdebug_chmap_str);
+        #endif
 
-        alsa_chmap = (*chmap_query)->map.pos;
-        SDL_memcpy(ctx->sdl_chmap, sdl_channel_maps[ctx->chans_n], ctx->chans_n
-                                                                            * sizeof(unsigned int));
-        if (ctx->chans_n == 6)
+        for (int i = 0; i < ctx->chans_n; i++) {
+            ctx->sdl_chmap[i] = (unsigned int) sdl_channel_maps[ctx->chans_n][i];
+        }
+
+        unsigned int *alsa_chmap = (*chmap_query)->map.pos;
+        if (ctx->chans_n == 6) {
             sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(ctx->sdl_chmap, alsa_chmap);
+        }
         if (alsa_chmap_has_duplicate_position(ctx, alsa_chmap)) {
-            ++chmap_query;
             continue;
         }
-        pos_matches_n = 0;
-        chan_idx = 0;
-        while (true) {
-            unsigned int subscan_chan_idx;
 
-            if (chan_idx == ctx->chans_n)
-                break;
-            subscan_chan_idx = 0;
-            while (true) {
-                if (subscan_chan_idx == ctx->chans_n)
-                    break;
+        unsigned int pos_matches_n = 0;
+        for (unsigned int chan_idx = 0; chan_idx != ctx->chans_n; chan_idx++) {
+            for (unsigned int subscan_chan_idx = 0; subscan_chan_idx != ctx->chans_n; subscan_chan_idx++) {
                 if (ctx->sdl_chmap[chan_idx] == alsa_chmap[subscan_chan_idx]) {
-                    ++pos_matches_n;
+                    pos_matches_n++;
                     break;
                 }
-                ++subscan_chan_idx;
             }
-            ++chan_idx;
         }
-        if (pos_matches_n == ctx->chans_n)
+
+        if (pos_matches_n == ctx->chans_n) {
             return alsa_chmap_install(ctx, ctx->sdl_chmap); // XXX: we program the SDL chmap here
-        ++chmap_query;
+        }
     }
+
     return CHMAP_NOT_FOUND;
 }
 
 static int alsa_chmap_cfg_ordered(struct ALSA_pcm_cfg_ctx *ctx)
 {
-    int status;
-
-    status = alsa_chmap_cfg_ordered_fixed_or_paired(ctx);
-    if (status != CHMAP_NOT_FOUND)
-        return status;
-    return alsa_chmap_cfg_ordered_var(ctx);
+    const int status = alsa_chmap_cfg_ordered_fixed_or_paired(ctx);
+    return (status != CHMAP_NOT_FOUND) ? status : alsa_chmap_cfg_ordered_var(ctx);
 }
+
 // In the unordered case, we are just interested to get the same unordered set of alsa channel
 // positions than in the SDL channel map since we will swizzle (no duplicate channel position).
 static int alsa_chmap_cfg_unordered(struct ALSA_pcm_cfg_ctx *ctx)
 {
-    char logdebug_chmap_str[128];
-    snd_pcm_chmap_query_t **chmap_query = ctx->chmap_queries;
-    while (true) {
-        unsigned int pos_matches_n;
-        unsigned int chan_idx;
-        unsigned int *alsa_chmap;
-
-        if (*chmap_query == NULL)
-            break;
-        if (((*chmap_query)->map.channels != ctx->chans_n)
-                        || ((*chmap_query)->type != SND_CHMAP_TYPE_FIXED
-                                                && (*chmap_query)->type != SND_CHMAP_TYPE_PAIRED)) {
-            ++chmap_query;
+    for (snd_pcm_chmap_query_t **chmap_query = ctx->chmap_queries; *chmap_query; chmap_query++) {
+        if ( ((*chmap_query)->map.channels != ctx->chans_n) ||
+             (((*chmap_query)->type != SND_CHMAP_TYPE_FIXED) && ((*chmap_query)->type != SND_CHMAP_TYPE_PAIRED)) ) {
             continue;
         }
 
+        #if SDL_ALSA_DEBUG
+        char logdebug_chmap_str[128];
         ALSA_snd_pcm_chmap_print(&(*chmap_query)->map,sizeof(logdebug_chmap_str),logdebug_chmap_str);
         LOGDEBUG("channel map:unordered:fixed|paired:%s",logdebug_chmap_str);
+        #endif
 
-        alsa_chmap = (*chmap_query)->map.pos;
-        SDL_memcpy(ctx->sdl_chmap, sdl_channel_maps[ctx->chans_n], ctx->chans_n
-                                                                            * sizeof(unsigned int));
-        if (ctx->chans_n == 6)
+        for (int i = 0; i < ctx->chans_n; i++) {
+            ctx->sdl_chmap[i] = (unsigned int) sdl_channel_maps[ctx->chans_n][i];
+        }
+
+        unsigned int *alsa_chmap = (*chmap_query)->map.pos;
+        if (ctx->chans_n == 6) {
             sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(ctx->sdl_chmap, alsa_chmap);
+        }
+
         if (alsa_chmap_has_duplicate_position(ctx, alsa_chmap)) {
-            ++chmap_query;
             continue;
         }
-        pos_matches_n = 0;
-        chan_idx = 0;
-        while (true) {
-            unsigned int subscan_chan_idx;
 
-            if (chan_idx == ctx->chans_n)
-                break;
-            subscan_chan_idx = 0;
-            while (true) {
-                if (subscan_chan_idx == ctx->chans_n)
-                    break;
+        unsigned int pos_matches_n = 0;
+        for (unsigned int chan_idx = 0; chan_idx != ctx->chans_n; chan_idx++) {
+            for (unsigned int subscan_chan_idx = 0; subscan_chan_idx != ctx->chans_n; subscan_chan_idx++) {
                 if (ctx->sdl_chmap[chan_idx] == alsa_chmap[subscan_chan_idx]) {
-                    ++pos_matches_n;
+                    pos_matches_n++;
                     break;
                 }
-                ++subscan_chan_idx;
             }
-            ++chan_idx;
         }
-        if (pos_matches_n == ctx->chans_n)
+
+        if (pos_matches_n == ctx->chans_n) {
             return alsa_chmap_install(ctx, alsa_chmap);
-        ++chmap_query;
+        }
     }
+
     return CHMAP_NOT_FOUND;
 }
 
@@ -1107,14 +1057,14 @@ static int alsa_chmap_cfg(struct ALSA_pcm_cfg_ctx *ctx)
         ctx->device->hidden->swizzle_func = no_swizzle;
         return status;
     }
-    if (status != CHMAP_NOT_FOUND)
+    if (status != CHMAP_NOT_FOUND) {
         return status; // < 0 error code
+    }
     // Fall-thru
     //----------------------------------------------------------------------------------------------
     status = alsa_chmap_cfg_unordered(ctx); // those we will have to swizzle
     if (status == CHMAP_INSTALLED) {
         LOGDEBUG("swizzling on");
-
         swizzle_map_compute(ctx); // fine grained swizzle configuration
         ctx->device->hidden->swizzle_func = swizzle_alsa_channels;
         return status;
@@ -1124,8 +1074,8 @@ static int alsa_chmap_cfg(struct ALSA_pcm_cfg_ctx *ctx)
     return status; // < 0 error code
 }
 
-#define CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N 0 /* target more hardware pressure */
-#define CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N          1 /* target less hardware pressure */
+#define CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N 0  // target more hardware pressure
+#define CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N          1  // target less hardware pressure
 #define CHANS_N_CONFIGURED      0
 #define CHANS_N_NOT_CONFIGURED  1
 static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned int mode)
@@ -1135,22 +1085,18 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
         target_chans_n--;
     }
     while (true) {
-        int status;
-        snd_pcm_format_t alsa_format;
-        const SDL_AudioFormat *closefmts;
-
         if (mode == CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N) {
             if (target_chans_n > SDL_AUDIO_ALSA__CHMAP_CHANS_N_MAX) {
                 return CHANS_N_NOT_CONFIGURED;
             }
-        } else {/* CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N */
-        if (target_chans_n == 0) {
-                return CHANS_N_NOT_CONFIGURED;
+            // else: CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N
+        } else if (target_chans_n == 0) {
+            return CHANS_N_NOT_CONFIGURED;
         }
-        }
+
         LOGDEBUG("target chans_n is %u\n", target_chans_n);
 
-        status = ALSA_snd_pcm_hw_params_any(ctx->device->hidden->pcm, ctx->hwparams);
+        int status = ALSA_snd_pcm_hw_params_any(ctx->device->hidden->pcm, ctx->hwparams);
         if (status < 0) {
             SDL_SetError("ALSA: Couldn't get hardware config: %s", ALSA_snd_strerror(status));
             return -1;
@@ -1163,8 +1109,8 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
             return -1;
         }
         // Try for a closest match on audio format
-        alsa_format = 0;
-        closefmts = SDL_ClosestAudioFormats(ctx->device->spec.format);
+        snd_pcm_format_t alsa_format = 0;
+        const SDL_AudioFormat *closefmts = SDL_ClosestAudioFormats(ctx->device->spec.format);
         ctx->matched_sdl_format = 0;
         while ((ctx->matched_sdl_format = *(closefmts++)) != 0) {
             // XXX: we are forcing the same endianness, namely we won't need byte swapping upon
@@ -1265,69 +1211,70 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
         ALSA_snd_pcm_hw_free(ctx->device->hidden->pcm); // uninstall those hw params
 
         if (mode == CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N) {
-            ++target_chans_n;
-        } else {/* CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N */
-        target_chans_n--;
+            target_chans_n++;
+        } else {  // CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N
+            target_chans_n--;
+        }
     }
-    }
+
+    SDL_assert(!"Shouldn't reach this code.");
+    return CHANS_N_NOT_CONFIGURED;
 }
 #undef CHMAP_INSTALLED
 #undef CHANS_N_NEXT
 #undef CHMAP_NOT_FOUND
 
-static int ALSA_pcm_cfg_hw(struct ALSA_pcm_cfg_ctx *ctx)
+static bool ALSA_pcm_cfg_hw(struct ALSA_pcm_cfg_ctx *ctx)
 {
-    int status;
-
     LOGDEBUG("target chans_n, equal or above requested chans_n mode\n");
-    status = ALSA_pcm_cfg_hw_chans_n_scan(ctx, CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N);
-    if (status < 0) /* something went too wrong */
-        return status;
-    if (status == CHANS_N_CONFIGURED)
-        return 0;
-    /* Here, status == CHANS_N_NOT_CONFIGURED */
+    int status = ALSA_pcm_cfg_hw_chans_n_scan(ctx, CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N);
+    if (status < 0) {  // something went too wrong
+        return false;
+    } else if (status == CHANS_N_CONFIGURED) {
+        return true;
+    }
+
+    // Here, status == CHANS_N_NOT_CONFIGURED
     LOGDEBUG("target chans_n, below requested chans_n mode\n");
     status = ALSA_pcm_cfg_hw_chans_n_scan(ctx, CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N);
-    if (status < 0) /* something went too wrong */
-        return status;
-    if (status == CHANS_N_CONFIGURED)
-        return 0;
-    /* Here, status == CHANS_N_NOT_CONFIGURED */
-    SDL_SetError("ALSA: Coudn't configure targetting any SDL supported channel number");
-    return -1;
+    if (status < 0) { // something went too wrong
+        return false;
+    } else if (status == CHANS_N_CONFIGURED) {
+        return true;
+    }
+
+    // Here, status == CHANS_N_NOT_CONFIGURED
+    return SDL_SetError("ALSA: Coudn't configure targetting any SDL supported channel number");
 }
 #undef CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N
 #undef CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N
 #undef CHANS_N_CONFIGURED
 #undef CHANS_N_NOT_CONFIGURED
 
-static int ALSA_pcm_cfg_sw(struct ALSA_pcm_cfg_ctx *ctx)
+
+static bool ALSA_pcm_cfg_sw(struct ALSA_pcm_cfg_ctx *ctx)
 {
     int status;
 
     status = ALSA_snd_pcm_sw_params_current(ctx->device->hidden->pcm, ctx->swparams);
     if (status < 0) {
-        SDL_SetError("ALSA: Couldn't get software config: %s", ALSA_snd_strerror(status));
-        return -1;
+        return SDL_SetError("ALSA: Couldn't get software config: %s", ALSA_snd_strerror(status));
     }
-    status = ALSA_snd_pcm_sw_params_set_avail_min(ctx->device->hidden->pcm, ctx->swparams,
-                                                                                    ctx->persize); // will become device->sample_frames if the alsa pcm configuration is successful
+
+    status = ALSA_snd_pcm_sw_params_set_avail_min(ctx->device->hidden->pcm, ctx->swparams, ctx->persize); // will become device->sample_frames if the alsa pcm configuration is successful
     if (status < 0) {
-        SDL_SetError("Couldn't set minimum available samples: %s", ALSA_snd_strerror(status));
-        return -1;
+        return SDL_SetError("Couldn't set minimum available samples: %s", ALSA_snd_strerror(status));
     }
-    status = ALSA_snd_pcm_sw_params_set_start_threshold(ctx->device->hidden->pcm,
-                                                                                ctx->swparams, 1);
+
+    status = ALSA_snd_pcm_sw_params_set_start_threshold(ctx->device->hidden->pcm, ctx->swparams, 1);
     if (status < 0) {
-        SDL_SetError("ALSA: Couldn't set start threshold: %s", ALSA_snd_strerror(status));
-        return -1;
+        return SDL_SetError("ALSA: Couldn't set start threshold: %s", ALSA_snd_strerror(status));
     }
     status = ALSA_snd_pcm_sw_params(ctx->device->hidden->pcm, ctx->swparams);
     if (status < 0) {
-        SDL_SetError("Couldn't set software audio parameters: %s", ALSA_snd_strerror(status));
-        return -1;
+        return SDL_SetError("Couldn't set software audio parameters: %s", ALSA_snd_strerror(status));
     }
-    return 0;
+    return true;
 }
 
 
@@ -1374,29 +1321,26 @@ static bool ALSA_OpenDevice(SDL_AudioDevice *device)
     snd_pcm_hw_params_alloca(&(cfg_ctx.hwparams));
     snd_pcm_sw_params_alloca(&(cfg_ctx.swparams));
 
-    status = ALSA_pcm_cfg_hw(&cfg_ctx); // alsa pcm "hardware" part of the pcm
-    if (status < 0) {
+    if (!ALSA_pcm_cfg_hw(&cfg_ctx)) { // alsa pcm "hardware" part of the pcm
         goto err_close_pcm;
     }
+
     // from here, we get only the alsa chmap queries in cfg_ctx to explicitely clean, hwparams is
     // uninstalled upon pcm closing
 
     // This is useful for debugging
-    if (SDL_getenv("SDL_AUDIO_ALSA_DEBUG")) {
-        snd_pcm_uframes_t bufsize;
-
-        ALSA_snd_pcm_hw_params_get_buffer_size(cfg_ctx.hwparams, &bufsize);
-
-        SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
+    #if SDL_ALSA_DEBUG
+    snd_pcm_uframes_t bufsize;
+    ALSA_snd_pcm_hw_params_get_buffer_size(cfg_ctx.hwparams, &bufsize);
+    SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
                      "ALSA: period size = %ld, periods = %u, buffer size = %lu",
                      cfg_ctx.persize, cfg_ctx.periods, bufsize);
-    }
+    #endif
 
-
-    status = ALSA_pcm_cfg_sw(&cfg_ctx); // alsa pcm "software" part of the pcm
-    if (status < 0) {
+    if (!ALSA_pcm_cfg_sw(&cfg_ctx)) { // alsa pcm "software" part of the pcm
         goto err_cleanup_ctx;
     }
+
     // Now we can update the following parameters in the spec:
     cfg_ctx.device->spec.format = cfg_ctx.matched_sdl_format;
     cfg_ctx.device->spec.channels = cfg_ctx.chans_n;
@@ -1437,221 +1381,214 @@ static ALSA_Device *hotplug_devices = NULL;
 static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_info, int dev_idx,
                             snd_pcm_stream_t direction, ALSA_Device **unseen, ALSA_Device **seen)
 {
-    int r;
-    unsigned int subdevs_n;
-    unsigned int subdev_idx;
-    snd_pcm_info_t *pcm_info;
-    bool recording = direction == SND_PCM_STREAM_CAPTURE ? true : false; // used for the unicity of the device
-
-    pcm_info = (snd_pcm_info_t*)SDL_stack_alloc(Uint8,ALSA_snd_pcm_info_sizeof());
+    unsigned int subdevs_n = 1; // we have at least one subdevice (substream since the direction is a stream in alsa terminology)
+    unsigned int subdev_idx = 0;
+    const bool recording = direction == SND_PCM_STREAM_CAPTURE ? true : false; // used for the unicity of the device
+    bool isstack;
+    snd_pcm_info_t *pcm_info = (snd_pcm_info_t*)SDL_small_alloc(Uint8, ALSA_snd_pcm_info_sizeof(), &isstack);
     SDL_memset(pcm_info, 0, ALSA_snd_pcm_info_sizeof());
 
-    subdev_idx = 0;
-    subdevs_n = 1; // we have at least one subdevice (substream since the direction is a stream in alsa terminology)
     while (true) {
-        ALSA_Device *unseen_prev_adev;
-        ALSA_Device *adev;
-
         ALSA_snd_pcm_info_set_stream(pcm_info, direction);
         ALSA_snd_pcm_info_set_device(pcm_info, dev_idx);
         ALSA_snd_pcm_info_set_subdevice(pcm_info, subdev_idx); // we have at least one subdevice (substream) of index 0
 
-        r = ALSA_snd_ctl_pcm_info(ctl, pcm_info);
+        const int r = ALSA_snd_ctl_pcm_info(ctl, pcm_info);
         if (r < 0) {
+            SDL_small_free(pcm_info, isstack);
             // first call to ALSA_snd_ctl_pcm_info
-            if (subdev_idx == 0 && r == -ENOENT) // no such direction/stream for this device
+            if (subdev_idx == 0 && r == -ENOENT) { // no such direction/stream for this device
                 return 0;
+            }
             return -1;
         }
-        if (subdev_idx == 0)
+
+        if (subdev_idx == 0) {
             subdevs_n = ALSA_snd_pcm_info_get_subdevices_count(pcm_info);
+        }
 
         // building the unseen list scanning the list of hotplug devices, if it is already there
         // using the id, move it to the seen list.
-        unseen_prev_adev = NULL;
-        adev = *unseen;
-        while (true) {
-            if (adev == NULL)
-                break;
+        ALSA_Device *unseen_prev_adev = NULL;
+        ALSA_Device *adev;
+        for (adev = *unseen; adev; adev = adev->next) {
             // the unicity key is the couple (id,recording)
-            if (SDL_strcmp(adev->id, ALSA_snd_ctl_card_info_get_id(ctl_card_info)) == 0 &&
-                adev->recording == recording) {
+            if ((SDL_strcmp(adev->id, ALSA_snd_ctl_card_info_get_id(ctl_card_info)) == 0) && (adev->recording == recording)) {
                 // unchain from unseen
-                if (*unseen == adev) // head
+                if (*unseen == adev) { // head
                     *unseen = adev->next;
-                else
+                } else {
                     unseen_prev_adev->next = adev->next;
+                }
                 // chain to seen
                 adev->next = *seen;
                 *seen = adev;
                 break;
             }
             unseen_prev_adev = adev;
-            adev = adev->next;
         }
 
         if (adev == NULL) { // newly seen device
-            int name_len;
-
-            adev = SDL_malloc(sizeof(*adev));
-            if (adev == NULL)
+            adev = SDL_calloc(1, sizeof(*adev));
+            if (adev == NULL) {
+                SDL_small_free(pcm_info, isstack);
                 return -1;
+            }
 
             adev->id = SDL_strdup(ALSA_snd_ctl_card_info_get_id(ctl_card_info));
             if (adev->id == NULL) {
+                SDL_small_free(pcm_info, isstack);
                 SDL_free(adev);
                 return -1;
             }
-#define NAME_FMT "%s:%s"
-            name_len = SDL_snprintf(0,0,NAME_FMT, ALSA_snd_ctl_card_info_get_name(ctl_card_info),
-                                                            ALSA_snd_pcm_info_get_name(pcm_info));
-            adev->name = SDL_malloc((size_t)(name_len + 1));
-            if (adev->name == NULL) {
+
+            if (SDL_asprintf(&adev->name, "%s:%s", ALSA_snd_ctl_card_info_get_name(ctl_card_info), ALSA_snd_pcm_info_get_name(pcm_info)) == -1) {
+                SDL_small_free(pcm_info, isstack);
                 SDL_free(adev->id);
                 SDL_free(adev);
                 return -1;
             }
-            SDL_snprintf(adev->name,(size_t)(name_len + 1),NAME_FMT,
-                                                ALSA_snd_ctl_card_info_get_name(ctl_card_info),
-                                                ALSA_snd_pcm_info_get_name(pcm_info));
-#undef NAME_FMT
-            if (direction == SND_PCM_STREAM_CAPTURE)
+
+            if (direction == SND_PCM_STREAM_CAPTURE) {
                 adev->recording = true;
-            else
+            } else {
                 adev->recording = false;
+            }
 
             if (SDL_AddAudioDevice(recording, adev->name, NULL, adev) == NULL) {
+                SDL_small_free(pcm_info, isstack);
                 SDL_free(adev->id);
                 SDL_free(adev->name);
                 SDL_free(adev);
                 return -1;
             }
 
-#if 0
-            adev->id = SDL_strdup(ALSA_snd_ctl_card_info_get_id(ctl_card_info));
-            SDL_free(adev->name);
-            adev->name = SDL_strdup(ALSA_snd_pcm_info_get_name(pcm_info));
-            if (direction == SND_PCM_STREAM_CAPTURE)
-                adev->recording = true;
-            else
-                adev->recording = false;
-#endif
             adev->next = *seen;
             *seen = adev;
         }
-        ++subdev_idx;
-        if (subdev_idx == subdevs_n)
+
+        subdev_idx++;
+        if (subdev_idx == subdevs_n) {
+            SDL_small_free(pcm_info, isstack);
             return 0;
+        }
+
         SDL_memset(pcm_info, 0, ALSA_snd_pcm_info_sizeof());
     }
+
+    SDL_small_free(pcm_info, isstack);
+    SDL_assert(!"Shouldn't reach this code");
+    return -1;
 }
 
 static void ALSA_HotplugIteration(bool *has_default_output, bool *has_default_recording)
 {
-    int r;
-    snd_ctl_t *ctl;
-    int card_idx, dev_idx;
-    snd_ctl_card_info_t *ctl_card_info;
-    ALSA_Device *unseen;
-    ALSA_Device *seen;
-    char ctl_name[sizeof("hw:")+sizeof("4294967295")-1];
-
-    if (has_default_output != NULL)
+    if (has_default_output != NULL) {
         *has_default_output = true;
-    if (has_default_recording != NULL)
+    }
+
+    if (has_default_recording != NULL) {
         *has_default_recording = true;
+    }
 
-    ctl_card_info = alloca(ALSA_snd_ctl_card_info_sizeof());
-    SDL_memset(ctl_card_info,0,ALSA_snd_ctl_card_info_sizeof());
+    bool isstack;
+    snd_ctl_card_info_t *ctl_card_info = (snd_ctl_card_info_t *) SDL_small_alloc(Uint8, ALSA_snd_ctl_card_info_sizeof(), &isstack);
+    if (!ctl_card_info) {
+        return;  // oh well.
+    }
 
-    unseen = hotplug_devices;
-    seen = NULL;
+    SDL_memset(ctl_card_info, 0, ALSA_snd_ctl_card_info_sizeof());
 
-    card_idx = -1;
-
+    snd_ctl_t *ctl = NULL;
+    ALSA_Device *unseen = hotplug_devices;
+    ALSA_Device *seen = NULL;
+    int card_idx = -1;
     while (true) {
-        r = ALSA_snd_card_next(&card_idx);
-        if (r < 0)
-            goto error_remove_all_devices;
-
-        if (card_idx == -1)
+        int r = ALSA_snd_card_next(&card_idx);
+        if (r < 0) {
+            goto failed;
+        } else if (card_idx == -1) {
             break;
+        }
 
-        sprintf(ctl_name, "hw:%d", card_idx); // card_idx >= 0
+        char ctl_name[64];
+        SDL_snprintf(ctl_name, sizeof (ctl_name), "hw:%d", card_idx); // card_idx >= 0
+
         r = ALSA_snd_ctl_open(&ctl, ctl_name, 0);
-        if (r < 0)
+        if (r < 0) {
             continue;
+        }
+
         r = ALSA_snd_ctl_card_info(ctl, ctl_card_info);
-        if (r < 0)
-            goto error_close_ctl;
-        dev_idx = -1;
+        if (r < 0) {
+            goto failed;
+        }
+
+        int dev_idx = -1;
         while (true) {
             r = ALSA_snd_ctl_pcm_next_device(ctl, &dev_idx);
-            if (r < 0)
-                goto error_close_ctl;
-
-            if (dev_idx == -1)
+            if (r < 0) {
+                goto failed;
+            } else if (dev_idx == -1) {
                 break;
+            }
 
-            r = hotplug_device_process(ctl, ctl_card_info, dev_idx, SND_PCM_STREAM_PLAYBACK,
-                                                                                    &unseen, &seen);
-            if (r < 0)
-                goto error_close_ctl;
+            r = hotplug_device_process(ctl, ctl_card_info, dev_idx, SND_PCM_STREAM_PLAYBACK, &unseen, &seen);
+            if (r < 0) {
+                goto failed;
+            }
 
-            r = hotplug_device_process(ctl, ctl_card_info, dev_idx, SND_PCM_STREAM_CAPTURE,
-                                                                                    &unseen, &seen);
-            if (r < 0)
-                goto error_close_ctl;
+            r = hotplug_device_process(ctl, ctl_card_info, dev_idx, SND_PCM_STREAM_CAPTURE, &unseen, &seen);
+            if (r < 0) {
+                goto failed;
+            }
         }
         ALSA_snd_ctl_close(ctl);
         ALSA_snd_ctl_card_info_clear(ctl_card_info);
     }
+
     // remove only the unseen devices
-    while (true) {
-        ALSA_Device *next;
-        if (unseen == NULL)
-            break;
+    while (unseen) {
         SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(unseen));
         SDL_free(unseen->name);
         SDL_free(unseen->id);
-        next = unseen->next;
+        ALSA_Device *next = unseen->next;
         SDL_free(unseen);
         unseen = next;
     }
+
     // update hotplug devices to be the seen devices
     hotplug_devices = seen;
+    SDL_small_free(ctl_card_info, isstack);
     return;
 
-error_close_ctl:
-    ALSA_snd_ctl_close(ctl);
+failed:
+    if (ctl) {
+        ALSA_snd_ctl_close(ctl);
+    }
 
-error_remove_all_devices:
     // remove the unseen
-    while (true) {
-        ALSA_Device *next;
-        if (unseen == NULL)
-            break;
+    while (unseen) {
         SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(unseen));
         SDL_free(unseen->name);
         SDL_free(unseen->id);
-        next = unseen->next;
+        ALSA_Device *next = unseen->next;
         SDL_free(unseen);
         unseen = next;
     }
+
     // remove the seen
-    while (true) {
-        ALSA_Device *next;
-        if (seen == NULL)
-            break;
+    while (seen) {
         SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(seen));
         SDL_free(seen->name);
         SDL_free(seen->id);
-        next = seen->next;
+        ALSA_Device *next = seen->next;
         SDL_free(seen);
         seen = next;
     }
+
     hotplug_devices = NULL;
-    return;
+    SDL_small_free(ctl_card_info, isstack);
 }
 
 
@@ -1666,7 +1603,7 @@ static int SDLCALL ALSA_HotplugThread(void *arg)
     while (!SDL_GetAtomicInt(&ALSA_hotplug_shutdown)) {
         // Block awhile before checking again, unless we're told to stop.
         const Uint64 ticks = SDL_GetTicks() + 5000;
-        while (!SDL_GetAtomicInt(&ALSA_hotplug_shutdown) && SDL_GetTicks() < ticks) {
+        while (!SDL_GetAtomicInt(&ALSA_hotplug_shutdown) && (SDL_GetTicks() < ticks)) {
             SDL_Delay(100);
         }
 
