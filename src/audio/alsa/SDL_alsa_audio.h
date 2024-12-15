@@ -36,12 +36,6 @@ struct SDL_PrivateAudioData
 
     // Raw mixing buffer
     Uint8 *mixbuf;
-
-    // swizzle function
-    void (*swizzle_func)(SDL_AudioDevice *_this, void *buffer, Uint32 bufferlen);
-    // Up to a channel map of 8 channels, will define the sample indexes into the alsa frame
-    // from a sdl sample index.
-    int swizzle_map[SDL_AUDIO_ALSA__CHMAP_CHANS_N_MAX];
 };
 
 #endif // SDL_ALSA_audio_h_
