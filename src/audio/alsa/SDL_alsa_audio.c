@@ -585,8 +585,7 @@ static bool has_pos(unsigned int *chmap, unsigned int pos)
 #define HAVE_REAR 1
 #define HAVE_SIDE 2
 #define HAVE_BOTH 3
-static void sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(unsigned int *sdl_6chans,
-                                                                        unsigned int *alsa_6chans)
+static void sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(unsigned int *sdl_6chans, unsigned int *alsa_6chans)
 {
     // For alsa channel maps with 6 channels and with SND_CHMAP_FL,SND_CHMAP_FR,SND_CHMAP_FC,
     // SND_CHMAP_LFE, reduce our 6 channels maps to a uniq one.
@@ -931,8 +930,7 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
             return -1;
         }
         // SDL only uses interleaved sample output
-        status = ALSA_snd_pcm_hw_params_set_access(ctx->device->hidden->pcm, ctx->hwparams,
-                                                                   SND_PCM_ACCESS_RW_INTERLEAVED);
+        status = ALSA_snd_pcm_hw_params_set_access(ctx->device->hidden->pcm, ctx->hwparams, SND_PCM_ACCESS_RW_INTERLEAVED);
         if (status < 0) {
             SDL_SetError("ALSA: Couldn't set interleaved access: %s", ALSA_snd_strerror(status));
             return -1;
@@ -972,8 +970,7 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
             default:
                 continue;
             }
-            if (ALSA_snd_pcm_hw_params_set_format(ctx->device->hidden->pcm, ctx->hwparams,
-                                                                                alsa_format) >= 0) {
+            if (ALSA_snd_pcm_hw_params_set_format(ctx->device->hidden->pcm, ctx->hwparams, alsa_format) >= 0) {
                 break;
             }
         }
@@ -983,40 +980,35 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
         }
         // let alsa approximate the number of channels
         ctx->chans_n = target_chans_n;
-        status = ALSA_snd_pcm_hw_params_set_channels_near(ctx->device->hidden->pcm,
-                                                                    ctx->hwparams, &(ctx->chans_n));
+        status = ALSA_snd_pcm_hw_params_set_channels_near(ctx->device->hidden->pcm, ctx->hwparams, &(ctx->chans_n));
         if (status < 0) {
             SDL_SetError("ALSA: Couldn't set audio channels: %s", ALSA_snd_strerror(status));
             return -1;
         }
         // let alsa approximate the audio rate
         ctx->rate = ctx->device->spec.freq;
-        status = ALSA_snd_pcm_hw_params_set_rate_near(ctx->device->hidden->pcm,
-                                                                ctx->hwparams, &(ctx->rate), NULL);
+        status = ALSA_snd_pcm_hw_params_set_rate_near(ctx->device->hidden->pcm, ctx->hwparams, &(ctx->rate), NULL);
         if (status < 0) {
             SDL_SetError("ALSA: Couldn't set audio frequency: %s", ALSA_snd_strerror(status));
             return -1;
         }
         // let approximate the period size to the requested buffer size
         ctx->persize = ctx->device->sample_frames;
-        status = ALSA_snd_pcm_hw_params_set_period_size_near(ctx->device->hidden->pcm,
-                                                            ctx->hwparams, &(ctx->persize), NULL);
+        status = ALSA_snd_pcm_hw_params_set_period_size_near(ctx->device->hidden->pcm, ctx->hwparams, &(ctx->persize), NULL);
         if (status < 0) {
             SDL_SetError("ALSA: Couldn't set the period size: %s", ALSA_snd_strerror(status));
             return -1;
         }
         // let approximate the minimun number of periods per buffer (we target a double buffer)
         ctx->periods = 2;
-        status = ALSA_snd_pcm_hw_params_set_periods_min(ctx->device->hidden->pcm,
-                                                            ctx->hwparams, &(ctx->periods), NULL);
+        status = ALSA_snd_pcm_hw_params_set_periods_min(ctx->device->hidden->pcm, ctx->hwparams, &(ctx->periods), NULL);
         if (status < 0) {
             SDL_SetError("ALSA: Couldn't set the minimum number of periods per buffer: %s", ALSA_snd_strerror(status));
             return -1;
         }
         // restrict the number of periods per buffer to an approximation of the approximated minimum
         // number of periods per buffer done right above
-        status = ALSA_snd_pcm_hw_params_set_periods_first(ctx->device->hidden->pcm,
-                                                            ctx->hwparams, &(ctx->periods), NULL);
+        status = ALSA_snd_pcm_hw_params_set_periods_first(ctx->device->hidden->pcm, ctx->hwparams, &(ctx->periods), NULL);
         if (status < 0) {
             SDL_SetError("ALSA: Couldn't set the number of periods per buffer: %s", ALSA_snd_strerror(status));
             return -1;
@@ -1210,7 +1202,7 @@ err_free_device_hidden:
 static ALSA_Device *hotplug_devices = NULL;
 
 static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_info, int dev_idx,
-                            snd_pcm_stream_t direction, ALSA_Device **unseen, ALSA_Device **seen)
+                                  snd_pcm_stream_t direction, ALSA_Device **unseen, ALSA_Device **seen)
 {
     unsigned int subdevs_n = 1; // we have at least one subdevice (substream since the direction is a stream in alsa terminology)
     unsigned int subdev_idx = 0;
