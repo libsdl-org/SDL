@@ -345,223 +345,6 @@ static char *get_pcm_str(void *handle)
     return pcm_str;
 }
 
-// SDL channel map with alsa names "FL FR"
-// The literal names are SDL names.
-// Faith: loading the whole frame in one shot may help naive compilers.
-#define SWIZ2(T)                                                                  \
-    static void swizzle_alsa_channels_2_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
-    {                                                                             \
-        T *ptr = (T *)buffer;                                                     \
-        Uint32 i;                                                                 \
-        for (i = 0; i < bufferlen; i++, ptr += 2) {                               \
-            const T front_left = ptr[0];                                          \
-            const T front_right = ptr[1];                                         \
-            ptr[swizzle_map[0]] = front_left;                                     \
-            ptr[swizzle_map[1]] = front_right;                                    \
-        }                                                                         \
-    }
-// SDL channel map with alsa names "FL FR LFE"
-// The literal names are SDL names.
-// Faith: loading the whole frame in one shot may help naive compilers.
-#define SWIZ3(T)                                                                  \
-    static void swizzle_alsa_channels_3_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
-    {                                                                             \
-        T *ptr = (T *)buffer;                                                     \
-        Uint32 i;                                                                 \
-        for (i = 0; i < bufferlen; i++, ptr += 3) {                               \
-            const T front_left = ptr[0];                                          \
-            const T front_right = ptr[1];                                         \
-            const T subwoofer = ptr[2];                                           \
-            ptr[swizzle_map[0]] = front_left;                                     \
-            ptr[swizzle_map[1]] = front_right;                                    \
-            ptr[swizzle_map[2]] = subwoofer;                                      \
-        }                                                                         \
-    }
-// SDL channel map with alsa names "FL FR RL RR";
-// The literal names are SDL names.
-// Faith: loading the whole frame in one shot may help naive compilers.
-#define SWIZ4(T)                                                                  \
-    static void swizzle_alsa_channels_4_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
-    {                                                                             \
-        T *ptr = (T *)buffer;                                                     \
-        Uint32 i;                                                                 \
-        for (i = 0; i < bufferlen; i++, ptr += 4) {                               \
-            const T front_left = ptr[0];                                          \
-            const T front_right = ptr[1];                                         \
-            const T back_left = ptr[2];                                           \
-            const T back_right = ptr[3];                                          \
-            ptr[swizzle_map[0]] = front_left;                                     \
-            ptr[swizzle_map[1]] = front_right;                                    \
-            ptr[swizzle_map[2]] = back_left;                                      \
-            ptr[swizzle_map[3]] = back_right;                                     \
-        }                                                                         \
-    }
-// SDL channel map with alsa names "FL FR LFE RL RR"
-// The literal names are SDL names.
-// Faith: loading the whole frame in one shot may help naive compilers.
-#define SWIZ5(T)                                                                  \
-    static void swizzle_alsa_channels_5_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
-    {                                                                             \
-        T *ptr = (T *)buffer;                                                     \
-        Uint32 i;                                                                 \
-        for (i = 0; i < bufferlen; i++, ptr += 5) {                               \
-            const T front_left = ptr[0];                                          \
-            const T front_right = ptr[1];                                         \
-            const T subwoofer = ptr[2];                                           \
-            const T back_left = ptr[3];                                           \
-            const T back_right = ptr[4];                                          \
-            ptr[swizzle_map[0]] = front_left;                                     \
-            ptr[swizzle_map[1]] = front_right;                                    \
-            ptr[swizzle_map[2]] = subwoofer;                                      \
-            ptr[swizzle_map[3]] = back_left;                                      \
-            ptr[swizzle_map[4]] = back_right;                                     \
-        }                                                                         \
-    }
-// SDL channel map with alsa names "FL FR FC LFE [SL|RL] [SR|RR]"
-// The literal names are SDL names.
-// Faith: loading the whole frame in one shot may help naive compilers.
-#define SWIZ6(T)                                                                  \
-    static void swizzle_alsa_channels_6_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
-    {                                                                             \
-        T *ptr = (T *)buffer;                                                     \
-        Uint32 i;                                                                 \
-        for (i = 0; i < bufferlen; i++, ptr += 6) {                               \
-            const T front_left = ptr[0];                                          \
-            const T front_right = ptr[1];                                         \
-            const T front_center = ptr[2];                                        \
-            const T subwoofer = ptr[3];                                           \
-            const T side_left = ptr[4];                                           \
-            const T side_right = ptr[5];                                          \
-            ptr[swizzle_map[0]] = front_left;                                     \
-            ptr[swizzle_map[1]] = front_right;                                    \
-            ptr[swizzle_map[2]] = front_center;                                   \
-            ptr[swizzle_map[3]] = subwoofer;                                      \
-            ptr[swizzle_map[4]] = side_left;                                      \
-            ptr[swizzle_map[5]] = side_right;                                     \
-        }                                                                         \
-    }
-// SDL channel map with alsa names "FL FR FC LFE RC SL SR".
-// The literal names are SDL names.
-// Faith: loading the whole frame in one shot may help naive compilers.
-#define SWIZ7(T)                                                                  \
-    static void swizzle_alsa_channels_7_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
-    {                                                                             \
-        T *ptr = (T *)buffer;                                                     \
-        Uint32 i;                                                                 \
-        for (i = 0; i < bufferlen; i++, ptr += 7) {                               \
-            const T front_left = ptr[0];                                          \
-            const T front_right = ptr[1];                                         \
-            const T front_center = ptr[2];                                        \
-            const T subwoofer = ptr[3];                                           \
-            const T back_center = ptr[4];                                         \
-            const T side_left = ptr[5];                                           \
-            const T side_right = ptr[6];                                          \
-            ptr[swizzle_map[0]] = front_left;                                     \
-            ptr[swizzle_map[1]] = front_right;                                    \
-            ptr[swizzle_map[2]] = front_center;                                   \
-            ptr[swizzle_map[3]] = subwoofer;                                      \
-            ptr[swizzle_map[4]] = back_center;                                    \
-            ptr[swizzle_map[5]] = side_left;                                      \
-            ptr[swizzle_map[6]] = side_right;                                     \
-        }                                                                         \
-    }
-
-// SDL channel map with alsa names "FL FR FC LFE RL RR SL SR"
-// The literal names are SDL names.
-// Faith: loading the whole frame in one shot may help naive compilers.
-#define SWIZ8(T)                                                                  \
-    static void swizzle_alsa_channels_8_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
-    {                                                                             \
-        T *ptr = (T *)buffer;                                                     \
-        Uint32 i;                                                                 \
-        for (i = 0; i < bufferlen; i++, ptr += 8) {                               \
-            const T front_left = ptr[0];                                          \
-            const T front_right = ptr[1];                                         \
-            const T front_center = ptr[2];                                        \
-            const T subwoofer = ptr[3];                                           \
-            const T back_left = ptr[4];                                           \
-            const T back_right = ptr[5];                                          \
-            const T side_left = ptr[6];                                           \
-            const T side_right = ptr[7];                                          \
-            ptr[swizzle_map[0]] = front_left;                                     \
-            ptr[swizzle_map[1]] = front_right;                                    \
-            ptr[swizzle_map[2]] = front_center;                                   \
-            ptr[swizzle_map[3]] = subwoofer;                                      \
-            ptr[swizzle_map[4]] = back_left;                                      \
-            ptr[swizzle_map[5]] = back_right;                                     \
-            ptr[swizzle_map[6]] = side_left;                                      \
-            ptr[swizzle_map[7]] = side_right;                                     \
-        }                                                                         \
-    }
-
-#define CHANNEL_SWIZZLE(x) \
-    x(Uint64)              \
-        x(Uint32)          \
-            x(Uint16)      \
-                x(Uint8)
-
-CHANNEL_SWIZZLE(SWIZ2)
-CHANNEL_SWIZZLE(SWIZ3)
-CHANNEL_SWIZZLE(SWIZ4)
-CHANNEL_SWIZZLE(SWIZ5)
-CHANNEL_SWIZZLE(SWIZ6)
-CHANNEL_SWIZZLE(SWIZ7)
-CHANNEL_SWIZZLE(SWIZ8)
-
-#undef CHANNEL_SWIZZLE
-#undef SWIZ2
-#undef SWIZ3
-#undef SWIZ4
-#undef SWIZ5
-#undef SWIZ6
-#undef SWIZ7
-#undef SWIZ8
-
-// Called right before feeding device->hidden->mixbuf to the hardware. Swizzle
-//  channels from Windows/Mac order to the format alsalib will want.
-static void swizzle_alsa_channels(SDL_AudioDevice *device, void *buffer, Uint32 bufferlen)
-{
-    int *swizzle_map = device->hidden->swizzle_map;
-    switch (device->spec.channels) {
-#define CHANSWIZ(chans)                                                             \
-    case chans:                                                                     \
-        switch ((device->spec.format & (0xFF))) {                                   \
-        case 8:                                                                     \
-            swizzle_alsa_channels_##chans##_Uint8(swizzle_map, buffer, bufferlen);  \
-            break;                                                                  \
-        case 16:                                                                    \
-            swizzle_alsa_channels_##chans##_Uint16(swizzle_map, buffer, bufferlen); \
-            break;                                                                  \
-        case 32:                                                                    \
-            swizzle_alsa_channels_##chans##_Uint32(swizzle_map, buffer, bufferlen); \
-            break;                                                                  \
-        case 64:                                                                    \
-            swizzle_alsa_channels_##chans##_Uint64(swizzle_map, buffer, bufferlen); \
-            break;                                                                  \
-        default:                                                                    \
-            SDL_assert(!"unhandled bitsize");                                       \
-            break;                                                                  \
-        }                                                                           \
-        return;
-
-        CHANSWIZ(2);
-        CHANSWIZ(3);
-        CHANSWIZ(4);
-        CHANSWIZ(5);
-        CHANSWIZ(6);
-        CHANSWIZ(7);
-        CHANSWIZ(8);
-#undef CHANSWIZ
-    default:
-        break;
-    }
-}
-
-// Some devices have the right channel map, no swizzling necessary
-static void no_swizzle(SDL_AudioDevice *device, void *buffer, Uint32 bufferlen)
-{
-}
-
 // This function waits until it is possible to write a full sound buffer
 static bool ALSA_WaitDevice(SDL_AudioDevice *device)
 {
@@ -596,8 +379,6 @@ static bool ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bu
     Uint8 *sample_buf = (Uint8 *) buffer;  // !!! FIXME: deal with this without casting away constness
     const int frame_size = SDL_AUDIO_FRAMESIZE(device->spec);
     snd_pcm_uframes_t frames_left = (snd_pcm_uframes_t) (buflen / frame_size);
-
-    device->hidden->swizzle_func(device, sample_buf, frames_left);
 
     while ((frames_left > 0) && !SDL_GetAtomicInt(&device->shutdown)) {
         const int rc = ALSA_snd_pcm_writei(device->hidden->pcm, sample_buf, frames_left);
@@ -664,8 +445,6 @@ static int ALSA_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
             return -1;
         }
         return 0;  // go back to WaitDevice and try again.
-    } else if (rc > 0) {
-        device->hidden->swizzle_func(device, buffer, total_frames - rc);
     }
 
     //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: recorded %d bytes", rc * frame_size);
@@ -691,23 +470,6 @@ static void ALSA_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
-
-// Swizzle channels to match SDL defaults.
-// These are swizzles _from_ SDL's layouts to what ALSA wants.
-
-#if 0
-// 5.1 swizzle:
-// https://bugzilla.libsdl.org/show_bug.cgi?id=110
-//  "For Linux ALSA, this is FL-FR-RL-RR-C-LFE
-//  and for Windows DirectX [and CoreAudio], this is FL-FR-C-LFE-RL-RR"
-static const int swizzle_alsa_channels_6[6] = { 0, 1, 4, 5, 2, 3 };
-
-// 7.1 swizzle:
-// https://docs.microsoft.com/en-us/windows-hardware/drivers/audio/mapping-stream-formats-to-speaker-configurations
-//  For Linux ALSA, this appears to be FL-FR-RL-RR-C-LFE-SL-SR
-//  and for Windows DirectX [and CoreAudio], this is FL-FR-C-LFE-SL-SR-RL-RR"
-static const int swizzle_alsa_channels_8[8] = { 0, 1, 6, 7, 2, 3, 4, 5 };
-#endif
 
 // To make easier to track parameters during the whole alsa pcm configuration:
 struct ALSA_pcm_cfg_ctx {
@@ -876,23 +638,28 @@ static void sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(unsigned int *
 #undef HAVE_SIDE
 #undef HAVE_BOTH
 
-static void swizzle_map_compute_alsa_subscan(struct ALSA_pcm_cfg_ctx *ctx, unsigned int sdl_pos_idx)
+static void swizzle_map_compute_alsa_subscan(struct ALSA_pcm_cfg_ctx *ctx, int *swizzle_map, unsigned int sdl_pos_idx)
 {
+    swizzle_map[sdl_pos_idx] = -1;
     for (unsigned int alsa_pos_idx = 0; ; alsa_pos_idx++) {
         SDL_assert(alsa_pos_idx != ctx->chans_n);  // no 0 channels or not found matching position should happen here (actually enforce playback/recording symmetry).
         if (ctx->alsa_chmap_installed[alsa_pos_idx] == ctx->sdl_chmap[sdl_pos_idx]) {
             LOGDEBUG("swizzle SDL %u <-> alsa %u", sdl_pos_idx,alsa_pos_idx);
-            ctx->device->hidden->swizzle_map[sdl_pos_idx] = alsa_pos_idx;
+            swizzle_map[sdl_pos_idx] = (int) alsa_pos_idx;
             return;
         }
     }
 }
 
 // XXX: this must stay playback/recording symetric.
-static void swizzle_map_compute(struct ALSA_pcm_cfg_ctx *ctx)
+static void swizzle_map_compute(struct ALSA_pcm_cfg_ctx *ctx, int *swizzle_map, bool *needs_swizzle)
 {
+    *needs_swizzle = false;
     for (unsigned int sdl_pos_idx = 0; sdl_pos_idx != ctx->chans_n; sdl_pos_idx++) {
-        swizzle_map_compute_alsa_subscan(ctx, sdl_pos_idx);
+        swizzle_map_compute_alsa_subscan(ctx, swizzle_map, sdl_pos_idx);
+        if (swizzle_map[sdl_pos_idx] != sdl_pos_idx) {
+            *needs_swizzle = true;
+        }
     }
 }
 
@@ -1093,7 +860,6 @@ static int alsa_chmap_cfg(struct ALSA_pcm_cfg_ctx *ctx)
     if (ctx->chmap_queries == NULL) {
         // We couldn't query the channel map, assume no swizzle necessary
         LOGDEBUG("couldn't query channel map, swizzling off");
-        ctx->device->hidden->swizzle_func = no_swizzle;
         return CHMAP_INSTALLED;
     }
 
@@ -1101,23 +867,39 @@ static int alsa_chmap_cfg(struct ALSA_pcm_cfg_ctx *ctx)
     status = alsa_chmap_cfg_ordered(ctx); // we prefer first channel maps we don't need to swizzle
     if (status == CHMAP_INSTALLED) {
         LOGDEBUG("swizzling off");
-        ctx->device->hidden->swizzle_func = no_swizzle;
         return status;
-    }
-    if (status != CHMAP_NOT_FOUND) {
+    } else if (status != CHMAP_NOT_FOUND) {
         return status; // < 0 error code
     }
+
     // Fall-thru
     //----------------------------------------------------------------------------------------------
     status = alsa_chmap_cfg_unordered(ctx); // those we will have to swizzle
     if (status == CHMAP_INSTALLED) {
         LOGDEBUG("swizzling on");
-        swizzle_map_compute(ctx); // fine grained swizzle configuration
-        ctx->device->hidden->swizzle_func = swizzle_alsa_channels;
-        return status;
+
+        bool isstack;
+        int *swizzle_map = SDL_small_alloc(int, ctx->chans_n, &isstack);
+        if (!swizzle_map) {
+            status = -1;
+        } else {
+            bool needs_swizzle;
+            swizzle_map_compute(ctx, swizzle_map, &needs_swizzle); // fine grained swizzle configuration
+            if (needs_swizzle) {
+                // let SDL's swizzler handle this one.
+                ctx->device->chmap = SDL_ChannelMapDup(swizzle_map, ctx->chans_n);
+                if (!ctx->device->chmap) {
+                    status = -1;
+                }
+            }
+            SDL_small_free(swizzle_map, isstack);
+        }
     }
-    if (status == CHMAP_NOT_FOUND)
+
+    if (status == CHMAP_NOT_FOUND) {
         return CHANS_N_NEXT;
+    }
+
     return status; // < 0 error code
 }
 
@@ -1249,10 +1031,12 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
         // Here the alsa pcm is in SND_PCM_STATE_PREPARED state, let's figure out a good fit for
         // SDL channel map, it may request to change the target number of channels though.
         status = alsa_chmap_cfg(ctx);
-        if (status < 0)
+        if (status < 0) {
             return status; // we forward the SDL error
-        if (status == CHMAP_INSTALLED)
+        } else if (status == CHMAP_INSTALLED) {
             return CHANS_N_CONFIGURED; // we are finished here
+        }
+
         // status == CHANS_N_NEXT
         ALSA_snd_pcm_free_chmaps(ctx->chmap_queries);
         ALSA_snd_pcm_hw_free(ctx->device->hidden->pcm); // uninstall those hw params
