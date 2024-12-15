@@ -525,14 +525,18 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
      * and frame-pacing by default due to swapchain starvation.
      */
     if (require_preferred_protocols && !Wayland_IsPreferred(display)) {
-        WAYLAND_wl_display_disconnect(display);
+        if (!display_is_external) {
+            WAYLAND_wl_display_disconnect(display);
+        }
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
     }
 
     data = SDL_calloc(1, sizeof(*data));
     if (!data) {
-        WAYLAND_wl_display_disconnect(display);
+        if (!display_is_external) {
+            WAYLAND_wl_display_disconnect(display);
+        }
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
     }
@@ -540,7 +544,9 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     input = SDL_calloc(1, sizeof(*input));
     if (!input) {
         SDL_free(data);
-        WAYLAND_wl_display_disconnect(display);
+        if (!display_is_external) {
+            WAYLAND_wl_display_disconnect(display);
+        }
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
     }
@@ -562,7 +568,9 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     if (!device) {
         SDL_free(input);
         SDL_free(data);
-        WAYLAND_wl_display_disconnect(display);
+        if (!display_is_external) {
+            WAYLAND_wl_display_disconnect(display);
+        }
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
     }
