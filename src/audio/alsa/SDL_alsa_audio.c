@@ -325,19 +325,20 @@ static char *get_pcm_str(void *handle)
 {
     SDL_assert(handle != NULL);  // SDL2 used NULL to mean "default" but that's not true in SDL3.
     ALSA_Device *dev = (ALSA_Device *)handle;
-
-    // If the user does not want to go thru the default PCM or the canonical default, the
-    // the configuration space being _massive_, give the user the ability to specify
-    // its own PCMs using environment variables. It will have to fit SDL constraints though.
-    // !!! FIXME: make these into SDL_Hints?
-    const char *env = SDL_getenv(dev->recording ? "SDL_AUDIO_ALSA_PCM_RECORDING" : "SDL_AUDIO_ALSA_PCM_PLAYBACK");
-    if (env) {
-        return SDL_strdup(env);
-    }
-
     char *pcm_str = NULL;
+
     if (SDL_strlen(dev->id) == 0) {
-        pcm_str = SDL_strdup("default");
+        // If the user does not want to go thru the default PCM or the canonical default, the
+        // the configuration space being _massive_, give the user the ability to specify
+        // its own PCMs using environment variables. It will have to fit SDL constraints though.
+        const char *devname = SDL_GetHint(dev->recording ? SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE : SDL_HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE);
+        if (!devname) {
+            devname = SDL_GetHint(SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE);
+            if (!devname) {
+                devname = "default";
+            }
+        }
+        pcm_str = SDL_strdup(devname);
     } else {
         SDL_asprintf(&pcm_str, "%sCARD=%s", ALSA_device_prefix, dev->id);
     }

@@ -216,15 +216,57 @@ extern "C" {
  * Specify the default ALSA audio device name.
  *
  * This variable is a specific audio device to open when the "default" audio
- * device is used. By default if 4 channel audio is requested, the
- * "plug:surround40" device will be opened and if 6 channel audio is requested
- * the "plug:surround51" device will be opened.
+ * device is used.
+ *
+ * This hint will be ignored when opening the default playback device if
+ * SDL_HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE is set, or when opening the
+ * default recording device if SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE
+ * is set.
  *
  * This hint should be set before an audio device is opened.
  *
  * \since This hint is available since SDL 3.1.3.
+ *
+ * \sa SDL_HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE
+ * \sa SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE
  */
 #define SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE "SDL_AUDIO_ALSA_DEFAULT_DEVICE"
+
+/**
+ * Specify the default ALSA audio playback device name.
+ *
+ * This variable is a specific audio device to open for playback, when the
+ * "default" audio device is used.
+ *
+ * If this hint isn't set, SDL will check SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE
+ * before choosing a reasonable default.
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.1.7.
+ *
+ * \sa SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE
+ * \sa SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE
+ */
+#define SDL_HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE "SDL_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE"
+
+/**
+ * Specify the default ALSA audio recording device name.
+ *
+ * This variable is a specific audio device to open for recording, when the
+ * "default" audio device is used.
+ *
+ * If this hint isn't set, SDL will check SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE
+ * before choosing a reasonable default.
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.1.7.
+ *
+ * \sa SDL_HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE
+ * \sa SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE
+ */
+#define SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE "SDL_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE"
 
 /**
  * A variable controlling the audio category on iOS and macOS.
