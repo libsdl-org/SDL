@@ -31,15 +31,16 @@
 #define SDL_ALSA_HOTPLUG_THREAD 1
 #endif
 
+// this turns off debug logging completely (but by default this goes to the bitbucket).
+#ifndef SDL_ALSA_DEBUG
+#define SDL_ALSA_DEBUG 1
+#endif
+
 #include "../SDL_sysaudio.h"
 #include "SDL_alsa_audio.h"
 
-#ifndef SDL_ALSA_DEBUG
-#define SDL_ALSA_DEBUG 0
-#endif
-
 #if SDL_ALSA_DEBUG
-#define LOGDEBUG(...) SDL_Log("ALSA: " __VA_ARGS__)
+#define LOGDEBUG(...) SDL_LogDebug(SDL_LOG_CATEGORY_AUDIO, "ALSA: " __VA_ARGS__)
 #else
 #define LOGDEBUG(...)
 #endif
