@@ -49,8 +49,8 @@
  * - Once a library is unloaded, all pointers into it obtained through
  *   SDL_LoadFunction() become invalid, even if the library is later reloaded.
  *   Don't unload a library if you plan to use these pointers in the future.
- *   Notably: beware of giving one of these pointers to atexit(), since it
- *   may call that pointer after the library unloads.
+ *   Notably: beware of giving one of these pointers to atexit(), since it may
+ *   call that pointer after the library unloads.
  */
 
 #ifndef SDL_loadso_h_

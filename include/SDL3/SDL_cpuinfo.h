@@ -33,7 +33,8 @@
  * CPU instruction set checks, like SDL_HasSSE() and SDL_HasNEON(), are
  * available on all platforms, even if they don't make sense (an ARM processor
  * will never have SSE and an x86 processor will never have NEON, for example,
- * but these functions still exist and will simply return false in these cases).
+ * but these functions still exist and will simply return false in these
+ * cases).
  */
 
 #ifndef SDL_cpuinfo_h_

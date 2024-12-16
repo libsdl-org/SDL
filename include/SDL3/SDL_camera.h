@@ -31,22 +31,22 @@
  *
  * Several platforms will alert the user if an app tries to access a camera,
  * and some will present a UI asking the user if your application should be
- * allowed to obtain images at all, which they can deny. A successfully
- * opened camera will not provide images until permission is granted.
- * Applications, after opening a camera device, can see if they were granted
- * access by either polling with the SDL_GetCameraPermissionState() function,
- * or waiting for an SDL_EVENT_CAMERA_DEVICE_APPROVED or
- * SDL_EVENT_CAMERA_DEVICE_DENIED event. Platforms that don't have any
- * user approval process will report approval immediately.
+ * allowed to obtain images at all, which they can deny. A successfully opened
+ * camera will not provide images until permission is granted. Applications,
+ * after opening a camera device, can see if they were granted access by
+ * either polling with the SDL_GetCameraPermissionState() function, or waiting
+ * for an SDL_EVENT_CAMERA_DEVICE_APPROVED or SDL_EVENT_CAMERA_DEVICE_DENIED
+ * event. Platforms that don't have any user approval process will report
+ * approval immediately.
  *
  * Note that SDL cameras only provide video as individual frames; they will
  * not provide full-motion video encoded in a movie file format, although an
- * app is free to encode the acquired frames into any format it likes. It
- * also does not provide audio from the camera hardware through this API;
- * not only do many webcams not have microphones at all, many people--from
- * streamers to people on Zoom calls--will want to use a separate microphone
- * regardless of the camera. In any case, recorded audio will be available
- * through SDL's audio API no matter what hardware provides the microphone.
+ * app is free to encode the acquired frames into any format it likes. It also
+ * does not provide audio from the camera hardware through this API; not only
+ * do many webcams not have microphones at all, many people--from streamers to
+ * people on Zoom calls--will want to use a separate microphone regardless of
+ * the camera. In any case, recorded audio will be available through SDL's
+ * audio API no matter what hardware provides the microphone.
  *
  * ## Camera gotchas
  *
