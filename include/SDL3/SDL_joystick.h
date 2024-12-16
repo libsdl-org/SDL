@@ -25,7 +25,7 @@
  * SDL joystick support.
  *
  * This is the lower-level joystick handling. If you want the simpler option,
- * where what buttons does what is well-defined, you should use the gamepad
+ * where what each button does is well-defined, you should use the gamepad
  * API instead.
  *
  * The term "instance_id" is the current instantiation of a joystick device in

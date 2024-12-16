@@ -20,7 +20,7 @@
 */
 
 /*
- *  Header file for CPU intrinsics for SDL
+ * Header file for CPU intrinsics for SDL
  */
 
 #ifndef SDL_intrin_h_

@@ -51,9 +51,14 @@
  * - It provides statistics and data on all failed assertions to the app.
  * - It allows the default assertion handler to be controlled with environment
  *   variables, in case an automated script needs to control it.
+ * - It can be used as an aid to Clang's static analysis; it will treat SDL
+ *   assertions as universally true (under the assumption that you are serious
+ *   about the asserted claims and that your debug builds will detect when
+ *   these claims were wrong). This can help the analyzer avoid false
+ *   positives.
  *
- * To use it: do a debug build and just sprinkle around tests to check your
- * code!
+ * To use it: compile a debug build and just sprinkle around tests to check
+ * your code!
  */
 
 #ifndef SDL_assert_h_
