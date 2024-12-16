@@ -23,6 +23,16 @@
  * # CategoryDialog
  *
  * File dialog support.
+ *
+ * SDL offers file dialogs, to let users select files with native GUI
+ * interfaces. There are "open" dialogs, "save" dialogs, and folder
+ * selection dialogs. The app can control some details, such as
+ * filtering to specific files, or whether multiple files can be selected by
+ * the user.
+ *
+ * Note that launching a file dialog is a non-blocking operation; control
+ * returns to the app immediately, and a callback is called later (possibly
+ * in another thread) when the user makes a choice.
  */
 
 #ifndef SDL_dialog_h_
@@ -244,20 +254,22 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  */
 extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, bool allow_many);
 
-typedef enum SDL_FileDialogType {
-  SDL_FILEDIALOG_OPENFILE,
-  SDL_FILEDIALOG_SAVEFILE,
-  SDL_FILEDIALOG_OPENFOLDER
+/**
+ * Various types of file dialogs.
+ *
+ * This is used by SDL_ShowFileDialogWithProperties() to decide what kind of
+ * dialog to present to the user.
+ *
+ * \since This enum is available since SDL 3.1.3.
+ *
+ * \sa SDL_ShowFileDialogWithProperties
+ */
+typedef enum SDL_FileDialogType
+{
+    SDL_FILEDIALOG_OPENFILE,
+    SDL_FILEDIALOG_SAVEFILE,
+    SDL_FILEDIALOG_OPENFOLDER
 } SDL_FileDialogType;
-
-#define SDL_PROP_FILE_DIALOG_FILTERS_POINTER     "SDL.filedialog.filters"
-#define SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER     "SDL.filedialog.nfilters"
-#define SDL_PROP_FILE_DIALOG_WINDOW_POINTER      "SDL.filedialog.window"
-#define SDL_PROP_FILE_DIALOG_LOCATION_STRING     "SDL.filedialog.location"
-#define SDL_PROP_FILE_DIALOG_MANY_BOOLEAN        "SDL.filedialog.many"
-#define SDL_PROP_FILE_DIALOG_TITLE_STRING        "SDL.filedialog.title"
-#define SDL_PROP_FILE_DIALOG_ACCEPT_STRING       "SDL.filedialog.accept"
-#define SDL_PROP_FILE_DIALOG_CANCEL_STRING       "SDL.filedialog.cancel"
 
 /**
  * Create and launch a file dialog with the specified properties.
@@ -307,6 +319,15 @@ typedef enum SDL_FileDialogType {
  * \sa SDL_ShowOpenFolderDialog
  */
 extern SDL_DECLSPEC void SDLCALL SDL_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props);
+
+#define SDL_PROP_FILE_DIALOG_FILTERS_POINTER     "SDL.filedialog.filters"
+#define SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER     "SDL.filedialog.nfilters"
+#define SDL_PROP_FILE_DIALOG_WINDOW_POINTER      "SDL.filedialog.window"
+#define SDL_PROP_FILE_DIALOG_LOCATION_STRING     "SDL.filedialog.location"
+#define SDL_PROP_FILE_DIALOG_MANY_BOOLEAN        "SDL.filedialog.many"
+#define SDL_PROP_FILE_DIALOG_TITLE_STRING        "SDL.filedialog.title"
+#define SDL_PROP_FILE_DIALOG_ACCEPT_STRING       "SDL.filedialog.accept"
+#define SDL_PROP_FILE_DIALOG_CANCEL_STRING       "SDL.filedialog.cancel"
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
