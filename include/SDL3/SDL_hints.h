@@ -1327,7 +1327,7 @@ extern "C" {
  * This variable is the default for all drivers, but can be overridden by the
  * hints for specific drivers below.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1344,7 +1344,7 @@ extern "C" {
  * - "1": Left and right Joy-Con controllers will be combined into a single
  *   controller. (default)
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1361,7 +1361,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1399,7 +1399,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1435,7 +1435,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1452,7 +1452,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1474,7 +1474,7 @@ extern "C" {
  * SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER. See
  * https://github.com/ViGEm/DsHidMini for an alternative driver on Windows.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1491,7 +1491,7 @@ extern "C" {
  *
  * The default value is 0.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1508,7 +1508,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1566,7 +1566,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1621,7 +1621,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1653,7 +1653,7 @@ extern "C" {
  *   Bluetooth access and may prompt the user for permission on iOS and
  *   Android.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1689,7 +1689,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1717,7 +1717,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1785,7 +1785,7 @@ extern "C" {
  * This driver doesn't work with the dolphinbar, so the default is false for
  * now.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1818,7 +1818,7 @@ extern "C" {
  * The default is "0" on Windows, otherwise the value of
  * SDL_HINT_JOYSTICK_HIDAPI
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1835,7 +1835,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI_XBOX
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1867,7 +1867,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI_XBOX_360
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
@@ -1884,7 +1884,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI_XBOX.
  *
- * This hint should be set before enumerating controllers.
+ * This hint should be set before initializing joysticks and gamepads.
  *
  * \since This hint is available since SDL 3.1.3.
  */
