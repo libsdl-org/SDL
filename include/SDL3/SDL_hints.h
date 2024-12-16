@@ -220,8 +220,8 @@ extern "C" {
  *
  * This hint will be ignored when opening the default playback device if
  * SDL_HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE is set, or when opening the
- * default recording device if SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE
- * is set.
+ * default recording device if SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE is
+ * set.
  *
  * This hint should be set before an audio device is opened.
  *
