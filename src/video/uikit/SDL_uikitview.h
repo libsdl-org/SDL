@@ -34,9 +34,16 @@
 - (void)setSDLWindow:(SDL_Window *)window;
 - (SDL_Window *)getSDLWindow;
 
+#if defined(__IPHONE_13_0)
+- (void)pencilHovering:(UIHoverGestureRecognizer *)recognizer API_AVAILABLE(ios(13.0));
+#endif
+
 #if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
 - (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4));
 - (UIPointerStyle *)pointerInteraction:(UIPointerInteraction *)interaction styleForRegion:(UIPointerRegion *)region API_AVAILABLE(ios(13.4));
+- (void)indirectPointerHovering:(UIHoverGestureRecognizer *)recognizer API_AVAILABLE(ios(13.4));
+- (void)updateIndirectPointerFromTouch:(UITouch *)touch;
+- (void)updateIndirectPointerButtonState:(UITouch *)touch fromEvent:(UIEvent *)event;
 #endif
 
 - (CGPoint)touchLocation:(UITouch *)touch shouldNormalize:(BOOL)normalize;
