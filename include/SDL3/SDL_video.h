@@ -1529,8 +1529,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surfa
 /**
  * Request that the window's position be set.
  *
- * If the window is in an exclusive fullscreen or maximized state, this request
- * has no effect.
+ * If the window is in an exclusive fullscreen or maximized state, this
+ * request has no effect.
  *
  * This can be used to reposition fullscreen-desktop windows onto a different
  * display, however, as exclusive fullscreen windows are locked to a specific
