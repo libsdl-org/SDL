@@ -1242,7 +1242,7 @@ int SDL_hid_init(void)
         return -1;
     }
 
-#if defined(HAVE_PLATFORM_BACKEND) && !defined(SDL_HIDAPI_DISABLED)
+#if defined(SDL_PLATFORM_MACOS) && !defined(SDL_HIDAPI_DISABLED)
     hid_darwin_set_open_exclusive(0);
 #endif
 
