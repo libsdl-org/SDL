@@ -2828,6 +2828,7 @@ static bool D3D12_INTERNAL_AssignStagingDescriptorHandle(
     if (pool->freeDescriptorCount == 0) {
         if (!D3D12_INTERNAL_ExpandStagingDescriptorPool(renderer, pool))
         {
+            SDL_UnlockMutex(pool->lock);
             return false;
         }
     }
