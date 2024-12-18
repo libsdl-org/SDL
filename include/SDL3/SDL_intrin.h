@@ -76,6 +76,25 @@
 #define SDL_LASX_INTRINSICS 1
 
 /**
+ * Defined if (and only if) the compiler supports ARM NEON intrinsics.
+ *
+ * If this macro is defined, SDL will have already included `<armintr.h>`
+ * `<arm_neon.h>`, `<arm64intr.h>`, and `<arm64_neon.h>`, as appropriate.
+ *
+ * \since This macro is available since 3.1.3.
+ */
+#define SDL_NEON_INTRINSICS 1
+
+/**
+ * Defined if (and only if) the compiler supports PowerPC Altivec intrinsics.
+ *
+ * If this macro is defined, SDL will have already included `<altivec.h>`
+ *
+ * \since This macro is available since 3.1.3.
+ */
+#define SDL_ALTIVEC_INTRINSICS 1
+
+/**
  * Defined if (and only if) the compiler supports Intel MMX intrinsics.
  *
  * If this macro is defined, SDL will have already included `<mmintrin.h>`
