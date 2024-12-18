@@ -118,6 +118,20 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
                             SDL_HideHomeIndicatorHintChanged,
                             (__bridge void *) self);
 #endif
+
+        /* Enable high refresh rates on iOS
+         * To enable this on phones, you should add the following line to Info.plist:
+         * <key>CADisableMinimumFrameDurationOnPhone</key> <true/>
+         */
+        if (@available(iOS 15.0, tvOS 15.0, *)) {
+            SDL_DisplayMode mode;
+            if (SDL_GetDesktopDisplayMode(0, &mode) == 0 && mode.refresh_rate > 60.0f) {
+                int frame_rate = (int)mode.refresh_rate;
+                displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
+                displayLink.preferredFrameRateRange = CAFrameRateRangeMake((frame_rate * 2) / 3, frame_rate, frame_rate);
+                [displayLink addToRunLoop:NSRunLoop.currentRunLoop forMode:NSDefaultRunLoopMode];
+            }
+        }
     }
     return self;
 }
@@ -147,6 +161,9 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 {
     [self stopAnimation];
 
+    if (interval <= 0) {
+        interval = 1;
+    }
     animationInterval = interval;
     animationCallback = callback;
     animationCallbackParam = callbackParam;
@@ -191,7 +208,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 - (void)doLoop:(CADisplayLink*)sender
 {
     /* Don't run the game loop while a messagebox is up */
-    if (!UIKit_ShowingMessageBox()) {
+    if (animationCallback && !UIKit_ShowingMessageBox()) {
         /* See the comment in the function definition. */
 #if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
         UIKit_GL_RestoreCurrentContext();
