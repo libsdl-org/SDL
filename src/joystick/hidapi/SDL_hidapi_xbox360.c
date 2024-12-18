@@ -20,6 +20,10 @@
 */
 #include "../../SDL_internal.h"
 
+#ifdef __MACOSX__
+#include <AvailabilityMacros.h>
+#endif
+
 #ifdef SDL_JOYSTICK_HIDAPI
 
 #include "SDL_events.h"
@@ -243,7 +247,8 @@ static int HIDAPI_DriverXbox360_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *dev
 static void HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXbox360_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
-#ifdef __MACOSX__
+#if (defined(__MACOSX__) && (MAC_OS_X_VERSION_MIN_REQUIRED < 150000))
+// In MacOS 15+ we are using the Apple XBox driver, instead of the 360Controller community driver. 
     const SDL_bool invert_y_axes = SDL_FALSE;
 #else
     const SDL_bool invert_y_axes = SDL_TRUE;
