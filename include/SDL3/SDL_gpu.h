@@ -3548,8 +3548,11 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * This function will fill the swapchain texture handle with NULL if too many
  * frames are in flight. This is not an error.
  *
- * If you use this function, it is possible to create a situation where many command buffers are allocated while the rendering context waits for the GPU to catch up, which will cause memory usage to grow.
- * You should use SDL_WaitAndAcquireGPUSwapchainTexture() unless you know what you are doing with timing.
+ * If you use this function, it is possible to create a situation where many
+ * command buffers are allocated while the rendering context waits for the GPU
+ * to catch up, which will cause memory usage to grow. You should use
+ * SDL_WaitAndAcquireGPUSwapchainTexture() unless you know what you are doing
+ * with timing.
  *
  * The swapchain texture is managed by the implementation and must not be
  * freed by the user. You MUST NOT call this function from any thread other
