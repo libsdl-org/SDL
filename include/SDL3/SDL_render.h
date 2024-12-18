@@ -2530,8 +2530,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderVSync(SDL_Renderer *renderer, int 
  *
  * \since This function is available since SDL 3.1.6.
  *
- * \sa SDL_RenderDebugTextF
- * \sa SDL_RenderDebugTextV
+ * \sa SDL_RenderDebugTextFormat
  * \sa SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, float x, float y, const char *str);
@@ -2539,9 +2538,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, flo
 /**
  * Draw debug text to an SDL_Renderer.
  *
- * This function will render a printf() style format string to a renderer. Note
- * that this is a convinence function for debugging, with severe limitations,
- * and is not intended to be used for production apps and games.
+ * This function will render a printf()-style format string to a renderer.
+ * Note that this is a convinence function for debugging, with severe
+ * limitations, and is not intended to be used for production apps and games.
  *
  * For the full list of limitations and other useful information,
  * see SDL_RenderDebugText.
@@ -2550,7 +2549,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, flo
  * \param x the x coordinate where the top-left corner of the text will draw.
  * \param y the y coordinate where the top-left corner of the text will draw.
  * \param fmt the format string to draw.
- * \param ... format arguments
+ * \param ... additional parameters matching % tokens in the `fmt` string, if
+ *            any.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -2559,38 +2559,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, flo
  * \since This function is available since SDL 3.1.7.
  *
  * \sa SDL_RenderDebugText
- * \sa SDL_RenderDebugTextV
  * \sa SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugTextF(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(4);
-
-/**
- * Draw debug text to an SDL_Renderer.
- *
- * This function will render a printf() style format string to a renderer. Note
- * that this is a convinence function for debugging, with severe limitations,
- * and is not intended to be used for production apps and games.
- *
- * For the full list of limitations and other useful information,
- * see SDL_RenderDebugText.
- *
- * \param renderer the renderer which should draw the text.
- * \param x the x coordinate where the top-left corner of the text will draw.
- * \param y the y coordinate where the top-left corner of the text will draw.
- * \param fmt the format string to draw.
- * \param ap a variable argument lists representing the format arguments
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
- *
- * \threadsafety This function should only be called on the main thread.
- *
- * \since This function is available since SDL 3.1.7.
- *
- * \sa SDL_RenderDebugText
- * \sa SDL_RenderDebugTextF
- * \sa SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
- */
-extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugTextV(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(4);
+extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugTextFormat(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(4);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

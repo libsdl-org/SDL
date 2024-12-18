@@ -1239,6 +1239,5 @@ SDL_DYNAPI_PROC(bool,SDL_SetGPUAllowedFramesInFlight,(SDL_GPUDevice *a,Uint32 b)
 SDL_DYNAPI_PROC(bool,SDL_RenderTextureAffine,(SDL_Renderer *a,SDL_Texture *b,const SDL_FRect *c,const SDL_FPoint *d,const SDL_FPoint *e,const SDL_FPoint *f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(bool,SDL_WaitAndAcquireGPUSwapchainTexture,(SDL_GPUCommandBuffer *a,SDL_Window *b,SDL_GPUTexture **c,Uint32 *d,Uint32 *e),(a,b,c,d,e),return)
 #ifndef SDL_DYNAPI_PROC_NO_VARARGS
-SDL_DYNAPI_PROC(bool,SDL_RenderDebugTextF,(SDL_Renderer *a,float b,float c,SDL_PRINTF_FORMAT_STRING const char *d,...),(a,b,c,d),return)
+SDL_DYNAPI_PROC(bool,SDL_RenderDebugTextFormat,(SDL_Renderer *a,float b,float c,SDL_PRINTF_FORMAT_STRING const char *d,...),(a,b,c,d),return)
 #endif
-SDL_DYNAPI_PROC(bool,SDL_RenderDebugTextV,(SDL_Renderer *a,float b,float c,SDL_PRINTF_FORMAT_STRING const char *d,va_list e),(a,b,c,d,e),return)

@@ -5590,45 +5590,28 @@ bool SDL_RenderDebugText(SDL_Renderer *renderer, float x, float y, const char *s
     return result;
 }
 
-bool SDL_RenderDebugTextF(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+bool SDL_RenderDebugTextFormat(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     va_list ap;
-
     va_start(ap, fmt);
-    bool result = SDL_RenderDebugTextV(renderer, x, y, fmt, ap);
+
+    // fast path to avoid unnecessary allocation and copy. If you're going through the dynapi, there's a good chance
+    // you _always_ hit this path, since it probably had to process varargs before calling into the jumptable.
+    if (SDL_strcmp(fmt, "%s") == 0) {
+        const char *str = va_arg(ap, const char *);
+        va_end(ap);
+        return SDL_RenderDebugText(renderer, x, y, str);
+    }
+
+    char *str = NULL;
+    const int rc = SDL_vasprintf(&str, fmt, ap);
     va_end(ap);
 
-    return result;
-}
-
-bool SDL_RenderDebugTextV(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
-{
-    // Probably for the best to check this here, so we don't do a bunch of string formatting before realizing the renderer isn't even valid...
-    CHECK_RENDERER_MAGIC(renderer, false);
-
-    va_list apc;
-    va_copy(apc, ap); // vsnprintf mangles ap, so copy it so it can be used again later
-    int len = SDL_vsnprintf(NULL, 0, fmt, apc);
-    va_end(apc);
-
-    if (len < 0) {
-        return SDL_SetError("Failed to format debug text");
+    if (rc == -1) {
+        return false;
     }
 
-    char *buf = SDL_malloc(len + 1);
-    if (buf == NULL) {
-        return SDL_OutOfMemory();
-    }
-
-    len = SDL_vsnprintf(buf, len + 1, fmt, ap);
-    if (len < 0) {
-        SDL_free(buf);
-        return SDL_SetError("Failed to format debug text");
-    }
-
-    bool result = SDL_RenderDebugText(renderer, x, y, buf);
-
-    SDL_free(buf);
-
-    return result;
+    const bool retval = SDL_RenderDebugText(renderer, x, y, str);
+    SDL_free(str);
+    return retval;
 }

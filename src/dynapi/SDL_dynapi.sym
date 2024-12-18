@@ -1207,8 +1207,7 @@ SDL3_0.0.0 {
     SDL_SetGPUAllowedFramesInFlight;
     SDL_RenderTextureAffine;
     SDL_WaitAndAcquireGPUSwapchainTexture;
-    SDL_RenderDebugTextF;
-    SDL_RenderDebugTextV;
+    SDL_RenderDebugTextFormat;
     # extra symbols go here (don't modify this line)
   local: *;
 };
