@@ -78,21 +78,18 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
         SDL_free(converted);
     }
 
-    // If the filter list is empty, put the suffix
-    if (!filters->name || !filters->pattern) {
-        new_length = SDL_strlen(combined) + SDL_strlen(suffix) + 1;
+    new_length = SDL_strlen(combined) + SDL_strlen(suffix) + 1;
 
-        new_combined = (char *)SDL_realloc(combined, new_length);
+    new_combined = (char *)SDL_realloc(combined, new_length);
 
-        if (!new_combined) {
-            SDL_free(combined);
-            return NULL;
-        }
-
-        combined = new_combined;
-
-        SDL_strlcat(combined, suffix, new_length);
+    if (!new_combined) {
+        SDL_free(combined);
+        return NULL;
     }
+
+    combined = new_combined;
+
+    SDL_strlcat(combined, suffix, new_length);
 
     return combined;
 }
