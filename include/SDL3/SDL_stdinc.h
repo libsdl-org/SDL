@@ -96,6 +96,7 @@ void *alloca(size_t);
 
 #ifndef SDL_COMPILE_TIME_ASSERT
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A compile-time assertion.
  *
@@ -115,8 +116,8 @@ void *alloca(size_t);
  * This is used with a C language trick that works on older compilers that
  * don't support better assertion techniques.
  *
- * If you need an assertion that operates at runtime, on variable data,
- * you should try SDL_assert instead.
+ * If you need an assertion that operates at runtime, on variable data, you
+ * should try SDL_assert instead.
  *
  * \param name a unique identifier for this assertion.
  * \param x the value to test. Must be a boolean value.
@@ -2886,6 +2887,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf_r(Uint64 *state);
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits_r(Uint64 *state);
 
 #ifndef SDL_PI_D
+
 /**
  * The value of Pi, as a double-precision floating point literal.
  *
@@ -2897,6 +2899,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits_r(Uint64 *state);
 #endif
 
 #ifndef SDL_PI_F
+
 /**
  * The value of Pi, as a single-precision floating point literal.
  *
