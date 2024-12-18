@@ -27,4 +27,4 @@ quickrefcategoryorder = Init,Hints,Error,Version,Properties,Log,Video,Events,Key
 quickreftitle = SDL3 API Quick Reference
 quickrefurl = https://libsdl.org/
 quickrefdesc = The latest version of this document can be found at https://wiki.libsdl.org/SDL3/QuickReference
-quickrefmacroregex = \A(SDL_PLATFORM_.*|SDL_.*_INTRINSICS|SDL_Atomic...Ref|SDL_assert.*?|SDL_arraysize|SDL_Swap[BL]E\d\d|SDL_[a-z]+_cast)\Z
+quickrefmacroregex = \A(SDL_PLATFORM_.*|SDL_.*_INTRINSICS|SDL_Atomic...Ref|SDL_assert.*?|SDL_COMPILE_TIME_ASSERT|SDL_arraysize|SDL_Swap[BL]E\d\d|SDL_[a-z]+_cast)\Z

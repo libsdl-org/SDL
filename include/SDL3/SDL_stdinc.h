@@ -95,7 +95,40 @@ void *alloca(size_t);
 #endif
 
 #ifndef SDL_COMPILE_TIME_ASSERT
-#if defined(__cplusplus)
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+/**
+ * A compile-time assertion.
+ *
+ * This can check constant values _known to the compiler at build time_ for
+ * correctness, and end the compile with the error if they fail.
+ *
+ * Often times these are used to verify basic truths, like the size of a
+ * datatype is what is expected:
+ *
+ * ```c
+ * SDL_COMPILE_TIME_ASSERT(uint32_size, sizeof(Uint32) == 4);
+ * ```
+ *
+ * The `name` parameter must be a valid C symbol, and must be unique across
+ * all compile-time asserts in the same compilation unit (one run of the
+ * compiler), or the build might fail with cryptic errors on some targets.
+ * This is used with a C language trick that works on older compilers that
+ * don't support better assertion techniques.
+ *
+ * If you need an assertion that operates at runtime, on variable data,
+ * you should try SDL_assert instead.
+ *
+ * \param name a unique identifier for this assertion.
+ * \param x the value to test. Must be a boolean value.
+ *
+ * \threadsafety This macro doesn't generate any code to run.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_assert
+ */
+#define SDL_COMPILE_TIME_ASSERT(name, x) FailToCompileIf_x_IsFalse(x)
+#elif defined(__cplusplus)
 /* Keep C++ case alone: Some versions of gcc will define __STDC_VERSION__ even when compiling in C++ mode. */
 #if (__cplusplus >= 201103L)
 #define SDL_COMPILE_TIME_ASSERT(name, x)  static_assert(x, #x)
@@ -2852,11 +2885,25 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf_r(Uint64 *state);
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits_r(Uint64 *state);
 
-
 #ifndef SDL_PI_D
+/**
+ * The value of Pi, as a double-precision floating point literal.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_PI_F
+ */
 #define SDL_PI_D   3.141592653589793238462643383279502884       /**< pi (double) */
 #endif
+
 #ifndef SDL_PI_F
+/**
+ * The value of Pi, as a single-precision floating point literal.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_PI_D
+ */
 #define SDL_PI_F   3.141592653589793238462643383279502884F      /**< pi (float) */
 #endif
 

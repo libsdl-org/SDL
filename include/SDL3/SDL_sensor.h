@@ -44,6 +44,11 @@ extern "C" {
 /* *INDENT-ON* */
 #endif
 
+/**
+ * The opaque structure used to identify an opened SDL sensor.
+ *
+ * \since This struct is available since SDL 3.1.3.
+ */
 typedef struct SDL_Sensor SDL_Sensor;
 
 /**
