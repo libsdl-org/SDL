@@ -448,13 +448,13 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 
         videodata->global_mouse_changed = true;
 
-        if (xev->deviceid != xev->sourceid) {
-            // Discard events from "Master" devices to avoid duplicates.
-            break;
-        }
-
         X11_PenHandle *pen = X11_FindPenByDeviceID(xev->deviceid);
         if (pen) {
+            if (xev->deviceid != xev->sourceid) {
+                // Discard events from "Master" devices to avoid duplicates.
+                break;
+            }
+
             SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
             SDL_SendPenMotion(0, pen->pen, window, (float) xev->event_x, (float) xev->event_y);
 
@@ -466,13 +466,14 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
                     SDL_SendPenAxis(0, pen->pen, window, (SDL_PenAxis) i, axes[i]);
                 }
             }
-        } else if (!pointer_emulated) {
+        } else if (!pointer_emulated && xev->deviceid == videodata->xinput_master_pointer_device) {
+            // Use the master device for non-relative motion, as the slave devices can seemingly lag behind.
             SDL_Mouse *mouse = SDL_GetMouse();
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
                 if (window) {
                     X11_ProcessHitTest(_this, window->internal, (float)xev->event_x, (float)xev->event_y, false);
-                    SDL_SendMouseMotion(0, window, (SDL_MouseID)xev->sourceid, false, (float)xev->event_x, (float)xev->event_y);
+                    SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, false, (float)xev->event_x, (float)xev->event_y);
                 }
             }
         }
@@ -753,6 +754,8 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
             }
             break;
         case XIMasterPointer:
+            data->xinput_master_pointer_device = dev->deviceid;
+            SDL_FALLTHROUGH;
         case XISlavePointer:
             {
                 SDL_MouseID mouseID = (SDL_MouseID)dev->deviceid;
