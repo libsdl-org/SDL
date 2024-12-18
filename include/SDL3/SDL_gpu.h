@@ -3720,7 +3720,7 @@ extern SDL_DECLSPEC SDL_GPUFence *SDLCALL SDL_SubmitGPUCommandBufferAndAcquireFe
  *
  * \since This function is available since SDL 3.1.6.
  *
- * \sa SDL_WaitAndAcquireSwapchainTexture
+ * \sa SDL_WaitAndAcquireGPUSwapchainTexture
  * \sa SDL_AcquireGPUCommandBuffer
  * \sa SDL_AcquireGPUSwapchainTexture
  */
