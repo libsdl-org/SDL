@@ -1087,7 +1087,7 @@ typedef enum SDL_GPUSamplerAddressMode
  *
  * \sa SDL_SetGPUSwapchainParameters
  * \sa SDL_WindowSupportsGPUPresentMode
- * \sa SDL_AcquireGPUSwapchainTexture
+ * \sa SDL_WaitAndAcquireGPUSwapchainTexture
  */
 typedef enum SDL_GPUPresentMode
 {
@@ -1119,7 +1119,7 @@ typedef enum SDL_GPUPresentMode
  *
  * \sa SDL_SetGPUSwapchainParameters
  * \sa SDL_WindowSupportsGPUSwapchainComposition
- * \sa SDL_AcquireGPUSwapchainTexture
+ * \sa SDL_WaitAndAcquireGPUSwapchainTexture
  */
 typedef enum SDL_GPUSwapchainComposition
 {
@@ -3441,7 +3441,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WindowSupportsGPUPresentMode(
  *
  * \since This function is available since SDL 3.1.3.
  *
- * \sa SDL_AcquireGPUSwapchainTexture
+ * \sa SDL_WaitAndAcquireGPUSwapchainTexture
  * \sa SDL_ReleaseWindowFromGPUDevice
  * \sa SDL_WindowSupportsGPUPresentMode
  * \sa SDL_WindowSupportsGPUSwapchainComposition
@@ -3546,9 +3546,10 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * buffer used to acquire it.
  *
  * This function will fill the swapchain texture handle with NULL if too many
- * frames are in flight. This is not an error. The best practice is to call
- * SDL_CancelGPUCommandBuffer if the swapchain texture handle is NULL to avoid
- * enqueuing needless work on the GPU.
+ * frames are in flight. This is not an error.
+ *
+ * If you use this function, it is possible to create a situation where many command buffers are allocated while the rendering context waits for the GPU to catch up, which will cause memory usage to grow.
+ * You should use SDL_WaitAndAcquireGPUSwapchainTexture() unless you know what you are doing with timing.
  *
  * The swapchain texture is managed by the implementation and must not be
  * freed by the user. You MUST NOT call this function from any thread other
@@ -3576,6 +3577,7 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * \sa SDL_CancelGPUCommandBuffer
  * \sa SDL_GetWindowSizeInPixels
  * \sa SDL_WaitForGPUSwapchain
+ * \sa SDL_WaitAndAcquireGPUSwapchainTexture
  * \sa SDL_SetGPUAllowedFramesInFlight
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_AcquireGPUSwapchainTexture(
@@ -3599,6 +3601,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AcquireGPUSwapchainTexture(
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_AcquireGPUSwapchainTexture
+ * \sa SDL_WaitAndAcquireGPUSwapchainTexture
  * \sa SDL_SetGPUAllowedFramesInFlight
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUSwapchain(
@@ -3662,6 +3665,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitAndAcquireGPUSwapchainTexture(
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_AcquireGPUCommandBuffer
+ * \sa SDL_WaitAndAcquireGPUSwapchainTexture
  * \sa SDL_AcquireGPUSwapchainTexture
  * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  */
@@ -3687,6 +3691,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SubmitGPUCommandBuffer(
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_AcquireGPUCommandBuffer
+ * \sa SDL_WaitAndAcquireGPUSwapchainTexture
  * \sa SDL_AcquireGPUSwapchainTexture
  * \sa SDL_SubmitGPUCommandBuffer
  * \sa SDL_ReleaseGPUFence
@@ -3699,11 +3704,12 @@ extern SDL_DECLSPEC SDL_GPUFence *SDLCALL SDL_SubmitGPUCommandBufferAndAcquireFe
  *
  * None of the enqueued commands are executed.
  *
+ * It is an error to call this function after a swapchain texture has been
+ * acquired.
+ *
  * This must be called from the thread the command buffer was acquired on.
  *
- * You must not reference the command buffer after calling this function. It
- * is an error to call this function after a swapchain texture has been
- * acquired.
+ * You must not reference the command buffer after calling this function.
  *
  * \param command_buffer a command buffer.
  * \returns true on success, false on error; call SDL_GetError() for more
@@ -3711,6 +3717,7 @@ extern SDL_DECLSPEC SDL_GPUFence *SDLCALL SDL_SubmitGPUCommandBufferAndAcquireFe
  *
  * \since This function is available since SDL 3.1.6.
  *
+ * \sa SDL_WaitAndAcquireSwapchainTexture
  * \sa SDL_AcquireGPUCommandBuffer
  * \sa SDL_AcquireGPUSwapchainTexture
  */
