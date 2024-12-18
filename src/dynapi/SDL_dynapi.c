@@ -149,15 +149,29 @@ static void SDL_InitDynamicAPI(void);
         va_end(ap);                                                                                                                       \
         return result;                                                                                                                    \
     }                                                                                                                                     \
-    _static bool SDLCALL SDL_RenderDebugTextF##name(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) \
+    _static bool SDLCALL SDL_RenderDebugTextFormat##name(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) \
     {                                                                                                                                     \
-        bool result;                                                                                                                      \
+        char buf[128], *str = buf;                                                                                                        \
+        int result;                                                                                                                       \
         va_list ap;                                                                                                                       \
         initcall;                                                                                                                         \
         va_start(ap, fmt);                                                                                                                \
-        result = jump_table.SDL_RenderDebugTextV(renderer, x, y, fmt, ap);                                                                \
+        result = jump_table.SDL_vsnprintf(buf, sizeof(buf), fmt, ap);                                                                     \
         va_end(ap);                                                                                                                       \
-        return result;                                                                                                                    \
+        if (result >= 0 && (size_t)result >= sizeof(buf)) {                                                                               \
+            str = NULL;                                                                                                                   \
+            va_start(ap, fmt);                                                                                                            \
+            result = jump_table.SDL_vasprintf(&str, fmt, ap);                                                                             \
+            va_end(ap);                                                                                                                   \
+        }                                                                                                                                 \
+        bool retval = false;                                                                                                              \
+        if (result >= 0) {                                                                                                                \
+            retval = jump_table.SDL_RenderDebugTextFormat(renderer, x, y, "%s", str);                                                     \
+        }                                                                                                                                 \
+        if (str != buf) {                                                                                                                 \
+            jump_table.SDL_free(str);                                                                                                     \
+        }                                                                                                                                 \
+        return retval;                                                                                                                    \
     }                                                                                                                                     \
     _static void SDLCALL SDL_Log##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                                     \
     {                                                                                                                                     \
