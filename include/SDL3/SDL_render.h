@@ -2542,8 +2542,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, flo
  * Note that this is a convinence function for debugging, with severe
  * limitations, and is not intended to be used for production apps and games.
  *
- * For the full list of limitations and other useful information,
- * see SDL_RenderDebugText.
+ * For the full list of limitations and other useful information, see
+ * SDL_RenderDebugText.
  *
  * \param renderer the renderer which should draw the text.
  * \param x the x coordinate where the top-left corner of the text will draw.
@@ -2556,7 +2556,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, flo
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.7.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RenderDebugText
  * \sa SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
