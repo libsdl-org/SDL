@@ -765,6 +765,7 @@ my %big_ascii = (
     ',' => [ "\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}", "\x{2584}\x{2588}\x{2557}", "\x{255A}\x{2550}\x{255D}" ],
     '/' => [ "\x{20}\x{20}\x{20}\x{20}\x{2588}\x{2588}\x{2557}", "\x{20}\x{20}\x{20}\x{2588}\x{2588}\x{2554}\x{255D}", "\x{20}\x{20}\x{2588}\x{2588}\x{2554}\x{255D}\x{20}", "\x{20}\x{2588}\x{2588}\x{2554}\x{255D}\x{20}\x{20}", "\x{2588}\x{2588}\x{2554}\x{255D}\x{20}\x{20}\x{20}", "\x{255A}\x{2550}\x{255D}\x{20}\x{20}\x{20}\x{20}" ],
     '!' => [ "\x{2588}\x{2588}\x{2557}", "\x{2588}\x{2588}\x{2551}", "\x{2588}\x{2588}\x{2551}", "\x{255A}\x{2550}\x{255D}", "\x{2588}\x{2588}\x{2557}", "\x{255A}\x{2550}\x{255D}" ],
+    '_' => [ "\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}", "\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2557}", "\x{255A}\x{2550}\x{2550}\x{2550}\x{2550}\x{2550}\x{2550}\x{255D}" ],
     '0' => [ "\x{20}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2557}\x{20}", "\x{2588}\x{2588}\x{2554}\x{2550}\x{2588}\x{2588}\x{2588}\x{2588}\x{2557}", "\x{2588}\x{2588}\x{2551}\x{2588}\x{2588}\x{2554}\x{2588}\x{2588}\x{2551}", "\x{2588}\x{2588}\x{2588}\x{2588}\x{2554}\x{255D}\x{2588}\x{2588}\x{2551}", "\x{255A}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2554}\x{255D}", "\x{20}\x{255A}\x{2550}\x{2550}\x{2550}\x{2550}\x{2550}\x{255D}\x{20}" ],
     '1' => [ "\x{20}\x{2588}\x{2588}\x{2557}", "\x{2588}\x{2588}\x{2588}\x{2551}", "\x{255A}\x{2588}\x{2588}\x{2551}", "\x{20}\x{2588}\x{2588}\x{2551}", "\x{20}\x{2588}\x{2588}\x{2551}", "\x{20}\x{255A}\x{2550}\x{255D}" ],
     '2' => [ "\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2557}\x{20}", "\x{255A}\x{2550}\x{2550}\x{2550}\x{2550}\x{2588}\x{2588}\x{2557}", "\x{20}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2554}\x{255D}", "\x{2588}\x{2588}\x{2554}\x{2550}\x{2550}\x{2550}\x{255D}\x{20}", "\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2557}", "\x{255A}\x{2550}\x{2550}\x{2550}\x{2550}\x{2550}\x{2550}\x{255D}" ],
@@ -862,11 +863,11 @@ sub generate_quickref {
     print $fh "<!-- DO NOT EDIT THIS PAGE ON THE WIKI. IT WILL BE OVERWRITTEN BY WIKIHEADERS AND CHANGES WILL BE LOST! -->\n\n";
 
     # Just something to test big_ascii output.
-    #print_big_ascii_string($fh, "ABCDEFGHIJ", $lowascii);
-    #print_big_ascii_string($fh, "KLMNOPQRST", $lowascii);
-    #print_big_ascii_string($fh, "UVWXYZ0123", $lowascii);
-    #print_big_ascii_string($fh, "456789JT3A", $lowascii);
-    #print_big_ascii_string($fh, "hello, a.b/c!!", $lowascii);
+    #print_big_ascii_string($fh, "ABCDEFGHIJ", '', $lowascii);
+    #print_big_ascii_string($fh, "KLMNOPQRST", '', $lowascii);
+    #print_big_ascii_string($fh, "UVWXYZ0123", '', $lowascii);
+    #print_big_ascii_string($fh, "456789JT3A", '', $lowascii);
+    #print_big_ascii_string($fh, "hello, _a.b/c_!!", '', $lowascii);
 
     # Dan Bechard's work was on an SDL2 cheatsheet:
     # https://blog.theprogrammingjunkie.com/post/sdl2-cheatsheet/
