@@ -904,7 +904,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ConvertPixels(int width, int height, SDL_Pi
  *                       properties, or 0.
  * \param dst a pointer to be filled in with new pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
- * \returns false on success or false on failure; call SDL_GetError() for more
+ * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.1.3.
