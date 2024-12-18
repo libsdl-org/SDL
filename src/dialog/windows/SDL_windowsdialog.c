@@ -63,6 +63,24 @@ int getFilterIndex(int as_reported_by_windows)
     return as_reported_by_windows - 1;
 }
 
+char *clear_filt_names(const char *filt)
+{
+    char *cleared = SDL_strdup(filt);
+
+    for (char *c = cleared; *c; c++) {
+        /* 0x01 bytes are used as temporary replacement for the various 0x00
+           bytes required by Win32 (one null byte between each filter, two at
+           the end of the filters). Filter out these bytes from the filter names
+           to avoid early-ending the filters if someone puts two consecutive
+           0x01 bytes in their filter names. */
+        if (*c == '\x01') {
+            *c = ' ';
+        }
+    }
+
+    return cleared;
+}
+
 // TODO: The new version of file dialogs
 void windows_ShowFileDialog(void *ptr)
 {
@@ -161,7 +179,7 @@ void windows_ShowFileDialog(void *ptr)
     if (filters) {
         // '\x01' is used in place of a null byte
         // suffix needs two null bytes in case the filter list is empty
-        char *filterlist = convert_filters(filters, nfilters, NULL, "", "",
+        char *filterlist = convert_filters(filters, nfilters, clear_filt_names, "", "",
                                            "\x01\x01", "", "\x01", "\x01",
                                            "*.", ";*.", "");
 
