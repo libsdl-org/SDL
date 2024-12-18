@@ -111,14 +111,13 @@
 #define WINDOW_PROPERTY_DATA                "SDL_GPUD3D12WindowPropertyData"
 #define D3D_FEATURE_LEVEL_CHOICE            D3D_FEATURE_LEVEL_11_1
 #define D3D_FEATURE_LEVEL_CHOICE_STR        "11_1"
-// FIXME: just use sysgpu.h defines
 #define MAX_ROOT_SIGNATURE_PARAMETERS         64
-#define VIEW_GPU_DESCRIPTOR_COUNT             65536
-#define SAMPLER_GPU_DESCRIPTOR_COUNT          2048
-#define VIEW_SAMPLER_STAGING_DESCRIPTOR_COUNT 1000000
-#define TARGET_STAGING_DESCRIPTOR_COUNT       1000000
 #define D3D12_FENCE_UNSIGNALED_VALUE          0
 #define D3D12_FENCE_SIGNAL_VALUE              1
+// TODO: do these need to be tuned?
+#define VIEW_GPU_DESCRIPTOR_COUNT             65536
+#define SAMPLER_GPU_DESCRIPTOR_COUNT          2048
+#define STAGING_HEAP_DESCRIPTOR_COUNT         1024
 
 #define SDL_GPU_SHADERSTAGE_COMPUTE (SDL_GPUShaderStage)2
 
@@ -607,6 +606,7 @@ typedef struct D3D12Buffer D3D12Buffer;
 typedef struct D3D12BufferContainer D3D12BufferContainer;
 typedef struct D3D12UniformBuffer D3D12UniformBuffer;
 typedef struct D3D12DescriptorHeap D3D12DescriptorHeap;
+typedef struct D3D12StagingDescriptor D3D12StagingDescriptor;
 typedef struct D3D12TextureDownload D3D12TextureDownload;
 
 typedef struct D3D12Fence
@@ -621,31 +621,43 @@ struct D3D12DescriptorHeap
     ID3D12DescriptorHeap *handle;
     D3D12_DESCRIPTOR_HEAP_TYPE heapType;
     D3D12_CPU_DESCRIPTOR_HANDLE descriptorHeapCPUStart;
-    D3D12_GPU_DESCRIPTOR_HANDLE descriptorHeapGPUStart; // only exists if staging is true
+    D3D12_GPU_DESCRIPTOR_HANDLE descriptorHeapGPUStart; // only used by GPU heaps
     Uint32 maxDescriptors;
     Uint32 descriptorSize;
     bool staging;
 
-    Uint32 currentDescriptorIndex;
-
-    Uint32 *inactiveDescriptorIndices; // only exists if staging is true
-    Uint32 inactiveDescriptorCount;
+    Uint32 currentDescriptorIndex; // only used by GPU heaps
 };
 
-typedef struct D3D12DescriptorHeapPool
+typedef struct D3D12GPUDescriptorHeapPool
 {
     Uint32 capacity;
     Uint32 count;
     D3D12DescriptorHeap **heaps;
     SDL_Mutex *lock;
-} D3D12DescriptorHeapPool;
+} D3D12GPUDescriptorHeapPool;
 
-typedef struct D3D12CPUDescriptor
+// The only thing we care about with staging descriptors is being able to grab a free descriptor.
+typedef struct D3D12StagingDescriptorPool
 {
+    Uint32 heapCount;
+    D3D12DescriptorHeap **heaps;
+
+    // Descriptor handles are owned by resources, so these can be thought of as descriptions of a free index within a heap.
+    Uint32 freeDescriptorCapacity;
+    Uint32 freeDescriptorCount;
+    D3D12StagingDescriptor *freeDescriptors;
+
+    SDL_Mutex *lock;
+} D3D12StagingDescriptorPool;
+
+struct D3D12StagingDescriptor
+{
+    D3D12StagingDescriptorPool *pool;
     D3D12DescriptorHeap *heap;
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
     Uint32 cpuHandleIndex;
-} D3D12CPUDescriptor;
+};
 
 typedef struct D3D12TextureContainer
 {
@@ -673,10 +685,10 @@ typedef struct D3D12TextureSubresource
     Uint32 index;
 
     // One per depth slice
-    D3D12CPUDescriptor *rtvHandles; // NULL if not a color target
+    D3D12StagingDescriptor *rtvHandles; // NULL if not a color target
 
-    D3D12CPUDescriptor uavHandle; // NULL if not a compute storage write texture
-    D3D12CPUDescriptor dsvHandle; // NULL if not a depth stencil target
+    D3D12StagingDescriptor uavHandle; // NULL if not a compute storage write texture
+    D3D12StagingDescriptor dsvHandle; // NULL if not a depth stencil target
 } D3D12TextureSubresource;
 
 struct D3D12Texture
@@ -688,7 +700,7 @@ struct D3D12Texture
     Uint32 subresourceCount; /* layerCount * num_levels */
 
     ID3D12Resource *resource;
-    D3D12CPUDescriptor srvHandle;
+    D3D12StagingDescriptor srvHandle;
 
     SDL_AtomicInt referenceCount;
 };
@@ -696,7 +708,7 @@ struct D3D12Texture
 typedef struct D3D12Sampler
 {
     SDL_GPUSamplerCreateInfo createInfo;
-    D3D12CPUDescriptor handle;
+    D3D12StagingDescriptor handle;
     SDL_AtomicInt referenceCount;
 } D3D12Sampler;
 
@@ -802,8 +814,8 @@ struct D3D12Renderer
     Uint32 availableFenceCount;
     Uint32 availableFenceCapacity;
 
-    D3D12DescriptorHeap *stagingDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
-    D3D12DescriptorHeapPool descriptorHeapPools[2];
+    D3D12StagingDescriptorPool *stagingDescriptorPools[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+    D3D12GPUDescriptorHeapPool gpuDescriptorHeapPools[2];
 
     // Deferred resource releasing
 
@@ -828,7 +840,6 @@ struct D3D12Renderer
     Uint32 computePipelinesToDestroyCapacity;
 
     // Locks
-    SDL_Mutex *stagingDescriptorHeapLock;
     SDL_Mutex *acquireCommandBufferLock;
     SDL_Mutex *acquireUniformBufferLock;
     SDL_Mutex *submitLock;
@@ -1036,9 +1047,9 @@ struct D3D12Buffer
     Uint32 containerIndex;
 
     ID3D12Resource *handle;
-    D3D12CPUDescriptor uavDescriptor;
-    D3D12CPUDescriptor srvDescriptor;
-    D3D12CPUDescriptor cbvDescriptor;
+    D3D12StagingDescriptor uavDescriptor;
+    D3D12StagingDescriptor srvDescriptor;
+    D3D12StagingDescriptor cbvDescriptor;
     D3D12_GPU_VIRTUAL_ADDRESS virtualAddress;
     Uint8 *mapPointer; // NULL except for upload buffers and fast uniform buffers
     SDL_AtomicInt referenceCount;
@@ -1175,23 +1186,18 @@ static void D3D12_INTERNAL_SetResourceName(
 
 // Release / Cleanup
 
-// TODO: call this when releasing resources
-static void D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+static void D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
     D3D12Renderer *renderer,
-    D3D12CPUDescriptor *cpuDescriptor)
+    D3D12StagingDescriptor *cpuDescriptor)
 {
-    D3D12DescriptorHeap *heap = cpuDescriptor->heap;
+    D3D12StagingDescriptorPool *pool = cpuDescriptor->pool;
 
-    if (heap != NULL) {
-        SDL_LockMutex(renderer->stagingDescriptorHeapLock);
-        heap->inactiveDescriptorIndices[heap->inactiveDescriptorCount] = cpuDescriptor->cpuHandleIndex;
-        heap->inactiveDescriptorCount += 1;
-        SDL_UnlockMutex(renderer->stagingDescriptorHeapLock);
+    if (pool != NULL) {
+        SDL_LockMutex(pool->lock);
+        SDL_memcpy(&pool->freeDescriptors[pool->freeDescriptorCount], cpuDescriptor, sizeof(D3D12StagingDescriptor));
+        pool->freeDescriptorCount += 1;
+        SDL_UnlockMutex(pool->lock);
     }
-
-    cpuDescriptor->heap = NULL;
-    cpuDescriptor->cpuHandle.ptr = 0;
-    cpuDescriptor->cpuHandleIndex = SDL_MAX_UINT32;
 }
 
 static void D3D12_INTERNAL_DestroyBuffer(
@@ -1208,13 +1214,13 @@ static void D3D12_INTERNAL_DestroyBuffer(
             0,
             NULL);
     }
-    D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+    D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
         renderer,
         &buffer->srvDescriptor);
-    D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+    D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
         renderer,
         &buffer->uavDescriptor);
-    D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+    D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
         renderer,
         &buffer->cbvDescriptor);
 
@@ -1276,24 +1282,24 @@ static void D3D12_INTERNAL_DestroyTexture(
         D3D12TextureSubresource *subresource = &texture->subresources[i];
         if (subresource->rtvHandles) {
             for (Uint32 depthIndex = 0; depthIndex < subresource->depth; depthIndex += 1) {
-                D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+                D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
                     renderer,
                     &subresource->rtvHandles[depthIndex]);
             }
             SDL_free(subresource->rtvHandles);
         }
 
-        D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+        D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
             renderer,
             &subresource->uavHandle);
 
-        D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+        D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
             renderer,
             &subresource->dsvHandle);
     }
     SDL_free(texture->subresources);
 
-    D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+    D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
         renderer,
         &texture->srvHandle);
 
@@ -1349,7 +1355,7 @@ static void D3D12_INTERNAL_DestroySampler(
     D3D12Renderer *renderer,
     D3D12Sampler *sampler)
 {
-    D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+    D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
         renderer,
         &sampler->handle);
 
@@ -1445,11 +1451,23 @@ static void D3D12_INTERNAL_DestroyDescriptorHeap(D3D12DescriptorHeap *descriptor
     if (!descriptorHeap) {
         return;
     }
-    SDL_free(descriptorHeap->inactiveDescriptorIndices);
     if (descriptorHeap->handle) {
         ID3D12DescriptorHeap_Release(descriptorHeap->handle);
     }
     SDL_free(descriptorHeap);
+}
+
+static void D3D12_INTERNAL_DestroyStagingDescriptorPool(
+    D3D12StagingDescriptorPool *pool)
+{
+    for (Uint32 i = 0; i < pool->heapCount; i += 1) {
+        D3D12_INTERNAL_DestroyDescriptorHeap(pool->heaps[i]);
+    }
+    SDL_free(pool->heaps);
+    SDL_free(pool->freeDescriptors);
+    SDL_DestroyMutex(pool->lock);
+
+    SDL_free(pool);
 }
 
 static void D3D12_INTERNAL_DestroyCommandBuffer(D3D12CommandBuffer *commandBuffer)
@@ -1500,25 +1518,25 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
 
     // Clean up descriptor heaps
     for (Uint32 i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; i += 1) {
-        if (renderer->stagingDescriptorHeaps[i]) {
-            D3D12_INTERNAL_DestroyDescriptorHeap(renderer->stagingDescriptorHeaps[i]);
-            renderer->stagingDescriptorHeaps[i] = NULL;
+        if (renderer->stagingDescriptorPools[i]) {
+            D3D12_INTERNAL_DestroyStagingDescriptorPool(renderer->stagingDescriptorPools[i]);
+            renderer->stagingDescriptorPools[i] = NULL;
         }
     }
 
     for (Uint32 i = 0; i < 2; i += 1) {
-        if (renderer->descriptorHeapPools[i].heaps) {
-            for (Uint32 j = 0; j < renderer->descriptorHeapPools[i].count; j += 1) {
-                if (renderer->descriptorHeapPools[i].heaps[j]) {
-                    D3D12_INTERNAL_DestroyDescriptorHeap(renderer->descriptorHeapPools[i].heaps[j]);
-                    renderer->descriptorHeapPools[i].heaps[j] = NULL;
+        if (renderer->gpuDescriptorHeapPools[i].heaps) {
+            for (Uint32 j = 0; j < renderer->gpuDescriptorHeapPools[i].count; j += 1) {
+                if (renderer->gpuDescriptorHeapPools[i].heaps[j]) {
+                    D3D12_INTERNAL_DestroyDescriptorHeap(renderer->gpuDescriptorHeapPools[i].heaps[j]);
+                    renderer->gpuDescriptorHeapPools[i].heaps[j] = NULL;
                 }
             }
-            SDL_free(renderer->descriptorHeapPools[i].heaps);
+            SDL_free(renderer->gpuDescriptorHeapPools[i].heaps);
         }
-        if (renderer->descriptorHeapPools[i].lock) {
-            SDL_DestroyMutex(renderer->descriptorHeapPools[i].lock);
-            renderer->descriptorHeapPools[i].lock = NULL;
+        if (renderer->gpuDescriptorHeapPools[i].lock) {
+            SDL_DestroyMutex(renderer->gpuDescriptorHeapPools[i].lock);
+            renderer->gpuDescriptorHeapPools[i].lock = NULL;
         }
     }
 
@@ -1609,7 +1627,6 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
         SDL_iconv_close(renderer->iconv);
     }
 
-    SDL_DestroyMutex(renderer->stagingDescriptorHeapLock);
     SDL_DestroyMutex(renderer->acquireCommandBufferLock);
     SDL_DestroyMutex(renderer->acquireUniformBufferLock);
     SDL_DestroyMutex(renderer->submitLock);
@@ -1945,16 +1962,6 @@ static D3D12DescriptorHeap *D3D12_INTERNAL_CreateDescriptorHeap(
     }
 
     heap->currentDescriptorIndex = 0;
-    heap->inactiveDescriptorCount = 0;
-    heap->inactiveDescriptorIndices = NULL;
-
-    if (staging) {
-        heap->inactiveDescriptorIndices = (Uint32 *)SDL_calloc(descriptorCount, sizeof(Uint32));
-        if (!heap->inactiveDescriptorIndices) {
-            D3D12_INTERNAL_DestroyDescriptorHeap(heap);
-            return NULL;
-        }
-    }
 
     heapDesc.NumDescriptors = descriptorCount;
     heapDesc.Type = type;
@@ -1986,13 +1993,82 @@ static D3D12DescriptorHeap *D3D12_INTERNAL_CreateDescriptorHeap(
     return heap;
 }
 
-static D3D12DescriptorHeap *D3D12_INTERNAL_AcquireDescriptorHeapFromPool(
+static D3D12StagingDescriptorPool *D3D12_INTERNAL_CreateStagingDescriptorPool(
+    D3D12Renderer *renderer,
+    D3D12_DESCRIPTOR_HEAP_TYPE heapType
+) {
+    D3D12DescriptorHeap *heap = D3D12_INTERNAL_CreateDescriptorHeap(
+        renderer,
+        heapType,
+        STAGING_HEAP_DESCRIPTOR_COUNT,
+        true);
+
+    if (!heap) {
+        return NULL;
+    }
+
+    D3D12StagingDescriptorPool *pool = SDL_calloc(1, sizeof(D3D12StagingDescriptorPool));
+
+    pool->heapCount = 1;
+    pool->heaps = SDL_malloc(sizeof(D3D12DescriptorHeap*));
+    pool->heaps[0] = heap;
+
+    pool->freeDescriptorCapacity = STAGING_HEAP_DESCRIPTOR_COUNT;
+    pool->freeDescriptorCount = STAGING_HEAP_DESCRIPTOR_COUNT;
+    pool->freeDescriptors = SDL_malloc(STAGING_HEAP_DESCRIPTOR_COUNT * sizeof(D3D12StagingDescriptor));
+
+    for (Uint32 i = 0; i < STAGING_HEAP_DESCRIPTOR_COUNT; i += 1) {
+        pool->freeDescriptors[i].pool = pool;
+        pool->freeDescriptors[i].heap = heap;
+        pool->freeDescriptors[i].cpuHandleIndex = i;
+        pool->freeDescriptors[i].cpuHandle.ptr = heap->descriptorHeapCPUStart.ptr + (i * heap->descriptorSize);
+    }
+
+    pool->lock = SDL_CreateMutex();
+
+    return pool;
+}
+
+/* If the pool is empty, we need to refill it! */
+static bool D3D12_INTERNAL_ExpandStagingDescriptorPool(
+    D3D12Renderer *renderer,
+    D3D12StagingDescriptorPool *pool
+) {
+    D3D12DescriptorHeap *heap = D3D12_INTERNAL_CreateDescriptorHeap(
+        renderer,
+        pool->heaps[0]->heapType,
+        STAGING_HEAP_DESCRIPTOR_COUNT,
+        true);
+
+    if (!heap) {
+        return false;
+    }
+
+    pool->heapCount += 1;
+    pool->heaps = SDL_realloc(pool->heaps, pool->heapCount * sizeof(D3D12DescriptorHeap*));
+    pool->heaps[pool->heapCount - 1] = heap;
+
+    pool->freeDescriptorCapacity += STAGING_HEAP_DESCRIPTOR_COUNT;
+    pool->freeDescriptorCount += STAGING_HEAP_DESCRIPTOR_COUNT;
+    pool->freeDescriptors = SDL_realloc(pool->freeDescriptors, pool->freeDescriptorCapacity * sizeof(D3D12StagingDescriptor));
+
+    for (Uint32 i = 0; i < STAGING_HEAP_DESCRIPTOR_COUNT; i += 1) {
+        pool->freeDescriptors[i].pool = pool;
+        pool->freeDescriptors[i].heap = heap;
+        pool->freeDescriptors[i].cpuHandleIndex = i;
+        pool->freeDescriptors[i].cpuHandle.ptr = heap->descriptorHeapCPUStart.ptr + (i * heap->descriptorSize);
+    }
+
+    return true;
+}
+
+static D3D12DescriptorHeap *D3D12_INTERNAL_AcquireGPUDescriptorHeapFromPool(
     D3D12CommandBuffer *commandBuffer,
     D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType)
 {
     D3D12DescriptorHeap *result;
     D3D12Renderer *renderer = commandBuffer->renderer;
-    D3D12DescriptorHeapPool *pool = &renderer->descriptorHeapPools[descriptorHeapType];
+    D3D12GPUDescriptorHeapPool *pool = &renderer->gpuDescriptorHeapPools[descriptorHeapType];
 
     SDL_LockMutex(pool->lock);
     if (pool->count > 0) {
@@ -2010,11 +2086,15 @@ static D3D12DescriptorHeap *D3D12_INTERNAL_AcquireDescriptorHeapFromPool(
     return result;
 }
 
-static void D3D12_INTERNAL_ReturnDescriptorHeapToPool(
+static void D3D12_INTERNAL_ReturnGPUDescriptorHeapToPool(
     D3D12Renderer *renderer,
     D3D12DescriptorHeap *heap)
 {
-    D3D12DescriptorHeapPool *pool = &renderer->descriptorHeapPools[heap->heapType];
+    if (heap == NULL) {
+        return;
+    }
+
+    D3D12GPUDescriptorHeapPool *pool = &renderer->gpuDescriptorHeapPools[heap->heapType];
 
     heap->currentDescriptorIndex = 0;
 
@@ -2735,36 +2815,31 @@ static bool D3D12_INTERNAL_ConvertVertexInputState(SDL_GPUVertexInputState verte
     return true;
 }
 
-static void D3D12_INTERNAL_AssignCpuDescriptorHandle(
+static bool D3D12_INTERNAL_AssignStagingDescriptorHandle(
     D3D12Renderer *renderer,
     D3D12_DESCRIPTOR_HEAP_TYPE heapType,
-    D3D12CPUDescriptor *cpuDescriptor)
+    D3D12StagingDescriptor *cpuDescriptor)
 {
-    D3D12DescriptorHeap *heap = renderer->stagingDescriptorHeaps[heapType];
-    Uint32 descriptorIndex;
+    D3D12StagingDescriptor *descriptor;
+    D3D12StagingDescriptorPool *pool = renderer->stagingDescriptorPools[heapType];
 
-    cpuDescriptor->heap = heap;
+    SDL_LockMutex(pool->lock);
 
-    SDL_LockMutex(renderer->stagingDescriptorHeapLock);
-
-    if (heap->inactiveDescriptorCount > 0) {
-        descriptorIndex = heap->inactiveDescriptorIndices[heap->inactiveDescriptorCount - 1];
-        heap->inactiveDescriptorCount -= 1;
-    } else if (heap->currentDescriptorIndex < heap->maxDescriptors) {
-        descriptorIndex = heap->currentDescriptorIndex;
-        heap->currentDescriptorIndex += 1;
-    } else {
-        cpuDescriptor->cpuHandleIndex = SDL_MAX_UINT32;
-        cpuDescriptor->cpuHandle.ptr = 0;
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Out of CPU descriptor handles, many bad things are going to happen!");
-        SDL_UnlockMutex(renderer->stagingDescriptorHeapLock);
-        return;
+    if (pool->freeDescriptorCount == 0) {
+        if (!D3D12_INTERNAL_ExpandStagingDescriptorPool(renderer, pool))
+        {
+            SDL_UnlockMutex(pool->lock);
+            return false;
+        }
     }
 
-    SDL_UnlockMutex(renderer->stagingDescriptorHeapLock);
+    descriptor = &pool->freeDescriptors[pool->freeDescriptorCount - 1];
+    SDL_memcpy(cpuDescriptor, descriptor, sizeof(D3D12StagingDescriptor));
+    pool->freeDescriptorCount -= 1;
 
-    cpuDescriptor->cpuHandleIndex = descriptorIndex;
-    cpuDescriptor->cpuHandle.ptr = heap->descriptorHeapCPUStart.ptr + (descriptorIndex * heap->descriptorSize);
+    SDL_UnlockMutex(pool->lock);
+
+    return true;
 }
 
 static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
@@ -2905,7 +2980,7 @@ static SDL_GPUSampler *D3D12_CreateSampler(
     samplerDesc.BorderColor[2] = 0;
     samplerDesc.BorderColor[3] = 0;
 
-    D3D12_INTERNAL_AssignCpuDescriptorHandle(
+    D3D12_INTERNAL_AssignStagingDescriptorHandle(
         renderer,
         D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
         &sampler->handle);
@@ -3068,7 +3143,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
 
-        D3D12_INTERNAL_AssignCpuDescriptorHandle(
+        D3D12_INTERNAL_AssignStagingDescriptorHandle(
             renderer,
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             &texture->srvHandle);
@@ -3144,12 +3219,12 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
             // Create RTV if needed
             if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
-                texture->subresources[subresourceIndex].rtvHandles = (D3D12CPUDescriptor *)SDL_calloc(depth, sizeof(D3D12CPUDescriptor));
+                texture->subresources[subresourceIndex].rtvHandles = (D3D12StagingDescriptor *)SDL_calloc(depth, sizeof(D3D12StagingDescriptor));
 
                 for (Uint32 depthIndex = 0; depthIndex < depth; depthIndex += 1) {
                     D3D12_RENDER_TARGET_VIEW_DESC rtvDesc;
 
-                    D3D12_INTERNAL_AssignCpuDescriptorHandle(
+                    D3D12_INTERNAL_AssignStagingDescriptorHandle(
                         renderer,
                         D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
                         &texture->subresources[subresourceIndex].rtvHandles[depthIndex]);
@@ -3187,7 +3262,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
                 D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 
-                D3D12_INTERNAL_AssignCpuDescriptorHandle(
+                D3D12_INTERNAL_AssignStagingDescriptorHandle(
                     renderer,
                     D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
                     &texture->subresources[subresourceIndex].dsvHandle);
@@ -3213,7 +3288,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             if (needsUAV) {
                 D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 
-                D3D12_INTERNAL_AssignCpuDescriptorHandle(
+                D3D12_INTERNAL_AssignStagingDescriptorHandle(
                     renderer,
                     D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                     &texture->subresources[subresourceIndex].uavHandle);
@@ -3397,7 +3472,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
     buffer->cbvDescriptor.heap = NULL;
 
     if (usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
-        D3D12_INTERNAL_AssignCpuDescriptorHandle(
+        D3D12_INTERNAL_AssignStagingDescriptorHandle(
             renderer,
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             &buffer->uavDescriptor);
@@ -3422,7 +3497,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
     if (
         (usageFlags & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) ||
         (usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ)) {
-        D3D12_INTERNAL_AssignCpuDescriptorHandle(
+        D3D12_INTERNAL_AssignStagingDescriptorHandle(
             renderer,
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             &buffer->srvDescriptor);
@@ -3445,7 +3520,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
 
     // FIXME: we may not need a CBV since we use root descriptors
     if (type == D3D12_BUFFER_TYPE_UNIFORM) {
-        D3D12_INTERNAL_AssignCpuDescriptorHandle(
+        D3D12_INTERNAL_AssignStagingDescriptorHandle(
             renderer,
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             &buffer->cbvDescriptor);
@@ -4665,6 +4740,27 @@ static void D3D12_PushFragmentUniformData(
         length);
 }
 
+static void D3D12_INTERNAL_SetGPUDescriptorHeaps(D3D12CommandBuffer *commandBuffer)
+{
+    ID3D12DescriptorHeap *heaps[2];
+    D3D12DescriptorHeap *viewHeap;
+    D3D12DescriptorHeap *samplerHeap;
+
+    viewHeap = D3D12_INTERNAL_AcquireGPUDescriptorHeapFromPool(commandBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    samplerHeap = D3D12_INTERNAL_AcquireGPUDescriptorHeapFromPool(commandBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+
+    commandBuffer->gpuDescriptorHeaps[0] = viewHeap;
+    commandBuffer->gpuDescriptorHeaps[1] = samplerHeap;
+
+    heaps[0] = viewHeap->handle;
+    heaps[1] = samplerHeap->handle;
+
+    ID3D12GraphicsCommandList_SetDescriptorHeaps(
+        commandBuffer->graphicsCommandList,
+        2,
+        heaps);
+}
+
 static void D3D12_INTERNAL_WriteGPUDescriptors(
     D3D12CommandBuffer *commandBuffer,
     D3D12_DESCRIPTOR_HEAP_TYPE heapType,
@@ -4672,8 +4768,15 @@ static void D3D12_INTERNAL_WriteGPUDescriptors(
     Uint32 resourceHandleCount,
     D3D12_GPU_DESCRIPTOR_HANDLE *gpuBaseDescriptor)
 {
-    D3D12DescriptorHeap *heap = commandBuffer->gpuDescriptorHeaps[heapType];
+    D3D12DescriptorHeap *heap;
     D3D12_CPU_DESCRIPTOR_HANDLE gpuHeapCpuHandle;
+
+    /* Descriptor overflow, acquire new heaps */
+    if (commandBuffer->gpuDescriptorHeaps[heapType]->currentDescriptorIndex >= commandBuffer->gpuDescriptorHeaps[heapType]->maxDescriptors) {
+        D3D12_INTERNAL_SetGPUDescriptorHeaps(commandBuffer);
+    }
+
+    heap = commandBuffer->gpuDescriptorHeaps[heapType];
 
     // FIXME: need to error on overflow
     gpuHeapCpuHandle.ptr = heap->descriptorHeapCPUStart.ptr + (heap->currentDescriptorIndex * heap->descriptorSize);
@@ -4696,6 +4799,11 @@ static void D3D12_INTERNAL_BindGraphicsResources(
     D3D12CommandBuffer *commandBuffer)
 {
     D3D12GraphicsPipeline *graphicsPipeline = commandBuffer->currentGraphicsPipeline;
+
+    /* Acquire GPU descriptor heaps if we haven't yet */
+    if (commandBuffer->gpuDescriptorHeaps[0] == NULL) {
+        D3D12_INTERNAL_SetGPUDescriptorHeaps(commandBuffer);
+    }
 
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandles[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     D3D12_GPU_DESCRIPTOR_HANDLE gpuDescriptorHandle;
@@ -5125,6 +5233,12 @@ static void D3D12_BindComputePipeline(
     SDL_GPUComputePipeline *computePipeline)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+
+    /* Acquire GPU descriptor heaps if we haven't yet */
+    if (d3d12CommandBuffer->gpuDescriptorHeaps[0] == NULL) {
+        D3D12_INTERNAL_SetGPUDescriptorHeaps(d3d12CommandBuffer);
+    }
+
     D3D12ComputePipeline *pipeline = (D3D12ComputePipeline *)computePipeline;
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandles[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     D3D12_GPU_DESCRIPTOR_HANDLE gpuDescriptorHandle;
@@ -5306,6 +5420,11 @@ static void D3D12_INTERNAL_BindComputeResources(
     D3D12CommandBuffer *commandBuffer)
 {
     D3D12ComputePipeline *computePipeline = commandBuffer->currentComputePipeline;
+
+    /* Acquire GPU descriptor heaps if we haven't yet */
+    if (commandBuffer->gpuDescriptorHeaps[0] == NULL) {
+        D3D12_INTERNAL_SetGPUDescriptorHeaps(commandBuffer);
+    }
 
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandles[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     D3D12_GPU_DESCRIPTOR_HANDLE gpuDescriptorHandle;
@@ -6380,7 +6499,7 @@ static bool D3D12_INTERNAL_InitializeSwapchainTexture(
         ID3D12Resource_Release(swapchainTexture);
         return false;
     }
-    pTexture->subresources[0].rtvHandles = SDL_calloc(1, sizeof(D3D12CPUDescriptor));
+    pTexture->subresources[0].rtvHandles = SDL_calloc(1, sizeof(D3D12StagingDescriptor));
     pTexture->subresources[0].uavHandle.heap = NULL;
     pTexture->subresources[0].dsvHandle.heap = NULL;
     pTexture->subresources[0].parent = pTexture;
@@ -6418,7 +6537,7 @@ static bool D3D12_INTERNAL_InitializeSwapchainTexture(
     pTexture->containerIndex = 0;
 
     // Create the SRV for the swapchain
-    D3D12_INTERNAL_AssignCpuDescriptorHandle(
+    D3D12_INTERNAL_AssignStagingDescriptorHandle(
         renderer,
         D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
         &pTexture->srvHandle);
@@ -6438,7 +6557,7 @@ static bool D3D12_INTERNAL_InitializeSwapchainTexture(
         pTexture->srvHandle.cpuHandle);
 
     // Create the RTV for the swapchain
-    D3D12_INTERNAL_AssignCpuDescriptorHandle(
+    D3D12_INTERNAL_AssignStagingDescriptorHandle(
         renderer,
         D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
         &pTexture->subresources[0].rtvHandles[0]);
@@ -6468,10 +6587,10 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
 
     // Release views and clean up
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
-        D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+        D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
             renderer,
             &windowData->textureContainers[i].activeTexture->srvHandle);
-        D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+        D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
             renderer,
             &windowData->textureContainers[i].activeTexture->subresources[0].rtvHandles[0]);
 
@@ -6519,10 +6638,10 @@ static void D3D12_INTERNAL_DestroySwapchain(
 {
     // Release views and clean up
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
-        D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+        D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
             renderer,
             &windowData->textureContainers[i].activeTexture->srvHandle);
-        D3D12_INTERNAL_ReleaseCpuDescriptorHandle(
+        D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
             renderer,
             &windowData->textureContainers[i].activeTexture->subresources[0].rtvHandles[0]);
 
@@ -7063,31 +7182,6 @@ static SDL_GPUCommandBuffer *D3D12_AcquireCommandBuffer(
         return NULL;
     }
 
-    // Set the descriptor heaps!
-    commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] =
-        D3D12_INTERNAL_AcquireDescriptorHeapFromPool(commandBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-    if (!commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]) {
-        D3D12_INTERNAL_DestroyCommandBuffer(commandBuffer);
-        return NULL;
-    }
-
-    commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] =
-        D3D12_INTERNAL_AcquireDescriptorHeapFromPool(commandBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
-
-    if (!commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER]) {
-        D3D12_INTERNAL_DestroyCommandBuffer(commandBuffer);
-        return NULL;
-    }
-
-    heaps[0] = commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->handle;
-    heaps[1] = commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER]->handle;
-
-    ID3D12GraphicsCommandList_SetDescriptorHeaps(
-        commandBuffer->graphicsCommandList,
-        2,
-        heaps);
-
     // Set the bind state
     commandBuffer->currentGraphicsPipeline = NULL;
 
@@ -7434,12 +7528,15 @@ static bool D3D12_INTERNAL_CleanCommandBuffer(
     CHECK_D3D12_ERROR_AND_RETURN("Could not reset command list", false);
 
     // Return descriptor heaps to pool
-    D3D12_INTERNAL_ReturnDescriptorHeapToPool(
+    D3D12_INTERNAL_ReturnGPUDescriptorHeapToPool(
         renderer,
         commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]);
-    D3D12_INTERNAL_ReturnDescriptorHeapToPool(
+    D3D12_INTERNAL_ReturnGPUDescriptorHeapToPool(
         renderer,
         commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER]);
+
+    commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = NULL;
+    commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = NULL;
 
     // Uniform buffers are now available
     SDL_LockMutex(renderer->acquireUniformBufferLock);
@@ -8786,14 +8883,13 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         return NULL;
     }
 
-    // Initialize CPU descriptor heaps
+    // Initialize staging descriptor pools
     for (Uint32 i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; i += 1) {
-        renderer->stagingDescriptorHeaps[i] = D3D12_INTERNAL_CreateDescriptorHeap(
+        renderer->stagingDescriptorPools[i] = D3D12_INTERNAL_CreateStagingDescriptorPool(
             renderer,
-            (D3D12_DESCRIPTOR_HEAP_TYPE)i,
-            (i <= D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER) ? VIEW_SAMPLER_STAGING_DESCRIPTOR_COUNT : TARGET_STAGING_DESCRIPTOR_COUNT,
-            true);
-        if (renderer->stagingDescriptorHeaps[i] == NULL) {
+            (D3D12_DESCRIPTOR_HEAP_TYPE)i);
+
+        if (renderer->stagingDescriptorPools[i] == NULL) {
             D3D12_INTERNAL_DestroyRenderer(renderer);
             return NULL;
         }
@@ -8801,20 +8897,20 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     // Initialize GPU descriptor heaps
     for (Uint32 i = 0; i < 2; i += 1) {
-        renderer->descriptorHeapPools[i].lock = SDL_CreateMutex();
-        renderer->descriptorHeapPools[i].capacity = 4;
-        renderer->descriptorHeapPools[i].count = 4;
-        renderer->descriptorHeapPools[i].heaps = (D3D12DescriptorHeap **)SDL_calloc(
-            renderer->descriptorHeapPools[i].capacity, sizeof(D3D12DescriptorHeap *));
+        renderer->gpuDescriptorHeapPools[i].lock = SDL_CreateMutex();
+        renderer->gpuDescriptorHeapPools[i].capacity = 4;
+        renderer->gpuDescriptorHeapPools[i].count = 4;
+        renderer->gpuDescriptorHeapPools[i].heaps = (D3D12DescriptorHeap **)SDL_calloc(
+            renderer->gpuDescriptorHeapPools[i].capacity, sizeof(D3D12DescriptorHeap *));
 
-        for (Uint32 j = 0; j < renderer->descriptorHeapPools[i].capacity; j += 1) {
-            renderer->descriptorHeapPools[i].heaps[j] = D3D12_INTERNAL_CreateDescriptorHeap(
+        for (Uint32 j = 0; j < renderer->gpuDescriptorHeapPools[i].capacity; j += 1) {
+            renderer->gpuDescriptorHeapPools[i].heaps[j] = D3D12_INTERNAL_CreateDescriptorHeap(
                 renderer,
                 (D3D12_DESCRIPTOR_HEAP_TYPE)i,
                 i == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV ? VIEW_GPU_DESCRIPTOR_COUNT : SAMPLER_GPU_DESCRIPTOR_COUNT,
                 false);
 
-            if (renderer->descriptorHeapPools[i].heaps[j] == NULL) {
+            if (renderer->gpuDescriptorHeapPools[i].heaps[j] == NULL) {
                 D3D12_INTERNAL_DestroyRenderer(renderer);
                 return NULL;
             }
@@ -8869,7 +8965,6 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     }
 
     // Locks
-    renderer->stagingDescriptorHeapLock = SDL_CreateMutex();
     renderer->acquireCommandBufferLock = SDL_CreateMutex();
     renderer->acquireUniformBufferLock = SDL_CreateMutex();
     renderer->submitLock = SDL_CreateMutex();
