@@ -43,9 +43,42 @@ typedef HRESULT (WINAPI *DwmSetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, 
 typedef HRESULT (WINAPI *DwmGetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, PVOID pvAttribute, DWORD cbAttribute);
 
 // Dark mode support
-#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
-#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
-#endif
+typedef enum {
+    UXTHEME_APPMODE_DEFAULT,
+    UXTHEME_APPMODE_ALLOW_DARK,
+    UXTHEME_APPMODE_FORCE_DARK,
+    UXTHEME_APPMODE_FORCE_LIGHT,
+    UXTHEME_APPMODE_MAX
+} UxthemePreferredAppMode;
+
+typedef enum {
+    WCA_UNDEFINED = 0,
+    WCA_USEDARKMODECOLORS = 26,
+    WCA_LAST = 27
+} WINDOWCOMPOSITIONATTRIB;
+
+typedef struct {
+    WINDOWCOMPOSITIONATTRIB Attrib;
+    PVOID pvData;
+    SIZE_T cbData;
+} WINDOWCOMPOSITIONATTRIBDATA;
+
+typedef struct {
+    ULONG dwOSVersionInfoSize;
+    ULONG dwMajorVersion;
+    ULONG dwMinorVersion;
+    ULONG dwBuildNumber;
+    ULONG dwPlatformId;
+    WCHAR szCSDVersion[128];
+} NT_OSVERSIONINFOW;
+
+typedef bool (WINAPI *ShouldAppsUseDarkMode_t)(void);
+typedef void (WINAPI *AllowDarkModeForWindow_t)(HWND, bool);
+typedef void (WINAPI *AllowDarkModeForApp_t)(bool);
+typedef void (WINAPI *RefreshImmersiveColorPolicyState_t)(void);
+typedef UxthemePreferredAppMode (WINAPI *SetPreferredAppMode_t)(UxthemePreferredAppMode);
+typedef BOOL (WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
+typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
 
 // Corner rounding support  (Win 11+)
 #ifndef DWMWA_WINDOW_CORNER_PREFERENCE
@@ -2230,15 +2263,67 @@ bool WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool foc
 
 void WIN_UpdateDarkModeForHWND(HWND hwnd)
 {
-    SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
-    if (handle) {
-        DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
-        if (DwmSetWindowAttributeFunc) {
-            // FIXME: Do we need to traverse children?
-            BOOL value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
-            DwmSetWindowAttributeFunc(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+    SDL_SharedObject *ntdll = SDL_LoadObject("ntdll.dll");
+    if (!ntdll) {
+        return;
+    }
+    // There is no function to get Windows build number, so let's get it here via RtlGetVersion
+    RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)SDL_LoadFunction(ntdll, "RtlGetVersion");
+    NT_OSVERSIONINFOW os_info;
+    os_info.dwOSVersionInfoSize = sizeof(NT_OSVERSIONINFOW);
+    os_info.dwBuildNumber = 0;
+    if (RtlGetVersionFunc) {
+        RtlGetVersionFunc(&os_info);
+    }
+    SDL_UnloadObject(ntdll);
+    os_info.dwBuildNumber &= ~0xF0000000;
+    if (os_info.dwBuildNumber < 17763) {
+        // Too old to support dark mode
+        return;
+    }
+    SDL_SharedObject *uxtheme = SDL_LoadObject("uxtheme.dll");
+    if (!uxtheme) {
+        return;
+    }
+    RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(104));
+    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(132));
+    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(133));
+    if (os_info.dwBuildNumber < 18362) {
+        AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(135));
+        if (AllowDarkModeForAppFunc) {
+            AllowDarkModeForAppFunc(true);
         }
-        SDL_UnloadObject(handle);
+    } else {
+        SetPreferredAppMode_t SetPreferredAppModeFunc = (SetPreferredAppMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(135));
+        if (SetPreferredAppModeFunc) {
+            SetPreferredAppModeFunc(UXTHEME_APPMODE_ALLOW_DARK);
+        }
+    }
+    if (RefreshImmersiveColorPolicyStateFunc) {
+        RefreshImmersiveColorPolicyStateFunc();
+    }
+    if (AllowDarkModeForWindowFunc) {
+        AllowDarkModeForWindowFunc(hwnd, true);
+    }
+    BOOL value;
+    // Check dark mode using ShouldAppsUseDarkMode, but use SDL_GetSystemTheme as a fallback
+    if (ShouldAppsUseDarkModeFunc) {
+        value = ShouldAppsUseDarkModeFunc() ? TRUE : FALSE;
+    } else {
+        value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
+    }
+    SDL_UnloadObject(uxtheme);
+    if (os_info.dwBuildNumber < 18362) {
+        SetProp(hwnd, TEXT("UseImmersiveDarkModeColors"), SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
+    } else {
+        HMODULE user32 = GetModuleHandle(TEXT("user32.dll"));
+        if (user32) {
+            SetWindowCompositionAttribute_t SetWindowCompositionAttributeFunc = (SetWindowCompositionAttribute_t)GetProcAddress(user32, "SetWindowCompositionAttribute");
+            if (SetWindowCompositionAttributeFunc) {
+                WINDOWCOMPOSITIONATTRIBDATA data = { WCA_USEDARKMODECOLORS, &value, sizeof(value) };
+                SetWindowCompositionAttributeFunc(hwnd, &data);
+            }
+        }
     }
 }
 
