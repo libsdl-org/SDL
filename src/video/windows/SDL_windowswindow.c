@@ -1655,7 +1655,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
     // }
 
     SDL_Mouse *mouse = SDL_GetMouse();
-    bool lock_to_ctr = (mouse->relative_mode_center && mouse->relative_mode && !mouse->relative_mode_warp);
+    bool lock_to_ctr = (mouse->relative_mode && mouse->relative_mode_center);
 
     RECT client;
     if (!GetClientScreenRect(data->hwnd, &client)) {

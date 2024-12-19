@@ -95,7 +95,6 @@ typedef struct
     float last_x, last_y; // the last reported x and y coordinates
     bool has_position;
     bool relative_mode;
-    bool relative_mode_warp;
     bool relative_mode_warp_motion;
     bool relative_mode_cursor_visible;
     bool relative_mode_center;

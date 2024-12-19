@@ -694,30 +694,6 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
         return;
     }
 
-    if (mouseID != SDL_TOUCH_MOUSEID && mouse->relative_mode_warp) {
-        int w = 0, h = 0;
-        float center_x, center_y;
-        SDL_GetWindowSize(window, &w, &h);
-        center_x = (float)w / 2.0f;
-        center_y = (float)h / 2.0f;
-        if (x >= SDL_floorf(center_x) && x <= SDL_ceilf(center_x) &&
-            y >= SDL_floorf(center_y) && y <= SDL_ceilf(center_y)) {
-            mouse->last_x = center_x;
-            mouse->last_y = center_y;
-            if (!mouse->relative_mode_warp_motion) {
-                return;
-            }
-        } else {
-            if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
-                if (mouse->WarpMouse) {
-                    mouse->WarpMouse(window, center_x, center_y);
-                } else {
-                    SDL_PrivateSendMouseMotion(timestamp, window, mouseID, false, center_x, center_y);
-                }
-            }
-        }
-    }
-
     if (relative) {
         if (mouse->relative_mode) {
             if (mouse->enable_relative_speed_scale) {
@@ -760,19 +736,14 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
         yrel = 0.0f;
     }
 
-    // TODO: should rework overall so that relative bool arg conveys intent,
-    // and do this logic at the SDL_SendMouseMotion level instead of here.
-    bool cmd_is_meant_as_delta = relative || (mouse->relative_mode && mouse->relative_mode_warp);
-    bool cmd_is_hardware_delta = relative;
-
     // modify internal state
     {
-        if (cmd_is_meant_as_delta) {
+        if (relative) {
             mouse->x_accu += xrel;
             mouse->y_accu += yrel;
         }
 
-        if (cmd_is_meant_as_delta && mouse->has_position) {
+        if (relative && mouse->has_position) {
             mouse->x += xrel;
             mouse->y += yrel;
             ConstrainMousePosition(mouse, window, &mouse->x, &mouse->y);
@@ -783,8 +754,8 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
         mouse->has_position = true;
 
         // Use unclamped values if we're getting events outside the window
-        mouse->last_x = cmd_is_hardware_delta ? mouse->x : x;
-        mouse->last_y = cmd_is_hardware_delta ? mouse->y : y;
+        mouse->last_x = relative ? mouse->x : x;
+        mouse->last_y = relative ? mouse->y : y;
     }
 
     // Move the mouse cursor, if needed
@@ -795,7 +766,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
 
     // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION)) {
-        if (!cmd_is_meant_as_delta && window_is_relative) {
+        if (!relative && window_is_relative) {
             if (!mouse->relative_mode_warp_motion) {
                 return;
             }
@@ -1195,8 +1166,7 @@ void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, bool ign
         }
     }
 
-    if (mouse->WarpMouse &&
-        (!mouse->relative_mode || mouse->relative_mode_warp)) {
+    if (mouse->WarpMouse && !mouse->relative_mode) {
         mouse->WarpMouse(window, x, y);
     } else {
         SDL_PrivateSendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, false, x, y);
@@ -1265,16 +1235,6 @@ bool SDL_WarpMouseGlobal(float x, float y)
     return SDL_Unsupported();
 }
 
-static bool SDL_ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
-{
-    if (!mouse->WarpMouse) {
-        // Need this functionality for relative mode warp implementation
-        return false;
-    }
-
-    return SDL_GetHintBoolean(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, false);
-}
-
 bool SDL_SetRelativeMouseMode(bool enabled)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -1290,17 +1250,9 @@ bool SDL_SetRelativeMouseMode(bool enabled)
     }
 
     // Set the relative mode
-    if (!enabled && mouse->relative_mode_warp) {
-        mouse->relative_mode_warp = false;
-    } else if (enabled && SDL_ShouldUseRelativeModeWarp(mouse)) {
-        mouse->relative_mode_warp = true;
-    } else if (!mouse->SetRelativeMouseMode || !mouse->SetRelativeMouseMode(enabled)) {
+    if (!mouse->SetRelativeMouseMode || !mouse->SetRelativeMouseMode(enabled)) {
         if (enabled) {
-            // Fall back to warp mode if native relative mode failed
-            if (!mouse->WarpMouse) {
-                return SDL_SetError("No relative mode implementation available");
-            }
-            mouse->relative_mode_warp = true;
+            return SDL_SetError("No relative mode implementation available");
         }
     }
     mouse->relative_mode = enabled;
@@ -1312,12 +1264,6 @@ bool SDL_SetRelativeMouseMode(bool enabled)
 
     if (enabled && focusWindow) {
         SDL_SetMouseFocus(focusWindow);
-
-        if (mouse->relative_mode_warp) {
-            float center_x = (float)focusWindow->w / 2.0f;
-            float center_y = (float)focusWindow->h / 2.0f;
-            SDL_PerformWarpMouseInWindow(focusWindow, center_x, center_y, true);
-        }
     }
 
     if (focusWindow) {

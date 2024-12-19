@@ -325,7 +325,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             break; // Pens check for XI_Motion instead
         }
 
-        if (!mouse->relative_mode || mouse->relative_mode_warp) {
+        if (!mouse->relative_mode) {
             break;
         }
 
@@ -469,7 +469,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         } else if (!pointer_emulated && xev->deviceid == videodata->xinput_master_pointer_device) {
             // Use the master device for non-relative motion, as the slave devices can seemingly lag behind.
             SDL_Mouse *mouse = SDL_GetMouse();
-            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+            if (!mouse->relative_mode) {
                 SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
                 if (window) {
                     X11_ProcessHitTest(_this, window->internal, (float)xev->event_x, (float)xev->event_y, false);

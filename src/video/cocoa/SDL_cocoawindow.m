@@ -954,7 +954,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
             mouse->WarpMouseGlobal(pendingWindowWarpX, pendingWindowWarpY);
             pendingWindowWarpX = pendingWindowWarpY = FLT_MAX;
         }
-        if (mouse->relative_mode && !mouse->relative_mode_warp && mouse->focus == _data.window) {
+        if (mouse->relative_mode && mouse->focus == _data.window) {
             // Move the cursor to the nearest point in the window
             {
                 float x, y;

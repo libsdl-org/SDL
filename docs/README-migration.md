@@ -820,12 +820,14 @@ The following hints have been renamed:
 The following hints have been removed:
 * SDL_HINT_ACCELEROMETER_AS_JOYSTICK
 * SDL_HINT_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO - the audio will be paused when the application is paused, and SDL_HINT_ANDROID_BLOCK_ON_PAUSE can be used to control that
+* SDL_HINT_AUDIO_DEVICE_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_NAME_STRING with SDL_SetAppMetadataProperty()
 * SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS - gamepad buttons are always positional
 * SDL_HINT_GRAB_KEYBOARD - use SDL_SetWindowKeyboardGrab() instead
 * SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver() instead
 * SDL_HINT_IME_INTERNAL_EDITING - replaced with SDL_HINT_IME_IMPLEMENTED_UI
 * SDL_HINT_IME_SHOW_UI - replaced with SDL_HINT_IME_IMPLEMENTED_UI
 * SDL_HINT_IME_SUPPORT_EXTENDED_TEXT - the normal text editing event has extended text
+* SDL_HINT_MOUSE_RELATIVE_MODE_WARP - relative mode is always implemented at the hardware level or reported as unavailable
 * SDL_HINT_MOUSE_RELATIVE_SCALING - mouse coordinates are no longer automatically scaled by the SDL renderer
 * SDL_HINT_PS2_DYNAMIC_VSYNC - use SDL_SetRenderVSync(renderer, -1) instead
 * SDL_HINT_RENDER_BATCHING - Render batching is always enabled, apps should call SDL_FlushRenderer() before calling into a lower-level graphics API.
@@ -848,7 +850,6 @@ The following hints have been removed:
 * SDL_HINT_WINRT_PRIVACY_POLICY_LABEL - WinRT support was removed in SDL3.
 * SDL_HINT_WINRT_PRIVACY_POLICY_URL - WinRT support was removed in SDL3.
 * SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING
-* SDL_HINT_AUDIO_DEVICE_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_NAME_STRING with SDL_SetAppMetadataProperty()
 
 The following environment variables have been renamed:
 * SDL_AUDIODRIVER => SDL_AUDIO_DRIVER
