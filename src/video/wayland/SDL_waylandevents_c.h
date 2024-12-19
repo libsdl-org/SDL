@@ -162,6 +162,7 @@ extern void Wayland_create_text_input(SDL_VideoData *d);
 extern void Wayland_input_initialize_seat(SDL_VideoData *d);
 extern void Wayland_display_destroy_input(SDL_VideoData *d);
 
+extern void Wayland_input_init_relative_pointer(SDL_VideoData *d);
 extern bool Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input);
 extern bool Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input);
 

@@ -1944,6 +1944,22 @@ static const struct wl_keyboard_listener keyboard_listener = {
     keyboard_handle_repeat_info, // Version 4
 };
 
+void Wayland_input_init_relative_pointer(SDL_VideoData *d)
+{
+    struct SDL_WaylandInput *input = d->input;
+
+    if (!d->relative_pointer_manager) {
+        return;
+    }
+
+    if (input->pointer && !input->relative_pointer) {
+        input->relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(input->display->relative_pointer_manager, input->pointer);
+        zwp_relative_pointer_v1_add_listener(input->relative_pointer,
+                                             &relative_pointer_listener,
+                                             input);
+    }
+}
+
 static void seat_handle_capabilities(void *data, struct wl_seat *seat,
                                      enum wl_seat_capability caps)
 {
@@ -1959,12 +1975,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         wl_pointer_set_user_data(input->pointer, input);
         wl_pointer_add_listener(input->pointer, &pointer_listener, input);
 
-        if (input->display->relative_pointer_manager) {
-            input->relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(input->display->relative_pointer_manager, input->pointer);
-            zwp_relative_pointer_v1_add_listener(input->relative_pointer,
-                                                 &relative_pointer_listener,
-                                                 input);
-        }
+        Wayland_input_init_relative_pointer(input->display);
 
         input->pointer_id = SDL_GetNextObjectID();
         SDL_AddMouse(input->pointer_id, WAYLAND_DEFAULT_POINTER_NAME, true);
