@@ -221,7 +221,7 @@ void windows_ShowFileDialog(void *ptr)
             title_len = 0;
         }
 
-        int title_wlen = MultiByteToWideChar(CP_UTF8, 0, title, title_len, NULL, 0);
+        int title_wlen = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
 
         if (title_wlen < 0) {
             title_wlen = 0;
@@ -236,7 +236,7 @@ void windows_ShowFileDialog(void *ptr)
             return;
         }
 
-        MultiByteToWideChar(CP_UTF8, 0, title, title_len, title_w, title_wlen);
+        MultiByteToWideChar(CP_UTF8, 0, title, -1, title_w, title_wlen);
     }
 
     OPENFILENAMEW dialog;
