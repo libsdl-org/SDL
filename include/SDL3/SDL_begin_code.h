@@ -53,8 +53,8 @@
  *
  * SDL, on occasion, might deprecate a function for various reasons. However,
  * SDL never removes symbols before major versions, so deprecated interfaces
- * in SDL3 will remain available under SDL4, where it would be expected an
- * app would have to take steps to migrate anyhow.
+ * in SDL3 will remain available under SDL4, where it would be expected an app
+ * would have to take steps to migrate anyhow.
  *
  * On compilers without a deprecation mechanism, this is defined to nothing,
  * and using a deprecated function will not generate a warning.
@@ -66,9 +66,9 @@
 /**
  * A macro to tag a symbol as a public API.
  *
- * SDL uses this macro for all its public functions. On some targets, it
- * is used to signal to the compiler that this function needs to be exported
- * from a shared library, but it might have other side effects.
+ * SDL uses this macro for all its public functions. On some targets, it is
+ * used to signal to the compiler that this function needs to be exported from
+ * a shared library, but it might have other side effects.
  *
  * This symbol is used in SDL's headers, but apps and other libraries are
  * welcome to use it for their own interfaces as well.
@@ -81,13 +81,13 @@
  * A macro to set a function's calling conventions.
  *
  * SDL uses this macro for all its public functions, and any callbacks it
- * defines. This macro guarantees that calling conventions match between
- * SDL and the app, even if the two were built with different compilers
- * or optimization settings.
+ * defines. This macro guarantees that calling conventions match between SDL
+ * and the app, even if the two were built with different compilers or
+ * optimization settings.
  *
  * When writing a callback function, it is very important for it to be
- * correctly tagged with SDLCALL, as mismatched calling conventions can
- * cause strange behaviors and can be difficult to diagnose. Plus, on many
+ * correctly tagged with SDLCALL, as mismatched calling conventions can cause
+ * strange behaviors and can be difficult to diagnose. Plus, on many
  * platforms, SDLCALL is defined to nothing, so compilers won't be able to
  * warn that the tag is missing.
  *
@@ -112,8 +112,8 @@
 /**
  * A macro to demand a function be inlined.
  *
- * This is a command to the compiler to inline a function. SDL uses this
- * macro in its public headers for a handful of simple functions. On compilers
+ * This is a command to the compiler to inline a function. SDL uses this macro
+ * in its public headers for a handful of simple functions. On compilers
  * without forceinline support, this is defined to `static SDL_INLINE`, which
  * is often good enough.
  *
@@ -131,8 +131,8 @@
  * of a function like this is the C runtime's exit() function.
  *
  * This hint can lead to code optimizations, and help analyzers understand
- * code flow better. On compilers without noreturn support, this is
- * defined to nothing.
+ * code flow better. On compilers without noreturn support, this is defined to
+ * nothing.
  *
  * This symbol is used in SDL's headers, but apps and other libraries are
  * welcome to use it for their own interfaces as well.
@@ -147,10 +147,10 @@
  * This is almost identical to SDL_NORETURN, except functions marked with this
  * _can_ actually return. The difference is that this isn't used for code
  * generation, but rather static analyzers use this information to assume
- * truths about program state and available code paths. Specifically, this
- * tag is useful for writing an assertion mechanism. Indeed, SDL_assert uses
- * this tag behind the scenes. Generally, apps that don't understand the
- * specific use-case for this tag should avoid using it directly.
+ * truths about program state and available code paths. Specifically, this tag
+ * is useful for writing an assertion mechanism. Indeed, SDL_assert uses this
+ * tag behind the scenes. Generally, apps that don't understand the specific
+ * use-case for this tag should avoid using it directly.
  *
  * On compilers without analyzer_noreturn support, this is defined to nothing.
  *
@@ -192,23 +192,23 @@
 /**
  * A macro to tag a function's return value as critical.
  *
- * This is a hint to the compiler that a function's return value should not
- * be ignored.
+ * This is a hint to the compiler that a function's return value should not be
+ * ignored.
  *
  * If an NODISCARD function's return value is thrown away (the function is
  * called as if it returns `void`), the compiler will issue a warning.
  *
- * While it's generally good practice to check return values for errors,
- * often times legitimate programs do not for good reasons. Be careful
- * about what functions are tagged as NODISCARD. It operates best when
- * used on a function that's failure is surprising and catastrophic; a good
- * example would be a program that checks the return values of all its
- * file write function calls but not the call to close the file, which it
- * assumes incorrectly never fails.
+ * While it's generally good practice to check return values for errors, often
+ * times legitimate programs do not for good reasons. Be careful about what
+ * functions are tagged as NODISCARD. It operates best when used on a function
+ * that's failure is surprising and catastrophic; a good example would be a
+ * program that checks the return values of all its file write function calls
+ * but not the call to close the file, which it assumes incorrectly never
+ * fails.
  *
- * Function callers that want to throw away a NODISCARD return value can
- * call the function with a `(void)` cast, which informs the compiler the
- * act is intentional.
+ * Function callers that want to throw away a NODISCARD return value can call
+ * the function with a `(void)` cast, which informs the compiler the act is
+ * intentional.
  *
  * On compilers without nodiscard support, this is defined to nothing.
  *
@@ -220,8 +220,8 @@
  * A macro to tag a function as an allocator.
  *
  * This is a hint to the compiler that a function is an allocator, like
- * malloc(), with certain rules. A description of how GCC treats this
- * hint is here:
+ * malloc(), with certain rules. A description of how GCC treats this hint is
+ * here:
  *
  * https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-malloc-function-attribute
  *
@@ -237,10 +237,9 @@
  * A macro to tag a function as returning a certain allocation.
  *
  * This is a hint to the compiler that a function allocates and returns a
- * specific amount of memory based on one of its arguments.
- * For example, the C runtime's malloc() function could use this macro
- * with an argument of 1 (first argument to malloc is the size of the
- * allocation).
+ * specific amount of memory based on one of its arguments. For example, the C
+ * runtime's malloc() function could use this macro with an argument of 1
+ * (first argument to malloc is the size of the allocation).
  *
  * On compilers without alloc_size support, this is defined to nothing.
  *
