@@ -90,7 +90,7 @@ extern "C" {
  * This only converts whole numbers, not fractional seconds.
  *
  * \param S the number of seconds to convert.
- * \return S, expressed in nanoseconds.
+ * \returns S, expressed in nanoseconds.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
@@ -105,7 +105,7 @@ extern "C" {
  * `NS` is an integer or floating point value.
  *
  * \param NS the number of nanoseconds to convert.
- * \return NS, expressed in seconds.
+ * \returns NS, expressed in seconds.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
@@ -119,7 +119,7 @@ extern "C" {
  * This only converts whole numbers, not fractional milliseconds.
  *
  * \param MS the number of milliseconds to convert.
- * \return MS, expressed in nanoseconds.
+ * \returns MS, expressed in nanoseconds.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
@@ -134,7 +134,7 @@ extern "C" {
  * `NS` is an integer or floating point value.
  *
  * \param NS the number of nanoseconds to convert.
- * \return NS, expressed in milliseconds.
+ * \returns NS, expressed in milliseconds.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
@@ -148,7 +148,7 @@ extern "C" {
  * This only converts whole numbers, not fractional microseconds.
  *
  * \param US the number of microseconds to convert.
- * \return US, expressed in nanoseconds.
+ * \returns US, expressed in nanoseconds.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
@@ -163,7 +163,7 @@ extern "C" {
  * `NS` is an integer or floating point value.
  *
  * \param NS the number of nanoseconds to convert.
- * \return NS, expressed in microseconds.
+ * \returns NS, expressed in microseconds.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
