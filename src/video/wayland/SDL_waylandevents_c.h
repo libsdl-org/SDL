@@ -81,8 +81,8 @@ struct SDL_WaylandInput
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
     SDL_CursorData *current_cursor;
-    Uint32 keyboard_id;
-    Uint32 pointer_id;
+    SDL_KeyboardID keyboard_id;
+    SDL_MouseID pointer_id;
     uint32_t pointer_enter_serial;
 
     // High-resolution event timestamps

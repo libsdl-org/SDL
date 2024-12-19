@@ -696,11 +696,17 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
 {
     SDL_WindowData *window = input->pointer_focus;
     enum wl_pointer_button_state state = state_w;
-    uint32_t sdl_button;
-    bool ignore_click = false;
+    Uint64 timestamp = Wayland_GetPointerTimestamp(input, time);
+
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON)) {
+        SDL_SendRawMouseButton(timestamp, input->pointer_id, !!state, button);
+    }
 
     if (window) {
         SDL_VideoData *viddata = window->waylandData;
+        Uint32 sdl_button;
+        bool ignore_click = false;
+
         switch (button) {
         case BTN_LEFT:
             sdl_button = SDL_BUTTON_LEFT;
@@ -760,7 +766,7 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
 
         if (!ignore_click) {
             SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, input->pointer_id,
-                                sdl_button, (state != 0));
+                                sdl_button, !!state);
         }
     }
 }
@@ -777,10 +783,23 @@ static void pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
                                           uint32_t time, uint32_t axis, wl_fixed_t value)
 {
     SDL_WindowData *window = input->pointer_focus;
-    enum wl_pointer_axis a = axis;
-    float x, y;
+    const Uint64 timestamp = Wayland_GetPointerTimestamp(input, time);
+    const enum wl_pointer_axis a = axis;
+
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_SCROLL)) {
+        // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
+        const float denom = (float)(WAYLAND_WHEEL_AXIS_UNIT * 256);
+
+        if (a == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+            SDL_SendRawMouseAxis(timestamp, input->pointer_id, 0, (int)value, 0.f, denom, SDL_EVENT_MOUSE_RAW_SCROLL);
+        } else {
+            SDL_SendRawMouseAxis(timestamp, input->pointer_id, (int)value, 0, denom, 0.f, SDL_EVENT_MOUSE_RAW_SCROLL);
+        }
+    }
 
     if (input->pointer_focus) {
+        float x, y;
+
         switch (a) {
         case WL_POINTER_AXIS_VERTICAL_SCROLL:
             x = 0;
@@ -797,14 +816,25 @@ static void pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
         x /= WAYLAND_WHEEL_AXIS_UNIT;
         y /= WAYLAND_WHEEL_AXIS_UNIT;
 
-        SDL_SendMouseWheel(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, input->pointer_id, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(timestamp, window->sdlwindow, input->pointer_id, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
 }
 
 static void pointer_handle_axis_common(struct SDL_WaylandInput *input, enum SDL_WaylandAxisEvent type,
                                        uint32_t axis, wl_fixed_t value)
 {
-    enum wl_pointer_axis a = axis;
+    const enum wl_pointer_axis a = axis;
+
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_SCROLL)) {
+        // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
+        const float denom = (float)((type == AXIS_EVENT_VALUE120 ? 120 : WAYLAND_WHEEL_AXIS_UNIT) * 256);
+
+        if (a == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+            SDL_SendRawMouseAxis(input->pointer_curr_axis_info.timestamp_ns, input->pointer_id, 0, (int)value, 0.f, denom, SDL_EVENT_MOUSE_RAW_SCROLL);
+        } else {
+            SDL_SendRawMouseAxis(input->pointer_curr_axis_info.timestamp_ns, input->pointer_id, (int)value, 0, denom, 0.f, SDL_EVENT_MOUSE_RAW_SCROLL);
+        }
+    }
 
     if (input->pointer_focus) {
         switch (a) {
@@ -990,6 +1020,128 @@ static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_axis_discrete,          // Version 5
     pointer_handle_axis_value120,          // Version 8
     pointer_handle_axis_relative_direction // Version 9
+};
+
+static void relative_pointer_handle_relative_motion(void *data,
+                                                    struct zwp_relative_pointer_v1 *pointer,
+                                                    uint32_t time_hi,
+                                                    uint32_t time_lo,
+                                                    wl_fixed_t dx_w,
+                                                    wl_fixed_t dy_w,
+                                                    wl_fixed_t dx_unaccel_w,
+                                                    wl_fixed_t dy_unaccel_w)
+{
+    struct SDL_WaylandInput *input = data;
+    SDL_VideoData *d = input->display;
+    SDL_WindowData *window = input->pointer_focus;
+
+    // Relative pointer event times are in microsecond granularity.
+    const Uint64 timestamp = Wayland_GetEventTimestamp(SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo));
+
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_MOTION)) {
+        // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
+        SDL_SendRawMouseAxis(timestamp, input->pointer_id, (int)dx_unaccel_w, (int)dy_unaccel_w, 256.0f, 256.0f, SDL_EVENT_MOUSE_RAW_MOTION);
+    }
+
+    if (input->pointer_focus && d->relative_mouse_mode) {
+        double dx;
+        double dy;
+        if (!SDL_GetMouse()->enable_relative_system_scale) {
+            dx = wl_fixed_to_double(dx_unaccel_w);
+            dy = wl_fixed_to_double(dy_unaccel_w);
+        } else {
+            dx = wl_fixed_to_double(dx_w);
+            dy = wl_fixed_to_double(dy_w);
+        }
+
+        SDL_SendMouseMotion(timestamp, window->sdlwindow, input->pointer_id, true, (float)dx, (float)dy);
+    }
+}
+
+static const struct zwp_relative_pointer_v1_listener relative_pointer_listener = {
+    relative_pointer_handle_relative_motion,
+};
+
+static void locked_pointer_locked(void *data,
+                                  struct zwp_locked_pointer_v1 *locked_pointer)
+{
+}
+
+static void locked_pointer_unlocked(void *data,
+                                    struct zwp_locked_pointer_v1 *locked_pointer)
+{
+}
+
+static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
+    locked_pointer_locked,
+    locked_pointer_unlocked,
+};
+
+bool Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
+{
+    SDL_WindowData *w = window->internal;
+    SDL_VideoData *d = input->display;
+
+    if (!d->pointer_constraints || !input->pointer) {
+        return false;
+    }
+
+    if (!w->locked_pointer) {
+        if (w->confined_pointer) {
+            // If the pointer is already confined to the surface, the lock will fail with a protocol error.
+            Wayland_input_unconfine_pointer(input, window);
+        }
+
+        w->locked_pointer = zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints,
+                                                                    w->surface,
+                                                                    input->pointer,
+                                                                    NULL,
+                                                                    ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+        zwp_locked_pointer_v1_add_listener(w->locked_pointer,
+                                           &locked_pointer_listener,
+                                           window);
+    }
+
+    return true;
+}
+
+bool Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
+{
+    SDL_WindowData *w = window->internal;
+
+    if (w->locked_pointer) {
+        zwp_locked_pointer_v1_destroy(w->locked_pointer);
+        w->locked_pointer = NULL;
+    }
+
+    // Restore existing pointer confinement.
+    Wayland_input_confine_pointer(input, window);
+
+    return true;
+}
+
+static void pointer_confine_destroy(SDL_Window *window)
+{
+    SDL_WindowData *w = window->internal;
+    if (w->confined_pointer) {
+        zwp_confined_pointer_v1_destroy(w->confined_pointer);
+        w->confined_pointer = NULL;
+    }
+}
+
+static void confined_pointer_confined(void *data,
+                                      struct zwp_confined_pointer_v1 *confined_pointer)
+{
+}
+
+static void confined_pointer_unconfined(void *data,
+                                        struct zwp_confined_pointer_v1 *confined_pointer)
+{
+}
+
+static const struct zwp_confined_pointer_v1_listener confined_pointer_listener = {
+    confined_pointer_confined,
+    confined_pointer_unconfined,
 };
 
 static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t serial,
@@ -1806,6 +1958,13 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
 
         wl_pointer_set_user_data(input->pointer, input);
         wl_pointer_add_listener(input->pointer, &pointer_listener, input);
+
+        if (input->display->relative_pointer_manager) {
+            input->relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(input->display->relative_pointer_manager, input->pointer);
+            zwp_relative_pointer_v1_add_listener(input->relative_pointer,
+                                                 &relative_pointer_listener,
+                                                 input);
+        }
 
         input->pointer_id = SDL_GetNextObjectID();
         SDL_AddMouse(input->pointer_id, WAYLAND_DEFAULT_POINTER_NAME, true);
@@ -2970,6 +3129,10 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
         }
     }
 
+    if (input->relative_pointer) {
+        zwp_relative_pointer_v1_destroy(input->relative_pointer);
+    }
+
     if (input->cursor_shape) {
         wp_cursor_shape_device_v1_destroy(input->cursor_shape);
     }
@@ -3030,114 +3193,11 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
     d->input = NULL;
 }
 
-static void relative_pointer_handle_relative_motion(void *data,
-                                                    struct zwp_relative_pointer_v1 *pointer,
-                                                    uint32_t time_hi,
-                                                    uint32_t time_lo,
-                                                    wl_fixed_t dx_w,
-                                                    wl_fixed_t dy_w,
-                                                    wl_fixed_t dx_unaccel_w,
-                                                    wl_fixed_t dy_unaccel_w)
-{
-    struct SDL_WaylandInput *input = data;
-    SDL_VideoData *d = input->display;
-    SDL_WindowData *window = input->pointer_focus;
-    double dx;
-    double dy;
-
-    // Relative pointer event times are in microsecond granularity.
-    const Uint64 timestamp = SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo);
-
-    if (!SDL_GetMouse()->enable_relative_system_scale) {
-        dx = wl_fixed_to_double(dx_unaccel_w);
-        dy = wl_fixed_to_double(dy_unaccel_w);
-    } else {
-        dx = wl_fixed_to_double(dx_w);
-        dy = wl_fixed_to_double(dy_w);
-    }
-
-    if (input->pointer_focus && d->relative_mouse_mode) {
-        SDL_SendMouseMotion(Wayland_GetEventTimestamp(timestamp), window->sdlwindow, input->pointer_id, true, (float)dx, (float)dy);
-    }
-}
-
-static const struct zwp_relative_pointer_v1_listener relative_pointer_listener = {
-    relative_pointer_handle_relative_motion,
-};
-
-static void locked_pointer_locked(void *data,
-                                  struct zwp_locked_pointer_v1 *locked_pointer)
-{
-}
-
-static void locked_pointer_unlocked(void *data,
-                                    struct zwp_locked_pointer_v1 *locked_pointer)
-{
-}
-
-static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
-    locked_pointer_locked,
-    locked_pointer_unlocked,
-};
-
-bool Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
-{
-    SDL_WindowData *w = window->internal;
-    SDL_VideoData *d = input->display;
-
-    if (!d->pointer_constraints || !input->pointer) {
-        return false;
-    }
-
-    if (!w->locked_pointer) {
-        if (w->confined_pointer) {
-            // If the pointer is already confined to the surface, the lock will fail with a protocol error.
-            Wayland_input_unconfine_pointer(input, window);
-        }
-
-        w->locked_pointer = zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints,
-                                                                    w->surface,
-                                                                    input->pointer,
-                                                                    NULL,
-                                                                    ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-        zwp_locked_pointer_v1_add_listener(w->locked_pointer,
-                                           &locked_pointer_listener,
-                                           window);
-    }
-
-    return true;
-}
-
-bool Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
-{
-    SDL_WindowData *w = window->internal;
-
-    if (w->locked_pointer) {
-        zwp_locked_pointer_v1_destroy(w->locked_pointer);
-        w->locked_pointer = NULL;
-    }
-
-    // Restore existing pointer confinement.
-    Wayland_input_confine_pointer(input, window);
-
-    return true;
-}
-
-static void pointer_confine_destroy(SDL_Window *window)
-{
-    SDL_WindowData *w = window->internal;
-    if (w->confined_pointer) {
-        zwp_confined_pointer_v1_destroy(w->confined_pointer);
-        w->confined_pointer = NULL;
-    }
-}
-
 bool Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = input->display;
     SDL_Window *window;
-    struct zwp_relative_pointer_v1 *relative_pointer;
 
     if (!d->relative_pointer_manager) {
         return false;
@@ -3156,14 +3216,6 @@ bool Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input)
      */
     for (window = vd->windows; window; window = window->next) {
         pointer_confine_destroy(window);
-    }
-
-    if (!input->relative_pointer) {
-        relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(d->relative_pointer_manager, input->pointer);
-        zwp_relative_pointer_v1_add_listener(relative_pointer,
-                                             &relative_pointer_listener,
-                                             input);
-        input->relative_pointer = relative_pointer;
     }
 
     for (window = vd->windows; window; window = window->next) {
@@ -3185,11 +3237,6 @@ bool Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input)
         Wayland_input_unlock_pointer(input, window);
     }
 
-    if (input->relative_pointer) {
-        zwp_relative_pointer_v1_destroy(input->relative_pointer);
-        input->relative_pointer = NULL;
-    }
-
     d->relative_mouse_mode = 0;
 
     for (window = vd->windows; window; window = window->next) {
@@ -3199,26 +3246,10 @@ bool Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input)
     return true;
 }
 
-static void confined_pointer_confined(void *data,
-                                      struct zwp_confined_pointer_v1 *confined_pointer)
-{
-}
-
-static void confined_pointer_unconfined(void *data,
-                                        struct zwp_confined_pointer_v1 *confined_pointer)
-{
-}
-
-static const struct zwp_confined_pointer_v1_listener confined_pointer_listener = {
-    confined_pointer_confined,
-    confined_pointer_unconfined,
-};
-
 bool Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
 {
     SDL_WindowData *w = window->internal;
     SDL_VideoData *d = input->display;
-    struct zwp_confined_pointer_v1 *confined_pointer;
     struct wl_region *confine_rect;
 
     if (!d->pointer_constraints) {
@@ -3264,7 +3295,7 @@ bool Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *w
                       scaled_mouse_rect.h);
     }
 
-    confined_pointer =
+    struct zwp_confined_pointer_v1 *confined_pointer =
         zwp_pointer_constraints_v1_confine_pointer(d->pointer_constraints,
                                                    w->surface,
                                                    input->pointer,
