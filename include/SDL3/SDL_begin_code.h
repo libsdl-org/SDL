@@ -53,7 +53,7 @@
  *
  * SDL, on occasion, might deprecate a function for various reasons. However,
  * SDL never removes symbols before major versions, so deprecated interfaces
- * in SDL3 will remain available under SDL4, where it would be expected an app
+ * in SDL3 will remain available until SDL4, where it would be expected an app
  * would have to take steps to migrate anyhow.
  *
  * On compilers without a deprecation mechanism, this is defined to nothing,
