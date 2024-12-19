@@ -905,7 +905,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
 #endif
 
     SDL_Mouse *mouse = SDL_GetMouse();
-    if ((!mouse->relative_mode || mouse->relative_mode_warp) && (x != mouse->x || y != mouse->y)) {
+    if (!mouse->relative_mode && (x != mouse->x || y != mouse->y)) {
         X11_ProcessHitTest(_this, windowdata, x, y, false);
         SDL_SendMouseMotion(0, window, mouseID, false, x, y);
     }
@@ -1556,7 +1556,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         }
 
         SDL_Mouse *mouse = SDL_GetMouse();
-        if (!mouse->relative_mode || mouse->relative_mode_warp) {
+        if (!mouse->relative_mode) {
 #ifdef DEBUG_MOTION
             SDL_Log("window 0x%lx: X11 motion: %d,%d\n", xevent->xany.window, xevent->xmotion.x, xevent->xmotion.y);
 #endif

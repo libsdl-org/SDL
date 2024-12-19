@@ -2533,21 +2533,6 @@ extern "C" {
 #define SDL_HINT_MOUSE_RELATIVE_MODE_CENTER "SDL_MOUSE_RELATIVE_MODE_CENTER"
 
 /**
- * A variable controlling whether relative mouse mode is implemented using
- * mouse warping.
- *
- * The variable can be set to the following values:
- *
- * - "0": Relative mouse mode uses raw input. (default)
- * - "1": Relative mouse mode uses mouse warping.
- *
- * This hint can be set anytime relative mode is not currently enabled.
- *
- * \since This hint is available since SDL 3.1.3.
- */
-#define SDL_HINT_MOUSE_RELATIVE_MODE_WARP "SDL_MOUSE_RELATIVE_MODE_WARP"
-
-/**
  * A variable setting the scale for mouse motion, in floating point, when the
  * mouse is in relative mode.
  *
