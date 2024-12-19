@@ -1980,11 +1980,19 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         input->pointer_id = SDL_GetNextObjectID();
         SDL_AddMouse(input->pointer_id, WAYLAND_DEFAULT_POINTER_NAME, true);
     } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
+        if (input->relative_pointer) {
+            zwp_relative_pointer_v1_destroy(input->relative_pointer);
+            input->relative_pointer = NULL;
+        }
         if (input->cursor_shape) {
             wp_cursor_shape_device_v1_destroy(input->cursor_shape);
             input->cursor_shape = NULL;
         }
-        wl_pointer_destroy(input->pointer);
+        if (wl_pointer_get_version(input->pointer) >= WL_POINTER_RELEASE_SINCE_VERSION) {
+            wl_pointer_release(input->pointer);
+        } else {
+            wl_pointer_destroy(input->pointer);
+        }
         input->pointer = NULL;
         input->display->pointer = NULL;
 
