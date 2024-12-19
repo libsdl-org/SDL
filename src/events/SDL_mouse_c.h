@@ -98,11 +98,11 @@ typedef struct
     bool relative_mode_warp;
     bool relative_mode_warp_motion;
     bool relative_mode_cursor_visible;
+    bool relative_mode_center;
     bool warp_emulation_hint;
     bool warp_emulation_active;
     bool warp_emulation_prohibited;
     Uint64 last_center_warp_time_ns;
-    int relative_mode_clip_interval;
     bool enable_normal_speed_scale;
     float normal_speed_scale;
     bool enable_relative_speed_scale;

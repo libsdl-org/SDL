@@ -350,8 +350,6 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
 
         WIN_UpdateWindowICCProfile(data->window, true);
     } else {
-        RECT rect;
-
         data->in_window_deactivation = true;
 
         SDL_SetKeyboardFocus(NULL);
@@ -361,10 +359,7 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
         }
         WIN_ResetDeadKeys();
 
-        if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect)) == 0) {
-            ClipCursor(NULL);
-            SDL_zero(data->cursor_clipped_rect);
-        }
+        WIN_UnclipCursorForWindow(window);
 
         data->in_window_deactivation = false;
     }
@@ -1078,6 +1073,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_NCACTIVATE:
     {
         // Don't immediately clip the cursor in case we're clicking minimize/maximize buttons
+        // This is the only place that this flag is set. This causes all subsequent calls to
+        // WIN_UpdateClipCursor for this window to be no-ops in this frame's message-pumping.
+        // This flag is unset at the end of message pumping each frame for every window, and
+        // should never be carried over between frames.
         data->skip_update_clipcursor = true;
 
         /* Update the focus here, since it's possible to get WM_ACTIVATE and WM_SETFOCUS without
@@ -1120,7 +1119,18 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_MOUSEMOVE:
     {
-        /* SDL_Mouse *mouse = SDL_GetMouse(); */
+        SDL_Window *window = data->window;
+
+        if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
+            bool wish_clip_cursor = (
+                window->flags & (SDL_WINDOW_MOUSE_RELATIVE_MODE | SDL_WINDOW_MOUSE_GRABBED) ||
+                (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)
+            );
+            if (wish_clip_cursor) {
+                data->skip_update_clipcursor = false;
+                WIN_UpdateClipCursor(window);  
+            }
+        }
 
         if (!data->mouse_tracked) {
             TRACKMOUSEEVENT trackMouseEvent;
@@ -1138,7 +1148,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             // Only generate mouse events for real mouse
             if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
-                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+                SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
             }
         }
     } break;
@@ -2068,28 +2078,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-static void WIN_UpdateClipCursorForWindows(void)
-{
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_Window *window;
-    Uint64 now = SDL_GetTicks();
-    const int CLIPCURSOR_UPDATE_INTERVAL_MS = SDL_GetMouse()->relative_mode_clip_interval;
-
-    if (_this) {
-        for (window = _this->windows; window; window = window->next) {
-            SDL_WindowData *data = window->internal;
-            if (data) {
-                if (data->skip_update_clipcursor) {
-                    data->skip_update_clipcursor = false;
-                    WIN_UpdateClipCursor(window);
-                } else if (CLIPCURSOR_UPDATE_INTERVAL_MS > 0 && now >= (data->last_updated_clipcursor + CLIPCURSOR_UPDATE_INTERVAL_MS)) {
-                    WIN_UpdateClipCursor(window);
-                }
-            }
-        }
-    }
-}
-
 static void WIN_UpdateMouseCapture(void)
 {
     SDL_Window *focusWindow = SDL_GetKeyboardFocus();
@@ -2284,7 +2272,17 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
     }
 
     // Update the clipping rect in case someone else has stolen it
-    WIN_UpdateClipCursorForWindows();
+    if (_this) {
+        SDL_Window *window = _this->windows;
+        while (window) {
+            SDL_WindowData *data = window->internal;
+            if (data && data->skip_update_clipcursor) {
+                data->skip_update_clipcursor = false;
+                WIN_UpdateClipCursor(window);
+            }
+            window = window->next;
+        }
+    }
 
     // Update mouse capture
     WIN_UpdateMouseCapture();
