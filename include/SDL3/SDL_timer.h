@@ -38,16 +38,137 @@ extern "C" {
 #endif
 
 /* SDL time constants */
+
+/**
+ * Number of milliseconds in a second.
+ *
+ * This is always 1000.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_MS_PER_SECOND   1000
+
+/**
+ * Number of microseconds in a second.
+ *
+ * This is always 1000000.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_US_PER_SECOND   1000000
+
+/**
+ * Number of nanoseconds in a second.
+ *
+ * This is always 1000000000.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_NS_PER_SECOND   1000000000LL
+
+/**
+ * Number of nanoseconds in a millisecond.
+ *
+ * This is always 1000000.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_NS_PER_MS       1000000
+
+/**
+ * Number of nanoseconds in a microsecond.
+ *
+ * This is always 1000.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_NS_PER_US       1000
+
+/**
+ * Convert seconds to nanoseconds.
+ *
+ * This only converts whole numbers, not fractional seconds.
+ *
+ * \param S the number of seconds to convert.
+ * \return S, expressed in nanoseconds.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_SECONDS_TO_NS(S)    (((Uint64)(S)) * SDL_NS_PER_SECOND)
+
+/**
+ * Convert nanoseconds to seconds.
+ *
+ * This performs a division, so the results can be dramatically different
+ * if `NS` is an integer or floating point value.
+ *
+ * \param NS the number of nanoseconds to convert.
+ * \return NS, expressed in seconds.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_NS_TO_SECONDS(NS)   ((NS) / SDL_NS_PER_SECOND)
+
+/**
+ * Convert milliseconds to nanoseconds.
+ *
+ * This only converts whole numbers, not fractional milliseconds.
+ *
+ * \param MS the number of milliseconds to convert.
+ * \return MS, expressed in nanoseconds.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_MS_TO_NS(MS)        (((Uint64)(MS)) * SDL_NS_PER_MS)
+
+/**
+ * Convert nanoseconds to milliseconds.
+ *
+ * This performs a division, so the results can be dramatically different
+ * if `NS` is an integer or floating point value.
+ *
+ * \param NS the number of nanoseconds to convert.
+ * \return NS, expressed in milliseconds.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_NS_TO_MS(NS)        ((NS) / SDL_NS_PER_MS)
+
+/**
+ * Convert microseconds to nanoseconds.
+ *
+ * This only converts whole numbers, not fractional microseconds.
+ *
+ * \param US the number of microseconds to convert.
+ * \return US, expressed in nanoseconds.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_US_TO_NS(US)        (((Uint64)(US)) * SDL_NS_PER_US)
+
+/**
+ * Convert nanoseconds to microseconds.
+ *
+ * This performs a division, so the results can be dramatically different
+ * if `NS` is an integer or floating point value.
+ *
+ * \param NS the number of nanoseconds to convert.
+ * \return NS, expressed in microseconds.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_NS_TO_US(NS)        ((NS) / SDL_NS_PER_US)
 
 /**

@@ -64,12 +64,70 @@ _m_prefetch(void *__P)
  *  \name The two types of endianness
  */
 /* @{ */
+
+
+/**
+ * A value to represent littleendian byteorder.
+ *
+ * This is used with the preprocessor macro SDL_BYTEORDER, to determine a
+ * platform's byte ordering:
+ *
+ * ```c
+ * #if SDL_BYTEORDER == SDL_LIL_ENDIAN
+ * SDL_Log("This system is littleendian.");
+ * #endif
+ * ```
+ *
+ * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_BYTEORDER
+ * \sa SDL_BIG_ENDIAN
+ */
 #define SDL_LIL_ENDIAN  1234
+
+/**
+ * A value to represent bigendian byteorder.
+ *
+ * This is used with the preprocessor macro SDL_BYTEORDER, to determine a
+ * platform's byte ordering:
+ *
+ * ```c
+ * #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+ * SDL_Log("This system is bigendian.");
+ * #endif
+ * ```
+ *
+ * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_BYTEORDER
+ * \sa SDL_LIL_ENDIAN
+ */
 #define SDL_BIG_ENDIAN  4321
+
 /* @} */
 
 #ifndef SDL_BYTEORDER
-#ifdef SDL_PLATFORM_LINUX
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+/**
+ * A macro that reports the target system's byte order.
+ *
+ * This is set to either SDL_LIL_ENDIAN or SDL_BIG_ENDIAN (and maybe other
+ * values in the future, if something else becomes popular). This can be
+ * tested with the preprocessor, so decisions can be made at compile time.
+ *
+ * ```c
+ * #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+ * SDL_Log("This system is bigendian.");
+ * #endif
+ * ```
+ *
+ * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_LIL_ENDIAN
+ * \sa SDL_BIG_ENDIAN
+ */
+#define SDL_BYTEORDER   SDL_LIL_ENDIAN___or_maybe___SDL_BIG_ENDIAN
+#elif defined(SDL_PLATFORM_LINUX)
 #include <endian.h>
 #define SDL_BYTEORDER  __BYTE_ORDER
 #elif defined(SDL_PLATFORM_SOLARIS)
@@ -110,8 +168,28 @@ _m_prefetch(void *__P)
 #endif /* !SDL_BYTEORDER */
 
 #ifndef SDL_FLOATWORDORDER
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+/**
+ * A macro that reports the target system's floating point word order.
+ *
+ * This is set to either SDL_LIL_ENDIAN or SDL_BIG_ENDIAN (and maybe other
+ * values in the future, if something else becomes popular). This can be
+ * tested with the preprocessor, so decisions can be made at compile time.
+ *
+ * ```c
+ * #if SDL_FLOATWORDORDER == SDL_BIG_ENDIAN
+ * SDL_Log("This system's floats are bigendian.");
+ * #endif
+ * ```
+ *
+ * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_LIL_ENDIAN
+ * \sa SDL_BIG_ENDIAN
+ */
+#define SDL_FLOATWORDORDER   SDL_LIL_ENDIAN___or_maybe___SDL_BIG_ENDIAN
 /* predefs from newer gcc versions: */
-#if defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__) && defined(__FLOAT_WORD_ORDER__)
+#elif defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__) && defined(__FLOAT_WORD_ORDER__)
 #if (__FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 #define SDL_FLOATWORDORDER   SDL_LIL_ENDIAN
 #elif (__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__)
