@@ -108,6 +108,7 @@ _m_prefetch(void *__P)
 
 #ifndef SDL_BYTEORDER
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A macro that reports the target system's byte order.
  *
@@ -169,6 +170,7 @@ _m_prefetch(void *__P)
 
 #ifndef SDL_FLOATWORDORDER
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A macro that reports the target system's floating point word order.
  *

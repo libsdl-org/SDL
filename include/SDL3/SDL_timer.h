@@ -101,8 +101,8 @@ extern "C" {
 /**
  * Convert nanoseconds to seconds.
  *
- * This performs a division, so the results can be dramatically different
- * if `NS` is an integer or floating point value.
+ * This performs a division, so the results can be dramatically different if
+ * `NS` is an integer or floating point value.
  *
  * \param NS the number of nanoseconds to convert.
  * \return NS, expressed in seconds.
@@ -130,8 +130,8 @@ extern "C" {
 /**
  * Convert nanoseconds to milliseconds.
  *
- * This performs a division, so the results can be dramatically different
- * if `NS` is an integer or floating point value.
+ * This performs a division, so the results can be dramatically different if
+ * `NS` is an integer or floating point value.
  *
  * \param NS the number of nanoseconds to convert.
  * \return NS, expressed in milliseconds.
@@ -159,8 +159,8 @@ extern "C" {
 /**
  * Convert nanoseconds to microseconds.
  *
- * This performs a division, so the results can be dramatically different
- * if `NS` is an integer or floating point value.
+ * This performs a division, so the results can be dramatically different if
+ * `NS` is an integer or floating point value.
  *
  * \param NS the number of nanoseconds to convert.
  * \return NS, expressed in microseconds.
