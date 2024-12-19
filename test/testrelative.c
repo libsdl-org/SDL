@@ -25,6 +25,7 @@ static int i, done;
 static SDL_FRect rect;
 static SDL_Event event;
 static bool warp;
+static bool raw;
 
 static void DrawRects(SDL_Renderer *renderer)
 {
@@ -88,12 +89,19 @@ static void loop(void)
             break;
         case SDL_EVENT_MOUSE_MOTION:
         {
-            rect.x += event.motion.xrel;
-            rect.y += event.motion.yrel;
+            if (!raw) {
+                rect.x += event.motion.xrel;
+                rect.y += event.motion.yrel;
 
-            if (warp) {
-                CenterMouse();
+                if (warp) {
+                    CenterMouse();
+                }
             }
+        } break;
+        case SDL_EVENT_MOUSE_RAW_MOTION:
+        {
+            rect.x += event.maxis.dx / event.maxis.ux;
+            rect.y += event.maxis.dy / event.maxis.uy;
         } break;
         default:
             break;
@@ -154,12 +162,16 @@ int main(int argc, char *argv[])
             if (SDL_strcasecmp(argv[i], "--warp") == 0) {
                 warp = true;
                 consumed = 1;
+            } else if (SDL_strcasecmp(argv[i], "--raw") == 0) {
+                raw = true;
+                consumed = 1;
             }
         }
 
         if (consumed < 0) {
             static const char *options[] = {
                 "[--warp]",
+                "[--raw]",
                 NULL
             };
             SDLTest_CommonLogUsage(state, argv[0], options);
@@ -193,6 +205,10 @@ int main(int argc, char *argv[])
         for (i = 0; i < state->num_windows; ++i) {
             SDL_SetWindowRelativeMouseMode(state->windows[i], true);
         }
+    }
+
+    if (raw) {
+        SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_MOTION, true);
     }
 
     rect.x = DEFAULT_WINDOW_WIDTH / 2;
