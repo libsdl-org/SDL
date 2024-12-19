@@ -886,11 +886,16 @@ void SDL_StopEventLoop(void)
     }
     SDL_zero(SDL_EventOK);
 
-    SDL_UnlockMutex(SDL_EventQ.lock);
-
+    SDL_Mutex *lock = NULL;
     if (SDL_EventQ.lock) {
-        SDL_DestroyMutex(SDL_EventQ.lock);
+        lock = SDL_EventQ.lock;
         SDL_EventQ.lock = NULL;
+    }
+
+    SDL_UnlockMutex(lock);
+
+    if (lock) {
+        SDL_DestroyMutex(lock);
     }
 }
 
