@@ -2183,7 +2183,44 @@ extern SDL_DECLSPEC void * SDLCALL SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, S
 #define SDL_memmove memmove
 #endif
 
+/**
+ * Initialize all bytes of buffer of memory to a specific value.
+ *
+ * This function will set `len` bytes, pointed to by `dst`, to the value
+ * specified in `c`.
+ *
+ * Despite `c` being an `int` instead of a `char`, this only operates on
+ * bytes; `c` must be a value between 0 and 255, inclusive.
+ *
+ * \param dst the destination memory region. Must not be NULL.
+ * \param c the byte value to set.
+ * \param len the length, in bytes, to set in `dst`.
+ * \returns `dst`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC void * SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len);
+
+/**
+ * Initialize all 32-bit words of buffer of memory to a specific value.
+ *
+ * This function will set a buffer of `dwords` Uint32 values, pointed to by
+ * `dst`, to the value specified in `val`.
+ *
+ * Unlike SDL_memset, this sets 32-bit values, not bytes, so it's not limited
+ * to a range of 0-255.
+ *
+ * \param dst the destination memory region. Must not be NULL.
+ * \param val the Uint32 value to set.
+ * \param dwords the number of Uint32 values to set in `dst`.
+ * \returns `dst`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC void * SDLCALL SDL_memset4(void *dst, Uint32 val, size_t dwords);
 
 /* Take advantage of compiler optimizations for memset */
@@ -2641,20 +2678,347 @@ extern SDL_DECLSPEC char * SDLCALL SDL_strupr(char *str);
  */
 extern SDL_DECLSPEC char * SDLCALL SDL_strlwr(char *str);
 
+/**
+ * Search a string for the first instance of a specific byte.
+ *
+ * The search ends once it finds the requested byte value, or a null
+ * terminator byte to end the string.
+ *
+ * Note that this looks for _bytes_, not _characters_, so you cannot match
+ * against a Unicode codepoint > 255, regardless of character encoding.
+ *
+ * \param str the string to search. Must not be NULL.
+ * \param c the byte value to search for.
+ * \returns a pointer to the first instance of `c` in the string, or NULL if not found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_strchr(const char *str, int c);
+
+/**
+ * Search a string for the last instance of a specific byte.
+ *
+ * The search must go until it finds a null terminator byte to end the string.
+ *
+ * Note that this looks for _bytes_, not _characters_, so you cannot match
+ * against a Unicode codepoint > 255, regardless of character encoding.
+ *
+ * \param str the string to search. Must not be NULL.
+ * \param c the byte value to search for.
+ * \returns a pointer to the last instance of `c` in the string, or NULL if not found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_strrchr(const char *str, int c);
+
+/**
+ * Search a string for the first instance of a specific substring.
+ *
+ * The search ends once it finds the requested substring, or a null
+ * terminator byte to end the string.
+ *
+ * Note that this looks for strings of _bytes_, not _characters_, so it's
+ * legal to search for malformed and incomplete UTF-8 sequences.
+ *
+ * \param haystack the string to search. Must not be NULL.
+ * \param needle the string to search for. Must not be NULL.
+ * \returns a pointer to the first instance of `needle` in the string, or NULL if not found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_strstr(const char *haystack, const char *needle);
+
+/**
+ * Search a string, up to n bytes, for the first instance of a specific substring.
+ *
+ * The search ends once it finds the requested substring, or a null
+ * terminator byte to end the string, or `maxlen` bytes have been examined.
+ * It is possible to use this function on a string without a null terminator.
+ *
+ * Note that this looks for strings of _bytes_, not _characters_, so it's
+ * legal to search for malformed and incomplete UTF-8 sequences.
+ *
+ * \param haystack the string to search. Must not be NULL.
+ * \param needle the string to search for. Must not be NULL.
+ * \param maxlen the maximum number of bytes to search in `haystack`.
+ * \returns a pointer to the first instance of `needle` in the string, or NULL if not found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_strnstr(const char *haystack, const char *needle, size_t maxlen);
+
+/**
+ * Search a UTF-8 string for the first instance of a specific substring, case-insensitively.
+ *
+ * This will work with Unicode strings, using a technique called
+ * "case-folding" to handle the vast majority of case-sensitive human
+ * languages regardless of system locale. It can deal with expanding values: a
+ * German Eszett character can compare against two ASCII 's' chars and be
+ * considered a match, for example. A notable exception: it does not handle
+ * the Turkish 'i' character; human language is complicated!
+ *
+ * Since this handles Unicode, it expects the strings to be well-formed UTF-8
+ * and not a null-terminated string of arbitrary bytes. Bytes that are not
+ * valid UTF-8 are treated as Unicode character U+FFFD (REPLACEMENT
+ * CHARACTER), which is to say two strings of random bits may turn out to
+ * match if they convert to the same amount of replacement characters.
+ *
+ * \param haystack the string to search. Must not be NULL.
+ * \param needle the string to search for. Must not be NULL.
+ * \returns a pointer to the first instance of `needle` in the string, or NULL if not found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_strcasestr(const char *haystack, const char *needle);
-extern SDL_DECLSPEC char * SDLCALL SDL_strtok_r(char *s1, const char *s2, char **saveptr);
+
+/**
+ * This works exactly like strtok_r() but doesn't require access to a C runtime.
+ *
+ * Break a string up into a series of tokens.
+ *
+ * To start tokenizing a new string, `str` should be the non-NULL address of
+ * the string to start tokenizing. Future calls to get the next token from
+ * the same string should specify a NULL.
+ *
+ * Note that this function will overwrite pieces of `str` with null chars to
+ * split it into tokens. This function cannot be used with const/read-only
+ * strings!
+ *
+ * `saveptr` just needs to point to a `char *` that can be overwritten; SDL
+ * will use this to save tokenizing state between calls. It is initialized
+ * if `str` is non-NULL, and used to resume tokenizing when `str` is NULL.
+ *
+ * \param str the string to tokenize, or NULL to continue tokenizing.
+ * \param delim the delimiter string that separates tokens.
+ * \param saveptr pointer to a char *, used for ongoing state.
+ * \returns A pointer to the next token, or NULL if no tokens remain.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
+extern SDL_DECLSPEC char * SDLCALL SDL_strtok_r(char *str, const char *delim, char **saveptr);
+
+/**
+ * Count the number of codepoints in a UTF-8 string.
+ *
+ * Counts the _codepoints_, not _bytes_, in `str`, excluding the null terminator.
+ *
+ * If you need to count the bytes in a string instead, consider using SDL_strlen().
+
+ * Since this handles Unicode, it expects the strings to be well-formed UTF-8
+ * and not a null-terminated string of arbitrary bytes. Bytes that are not
+ * valid UTF-8 are treated as Unicode character U+FFFD (REPLACEMENT
+ * CHARACTER), so a malformed or incomplete UTF-8 sequence might increase the
+ * count by several replacement characters.
+ *
+ * \param str The null-terminated UTF-8 string to read. Must not be NULL.
+ * \returns The length (in codepoints, excluding the null terminator) of `src`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_utf8strnlen
+ * \sa SDL_strlen
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strlen(const char *str);
+
+/**
+ * Count the number of codepoints in a UTF-8 string, up to n bytes.
+ *
+ * Counts the _codepoints_, not _bytes_, in `str`, excluding the null terminator.
+ *
+ * If you need to count the bytes in a string instead, consider using SDL_strnlen().
+ *
+ * The counting stops at `bytes` bytes (not codepoints!). This seems
+ * counterintuitive, but makes it easy to express the total size of the
+ * string's buffer.
+ *
+ * Since this handles Unicode, it expects the strings to be well-formed UTF-8
+ * and not a null-terminated string of arbitrary bytes. Bytes that are not
+ * valid UTF-8 are treated as Unicode character U+FFFD (REPLACEMENT
+ * CHARACTER), so a malformed or incomplete UTF-8 sequence might increase the
+ * count by several replacement characters.
+ *
+ * \param str The null-terminated UTF-8 string to read. Must not be NULL.
+ * \param maxlen The maximum amount of bytes to count.
+ * \returns The length (in codepoints, excluding the null terminator) of `src` but
+ *          never more than `maxlen`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_utf8strlen
+ * \sa SDL_strnlen
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strnlen(const char *str, size_t bytes);
 
+/**
+ * Convert an integer into a string.
+ *
+ * This requires a radix to specified for string format. Specifying 10
+ * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * to 36.
+ *
+ * Note that this function will overflow a buffer if `str` is not large enough
+ * to hold the output! It may be safer to use SDL_snprintf to clamp output,
+ * or SDL_asprintf to allocate a buffer. Otherwise, it doesn't hurt to
+ * allocate much more space than you expect to use (and don't forget possible
+ * negative signs, null terminator bytes, etc).
+ *
+ * \param value the integer to convert.
+ * \param str the buffer to write the string into.
+ * \param radix the radix to use for string generation.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_uitoa
+ * \sa SDL_ltoa
+ * \sa SDL_lltoa
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_itoa(int value, char *str, int radix);
+
+/**
+ * Convert an unsigned integer into a string.
+ *
+ * This requires a radix to specified for string format. Specifying 10
+ * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * to 36.
+ *
+ * Note that this function will overflow a buffer if `str` is not large enough
+ * to hold the output! It may be safer to use SDL_snprintf to clamp output,
+ * or SDL_asprintf to allocate a buffer. Otherwise, it doesn't hurt to
+ * allocate much more space than you expect to use (and don't forget null
+ * terminator bytes, etc).
+ *
+ * \param value the unsigned integer to convert.
+ * \param str the buffer to write the string into.
+ * \param radix the radix to use for string generation.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_itoa
+ * \sa SDL_ultoa
+ * \sa SDL_ulltoa
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_uitoa(unsigned int value, char *str, int radix);
+
+/**
+ * Convert a long integer into a string.
+ *
+ * This requires a radix to specified for string format. Specifying 10
+ * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * to 36.
+ *
+ * Note that this function will overflow a buffer if `str` is not large enough
+ * to hold the output! It may be safer to use SDL_snprintf to clamp output,
+ * or SDL_asprintf to allocate a buffer. Otherwise, it doesn't hurt to
+ * allocate much more space than you expect to use (and don't forget possible
+ * negative signs, null terminator bytes, etc).
+ *
+ * \param value the long integer to convert.
+ * \param str the buffer to write the string into.
+ * \param radix the radix to use for string generation.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_ultoa
+ * \sa SDL_itoa
+ * \sa SDL_lltoa
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_ltoa(long value, char *str, int radix);
+
+/**
+ * Convert an unsigned long integer into a string.
+ *
+ * This requires a radix to specified for string format. Specifying 10
+ * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * to 36.
+ *
+ * Note that this function will overflow a buffer if `str` is not large enough
+ * to hold the output! It may be safer to use SDL_snprintf to clamp output,
+ * or SDL_asprintf to allocate a buffer. Otherwise, it doesn't hurt to
+ * allocate much more space than you expect to use (and don't forget null
+ * terminator bytes, etc).
+ *
+ * \param value the unsigned long integer to convert.
+ * \param str the buffer to write the string into.
+ * \param radix the radix to use for string generation.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_ltoa
+ * \sa SDL_uitoa
+ * \sa SDL_ulltoa
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_ultoa(unsigned long value, char *str, int radix);
+
+/**
+ * Convert a long long integer into a string.
+ *
+ * This requires a radix to specified for string format. Specifying 10
+ * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * to 36.
+ *
+ * Note that this function will overflow a buffer if `str` is not large enough
+ * to hold the output! It may be safer to use SDL_snprintf to clamp output,
+ * or SDL_asprintf to allocate a buffer. Otherwise, it doesn't hurt to
+ * allocate much more space than you expect to use (and don't forget possible
+ * negative signs, null terminator bytes, etc).
+ *
+ * \param value the long long integer to convert.
+ * \param str the buffer to write the string into.
+ * \param radix the radix to use for string generation.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_ulltoa
+ * \sa SDL_itoa
+ * \sa SDL_ltoa
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_lltoa(long long value, char *str, int radix);
+
+/**
+ * Convert an unsigned long long integer into a string.
+ *
+ * This requires a radix to specified for string format. Specifying 10
+ * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * to 36.
+ *
+ * Note that this function will overflow a buffer if `str` is not large enough
+ * to hold the output! It may be safer to use SDL_snprintf to clamp output,
+ * or SDL_asprintf to allocate a buffer. Otherwise, it doesn't hurt to
+ * allocate much more space than you expect to use (and don't forget null
+ * terminator bytes, etc).
+ *
+ * \param value the unsigned long long integer to convert.
+ * \param str the buffer to write the string into.
+ * \param radix the radix to use for string generation.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_lltoa
+ * \sa SDL_uitoa
+ * \sa SDL_ultoa
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_ulltoa(unsigned long long value, char *str, int radix);
 
 /**
