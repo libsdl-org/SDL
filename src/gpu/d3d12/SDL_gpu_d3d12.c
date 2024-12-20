@@ -2007,15 +2007,15 @@ static D3D12StagingDescriptorPool *D3D12_INTERNAL_CreateStagingDescriptorPool(
         return NULL;
     }
 
-    D3D12StagingDescriptorPool *pool = SDL_calloc(1, sizeof(D3D12StagingDescriptorPool));
+    D3D12StagingDescriptorPool *pool = (D3D12StagingDescriptorPool*) SDL_calloc(1, sizeof(D3D12StagingDescriptorPool));
 
     pool->heapCount = 1;
-    pool->heaps = SDL_malloc(sizeof(D3D12DescriptorHeap*));
+    pool->heaps = (D3D12DescriptorHeap**) SDL_malloc(sizeof(D3D12DescriptorHeap*));
     pool->heaps[0] = heap;
 
     pool->freeDescriptorCapacity = STAGING_HEAP_DESCRIPTOR_COUNT;
     pool->freeDescriptorCount = STAGING_HEAP_DESCRIPTOR_COUNT;
-    pool->freeDescriptors = SDL_malloc(STAGING_HEAP_DESCRIPTOR_COUNT * sizeof(D3D12StagingDescriptor));
+    pool->freeDescriptors = (D3D12StagingDescriptor*) SDL_malloc(STAGING_HEAP_DESCRIPTOR_COUNT * sizeof(D3D12StagingDescriptor));
 
     for (Uint32 i = 0; i < STAGING_HEAP_DESCRIPTOR_COUNT; i += 1) {
         pool->freeDescriptors[i].pool = pool;
@@ -2045,12 +2045,12 @@ static bool D3D12_INTERNAL_ExpandStagingDescriptorPool(
     }
 
     pool->heapCount += 1;
-    pool->heaps = SDL_realloc(pool->heaps, pool->heapCount * sizeof(D3D12DescriptorHeap*));
+    pool->heaps = (D3D12DescriptorHeap**) SDL_realloc(pool->heaps, pool->heapCount * sizeof(D3D12DescriptorHeap*));
     pool->heaps[pool->heapCount - 1] = heap;
 
     pool->freeDescriptorCapacity += STAGING_HEAP_DESCRIPTOR_COUNT;
     pool->freeDescriptorCount += STAGING_HEAP_DESCRIPTOR_COUNT;
-    pool->freeDescriptors = SDL_realloc(pool->freeDescriptors, pool->freeDescriptorCapacity * sizeof(D3D12StagingDescriptor));
+    pool->freeDescriptors = (D3D12StagingDescriptor*) SDL_realloc(pool->freeDescriptors, pool->freeDescriptorCapacity * sizeof(D3D12StagingDescriptor));
 
     for (Uint32 i = 0; i < STAGING_HEAP_DESCRIPTOR_COUNT; i += 1) {
         pool->freeDescriptors[i].pool = pool;
