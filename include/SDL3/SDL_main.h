@@ -567,16 +567,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* defined(SDL_PLATFORM_WINDOWS) */
 
-#ifdef SDL_PLATFORM_GDK
-
 /**
  * Callback from the application to let the suspend continue.
+ *
+ * This function is only needed for Xbox GDK support; all other platforms will
+ * do nothing and set an "unsupported" error message.
  *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
-
-#endif /* SDL_PLATFORM_GDK */
 
 #ifdef __cplusplus
 }
