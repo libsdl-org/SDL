@@ -1653,6 +1653,12 @@ typedef struct SDL_GPUGraphicsPipelineTargetInfo
  * \since This struct is available since SDL 3.1.3
  *
  * \sa SDL_CreateGPUGraphicsPipeline
+ * \sa SDL_GPUVertexInputState
+ * \sa SDL_GPUPrimitiveType
+ * \sa SDL_GPURasterizerState
+ * \sa SDL_GPUMultisampleState
+ * \sa SDL_GPUDepthStencilState
+ * \sa SDL_GPUGraphicsPipelineTargetInfo
  */
 typedef struct SDL_GPUGraphicsPipelineCreateInfo
 {
