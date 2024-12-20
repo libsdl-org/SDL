@@ -148,17 +148,6 @@ void *alloca(size_t);
 #endif
 
 /**
- * Check if the compiler supports a given builtin.
- * Supported by virtually all clang versions and recent gcc. Use this
- * instead of checking the clang version if possible.
- */
-#ifdef __has_builtin
-#define SDL_HAS_BUILTIN(x) __has_builtin(x)
-#else
-#define SDL_HAS_BUILTIN(x) 0
-#endif
-
-/**
  * The number of elements in a static array.
  *
  * This will compile but return incorrect results for a pointer to an array;
