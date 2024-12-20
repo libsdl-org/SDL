@@ -439,11 +439,13 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
 
 
     // WIN_WarpCursor() jitters by +1, and remote desktop warp wobble is +/- 1
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     LONG remote_desktop_adjustment = GetSystemMetrics(SM_REMOTESESSION) ? 2 : 0;
     data->cursor_ctrlock_rect.left   = 0 - remote_desktop_adjustment;
     data->cursor_ctrlock_rect.top    = 0;
     data->cursor_ctrlock_rect.right  = 1 + remote_desktop_adjustment;
     data->cursor_ctrlock_rect.bottom = 1;
+#endif
 
     if (SDL_GetHintBoolean("SDL_WINDOW_RETAIN_CONTENT", false)) {
         data->copybits_flag = 0;
@@ -2264,6 +2266,7 @@ bool WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool foc
 
 void WIN_UpdateDarkModeForHWND(HWND hwnd)
 {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_SharedObject *ntdll = SDL_LoadObject("ntdll.dll");
     if (!ntdll) {
         return;
@@ -2326,6 +2329,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
             }
         }
     }
+#endif
 }
 
 bool WIN_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent)
