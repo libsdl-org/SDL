@@ -2881,6 +2881,8 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
             SDL_RenderCoordinatesFromWindow(renderer, event->motion.x, event->motion.y, &event->motion.x, &event->motion.y);
             SDL_RenderVectorFromWindow(renderer, event->motion.xrel, event->motion.yrel, &event->motion.xrel, &event->motion.yrel);
         }
+    } else if (event->type == SDL_EVENT_RAW_MOUSE_MOTION) {
+        SDL_RenderVectorFromWindow(renderer, event->raw_motion.scale_x, event->raw_motion.scale_y, &event->raw_motion.scale_x, &event->raw_motion.scale_y);
     } else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
                event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
         SDL_Window *window = SDL_GetWindowFromID(event->button.windowID);

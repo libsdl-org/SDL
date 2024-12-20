@@ -174,6 +174,8 @@ typedef enum SDL_EventType
     SDL_EVENT_KEYBOARD_ADDED,          /**< A new keyboard has been inserted into the system */
     SDL_EVENT_KEYBOARD_REMOVED,        /**< A keyboard has been removed */
     SDL_EVENT_TEXT_EDITING_CANDIDATES, /**< Keyboard text editing candidates */
+    SDL_EVENT_RAW_KEY_DOWN,            /**< Key pressed (raw key press) */
+    SDL_EVENT_RAW_KEY_UP,              /**< Key released (raw key release) */
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
@@ -182,9 +184,10 @@ typedef enum SDL_EventType
     SDL_EVENT_MOUSE_WHEEL,             /**< Mouse wheel motion */
     SDL_EVENT_MOUSE_ADDED,             /**< A new mouse has been inserted into the system */
     SDL_EVENT_MOUSE_REMOVED,           /**< A mouse has been removed */
-    SDL_EVENT_MOUSE_RAW_MOTION,        /**< Mouse moved (raw motion deltas) */
-    SDL_EVENT_MOUSE_RAW_BUTTON,        /**< Mouse click (raw button delta) */
-    SDL_EVENT_MOUSE_RAW_SCROLL,         /**< Mouse wheel (raw scroll deltas) */
+    SDL_EVENT_RAW_MOUSE_MOTION,        /**< Mouse moved (raw motion deltas) */
+    SDL_EVENT_RAW_MOUSE_BUTTON_DOWN,   /**< Mouse button pressed (raw button press) */
+    SDL_EVENT_RAW_MOUSE_BUTTON_UP,     /**< Mouse button released (raw button release) */
+    SDL_EVENT_RAW_MOUSE_WHEEL,         /**< Mouse wheel motion (raw wheel deltas) */
 
     /* Joystick events */
     SDL_EVENT_JOYSTICK_AXIS_MOTION  = 0x600, /**< Joystick axis motion */
@@ -361,9 +364,25 @@ typedef struct SDL_KeyboardEvent
     SDL_Keycode key;        /**< SDL virtual key code */
     SDL_Keymod mod;         /**< current key modifiers */
     Uint16 raw;             /**< The platform dependent scancode for this event */
-    bool down;          /**< true if the key is pressed */
-    bool repeat;        /**< true if this is a key repeat */
+    bool down;              /**< true if the key is pressed */
+    bool repeat;            /**< true if this is a key repeat */
 } SDL_KeyboardEvent;
+
+/**
+ * Raw keyboard button event structure (event.raw_key.*)
+ *
+ * \since This struct is available since SDL 3.1.8.
+ */
+typedef struct SDL_RawKeyboardEvent
+{
+    SDL_EventType type;     /**< SDL_EVENT_RAW_KEY_DOWN or SDL_EVENT_RAW_KEY_UP */
+    Uint32 reserved;
+    Uint64 timestamp;       /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_KeyboardID which;   /**< The keyboard instance id */
+    SDL_Scancode scancode;  /**< SDL physical key code */
+    Uint16 raw;             /**< The platform dependent scancode for this event */
+    bool down;              /**< true if the key is pressed */
+} SDL_RawKeyboardEvent;
 
 /**
  * Keyboard text editing event structure (event.edit.*)
@@ -458,21 +477,21 @@ typedef struct SDL_MouseMotionEvent
 } SDL_MouseMotionEvent;
 
 /**
- * Mouse raw motion and wheel event structure (event.maxis.*)
+ * Raw mouse motion event structure (event.raw_motion.*)
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.8.
  */
-typedef struct SDL_MouseRawAxisEvent
+typedef struct SDL_RawMouseMotionEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_MOUSE_RAW_MOTION or SDL_EVENT_MOUSE_RAW_SCROLL */
+    SDL_EventType type; /**< SDL_EVENT_RAW_MOUSE_MOTION */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID, or SDL_PEN_MOUSEID */
-    int dx;             /**< The axis delta value in the X direction */
-    int dy;             /**< The axis delta value in the Y direction */
-    float ux;           /**< The denominator unit in the X direction */
-    float uy;           /**< The denominator unit in the Y direction */
-} SDL_MouseRawAxisEvent;
+    SDL_MouseID which;  /**< The mouse instance id */
+    Sint32 dx;          /**< X axis delta */
+    Sint32 dy;          /**< Y axis delta */
+    float scale_x;      /**< X value scale to approximate desktop acceleration */
+    float scale_y;      /**< Y value scale to approximate desktop acceleration */
+} SDL_RawMouseMotionEvent;
 
 /**
  * Mouse button event structure (event.button.*)
@@ -485,9 +504,9 @@ typedef struct SDL_MouseButtonEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
-    SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID */
+    SDL_MouseID which;  /**< The mouse instance id or SDL_TOUCH_MOUSEID */
     Uint8 button;       /**< The mouse button index */
-    bool down;      /**< true if the button is pressed */
+    bool down;          /**< true if the button is pressed */
     Uint8 clicks;       /**< 1 for single-click, 2 for double-click, etc. */
     Uint8 padding;
     float x;            /**< X coordinate, relative to window */
@@ -495,19 +514,19 @@ typedef struct SDL_MouseButtonEvent
 } SDL_MouseButtonEvent;
 
 /**
- * Mouse raw button event structure (event.mbutton.*)
+ * Raw mouse button event structure (event.raw_button.*)
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.1.8.
  */
-typedef struct SDL_MouseRawButtonEvent
+typedef struct SDL_RawMouseButtonEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_MOUSE_RAW_BUTTON */
+    SDL_EventType type; /**< SDL_EVENT_RAW_MOUSE_BUTTON_DOWN or SDL_EVENT_RAW_MOUSE_BUTTON_UP */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID, or SDL_PEN_MOUSEID */
+    SDL_MouseID which;  /**< The mouse instance id */
     Uint8 button;       /**< The mouse button index */
-    Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
-} SDL_MouseRawButtonEvent;
+    bool down;          /**< true if the button is pressed */
+} SDL_RawMouseButtonEvent;
 
 /**
  * Mouse wheel event structure (event.wheel.*)
@@ -520,13 +539,30 @@ typedef struct SDL_MouseWheelEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
-    SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID */
+    SDL_MouseID which;  /**< The mouse instance id */
     float x;            /**< The amount scrolled horizontally, positive to the right and negative to the left */
     float y;            /**< The amount scrolled vertically, positive away from the user and negative toward the user */
     SDL_MouseWheelDirection direction; /**< Set to one of the SDL_MOUSEWHEEL_* defines. When FLIPPED the values in X and Y will be opposite. Multiply by -1 to change them back */
     float mouse_x;      /**< X coordinate, relative to window */
     float mouse_y;      /**< Y coordinate, relative to window */
 } SDL_MouseWheelEvent;
+
+/**
+ * Raw mouse wheel event structure (event.raw_wheel.*)
+ *
+ * \since This struct is available since SDL 3.1.3.
+ */
+typedef struct SDL_RawMouseWheelEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_RAW_MOUSE_WHEEL */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_MouseID which;  /**< The mouse instance id */
+    Sint32 dx;          /**< X axis delta, positive to the right and negative to the left */
+    Sint32 dy;          /**< Y axis delta, positive away from the user and negative toward the user */
+    float scale_x;      /**< X value scale to convert to logical scroll units */
+    float scale_y;      /**< Y value scale to convert to logical scroll units */
+} SDL_RawMouseWheelEvent;
 
 /**
  * Joystick axis motion event structure (event.jaxis.*)
@@ -1025,15 +1061,17 @@ typedef union SDL_Event
     SDL_WindowEvent window;                 /**< Window event data */
     SDL_KeyboardDeviceEvent kdevice;        /**< Keyboard device change event data */
     SDL_KeyboardEvent key;                  /**< Keyboard event data */
+    SDL_RawKeyboardEvent raw_key;           /**< Raw keyboard event data */
     SDL_TextEditingEvent edit;              /**< Text editing event data */
     SDL_TextEditingCandidatesEvent edit_candidates; /**< Text editing candidates event data */
     SDL_TextInputEvent text;                /**< Text input event data */
     SDL_MouseDeviceEvent mdevice;           /**< Mouse device change event data */
     SDL_MouseMotionEvent motion;            /**< Mouse motion event data */
+    SDL_RawMouseMotionEvent raw_motion;     /**< Raw mouse motion event data */
     SDL_MouseButtonEvent button;            /**< Mouse button event data */
+    SDL_RawMouseButtonEvent raw_button;     /**< Raw mouse button event data */
     SDL_MouseWheelEvent wheel;              /**< Mouse wheel event data */
-    SDL_MouseRawAxisEvent maxis;            /**< Mouse raw axis event data (motion or wheel deltas) */
-    SDL_MouseRawButtonEvent mbutton;        /**< Mouse raw button event data */
+    SDL_RawMouseWheelEvent raw_wheel;       /**< Raw mouse wheel event data */
     SDL_JoyDeviceEvent jdevice;             /**< Joystick device change event data */
     SDL_JoyAxisEvent jaxis;                 /**< Joystick axis event data */
     SDL_JoyBallEvent jball;                 /**< Joystick ball event data */

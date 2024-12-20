@@ -319,19 +319,11 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         double coords[2];
         double processed_coords[2];
         int i;
+        Uint64 timestamp = X11_GetEventTimestamp(rawev->time);
 
         videodata->global_mouse_changed = true;
         if (is_pen) {
             break; // Pens check for XI_Motion instead
-        }
-
-        if (!mouse->relative_mode) {
-            break;
-        }
-
-        // Relative mouse motion is delivered to the window with keyboard focus
-        if (!SDL_GetKeyboardFocus()) {
-            break;
         }
 
         devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
@@ -350,7 +342,16 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
         }
 
-        SDL_SendMouseMotion(0, mouse->focus, (SDL_MouseID)rawev->sourceid, true, (float)processed_coords[0], (float)processed_coords[1]);
+        // FIXME: Are the processed_coords always integral values?
+        // FIXME: Apply desktop mouse scale?
+        const float scale = 1.0f;
+        SDL_SendRawMouseMotion(timestamp, (SDL_MouseID)rawev->sourceid, (int)processed_coords[0], (int)processed_coords[1], scale, scale);
+
+        // Relative mouse motion is delivered to the window with keyboard focus
+        if (mouse->relative_mode && SDL_GetKeyboardFocus()) {
+            SDL_SendMouseMotion(timestamp, mouse->focus, (SDL_MouseID)rawev->sourceid, true, (float)processed_coords[0], (float)processed_coords[1]);
+        }
+
         devinfo->prev_coords[0] = coords[0];
         devinfo->prev_coords[1] = coords[1];
     } break;
@@ -430,7 +431,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
                 X11_HandleButtonPress(_this, windowdata, (SDL_MouseID)xev->sourceid, button,
                                       (float)xev->event_x, (float)xev->event_y, xev->time);
             } else {
-                X11_HandleButtonRelease(_this, windowdata, (SDL_MouseID)xev->sourceid, button);
+                X11_HandleButtonRelease(_this, windowdata, (SDL_MouseID)xev->sourceid, button, xev->time);
             }
         }
     } break;

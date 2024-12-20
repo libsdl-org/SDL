@@ -103,10 +103,10 @@ static void loop(void)
                 }
             }
         } break;
-        case SDL_EVENT_MOUSE_RAW_MOTION:
+        case SDL_EVENT_RAW_MOUSE_MOTION:
         {
-            rect.x += event.maxis.dx / event.maxis.ux;
-            rect.y += event.maxis.dy / event.maxis.uy;
+            rect.x += event.raw_motion.dx * event.raw_motion.scale_x;
+            rect.y += event.raw_motion.dy * event.raw_motion.scale_y;
         } break;
         default:
             break;
@@ -212,9 +212,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (raw) {
-        SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_MOTION, true);
-    }
+    SDL_SetEventEnabled(SDL_EVENT_RAW_MOUSE_MOTION, raw);
 
     rect.x = DEFAULT_WINDOW_WIDTH / 2;
     rect.y = DEFAULT_WINDOW_HEIGHT / 2;

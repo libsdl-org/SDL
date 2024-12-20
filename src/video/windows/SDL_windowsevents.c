@@ -521,46 +521,66 @@ static bool WIN_SwapButtons(HANDLE hDevice)
 
 static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
 {
-    int xraw = (int)rawmouse->lLastX;
-    int yraw = (int)rawmouse->lLastY;
-    bool haveMotion = (xraw || yraw) ? true : false;
-    bool haveButton = (rawmouse->usButtonFlags) ? true : false;
-    bool isAbsolute = (rawmouse->usFlags & MOUSE_MOVE_ABSOLUTE) ? true : false;
+    static struct {
+        USHORT usButtonFlags;
+        Uint8 button;
+        bool down;
+    } raw_buttons[] = {
+        { RI_MOUSE_LEFT_BUTTON_DOWN, SDL_BUTTON_LEFT, true },
+        { RI_MOUSE_LEFT_BUTTON_UP, SDL_BUTTON_LEFT, false },
+        { RI_MOUSE_RIGHT_BUTTON_DOWN, SDL_BUTTON_RIGHT, true },
+        { RI_MOUSE_RIGHT_BUTTON_UP, SDL_BUTTON_RIGHT, false },
+        { RI_MOUSE_MIDDLE_BUTTON_DOWN, SDL_BUTTON_MIDDLE, true },
+        { RI_MOUSE_MIDDLE_BUTTON_UP, SDL_BUTTON_MIDDLE, false },
+        { RI_MOUSE_BUTTON_4_DOWN, SDL_BUTTON_X1, true },
+        { RI_MOUSE_BUTTON_4_UP, SDL_BUTTON_X1, false },
+        { RI_MOUSE_BUTTON_5_DOWN, SDL_BUTTON_X2, true },
+        { RI_MOUSE_BUTTON_5_UP, SDL_BUTTON_X2, false }
+    };
+
+    int dx = (int)rawmouse->lLastX;
+    int dy = (int)rawmouse->lLastY;
+    bool haveMotion = (dx || dy);
+    bool haveButton = (rawmouse->usButtonFlags != 0);
+    bool isAbsolute = ((rawmouse->usFlags & MOUSE_MOVE_ABSOLUTE) != 0);
     SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)hDevice;
-    
-    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_MOTION)) {
-        if (haveMotion && !isAbsolute) {
-            SDL_SendRawMouseAxis(timestamp, mouseID, xraw, yraw, 1.0f, 1.0f, SDL_EVENT_MOUSE_RAW_MOTION);
-        }
+
+    if (haveMotion && !isAbsolute) {
+        // FIXME: Apply desktop mouse scale?
+        const float scale = 1.0f;
+        SDL_SendRawMouseMotion(timestamp, mouseID, dx, dy, scale, scale);
     }
-    
-    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON)) {
-        if (haveButton) {
-            USHORT flagBits = rawmouse->usButtonFlags;
-            for (Uint8 i = 0; i < 10; ++i) {
-                if (flagBits & 1) {
-                    Uint8 state = (i & 1) ^ 1;
-                    Uint8 button = (i >> 1) + 1;
-                    SDL_SendRawMouseButton(timestamp, mouseID, state, button);
+
+    if (haveButton) {
+        for (int i = 0; i < SDL_arraysize(raw_buttons); ++i) {
+            if (rawmouse->usButtonFlags & raw_buttons[i].usButtonFlags) {
+                Uint8 button = raw_buttons[i].button;
+                bool down = raw_buttons[i].down;
+
+                if (button == SDL_BUTTON_LEFT) {
+                    if (WIN_SwapButtons(hDevice)) {
+                        button = SDL_BUTTON_RIGHT;
+                    }
+                } else if (button == SDL_BUTTON_RIGHT) {
+                    if (WIN_SwapButtons(hDevice)) {
+                        button = SDL_BUTTON_LEFT;
+                    }
                 }
-                flagBits = flagBits >> 1;
+
+                SDL_SendRawMouseButton(timestamp, mouseID, button, down);
             }
         }
-    }
-    
-    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_SCROLL)) {
-        if (haveButton) {
-            short amount = (short)rawmouse->usButtonData;
-            if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
-                SDL_SendRawMouseAxis(timestamp, mouseID, 0, (int)amount, 120.0f, 120.0f, SDL_EVENT_MOUSE_RAW_SCROLL);
-            } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
-                SDL_SendRawMouseAxis(timestamp, mouseID, (int)amount, 0, 120.0f, 120.0f, SDL_EVENT_MOUSE_RAW_SCROLL);
-            }
+
+        const float scale = 1.0f / 120.0f;
+        SHORT amount = (SHORT)rawmouse->usButtonData;
+        if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
+            SDL_SendRawMouseWheel(timestamp, mouseID, 0, amount, scale, scale);
+        } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
+            SDL_SendRawMouseWheel(timestamp, mouseID, amount, 0, scale, scale);
         }
     }
 
-    // this check is for whether relative mode should also receive events from the rawinput stream,
-    // separate from whether or not the optional rawaxis/rawbutton events should be generated.
+    // Check whether relative mode should also receive events from the rawinput stream
     if (!data->raw_mouse_enabled) {
         return;
     }
@@ -579,27 +599,27 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
 
     if (haveMotion) {
         if (!isAbsolute) {
-            SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)xraw, (float)yraw);
+            SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)dx, (float)dy);
         } else {
             /* This is absolute motion, either using a tablet or mouse over RDP
-    
+
                 Notes on how RDP appears to work, as of Windows 10 2004:
                 - SetCursorPos() calls are cached, with multiple calls coalesced into a single call that's sent to the RDP client. If the last call to SetCursorPos() has the same value as the last one that was sent to the client, it appears to be ignored and not sent. This means that we need to jitter the SetCursorPos() position slightly in order for the recentering to work correctly.
                 - User mouse motion is coalesced with SetCursorPos(), so the WM_INPUT positions we see will not necessarily match the position we requested with SetCursorPos().
                 - SetCursorPos() outside of the bounds of the focus window appears not to do anything.
                 - SetCursorPos() while the cursor is NULL doesn't do anything
-    
+
                 We handle this by creating a safe area within the application window, and when the mouse leaves that safe area, we warp back to the opposite side. Any single motion > 50% of the safe area is assumed to be a warp and ignored.
             */
-            bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? true : false;
-            bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? true : false;
-            bool raw_coordinates = (rawmouse->usFlags & 0x40) ? true : false;
+            bool remote_desktop = (GetSystemMetrics(SM_REMOTESESSION) == TRUE);
+            bool virtual_desktop = ((rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) != 0);
+            bool raw_coordinates = ((rawmouse->usFlags & 0x40) != 0);
             int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
             int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
-            int x = raw_coordinates ? (int)xraw : (int)(((float)xraw / 65535.0f) * w);
-            int y = raw_coordinates ? (int)yraw : (int)(((float)yraw / 65535.0f) * h);
+            int x = raw_coordinates ? dx : (int)(((float)dx / 65535.0f) * w);
+            int y = raw_coordinates ? dy : (int)(((float)dy / 65535.0f) * h);
             int relX, relY;
-    
+
             /* Calculate relative motion */
             if (data->last_raw_mouse_position.x == 0 && data->last_raw_mouse_position.y == 0) {
                 data->last_raw_mouse_position.x = x;
@@ -607,22 +627,22 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
             }
             relX = x - data->last_raw_mouse_position.x;
             relY = y - data->last_raw_mouse_position.y;
-    
+
             if (remote_desktop) {
                 if (!windowdata->in_title_click && !windowdata->focus_click_pending) {
                     static int wobble;
                     float floatX = (float)x / w;
                     float floatY = (float)y / h;
-    
+
                     /* See if the mouse is at the edge of the screen, or in the RDP title bar area */
                     if (floatX <= 0.01f || floatX >= 0.99f || floatY <= 0.01f || floatY >= 0.99f || y < 32) {
                         /* Wobble the cursor position so it's not ignored if the last warp didn't have any effect */
                         RECT rect = windowdata->cursor_clipped_rect;
                         int warpX = rect.left + ((rect.right - rect.left) / 2) + wobble;
                         int warpY = rect.top + ((rect.bottom - rect.top) / 2);
-    
+
                         WIN_SetCursorPos(warpX, warpY);
-    
+
                         ++wobble;
                         if (wobble > 1) {
                             wobble = -1;
@@ -648,30 +668,13 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                     SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)relX, (float)relY);
                 }
             }
-    
+
             data->last_raw_mouse_position.x = x;
             data->last_raw_mouse_position.y = y;
         }
     }
 
     if (haveButton) {
-        static struct {
-            USHORT usButtonFlags;
-            Uint8 button;
-            bool down;
-        } raw_buttons[] = {
-            { RI_MOUSE_LEFT_BUTTON_DOWN, SDL_BUTTON_LEFT, true },
-            { RI_MOUSE_LEFT_BUTTON_UP, SDL_BUTTON_LEFT, false },
-            { RI_MOUSE_RIGHT_BUTTON_DOWN, SDL_BUTTON_RIGHT, true },
-            { RI_MOUSE_RIGHT_BUTTON_UP, SDL_BUTTON_RIGHT, false },
-            { RI_MOUSE_MIDDLE_BUTTON_DOWN, SDL_BUTTON_MIDDLE, true },
-            { RI_MOUSE_MIDDLE_BUTTON_UP, SDL_BUTTON_MIDDLE, false },
-            { RI_MOUSE_BUTTON_4_DOWN, SDL_BUTTON_X1, true },
-            { RI_MOUSE_BUTTON_4_UP, SDL_BUTTON_X1, false },
-            { RI_MOUSE_BUTTON_5_DOWN, SDL_BUTTON_X2, true },
-            { RI_MOUSE_BUTTON_5_UP, SDL_BUTTON_X2, false }
-        };
-
         for (int i = 0; i < SDL_arraysize(raw_buttons); ++i) {
             if (rawmouse->usButtonFlags & raw_buttons[i].usButtonFlags) {
                 Uint8 button = raw_buttons[i].button;
@@ -703,11 +706,11 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         }
 
         if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
-            short amount = (short)rawmouse->usButtonData;
+            SHORT amount = (SHORT)rawmouse->usButtonData;
             float fAmount = (float)amount / WHEEL_DELTA;
             SDL_SendMouseWheel(WIN_GetEventTimestamp(), window, mouseID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
         } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
-            short amount = (short)rawmouse->usButtonData;
+            SHORT amount = (SHORT)rawmouse->usButtonData;
             float fAmount = (float)amount / WHEEL_DELTA;
             SDL_SendMouseWheel(WIN_GetEventTimestamp(), window, mouseID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
         }
@@ -717,10 +720,6 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
 static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWKEYBOARD *rawkeyboard)
 {
     SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)hDevice;
-
-    if (!data->raw_keyboard_enabled) {
-        return;
-    }
 
     if (rawkeyboard->Flags & RI_KEY_E1) {
         // First key in a Ctrl+{key} sequence
@@ -764,6 +763,13 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
         }
         code = windows_scancode_table[index];
     }
+
+    SDL_SendRawKeyboardKey(timestamp, keyboardID, rawcode, code, down);
+
+    if (!data->raw_keyboard_enabled) {
+        return;
+    }
+
     if (down) {
         SDL_Window *focus = SDL_GetKeyboardFocus();
         if (!focus || focus->text_input_active) {
@@ -1167,7 +1173,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             );
             if (wish_clip_cursor) {
                 data->skip_update_clipcursor = false;
-                WIN_UpdateClipCursor(window);  
+                WIN_UpdateClipCursor(window);
             }
         }
 

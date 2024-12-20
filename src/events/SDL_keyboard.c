@@ -690,6 +690,22 @@ bool SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode)
     return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_AUTORELEASE, SDL_GLOBAL_KEYBOARD_ID, 0, scancode, true);
 }
 
+void SDL_SendRawKeyboardKey(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down)
+{
+    const SDL_EventType type = down ? SDL_EVENT_RAW_KEY_DOWN : SDL_EVENT_RAW_KEY_UP;
+
+    if (SDL_EventEnabled(type)) {
+        SDL_Event event;
+        event.type = type;
+        event.common.timestamp = timestamp;
+        event.raw_key.which = keyboardID;
+        event.raw_key.scancode = scancode;
+        event.raw_key.raw = rawcode;
+        event.raw_key.down = down;
+        SDL_PushEvent(&event);
+    }
+}
+
 void SDL_ReleaseAutoReleaseKeys(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
