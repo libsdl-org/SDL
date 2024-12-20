@@ -346,6 +346,12 @@ Render(SDL_Window *window, const int windownum)
         quit(2);
     }
 
+    if (swapchainTexture == NULL) {
+        /* Swapchain is unavailable, cancel work */
+        SDL_CancelGPUCommandBuffer(cmd);
+        return;
+    }
+
     /*
     * Do some rotation with Euler angles. It is not a fixed axis as
     * quaternions would be, but the effect is cool.
