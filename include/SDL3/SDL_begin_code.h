@@ -265,13 +265,14 @@
 /**
  * Check if the compiler supports a given builtin functionality.
  *
- * This allows preprocessor checks for things that otherwise might fail
- * to compile.
+ * This allows preprocessor checks for things that otherwise might fail to
+ * compile.
  *
  * Supported by virtually all clang versions and more-recent GCCs. Use this
  * instead of checking the clang version if possible.
  *
- * On compilers without has_builtin support, this is defined to 0 (always false).
+ * On compilers without has_builtin support, this is defined to 0 (always
+ * false).
  *
  * \since This macro is available since SDL 3.1.3.
  */
