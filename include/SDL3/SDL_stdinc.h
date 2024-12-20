@@ -103,7 +103,8 @@ void *alloca(size_t);
  *
  * \since This macro is available since SDL 3.1.3.
  */
-# define SDL_SIZE_MAX SIZE_MAX
+#define SDL_SIZE_MAX SIZE_MAX
+
 #elif defined(SIZE_MAX)
 # define SDL_SIZE_MAX SIZE_MAX
 #else
@@ -2852,7 +2853,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strlen(const char *str);
  * count by several replacement characters.
  *
  * \param str The null-terminated UTF-8 string to read. Must not be NULL.
- * \param maxlen The maximum amount of bytes to count.
+ * \param bytes The maximum amount of bytes to count.
  * \returns The length (in codepoints, excluding the null terminator) of `src` but
  *          never more than `maxlen`.
  *
@@ -2881,6 +2882,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strnlen(const char *str, size_t bytes
  * \param value the integer to convert.
  * \param str the buffer to write the string into.
  * \param radix the radix to use for string generation.
+ * \returns `str`.
+ *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
@@ -2907,6 +2910,8 @@ extern SDL_DECLSPEC char * SDLCALL SDL_itoa(int value, char *str, int radix);
  * \param value the unsigned integer to convert.
  * \param str the buffer to write the string into.
  * \param radix the radix to use for string generation.
+ * \returns `str`.
+ *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
@@ -2933,6 +2938,8 @@ extern SDL_DECLSPEC char * SDLCALL SDL_uitoa(unsigned int value, char *str, int 
  * \param value the long integer to convert.
  * \param str the buffer to write the string into.
  * \param radix the radix to use for string generation.
+ * \returns `str`.
+ *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
@@ -2959,6 +2966,8 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ltoa(long value, char *str, int radix);
  * \param value the unsigned long integer to convert.
  * \param str the buffer to write the string into.
  * \param radix the radix to use for string generation.
+ * \returns `str`.
+ *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
@@ -2985,6 +2994,8 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ultoa(unsigned long value, char *str, int
  * \param value the long long integer to convert.
  * \param str the buffer to write the string into.
  * \param radix the radix to use for string generation.
+ * \returns `str`.
+ *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
@@ -3011,6 +3022,8 @@ extern SDL_DECLSPEC char * SDLCALL SDL_lltoa(long long value, char *str, int rad
  * \param value the unsigned long long integer to convert.
  * \param str the buffer to write the string into.
  * \param radix the radix to use for string generation.
+ * \returns `str`.
+ *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
