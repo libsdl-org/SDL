@@ -597,34 +597,6 @@ void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouse
     SDL_PrivateSendMouseMotion(timestamp, window, mouseID, relative, x, y);
 }
 
-void SDL_SendRawMouseAxis(Uint64 timestamp, SDL_MouseID mouseID, int dx, int dy, float ux, float uy, SDL_EventType type)
-{
-    if (SDL_EventEnabled(type)) {
-        SDL_Event event;
-        event.type = type;
-        event.common.timestamp = timestamp;
-        event.maxis.which = mouseID;
-        event.maxis.dx = dx;
-        event.maxis.dy = dy;
-        event.maxis.ux = ux;
-        event.maxis.uy = uy;
-        SDL_PushEvent(&event);
-    }
-}
-
-void SDL_SendRawMouseButton(Uint64 timestamp, SDL_MouseID mouseID, Uint8 state, Uint8 button)
-{
-    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON)) {
-        SDL_Event event;
-        event.type = SDL_EVENT_MOUSE_RAW_BUTTON;
-        event.common.timestamp = timestamp;
-        event.mbutton.which = mouseID;
-        event.mbutton.button = button;
-        event.mbutton.state = state;
-        SDL_PushEvent(&event);
-    }
-}
-
 static void ConstrainMousePosition(SDL_Mouse *mouse, SDL_Window *window, float *x, float *y)
 {
     /* make sure that the pointers find themselves inside the windows,
@@ -994,6 +966,51 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
         event.wheel.direction = direction;
         event.wheel.mouse_x = mouse->x;
         event.wheel.mouse_y = mouse->y;
+        SDL_PushEvent(&event);
+    }
+}
+
+void SDL_SendRawMouseMotion(Uint64 timestamp, SDL_MouseID mouseID, int dx, int dy, float scale_x, float scale_y)
+{
+    if (SDL_EventEnabled(SDL_EVENT_RAW_MOUSE_MOTION)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_RAW_MOUSE_MOTION;
+        event.common.timestamp = timestamp;
+        event.raw_motion.which = mouseID;
+        event.raw_motion.dx = dx;
+        event.raw_motion.dy = dy;
+        event.raw_motion.scale_x = scale_x;
+        event.raw_motion.scale_y = scale_y;
+        SDL_PushEvent(&event);
+    }
+}
+
+void SDL_SendRawMouseButton(Uint64 timestamp, SDL_MouseID mouseID, Uint8 button, bool down)
+{
+    const SDL_EventType type = down ? SDL_EVENT_RAW_MOUSE_BUTTON_DOWN : SDL_EVENT_RAW_MOUSE_BUTTON_UP;
+
+    if (SDL_EventEnabled(type)) {
+        SDL_Event event;
+        event.type = type;
+        event.common.timestamp = timestamp;
+        event.raw_button.which = mouseID;
+        event.raw_button.button = button;
+        event.raw_button.down = down;
+        SDL_PushEvent(&event);
+    }
+}
+
+void SDL_SendRawMouseWheel(Uint64 timestamp, SDL_MouseID mouseID, int dx, int dy, float scale_x, float scale_y)
+{
+    if (SDL_EventEnabled(SDL_EVENT_RAW_MOUSE_WHEEL)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_RAW_MOUSE_WHEEL;
+        event.common.timestamp = timestamp;
+        event.raw_wheel.which = mouseID;
+        event.raw_wheel.dx = dx;
+        event.raw_wheel.dy = dy;
+        event.raw_wheel.scale_x = scale_x;
+        event.raw_wheel.scale_y = scale_y;
         SDL_PushEvent(&event);
     }
 }

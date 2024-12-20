@@ -62,6 +62,8 @@ SDL_EventCategory SDL_GetEventCategory(Uint32 type)
 
     case SDL_EVENT_KEY_DOWN:
     case SDL_EVENT_KEY_UP:
+    case SDL_EVENT_RAW_KEY_DOWN:
+    case SDL_EVENT_RAW_KEY_UP:
         return SDL_EVENTCATEGORY_KEY;
 
     case SDL_EVENT_TEXT_EDITING:
@@ -78,13 +80,17 @@ SDL_EventCategory SDL_GetEventCategory(Uint32 type)
         return SDL_EVENTCATEGORY_EDIT_CANDIDATES;
 
     case SDL_EVENT_MOUSE_MOTION:
+    case SDL_EVENT_RAW_MOUSE_MOTION:
         return SDL_EVENTCATEGORY_MOTION;
 
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
     case SDL_EVENT_MOUSE_BUTTON_UP:
+    case SDL_EVENT_RAW_MOUSE_BUTTON_DOWN:
+    case SDL_EVENT_RAW_MOUSE_BUTTON_UP:
         return SDL_EVENTCATEGORY_BUTTON;
 
     case SDL_EVENT_MOUSE_WHEEL:
+    case SDL_EVENT_RAW_MOUSE_WHEEL:
         return SDL_EVENTCATEGORY_WHEEL;
 
     case SDL_EVENT_MOUSE_ADDED:

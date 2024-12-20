@@ -390,7 +390,7 @@ static void SDL_LogEvent(const SDL_Event *event)
     // sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded.
     if ((SDL_EventLoggingVerbosity < 2) &&
         ((event->type == SDL_EVENT_MOUSE_MOTION) ||
-         (event->type == SDL_EVENT_MOUSE_RAW_MOTION) ||
+         (event->type == SDL_EVENT_RAW_MOUSE_MOTION) ||
          (event->type == SDL_EVENT_FINGER_MOTION) ||
          (event->type == SDL_EVENT_PEN_AXIS) ||
          (event->type == SDL_EVENT_PEN_MOTION) ||
@@ -535,6 +535,19 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_KEY_EVENT
 
+#define PRINT_RAW_KEY_EVENT(event)                                                                              \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u state=%s scancode=%u)",               \
+                       (uint)event->raw_key.timestamp, (uint)event->raw_key.which,                              \
+                       event->raw_key.down ? "pressed" : "released",                                            \
+                       (uint)event->raw_key.scancode);
+        SDL_EVENT_CASE(SDL_EVENT_RAW_KEY_DOWN)
+        PRINT_RAW_KEY_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_RAW_KEY_UP)
+        PRINT_RAW_KEY_EVENT(event);
+        break;
+#undef PRINT_RAW_KEY_EVENT
+
         SDL_EVENT_CASE(SDL_EVENT_TEXT_EDITING)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u text='%s' start=%d length=%d)",
                            (uint)event->edit.timestamp, (uint)event->edit.windowID,
@@ -568,11 +581,18 @@ static void SDL_LogEvent(const SDL_Event *event)
                            event->motion.xrel, event->motion.yrel);
         break;
 
+        SDL_EVENT_CASE(SDL_EVENT_RAW_MOUSE_MOTION)
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u dx=%d dy=%d)",
+                           (uint)event->raw_motion.timestamp,
+                           (uint)event->raw_motion.which,
+                           (int)event->raw_motion.dx, (int)event->raw_motion.dy);
+        break;
+
 #define PRINT_MBUTTON_EVENT(event)                                                                                              \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u button=%u state=%s clicks=%u x=%g y=%g)", \
                        (uint)event->button.timestamp, (uint)event->button.windowID,                                             \
                        (uint)event->button.which, (uint)event->button.button,                                                   \
-                       event->button.down ? "pressed" : "released",                                             \
+                       event->button.down ? "pressed" : "released",                                                             \
                        (uint)event->button.clicks, event->button.x, event->button.y)
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTON_DOWN)
         PRINT_MBUTTON_EVENT(event);
@@ -582,11 +602,31 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_MBUTTON_EVENT
 
+#define PRINT_RAW_MBUTTON_EVENT(event)                                                                                          \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u button=%u state=%s)",                                 \
+                       (uint)event->raw_button.timestamp,                                                                       \
+                       (uint)event->raw_button.which, (uint)event->raw_button.button,                                           \
+                       event->raw_button.down ? "pressed" : "released");
+        SDL_EVENT_CASE(SDL_EVENT_RAW_MOUSE_BUTTON_DOWN)
+        PRINT_RAW_MBUTTON_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_RAW_MOUSE_BUTTON_UP)
+        PRINT_RAW_MBUTTON_EVENT(event);
+        break;
+#undef PRINT_RAW_MBUTTON_EVENT
+
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_WHEEL)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u x=%g y=%g direction=%s)",
                            (uint)event->wheel.timestamp, (uint)event->wheel.windowID,
                            (uint)event->wheel.which, event->wheel.x, event->wheel.y,
                            event->wheel.direction == SDL_MOUSEWHEEL_NORMAL ? "normal" : "flipped");
+        break;
+
+        SDL_EVENT_CASE(SDL_EVENT_RAW_MOUSE_WHEEL)
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u dx=%d dy=%d)",
+                           (uint)event->raw_wheel.timestamp,
+                           (uint)event->raw_wheel.which,
+                           (int)event->raw_wheel.dx, (int)event->raw_wheel.dy);
         break;
 
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_AXIS_MOTION)
@@ -1890,12 +1930,6 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
         if (type == SDL_EVENT_DROP_FILE || type == SDL_EVENT_DROP_TEXT) {
             SDL_ToggleDragAndDropSupport();
         }
-
-        if (type == SDL_EVENT_MOUSE_RAW_MOTION || 
-            type == SDL_EVENT_MOUSE_RAW_SCROLL || 
-            type == SDL_EVENT_MOUSE_RAW_BUTTON) {
-            SDL_UpdateRawMouseDataEnabled();
-        }
     }
 }
 
@@ -1984,9 +2018,6 @@ bool SDL_InitEvents(void)
         return false;
     }
 
-    SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_MOTION, false);
-    SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_SCROLL, false);
-    SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON, false);
     SDL_InitQuit();
 
     return true;

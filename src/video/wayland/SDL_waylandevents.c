@@ -697,37 +697,37 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
     SDL_WindowData *window = input->pointer_focus;
     enum wl_pointer_button_state state = state_w;
     Uint64 timestamp = Wayland_GetPointerTimestamp(input, time);
+    Uint8 sdl_button;
+    const bool down = (state != 0);
 
-    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON)) {
-        SDL_SendRawMouseButton(timestamp, input->pointer_id, !!state, button);
+    switch (button) {
+    case BTN_LEFT:
+        sdl_button = SDL_BUTTON_LEFT;
+        break;
+    case BTN_MIDDLE:
+        sdl_button = SDL_BUTTON_MIDDLE;
+        break;
+    case BTN_RIGHT:
+        sdl_button = SDL_BUTTON_RIGHT;
+        break;
+    case BTN_SIDE:
+        sdl_button = SDL_BUTTON_X1;
+        break;
+    case BTN_EXTRA:
+        sdl_button = SDL_BUTTON_X2;
+        break;
+    default:
+        return;
     }
+    SDL_SendRawMouseButton(timestamp, input->pointer_id, sdl_button, down);
 
     if (window) {
         SDL_VideoData *viddata = window->waylandData;
-        Uint32 sdl_button;
         bool ignore_click = false;
 
-        switch (button) {
-        case BTN_LEFT:
-            sdl_button = SDL_BUTTON_LEFT;
-            if (ProcessHitTest(input->pointer_focus, input->seat, input->sx_w, input->sy_w, serial)) {
-                return; // don't pass this event on to app.
-            }
-            break;
-        case BTN_MIDDLE:
-            sdl_button = SDL_BUTTON_MIDDLE;
-            break;
-        case BTN_RIGHT:
-            sdl_button = SDL_BUTTON_RIGHT;
-            break;
-        case BTN_SIDE:
-            sdl_button = SDL_BUTTON_X1;
-            break;
-        case BTN_EXTRA:
-            sdl_button = SDL_BUTTON_X2;
-            break;
-        default:
-            return;
+        if (sdl_button == SDL_BUTTON_LEFT &&
+            ProcessHitTest(input->pointer_focus, input->seat, input->sx_w, input->sy_w, serial)) {
+            return; // don't pass this event on to app.
         }
 
         // Possibly ignore this click if it was to gain focus.
@@ -765,8 +765,7 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
         }
 
         if (!ignore_click) {
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, input->pointer_id,
-                                sdl_button, !!state);
+            SDL_SendMouseButton(timestamp, window->sdlwindow, input->pointer_id, sdl_button, down);
         }
     }
 }
@@ -786,15 +785,13 @@ static void pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
     const Uint64 timestamp = Wayland_GetPointerTimestamp(input, time);
     const enum wl_pointer_axis a = axis;
 
-    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_SCROLL)) {
-        // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
-        const float denom = (float)(WAYLAND_WHEEL_AXIS_UNIT * 256);
-
-        if (a == WL_POINTER_AXIS_VERTICAL_SCROLL) {
-            SDL_SendRawMouseAxis(timestamp, input->pointer_id, 0, (int)value, 0.f, denom, SDL_EVENT_MOUSE_RAW_SCROLL);
-        } else {
-            SDL_SendRawMouseAxis(timestamp, input->pointer_id, (int)value, 0, denom, 0.f, SDL_EVENT_MOUSE_RAW_SCROLL);
-        }
+    // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
+    const float scale = 1.0f / WAYLAND_WHEEL_AXIS_UNIT;
+    const int amount = (value * WAYLAND_WHEEL_AXIS_UNIT) >> 8;
+    if (a == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+        SDL_SendRawMouseWheel(timestamp, input->pointer_id, 0, amount, scale, scale);
+    } else {
+        SDL_SendRawMouseWheel(timestamp, input->pointer_id, amount, 0, scale, scale);
     }
 
     if (input->pointer_focus) {
@@ -825,15 +822,13 @@ static void pointer_handle_axis_common(struct SDL_WaylandInput *input, enum SDL_
 {
     const enum wl_pointer_axis a = axis;
 
-    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_SCROLL)) {
-        // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
-        const float denom = (float)((type == AXIS_EVENT_VALUE120 ? 120 : WAYLAND_WHEEL_AXIS_UNIT) * 256);
-
-        if (a == WL_POINTER_AXIS_VERTICAL_SCROLL) {
-            SDL_SendRawMouseAxis(input->pointer_curr_axis_info.timestamp_ns, input->pointer_id, 0, (int)value, 0.f, denom, SDL_EVENT_MOUSE_RAW_SCROLL);
-        } else {
-            SDL_SendRawMouseAxis(input->pointer_curr_axis_info.timestamp_ns, input->pointer_id, (int)value, 0, denom, 0.f, SDL_EVENT_MOUSE_RAW_SCROLL);
-        }
+    // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
+    const float scale = (type == AXIS_EVENT_VALUE120) ? (1.0f / 120.0f) : (1.0f / WAYLAND_WHEEL_AXIS_UNIT);
+    const int amount = (type == AXIS_EVENT_VALUE120) ? (value >> 8) : ((value * WAYLAND_WHEEL_AXIS_UNIT) >> 8);
+    if (a == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+        SDL_SendRawMouseWheel(0, input->pointer_id, 0, amount, scale, scale);
+    } else {
+        SDL_SendRawMouseWheel(0, input->pointer_id, amount, 0, scale, scale);
     }
 
     if (input->pointer_focus) {
@@ -1038,10 +1033,10 @@ static void relative_pointer_handle_relative_motion(void *data,
     // Relative pointer event times are in microsecond granularity.
     const Uint64 timestamp = Wayland_GetEventTimestamp(SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo));
 
-    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_MOTION)) {
-        // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
-        SDL_SendRawMouseAxis(timestamp, input->pointer_id, (int)dx_unaccel_w, (int)dy_unaccel_w, 256.0f, 256.0f, SDL_EVENT_MOUSE_RAW_MOTION);
-    }
+    // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
+    const float scale_x = dx_unaccel_w ? (dx_w / (float)dx_unaccel_w) : 1.0f;
+    const float scale_y = dy_unaccel_w ? (dy_w / (float)dy_unaccel_w) : 1.0f;
+    SDL_SendRawMouseMotion(timestamp, input->pointer_id, dx_unaccel_w >> 8, dy_unaccel_w >> 8, scale_x, scale_y);
 
     if (input->pointer_focus && d->relative_mouse_mode) {
         double dx;
@@ -1719,7 +1714,8 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     }
 #endif
 
-    window->last_focus_event_time_ns = SDL_GetTicksNS();
+    Uint64 timestamp = SDL_GetTicksNS();
+    window->last_focus_event_time_ns = timestamp;
 
     wl_array_for_each (key, keys) {
         const SDL_Scancode scancode = Wayland_get_scancode_from_key(input, *key + 8);
@@ -1736,7 +1732,8 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         case SDLK_RGUI:
         case SDLK_MODE:
             Wayland_HandleModifierKeys(input, scancode, true);
-            SDL_SendKeyboardKeyIgnoreModifiers(0, input->keyboard_id, *key, scancode, true);
+            SDL_SendRawKeyboardKey(timestamp, input->keyboard_id, *key, scancode, true);
+            SDL_SendKeyboardKeyIgnoreModifiers(timestamp, input->keyboard_id, *key, scancode, true);
             break;
         default:
             break;
@@ -1872,7 +1869,9 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
     scancode = Wayland_get_scancode_from_key(input, key + 8);
     Wayland_HandleModifierKeys(input, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
-    SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetKeyboardTimestamp(input, time), input->keyboard_id, key, scancode, (state == WL_KEYBOARD_KEY_STATE_PRESSED));
+    Uint64 timestamp = Wayland_GetKeyboardTimestamp(input, time);
+    SDL_SendRawKeyboardKey(timestamp, input->keyboard_id, key, scancode, (state == WL_KEYBOARD_KEY_STATE_PRESSED));
+    SDL_SendKeyboardKeyIgnoreModifiers(timestamp, input->keyboard_id, key, scancode, (state == WL_KEYBOARD_KEY_STATE_PRESSED));
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         if (has_text && !(SDL_GetModState() & SDL_KMOD_CTRL)) {

@@ -291,6 +291,7 @@ static void GAMEINPUT_InitialMouseReading(WIN_GameInputData *data, SDL_Window *w
         for (int i = 0; i < MAX_GAMEINPUT_BUTTONS; ++i) {
             const GameInputMouseButtons mask = (1 << i);
             bool down = ((state.buttons & mask) != 0);
+            SDL_SendRawMouseButton(timestamp, mouseID, GAMEINPUT_button_map[i], down);
             SDL_SendMouseButton(timestamp, window, mouseID, GAMEINPUT_button_map[i], down);
         }
     }
@@ -313,6 +314,10 @@ static void GAMEINPUT_HandleMouseDelta(WIN_GameInputData *data, SDL_Window *wind
         delta.wheelY = (state.wheelY - last.wheelY);
 
         if (delta.positionX || delta.positionY) {
+            // FIXME: Apply desktop mouse scale?
+            const float scale = 1.0f;
+            SDL_SendRawMouseMotion(timestamp, mouseID, delta.positionX, delta.positionY, scale, scale);
+
             SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)delta.positionX, (float)delta.positionY);
         }
         if (delta.buttons) {
@@ -320,11 +325,15 @@ static void GAMEINPUT_HandleMouseDelta(WIN_GameInputData *data, SDL_Window *wind
                 const GameInputMouseButtons mask = (1 << i);
                 if (delta.buttons & mask) {
                     bool down = ((state.buttons & mask) != 0);
+                    SDL_SendRawMouseButton(timestamp, mouseID, GAMEINPUT_button_map[i], down);
                     SDL_SendMouseButton(timestamp, window, mouseID, GAMEINPUT_button_map[i], down);
                 }
             }
         }
         if (delta.wheelX || delta.wheelY) {
+            const float scale = 1.0f / WHEEL_DELTA;
+            SDL_SendRawMouseWheel(timestamp, device->instance_id, delta.wheelX, delta.wheelY, scale, scale);
+
             float fAmountX = (float)delta.wheelX / WHEEL_DELTA;
             float fAmountY = (float)delta.wheelY / WHEEL_DELTA;
             SDL_SendMouseWheel(timestamp, SDL_GetMouseFocus(), device->instance_id, fAmountX, fAmountY, SDL_MOUSEWHEEL_NORMAL);
@@ -374,12 +383,14 @@ static void GAMEINPUT_InitialKeyboardReading(WIN_GameInputData *data, SDL_Window
     const bool *keyboard_state = SDL_GetKeyboardState(&num_scancodes);
     for (int i = 0; i < num_scancodes; ++i) {
         if (keyboard_state[i] && !KeysHaveScancode(keys, num_keys, (SDL_Scancode)i)) {
+            SDL_SendRawKeyboardKey(timestamp, keyboardID, keys[i].scanCode, (SDL_Scancode)i, false);
             SDL_SendKeyboardKey(timestamp, keyboardID, keys[i].scanCode, (SDL_Scancode)i, false);
         }
     }
 
     // Go through and send key down events for any key that's held down
     for (uint32_t i = 0; i < num_keys; ++i) {
+        SDL_SendRawKeyboardKey(timestamp, keyboardID, keys[i].scanCode, GetScancodeFromKeyState(&keys[i]), true);
         SDL_SendKeyboardKey(timestamp, keyboardID, keys[i].scanCode, GetScancodeFromKeyState(&keys[i]), true);
     }
 }
@@ -425,15 +436,18 @@ static void GAMEINPUT_HandleKeyboardDelta(WIN_GameInputData *data, SDL_Window *w
                 ++index_keys;
             } else {
                 // This key was released
+                SDL_SendRawKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), false);
                 SDL_SendKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), false);
                 ++index_last;
             }
         } else if (index_last < num_last) {
             // This key was released
+            SDL_SendRawKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), false);
             SDL_SendKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), false);
             ++index_last;
         } else {
             // This key was pressed
+            SDL_SendRawKeyboardKey(timestamp, keyboardID, keys[index_keys].scanCode, GetScancodeFromKeyState(&keys[index_keys]), true);
             SDL_SendKeyboardKey(timestamp, keyboardID, keys[index_keys].scanCode, GetScancodeFromKeyState(&keys[index_keys]), true);
             ++index_keys;
         }

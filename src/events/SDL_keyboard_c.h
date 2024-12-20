@@ -63,6 +63,9 @@ extern bool SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scanco
    Most platforms should prefer to optionally call SDL_SetKeymap and then use SDL_SendKeyboardKey. */
 extern bool SDL_SendKeyboardKeyAndKeycode(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, SDL_Keycode keycode, bool down);
 
+// Send a raw keyboard key event
+extern void SDL_SendRawKeyboardKey(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, bool down);
+
 // Release all the autorelease keys
 extern void SDL_ReleaseAutoReleaseKeys(void);
 
