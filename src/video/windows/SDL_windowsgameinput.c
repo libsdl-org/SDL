@@ -383,14 +383,12 @@ static void GAMEINPUT_InitialKeyboardReading(WIN_GameInputData *data, SDL_Window
     const bool *keyboard_state = SDL_GetKeyboardState(&num_scancodes);
     for (int i = 0; i < num_scancodes; ++i) {
         if (keyboard_state[i] && !KeysHaveScancode(keys, num_keys, (SDL_Scancode)i)) {
-            SDL_SendRawKeyboardKey(timestamp, keyboardID, keys[i].scanCode, (SDL_Scancode)i, false);
             SDL_SendKeyboardKey(timestamp, keyboardID, keys[i].scanCode, (SDL_Scancode)i, false);
         }
     }
 
     // Go through and send key down events for any key that's held down
     for (uint32_t i = 0; i < num_keys; ++i) {
-        SDL_SendRawKeyboardKey(timestamp, keyboardID, keys[i].scanCode, GetScancodeFromKeyState(&keys[i]), true);
         SDL_SendKeyboardKey(timestamp, keyboardID, keys[i].scanCode, GetScancodeFromKeyState(&keys[i]), true);
     }
 }
@@ -436,18 +434,15 @@ static void GAMEINPUT_HandleKeyboardDelta(WIN_GameInputData *data, SDL_Window *w
                 ++index_keys;
             } else {
                 // This key was released
-                SDL_SendRawKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), false);
                 SDL_SendKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), false);
                 ++index_last;
             }
         } else if (index_last < num_last) {
             // This key was released
-            SDL_SendRawKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), false);
             SDL_SendKeyboardKey(timestamp, keyboardID, last[index_last].scanCode, GetScancodeFromKeyState(&last[index_last]), false);
             ++index_last;
         } else {
             // This key was pressed
-            SDL_SendRawKeyboardKey(timestamp, keyboardID, keys[index_keys].scanCode, GetScancodeFromKeyState(&keys[index_keys]), true);
             SDL_SendKeyboardKey(timestamp, keyboardID, keys[index_keys].scanCode, GetScancodeFromKeyState(&keys[index_keys]), true);
             ++index_keys;
         }

@@ -62,8 +62,6 @@ SDL_EventCategory SDL_GetEventCategory(Uint32 type)
 
     case SDL_EVENT_KEY_DOWN:
     case SDL_EVENT_KEY_UP:
-    case SDL_EVENT_RAW_KEY_DOWN:
-    case SDL_EVENT_RAW_KEY_UP:
         return SDL_EVENTCATEGORY_KEY;
 
     case SDL_EVENT_TEXT_EDITING:

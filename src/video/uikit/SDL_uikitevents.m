@@ -188,7 +188,6 @@ static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0
 
     keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed) {
         Uint64 timestamp = SDL_GetTicksNS();
-        SDL_SendRawKeyboardKey(timestamp, keyboardID, 0, (SDL_Scancode)keyCode, pressed);
         SDL_SendKeyboardKey(timestamp, keyboardID, 0, (SDL_Scancode)keyCode, pressed);
     };
 

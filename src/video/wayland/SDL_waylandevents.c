@@ -1732,7 +1732,6 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         case SDLK_RGUI:
         case SDLK_MODE:
             Wayland_HandleModifierKeys(input, scancode, true);
-            SDL_SendRawKeyboardKey(timestamp, input->keyboard_id, *key, scancode, true);
             SDL_SendKeyboardKeyIgnoreModifiers(timestamp, input->keyboard_id, *key, scancode, true);
             break;
         default:
@@ -1870,7 +1869,6 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     scancode = Wayland_get_scancode_from_key(input, key + 8);
     Wayland_HandleModifierKeys(input, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
     Uint64 timestamp = Wayland_GetKeyboardTimestamp(input, time);
-    SDL_SendRawKeyboardKey(timestamp, input->keyboard_id, key, scancode, (state == WL_KEYBOARD_KEY_STATE_PRESSED));
     SDL_SendKeyboardKeyIgnoreModifiers(timestamp, input->keyboard_id, key, scancode, (state == WL_KEYBOARD_KEY_STATE_PRESSED));
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {

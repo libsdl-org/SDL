@@ -535,19 +535,6 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_KEY_EVENT
 
-#define PRINT_RAW_KEY_EVENT(event)                                                                              \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u state=%s scancode=%u)",               \
-                       (uint)event->raw_key.timestamp, (uint)event->raw_key.which,                              \
-                       event->raw_key.down ? "pressed" : "released",                                            \
-                       (uint)event->raw_key.scancode);
-        SDL_EVENT_CASE(SDL_EVENT_RAW_KEY_DOWN)
-        PRINT_RAW_KEY_EVENT(event);
-        break;
-        SDL_EVENT_CASE(SDL_EVENT_RAW_KEY_UP)
-        PRINT_RAW_KEY_EVENT(event);
-        break;
-#undef PRINT_RAW_KEY_EVENT
-
         SDL_EVENT_CASE(SDL_EVENT_TEXT_EDITING)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u text='%s' start=%d length=%d)",
                            (uint)event->edit.timestamp, (uint)event->edit.windowID,

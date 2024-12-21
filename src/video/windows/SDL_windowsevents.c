@@ -721,6 +721,10 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
 {
     SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)hDevice;
 
+    if (!data->raw_keyboard_enabled) {
+        return;
+    }
+
     if (rawkeyboard->Flags & RI_KEY_E1) {
         // First key in a Ctrl+{key} sequence
         data->pending_E1_key_sequence = true;
@@ -762,12 +766,6 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
             index |= 0x80;
         }
         code = windows_scancode_table[index];
-    }
-
-    SDL_SendRawKeyboardKey(timestamp, keyboardID, rawcode, code, down);
-
-    if (!data->raw_keyboard_enabled) {
-        return;
     }
 
     if (down) {
