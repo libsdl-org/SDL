@@ -1906,9 +1906,21 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_WindowFlags window_flags = SDL_GetWindowFlags(data->window);
         if (wParam == TRUE && (window_flags & SDL_WINDOW_BORDERLESS) && !(window_flags & SDL_WINDOW_FULLSCREEN)) {
             // When borderless, need to tell windows that the size of the non-client area is 0
-            if (!(window_flags & SDL_WINDOW_RESIZABLE)) {
+            NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
+            WINDOWPLACEMENT placement;
+            if (GetWindowPlacement(hwnd, &placement) && placement.showCmd == SW_MAXIMIZE) {
+                // Maximized borderless windows should use the full monitor size
+                HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL);
+                if (hMonitor) {
+                    MONITORINFO info;
+                    SDL_zero(info);
+                    info.cbSize = sizeof(info);
+                    if (GetMonitorInfo(hMonitor, &info)) {
+                        params->rgrc[0] = info.rcMonitor;
+                    }
+                }
+            } else if (!(window_flags & SDL_WINDOW_RESIZABLE)) {
                 int w, h;
-                NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
                 w = data->window->floating.w;
                 h = data->window->floating.h;
                 params->rgrc[0].right = params->rgrc[0].left + w;
