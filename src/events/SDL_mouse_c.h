@@ -178,15 +178,6 @@ extern void SDL_SendMouseButtonClicks(Uint64 timestamp, SDL_Window *window, SDL_
 // Send a mouse wheel event
 extern void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction);
 
-// Send raw mouse motion
-extern void SDL_SendRawMouseMotion(Uint64 timestamp, SDL_MouseID mouseID, int dx, int dy, float scale_x, float scale_y);
-
-// Send a raw mouse button event
-extern void SDL_SendRawMouseButton(Uint64 timestamp, SDL_MouseID mouseID, Uint8 button, bool down);
-
-// Send a raw mouse wheel event
-extern void SDL_SendRawMouseWheel(Uint64 timestamp, SDL_MouseID mouseID, int dx, int dy, float scale_x, float scale_y);
-
 // Warp the mouse within the window, potentially overriding relative mode
 extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, bool ignore_relative_mode);
 

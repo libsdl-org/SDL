@@ -1784,11 +1784,6 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->motion.xrel, event->motion.yrel,
                 event->motion.windowID);
         break;
-    case SDL_EVENT_RAW_MOUSE_MOTION:
-        SDL_Log("SDL EVENT: Raw Mouse: mouse %" SDL_PRIu32 " moved %" SDL_PRIs32 ",%" SDL_PRIs32,
-                event->raw_motion.which,
-                event->raw_motion.dx, event->raw_motion.dy);
-        break;
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
         SDL_Log("SDL EVENT: Mouse: button %d pressed at %g,%g with click count %d in window %" SDL_PRIu32,
                 event->button.button, event->button.x, event->button.y, event->button.clicks,
@@ -1799,21 +1794,9 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);
         break;
-    case SDL_EVENT_RAW_MOUSE_BUTTON_DOWN:
-        SDL_Log("SDL EVENT: Raw Mouse: mouse %" SDL_PRIu32 " button %d pressed",
-                event->raw_button.which, event->raw_button.button);
-        break;
-    case SDL_EVENT_RAW_MOUSE_BUTTON_UP:
-        SDL_Log("SDL EVENT: Raw Mouse: mouse %" SDL_PRIu32 " button %d released",
-                event->raw_button.which, event->raw_button.button);
-        break;
     case SDL_EVENT_MOUSE_WHEEL:
         SDL_Log("SDL EVENT: Mouse: wheel scrolled %g in x and %g in y (reversed: %d) in window %" SDL_PRIu32,
                 event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
-        break;
-    case SDL_EVENT_RAW_MOUSE_WHEEL:
-        SDL_Log("SDL EVENT: Raw Mouse: mouse %" SDL_PRIu32 " wheel scrolled %" SDL_PRIs32 " in x and %" SDL_PRIs32 " in y",
-                event->raw_wheel.which, event->raw_wheel.dx, event->raw_wheel.dy);
         break;
     case SDL_EVENT_JOYSTICK_ADDED:
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " attached",
@@ -2238,7 +2221,6 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
 
     if (state->verbose & VERBOSE_EVENT) {
         if ((event->type != SDL_EVENT_MOUSE_MOTION &&
-             event->type != SDL_EVENT_RAW_MOUSE_MOTION &&
              event->type != SDL_EVENT_FINGER_MOTION &&
              event->type != SDL_EVENT_PEN_MOTION &&
              event->type != SDL_EVENT_PEN_AXIS &&

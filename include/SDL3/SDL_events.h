@@ -182,10 +182,6 @@ typedef enum SDL_EventType
     SDL_EVENT_MOUSE_WHEEL,             /**< Mouse wheel motion */
     SDL_EVENT_MOUSE_ADDED,             /**< A new mouse has been inserted into the system */
     SDL_EVENT_MOUSE_REMOVED,           /**< A mouse has been removed */
-    SDL_EVENT_RAW_MOUSE_MOTION,        /**< Mouse moved (raw motion deltas) */
-    SDL_EVENT_RAW_MOUSE_BUTTON_DOWN,   /**< Mouse button pressed (raw button press) */
-    SDL_EVENT_RAW_MOUSE_BUTTON_UP,     /**< Mouse button released (raw button release) */
-    SDL_EVENT_RAW_MOUSE_WHEEL,         /**< Mouse wheel motion (raw wheel deltas) */
 
     /* Joystick events */
     SDL_EVENT_JOYSTICK_AXIS_MOTION  = 0x600, /**< Joystick axis motion */
@@ -459,23 +455,6 @@ typedef struct SDL_MouseMotionEvent
 } SDL_MouseMotionEvent;
 
 /**
- * Raw mouse motion event structure (event.raw_motion.*)
- *
- * \since This struct is available since SDL 3.1.8.
- */
-typedef struct SDL_RawMouseMotionEvent
-{
-    SDL_EventType type; /**< SDL_EVENT_RAW_MOUSE_MOTION */
-    Uint32 reserved;
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_MouseID which;  /**< The mouse instance id */
-    Sint32 dx;          /**< X axis delta */
-    Sint32 dy;          /**< Y axis delta */
-    float scale_x;      /**< X value scale to approximate desktop acceleration */
-    float scale_y;      /**< Y value scale to approximate desktop acceleration */
-} SDL_RawMouseMotionEvent;
-
-/**
  * Mouse button event structure (event.button.*)
  *
  * \since This struct is available since SDL 3.1.3.
@@ -496,21 +475,6 @@ typedef struct SDL_MouseButtonEvent
 } SDL_MouseButtonEvent;
 
 /**
- * Raw mouse button event structure (event.raw_button.*)
- *
- * \since This struct is available since SDL 3.1.8.
- */
-typedef struct SDL_RawMouseButtonEvent
-{
-    SDL_EventType type; /**< SDL_EVENT_RAW_MOUSE_BUTTON_DOWN or SDL_EVENT_RAW_MOUSE_BUTTON_UP */
-    Uint32 reserved;
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_MouseID which;  /**< The mouse instance id */
-    Uint8 button;       /**< The mouse button index */
-    bool down;          /**< true if the button is pressed */
-} SDL_RawMouseButtonEvent;
-
-/**
  * Mouse wheel event structure (event.wheel.*)
  *
  * \since This struct is available since SDL 3.1.3.
@@ -528,23 +492,6 @@ typedef struct SDL_MouseWheelEvent
     float mouse_x;      /**< X coordinate, relative to window */
     float mouse_y;      /**< Y coordinate, relative to window */
 } SDL_MouseWheelEvent;
-
-/**
- * Raw mouse wheel event structure (event.raw_wheel.*)
- *
- * \since This struct is available since SDL 3.1.3.
- */
-typedef struct SDL_RawMouseWheelEvent
-{
-    SDL_EventType type; /**< SDL_EVENT_RAW_MOUSE_WHEEL */
-    Uint32 reserved;
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_MouseID which;  /**< The mouse instance id */
-    Sint32 dx;          /**< X axis delta, positive to the right and negative to the left */
-    Sint32 dy;          /**< Y axis delta, positive away from the user and negative toward the user */
-    float scale_x;      /**< X value scale to convert to logical scroll units */
-    float scale_y;      /**< Y value scale to convert to logical scroll units */
-} SDL_RawMouseWheelEvent;
 
 /**
  * Joystick axis motion event structure (event.jaxis.*)
@@ -1048,11 +995,8 @@ typedef union SDL_Event
     SDL_TextInputEvent text;                /**< Text input event data */
     SDL_MouseDeviceEvent mdevice;           /**< Mouse device change event data */
     SDL_MouseMotionEvent motion;            /**< Mouse motion event data */
-    SDL_RawMouseMotionEvent raw_motion;     /**< Raw mouse motion event data */
     SDL_MouseButtonEvent button;            /**< Mouse button event data */
-    SDL_RawMouseButtonEvent raw_button;     /**< Raw mouse button event data */
     SDL_MouseWheelEvent wheel;              /**< Mouse wheel event data */
-    SDL_RawMouseWheelEvent raw_wheel;       /**< Raw mouse wheel event data */
     SDL_JoyDeviceEvent jdevice;             /**< Joystick device change event data */
     SDL_JoyAxisEvent jaxis;                 /**< Joystick axis event data */
     SDL_JoyBallEvent jball;                 /**< Joystick ball event data */

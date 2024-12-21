@@ -193,11 +193,10 @@ static bool WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
     Uint32 flags = 0;
-    const bool ENABLE_RAW_INPUT_EVENTS = true;
-    if (data->raw_mouse_enabled || ENABLE_RAW_INPUT_EVENTS) {
+    if (data->raw_mouse_enabled) {
         flags |= ENABLE_RAW_MOUSE_INPUT;
     }
-    if (data->raw_keyboard_enabled || ENABLE_RAW_INPUT_EVENTS) {
+    if (data->raw_keyboard_enabled) {
         flags |= ENABLE_RAW_KEYBOARD_INPUT;
     }
     if (flags != data->raw_input_enabled) {

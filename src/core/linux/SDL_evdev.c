@@ -348,7 +348,6 @@ void SDL_EVDEV_Poll(void)
                     if (event->code >= BTN_MOUSE && event->code < BTN_MOUSE + SDL_arraysize(EVDEV_MouseButtons)) {
                         Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
                         mouse_button = event->code - BTN_MOUSE;
-                        SDL_SendRawMouseButton(timestamp, (SDL_MouseID)item->fd, EVDEV_MouseButtons[mouse_button], (event->value != 0));
                         SDL_SendMouseButton(timestamp, mouse->focus, (SDL_MouseID)item->fd, EVDEV_MouseButtons[mouse_button], (event->value != 0));
                         break;
                     }
@@ -491,7 +490,6 @@ void SDL_EVDEV_Poll(void)
                         if (item->relative_mouse) {
                             if (item->mouse_x != 0 || item->mouse_y != 0) {
                                 Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
-                                SDL_SendRawMouseMotion(timestamp, (SDL_MouseID)item->fd, item->mouse_x, item->mouse_y, 1.0f, 1.0f);
                                 SDL_SendMouseMotion(timestamp, mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, (float)item->mouse_x, (float)item->mouse_y);
                                 item->mouse_x = item->mouse_y = 0;
                             }
@@ -516,14 +514,11 @@ void SDL_EVDEV_Poll(void)
 
                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
                             Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
-                            const float scale = (item->high_res_hwheel ? 1.0f / 120.0f : 1.0f);
-                            SDL_SendRawMouseWheel(timestamp,
-                                                  (SDL_MouseID)item->fd,
-                                                  item->mouse_hwheel, item->mouse_wheel, scale, scale);
+                            const float denom = (item->high_res_hwheel ? 120.0f : 1.0f);
                             SDL_SendMouseWheel(timestamp,
                                                mouse->focus, (SDL_MouseID)item->fd,
-                                               item->mouse_hwheel * scale,
-                                               item->mouse_wheel * scale,
+                                               item->mouse_hwheel / denom,
+                                               item->mouse_wheel / denom,
                                                SDL_MOUSEWHEEL_NORMAL);
                             item->mouse_wheel = item->mouse_hwheel = 0;
                         }

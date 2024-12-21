@@ -342,11 +342,6 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
         }
 
-        // FIXME: Are the processed_coords always integral values?
-        // FIXME: Apply desktop mouse scale?
-        const float scale = 1.0f;
-        SDL_SendRawMouseMotion(timestamp, (SDL_MouseID)rawev->sourceid, (int)processed_coords[0], (int)processed_coords[1], scale, scale);
-
         // Relative mouse motion is delivered to the window with keyboard focus
         if (mouse->relative_mode && SDL_GetKeyboardFocus()) {
             SDL_SendMouseMotion(timestamp, mouse->focus, (SDL_MouseID)rawev->sourceid, true, (float)processed_coords[0], (float)processed_coords[1]);
