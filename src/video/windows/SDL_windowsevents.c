@@ -545,41 +545,6 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
     bool isAbsolute = ((rawmouse->usFlags & MOUSE_MOVE_ABSOLUTE) != 0);
     SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)hDevice;
 
-    if (haveMotion && !isAbsolute) {
-        // FIXME: Apply desktop mouse scale?
-        const float scale = 1.0f;
-        SDL_SendRawMouseMotion(timestamp, mouseID, dx, dy, scale, scale);
-    }
-
-    if (haveButton) {
-        for (int i = 0; i < SDL_arraysize(raw_buttons); ++i) {
-            if (rawmouse->usButtonFlags & raw_buttons[i].usButtonFlags) {
-                Uint8 button = raw_buttons[i].button;
-                bool down = raw_buttons[i].down;
-
-                if (button == SDL_BUTTON_LEFT) {
-                    if (WIN_SwapButtons(hDevice)) {
-                        button = SDL_BUTTON_RIGHT;
-                    }
-                } else if (button == SDL_BUTTON_RIGHT) {
-                    if (WIN_SwapButtons(hDevice)) {
-                        button = SDL_BUTTON_LEFT;
-                    }
-                }
-
-                SDL_SendRawMouseButton(timestamp, mouseID, button, down);
-            }
-        }
-
-        const float scale = 1.0f / 120.0f;
-        SHORT amount = (SHORT)rawmouse->usButtonData;
-        if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
-            SDL_SendRawMouseWheel(timestamp, mouseID, 0, amount, scale, scale);
-        } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
-            SDL_SendRawMouseWheel(timestamp, mouseID, amount, 0, scale, scale);
-        }
-    }
-
     // Check whether relative mode should also receive events from the rawinput stream
     if (!data->raw_mouse_enabled) {
         return;

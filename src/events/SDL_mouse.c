@@ -970,51 +970,6 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
     }
 }
 
-void SDL_SendRawMouseMotion(Uint64 timestamp, SDL_MouseID mouseID, int dx, int dy, float scale_x, float scale_y)
-{
-    if (SDL_EventEnabled(SDL_EVENT_RAW_MOUSE_MOTION)) {
-        SDL_Event event;
-        event.type = SDL_EVENT_RAW_MOUSE_MOTION;
-        event.common.timestamp = timestamp;
-        event.raw_motion.which = mouseID;
-        event.raw_motion.dx = dx;
-        event.raw_motion.dy = dy;
-        event.raw_motion.scale_x = scale_x;
-        event.raw_motion.scale_y = scale_y;
-        SDL_PushEvent(&event);
-    }
-}
-
-void SDL_SendRawMouseButton(Uint64 timestamp, SDL_MouseID mouseID, Uint8 button, bool down)
-{
-    const SDL_EventType type = down ? SDL_EVENT_RAW_MOUSE_BUTTON_DOWN : SDL_EVENT_RAW_MOUSE_BUTTON_UP;
-
-    if (SDL_EventEnabled(type)) {
-        SDL_Event event;
-        event.type = type;
-        event.common.timestamp = timestamp;
-        event.raw_button.which = mouseID;
-        event.raw_button.button = button;
-        event.raw_button.down = down;
-        SDL_PushEvent(&event);
-    }
-}
-
-void SDL_SendRawMouseWheel(Uint64 timestamp, SDL_MouseID mouseID, int dx, int dy, float scale_x, float scale_y)
-{
-    if (SDL_EventEnabled(SDL_EVENT_RAW_MOUSE_WHEEL)) {
-        SDL_Event event;
-        event.type = SDL_EVENT_RAW_MOUSE_WHEEL;
-        event.common.timestamp = timestamp;
-        event.raw_wheel.which = mouseID;
-        event.raw_wheel.dx = dx;
-        event.raw_wheel.dy = dy;
-        event.raw_wheel.scale_x = scale_x;
-        event.raw_wheel.scale_y = scale_y;
-        SDL_PushEvent(&event);
-    }
-}
-
 void SDL_QuitMouse(void)
 {
     SDL_Cursor *cursor, *next;

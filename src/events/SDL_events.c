@@ -390,7 +390,6 @@ static void SDL_LogEvent(const SDL_Event *event)
     // sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded.
     if ((SDL_EventLoggingVerbosity < 2) &&
         ((event->type == SDL_EVENT_MOUSE_MOTION) ||
-         (event->type == SDL_EVENT_RAW_MOUSE_MOTION) ||
          (event->type == SDL_EVENT_FINGER_MOTION) ||
          (event->type == SDL_EVENT_PEN_AXIS) ||
          (event->type == SDL_EVENT_PEN_MOTION) ||
@@ -568,13 +567,6 @@ static void SDL_LogEvent(const SDL_Event *event)
                            event->motion.xrel, event->motion.yrel);
         break;
 
-        SDL_EVENT_CASE(SDL_EVENT_RAW_MOUSE_MOTION)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u dx=%d dy=%d)",
-                           (uint)event->raw_motion.timestamp,
-                           (uint)event->raw_motion.which,
-                           (int)event->raw_motion.dx, (int)event->raw_motion.dy);
-        break;
-
 #define PRINT_MBUTTON_EVENT(event)                                                                                              \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u button=%u state=%s clicks=%u x=%g y=%g)", \
                        (uint)event->button.timestamp, (uint)event->button.windowID,                                             \
@@ -589,31 +581,11 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_MBUTTON_EVENT
 
-#define PRINT_RAW_MBUTTON_EVENT(event)                                                                                          \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u button=%u state=%s)",                                 \
-                       (uint)event->raw_button.timestamp,                                                                       \
-                       (uint)event->raw_button.which, (uint)event->raw_button.button,                                           \
-                       event->raw_button.down ? "pressed" : "released");
-        SDL_EVENT_CASE(SDL_EVENT_RAW_MOUSE_BUTTON_DOWN)
-        PRINT_RAW_MBUTTON_EVENT(event);
-        break;
-        SDL_EVENT_CASE(SDL_EVENT_RAW_MOUSE_BUTTON_UP)
-        PRINT_RAW_MBUTTON_EVENT(event);
-        break;
-#undef PRINT_RAW_MBUTTON_EVENT
-
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_WHEEL)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u x=%g y=%g direction=%s)",
                            (uint)event->wheel.timestamp, (uint)event->wheel.windowID,
                            (uint)event->wheel.which, event->wheel.x, event->wheel.y,
                            event->wheel.direction == SDL_MOUSEWHEEL_NORMAL ? "normal" : "flipped");
-        break;
-
-        SDL_EVENT_CASE(SDL_EVENT_RAW_MOUSE_WHEEL)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u dx=%d dy=%d)",
-                           (uint)event->raw_wheel.timestamp,
-                           (uint)event->raw_wheel.which,
-                           (int)event->raw_wheel.dx, (int)event->raw_wheel.dy);
         break;
 
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_AXIS_MOTION)

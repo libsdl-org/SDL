@@ -920,10 +920,6 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
     }
 
     if (X11_IsWheelEvent(display, button, &xticks, &yticks)) {
-        if (mouseID != SDL_GLOBAL_MOUSE_ID) {
-            const float scale = 1.0f;
-            SDL_SendRawMouseWheel(timestamp, mouseID, -xticks, yticks, scale, scale);
-        }
         SDL_SendMouseWheel(timestamp, window, mouseID, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
     } else {
         bool ignore_click = false;
@@ -931,9 +927,6 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
             /* X button values 4-7 are used for scrolling, so X1 is 8, X2 is 9, ...
                => subtract (8-SDL_BUTTON_X1) to get value SDL expects */
             button -= (8 - SDL_BUTTON_X1);
-        }
-        if (mouseID != SDL_GLOBAL_MOUSE_ID) {
-            SDL_SendRawMouseButton(timestamp, mouseID, button, true);
         }
         if (button == Button1) {
             if (X11_TriggerHitTestAction(_this, windowdata, x, y)) {
@@ -971,9 +964,6 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
         if (button > 7) {
             // see explanation at case ButtonPress
             button -= (8 - SDL_BUTTON_X1);
-        }
-        if (mouseID != SDL_GLOBAL_MOUSE_ID) {
-            SDL_SendRawMouseButton(timestamp, mouseID, button, false);
         }
         SDL_SendMouseButton(timestamp, window, mouseID, button, false);
     }

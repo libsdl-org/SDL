@@ -320,7 +320,6 @@ static bool SetGCMouseRelativeMode(bool enabled)
 static void OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button, BOOL pressed)
 {
     Uint64 timestamp = SDL_GetTicksNS();
-    SDL_SendRawMouseButton(timestamp, mouseID, button, pressed);
     SDL_SendMouseButton(timestamp, SDL_GetMouseFocus(), mouseID, button, pressed);
 }
 
@@ -351,9 +350,6 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
     mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouseInput, float deltaX, float deltaY) {
         Uint64 timestamp = SDL_GetTicksNS();
 
-        // FIXME: Do we get non-integer deltas here?
-        SDL_SendRawMouseMotion(timestamp, mouseID, (int)deltaX, (int)-deltaY, 1.0f, 1.0f);
-
         if (SDL_GCMouseRelativeMode()) {
             SDL_SendMouseMotion(timestamp, SDL_GetMouseFocus(), mouseID, true, deltaX, -deltaY);
         }
@@ -369,9 +365,6 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
          */
         float vertical = -xValue;
         float horizontal = yValue;
-
-        // FIXME: Do we get non-integer deltas here?
-        SDL_SendRawMouseWheel(timestamp, mouseID, (int)horizontal, (int)vertical, 1.0f, 1.0f);
 
         if (mouse_scroll_direction == SDL_MOUSEWHEEL_FLIPPED) {
             // Since these are raw values, we need to flip them ourselves

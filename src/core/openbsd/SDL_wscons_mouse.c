@@ -87,35 +87,26 @@ void updateMouse(SDL_WSCONS_mouse_input_data *input)
             {
                 Uint8 button = SDL_BUTTON_LEFT + events[i].value;
                 bool down = (type == WSCONS_EVENT_MOUSE_DOWN);
-                SDL_SendRawMouseButton(timestamp, input->mouseID, button, down);
                 SDL_SendMouseButton(timestamp, mouse->focus, input->mouseID, button, down);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_X:
             {
-                const float scale = 1.0f;
-                SDL_SendRawMouseMotion(timestamp, input->mouseID, events[i].value, 0, scale, scale);
                 SDL_SendMouseMotion(timestamp, mouse->focus, input->mouseID, true, (float)events[i].value, 0.0f);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_Y:
             {
-                const float scale = 1.0f;
-                SDL_SendRawMouseMotion(timestamp, input->mouseID, 0, -events[i].value, scale, scale);
                 SDL_SendMouseMotion(timestamp, mouse->focus, input->mouseID, true, 0.0f, -(float)events[i].value);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_W:
             {
-                const float scale = 1.0f;
-                SDL_SendRawMouseWheel(timestamp, input->mouseID, events[i].value, 0, scale, scale);
                 SDL_SendMouseWheel(timestamp, mouse->focus, input->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_Z:
             {
-                const float scale = 1.0f;
-                SDL_SendRawMouseWheel(timestamp, input->mouseID, 0, -events[i].value, scale, scale);
                 SDL_SendMouseWheel(timestamp, mouse->focus, input->mouseID, 0, -events[i].value, SDL_MOUSEWHEEL_NORMAL);
                 break;
             }

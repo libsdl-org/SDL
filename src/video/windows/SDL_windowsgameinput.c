@@ -291,7 +291,6 @@ static void GAMEINPUT_InitialMouseReading(WIN_GameInputData *data, SDL_Window *w
         for (int i = 0; i < MAX_GAMEINPUT_BUTTONS; ++i) {
             const GameInputMouseButtons mask = (1 << i);
             bool down = ((state.buttons & mask) != 0);
-            SDL_SendRawMouseButton(timestamp, mouseID, GAMEINPUT_button_map[i], down);
             SDL_SendMouseButton(timestamp, window, mouseID, GAMEINPUT_button_map[i], down);
         }
     }
@@ -314,10 +313,6 @@ static void GAMEINPUT_HandleMouseDelta(WIN_GameInputData *data, SDL_Window *wind
         delta.wheelY = (state.wheelY - last.wheelY);
 
         if (delta.positionX || delta.positionY) {
-            // FIXME: Apply desktop mouse scale?
-            const float scale = 1.0f;
-            SDL_SendRawMouseMotion(timestamp, mouseID, delta.positionX, delta.positionY, scale, scale);
-
             SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)delta.positionX, (float)delta.positionY);
         }
         if (delta.buttons) {
@@ -325,15 +320,11 @@ static void GAMEINPUT_HandleMouseDelta(WIN_GameInputData *data, SDL_Window *wind
                 const GameInputMouseButtons mask = (1 << i);
                 if (delta.buttons & mask) {
                     bool down = ((state.buttons & mask) != 0);
-                    SDL_SendRawMouseButton(timestamp, mouseID, GAMEINPUT_button_map[i], down);
                     SDL_SendMouseButton(timestamp, window, mouseID, GAMEINPUT_button_map[i], down);
                 }
             }
         }
         if (delta.wheelX || delta.wheelY) {
-            const float scale = 1.0f / WHEEL_DELTA;
-            SDL_SendRawMouseWheel(timestamp, device->instance_id, delta.wheelX, delta.wheelY, scale, scale);
-
             float fAmountX = (float)delta.wheelX / WHEEL_DELTA;
             float fAmountY = (float)delta.wheelY / WHEEL_DELTA;
             SDL_SendMouseWheel(timestamp, SDL_GetMouseFocus(), device->instance_id, fAmountX, fAmountY, SDL_MOUSEWHEEL_NORMAL);

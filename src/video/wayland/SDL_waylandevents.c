@@ -719,7 +719,6 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
     default:
         return;
     }
-    SDL_SendRawMouseButton(timestamp, input->pointer_id, sdl_button, down);
 
     if (window) {
         SDL_VideoData *viddata = window->waylandData;
@@ -785,15 +784,6 @@ static void pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
     const Uint64 timestamp = Wayland_GetPointerTimestamp(input, time);
     const enum wl_pointer_axis a = axis;
 
-    // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
-    const float scale = 1.0f / WAYLAND_WHEEL_AXIS_UNIT;
-    const int amount = (value * WAYLAND_WHEEL_AXIS_UNIT) >> 8;
-    if (a == WL_POINTER_AXIS_VERTICAL_SCROLL) {
-        SDL_SendRawMouseWheel(timestamp, input->pointer_id, 0, amount, scale, scale);
-    } else {
-        SDL_SendRawMouseWheel(timestamp, input->pointer_id, amount, 0, scale, scale);
-    }
-
     if (input->pointer_focus) {
         float x, y;
 
@@ -821,15 +811,6 @@ static void pointer_handle_axis_common(struct SDL_WaylandInput *input, enum SDL_
                                        uint32_t axis, wl_fixed_t value)
 {
     const enum wl_pointer_axis a = axis;
-
-    // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
-    const float scale = (type == AXIS_EVENT_VALUE120) ? (1.0f / 120.0f) : (1.0f / WAYLAND_WHEEL_AXIS_UNIT);
-    const int amount = (type == AXIS_EVENT_VALUE120) ? (value >> 8) : ((value * WAYLAND_WHEEL_AXIS_UNIT) >> 8);
-    if (a == WL_POINTER_AXIS_VERTICAL_SCROLL) {
-        SDL_SendRawMouseWheel(0, input->pointer_id, 0, amount, scale, scale);
-    } else {
-        SDL_SendRawMouseWheel(0, input->pointer_id, amount, 0, scale, scale);
-    }
 
     if (input->pointer_focus) {
         switch (a) {
@@ -1032,11 +1013,6 @@ static void relative_pointer_handle_relative_motion(void *data,
 
     // Relative pointer event times are in microsecond granularity.
     const Uint64 timestamp = Wayland_GetEventTimestamp(SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo));
-
-    // wl_fixed_t is a 24.8 signed fixed-point number which needs to be converted by dividing by 256
-    const float scale_x = dx_unaccel_w ? (dx_w / (float)dx_unaccel_w) : 1.0f;
-    const float scale_y = dy_unaccel_w ? (dy_w / (float)dy_unaccel_w) : 1.0f;
-    SDL_SendRawMouseMotion(timestamp, input->pointer_id, dx_unaccel_w >> 8, dy_unaccel_w >> 8, scale_x, scale_y);
 
     if (input->pointer_focus && d->relative_mouse_mode) {
         double dx;
