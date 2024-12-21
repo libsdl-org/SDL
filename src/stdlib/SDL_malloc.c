@@ -6353,8 +6353,8 @@ static struct
 };
 
 // Define this if you want to track the number of allocations active
-// #define TRACK_ALLOCATION_COUNT
-#ifdef TRACK_ALLOCATION_COUNT
+// #define SDL_TRACK_ALLOCATION_COUNT
+#ifdef SDL_TRACK_ALLOCATION_COUNT
 #define INCREMENT_ALLOCATION_COUNT()    (void)SDL_AtomicIncRef(&s_mem.num_allocations)
 #define DECREMENT_ALLOCATION_COUNT()    (void)SDL_AtomicDecRef(&s_mem.num_allocations)
 #else
@@ -6428,7 +6428,11 @@ bool SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 
 int SDL_GetNumAllocations(void)
 {
+#ifdef SDL_TRACK_ALLOCATION_COUNT
     return SDL_GetAtomicInt(&s_mem.num_allocations);
+#else
+    return -1;
+#endif
 }
 
 void *SDL_malloc(size_t size)
