@@ -174,8 +174,6 @@ typedef enum SDL_EventType
     SDL_EVENT_KEYBOARD_ADDED,          /**< A new keyboard has been inserted into the system */
     SDL_EVENT_KEYBOARD_REMOVED,        /**< A keyboard has been removed */
     SDL_EVENT_TEXT_EDITING_CANDIDATES, /**< Keyboard text editing candidates */
-    SDL_EVENT_RAW_KEY_DOWN,            /**< Key pressed (raw key press) */
-    SDL_EVENT_RAW_KEY_UP,              /**< Key released (raw key release) */
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
@@ -367,22 +365,6 @@ typedef struct SDL_KeyboardEvent
     bool down;              /**< true if the key is pressed */
     bool repeat;            /**< true if this is a key repeat */
 } SDL_KeyboardEvent;
-
-/**
- * Raw keyboard button event structure (event.raw_key.*)
- *
- * \since This struct is available since SDL 3.1.8.
- */
-typedef struct SDL_RawKeyboardEvent
-{
-    SDL_EventType type;     /**< SDL_EVENT_RAW_KEY_DOWN or SDL_EVENT_RAW_KEY_UP */
-    Uint32 reserved;
-    Uint64 timestamp;       /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_KeyboardID which;   /**< The keyboard instance id */
-    SDL_Scancode scancode;  /**< SDL physical key code */
-    Uint16 raw;             /**< The platform dependent scancode for this event */
-    bool down;              /**< true if the key is pressed */
-} SDL_RawKeyboardEvent;
 
 /**
  * Keyboard text editing event structure (event.edit.*)
@@ -1061,7 +1043,6 @@ typedef union SDL_Event
     SDL_WindowEvent window;                 /**< Window event data */
     SDL_KeyboardDeviceEvent kdevice;        /**< Keyboard device change event data */
     SDL_KeyboardEvent key;                  /**< Keyboard event data */
-    SDL_RawKeyboardEvent raw_key;           /**< Raw keyboard event data */
     SDL_TextEditingEvent edit;              /**< Text editing event data */
     SDL_TextEditingCandidatesEvent edit_candidates; /**< Text editing candidates event data */
     SDL_TextInputEvent text;                /**< Text input event data */

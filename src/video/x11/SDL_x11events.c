@@ -827,11 +827,6 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     }
 #endif // DEBUG SCANCODES
 
-    if (keyboardID != SDL_GLOBAL_KEYBOARD_ID) {
-        const bool down = (xevent->type == KeyPress);
-        SDL_SendRawKeyboardKey(timestamp, keyboardID, keycode, videodata->key_layout[keycode], down);
-    }
-
     text[0] = '\0';
 
     if (SDL_TextInputActive(windowdata->window)) {
