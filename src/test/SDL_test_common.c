@@ -2473,10 +2473,16 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                 SDL_Window *window = SDL_GetWindowFromEvent(event);
                 if (window) {
                     SDL_WindowFlags flags = SDL_GetWindowFlags(window);
+                    if (!(flags & SDL_WINDOW_RESIZABLE)) {
+                        SDL_SetWindowResizable(window, true);
+                    }
                     if (flags & SDL_WINDOW_MAXIMIZED) {
                         SDL_RestoreWindow(window);
                     } else {
                         SDL_MaximizeWindow(window);
+                    }
+                    if (!(flags & SDL_WINDOW_RESIZABLE)) {
+                        SDL_SetWindowResizable(window, false);
                     }
                 }
             }
