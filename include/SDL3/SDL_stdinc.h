@@ -1024,7 +1024,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
 /**
  * Get the number of outstanding (unfreed) allocations.
  *
- * \returns the number of allocations.
+ * \returns the number of allocations or
+ *          -1 if allocation counting is disabled.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

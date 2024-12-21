@@ -71,11 +71,8 @@ static SDL_malloc_func SDL_malloc_orig = NULL;
 static SDL_calloc_func SDL_calloc_orig = NULL;
 static SDL_realloc_func SDL_realloc_orig = NULL;
 static SDL_free_func SDL_free_orig = NULL;
-#ifdef TRACK_ALLOCATION_COUNT
 static int s_previous_allocations = 0;
-#else
 static int s_unknown_frees = 0;
-#endif
 static SDL_tracked_allocation *s_tracked_allocations[256];
 static bool s_randfill_allocations = false;
 static SDL_AtomicInt s_lock;
@@ -215,9 +212,9 @@ static void SDL_UntrackAllocation(void *mem)
         }
         prev = entry;
     }
-#ifndef TRACK_ALLOCATION_COUNT
-    s_unknown_frees += 1;
-#endif
+    if (s_tracked_allocations < 0) {
+        s_unknown_frees += 1;
+    }
     UNLOCK_ALLOCATOR();
 }
 
@@ -284,11 +281,9 @@ static void SDLCALL SDLTest_TrackedFree(void *ptr)
         return;
     }
 
-#ifdef TRACK_ALLOCATION_COUNT
-    if (!s_previous_allocations) {
+    if (s_previous_allocations == 0) {
         SDL_assert(SDL_IsAllocationTracked(ptr));
     }
-#endif
     SDL_UntrackAllocation(ptr);
     SDL_free_orig(ptr);
 }
@@ -301,14 +296,12 @@ void SDLTest_TrackAllocations(void)
 
     SDLTest_Crc32Init(&s_crc32_context);
 
-#ifdef TRACK_ALLOCATION_COUNT
     s_previous_allocations = SDL_GetNumAllocations();
-    if (s_previous_allocations != 0) {
+    if (s_previous_allocations < 0) {
+        SDL_Log("SDL was built without allocation count support, disabling free() validation");
+    } else if (s_previous_allocations != 0) {
         SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
     }
-#else
-    SDL_Log("SDL was built without allocation count support, disabling free() validation");
-#endif
 #ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
     do {
         /* Don't use SDL_GetHint: SDL_malloc is off limits. */
@@ -454,12 +447,10 @@ void SDLTest_LogAllocations(void)
     }
     (void)SDL_snprintf(line, sizeof(line), "Total: %.2f Kb in %d allocations", total_allocated / 1024.0, count);
     ADD_LINE();
-#ifndef TRACK_ALLOCATION_COUNT
     if (s_unknown_frees != 0) {
         (void)SDL_snprintf(line, sizeof(line), ", %d unknown frees", s_unknown_frees);
         ADD_LINE();
     }
-#endif
     (void)SDL_snprintf(line, sizeof(line), "\n");
     ADD_LINE();
 #undef ADD_LINE
