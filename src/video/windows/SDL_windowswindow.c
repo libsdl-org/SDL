@@ -500,7 +500,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
         }
         if (style & WS_THICKFRAME) {
             window->flags |= SDL_WINDOW_RESIZABLE;
-        } else {
+        } else if (!(style & WS_POPUP)) {
             window->flags &= ~SDL_WINDOW_RESIZABLE;
         }
 #ifdef WS_MAXIMIZE
