@@ -5339,9 +5339,9 @@ SDL_FORCE_INLINE bool SDL_size_mul_check_overflow_builtin(size_t a, size_t b, si
 /**
  * Add two integers, checking for overflow.
  *
- * If `a + b` would overflow, return -1.
+ * If `a + b` would overflow, return false.
  *
- * Otherwise store `a + b` via ret and return 0.
+ * Otherwise store `a + b` via ret and return true.
  *
  * \param a the first addend.
  * \param b the second addend.
