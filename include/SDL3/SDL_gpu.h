@@ -3636,6 +3636,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUSwapchain(
  * buffer used to acquire it. It is an error to call
  * SDL_CancelGPUCommandBuffer() after a swapchain texture is acquired.
  *
+ * This function can fill the swapchain texture handle with NULL in certain
+ * cases, for example if the window is minimized. This is not an error. You
+ * should always make sure to check whether the pointer is NULL before
+ * actually using it.
+ *
  * The swapchain texture is managed by the implementation and must not be
  * freed by the user. You MUST NOT call this function from any thread other
  * than the one that created the window.
