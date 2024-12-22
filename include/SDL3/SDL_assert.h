@@ -226,7 +226,7 @@ disable assertions.
  */
 #define SDL_NULL_WHILE_LOOP_CONDITION (0)
 
-#elif defined _MSC_VER  /* Avoid /W4 warnings. */
+#elif defined(_MSC_VER)  /* Avoid /W4 warnings. */
 /* "while (0,0)" fools Microsoft's compiler's /W4 warning level into thinking
     this condition isn't constant. And looks like an owl's face! */
 #define SDL_NULL_WHILE_LOOP_CONDITION (0,0)
