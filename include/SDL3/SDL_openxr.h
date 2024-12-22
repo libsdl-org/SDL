@@ -94,10 +94,10 @@ extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSession(
 extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSwapchain(
     SDL_GPUDevice *device,
     XrSession session,
-    const XrSwapchainCreateInfo *createinfo, /* your normal create info sans the format */
-    SDL_GPUTextureFormat *textureFormat, /* the texture format chosen by SDL_gpu */
-    XrSwapchain *swapchain, /* the created swapchain */
-    SDL_GPUTexture ***textures /* ptr to where an array of SDL_GPUTexture you can render to will be */);
+    const XrSwapchainCreateInfo *createinfo, /**< The swapchain create info. */
+    SDL_GPUTextureFormat *textureFormat, /**< The texture format that SDL picked. */
+    XrSwapchain *swapchain, /**< The created OpenXR swapchain. */
+    SDL_GPUTexture ***textures /**< A pointer to where to store the swapchain texture array. */);
 
 extern SDL_DECLSPEC XrResult SDLCALL SDL_DestroyGPUXRSwapchain(SDL_GPUDevice *device, XrSwapchain swapchain, SDL_GPUTexture **swapchainImages);
 
