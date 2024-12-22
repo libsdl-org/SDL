@@ -1267,3 +1267,4 @@
 #define SDL_CreateGPUXRSession SDL_CreateGPUXRSession_REAL
 #define SDL_CreateGPUXRSwapchain SDL_CreateGPUXRSwapchain_REAL
 #define SDL_DestroyGPUXRSwapchain SDL_DestroyGPUXRSwapchain_REAL
+#define SDL_XRGPUSupportsProperties SDL_XRGPUSupportsProperties_REAL

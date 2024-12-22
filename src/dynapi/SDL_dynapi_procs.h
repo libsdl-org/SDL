@@ -1275,3 +1275,4 @@ SDL_DYNAPI_PROC(bool,SDL_CreateXRGPUDeviceWithProperties,(SDL_GPUDevice **a, XrI
 SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSession,(SDL_GPUDevice *a, const XrSessionCreateInfo *b, XrSession *c),(a,b,c),return)
 SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSwapchain,(SDL_GPUDevice *a, XrSession b, const XrSwapchainCreateInfo *c, SDL_GPUTextureFormat *d, XrSwapchain *e, SDL_GPUTexture ***f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(XrResult,SDL_DestroyGPUXRSwapchain,(SDL_GPUDevice *a,XrSwapchain b,SDL_GPUTexture **c),(a,b,c),return)
+SDL_DYNAPI_PROC(bool,SDL_XRGPUSupportsProperties,(SDL_PropertiesID a),(a),return)

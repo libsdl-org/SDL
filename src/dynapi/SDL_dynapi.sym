@@ -1242,6 +1242,7 @@ SDL3_0.0.0 {
     SDL_CreateGPUXRSession;
     SDL_CreateGPUXRSwapchain;
     SDL_DestroyGPUXRSwapchain;
+    SDL_XRGPUSupportsProperties;
     # extra symbols go here (don't modify this line)
   local: *;
 };

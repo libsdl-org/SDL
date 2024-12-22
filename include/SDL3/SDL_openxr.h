@@ -66,6 +66,9 @@ typedef enum XrResult {
 } XrResult;
 #endif /* NO_SDL_OPENXR_TYPEDEFS */
 
+extern SDL_DECLSPEC bool SDLCALL SDL_XRGPUSupportsProperties(
+    SDL_PropertiesID props);
+
 extern SDL_DECLSPEC bool SDLCALL SDL_CreateXRGPUDeviceWithProperties(
     SDL_GPUDevice **device,
     XrInstance *instance,
