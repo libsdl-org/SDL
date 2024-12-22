@@ -568,6 +568,14 @@ static D3D12_PRIMITIVE_TOPOLOGY SDLToD3D12_PrimitiveType[] = {
     D3D_PRIMITIVE_TOPOLOGY_POINTLIST      // POINTLIST
 };
 
+static D3D12_PRIMITIVE_TOPOLOGY_TYPE SDLToD3D12_PrimitiveTopologyType[] = {
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, // TRIANGLELIST
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, // TRIANGLESTRIP
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,     // LINELIST
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,     // LINESTRIP
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT     // POINTLIST
+};
+
 static D3D12_TEXTURE_ADDRESS_MODE SDLToD3D12_SamplerAddressMode[] = {
     D3D12_TEXTURE_ADDRESS_MODE_WRAP,   // REPEAT
     D3D12_TEXTURE_ADDRESS_MODE_MIRROR, // MIRRORED_REPEAT
@@ -2864,7 +2872,7 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
         D3D12_INTERNAL_ConvertVertexInputState(createinfo->vertex_input_state, inputElementDescs, renderer->semantic);
     }
 
-    psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    psoDesc.PrimitiveTopologyType = SDLToD3D12_PrimitiveTopologyType[createinfo->primitive_type];
 
     if (!D3D12_INTERNAL_ConvertRasterizerState(createinfo->rasterizer_state, &psoDesc.RasterizerState)) {
         return NULL;
