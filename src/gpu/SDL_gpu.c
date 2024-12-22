@@ -374,7 +374,7 @@ void SDL_GPU_BlitCommon(
 // Driver Functions
 
 #ifndef SDL_GPU_DISABLED
-static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
+static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props, bool xr)
 {
     Uint32 i;
     SDL_GPUShaderFormat format_flags = 0;
@@ -418,7 +418,12 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
                     SDL_SetError("Required shader format for backend %s not provided!", gpudriver);
                     return NULL;
                 }
-                if (backends[i]->PrepareDriver(_this)) {
+
+                if (xr) {
+                    if (backends[i]->PrepareXrDriver(_this)) {
+                        return backends[i];
+                    }
+                } else if (backends[i]->PrepareDriver(_this)) {
                     return backends[i];
                 }
             }
@@ -433,7 +438,12 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
             // Don't select a backend which doesn't support the app's shaders.
             continue;
         }
-        if (backends[i]->PrepareDriver(_this)) {
+
+        if (xr) {
+            if (backends[i]->PrepareXrDriver(_this)) {
+                return backends[i];
+            }
+        } else if (backends[i]->PrepareDriver(_this)) {
             return backends[i];
         }
     }
@@ -491,7 +501,17 @@ bool SDL_GPUSupportsShaderFormats(
 bool SDL_GPUSupportsProperties(SDL_PropertiesID props)
 {
 #ifndef SDL_GPU_DISABLED
-    return (SDL_GPUSelectBackend(props) != NULL);
+    return (SDL_GPUSelectBackend(props, false) != NULL);
+#else
+    SDL_SetError("SDL not built with GPU support");
+    return false;
+#endif
+}
+
+bool SDL_XRGPUSupportsProperties(SDL_PropertiesID props)
+{
+#ifndef SDL_GPU_DISABLED
+    return (SDL_GPUSelectBackend(props, true) != NULL);
 #else
     SDL_SetError("SDL not built with GPU support");
     return false;
@@ -528,7 +548,7 @@ bool SDL_CreateXRGPUDeviceWithProperties(
     const SDL_GPUBootstrap *selectedBackend;
 
     /* TODO: make the backend selection actually take the available OpenXR instance extensions into account */
-    selectedBackend = SDL_GPUSelectBackend(props);
+    selectedBackend = SDL_GPUSelectBackend(props, true);
     if (selectedBackend != NULL) {
         debug_mode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, true);
         preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
@@ -555,7 +575,7 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
     SDL_GPUDevice *result = NULL;
     const SDL_GPUBootstrap *selectedBackend;
 
-    selectedBackend = SDL_GPUSelectBackend(props);
+    selectedBackend = SDL_GPUSelectBackend(props, false);
     if (selectedBackend != NULL) {
         debug_mode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, true);
         preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
