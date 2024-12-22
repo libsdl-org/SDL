@@ -6914,8 +6914,7 @@ static XrResult VULKAN_CreateXRSession(
 static XrResult VULKAN_DestroyXRSwapchain(
     SDL_GPURenderer *driverData,
     XrSwapchain swapchain,
-    SDL_GPUTexture **swapchainImages
-)
+    SDL_GPUTexture **swapchainImages)
 {
 #ifdef HAVE_GPU_OPENXR
     XrResult result;
@@ -6927,13 +6926,14 @@ static XrResult VULKAN_DestroyXRSwapchain(
         return result;
     }
 
-
     /* We always want to destroy the swapchain images, so don't early return if xrDestroySwapchain fails for some reason */
     for(Uint32 i = 0; i < swapchainCount; i++) {
         VulkanTextureContainer *container = (VulkanTextureContainer *)swapchainImages[i];
 
-        if(!container->externallyManaged)
-            return XR_ERROR_RUNTIME_FAILURE; /* there's probably a better error we can use, this shouldn't ever be hit */
+        if(!container->externallyManaged) {
+            SDL_SetError("Invalid GPU Texture handle.");
+            return XR_ERROR_HANDLE_INVALID;
+        }
 
         VULKAN_INTERNAL_DestroyTexture(renderer, container->activeTexture);
 
@@ -7018,8 +7018,8 @@ static XrResult VULKAN_CreateXRSwapchain(
     if(vkFormat == VK_FORMAT_UNDEFINED)
     {
         /* TODO: there needs to be a better way of returning SDL errors from here... */
-        SDL_SetError("Failed to find swapchain format supported by both the OpenXR runtime and SDL_gpu");
-        return XR_ERROR_RUNTIME_FAILURE;
+        SDL_SetError("Failed to find a swapchain format supported by both OpenXR and SDL");
+        return XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED;
     }
 
     XrSwapchainCreateInfo createInfo = *oldCreateInfo;
@@ -7093,7 +7093,8 @@ static XrResult VULKAN_CreateXRSwapchain(
                         texture->swizzle,
                         &texture->subresources[subresourceIndex].renderTargetViews[0])) {
                         VULKAN_INTERNAL_DestroyTexture(renderer, texture);
-                        SDL_SetError("Failed to create render target view\n");
+
+                        SDL_SetError("Failed to create render target view");
                         return XR_ERROR_RUNTIME_FAILURE; /* TODO: there's probably a better error for this.. */
                     }
                 }

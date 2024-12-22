@@ -583,13 +583,9 @@ void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
 
 XrResult SDL_DestroyGPUXRSwapchain(SDL_GPUDevice *device, XrSwapchain swapchain, SDL_GPUTexture **swapchainImages)
 {
-#ifdef HAVE_GPU_OPENXR
     CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
 
     return device->DestroyXRSwapchain(device->driverData, swapchain, swapchainImages);
-#else
-    return XR_ERROR_FUNCTION_UNSUPPORTED;
-#endif
 }
 
 int SDL_GetNumGPUDrivers(void)
