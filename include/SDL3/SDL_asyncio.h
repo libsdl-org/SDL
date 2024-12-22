@@ -429,7 +429,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyAsyncIOQueue(SDL_AsyncIOQueue *queue
  * \param queue the async I/O task queue to query.
  * \param outcome details of a finished task will be written here. May not be
  *                NULL.
- * \returns true if task has completed, false otherwise.
+ * \returns true if a task has completed, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
