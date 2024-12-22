@@ -358,6 +358,7 @@
 #endif /* HAVE_WINAPIFAMILY_H */
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A preprocessor macro that defined to 1 if compiling for Windows Phone.
  *

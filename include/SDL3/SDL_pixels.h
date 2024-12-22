@@ -244,8 +244,10 @@ typedef enum SDL_PackedLayout
  * ```
  *
  * \param type the type of the new format, probably a SDL_PixelType value.
- * \param order the order of the new format, probably a SDL_BitmapOrder, SDL_PackedOrder, or SDL_ArrayOrder value.
- * \param layout the layout of the new format, probably an SDL_PackedLayout value or zero.
+ * \param order the order of the new format, probably a SDL_BitmapOrder,
+ *              SDL_PackedOrder, or SDL_ArrayOrder value.
+ * \param layout the layout of the new format, probably an SDL_PackedLayout
+ *               value or zero.
  * \param bits the number of bits per pixel of the new format.
  * \param bytes the number of bytes per pixel of the new format.
  * \returns a format value in the style of SDL_PixelFormat.
@@ -305,8 +307,8 @@ typedef enum SDL_PackedLayout
 /**
  * A macro to retrieve the layout of an SDL_PixelFormat.
  *
- * This is usually a value from the SDL_PackedLayout enumeration, or zero if
- * a layout doesn't make sense for the format type.
+ * This is usually a value from the SDL_PackedLayout enumeration, or zero if a
+ * layout doesn't make sense for the format type.
  *
  * \param format an SDL_PixelFormat to check.
  * \returns the layout of `format`.
@@ -833,10 +835,14 @@ typedef enum SDL_ChromaLocation
  *
  * \param type the type of the new format, probably an SDL_ColorType value.
  * \param range the range of the new format, probably a SDL_ColorRange value.
- * \param primaries the primaries of the new format, probably an SDL_ColorPrimaries value.
- * \param transfer the transfer characteristics of the new format, probably an SDL_TransferCharacteristics value.
- * \param matrix the matrix coefficients of the new format, probably an SDL_MatrixCoefficients value.
- * \param chroma the chroma sample location of the new format, probably an SDL_ChromaLocation value.
+ * \param primaries the primaries of the new format, probably an
+ *                  SDL_ColorPrimaries value.
+ * \param transfer the transfer characteristics of the new format, probably an
+ *                 SDL_TransferCharacteristics value.
+ * \param matrix the matrix coefficients of the new format, probably an
+ *               SDL_MatrixCoefficients value.
+ * \param chroma the chroma sample location of the new format, probably an
+ *               SDL_ChromaLocation value.
  * \returns a format value in the style of SDL_Colorspace.
  *
  * \threadsafety It is safe to call this macro from any thread.
@@ -920,7 +926,8 @@ typedef enum SDL_ChromaLocation
 #define SDL_COLORSPACEMATRIX(cspace)     (SDL_MatrixCoefficients)((cspace) & 0x1F)
 
 /**
- * A macro to determine if an SDL_Colorspace uses BT601 (or BT470BG) matrix coefficients.
+ * A macro to determine if an SDL_Colorspace uses BT601 (or BT470BG) matrix
+ * coefficients.
  *
  * Note that this macro double-evaluates its parameter, so do not use
  * expressions with side-effects here.
@@ -947,7 +954,8 @@ typedef enum SDL_ChromaLocation
 #define SDL_ISCOLORSPACE_MATRIX_BT709(cspace)        (SDL_COLORSPACEMATRIX(cspace) == SDL_MATRIX_COEFFICIENTS_BT709)
 
 /**
- * A macro to determine if an SDL_Colorspace uses BT2020_NCL matrix coefficients.
+ * A macro to determine if an SDL_Colorspace uses BT2020_NCL matrix
+ * coefficients.
  *
  * \param cspace an SDL_Colorspace to check.
  * \returns true if BT709, false otherwise.

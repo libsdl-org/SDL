@@ -324,9 +324,9 @@ _m_prefetch(void *__P)
  * #endif
  * ```
  *
- * The application is, on a whole, built without SSE2 instructions, so it
- * will run on Intel machines that don't support SSE2. But then at runtime,
- * it checks if the system supports the instructions, and then calls into a
+ * The application is, on a whole, built without SSE2 instructions, so it will
+ * run on Intel machines that don't support SSE2. But then at runtime, it
+ * checks if the system supports the instructions, and then calls into a
  * function that uses SSE2 opcodes. The ifdefs make sure that this code isn't
  * used on platforms that don't have SSE2 at all.
  *

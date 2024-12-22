@@ -826,7 +826,8 @@ SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 f
  * and is only written to by the function. The compiler or other analysis
  * tools can warn when this doesn't appear to be the case.
  *
- * This operates on counts of objects, not bytes. Use SDL_OUT_BYTECAP for bytes.
+ * This operates on counts of objects, not bytes. Use SDL_OUT_BYTECAP for
+ * bytes.
  *
  * On compilers without this annotation mechanism, this is defined to nothing.
  *
@@ -917,13 +918,14 @@ SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 f
  * int fprintf(FILE *f, const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
  * ```
  *
- * This notes that the second parameter should be a printf-style format string, followed by `...`.
- * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ * This notes that the second parameter should be a printf-style format
+ * string, followed by `...`. The compiler or other analysis tools can warn
+ * when this doesn't appear to be the case.
  *
  * On compilers without this annotation mechanism, this is defined to nothing.
  *
- * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which between them
- * will cover at least Visual Studio, GCC, and Clang.
+ * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which
+ * between them will cover at least Visual Studio, GCC, and Clang.
  *
  * \since This macro is available since SDL 3.1.3.
  */
@@ -938,13 +940,14 @@ SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 f
  * int vfprintf(FILE *f, const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
  * ```
  *
- * This notes that the second parameter should be a printf-style format string, followed by a va_list.
- * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ * This notes that the second parameter should be a printf-style format
+ * string, followed by a va_list. The compiler or other analysis tools can
+ * warn when this doesn't appear to be the case.
  *
  * On compilers without this annotation mechanism, this is defined to nothing.
  *
- * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which between them
- * will cover at least Visual Studio, GCC, and Clang.
+ * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which
+ * between them will cover at least Visual Studio, GCC, and Clang.
  *
  * \since This macro is available since SDL 3.1.3.
  */
@@ -959,13 +962,14 @@ SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 f
  * int fscanf(FILE *f, const char *fmt, ...) SDL_PRINTF_VARARG_FUNCV(2);
  * ```
  *
- * This notes that the second parameter should be a scanf-style format string, followed by `...`.
- * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ * This notes that the second parameter should be a scanf-style format string,
+ * followed by `...`. The compiler or other analysis tools can warn when this
+ * doesn't appear to be the case.
  *
  * On compilers without this annotation mechanism, this is defined to nothing.
  *
- * This can (and should) be used with SDL_SCANF_FORMAT_STRING as well, which between them
- * will cover at least Visual Studio, GCC, and Clang.
+ * This can (and should) be used with SDL_SCANF_FORMAT_STRING as well, which
+ * between them will cover at least Visual Studio, GCC, and Clang.
  *
  * \since This macro is available since SDL 3.1.3.
  */
@@ -980,13 +984,14 @@ SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 f
  * int vfscanf(FILE *f, const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
  * ```
  *
- * This notes that the second parameter should be a scanf-style format string, followed by a va_list.
- * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ * This notes that the second parameter should be a scanf-style format string,
+ * followed by a va_list. The compiler or other analysis tools can warn when
+ * this doesn't appear to be the case.
  *
  * On compilers without this annotation mechanism, this is defined to nothing.
  *
- * This can (and should) be used with SDL_SCANF_FORMAT_STRING as well, which between them
- * will cover at least Visual Studio, GCC, and Clang.
+ * This can (and should) be used with SDL_SCANF_FORMAT_STRING as well, which
+ * between them will cover at least Visual Studio, GCC, and Clang.
  *
  * \since This macro is available since SDL 3.1.3.
  */
@@ -1001,13 +1006,14 @@ SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 f
  * int fwprintf(FILE *f, const wchar_t *fmt, ...) SDL_WPRINTF_VARARG_FUNC(2);
  * ```
  *
- * This notes that the second parameter should be a wprintf-style format wide string, followed by `...`.
- * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ * This notes that the second parameter should be a wprintf-style format wide
+ * string, followed by `...`. The compiler or other analysis tools can warn
+ * when this doesn't appear to be the case.
  *
  * On compilers without this annotation mechanism, this is defined to nothing.
  *
- * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which between them
- * will cover at least Visual Studio, GCC, and Clang.
+ * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which
+ * between them will cover at least Visual Studio, GCC, and Clang.
  *
  * \since This macro is available since SDL 3.1.3.
  */
@@ -1022,13 +1028,14 @@ SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 f
  * int vfwprintf(FILE *f, const wchar_t *fmt, va_list ap) SDL_WPRINTF_VARARG_FUNC(2);
  * ```
  *
- * This notes that the second parameter should be a wprintf-style format wide string, followed by a va_list.
- * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ * This notes that the second parameter should be a wprintf-style format wide
+ * string, followed by a va_list. The compiler or other analysis tools can
+ * warn when this doesn't appear to be the case.
  *
  * On compilers without this annotation mechanism, this is defined to nothing.
  *
- * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which between them
- * will cover at least Visual Studio, GCC, and Clang.
+ * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which
+ * between them will cover at least Visual Studio, GCC, and Clang.
  *
  * \since This macro is available since SDL 3.1.3.
  */
@@ -2582,9 +2589,9 @@ extern SDL_DECLSPEC void * SDLCALL SDL_memset4(void *dst, Uint32 val, size_t dwo
  * \param s1 the first buffer to compare. NULL is not permitted!
  * \param s2 the second buffer to compare. NULL is not permitted!
  * \param len the number of bytes to compare between the buffers.
- * \returns less than zero if s1 is "less than" s2, greater than zero if
- *          s1 is "greater than" s2, and zero if the buffers match
- *          exactly for `len` bytes.
+ * \returns less than zero if s1 is "less than" s2, greater than zero if s1 is
+ *          "greater than" s2, and zero if the buffers match exactly for `len`
+ *          bytes.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -2606,7 +2613,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_
  * bytes on Linux, 2 on Windows, etc).
  *
  * \param wstr The null-terminated wide string to read. Must not be NULL.
- * \returns the length (in wchar_t values, excluding the null terminator) of `wstr`.
+ * \returns the length (in wchar_t values, excluding the null terminator) of
+ *          `wstr`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -2726,15 +2734,16 @@ extern SDL_DECLSPEC wchar_t * SDLCALL SDL_wcsdup(const wchar_t *wstr);
 /**
  * Search a wide string for the first instance of a specific substring.
  *
- * The search ends once it finds the requested substring, or a null
- * terminator byte to end the string.
+ * The search ends once it finds the requested substring, or a null terminator
+ * byte to end the string.
  *
  * Note that this looks for strings of _wide characters_, not _codepoints_, so
  * it's legal to search for malformed and incomplete UTF-16 sequences.
  *
  * \param haystack the wide string to search. Must not be NULL.
  * \param needle the wide string to search for. Must not be NULL.
- * \returns a pointer to the first instance of `needle` in the string, or NULL if not found.
+ * \returns a pointer to the first instance of `needle` in the string, or NULL
+ *          if not found.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -2743,20 +2752,23 @@ extern SDL_DECLSPEC wchar_t * SDLCALL SDL_wcsdup(const wchar_t *wstr);
 extern SDL_DECLSPEC wchar_t * SDLCALL SDL_wcsstr(const wchar_t *haystack, const wchar_t *needle);
 
 /**
- * Search a wide string, up to n wide chars, for the first instance of a specific substring.
+ * Search a wide string, up to n wide chars, for the first instance of a
+ * specific substring.
  *
- * The search ends once it finds the requested substring, or a null
- * terminator value to end the string, or `maxlen` wide character have been
- * examined. It is possible to use this function on a wide string without a
- * null terminator.
+ * The search ends once it finds the requested substring, or a null terminator
+ * value to end the string, or `maxlen` wide character have been examined. It
+ * is possible to use this function on a wide string without a null
+ * terminator.
  *
  * Note that this looks for strings of _wide characters_, not _codepoints_, so
  * it's legal to search for malformed and incomplete UTF-16 sequences.
  *
  * \param haystack the wide string to search. Must not be NULL.
  * \param needle the wide string to search for. Must not be NULL.
- * \param maxlen the maximum number of wide characters to search in `haystack`.
- * \returns a pointer to the first instance of `needle` in the string, or NULL if not found.
+ * \param maxlen the maximum number of wide characters to search in
+ *               `haystack`.
+ * \returns a pointer to the first instance of `needle` in the string, or NULL
+ *          if not found.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3064,19 +3076,19 @@ extern SDL_DECLSPEC SDL_MALLOC char * SDLCALL SDL_strdup(const char *str);
  * Allocate a copy of a string, up to n characters.
  *
  * This allocates enough space for a null-terminated copy of `str`, up to
- * `maxlen` bytes, using SDL_malloc, and then makes a copy of the string
- * into this space.
+ * `maxlen` bytes, using SDL_malloc, and then makes a copy of the string into
+ * this space.
  *
- * If the string is longer than `maxlen` bytes, the returned string will
- * be `maxlen` bytes long, plus a null-terminator character that isn't
- * included in the count.
+ * If the string is longer than `maxlen` bytes, the returned string will be
+ * `maxlen` bytes long, plus a null-terminator character that isn't included
+ * in the count.
  *
  * The returned string is owned by the caller, and should be passed to
  * SDL_free when no longer needed.
  *
  * \param str the string to copy.
- * \param maxlen the maximum length of the copied string, not counting
- *        the null-terminator character.
+ * \param maxlen the maximum length of the copied string, not counting the
+ *               null-terminator character.
  * \returns a pointer to the newly-allocated string.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -3998,14 +4010,16 @@ extern SDL_DECLSPEC char * SDLCALL SDL_UCS4ToUTF8(Uint32 codepoint, char *dst);
 extern SDL_DECLSPEC int SDLCALL SDL_sscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, ...) SDL_SCANF_VARARG_FUNC(2);
 
 /**
- * This works exactly like vsscanf() but doesn't require access to a C runtime.
+ * This works exactly like vsscanf() but doesn't require access to a C
+ * runtime.
  *
- * Functions identically to SDL_sscanf(), except it takes a `va_list`
- * instead of using `...` variable arguments.
+ * Functions identically to SDL_sscanf(), except it takes a `va_list` instead
+ * of using `...` variable arguments.
  *
  * \param text the string to scan. Must not be NULL.
  * \param fmt a printf-style format string. Must not be NULL.
- * \param ap a `va_list` of pointers to values to be filled in with scanned items.
+ * \param ap a `va_list` of pointers to values to be filled in with scanned
+ *           items.
  * \returns the number of items that matched the format string.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -4015,14 +4029,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_sscanf(const char *text, SDL_SCANF_FORMAT_ST
 extern SDL_DECLSPEC int SDLCALL SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_list ap) SDL_SCANF_VARARG_FUNCV(2);
 
 /**
- * This works exactly like snprintf() but doesn't require access to a C runtime.
+ * This works exactly like snprintf() but doesn't require access to a C
+ * runtime.
  *
  * Format a string of up to `maxlen`-1 bytes, converting each '%' item with
  * values provided through variable arguments.
  *
- * While some C runtimes differ on how to deal with too-large strings,
- * this function null-terminates the output, by treating the null-terminator
- * as part of the `maxlen` count. Note that if `maxlen` is zero, however, no
+ * While some C runtimes differ on how to deal with too-large strings, this
+ * function null-terminates the output, by treating the null-terminator as
+ * part of the `maxlen` count. Note that if `maxlen` is zero, however, no
  * bytes will be written at all.
  *
  * This function returns the number of _bytes_ (not _characters_) that should
@@ -4047,15 +4062,16 @@ extern SDL_DECLSPEC int SDLCALL SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_S
 extern SDL_DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(3);
 
 /**
- * This works exactly like swprintf() but doesn't require access to a C runtime.
+ * This works exactly like swprintf() but doesn't require access to a C
+ * runtime.
  *
- * Format a wide string of up to `maxlen`-1 wchar_t values, converting each '%'
- * item with values provided through variable arguments.
+ * Format a wide string of up to `maxlen`-1 wchar_t values, converting each
+ * '%' item with values provided through variable arguments.
  *
- * While some C runtimes differ on how to deal with too-large strings,
- * this function null-terminates the output, by treating the null-terminator
- * as part of the `maxlen` count. Note that if `maxlen` is zero, however, no
- * wide characters will be written at all.
+ * While some C runtimes differ on how to deal with too-large strings, this
+ * function null-terminates the output, by treating the null-terminator as
+ * part of the `maxlen` count. Note that if `maxlen` is zero, however, no wide
+ * characters will be written at all.
  *
  * This function returns the number of _wide characters_ (not _codepoints_)
  * that should be written, excluding the null-terminator character. If this
@@ -4066,7 +4082,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, s
  * behavior.
  *
  * \param text the buffer to write the wide string into. Must not be NULL.
- * \param maxlen the maximum wchar_t values to write, including the null-terminator.
+ * \param maxlen the maximum wchar_t values to write, including the
+ *               null-terminator.
  * \param fmt a printf-style format string. Must not be NULL.
  * \param ... a list of values to be used with the format string.
  * \returns the number of wide characters that should be written, not counting
@@ -4079,7 +4096,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, s
 extern SDL_DECLSPEC int SDLCALL SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ...) SDL_WPRINTF_VARARG_FUNC(3);
 
 /**
- * This works exactly like vsnprintf() but doesn't require access to a C runtime.
+ * This works exactly like vsnprintf() but doesn't require access to a C
+ * runtime.
  *
  * Functions identically to SDL_snprintf(), except it takes a `va_list`
  * instead of using `...` variable arguments.
@@ -4098,13 +4116,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text
 extern SDL_DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(3);
 
 /**
- * This works exactly like vswprintf() but doesn't require access to a C runtime.
+ * This works exactly like vswprintf() but doesn't require access to a C
+ * runtime.
  *
  * Functions identically to SDL_swprintf(), except it takes a `va_list`
  * instead of using `...` variable arguments.
  *
  * \param text the buffer to write the string into. Must not be NULL.
- * \param maxlen the maximum wide characters to write, including the null-terminator.
+ * \param maxlen the maximum wide characters to write, including the
+ *               null-terminator.
  * \param fmt a printf-style format wide string. Must not be NULL.
  * \param ap a `va_list` values to be used with the format string.
  * \returns the number of wide characters that should be written, not counting
@@ -4117,7 +4137,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, 
 extern SDL_DECLSPEC int SDLCALL SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, va_list ap) SDL_WPRINTF_VARARG_FUNCV(3);
 
 /**
- * This works exactly like asprintf() but doesn't require access to a C runtime.
+ * This works exactly like asprintf() but doesn't require access to a C
+ * runtime.
  *
  * Functions identically to SDL_snprintf(), except it allocates a buffer large
  * enough to hold the output string on behalf of the caller.
@@ -4145,7 +4166,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *tex
 extern SDL_DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 /**
- * This works exactly like vasprintf() but doesn't require access to a C runtime.
+ * This works exactly like vasprintf() but doesn't require access to a C
+ * runtime.
  *
  * Functions identically to SDL_asprintf(), except it takes a `va_list`
  * instead of using `...` variable arguments.

@@ -181,9 +181,9 @@ extern "C" {
 /**
  * Define an SDL_AudioFormat value.
  *
- * SDL does not support custom audio formats, so this macro is not of much
- * use externally, but it can be illustrative as to what the various bits of
- * an SDL_AudioFormat mean.
+ * SDL does not support custom audio formats, so this macro is not of much use
+ * externally, but it can be illustrative as to what the various bits of an
+ * SDL_AudioFormat mean.
  *
  * For example, SDL_AUDIO_S32LE looks like this:
  *

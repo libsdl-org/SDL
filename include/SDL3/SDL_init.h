@@ -117,8 +117,8 @@ typedef enum SDL_AppResult
  * Function pointer typedef for SDL_AppInit.
  *
  * These are used by SDL_EnterAppMainCallbacks. This mechanism operates behind
- * the scenes for apps using the optional main callbacks. Apps that want to use
- * this should just implement SDL_AppInit directly.
+ * the scenes for apps using the optional main callbacks. Apps that want to
+ * use this should just implement SDL_AppInit directly.
  *
  * \param appstate a place where the app can optionally store a pointer for
  *                 future use.
@@ -136,8 +136,8 @@ typedef SDL_AppResult (SDLCALL *SDL_AppInit_func)(void **appstate, int argc, cha
  * Function pointer typedef for SDL_AppIterate.
  *
  * These are used by SDL_EnterAppMainCallbacks. This mechanism operates behind
- * the scenes for apps using the optional main callbacks. Apps that want to use
- * this should just implement SDL_AppIterate directly.
+ * the scenes for apps using the optional main callbacks. Apps that want to
+ * use this should just implement SDL_AppIterate directly.
  *
  * \param appstate an optional pointer, provided by the app in SDL_AppInit.
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
@@ -151,8 +151,8 @@ typedef SDL_AppResult (SDLCALL *SDL_AppIterate_func)(void *appstate);
  * Function pointer typedef for SDL_AppEvent.
  *
  * These are used by SDL_EnterAppMainCallbacks. This mechanism operates behind
- * the scenes for apps using the optional main callbacks. Apps that want to use
- * this should just implement SDL_AppEvent directly.
+ * the scenes for apps using the optional main callbacks. Apps that want to
+ * use this should just implement SDL_AppEvent directly.
  *
  * \param appstate an optional pointer, provided by the app in SDL_AppInit.
  * \param event the new event for the app to examine.
@@ -167,8 +167,8 @@ typedef SDL_AppResult (SDLCALL *SDL_AppEvent_func)(void *appstate, SDL_Event *ev
  * Function pointer typedef for SDL_AppQuit.
  *
  * These are used by SDL_EnterAppMainCallbacks. This mechanism operates behind
- * the scenes for apps using the optional main callbacks. Apps that want to use
- * this should just implement SDL_AppEvent directly.
+ * the scenes for apps using the optional main callbacks. Apps that want to
+ * use this should just implement SDL_AppEvent directly.
  *
  * \param appstate an optional pointer, provided by the app in SDL_AppInit.
  * \param result the result code that terminated the app (success or failure).

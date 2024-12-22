@@ -34,6 +34,7 @@
 #include <SDL3/SDL_thread.h>
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * Enable thread safety attributes, only with clang.
  *

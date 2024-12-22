@@ -157,6 +157,7 @@ extern "C" {
 #endif
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A macro that reports the current function being compiled.
  *
@@ -204,6 +205,7 @@ disable assertions.
 */
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A macro for wrapping code in `do {} while (0);` without compiler warnings.
  *
@@ -211,7 +213,8 @@ disable assertions.
  * compiler complaints.
  *
  * the `do {} while (0);` trick is useful for wrapping code in a macro that
- * may or may not be a single statement, to avoid various C language accidents.
+ * may or may not be a single statement, to avoid various C language
+ * accidents.
  *
  * To use:
  *
@@ -311,6 +314,7 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
 
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * The macro used when an assertion triggers a breakpoint.
  *
@@ -342,9 +346,9 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
  * if (x) SDL_assert(y); else blah();
  * ```
  *
- * ... without the do/while, the "else" could attach to this macro's "if".
- * We try to handle just the minimum we need here in a macro...the loop,
- * the static vars, and break points. The heavy lifting is handled in
+ * ... without the do/while, the "else" could attach to this macro's "if". We
+ * try to handle just the minimum we need here in a macro...the loop, the
+ * static vars, and break points. The heavy lifting is handled in
  * SDL_ReportAssertion().
  *
  * \param condition the condition to assert.

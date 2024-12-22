@@ -175,10 +175,10 @@ extern __inline void SDL_CompilerBarrier(void);
  * Insert a memory release barrier (function version).
  *
  * Please refer to SDL_MemoryBarrierRelease for details. This is a function
- * version, which might be useful if you need to use this functionality from
- * a scripting language, etc. Also, some of the macro versions call this
- * function behind the scenes, where more heavy lifting can happen inside
- * of SDL. Generally, though, an app written in C/C++/etc should use the macro
+ * version, which might be useful if you need to use this functionality from a
+ * scripting language, etc. Also, some of the macro versions call this
+ * function behind the scenes, where more heavy lifting can happen inside of
+ * SDL. Generally, though, an app written in C/C++/etc should use the macro
  * version, as it will be more efficient.
  *
  * \threadsafety Obviously this function is safe to use from any thread at any
@@ -195,10 +195,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
  * Insert a memory acquire barrier (function version).
  *
  * Please refer to SDL_MemoryBarrierRelease for details. This is a function
- * version, which might be useful if you need to use this functionality from
- * a scripting language, etc. Also, some of the macro versions call this
- * function behind the scenes, where more heavy lifting can happen inside
- * of SDL. Generally, though, an app written in C/C++/etc should use the macro
+ * version, which might be useful if you need to use this functionality from a
+ * scripting language, etc. Also, some of the macro versions call this
+ * function behind the scenes, where more heavy lifting can happen inside of
+ * SDL. Generally, though, an app written in C/C++/etc should use the macro
  * version, as it will be more efficient.
  *
  * \threadsafety Obviously this function is safe to use from any thread at any
@@ -213,6 +213,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * Insert a memory release barrier (macro version).
  *
@@ -234,11 +235,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
  * For more information on these semantics, take a look at the blog post:
  * http://preshing.com/20120913/acquire-and-release-semantics
  *
- * This is the macro version of this functionality; if possible, SDL will
- * use compiler intrinsics or inline assembly, but some platforms might
- * need to call the function version of this, SDL_MemoryBarrierReleaseFunction
- * to do the heavy lifting. Apps that can use the macro should favor it over
- * the function.
+ * This is the macro version of this functionality; if possible, SDL will use
+ * compiler intrinsics or inline assembly, but some platforms might need to
+ * call the function version of this, SDL_MemoryBarrierReleaseFunction to do
+ * the heavy lifting. Apps that can use the macro should favor it over the
+ * function.
  *
  * \threadsafety Obviously this macro is safe to use from any thread at any
  *               time, but if you find yourself needing this, you are probably
@@ -257,11 +258,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
  * Please see SDL_MemoryBarrierRelease for the details on what memory barriers
  * are and when to use them.
  *
- * This is the macro version of this functionality; if possible, SDL will
- * use compiler intrinsics or inline assembly, but some platforms might
- * need to call the function version of this,
- * SDL_MemoryBarrierAcquireFunction, to do the heavy lifting. Apps that can
- * use the macro should favor it over the function.
+ * This is the macro version of this functionality; if possible, SDL will use
+ * compiler intrinsics or inline assembly, but some platforms might need to
+ * call the function version of this, SDL_MemoryBarrierAcquireFunction, to do
+ * the heavy lifting. Apps that can use the macro should favor it over the
+ * function.
  *
  * \threadsafety Obviously this macro is safe to use from any thread at any
  *               time, but if you find yourself needing this, you are probably
