@@ -1009,7 +1009,7 @@ static int SDLCALL pixels_saveLoadBMP(void *arg)
         if (surface) {
             Uint8 *pixels = (Uint8 *)surface->pixels;
             if (SDL_ISPIXELFORMAT_ALPHA(format)) {
-                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_BGRA32, "Verify BMP surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_BGRA32), SDL_GetPixelFormatName(surface->format));
+                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_ARGB8888, "Verify BMP surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_ARGB8888), SDL_GetPixelFormatName(surface->format));
                 SDLTest_AssertCheck(pixels[0] == 255 &&
                                     pixels[1] == 255 &&
                                     pixels[2] == 255 &&
@@ -1057,7 +1057,7 @@ static int SDLCALL pixels_saveLoadBMP(void *arg)
         if (surface) {
             Uint8 *pixels = (Uint8 *)surface->pixels;
             if (SDL_ISPIXELFORMAT_ALPHA(format)) {
-                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_BGRA32, "Verify BMP surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_BGRA32), SDL_GetPixelFormatName(surface->format));
+                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_ARGB8888, "Verify BMP surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_ARGB8888), SDL_GetPixelFormatName(surface->format));
                 SDLTest_AssertCheck(pixels[0] == 255 &&
                                     pixels[1] == 255 &&
                                     pixels[2] == 255 &&
