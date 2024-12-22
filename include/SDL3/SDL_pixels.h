@@ -958,7 +958,7 @@ typedef enum SDL_ChromaLocation
  * coefficients.
  *
  * \param cspace an SDL_Colorspace to check.
- * \returns true if BT709, false otherwise.
+ * \returns true if BT2020_NCL, false otherwise.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
